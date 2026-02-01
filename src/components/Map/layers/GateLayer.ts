@@ -139,12 +139,12 @@ export class GateLayer extends BaseLayerRenderer {
 
     const img = new Image(48, 48);
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48"><path fill="white" d="M21,16V14L13,9V3.5A1.5,1.5,0,0,0,11.5,2A1.5,1.5,0,0,0,10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>`;
-    img.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
     img.onload = () => {
       if (!map.hasImage('aircraft-icon')) {
         map.addImage('aircraft-icon', img, { sdf: true });
       }
     };
+    img.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
   }
 
   private createGeoJSON(locations: StartupLocation[]): GeoJSON.FeatureCollection {

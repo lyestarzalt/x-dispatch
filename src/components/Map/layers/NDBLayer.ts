@@ -42,8 +42,7 @@ async function loadNDBImages(map: maplibregl.Map): Promise<boolean> {
   if (!map.hasImage(id)) {
     try {
       const img = new Image();
-      img.src = svgToDataURL(createNDBSymbolSVG(40));
-      return await new Promise<boolean>((resolve) => {
+      const promise = new Promise<boolean>((resolve) => {
         img.onload = () => {
           if (!map.hasImage(id)) {
             map.addImage(id, img, { sdf: false });
@@ -54,6 +53,8 @@ async function loadNDBImages(map: maplibregl.Map): Promise<boolean> {
           resolve(false);
         };
       });
+      img.src = svgToDataURL(createNDBSymbolSVG(40));
+      return await promise;
     } catch {
       return false;
     }

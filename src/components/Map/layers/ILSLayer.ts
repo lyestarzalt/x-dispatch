@@ -29,8 +29,7 @@ async function loadILSImages(map: maplibregl.Map): Promise<boolean> {
   if (!map.hasImage(id)) {
     try {
       const img = new Image();
-      img.src = svgToDataURL(createILSSymbolSVG(36));
-      return await new Promise<boolean>((resolve) => {
+      const promise = new Promise<boolean>((resolve) => {
         img.onload = () => {
           if (!map.hasImage(id)) {
             map.addImage(id, img, { sdf: false });
@@ -41,6 +40,8 @@ async function loadILSImages(map: maplibregl.Map): Promise<boolean> {
           resolve(false);
         };
       });
+      img.src = svgToDataURL(createILSSymbolSVG(36));
+      return await promise;
     } catch {
       return false;
     }

@@ -116,8 +116,7 @@ async function loadVORImages(map: maplibregl.Map): Promise<boolean> {
     if (!map.hasImage(id)) {
       try {
         const img = new Image();
-        img.src = svgToDataURL(svg);
-        await new Promise<void>((resolve) => {
+        const promise = new Promise<void>((resolve) => {
           img.onload = () => {
             if (!map.hasImage(id)) {
               map.addImage(id, img, { sdf: false });
@@ -126,9 +125,11 @@ async function loadVORImages(map: maplibregl.Map): Promise<boolean> {
           };
           img.onerror = () => {
             allLoaded = false;
-            resolve(); // Don't reject, just mark as failed
+            resolve();
           };
         });
+        img.src = svgToDataURL(svg);
+        await promise;
       } catch {
         allLoaded = false;
       }
