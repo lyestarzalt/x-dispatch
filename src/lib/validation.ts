@@ -1,4 +1,3 @@
-
 export function isValidICAO(icao: unknown): icao is string {
   if (typeof icao !== 'string') return false;
   return /^[A-Z0-9]{3,4}$/i.test(icao);

@@ -1,4 +1,3 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -34,7 +33,6 @@ export const XPLANE_PATHS = {
   userFix: 'Custom Data/user_fix.dat',
 } as const;
 
-
 export function resolveDataPath(
   xplanePath: string,
   relativePath: string,
@@ -54,21 +52,17 @@ export function resolveDataPath(
   return path.join(xplanePath, relativePath);
 }
 
-
 export function getNavDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthNav);
 }
-
 
 export function getFixDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthFix);
 }
 
-
 export function getAirwayDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthAwy);
 }
-
 
 export function getAirspaceDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.airspaces);
@@ -77,7 +71,6 @@ export function getAirspaceDataPath(xplanePath: string): string {
 export function getAptDataPath(xplanePath: string): string {
   return path.join(xplanePath, XPLANE_PATHS.globalAirports);
 }
-
 
 export function getCifpPath(xplanePath: string, icao: string): string {
   // Check Custom Data first
@@ -92,7 +85,6 @@ export function getCifpPath(xplanePath: string, icao: string): string {
 
   return path.join(xplanePath, XPLANE_PATHS.cifpDir, `${icao.toUpperCase()}.dat`);
 }
-
 
 export function validateXPlanePath(xplanePath: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];

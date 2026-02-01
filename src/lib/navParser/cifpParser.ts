@@ -256,7 +256,6 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
   return procedures;
 }
 
-
 export function getUniqueProcedureNames(procedures: Procedure[]): string[] {
   const names = new Set<string>();
   for (const proc of procedures) {
@@ -264,7 +263,6 @@ export function getUniqueProcedureNames(procedures: Procedure[]): string[] {
   }
   return Array.from(names).sort();
 }
-
 
 export function getProcedureRunways(procedures: Procedure[], name: string): string[] {
   const runways = new Set<string>();
@@ -275,7 +273,6 @@ export function getProcedureRunways(procedures: Procedure[], name: string): stri
   }
   return Array.from(runways).sort();
 }
-
 
 export function getProcedureTransitions(procedures: Procedure[], name: string): string[] {
   const transitions = new Set<string>();

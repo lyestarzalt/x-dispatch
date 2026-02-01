@@ -3,7 +3,6 @@ import * as path from 'path';
 import logger from '../logger';
 import type { Aircraft, Livery } from './types';
 
-
 export function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
   try {
     const content = fs.readFileSync(acfPath, 'utf-8');
@@ -119,7 +118,6 @@ function findAcfFiles(dir: string): string[] {
   return results;
 }
 
-
 function findPreviewImage(acfDir: string, acfBasename: string): string | null {
   // Try common naming patterns
   const patterns = [
@@ -139,7 +137,6 @@ function findPreviewImage(acfDir: string, acfBasename: string): string | null {
   return null;
 }
 
-
 function findThumbnailImage(acfDir: string, acfBasename: string): string | null {
   const patterns = [
     `${acfBasename}_icon11_thumb.png`,
@@ -157,7 +154,6 @@ function findThumbnailImage(acfDir: string, acfBasename: string): string | null 
 
   return null;
 }
-
 
 function scanLiveries(acfDir: string): Livery[] {
   const liveriesDir = path.join(acfDir, 'liveries');
@@ -195,7 +191,6 @@ function scanLiveries(acfDir: string): Livery[] {
 
   return liveries;
 }
-
 
 function findLiveryPreview(liveryDir: string): string | null {
   try {

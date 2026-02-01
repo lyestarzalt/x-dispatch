@@ -125,7 +125,7 @@ export function parseAirspaces(content: string): Airspace[] {
     // Skip empty lines and comments
     if (!line || line.startsWith('*')) continue;
 
-    // Get the command 
+    // Get the command
     const command = line.substring(0, 2).toUpperCase();
 
     switch (command) {
