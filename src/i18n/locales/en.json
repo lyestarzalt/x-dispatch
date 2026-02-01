@@ -1,0 +1,424 @@
+{
+  "common": {
+    "search": "Search",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "noResults": "No results found",
+    "all": "All",
+    "retry": "Retry",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "browse": "Browse",
+    "refresh": "Refresh",
+    "showMore": "Show all {{count}}",
+    "showLess": "Show less",
+    "copiedToClipboard": "Copied to clipboard!",
+    "notConfigured": "Not configured",
+    "selected": "Selected",
+    "online": "online",
+    "approved": "Approved",
+    "recommended": "Recommended"
+  },
+
+  "units": {
+    "ft": "ft",
+    "m": "m",
+    "nm": "nm",
+    "kt": "kt",
+    "s": "s",
+    "kg": "kg"
+  },
+
+  "directions": {
+    "n": "N",
+    "e": "E",
+    "s": "S",
+    "w": "W",
+    "ne": "NE",
+    "nw": "NW",
+    "se": "SE",
+    "sw": "SW"
+  },
+
+  "app": {
+    "title": "X-Dispatch"
+  },
+
+  "setup": {
+    "title": "X-Dispatch",
+    "subtitle": "Select your X-Plane installation to get started",
+    "scanning": "Scanning for installations...",
+    "noInstallations": "No X-Plane installations found",
+    "selectManually": "Use the button below to select manually",
+    "browseManually": "Browse manually",
+    "failedToBrowse": "Failed to browse",
+    "failedToSave": "Failed to save"
+  },
+
+  "loading": {
+    "title": "X-Dispatch",
+    "badge": "Loading data",
+    "initializing": "Initializing...",
+    "steps": {
+      "airports": "Airports",
+      "navaids": "Navaids",
+      "waypoints": "Waypoints",
+      "airspaces": "Airspaces",
+      "airways": "Airways"
+    },
+    "pathNotConfigured": "X-Plane path not configured",
+    "configurationRequired": "Configuration required",
+    "configureXPlanePath": "Configure X-Plane path"
+  },
+
+  "toolbar": {
+    "searchPlaceholder": "Search airports...",
+    "nav": "NAV",
+    "vatsim": "VATSIM",
+    "launch": "Launch",
+    "navigationLayers": "Navigation Layers"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your preferences",
+    "tabs": {
+      "xplane": "X-Plane",
+      "appearance": "Appearance",
+      "navigation": "Navigation"
+    },
+    "xplane": {
+      "title": "X-Plane Installation",
+      "description": "Configure your X-Plane data source",
+      "currentPath": "Current Path",
+      "detectedInstallations": "Detected Installations",
+      "dataLoaded": "Loaded Data",
+      "dataType": "Type",
+      "count": "Count",
+      "source": "Source"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize the look and feel",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "mapStyle": "Map Style",
+      "unlimited": "Unlimited",
+      "customStyleUrl": "Custom URL",
+      "customStyleHint": "Paste any MapLibre style.json URL",
+      "language": "Language"
+    },
+    "navigation": {
+      "title": "Navigation Data",
+      "description": "Configure navigation and VATSIM settings",
+      "searchRadius": "Search Radius",
+      "vatsim": {
+        "title": "VATSIM Live Traffic",
+        "enable": "Enable VATSIM",
+        "description": "Show live aircraft from the VATSIM network",
+        "refreshInterval": "Refresh Interval",
+        "refreshHelp": "How often to refresh VATSIM data (recommended: 15s)"
+      }
+    }
+  },
+
+  "sidebar": {
+    "weather": "Weather",
+    "wind": "Wind",
+    "visibility": "Visibility",
+    "ceiling": "Ceiling",
+    "altimeter": "Altimeter",
+    "temp": "Temp",
+    "dewpoint": "Dewpoint",
+    "clouds": "Clouds",
+    "noWeatherData": "No weather data available",
+    "noFrequencies": "No frequencies available",
+    "searchGates": "Search gates...",
+    "frequencies": "Frequencies",
+    "runways": "Runways",
+    "gatesParking": "Gates & Parking",
+    "moreCount": "+{{count}} more",
+    "procedures": "Procedures",
+    "nearbyNavaids": "Nearby Navaids",
+    "withinRadius": "Within 50nm radius",
+    "ils": "ILS",
+    "startFrom": "Start from:"
+  },
+
+  "airportInfo": {
+    "tabs": {
+      "info": "INFO",
+      "runways": "Runways",
+      "gates": "Gates",
+      "radio": "Radio",
+      "gateway": "GATEWAY"
+    },
+    "stats": {
+      "elevation": "ELEV",
+      "runways": "RWY",
+      "gates": "GATES",
+      "hangars": "HANGARS"
+    },
+    "runwayCount": "{{count}} RWY",
+    "location": "LOCATION",
+    "facilities": "FACILITIES",
+    "tower": "TOWER",
+    "windsocks": "WINDSOCKS",
+    "beacon": "BEACON",
+    "helipads": "HELIPADS",
+    "searchGates": "Search gates...",
+    "filterAll": "ALL",
+    "filterGates": "GATES",
+    "filterHangars": "HANGARS",
+    "filterOther": "OTHER",
+    "noGatesFound": "NO GATES FOUND",
+    "noFrequencies": "No frequencies available",
+    "xplaneGateway": "X-Plane Gateway",
+    "gatewayNotAvailable": "GATEWAY DATA NOT AVAILABLE",
+    "gatewayLoading": "LOADING GATEWAY DATA...",
+    "noGatewayData": "NO GATEWAY DATA FOR THIS AIRPORT",
+    "gatewayDescription": "This data shows submissions for this airport.",
+    "viewOnGateway": "View on Gateway",
+    "accepted": "ACCEPTED",
+    "features": "FEATURES",
+    "sceneryPacks": "SCENERY PACKS",
+    "moreOnGateway": "MORE ON GATEWAY",
+    "refreshData": "REFRESH DATA",
+    "artistComments": "ARTIST COMMENTS",
+    "approvedDate": "Approved:",
+    "beaconTypes": {
+      "civil": "Civil (W-G)",
+      "seaplane": "Seaplane (W-Y)",
+      "heliport": "Heliport",
+      "military": "Military"
+    },
+    "surfaces": {
+      "asphalt": "Asphalt",
+      "concrete": "Concrete",
+      "grass": "Grass",
+      "dirt": "Dirt",
+      "gravel": "Gravel",
+      "dryLake": "Dry Lake",
+      "water": "Water",
+      "snow": "Snow",
+      "transparent": "Transparent",
+      "unknown": "Unknown"
+    }
+  },
+
+  "navigation": {
+    "heading": "HEADING",
+    "wind": "WIND",
+    "calm": "Calm"
+  },
+
+  "weather": {
+    "fetching": "Fetching weather...",
+    "noData": "No weather data available",
+    "tabs": {
+      "metar": "METAR",
+      "taf": "TAF"
+    },
+    "visibility": "VISIBILITY",
+    "clouds": "CLOUDS",
+    "tempDew": "TEMP/DEW",
+    "altimeter": "ALTIMETER",
+    "showRaw": "Show raw",
+    "hideRaw": "Hide raw",
+    "runway": "RUNWAY {{names}}",
+    "useRunway": "Use {{name}}",
+    "headwind": "HW",
+    "tailwind": "TW",
+    "crosswind": "XW"
+  },
+
+  "procedures": {
+    "noData": "No procedures available",
+    "noTypeData": "No {{type}}s available",
+    "tabs": {
+      "sid": "SID",
+      "star": "STAR",
+      "app": "APP"
+    },
+    "allRunways": "ALL"
+  },
+
+  "layers": {
+    "airport": {
+      "title": "Airport Layers",
+      "surfaces": "Surfaces",
+      "markings": "Markings",
+      "lights": "Lights",
+      "objects": "Objects",
+      "effects": "Effects"
+    },
+    "navigation": {
+      "title": "Navigation Layers",
+      "navaids": "Navaids",
+      "fixes": "Fixes",
+      "airspaces": "Airspaces"
+    },
+    "items": {
+      "runways": "Runways",
+      "taxiways": "Taxiways",
+      "aprons": "Aprons",
+      "boundary": "Boundary",
+      "rwyMarkings": "RWY Markings",
+      "lines": "Lines",
+      "signs": "Signs",
+      "rwyLights": "RWY Lights",
+      "twyLights": "TWY Lights",
+      "approach": "Approach",
+      "gates": "Gates",
+      "windsocks": "Windsocks",
+      "animations": "Animations",
+      "weatherEffects": "Weather",
+      "vors": "VORs",
+      "ndbs": "NDBs",
+      "dmes": "DMEs",
+      "ils": "ILS",
+      "waypoints": "Waypoints",
+      "airwaysOff": "Off",
+      "highAirways": "High Airways (Jet)",
+      "lowAirways": "Low Airways (Victor)"
+    },
+    "loadViewport": "Load Viewport Navaids",
+    "showAll": "Show All",
+    "hideAll": "Hide All"
+  },
+
+  "debug": {
+    "title": "Debug Mode Active",
+    "instruction": "Click on any feature on the map to inspect its properties.",
+    "descriptions": {
+      "lines": "Lines (painted markings)",
+      "signs": "Signs (taxiway/runway signs)",
+      "gates": "Gates & Parking spots",
+      "runways": "Runways & Taxiways"
+    },
+    "properties": "Properties",
+    "coordinates": "Coordinates",
+    "rawAptDat": "Raw apt.dat",
+    "lineTypesHeader": "X-Plane Line Types (apt.dat 1130):",
+    "copyToClipboard": "Copy to clipboard",
+    "clearSelection": "Clear selection"
+  },
+
+  "launcher": {
+    "title": "Flight Setup",
+    "launch": "Launch X-Plane",
+    "launching": "Launching...",
+    "selectDeparture": "Select a departure on the map",
+    "selectAircraft": "Select an aircraft",
+
+    "aircraft": {
+      "title": "Aircraft",
+      "search": "Search aircraft...",
+      "allCategories": "All Categories",
+      "allManufacturers": "All Manufacturers",
+      "count": "{{count}} aircraft",
+      "favorites": "{{count}} favorites",
+      "noFavorites": "No favorites yet",
+      "noAircraft": "No aircraft found",
+      "showAll": "Show all",
+      "showFavoritesOnly": "Show favorites only"
+    },
+
+    "liveries": {
+      "title": "Liveries",
+      "count": "Liveries ({{count}})",
+      "default": "Default"
+    },
+
+    "config": {
+      "timeOfDay": "Time of Day",
+      "weather": "Weather",
+      "fuel": "Fuel",
+      "summary": "Summary",
+      "departure": "Departure",
+      "livery": "Livery"
+    },
+
+    "time": {
+      "dawn": "Dawn",
+      "day": "Day",
+      "dusk": "Dusk",
+      "night": "Night"
+    },
+
+    "timePresets": {
+      "dawn": "Dawn",
+      "sunrise": "Sunrise",
+      "noon": "Noon",
+      "sunset": "Sunset",
+      "dusk": "Dusk",
+      "night": "Night"
+    },
+
+    "weather": {
+      "clear": "Clear",
+      "cloudy": "Cloudy",
+      "rainy": "Rainy",
+      "stormy": "Stormy",
+      "snowy": "Snowy",
+      "foggy": "Foggy"
+    },
+
+    "weatherBuilder": {
+      "custom": "Custom Weather",
+      "customize": "Customize weather",
+      "details": "Weather Details",
+      "visibility": "Visibility",
+      "wind": "Wind",
+      "direction": "Direction",
+      "speed": "Speed",
+      "gusts": "Gusts",
+      "clouds": "Clouds",
+      "addLayer": "Add Layer",
+      "noClouds": "No cloud layers",
+      "layer": "Layer",
+      "coverage": "Coverage",
+      "cloudType": "Type",
+      "base": "Base (ft)",
+      "tops": "Tops (ft)",
+      "precipitation": "Precipitation",
+      "temperature": "Temperature",
+      "dewpoint": "Dewpoint",
+      "pressure": "Pressure",
+      "atmosphere": "Atmosphere",
+      "cloudTypes": {
+        "stratus": "Stratus",
+        "cumulus": "Cumulus",
+        "cumulonimbus": "Cumulonimbus"
+      }
+    },
+
+    "weatherModal": {
+      "presets": "Presets",
+      "custom": "Custom",
+      "poor": "Poor",
+      "unlimited": "Unlimited"
+    },
+
+    "fuelConfig": {
+      "auto": "Auto",
+      "manual": "Manual",
+      "total": "Total"
+    },
+
+    "fuelModal": {
+      "empty": "Empty",
+      "full": "Full",
+      "of": "of"
+    }
+  }
+}
