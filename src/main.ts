@@ -1,6 +1,7 @@
 import { BrowserWindow, app, dialog, ipcMain, net, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import path from 'path';
+import { initDb } from './db';
 import logger, { getLogPath } from './lib/logger';
 import { AirportProcedures } from './lib/navParser/cifpParser';
 import {
@@ -15,7 +16,7 @@ import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
 
 app.name = 'X-Dispatch';
 
-const dataManager = getXPlaneDataManager();
+let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
 let launcherModule: typeof import('./lib/launcher') | null = null;
@@ -440,6 +441,10 @@ function registerIpcHandlers() {
 app.whenReady().then(async () => {
   logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
   logger.main.debug(`Log file: ${getLogPath()}`);
+
+  // Initialize database before anything else
+  await initDb();
+  dataManager = getXPlaneDataManager();
 
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
     callback(['clipboard-read', 'clipboard-write'].includes(permission));

@@ -6,8 +6,7 @@ import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
-// Drizzle imports
-import { airports, closeDb, getDb, getSqlite } from '../../db';
+import { airports, closeDb, getDb, getSqlite, saveDb } from '../../db';
 import logger from '../logger';
 import { parseAirspaces } from '../navParser/airspaceParser';
 import { parseAirways } from '../navParser/airwayParser';
@@ -475,26 +474,16 @@ export class XPlaneDataManager {
     // 3. Insert all airports into database
     const sqlite = getSqlite();
     if (sqlite && allAirports.size > 0) {
-      sqlite.exec('DELETE FROM airports');
+      sqlite.run('DELETE FROM airports');
 
-      const insertStmt = sqlite.prepare(
-        'INSERT OR REPLACE INTO airports (icao, name, lat, lon, type, data) VALUES (?, ?, ?, ?, ?, ?)'
-      );
+      for (const airport of allAirports.values()) {
+        sqlite.run(
+          'INSERT OR REPLACE INTO airports (icao, name, lat, lon, type, data) VALUES (?, ?, ?, ?, ?, ?)',
+          [airport.icao, airport.name, airport.lat, airport.lon, airport.type, airport.data]
+        );
+      }
 
-      const insertMany = sqlite.transaction((items: typeof allAirports) => {
-        for (const airport of items.values()) {
-          insertStmt.run(
-            airport.icao,
-            airport.name,
-            airport.lat,
-            airport.lon,
-            airport.type,
-            airport.data
-          );
-        }
-      });
-
-      insertMany(allAirports);
+      saveDb();
       logger.data.info(`Stored ${allAirports.size} total airports (Global + Custom Scenery)`);
     }
 
