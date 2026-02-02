@@ -8,6 +8,9 @@ updates:
       dependencies:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore(deps)"
 

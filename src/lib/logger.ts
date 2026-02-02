@@ -5,6 +5,15 @@ import * as fs from 'fs';
 log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}] [{level}] {text}';
 log.transports.console.format = '[{level}] {text}';
 
+// Handle EPIPE errors on console transport (happens when stdout is closed)
+log.transports.console.writeFn = ({ message }) => {
+  try {
+    process.stdout.write(message + '\n');
+  } catch {
+    // Ignore write errors (EPIPE, etc.)
+  }
+};
+
 const isDev = !app.isPackaged;
 
 if (isDev) {

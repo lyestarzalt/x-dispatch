@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cloud, Radio, Route } from 'lucide-react';
 import {
@@ -71,13 +70,10 @@ export default function Sidebar({
 
   const metar = weather.metar?.decoded;
 
-  // Get ATIS frequency for quick weather display
-  const atisFrequency = useMemo(() => {
-    if (!airport?.frequencies) return null;
-    return airport.frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
-  }, [airport?.frequencies]);
-
   if (!airport) return null;
+
+  // Get ATIS frequency for quick weather display
+  const atisFrequency = airport.frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
 
   return (
     <div className="absolute bottom-4 right-4 top-20 z-20 w-80">

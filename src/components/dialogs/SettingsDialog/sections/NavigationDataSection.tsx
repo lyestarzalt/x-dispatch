@@ -101,17 +101,16 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
   const [dataStatus, setDataStatus] = useState<DataLoadStatus | null>(null);
 
   useEffect(() => {
+    async function loadDataStatus() {
+      try {
+        const result = await window.appAPI.getLoadingStatus();
+        setDataStatus(result.status);
+      } catch {
+        // Ignore errors
+      }
+    }
     loadDataStatus();
   }, []);
-
-  async function loadDataStatus() {
-    try {
-      const result = await window.appAPI.getLoadingStatus();
-      setDataStatus(result.status);
-    } catch {
-      // Ignore errors
-    }
-  }
 
   const globalSource = dataStatus?.sources?.global;
   const isNavigraph = globalSource?.source === 'navigraph';
