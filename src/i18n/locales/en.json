@@ -373,6 +373,8 @@
 
     "config": {
       "timeOfDay": "Time of Day",
+      "systemTime": "System",
+      "coldAndDark": "Cold & Dark",
       "weather": "Weather",
       "fuel": "Fuel",
       "summary": "Summary",
