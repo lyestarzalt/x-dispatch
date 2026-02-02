@@ -1,10 +1,54 @@
-# X-Dispatch
+<p align="center">
+  <img src="assets/icon.png" alt="X-Dispatch" width="128">
+</p>
 
-Interactive airport map and flight launcher for X-Plane 12.
+<h1 align="center">X-Dispatch</h1>
+
+<p align="center">
+  Interactive airport map and flight launcher for X-Plane 12
+</p>
+
+<p align="center">
+  <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download for Windows, macOS, Linux</a>
+</p>
+
+---
+
+![Map Overview](screenshots/map-overview.png)
 
 X-Plane shows airport diagrams but has no global map to explore and discover airports. You need to already know the ICAO code to load an airport. This app gives you a world map to browse, search, and explore all airports visually.
 
 Click on any airport to see detailed maps with runways, taxiways, gates, and markings. Select a start position, configure your flight, and launch X-Plane directly.
+
+## Screenshots
+
+<details>
+<summary>Airport Detail View</summary>
+
+![Airport Detail](screenshots/airport-detail.png)
+
+</details>
+
+<details>
+<summary>SID/STAR Procedures</summary>
+
+![Procedures](screenshots/procedures.png)
+
+</details>
+
+<details>
+<summary>Flight Setup</summary>
+
+![Flight Setup](screenshots/flight-setup.png)
+
+</details>
+
+<details>
+<summary>Settings</summary>
+
+![Settings](screenshots/settings.png)
+
+</details>
 
 ## Features
 
@@ -66,19 +110,21 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 5. Select a gate or runway, pick your aircraft, configure the flight
 6. The app writes a `Freeflight.prf` file and launches X-Plane with your configuration
 
-## Requirements
-
-- X-Plane 12
-- Node.js 18+
-
 ## Development
+
+### Requirements
+
+- Node.js 20+
+- X-Plane 12
+
+### Setup
 
 ```bash
 npm install
 npm start
 ```
 
-## Build
+### Build
 
 ```bash
 npm run make
