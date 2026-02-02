@@ -1,0 +1,559 @@
+import { BrowserWindow, app, dialog, ipcMain, net, session, shell } from 'electron';
+import windowStateKeeper from 'electron-window-state';
+import path from 'path';
+import { initDb } from './db';
+import logger, { getLogPath } from './lib/logger';
+import { AirportProcedures } from './lib/navParser/cifpParser';
+import {
+  isInvalidCoords,
+  isValidICAO,
+  isValidRunway,
+  isValidSceneryId,
+  isValidSearchQuery,
+  validateCoordinates,
+} from './lib/validation';
+import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
+
+app.name = 'X-Dispatch';
+
+let dataManager: ReturnType<typeof getXPlaneDataManager>;
+let mainWindow: BrowserWindow | null = null;
+let isLoading = false;
+let launcherModule: typeof import('./lib/launcher') | null = null;
+
+interface LoadingProgress {
+  step: string;
+  status: 'pending' | 'loading' | 'complete' | 'error';
+  message: string;
+  count?: number;
+  error?: string;
+}
+
+async function getLauncherModule() {
+  if (!launcherModule) {
+    launcherModule = await import('./lib/launcher');
+  }
+  return launcherModule;
+}
+
+function sendLoadingProgress(progress: LoadingProgress) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('loading-progress', progress);
+  }
+}
+
+async function proxyFetch(url: string): Promise<{ data: string | null; error: string | null }> {
+  return new Promise((resolve) => {
+    const request = net.request(url);
+    let data = '';
+
+    request.on('response', (response) => {
+      response.on('data', (chunk) => {
+        data += chunk.toString();
+      });
+      response.on('end', () => {
+        if (response.statusCode === 200) {
+          resolve({ data, error: null });
+        } else {
+          resolve({ data: null, error: `HTTP ${response.statusCode}` });
+        }
+      });
+    });
+
+    request.on('error', (error) => {
+      resolve({ data: null, error: error.message });
+    });
+
+    request.end();
+  });
+}
+
+function createWindow(): BrowserWindow {
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets', 'icon.png')
+    : path.join(__dirname, '..', '..', 'assets', 'icon.png');
+
+  const windowState = windowStateKeeper({
+    defaultWidth: 1200,
+    defaultHeight: 800,
+  });
+
+  const window = new BrowserWindow({
+    x: windowState.x,
+    y: windowState.y,
+    width: windowState.width,
+    height: windowState.height,
+    minWidth: 800,
+    minHeight: 600,
+    show: false,
+    backgroundColor: '#0a0a0a',
+    icon: iconPath,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+      webviewTag: false,
+      allowRunningInsecureContent: false,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+
+  windowState.manage(window);
+  window.once('ready-to-show', () => window.show());
+
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    window.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  } else {
+    window.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+  }
+
+  return window;
+}
+
+function registerIpcHandlers() {
+  ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
+  ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:getLoadingStatus', () => ({
+    xplanePath: dataManager.getXPlanePath(),
+    status: dataManager.getStatus(),
+  }));
+
+  ipcMain.handle('app:startLoading', async () => {
+    if (isLoading) {
+      return { success: false, error: 'Loading already in progress' };
+    }
+
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) {
+      sendLoadingProgress({
+        step: 'config',
+        status: 'error',
+        message: 'X-Plane path not configured',
+        error: 'Please configure X-Plane path in settings',
+      });
+      return { success: false, error: 'X-Plane path not configured' };
+    }
+
+    isLoading = true;
+    logger.data.info(`Loading data from: ${xplanePath}`);
+    const startTime = Date.now();
+
+    try {
+      // Detect data sources first (Navigraph vs X-Plane default)
+      dataManager.detectDataSources(xplanePath);
+
+      sendLoadingProgress({ step: 'airports', status: 'loading', message: 'Loading airports...' });
+      await dataManager.loadAirportsOnly(xplanePath);
+      sendLoadingProgress({
+        step: 'airports',
+        status: 'complete',
+        message: 'Airports loaded',
+        count: dataManager.getStatus().airports.count,
+      });
+
+      sendLoadingProgress({
+        step: 'navaids',
+        status: 'loading',
+        message: 'Loading navigation aids...',
+      });
+      await dataManager.loadNavaidsOnly(xplanePath);
+      sendLoadingProgress({
+        step: 'navaids',
+        status: 'complete',
+        message: 'Navaids loaded',
+        count: dataManager.getStatus().navaids.count,
+      });
+
+      sendLoadingProgress({
+        step: 'waypoints',
+        status: 'loading',
+        message: 'Loading waypoints...',
+      });
+      await dataManager.loadWaypointsOnly(xplanePath);
+      sendLoadingProgress({
+        step: 'waypoints',
+        status: 'complete',
+        message: 'Waypoints loaded',
+        count: dataManager.getStatus().waypoints.count,
+      });
+
+      sendLoadingProgress({
+        step: 'airspaces',
+        status: 'loading',
+        message: 'Loading airspaces...',
+      });
+      await dataManager.loadAirspacesOnly(xplanePath);
+      sendLoadingProgress({
+        step: 'airspaces',
+        status: 'complete',
+        message: 'Airspaces loaded',
+        count: dataManager.getStatus().airspaces.count,
+      });
+
+      sendLoadingProgress({ step: 'airways', status: 'loading', message: 'Loading airways...' });
+      await dataManager.loadAirwaysOnly(xplanePath);
+      sendLoadingProgress({
+        step: 'airways',
+        status: 'complete',
+        message: 'Airways loaded',
+        count: dataManager.getStatus().airways.count,
+      });
+
+      // Load optional data types (non-blocking)
+      await Promise.allSettled([
+        dataManager.loadATCDataOnly(xplanePath),
+        dataManager.loadHoldingPatternsOnly(xplanePath),
+        dataManager.loadAirportMetadataOnly(xplanePath),
+        dataManager.loadMORAOnly(xplanePath),
+        dataManager.loadMSAOnly(xplanePath),
+      ]);
+
+      sendLoadingProgress({ step: 'complete', status: 'complete', message: 'All data loaded' });
+      logger.data.info(`Data loaded in ${((Date.now() - startTime) / 1000).toFixed(2)}s`);
+
+      isLoading = false;
+      return { success: true, status: dataManager.getStatus() };
+    } catch (error) {
+      logger.data.error('Data loading failed', error);
+      sendLoadingProgress({
+        step: 'error',
+        status: 'error',
+        message: 'Loading failed',
+        error: (error as Error).message,
+      });
+      isLoading = false;
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('xplane:getPath', () => dataManager.getXPlanePath());
+  ipcMain.handle('xplane:setPath', (_, p: string) => dataManager.setXPlanePath(p));
+  ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
+  ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
+  ipcMain.handle('xplane:browseForPath', async () => {
+    if (!mainWindow) return null;
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory'],
+      title: 'Select X-Plane Installation Folder',
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const selectedPath = result.filePaths[0];
+    const validation = dataManager.validatePath(selectedPath);
+    return { path: selectedPath, valid: validation.valid, errors: validation.errors };
+  });
+
+  ipcMain.handle('get-airports', () => dataManager.getAllAirports());
+  ipcMain.handle('get-airport-data', (_, icao: string) => {
+    if (!isValidICAO(icao)) throw new Error('Invalid ICAO code');
+    return dataManager.getAirportData(icao.toUpperCase());
+  });
+
+  ipcMain.handle('fetch-metar', async (_, icao: string) => {
+    if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
+    return proxyFetch(
+      `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao.toUpperCase())}&format=raw`
+    );
+  });
+
+  ipcMain.handle('fetch-taf', async (_, icao: string) => {
+    if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
+    return proxyFetch(
+      `https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(icao.toUpperCase())}&format=raw`
+    );
+  });
+
+  ipcMain.handle('fetch-gateway-airport', async (_, icao: string) => {
+    if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
+    return proxyFetch(
+      `https://gateway.x-plane.com/apiv1/airport/${encodeURIComponent(icao.toUpperCase())}`
+    );
+  });
+
+  ipcMain.handle('fetch-gateway-scenery', async (_, sceneryId: number) => {
+    if (!isValidSceneryId(sceneryId)) return { data: null, error: 'Invalid scenery ID' };
+    return proxyFetch(`https://gateway.x-plane.com/apiv1/scenery/${sceneryId}`);
+  });
+
+  ipcMain.handle('fetch-vatsim-data', async () => {
+    const result = await proxyFetch('https://data.vatsim.net/v3/vatsim-data.json');
+    if (result.data) {
+      try {
+        return { data: JSON.parse(result.data), error: null };
+      } catch {
+        return { data: null, error: 'Failed to parse VATSIM data' };
+      }
+    }
+    return result;
+  });
+
+  ipcMain.handle('nav:loadDatabase', async (_, xplanePath?: string) => {
+    try {
+      const status = await dataManager.loadAll(xplanePath || undefined);
+      return { success: true, status };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('nav:getStatus', () => dataManager.getStatus());
+
+  ipcMain.handle('nav:getVORsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getVORsInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getNDBsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getNDBsInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getDMEsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getDMEsInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getILSInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getILSInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getGlideSlopesInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getGlideSlopesInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getMarkersInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getMarkersInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle(
+    'nav:getILSComponentsInRadius',
+    (_, lat: number, lon: number, radiusNm: number) => {
+      const c = validateCoordinates(lat, lon, radiusNm);
+      if (isInvalidCoords(c)) throw new Error(c.error);
+      return dataManager.getILSComponentsInRadius(c.lat, c.lon, c.radius);
+    }
+  );
+
+  ipcMain.handle('nav:getApproachAidsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getApproachAidsInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getApproachNavaidsByAirport', (_, airportIcao: string) => {
+    if (!isValidICAO(airportIcao)) throw new Error('Invalid ICAO code');
+    return dataManager.getApproachNavaidsByAirport(airportIcao.toUpperCase());
+  });
+
+  ipcMain.handle('nav:getApproachNavaidsByRunway', (_, airportIcao: string, runway: string) => {
+    if (!isValidICAO(airportIcao)) throw new Error('Invalid ICAO code');
+    if (!isValidRunway(runway)) throw new Error('Invalid runway identifier');
+    return dataManager.getApproachNavaidsByRunway(airportIcao.toUpperCase(), runway.toUpperCase());
+  });
+
+  ipcMain.handle('nav:getWaypointsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getWaypointsInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getAirspacesNearPoint', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getAirspacesNearPoint(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getAllAirspaces', () => dataManager.getAllAirspaces());
+
+  ipcMain.handle('nav:getAirwaysInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getAirwaysInRadius(c.lat, c.lon, c.radius);
+  });
+
+  ipcMain.handle('nav:getAllAirwaysWithCoords', () => dataManager.getAllAirwaysWithCoords());
+
+  ipcMain.handle('nav:searchNavaids', (_, query: string, limit = 20) => {
+    if (!isValidSearchQuery(query)) return [];
+    return dataManager.searchNavaids(query, Math.min(Math.max(1, limit), 100));
+  });
+
+  ipcMain.handle('nav:getAirportProcedures', (_, icao: string): AirportProcedures | null => {
+    if (!isValidICAO(icao)) return null;
+    return dataManager.getAirportProcedures(icao.toUpperCase());
+  });
+
+  // New navigation data handlers
+  ipcMain.handle('nav:getDataSources', () => dataManager.getDataSources());
+
+  ipcMain.handle('nav:getATCByFacility', (_, facilityId: string) => {
+    if (!facilityId || typeof facilityId !== 'string') return null;
+    return dataManager.getATCByFacility(facilityId);
+  });
+
+  ipcMain.handle('nav:getAllATCControllers', () => dataManager.getAllATCControllers());
+
+  ipcMain.handle('nav:getHoldingPatterns', (_, fixId: string) => {
+    if (!fixId || typeof fixId !== 'string') return [];
+    return dataManager.getHoldingPatternsForFix(fixId);
+  });
+
+  ipcMain.handle('nav:getAirportMetadata', (_, icao: string) => {
+    if (!isValidICAO(icao)) return null;
+    return dataManager.getAirportMetadata(icao.toUpperCase());
+  });
+
+  ipcMain.handle('nav:getTransitionAltitude', (_, icao: string) => {
+    if (!isValidICAO(icao)) return null;
+    return dataManager.getTransitionAltitude(icao.toUpperCase());
+  });
+
+  ipcMain.handle('nav:getMORA', (_, lat: number, lon: number) => {
+    const c = validateCoordinates(lat, lon, 1);
+    if (isInvalidCoords(c)) return null;
+    return dataManager.getMORAAtPoint(c.lat, c.lon);
+  });
+
+  ipcMain.handle('nav:getMSA', (_, fixId: string) => {
+    if (!fixId || typeof fixId !== 'string') return [];
+    return dataManager.getMSAForNavaid(fixId);
+  });
+
+  // Bulk data retrieval for map layers (with coordinates resolved)
+  ipcMain.handle('nav:getAllHoldingPatterns', () => dataManager.getAllHoldingPatternsWithCoords());
+  ipcMain.handle('nav:getAllMORACells', () => dataManager.getAllMORACells());
+  ipcMain.handle('nav:getAllMSASectors', () => dataManager.getAllMSASectorsWithCoords());
+
+  ipcMain.on('log:error', (_, msg: string, args: unknown[]) =>
+    logger.error(`[Renderer] ${msg}`, ...args)
+  );
+  ipcMain.on('log:warn', (_, msg: string, args: unknown[]) =>
+    logger.warn(`[Renderer] ${msg}`, ...args)
+  );
+  ipcMain.on('log:info', (_, msg: string, args: unknown[]) =>
+    logger.info(`[Renderer] ${msg}`, ...args)
+  );
+
+  ipcMain.handle('launcher:scanAircraft', async () => {
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) return { success: false, error: 'X-Plane path not configured', aircraft: [] };
+    try {
+      const { getLauncher } = await getLauncherModule();
+      const aircraft = getLauncher(xplanePath).scanAircraft();
+      return { success: true, aircraft };
+    } catch (error) {
+      return { success: false, error: (error as Error).message, aircraft: [] };
+    }
+  });
+
+  ipcMain.handle('launcher:getAircraft', async () => {
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) return [];
+    const { getLauncher } = await getLauncherModule();
+    return getLauncher(xplanePath).getAircraft();
+  });
+
+  ipcMain.handle('launcher:getWeatherPresets', async () => {
+    const { WEATHER_PRESETS } = await getLauncherModule();
+    return WEATHER_PRESETS;
+  });
+
+  ipcMain.handle('launcher:launch', async (_, config: unknown) => {
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) return { success: false, error: 'X-Plane path not configured' };
+    try {
+      const { getLauncher } = await getLauncherModule();
+      return await getLauncher(xplanePath).launch(config as any);
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('launcher:getAircraftImage', async (_, imagePath: string) => {
+    if (!imagePath) return null;
+    try {
+      const fs = await import('fs');
+      if (!fs.existsSync(imagePath)) return null;
+      const data = fs.readFileSync(imagePath);
+      const ext = imagePath.split('.').pop()?.toLowerCase() || 'png';
+      return `data:image/${ext};base64,${data.toString('base64')}`;
+    } catch {
+      return null;
+    }
+  });
+}
+
+app.whenReady().then(async () => {
+  logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
+  logger.main.debug(`Log file: ${getLogPath()}`);
+
+  // Initialize database before anything else
+  await initDb();
+  dataManager = getXPlaneDataManager();
+
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    callback(['clipboard-read', 'clipboard-write'].includes(permission));
+  });
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self'; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+            "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com; " +
+            "font-src 'self' data:; " +
+            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org; " +
+            "worker-src 'self' blob:;",
+        ],
+      },
+    });
+  });
+
+  registerIpcHandlers();
+  mainWindow = createWindow();
+
+  if (process.platform === 'darwin' && app.dock) {
+    const iconPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'assets', 'icon.png')
+      : path.join(__dirname, '..', '..', 'assets', 'icon.png');
+    app.dock.setIcon(iconPath);
+  }
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const parsedUrl = new URL(url);
+    if (
+      parsedUrl.protocol !== 'file:' &&
+      parsedUrl.hostname !== 'localhost' &&
+      parsedUrl.hostname !== '127.0.0.1'
+    ) {
+      event.preventDefault();
+    }
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://') || url.startsWith('http://')) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+});
+
+app.on('window-all-closed', () => {
+  dataManager.close();
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});

@@ -1,0 +1,424 @@
+{
+  "common": {
+    "search": "Rechercher",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "noResults": "Aucun résultat",
+    "all": "Tout",
+    "retry": "Réessayer",
+    "continue": "Continuer",
+    "back": "Retour",
+    "next": "Suivant",
+    "browse": "Parcourir",
+    "refresh": "Actualiser",
+    "showMore": "Afficher tout ({{count}})",
+    "showLess": "Afficher moins",
+    "copiedToClipboard": "Copié !",
+    "notConfigured": "Non configuré",
+    "selected": "Sélectionné",
+    "online": "en ligne",
+    "approved": "Approuvé",
+    "recommended": "Recommandé"
+  },
+
+  "units": {
+    "ft": "ft",
+    "m": "m",
+    "nm": "nm",
+    "kt": "kt",
+    "s": "s",
+    "kg": "kg"
+  },
+
+  "directions": {
+    "n": "N",
+    "e": "E",
+    "s": "S",
+    "w": "O",
+    "ne": "NE",
+    "nw": "NO",
+    "se": "SE",
+    "sw": "SO"
+  },
+
+  "app": {
+    "title": "X-Dispatch"
+  },
+
+  "setup": {
+    "title": "X-Dispatch",
+    "subtitle": "Sélectionnez votre installation X-Plane pour commencer",
+    "scanning": "Recherche des installations...",
+    "noInstallations": "Aucune installation X-Plane trouvée",
+    "selectManually": "Utilisez le bouton ci-dessous pour sélectionner manuellement",
+    "browseManually": "Parcourir manuellement",
+    "failedToBrowse": "Échec de la navigation",
+    "failedToSave": "Échec de l'enregistrement"
+  },
+
+  "loading": {
+    "title": "X-Dispatch",
+    "badge": "Chargement des données",
+    "initializing": "Initialisation...",
+    "steps": {
+      "airports": "Aéroports",
+      "navaids": "Aides à la navigation",
+      "waypoints": "Points de cheminement",
+      "airspaces": "Espaces aériens",
+      "airways": "Routes aériennes"
+    },
+    "pathNotConfigured": "Chemin X-Plane non configuré",
+    "configurationRequired": "Configuration requise",
+    "configureXPlanePath": "Configurer le chemin X-Plane"
+  },
+
+  "toolbar": {
+    "searchPlaceholder": "Rechercher des aéroports...",
+    "nav": "NAV",
+    "vatsim": "VATSIM",
+    "launch": "Lancer",
+    "navigationLayers": "Couches de navigation"
+  },
+
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Configurez vos préférences",
+    "tabs": {
+      "xplane": "X-Plane",
+      "appearance": "Apparence",
+      "navigation": "Navigation"
+    },
+    "xplane": {
+      "title": "Installation X-Plane",
+      "description": "Configurez votre source de données X-Plane",
+      "currentPath": "Chemin actuel",
+      "detectedInstallations": "Installations détectées"
+    },
+    "appearance": {
+      "title": "Apparence",
+      "description": "Personnalisez l'apparence",
+      "theme": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système",
+      "language": "Langue"
+    },
+    "navigation": {
+      "title": "Données de navigation",
+      "description": "Configurez les paramètres de navigation et VATSIM",
+      "searchRadius": "Rayon de recherche",
+      "vatsim": {
+        "title": "Trafic en direct VATSIM",
+        "enable": "Activer VATSIM",
+        "description": "Afficher les avions en direct du réseau VATSIM",
+        "refreshInterval": "Intervalle de rafraîchissement",
+        "refreshHelp": "Fréquence de rafraîchissement des données VATSIM (recommandé : 15s)"
+      }
+    }
+  },
+
+  "sidebar": {
+    "weather": "Météo",
+    "weatherDetails": "Détails météo",
+    "wind": "Vent",
+    "visibility": "Visibilité",
+    "ceiling": "Plafond",
+    "altimeter": "Altimètre",
+    "temp": "Temp",
+    "dewpoint": "Point de rosée",
+    "clouds": "Nuages",
+    "noWeatherData": "Aucune donnée météo disponible",
+    "noFrequencies": "Aucune fréquence disponible",
+    "searchGates": "Rechercher des portes...",
+    "searchRunways": "Rechercher des pistes...",
+    "frequencies": "Fréquences",
+    "runways": "Pistes",
+    "gates": "Portes",
+    "gatesParking": "Portes et parkings",
+    "departurePosition": "Position de départ",
+    "moreCount": "+{{count}} de plus",
+    "more": "de plus",
+    "procedures": "Procédures",
+    "nearbyNavaids": "Aides à la navigation proches",
+    "withinRadius": "Dans un rayon de 50nm",
+    "ils": "ILS",
+    "startFrom": "Départ de :",
+    "noGatesFound": "Aucune porte trouvée",
+    "noRunwaysFound": "Aucune piste trouvée",
+    "copyFrequency": "Copier la fréquence"
+  },
+
+  "airportInfo": {
+    "tabs": {
+      "info": "INFO",
+      "runways": "Pistes",
+      "gates": "Portes",
+      "radio": "Radio",
+      "gateway": "GATEWAY"
+    },
+    "stats": {
+      "elevation": "ALT",
+      "runways": "PISTE",
+      "gates": "PORTES",
+      "hangars": "HANGARS"
+    },
+    "runwayCount": "{{count}} PISTE(S)",
+    "location": "EMPLACEMENT",
+    "facilities": "INSTALLATIONS",
+    "tower": "TOUR",
+    "windsocks": "MANCHES À AIR",
+    "beacon": "BALISE",
+    "helipads": "HÉLIPORTS",
+    "searchGates": "Rechercher des portes...",
+    "filterAll": "TOUT",
+    "filterGates": "PORTES",
+    "filterHangars": "HANGARS",
+    "filterOther": "AUTRE",
+    "noGatesFound": "AUCUNE PORTE TROUVÉE",
+    "noFrequencies": "Aucune fréquence disponible",
+    "xplaneGateway": "X-Plane Gateway",
+    "gatewayNotAvailable": "DONNÉES GATEWAY NON DISPONIBLES",
+    "gatewayLoading": "CHARGEMENT DES DONNÉES GATEWAY...",
+    "noGatewayData": "AUCUNE DONNÉE GATEWAY POUR CET AÉROPORT",
+    "gatewayDescription": "Ces données affichent les soumissions pour cet aéroport.",
+    "viewOnGateway": "Voir sur Gateway",
+    "accepted": "ACCEPTÉ",
+    "features": "CARACTÉRISTIQUES",
+    "sceneryPacks": "PACKS DE SCÈNES",
+    "moreOnGateway": "PLUS SUR GATEWAY",
+    "refreshData": "ACTUALISER LES DONNÉES",
+    "artistComments": "COMMENTAIRES DE L'ARTISTE",
+    "approvedDate": "Approuvé :",
+    "beaconTypes": {
+      "civil": "Civil (B-V)",
+      "seaplane": "Hydravion (B-J)",
+      "heliport": "Héliport",
+      "military": "Militaire"
+    },
+    "surfaces": {
+      "asphalt": "Asphalte",
+      "concrete": "Béton",
+      "grass": "Herbe",
+      "dirt": "Terre",
+      "gravel": "Gravier",
+      "dryLake": "Lac asséché",
+      "water": "Eau",
+      "snow": "Neige",
+      "transparent": "Transparent",
+      "unknown": "Inconnu"
+    }
+  },
+
+  "navigation": {
+    "heading": "CAP",
+    "wind": "VENT",
+    "calm": "Calme"
+  },
+
+  "weather": {
+    "fetching": "Récupération de la météo...",
+    "noData": "Aucune donnée météo disponible",
+    "tabs": {
+      "metar": "METAR",
+      "taf": "TAF"
+    },
+    "visibility": "VISIBILITÉ",
+    "clouds": "NUAGES",
+    "tempDew": "TEMP/ROSÉE",
+    "altimeter": "ALTIMÈTRE",
+    "showRaw": "Afficher brut",
+    "hideRaw": "Masquer brut",
+    "runway": "PISTE {{names}}",
+    "useRunway": "Utiliser {{name}}",
+    "headwind": "VF",
+    "tailwind": "VA",
+    "crosswind": "VT"
+  },
+
+  "procedures": {
+    "noData": "Aucune procédure disponible",
+    "noTypeData": "Aucune {{type}} disponible",
+    "tabs": {
+      "sid": "SID",
+      "star": "STAR",
+      "app": "APP"
+    },
+    "allRunways": "TOUT"
+  },
+
+  "layers": {
+    "airport": {
+      "title": "Couches d'aéroport",
+      "surfaces": "Surfaces",
+      "markings": "Marquages",
+      "lights": "Éclairage",
+      "objects": "Objets",
+      "effects": "Effets"
+    },
+    "navigation": {
+      "title": "Couches de navigation",
+      "navaids": "Aides à la nav",
+      "fixes": "Points",
+      "airspaces": "Espaces aériens"
+    },
+    "items": {
+      "runways": "Pistes",
+      "taxiways": "Taxiways",
+      "aprons": "Aires de trafic",
+      "boundary": "Limites",
+      "rwyMarkings": "Marquages piste",
+      "lines": "Lignes",
+      "signs": "Panneaux",
+      "rwyLights": "Éclairage piste",
+      "twyLights": "Éclairage taxiway",
+      "approach": "Approche",
+      "gates": "Portes",
+      "windsocks": "Manches à air",
+      "animations": "Animations",
+      "weatherEffects": "Météo",
+      "vors": "VOR",
+      "ndbs": "NDB",
+      "dmes": "DME",
+      "ils": "ILS",
+      "waypoints": "Waypoints",
+      "airwaysOff": "Désactivé",
+      "highAirways": "Routes hautes (Jet)",
+      "lowAirways": "Routes basses (Victor)"
+    },
+    "loadViewport": "Charger les aides à la nav",
+    "showAll": "Tout afficher",
+    "hideAll": "Tout masquer"
+  },
+
+  "debug": {
+    "title": "Mode débogage actif",
+    "instruction": "Cliquez sur n'importe quelle entité sur la carte pour inspecter ses propriétés.",
+    "descriptions": {
+      "lines": "Lignes (marquages peints)",
+      "signs": "Panneaux (taxiway/piste)",
+      "gates": "Portes et parkings",
+      "runways": "Pistes et taxiways"
+    },
+    "properties": "Propriétés",
+    "coordinates": "Coordonnées",
+    "rawAptDat": "apt.dat brut",
+    "lineTypesHeader": "Types de lignes X-Plane (apt.dat 1130) :",
+    "copyToClipboard": "Copier",
+    "clearSelection": "Effacer la sélection"
+  },
+
+  "launcher": {
+    "title": "Configuration du vol",
+    "launch": "Lancer X-Plane",
+    "launching": "Lancement...",
+    "selectDeparture": "Sélectionnez un départ sur la carte",
+    "selectAircraft": "Sélectionnez un aéronef",
+
+    "aircraft": {
+      "title": "Aéronef",
+      "search": "Rechercher un aéronef...",
+      "allCategories": "Toutes les catégories",
+      "allManufacturers": "Tous les constructeurs",
+      "count": "{{count}} aéronef(s)",
+      "favorites": "{{count}} favori(s)",
+      "noFavorites": "Aucun favori",
+      "noAircraft": "Aucun aéronef trouvé",
+      "showAll": "Tout afficher",
+      "showFavoritesOnly": "Afficher les favoris uniquement"
+    },
+
+    "liveries": {
+      "title": "Livrées",
+      "count": "Livrées ({{count}})",
+      "default": "Par défaut"
+    },
+
+    "config": {
+      "timeOfDay": "Heure du jour",
+      "weather": "Météo",
+      "fuel": "Carburant",
+      "summary": "Résumé",
+      "departure": "Départ",
+      "livery": "Livrée"
+    },
+
+    "time": {
+      "dawn": "Aube",
+      "day": "Jour",
+      "dusk": "Crépuscule",
+      "night": "Nuit"
+    },
+
+    "timePresets": {
+      "dawn": "Aube",
+      "sunrise": "Lever du soleil",
+      "noon": "Midi",
+      "sunset": "Coucher du soleil",
+      "dusk": "Crépuscule",
+      "night": "Nuit"
+    },
+
+    "weather": {
+      "clear": "Dégagé",
+      "cloudy": "Nuageux",
+      "rainy": "Pluvieux",
+      "stormy": "Orageux",
+      "snowy": "Neigeux",
+      "foggy": "Brumeux"
+    },
+
+    "weatherBuilder": {
+      "custom": "Météo personnalisée",
+      "customize": "Personnaliser la météo",
+      "details": "Détails météo",
+      "visibility": "Visibilité",
+      "wind": "Vent",
+      "direction": "Direction",
+      "speed": "Vitesse",
+      "gusts": "Rafales",
+      "clouds": "Nuages",
+      "addLayer": "Ajouter une couche",
+      "noClouds": "Aucune couche nuageuse",
+      "layer": "Couche",
+      "coverage": "Couverture",
+      "cloudType": "Type",
+      "base": "Base (ft)",
+      "tops": "Sommet (ft)",
+      "precipitation": "Précipitations",
+      "temperature": "Température",
+      "dewpoint": "Point de rosée",
+      "pressure": "Pression",
+      "atmosphere": "Atmosphère",
+      "cloudTypes": {
+        "stratus": "Stratus",
+        "cumulus": "Cumulus",
+        "cumulonimbus": "Cumulonimbus"
+      }
+    },
+
+    "weatherModal": {
+      "presets": "Préréglages",
+      "custom": "Personnalisé",
+      "poor": "Faible",
+      "unlimited": "Illimitée"
+    },
+
+    "fuelConfig": {
+      "auto": "Auto",
+      "manual": "Manuel",
+      "total": "Total"
+    },
+
+    "fuelModal": {
+      "empty": "Vide",
+      "full": "Plein",
+      "of": "sur"
+    }
+  }
+}

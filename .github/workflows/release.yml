@@ -1,0 +1,143 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version bump"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      prerelease:
+        description: "Pre-release"
+        required: false
+        type: boolean
+        default: false
+
+env:
+  ELECTRON_CACHE: ~/.cache/electron
+  ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: bump
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "${{ inputs.version }}" in
+            major) NEW="$((MAJOR + 1)).0.0" ;;
+            minor) NEW="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+          echo "version=$NEW" >> $GITHUB_OUTPUT
+
+  build:
+    name: ${{ matrix.platform }}
+    needs: version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: macOS
+            artifact: macos
+            pattern: "out/make/**/*.dmg"
+          - os: windows-latest
+            platform: Windows
+            artifact: windows
+            pattern: "out/make/**/*.exe"
+          - os: ubuntu-latest
+            platform: Linux
+            artifact: linux
+            pattern: "out/make/**/*.{deb,rpm}"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Cache Electron
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/AppData/Local/electron/Cache
+          key: electron-${{ matrix.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: electron-${{ matrix.os }}-
+
+      - run: npm ci
+
+      - run: npm version ${{ needs.version.outputs.version }} --no-git-tag-version
+
+      - name: Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
+
+      - name: macOS deps
+        if: matrix.os == 'macos-latest'
+        run: brew install python-setuptools
+
+      - run: npm run make
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            out/make/**/*.dmg
+            out/make/**/*.exe
+            out/make/**/*.deb
+            out/make/**/*.rpm
+          if-no-files-found: ignore
+
+  publish:
+    name: Publish
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: |
+          npm version ${{ needs.version.outputs.version }} --no-git-tag-version
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "release: v${{ needs.version.outputs.version }}"
+          git tag v${{ needs.version.outputs.version }}
+          git push && git push --tags
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: v${{ needs.version.outputs.version }}
+          prerelease: ${{ inputs.prerelease }}
+          generate_release_notes: true
+          files: dist/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
