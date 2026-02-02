@@ -1,4 +1,4 @@
-import { BrowserWindow, app, dialog, ipcMain, net, session, shell } from 'electron';
+import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import path from 'path';
 import { initDb } from './db';
@@ -94,6 +94,7 @@ function createWindow(): BrowserWindow {
       sandbox: false,
       webviewTag: false,
       allowRunningInsecureContent: false,
+      devTools: !app.isPackaged,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -495,7 +496,7 @@ app.whenReady().then(async () => {
   logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
   logger.main.debug(`Log file: ${getLogPath()}`);
 
-  // Initialize database before anything else
+  Menu.setApplicationMenu(null);
   await initDb();
   dataManager = getXPlaneDataManager();
 
