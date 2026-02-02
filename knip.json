@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/main.ts",
+    "src/preload.ts",
+    "src/renderer.tsx",
+    "src/lib/launcher/index.ts",
+    "forge.config.ts",
+    "vite.*.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "*.config.ts"],
+  "ignore": ["src/components/ui/**"],
+  "ignoreDependencies": ["@electron-forge/*", "@radix-ui/*", "cmdk", "@eslint/js"]
+}
