@@ -32,6 +32,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const [weatherPresets, setWeatherPresets] = useState<WeatherPreset[]>([]);
   const [selectedWeather, setSelectedWeather] = useState<string>('clear');
   const [timeOfDay, setTimeOfDay] = useState(12);
+  const [useSystemTime, setUseSystemTime] = useState(false);
+  const [coldAndDark, setColdAndDark] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -159,11 +161,13 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           timeInHours: timeOfDay,
           latitude: startPosition.latitude,
           longitude: startPosition.longitude,
+          useSystemTime,
         },
         weather: {
           name: weatherName,
           definition: weatherDefinition,
         },
+        startEngineRunning: !coldAndDark,
       };
 
       const result = await window.launcherAPI.launch(config);
@@ -248,11 +252,15 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               timeOfDay={timeOfDay}
               selectedWeather={selectedWeather}
               fuelPercentage={fuelPercentage}
+              useSystemTime={useSystemTime}
+              coldAndDark={coldAndDark}
               isLoading={isLoading}
               launchError={launchError}
               onTimeChange={setTimeOfDay}
               onWeatherChange={setSelectedWeather}
               onFuelChange={setFuelPercentage}
+              onSystemTimeChange={setUseSystemTime}
+              onColdAndDarkChange={setColdAndDark}
               onLaunch={handleLaunch}
             />
           </div>
