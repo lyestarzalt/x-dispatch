@@ -15,9 +15,6 @@ import { WEATHER_PRESETS } from './types';
 export type { Aircraft, LaunchConfig, WeatherPreset };
 export { WEATHER_PRESETS };
 
-/**
- * X-Plane Launcher class - manages aircraft and launching
- */
 class XPlaneLauncher {
   private xplanePath: string;
   private aircraftCache: Aircraft[] | null = null;
@@ -26,18 +23,12 @@ class XPlaneLauncher {
     this.xplanePath = xplanePath;
   }
 
-  /**
-   * Scan for all available aircraft
-   */
   scanAircraft(): Aircraft[] {
     this.aircraftCache = scanAircraftDirectory(this.xplanePath);
     logger.launcher.info(`Scanned ${this.aircraftCache.length} aircraft`);
     return this.aircraftCache;
   }
 
-  /**
-   * Get cached aircraft list (or scan if not cached)
-   */
   getAircraft(): Aircraft[] {
     if (this.aircraftCache === null) {
       return this.scanAircraft();
@@ -52,9 +43,6 @@ class XPlaneLauncher {
     this.aircraftCache = null;
   }
 
-  /**
-   * Get weather presets
-   */
   getWeatherPresets(): WeatherPreset[] {
     return WEATHER_PRESETS;
   }
@@ -66,14 +54,11 @@ class XPlaneLauncher {
     try {
       // Generate Freeflight.prf content
       const prfContent = generateFreeflightPrf(config);
-
-      // Write the file
       const writeSuccess = writeFreeflightPrf(this.xplanePath, prfContent);
       if (!writeSuccess) {
         return { success: false, error: 'Failed to write Freeflight.prf' };
       }
 
-      // Get X-Plane executable
       const executable = getXPlaneExecutable(this.xplanePath);
       if (!executable) {
         return { success: false, error: 'X-Plane executable not found' };
@@ -81,8 +66,11 @@ class XPlaneLauncher {
 
       logger.launcher.info('Launching X-Plane');
 
-      // Launch X-Plane with skip QFL flag
-      const xplaneProcess = spawn(executable, ['--pref:_show_qfl_on_start=0'], {
+      const launchArgs = ['--pref:_show_qfl_on_start=0'];
+      const startRunning = config.startEngineRunning ?? true;
+      launchArgs.push(`--start_running=${startRunning}`);
+
+      const xplaneProcess = spawn(executable, launchArgs, {
         detached: true,
         stdio: 'ignore',
       });

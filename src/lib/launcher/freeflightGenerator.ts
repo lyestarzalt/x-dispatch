@@ -90,7 +90,13 @@ function generateTimeJson(time: {
   timeInHours: number;
   latitude: number;
   longitude: number;
+  useSystemTime?: boolean;
 }): string {
+  if (time.useSystemTime) {
+    return JSON.stringify({
+      system_time: { enabled: true },
+    });
+  }
   return JSON.stringify({
     local_time: {
       day_of_year: time.dayOfYear,
@@ -177,7 +183,7 @@ export function getXPlaneExecutable(xplanePath: string): string | null {
       return winPath;
     }
   } else {
-    // Linux
+    //  TODO, check Linux
     const linuxPath = path.join(xplanePath, 'X-Plane-x86_64');
     if (fs.existsSync(linuxPath)) {
       return linuxPath;

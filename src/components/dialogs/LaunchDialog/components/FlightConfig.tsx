@@ -10,12 +10,14 @@ import {
   CloudSun,
   Fuel,
   Loader2,
+  Moon,
+  Power,
   Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { formatTime } from '@/lib/format';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import type { Aircraft, StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
@@ -28,11 +30,15 @@ interface FlightConfigProps {
   timeOfDay: number;
   selectedWeather: string;
   fuelPercentage: number;
+  useSystemTime: boolean;
+  coldAndDark: boolean;
   isLoading: boolean;
   launchError: string | null;
   onTimeChange: (time: number) => void;
   onWeatherChange: (weather: string) => void;
   onFuelChange: (fuel: number) => void;
+  onSystemTimeChange: (useSystem: boolean) => void;
+  onColdAndDarkChange: (coldDark: boolean) => void;
   onLaunch: () => void;
 }
 
@@ -52,11 +58,15 @@ export function FlightConfig({
   timeOfDay,
   selectedWeather,
   fuelPercentage,
+  useSystemTime,
+  coldAndDark,
   isLoading,
   launchError,
   onTimeChange,
   onWeatherChange,
   onFuelChange,
+  onSystemTimeChange,
+  onColdAndDarkChange,
   onLaunch,
 }: FlightConfigProps) {
   const { t } = useTranslation();
@@ -74,7 +84,46 @@ export function FlightConfig({
       <div className="flex-1 space-y-5 overflow-auto p-4">
         {/* Time of Day */}
         <div className="space-y-3">
-          {startPosition ? (
+          <div className="flex items-center justify-between">
+            <Label className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              {t('launcher.config.timeOfDay')}
+            </Label>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {t('launcher.config.systemTime')}
+              </span>
+              <Switch checked={useSystemTime} onCheckedChange={onSystemTimeChange} />
+            </div>
+          </div>
+          {useSystemTime ? (
+            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
+              <div className="flex items-center gap-2">
+                {new Date().getHours() >= 6 && new Date().getHours() < 18 ? (
+                  <Sun className="h-4 w-4 text-yellow-400" />
+                ) : (
+                  <Moon className="h-4 w-4 text-slate-400" />
+                )}
+                <span className="font-mono text-lg font-semibold">
+                  {new Date().toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  })}
+                </span>
+                <span className="text-xs text-muted-foreground">local</span>
+              </div>
+              <span className="font-mono text-sm text-muted-foreground">
+                {new Date().toLocaleTimeString('en-GB', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: 'UTC',
+                })}
+                Z
+              </span>
+            </div>
+          ) : startPosition ? (
             <SunArc
               timeOfDay={timeOfDay}
               latitude={startPosition.latitude}
@@ -83,13 +132,6 @@ export function FlightConfig({
             />
           ) : (
             <>
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  {t('launcher.config.timeOfDay')}
-                </Label>
-                <span className="font-mono text-sm font-medium">{formatTime(timeOfDay)}</span>
-              </div>
               <Slider
                 value={[timeOfDay]}
                 onValueChange={(v) => onTimeChange(v[0])}
@@ -164,6 +206,15 @@ export function FlightConfig({
             <span>{t('launcher.fuelModal.empty')}</span>
             <span>{t('launcher.fuelModal.full')}</span>
           </div>
+        </div>
+
+        {/* Cold & Dark */}
+        <div className="flex items-center justify-between">
+          <Label className="flex items-center gap-2">
+            <Power className="h-4 w-4 text-muted-foreground" />
+            {t('launcher.config.coldAndDark')}
+          </Label>
+          <Switch checked={coldAndDark} onCheckedChange={onColdAndDarkChange} />
         </div>
 
         {/* Summary */}
