@@ -1,7 +1,7 @@
 {
   "name": "x-dispatch",
   "productName": "X-Dispatch",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Flight dispatch and airport visualization for X-Plane",
   "author": {
     "name": "Lyes Tarzalt"
@@ -41,6 +41,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.0",
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron-forge/plugin-vite": "^7.8.0",
+    "@electron-forge/publisher-github": "^7.11.1",
     "@electron/fuses": "^1.8.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/electron-window-state": "^2.0.34",

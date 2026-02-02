@@ -4,6 +4,7 @@ import { MakerRpm } from '@electron-forge/maker-rpm';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
+import { PublisherGithub } from '@electron-forge/publisher-github';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { cp, mkdir } from 'node:fs/promises';
@@ -36,6 +37,15 @@ const config: ForgeConfig = {
         icon: './assets/icon.png',
         categories: ['Utility', 'Game'],
       },
+    }),
+  ],
+  publishers: [
+    new PublisherGithub({
+      repository: {
+        owner: 'lyestarzalt',
+        name: 'x-dispatch',
+      },
+      draft: true,
     }),
   ],
   plugins: [
