@@ -12,6 +12,14 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download for Windows, macOS, Linux</a>
 </p>
 
+> **macOS users:** If the app shows "damaged" or won't open, run in Terminal:
+>
+> ```
+> sudo xattr -cr /Applications/X-Dispatch.app
+> ```
+>
+> Homebrew install coming soon.
+
 ---
 
 ![Map Overview](screenshots/map-overview.png)

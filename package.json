@@ -9,9 +9,9 @@
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lyes-tarzalt/xplane-airport-visualizer"
+    "url": "https://github.com/lyestarzalt/x-dispatch"
   },
-  "homepage": "https://github.com/lyes-tarzalt/xplane-airport-visualizer#readme",
+  "homepage": "https://github.com/lyestarzalt/x-dispatch#readme",
   "keywords": [
     "x-plane",
     "flight-simulator",
