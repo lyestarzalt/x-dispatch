@@ -205,8 +205,6 @@ function registerIpcHandlers() {
         dataManager.loadATCDataOnly(xplanePath),
         dataManager.loadHoldingPatternsOnly(xplanePath),
         dataManager.loadAirportMetadataOnly(xplanePath),
-        dataManager.loadMORAOnly(xplanePath),
-        dataManager.loadMSAOnly(xplanePath),
       ]);
 
       sendLoadingProgress({ step: 'complete', status: 'complete', message: 'All data loaded' });
@@ -417,21 +415,8 @@ function registerIpcHandlers() {
     return dataManager.getTransitionAltitude(icao.toUpperCase());
   });
 
-  ipcMain.handle('nav:getMORA', (_, lat: number, lon: number) => {
-    const c = validateCoordinates(lat, lon, 1);
-    if (isInvalidCoords(c)) return null;
-    return dataManager.getMORAAtPoint(c.lat, c.lon);
-  });
-
-  ipcMain.handle('nav:getMSA', (_, fixId: string) => {
-    if (!fixId || typeof fixId !== 'string') return [];
-    return dataManager.getMSAForNavaid(fixId);
-  });
-
   // Bulk data retrieval for map layers (with coordinates resolved)
   ipcMain.handle('nav:getAllHoldingPatterns', () => dataManager.getAllHoldingPatternsWithCoords());
-  ipcMain.handle('nav:getAllMORACells', () => dataManager.getAllMORACells());
-  ipcMain.handle('nav:getAllMSASectors', () => dataManager.getAllMSASectorsWithCoords());
 
   ipcMain.on('log:error', (_, msg: string, args: unknown[]) =>
     logger.error(`[Renderer] ${msg}`, ...args)

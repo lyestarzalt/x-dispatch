@@ -28,8 +28,6 @@ export interface NavDataSources {
   atc: DataSourceInfo | null;
   holds: DataSourceInfo | null;
   aptMeta: DataSourceInfo | null;
-  mora: DataSourceInfo | null;
-  msa: DataSourceInfo | null;
 }
 
 /**
@@ -261,20 +259,6 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
     ? detectFileSource(xplanePath, 'Resources/default data/earth_aptmeta.dat', navigraphInfo)
     : null;
 
-  const moraPath = path.join(xplanePath, 'Custom Data', 'earth_mora.dat');
-  const defaultMoraPath = path.join(xplanePath, 'Resources', 'default data', 'earth_mora.dat');
-  const moraExists = fs.existsSync(moraPath) || fs.existsSync(defaultMoraPath);
-  const mora = moraExists
-    ? detectFileSource(xplanePath, 'Resources/default data/earth_mora.dat', navigraphInfo)
-    : null;
-
-  const msaPath = path.join(xplanePath, 'Custom Data', 'earth_msa.dat');
-  const defaultMsaPath = path.join(xplanePath, 'Resources', 'default data', 'earth_msa.dat');
-  const msaExists = fs.existsSync(msaPath) || fs.existsSync(defaultMsaPath);
-  const msa = msaExists
-    ? detectFileSource(xplanePath, 'Resources/default data/earth_msa.dat', navigraphInfo)
-    : null;
-
   // Determine global source
   const hasNavigraph = navigraphInfo !== null && (navaids.isCustomData || waypoints.isCustomData);
   const global: DataSourceInfo = hasNavigraph
@@ -299,8 +283,6 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
     atc,
     holds,
     aptMeta,
-    mora,
-    msa,
   };
 }
 

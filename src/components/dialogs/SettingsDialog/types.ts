@@ -35,8 +35,6 @@ export interface NavDataSources {
   atc: DataSourceInfo | null;
   holds: DataSourceInfo | null;
   aptMeta: DataSourceInfo | null;
-  mora: DataSourceInfo | null;
-  msa: DataSourceInfo | null;
 }
 
 export interface DataLoadStatus {
@@ -48,8 +46,6 @@ export interface DataLoadStatus {
   atc: DataTypeStatus | null;
   holds: DataTypeStatus | null;
   aptMeta: DataTypeStatus | null;
-  mora: DataTypeStatus | null;
-  msa: DataTypeStatus | null;
   sources: NavDataSources | null;
 }
 
