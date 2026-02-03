@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Cloud, Radio, Thermometer, Wind } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Frequency } from '@/lib/aptParser/types';
 import { formatFrequency } from '@/lib/format';
 import { DecodedMETAR } from '@/utils/decodeMetar';
@@ -54,17 +55,18 @@ export default function QuickWeather({ metar, atisFrequency }: QuickWeatherProps
 
       {/* ATIS Frequency */}
       {atisFrequency && (
-        <button
+        <Button
+          variant="ghost"
           onClick={handleCopyFrequency}
-          className="mt-2 flex w-full items-center gap-1.5 rounded bg-muted/50 px-2 py-1.5 text-xs transition-colors hover:bg-muted"
+          className="mt-2 flex h-auto w-full items-center justify-start gap-1.5 bg-muted/50 px-2 py-1.5 text-xs hover:bg-muted"
           title={t('sidebar.copyFrequency')}
         >
-          <Radio className="h-3.5 w-3.5 text-blue-400" />
+          <Radio className="h-3.5 w-3.5 text-primary" />
           <span className="text-muted-foreground">ATIS</span>
           <span className="ml-auto font-mono text-foreground">
             {formatFrequency(atisFrequency.frequency)}
           </span>
-        </button>
+        </Button>
       )}
     </div>
   );

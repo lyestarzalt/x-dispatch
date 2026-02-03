@@ -54,11 +54,11 @@ export default function DepartureSelector({
     <div className="flex flex-col">
       {/* Section header */}
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {t('sidebar.departurePosition')}
         </h3>
         {selectedStartPosition && (
-          <Badge variant="success" className="px-1.5 py-0 text-[9px]">
+          <Badge variant="success" className="px-1.5 py-0 text-xs">
             {selectedStartPosition.name}
           </Badge>
         )}
@@ -82,7 +82,7 @@ export default function DepartureSelector({
         >
           <DoorOpen className="h-3 w-3" />
           {t('sidebar.gates')}
-          <span className="ml-1 text-[10px] text-muted-foreground">({gates.length})</span>
+          <span className="ml-1 text-xs text-muted-foreground">({gates.length})</span>
         </ToggleGroupItem>
         <ToggleGroupItem
           value="runways"
@@ -90,7 +90,7 @@ export default function DepartureSelector({
         >
           <Plane className="h-3 w-3 rotate-45" />
           {t('sidebar.runways')}
-          <span className="ml-1 text-[10px] text-muted-foreground">({runways.length})</span>
+          <span className="ml-1 text-xs text-muted-foreground">({runways.length})</span>
         </ToggleGroupItem>
       </ToggleGroup>
 
@@ -166,7 +166,7 @@ function GateList({ gates, onSelect, selectedName }: GateListProps) {
             className={cn(
               'flex h-auto w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs',
               isSelected
-                ? 'border border-green-500/30 bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                ? 'border border-success/30 bg-success/20 text-success hover:bg-success/30'
                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'
             )}
           >
@@ -174,14 +174,12 @@ function GateList({ gates, onSelect, selectedName }: GateListProps) {
               {gate.name}
               {isSelected && <Rocket className="h-2.5 w-2.5" />}
             </span>
-            <span className="text-[10px] text-muted-foreground/50">
-              {Math.round(gate.heading)}°
-            </span>
+            <span className="text-xs text-muted-foreground/50">{Math.round(gate.heading)}°</span>
           </Button>
         );
       })}
       {gates.length > 50 && (
-        <p className="pt-1 text-center text-[10px] text-muted-foreground/50">
+        <p className="pt-1 text-center text-xs text-muted-foreground/50">
           +{gates.length - 50} {t('sidebar.more')}
         </p>
       )}
@@ -258,37 +256,41 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
 
   return (
     <div className="rounded-lg bg-muted/50 p-2.5">
-      <button onClick={onSelect} className="w-full text-left transition-opacity hover:opacity-80">
+      <Button
+        variant="ghost"
+        onClick={onSelect}
+        className="h-auto w-full flex-col items-stretch gap-1 p-0 text-left hover:opacity-80"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-foreground">
               {e1.name}/{e2.name}
             </span>
             {ilsCount && ilsCount > 0 && (
-              <Badge variant="success" className="px-1 py-0.5 text-[9px]">
+              <Badge variant="success" className="px-1 py-0.5 text-xs">
                 ILS
               </Badge>
             )}
             {hasLighting && (
-              <Badge variant="warning" className="px-1 py-0.5 text-[9px]">
+              <Badge variant="warning" className="px-1 py-0.5 text-xs">
                 LGT
               </Badge>
             )}
           </div>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
         </div>
-        <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{lengthFt}'</span>
           <span>x</span>
           <span>{Math.round(metersToFeet(runway.width))}'</span>
           <span className="opacity-50">|</span>
           <span>{t(`airportInfo.surfaces.${surfaceKeys[runway.surface_type] || 'unknown'}`)}</span>
         </div>
-      </button>
+      </Button>
 
       {/* Runway end selection */}
       <div className="mt-2 flex gap-2 border-t border-border/30 pt-2">
-        <span className="self-center text-[10px] text-muted-foreground/50">
+        <span className="self-center text-xs text-muted-foreground/50">
           {t('sidebar.startFrom')}
         </span>
         {[e1, e2].map((end) => {
@@ -305,7 +307,7 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
               className={cn(
                 'h-auto flex-1 rounded px-2 py-1 font-mono text-xs font-medium',
                 isSelected
-                  ? 'border border-green-500/30 bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                  ? 'border border-success/30 bg-success/20 text-success hover:bg-success/30'
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               )}
             >

@@ -7,7 +7,6 @@ import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { NAV_GLOBAL_LOADING, NAV_LIMITS } from '@/config/navLayerConfig';
 import { ParsedAirport } from '@/lib/aptParser';
-import { Runway } from '@/lib/aptParser/types';
 import { Airport } from '@/lib/xplaneData';
 import { useGatewayQuery } from '@/queries/useGatewayQuery';
 import {
@@ -15,37 +14,27 @@ import {
   useGlobalAirwaysQuery,
   useNavDataQuery,
 } from '@/queries/useNavDataQuery';
-import { getPilotsInBounds, useVatsimQuery } from '@/queries/useVatsimQuery';
+import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useWeatherQuery } from '@/queries/useWeatherQuery';
 import { useAppStore } from '@/stores/appStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
-import { useAirportRenderer } from './hooks/useAirportRenderer';
 import {
-  addAirspaceLayer,
-  addDMELayer,
+  applyNavVisibilityChange,
+  toggleVatsimLayer,
+  useAirportInteractions,
+  useAirportRenderer,
+  useMapSetup,
+  useNavLayerSync,
+  useVatsimSync,
+} from './hooks';
+import {
   addFIRLayer,
-  addHighAirwayLayer,
-  addILSLayer,
-  addLowAirwayLayer,
-  addNDBLayer,
   addProcedureRouteLayer,
-  addVORLayer,
-  addVatsimPilotLayer,
-  addWaypointLayer,
-  removeHighAirwayLayer,
-  removeLowAirwayLayer,
   removeProcedureRouteLayer,
   removeVatsimPilotLayer,
-  setAirspaceLayerVisibility,
-  setDMELayerVisibility,
   setFIRLayerVisibility,
-  setILSLayerVisibility,
-  setNDBLayerVisibility,
-  setVORLayerVisibility,
-  setWaypointLayerVisibility,
-  setupVatsimClickHandler,
 } from './layers';
 import './map-animations.css';
 import CompassWidget from './widgets/CompassWidget';
@@ -65,11 +54,6 @@ const CLICKABLE_LAYERS = [
 ];
 
 export default function Map({ airports }: MapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  const popup = useRef<maplibregl.Popup | null>(null);
-  const vatsimPopup = useRef<maplibregl.Popup | null>(null);
-
   const {
     selectedICAO,
     selectedAirportData,
@@ -83,7 +67,6 @@ export default function Map({ airports }: MapProps) {
     setShowSettings,
     setShowLaunchDialog,
     selectProcedure: setSelectedProcedure,
-    setStartPosition: setSelectedStartPosition,
   } = useAppStore();
 
   const {
@@ -97,8 +80,6 @@ export default function Map({ airports }: MapProps) {
     toggleLayer,
     toggleNavLayer,
     setAirwaysMode,
-    setCurrentZoom,
-    setMapBearing,
     setDebugEnabled,
     setSelectedFeature,
     setVatsimEnabled,
@@ -107,13 +88,68 @@ export default function Map({ airports }: MapProps) {
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
 
+  // Refs for stable airport click callback (avoids circular dependency)
+  const renderAirportRef = useRef<((icao: string) => Promise<ParsedAirport | null>) | null>(null);
+  const startAnimationsRef = useRef<(() => void) | null>(null);
+  const stopAnimationsRef = useRef<(() => void) | null>(null);
+  const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
+  const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
+
+  // Stable callback for airport click - uses refs to access renderer functions
+  const handleAirportClick = useCallback(async (icao: string) => {
+    try {
+      useMapStore.getState().setSelectedFeature(null);
+      const parsedAirport = await renderAirportRef.current?.(icao);
+      if (parsedAirport) {
+        useAppStore.getState().selectAirport(icao, parsedAirport);
+        setTimeout(() => {
+          startAnimationsRef.current?.();
+          applyLayerVisibilityRef.current?.(layerVisibilityRef.current);
+        }, 100);
+      } else {
+        useAppStore.getState().clearAirport();
+        stopAnimationsRef.current?.();
+      }
+    } catch (err) {
+      window.appAPI.log.error('Airport click error', err);
+    }
+  }, []);
+
+  // Map initialization
+  const { mapRef, mapContainerRef, vatsimPopupRef } = useMapSetup({
+    airports,
+    mapStyleUrl,
+    onAirportClick: handleAirportClick,
+  });
+
+  // Airport renderer
   const {
     renderAirport,
     setLayerVisibility: applyLayerVisibility,
     startAnimations,
     stopAnimations,
-  } = useAirportRenderer(map, isNightMode);
+  } = useAirportRenderer(mapRef, isNightMode);
 
+  // Update refs after useAirportRenderer is called
+  useEffect(() => {
+    renderAirportRef.current = renderAirport;
+    startAnimationsRef.current = startAnimations;
+    stopAnimationsRef.current = stopAnimations;
+    applyLayerVisibilityRef.current = applyLayerVisibility;
+  }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility]);
+
+  useEffect(() => {
+    layerVisibilityRef.current = layerVisibility;
+  }, [layerVisibility]);
+
+  // Airport interactions (gates, runway ends)
+  const { selectGateAsStart, selectRunwayEndAsStart, navigateToGate, navigateToRunway } =
+    useAirportInteractions({
+      mapRef,
+      selectedAirportData,
+    });
+
+  // Queries
   const { data: weatherData } = useWeatherQuery(selectedICAO);
   const weather = {
     metar: weatherData?.metar || null,
@@ -142,117 +178,78 @@ export default function Map({ airports }: MapProps) {
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
 
-  const hoveredGateId = useRef<number | null>(null);
-  const hoveredRunwayEndId = useRef<number | null>(null);
-  const selectedGateId = useRef<number | null>(null);
-  const selectedRunwayEndId = useRef<number | null>(null);
+  // Nav layer sync
+  useNavLayerSync({
+    mapRef,
+    navData,
+    airwaysData,
+    airwaysFetched,
+    navVisibility,
+  });
 
-  const selectedAirportDataRef = useRef<ParsedAirport | null>(null);
-  selectedAirportDataRef.current = selectedAirportData;
+  // Vatsim sync
+  useVatsimSync({
+    mapRef,
+    vatsimPopupRef,
+    vatsimData,
+    vatsimEnabled,
+    selectedAirportId: selectedAirportData?.id,
+  });
 
-  const handleLayerToggle = useCallback(
-    (layer: keyof LayerVisibility) => {
-      toggleLayer(layer);
-      const newVisibility = { ...layerVisibility, [layer]: !layerVisibility[layer] };
-      applyLayerVisibility(newVisibility);
-    },
-    [toggleLayer, layerVisibility, applyLayerVisibility]
-  );
+  // Load FIR boundaries on map load
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !NAV_GLOBAL_LOADING.firBoundaries) return;
 
-  const handleNavLayerToggle = useCallback(
-    (layer: keyof NavLayerVisibility) => {
-      toggleNavLayer(layer);
-      const newVisibility = { ...navVisibility, [layer]: !navVisibility[layer] };
-
-      if (map.current) {
-        if (layer === 'vors') setVORLayerVisibility(map.current, newVisibility.vors);
-        if (layer === 'ndbs') setNDBLayerVisibility(map.current, newVisibility.ndbs);
-        if (layer === 'dmes') setDMELayerVisibility(map.current, newVisibility.dmes);
-        if (layer === 'ils') setILSLayerVisibility(map.current, newVisibility.ils);
-        if (layer === 'waypoints') setWaypointLayerVisibility(map.current, newVisibility.waypoints);
-        if (layer === 'airspaces') {
-          setAirspaceLayerVisibility(map.current, newVisibility.airspaces);
-          setFIRLayerVisibility(map.current, newVisibility.airspaces);
-        }
-      }
-    },
-    [toggleNavLayer, navVisibility]
-  );
-
-  const handleSetAirwaysMode = useCallback(
-    (mode: AirwaysMode) => {
-      setAirwaysMode(mode);
-    },
-    [setAirwaysMode]
-  );
-
-  const handleLoadViewportNavaids = useCallback(async () => {}, []);
-
-  const handleToggleVatsim = useCallback(() => {
-    if (vatsimEnabled) {
-      setVatsimEnabled(false);
-      if (map.current) removeVatsimPilotLayer(map.current);
-    } else {
-      setVatsimEnabled(true);
-      if (map.current && vatsimPopup.current) {
-        setupVatsimClickHandler(map.current, vatsimPopup.current);
-      }
-    }
-  }, [vatsimEnabled, setVatsimEnabled]);
-
-  const handleSelectProcedure = useCallback(
-    async (procedure: any) => {
-      setSelectedProcedure(procedure);
-
-      if (!map.current || !procedure) {
-        if (map.current) removeProcedureRouteLayer(map.current);
+    const loadFIR = async () => {
+      if (!map.isStyleLoaded()) {
+        map.once('load', loadFIR);
         return;
       }
 
-      // Procedures now come with embedded coordinates from the resolver
-      // Pass waypoints with their embedded lat/lon
-      addProcedureRouteLayer(map.current, {
-        type: procedure.type,
-        name: procedure.name,
-        waypoints: procedure.waypoints.map((wp: any) => ({
-          fixId: wp.fixId,
-          latitude: wp.latitude,
-          longitude: wp.longitude,
-          resolved: wp.resolved,
-        })),
-      });
-    },
-    [setSelectedProcedure]
-  );
-
-  const selectAirport = useCallback(
-    async (airport: Airport) => {
-      setSelectedFeature(null);
-      map.current?.flyTo({
-        center: [airport.lon, airport.lat],
-        zoom: 14,
-        duration: 2000,
-      });
-
-      const parsedAirport = await renderAirport(airport.icao);
-      if (parsedAirport) {
-        storeSelectAirport(airport.icao, parsedAirport);
-        setTimeout(() => {
-          startAnimations();
-          applyLayerVisibility(layerVisibility);
-        }, 100);
+      try {
+        const allAirspaces = await window.navAPI.getAllAirspaces();
+        if (allAirspaces.length > 0) {
+          addFIRLayer(map, allAirspaces);
+          setFIRLayerVisibility(map, useMapStore.getState().navVisibility.airspaces);
+        }
+      } catch (err) {
+        window.appAPI.log.error('Failed to load airspaces', err);
       }
-    },
-    [
-      renderAirport,
-      startAnimations,
-      applyLayerVisibility,
-      layerVisibility,
-      storeSelectAirport,
-      setSelectedFeature,
-    ]
-  );
+    };
 
+    loadFIR();
+  }, [mapRef]);
+
+  // Style change handler
+  const initialStyleRef = useRef(true);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (initialStyleRef.current) {
+      initialStyleRef.current = false;
+      return;
+    }
+
+    const currentICAO = selectedICAO;
+    const handleStyleLoad = async () => {
+      if (currentICAO) {
+        await renderAirport(currentICAO);
+        applyLayerVisibility(layerVisibility);
+      }
+    };
+
+    map.once('style.load', handleStyleLoad);
+    map.setStyle(mapStyleUrl);
+
+    return () => {
+      map.off('style.load', handleStyleLoad);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapStyleUrl]);
+
+  // Debug mode click handler
   const handleFeatureClick = useCallback(
     (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
       if (!debugEnabled || !e.features || e.features.length === 0) return;
@@ -271,13 +268,13 @@ export default function Map({ airports }: MapProps) {
 
       const debugInfo: FeatureDebugInfo = {
         type: featureType,
-        name: props.name || props.text || undefined,
+        name: (props.name as string) || (props.text as string) || undefined,
         properties: { ...props, _layerId: layerId },
         coordinates:
           geom.type === 'Point'
-            ? (geom.coordinates as [number, number])
+            ? ((geom as GeoJSON.Point).coordinates as [number, number])
             : geom.type === 'LineString'
-              ? (geom.coordinates as [number, number][])
+              ? ((geom as GeoJSON.LineString).coordinates as [number, number][])
               : undefined,
       };
 
@@ -287,376 +284,45 @@ export default function Map({ airports }: MapProps) {
   );
 
   useEffect(() => {
-    if (!mapContainer.current) return;
-
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: mapStyleUrl,
-      center: [0, 30],
-      zoom: 2,
-      pitch: 0,
-      bearing: 0,
-      maxPitch: 85,
-      fadeDuration: 0,
-      trackResize: true,
-      refreshExpiredTiles: false,
-    });
-
-    map.current.addControl(
-      new maplibregl.NavigationControl({ visualizePitch: true }),
-      'bottom-right'
-    );
-    map.current.addControl(
-      new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }),
-      'bottom-left'
-    );
-
-    map.current.on('error', (e) => {
-      window.appAPI.log.error('MapLibre error', e.error);
-    });
-
-    map.current.on('load', () => {
-      if (!map.current) return;
-
-      const features = airports.map((airport) => ({
-        type: 'Feature' as const,
-        geometry: { type: 'Point' as const, coordinates: [airport.lon, airport.lat] },
-        properties: { icao: airport.icao, name: airport.name },
-      }));
-
-      map.current.addSource('airports', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features },
-      });
-
-      map.current.addLayer({
-        id: 'airports-glow',
-        type: 'circle',
-        source: 'airports',
-        minzoom: 5,
-        paint: {
-          'circle-color': '#4a90d9',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 8],
-          'circle-blur': 0.6,
-          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.1, 8, 0.2],
-        },
-      });
-
-      map.current.addLayer({
-        id: 'airports',
-        type: 'circle',
-        source: 'airports',
-        minzoom: 4,
-        paint: {
-          'circle-color': '#4a90d9',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 1.5, 6, 3, 10, 5, 14, 6],
-          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 4, 0.5, 8, 1],
-          'circle-stroke-color': '#ffffff',
-          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.6, 6, 0.9, 8, 1],
-        },
-      });
-
-      map.current.addLayer({
-        id: 'airport-labels',
-        type: 'symbol',
-        source: 'airports',
-        minzoom: 6,
-        layout: {
-          'text-field': ['get', 'icao'],
-          'text-font': ['Open Sans Bold'],
-          'text-offset': [0, 1.2],
-          'text-anchor': 'top',
-          'text-size': ['interpolate', ['linear'], ['zoom'], 6, 8, 10, 10, 14, 12],
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-        },
-        paint: {
-          'text-color': '#cccccc',
-          'text-halo-color': '#000000',
-          'text-halo-width': 1,
-        },
-      });
-
-      popup.current = new maplibregl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        className: 'airport-popup',
-      });
-      vatsimPopup.current = new maplibregl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        className: 'vatsim-popup',
-        maxWidth: '300px',
-      });
-
-      map.current.on('mouseenter', 'airports', (e) => {
-        if (!map.current || !e.features || e.features[0].geometry.type !== 'Point') return;
-        map.current.getCanvas().style.cursor = 'pointer';
-        const coordinates = e.features[0].geometry.coordinates.slice() as [number, number];
-        const { name, icao } = e.features[0].properties as { name: string; icao: string };
-        popup.current
-          ?.setLngLat(coordinates)
-          .setHTML(
-            `<div class="bg-black/90 text-white px-3 py-2 rounded border border-gray-700"><div class="font-mono font-bold text-blue-400">${icao}</div><div class="text-gray-400 text-xs">${name}</div></div>`
-          )
-          .addTo(map.current);
-      });
-
-      map.current.on('mouseleave', 'airports', () => {
-        if (!map.current) return;
-        map.current.getCanvas().style.cursor = '';
-        popup.current?.remove();
-      });
-
-      map.current.on('click', 'airports', async (e) => {
-        if (!e.features || !e.features[0].properties?.icao) return;
-        if (e.features[0].geometry.type !== 'Point') return;
-
-        const icao = e.features[0].properties.icao;
-        try {
-          useMapStore.getState().setSelectedFeature(null);
-          const parsedAirport = await renderAirport(icao);
-          if (parsedAirport) {
-            useAppStore.getState().selectAirport(icao, parsedAirport);
-            setTimeout(() => {
-              startAnimations();
-              applyLayerVisibility(layerVisibility);
-            }, 100);
-          } else {
-            useAppStore.getState().clearAirport();
-            stopAnimations();
-          }
-        } catch (err) {
-          window.appAPI.log.error('Airport click error', err);
-        }
-      });
-
-      map.current.on('zoomend', () => {
-        if (map.current) setCurrentZoom(map.current.getZoom());
-      });
-
-      map.current.on('mouseenter', 'airport-gates-hitbox', (e) => {
-        if (!map.current || !e.features || e.features.length === 0) return;
-        map.current.getCanvas().style.cursor = 'pointer';
-        const featureId = e.features[0].id as number;
-        if (hoveredGateId.current !== null && hoveredGateId.current !== featureId) {
-          map.current.setFeatureState(
-            { source: 'airport-gates', id: hoveredGateId.current },
-            { hover: false }
-          );
-        }
-        hoveredGateId.current = featureId;
-        map.current.setFeatureState({ source: 'airport-gates', id: featureId }, { hover: true });
-      });
-
-      map.current.on('mouseleave', 'airport-gates-hitbox', () => {
-        if (!map.current) return;
-        map.current.getCanvas().style.cursor = '';
-        if (hoveredGateId.current !== null) {
-          map.current.setFeatureState(
-            { source: 'airport-gates', id: hoveredGateId.current },
-            { hover: false }
-          );
-          hoveredGateId.current = null;
-        }
-      });
-
-      map.current.on('click', 'airport-gates-hitbox', (e) => {
-        if (!map.current || !e.features || e.features.length === 0) return;
-        e.originalEvent.stopPropagation();
-
-        const feature = e.features[0];
-        const props = feature.properties;
-        const featureId = feature.id as number;
-
-        if (selectedGateId.current !== null) {
-          map.current.setFeatureState(
-            { source: 'airport-gates', id: selectedGateId.current },
-            { selected: false }
-          );
-        }
-        if (selectedRunwayEndId.current !== null) {
-          map.current.setFeatureState(
-            { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
-            { selected: false }
-          );
-          selectedRunwayEndId.current = null;
-        }
-
-        selectedGateId.current = featureId;
-        map.current.setFeatureState({ source: 'airport-gates', id: featureId }, { selected: true });
-
-        const currentAirport = selectedAirportDataRef.current;
-        if (props && currentAirport) {
-          setSelectedStartPosition({
-            type: 'ramp',
-            name: props.name || `Gate ${featureId}`,
-            airport: currentAirport.id,
-            latitude: props.latitude,
-            longitude: props.longitude,
-          });
-        }
-      });
-
-      map.current.on('mouseenter', 'airport-runway-ends', (e) => {
-        if (!map.current || !e.features || e.features.length === 0) return;
-        map.current.getCanvas().style.cursor = 'pointer';
-        const featureId = e.features[0].id as number;
-        if (hoveredRunwayEndId.current !== null && hoveredRunwayEndId.current !== featureId) {
-          map.current.setFeatureState(
-            { source: 'airport-runway-ends', id: hoveredRunwayEndId.current },
-            { hover: false }
-          );
-        }
-        hoveredRunwayEndId.current = featureId;
-        map.current.setFeatureState(
-          { source: 'airport-runway-ends', id: featureId },
-          { hover: true }
-        );
-      });
-
-      map.current.on('mouseleave', 'airport-runway-ends', () => {
-        if (!map.current) return;
-        map.current.getCanvas().style.cursor = '';
-        if (hoveredRunwayEndId.current !== null) {
-          map.current.setFeatureState(
-            { source: 'airport-runway-ends', id: hoveredRunwayEndId.current },
-            { hover: false }
-          );
-          hoveredRunwayEndId.current = null;
-        }
-      });
-
-      map.current.on('click', 'airport-runway-ends', (e) => {
-        if (!map.current || !e.features || e.features.length === 0) return;
-        e.originalEvent.stopPropagation();
-
-        const feature = e.features[0];
-        const props = feature.properties;
-        const featureId = feature.id as number;
-
-        if (selectedRunwayEndId.current !== null) {
-          map.current.setFeatureState(
-            { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
-            { selected: false }
-          );
-        }
-        if (selectedGateId.current !== null) {
-          map.current.setFeatureState(
-            { source: 'airport-gates', id: selectedGateId.current },
-            { selected: false }
-          );
-          selectedGateId.current = null;
-        }
-
-        selectedRunwayEndId.current = featureId;
-        map.current.setFeatureState(
-          { source: 'airport-runway-ends', id: featureId },
-          { selected: true }
-        );
-
-        const currentAirport = selectedAirportDataRef.current;
-        if (props && currentAirport) {
-          setSelectedStartPosition({
-            type: 'runway',
-            name: props.name || `Runway End ${featureId}`,
-            airport: currentAirport.id,
-            latitude: props.latitude,
-            longitude: props.longitude,
-          });
-        }
-      });
-
-      map.current.on('rotate', () => {
-        if (map.current) setMapBearing(map.current.getBearing());
-      });
-
-      setCurrentZoom(map.current.getZoom());
-
-      if (NAV_GLOBAL_LOADING.firBoundaries) {
-        window.navAPI
-          .getAllAirspaces()
-          .then((allAirspaces) => {
-            if (map.current && allAirspaces.length > 0) {
-              addFIRLayer(map.current, allAirspaces);
-              setFIRLayerVisibility(map.current, useMapStore.getState().navVisibility.airspaces);
-            }
-          })
-          .catch((err) => window.appAPI.log.error('Failed to load airspaces', err));
-      }
-    });
-
-    return () => {
-      stopAnimations();
-      map.current?.remove();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [airports]);
-
-  const initialStyleRef = useRef(true);
-  useEffect(() => {
-    if (!map.current) return;
-
-    if (initialStyleRef.current) {
-      initialStyleRef.current = false;
-      return;
-    }
-
-    const m = map.current;
-    const currentICAO = selectedICAO;
-
-    const handleStyleLoad = async () => {
-      if (currentICAO) {
-        await renderAirport(currentICAO);
-        applyLayerVisibility(layerVisibility);
-      }
-    };
-
-    m.once('style.load', handleStyleLoad);
-    m.setStyle(mapStyleUrl);
-
-    return () => {
-      m.off('style.load', handleStyleLoad);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapStyleUrl]);
-
-  useEffect(() => {
-    if (!map.current) return;
-    const m = map.current;
+    const map = mapRef.current;
+    if (!map) return;
 
     if (debugEnabled) {
       CLICKABLE_LAYERS.forEach((layerId) => {
-        m.on('click', layerId, handleFeatureClick);
-        m.on('mouseenter', layerId, () => {
-          m.getCanvas().style.cursor = 'crosshair';
+        map.on('click', layerId, handleFeatureClick);
+        map.on('mouseenter', layerId, () => {
+          map.getCanvas().style.cursor = 'crosshair';
         });
-        m.on('mouseleave', layerId, () => {
-          m.getCanvas().style.cursor = '';
+        map.on('mouseleave', layerId, () => {
+          map.getCanvas().style.cursor = '';
         });
       });
     }
 
     return () => {
       CLICKABLE_LAYERS.forEach((layerId) => {
-        m.off('click', layerId, handleFeatureClick);
+        map.off('click', layerId, handleFeatureClick);
       });
     };
-  }, [debugEnabled, handleFeatureClick]);
+  }, [mapRef, debugEnabled, handleFeatureClick]);
 
+  // Ref for selectAirport to use in auto-load effect without causing re-runs
+  const selectAirportRef = useRef<((airport: Airport) => Promise<void>) | null>(null);
+
+  // Auto-load nearby airport
   useEffect(() => {
-    const m = map.current;
-    if (!m) return;
+    const map = mapRef.current;
+    if (!map) return;
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const checkNearbyAirport = () => {
       if (timeoutId) clearTimeout(timeoutId);
-      const zoom = m.getZoom();
+      const zoom = map.getZoom();
       if (zoom < NAV_LIMITS.autoLoadAirport) return;
 
       timeoutId = setTimeout(() => {
-        const center = m.getCenter();
+        const center = map.getCenter();
         const currentAirport = useAppStore.getState().selectedAirportData;
         let nearestAirport: Airport | null = null;
         let nearestDistance = Infinity;
@@ -672,255 +338,137 @@ export default function Map({ airports }: MapProps) {
         }
 
         if (nearestAirport && nearestAirport.icao !== currentAirport?.id) {
-          selectAirport(nearestAirport);
+          selectAirportRef.current?.(nearestAirport);
         }
       }, NAV_LIMITS.autoLoadDebounce);
     };
 
-    m.on('moveend', checkNearbyAirport);
+    map.on('moveend', checkNearbyAirport);
     checkNearbyAirport();
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
-      m.off('moveend', checkNearbyAirport);
+      map.off('moveend', checkNearbyAirport);
     };
-  }, [airports, selectAirport]);
+  }, [mapRef, airports]);
 
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !navData) return;
-
-    const updateNavLayers = async () => {
-      try {
-        if (!m.isStyleLoaded()) {
-          m.once('styledata', () => updateNavLayers());
-          return;
-        }
-
-        if (navData.vors.length > 0) {
-          await addVORLayer(m, navData.vors);
-          setVORLayerVisibility(m, navVisibility.vors);
-        }
-        if (navData.ndbs.length > 0) {
-          await addNDBLayer(m, navData.ndbs);
-          setNDBLayerVisibility(m, navVisibility.ndbs);
-        }
-        if (navData.dmes.length > 0) {
-          addDMELayer(m, navData.dmes);
-          setDMELayerVisibility(m, navVisibility.dmes);
-        }
-        if (navData.ils.length > 0) {
-          await addILSLayer(m, navData.ils);
-          setILSLayerVisibility(m, navVisibility.ils);
-        }
-        if (navData.waypoints.length > 0) {
-          addWaypointLayer(m, navData.waypoints.slice(0, 2000));
-          setWaypointLayerVisibility(m, navVisibility.waypoints);
-        }
-        if (navData.airspaces.length > 0) {
-          addAirspaceLayer(m, navData.airspaces);
-          setAirspaceLayerVisibility(m, navVisibility.airspaces);
-        }
-      } catch (err) {
-        window.appAPI.log.error('Nav layer update failed', err);
-      }
-    };
-
-    updateNavLayers();
-  }, [navData, navVisibility]);
-
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !airwaysFetched || !airwaysData) return;
-
-    const updateAirwayLayers = () => {
-      if (!m.isStyleLoaded()) {
-        m.once('styledata', updateAirwayLayers);
-        return;
-      }
-
-      try {
-        if (navVisibility.airwaysMode === 'high' && airwaysData.highAirways.length > 0) {
-          removeHighAirwayLayer(m);
-          addHighAirwayLayer(m, airwaysData.highAirways);
-          removeLowAirwayLayer(m);
-        } else if (navVisibility.airwaysMode === 'low' && airwaysData.lowAirways.length > 0) {
-          removeLowAirwayLayer(m);
-          addLowAirwayLayer(m, airwaysData.lowAirways);
-          removeHighAirwayLayer(m);
-        } else {
-          removeHighAirwayLayer(m);
-          removeLowAirwayLayer(m);
-        }
-      } catch (err) {
-        window.appAPI.log.error('Airway layer update failed', err);
-      }
-    };
-
-    updateAirwayLayers();
-  }, [airwaysData, airwaysFetched, navVisibility.airwaysMode]);
-
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !vatsimEnabled) return;
-
-    const updateVatsim = () => {
-      if (!m.isStyleLoaded()) {
-        m.once('styledata', updateVatsim);
-        return;
-      }
-
-      const bounds = m.getBounds();
-      const pilotsInView = getPilotsInBounds(vatsimData, {
-        north: bounds.getNorthEast().lat,
-        south: bounds.getSouthWest().lat,
-        east: bounds.getNorthEast().lng,
-        west: bounds.getSouthWest().lng,
+  // Callbacks
+  const selectAirport = useCallback(
+    async (airport: Airport) => {
+      setSelectedFeature(null);
+      mapRef.current?.flyTo({
+        center: [airport.lon, airport.lat],
+        zoom: 14,
+        duration: 2000,
       });
 
-      addVatsimPilotLayer(m, pilotsInView, selectedAirportData?.id);
-      if (vatsimPopup.current) setupVatsimClickHandler(m, vatsimPopup.current);
-    };
+      const parsedAirport = await renderAirport(airport.icao);
+      if (parsedAirport) {
+        storeSelectAirport(airport.icao, parsedAirport);
+        setTimeout(() => {
+          startAnimations();
+          applyLayerVisibility(layerVisibility);
+        }, 100);
+      }
+    },
+    [
+      mapRef,
+      renderAirport,
+      startAnimations,
+      applyLayerVisibility,
+      layerVisibility,
+      storeSelectAirport,
+      setSelectedFeature,
+    ]
+  );
 
-    const handleMoveEnd = () => {
-      if (vatsimEnabled && vatsimData) updateVatsim();
-    };
+  // Update selectAirport ref for auto-load effect
+  useEffect(() => {
+    selectAirportRef.current = selectAirport;
+  }, [selectAirport]);
 
-    m.on('moveend', handleMoveEnd);
-    updateVatsim();
+  const handleLayerToggle = useCallback(
+    (layer: keyof LayerVisibility) => {
+      toggleLayer(layer);
+      const newVisibility = { ...layerVisibility, [layer]: !layerVisibility[layer] };
+      applyLayerVisibility(newVisibility);
+    },
+    [toggleLayer, layerVisibility, applyLayerVisibility]
+  );
 
-    return () => {
-      m.off('moveend', handleMoveEnd);
-    };
-  }, [vatsimData, vatsimEnabled, selectedAirportData]);
+  const handleNavLayerToggle = useCallback(
+    (layer: keyof NavLayerVisibility) => {
+      toggleNavLayer(layer);
+      const newVisibility = { ...navVisibility, [layer]: !navVisibility[layer] };
+
+      const map = mapRef.current;
+      if (map) {
+        applyNavVisibilityChange(map, layer, newVisibility);
+        if (layer === 'airspaces') {
+          setFIRLayerVisibility(map, newVisibility.airspaces);
+        }
+      }
+    },
+    [mapRef, toggleNavLayer, navVisibility]
+  );
+
+  const handleSetAirwaysMode = useCallback(
+    (mode: AirwaysMode) => {
+      setAirwaysMode(mode);
+    },
+    [setAirwaysMode]
+  );
+
+  const handleLoadViewportNavaids = useCallback(async () => {}, []);
+
+  const handleToggleVatsim = useCallback(() => {
+    if (vatsimEnabled) {
+      setVatsimEnabled(false);
+      if (mapRef.current) removeVatsimPilotLayer(mapRef.current);
+    } else {
+      setVatsimEnabled(true);
+      toggleVatsimLayer(mapRef, vatsimPopupRef, true);
+    }
+  }, [mapRef, vatsimPopupRef, vatsimEnabled, setVatsimEnabled]);
+
+  const handleSelectProcedure = useCallback(
+    async (procedure: any) => {
+      setSelectedProcedure(procedure);
+
+      const map = mapRef.current;
+      if (!map || !procedure) {
+        if (map) removeProcedureRouteLayer(map);
+        return;
+      }
+
+      addProcedureRouteLayer(map, {
+        type: procedure.type as 'SID' | 'STAR' | 'APPROACH',
+        name: procedure.name,
+        waypoints: procedure.waypoints.map(
+          (wp: { fixId: string; latitude?: number; longitude?: number; resolved?: boolean }) => ({
+            fixId: wp.fixId,
+            latitude: wp.latitude,
+            longitude: wp.longitude,
+            resolved: wp.resolved,
+          })
+        ),
+      });
+    },
+    [mapRef, setSelectedProcedure]
+  );
 
   const closeSidebar = useCallback(() => {
     setShowSidebar(false);
     setSelectedFeature(null);
   }, [setShowSidebar, setSelectedFeature]);
 
-  const navigateToGate = useCallback(
-    (gate: { latitude: number; longitude: number; heading: number; name?: string }) => {
-      if (!map.current) return;
-      map.current.flyTo({
-        center: [gate.longitude, gate.latitude],
-        zoom: 18,
-        duration: 1500,
-        bearing: gate.heading,
-      });
-    },
-    []
-  );
-
-  const selectGateAsStart = useCallback(
-    (gate: { latitude: number; longitude: number; name: string }, featureId?: number) => {
-      if (!selectedAirportData || !map.current) return;
-
-      if (selectedGateId.current !== null) {
-        map.current.setFeatureState(
-          { source: 'airport-gates', id: selectedGateId.current },
-          { selected: false }
-        );
-      }
-      if (selectedRunwayEndId.current !== null) {
-        map.current.setFeatureState(
-          { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
-          { selected: false }
-        );
-        selectedRunwayEndId.current = null;
-      }
-
-      if (featureId !== undefined) {
-        selectedGateId.current = featureId;
-        map.current.setFeatureState({ source: 'airport-gates', id: featureId }, { selected: true });
-      }
-
-      setSelectedStartPosition({
-        type: 'ramp',
-        name: gate.name,
-        airport: selectedAirportData.id,
-        latitude: gate.latitude,
-        longitude: gate.longitude,
-      });
-
-      navigateToGate({ ...gate, heading: 0 });
-    },
-    [selectedAirportData, setSelectedStartPosition, navigateToGate]
-  );
-
-  const selectRunwayEndAsStart = useCallback(
-    (runwayEnd: { name: string; latitude: number; longitude: number }, featureId?: number) => {
-      if (!selectedAirportData || !map.current) return;
-
-      if (selectedRunwayEndId.current !== null) {
-        map.current.setFeatureState(
-          { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
-          { selected: false }
-        );
-      }
-      if (selectedGateId.current !== null) {
-        map.current.setFeatureState(
-          { source: 'airport-gates', id: selectedGateId.current },
-          { selected: false }
-        );
-        selectedGateId.current = null;
-      }
-
-      if (featureId !== undefined) {
-        selectedRunwayEndId.current = featureId;
-        map.current.setFeatureState(
-          { source: 'airport-runway-ends', id: featureId },
-          { selected: true }
-        );
-      }
-
-      setSelectedStartPosition({
-        type: 'runway',
-        name: runwayEnd.name,
-        airport: selectedAirportData.id,
-        latitude: runwayEnd.latitude,
-        longitude: runwayEnd.longitude,
-      });
-
-      map.current.flyTo({
-        center: [runwayEnd.longitude, runwayEnd.latitude],
-        zoom: 17,
-        duration: 1500,
-      });
-    },
-    [selectedAirportData, setSelectedStartPosition]
-  );
-
-  const navigateToRunway = useCallback((runway: Runway) => {
-    if (!map.current) return;
-
-    const e1 = runway.ends[0],
-      e2 = runway.ends[1];
-    const centerLat = (e1.latitude + e2.latitude) / 2;
-    const centerLon = (e1.longitude + e2.longitude) / 2;
-
-    const dLon = ((e2.longitude - e1.longitude) * Math.PI) / 180;
-    const lat1 = (e1.latitude * Math.PI) / 180;
-    const lat2 = (e2.latitude * Math.PI) / 180;
-    const y = Math.sin(dLon) * Math.cos(lat2);
-    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-    const bearing = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
-
-    map.current.flyTo({
-      center: [centerLon, centerLat],
-      zoom: 16,
-      duration: 1500,
-      bearing: bearing - 90,
-    });
-  }, []);
-
   return (
     <div
-      className="relative overflow-hidden bg-gray-950"
+      className="relative overflow-hidden bg-background"
       style={{ width: '100vw', height: '100vh' }}
     >
       <div
-        ref={mapContainer}
+        ref={mapContainerRef}
         style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
       />
 

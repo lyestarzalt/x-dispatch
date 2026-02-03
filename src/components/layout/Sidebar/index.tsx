@@ -72,10 +72,11 @@ export default function Sidebar({
   const metar = weather.metar?.decoded;
 
   // Get ATIS frequency for quick weather display
+  const frequencies = airport?.frequencies;
   const atisFrequency = useMemo(() => {
-    if (!airport?.frequencies) return null;
-    return airport.frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
-  }, [airport?.frequencies]);
+    if (!frequencies) return null;
+    return frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
+  }, [frequencies]);
 
   if (!airport) return null;
 
@@ -113,7 +114,7 @@ export default function Sidebar({
               <AccordionItem value="weather" className="border-border/50">
                 <AccordionTrigger className="py-2 text-xs hover:no-underline">
                   <div className="flex items-center gap-2">
-                    <Cloud className="h-3.5 w-3.5 text-blue-400" />
+                    <Cloud className="h-3.5 w-3.5 text-info" />
                     <span>{t('sidebar.weatherDetails')}</span>
                   </div>
                 </AccordionTrigger>
@@ -126,9 +127,9 @@ export default function Sidebar({
               <AccordionItem value="frequencies" className="border-border/50">
                 <AccordionTrigger className="py-2 text-xs hover:no-underline">
                   <div className="flex items-center gap-2">
-                    <Radio className="h-3.5 w-3.5 text-green-400" />
+                    <Radio className="h-3.5 w-3.5 text-success" />
                     <span>{t('sidebar.frequencies')}</span>
-                    <span className="ml-1 text-[10px] text-muted-foreground">
+                    <span className="ml-1 text-xs text-muted-foreground">
                       ({airport.frequencies.length})
                     </span>
                   </div>
@@ -142,7 +143,7 @@ export default function Sidebar({
               <AccordionItem value="procedures" className="border-border/50">
                 <AccordionTrigger className="py-2 text-xs hover:no-underline">
                   <div className="flex items-center gap-2">
-                    <Route className="h-3.5 w-3.5 text-purple-400" />
+                    <Route className="h-3.5 w-3.5 text-violet" />
                     <span>{t('sidebar.procedures')}</span>
                   </div>
                 </AccordionTrigger>

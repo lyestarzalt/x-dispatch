@@ -96,7 +96,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
           <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-3">
             {xplanePath ? (
               <>
-                <Check className="h-4 w-4 shrink-0 text-green-500" />
+                <Check className="h-4 w-4 shrink-0 text-success" />
                 <span className="flex-1 truncate font-mono text-sm">{xplanePath}</span>
                 <Badge variant="outline" className="shrink-0">
                   X-Plane 12
@@ -132,11 +132,11 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                   <div
                     className={cn(
                       'h-2.5 w-2.5 rounded-full transition-colors',
-                      isSelected ? 'bg-green-500' : 'bg-muted-foreground/30'
+                      isSelected ? 'bg-success' : 'bg-muted-foreground/30'
                     )}
                   />
                   <span className="flex-1 truncate text-left font-mono text-sm">{path}</span>
-                  {isSelected && <Check className="h-4 w-4 shrink-0 text-green-500" />}
+                  {isSelected && <Check className="h-4 w-4 shrink-0 text-success" />}
                 </Button>
               );
             })}

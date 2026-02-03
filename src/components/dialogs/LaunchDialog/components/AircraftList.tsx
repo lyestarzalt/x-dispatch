@@ -147,7 +147,7 @@ export function AircraftList({
             </SelectContent>
           </Select>
         </div>
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           {t('launcher.aircraft.count', { count: filteredAircraft.length })}
           {showFavoritesOnly &&
             ` · ${t('launcher.aircraft.favorites', { count: favorites.length })}`}
@@ -202,26 +202,26 @@ export function AircraftList({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-xs font-medium">{ac.name}</div>
-                  <div className="truncate text-[10px] text-muted-foreground">
-                    {ac.manufacturer}
-                  </div>
+                  <div className="truncate text-xs text-muted-foreground">{ac.manufacturer}</div>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleFavorite(ac.path);
                   }}
-                  className="rounded p-1 hover:bg-muted"
                 >
                   <Star
                     className={cn(
                       'h-3 w-3',
                       favorites.includes(ac.path)
-                        ? 'fill-yellow-500 text-yellow-500'
+                        ? 'fill-warning text-warning'
                         : 'text-muted-foreground/50'
                     )}
                   />
-                </button>
+                </Button>
               </div>
             ))
           )}

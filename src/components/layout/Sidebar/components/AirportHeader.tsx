@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket, X } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ParsedAirport } from '@/lib/aptParser';
@@ -21,11 +22,11 @@ interface AirportMetadataInfo {
   longestRunway: number | null;
 }
 
-const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'purple'> = {
+const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'violet'> = {
   VFR: 'success',
   MVFR: 'info',
   IFR: 'danger',
-  LIFR: 'purple',
+  LIFR: 'violet',
 };
 
 export default function AirportHeader({
@@ -87,7 +88,7 @@ export default function AirportHeader({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Plane className="h-4 w-4 text-blue-400" />
+            <Plane className="h-4 w-4 text-info" />
             <h2 className="font-mono text-xl font-bold text-foreground">{airport.id}</h2>
             {flightCategory && (
               <Badge
@@ -100,7 +101,7 @@ export default function AirportHeader({
             {metadata?.transitionAlt && (
               <Badge
                 variant="outline"
-                className="rounded px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                className="rounded px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
                 title={t('sidebar.transitionAltitude')}
               >
                 TA {formatTransitionAltitude(metadata.transitionAlt)}
@@ -130,25 +131,25 @@ export default function AirportHeader({
       {/* Stats grid */}
       <div className="mt-3 grid grid-cols-4 gap-2">
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="text-[10px] text-muted-foreground">ELEV</div>
+          <div className="text-xs text-muted-foreground">ELEV</div>
           <div className="font-mono text-xs font-medium">{Math.round(airport.elevation)}ft</div>
         </div>
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <ArrowUpRight className="h-2.5 w-2.5" />
             RWY
           </div>
           <div className="font-mono text-xs font-medium">{runwaysCount}</div>
         </div>
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <ParkingCircle className="h-2.5 w-2.5" />
             GATES
           </div>
           <div className="font-mono text-xs font-medium">{gatesCount}</div>
         </div>
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="text-[10px] text-muted-foreground">LONGEST</div>
+          <div className="text-xs text-muted-foreground">LONGEST</div>
           <div className="font-mono text-xs font-medium">{Math.round(longestRunwayFt)}ft</div>
         </div>
       </div>
@@ -162,13 +163,15 @@ export default function AirportHeader({
 
       {/* Selected Start Position */}
       {selectedStartPosition && (
-        <div className="mt-3 flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-2">
-          <Rocket className="h-3.5 w-3.5 text-green-400" />
-          <span className="text-xs text-green-400">{t('launcher.config.departure')}:</span>
-          <span className="truncate text-xs font-medium text-foreground">
-            {selectedStartPosition.name}
-          </span>
-        </div>
+        <Alert variant="success" className="mt-3 p-2">
+          <AlertDescription className="flex items-center gap-2">
+            <Rocket className="h-3.5 w-3.5" />
+            <span className="text-xs">{t('launcher.config.departure')}:</span>
+            <span className="truncate text-xs font-medium text-foreground">
+              {selectedStartPosition.name}
+            </span>
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );

@@ -77,18 +77,18 @@ export default function SettingsDialog({
                       'w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium',
                       'data-[state=active]:bg-background data-[state=active]:shadow-sm',
                       'transition-colors hover:bg-background/50',
-                      id === 'vatsim' && isVatsimEnabled && 'text-green-500'
+                      id === 'vatsim' && isVatsimEnabled && 'text-success'
                     )}
                   >
                     <Icon
                       className={cn(
                         'h-4 w-4',
-                        id === 'vatsim' && isVatsimEnabled && 'text-green-500'
+                        id === 'vatsim' && isVatsimEnabled && 'text-success'
                       )}
                     />
                     {t(labelKey)}
                     {id === 'vatsim' && isVatsimEnabled && (
-                      <span className="ml-auto h-2 w-2 rounded-full bg-green-500" />
+                      <span className="ml-auto h-2 w-2 rounded-full bg-success" />
                     )}
                   </TabsTrigger>
                 ))}
@@ -97,9 +97,7 @@ export default function SettingsDialog({
 
             {/* Version Footer */}
             <div className="border-t p-4">
-              <p className="font-mono text-[10px] text-muted-foreground">
-                {version && `v${version}`}
-              </p>
+              <p className="font-mono text-xs text-muted-foreground">{version && `v${version}`}</p>
             </div>
           </div>
 

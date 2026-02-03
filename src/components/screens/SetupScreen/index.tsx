@@ -108,7 +108,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
                           {path.split('/').pop() || path.split('\\').pop()}
                         </span>
                         {selectedPath === path && (
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-xs">
                             {t('common.selected')}
                           </Badge>
                         )}
@@ -170,7 +170,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
         </div>
 
         {/* Version */}
-        <p className="mt-10 text-center font-mono text-[10px] text-muted-foreground/50">
+        <p className="mt-10 text-center font-mono text-xs text-muted-foreground/50">
           {version && `v${version}`}
         </p>
       </div>

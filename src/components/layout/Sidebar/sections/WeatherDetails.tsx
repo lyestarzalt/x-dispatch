@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Runway } from '@/lib/aptParser/types';
 import { DecodedMETAR, calculateWindComponents } from '@/utils/decodeMetar';
 
@@ -60,7 +61,7 @@ export default function WeatherDetails({
           {/* Clouds */}
           {metar.clouds && metar.clouds.length > 0 && (
             <div className="rounded-lg bg-muted/50 p-2">
-              <p className="mb-1 text-[10px] text-muted-foreground">{t('sidebar.clouds')}</p>
+              <p className="mb-1 text-xs text-muted-foreground">{t('sidebar.clouds')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {metar.clouds.map((c, i) => (
                   <span
@@ -76,9 +77,11 @@ export default function WeatherDetails({
 
           {/* Weather phenomena */}
           {metar.weather && metar.weather.length > 0 && (
-            <div className="rounded border border-yellow-500/20 bg-yellow-500/10 p-2">
-              <p className="font-mono text-xs text-yellow-400">{metar.weather.join(', ')}</p>
-            </div>
+            <Alert variant="warning" className="p-2">
+              <AlertDescription className="font-mono text-xs">
+                {metar.weather.join(', ')}
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Runway wind components */}
@@ -92,8 +95,8 @@ export default function WeatherDetails({
       {/* Raw METAR */}
       {metarRaw && (
         <div className="rounded-lg bg-muted/50 p-2.5">
-          <p className="mb-1 text-[10px] text-muted-foreground">METAR</p>
-          <p className="break-all font-mono text-[11px] leading-relaxed text-foreground/80">
+          <p className="mb-1 text-xs text-muted-foreground">METAR</p>
+          <p className="break-all font-mono text-xs leading-relaxed text-foreground/80">
             {metarRaw}
           </p>
         </div>
@@ -102,8 +105,8 @@ export default function WeatherDetails({
       {/* TAF */}
       {taf && (
         <div className="rounded-lg bg-muted/50 p-2.5">
-          <p className="mb-1 text-[10px] text-muted-foreground">TAF</p>
-          <pre className="whitespace-pre-wrap break-all font-mono text-[10px] leading-relaxed text-muted-foreground">
+          <p className="mb-1 text-xs text-muted-foreground">TAF</p>
+          <pre className="whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-muted-foreground">
             {taf}
           </pre>
         </div>
@@ -115,7 +118,7 @@ export default function WeatherDetails({
 function WeatherStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-muted/50 p-2">
-      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className="font-mono text-sm text-foreground">{value}</p>
     </div>
   );
@@ -147,17 +150,19 @@ function RunwayWindComponent({ metar, runway }: { metar: DecodedMETAR; runway: R
   const favorableComp = comp1.headwind > comp2.headwind ? comp1 : comp2;
 
   return (
-    <div className="rounded border border-green-500/20 bg-green-500/10 p-2">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="font-mono text-[9px] text-muted-foreground">
-          RUNWAY {e1.name}/{e2.name}
-        </span>
-        <span className="font-mono text-[9px] font-bold text-green-400">Use {favorable.name}</span>
-      </div>
-      <div className="font-mono text-[10px] text-muted-foreground">
-        {favorableComp.headwind > 0 ? 'HW' : 'TW'} {Math.abs(favorableComp.headwind)}kt | XW{' '}
-        {favorableComp.crosswind}kt {favorableComp.crosswindDirection}
-      </div>
-    </div>
+    <Alert variant="success" className="p-2">
+      <AlertDescription>
+        <div className="mb-1 flex items-center justify-between">
+          <span className="font-mono text-xs text-muted-foreground">
+            RUNWAY {e1.name}/{e2.name}
+          </span>
+          <span className="font-mono text-xs font-bold">Use {favorable.name}</span>
+        </div>
+        <div className="font-mono text-xs text-muted-foreground">
+          {favorableComp.headwind > 0 ? 'HW' : 'TW'} {Math.abs(favorableComp.headwind)}kt | XW{' '}
+          {favorableComp.crosswind}kt {favorableComp.crosswindDirection}
+        </div>
+      </AlertDescription>
+    </Alert>
   );
 }
