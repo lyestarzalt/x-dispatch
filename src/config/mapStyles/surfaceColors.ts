@@ -7,7 +7,7 @@ import { SurfaceType } from '@/lib/aptParser/types';
 const SURFACE_COLORS: Record<number, string> = {
   // Standard X-Plane surface types
   [SurfaceType.ASPHALT]: '#2a2a2a', // Dark gray - aged asphalt
-  [SurfaceType.CONCRETE]: '#6a6a6a', // Medium gray - concrete
+  [SurfaceType.CONCRETE]: '#a0a0a0', // Medium gray - concrete
   [SurfaceType.TURF_OR_GRASS]: '#3d6b35', // Natural green - grass
   [SurfaceType.DIRT]: '#8b6914', // Brown - dirt/earth
   [SurfaceType.GRAVEL]: '#9e9e9e', // Light gray - gravel
@@ -47,6 +47,15 @@ const SURFACE_COLORS: Record<number, string> = {
   56: '#656565', // Apron concrete
   57: '#2e2e2e', // High contrast runway
 };
+
+/**
+ * All known X-Plane surface type codes
+ * Used for MapLibre match expressions in runway/taxiway/pavement layers
+ */
+export const SURFACE_TYPES = [
+  1, 2, 3, 4, 5, 12, 13, 14, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+  37, 38, 50, 51, 52, 53, 54, 55, 56, 57,
+] as const;
 
 /**
  * Get surface color with fallback to default

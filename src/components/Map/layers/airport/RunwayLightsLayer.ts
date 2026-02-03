@@ -244,6 +244,14 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
     return { type: 'FeatureCollection', features };
   }
 
+  /**
+   * Calculate barIndex for approach light animation (0=near threshold, 29=far)
+   * Maps distance in meters to animation index for the "rabbit" effect
+   */
+  private getBarIndex(dist: number): number {
+    return Math.min(29, Math.max(0, Math.floor(dist / 30) - 1));
+  }
+
   private generateApproachLights(
     features: GeoJSON.Feature[],
     runwayEnd: { latitude: number; longitude: number; lighting?: number },
@@ -314,7 +322,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: barPoint },
-          properties: { type: 'approach', isRed, dist, intensity: 1.0 },
+          properties: {
+            type: 'approach',
+            isRed,
+            dist,
+            intensity: 1.0,
+            barIndex: this.getBarIndex(dist),
+          },
         });
       }
     }
@@ -336,7 +350,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: barPoint },
-          properties: { type: 'approach', isRed: dist <= 60, dist, intensity: 0.95 },
+          properties: {
+            type: 'approach',
+            isRed: dist <= 60,
+            dist,
+            intensity: 0.95,
+            barIndex: this.getBarIndex(dist),
+          },
         });
       }
     }
@@ -355,7 +375,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
           features.push({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: sidePoint },
-            properties: { type: 'approach', isRed: true, dist, intensity: 0.9 },
+            properties: {
+              type: 'approach',
+              isRed: true,
+              dist,
+              intensity: 0.9,
+              barIndex: this.getBarIndex(dist),
+            },
           });
         }
       }
@@ -382,7 +408,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: point },
-        properties: { type: 'approach', isRed: dist <= 90, dist, intensity: 1.0 },
+        properties: {
+          type: 'approach',
+          isRed: dist <= 90,
+          dist,
+          intensity: 1.0,
+          barIndex: this.getBarIndex(dist),
+        },
       });
     }
 
@@ -403,7 +435,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: pt },
-          properties: { type: 'approach', isRed: false, dist, intensity: 0.9 },
+          properties: {
+            type: 'approach',
+            isRed: false,
+            dist,
+            intensity: 0.9,
+            barIndex: this.getBarIndex(dist),
+          },
         });
       }
     }
@@ -438,7 +476,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: barPoint },
-          properties: { type: 'approach', isRed: dist <= 60, dist, intensity: 1.0 },
+          properties: {
+            type: 'approach',
+            isRed: dist <= 60,
+            dist,
+            intensity: 1.0,
+            barIndex: this.getBarIndex(dist),
+          },
         });
       }
     }
@@ -460,7 +504,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: pt },
-        properties: { type: 'approach', isRed: true, dist: 30, intensity: 1.0 },
+        properties: {
+          type: 'approach',
+          isRed: true,
+          dist: 30,
+          intensity: 1.0,
+          barIndex: this.getBarIndex(30),
+        },
       });
     }
 
@@ -497,7 +547,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: barPoint },
-          properties: { type: 'approach', isRed: false, dist, intensity: 0.9 },
+          properties: {
+            type: 'approach',
+            isRed: false,
+            dist,
+            intensity: 0.9,
+            barIndex: this.getBarIndex(dist),
+          },
         });
       }
     }
@@ -516,7 +572,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         features.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: pt },
-          properties: { type: 'approach', isRed: false, dist, intensity: 0.85 },
+          properties: {
+            type: 'approach',
+            isRed: false,
+            dist,
+            intensity: 0.85,
+            barIndex: this.getBarIndex(dist),
+          },
         });
       }
     }
@@ -541,7 +603,14 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: point },
-        properties: { type: 'approach', isRed: false, dist, intensity: 1.0, isFlasher: true },
+        properties: {
+          type: 'approach',
+          isRed: false,
+          dist,
+          intensity: 1.0,
+          isFlasher: true,
+          barIndex: this.getBarIndex(dist),
+        },
       });
     }
 
@@ -556,7 +625,14 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: pt },
-        properties: { type: 'approach', isRed: false, dist: 0, intensity: 1.0, isFlasher: true },
+        properties: {
+          type: 'approach',
+          isRed: false,
+          dist: 0,
+          intensity: 1.0,
+          isFlasher: true,
+          barIndex: 0,
+        },
       });
     }
   }
@@ -586,6 +662,7 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
           intensity: 1.0,
           isFlasher: true,
           sequence: i,
+          barIndex: this.getBarIndex(dist),
         },
       });
     }
@@ -605,7 +682,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: point },
-        properties: { type: 'approach', isRed: dist <= 60, dist, intensity: 0.8 },
+        properties: {
+          type: 'approach',
+          isRed: dist <= 60,
+          dist,
+          intensity: 0.8,
+          barIndex: this.getBarIndex(dist),
+        },
       });
     }
   }
