@@ -108,12 +108,8 @@ contextBridge.exposeInMainWorld('navAPI', {
   getHoldingPatterns: (fixId: string) => ipcRenderer.invoke('nav:getHoldingPatterns', fixId),
   getAirportMetadata: (icao: string) => ipcRenderer.invoke('nav:getAirportMetadata', icao),
   getTransitionAltitude: (icao: string) => ipcRenderer.invoke('nav:getTransitionAltitude', icao),
-  getMORA: (lat: number, lon: number) => ipcRenderer.invoke('nav:getMORA', lat, lon),
-  getMSA: (fixId: string) => ipcRenderer.invoke('nav:getMSA', fixId),
   // Bulk data retrieval for map layers
   getAllHoldingPatterns: () => ipcRenderer.invoke('nav:getAllHoldingPatterns'),
-  getAllMORACells: () => ipcRenderer.invoke('nav:getAllMORACells'),
-  getAllMSASectors: () => ipcRenderer.invoke('nav:getAllMSASectors'),
 });
 
 contextBridge.exposeInMainWorld('launcherAPI', {
@@ -342,8 +338,6 @@ interface NavDataSources {
   atc: DataSourceInfo | null;
   holds: DataSourceInfo | null;
   aptMeta: DataSourceInfo | null;
-  mora: DataSourceInfo | null;
-  msa: DataSourceInfo | null;
 }
 
 // ATC Controller
@@ -388,25 +382,6 @@ interface AirportMetadata {
   ifrCapable: boolean;
   transitionAlt: number;
   transitionLevel: string;
-}
-
-// MSA Sector
-interface MSASector {
-  fixId: string;
-  fixRegion: string;
-  sectorBearing1: number;
-  sectorBearing2: number;
-  radius: number;
-  altitude: number;
-}
-
-// MORA Cell
-interface MORACell {
-  latMin: number;
-  latMax: number;
-  lonMin: number;
-  lonMax: number;
-  altitude: number;
 }
 
 // X-Plane path validation result
@@ -457,8 +432,6 @@ interface DataLoadStatus {
   atc: { loaded: boolean; count: number; source: string | null } | null;
   holds: { loaded: boolean; count: number; source: string | null } | null;
   aptMeta: { loaded: boolean; count: number; source: string | null } | null;
-  mora: { loaded: boolean; count: number; source: string | null } | null;
-  msa: { loaded: boolean; count: number; source: string | null } | null;
   sources: NavDataSources | null;
 }
 
@@ -525,14 +498,10 @@ declare global {
       getHoldingPatterns: (fixId: string) => Promise<HoldingPattern[]>;
       getAirportMetadata: (icao: string) => Promise<AirportMetadata | null>;
       getTransitionAltitude: (icao: string) => Promise<number | null>;
-      getMORA: (lat: number, lon: number) => Promise<number | null>;
-      getMSA: (fixId: string) => Promise<MSASector[]>;
       // Bulk data retrieval for map layers (with coordinates resolved)
       getAllHoldingPatterns: () => Promise<
         (HoldingPattern & { latitude: number; longitude: number })[]
       >;
-      getAllMORACells: () => Promise<MORACell[]>;
-      getAllMSASectors: () => Promise<(MSASector & { latitude: number; longitude: number })[]>;
     };
     launcherAPI: {
       scanAircraft: () => Promise<{ success: boolean; aircraft: Aircraft[]; error?: string }>;

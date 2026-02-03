@@ -324,22 +324,6 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                     sourceType={dataStatus.sources?.aptMeta?.source}
                   />
                 )}
-                {dataStatus.mora && dataStatus.mora.count > 0 && (
-                  <DataRow
-                    label={t('settings.xplane.moraGrid', 'MORA Grid')}
-                    count={dataStatus.mora.count}
-                    source={dataStatus.mora.source}
-                    sourceType={dataStatus.sources?.mora?.source}
-                  />
-                )}
-                {dataStatus.msa && dataStatus.msa.count > 0 && (
-                  <DataRow
-                    label={t('settings.xplane.msaSectors', 'MSA Sectors')}
-                    count={dataStatus.msa.count}
-                    source={dataStatus.msa.source}
-                    sourceType={dataStatus.sources?.msa?.source}
-                  />
-                )}
               </TableBody>
             </Table>
           </CardContent>

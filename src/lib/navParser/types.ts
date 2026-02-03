@@ -145,25 +145,6 @@ export interface AirportMetadata {
   transitionLevel: string; // "FL150" or feet
 }
 
-// === MORA (Minimum Off-Route Altitude) ===
-export interface MORACell {
-  latMin: number; // Grid cell south boundary
-  latMax: number; // Grid cell north boundary
-  lonMin: number; // Grid cell west boundary
-  lonMax: number; // Grid cell east boundary
-  altitude: number; // feet MSL
-}
-
-// === MSA (Minimum Sector Altitude) ===
-export interface MSASector {
-  fixId: string;
-  fixRegion: string;
-  sectorBearing1: number; // From bearing
-  sectorBearing2: number; // To bearing
-  radius: number; // nm
-  altitude: number; // feet MSL
-}
-
 interface NavaidGeoJSON extends GeoJSON.FeatureCollection {
   features: GeoJSON.Feature<
     GeoJSON.Point,

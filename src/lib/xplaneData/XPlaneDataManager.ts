@@ -15,8 +15,6 @@ import { parseAirportMetadata } from '../navParser/aptMetaParser';
 import { parseATCData } from '../navParser/atcParser';
 import { AirportProcedures, parseCIFP } from '../navParser/cifpParser';
 import { parseHoldingPatterns } from '../navParser/holdParser';
-import { getMORAAtPoint as moraLookup, parseMORA } from '../navParser/moraParser';
-import { getMSAForFix as msaLookup, parseMSA } from '../navParser/msaParser';
 import { parseNavaids } from '../navParser/navaidParser';
 import {
   ResolvedAirportProcedures,
@@ -30,8 +28,6 @@ import {
   Airspace,
   AirwaySegment,
   HoldingPattern,
-  MORACell,
-  MSASector,
   Navaid,
   NavaidType,
   Waypoint,
@@ -49,8 +45,6 @@ import {
   getCifpPath,
   getFixDataPath,
   getHoldDataPath,
-  getMoraDataPath,
-  getMsaDataPath,
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
@@ -129,8 +123,6 @@ interface DataLoadStatus {
   atc: { loaded: boolean; count: number; source: string | null } | null;
   holds: { loaded: boolean; count: number; source: string | null } | null;
   aptMeta: { loaded: boolean; count: number; source: string | null } | null;
-  mora: { loaded: boolean; count: number; source: string | null } | null;
-  msa: { loaded: boolean; count: number; source: string | null } | null;
   // Data sources info
   sources: NavDataSources | null;
 }
@@ -169,8 +161,6 @@ export class XPlaneDataManager {
   private atcControllers: ATCController[] = [];
   private holdingPatterns: HoldingPattern[] = [];
   private airportMetadata: Map<string, AirportMetadata> = new Map();
-  private moraCells: MORACell[] = [];
-  private msaSectors: MSASector[] = [];
 
   // Data sources info
   private dataSources: NavDataSources | null = null;
@@ -184,8 +174,6 @@ export class XPlaneDataManager {
     atc: false,
     holds: false,
     aptMeta: false,
-    mora: false,
-    msa: false,
   };
 
   // Track airport source breakdown
@@ -292,8 +280,6 @@ export class XPlaneDataManager {
       this.loadATCData(pathToUse),
       this.loadHoldingPatterns(pathToUse),
       this.loadAirportMetadata(pathToUse),
-      this.loadMORA(pathToUse),
-      this.loadMSA(pathToUse),
     ]);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -362,20 +348,6 @@ export class XPlaneDataManager {
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
     await this.loadAirportMetadata(pathToUse);
-  }
-
-  async loadMORAOnly(xplanePath?: string): Promise<void> {
-    const pathToUse = xplanePath || this.xplanePath;
-    if (!pathToUse) throw new Error('X-Plane path not set');
-    this.xplanePath = pathToUse;
-    await this.loadMORA(pathToUse);
-  }
-
-  async loadMSAOnly(xplanePath?: string): Promise<void> {
-    const pathToUse = xplanePath || this.xplanePath;
-    if (!pathToUse) throw new Error('X-Plane path not set');
-    this.xplanePath = pathToUse;
-    await this.loadMSA(pathToUse);
   }
 
   /**
@@ -744,48 +716,6 @@ export class XPlaneDataManager {
       logger.data.info(`Loaded ${this.airportMetadata.size} airport metadata entries`);
     } catch (error) {
       logger.data.warn('Failed to load airport metadata:', error);
-    }
-  }
-
-  /**
-   * Load MORA data from earth_mora.dat
-   */
-  private async loadMORA(xplanePath: string): Promise<void> {
-    const moraPath = getMoraDataPath(xplanePath);
-
-    if (!fs.existsSync(moraPath)) {
-      logger.data.debug(`earth_mora.dat not found: ${moraPath}`);
-      return;
-    }
-
-    try {
-      const content = await fs.promises.readFile(moraPath, 'utf-8');
-      this.moraCells = parseMORA(content);
-      this.loadStatus.mora = true;
-      logger.data.info(`Loaded ${this.moraCells.length} MORA cells`);
-    } catch (error) {
-      logger.data.warn('Failed to load MORA data:', error);
-    }
-  }
-
-  /**
-   * Load MSA data from earth_msa.dat
-   */
-  private async loadMSA(xplanePath: string): Promise<void> {
-    const msaPath = getMsaDataPath(xplanePath);
-
-    if (!fs.existsSync(msaPath)) {
-      logger.data.debug(`earth_msa.dat not found: ${msaPath}`);
-      return;
-    }
-
-    try {
-      const content = await fs.promises.readFile(msaPath, 'utf-8');
-      this.msaSectors = parseMSA(content);
-      this.loadStatus.msa = true;
-      logger.data.info(`Loaded ${this.msaSectors.length} MSA sectors`);
-    } catch (error) {
-      logger.data.warn('Failed to load MSA data:', error);
     }
   }
 
@@ -1303,75 +1233,6 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Get MORA at a specific point
-   */
-  getMORAAtPoint(lat: number, lon: number): number | null {
-    return moraLookup(this.moraCells, lat, lon);
-  }
-
-  /**
-   * Get all MORA cells
-   */
-  getAllMORACells(): MORACell[] {
-    return this.moraCells;
-  }
-
-  /**
-   * Get MSA sectors for a navaid/fix
-   */
-  getMSAForNavaid(fixId: string): MSASector[] {
-    return msaLookup(this.msaSectors, fixId);
-  }
-
-  /**
-   * Get all MSA sectors
-   */
-  getAllMSASectors(): MSASector[] {
-    return this.msaSectors;
-  }
-
-  /**
-   * Get MSA sectors with resolved coordinates for map rendering
-   * Resolves fixId to lat/lon using waypoints and navaids
-   */
-  getAllMSASectorsWithCoords(): (MSASector & { latitude: number; longitude: number })[] {
-    const result: (MSASector & { latitude: number; longitude: number })[] = [];
-
-    // Build a lookup map for fixes
-    const fixCoords = new Map<string, { lat: number; lon: number }>();
-
-    for (const wp of this.waypoints) {
-      const key = `${wp.id}:${wp.region}`;
-      fixCoords.set(key, { lat: wp.latitude, lon: wp.longitude });
-      if (!fixCoords.has(wp.id)) {
-        fixCoords.set(wp.id, { lat: wp.latitude, lon: wp.longitude });
-      }
-    }
-
-    for (const nav of this.navaids) {
-      const key = `${nav.id}:${nav.region}`;
-      fixCoords.set(key, { lat: nav.latitude, lon: nav.longitude });
-      if (!fixCoords.has(nav.id)) {
-        fixCoords.set(nav.id, { lat: nav.latitude, lon: nav.longitude });
-      }
-    }
-
-    for (const msa of this.msaSectors) {
-      const key = `${msa.fixId}:${msa.fixRegion}`;
-      const coords = fixCoords.get(key) || fixCoords.get(msa.fixId);
-      if (coords) {
-        result.push({
-          ...msa,
-          latitude: coords.lat,
-          longitude: coords.lon,
-        });
-      }
-    }
-
-    return result;
-  }
-
-  /**
    * Get data sources information
    */
   getDataSources(): NavDataSources | null {
@@ -1536,20 +1397,6 @@ export class XPlaneDataManager {
             source: xp ? getAptMetaDataPath(xp) : null,
           }
         : null,
-      mora: this.loadStatus.mora
-        ? {
-            loaded: true,
-            count: this.moraCells.length,
-            source: xp ? getMoraDataPath(xp) : null,
-          }
-        : null,
-      msa: this.loadStatus.msa
-        ? {
-            loaded: true,
-            count: this.msaSectors.length,
-            source: xp ? getMsaDataPath(xp) : null,
-          }
-        : null,
       // Data sources info
       sources: this.dataSources,
     };
@@ -1566,8 +1413,6 @@ export class XPlaneDataManager {
     this.atcControllers = [];
     this.holdingPatterns = [];
     this.airportMetadata = new Map();
-    this.moraCells = [];
-    this.msaSectors = [];
     this.dataSources = null;
     this.loadStatus = {
       airports: false,
@@ -1578,8 +1423,6 @@ export class XPlaneDataManager {
       atc: false,
       holds: false,
       aptMeta: false,
-      mora: false,
-      msa: false,
     };
 
     const db = getDb();

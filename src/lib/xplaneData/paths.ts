@@ -17,8 +17,6 @@ export const XPLANE_PATHS = {
   // New navigation data files
   earthHold: 'Resources/default data/earth_hold.dat',
   earthAptMeta: 'Resources/default data/earth_aptmeta.dat',
-  earthMora: 'Resources/default data/earth_mora.dat',
-  earthMsa: 'Resources/default data/earth_msa.dat',
 
   // CIFP (instrument procedures)
   cifpDir: 'Resources/default data/CIFP',
@@ -99,14 +97,6 @@ export function getHoldDataPath(xplanePath: string): string {
 
 export function getAptMetaDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthAptMeta);
-}
-
-export function getMoraDataPath(xplanePath: string): string {
-  return resolveDataPath(xplanePath, XPLANE_PATHS.earthMora);
-}
-
-export function getMsaDataPath(xplanePath: string): string {
-  return resolveDataPath(xplanePath, XPLANE_PATHS.earthMsa);
 }
 
 export function getAtcDataPath(xplanePath: string): string | null {
