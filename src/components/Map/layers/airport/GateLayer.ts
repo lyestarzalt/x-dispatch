@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import { ParsedAirport } from '@/lib/aptParser';
 import { StartupLocation } from '@/lib/aptParser/types';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';

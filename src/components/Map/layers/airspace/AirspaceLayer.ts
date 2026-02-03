@@ -9,11 +9,7 @@
  */
 import maplibregl from 'maplibre-gl';
 import type { Airspace } from '@/types/navigation';
-
-const FILL_LAYER_ID = 'nav-airspaces-fill';
-const OUTLINE_LAYER_ID = 'nav-airspaces-outline';
-const LABEL_LAYER_ID = 'nav-airspaces-labels';
-const SOURCE_ID = 'nav-airspaces-source';
+import { NavLayerRenderer } from '../navigation/NavLayerRenderer';
 
 // ICAO standard airspace colors - borders only
 const AIRSPACE_STYLES: Record<string, { color: string; dashed: boolean }> = {
@@ -38,109 +34,105 @@ function getAirspaceStyle(airspaceClass: string) {
   return AIRSPACE_STYLES[airspaceClass] || AIRSPACE_STYLES['OTHER'];
 }
 
-function createAirspaceGeoJSON(airspaces: Airspace[]): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: airspaces
-      .filter((a) => a.coordinates.length >= 3)
-      .map((airspace) => {
-        const style = getAirspaceStyle(airspace.class);
-        return {
-          type: 'Feature' as const,
-          geometry: {
-            type: 'Polygon' as const,
-            coordinates: [airspace.coordinates],
-          },
-          properties: {
-            class: airspace.class,
-            name: airspace.name,
-            upperLimit: airspace.upperLimit,
-            lowerLimit: airspace.lowerLimit,
-            color: style.color,
-            dashed: style.dashed ? 1 : 0,
-          },
-        };
-      }),
-  };
-}
+/**
+ * Airspace Layer - renders airspace boundaries (Class B, C, D, etc.)
+ */
+export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
+  readonly layerId = 'nav-airspaces-fill';
+  readonly sourceId = 'nav-airspaces-source';
+  readonly additionalLayerIds = ['nav-airspaces-outline', 'nav-airspaces-labels'];
 
-export function addAirspaceLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
-  removeAirspaceLayer(map);
-  if (airspaces.length === 0) return;
+  protected createGeoJSON(airspaces: Airspace[]): GeoJSON.FeatureCollection {
+    return {
+      type: 'FeatureCollection',
+      features: airspaces
+        .filter((a) => a.coordinates.length >= 3)
+        .map((airspace) => {
+          const style = getAirspaceStyle(airspace.class);
+          return {
+            type: 'Feature' as const,
+            geometry: {
+              type: 'Polygon' as const,
+              coordinates: [airspace.coordinates],
+            },
+            properties: {
+              class: airspace.class,
+              name: airspace.name,
+              upperLimit: airspace.upperLimit,
+              lowerLimit: airspace.lowerLimit,
+              color: style.color,
+              dashed: style.dashed ? 1 : 0,
+            },
+          };
+        }),
+    };
+  }
 
-  const geoJSON = createAirspaceGeoJSON(airspaces);
+  protected addLayers(map: maplibregl.Map): void {
+    // Fill layer
+    map.addLayer({
+      id: this.layerId,
+      type: 'fill',
+      source: this.sourceId,
+      paint: {
+        'fill-color': ['get', 'color'],
+        'fill-opacity': 0.02,
+      },
+    });
 
-  map.addSource(SOURCE_ID, {
-    type: 'geojson',
-    data: geoJSON,
-  });
+    // Outline layer - the main visual
+    map.addLayer({
+      id: this.additionalLayerIds[0],
+      type: 'line',
+      source: this.sourceId,
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 8, 1.5, 12, 2],
+        'line-opacity': 0.6,
+      },
+    });
 
-  map.addLayer({
-    id: FILL_LAYER_ID,
-    type: 'fill',
-    source: SOURCE_ID,
-    paint: {
-      'fill-color': ['get', 'color'],
-      'fill-opacity': 0.02,
-    },
-  });
-
-  // Outline layer - the main visual
-  map.addLayer({
-    id: OUTLINE_LAYER_ID,
-    type: 'line',
-    source: SOURCE_ID,
-    paint: {
-      'line-color': ['get', 'color'],
-      'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 8, 1.5, 12, 2],
-      'line-opacity': 0.6,
-    },
-  });
-
-  // Labels at higher zoom
-  map.addLayer({
-    id: LABEL_LAYER_ID,
-    type: 'symbol',
-    source: SOURCE_ID,
-    minzoom: 9,
-    layout: {
-      'text-field': ['concat', ['get', 'class'], ' ', ['get', 'name']],
-      'text-font': ['Open Sans Semibold'],
-      'text-size': 10,
-      'text-allow-overlap': false,
-      'symbol-placement': 'point',
-    },
-    paint: {
-      'text-color': ['get', 'color'],
-      'text-halo-color': '#000000',
-      'text-halo-width': 1,
-      'text-opacity': 0.8,
-    },
-  });
-}
-
-function removeAirspaceLayer(map: maplibregl.Map): void {
-  if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
-  if (map.getLayer(OUTLINE_LAYER_ID)) map.removeLayer(OUTLINE_LAYER_ID);
-  if (map.getLayer(FILL_LAYER_ID)) map.removeLayer(FILL_LAYER_ID);
-  if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-}
-
-function updateAirspaceLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
-  const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
-  if (source) {
-    source.setData(createAirspaceGeoJSON(airspaces));
-  } else {
-    addAirspaceLayer(map, airspaces);
+    // Labels at higher zoom
+    map.addLayer({
+      id: this.additionalLayerIds[1],
+      type: 'symbol',
+      source: this.sourceId,
+      minzoom: 9,
+      layout: {
+        'text-field': ['concat', ['get', 'class'], ' ', ['get', 'name']],
+        'text-font': ['Open Sans Semibold'],
+        'text-size': 10,
+        'text-allow-overlap': false,
+        'symbol-placement': 'point',
+      },
+      paint: {
+        'text-color': ['get', 'color'],
+        'text-halo-color': '#000000',
+        'text-halo-width': 1,
+        'text-opacity': 0.8,
+      },
+    });
   }
 }
 
-export function setAirspaceLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  const visibility = visible ? 'visible' : 'none';
-  if (map.getLayer(FILL_LAYER_ID)) map.setLayoutProperty(FILL_LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(OUTLINE_LAYER_ID))
-    map.setLayoutProperty(OUTLINE_LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', visibility);
+// Singleton instance for backward compatibility
+const airspaceLayer = new AirspaceLayerRenderer();
+
+// Legacy function exports for backward compatibility
+export function addAirspaceLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
+  void airspaceLayer.add(map, airspaces);
 }
 
-const AIRSPACE_LAYER_IDS = [FILL_LAYER_ID, OUTLINE_LAYER_ID, LABEL_LAYER_ID];
+export function removeAirspaceLayer(map: maplibregl.Map): void {
+  return airspaceLayer.remove(map);
+}
+
+export function setAirspaceLayerVisibility(map: maplibregl.Map, visible: boolean): void {
+  return airspaceLayer.setVisibility(map, visible);
+}
+
+export function updateAirspaceLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
+  void airspaceLayer.update(map, airspaces);
+}
+
+export const AIRSPACE_LAYER_IDS = airspaceLayer.getAllLayerIds();

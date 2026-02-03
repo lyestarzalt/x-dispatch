@@ -3,7 +3,7 @@ import { getSurfaceColor, getSurfaceOutlineColor } from '@/config/mapStyles/surf
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { ParsedAirport } from '@/lib/aptParser';
 import { createPavementGeoJSON } from '../../utils/geoJsonFactory';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 export class PavementLayer extends BaseLayerRenderer {
   layerId = 'airport-pavements';

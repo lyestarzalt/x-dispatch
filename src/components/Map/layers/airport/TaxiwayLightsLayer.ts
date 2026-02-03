@@ -8,7 +8,7 @@ import {
   generateAirportLights,
 } from '@/lib/airportLighting';
 import { ParsedAirport } from '@/lib/aptParser';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 // Type for deck.gl color arrays
 type RGBAColor = [number, number, number, number];
