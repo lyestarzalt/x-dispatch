@@ -15,7 +15,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
       <div className="flex items-center gap-3">
         {/* Compass */}
         <div className="flex flex-col items-center">
-          <div className="mb-1 font-mono text-[9px] text-muted-foreground">HDG</div>
+          <div className="mb-1 font-mono text-xs text-muted-foreground">HDG</div>
           <div className="relative h-14 w-14">
             <svg viewBox="0 0 56 56" className="h-full w-full">
               {/* Outer ring */}
@@ -35,7 +35,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
                   x="28"
                   y="9"
                   textAnchor="middle"
-                  className="fill-destructive font-mono text-[8px] font-bold"
+                  className="fill-destructive font-mono text-xs font-bold"
                 >
                   N
                 </text>
@@ -44,7 +44,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
                   x="48"
                   y="31"
                   textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-[7px]"
+                  className="fill-muted-foreground font-mono text-xs"
                 >
                   E
                 </text>
@@ -53,7 +53,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
                   x="28"
                   y="52"
                   textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-[7px]"
+                  className="fill-muted-foreground font-mono text-xs"
                 >
                   S
                 </text>
@@ -62,7 +62,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
                   x="8"
                   y="31"
                   textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-[7px]"
+                  className="fill-muted-foreground font-mono text-xs"
                 >
                   W
                 </text>
@@ -89,14 +89,14 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
               />
             </svg>
           </div>
-          <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+          <div className="mt-0.5 font-mono text-xs text-muted-foreground">
             {Math.round(mapBearing).toString().padStart(3, '0')}°
           </div>
         </div>
 
         {/* Wind Indicator */}
         <div className="flex flex-col items-center">
-          <div className="mb-1 font-mono text-[9px] text-muted-foreground">WIND</div>
+          <div className="mb-1 font-mono text-xs text-muted-foreground">WIND</div>
           {wind && wind.speed > 0 ? (
             <>
               <div className="relative h-12 w-12">
@@ -130,7 +130,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
                   )}
                 </svg>
               </div>
-              <div className="mt-0.5 font-mono text-[10px] text-info">
+              <div className="mt-0.5 font-mono text-xs text-info">
                 {wind.direction === 'VRB' ? 'VRB' : `${String(wind.direction).padStart(3, '0')}°`}
                 <span className="mx-0.5 text-muted-foreground">@</span>
                 {wind.speed}kt
@@ -139,7 +139,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
             </>
           ) : (
             <div className="flex h-12 w-12 items-center justify-center">
-              <span className="font-mono text-[10px] text-muted-foreground">
+              <span className="font-mono text-xs text-muted-foreground">
                 {weather?.loading ? '...' : 'CALM'}
               </span>
             </div>

@@ -116,7 +116,7 @@ export default function Map({ airports }: MapProps) {
   }, []);
 
   // Map initialization
-  const { mapRef, mapContainerRef, airportPopupRef, vatsimPopupRef } = useMapSetup({
+  const { mapRef, mapContainerRef, vatsimPopupRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
