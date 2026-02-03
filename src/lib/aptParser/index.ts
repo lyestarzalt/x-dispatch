@@ -38,14 +38,12 @@ export interface ParsedAirport {
 
 export class AirportParser {
   private lines: string[];
-  private bezierResolution: number;
 
-  constructor(data: string, bezierResolution = 16) {
+  constructor(data: string) {
     this.lines = data
       .split('\n')
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
-    this.bezierResolution = bezierResolution;
   }
 
   private parseRunwayEnd(tokens: string[]): RunwayEnd {
@@ -334,7 +332,7 @@ export class AirportParser {
         }
 
         case RowCode.TAXIWAY: {
-          const pathParser = new PathParser(this.lines.slice(i + 1), this.bezierResolution);
+          const pathParser = new PathParser(this.lines.slice(i + 1));
           const paths = pathParser.getPaths('polygon');
           if (paths.length > 0) {
             // Add to taxiways
@@ -354,7 +352,7 @@ export class AirportParser {
         }
 
         case RowCode.BOUNDARY: {
-          const boundaryParser = new PathParser(this.lines.slice(i + 1), this.bezierResolution);
+          const boundaryParser = new PathParser(this.lines.slice(i + 1));
           const boundaryPaths = boundaryParser.getPaths('polygon');
           if (boundaryPaths.length > 0) {
             airport.boundaries.push({ paths: boundaryPaths });
@@ -382,10 +380,7 @@ export class AirportParser {
         }
 
         case RowCode.FREE_CHAIN: {
-          const linearFeatureParser = new PathParser(
-            this.lines.slice(i + 1),
-            this.bezierResolution
-          );
+          const linearFeatureParser = new PathParser(this.lines.slice(i + 1));
           const linearFeaturePaths = linearFeatureParser.getPaths('line');
           if (linearFeaturePaths.length > 0) {
             const linearFeatures = this.parseLinearFeatures(tokens, linearFeaturePaths);

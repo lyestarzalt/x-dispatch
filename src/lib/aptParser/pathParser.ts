@@ -1,7 +1,8 @@
-import { calculateBezier } from './bezier';
+import type { LonLat } from '@/types/geo';
+import { calculateBezier, calculateCubicBezier, mirrorControlPoint } from './bezier';
 import { CoordLineType, LineProps, ParsedPath, RowCode } from './types';
 
-function getSignedArea(coords: [number, number][]): number {
+function getSignedArea(coords: LonLat[]): number {
   let area = 0;
   for (let i = 0; i < coords.length - 1; i++) {
     const [x1, y1] = coords[i];
@@ -11,7 +12,7 @@ function getSignedArea(coords: [number, number][]): number {
   return area / 2;
 }
 
-function isClockwise(coords: [number, number][]): boolean {
+function isClockwise(coords: LonLat[]): boolean {
   return getSignedArea(coords) < 0;
 }
 
@@ -19,11 +20,9 @@ export class PathParser {
   private lines: string[];
   private currentIndex = 0;
   private linesConsumed = 0;
-  private bezierResolution: number;
 
-  constructor(content: string[], bezierResolution = 16) {
+  constructor(content: string[]) {
     this.lines = content;
-    this.bezierResolution = bezierResolution;
   }
 
   getLinesConsumed(): number {
@@ -35,7 +34,7 @@ export class PathParser {
     this.linesConsumed = 0;
 
     const finalizePath = (
-      coordinates: [number, number][],
+      coordinates: LonLat[],
       properties: LineProps,
       lineTypes: CoordLineType[]
     ) => {
@@ -45,25 +44,25 @@ export class PathParser {
       }
     };
 
-    let coordinates: [number, number][] = [];
+    let coordinates: LonLat[] = [];
     let lineTypes: CoordLineType[] = [];
     let properties: LineProps = {};
 
     let inBezier = false;
-    let tempBezierNodes: [number, number][] = [];
+    let tempBezierNodes: LonLat[] = [];
     let firstRow: string[] | null = null;
     let firstRowIsBezier = false;
 
     let currentLineType = 0;
     let currentLightType = 0;
 
-    const addCoord = (coord: [number, number], lineType: number, lightType: number) => {
+    const addCoord = (coord: LonLat, lineType: number, lightType: number) => {
       coordinates.push(coord);
       lineTypes.push({ lineType, lightType });
     };
 
     const addBezierSegment = (
-      points: [number, number][],
+      points: LonLat[],
       segmentType: number,
       segmentLight: number,
       endNodeType: number,
@@ -71,8 +70,14 @@ export class PathParser {
     ) => {
       if (points.length === 0) return;
 
-      // Add all points except the last with the segment's type
-      for (let i = 0; i < points.length - 1; i++) {
+      // Check if first point is already in coordinates (to avoid duplicates)
+      const lastCoord = coordinates[coordinates.length - 1];
+      const firstPoint = points[0];
+      const startIndex =
+        lastCoord && lastCoord[0] === firstPoint[0] && lastCoord[1] === firstPoint[1] ? 1 : 0;
+
+      // Add points (skip first if duplicate)
+      for (let i = startIndex; i < points.length - 1; i++) {
         addCoord(points[i], segmentType, segmentLight);
       }
       // Add the last point with the ending node's type (for next segment)
@@ -82,7 +87,7 @@ export class PathParser {
     const processRow = (isBezier: boolean, tokens: string[]) => {
       const lat = parseFloat(tokens[1]);
       const lon = parseFloat(tokens[2]);
-      const coord: [number, number] = [lon, lat];
+      const coord: LonLat = [lon, lat];
 
       if (!isBezier) {
         // Non-bezier node (111, 113, 115)
@@ -90,15 +95,14 @@ export class PathParser {
         const nodeLightType = tokens.length > 4 ? parseInt(tokens[4]) : 0;
 
         if (inBezier && tempBezierNodes.length >= 2) {
-          // End of bezier sequence - complete the curve
-          tempBezierNodes.push(coord);
-          if (tempBezierNodes.length === 3) {
-            const bezierPoints = calculateBezier(
-              tempBezierNodes[0],
-              tempBezierNodes[1],
-              tempBezierNodes[2],
-              this.bezierResolution
-            );
+          // End of bezier sequence - complete the curve (112 → 111 case)
+          const p0 = tempBezierNodes[0];
+
+          // Check for split bezier (same vertex) - skip curve if same position
+          if (p0[0] === coord[0] && p0[1] === coord[1]) {
+            // Same position - this is a split bezier, don't draw curve to self
+          } else {
+            const bezierPoints = calculateBezier(p0, tempBezierNodes[1], coord);
             // Segment uses previous node's type, last point uses THIS node's type
             addBezierSegment(
               bezierPoints,
@@ -130,21 +134,23 @@ export class PathParser {
         // Bezier node (112, 114, 116)
         const bzpLat = parseFloat(tokens[3]);
         const bzpLon = parseFloat(tokens[4]);
-        const controlPoint: [number, number] = [bzpLon, bzpLat];
+        const controlPoint: LonLat = [bzpLon, bzpLat];
         const nodeLineType = tokens.length > 5 ? parseInt(tokens[5]) : 0;
         const nodeLightType = tokens.length > 6 ? parseInt(tokens[6]) : 0;
 
         if (inBezier && tempBezierNodes.length >= 2) {
-          // Continue bezier sequence
-          tempBezierNodes.push(coord);
-          if (tempBezierNodes.length === 3) {
-            const bezierPoints = calculateBezier(
-              tempBezierNodes[0],
-              tempBezierNodes[1],
-              tempBezierNodes[2],
-              this.bezierResolution
-            );
-            // Segment uses previous node's type, last point uses THIS node's type
+          // 112 → 112 case: CUBIC bezier
+          const p0 = tempBezierNodes[0];
+          const p3 = coord;
+
+          // Check for split bezier (same vertex with different controls) - skip curve if same position
+          if (p0[0] === p3[0] && p0[1] === p3[1]) {
+            // Same position - this is a split bezier, don't draw curve to self
+          } else {
+            const p1 = tempBezierNodes[1];
+            const p2 = mirrorControlPoint(p3, controlPoint);
+
+            const bezierPoints = calculateCubicBezier(p0, p1, p2, p3);
             addBezierSegment(
               bezierPoints,
               currentLineType,
@@ -152,33 +158,28 @@ export class PathParser {
               nodeLineType,
               nodeLightType
             );
-            tempBezierNodes = [];
           }
         } else if (coordinates.length > 0) {
-          // Start bezier from last point - need to calculate curve to this point
-          const diffLat = bzpLat - lat;
-          const diffLon = bzpLon - lon;
-          const mirrLat = lat - diffLat;
-          const mirrLon = lon - diffLon;
+          // 111 → 112 case: Quadratic bezier with mirrored control point
           const lastPoint = coordinates[coordinates.length - 1];
 
-          const bezierPoints = calculateBezier(
-            lastPoint,
-            [mirrLon, mirrLat],
-            coord,
-            this.bezierResolution
-          );
-          // Segment uses previous node's type, last point uses THIS node's type
-          addBezierSegment(
-            bezierPoints,
-            currentLineType,
-            currentLightType,
-            nodeLineType,
-            nodeLightType
-          );
+          // Check for split bezier (same vertex) - skip curve if same position
+          if (lastPoint[0] === coord[0] && lastPoint[1] === coord[1]) {
+            // Same position - this is a split bezier, don't draw curve to self
+          } else {
+            const mirroredControl = mirrorControlPoint(coord, controlPoint);
+            const bezierPoints = calculateBezier(lastPoint, mirroredControl, coord);
+            addBezierSegment(
+              bezierPoints,
+              currentLineType,
+              currentLightType,
+              nodeLineType,
+              nodeLightType
+            );
+          }
         }
 
-        // Set up for next bezier segment
+        // Set up for next bezier segment (outgoing control point)
         tempBezierNodes = [coord, controlPoint];
         inBezier = true;
 
