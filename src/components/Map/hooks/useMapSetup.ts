@@ -4,7 +4,7 @@ import { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
 
 export type MapRef = React.RefObject<maplibregl.Map | null>;
-export type PopupRef = React.RefObject<maplibregl.Popup | null>;
+export type PopupRef = React.MutableRefObject<maplibregl.Popup | null>;
 
 interface UseMapSetupOptions {
   airports: Airport[];
