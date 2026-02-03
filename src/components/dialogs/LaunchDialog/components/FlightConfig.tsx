@@ -101,9 +101,9 @@ export function FlightConfig({
             <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
               <div className="flex items-center gap-2">
                 {new Date().getHours() >= 6 && new Date().getHours() < 18 ? (
-                  <Sun className="h-4 w-4 text-yellow-400" />
+                  <Sun className="h-4 w-4 text-warning" />
                 ) : (
-                  <Moon className="h-4 w-4 text-slate-400" />
+                  <Moon className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="font-mono text-lg font-semibold">
                   {new Date().toLocaleTimeString('en-GB', {
@@ -140,7 +140,7 @@ export function FlightConfig({
                 max={24}
                 step={0.5}
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>00:00</span>
                 <span>06:00</span>
                 <span>12:00</span>
@@ -172,7 +172,7 @@ export function FlightConfig({
                   )}
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="text-[10px]">{t(`launcher.weather.${weather}`)}</span>
+                  <span className="text-xs">{t(`launcher.weather.${weather}`)}</span>
                 </Button>
               );
             })}
@@ -202,7 +202,7 @@ export function FlightConfig({
             max={100}
             step={5}
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>{t('launcher.fuelModal.empty')}</span>
             <span>{t('launcher.fuelModal.full')}</span>
           </div>
@@ -260,7 +260,7 @@ export function FlightConfig({
           )}
         </Button>
         {!startPosition && (
-          <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+          <p className="mt-1.5 text-center text-xs text-muted-foreground">
             {t('launcher.selectDeparture')}
           </p>
         )}

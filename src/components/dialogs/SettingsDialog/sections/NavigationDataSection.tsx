@@ -53,8 +53,8 @@ function getSourceLabel(sourceType: SourceType | undefined, source: string | nul
 
 function getSourceStyles(sourceType: SourceType | undefined, source: string | null): string {
   const label = getSourceLabel(sourceType, source);
-  if (label === 'Navigraph') return 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30';
-  if (label === 'Custom Airport') return 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30';
+  if (label === 'Navigraph') return 'bg-info/20 text-info hover:bg-info/30';
+  if (label === 'Custom Airport') return 'bg-violet/20 text-violet hover:bg-violet/30';
   return ''; // Default secondary style
 }
 
@@ -166,16 +166,16 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                     {airportBreakdown.globalAirports.toLocaleString()}
                   </div>
                 </div>
-                <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
-                  <div className="flex items-center gap-2 text-xs text-purple-400">
+                <div className="rounded-lg border border-violet/30 bg-violet/10 p-3">
+                  <div className="flex items-center gap-2 text-xs text-violet">
                     <MapPin className="h-3.5 w-3.5" />
                     Custom Airports
                   </div>
-                  <div className="mt-1 font-mono text-lg font-semibold text-purple-400">
+                  <div className="mt-1 font-mono text-lg font-semibold text-violet">
                     {airportBreakdown.customScenery.toLocaleString()}
                   </div>
                   {airportBreakdown.customSceneryPacks > 0 && (
-                    <div className="text-[10px] text-purple-400/70">
+                    <div className="text-xs text-violet/70">
                       from {airportBreakdown.customSceneryPacks} scenery pack
                       {airportBreakdown.customSceneryPacks !== 1 ? 's' : ''}
                     </div>
@@ -195,7 +195,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
       </Card>
 
       {/* Navigation Data Source Card */}
-      <Card className={cn(isNavigraph ? 'border-blue-500/30' : '')}>
+      <Card className={cn(isNavigraph ? 'border-info/30' : '')}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Radio className="h-4 w-4" />
@@ -210,7 +210,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {isNavigraph ? (
-                  <Badge className="bg-blue-500 hover:bg-blue-600">Navigraph</Badge>
+                  <Badge className="bg-info hover:bg-info/80">Navigraph</Badge>
                 ) : (
                   <Badge variant="secondary">X-Plane Default</Badge>
                 )}
@@ -223,11 +223,8 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
               </div>
               {isNavigraph && (
                 <Badge
-                  variant={globalSource.isExpired ? 'destructive' : 'default'}
-                  className={cn(
-                    'gap-1',
-                    !globalSource.isExpired && 'border-green-500/30 bg-green-500/20 text-green-400'
-                  )}
+                  variant={globalSource.isExpired ? 'destructive' : 'success'}
+                  className="gap-1"
                 >
                   {globalSource.isExpired ? (
                     <>

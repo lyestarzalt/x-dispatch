@@ -213,7 +213,7 @@ export default function Toolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel className="text-[10px] font-normal uppercase tracking-wider text-muted-foreground">
+            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
               Around Airport (50nm)
             </DropdownMenuLabel>
             {localNavLayers.map((layer) => (
@@ -227,7 +227,7 @@ export default function Toolbar({
               </DropdownMenuCheckboxItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] font-normal uppercase tracking-wider text-muted-foreground">
+            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
               Global Airways
             </DropdownMenuLabel>
             <DropdownMenuRadioGroup

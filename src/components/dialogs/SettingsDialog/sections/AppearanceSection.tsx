@@ -102,7 +102,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium">OpenFreeMap</span>
-              <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+              <Badge variant="secondary" className="px-1.5 py-0 text-xs">
                 {t('settings.appearance.unlimited')}
               </Badge>
             </div>
@@ -157,7 +157,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
               onChange={(e) => handleChange('mapStyleUrl', e.target.value)}
               className="h-9 font-mono text-xs"
             />
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {t('settings.appearance.customStyleHint')}
             </p>
           </div>

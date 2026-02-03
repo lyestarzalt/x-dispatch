@@ -88,7 +88,7 @@ export default function AirportHeader({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Plane className="h-4 w-4 text-blue-400" />
+            <Plane className="h-4 w-4 text-info" />
             <h2 className="font-mono text-xl font-bold text-foreground">{airport.id}</h2>
             {flightCategory && (
               <Badge
@@ -101,7 +101,7 @@ export default function AirportHeader({
             {metadata?.transitionAlt && (
               <Badge
                 variant="outline"
-                className="rounded px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                className="rounded px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
                 title={t('sidebar.transitionAltitude')}
               >
                 TA {formatTransitionAltitude(metadata.transitionAlt)}
@@ -131,25 +131,25 @@ export default function AirportHeader({
       {/* Stats grid */}
       <div className="mt-3 grid grid-cols-4 gap-2">
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="text-[10px] text-muted-foreground">ELEV</div>
+          <div className="text-xs text-muted-foreground">ELEV</div>
           <div className="font-mono text-xs font-medium">{Math.round(airport.elevation)}ft</div>
         </div>
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <ArrowUpRight className="h-2.5 w-2.5" />
             RWY
           </div>
           <div className="font-mono text-xs font-medium">{runwaysCount}</div>
         </div>
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <ParkingCircle className="h-2.5 w-2.5" />
             GATES
           </div>
           <div className="font-mono text-xs font-medium">{gatesCount}</div>
         </div>
         <div className="rounded-md bg-muted/50 px-2 py-1.5 text-center">
-          <div className="text-[10px] text-muted-foreground">LONGEST</div>
+          <div className="text-xs text-muted-foreground">LONGEST</div>
           <div className="font-mono text-xs font-medium">{Math.round(longestRunwayFt)}ft</div>
         </div>
       </div>

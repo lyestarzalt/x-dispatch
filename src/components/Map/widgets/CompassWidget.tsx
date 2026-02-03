@@ -119,22 +119,22 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
                         y1="8"
                         x2="24"
                         y2="40"
-                        className="stroke-cyan-500"
+                        className="stroke-info"
                         strokeWidth="2"
                       />
-                      <polygon points="24,8 20,16 28,16" className="fill-cyan-500" />
+                      <polygon points="24,8 20,16 28,16" className="fill-info" />
                     </g>
                   )}
                   {wind.direction === 'VRB' && (
-                    <circle cx="24" cy="24" r="6" className="fill-cyan-500/50" />
+                    <circle cx="24" cy="24" r="6" className="fill-info/50" />
                   )}
                 </svg>
               </div>
-              <div className="mt-0.5 font-mono text-[10px] text-cyan-500">
+              <div className="mt-0.5 font-mono text-[10px] text-info">
                 {wind.direction === 'VRB' ? 'VRB' : `${String(wind.direction).padStart(3, '0')}°`}
                 <span className="mx-0.5 text-muted-foreground">@</span>
                 {wind.speed}kt
-                {wind.gust && <span className="ml-0.5 text-amber-500">G{wind.gust}</span>}
+                {wind.gust && <span className="ml-0.5 text-warning">G{wind.gust}</span>}
               </div>
             </>
           ) : (

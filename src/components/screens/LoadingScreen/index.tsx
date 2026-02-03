@@ -170,7 +170,7 @@ export default function LoadingScreen({
                   {step.status === 'loading' && (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   )}
-                  {step.status === 'complete' && <Check className="h-4 w-4 text-green-500" />}
+                  {step.status === 'complete' && <Check className="h-4 w-4 text-success" />}
                   {step.status === 'error' && <AlertCircle className="h-4 w-4 text-destructive" />}
                   {step.status === 'pending' && (
                     <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
@@ -226,7 +226,7 @@ export default function LoadingScreen({
         )}
 
         {/* Version */}
-        <p className="mt-8 text-center font-mono text-[10px] text-muted-foreground/50">
+        <p className="mt-8 text-center font-mono text-xs text-muted-foreground/50">
           {version && `v${version}`}
         </p>
       </div>

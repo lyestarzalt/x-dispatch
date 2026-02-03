@@ -117,10 +117,10 @@ export default function ProceduresSection({
           <TabsTrigger
             key={tab}
             value={tab}
-            className="font-mono text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="font-mono text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             {tabLabels[tab]}
-            <Badge variant="secondary" className="ml-1.5 h-4 px-1 py-0 text-[9px]">
+            <Badge variant="secondary" className="ml-1.5 h-4 px-1 py-0 text-xs">
               {counts[tab]}
             </Badge>
           </TabsTrigger>
@@ -156,14 +156,14 @@ export default function ProceduresSection({
                         )}
                       >
                         <span className={cn(isSelected && 'text-foreground')}>{proc.name}</span>
-                        <span className="text-[10px] text-muted-foreground/60">
+                        <span className="text-xs text-muted-foreground/60">
                           {proc.runway || t('procedures.allRunways')}
                         </span>
                       </Button>
                     );
                   })}
                   {procs.length > 20 && (
-                    <div className="py-1 text-center text-[10px] text-muted-foreground/50">
+                    <div className="py-1 text-center text-xs text-muted-foreground/50">
                       +{procs.length - 20} more
                     </div>
                   )}

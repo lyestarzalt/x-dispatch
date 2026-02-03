@@ -105,7 +105,7 @@ export function AircraftPreview({
                     )}
                   </div>
                   <div className="w-full px-0.5">
-                    <div className="truncate text-center text-[9px]">{liv.displayName}</div>
+                    <div className="truncate text-center text-xs">{liv.displayName}</div>
                   </div>
                 </Button>
               );

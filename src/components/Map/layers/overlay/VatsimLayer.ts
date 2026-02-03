@@ -297,10 +297,10 @@ export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.P
     const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
 
     const html = `
-      <div class="bg-background/95 backdrop-blur-md text-foreground p-4 rounded-lg border border-green-500/30 min-w-[220px] shadow-xl">
+      <div class="bg-background/95 backdrop-blur-md text-foreground p-4 rounded-lg border border-success/30 min-w-[220px] shadow-xl">
         <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border">
-          <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-          <span class="text-green-400 font-bold font-mono">${props.callsign}</span>
+          <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+          <span class="text-success font-bold font-mono">${props.callsign}</span>
         </div>
 
         <div class="space-y-2 text-xs">
@@ -331,16 +331,16 @@ export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.P
             ? `
           <div class="mt-3 pt-2 border-t border-border">
             <div class="flex items-center justify-center gap-2 text-sm">
-              <span class="font-mono font-bold text-blue-400">${props.departure || '????'}</span>
+              <span class="font-mono font-bold text-info">${props.departure || '????'}</span>
               <span class="text-muted-foreground">→</span>
-              <span class="font-mono font-bold text-blue-400">${props.arrival || '????'}</span>
+              <span class="font-mono font-bold text-info">${props.arrival || '????'}</span>
             </div>
           </div>
         `
             : ''
         }
 
-        <div class="mt-3 pt-2 border-t border-border text-[10px] text-muted-foreground">
+        <div class="mt-3 pt-2 border-t border-border text-xs text-muted-foreground">
           ${props.name}
         </div>
       </div>

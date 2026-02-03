@@ -104,7 +104,7 @@ export default function FrequenciesSection({ frequencies, airportIcao }: Frequen
 
         return (
           <div key={type}>
-            <h4 className="mb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <h4 className="mb-1.5 text-xs uppercase tracking-wider text-muted-foreground">
               {FREQ_LABELS[type]}
             </h4>
             <div className="space-y-1">
@@ -141,11 +141,11 @@ export default function FrequenciesSection({ frequencies, airportIcao }: Frequen
       {atcControllers.length > 0 && (
         <div className="border-t border-border pt-3">
           <div className="mb-2 flex items-center gap-2">
-            <Radio className="h-3 w-3 text-blue-400" />
-            <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <Radio className="h-3 w-3 text-info" />
+            <h4 className="text-xs uppercase tracking-wider text-muted-foreground">
               {t('sidebar.atcControllers')}
             </h4>
-            <Badge variant="secondary" className="px-1 py-0 text-[9px]">
+            <Badge variant="secondary" className="px-1 py-0 text-xs">
               Navigraph
             </Badge>
           </div>
@@ -154,14 +154,14 @@ export default function FrequenciesSection({ frequencies, airportIcao }: Frequen
               <div key={i} className="group rounded bg-muted/30 p-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                    <Badge variant="outline" className="px-1.5 py-0 text-xs">
                       {ATC_ROLE_LABELS[controller.role] || controller.role.toUpperCase()}
                     </Badge>
                     <span className="max-w-[120px] truncate text-xs text-muted-foreground">
                       {controller.name}
                     </span>
                   </div>
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {controller.facilityId}
                   </span>
                 </div>

@@ -27,7 +27,7 @@ export default function VatsimSection({
       {/* Header */}
       <div>
         <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Radar className="h-5 w-5 text-green-500" />
+          <Radar className="h-5 w-5 text-success" />
           {t('settings.navigation.vatsim.title', 'VATSIM')}
         </h3>
         <p className="text-sm text-muted-foreground">
@@ -41,7 +41,7 @@ export default function VatsimSection({
       <Separator />
 
       {/* Enable/Disable Card */}
-      <Card className={cn(isVatsimEnabled && 'border-green-500/30')}>
+      <Card className={cn(isVatsimEnabled && 'border-success/30')}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -61,11 +61,11 @@ export default function VatsimSection({
         {isVatsimEnabled && (
           <CardContent className="pt-0">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-green-500" />
+              <Users className="h-4 w-4 text-success" />
               <span className="text-sm">
                 {t('settings.navigation.vatsim.currentlyOnline', 'Currently Online')}:
               </span>
-              <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/30">
+              <Badge variant="success">
                 {vatsimPilotCount !== undefined
                   ? `${vatsimPilotCount.toLocaleString()} pilots`
                   : 'Loading...'}
@@ -105,14 +105,14 @@ export default function VatsimSection({
           </Card>
 
           {/* Usage Info */}
-          <Card className="border-blue-500/20 bg-blue-500/5">
+          <Card className="border-info/20 bg-info/5">
             <CardContent className="flex items-start gap-3 pt-4">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-              <div className="space-y-1 text-xs text-blue-400">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" />
+              <div className="space-y-1 text-xs text-info">
                 <p className="font-medium">
                   {t('settings.navigation.vatsim.aboutTitle', 'About VATSIM Integration')}
                 </p>
-                <p className="text-blue-400/80">
+                <p className="text-info/80">
                   {t(
                     'settings.navigation.vatsim.aboutDescription',
                     'Pilots are displayed as icons on the map. Click on a pilot to see their flight details including callsign, aircraft, departure, and destination.'

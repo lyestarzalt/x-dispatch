@@ -397,7 +397,7 @@ export default function Map({ airports }: MapProps) {
         popup.current
           ?.setLngLat(coordinates)
           .setHTML(
-            `<div class="bg-black/90 text-white px-3 py-2 rounded border border-gray-700"><div class="font-mono font-bold text-blue-400">${icao}</div><div class="text-gray-400 text-xs">${name}</div></div>`
+            `<div class="bg-background/95 text-foreground px-3 py-2 rounded border border-border"><div class="font-mono font-bold text-info">${icao}</div><div class="text-muted-foreground text-xs">${name}</div></div>`
           )
           .addTo(map.current);
       });

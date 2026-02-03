@@ -52,6 +52,14 @@
     --warning: 38 92% 50%;
     --warning-foreground: 222 47% 11%;
 
+    /* Info - Blue for informational elements */
+    --info: 217 91% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* Violet - Purple for custom scenery */
+    --violet: 270 91% 55%;
+    --violet-foreground: 0 0% 100%;
+
     /* Borders and inputs */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
@@ -113,6 +121,14 @@
     /* Warning */
     --warning: 38 92% 50%;
     --warning-foreground: 222 47% 4%;
+
+    /* Info - Blue for informational elements */
+    --info: 217 91% 60%;
+    --info-foreground: 222 47% 4%;
+
+    /* Violet - Purple for custom scenery */
+    --violet: 270 91% 65%;
+    --violet-foreground: 222 47% 4%;
 
     /* Borders and inputs */
     --border: 222 47% 15%;
