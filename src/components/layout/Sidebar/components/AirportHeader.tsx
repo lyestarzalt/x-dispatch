@@ -22,11 +22,11 @@ interface AirportMetadataInfo {
   longestRunway: number | null;
 }
 
-const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'purple'> = {
+const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'violet'> = {
   VFR: 'success',
   MVFR: 'info',
   IFR: 'danger',
-  LIFR: 'purple',
+  LIFR: 'violet',
 };
 
 export default function AirportHeader({
