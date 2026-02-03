@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { WeatherData } from '@/types/weather';
 
@@ -6,141 +7,265 @@ interface CompassWidgetProps {
   weather: WeatherData | null;
 }
 
+// Constants
+const SIZE = 72;
+const CENTER = SIZE / 2;
+const RADIUS = 32;
+
+// Pre-calculate tick marks (static, never changes)
+const TICK_MARKS = Array.from({ length: 72 }, (_, i) => {
+  const deg = i * 5;
+  const isMajor = deg % 30 === 0;
+  const isMedium = deg % 10 === 0;
+  return {
+    deg,
+    tickLength: isMajor ? 6 : isMedium ? 4 : 2,
+    tickWidth: isMajor ? 1.5 : 1,
+    opacity: isMajor ? 0.9 : isMedium ? 0.5 : 0.3,
+    isNorth: deg === 0,
+  };
+});
+
+// Pre-calculate label positions (static, never changes)
+const LABEL_POSITIONS = Object.entries({
+  0: 'N',
+  30: '3',
+  60: '6',
+  90: 'E',
+  120: '12',
+  150: '15',
+  180: 'S',
+  210: '21',
+  240: '24',
+  270: 'W',
+  300: '30',
+  330: '33',
+}).map(([deg, label]) => {
+  const angle = ((Number(deg) - 90) * Math.PI) / 180;
+  const labelRadius = RADIUS - 12;
+  const isCardinal = ['N', 'E', 'S', 'W'].includes(label);
+  return {
+    deg: Number(deg),
+    label,
+    x: CENTER + labelRadius * Math.cos(angle),
+    y: CENTER + labelRadius * Math.sin(angle),
+    fontSize: isCardinal ? 9 : 7,
+    fontWeight: isCardinal ? 'bold' : 'normal',
+    isNorth: label === 'N',
+  };
+});
+
+// Lubber line points (static)
+const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
+
 export default function CompassWidget({ mapBearing, weather }: CompassWidgetProps) {
   const decoded = weather?.metar?.decoded;
   const wind = decoded?.wind;
 
+  // Memoize wind rotation calculation
+  const windRotation = useMemo(() => {
+    if (!wind || wind.direction === 'VRB') return 0;
+    return (wind.direction as number) - mapBearing + 180;
+  }, [wind, mapBearing]);
+
+  // Format heading for display
+  const headingDisplay = useMemo(
+    () => Math.round(mapBearing).toString().padStart(3, '0'),
+    [mapBearing]
+  );
+
   return (
-    <Card className="absolute left-4 top-16 z-10 border-border/50 bg-background/90 p-3 backdrop-blur-sm">
+    <Card
+      className="absolute left-4 top-16 z-10 border-border/50 bg-background/90 p-2 backdrop-blur-sm"
+      role="region"
+      aria-label="Navigation instruments"
+    >
       <div className="flex items-center gap-3">
-        {/* Compass */}
-        <div className="flex flex-col items-center">
-          <div className="mb-1 font-mono text-xs text-muted-foreground">HDG</div>
-          <div className="relative h-14 w-14">
-            <svg viewBox="0 0 56 56" className="h-full w-full">
-              {/* Outer ring */}
+        {/* Heading Indicator */}
+        <div
+          className="flex flex-col items-center"
+          aria-label={`Heading ${headingDisplay} degrees`}
+        >
+          <div className="relative" style={{ width: SIZE, height: SIZE }}>
+            <svg
+              viewBox={`0 0 ${SIZE} ${SIZE}`}
+              className="h-full w-full"
+              role="img"
+              aria-hidden="true"
+            >
+              {/* Bezel - outer ring */}
               <circle
-                cx="28"
-                cy="28"
-                r="26"
+                cx={CENTER}
+                cy={CENTER}
+                r={RADIUS + 3}
                 fill="none"
-                stroke="currentColor"
-                strokeOpacity="0.2"
-                strokeWidth="1"
+                className="stroke-border"
+                strokeWidth="2"
               />
-              {/* Cardinal directions - rotate opposite to map bearing */}
-              <g transform={`rotate(${-mapBearing}, 28, 28)`}>
-                {/* N marker */}
-                <text
-                  x="28"
-                  y="9"
-                  textAnchor="middle"
-                  className="fill-destructive font-mono text-xs font-bold"
-                >
-                  N
-                </text>
-                {/* E marker */}
-                <text
-                  x="48"
-                  y="31"
-                  textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-xs"
-                >
-                  E
-                </text>
-                {/* S marker */}
-                <text
-                  x="28"
-                  y="52"
-                  textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-xs"
-                >
-                  S
-                </text>
-                {/* W marker */}
-                <text
-                  x="8"
-                  y="31"
-                  textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-xs"
-                >
-                  W
-                </text>
+              {/* Inner background */}
+              <circle cx={CENTER} cy={CENTER} r={RADIUS} className="fill-card" />
+
+              {/* Rotating compass rose with smooth transition */}
+              <g
+                style={{
+                  transform: `rotate(${-mapBearing}deg)`,
+                  transformOrigin: `${CENTER}px ${CENTER}px`,
+                  transition: 'transform 150ms ease-out',
+                }}
+              >
                 {/* Tick marks */}
-                {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
+                {TICK_MARKS.map((tick) => (
                   <line
-                    key={deg}
-                    x1="28"
-                    y1="4"
-                    x2="28"
-                    y2={deg % 90 === 0 ? '8' : '6'}
-                    stroke={deg === 0 ? 'hsl(var(--destructive))' : 'currentColor'}
-                    strokeOpacity={deg === 0 ? 1 : 0.3}
-                    strokeWidth={deg % 90 === 0 ? '1.5' : '1'}
-                    transform={`rotate(${deg}, 28, 28)`}
+                    key={tick.deg}
+                    x1={CENTER}
+                    y1={CENTER - RADIUS + 2}
+                    x2={CENTER}
+                    y2={CENTER - RADIUS + 2 + tick.tickLength}
+                    stroke={
+                      tick.isNorth ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'
+                    }
+                    strokeOpacity={tick.opacity}
+                    strokeWidth={tick.tickWidth}
+                    transform={`rotate(${tick.deg}, ${CENTER}, ${CENTER})`}
                   />
                 ))}
+
+                {/* Heading labels */}
+                {LABEL_POSITIONS.map((pos) => (
+                  <text
+                    key={pos.deg}
+                    x={pos.x}
+                    y={pos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={pos.fontSize}
+                    fontFamily="monospace"
+                    fontWeight={pos.fontWeight}
+                    fill={pos.isNorth ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'}
+                  >
+                    {pos.label}
+                  </text>
+                ))}
               </g>
-              {/* Fixed aircraft indicator (always points up) */}
-              <polygon
-                points="28,14 24,34 28,30 32,34"
-                className="fill-primary stroke-primary"
-                strokeWidth="0.5"
-              />
+
+              {/* Fixed lubber line (top reference) */}
+              <polygon points={LUBBER_POINTS} className="fill-primary" />
+
+              {/* Center aircraft symbol */}
+              <g transform={`translate(${CENTER}, ${CENTER})`}>
+                <line x1="0" y1="-8" x2="0" y2="8" className="stroke-primary" strokeWidth="2" />
+                <line x1="-10" y1="2" x2="10" y2="2" className="stroke-primary" strokeWidth="2" />
+                <line x1="-4" y1="7" x2="4" y2="7" className="stroke-primary" strokeWidth="1.5" />
+              </g>
             </svg>
           </div>
-          <div className="mt-0.5 font-mono text-xs text-muted-foreground">
-            {Math.round(mapBearing).toString().padStart(3, '0')}°
+          {/* Digital readout */}
+          <div className="mt-1 rounded bg-card px-2 py-0.5 font-mono text-sm font-bold tabular-nums text-foreground">
+            {headingDisplay}°
           </div>
         </div>
 
         {/* Wind Indicator */}
-        <div className="flex flex-col items-center">
-          <div className="mb-1 font-mono text-xs text-muted-foreground">WIND</div>
+        <div
+          className="flex flex-col items-center"
+          aria-label={
+            wind && wind.speed > 0
+              ? `Wind from ${wind.direction === 'VRB' ? 'variable' : wind.direction + ' degrees'} at ${wind.speed} knots${wind.gust ? ` gusting ${wind.gust}` : ''}`
+              : 'Wind calm'
+          }
+        >
+          <div className="text-xs text-muted-foreground">WIND</div>
           {wind && wind.speed > 0 ? (
             <>
-              <div className="relative h-12 w-12">
-                <svg viewBox="0 0 48 48" className="h-full w-full">
+              <div className="relative h-14 w-14">
+                <svg viewBox="0 0 56 56" className="h-full w-full" role="img" aria-hidden="true">
+                  {/* Outer ring */}
                   <circle
-                    cx="24"
-                    cy="24"
-                    r="22"
+                    cx="28"
+                    cy="28"
+                    r="26"
                     fill="none"
-                    stroke="currentColor"
-                    strokeOpacity="0.2"
+                    className="stroke-border"
                     strokeWidth="1"
                   />
+                  <circle cx="28" cy="28" r="24" className="fill-card" />
+
+                  {/* Wind direction arrow with smooth transition */}
                   {wind.direction !== 'VRB' && (
                     <g
-                      transform={`rotate(${(wind.direction as number) - mapBearing + 180}, 24, 24)`}
+                      style={{
+                        transform: `rotate(${windRotation}deg)`,
+                        transformOrigin: '28px 28px',
+                        transition: 'transform 150ms ease-out',
+                      }}
                     >
                       <line
-                        x1="24"
+                        x1="28"
                         y1="8"
-                        x2="24"
-                        y2="40"
+                        x2="28"
+                        y2="38"
                         className="stroke-info"
                         strokeWidth="2"
                       />
-                      <polygon points="24,8 20,16 28,16" className="fill-info" />
+                      <polygon points="28,6 24,14 32,14" className="fill-info" />
+                      {/* Wind barbs based on speed */}
+                      {wind.speed >= 5 && (
+                        <line
+                          x1="28"
+                          y1="36"
+                          x2="36"
+                          y2="32"
+                          className="stroke-info"
+                          strokeWidth="1.5"
+                        />
+                      )}
+                      {wind.speed >= 10 && (
+                        <line
+                          x1="28"
+                          y1="32"
+                          x2="36"
+                          y2="28"
+                          className="stroke-info"
+                          strokeWidth="1.5"
+                        />
+                      )}
+                      {wind.speed >= 15 && (
+                        <line
+                          x1="28"
+                          y1="28"
+                          x2="36"
+                          y2="24"
+                          className="stroke-info"
+                          strokeWidth="1.5"
+                        />
+                      )}
                     </g>
                   )}
                   {wind.direction === 'VRB' && (
-                    <circle cx="24" cy="24" r="6" className="fill-info/50" />
+                    <circle
+                      cx="28"
+                      cy="28"
+                      r="8"
+                      className="fill-info/30 stroke-info"
+                      strokeWidth="1"
+                    />
                   )}
                 </svg>
               </div>
-              <div className="mt-0.5 font-mono text-xs text-info">
-                {wind.direction === 'VRB' ? 'VRB' : `${String(wind.direction).padStart(3, '0')}°`}
-                <span className="mx-0.5 text-muted-foreground">@</span>
-                {wind.speed}kt
-                {wind.gust && <span className="ml-0.5 text-warning">G{wind.gust}</span>}
+              <div className="mt-1 font-mono text-xs">
+                <span className="text-info">
+                  {wind.direction === 'VRB' ? 'VRB' : `${String(wind.direction).padStart(3, '0')}°`}
+                </span>
+                <span className="mx-0.5 text-muted-foreground">/</span>
+                <span className="text-foreground">{wind.speed}</span>
+                {wind.gust && <span className="text-warning">G{wind.gust}</span>}
+                <span className="text-muted-foreground">kt</span>
               </div>
             </>
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center">
+            <div className="flex h-14 w-14 items-center justify-center">
               <span className="font-mono text-xs text-muted-foreground">
-                {weather?.loading ? '...' : 'CALM'}
+                {weather?.loading ? '---' : 'CALM'}
               </span>
             </div>
           )}
