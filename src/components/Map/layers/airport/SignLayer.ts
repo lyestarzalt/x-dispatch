@@ -7,7 +7,7 @@ import {
 } from '@/config/mapStyles/signStyles';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { ParsedAirport } from '@/lib/aptParser';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**
  * Sign Layer - Renders airport taxiway signs according to X-Plane spec

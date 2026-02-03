@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { ParsedAirport } from '@/lib/aptParser';
 import { createBoundaryGeoJSON } from '../../utils/geoJsonFactory';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 export class BoundaryLayer extends BaseLayerRenderer {
   layerId = 'airport-boundaries';

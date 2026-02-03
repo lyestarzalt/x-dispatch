@@ -253,7 +253,7 @@ export function removeVatsimPilotLayer(map: maplibregl.Map): void {
   if (map.getSource(TRAIL_SOURCE_ID)) map.removeSource(TRAIL_SOURCE_ID);
 }
 
-function updateVatsimPilotLayer(
+export function updateVatsimPilotLayer(
   map: maplibregl.Map,
   pilots: VatsimPilot[],
   highlightAirport?: string
@@ -269,7 +269,7 @@ function updateVatsimPilotLayer(
   }
 }
 
-function setVatsimPilotLayerVisibility(map: maplibregl.Map, visible: boolean): void {
+export function setVatsimPilotLayerVisibility(map: maplibregl.Map, visible: boolean): void {
   const visibility = visible ? 'visible' : 'none';
   if (map.getLayer(PILOT_LAYER_ID)) map.setLayoutProperty(PILOT_LAYER_ID, 'visibility', visibility);
   if (map.getLayer(`${PILOT_LAYER_ID}-glow`))
@@ -358,4 +358,9 @@ export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.P
   });
 }
 
-const VATSIM_LAYER_IDS = [PILOT_LAYER_ID, `${PILOT_LAYER_ID}-glow`, TRAIL_LAYER_ID, LABEL_LAYER_ID];
+export const VATSIM_LAYER_IDS = [
+  PILOT_LAYER_ID,
+  `${PILOT_LAYER_ID}-glow`,
+  TRAIL_LAYER_ID,
+  LABEL_LAYER_ID,
+];

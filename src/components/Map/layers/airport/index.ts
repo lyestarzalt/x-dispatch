@@ -1,4 +1,5 @@
 // Airport layers - rendering apt.dat parsed data
+export { BaseLayerRenderer, type LayerRenderer } from './BaseLayerRenderer';
 export { BoundaryLayer } from './BoundaryLayer';
 export { GateLayer } from './GateLayer';
 export { LinearFeatureLayer } from './LinearFeatureLayer';

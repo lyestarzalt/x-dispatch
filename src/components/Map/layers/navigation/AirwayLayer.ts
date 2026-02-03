@@ -7,15 +7,8 @@ import {
   NAV_ZOOM_LEVELS,
 } from '@/config/navLayerConfig';
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
-
-// Source and layer IDs
-const HIGH_AIRWAY_SOURCE_ID = 'nav-high-airways-source';
-const HIGH_AIRWAY_LAYER_ID = 'nav-high-airways';
-const HIGH_AIRWAY_LABEL_LAYER_ID = 'nav-high-airways-labels';
-
-const LOW_AIRWAY_SOURCE_ID = 'nav-low-airways-source';
-const LOW_AIRWAY_LAYER_ID = 'nav-low-airways';
-const LOW_AIRWAY_LABEL_LAYER_ID = 'nav-low-airways-labels';
+import { removeLayersAndSource, setLayersVisibility } from '../types';
+import { NavLayerRenderer } from './NavLayerRenderer';
 
 function createAirwayGeoJSON(airways: AirwaySegmentWithCoords[]): GeoJSON.FeatureCollection {
   return {
@@ -84,234 +77,309 @@ function createAirwayLabelGeoJSON(airways: AirwaySegmentWithCoords[]): GeoJSON.F
   };
 }
 
+/**
+ * High Airway Layer - renders high-altitude airways (jet routes)
+ */
+export class HighAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCoords> {
+  readonly layerId = 'nav-high-airways';
+  readonly sourceId = 'nav-high-airways-source';
+  readonly additionalLayerIds = ['nav-high-airways-labels'];
+
+  private readonly labelSourceId = 'nav-high-airways-source-labels';
+
+  protected createGeoJSON(airways: AirwaySegmentWithCoords[]): GeoJSON.FeatureCollection {
+    return createAirwayGeoJSON(airways);
+  }
+
+  protected addLayers(map: maplibregl.Map): void {
+    const highStyle = NAV_LINE_STYLES.airways.high;
+
+    // Add thin line layer - X-Plane style
+    map.addLayer({
+      id: this.layerId,
+      type: 'line',
+      source: this.sourceId,
+      minzoom: NAV_ZOOM_LEVELS.highAirways.lines,
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round',
+      },
+      paint: {
+        'line-color': NAV_COLORS.airways.line,
+        'line-width': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          4,
+          highStyle.width.base,
+          6,
+          highStyle.width.medium,
+          8,
+          highStyle.width.zoomed,
+          12,
+          highStyle.width.max,
+        ],
+        'line-opacity': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          4,
+          highStyle.opacity.base,
+          6,
+          highStyle.opacity.medium,
+          10,
+          highStyle.opacity.zoomed,
+        ],
+      },
+    });
+
+    const textSize = NAV_LABEL_STYLES.textSize.airways;
+
+    // Add label layer - small box style
+    map.addLayer({
+      id: this.additionalLayerIds[0],
+      type: 'symbol',
+      source: this.labelSourceId,
+      minzoom: NAV_ZOOM_LEVELS.highAirways.labels,
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-font': NAV_LABEL_STYLES.fonts.bold,
+        'text-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          6,
+          textSize.min,
+          10,
+          textSize.medium,
+          14,
+          textSize.max,
+        ],
+        'text-allow-overlap': false,
+        'text-ignore-placement': false,
+        'symbol-placement': 'point',
+        'text-padding': 4,
+        'text-rotate': ['get', 'bearing'],
+        'text-rotation-alignment': 'map',
+      },
+      paint: {
+        'text-color': NAV_COLORS.airways.labelText,
+        'text-halo-color': NAV_COLORS.airways.highLabelBg,
+        'text-halo-width': NAV_LABEL_STYLES.haloWidth.airways,
+        'text-halo-blur': 0,
+      },
+    });
+  }
+
+  // Override add to handle label source
+  async add(map: maplibregl.Map, data: AirwaySegmentWithCoords[]): Promise<void> {
+    this.remove(map);
+    if (data.length === 0) return;
+
+    // Add line source
+    map.addSource(this.sourceId, {
+      type: 'geojson',
+      data: this.createGeoJSON(data),
+    });
+
+    // Add label source
+    map.addSource(this.labelSourceId, {
+      type: 'geojson',
+      data: createAirwayLabelGeoJSON(data),
+    });
+
+    this.addLayers(map);
+  }
+
+  // Override update to handle label source
+  async update(map: maplibregl.Map, data: AirwaySegmentWithCoords[]): Promise<void> {
+    const source = map.getSource(this.sourceId) as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData(this.createGeoJSON(data));
+      const labelSource = map.getSource(this.labelSourceId) as maplibregl.GeoJSONSource;
+      if (labelSource) labelSource.setData(createAirwayLabelGeoJSON(data));
+    } else {
+      await this.add(map, data);
+    }
+  }
+
+  // Override remove to handle label source
+  remove(map: maplibregl.Map): void {
+    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
+    if (map.getSource(this.labelSourceId)) map.removeSource(this.labelSourceId);
+  }
+
+  setVisibility(map: maplibregl.Map, visible: boolean): void {
+    setLayersVisibility(map, [this.layerId, ...this.additionalLayerIds], visible);
+  }
+}
+
+/**
+ * Low Airway Layer - renders low-altitude airways (victor routes)
+ */
+export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCoords> {
+  readonly layerId = 'nav-low-airways';
+  readonly sourceId = 'nav-low-airways-source';
+  readonly additionalLayerIds = ['nav-low-airways-labels'];
+
+  private readonly labelSourceId = 'nav-low-airways-source-labels';
+
+  protected createGeoJSON(airways: AirwaySegmentWithCoords[]): GeoJSON.FeatureCollection {
+    return createAirwayGeoJSON(airways);
+  }
+
+  protected addLayers(map: maplibregl.Map): void {
+    const lowStyle = NAV_LINE_STYLES.airways.low;
+
+    // Add thin line layer - X-Plane style (dashed for low airways)
+    map.addLayer({
+      id: this.layerId,
+      type: 'line',
+      source: this.sourceId,
+      minzoom: NAV_ZOOM_LEVELS.lowAirways.lines,
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round',
+      },
+      paint: {
+        'line-color': NAV_COLORS.airways.line,
+        'line-width': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          5,
+          lowStyle.width.base,
+          7,
+          lowStyle.width.medium,
+          9,
+          lowStyle.width.zoomed,
+          12,
+          lowStyle.width.max,
+        ],
+        'line-opacity': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          5,
+          lowStyle.opacity.base,
+          7,
+          lowStyle.opacity.medium,
+          10,
+          lowStyle.opacity.zoomed,
+        ],
+        'line-dasharray': lowStyle.dasharray,
+      },
+    });
+
+    const textSize = NAV_LABEL_STYLES.textSize.airways;
+
+    // Add label layer
+    map.addLayer({
+      id: this.additionalLayerIds[0],
+      type: 'symbol',
+      source: this.labelSourceId,
+      minzoom: NAV_ZOOM_LEVELS.lowAirways.labels,
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-font': NAV_LABEL_STYLES.fonts.bold,
+        'text-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          7,
+          textSize.min,
+          10,
+          textSize.medium - 1,
+          14,
+          textSize.max - 1,
+        ],
+        'text-allow-overlap': false,
+        'text-ignore-placement': false,
+        'symbol-placement': 'point',
+        'text-padding': 4,
+        'text-rotate': ['get', 'bearing'],
+        'text-rotation-alignment': 'map',
+      },
+      paint: {
+        'text-color': NAV_COLORS.airways.labelText,
+        'text-halo-color': NAV_COLORS.airways.lowLabelBg,
+        'text-halo-width': NAV_LABEL_STYLES.haloWidth.airways,
+        'text-halo-blur': 0,
+      },
+    });
+  }
+
+  // Override add to handle label source
+  async add(map: maplibregl.Map, data: AirwaySegmentWithCoords[]): Promise<void> {
+    this.remove(map);
+    if (data.length === 0) return;
+
+    // Add line source
+    map.addSource(this.sourceId, {
+      type: 'geojson',
+      data: this.createGeoJSON(data),
+    });
+
+    // Add label source
+    map.addSource(this.labelSourceId, {
+      type: 'geojson',
+      data: createAirwayLabelGeoJSON(data),
+    });
+
+    this.addLayers(map);
+  }
+
+  // Override update to handle label source
+  async update(map: maplibregl.Map, data: AirwaySegmentWithCoords[]): Promise<void> {
+    const source = map.getSource(this.sourceId) as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData(this.createGeoJSON(data));
+      const labelSource = map.getSource(this.labelSourceId) as maplibregl.GeoJSONSource;
+      if (labelSource) labelSource.setData(createAirwayLabelGeoJSON(data));
+    } else {
+      await this.add(map, data);
+    }
+  }
+
+  // Override remove to handle label source
+  remove(map: maplibregl.Map): void {
+    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
+    if (map.getSource(this.labelSourceId)) map.removeSource(this.labelSourceId);
+  }
+
+  setVisibility(map: maplibregl.Map, visible: boolean): void {
+    setLayersVisibility(map, [this.layerId, ...this.additionalLayerIds], visible);
+  }
+}
+
+// Singleton instances for backward compatibility
+const highAirwayLayer = new HighAirwayLayerRenderer();
+const lowAirwayLayer = new LowAirwayLayerRenderer();
+
+// Legacy function exports for backward compatibility
 export function addHighAirwayLayer(map: maplibregl.Map, airways: AirwaySegmentWithCoords[]): void {
-  removeHighAirwayLayer(map);
-  if (airways.length === 0) return;
-
-  const geoJSON = createAirwayGeoJSON(airways);
-  const labelGeoJSON = createAirwayLabelGeoJSON(airways);
-
-  // Add line source
-  map.addSource(HIGH_AIRWAY_SOURCE_ID, {
-    type: 'geojson',
-    data: geoJSON,
-  });
-
-  const highStyle = NAV_LINE_STYLES.airways.high;
-
-  // Add thin line layer - X-Plane style
-  map.addLayer({
-    id: HIGH_AIRWAY_LAYER_ID,
-    type: 'line',
-    source: HIGH_AIRWAY_SOURCE_ID,
-    minzoom: NAV_ZOOM_LEVELS.highAirways.lines,
-    layout: {
-      'line-cap': 'round',
-      'line-join': 'round',
-    },
-    paint: {
-      'line-color': NAV_COLORS.airways.line,
-      'line-width': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        4,
-        highStyle.width.base,
-        6,
-        highStyle.width.medium,
-        8,
-        highStyle.width.zoomed,
-        12,
-        highStyle.width.max,
-      ],
-      'line-opacity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        4,
-        highStyle.opacity.base,
-        6,
-        highStyle.opacity.medium,
-        10,
-        highStyle.opacity.zoomed,
-      ],
-    },
-  });
-
-  // Add label source
-  map.addSource(`${HIGH_AIRWAY_SOURCE_ID}-labels`, {
-    type: 'geojson',
-    data: labelGeoJSON,
-  });
-
-  const textSize = NAV_LABEL_STYLES.textSize.airways;
-
-  // Add label layer - small box style
-  map.addLayer({
-    id: HIGH_AIRWAY_LABEL_LAYER_ID,
-    type: 'symbol',
-    source: `${HIGH_AIRWAY_SOURCE_ID}-labels`,
-    minzoom: NAV_ZOOM_LEVELS.highAirways.labels,
-    layout: {
-      'text-field': ['get', 'name'],
-      'text-font': NAV_LABEL_STYLES.fonts.bold,
-      'text-size': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        6,
-        textSize.min,
-        10,
-        textSize.medium,
-        14,
-        textSize.max,
-      ],
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-      'symbol-placement': 'point',
-      'text-padding': 4,
-      'text-rotate': ['get', 'bearing'],
-      'text-rotation-alignment': 'map',
-    },
-    paint: {
-      'text-color': NAV_COLORS.airways.labelText,
-      'text-halo-color': NAV_COLORS.airways.highLabelBg,
-      'text-halo-width': NAV_LABEL_STYLES.haloWidth.airways,
-      'text-halo-blur': 0,
-    },
-  });
+  void highAirwayLayer.add(map, airways);
 }
 
 export function removeHighAirwayLayer(map: maplibregl.Map): void {
-  if (map.getLayer(HIGH_AIRWAY_LABEL_LAYER_ID)) map.removeLayer(HIGH_AIRWAY_LABEL_LAYER_ID);
-  if (map.getLayer(HIGH_AIRWAY_LAYER_ID)) map.removeLayer(HIGH_AIRWAY_LAYER_ID);
-  if (map.getSource(`${HIGH_AIRWAY_SOURCE_ID}-labels`))
-    map.removeSource(`${HIGH_AIRWAY_SOURCE_ID}-labels`);
-  if (map.getSource(HIGH_AIRWAY_SOURCE_ID)) map.removeSource(HIGH_AIRWAY_SOURCE_ID);
+  return highAirwayLayer.remove(map);
 }
 
-function setHighAirwayLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  const visibility = visible ? 'visible' : 'none';
-  if (map.getLayer(HIGH_AIRWAY_LAYER_ID))
-    map.setLayoutProperty(HIGH_AIRWAY_LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(HIGH_AIRWAY_LABEL_LAYER_ID))
-    map.setLayoutProperty(HIGH_AIRWAY_LABEL_LAYER_ID, 'visibility', visibility);
+export function setHighAirwayLayerVisibility(map: maplibregl.Map, visible: boolean): void {
+  return highAirwayLayer.setVisibility(map, visible);
 }
 
 export function addLowAirwayLayer(map: maplibregl.Map, airways: AirwaySegmentWithCoords[]): void {
-  removeLowAirwayLayer(map);
-  if (airways.length === 0) return;
-
-  const geoJSON = createAirwayGeoJSON(airways);
-  const labelGeoJSON = createAirwayLabelGeoJSON(airways);
-
-  // Add line source
-  map.addSource(LOW_AIRWAY_SOURCE_ID, {
-    type: 'geojson',
-    data: geoJSON,
-  });
-
-  const lowStyle = NAV_LINE_STYLES.airways.low;
-
-  // Add thin line layer - X-Plane style (dashed for low airways)
-  map.addLayer({
-    id: LOW_AIRWAY_LAYER_ID,
-    type: 'line',
-    source: LOW_AIRWAY_SOURCE_ID,
-    minzoom: NAV_ZOOM_LEVELS.lowAirways.lines,
-    layout: {
-      'line-cap': 'round',
-      'line-join': 'round',
-    },
-    paint: {
-      'line-color': NAV_COLORS.airways.line,
-      'line-width': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        5,
-        lowStyle.width.base,
-        7,
-        lowStyle.width.medium,
-        9,
-        lowStyle.width.zoomed,
-        12,
-        lowStyle.width.max,
-      ],
-      'line-opacity': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        5,
-        lowStyle.opacity.base,
-        7,
-        lowStyle.opacity.medium,
-        10,
-        lowStyle.opacity.zoomed,
-      ],
-      'line-dasharray': lowStyle.dasharray,
-    },
-  });
-
-  // Add label source
-  map.addSource(`${LOW_AIRWAY_SOURCE_ID}-labels`, {
-    type: 'geojson',
-    data: labelGeoJSON,
-  });
-
-  const textSize = NAV_LABEL_STYLES.textSize.airways;
-
-  // Add label layer
-  map.addLayer({
-    id: LOW_AIRWAY_LABEL_LAYER_ID,
-    type: 'symbol',
-    source: `${LOW_AIRWAY_SOURCE_ID}-labels`,
-    minzoom: NAV_ZOOM_LEVELS.lowAirways.labels,
-    layout: {
-      'text-field': ['get', 'name'],
-      'text-font': NAV_LABEL_STYLES.fonts.bold,
-      'text-size': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        7,
-        textSize.min,
-        10,
-        textSize.medium - 1,
-        14,
-        textSize.max - 1,
-      ],
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-      'symbol-placement': 'point',
-      'text-padding': 4,
-      'text-rotate': ['get', 'bearing'],
-      'text-rotation-alignment': 'map',
-    },
-    paint: {
-      'text-color': NAV_COLORS.airways.labelText,
-      'text-halo-color': NAV_COLORS.airways.lowLabelBg,
-      'text-halo-width': NAV_LABEL_STYLES.haloWidth.airways,
-      'text-halo-blur': 0,
-    },
-  });
+  void lowAirwayLayer.add(map, airways);
 }
 
 export function removeLowAirwayLayer(map: maplibregl.Map): void {
-  if (map.getLayer(LOW_AIRWAY_LABEL_LAYER_ID)) map.removeLayer(LOW_AIRWAY_LABEL_LAYER_ID);
-  if (map.getLayer(LOW_AIRWAY_LAYER_ID)) map.removeLayer(LOW_AIRWAY_LAYER_ID);
-  if (map.getSource(`${LOW_AIRWAY_SOURCE_ID}-labels`))
-    map.removeSource(`${LOW_AIRWAY_SOURCE_ID}-labels`);
-  if (map.getSource(LOW_AIRWAY_SOURCE_ID)) map.removeSource(LOW_AIRWAY_SOURCE_ID);
+  return lowAirwayLayer.remove(map);
 }
 
-function setLowAirwayLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  const visibility = visible ? 'visible' : 'none';
-  if (map.getLayer(LOW_AIRWAY_LAYER_ID))
-    map.setLayoutProperty(LOW_AIRWAY_LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(LOW_AIRWAY_LABEL_LAYER_ID))
-    map.setLayoutProperty(LOW_AIRWAY_LABEL_LAYER_ID, 'visibility', visibility);
+export function setLowAirwayLayerVisibility(map: maplibregl.Map, visible: boolean): void {
+  return lowAirwayLayer.setVisibility(map, visible);
 }
 
-const HIGH_AIRWAY_LAYER_IDS = [HIGH_AIRWAY_LAYER_ID, HIGH_AIRWAY_LABEL_LAYER_ID];
-const LOW_AIRWAY_LAYER_IDS = [LOW_AIRWAY_LAYER_ID, LOW_AIRWAY_LABEL_LAYER_ID];
+export const HIGH_AIRWAY_LAYER_IDS = highAirwayLayer.getAllLayerIds();
+export const LOW_AIRWAY_LAYER_IDS = lowAirwayLayer.getAllLayerIds();

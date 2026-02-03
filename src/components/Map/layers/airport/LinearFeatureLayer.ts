@@ -8,7 +8,7 @@ import {
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { ParsedAirport } from '@/lib/aptParser';
 import { createLinearFeatureGeoJSON } from '../../utils/geoJsonFactory';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**
  * Linear Feature Layer - Renders painted taxiway lines

@@ -1,5 +1,4 @@
 // Layer imports for registry
-import type { LayerRenderer } from './BaseLayerRenderer';
 import {
   BoundaryLayer,
   GateLayer,
@@ -14,15 +13,16 @@ import {
   TaxiwayLightsLayer,
   WindsockLayer,
 } from './airport';
+import type { LayerRenderer } from './airport/BaseLayerRenderer';
 
 // Re-export base types
-export { type LayerRenderer } from './BaseLayerRenderer';
+export { type LayerRenderer } from './airport/BaseLayerRenderer';
 
 // Re-export all layer implementations by category
 export * from './airport';
 export * from './navigation';
 export * from './airspace';
-export * from './overlay';
+export * from './dynamic';
 
 /**
  * Create all layer renderers in correct z-order

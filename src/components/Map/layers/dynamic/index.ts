@@ -1,3 +1,3 @@
-// Overlay layers - additional info displayed on top
+// Dynamic layers - real-time overlays (VATSIM, procedures)
 export * from './VatsimLayer';
 export * from './ProcedureRouteLayer';

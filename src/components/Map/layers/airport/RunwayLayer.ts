@@ -3,7 +3,7 @@ import { getSurfaceColor } from '@/config/mapStyles/surfaceColors';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { ParsedAirport } from '@/lib/aptParser';
 import { createRunwayGeoJSON, createRunwayShoulderGeoJSON } from '../../utils/geoJsonFactory';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 export class RunwayLayer extends BaseLayerRenderer {
   layerId = 'airport-runways';

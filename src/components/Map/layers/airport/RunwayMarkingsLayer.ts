@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Runway, RunwayMarking } from '@/lib/aptParser/types';
 import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/geo';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**
  * Runway Markings Layer - Creates realistic runway markings

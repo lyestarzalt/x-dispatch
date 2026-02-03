@@ -1,10 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import type { Navaid } from '@/types/navigation';
-
-const LAYER_ID = 'nav-vors';
-const SOURCE_ID = 'nav-vors-source';
-const LABEL_LAYER_ID = 'nav-vors-labels';
-const COMPASS_LAYER_ID = 'nav-vors-compass';
+import { NavLayerRenderer } from './NavLayerRenderer';
 
 const VOR_COLOR = '#0066CC';
 const VOR_DME_COLOR = '#0088FF';
@@ -103,148 +99,148 @@ function svgToDataURL(svg: string): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-async function loadVORImages(map: maplibregl.Map): Promise<boolean> {
-  const symbols = [
-    { id: 'vor-symbol', svg: createVORSymbolSVG(48) },
-    { id: 'vortac-symbol', svg: createVORTACSymbolSVG(48) },
-    { id: 'vor-dme-symbol', svg: createVORDMESymbolSVG(48) },
-  ];
+/**
+ * VOR Layer - renders VOR, VORTAC, and VOR-DME navaids
+ */
+export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
+  readonly layerId = 'nav-vors';
+  readonly sourceId = 'nav-vors-source';
+  readonly additionalLayerIds = ['nav-vors-labels'];
 
-  let allLoaded = true;
+  private imagesLoaded = false;
 
-  for (const { id, svg } of symbols) {
-    if (!map.hasImage(id)) {
-      try {
-        const img = new Image();
-        const promise = new Promise<void>((resolve) => {
-          img.onload = () => {
-            if (!map.hasImage(id)) {
-              map.addImage(id, img, { sdf: false });
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            allLoaded = false;
-            resolve();
-          };
-        });
-        img.src = svgToDataURL(svg);
-        await promise;
-      } catch {
-        allLoaded = false;
+  protected createGeoJSON(vors: Navaid[]): GeoJSON.FeatureCollection {
+    return {
+      type: 'FeatureCollection',
+      features: vors.map((vor) => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [vor.longitude, vor.latitude],
+        },
+        properties: {
+          id: vor.id,
+          name: vor.name,
+          type: vor.type,
+          frequency: vor.frequency,
+          freqDisplay: `${(vor.frequency / 100).toFixed(2)}`,
+          symbolType:
+            vor.type === 'VORTAC'
+              ? 'vortac-symbol'
+              : vor.type === 'VOR-DME'
+                ? 'vor-dme-symbol'
+                : 'vor-symbol',
+        },
+      })),
+    };
+  }
+
+  protected async loadImages(map: maplibregl.Map): Promise<boolean> {
+    const symbols = [
+      { id: 'vor-symbol', svg: createVORSymbolSVG(48) },
+      { id: 'vortac-symbol', svg: createVORTACSymbolSVG(48) },
+      { id: 'vor-dme-symbol', svg: createVORDMESymbolSVG(48) },
+    ];
+
+    let allLoaded = true;
+
+    for (const { id, svg } of symbols) {
+      if (!map.hasImage(id)) {
+        try {
+          const img = new Image();
+          const promise = new Promise<void>((resolve) => {
+            img.onload = () => {
+              if (!map.hasImage(id)) {
+                map.addImage(id, img, { sdf: false });
+              }
+              resolve();
+            };
+            img.onerror = () => {
+              allLoaded = false;
+              resolve();
+            };
+          });
+          img.src = svgToDataURL(svg);
+          await promise;
+        } catch {
+          allLoaded = false;
+        }
       }
     }
+
+    this.imagesLoaded = allLoaded;
+    return allLoaded;
   }
 
-  return allLoaded;
-}
+  protected addLayers(map: maplibregl.Map): void {
+    if (this.imagesLoaded && map.hasImage('vor-symbol')) {
+      // VOR symbols using custom icons
+      map.addLayer({
+        id: this.layerId,
+        type: 'symbol',
+        source: this.sourceId,
+        layout: {
+          'icon-image': ['get', 'symbolType'],
+          'icon-size': ['interpolate', ['linear'], ['zoom'], 5, 0.4, 8, 0.6, 12, 0.8, 16, 1.0],
+          'icon-allow-overlap': true,
+        },
+      });
+    } else {
+      // Fallback to circle layer if images failed to load
+      map.addLayer({
+        id: this.layerId,
+        type: 'circle',
+        source: this.sourceId,
+        paint: {
+          'circle-color': VOR_COLOR,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 8, 16, 10],
+          'circle-stroke-color': '#FFFFFF',
+          'circle-stroke-width': 2,
+        },
+      });
+    }
 
-function createVORGeoJSON(vors: Navaid[]): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: vors.map((vor) => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: [vor.longitude, vor.latitude],
-      },
-      properties: {
-        id: vor.id,
-        name: vor.name,
-        type: vor.type,
-        frequency: vor.frequency,
-        freqDisplay: `${(vor.frequency / 100).toFixed(2)}`,
-        symbolType:
-          vor.type === 'VORTAC'
-            ? 'vortac-symbol'
-            : vor.type === 'VOR-DME'
-              ? 'vor-dme-symbol'
-              : 'vor-symbol',
-      },
-    })),
-  };
-}
-
-export async function addVORLayer(map: maplibregl.Map, vors: Navaid[]): Promise<void> {
-  removeVORLayer(map);
-  if (vors.length === 0) return;
-
-  const imagesLoaded = await loadVORImages(map);
-  const geoJSON = createVORGeoJSON(vors);
-
-  map.addSource(SOURCE_ID, {
-    type: 'geojson',
-    data: geoJSON,
-  });
-
-  if (imagesLoaded && map.hasImage('vor-symbol')) {
-    // VOR symbols using custom icons
+    // VOR labels
     map.addLayer({
-      id: LAYER_ID,
+      id: this.additionalLayerIds[0],
       type: 'symbol',
-      source: SOURCE_ID,
+      source: this.sourceId,
+      minzoom: 7,
       layout: {
-        'icon-image': ['get', 'symbolType'],
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 5, 0.4, 8, 0.6, 12, 0.8, 16, 1.0],
-        'icon-allow-overlap': true,
+        'text-field': ['concat', ['get', 'id'], '\n', ['get', 'freqDisplay']],
+        'text-font': ['Open Sans Bold'],
+        'text-size': 10,
+        'text-offset': [0, 2],
+        'text-anchor': 'top',
+        'text-allow-overlap': false,
       },
-    });
-  } else {
-    // Fallback to circle layer if images failed to load
-    map.addLayer({
-      id: LAYER_ID,
-      type: 'circle',
-      source: SOURCE_ID,
       paint: {
-        'circle-color': VOR_COLOR,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 8, 16, 10],
-        'circle-stroke-color': '#FFFFFF',
-        'circle-stroke-width': 2,
+        'text-color': VOR_COLOR,
+        'text-halo-color': '#000000',
+        'text-halo-width': 1.5,
       },
     });
   }
-
-  // VOR labels
-  map.addLayer({
-    id: LABEL_LAYER_ID,
-    type: 'symbol',
-    source: SOURCE_ID,
-    minzoom: 7,
-    layout: {
-      'text-field': ['concat', ['get', 'id'], '\n', ['get', 'freqDisplay']],
-      'text-font': ['Open Sans Bold'],
-      'text-size': 10,
-      'text-offset': [0, 2],
-      'text-anchor': 'top',
-      'text-allow-overlap': false,
-    },
-    paint: {
-      'text-color': VOR_COLOR,
-      'text-halo-color': '#000000',
-      'text-halo-width': 1.5,
-    },
-  });
 }
 
-function removeVORLayer(map: maplibregl.Map): void {
-  if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
-  if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-  if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+// Singleton instance for backward compatibility
+const vorLayer = new VORLayerRenderer();
+
+// Legacy function exports for backward compatibility
+export async function addVORLayer(map: maplibregl.Map, vors: Navaid[]): Promise<void> {
+  return vorLayer.add(map, vors);
 }
 
-async function updateVORLayer(map: maplibregl.Map, vors: Navaid[]): Promise<void> {
-  const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
-  if (source) {
-    source.setData(createVORGeoJSON(vors));
-  } else {
-    await addVORLayer(map, vors);
-  }
+export function removeVORLayer(map: maplibregl.Map): void {
+  return vorLayer.remove(map);
 }
 
 export function setVORLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  const visibility = visible ? 'visible' : 'none';
-  if (map.getLayer(LAYER_ID)) map.setLayoutProperty(LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', visibility);
+  return vorLayer.setVisibility(map, visible);
 }
 
-const VOR_LAYER_IDS = [LAYER_ID, LABEL_LAYER_ID];
+export async function updateVORLayer(map: maplibregl.Map, vors: Navaid[]): Promise<void> {
+  return vorLayer.update(map, vors);
+}
+
+export const VOR_LAYER_IDS = vorLayer.getAllLayerIds();

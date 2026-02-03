@@ -1,14 +1,8 @@
 import maplibregl from 'maplibre-gl';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/geo';
 import type { Navaid } from '@/types/navigation';
-
-const LAYER_ID = 'nav-ils';
-const SOURCE_ID = 'nav-ils-source';
-const LABEL_LAYER_ID = 'nav-ils-labels';
-const CONE_LAYER_ID = 'nav-ils-cone';
-const CONE_SOURCE_ID = 'nav-ils-cone-source';
-const COURSE_LAYER_ID = 'nav-ils-course';
-const COURSE_SOURCE_ID = 'nav-ils-course-source';
+import { removeLayersAndSource, setLayersVisibility } from '../types';
+import { NavLayerRenderer } from './NavLayerRenderer';
 
 const ILS_COLOR = '#FF8800';
 const ILS_CONE_COLOR = '#FF8800';
@@ -23,31 +17,6 @@ function createILSSymbolSVG(size: number = 36): string {
 
 function svgToDataURL(svg: string): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-async function loadILSImages(map: maplibregl.Map): Promise<boolean> {
-  const id = 'ils-symbol';
-  if (!map.hasImage(id)) {
-    try {
-      const img = new Image();
-      const promise = new Promise<boolean>((resolve) => {
-        img.onload = () => {
-          if (!map.hasImage(id)) {
-            map.addImage(id, img, { sdf: false });
-          }
-          resolve(true);
-        };
-        img.onerror = () => {
-          resolve(false);
-        };
-      });
-      img.src = svgToDataURL(createILSSymbolSVG(36));
-      return await promise;
-    } catch {
-      return false;
-    }
-  }
-  return true;
 }
 
 // Helper to calculate destination point using nautical miles
@@ -121,149 +90,233 @@ function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
   return { type: 'FeatureCollection', features };
 }
 
-function createILSGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: ilsList.map((ils) => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: [ils.longitude, ils.latitude],
-      },
-      properties: {
-        id: ils.id,
-        name: ils.name,
-        frequency: ils.frequency,
-        bearing: ils.bearing || 0,
-        runway: ils.associatedRunway || '',
-        freqDisplay: `${(ils.frequency / 100).toFixed(2)}`,
-        rotation: ils.bearing !== undefined ? (ils.bearing + 180) % 360 : 0,
-      },
-    })),
-  };
-}
+/**
+ * ILS Layer - renders Instrument Landing System navaids with localizer cone
+ *
+ * This layer is more complex than others because it has multiple sources:
+ * - Main source for ILS symbols and labels
+ * - Cone source for localizer coverage polygon
+ * - Course source for extended centerline
+ */
+export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
+  readonly layerId = 'nav-ils';
+  readonly sourceId = 'nav-ils-source';
+  readonly additionalLayerIds = ['nav-ils-labels', 'nav-ils-cone', 'nav-ils-course'];
 
-export async function addILSLayer(map: maplibregl.Map, ilsList: Navaid[]): Promise<void> {
-  removeILSLayer(map);
-  if (ilsList.length === 0) return;
+  // Additional sources for cone and course
+  private readonly coneSourceId = 'nav-ils-cone-source';
+  private readonly courseSourceId = 'nav-ils-course-source';
 
-  const imagesLoaded = await loadILSImages(map);
+  private imagesLoaded = false;
 
-  map.addSource(CONE_SOURCE_ID, {
-    type: 'geojson',
-    data: createILSConeGeoJSON(ilsList),
-  });
+  protected createGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
+    return {
+      type: 'FeatureCollection',
+      features: ilsList.map((ils) => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [ils.longitude, ils.latitude],
+        },
+        properties: {
+          id: ils.id,
+          name: ils.name,
+          frequency: ils.frequency,
+          bearing: ils.bearing || 0,
+          runway: ils.associatedRunway || '',
+          freqDisplay: `${(ils.frequency / 100).toFixed(2)}`,
+          rotation: ils.bearing !== undefined ? (ils.bearing + 180) % 360 : 0,
+        },
+      })),
+    };
+  }
 
-  map.addLayer({
-    id: CONE_LAYER_ID,
-    type: 'fill',
-    source: CONE_SOURCE_ID,
-    paint: {
-      'fill-color': ILS_CONE_COLOR,
-      'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.05, 12, 0.1, 16, 0.15],
-    },
-  });
+  protected async loadImages(map: maplibregl.Map): Promise<boolean> {
+    const id = 'ils-symbol';
+    if (!map.hasImage(id)) {
+      try {
+        const img = new Image();
+        const promise = new Promise<boolean>((resolve) => {
+          img.onload = () => {
+            if (!map.hasImage(id)) {
+              map.addImage(id, img, { sdf: false });
+            }
+            resolve(true);
+          };
+          img.onerror = () => {
+            resolve(false);
+          };
+        });
+        img.src = svgToDataURL(createILSSymbolSVG(36));
+        this.imagesLoaded = await promise;
+        return this.imagesLoaded;
+      } catch {
+        this.imagesLoaded = false;
+        return false;
+      }
+    }
+    this.imagesLoaded = true;
+    return true;
+  }
 
-  map.addSource(COURSE_SOURCE_ID, {
-    type: 'geojson',
-    data: createILSCourseGeoJSON(ilsList),
-  });
-
-  map.addLayer({
-    id: COURSE_LAYER_ID,
-    type: 'line',
-    source: COURSE_SOURCE_ID,
-    paint: {
-      'line-color': ILS_COLOR,
-      'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 12, 2, 16, 3],
-      'line-dasharray': [4, 2],
-      'line-opacity': 0.8,
-    },
-  });
-
-  map.addSource(SOURCE_ID, {
-    type: 'geojson',
-    data: createILSGeoJSON(ilsList),
-  });
-
-  if (imagesLoaded && map.hasImage('ils-symbol')) {
+  protected addLayers(map: maplibregl.Map): void {
+    // Cone fill layer
     map.addLayer({
-      id: LAYER_ID,
-      type: 'symbol',
-      source: SOURCE_ID,
-      layout: {
-        'icon-image': 'ils-symbol',
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 12, 0.7, 16, 1.0],
-        'icon-rotate': ['get', 'rotation'],
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-      },
-    });
-  } else {
-    map.addLayer({
-      id: LAYER_ID,
-      type: 'circle',
-      source: SOURCE_ID,
+      id: this.additionalLayerIds[1], // nav-ils-cone
+      type: 'fill',
+      source: this.coneSourceId,
       paint: {
-        'circle-color': ILS_COLOR,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4, 12, 6, 16, 8],
-        'circle-stroke-color': '#FFFFFF',
-        'circle-stroke-width': 2,
+        'fill-color': ILS_CONE_COLOR,
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.05, 12, 0.1, 16, 0.15],
+      },
+    });
+
+    // Course line layer
+    map.addLayer({
+      id: this.additionalLayerIds[2], // nav-ils-course
+      type: 'line',
+      source: this.courseSourceId,
+      paint: {
+        'line-color': ILS_COLOR,
+        'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 12, 2, 16, 3],
+        'line-dasharray': [4, 2],
+        'line-opacity': 0.8,
+      },
+    });
+
+    // ILS symbol layer
+    if (this.imagesLoaded && map.hasImage('ils-symbol')) {
+      map.addLayer({
+        id: this.layerId,
+        type: 'symbol',
+        source: this.sourceId,
+        layout: {
+          'icon-image': 'ils-symbol',
+          'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 12, 0.7, 16, 1.0],
+          'icon-rotate': ['get', 'rotation'],
+          'icon-rotation-alignment': 'map',
+          'icon-allow-overlap': true,
+        },
+      });
+    } else {
+      map.addLayer({
+        id: this.layerId,
+        type: 'circle',
+        source: this.sourceId,
+        paint: {
+          'circle-color': ILS_COLOR,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4, 12, 6, 16, 8],
+          'circle-stroke-color': '#FFFFFF',
+          'circle-stroke-width': 2,
+        },
+      });
+    }
+
+    // ILS labels
+    map.addLayer({
+      id: this.additionalLayerIds[0], // nav-ils-labels
+      type: 'symbol',
+      source: this.sourceId,
+      minzoom: 10,
+      layout: {
+        'text-field': [
+          'concat',
+          ['get', 'id'],
+          ' ',
+          ['get', 'runway'],
+          '\n',
+          ['get', 'freqDisplay'],
+        ],
+        'text-font': ['Open Sans Semibold'],
+        'text-size': 9,
+        'text-offset': [0, 1.5],
+        'text-anchor': 'top',
+        'text-allow-overlap': false,
+      },
+      paint: {
+        'text-color': ILS_COLOR,
+        'text-halo-color': '#000000',
+        'text-halo-width': 1.5,
       },
     });
   }
 
-  map.addLayer({
-    id: LABEL_LAYER_ID,
-    type: 'symbol',
-    source: SOURCE_ID,
-    minzoom: 10,
-    layout: {
-      'text-field': ['concat', ['get', 'id'], ' ', ['get', 'runway'], '\n', ['get', 'freqDisplay']],
-      'text-font': ['Open Sans Semibold'],
-      'text-size': 9,
-      'text-offset': [0, 1.5],
-      'text-anchor': 'top',
-      'text-allow-overlap': false,
-    },
-    paint: {
-      'text-color': ILS_COLOR,
-      'text-halo-color': '#000000',
-      'text-halo-width': 1.5,
-    },
-  });
-}
+  // Override add to handle multiple sources
+  async add(map: maplibregl.Map, data: Navaid[]): Promise<void> {
+    this.remove(map);
+    if (data.length === 0) return;
 
-function removeILSLayer(map: maplibregl.Map): void {
-  if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
-  if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-  if (map.getLayer(COURSE_LAYER_ID)) map.removeLayer(COURSE_LAYER_ID);
-  if (map.getLayer(CONE_LAYER_ID)) map.removeLayer(CONE_LAYER_ID);
-  if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-  if (map.getSource(COURSE_SOURCE_ID)) map.removeSource(COURSE_SOURCE_ID);
-  if (map.getSource(CONE_SOURCE_ID)) map.removeSource(CONE_SOURCE_ID);
-}
+    await this.loadImages(map);
 
-async function updateILSLayer(map: maplibregl.Map, ilsList: Navaid[]): Promise<void> {
-  const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
-  if (source) {
-    source.setData(createILSGeoJSON(ilsList));
-    const coneSource = map.getSource(CONE_SOURCE_ID) as maplibregl.GeoJSONSource;
-    if (coneSource) coneSource.setData(createILSConeGeoJSON(ilsList));
-    const courseSource = map.getSource(COURSE_SOURCE_ID) as maplibregl.GeoJSONSource;
-    if (courseSource) courseSource.setData(createILSCourseGeoJSON(ilsList));
-  } else {
-    await addILSLayer(map, ilsList);
+    // Add cone source
+    map.addSource(this.coneSourceId, {
+      type: 'geojson',
+      data: createILSConeGeoJSON(data),
+    });
+
+    // Add course source
+    map.addSource(this.courseSourceId, {
+      type: 'geojson',
+      data: createILSCourseGeoJSON(data),
+    });
+
+    // Add main source
+    map.addSource(this.sourceId, {
+      type: 'geojson',
+      data: this.createGeoJSON(data),
+    });
+
+    this.addLayers(map);
   }
+
+  // Override update to handle multiple sources
+  async update(map: maplibregl.Map, data: Navaid[]): Promise<void> {
+    const source = map.getSource(this.sourceId) as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData(this.createGeoJSON(data));
+      const coneSource = map.getSource(this.coneSourceId) as maplibregl.GeoJSONSource;
+      if (coneSource) coneSource.setData(createILSConeGeoJSON(data));
+      const courseSource = map.getSource(this.courseSourceId) as maplibregl.GeoJSONSource;
+      if (courseSource) courseSource.setData(createILSCourseGeoJSON(data));
+    } else {
+      await this.add(map, data);
+    }
+  }
+
+  // Override remove to handle multiple sources
+  remove(map: maplibregl.Map): void {
+    // Remove main layers and source via base helper
+    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
+
+    // Remove additional sources
+    if (map.getSource(this.coneSourceId)) map.removeSource(this.coneSourceId);
+    if (map.getSource(this.courseSourceId)) map.removeSource(this.courseSourceId);
+  }
+
+  // Override setVisibility to include all layers
+  setVisibility(map: maplibregl.Map, visible: boolean): void {
+    setLayersVisibility(map, [this.layerId, ...this.additionalLayerIds], visible);
+  }
+}
+
+// Singleton instance for backward compatibility
+const ilsLayer = new ILSLayerRenderer();
+
+// Legacy function exports for backward compatibility
+export async function addILSLayer(map: maplibregl.Map, ilsList: Navaid[]): Promise<void> {
+  return ilsLayer.add(map, ilsList);
+}
+
+export function removeILSLayer(map: maplibregl.Map): void {
+  return ilsLayer.remove(map);
 }
 
 export function setILSLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  const visibility = visible ? 'visible' : 'none';
-  if (map.getLayer(LAYER_ID)) map.setLayoutProperty(LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(COURSE_LAYER_ID))
-    map.setLayoutProperty(COURSE_LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(CONE_LAYER_ID)) map.setLayoutProperty(CONE_LAYER_ID, 'visibility', visibility);
+  return ilsLayer.setVisibility(map, visible);
 }
 
-const ILS_LAYER_IDS = [LAYER_ID, LABEL_LAYER_ID, COURSE_LAYER_ID, CONE_LAYER_ID];
+export async function updateILSLayer(map: maplibregl.Map, ilsList: Navaid[]): Promise<void> {
+  return ilsLayer.update(map, ilsList);
+}
+
+export const ILS_LAYER_IDS = ilsLayer.getAllLayerIds();

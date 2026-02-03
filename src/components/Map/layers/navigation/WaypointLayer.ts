@@ -6,106 +6,101 @@ import {
   NAV_ZOOM_LEVELS,
 } from '@/config/navLayerConfig';
 import type { Waypoint } from '@/types/navigation';
+import { NavLayerRenderer } from './NavLayerRenderer';
 
-const LAYER_ID = 'nav-waypoints';
-const SOURCE_ID = 'nav-waypoints-source';
-const LABEL_LAYER_ID = 'nav-waypoints-labels';
+/**
+ * Waypoint Layer - renders navigation waypoints/fixes
+ */
+export class WaypointLayerRenderer extends NavLayerRenderer<Waypoint> {
+  readonly layerId = 'nav-waypoints';
+  readonly sourceId = 'nav-waypoints-source';
+  readonly additionalLayerIds = ['nav-waypoints-labels'];
 
-function createWaypointGeoJSON(waypoints: Waypoint[]): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: waypoints.map((wp) => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: [wp.longitude, wp.latitude],
+  protected createGeoJSON(waypoints: Waypoint[]): GeoJSON.FeatureCollection {
+    return {
+      type: 'FeatureCollection',
+      features: waypoints.map((wp) => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [wp.longitude, wp.latitude],
+        },
+        properties: {
+          id: wp.id,
+          region: wp.region,
+        },
+      })),
+    };
+  }
+
+  protected addLayers(map: maplibregl.Map): void {
+    const sizes = NAV_SYMBOL_SIZES.waypoint;
+
+    // Waypoint symbol - small circle
+    map.addLayer({
+      id: this.layerId,
+      type: 'circle',
+      source: this.sourceId,
+      minzoom: NAV_ZOOM_LEVELS.waypoints.symbols,
+      paint: {
+        'circle-color': NAV_COLORS.waypoint.standard,
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          8,
+          sizes.min,
+          12,
+          sizes.medium,
+          16,
+          sizes.max,
+        ],
+        'circle-stroke-width': 0,
+        'circle-opacity': 0.7,
       },
-      properties: {
-        id: wp.id,
-        region: wp.region,
+    });
+
+    // Waypoint labels - only at high zoom
+    map.addLayer({
+      id: this.additionalLayerIds[0],
+      type: 'symbol',
+      source: this.sourceId,
+      minzoom: NAV_ZOOM_LEVELS.waypoints.labels,
+      layout: {
+        'text-field': ['get', 'id'],
+        'text-font': NAV_LABEL_STYLES.fonts.semibold,
+        'text-size': NAV_LABEL_STYLES.textSize.waypoint,
+        'text-offset': NAV_LABEL_STYLES.offset.waypoint,
+        'text-anchor': 'top',
+        'text-allow-overlap': false,
       },
-    })),
-  };
-}
-
-export function addWaypointLayer(map: maplibregl.Map, waypoints: Waypoint[]): void {
-  removeWaypointLayer(map);
-  if (waypoints.length === 0) return;
-
-  const geoJSON = createWaypointGeoJSON(waypoints);
-
-  map.addSource(SOURCE_ID, {
-    type: 'geojson',
-    data: geoJSON,
-  });
-
-  const sizes = NAV_SYMBOL_SIZES.waypoint;
-
-  // Waypoint symbol - small circle
-  map.addLayer({
-    id: LAYER_ID,
-    type: 'circle',
-    source: SOURCE_ID,
-    minzoom: NAV_ZOOM_LEVELS.waypoints.symbols,
-    paint: {
-      'circle-color': NAV_COLORS.waypoint.standard,
-      'circle-radius': [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        8,
-        sizes.min,
-        12,
-        sizes.medium,
-        16,
-        sizes.max,
-      ],
-      'circle-stroke-width': 0,
-      'circle-opacity': 0.7,
-    },
-  });
-
-  // Waypoint labels - only at high zoom
-  map.addLayer({
-    id: LABEL_LAYER_ID,
-    type: 'symbol',
-    source: SOURCE_ID,
-    minzoom: NAV_ZOOM_LEVELS.waypoints.labels,
-    layout: {
-      'text-field': ['get', 'id'],
-      'text-font': NAV_LABEL_STYLES.fonts.semibold,
-      'text-size': NAV_LABEL_STYLES.textSize.waypoint,
-      'text-offset': NAV_LABEL_STYLES.offset.waypoint,
-      'text-anchor': 'top',
-      'text-allow-overlap': false,
-    },
-    paint: {
-      'text-color': NAV_COLORS.waypoint.standard,
-      'text-halo-color': '#000000',
-      'text-halo-width': NAV_LABEL_STYLES.haloWidth.small,
-    },
-  });
-}
-
-function removeWaypointLayer(map: maplibregl.Map): void {
-  if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
-  if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-  if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-}
-
-function updateWaypointLayer(map: maplibregl.Map, waypoints: Waypoint[]): void {
-  const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
-  if (source) {
-    source.setData(createWaypointGeoJSON(waypoints));
-  } else {
-    addWaypointLayer(map, waypoints);
+      paint: {
+        'text-color': NAV_COLORS.waypoint.standard,
+        'text-halo-color': '#000000',
+        'text-halo-width': NAV_LABEL_STYLES.haloWidth.small,
+      },
+    });
   }
 }
 
-export function setWaypointLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  const visibility = visible ? 'visible' : 'none';
-  if (map.getLayer(LAYER_ID)) map.setLayoutProperty(LAYER_ID, 'visibility', visibility);
-  if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', visibility);
+// Singleton instance for backward compatibility
+const waypointLayer = new WaypointLayerRenderer();
+
+// Legacy function exports for backward compatibility
+export function addWaypointLayer(map: maplibregl.Map, waypoints: Waypoint[]): void {
+  void waypointLayer.add(map, waypoints);
 }
 
-const WAYPOINT_LAYER_IDS = [LAYER_ID, LABEL_LAYER_ID];
+export function removeWaypointLayer(map: maplibregl.Map): void {
+  return waypointLayer.remove(map);
+}
+
+export function setWaypointLayerVisibility(map: maplibregl.Map, visible: boolean): void {
+  return waypointLayer.setVisibility(map, visible);
+}
+
+export function updateWaypointLayer(map: maplibregl.Map, waypoints: Waypoint[]): void {
+  void waypointLayer.update(map, waypoints);
+}
+
+export const WAYPOINT_LAYER_IDS = waypointLayer.getAllLayerIds();

@@ -223,7 +223,7 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
   if (map.getSource(ROUTE_SOURCE_ID)) map.removeSource(ROUTE_SOURCE_ID);
 }
 
-function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolean): void {
+export function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolean): void {
   const visibility = visible ? 'visible' : 'none';
   if (map.getLayer(ROUTE_LAYER_ID)) map.setLayoutProperty(ROUTE_LAYER_ID, 'visibility', visibility);
   if (map.getLayer(WAYPOINT_LAYER_ID))
@@ -231,7 +231,7 @@ function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolean): voi
   if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', visibility);
 }
 
-const PROCEDURE_ROUTE_LAYER_IDS = [
+export const PROCEDURE_ROUTE_LAYER_IDS = [
   ROUTE_LAYER_ID,
   WAYPOINT_LAYER_ID,
   LABEL_LAYER_ID,

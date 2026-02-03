@@ -3,7 +3,7 @@ import { RUNWAY_LIGHT_COLORS } from '@/config/mapStyles/theme';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Runway } from '@/lib/aptParser/types';
 import { calculateBearing, destinationPoint as calculatePoint, haversineDistance } from '@/lib/geo';
-import { BaseLayerRenderer } from '../BaseLayerRenderer';
+import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**
  * Runway Lights Layer - Creates realistic runway lighting
