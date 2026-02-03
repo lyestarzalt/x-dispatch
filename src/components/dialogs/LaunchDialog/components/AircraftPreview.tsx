@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Check, Plane } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Aircraft } from '../types';
@@ -68,17 +69,18 @@ export function AircraftPreview({
               const isSelected = selectedLivery === liv.name;
 
               return (
-                <button
+                <Button
                   key={liv.name}
+                  variant="ghost"
                   onClick={() => onSelectLivery(liv.name)}
                   className={cn(
-                    'overflow-hidden rounded text-left transition-all',
+                    'h-auto flex-col gap-0 overflow-hidden rounded p-0 text-left transition-all',
                     isSelected
                       ? 'ring-2 ring-primary'
                       : 'hover:ring-1 hover:ring-muted-foreground/30'
                   )}
                 >
-                  <div className="relative aspect-[16/10] bg-muted/30">
+                  <div className="relative aspect-[16/10] w-full bg-muted/30">
                     {liveryImages[imgKey] ? (
                       <img
                         src={liveryImages[imgKey]}
@@ -102,10 +104,10 @@ export function AircraftPreview({
                       </div>
                     )}
                   </div>
-                  <div className="px-0.5">
+                  <div className="w-full px-0.5">
                     <div className="truncate text-center text-[9px]">{liv.displayName}</div>
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>

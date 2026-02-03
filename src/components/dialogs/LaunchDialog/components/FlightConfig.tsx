@@ -14,6 +14,7 @@ import {
   Power,
   Sun,
 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -161,19 +162,18 @@ export function FlightConfig({
               const Icon = WEATHER_ICONS[weather] || Cloud;
               const isActive = selectedWeather === weather;
               return (
-                <button
+                <Button
                   key={weather}
+                  variant="outline"
                   onClick={() => onWeatherChange(weather)}
                   className={cn(
-                    'rounded-lg border p-2 text-center transition-colors',
-                    isActive
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                    'h-auto flex-col gap-1 p-2',
+                    isActive && 'border-primary bg-primary/10 text-primary'
                   )}
                 >
-                  <Icon className="mx-auto mb-1 h-5 w-5" />
+                  <Icon className="h-5 w-5" />
                   <span className="text-[10px]">{t(`launcher.weather.${weather}`)}</span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -236,9 +236,9 @@ export function FlightConfig({
         </div>
 
         {launchError && (
-          <div className="rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-500">
-            {launchError}
-          </div>
+          <Alert variant="destructive" className="p-2">
+            <AlertDescription className="text-xs">{launchError}</AlertDescription>
+          </Alert>
         )}
       </div>
 

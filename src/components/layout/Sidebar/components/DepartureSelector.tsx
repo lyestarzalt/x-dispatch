@@ -258,7 +258,11 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
 
   return (
     <div className="rounded-lg bg-muted/50 p-2.5">
-      <button onClick={onSelect} className="w-full text-left transition-opacity hover:opacity-80">
+      <Button
+        variant="ghost"
+        onClick={onSelect}
+        className="h-auto w-full flex-col items-stretch gap-1 p-0 text-left hover:opacity-80"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-foreground">
@@ -277,14 +281,14 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
           </div>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
         </div>
-        <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
           <span>{lengthFt}'</span>
           <span>x</span>
           <span>{Math.round(metersToFeet(runway.width))}'</span>
           <span className="opacity-50">|</span>
           <span>{t(`airportInfo.surfaces.${surfaceKeys[runway.surface_type] || 'unknown'}`)}</span>
         </div>
-      </button>
+      </Button>
 
       {/* Runway end selection */}
       <div className="mt-2 flex gap-2 border-t border-border/30 pt-2">

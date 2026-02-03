@@ -13,6 +13,7 @@ import {
   Route,
   XCircle,
 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -101,17 +102,25 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
   const [dataStatus, setDataStatus] = useState<DataLoadStatus | null>(null);
 
   useEffect(() => {
-    loadDataStatus();
-  }, []);
+    let cancelled = false;
 
-  async function loadDataStatus() {
-    try {
-      const result = await window.appAPI.getLoadingStatus();
-      setDataStatus(result.status);
-    } catch {
-      // Ignore errors
+    async function loadDataStatus() {
+      try {
+        const result = await window.appAPI.getLoadingStatus();
+        if (!cancelled) {
+          setDataStatus(result.status);
+        }
+      } catch {
+        // Ignore errors
+      }
     }
-  }
+
+    loadDataStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const globalSource = dataStatus?.sources?.global;
   const isNavigraph = globalSource?.source === 'navigraph';

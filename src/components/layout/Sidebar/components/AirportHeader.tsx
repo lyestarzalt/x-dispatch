@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket, X } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ParsedAirport } from '@/lib/aptParser';
@@ -162,13 +163,15 @@ export default function AirportHeader({
 
       {/* Selected Start Position */}
       {selectedStartPosition && (
-        <div className="mt-3 flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-2">
-          <Rocket className="h-3.5 w-3.5 text-green-400" />
-          <span className="text-xs text-green-400">{t('launcher.config.departure')}:</span>
-          <span className="truncate text-xs font-medium text-foreground">
-            {selectedStartPosition.name}
-          </span>
-        </div>
+        <Alert variant="success" className="mt-3 p-2">
+          <AlertDescription className="flex items-center gap-2">
+            <Rocket className="h-3.5 w-3.5" />
+            <span className="text-xs">{t('launcher.config.departure')}:</span>
+            <span className="truncate text-xs font-medium text-foreground">
+              {selectedStartPosition.name}
+            </span>
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );

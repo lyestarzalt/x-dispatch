@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Navigation, Plane, Radar, Search, Settings, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -153,34 +154,37 @@ export default function Toolbar({
             className="h-8 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
           />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
               onClick={() => {
                 setSearchQuery('');
                 setShowResults(false);
               }}
-              className="text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           )}
         </div>
 
         {showResults && filteredAirports.length > 0 && (
           <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-popover shadow-lg">
             {filteredAirports.map((airport, index) => (
-              <button
+              <Button
                 key={airport.icao}
+                variant="ghost"
                 onClick={() => handleSelect(airport)}
                 className={cn(
-                  'flex w-full items-center gap-3 px-3 py-2 text-left text-sm',
+                  'flex h-auto w-full justify-start gap-3 rounded-none px-3 py-2',
                   index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
                 )}
               >
-                <span className="w-16 shrink-0 font-mono font-semibold text-blue-400">
+                <span className="w-16 shrink-0 font-mono font-semibold text-primary">
                   {airport.icao}
                 </span>
                 <span className="truncate">{airport.name}</span>
-              </button>
+              </Button>
             ))}
           </div>
         )}
@@ -201,7 +205,9 @@ export default function Toolbar({
               <Navigation className="h-4 w-4" />
               <span className="text-xs font-medium">{t('toolbar.nav')}</span>
               {totalNavItems > 0 && (
-                <span className="rounded bg-primary/20 px-1.5 py-0.5 text-xs">{totalNavItems}</span>
+                <Badge variant="secondary" className="px-1.5 py-0.5">
+                  {totalNavItems}
+                </Badge>
               )}
               <ChevronDown className="h-3 w-3" />
             </Button>
@@ -259,7 +265,7 @@ export default function Toolbar({
           <Radar className={cn('h-4 w-4', isVatsimEnabled && 'animate-pulse')} />
           <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
           {isVatsimEnabled && vatsimPilotCount !== undefined && (
-            <span className="rounded bg-success/20 px-1.5 py-0.5 text-xs">{vatsimPilotCount}</span>
+            <Badge className="bg-success/20 px-1.5 py-0.5 text-success">{vatsimPilotCount}</Badge>
           )}
         </Button>
 

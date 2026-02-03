@@ -206,12 +206,14 @@ export function AircraftList({
                     {ac.manufacturer}
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleFavorite(ac.path);
                   }}
-                  className="rounded p-1 hover:bg-muted"
                 >
                   <Star
                     className={cn(
@@ -221,7 +223,7 @@ export function AircraftList({
                         : 'text-muted-foreground/50'
                     )}
                   />
-                </button>
+                </Button>
               </div>
             ))
           )}

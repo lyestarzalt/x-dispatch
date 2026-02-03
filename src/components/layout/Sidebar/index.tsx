@@ -72,10 +72,11 @@ export default function Sidebar({
   const metar = weather.metar?.decoded;
 
   // Get ATIS frequency for quick weather display
+  const frequencies = airport?.frequencies;
   const atisFrequency = useMemo(() => {
-    if (!airport?.frequencies) return null;
-    return airport.frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
-  }, [airport?.frequencies]);
+    if (!frequencies) return null;
+    return frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
+  }, [frequencies]);
 
   if (!airport) return null;
 
