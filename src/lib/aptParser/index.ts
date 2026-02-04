@@ -117,12 +117,10 @@ export class AirportParser {
     for (const path of paths) {
       const { coordinates, lineTypes } = path;
 
-      // Must have at least 2 points for a line
       if (coordinates.length < 2) {
         continue;
       }
 
-      // lineTypes must match coordinates
       if (!lineTypes || lineTypes.length !== coordinates.length) {
         continue;
       }

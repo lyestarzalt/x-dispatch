@@ -39,6 +39,10 @@ export class LinearFeatureLayer extends BaseLayerRenderer {
       source: this.sourceId,
       minzoom: ZOOM_BEHAVIORS.linearFeatures.minZoom,
       filter: ['>=', ['get', 'lineType'], 1],
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round',
+      },
       paint: {
         'line-color': buildBorderColorExpression(),
         'line-width': buildBorderWidthExpression(),

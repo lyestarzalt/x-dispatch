@@ -70,17 +70,14 @@ export class PathParser {
     ) => {
       if (points.length === 0) return;
 
-      // Check if first point is already in coordinates (to avoid duplicates)
       const lastCoord = coordinates[coordinates.length - 1];
       const firstPoint = points[0];
       const startIndex =
         lastCoord && lastCoord[0] === firstPoint[0] && lastCoord[1] === firstPoint[1] ? 1 : 0;
 
-      // Add points (skip first if duplicate)
       for (let i = startIndex; i < points.length - 1; i++) {
         addCoord(points[i], segmentType, segmentLight);
       }
-      // Add the last point with the ending node's type (for next segment)
       addCoord(points[points.length - 1], endNodeType, endNodeLight);
     };
 
@@ -101,6 +98,8 @@ export class PathParser {
           // Check for split bezier (same vertex) - skip curve if same position
           if (p0[0] === coord[0] && p0[1] === coord[1]) {
             // Same position - this is a split bezier, don't draw curve to self
+            // But still add the coordinate with its type for the next segment
+            addCoord(coord, nodeLineType, nodeLightType);
           } else {
             const bezierPoints = calculateBezier(p0, tempBezierNodes[1], coord);
             // Segment uses previous node's type, last point uses THIS node's type
@@ -146,6 +145,8 @@ export class PathParser {
           // Check for split bezier (same vertex with different controls) - skip curve if same position
           if (p0[0] === p3[0] && p0[1] === p3[1]) {
             // Same position - this is a split bezier, don't draw curve to self
+            // But still add the coordinate with its type for the next segment
+            addCoord(coord, nodeLineType, nodeLightType);
           } else {
             const p1 = tempBezierNodes[1];
             const p2 = mirrorControlPoint(p3, controlPoint);
@@ -166,6 +167,8 @@ export class PathParser {
           // Check for split bezier (same vertex) - skip curve if same position
           if (lastPoint[0] === coord[0] && lastPoint[1] === coord[1]) {
             // Same position - this is a split bezier, don't draw curve to self
+            // But still add the coordinate with its type for the next segment
+            addCoord(coord, nodeLineType, nodeLightType);
           } else {
             const mirroredControl = mirrorControlPoint(coord, controlPoint);
             const bezierPoints = calculateBezier(lastPoint, mirroredControl, coord);
