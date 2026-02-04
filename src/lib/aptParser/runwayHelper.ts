@@ -54,16 +54,35 @@ export function getRunwayPolygon(runway: Runway): [number, number][] {
   ];
 }
 
+/**
+ * Calculate default shoulder width based on runway width.
+ * Per X-Plane spec: "width is same as X-Plane 11, scaling with runway type and width, some 3-5 meters"
+ * Typical values:
+ * - Narrow runways (< 30m): 3m shoulders
+ * - Medium runways (30-45m): 4m shoulders
+ * - Wide runways (> 45m): 5m shoulders
+ */
+function getDefaultShoulderWidth(runwayWidth: number): number {
+  if (runwayWidth < 30) return 3;
+  if (runwayWidth <= 45) return 4;
+  return 5;
+}
+
 export function getRunwayShoulderPolygon(runway: Runway): [number, number][] | null {
-  if (runway.shoulder_surface_type === ShoulderSurfaceType.NONE || runway.shoulder_width === 0) {
+  // No shoulder if surface type is NONE (0)
+  if (runway.shoulder_surface_type === ShoulderSurfaceType.NONE) {
     return null;
   }
 
   const end1 = runway.ends[0];
   const end2 = runway.ends[1];
 
+  // Use explicit width if set, otherwise calculate default based on runway width
+  const shoulderWidth =
+    runway.shoulder_width > 0 ? runway.shoulder_width : getDefaultShoulderWidth(runway.width);
+
   // Total half width = runway half width + shoulder width
-  const totalHalfWidth = runway.width / 2 + runway.shoulder_width;
+  const totalHalfWidth = runway.width / 2 + shoulderWidth;
 
   // Get runway heading from number (e.g., "08" -> 80 degrees)
   const heading1 = parseInt(end1.name.replace(/[LCR]$/, '')) * 10;

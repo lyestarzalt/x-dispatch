@@ -112,6 +112,9 @@ export enum SurfaceType {
 
 export enum ShoulderSurfaceType {
   NONE = 0,
+  ASPHALT = 1,
+  CONCRETE = 2,
+  // X-Plane 12 also supports surface codes 20-38 (asphalt variants) and 50-57 (concrete variants)
 }
 
 export enum RunwayMarking {
