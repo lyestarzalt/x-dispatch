@@ -146,7 +146,6 @@ export function createPavementGeoJSON(pavements: Pavement[]): GeoJSON.FeatureCol
 export function createLinearFeatureGeoJSON(
   linearFeatures: LinearFeature[]
 ): GeoJSON.FeatureCollection {
-  // Filter out transparent/undefined lines - only include lineType >= 1
   const filtered = linearFeatures.filter((feature) => {
     const lineType = feature.painted_line_type;
     return lineType !== undefined && lineType !== null && lineType >= 1;

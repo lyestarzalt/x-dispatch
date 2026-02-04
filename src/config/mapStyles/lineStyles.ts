@@ -388,20 +388,12 @@ const LINE_STYLES: Record<number, LineStyle> = {
 
 /**
  * Default style for unknown line types - transparent so they don't render
- * If an artist uses a line type that's not defined, it should not show
  */
 const DEFAULT_LINE_STYLE: LineStyle = {
   color: 'rgba(0,0,0,0)',
   width: 0,
   hasBorder: false,
 };
-
-/**
- * Get line style with fallback to default
- */
-function getLineStyle(lineType: number): LineStyle {
-  return LINE_STYLES[lineType] ?? DEFAULT_LINE_STYLE;
-}
 
 /**
  * Build MapLibre paint expression for line colors
