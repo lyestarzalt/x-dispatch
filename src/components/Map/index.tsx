@@ -19,6 +19,7 @@ import { useWeatherQuery } from '@/queries/useWeatherQuery';
 import { useAppStore } from '@/stores/appStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { Coordinates } from '@/types/geo';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import {
   applyNavVisibilityChange,
@@ -159,15 +160,15 @@ export default function Map({ airports }: MapProps) {
 
   const { data: gatewayData } = useGatewayQuery(selectedICAO);
 
-  const navDataLocation = selectedAirportData
+  const navDataLocation: Coordinates | null = selectedAirportData?.metadata
     ? {
-        lat: selectedAirportData.runways[0]?.ends[0]?.latitude,
-        lon: selectedAirportData.runways[0]?.ends[0]?.longitude,
+        latitude: parseFloat(selectedAirportData.metadata.datum_lat),
+        longitude: parseFloat(selectedAirportData.metadata.datum_lon),
       }
     : null;
   const { data: navData, isLoading: navLoading } = useNavDataQuery(
-    navDataLocation?.lat ?? null,
-    navDataLocation?.lon ?? null,
+    navDataLocation?.latitude ?? null,
+    navDataLocation?.longitude ?? null,
     50
   );
 
