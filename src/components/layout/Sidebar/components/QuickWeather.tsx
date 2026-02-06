@@ -15,8 +15,8 @@ export default function QuickWeather({ metar, atisFrequency }: QuickWeatherProps
 
   if (!metar) {
     return (
-      <div className="rounded-lg border border-border bg-muted/30 p-3">
-        <p className="text-center text-xs text-muted-foreground">{t('sidebar.noWeatherData')}</p>
+      <div className="rounded-lg border border-border bg-secondary p-3">
+        <p className="xp-label text-center">{t('sidebar.noWeatherData')}</p>
       </div>
     );
   }
@@ -32,24 +32,24 @@ export default function QuickWeather({ metar, atisFrequency }: QuickWeatherProps
   };
 
   return (
-    <div className="rounded-lg border border-border bg-muted/30 p-3">
-      <div className="grid grid-cols-3 gap-2 text-xs">
+    <div className="rounded-lg border border-border bg-secondary p-3">
+      <div className="flex items-center justify-between gap-3">
         {/* Temperature */}
-        <div className="flex items-center gap-1.5">
-          <Thermometer className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-mono text-foreground">{tempStr}</span>
+        <div className="flex items-center gap-1">
+          <Thermometer className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+          <span className="whitespace-nowrap font-mono text-xs text-foreground">{tempStr}</span>
         </div>
 
         {/* Wind */}
-        <div className="flex items-center gap-1.5">
-          <Wind className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-mono text-foreground">{windStr}</span>
+        <div className="flex items-center gap-1">
+          <Wind className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+          <span className="whitespace-nowrap font-mono text-xs text-foreground">{windStr}</span>
         </div>
 
         {/* Ceiling */}
-        <div className="flex items-center gap-1.5">
-          <Cloud className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-mono text-foreground">{ceilingStr}</span>
+        <div className="flex items-center gap-1">
+          <Cloud className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+          <span className="whitespace-nowrap font-mono text-xs text-foreground">{ceilingStr}</span>
         </div>
       </div>
 
@@ -58,12 +58,12 @@ export default function QuickWeather({ metar, atisFrequency }: QuickWeatherProps
         <Button
           variant="ghost"
           onClick={handleCopyFrequency}
-          className="mt-2 flex h-auto w-full items-center justify-start gap-1.5 bg-muted/50 px-2 py-1.5 text-xs hover:bg-muted"
+          className="mt-2 flex h-auto w-full items-center justify-start gap-1.5 rounded-lg bg-accent px-2 py-1.5 text-xs hover:bg-muted"
           title={t('sidebar.copyFrequency')}
         >
           <Radio className="h-3.5 w-3.5 text-primary" />
-          <span className="text-muted-foreground">ATIS</span>
-          <span className="ml-auto font-mono text-foreground">
+          <span className="xp-label">ATIS</span>
+          <span className="xp-value-primary ml-auto">
             {formatFrequency(atisFrequency.frequency)}
           </span>
         </Button>

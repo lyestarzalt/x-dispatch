@@ -82,7 +82,7 @@ export default function Sidebar({
 
   return (
     <div className="absolute bottom-4 right-4 top-20 z-20 w-80">
-      <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card/95 backdrop-blur-sm">
+      <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
         {/* Header */}
         <AirportHeader
           airport={airport}

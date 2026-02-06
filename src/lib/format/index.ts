@@ -1,6 +1,10 @@
 /**
  * Centralized formatting utilities
  */
+import type { WeightUnit } from './types';
+
+// Re-export types
+export * from './types';
 
 // ============================================================================
 // ALTITUDE FORMATTING
@@ -285,4 +289,48 @@ function formatDecimal(value: number, decimals: number): string {
 function formatHeading(degrees: number): string {
   const normalized = ((degrees % 360) + 360) % 360;
   return Math.round(normalized).toString().padStart(3, '0') + '°';
+}
+
+// ============================================================================
+// WEIGHT FORMATTING
+// ============================================================================
+
+const LBS_TO_KG = 0.453592;
+const KG_TO_LBS = 2.20462;
+
+/**
+ * Convert pounds to kilograms
+ */
+export function lbsToKg(lbs: number): number {
+  return lbs * LBS_TO_KG;
+}
+
+/**
+ * Convert kilograms to pounds
+ */
+export function kgToLbs(kg: number): number {
+  return kg * KG_TO_LBS;
+}
+
+/**
+ * Format weight in the specified unit
+ * @param lbs Weight in pounds (X-Plane native unit)
+ * @param unit Target unit for display
+ */
+export function formatWeight(lbs: number, unit: WeightUnit): string {
+  if (unit === 'kg') {
+    const kg = lbsToKg(lbs);
+    if (kg >= 1000) {
+      return `${(kg / 1000).toFixed(1)}t`;
+    }
+    return `${Math.round(kg)} kg`;
+  }
+  // lbs
+  if (lbs >= 10000) {
+    return `${(lbs / 1000).toFixed(0)}k lbs`;
+  }
+  if (lbs >= 1000) {
+    return `${(lbs / 1000).toFixed(1)}k lbs`;
+  }
+  return `${Math.round(lbs)} lbs`;
 }

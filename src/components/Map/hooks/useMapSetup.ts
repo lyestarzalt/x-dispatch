@@ -166,7 +166,7 @@ function setupAirportPopup(
     popupRef.current
       ?.setLngLat(coordinates)
       .setHTML(
-        `<div class="bg-background/95 text-foreground px-3 py-2 rounded border border-border"><div class="font-mono font-bold text-info">${icao}</div><div class="text-muted-foreground text-xs">${name}</div></div>`
+        `<div class="bg-card text-foreground px-3 py-2 rounded-lg border border-border"><div class="font-mono font-bold text-info">${icao}</div><div class="text-muted-foreground text-xs">${name}</div></div>`
       )
       .addTo(map);
   });

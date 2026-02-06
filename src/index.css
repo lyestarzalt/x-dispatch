@@ -9,140 +9,79 @@
 
 @layer base {
   /*
-   * Light Theme - Clean aviation chart style
+   * X-Plane 11 Design System
+   * Single dark theme - navy-tinted backgrounds with cyan accent
+   * Reference: X-Plane 11 UI Component Library
+   *
+   * Color values are L C H (lightness, chroma, hue) for oklch
+   * Tailwind wraps these with oklch() and injects alpha for opacity modifiers
    */
   :root {
-    /* Core backgrounds */
-    --background: 0 0% 100%; /* Pure white */
-    --foreground: 222 47% 11%; /* Dark text */
+    --radius: 0.375rem;
 
-    /* Cards/panels */
-    --card: 0 0% 98%;
-    --card-foreground: 222 47% 11%;
+    /* Background scale (navy-tinted darks) */
+    --background: 0.13 0.02 250; /* #06090D - deepest */
+    --foreground: 0.98 0 0; /* #FFFFFF */
 
-    /* Popovers/dropdowns */
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --card: 0.16 0.02 250; /* #0D131A - raised surfaces */
+    --card-foreground: 0.98 0 0;
 
-    /* Primary - Aviation blue */
-    --primary: 217 91% 50%;
-    --primary-foreground: 0 0% 100%;
+    --popover: 0.19 0.02 250; /* #141C26 - elevated */
+    --popover-foreground: 0.98 0 0;
 
-    /* Secondary */
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    /* Primary = Cyan accent (X-Plane signature color) */
+    --primary: 0.65 0.15 230; /* #1DA0F2 */
+    --primary-foreground: 0.13 0.02 250;
 
-    /* Muted */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    /* Secondary = Interactive surfaces */
+    --secondary: 0.22 0.02 250; /* #1A2633 */
+    --secondary-foreground: 0.98 0 0;
 
-    /* Accent */
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    /* Muted = Subdued elements */
+    --muted: 0.25 0.02 250; /* #263240 */
+    --muted-foreground: 0.55 0.02 250; /* #717880 */
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    /* Accent = Hover states */
+    --accent: 0.28 0.02 250;
+    --accent-foreground: 0.98 0 0;
 
-    /* Success */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+    /* Borders */
+    --border: 0.28 0.02 250; /* #263240 */
+    --input: 0.28 0.02 250;
+    --ring: 0.7 0.15 230; /* #4AB3F5 - cyan focus */
 
-    /* Warning */
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
+    /* Semantic - Status indicators only */
+    --destructive: 0.6 0.2 25; /* Red - errors, LIFR */
+    --destructive-foreground: 0.98 0 0;
 
-    /* Info - Blue for informational elements */
-    --info: 217 91% 50%;
-    --info-foreground: 0 0% 100%;
+    --success: 0.65 0.2 145; /* Green - VFR, success */
+    --success-foreground: 0.13 0.02 250;
 
-    /* Violet - Purple for custom scenery */
-    --violet: 270 91% 55%;
-    --violet-foreground: 0 0% 100%;
+    --warning: 0.75 0.15 85; /* Amber - MVFR, caution */
+    --warning-foreground: 0.13 0.02 250;
 
-    /* Borders and inputs */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 50%;
+    --info: 0.7 0.12 230; /* Light cyan - info */
+    --info-foreground: 0.13 0.02 250;
 
-    --radius: 0.5rem;
+    --violet: 0.6 0.2 300; /* Purple - procedures */
+    --violet-foreground: 0.98 0 0;
 
-    /* Chart colors for map elements */
-    --chart-vor: 217 91% 50%;
-    --chart-ndb: 270 91% 55%;
-    --chart-dme: 187 100% 35%;
-    --chart-waypoint: 142 76% 36%;
-    --chart-ils: 38 92% 45%;
-    --chart-runway: 222 47% 20%;
-    --chart-taxiway: 217 91% 50%;
-  }
+    /* X-Plane extended tokens */
+    --xp-accent-hover: 0.72 0.14 230; /* #4AB3F5 */
+    --xp-accent-muted: 0.5 0.12 230; /* #1678B5 */
+    --xp-accent-subtle: 0.35 0.1 230; /* #0F5079 */
+    --xp-accent-glow: 0.78 0.1 230; /* #77C6E7 */
+    --xp-text-secondary: 0.8 0.08 230; /* #A5D9FA - cyan-tinted text */
+    --xp-text-disabled: 0.4 0.02 250; /* #474F59 */
 
-  /*
-   * Dark Theme - Aviation cockpit style
-   * Inspired by night-mode aviation charts and cockpit displays
-   */
-  .dark {
-    /* Core backgrounds - very dark with slight blue tint */
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
-
-    /* Cards/panels - slightly lighter than background */
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
-
-    /* Popovers/dropdowns */
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
-
-    /* Primary - Aviation blue */
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 4%;
-
-    /* Secondary - Muted panel background */
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
-
-    /* Muted */
-    --muted: 222 47% 11%;
-    --muted-foreground: 215 20% 65%;
-
-    /* Accent */
-    --accent: 217 91% 60%;
-    --accent-foreground: 222 47% 4%;
-
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-
-    /* Success */
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-
-    /* Warning */
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 4%;
-
-    /* Info - Blue for informational elements */
-    --info: 217 91% 60%;
-    --info-foreground: 222 47% 4%;
-
-    /* Violet - Purple for custom scenery */
-    --violet: 270 91% 65%;
-    --violet-foreground: 222 47% 4%;
-
-    /* Borders and inputs */
-    --border: 222 47% 15%;
-    --input: 222 47% 15%;
-    --ring: 217 91% 60%;
-
-    /* Chart colors for map elements */
-    --chart-vor: 217 91% 60%;
-    --chart-ndb: 270 91% 65%;
-    --chart-dme: 187 100% 42%;
-    --chart-waypoint: 142 76% 36%;
-    --chart-ils: 38 92% 50%;
-    --chart-runway: 210 40% 98%;
-    --chart-taxiway: 217 91% 60%;
+    /* Chart colors for map layers */
+    --chart-vor: 0.65 0.15 230; /* Cyan */
+    --chart-ndb: 0.7 0.15 85; /* Amber */
+    --chart-dme: 0.6 0.2 300; /* Violet */
+    --chart-waypoint: 0.65 0.2 145; /* Green */
+    --chart-ils: 0.6 0.2 25; /* Red */
+    --chart-runway: 0.55 0.02 250; /* Gray */
+    --chart-taxiway: 0.75 0.15 85; /* Amber */
   }
 }
 
@@ -151,7 +90,34 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
+
+/* X-Plane Typography Utilities */
+@layer utilities {
+  .xp-page-heading {
+    @apply text-center text-2xl font-light tracking-tight;
+  }
+
+  .xp-detail-heading {
+    @apply text-xl font-medium;
+  }
+
+  .xp-section-heading {
+    @apply border-b border-border pb-1 text-xs uppercase tracking-wider text-muted-foreground;
+  }
+
+  .xp-label {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .xp-value {
+    @apply font-mono text-sm text-foreground;
+  }
+
+  .xp-value-primary {
+    @apply font-mono text-sm text-primary;
   }
 }
 
@@ -187,23 +153,23 @@
   background: transparent !important;
 }
 
-/* Custom scrollbar for info panel */
+/* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
+  background: oklch(0.16 0.02 250);
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: oklch(0.35 0.02 250);
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: oklch(0.45 0.02 250);
 }
 
 /* Glowing effects for runway lights */
@@ -211,22 +177,22 @@
   filter: drop-shadow(0 0 8px currentColor);
 }
 
-/* MapLibre navigation controls styling - adapts to theme */
+/* MapLibre navigation controls - X-Plane style */
 .maplibregl-ctrl-group {
-  background: hsl(var(--card) / 0.9) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  border-radius: 8px !important;
+  background: oklch(0.16 0.02 250 / 0.95) !important;
+  border: 1px solid oklch(0.28 0.02 250) !important;
+  border-radius: 6px !important;
+  backdrop-filter: blur(8px);
 }
 
 .maplibregl-ctrl-group button {
-  border-color: hsl(var(--border)) !important;
+  border-color: oklch(0.28 0.02 250) !important;
 }
 
 .maplibregl-ctrl-group button:hover {
-  background-color: hsl(var(--accent) / 0.1) !important;
+  background-color: oklch(0.28 0.02 250) !important;
 }
 
-/* Dark mode: invert map controls */
-.dark .maplibregl-ctrl-icon {
+.maplibregl-ctrl-icon {
   filter: invert(1);
 }

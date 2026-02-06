@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Clock,
@@ -19,7 +19,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { formatWeight } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { Aircraft, StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
 import { SunArc } from './SunArc';
@@ -71,6 +73,35 @@ export function FlightConfig({
   onLaunch,
 }: FlightConfigProps) {
   const { t } = useTranslation();
+  const weightUnit = useSettingsStore((state) => state.map.units.weight);
+
+  // Current time state - updates every minute when using system time
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  useEffect(() => {
+    if (!useSystemTime) return;
+    const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, [useSystemTime]);
+
+  // Memoized time display values
+  const { localTimeStr, utcTimeStr, isDay } = useMemo(() => {
+    const hours = currentTime.getHours();
+    return {
+      localTimeStr: currentTime.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }),
+      utcTimeStr: currentTime.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'UTC',
+      }),
+      isDay: hours >= 6 && hours < 18,
+    };
+  }, [currentTime]);
 
   // Calculate total fuel
   const totalFuel = useMemo(() => {
@@ -81,12 +112,17 @@ export function FlightConfig({
   }, [aircraft, fuelPercentage]);
 
   return (
-    <div className="flex w-72 flex-col border-l bg-card">
-      <div className="flex-1 space-y-5 overflow-auto p-4">
+    <div className="flex w-64 min-w-[240px] flex-col border-l border-border bg-card lg:w-72">
+      {/* Section Header */}
+      <div className="flex-shrink-0 border-b border-border px-4 py-2">
+        <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
+      </div>
+
+      <div className="flex-1 space-y-4 overflow-auto p-4">
         {/* Time of Day */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2">
+            <Label className="flex items-center gap-2 text-sm">
               <Clock className="h-4 w-4 text-muted-foreground" />
               {t('launcher.config.timeOfDay')}
             </Label>
@@ -98,31 +134,17 @@ export function FlightConfig({
             </div>
           </div>
           {useSystemTime ? (
-            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
+            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary px-3 py-2">
               <div className="flex items-center gap-2">
-                {new Date().getHours() >= 6 && new Date().getHours() < 18 ? (
+                {isDay ? (
                   <Sun className="h-4 w-4 text-warning" />
                 ) : (
                   <Moon className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="font-mono text-lg font-semibold">
-                  {new Date().toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
-                  })}
-                </span>
+                <span className="font-mono text-lg font-semibold">{localTimeStr}</span>
                 <span className="text-xs text-muted-foreground">local</span>
               </div>
-              <span className="font-mono text-sm text-muted-foreground">
-                {new Date().toLocaleTimeString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                  timeZone: 'UTC',
-                })}
-                Z
-              </span>
+              <span className="font-mono text-sm text-muted-foreground">{utcTimeStr}Z</span>
             </div>
           ) : startPosition ? (
             <SunArc
@@ -152,45 +174,47 @@ export function FlightConfig({
         </div>
 
         {/* Weather Presets */}
-        <div className="space-y-3">
-          <Label className="flex items-center gap-2">
+        <div className="space-y-2.5">
+          <Label className="flex items-center gap-2 text-sm">
             <Cloud className="h-4 w-4 text-muted-foreground" />
             {t('launcher.config.weather')}
           </Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             {WEATHER_OPTIONS.map((weather) => {
               const Icon = WEATHER_ICONS[weather] || Cloud;
               const isActive = selectedWeather === weather;
               return (
-                <Button
+                <button
                   key={weather}
-                  variant="outline"
+                  type="button"
                   onClick={() => onWeatherChange(weather)}
                   className={cn(
-                    'h-auto flex-col gap-1 p-2',
-                    isActive && 'border-primary bg-primary/10 text-primary'
+                    'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    isActive
+                      ? 'bg-primary/10 text-primary ring-2 ring-primary'
+                      : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
                   )}
                 >
                   <Icon className="h-5 w-5" />
                   <span className="text-xs">{t(`launcher.weather.${weather}`)}</span>
-                </Button>
+                </button>
               );
             })}
           </div>
         </div>
 
         {/* Fuel */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2">
+            <Label className="flex items-center gap-2 text-sm">
               <Fuel className="h-4 w-4 text-muted-foreground" />
               {t('launcher.config.fuel')}
             </Label>
-            <span className="text-sm font-medium">
+            <span className="font-mono text-sm">
               {fuelPercentage}%
-              {aircraft && (
-                <span className="ml-1 text-xs text-muted-foreground">
-                  ({totalFuel.toFixed(0)} kg)
+              {aircraft && aircraft.maxFuel > 0 && (
+                <span className="ml-1.5 text-xs text-muted-foreground">
+                  ({formatWeight(totalFuel, weightUnit)})
                 </span>
               )}
             </span>
@@ -208,28 +232,41 @@ export function FlightConfig({
           </div>
         </div>
 
-        {/* Cold & Dark */}
-        <div className="flex items-center justify-between">
-          <Label className="flex items-center gap-2">
+        {/* Cold & Dark Toggle */}
+        <div className="flex items-center justify-between rounded-lg bg-secondary px-3 py-2.5">
+          <Label className="flex items-center gap-2 text-sm">
             <Power className="h-4 w-4 text-muted-foreground" />
             {t('launcher.config.coldAndDark')}
           </Label>
           <Switch checked={coldAndDark} onCheckedChange={onColdAndDarkChange} />
         </div>
 
-        {/* Summary */}
-        <div className="space-y-2 border-t pt-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('launcher.aircraft.title')}</span>
-            <span className="ml-2 max-w-[140px] truncate font-medium">{aircraft?.name || '—'}</span>
+        {/* Flight Summary */}
+        <div className="space-y-2 rounded-lg bg-secondary p-3">
+          <div className="flex items-center justify-between">
+            <span className="xp-label">{t('launcher.aircraft.title')}</span>
+            <span
+              className="max-w-[130px] truncate font-mono text-xs text-foreground"
+              title={aircraft?.name || undefined}
+            >
+              {aircraft?.name || '—'}
+            </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('launcher.config.livery')}</span>
-            <span className="ml-2 max-w-[140px] truncate">{selectedLivery}</span>
+          <div className="flex items-center justify-between">
+            <span className="xp-label">{t('launcher.config.livery')}</span>
+            <span
+              className="max-w-[130px] truncate font-mono text-xs text-foreground"
+              title={selectedLivery}
+            >
+              {selectedLivery}
+            </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('launcher.config.departure')}</span>
-            <span className="ml-2 max-w-[140px] truncate">
+          <div className="flex items-center justify-between">
+            <span className="xp-label">{t('launcher.config.departure')}</span>
+            <span
+              className="max-w-[130px] truncate font-mono text-xs text-primary"
+              title={startPosition ? `${startPosition.airport} ${startPosition.name}` : undefined}
+            >
               {startPosition ? `${startPosition.airport} ${startPosition.name}` : '—'}
             </span>
           </div>

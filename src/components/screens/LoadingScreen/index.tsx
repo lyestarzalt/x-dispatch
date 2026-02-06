@@ -146,17 +146,17 @@ export default function LoadingScreen({
       <div className="w-full max-w-md px-8">
         {/* Title */}
         <div className="mb-10 text-center">
-          <h1 className="mb-2 text-2xl font-light tracking-tight">{t('loading.title')}</h1>
-          <Badge variant="outline" className="gap-1.5">
+          <h1 className="xp-page-heading mb-2">{t('loading.title')}</h1>
+          <Badge variant="info" className="gap-1.5">
             <Loader2 className="h-3 w-3 animate-spin" />
             {t('loading.badge')}
           </Badge>
         </div>
 
         {/* Progress bar */}
-        <div className="mb-8 h-1 overflow-hidden rounded-full bg-muted">
+        <div className="mb-8 h-1.5 overflow-hidden rounded-full bg-secondary">
           <div
-            className="h-full bg-primary transition-all duration-300 ease-out"
+            className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>

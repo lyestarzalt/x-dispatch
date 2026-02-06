@@ -129,7 +129,12 @@
       "unlimited": "Unlimited",
       "customStyleUrl": "Custom URL",
       "customStyleHint": "Paste any MapLibre style.json URL",
-      "language": "Language"
+      "language": "Language",
+      "units": "Units",
+      "unitsDescription": "Configure display units for measurements",
+      "weightUnit": "Weight",
+      "lbs": "Pounds (lbs)",
+      "kg": "Kilograms (kg)"
     },
     "navigation": {
       "title": "Navigation",
@@ -357,6 +362,12 @@
       "search": "Search aircraft...",
       "allCategories": "All Categories",
       "allManufacturers": "All Manufacturers",
+      "allTypes": "All Types",
+      "allEngines": "All Engines",
+      "fixedWing": "Fixed Wing",
+      "helicopter": "Helicopter",
+      "jet": "Jet",
+      "prop": "Prop",
       "count": "{{count}} aircraft",
       "favorites": "{{count}} favorites",
       "noFavorites": "No favorites yet",
@@ -369,6 +380,13 @@
       "title": "Liveries",
       "count": "Liveries ({{count}})",
       "default": "Default"
+    },
+
+    "specs": {
+      "emptyWeight": "Empty",
+      "maxWeight": "MTOW",
+      "maxFuel": "Fuel Cap",
+      "tailNumber": "Tail"
     },
 
     "config": {
