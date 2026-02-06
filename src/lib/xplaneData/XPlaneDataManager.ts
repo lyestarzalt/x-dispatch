@@ -1624,6 +1624,7 @@ export class XPlaneDataManager {
 
     const db = getDb();
     db.delete(airports).run();
+    db.delete(aptFileMeta).run();
   }
 
   /**
