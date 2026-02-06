@@ -48,7 +48,7 @@ import {
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
-import type { AptFileInfo, CacheCheckResult } from './types';
+import type { AptFileInfo, CacheCheckResult, ParsedAirportEntry } from './types';
 
 interface AirwaySegmentWithCoords {
   name: string;
@@ -486,32 +486,10 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Parse a single apt.dat file and return airport data
+   * Parse a single apt.dat file and return airport data with metadata
    */
-  private async parseAptFile(aptPath: string): Promise<
-    Map<
-      string,
-      {
-        icao: string;
-        name: string;
-        lat: number;
-        lon: number;
-        type: 'land' | 'seaplane' | 'heliport';
-        data: string;
-      }
-    >
-  > {
-    const airports = new Map<
-      string,
-      {
-        icao: string;
-        name: string;
-        lat: number;
-        lon: number;
-        type: 'land' | 'seaplane' | 'heliport';
-        data: string;
-      }
-    >();
+  private async parseAptFile(aptPath: string): Promise<Map<string, ParsedAirportEntry>> {
+    const airports = new Map<string, ParsedAirportEntry>();
 
     const reader = new FastFileReader(aptPath);
 
@@ -522,8 +500,21 @@ export class XPlaneDataManager {
       datumLon: number;
       runwayLat: number;
       runwayLon: number;
+      elevation: number;
       type: 'land' | 'seaplane' | 'heliport';
       data: string[];
+      // Metadata
+      city?: string;
+      country?: string;
+      iataCode?: string;
+      faaCode?: string;
+      regionCode?: string;
+      state?: string;
+      transitionAlt?: number;
+      transitionLevel?: string;
+      towerServiceType?: string;
+      driveOnLeft?: boolean;
+      guiLabel?: string;
     } | null = null;
 
     const finalizeAirport = () => {
@@ -540,7 +531,21 @@ export class XPlaneDataManager {
           lat,
           lon,
           type: currentAirport.type,
+          elevation: currentAirport.elevation || undefined,
           data: currentAirport.data.join('\n'),
+          sourceFile: aptPath,
+          // Metadata
+          city: currentAirport.city,
+          country: currentAirport.country,
+          iataCode: currentAirport.iataCode,
+          faaCode: currentAirport.faaCode,
+          regionCode: currentAirport.regionCode,
+          state: currentAirport.state,
+          transitionAlt: currentAirport.transitionAlt,
+          transitionLevel: currentAirport.transitionLevel,
+          towerServiceType: currentAirport.towerServiceType,
+          driveOnLeft: currentAirport.driveOnLeft,
+          guiLabel: currentAirport.guiLabel,
         });
       }
     };
@@ -564,6 +569,7 @@ export class XPlaneDataManager {
             datumLon: 0,
             runwayLat: 0,
             runwayLon: 0,
+            elevation: parseInt(parts[1]) || 0,
             type: parts[0] === '1' ? 'land' : parts[0] === '16' ? 'seaplane' : 'heliport',
             data: [line],
           };
@@ -573,13 +579,54 @@ export class XPlaneDataManager {
 
       if (!currentAirport) continue;
 
-      // Metadata with datum coordinates (row code 1302)
+      // Metadata (row code 1302)
       if (line.startsWith('1302 ')) {
         const parts = line.split(/\s+/);
-        if (parts[1] === 'datum_lat') {
-          currentAirport.datumLat = parseFloat(parts[2]);
-        } else if (parts[1] === 'datum_lon') {
-          currentAirport.datumLon = parseFloat(parts[2]);
+        const key = parts[1];
+        const value = parts.slice(2).join(' ').trim();
+
+        if (value) {
+          switch (key) {
+            case 'city':
+              currentAirport.city = value;
+              break;
+            case 'country':
+              currentAirport.country = value;
+              break;
+            case 'iata_code':
+              currentAirport.iataCode = value;
+              break;
+            case 'faa_code':
+              currentAirport.faaCode = value;
+              break;
+            case 'region_code':
+              currentAirport.regionCode = value;
+              break;
+            case 'state':
+              currentAirport.state = value;
+              break;
+            case 'transition_alt':
+              currentAirport.transitionAlt = parseInt(value) || undefined;
+              break;
+            case 'transition_level':
+              currentAirport.transitionLevel = value;
+              break;
+            case 'tower_service_type':
+              currentAirport.towerServiceType = value;
+              break;
+            case 'drive_on_left':
+              currentAirport.driveOnLeft = value === '1';
+              break;
+            case 'gui_label':
+              currentAirport.guiLabel = value;
+              break;
+            case 'datum_lat':
+              currentAirport.datumLat = parseFloat(value);
+              break;
+            case 'datum_lon':
+              currentAirport.datumLon = parseFloat(value);
+              break;
+          }
         }
       }
 
