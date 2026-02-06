@@ -1,11 +1,5 @@
 import type { SignConfig, SignDimensions, SignSize } from './types';
 
-/**
- * Sign Renderer Configuration
- *
- * Adjust `scale` to resize all signs proportionally.
- * Adjust individual values for fine-tuning.
- */
 export const SIGN_CONFIG: SignConfig = {
   scale: 1.0,
 
@@ -31,26 +25,11 @@ export const SIGN_CONFIG: SignConfig = {
   },
 };
 
-/**
- * Sign Layer Display Settings
- * Controls when and how signs appear on the map
- */
 export const SIGN_LAYER_CONFIG = {
-  // Zoom level at which signs start appearing
   minZoom: 16,
-
-  // Icon size - use zoom interpolation to keep signs proportional to airport features
-  // Signs scale with zoom to maintain visual relationship with taxiways/runways
-  iconSizeStops: [
-    [16, 0.4], // At minzoom, smaller
-    [18, 0.6], // Medium zoom
-    [20, 0.8], // Closer zoom, larger
-  ] as const,
+  iconSize: 0.6,
 };
 
-/**
- * Get computed dimensions for a given sign size
- */
 export function getSignDimensions(signSize: SignSize | number): SignDimensions {
   const mult = SIGN_CONFIG.sizeMultipliers[signSize] ?? 1.0;
   const s = SIGN_CONFIG.scale;
