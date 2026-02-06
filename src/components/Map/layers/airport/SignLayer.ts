@@ -65,6 +65,14 @@ export class SignLayer extends BaseLayerRenderer {
     this.addSource(map, geoJSON);
 
     // Single symbol layer using generated sign images
+    // Use zoom interpolation for icon-size to keep signs proportional to airport features
+    const iconSizeExpression: maplibregl.ExpressionSpecification = [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      ...SIGN_LAYER_CONFIG.iconSizeStops.flat(),
+    ];
+
     this.addLayer(map, {
       id: this.layerId,
       type: 'symbol',
@@ -77,7 +85,7 @@ export class SignLayer extends BaseLayerRenderer {
         'icon-pitch-alignment': 'viewport', // Keep icons facing viewer, no pitch distortion
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
-        'icon-size': SIGN_LAYER_CONFIG.iconSize,
+        'icon-size': iconSizeExpression,
       },
       paint: {
         'icon-opacity': 1,

@@ -218,13 +218,20 @@ export function decodeSignCacheKey(key: string): { segments: SignSegment[]; size
   const size = parseInt(match[1], 10);
   const encoded = match[2];
 
-  const segments: SignSegment[] = encoded.split(',').map((part) => {
-    const [type, ...textParts] = part.split(':');
-    return {
-      type: type as SignColorMode,
-      text: textParts.join(':'), // Rejoin in case text had colons
-    };
-  });
+  const segments: SignSegment[] = encoded
+    .split(',')
+    .map((part) => {
+      const [type, ...textParts] = part.split(':');
+      return {
+        type: type as SignColorMode,
+        text: textParts.join(':'), // Rejoin in case text had colons
+      };
+    })
+    // Filter out invalid segments (empty type or type not in YRLB)
+    .filter((seg) => seg.type && isColorDirective(seg.type) && seg.text);
+
+  // Return null if no valid segments remain
+  if (segments.length === 0) return null;
 
   return { segments, size };
 }

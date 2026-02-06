@@ -39,8 +39,13 @@ export const SIGN_LAYER_CONFIG = {
   // Zoom level at which signs start appearing
   minZoom: 16,
 
-  // Icon size on screen (doesn't change with zoom)
-  iconSize: 0.8,
+  // Icon size - use zoom interpolation to keep signs proportional to airport features
+  // Signs scale with zoom to maintain visual relationship with taxiways/runways
+  iconSizeStops: [
+    [16, 0.4], // At minzoom, smaller
+    [18, 0.6], // Medium zoom
+    [20, 0.8], // Closer zoom, larger
+  ] as const,
 };
 
 /**
