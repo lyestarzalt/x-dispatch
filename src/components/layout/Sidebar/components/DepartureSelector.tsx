@@ -54,7 +54,7 @@ export default function DepartureSelector({
     <div className="flex flex-col">
       {/* Section header */}
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <h3 className="xp-section-heading flex-1 border-0 pb-0">
           {t('sidebar.departurePosition')}
         </h3>
         {selectedStartPosition && (
@@ -74,36 +74,36 @@ export default function DepartureSelector({
             setSearchQuery('');
           }
         }}
-        className="mb-2 w-full rounded-lg bg-muted/50 p-1"
+        className="mb-2 w-full rounded-lg bg-secondary p-1"
       >
         <ToggleGroupItem
           value="gates"
-          className="flex-1 gap-1 rounded text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm"
+          className="flex-1 gap-1 rounded-lg text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
         >
           <DoorOpen className="h-3 w-3" />
           {t('sidebar.gates')}
-          <span className="ml-1 text-xs text-muted-foreground">({gates.length})</span>
+          <span className="ml-1 text-xs opacity-70">({gates.length})</span>
         </ToggleGroupItem>
         <ToggleGroupItem
           value="runways"
-          className="flex-1 gap-1 rounded text-xs data-[state=on]:bg-background data-[state=on]:shadow-sm"
+          className="flex-1 gap-1 rounded-lg text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
         >
           <Plane className="h-3 w-3 rotate-45" />
           {t('sidebar.runways')}
-          <span className="ml-1 text-xs text-muted-foreground">({runways.length})</span>
+          <span className="ml-1 text-xs opacity-70">({runways.length})</span>
         </ToggleGroupItem>
       </ToggleGroup>
 
       {/* Search input */}
       <div className="relative mb-2">
-        <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground/50" />
+        <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t(
             departureType === 'gates' ? 'sidebar.searchGates' : 'sidebar.searchRunways'
           )}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-7 border-border bg-muted/50 pl-7 text-xs"
+          className="h-7 pl-7 text-xs"
         />
       </div>
 
@@ -164,10 +164,10 @@ function GateList({ gates, onSelect, selectedName }: GateListProps) {
               })
             }
             className={cn(
-              'flex h-auto w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs',
+              'flex h-auto w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs',
               isSelected
-                ? 'border border-success/30 bg-success/20 text-success hover:bg-success/30'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                ? 'border border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                : 'bg-secondary text-muted-foreground hover:bg-accent'
             )}
           >
             <span className="flex items-center gap-2 truncate font-mono">
@@ -255,7 +255,7 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
   const hasLighting = e1.lighting > 0 || e2.lighting > 0;
 
   return (
-    <div className="rounded-lg bg-muted/50 p-2.5">
+    <div className="rounded-lg bg-secondary p-2.5">
       <Button
         variant="ghost"
         onClick={onSelect}
@@ -305,10 +305,10 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
                 onSelectEnd({ name: end.name, latitude: end.latitude, longitude: end.longitude });
               }}
               className={cn(
-                'h-auto flex-1 rounded px-2 py-1 font-mono text-xs font-medium',
+                'h-auto flex-1 rounded-lg px-2 py-1 font-mono text-xs font-medium',
                 isSelected
-                  ? 'border border-success/30 bg-success/20 text-success hover:bg-success/30'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  ? 'border border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                  : 'bg-accent text-muted-foreground hover:bg-muted'
               )}
             >
               {end.name}

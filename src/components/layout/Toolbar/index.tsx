@@ -141,7 +141,7 @@ export default function Toolbar({
     <div className="absolute left-4 right-4 top-4 z-50 flex items-center gap-3">
       {/* Search */}
       <div ref={containerRef} className="relative">
-        <div className="flex h-10 w-[300px] items-center gap-2 rounded-md border border-input bg-card/95 px-3 backdrop-blur-sm focus-within:ring-1 focus-within:ring-ring">
+        <div className="flex h-10 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
           <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <Input
             ref={inputRef}
@@ -169,7 +169,7 @@ export default function Toolbar({
         </div>
 
         {showResults && filteredAirports.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-popover shadow-lg">
+          <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-border bg-popover">
             {filteredAirports.map((airport, index) => (
               <Button
                 key={airport.icao}

@@ -3,14 +3,25 @@ import { Coordinates } from '@/types/geo';
 export interface Aircraft {
   path: string;
   name: string;
+  icao: string; // ICAO type code (e.g., "C172", "B738")
+  description: string;
   manufacturer: string;
   studio: string;
   author: string;
   tailNumber: string;
+  // Weights (all in lbs)
   emptyWeight: number;
   maxWeight: number;
   maxFuel: number;
   tankNames: string[];
+  // Aircraft type
+  isHelicopter: boolean;
+  engineCount: number;
+  propCount: number; // 0 = jet
+  // Speeds (knots)
+  vneKts: number; // Never exceed speed
+  vnoKts: number; // Max cruise speed
+  // Images
   previewImage: string | null;
   thumbnailImage: string | null;
   liveries: Livery[];

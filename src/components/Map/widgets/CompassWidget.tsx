@@ -76,7 +76,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
 
   return (
     <Card
-      className="absolute left-4 top-16 z-10 border-border/50 bg-background/90 p-2 backdrop-blur-sm"
+      className="absolute left-4 top-16 z-10 border-border bg-card p-2"
       role="region"
       aria-label="Navigation instruments"
     >

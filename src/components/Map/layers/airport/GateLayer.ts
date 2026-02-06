@@ -3,16 +3,24 @@ import { ParsedAirport } from '@/lib/aptParser';
 import { Helipad, StartupLocation } from '@/lib/aptParser/types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
-// Gate type definitions with colors
+// Gate colors - simplified X-Plane design system
+// All gates use same muted color, selected uses primary cyan
+const GATE_COLORS = {
+  default: '#64748b', // Muted gray
+  hover: '#94a3b8', // Lighter gray
+  selected: '#1DA0F2', // Primary cyan
+} as const;
+
+// Gate type definitions - icons only, color is unified
 const GATE_TYPES = {
-  gate: { color: '#3b82f6', hoverColor: '#60a5fa', icon: 'gate-airliner' },
-  cargo: { color: '#f97316', hoverColor: '#fb923c', icon: 'gate-cargo' },
-  tie_down: { color: '#22c55e', hoverColor: '#4ade80', icon: 'gate-ga' },
-  hangar: { color: '#6b7280', hoverColor: '#9ca3af', icon: 'gate-hangar' },
-  fuel: { color: '#eab308', hoverColor: '#facc15', icon: 'gate-fuel' },
-  helicopter: { color: '#a855f7', hoverColor: '#c084fc', icon: 'gate-heli' },
-  helipad: { color: '#22c55e', hoverColor: '#4ade80', icon: 'gate-helipad' },
-  misc: { color: '#64748b', hoverColor: '#94a3b8', icon: 'gate-ga' },
+  gate: { icon: 'gate-airliner' },
+  cargo: { icon: 'gate-cargo' },
+  tie_down: { icon: 'gate-ga' },
+  hangar: { icon: 'gate-hangar' },
+  fuel: { icon: 'gate-fuel' },
+  helicopter: { icon: 'gate-heli' },
+  helipad: { icon: 'gate-helipad' },
+  misc: { icon: 'gate-ga' },
 } as const;
 
 type GateType = keyof typeof GATE_TYPES;
@@ -83,7 +91,7 @@ export class GateLayer extends BaseLayerRenderer {
     const geoJSON = this.createGeoJSON(airport.startupLocations, airport.helipads);
     this.addSource(map, geoJSON);
 
-    // Ring layer with type-based colors
+    // Ring layer with unified colors
     this.addLayer(map, {
       id: 'airport-gates-ring',
       type: 'circle',
@@ -94,34 +102,34 @@ export class GateLayer extends BaseLayerRenderer {
         'circle-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#06b6d4', // Selected - cyan (distinct from tie_down green)
+          GATE_COLORS.selected,
           ['boolean', ['feature-state', 'hover'], false],
-          ['get', 'hoverColor'],
-          ['get', 'typeColor'],
+          GATE_COLORS.hover,
+          GATE_COLORS.default,
         ],
         'circle-opacity': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
           0.95,
           ['boolean', ['feature-state', 'hover'], false],
-          0.9,
-          0.75,
+          0.85,
+          0.7,
         ],
         'circle-stroke-width': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
           2.5,
           ['boolean', ['feature-state', 'hover'], false],
-          2,
+          1.5,
           1,
         ],
         'circle-stroke-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#06b6d4',
+          GATE_COLORS.selected,
           ['boolean', ['feature-state', 'hover'], false],
           '#ffffff',
-          ['get', 'hoverColor'],
+          GATE_COLORS.hover,
         ],
       },
     });
@@ -187,7 +195,7 @@ export class GateLayer extends BaseLayerRenderer {
         'text-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#06b6d4',
+          GATE_COLORS.selected,
           '#e2e8f0',
         ],
         'text-halo-color': '#0f172a',
@@ -234,8 +242,6 @@ export class GateLayer extends BaseLayerRenderer {
           airplaneTypes: location.airplane_types,
           iconScale: this.getIconScale(location.airplane_types),
           iconName: typeConfig.icon,
-          typeColor: typeConfig.color,
-          hoverColor: typeConfig.hoverColor,
           latitude: location.latitude,
           longitude: location.longitude,
         },
@@ -262,8 +268,6 @@ export class GateLayer extends BaseLayerRenderer {
           airplaneTypes: 'F',
           iconScale: 1.0,
           iconName: typeConfig.icon,
-          typeColor: typeConfig.color,
-          hoverColor: typeConfig.hoverColor,
           latitude: helipad.latitude,
           longitude: helipad.longitude,
         },

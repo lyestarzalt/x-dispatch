@@ -6,12 +6,16 @@
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval';
-      style-src 'self' 'unsafe-inline' https://unpkg.com;
+      style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com;
       img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com;
-      font-src 'self' data:;
+      font-src 'self' data: https://fonts.gstatic.com;
       connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org;
       worker-src 'self' blob:;">
   <title>X-Dispatch</title>
+  <!-- Google Fonts - Roboto for X-Plane design system -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
 </head>
 

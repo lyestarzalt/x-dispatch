@@ -42,14 +42,24 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     return {
       path: relativePath,
       name: props['acf/_name'] || path.basename(acfPath, '.acf'),
+      icao: props['acf/_ICAO'] || '',
+      description: props['acf/_descrip'] || '',
       manufacturer: props['acf/_manufacturer'] || 'Unknown',
       studio: props['acf/_studio'] || '',
       author: props['acf/_author'] || '',
       tailNumber: props['acf/_tailnum'] || '',
+      // Weights (lbs)
       emptyWeight: parseFloat(props['acf/_m_empty']) || 0,
       maxWeight: parseFloat(props['acf/_m_max']) || 0,
       maxFuel: parseFloat(props['acf/_m_fuel_max_tot']) || 0,
       tankNames,
+      // Aircraft type
+      isHelicopter: props['acf/_is_helicopter'] === '1',
+      engineCount: parseInt(props['acf/_num_engn'], 10) || 0,
+      propCount: parseInt(props['acf/_num_prop'], 10) || 0,
+      // Speeds (knots)
+      vneKts: parseFloat(props['acf/_Vne_kts']) || 0,
+      vnoKts: parseFloat(props['acf/_Vno_kts']) || 0,
       previewImage,
       thumbnailImage,
       liveries,

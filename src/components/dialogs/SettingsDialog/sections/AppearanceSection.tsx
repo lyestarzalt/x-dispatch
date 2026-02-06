@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Map, Monitor, Moon, Palette, Sun } from 'lucide-react';
+import { Globe, Map, Palette, Scale } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,21 +15,14 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { changeLanguage, languages } from '@/i18n';
+import type { WeightUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { MAP_STYLE_PRESETS, MapSettings, useSettingsStore } from '@/stores/settingsStore';
-import { useThemeStore } from '@/stores/themeStore';
 import type { SettingsSectionProps } from '../types';
-
-const THEME_OPTIONS = [
-  { id: 'light', icon: Sun, label: 'settings.appearance.light' },
-  { id: 'dark', icon: Moon, label: 'settings.appearance.dark' },
-  { id: 'system', icon: Monitor, label: 'settings.appearance.system' },
-] as const;
 
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
   const { map: mapSettings, updateMapSettings } = useSettingsStore();
-  const { theme, setTheme } = useThemeStore();
 
   const handleChange = useCallback(
     <K extends keyof MapSettings>(key: K, value: MapSettings[K]) => {
@@ -57,34 +50,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
       </div>
 
       <Separator />
-
-      {/* Theme Selection */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('settings.appearance.theme')}</CardTitle>
-          <CardDescription>
-            {t('settings.appearance.themeDescription', 'Choose your preferred color scheme')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-3">
-            {THEME_OPTIONS.map(({ id, icon: Icon, label }) => (
-              <Button
-                key={id}
-                variant={theme === id ? 'default' : 'outline'}
-                className={cn(
-                  'h-auto flex-col gap-2 py-4',
-                  theme === id && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
-                )}
-                onClick={() => setTheme(id as 'light' | 'dark' | 'system')}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs">{t(label)}</span>
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Map Style Selection */}
       <Card>
@@ -185,6 +150,36 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
               ))}
             </SelectContent>
           </Select>
+        </CardContent>
+      </Card>
+
+      {/* Units */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Scale className="h-4 w-4" />
+            {t('settings.appearance.units')}
+          </CardTitle>
+          <CardDescription>{t('settings.appearance.unitsDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <Label className="text-sm">{t('settings.appearance.weightUnit')}</Label>
+            <Select
+              value={mapSettings.units.weight}
+              onValueChange={(value: WeightUnit) =>
+                updateMapSettings({ units: { ...mapSettings.units, weight: value } })
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lbs">{t('settings.appearance.lbs')}</SelectItem>
+                <SelectItem value="kg">{t('settings.appearance.kg')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
     </div>

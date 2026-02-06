@@ -77,7 +77,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="mb-10 text-center">
-          <h1 className="mb-3 text-3xl font-light tracking-tight">{t('setup.title')}</h1>
+          <h1 className="xp-page-heading mb-3 text-3xl">{t('setup.title')}</h1>
           <p className="text-sm text-muted-foreground">{t('setup.subtitle')}</p>
         </div>
 
@@ -97,8 +97,8 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
                     htmlFor={path}
                     className={`flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors ${
                       selectedPath === path
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-muted-foreground/30 hover:bg-muted/50'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-secondary hover:border-muted-foreground hover:bg-accent'
                     }`}
                   >
                     <RadioGroupItem value={path} id={path} />

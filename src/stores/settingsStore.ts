@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { WeightUnit } from '@/lib/format';
 
 interface MapStylePreset {
   id: string;
@@ -53,6 +54,9 @@ export interface MapSettings {
   navDataRadiusNm: number;
   vatsimRefreshInterval: number;
   mapStyleUrl: string;
+  units: {
+    weight: WeightUnit;
+  };
 }
 
 interface SettingsState {
@@ -65,6 +69,9 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   navDataRadiusNm: 100,
   vatsimRefreshInterval: 15,
   mapStyleUrl: DEFAULT_MAP_STYLE_URL,
+  units: {
+    weight: 'lbs',
+  },
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -81,10 +88,21 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 6,
+      version: 7,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return { map: DEFAULT_MAP_SETTINGS };
+        }
+        if (version < 7) {
+          // Add units preference
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            map: {
+              ...state.map,
+              units: DEFAULT_MAP_SETTINGS.units,
+            },
+          };
         }
         return persistedState as SettingsState;
       },

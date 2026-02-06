@@ -6,7 +6,15 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
-import { Aircraft, StartPosition, WeatherPreset, getFavorites, saveFavorites } from './types';
+import {
+  Aircraft,
+  AircraftType,
+  EngineType,
+  StartPosition,
+  WeatherPreset,
+  getFavorites,
+  saveFavorites,
+} from './types';
 
 interface LaunchPanelProps {
   open: boolean;
@@ -22,6 +30,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const [searchQuery, setSearchQuery] = useState('');
   const [filterManufacturer, setFilterManufacturer] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterAircraftType, setFilterAircraftType] = useState<AircraftType>('all');
+  const [filterEngineType, setFilterEngineType] = useState<EngineType>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(getFavorites());
 
@@ -69,6 +79,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       setSearchQuery('');
       setFilterManufacturer('all');
       setFilterCategory('all');
+      setFilterAircraftType('all');
+      setFilterEngineType('all');
       setShowFavoritesOnly(false);
     }
   }, [open]);
@@ -190,14 +202,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed left-[50%] top-[50%] z-50 flex h-[90vh] w-[95vw] max-w-7xl translate-x-[-50%] translate-y-[-50%] flex-col border border-border bg-background shadow-xl"
+          className="fixed left-[50%] top-[50%] z-50 flex h-[90vh] w-[95vw] min-w-[900px] max-w-7xl translate-x-[-50%] translate-y-[-50%] flex-col rounded-lg border border-border bg-background"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
             <DialogTitle>{t('launcher.title')}</DialogTitle>
           </VisuallyHidden.Root>
           {/* Header */}
-          <div className="flex h-11 flex-shrink-0 items-center justify-between border-b bg-muted/30 px-4">
+          <div className="flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b border-border bg-card px-4">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">{t('launcher.title')}</span>
               {startPosition && (
@@ -226,12 +238,16 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               searchQuery={searchQuery}
               filterCategory={filterCategory}
               filterManufacturer={filterManufacturer}
+              filterAircraftType={filterAircraftType}
+              filterEngineType={filterEngineType}
               showFavoritesOnly={showFavoritesOnly}
               favorites={favorites}
               aircraftImages={aircraftImages}
               onSearchChange={setSearchQuery}
               onCategoryChange={setFilterCategory}
               onManufacturerChange={setFilterManufacturer}
+              onAircraftTypeChange={setFilterAircraftType}
+              onEngineTypeChange={setFilterEngineType}
               onToggleFavoritesOnly={() => setShowFavoritesOnly(!showFavoritesOnly)}
               onSelectAircraft={handleSelectAircraft}
               onToggleFavorite={toggleFavorite}
