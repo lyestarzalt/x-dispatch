@@ -1,13 +1,16 @@
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
-import {
-  SIGN_LAYER_CONFIG,
-  generateSignCacheKey,
-  generateSignImage,
-  parseSignText,
-} from '@/lib/signRenderer';
-import type { SignSegment } from '@/lib/signRenderer';
+import type { ParsedAirport } from '@/lib/aptParser';
+import { parseSignText } from '@/lib/signRenderer';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
+
+const SIGN_COLORS = {
+  Y: { text: '#000000', bg: '#FFCC00' }, // Direction
+  L: { text: '#FFCC00', bg: '#000000' }, // Location
+  R: { text: '#FFFFFF', bg: '#CC0000' }, // Mandatory
+  B: { text: '#FFFFFF', bg: '#000000' }, // Distance
+} as const;
+
+const MIN_ZOOM = 16;
 
 export class SignLayer extends BaseLayerRenderer {
   layerId = 'airport-signs';
@@ -18,18 +21,14 @@ export class SignLayer extends BaseLayerRenderer {
     return airport.signs && airport.signs.length > 0;
   }
 
-  async render(map: maplibregl.Map, airport: ParsedAirport): Promise<void> {
+  render(map: maplibregl.Map, airport: ParsedAirport): void {
     if (!this.hasData(airport)) return;
 
-    // Process signs and collect unique images to generate
-    const imageMap = new Map<string, { segments: SignSegment[]; size: number }>();
     const features = airport.signs.map((sign) => {
       const parsed = parseSignText(sign.text);
-      const imageId = generateSignCacheKey(parsed.front, sign.size);
-
-      if (!imageMap.has(imageId) && parsed.front.length > 0) {
-        imageMap.set(imageId, { segments: parsed.front, size: sign.size });
-      }
+      const firstSegment = parsed.front[0];
+      const signType = firstSegment?.type || 'L';
+      const displayText = parsed.front.map((s) => s.text).join(' ');
 
       return {
         type: 'Feature' as const,
@@ -38,47 +37,53 @@ export class SignLayer extends BaseLayerRenderer {
           coordinates: [sign.longitude, sign.latitude],
         },
         properties: {
-          imageId,
+          text: displayText,
+          type: signType,
           heading: sign.heading,
-          size: sign.size,
         },
       };
     });
 
-    // Pre-generate all sign images before adding the layer
-    await Promise.all(
-      Array.from(imageMap.entries()).map(async ([imageId, { segments, size }]) => {
-        if (map.hasImage(imageId)) return;
-        try {
-          const image = await generateSignImage(segments, size);
-          if (!map.hasImage(imageId)) {
-            map.addImage(imageId, image);
-          }
-        } catch (err) {
-          console.error(`Failed to generate sign: ${imageId}`, err);
-        }
-      })
-    );
-
-    const geoJSON: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features,
-    };
-
-    this.addSource(map, geoJSON);
+    this.addSource(map, { type: 'FeatureCollection', features });
 
     this.addLayer(map, {
       id: this.layerId,
       type: 'symbol',
       source: this.sourceId,
-      minzoom: SIGN_LAYER_CONFIG.minZoom,
+      minzoom: MIN_ZOOM,
       layout: {
-        'icon-image': ['get', 'imageId'],
-        'icon-rotate': ['get', 'heading'],
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-        'icon-size': SIGN_LAYER_CONFIG.iconSize,
+        'text-field': ['get', 'text'],
+        'text-size': 11,
+        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+        'text-rotate': ['get', 'heading'],
+        'text-rotation-alignment': 'map',
+        'text-allow-overlap': true,
+        'text-ignore-placement': true,
+      },
+      paint: {
+        'text-color': [
+          'match',
+          ['get', 'type'],
+          'Y',
+          SIGN_COLORS.Y.text,
+          'R',
+          SIGN_COLORS.R.text,
+          'B',
+          SIGN_COLORS.B.text,
+          SIGN_COLORS.L.text,
+        ],
+        'text-halo-color': [
+          'match',
+          ['get', 'type'],
+          'Y',
+          SIGN_COLORS.Y.bg,
+          'R',
+          SIGN_COLORS.R.bg,
+          'B',
+          SIGN_COLORS.B.bg,
+          SIGN_COLORS.L.bg,
+        ],
+        'text-halo-width': 3,
       },
     });
   }
