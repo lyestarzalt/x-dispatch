@@ -481,6 +481,26 @@ app.whenReady().then(async () => {
   logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
   logger.main.debug(`Log file: ${getLogPath()}`);
 
+  // Load React DevTools in development
+  if (!app.isPackaged && process.platform === 'darwin') {
+    const os = await import('os');
+    const reactDevToolsPath = path.join(
+      os.homedir(),
+      '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi'
+    );
+    try {
+      const fs = await import('fs');
+      const versions = fs.readdirSync(reactDevToolsPath);
+      if (versions.length > 0) {
+        const latestVersion = versions.sort().pop();
+        await session.defaultSession.loadExtension(path.join(reactDevToolsPath, latestVersion!));
+        logger.main.info('React DevTools loaded');
+      }
+    } catch {
+      // DevTools not installed, skip
+    }
+  }
+
   Menu.setApplicationMenu(null);
   await initDb();
   dataManager = getXPlaneDataManager();
