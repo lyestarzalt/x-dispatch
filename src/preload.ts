@@ -133,14 +133,25 @@ interface LaunchConfig {
 interface Aircraft {
   path: string;
   name: string;
+  icao: string;
+  description: string;
   manufacturer: string;
   studio: string;
   author: string;
   tailNumber: string;
+  // Weights (lbs)
   emptyWeight: number;
   maxWeight: number;
   maxFuel: number;
   tankNames: string[];
+  // Aircraft type
+  isHelicopter: boolean;
+  engineCount: number;
+  propCount: number;
+  // Speeds (knots)
+  vneKts: number;
+  vnoKts: number;
+  // Images
   previewImage: string | null;
   thumbnailImage: string | null;
   liveries: { name: string; displayName: string; previewImage: string | null }[];
