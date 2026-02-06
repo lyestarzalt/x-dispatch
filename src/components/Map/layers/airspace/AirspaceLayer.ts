@@ -68,24 +68,27 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
       },
     });
 
-    // Labels at higher zoom
+    // Labels along boundary - large halo creates "cut" effect in the border
     map.addLayer({
       id: this.additionalLayerIds[1],
       type: 'symbol',
       source: this.sourceId,
-      minzoom: 9,
+      minzoom: 8,
       layout: {
-        'text-field': ['concat', ['get', 'class'], ' ', ['get', 'name']],
-        'text-font': ['Open Sans Semibold'],
-        'text-size': 10,
+        'text-field': ['get', 'name'],
+        'text-font': ['Open Sans Bold'],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 8, 10, 12, 12],
         'text-allow-overlap': false,
-        'symbol-placement': 'point',
+        'symbol-placement': 'line',
+        'symbol-spacing': 300,
+        'text-max-angle': 45,
+        'text-padding': 20,
       },
       paint: {
         'text-color': ['get', 'color'],
-        'text-halo-color': '#000000',
-        'text-halo-width': 1,
-        'text-opacity': 0.8,
+        'text-halo-color': '#0d1117',
+        'text-halo-width': 6,
+        'text-halo-blur': 1,
       },
     });
   }
