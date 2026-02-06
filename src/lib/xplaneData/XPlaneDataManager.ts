@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
-import { airports, aptFileMeta, closeDb, getDb, getSqlite, saveDb } from '../../db';
+import { airports, aptFileMeta, closeDb, getDb, saveDb } from '../../db';
 import { distanceNm } from '../geo';
 import logger from '../logger';
 import { parseAirspaces } from '../navParser/airspaceParser';
@@ -664,23 +664,35 @@ export class XPlaneDataManager {
 
   /**
    * Load airport data from Global Airports and Custom Scenery
+   * Uses batch inserts for performance and checks cache validity
    */
   private async loadAirports(xplanePath: string): Promise<void> {
+    // Check if we need to reload
+    const cacheCheck = this.checkCacheValidity(xplanePath);
+
+    if (!cacheCheck.needsReload) {
+      logger.data.info('Airport cache is valid, skipping reload');
+      this.loadStatus.airports = true;
+      return;
+    }
+
+    if (cacheCheck.changedFiles.length > 0) {
+      logger.data.info(`Changed apt.dat files: ${cacheCheck.changedFiles.length}`);
+    }
+    if (cacheCheck.newFiles.length > 0) {
+      logger.data.info(`New apt.dat files: ${cacheCheck.newFiles.length}`);
+    }
+    if (cacheCheck.deletedFiles.length > 0) {
+      logger.data.info(`Deleted apt.dat files: ${cacheCheck.deletedFiles.length}`);
+    }
+
     const globalAptPath = getAptDataPath(xplanePath);
     const customAptFiles = this.getCustomSceneryAptFiles(xplanePath);
+    const currentFiles = this.getCurrentAptFiles(xplanePath);
 
     // Store all airports by ICAO (Custom Scenery will override Global)
-    const allAirports = new Map<
-      string,
-      {
-        icao: string;
-        name: string;
-        lat: number;
-        lon: number;
-        type: 'land' | 'seaplane' | 'heliport';
-        data: string;
-      }
-    >();
+    const allAirports = new Map<string, ParsedAirportEntry>();
+    const airportCounts = new Map<string, number>();
 
     // Track which ICAOs came from Global vs Custom
     const globalIcaos = new Set<string>();
@@ -690,6 +702,7 @@ export class XPlaneDataManager {
     if (fs.existsSync(globalAptPath)) {
       logger.data.info(`Loading Global Airports from: ${globalAptPath}`);
       const globalAirports = await this.parseAptFile(globalAptPath);
+      airportCounts.set(globalAptPath, globalAirports.size);
       for (const [icao, airport] of globalAirports) {
         allAirports.set(icao, airport);
         globalIcaos.add(icao);
@@ -704,6 +717,7 @@ export class XPlaneDataManager {
       logger.data.info(`Found ${customAptFiles.length} Custom Scenery apt.dat files`);
       for (const aptFile of customAptFiles) {
         const customAirports = await this.parseAptFile(aptFile);
+        airportCounts.set(aptFile, customAirports.size);
         for (const [icao, airport] of customAirports) {
           allAirports.set(icao, airport); // Override global
           customIcaos.add(icao);
@@ -712,8 +726,6 @@ export class XPlaneDataManager {
     }
 
     // Calculate source breakdown
-    // Custom scenery airports = those in customIcaos
-    // Global airports = those in globalIcaos but NOT in customIcaos (not overridden)
     const customCount = customIcaos.size;
     const globalOnlyCount = [...globalIcaos].filter((icao) => !customIcaos.has(icao)).length;
 
@@ -727,21 +739,52 @@ export class XPlaneDataManager {
       `Airport breakdown: ${globalOnlyCount} from Global, ${customCount} from Custom Scenery (${customAptFiles.length} packs)`
     );
 
-    // 3. Insert all airports into database
-    const sqlite = getSqlite();
-    if (sqlite && allAirports.size > 0) {
-      sqlite.run('DELETE FROM airports');
+    // 3. Batch insert all airports into database
+    const db = getDb();
+    const startInsert = Date.now();
 
-      for (const airport of allAirports.values()) {
-        sqlite.run(
-          'INSERT OR REPLACE INTO airports (icao, name, lat, lon, type, data) VALUES (?, ?, ?, ?, ?, ?)',
-          [airport.icao, airport.name, airport.lat, airport.lon, airport.type, airport.data]
-        );
-      }
+    // Clear existing airports
+    db.delete(airports).run();
 
-      saveDb();
-      logger.data.info(`Stored ${allAirports.size} total airports (Global + Custom Scenery)`);
+    // Convert to array for batch insert
+    const airportArray = Array.from(allAirports.values()).map((a) => ({
+      icao: a.icao,
+      name: a.name,
+      lat: a.lat,
+      lon: a.lon,
+      type: a.type,
+      elevation: a.elevation,
+      data: a.data,
+      sourceFile: a.sourceFile,
+      city: a.city,
+      country: a.country,
+      iataCode: a.iataCode,
+      faaCode: a.faaCode,
+      regionCode: a.regionCode,
+      state: a.state,
+      transitionAlt: a.transitionAlt,
+      transitionLevel: a.transitionLevel,
+      towerServiceType: a.towerServiceType,
+      driveOnLeft: a.driveOnLeft,
+      guiLabel: a.guiLabel,
+    }));
+
+    // Batch insert in chunks of 500
+    const CHUNK_SIZE = 500;
+    for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+      const chunk = airportArray.slice(i, i + CHUNK_SIZE);
+      db.insert(airports).values(chunk).run();
     }
+
+    const insertTime = Date.now() - startInsert;
+    logger.data.info(`Batch inserted ${allAirports.size} airports in ${insertTime}ms`);
+
+    // 4. Update file metadata cache
+    this.updateStoredFileMeta(currentFiles, airportCounts);
+
+    // 5. Save database
+    saveDb();
+    logger.data.info(`Stored ${allAirports.size} total airports (Global + Custom Scenery)`);
 
     this.loadStatus.airports = true;
   }
