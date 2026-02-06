@@ -1,27 +1,32 @@
 import maplibregl from 'maplibre-gl';
-import {
-  SIGN_TYPE_COLORS,
-  buildSignFontSizeExpression,
-  buildSignHaloWidthExpression,
-  parseSignText,
-} from '@/config/mapStyles/signStyles';
-import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { ParsedAirport } from '@/lib/aptParser';
+import {
+  SIGN_LAYER_CONFIG,
+  decodeSignCacheKey,
+  generateSignCacheKey,
+  generateSignImage,
+  parseSignText,
+} from '@/lib/signRenderer';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**
- * Sign Layer - Renders airport taxiway signs according to X-Plane spec
+ * Sign Layer - Renders airport taxiway signs as SVG images
  *
- * Sign types:
+ * Signs are rendered as proper rectangular images with:
  * - @Y: Direction signs (black text on yellow background)
  * - @L: Location signs (yellow text on black background)
  * - @R: Mandatory/Hold signs (white text on red background)
  * - @B: Distance remaining signs (white text on black background)
+ *
+ * Multi-segment signs are rendered as connected rectangles.
  */
 export class SignLayer extends BaseLayerRenderer {
   layerId = 'airport-signs';
   sourceId = 'airport-signs';
-  additionalLayerIds = ['airport-signs-direction'];
+  additionalLayerIds: string[] = [];
+
+  private imageLoadingSet = new Set<string>();
+  private styleMissingHandler: ((e: { id: string }) => void) | null = null;
 
   hasData(airport: ParsedAirport): boolean {
     return airport.signs && airport.signs.length > 0;
@@ -30,147 +35,108 @@ export class SignLayer extends BaseLayerRenderer {
   render(map: maplibregl.Map, airport: ParsedAirport): void {
     if (!this.hasData(airport)) return;
 
-    // Process signs to extract type and clean text
-    const processedSigns = airport.signs.map((sign) => {
-      const parsed = parseSignText(sign.text);
-      return {
-        ...sign,
-        text: parsed.text,
-        signType: parsed.signType,
-        hasArrow: parsed.hasArrow,
-        arrowDirection: parsed.arrowDirection,
-      };
-    });
+    // Register the styleimagemissing handler for lazy image generation
+    this.registerImageHandler(map);
 
-    // Create GeoJSON with processed data
-    const geoJSON: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: processedSigns.map((sign) => ({
+    // Process signs to generate image cache keys
+    const features = airport.signs.map((sign) => {
+      const parsed = parseSignText(sign.text);
+      const imageId = generateSignCacheKey(parsed.front, sign.size);
+
+      return {
         type: 'Feature' as const,
         geometry: {
           type: 'Point' as const,
           coordinates: [sign.longitude, sign.latitude],
         },
         properties: {
-          text: sign.text,
-          size: sign.size,
+          imageId,
           heading: sign.heading,
-          signType: sign.signType,
-          hasArrow: sign.hasArrow,
-          arrowDirection: sign.arrowDirection,
+          size: sign.size,
         },
-      })),
+      };
+    });
+
+    const geoJSON: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features,
     };
 
     this.addSource(map, geoJSON);
 
-    // Build color expressions based on sign type
-    const textColorExpr = this.buildTextColorExpression();
-    const haloColorExpr = this.buildHaloColorExpression();
-
-    // Main sign text layer
+    // Single symbol layer using generated sign images
     this.addLayer(map, {
       id: this.layerId,
       type: 'symbol',
       source: this.sourceId,
-      minzoom: ZOOM_BEHAVIORS.signs.minZoom,
+      minzoom: SIGN_LAYER_CONFIG.minZoom,
       layout: {
-        'text-field': ['get', 'text'],
-        'text-font': ['Open Sans Bold'],
-        'text-size': buildSignFontSizeExpression(),
-        'text-rotate': ['get', 'heading'],
-        'text-allow-overlap': false,
-        'text-ignore-placement': false,
-        'text-padding': 4,
-        'text-anchor': 'center',
+        'icon-image': ['get', 'imageId'],
+        'icon-rotate': ['get', 'heading'],
+        'icon-rotation-alignment': 'map',
+        'icon-pitch-alignment': 'viewport', // Keep icons facing viewer, no pitch distortion
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'icon-size': SIGN_LAYER_CONFIG.iconSize,
       },
       paint: {
-        'text-color': textColorExpr,
-        'text-halo-color': haloColorExpr,
-        'text-halo-width': buildSignHaloWidthExpression(),
-        'text-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, 1],
-      },
-    });
-
-    // Direction indicator arrow below sign
-    this.addLayer(map, {
-      id: 'airport-signs-direction',
-      type: 'symbol',
-      source: this.sourceId,
-      minzoom: ZOOM_BEHAVIORS.signs.minZoom + 1,
-      layout: {
-        'text-field': '\u25BC', // ▼ pointing down (will be rotated)
-        'text-font': ['Open Sans Bold'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 16, 6, 18, 10],
-        'text-rotate': ['get', 'heading'],
-        'text-offset': [0, 1.4],
-        'text-allow-overlap': true,
-        'text-ignore-placement': true,
-      },
-      paint: {
-        'text-color': [
-          'match',
-          ['get', 'signType'],
-          'direction',
-          '#FFD700', // Yellow for direction signs
-          'location',
-          '#FFD700', // Yellow for location signs
-          'mandatory',
-          '#CC0000', // Red for hold signs
-          'distance',
-          '#666666', // Gray for distance
-          '#888888', // Default gray
-        ],
-        'text-opacity': ['interpolate', ['linear'], ['zoom'], 16, 0, 17, 0.6],
+        'icon-opacity': 1,
       },
     });
   }
 
   /**
-   * Build MapLibre expression for text color based on sign type
+   * Register handler for styleimagemissing event to generate sign images on demand
    */
-  private buildTextColorExpression(): maplibregl.ExpressionSpecification {
-    return [
-      'match',
-      ['get', 'signType'],
-      'direction',
-      SIGN_TYPE_COLORS.direction.textColor,
-      'location',
-      SIGN_TYPE_COLORS.location.textColor,
-      'mandatory',
-      SIGN_TYPE_COLORS.mandatory.textColor,
-      'distance',
-      SIGN_TYPE_COLORS.distance.textColor,
-      SIGN_TYPE_COLORS.unknown.textColor,
-    ] as maplibregl.ExpressionSpecification;
-  }
+  private registerImageHandler(map: maplibregl.Map): void {
+    // Remove existing handler if any
+    if (this.styleMissingHandler) {
+      map.off('styleimagemissing', this.styleMissingHandler);
+    }
 
-  /**
-   * Build MapLibre expression for halo/background color based on sign type
-   */
-  private buildHaloColorExpression(): maplibregl.ExpressionSpecification {
-    return [
-      'match',
-      ['get', 'signType'],
-      'direction',
-      SIGN_TYPE_COLORS.direction.haloColor,
-      'location',
-      SIGN_TYPE_COLORS.location.haloColor,
-      'mandatory',
-      SIGN_TYPE_COLORS.mandatory.haloColor,
-      'distance',
-      SIGN_TYPE_COLORS.distance.haloColor,
-      SIGN_TYPE_COLORS.unknown.haloColor,
-    ] as maplibregl.ExpressionSpecification;
+    this.styleMissingHandler = async (e: { id: string }) => {
+      const imageId = e.id;
+
+      // Only handle our sign images
+      if (!imageId.startsWith('sign-')) return;
+
+      // Prevent duplicate loading
+      if (this.imageLoadingSet.has(imageId)) return;
+      if (map.hasImage(imageId)) return;
+
+      this.imageLoadingSet.add(imageId);
+
+      try {
+        const decoded = decodeSignCacheKey(imageId);
+        if (!decoded) {
+          console.warn(`Invalid sign image ID: ${imageId}`);
+          return;
+        }
+
+        const image = await generateSignImage(decoded.segments, decoded.size);
+
+        // Check again in case it was added while we were loading
+        if (!map.hasImage(imageId)) {
+          map.addImage(imageId, image);
+        }
+      } catch (err) {
+        console.error(`Failed to generate sign image: ${imageId}`, err);
+      } finally {
+        this.imageLoadingSet.delete(imageId);
+      }
+    };
+
+    map.on('styleimagemissing', this.styleMissingHandler);
   }
 
   override remove(map: maplibregl.Map): void {
-    // Remove additional layers
-    for (const layerId of this.additionalLayerIds) {
-      if (map.getLayer(layerId)) {
-        map.removeLayer(layerId);
-      }
+    // Remove the styleimagemissing handler
+    if (this.styleMissingHandler) {
+      map.off('styleimagemissing', this.styleMissingHandler);
+      this.styleMissingHandler = null;
     }
+
+    this.imageLoadingSet.clear();
     super.remove(map);
   }
 }
