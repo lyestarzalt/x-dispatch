@@ -1,5 +1,6 @@
 // Layer imports for registry
 import {
+  BeaconLayer,
   BoundaryLayer,
   GateLayer,
   LinearFeatureLayer,
@@ -11,6 +12,7 @@ import {
   SignLayer,
   TaxiwayLayer,
   TaxiwayLightsLayer,
+  TowerLayer,
   WindsockLayer,
 } from './airport';
 import type { LayerRenderer } from './airport/BaseLayerRenderer';
@@ -24,10 +26,6 @@ export * from './navigation';
 export * from './airspace';
 export * from './dynamic';
 
-/**
- * Create all layer renderers in correct z-order
- * Order matters! Lower index = rendered first (below)
- */
 export function createLayerRenderers(): LayerRenderer[] {
   return [
     new PavementLayer(),
@@ -35,12 +33,14 @@ export function createLayerRenderers(): LayerRenderer[] {
     new TaxiwayLayer(),
     new RunwayLayer(),
     new RunwayMarkingsLayer(),
-    new LinearFeatureLayer(), // Painted lines only (no lights)
-    new RunwayLightsLayer(), // Runway lights
-    new TaxiwayLightsLayer(), // Taxiway lights (FAA-accurate)
+    new LinearFeatureLayer(),
+    new RunwayLightsLayer(),
+    new TaxiwayLightsLayer(),
     new GateLayer(),
     new RunwayEndLayer(),
     new WindsockLayer(),
     new SignLayer(),
+    new BeaconLayer(),
+    new TowerLayer(),
   ];
 }
