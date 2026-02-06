@@ -76,12 +76,13 @@ const LIGHT_CONFIGS: Record<LineLightingType, LightingConfig> = {
 
   // 102: Taxiway edge lights - blue, omnidirectional
   // FAA standard: 200ft (60m) max, 50ft (15m) on curves
+  // Using 10m for slightly denser visualization
   [LineLightingType.BLUE_OMNIDIRECTIONAL_LIGHTS]: {
-    spacingMeters: 40,
+    spacingMeters: 10,
     color: 'blue',
     direction: 'omnidirectional',
     isPulsating: false,
-    intensity: 1.0,
+    intensity: 1.2,
   },
 
   // 103: Clearance bar / intermediate hold - amber, unidirectional

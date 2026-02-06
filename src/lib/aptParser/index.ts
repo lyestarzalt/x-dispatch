@@ -106,12 +106,39 @@ export class AirportParser {
   }
 
   /**
+   * Extract edge linear features from pavement paths.
+   * Pavements (110) can have line types and light types on their boundary nodes,
+   * defining painted edge lines and embedded lights around the pavement.
+   */
+  private extractPavementEdgeFeatures(name: string, paths: ParsedPath[]): LinearFeature[] {
+    // Check if any path has non-zero line or light types
+    const hasEdgeMarkings = paths.some((path) =>
+      path.lineTypes?.some((lt) => lt.lineType > 0 || lt.lightType > 0)
+    );
+
+    if (!hasEdgeMarkings) {
+      return [];
+    }
+
+    // Reuse parseLinearFeatures logic with a synthetic token array
+    return this.parseLinearFeaturesFromPaths(`${name} edge`, paths);
+  }
+
+  /**
    * Parse linear feature(s) from path data.
    * Splits into multiple features when line type changes.
    * lineTypes[i] applies to segment from coord[i] to coord[i+1].
    */
   private parseLinearFeatures(tokens: string[], paths: ParsedPath[]): LinearFeature[] {
     const name = tokens.slice(1).join(' ');
+    return this.parseLinearFeaturesFromPaths(name, paths);
+  }
+
+  /**
+   * Core logic for parsing linear features from paths.
+   * Used by both standalone linear features (120) and pavement edge markings (110).
+   */
+  private parseLinearFeaturesFromPaths(name: string, paths: ParsedPath[]): LinearFeature[] {
     const features: LinearFeature[] = [];
 
     for (const path of paths) {
@@ -333,6 +360,8 @@ export class AirportParser {
           const pathParser = new PathParser(this.lines.slice(i + 1));
           const paths = pathParser.getPaths('polygon');
           if (paths.length > 0) {
+            const pavementName = tokens.slice(4).join(' ');
+
             // Add to taxiways
             airport.taxiways.push({
               surface: parseInt(tokens[1]),
@@ -340,9 +369,14 @@ export class AirportParser {
               orientation: parseFloat(tokens[3]),
               paths: paths,
             });
+
             // Also add to pavements
             const pavement = this.parsePavement(tokens, paths);
             airport.pavements.push(pavement);
+
+            // Extract edge markings (painted lines and lights on pavement boundary)
+            const edgeFeatures = this.extractPavementEdgeFeatures(pavementName, paths);
+            airport.linearFeatures.push(...edgeFeatures);
           }
           // Use getLinesConsumed() for proper index advancement (handles multi-ring pavements)
           i += pathParser.getLinesConsumed();

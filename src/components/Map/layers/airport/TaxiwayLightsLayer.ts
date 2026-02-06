@@ -98,39 +98,39 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
     const pulseOpacity = 0.3 + 0.7 * Math.sin(this.pulsatePhase * Math.PI * 2);
 
     return [
-      // Subtle glow layer for static lights - very soft, small halo
+      // Outer glow layer for static lights - soft halo effect
       new ScatterplotLayer<AirportLight>({
         id: 'taxiway-lights-glow',
         data: staticLights,
         pickable: false,
-        opacity: 0.15,
+        opacity: 0.2,
         stroked: false,
         filled: true,
-        radiusMinPixels: 2,
-        radiusMaxPixels: 5,
+        radiusMinPixels: 3,
+        radiusMaxPixels: 8,
         radiusScale: 1,
         getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: 3,
+        getRadius: (d) => 3 * d.intensity,
         getFillColor: (d) => getGlowColor(d.color),
       }),
 
-      // Main layer for static lights - tiny crisp points
+      // Main layer for static lights - visible colored circle
       new ScatterplotLayer<AirportLight>({
         id: 'taxiway-lights-main',
         data: staticLights,
         pickable: false,
-        opacity: 0.9,
+        opacity: 0.95,
         stroked: false,
         filled: true,
-        radiusMinPixels: 0.8,
-        radiusMaxPixels: 2,
+        radiusMinPixels: 1.5,
+        radiusMaxPixels: 4,
         radiusScale: 1,
         getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: 1,
+        getRadius: (d) => 1.5 * d.intensity,
         getFillColor: (d) => getLightColor(d.color),
       }),
 
-      // Tiny bright core for static lights
+      // Bright white core for static lights
       new ScatterplotLayer<AirportLight>({
         id: 'taxiway-lights-core',
         data: staticLights,
@@ -138,31 +138,31 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
         opacity: 1,
         stroked: false,
         filled: true,
-        radiusMinPixels: 0.3,
-        radiusMaxPixels: 0.8,
+        radiusMinPixels: 0.5,
+        radiusMaxPixels: 2,
         radiusScale: 1,
         getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: 0.5,
-        getFillColor: () => [255, 255, 255, 200] as RGBAColor,
+        getRadius: (d) => 0.6 * d.intensity,
+        getFillColor: () => [255, 255, 255, 255] as RGBAColor,
       }),
 
-      // Pulsating lights glow - slightly larger but still subtle
+      // Pulsating lights glow - animated halo
       new ScatterplotLayer<AirportLight>({
         id: 'taxiway-lights-pulsating-glow',
         data: pulsatingLights,
         pickable: false,
-        opacity: pulseOpacity * 0.25,
+        opacity: pulseOpacity * 0.3,
         stroked: false,
         filled: true,
-        radiusMinPixels: 3,
-        radiusMaxPixels: 7,
+        radiusMinPixels: 4,
+        radiusMaxPixels: 10,
         radiusScale: 1,
         getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: 4,
+        getRadius: (d) => 4 * d.intensity,
         getFillColor: (d) => getGlowColor(d.color),
       }),
 
-      // Pulsating lights main - small point
+      // Pulsating lights main - visible pulsing circle
       new ScatterplotLayer<AirportLight>({
         id: 'taxiway-lights-pulsating-main',
         data: pulsatingLights,
@@ -170,15 +170,15 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
         opacity: pulseOpacity,
         stroked: false,
         filled: true,
-        radiusMinPixels: 1,
-        radiusMaxPixels: 2.5,
+        radiusMinPixels: 2,
+        radiusMaxPixels: 5,
         radiusScale: 1,
         getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: 1.5,
+        getRadius: (d) => 2 * d.intensity,
         getFillColor: (d) => getLightColor(d.color),
       }),
 
-      // Pulsating lights core - tiny
+      // Pulsating lights core - bright center
       new ScatterplotLayer<AirportLight>({
         id: 'taxiway-lights-pulsating-core',
         data: pulsatingLights,
@@ -186,12 +186,12 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
         opacity: pulseOpacity,
         stroked: false,
         filled: true,
-        radiusMinPixels: 0.4,
-        radiusMaxPixels: 1,
+        radiusMinPixels: 0.8,
+        radiusMaxPixels: 2.5,
         radiusScale: 1,
         getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: 0.6,
-        getFillColor: () => [255, 255, 255, 220] as RGBAColor,
+        getRadius: (d) => 0.8 * d.intensity,
+        getFillColor: () => [255, 255, 255, 255] as RGBAColor,
       }),
     ];
   }

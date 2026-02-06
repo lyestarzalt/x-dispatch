@@ -88,8 +88,23 @@ export class PathParser {
 
       if (!isBezier) {
         // Non-bezier node (111, 113, 115)
-        const nodeLineType = tokens.length > 3 ? parseInt(tokens[3]) : 0;
-        const nodeLightType = tokens.length > 4 ? parseInt(tokens[4]) : 0;
+        // Handle case where only one value is present: if >= 100, it's a light type, not line type
+        // (Line types are 0-92, light types are 101-108)
+        let nodeLineType = 0;
+        let nodeLightType = 0;
+        if (tokens.length > 4) {
+          // Both values present: tokens[3] = line, tokens[4] = light
+          nodeLineType = parseInt(tokens[3]);
+          nodeLightType = parseInt(tokens[4]);
+        } else if (tokens.length > 3) {
+          // Only one value: if >= 100, it's a light type
+          const singleValue = parseInt(tokens[3]);
+          if (singleValue >= 100) {
+            nodeLightType = singleValue;
+          } else {
+            nodeLineType = singleValue;
+          }
+        }
 
         if (inBezier && tempBezierNodes.length >= 2) {
           // End of bezier sequence - complete the curve (112 → 111 case)
@@ -134,8 +149,23 @@ export class PathParser {
         const bzpLat = parseFloat(tokens[3]);
         const bzpLon = parseFloat(tokens[4]);
         const controlPoint: LonLat = [bzpLon, bzpLat];
-        const nodeLineType = tokens.length > 5 ? parseInt(tokens[5]) : 0;
-        const nodeLightType = tokens.length > 6 ? parseInt(tokens[6]) : 0;
+        // Handle case where only one value is present: if >= 100, it's a light type, not line type
+        // (Line types are 0-92, light types are 101-108)
+        let nodeLineType = 0;
+        let nodeLightType = 0;
+        if (tokens.length > 6) {
+          // Both values present: tokens[5] = line, tokens[6] = light
+          nodeLineType = parseInt(tokens[5]);
+          nodeLightType = parseInt(tokens[6]);
+        } else if (tokens.length > 5) {
+          // Only one value: if >= 100, it's a light type
+          const singleValue = parseInt(tokens[5]);
+          if (singleValue >= 100) {
+            nodeLightType = singleValue;
+          } else {
+            nodeLineType = singleValue;
+          }
+        }
 
         if (inBezier && tempBezierNodes.length >= 2) {
           // 112 → 112 case: CUBIC bezier

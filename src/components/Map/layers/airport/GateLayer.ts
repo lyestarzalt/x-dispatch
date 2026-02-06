@@ -3,6 +3,61 @@ import { ParsedAirport } from '@/lib/aptParser';
 import { StartupLocation } from '@/lib/aptParser/types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
+// Gate type definitions with colors
+const GATE_TYPES = {
+  gate: { color: '#3b82f6', hoverColor: '#60a5fa', icon: 'gate-airliner' }, // Blue
+  cargo: { color: '#f97316', hoverColor: '#fb923c', icon: 'gate-cargo' }, // Orange
+  tie_down: { color: '#22c55e', hoverColor: '#4ade80', icon: 'gate-ga' }, // Green
+  hangar: { color: '#6b7280', hoverColor: '#9ca3af', icon: 'gate-hangar' }, // Gray
+  fuel: { color: '#eab308', hoverColor: '#facc15', icon: 'gate-fuel' }, // Yellow
+  helicopter: { color: '#a855f7', hoverColor: '#c084fc', icon: 'gate-heli' }, // Purple
+  misc: { color: '#64748b', hoverColor: '#94a3b8', icon: 'gate-ga' }, // Slate
+} as const;
+
+type GateType = keyof typeof GATE_TYPES;
+
+// SVG icons for each gate type (top-down silhouettes, 48x48 viewbox)
+const GATE_ICONS: Record<string, string> = {
+  // Commercial airliner - swept wings, twin engines
+  'gate-airliner': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M24 4c-1.1 0-2 .9-2 2v12l-14 8v3l14-4v10l-4 3v2l6-2 6 2v-2l-4-3V25l14 4v-3l-14-8V6c0-1.1-.9-2-2-2z"/>
+  </svg>`,
+
+  // Cargo freighter - wider body, box indicator
+  'gate-cargo': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M24 4c-1.5 0-2.5.9-2.5 2v10l-14 9v4l14-4v8l-4 3v3l6.5-2 6.5 2v-3l-4-3v-8l14 4v-4l-14-9V6c0-1.1-1-2-2.5-2z"/>
+    <rect fill="white" x="20" y="18" width="8" height="6" rx="1" opacity="0.6"/>
+  </svg>`,
+
+  // General aviation - high-wing single prop (Cessna style)
+  'gate-ga': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M24 6c-.8 0-1.5.7-1.5 1.5v5L8 16v2l14.5-2v16l-5 4v2l6.5-1.5 6.5 1.5v-2l-5-4V16L40 18v-2l-14.5-3.5v-5c0-.8-.7-1.5-1.5-1.5z"/>
+    <circle fill="white" cx="24" cy="8" r="2"/>
+  </svg>`,
+
+  // Hangar - building with roof
+  'gate-hangar': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M24 8L8 18v22h32V18L24 8zm0 4l12 8v16H12V20l12-8z"/>
+    <rect fill="white" x="18" y="28" width="12" height="10" opacity="0.5"/>
+  </svg>`,
+
+  // Fuel - fuel pump/droplet
+  'gate-fuel': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M24 6c-1 0-1.8.5-2.3 1.2L12 22c-2 3-3 6-3 9 0 7 6.7 13 15 13s15-6 15-13c0-3-1-6-3-9L26.3 7.2C25.8 6.5 25 6 24 6zm0 6l8 12c1.3 2 2 4 2 6 0 5-4.5 9-10 9s-10-4-10-9c0-2 .7-4 2-6l8-12z"/>
+    <circle fill="white" cx="24" cy="32" r="4" opacity="0.6"/>
+  </svg>`,
+
+  // Helicopter - rotor disk with body
+  'gate-heli': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <circle fill="white" cx="24" cy="20" r="14" opacity="0.3" stroke="white" stroke-width="2"/>
+    <ellipse fill="white" cx="24" cy="24" rx="4" ry="8"/>
+    <path fill="white" d="M20 32h8l2 8h-12l2-8z"/>
+    <rect fill="white" x="14" y="38" width="20" height="3" rx="1"/>
+    <line stroke="white" stroke-width="2" x1="24" y1="6" x2="24" y2="34"/>
+    <line stroke="white" stroke-width="2" x1="10" y1="20" x2="38" y2="20"/>
+  </svg>`,
+};
+
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';
   sourceId = 'airport-gates';
@@ -15,11 +70,12 @@ export class GateLayer extends BaseLayerRenderer {
   render(map: maplibregl.Map, airport: ParsedAirport): void {
     if (!this.hasData(airport)) return;
 
-    this.loadAircraftIcon(map);
+    this.loadGateIcons(map);
 
     const geoJSON = this.createGeoJSON(airport.startupLocations);
     this.addSource(map, geoJSON);
 
+    // Ring layer with type-based colors
     this.addLayer(map, {
       id: 'airport-gates-ring',
       type: 'circle',
@@ -30,67 +86,69 @@ export class GateLayer extends BaseLayerRenderer {
         'circle-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#22c55e',
+          '#06b6d4', // Selected - cyan (distinct from tie_down green)
           ['boolean', ['feature-state', 'hover'], false],
-          '#334155',
-          '#1e293b',
+          ['get', 'hoverColor'],
+          ['get', 'typeColor'],
         ],
         'circle-opacity': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          0.9,
+          0.95,
           ['boolean', ['feature-state', 'hover'], false],
-          0.85,
-          0.7,
+          0.9,
+          0.75,
         ],
         'circle-stroke-width': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          2,
+          2.5,
           ['boolean', ['feature-state', 'hover'], false],
-          1.5,
+          2,
           1,
         ],
         'circle-stroke-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#22c55e',
+          '#06b6d4',
           ['boolean', ['feature-state', 'hover'], false],
-          '#94a3b8',
-          '#64748b',
+          '#ffffff',
+          ['get', 'hoverColor'],
         ],
       },
     });
 
+    // Hitbox layer for interactions
     this.addLayer(map, {
       id: 'airport-gates-hitbox',
       type: 'circle',
       source: this.sourceId,
       minzoom: 15,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 12, 17, 16, 19, 22],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 14, 17, 18, 19, 24],
         'circle-color': 'transparent',
         'circle-opacity': 0,
       },
     });
 
+    // Icon layer with type-based icons
     this.addLayer(map, {
       id: this.layerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 15,
       layout: {
-        'icon-image': 'aircraft-icon',
+        'icon-image': ['get', 'iconName'],
         'icon-size': [
           'interpolate',
           ['linear'],
           ['zoom'],
           15,
-          ['*', ['get', 'iconScale'], 0.35],
+          ['*', ['get', 'iconScale'], 0.3],
           17,
-          ['*', ['get', 'iconScale'], 0.5],
+          ['*', ['get', 'iconScale'], 0.45],
           19,
-          ['*', ['get', 'iconScale'], 0.7],
+          ['*', ['get', 'iconScale'], 0.6],
         ],
         'icon-rotate': ['get', 'heading'],
         'icon-rotation-alignment': 'map',
@@ -98,16 +156,12 @@ export class GateLayer extends BaseLayerRenderer {
         'icon-ignore-placement': true,
       },
       paint: {
-        'icon-color': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          '#ffffff',
-          '#ffffff',
-        ],
+        'icon-color': '#ffffff',
         'icon-opacity': 1,
       },
     });
 
+    // Labels
     this.addLayer(map, {
       id: 'airport-gate-labels',
       type: 'symbol',
@@ -125,61 +179,93 @@ export class GateLayer extends BaseLayerRenderer {
         'text-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#22c55e',
-          '#94a3b8',
+          '#06b6d4',
+          '#e2e8f0',
         ],
-        'text-halo-color': '#000000',
-        'text-halo-width': 1,
+        'text-halo-color': '#0f172a',
+        'text-halo-width': 1.5,
       },
     });
   }
 
-  private loadAircraftIcon(map: maplibregl.Map): void {
-    if (map.hasImage('aircraft-icon')) return;
+  private loadGateIcons(map: maplibregl.Map): void {
+    for (const [iconName, svgContent] of Object.entries(GATE_ICONS)) {
+      if (map.hasImage(iconName)) continue;
 
-    const img = new Image(48, 48);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48"><path fill="white" d="M21,16V14L13,9V3.5A1.5,1.5,0,0,0,11.5,2A1.5,1.5,0,0,0,10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/></svg>`;
-    img.onload = () => {
-      if (!map.hasImage('aircraft-icon')) {
-        map.addImage('aircraft-icon', img, { sdf: true });
-      }
-    };
-    img.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      const img = new Image(48, 48);
+      img.onload = () => {
+        if (!map.hasImage(iconName)) {
+          map.addImage(iconName, img, { sdf: true });
+        }
+      };
+      img.src = 'data:image/svg+xml,' + encodeURIComponent(svgContent);
+    }
   }
 
   private createGeoJSON(locations: StartupLocation[]): GeoJSON.FeatureCollection {
     return {
       type: 'FeatureCollection',
-      features: locations.map((location, index) => ({
-        type: 'Feature' as const,
-        id: index,
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [location.longitude, location.latitude],
-        },
-        properties: {
+      features: locations.map((location, index) => {
+        const gateType = this.normalizeGateType(location.location_type, location.airplane_types);
+        const typeConfig = GATE_TYPES[gateType];
+
+        return {
+          type: 'Feature' as const,
           id: index,
-          name: location.name,
-          locationType: location.location_type,
-          heading: location.heading,
-          airplaneTypes: location.airplane_types,
-          iconScale: this.getIconScale(location.airplane_types),
-          latitude: location.latitude,
-          longitude: location.longitude,
-        },
-      })),
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [location.longitude, location.latitude],
+          },
+          properties: {
+            id: index,
+            name: location.name,
+            locationType: location.location_type,
+            gateType,
+            heading: location.heading,
+            airplaneTypes: location.airplane_types,
+            iconScale: this.getIconScale(location.airplane_types),
+            iconName: typeConfig.icon,
+            typeColor: typeConfig.color,
+            hoverColor: typeConfig.hoverColor,
+            latitude: location.latitude,
+            longitude: location.longitude,
+          },
+        };
+      }),
     };
+  }
+
+  private normalizeGateType(locationType: string, airplaneTypes: string): GateType {
+    const type = locationType?.toLowerCase() || '';
+
+    // Check for helicopter first (airplane_types contains F)
+    if (airplaneTypes?.toUpperCase().includes('F') && !airplaneTypes.match(/[A-E]/i)) {
+      return 'helicopter';
+    }
+
+    // Map location types
+    if (type.includes('gate') || type.includes('jet_bridge')) return 'gate';
+    if (type.includes('cargo')) return 'cargo';
+    if (type.includes('tie_down') || type.includes('tiedown')) return 'tie_down';
+    if (type.includes('hangar')) return 'hangar';
+    if (type.includes('fuel')) return 'fuel';
+    if (type.includes('misc')) return 'misc';
+
+    // Default based on aircraft size
+    const types = airplaneTypes?.toUpperCase() || '';
+    if (types.match(/[ABC]/)) return 'gate'; // Large aircraft = gate
+    return 'tie_down'; // Small aircraft = tie-down
   }
 
   private getIconScale(airplaneTypes: string): number {
     if (!airplaneTypes) return 1.0;
     const types = airplaneTypes.toUpperCase();
-    if (types.includes('A')) return 1.8;
-    if (types.includes('B')) return 1.5;
+    if (types.includes('A')) return 1.6;
+    if (types.includes('B')) return 1.4;
     if (types.includes('C')) return 1.2;
     if (types.includes('D')) return 1.0;
-    if (types.includes('E')) return 0.8;
-    if (types.includes('F')) return 0.6;
+    if (types.includes('E')) return 0.85;
+    if (types.includes('F')) return 0.75;
     return 1.0;
   }
 }
