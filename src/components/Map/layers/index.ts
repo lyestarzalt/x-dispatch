@@ -9,7 +9,7 @@ import {
   RunwayLayer,
   RunwayLightsLayer,
   RunwayMarkingsLayer,
-  SignLayer,
+  // SignLayer, // TODO: rework sign rendering
   TaxiwayLayer,
   TaxiwayLightsLayer,
   TowerLayer,
@@ -39,7 +39,7 @@ export function createLayerRenderers(): LayerRenderer[] {
     new GateLayer(),
     new RunwayEndLayer(),
     new WindsockLayer(),
-    new SignLayer(),
+    // new SignLayer(), // TODO: rework sign rendering
     new BeaconLayer(),
     new TowerLayer(),
   ];
