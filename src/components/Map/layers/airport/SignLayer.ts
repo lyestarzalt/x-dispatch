@@ -2,46 +2,34 @@ import maplibregl from 'maplibre-gl';
 import { ParsedAirport } from '@/lib/aptParser';
 import {
   SIGN_LAYER_CONFIG,
-  decodeSignCacheKey,
   generateSignCacheKey,
   generateSignImage,
   parseSignText,
 } from '@/lib/signRenderer';
+import type { SignSegment } from '@/lib/signRenderer';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
-/**
- * Sign Layer - Renders airport taxiway signs as SVG images
- *
- * Signs are rendered as proper rectangular images with:
- * - @Y: Direction signs (black text on yellow background)
- * - @L: Location signs (yellow text on black background)
- * - @R: Mandatory/Hold signs (white text on red background)
- * - @B: Distance remaining signs (white text on black background)
- *
- * Multi-segment signs are rendered as connected rectangles.
- */
 export class SignLayer extends BaseLayerRenderer {
   layerId = 'airport-signs';
   sourceId = 'airport-signs';
   additionalLayerIds: string[] = [];
 
-  private imageLoadingSet = new Set<string>();
-  private styleMissingHandler: ((e: { id: string }) => void) | null = null;
-
   hasData(airport: ParsedAirport): boolean {
     return airport.signs && airport.signs.length > 0;
   }
 
-  render(map: maplibregl.Map, airport: ParsedAirport): void {
+  async render(map: maplibregl.Map, airport: ParsedAirport): Promise<void> {
     if (!this.hasData(airport)) return;
 
-    // Register the styleimagemissing handler for lazy image generation
-    this.registerImageHandler(map);
-
-    // Process signs to generate image cache keys
+    // Process signs and collect unique images to generate
+    const imageMap = new Map<string, { segments: SignSegment[]; size: number }>();
     const features = airport.signs.map((sign) => {
       const parsed = parseSignText(sign.text);
       const imageId = generateSignCacheKey(parsed.front, sign.size);
+
+      if (!imageMap.has(imageId) && parsed.front.length > 0) {
+        imageMap.set(imageId, { segments: parsed.front, size: sign.size });
+      }
 
       return {
         type: 'Feature' as const,
@@ -56,6 +44,21 @@ export class SignLayer extends BaseLayerRenderer {
         },
       };
     });
+
+    // Pre-generate all sign images before adding the layer
+    await Promise.all(
+      Array.from(imageMap.entries()).map(async ([imageId, { segments, size }]) => {
+        if (map.hasImage(imageId)) return;
+        try {
+          const image = await generateSignImage(segments, size);
+          if (!map.hasImage(imageId)) {
+            map.addImage(imageId, image);
+          }
+        } catch (err) {
+          console.error(`Failed to generate sign: ${imageId}`, err);
+        }
+      })
+    );
 
     const geoJSON: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
@@ -78,60 +81,5 @@ export class SignLayer extends BaseLayerRenderer {
         'icon-size': SIGN_LAYER_CONFIG.iconSize,
       },
     });
-  }
-
-  /**
-   * Register handler for styleimagemissing event to generate sign images on demand
-   */
-  private registerImageHandler(map: maplibregl.Map): void {
-    // Remove existing handler if any
-    if (this.styleMissingHandler) {
-      map.off('styleimagemissing', this.styleMissingHandler);
-    }
-
-    this.styleMissingHandler = async (e: { id: string }) => {
-      const imageId = e.id;
-
-      // Only handle our sign images
-      if (!imageId.startsWith('sign-')) return;
-
-      // Prevent duplicate loading
-      if (this.imageLoadingSet.has(imageId)) return;
-      if (map.hasImage(imageId)) return;
-
-      this.imageLoadingSet.add(imageId);
-
-      try {
-        const decoded = decodeSignCacheKey(imageId);
-        if (!decoded) {
-          console.warn(`Invalid sign image ID: ${imageId}`);
-          return;
-        }
-
-        const image = await generateSignImage(decoded.segments, decoded.size);
-
-        if (!map.hasImage(imageId)) {
-          map.addImage(imageId, image);
-          map.triggerRepaint();
-        }
-      } catch (err) {
-        console.error(`Failed to generate sign image: ${imageId}`, err);
-      } finally {
-        this.imageLoadingSet.delete(imageId);
-      }
-    };
-
-    map.on('styleimagemissing', this.styleMissingHandler);
-  }
-
-  override remove(map: maplibregl.Map): void {
-    // Remove the styleimagemissing handler
-    if (this.styleMissingHandler) {
-      map.off('styleimagemissing', this.styleMissingHandler);
-      this.styleMissingHandler = null;
-    }
-
-    this.imageLoadingSet.clear();
-    super.remove(map);
   }
 }

@@ -18,7 +18,7 @@ export interface LayerRenderer {
    * @param map MapLibre map instance
    * @param airport Parsed airport data
    */
-  render(map: maplibregl.Map, airport: ParsedAirport): void;
+  render(map: maplibregl.Map, airport: ParsedAirport): void | Promise<void>;
 
   /**
    * Remove the layer and source from the map
@@ -41,7 +41,7 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
   abstract sourceId: string;
   additionalLayerIds?: string[];
 
-  abstract render(map: maplibregl.Map, airport: ParsedAirport): void;
+  abstract render(map: maplibregl.Map, airport: ParsedAirport): void | Promise<void>;
   abstract hasData(airport: ParsedAirport): boolean;
 
   remove(map: maplibregl.Map): void {
