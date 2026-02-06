@@ -319,7 +319,7 @@ export default function Toolbar({
         </div>
       </div>
 
-      <ExplorePanel />
+      <ExplorePanel airports={airports} onSelectAirport={onSelectAirport} />
     </div>
   );
 }

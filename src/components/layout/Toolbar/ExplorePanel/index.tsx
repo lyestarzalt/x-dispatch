@@ -1,5 +1,7 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import type { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
 import { FiltersTab } from './FiltersTab';
@@ -7,20 +9,32 @@ import { RoutesTab } from './RoutesTab';
 
 const TABS = ['filters', 'featured', 'routes'] as const;
 
-export function ExplorePanel() {
+interface ExplorePanelProps {
+  airports: Airport[];
+  onSelectAirport: (airport: Airport) => void;
+}
+
+export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
   const { t } = useTranslation();
   const explore = useMapStore((s) => s.explore);
   const setExploreTab = useMapStore((s) => s.setExploreTab);
+  const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const setExploreFilters = useMapStore((s) => s.setExploreFilters);
   const setFeaturedCategory = useMapStore((s) => s.setFeaturedCategory);
   const setSelectedRoute = useMapStore((s) => s.setSelectedRoute);
 
-  if (!explore.isOpen) return null;
+  const handleSelectAirport = useCallback(
+    (icao: string) => {
+      const airport = airports.find((a) => a.icao === icao);
+      if (airport) {
+        onSelectAirport(airport);
+        setExploreOpen(false);
+      }
+    },
+    [airports, onSelectAirport, setExploreOpen]
+  );
 
-  const handleSelectAirport = (icao: string) => {
-    console.log('Select airport:', icao);
-    // Will be implemented to fly to airport
-  };
+  if (!explore.isOpen) return null;
 
   return (
     <div className="absolute left-0 right-0 top-full z-40 border-b border-border bg-card shadow-lg">
