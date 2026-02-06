@@ -64,15 +64,6 @@ export class SignLayer extends BaseLayerRenderer {
 
     this.addSource(map, geoJSON);
 
-    // Single symbol layer using generated sign images
-    // Use zoom interpolation for icon-size to keep signs proportional to airport features
-    const iconSizeExpression: maplibregl.ExpressionSpecification = [
-      'interpolate',
-      ['linear'],
-      ['zoom'],
-      ...SIGN_LAYER_CONFIG.iconSizeStops.flat(),
-    ];
-
     this.addLayer(map, {
       id: this.layerId,
       type: 'symbol',
@@ -82,13 +73,9 @@ export class SignLayer extends BaseLayerRenderer {
         'icon-image': ['get', 'imageId'],
         'icon-rotate': ['get', 'heading'],
         'icon-rotation-alignment': 'map',
-        'icon-pitch-alignment': 'viewport', // Keep icons facing viewer, no pitch distortion
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
-        'icon-size': iconSizeExpression,
-      },
-      paint: {
-        'icon-opacity': 1,
+        'icon-size': SIGN_LAYER_CONFIG.iconSize,
       },
     });
   }
@@ -123,9 +110,9 @@ export class SignLayer extends BaseLayerRenderer {
 
         const image = await generateSignImage(decoded.segments, decoded.size);
 
-        // Check again in case it was added while we were loading
         if (!map.hasImage(imageId)) {
           map.addImage(imageId, image);
+          map.triggerRepaint();
         }
       } catch (err) {
         console.error(`Failed to generate sign image: ${imageId}`, err);
