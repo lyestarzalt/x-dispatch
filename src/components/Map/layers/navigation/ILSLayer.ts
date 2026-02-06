@@ -1,22 +1,17 @@
 import maplibregl from 'maplibre-gl';
+import { NAV_COLORS } from '@/config/navLayerConfig';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/geo';
+import { svgToDataUrl } from '@/lib/svg';
 import type { Navaid } from '@/types/navigation';
 import { removeLayersAndSource, setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
-const ILS_COLOR = '#FF8800';
-const ILS_CONE_COLOR = '#FF8800';
-
 function createILSSymbolSVG(size: number = 36): string {
   const center = size / 2;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <polygon points="${center},4 ${center - 8},${size - 4} ${center},${size - 12} ${center + 8},${size - 4}" fill="${ILS_COLOR}" stroke="${ILS_COLOR}" stroke-width="1"/>
+    <polygon points="${center},4 ${center - 8},${size - 4} ${center},${size - 12} ${center + 8},${size - 4}" fill="${NAV_COLORS.ils}" stroke="${NAV_COLORS.ils}" stroke-width="1"/>
     <line x1="${center}" y1="4" x2="${center}" y2="${size - 4}" stroke="#000" stroke-width="1.5"/>
   </svg>`;
-}
-
-function svgToDataURL(svg: string): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 // Helper to calculate destination point using nautical miles
@@ -147,7 +142,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
             resolve(false);
           };
         });
-        img.src = svgToDataURL(createILSSymbolSVG(36));
+        img.src = svgToDataUrl(createILSSymbolSVG(36));
         this.imagesLoaded = await promise;
         return this.imagesLoaded;
       } catch {
@@ -166,7 +161,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
       type: 'fill',
       source: this.coneSourceId,
       paint: {
-        'fill-color': ILS_CONE_COLOR,
+        'fill-color': NAV_COLORS.ils,
         'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.05, 12, 0.1, 16, 0.15],
       },
     });
@@ -177,7 +172,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
       type: 'line',
       source: this.courseSourceId,
       paint: {
-        'line-color': ILS_COLOR,
+        'line-color': NAV_COLORS.ils,
         'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 12, 2, 16, 3],
         'line-dasharray': [4, 2],
         'line-opacity': 0.8,
@@ -204,7 +199,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
         type: 'circle',
         source: this.sourceId,
         paint: {
-          'circle-color': ILS_COLOR,
+          'circle-color': NAV_COLORS.ils,
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4, 12, 6, 16, 8],
           'circle-stroke-color': '#FFFFFF',
           'circle-stroke-width': 2,
@@ -234,7 +229,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
         'text-allow-overlap': false,
       },
       paint: {
-        'text-color': ILS_COLOR,
+        'text-color': NAV_COLORS.ils,
         'text-halo-color': '#000000',
         'text-halo-width': 1.5,
       },
@@ -299,24 +294,5 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 }
 
-// Singleton instance for backward compatibility
-const ilsLayer = new ILSLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export async function addILSLayer(map: maplibregl.Map, ilsList: Navaid[]): Promise<void> {
-  return ilsLayer.add(map, ilsList);
-}
-
-export function removeILSLayer(map: maplibregl.Map): void {
-  return ilsLayer.remove(map);
-}
-
-export function setILSLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return ilsLayer.setVisibility(map, visible);
-}
-
-export async function updateILSLayer(map: maplibregl.Map, ilsList: Navaid[]): Promise<void> {
-  return ilsLayer.update(map, ilsList);
-}
-
+export const ilsLayer = new ILSLayerRenderer();
 export const ILS_LAYER_IDS = ilsLayer.getAllLayerIds();

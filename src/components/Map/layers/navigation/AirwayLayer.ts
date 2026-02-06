@@ -352,34 +352,7 @@ export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCo
   }
 }
 
-// Singleton instances for backward compatibility
-const highAirwayLayer = new HighAirwayLayerRenderer();
-const lowAirwayLayer = new LowAirwayLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export function addHighAirwayLayer(map: maplibregl.Map, airways: AirwaySegmentWithCoords[]): void {
-  void highAirwayLayer.add(map, airways);
-}
-
-export function removeHighAirwayLayer(map: maplibregl.Map): void {
-  return highAirwayLayer.remove(map);
-}
-
-export function setHighAirwayLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return highAirwayLayer.setVisibility(map, visible);
-}
-
-export function addLowAirwayLayer(map: maplibregl.Map, airways: AirwaySegmentWithCoords[]): void {
-  void lowAirwayLayer.add(map, airways);
-}
-
-export function removeLowAirwayLayer(map: maplibregl.Map): void {
-  return lowAirwayLayer.remove(map);
-}
-
-export function setLowAirwayLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return lowAirwayLayer.setVisibility(map, visible);
-}
-
+export const highAirwayLayer = new HighAirwayLayerRenderer();
+export const lowAirwayLayer = new LowAirwayLayerRenderer();
 export const HIGH_AIRWAY_LAYER_IDS = highAirwayLayer.getAllLayerIds();
 export const LOW_AIRWAY_LAYER_IDS = lowAirwayLayer.getAllLayerIds();

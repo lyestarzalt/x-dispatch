@@ -71,24 +71,5 @@ export class FIRLayerRenderer extends NavLayerRenderer<Airspace> {
   }
 }
 
-// Singleton instance for backward compatibility
-const firLayer = new FIRLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export function addFIRLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
-  void firLayer.add(map, airspaces);
-}
-
-export function removeFIRLayer(map: maplibregl.Map): void {
-  return firLayer.remove(map);
-}
-
-export function setFIRLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return firLayer.setVisibility(map, visible);
-}
-
-export function updateFIRLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
-  void firLayer.update(map, airspaces);
-}
-
+export const firLayer = new FIRLayerRenderer();
 export const FIR_LAYER_IDS = firLayer.getAllLayerIds();

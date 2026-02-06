@@ -83,24 +83,5 @@ export class WaypointLayerRenderer extends NavLayerRenderer<Waypoint> {
   }
 }
 
-// Singleton instance for backward compatibility
-const waypointLayer = new WaypointLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export function addWaypointLayer(map: maplibregl.Map, waypoints: Waypoint[]): void {
-  void waypointLayer.add(map, waypoints);
-}
-
-export function removeWaypointLayer(map: maplibregl.Map): void {
-  return waypointLayer.remove(map);
-}
-
-export function setWaypointLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return waypointLayer.setVisibility(map, visible);
-}
-
-export function updateWaypointLayer(map: maplibregl.Map, waypoints: Waypoint[]): void {
-  void waypointLayer.update(map, waypoints);
-}
-
+export const waypointLayer = new WaypointLayerRenderer();
 export const WAYPOINT_LAYER_IDS = waypointLayer.getAllLayerIds();

@@ -1,8 +1,7 @@
 import maplibregl from 'maplibre-gl';
+import { NAV_COLORS } from '@/config/navLayerConfig';
 import type { HoldingPattern } from '@/lib/navParser/types';
 import { NavLayerRenderer } from './NavLayerRenderer';
-
-const HOLDING_COLOR = '#FF6B6B'; // Coral color for visibility
 
 export interface HoldingPatternWithCoords extends HoldingPattern {
   latitude: number;
@@ -145,7 +144,7 @@ export class HoldingPatternLayerRenderer extends NavLayerRenderer<HoldingPattern
       source: this.sourceId,
       filter: ['==', '$type', 'LineString'],
       paint: {
-        'line-color': HOLDING_COLOR,
+        'line-color': NAV_COLORS.holdingPattern,
         'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 12, 2, 16, 3],
         'line-opacity': 0.8,
         'line-dasharray': [4, 2],
@@ -168,7 +167,7 @@ export class HoldingPatternLayerRenderer extends NavLayerRenderer<HoldingPattern
         'text-allow-overlap': false,
       },
       paint: {
-        'text-color': HOLDING_COLOR,
+        'text-color': NAV_COLORS.holdingPattern,
         'text-halo-color': '#000000',
         'text-halo-width': 1.5,
       },
@@ -177,30 +176,5 @@ export class HoldingPatternLayerRenderer extends NavLayerRenderer<HoldingPattern
   }
 }
 
-// Singleton instance for backward compatibility
-const holdingPatternLayer = new HoldingPatternLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export async function addHoldingPatternLayer(
-  map: maplibregl.Map,
-  holds: HoldingPatternWithCoords[]
-): Promise<void> {
-  return holdingPatternLayer.add(map, holds);
-}
-
-export function removeHoldingPatternLayer(map: maplibregl.Map): void {
-  return holdingPatternLayer.remove(map);
-}
-
-export function setHoldingPatternLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return holdingPatternLayer.setVisibility(map, visible);
-}
-
-export async function updateHoldingPatternLayer(
-  map: maplibregl.Map,
-  holds: HoldingPatternWithCoords[]
-): Promise<void> {
-  return holdingPatternLayer.update(map, holds);
-}
-
+export const holdingPatternLayer = new HoldingPatternLayerRenderer();
 export const HOLDING_PATTERN_LAYER_IDS = holdingPatternLayer.getAllLayerIds();

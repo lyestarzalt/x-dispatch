@@ -30,11 +30,10 @@ import {
   useVatsimSync,
 } from './hooks';
 import {
-  addFIRLayer,
   addProcedureRouteLayer,
+  firLayer,
   removeProcedureRouteLayer,
   removeVatsimPilotLayer,
-  setFIRLayerVisibility,
 } from './layers';
 import './map-animations.css';
 import CompassWidget from './widgets/CompassWidget';
@@ -210,8 +209,8 @@ export default function Map({ airports }: MapProps) {
       try {
         const allAirspaces = await window.navAPI.getAllAirspaces();
         if (allAirspaces.length > 0) {
-          addFIRLayer(map, allAirspaces);
-          setFIRLayerVisibility(map, useMapStore.getState().navVisibility.airspaces);
+          await firLayer.add(map, allAirspaces);
+          firLayer.setVisibility(map, useMapStore.getState().navVisibility.airspaces);
         }
       } catch (err) {
         window.appAPI.log.error('Failed to load airspaces', err);
@@ -405,7 +404,7 @@ export default function Map({ airports }: MapProps) {
       if (map) {
         applyNavVisibilityChange(map, layer, newVisibility);
         if (layer === 'airspaces') {
-          setFIRLayerVisibility(map, newVisibility.airspaces);
+          firLayer.setVisibility(map, newVisibility.airspaces);
         }
       }
     },

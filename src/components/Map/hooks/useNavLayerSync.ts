@@ -3,22 +3,14 @@ import maplibregl from 'maplibre-gl';
 import type { GlobalAirwaysData, NavigationData } from '@/queries/useNavDataQuery';
 import type { NavLayerVisibility } from '@/types/layers';
 import {
-  addAirspaceLayer,
-  addDMELayer,
-  addHighAirwayLayer,
-  addILSLayer,
-  addLowAirwayLayer,
-  addNDBLayer,
-  addVORLayer,
-  addWaypointLayer,
-  removeHighAirwayLayer,
-  removeLowAirwayLayer,
-  setAirspaceLayerVisibility,
-  setDMELayerVisibility,
-  setILSLayerVisibility,
-  setNDBLayerVisibility,
-  setVORLayerVisibility,
-  setWaypointLayerVisibility,
+  airspaceLayer,
+  dmeLayer,
+  highAirwayLayer,
+  ilsLayer,
+  lowAirwayLayer,
+  ndbLayer,
+  vorLayer,
+  waypointLayer,
 } from '../layers';
 import type { MapRef } from './useMapSetup';
 
@@ -50,28 +42,28 @@ export function useNavLayerSync({
         }
 
         if (navData.vors.length > 0) {
-          await addVORLayer(map, navData.vors);
-          setVORLayerVisibility(map, navVisibility.vors);
+          await vorLayer.add(map, navData.vors);
+          vorLayer.setVisibility(map, navVisibility.vors);
         }
         if (navData.ndbs.length > 0) {
-          await addNDBLayer(map, navData.ndbs);
-          setNDBLayerVisibility(map, navVisibility.ndbs);
+          await ndbLayer.add(map, navData.ndbs);
+          ndbLayer.setVisibility(map, navVisibility.ndbs);
         }
         if (navData.dmes.length > 0) {
-          addDMELayer(map, navData.dmes);
-          setDMELayerVisibility(map, navVisibility.dmes);
+          await dmeLayer.add(map, navData.dmes);
+          dmeLayer.setVisibility(map, navVisibility.dmes);
         }
         if (navData.ils.length > 0) {
-          await addILSLayer(map, navData.ils);
-          setILSLayerVisibility(map, navVisibility.ils);
+          await ilsLayer.add(map, navData.ils);
+          ilsLayer.setVisibility(map, navVisibility.ils);
         }
         if (navData.waypoints.length > 0) {
-          addWaypointLayer(map, navData.waypoints.slice(0, 2000));
-          setWaypointLayerVisibility(map, navVisibility.waypoints);
+          await waypointLayer.add(map, navData.waypoints.slice(0, 2000));
+          waypointLayer.setVisibility(map, navVisibility.waypoints);
         }
         if (navData.airspaces.length > 0) {
-          addAirspaceLayer(map, navData.airspaces);
-          setAirspaceLayerVisibility(map, navVisibility.airspaces);
+          await airspaceLayer.add(map, navData.airspaces);
+          airspaceLayer.setVisibility(map, navVisibility.airspaces);
         }
       } catch (err) {
         window.appAPI.log.error('Nav layer update failed', err);
@@ -94,16 +86,16 @@ export function useNavLayerSync({
 
       try {
         if (navVisibility.airwaysMode === 'high' && airwaysData.highAirways.length > 0) {
-          removeHighAirwayLayer(map);
-          addHighAirwayLayer(map, airwaysData.highAirways);
-          removeLowAirwayLayer(map);
+          highAirwayLayer.remove(map);
+          void highAirwayLayer.add(map, airwaysData.highAirways);
+          lowAirwayLayer.remove(map);
         } else if (navVisibility.airwaysMode === 'low' && airwaysData.lowAirways.length > 0) {
-          removeLowAirwayLayer(map);
-          addLowAirwayLayer(map, airwaysData.lowAirways);
-          removeHighAirwayLayer(map);
+          lowAirwayLayer.remove(map);
+          void lowAirwayLayer.add(map, airwaysData.lowAirways);
+          highAirwayLayer.remove(map);
         } else {
-          removeHighAirwayLayer(map);
-          removeLowAirwayLayer(map);
+          highAirwayLayer.remove(map);
+          lowAirwayLayer.remove(map);
         }
       } catch (err) {
         window.appAPI.log.error('Airway layer update failed', err);
@@ -122,22 +114,22 @@ export function applyNavVisibilityChange(
 ): void {
   switch (layer) {
     case 'vors':
-      setVORLayerVisibility(map, visibility.vors);
+      vorLayer.setVisibility(map, visibility.vors);
       break;
     case 'ndbs':
-      setNDBLayerVisibility(map, visibility.ndbs);
+      ndbLayer.setVisibility(map, visibility.ndbs);
       break;
     case 'dmes':
-      setDMELayerVisibility(map, visibility.dmes);
+      dmeLayer.setVisibility(map, visibility.dmes);
       break;
     case 'ils':
-      setILSLayerVisibility(map, visibility.ils);
+      ilsLayer.setVisibility(map, visibility.ils);
       break;
     case 'waypoints':
-      setWaypointLayerVisibility(map, visibility.waypoints);
+      waypointLayer.setVisibility(map, visibility.waypoints);
       break;
     case 'airspaces':
-      setAirspaceLayerVisibility(map, visibility.airspaces);
+      airspaceLayer.setVisibility(map, visibility.airspaces);
       break;
   }
 }

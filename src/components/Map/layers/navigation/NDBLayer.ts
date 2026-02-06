@@ -1,9 +1,8 @@
 import maplibregl from 'maplibre-gl';
+import { NAV_COLORS } from '@/config/navLayerConfig';
+import { svgToDataUrl } from '@/lib/svg';
 import type { Navaid } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
-
-// ICAO standard NDB color - magenta/brown
-const NDB_COLOR = '#9933CC';
 
 function createNDBSymbolSVG(size: number = 40): string {
   const center = size / 2;
@@ -19,19 +18,15 @@ function createNDBSymbolSVG(size: number = 40): string {
       const angle = ((i * 45 - 90) * Math.PI) / 180;
       const x = center + ringRadius * Math.cos(angle);
       const y = center + ringRadius * Math.sin(angle);
-      dots += `<circle cx="${x}" cy="${y}" r="${dotRadius}" fill="${NDB_COLOR}" opacity="${ring === 1 ? 1 : 0.6}"/>`;
+      dots += `<circle cx="${x}" cy="${y}" r="${dotRadius}" fill="${NAV_COLORS.ndb}" opacity="${ring === 1 ? 1 : 0.6}"/>`;
     }
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <circle cx="${center}" cy="${center}" r="${outerRadius}" fill="none" stroke="${NDB_COLOR}" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <circle cx="${center}" cy="${center}" r="${innerRadius}" fill="${NDB_COLOR}"/>
+    <circle cx="${center}" cy="${center}" r="${outerRadius}" fill="none" stroke="${NAV_COLORS.ndb}" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <circle cx="${center}" cy="${center}" r="${innerRadius}" fill="${NAV_COLORS.ndb}"/>
     ${dots}
   </svg>`;
-}
-
-function svgToDataURL(svg: string): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 /**
@@ -79,7 +74,7 @@ export class NDBLayerRenderer extends NavLayerRenderer<Navaid> {
             resolve(false);
           };
         });
-        img.src = svgToDataURL(createNDBSymbolSVG(40));
+        img.src = svgToDataUrl(createNDBSymbolSVG(40));
         this.imagesLoaded = await promise;
         return this.imagesLoaded;
       } catch {
@@ -111,7 +106,7 @@ export class NDBLayerRenderer extends NavLayerRenderer<Navaid> {
         type: 'circle',
         source: this.sourceId,
         paint: {
-          'circle-color': NDB_COLOR,
+          'circle-color': NAV_COLORS.ndb,
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 8, 16, 10],
           'circle-stroke-color': '#FFFFFF',
           'circle-stroke-width': 2,
@@ -134,7 +129,7 @@ export class NDBLayerRenderer extends NavLayerRenderer<Navaid> {
         'text-allow-overlap': false,
       },
       paint: {
-        'text-color': NDB_COLOR,
+        'text-color': NAV_COLORS.ndb,
         'text-halo-color': '#000000',
         'text-halo-width': 1.5,
       },
@@ -142,24 +137,5 @@ export class NDBLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 }
 
-// Singleton instance for backward compatibility
-const ndbLayer = new NDBLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export async function addNDBLayer(map: maplibregl.Map, ndbs: Navaid[]): Promise<void> {
-  return ndbLayer.add(map, ndbs);
-}
-
-export function removeNDBLayer(map: maplibregl.Map): void {
-  return ndbLayer.remove(map);
-}
-
-export function setNDBLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return ndbLayer.setVisibility(map, visible);
-}
-
-export async function updateNDBLayer(map: maplibregl.Map, ndbs: Navaid[]): Promise<void> {
-  return ndbLayer.update(map, ndbs);
-}
-
+export const ndbLayer = new NDBLayerRenderer();
 export const NDB_LAYER_IDS = ndbLayer.getAllLayerIds();

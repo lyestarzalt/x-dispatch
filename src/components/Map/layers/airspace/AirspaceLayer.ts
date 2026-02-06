@@ -1,37 +1,13 @@
-/**
- * Airspace Layer - Renders airspace boundaries
- * ICAO Standard Colors:
- * - Class B: Blue solid
- * - Class C: Magenta solid
- * - Class D: Blue dashed
- * - Class E: Magenta dashed
- * - Restricted/Prohibited: Red
- */
 import maplibregl from 'maplibre-gl';
+import { AIRSPACE_STYLES } from '@/config/navLayerConfig';
 import type { Airspace } from '@/types/navigation';
 import { NavLayerRenderer } from '../navigation/NavLayerRenderer';
 
-// ICAO standard airspace colors - borders only
-const AIRSPACE_STYLES: Record<string, { color: string; dashed: boolean }> = {
-  A: { color: '#0066CC', dashed: false },
-  B: { color: '#0066CC', dashed: false },
-  C: { color: '#CC0099', dashed: false },
-  D: { color: '#0066CC', dashed: true },
-  E: { color: '#CC0099', dashed: true },
-  F: { color: '#CC6600', dashed: true },
-  G: { color: '#666666', dashed: true },
-  CTR: { color: '#0066CC', dashed: false },
-  TMA: { color: '#CC0099', dashed: false },
-  R: { color: '#CC0000', dashed: false },
-  P: { color: '#CC0000', dashed: false },
-  Q: { color: '#CC0000', dashed: true },
-  W: { color: '#CC6600', dashed: true },
-  GP: { color: '#666666', dashed: true },
-  OTHER: { color: '#666666', dashed: true },
-};
+const DASHED_CLASSES = ['D', 'E', 'F', 'G', 'Q', 'W', 'GP', 'OTHER'];
 
-function getAirspaceStyle(airspaceClass: string) {
-  return AIRSPACE_STYLES[airspaceClass] || AIRSPACE_STYLES['OTHER'];
+function getLocalAirspaceStyle(airspaceClass: string) {
+  const style = AIRSPACE_STYLES[airspaceClass] || AIRSPACE_STYLES.OTHER;
+  return { color: style.border, dashed: DASHED_CLASSES.includes(airspaceClass) };
 }
 
 /**
@@ -48,7 +24,7 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
       features: airspaces
         .filter((a) => a.coordinates.length >= 3)
         .map((airspace) => {
-          const style = getAirspaceStyle(airspace.class);
+          const style = getLocalAirspaceStyle(airspace.class);
           return {
             type: 'Feature' as const,
             geometry: {
@@ -115,24 +91,5 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
   }
 }
 
-// Singleton instance for backward compatibility
-const airspaceLayer = new AirspaceLayerRenderer();
-
-// Legacy function exports for backward compatibility
-export function addAirspaceLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
-  void airspaceLayer.add(map, airspaces);
-}
-
-export function removeAirspaceLayer(map: maplibregl.Map): void {
-  return airspaceLayer.remove(map);
-}
-
-export function setAirspaceLayerVisibility(map: maplibregl.Map, visible: boolean): void {
-  return airspaceLayer.setVisibility(map, visible);
-}
-
-export function updateAirspaceLayer(map: maplibregl.Map, airspaces: Airspace[]): void {
-  void airspaceLayer.update(map, airspaces);
-}
-
+export const airspaceLayer = new AirspaceLayerRenderer();
 export const AIRSPACE_LAYER_IDS = airspaceLayer.getAllLayerIds();

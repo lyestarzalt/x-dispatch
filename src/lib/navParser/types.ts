@@ -76,23 +76,6 @@ export interface AirwaySegment {
   topFl: number;
 }
 
-type AirspaceClass =
-  | 'A'
-  | 'B'
-  | 'C'
-  | 'D'
-  | 'E'
-  | 'F'
-  | 'G'
-  | 'CTR'
-  | 'TMA'
-  | 'R'
-  | 'P'
-  | 'Q'
-  | 'W'
-  | 'GP'
-  | 'OTHER';
-
 export interface Airspace {
   class: string;
   name: string;
@@ -144,78 +127,3 @@ export interface AirportMetadata {
   transitionAlt: number; // feet
   transitionLevel: string; // "FL150" or feet
 }
-
-interface NavaidGeoJSON extends GeoJSON.FeatureCollection {
-  features: GeoJSON.Feature<
-    GeoJSON.Point,
-    {
-      type: NavaidType;
-      id: string;
-      name: string;
-      frequency: number;
-      elevation: number;
-      range: number;
-    }
-  >[];
-}
-
-interface WaypointGeoJSON extends GeoJSON.FeatureCollection {
-  features: GeoJSON.Feature<
-    GeoJSON.Point,
-    {
-      id: string;
-      region: string;
-      description: string;
-    }
-  >[];
-}
-
-interface AirspaceGeoJSON extends GeoJSON.FeatureCollection {
-  features: GeoJSON.Feature<
-    GeoJSON.Polygon,
-    {
-      class: string;
-      name: string;
-      upperLimit: string;
-      lowerLimit: string;
-    }
-  >[];
-}
-
-const NAV_COLORS = {
-  VOR: '#2563eb',
-  VORTAC: '#2563eb',
-  'VOR-DME': '#2563eb',
-  NDB: '#7c3aed',
-  DME: '#06b6d4',
-  TACAN: '#2563eb',
-  WAYPOINT: '#22c55e',
-  ILS: '#f59e0b',
-  LOC: '#f59e0b',
-  GS: '#f59e0b',
-  OM: '#3b82f6',
-  MM: '#f59e0b',
-  IM: '#ffffff',
-  FPAP: '#10b981',
-  GLS: '#8b5cf6',
-  LTP: '#10b981',
-  FTP: '#10b981',
-} as const;
-
-const AIRSPACE_STYLES: Record<string, { fill: string; border: string; opacity: number }> = {
-  A: { fill: '#3b82f6', border: '#1d4ed8', opacity: 0.15 },
-  B: { fill: '#3b82f6', border: '#1d4ed8', opacity: 0.15 },
-  C: { fill: '#d946ef', border: '#a21caf', opacity: 0.15 },
-  D: { fill: '#3b82f6', border: '#3b82f6', opacity: 0.1 },
-  E: { fill: '#22c55e', border: '#16a34a', opacity: 0.08 },
-  F: { fill: '#f59e0b', border: '#d97706', opacity: 0.1 },
-  G: { fill: '#6b7280', border: '#4b5563', opacity: 0.05 },
-  CTR: { fill: '#3b82f6', border: '#3b82f6', opacity: 0.2 },
-  TMA: { fill: '#d946ef', border: '#a21caf', opacity: 0.15 },
-  R: { fill: '#ef4444', border: '#dc2626', opacity: 0.2 },
-  P: { fill: '#ef4444', border: '#dc2626', opacity: 0.2 },
-  Q: { fill: '#ef4444', border: '#b91c1c', opacity: 0.15 },
-  W: { fill: '#f59e0b', border: '#d97706', opacity: 0.15 },
-  GP: { fill: '#6b7280', border: '#4b5563', opacity: 0.1 },
-  OTHER: { fill: '#6b7280', border: '#4b5563', opacity: 0.1 },
-};

@@ -20,37 +20,58 @@ export const NAV_COLORS = {
     lowLabelBg: '#555555',
     labelText: '#ffffff',
   },
-  vor: { standard: '#0066CC', dme: '#0088FF', tac: '#0044AA' },
-  ndb: { standard: '#CC0099' },
-  dme: { standard: '#0099CC' },
-  ils: { localizer: '#CC6600', glideslope: '#FF9900' },
+  vor: '#0066CC',
+  vorDme: '#0088FF',
+  vortac: '#0044AA',
+  ndb: '#9933CC',
+  dme: '#0099CC',
+  ils: '#FF8800',
   waypoint: { standard: '#00CC66', compulsory: '#000000' },
   fir: '#FF69B4',
   airspace: {
-    A: '#0066CC',
-    B: '#0066CC',
-    C: '#CC0099',
-    D: '#0066CC',
-    E: '#CC0099',
-    F: '#CC6600',
-    G: '#666666',
-    CTR: '#0066CC',
-    TMA: '#CC0099',
-    R: '#CC0000',
-    P: '#CC0000',
-    Q: '#CC0000',
-    W: '#CC6600',
-    default: '#888888',
+    A: '#3b82f6',
+    B: '#3b82f6',
+    C: '#d946ef',
+    D: '#3b82f6',
+    E: '#22c55e',
+    F: '#f59e0b',
+    G: '#6b7280',
+    CTR: '#3b82f6',
+    TMA: '#d946ef',
+    R: '#ef4444',
+    P: '#ef4444',
+    Q: '#ef4444',
+    W: '#f59e0b',
+    GP: '#6b7280',
+    default: '#6b7280',
   },
-  holdingPattern: '#FF6B6B', // Coral
+  holdingPattern: '#FF6B6B',
   mora: {
-    low: '#3CB371', // <5000ft - Medium sea green
-    medium: '#FFD700', // 5000-10000ft - Gold
-    high: '#FF8C00', // 10000-15000ft - Dark orange
-    veryHigh: '#FF4500', // >15000ft - Orange red
+    low: '#3CB371',
+    medium: '#FFD700',
+    high: '#FF8C00',
+    veryHigh: '#FF4500',
     grid: '#666666',
   },
-  msa: '#9370DB', // Medium purple
+  msa: '#9370DB',
+};
+
+export const AIRSPACE_STYLES: Record<string, { fill: string; border: string; opacity: number }> = {
+  A: { fill: '#3b82f6', border: '#1d4ed8', opacity: 0.15 },
+  B: { fill: '#3b82f6', border: '#1d4ed8', opacity: 0.15 },
+  C: { fill: '#d946ef', border: '#a21caf', opacity: 0.15 },
+  D: { fill: '#3b82f6', border: '#3b82f6', opacity: 0.1 },
+  E: { fill: '#22c55e', border: '#16a34a', opacity: 0.08 },
+  F: { fill: '#f59e0b', border: '#d97706', opacity: 0.1 },
+  G: { fill: '#6b7280', border: '#4b5563', opacity: 0.05 },
+  CTR: { fill: '#3b82f6', border: '#3b82f6', opacity: 0.2 },
+  TMA: { fill: '#d946ef', border: '#a21caf', opacity: 0.15 },
+  R: { fill: '#ef4444', border: '#dc2626', opacity: 0.2 },
+  P: { fill: '#ef4444', border: '#dc2626', opacity: 0.2 },
+  Q: { fill: '#ef4444', border: '#b91c1c', opacity: 0.15 },
+  W: { fill: '#f59e0b', border: '#d97706', opacity: 0.15 },
+  GP: { fill: '#6b7280', border: '#4b5563', opacity: 0.1 },
+  OTHER: { fill: '#6b7280', border: '#4b5563', opacity: 0.1 },
 };
 
 export const NAV_LINE_STYLES = {
@@ -121,17 +142,15 @@ export const NAV_GLOBAL_LOADING = {
   airspaces: false,
 };
 
-const GLOBAL_AIRSPACE_CLASSES = ['A', 'B', 'C', 'D', 'CTR', 'TMA', 'R', 'P'];
-
-function isGlobalAirspace(airspaceClass: string): boolean {
-  if (!airspaceClass) return false;
-  return GLOBAL_AIRSPACE_CLASSES.includes(airspaceClass.toUpperCase());
+export function getAirspaceStyle(airspaceClass: string): {
+  fill: string;
+  border: string;
+  opacity: number;
+} {
+  if (!airspaceClass) return AIRSPACE_STYLES.OTHER;
+  return AIRSPACE_STYLES[airspaceClass.toUpperCase()] || AIRSPACE_STYLES.OTHER;
 }
 
 export function getAirspaceColor(airspaceClass: string): string {
-  if (!airspaceClass) return NAV_COLORS.airspace.default;
-  const upper = airspaceClass.toUpperCase();
-  return (
-    NAV_COLORS.airspace[upper as keyof typeof NAV_COLORS.airspace] || NAV_COLORS.airspace.default
-  );
+  return getAirspaceStyle(airspaceClass).border;
 }
