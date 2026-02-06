@@ -1,17 +1,18 @@
 import maplibregl from 'maplibre-gl';
 import { ParsedAirport } from '@/lib/aptParser';
-import { StartupLocation } from '@/lib/aptParser/types';
+import { Helipad, StartupLocation } from '@/lib/aptParser/types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 // Gate type definitions with colors
 const GATE_TYPES = {
-  gate: { color: '#3b82f6', hoverColor: '#60a5fa', icon: 'gate-airliner' }, // Blue
-  cargo: { color: '#f97316', hoverColor: '#fb923c', icon: 'gate-cargo' }, // Orange
-  tie_down: { color: '#22c55e', hoverColor: '#4ade80', icon: 'gate-ga' }, // Green
-  hangar: { color: '#6b7280', hoverColor: '#9ca3af', icon: 'gate-hangar' }, // Gray
-  fuel: { color: '#eab308', hoverColor: '#facc15', icon: 'gate-fuel' }, // Yellow
-  helicopter: { color: '#a855f7', hoverColor: '#c084fc', icon: 'gate-heli' }, // Purple
-  misc: { color: '#64748b', hoverColor: '#94a3b8', icon: 'gate-ga' }, // Slate
+  gate: { color: '#3b82f6', hoverColor: '#60a5fa', icon: 'gate-airliner' },
+  cargo: { color: '#f97316', hoverColor: '#fb923c', icon: 'gate-cargo' },
+  tie_down: { color: '#22c55e', hoverColor: '#4ade80', icon: 'gate-ga' },
+  hangar: { color: '#6b7280', hoverColor: '#9ca3af', icon: 'gate-hangar' },
+  fuel: { color: '#eab308', hoverColor: '#facc15', icon: 'gate-fuel' },
+  helicopter: { color: '#a855f7', hoverColor: '#c084fc', icon: 'gate-heli' },
+  helipad: { color: '#22c55e', hoverColor: '#4ade80', icon: 'gate-helipad' },
+  misc: { color: '#64748b', hoverColor: '#94a3b8', icon: 'gate-ga' },
 } as const;
 
 type GateType = keyof typeof GATE_TYPES;
@@ -56,6 +57,11 @@ const GATE_ICONS: Record<string, string> = {
     <line stroke="white" stroke-width="2" x1="24" y1="6" x2="24" y2="34"/>
     <line stroke="white" stroke-width="2" x1="10" y1="20" x2="38" y2="20"/>
   </svg>`,
+
+  // Helipad - just H letter
+  'gate-helipad': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M12 8v32h6V28h12v12h6V8h-6v14H18V8z"/>
+  </svg>`,
 };
 
 export class GateLayer extends BaseLayerRenderer {
@@ -64,7 +70,9 @@ export class GateLayer extends BaseLayerRenderer {
   additionalLayerIds = ['airport-gate-labels', 'airport-gates-hitbox', 'airport-gates-ring'];
 
   hasData(airport: ParsedAirport): boolean {
-    return airport.startupLocations && airport.startupLocations.length > 0;
+    const hasGates = airport.startupLocations && airport.startupLocations.length > 0;
+    const hasHelipads = airport.helipads && airport.helipads.length > 0;
+    return hasGates || hasHelipads;
   }
 
   render(map: maplibregl.Map, airport: ParsedAirport): void {
@@ -72,7 +80,7 @@ export class GateLayer extends BaseLayerRenderer {
 
     this.loadGateIcons(map);
 
-    const geoJSON = this.createGeoJSON(airport.startupLocations);
+    const geoJSON = this.createGeoJSON(airport.startupLocations, airport.helipads);
     this.addSource(map, geoJSON);
 
     // Ring layer with type-based colors
@@ -202,36 +210,69 @@ export class GateLayer extends BaseLayerRenderer {
     }
   }
 
-  private createGeoJSON(locations: StartupLocation[]): GeoJSON.FeatureCollection {
+  private createGeoJSON(
+    locations: StartupLocation[],
+    helipads: Helipad[]
+  ): GeoJSON.FeatureCollection {
+    const locationFeatures = (locations || []).map((location, index) => {
+      const gateType = this.normalizeGateType(location.location_type, location.airplane_types);
+      const typeConfig = GATE_TYPES[gateType];
+
+      return {
+        type: 'Feature' as const,
+        id: index,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [location.longitude, location.latitude],
+        },
+        properties: {
+          id: index,
+          name: location.name,
+          locationType: location.location_type,
+          gateType,
+          heading: location.heading,
+          airplaneTypes: location.airplane_types,
+          iconScale: this.getIconScale(location.airplane_types),
+          iconName: typeConfig.icon,
+          typeColor: typeConfig.color,
+          hoverColor: typeConfig.hoverColor,
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+      };
+    });
+
+    const helipadFeatures = (helipads || []).map((helipad, index) => {
+      const typeConfig = GATE_TYPES.helipad;
+      const featureId = locationFeatures.length + index;
+
+      return {
+        type: 'Feature' as const,
+        id: featureId,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [helipad.longitude, helipad.latitude],
+        },
+        properties: {
+          id: featureId,
+          name: helipad.name,
+          locationType: 'helipad',
+          gateType: 'helipad' as GateType,
+          heading: helipad.heading,
+          airplaneTypes: 'F',
+          iconScale: 1.0,
+          iconName: typeConfig.icon,
+          typeColor: typeConfig.color,
+          hoverColor: typeConfig.hoverColor,
+          latitude: helipad.latitude,
+          longitude: helipad.longitude,
+        },
+      };
+    });
+
     return {
       type: 'FeatureCollection',
-      features: locations.map((location, index) => {
-        const gateType = this.normalizeGateType(location.location_type, location.airplane_types);
-        const typeConfig = GATE_TYPES[gateType];
-
-        return {
-          type: 'Feature' as const,
-          id: index,
-          geometry: {
-            type: 'Point' as const,
-            coordinates: [location.longitude, location.latitude],
-          },
-          properties: {
-            id: index,
-            name: location.name,
-            locationType: location.location_type,
-            gateType,
-            heading: location.heading,
-            airplaneTypes: location.airplane_types,
-            iconScale: this.getIconScale(location.airplane_types),
-            iconName: typeConfig.icon,
-            typeColor: typeConfig.color,
-            hoverColor: typeConfig.hoverColor,
-            latitude: location.latitude,
-            longitude: location.longitude,
-          },
-        };
-      }),
+      features: [...locationFeatures, ...helipadFeatures],
     };
   }
 
