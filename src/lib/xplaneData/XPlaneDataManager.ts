@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
-import { airports, closeDb, getDb, getSqlite, saveDb } from '../../db';
+import { airports, aptFileMeta, closeDb, getDb, getSqlite, saveDb } from '../../db';
 import { distanceNm } from '../geo';
 import logger from '../logger';
 import { parseAirspaces } from '../navParser/airspaceParser';
@@ -48,6 +48,7 @@ import {
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
+import type { AptFileInfo, CacheCheckResult } from './types';
 
 interface AirwaySegmentWithCoords {
   name: string;
@@ -348,6 +349,112 @@ export class XPlaneDataManager {
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
     await this.loadAirportMetadata(pathToUse);
+  }
+
+  /**
+   * Get file modification time in milliseconds
+   */
+  private getFileMtime(filePath: string): number | null {
+    try {
+      const stat = fs.statSync(filePath);
+      return Math.floor(stat.mtimeMs);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get stored file metadata from database
+   */
+  private getStoredFileMeta(): Map<string, number> {
+    const db = getDb();
+    const stored = db.select().from(aptFileMeta).all();
+    const map = new Map<string, number>();
+    for (const row of stored) {
+      map.set(row.path, row.mtime);
+    }
+    return map;
+  }
+
+  /**
+   * Get current apt.dat files with their mtimes
+   */
+  private getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
+    const files: AptFileInfo[] = [];
+
+    // Global apt.dat
+    const globalPath = getAptDataPath(xplanePath);
+    const globalMtime = this.getFileMtime(globalPath);
+    if (globalMtime !== null) {
+      files.push({ path: globalPath, mtime: globalMtime });
+    }
+
+    // Custom Scenery apt.dat files
+    const customFiles = this.getCustomSceneryAptFiles(xplanePath);
+    for (const customPath of customFiles) {
+      const mtime = this.getFileMtime(customPath);
+      if (mtime !== null) {
+        files.push({ path: customPath, mtime });
+      }
+    }
+
+    return files;
+  }
+
+  /**
+   * Check if cache needs to be reloaded
+   */
+  private checkCacheValidity(xplanePath: string): CacheCheckResult {
+    const stored = this.getStoredFileMeta();
+    const current = this.getCurrentAptFiles(xplanePath);
+
+    const changedFiles: string[] = [];
+    const newFiles: string[] = [];
+    const deletedFiles: string[] = [];
+
+    const currentPaths = new Set(current.map((f) => f.path));
+
+    // Check for changed or new files
+    for (const file of current) {
+      const storedMtime = stored.get(file.path);
+      if (storedMtime === undefined) {
+        newFiles.push(file.path);
+      } else if (storedMtime !== file.mtime) {
+        changedFiles.push(file.path);
+      }
+    }
+
+    // Check for deleted files
+    for (const storedPath of stored.keys()) {
+      if (!currentPaths.has(storedPath)) {
+        deletedFiles.push(storedPath);
+      }
+    }
+
+    const needsReload = changedFiles.length > 0 || newFiles.length > 0 || deletedFiles.length > 0;
+
+    return { needsReload, changedFiles, newFiles, deletedFiles };
+  }
+
+  /**
+   * Update stored file metadata after successful load
+   */
+  private updateStoredFileMeta(files: AptFileInfo[], airportCounts: Map<string, number>): void {
+    const db = getDb();
+
+    // Clear existing
+    db.delete(aptFileMeta).run();
+
+    // Insert current state
+    const entries = files.map((f) => ({
+      path: f.path,
+      mtime: f.mtime,
+      airportCount: airportCounts.get(f.path) ?? 0,
+    }));
+
+    if (entries.length > 0) {
+      db.insert(aptFileMeta).values(entries).run();
+    }
   }
 
   /**
