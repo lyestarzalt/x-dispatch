@@ -5,17 +5,17 @@ import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
-import { NAV_GLOBAL_LOADING, NAV_LIMITS } from '@/config/navLayerConfig';
+import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
+import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Airport } from '@/lib/xplaneData';
-import { useGatewayQuery } from '@/queries/useGatewayQuery';
 import {
   getNavDataCounts,
   useGlobalAirwaysQuery,
   useNavDataQuery,
 } from '@/queries/useNavDataQuery';
+import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
-import { useWeatherQuery } from '@/queries/useWeatherQuery';
 import { useAppStore } from '@/stores/appStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -33,6 +33,7 @@ import {
 } from './hooks';
 import {
   addProcedureRouteLayer,
+  bringVatsimLayersToTop,
   firLayer,
   removeProcedureRouteLayer,
   removeVatsimPilotLayer,
@@ -95,6 +96,7 @@ export default function Map({ airports }: MapProps) {
   const stopAnimationsRef = useRef<(() => void) | null>(null);
   const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
   const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
+  const bringVatsimToTopRef = useRef<(() => void) | null>(null);
 
   // Stable callback for airport click - uses refs to access renderer functions
   const handleAirportClick = useCallback(async (icao: string) => {
@@ -106,6 +108,8 @@ export default function Map({ airports }: MapProps) {
         setTimeout(() => {
           startAnimationsRef.current?.();
           applyLayerVisibilityRef.current?.(layerVisibilityRef.current);
+          // Bring VATSIM layers to top after airport rendering
+          bringVatsimToTopRef.current?.();
         }, 100);
       } else {
         useAppStore.getState().clearAirport();
@@ -137,7 +141,10 @@ export default function Map({ airports }: MapProps) {
     startAnimationsRef.current = startAnimations;
     stopAnimationsRef.current = stopAnimations;
     applyLayerVisibilityRef.current = applyLayerVisibility;
-  }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility]);
+    bringVatsimToTopRef.current = () => {
+      if (mapRef.current) bringVatsimLayersToTop(mapRef.current);
+    };
+  }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility, mapRef]);
 
   useEffect(() => {
     layerVisibilityRef.current = layerVisibility;
@@ -150,16 +157,8 @@ export default function Map({ airports }: MapProps) {
       selectedAirportData,
     });
 
-  // Queries
-  const { data: weatherData } = useWeatherQuery(selectedICAO);
-  const weather = {
-    metar: weatherData?.metar || null,
-    taf: weatherData?.taf || null,
-    loading: false,
-    error: null as string | null,
-  };
-
-  const { data: gatewayData } = useGatewayQuery(selectedICAO);
+  // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
+  const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
 
   const navDataLocation: Coordinates | null = selectedAirportData?.metadata
     ? {
@@ -194,7 +193,6 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
-    selectedAirportId: selectedAirportData?.id,
   });
 
   // Route line sync for Explore panel routes
@@ -244,6 +242,8 @@ export default function Map({ airports }: MapProps) {
       if (currentICAO) {
         await renderAirport(currentICAO);
         applyLayerVisibility(layerVisibility);
+        // Bring VATSIM layers to top after airport rendering
+        bringVatsimLayersToTop(map);
       }
     };
 
@@ -313,52 +313,6 @@ export default function Map({ airports }: MapProps) {
     };
   }, [mapRef, debugEnabled, handleFeatureClick]);
 
-  // Ref for selectAirport to use in auto-load effect without causing re-runs
-  const selectAirportRef = useRef<((airport: Airport) => Promise<void>) | null>(null);
-
-  // Auto-load nearby airport
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const checkNearbyAirport = () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      const zoom = map.getZoom();
-      if (zoom < NAV_LIMITS.autoLoadAirport) return;
-
-      timeoutId = setTimeout(() => {
-        const center = map.getCenter();
-        const currentAirport = useAppStore.getState().selectedAirportData;
-        let nearestAirport: Airport | null = null;
-        let nearestDistance = Infinity;
-
-        for (const airport of airports) {
-          const dLat = airport.lat - center.lat;
-          const dLon = airport.lon - center.lng;
-          const distance = dLat * dLat + dLon * dLon;
-          if (distance < NAV_LIMITS.autoLoadSearchRadius && distance < nearestDistance) {
-            nearestDistance = distance;
-            nearestAirport = airport;
-          }
-        }
-
-        if (nearestAirport && nearestAirport.icao !== currentAirport?.id) {
-          selectAirportRef.current?.(nearestAirport);
-        }
-      }, NAV_LIMITS.autoLoadDebounce);
-    };
-
-    map.on('moveend', checkNearbyAirport);
-    checkNearbyAirport();
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      map.off('moveend', checkNearbyAirport);
-    };
-  }, [mapRef, airports]);
-
   // Callbacks
   const selectAirport = useCallback(
     async (airport: Airport) => {
@@ -375,6 +329,8 @@ export default function Map({ airports }: MapProps) {
         setTimeout(() => {
           startAnimations();
           applyLayerVisibility(layerVisibility);
+          // Bring VATSIM layers to top after airport rendering
+          if (mapRef.current) bringVatsimLayersToTop(mapRef.current);
         }, 100);
       }
     },
@@ -388,11 +344,6 @@ export default function Map({ airports }: MapProps) {
       setSelectedFeature,
     ]
   );
-
-  // Update selectAirport ref for auto-load effect
-  useEffect(() => {
-    selectAirportRef.current = selectAirport;
-  }, [selectAirport]);
 
   const handleLayerToggle = useCallback(
     (layer: keyof LayerVisibility) => {
@@ -502,33 +453,22 @@ export default function Map({ airports }: MapProps) {
         vatsimPilotCount={vatsimData?.pilots?.length}
       />
 
-      <CompassWidget mapBearing={mapBearing} weather={weather} />
+      <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} />
+      <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showSidebar && selectedAirportData && (
         <Sidebar
           airport={selectedAirportData}
           onCloseAirport={closeSidebar}
-          weather={weather}
-          gatewayInfo={gatewayData ?? null}
-          onRefreshGateway={() => {}}
-          layerVisibility={layerVisibility}
-          onLayerToggle={handleLayerToggle}
-          navVisibility={navVisibility}
-          onNavToggle={handleNavLayerToggle}
-          onLoadViewportNavaids={handleLoadViewportNavaids}
-          isLoadingNav={navLoading}
           navDataCounts={navDataCounts}
-          onNavigateToGate={navigateToGate}
           onSelectRunway={navigateToRunway}
-          debugEnabled={debugEnabled}
-          onDebugToggle={() => setDebugEnabled(!debugEnabled)}
-          selectedFeature={selectedFeature}
-          onClearSelectedFeature={() => setSelectedFeature(null)}
           onSelectProcedure={handleSelectProcedure}
           selectedProcedure={selectedProcedure}
           onSelectGateAsStart={selectGateAsStart}
           onSelectRunwayEndAsStart={selectRunwayEndAsStart}
           selectedStartPosition={selectedStartPosition}
+          vatsimData={vatsimData}
+          vatsimMetar={vatsimMetar?.raw ?? null}
         />
       )}
 

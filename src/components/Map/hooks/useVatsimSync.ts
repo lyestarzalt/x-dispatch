@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { VatsimData, getPilotsInBounds } from '@/queries/useVatsimQuery';
-import { addVatsimPilotLayer, removeVatsimPilotLayer, setupVatsimClickHandler } from '../layers';
+import { removeVatsimPilotLayer, setupVatsimClickHandler, updateVatsimPilotLayer } from '../layers';
 import type { MapRef, PopupRef } from './useMapSetup';
 
 interface UseVatsimSyncOptions {
@@ -8,7 +8,6 @@ interface UseVatsimSyncOptions {
   vatsimPopupRef: PopupRef;
   vatsimData: VatsimData | undefined;
   vatsimEnabled: boolean;
-  selectedAirportId: string | undefined;
 }
 
 export function useVatsimSync({
@@ -16,7 +15,6 @@ export function useVatsimSync({
   vatsimPopupRef,
   vatsimData,
   vatsimEnabled,
-  selectedAirportId,
 }: UseVatsimSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
@@ -36,7 +34,7 @@ export function useVatsimSync({
         west: bounds.getSouthWest().lng,
       });
 
-      addVatsimPilotLayer(map, pilotsInView, selectedAirportId);
+      updateVatsimPilotLayer(map, pilotsInView);
       if (vatsimPopupRef.current) {
         setupVatsimClickHandler(map, vatsimPopupRef.current);
       }
@@ -52,7 +50,7 @@ export function useVatsimSync({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled, selectedAirportId]);
+  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled]);
 }
 
 export function toggleVatsimLayer(mapRef: MapRef, vatsimPopupRef: PopupRef, enable: boolean): void {

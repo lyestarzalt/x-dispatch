@@ -285,6 +285,26 @@ function registerIpcHandlers() {
     return result;
   });
 
+  ipcMain.handle('fetch-vatsim-metar', async (_, icao: string) => {
+    if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
+    const result = await proxyFetch(
+      `https://metar.vatsim.net/${encodeURIComponent(icao.toUpperCase())}`
+    );
+    return result;
+  });
+
+  ipcMain.handle('fetch-vatsim-events', async () => {
+    const result = await proxyFetch('https://my.vatsim.net/api/v2/events/latest');
+    if (result.data) {
+      try {
+        return { data: JSON.parse(result.data), error: null };
+      } catch {
+        return { data: null, error: 'Failed to parse VATSIM events' };
+      }
+    }
+    return result;
+  });
+
   ipcMain.handle('nav:loadDatabase', async (_, xplanePath?: string) => {
     try {
       const status = await dataManager.loadAll(xplanePath || undefined);
@@ -517,9 +537,9 @@ app.whenReady().then(async () => {
           "default-src 'self'; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; " +
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com; " +
+            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com;" +
             "font-src 'self' data: https://fonts.gstatic.com; " +
-            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org; " +
+            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com; " +
             "worker-src 'self' blob:;",
         ],
       },

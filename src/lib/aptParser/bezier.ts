@@ -1,6 +1,6 @@
 import type { LonLat } from '@/types/geo';
 
-export const DEFAULT_BEZIER_RESOLUTION = 128;
+export const DEFAULT_BEZIER_RESOLUTION = 60;
 
 /**
  * Quadratic Bezier interpolation (3 control points)

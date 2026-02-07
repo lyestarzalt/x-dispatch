@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('airportAPI', {
   fetchGatewayScenery: (sceneryId: number) =>
     ipcRenderer.invoke('fetch-gateway-scenery', sceneryId),
   fetchVatsimData: () => ipcRenderer.invoke('fetch-vatsim-data'),
+  fetchVatsimMetar: (icao: string) => ipcRenderer.invoke('fetch-vatsim-metar', icao),
+  fetchVatsimEvents: () => ipcRenderer.invoke('fetch-vatsim-events'),
 });
 
 contextBridge.exposeInMainWorld('versions', {
@@ -192,10 +194,88 @@ interface VatsimData {
     version: number;
     update_timestamp: string;
     connected_clients: number;
+    unique_users: number;
   };
   pilots: VatsimPilot[];
-  controllers: unknown[];
-  atis: unknown[];
+  controllers: VatsimController[];
+  atis: VatsimATIS[];
+  prefiles: VatsimPrefile[];
+}
+
+interface VatsimController {
+  cid: number;
+  name: string;
+  callsign: string;
+  frequency: string;
+  facility: number;
+  rating: number;
+  server: string;
+  visual_range: number;
+  text_atis: string[] | null;
+  last_updated: string;
+  logon_time: string;
+}
+
+interface VatsimATIS {
+  cid: number;
+  name: string;
+  callsign: string;
+  frequency: string;
+  facility: number;
+  rating: number;
+  server: string;
+  visual_range: number;
+  atis_code: string;
+  text_atis: string[] | null;
+  last_updated: string;
+  logon_time: string;
+}
+
+interface VatsimPrefile {
+  cid: number;
+  name: string;
+  callsign: string;
+  flight_plan: {
+    flight_rules: string;
+    aircraft: string;
+    aircraft_faa: string;
+    aircraft_short: string;
+    departure: string;
+    arrival: string;
+    alternate: string;
+    deptime: string;
+    enroute_time: string;
+    fuel_time: string;
+    remarks: string;
+    route: string;
+    revision_id: number;
+    assigned_transponder: string;
+  } | null;
+  last_updated: string;
+}
+
+interface VatsimEvent {
+  id: number;
+  type: string;
+  name: string;
+  link: string;
+  organisers: {
+    region: string | null;
+    division: string | null;
+    subdivision: string | null;
+    organised_by_vatsim: boolean;
+  }[];
+  airports: { icao: string }[];
+  routes: { departure: string; arrival: string; route: string }[];
+  start_time: string;
+  end_time: string;
+  short_description: string;
+  description: string;
+  banner: string;
+}
+
+interface VatsimEventsResponse {
+  data: VatsimEvent[];
 }
 
 // Navigation data types (mirrored from navParser/types.ts for renderer process)
@@ -468,6 +548,8 @@ declare global {
       fetchGatewayAirport: (icao: string) => Promise<ApiResponse>;
       fetchGatewayScenery: (sceneryId: number) => Promise<ApiResponse>;
       fetchVatsimData: () => Promise<{ data: VatsimData | null; error: string | null }>;
+      fetchVatsimMetar: (icao: string) => Promise<ApiResponse>;
+      fetchVatsimEvents: () => Promise<{ data: VatsimEventsResponse | null; error: string | null }>;
     };
     xplaneAPI: {
       getPath: () => Promise<string | null>;
