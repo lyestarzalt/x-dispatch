@@ -5,8 +5,9 @@ import type { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
 import { RoutesTab } from './RoutesTab';
+import { VatsimEventsTab } from './VatsimEventsTab';
 
-const TABS = ['featured', 'routes'] as const;
+const TABS = ['featured', 'routes', 'vatsim'] as const;
 
 interface ExplorePanelProps {
   airports: Airport[];
@@ -53,7 +54,7 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
         ))}
       </div>
 
-      <div className="max-h-72 overflow-y-auto overflow-x-hidden p-4">
+      <div className="max-h-96 overflow-y-auto overflow-x-hidden p-4">
         {explore.activeTab === 'featured' && (
           <FeaturedTab
             category={explore.featuredCategory}
@@ -64,6 +65,9 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
         {explore.activeTab === 'routes' && (
           <RoutesTab selectedRoute={explore.selectedRoute} onSelectRoute={setSelectedRoute} />
         )}
+        {explore.activeTab === 'vatsim' && (
+          <VatsimEventsTab onSelectAirport={handleSelectAirport} />
+        )}
       </div>
     </div>
   );
@@ -71,4 +75,5 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
 
 export { FeaturedTab } from './FeaturedTab';
 export { RoutesTab } from './RoutesTab';
+export { VatsimEventsTab } from './VatsimEventsTab';
 export type * from './types';

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { VatsimData, getPilotsInBounds } from '@/queries/useVatsimQuery';
-import { addVatsimPilotLayer, removeVatsimPilotLayer, setupVatsimClickHandler } from '../layers';
+import { removeVatsimPilotLayer, setupVatsimClickHandler, updateVatsimPilotLayer } from '../layers';
 import type { MapRef, PopupRef } from './useMapSetup';
 
 interface UseVatsimSyncOptions {
@@ -36,7 +36,7 @@ export function useVatsimSync({
         west: bounds.getSouthWest().lng,
       });
 
-      addVatsimPilotLayer(map, pilotsInView, selectedAirportId);
+      updateVatsimPilotLayer(map, pilotsInView, selectedAirportId);
       if (vatsimPopupRef.current) {
         setupVatsimClickHandler(map, vatsimPopupRef.current);
       }

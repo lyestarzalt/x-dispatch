@@ -90,7 +90,15 @@
     "tabs": {
       "filters": "Filters",
       "featured": "Featured",
-      "routes": "Routes"
+      "routes": "Routes",
+      "vatsim": "VATSIM"
+    },
+    "vatsim": {
+      "busiestNow": "Busiest Now",
+      "events": "Events",
+      "noEvents": "No upcoming events",
+      "viewRoute": "View Route",
+      "goToDeparture": "Go to Departure"
     },
     "filters": {
       "country": "Country",
@@ -221,7 +229,11 @@
     "startFrom": "Start from:",
     "noGatesFound": "No gates found",
     "noRunwaysFound": "No runways found",
-    "copyFrequency": "Copy frequency"
+    "copyFrequency": "Copy frequency",
+    "vatsim": {
+      "notEnabled": "Enable VATSIM in settings to see live data",
+      "noActivity": "No VATSIM activity"
+    }
   },
 
   "airportInfo": {

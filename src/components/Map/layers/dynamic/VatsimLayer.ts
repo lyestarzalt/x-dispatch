@@ -278,6 +278,15 @@ export function setVatsimPilotLayerVisibility(map: maplibregl.Map, visible: bool
   if (map.getLayer(LABEL_LAYER_ID)) map.setLayoutProperty(LABEL_LAYER_ID, 'visibility', visibility);
 }
 
+// Move VATSIM layers to top (call after airport rendering)
+export function bringVatsimLayersToTop(map: maplibregl.Map): void {
+  // Move in order: trails first, then glow, then icons, then labels on top
+  if (map.getLayer(TRAIL_LAYER_ID)) map.moveLayer(TRAIL_LAYER_ID);
+  if (map.getLayer(`${PILOT_LAYER_ID}-glow`)) map.moveLayer(`${PILOT_LAYER_ID}-glow`);
+  if (map.getLayer(PILOT_LAYER_ID)) map.moveLayer(PILOT_LAYER_ID);
+  if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
+}
+
 // Track if click handler is already set up (per map instance)
 const clickHandlerSetup = new WeakSet<maplibregl.Map>();
 

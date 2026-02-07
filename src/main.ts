@@ -285,6 +285,26 @@ function registerIpcHandlers() {
     return result;
   });
 
+  ipcMain.handle('fetch-vatsim-metar', async (_, icao: string) => {
+    if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
+    const result = await proxyFetch(
+      `https://metar.vatsim.net/${encodeURIComponent(icao.toUpperCase())}`
+    );
+    return result;
+  });
+
+  ipcMain.handle('fetch-vatsim-events', async () => {
+    const result = await proxyFetch('https://my.vatsim.net/api/v2/events/latest');
+    if (result.data) {
+      try {
+        return { data: JSON.parse(result.data), error: null };
+      } catch {
+        return { data: null, error: 'Failed to parse VATSIM events' };
+      }
+    }
+    return result;
+  });
+
   ipcMain.handle('nav:loadDatabase', async (_, xplanePath?: string) => {
     try {
       const status = await dataManager.loadAll(xplanePath || undefined);
