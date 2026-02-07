@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
-import { airports, closeDb, getDb, getSqlite, saveDb } from '../../db';
+import { airports, aptFileMeta, closeDb, getDb, saveDb } from '../../db';
 import { distanceNm } from '../geo';
 import logger from '../logger';
 import { parseAirspaces } from '../navParser/airspaceParser';
@@ -48,6 +48,7 @@ import {
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
+import type { AptFileInfo, CacheCheckResult, ParsedAirportEntry } from './types';
 
 interface AirwaySegmentWithCoords {
   name: string;
@@ -351,6 +352,112 @@ export class XPlaneDataManager {
   }
 
   /**
+   * Get file modification time in milliseconds
+   */
+  private getFileMtime(filePath: string): number | null {
+    try {
+      const stat = fs.statSync(filePath);
+      return Math.floor(stat.mtimeMs);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get stored file metadata from database
+   */
+  private getStoredFileMeta(): Map<string, number> {
+    const db = getDb();
+    const stored = db.select().from(aptFileMeta).all();
+    const map = new Map<string, number>();
+    for (const row of stored) {
+      map.set(row.path, row.mtime);
+    }
+    return map;
+  }
+
+  /**
+   * Get current apt.dat files with their mtimes
+   */
+  private getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
+    const files: AptFileInfo[] = [];
+
+    // Global apt.dat
+    const globalPath = getAptDataPath(xplanePath);
+    const globalMtime = this.getFileMtime(globalPath);
+    if (globalMtime !== null) {
+      files.push({ path: globalPath, mtime: globalMtime });
+    }
+
+    // Custom Scenery apt.dat files
+    const customFiles = this.getCustomSceneryAptFiles(xplanePath);
+    for (const customPath of customFiles) {
+      const mtime = this.getFileMtime(customPath);
+      if (mtime !== null) {
+        files.push({ path: customPath, mtime });
+      }
+    }
+
+    return files;
+  }
+
+  /**
+   * Check if cache needs to be reloaded
+   */
+  private checkCacheValidity(xplanePath: string): CacheCheckResult {
+    const stored = this.getStoredFileMeta();
+    const current = this.getCurrentAptFiles(xplanePath);
+
+    const changedFiles: string[] = [];
+    const newFiles: string[] = [];
+    const deletedFiles: string[] = [];
+
+    const currentPaths = new Set(current.map((f) => f.path));
+
+    // Check for changed or new files
+    for (const file of current) {
+      const storedMtime = stored.get(file.path);
+      if (storedMtime === undefined) {
+        newFiles.push(file.path);
+      } else if (storedMtime !== file.mtime) {
+        changedFiles.push(file.path);
+      }
+    }
+
+    // Check for deleted files
+    for (const storedPath of stored.keys()) {
+      if (!currentPaths.has(storedPath)) {
+        deletedFiles.push(storedPath);
+      }
+    }
+
+    const needsReload = changedFiles.length > 0 || newFiles.length > 0 || deletedFiles.length > 0;
+
+    return { needsReload, changedFiles, newFiles, deletedFiles };
+  }
+
+  /**
+   * Update stored file metadata after successful load
+   */
+  private updateStoredFileMeta(files: AptFileInfo[], airportCounts: Map<string, number>): void {
+    const db = getDb();
+
+    // Clear existing
+    db.delete(aptFileMeta).run();
+
+    // Insert current state
+    const entries = files.map((f) => ({
+      path: f.path,
+      mtime: f.mtime,
+      airportCount: airportCounts.get(f.path) ?? 0,
+    }));
+
+    if (entries.length > 0) {
+      db.insert(aptFileMeta).values(entries).run();
+    }
+  }
+
+  /**
    * Find all Custom Scenery apt.dat files
    */
   private getCustomSceneryAptFiles(xplanePath: string): string[] {
@@ -379,32 +486,10 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Parse a single apt.dat file and return airport data
+   * Parse a single apt.dat file and return airport data with metadata
    */
-  private async parseAptFile(aptPath: string): Promise<
-    Map<
-      string,
-      {
-        icao: string;
-        name: string;
-        lat: number;
-        lon: number;
-        type: 'land' | 'seaplane' | 'heliport';
-        data: string;
-      }
-    >
-  > {
-    const airports = new Map<
-      string,
-      {
-        icao: string;
-        name: string;
-        lat: number;
-        lon: number;
-        type: 'land' | 'seaplane' | 'heliport';
-        data: string;
-      }
-    >();
+  private async parseAptFile(aptPath: string): Promise<Map<string, ParsedAirportEntry>> {
+    const airports = new Map<string, ParsedAirportEntry>();
 
     const reader = new FastFileReader(aptPath);
 
@@ -415,8 +500,21 @@ export class XPlaneDataManager {
       datumLon: number;
       runwayLat: number;
       runwayLon: number;
+      elevation: number;
       type: 'land' | 'seaplane' | 'heliport';
       data: string[];
+      // Metadata
+      city?: string;
+      country?: string;
+      iataCode?: string;
+      faaCode?: string;
+      regionCode?: string;
+      state?: string;
+      transitionAlt?: number;
+      transitionLevel?: string;
+      towerServiceType?: string;
+      driveOnLeft?: boolean;
+      guiLabel?: string;
     } | null = null;
 
     const finalizeAirport = () => {
@@ -433,7 +531,21 @@ export class XPlaneDataManager {
           lat,
           lon,
           type: currentAirport.type,
+          elevation: currentAirport.elevation || undefined,
           data: currentAirport.data.join('\n'),
+          sourceFile: aptPath,
+          // Metadata
+          city: currentAirport.city,
+          country: currentAirport.country,
+          iataCode: currentAirport.iataCode,
+          faaCode: currentAirport.faaCode,
+          regionCode: currentAirport.regionCode,
+          state: currentAirport.state,
+          transitionAlt: currentAirport.transitionAlt,
+          transitionLevel: currentAirport.transitionLevel,
+          towerServiceType: currentAirport.towerServiceType,
+          driveOnLeft: currentAirport.driveOnLeft,
+          guiLabel: currentAirport.guiLabel,
         });
       }
     };
@@ -457,6 +569,7 @@ export class XPlaneDataManager {
             datumLon: 0,
             runwayLat: 0,
             runwayLon: 0,
+            elevation: parseInt(parts[1]) || 0,
             type: parts[0] === '1' ? 'land' : parts[0] === '16' ? 'seaplane' : 'heliport',
             data: [line],
           };
@@ -466,13 +579,54 @@ export class XPlaneDataManager {
 
       if (!currentAirport) continue;
 
-      // Metadata with datum coordinates (row code 1302)
+      // Metadata (row code 1302)
       if (line.startsWith('1302 ')) {
         const parts = line.split(/\s+/);
-        if (parts[1] === 'datum_lat') {
-          currentAirport.datumLat = parseFloat(parts[2]);
-        } else if (parts[1] === 'datum_lon') {
-          currentAirport.datumLon = parseFloat(parts[2]);
+        const key = parts[1];
+        const value = parts.slice(2).join(' ').trim();
+
+        if (value) {
+          switch (key) {
+            case 'city':
+              currentAirport.city = value;
+              break;
+            case 'country':
+              currentAirport.country = value;
+              break;
+            case 'iata_code':
+              currentAirport.iataCode = value;
+              break;
+            case 'faa_code':
+              currentAirport.faaCode = value;
+              break;
+            case 'region_code':
+              currentAirport.regionCode = value;
+              break;
+            case 'state':
+              currentAirport.state = value;
+              break;
+            case 'transition_alt':
+              currentAirport.transitionAlt = parseInt(value) || undefined;
+              break;
+            case 'transition_level':
+              currentAirport.transitionLevel = value;
+              break;
+            case 'tower_service_type':
+              currentAirport.towerServiceType = value;
+              break;
+            case 'drive_on_left':
+              currentAirport.driveOnLeft = value === '1';
+              break;
+            case 'gui_label':
+              currentAirport.guiLabel = value;
+              break;
+            case 'datum_lat':
+              currentAirport.datumLat = parseFloat(value);
+              break;
+            case 'datum_lon':
+              currentAirport.datumLon = parseFloat(value);
+              break;
+          }
         }
       }
 
@@ -510,23 +664,35 @@ export class XPlaneDataManager {
 
   /**
    * Load airport data from Global Airports and Custom Scenery
+   * Uses batch inserts for performance and checks cache validity
    */
   private async loadAirports(xplanePath: string): Promise<void> {
+    // Check if we need to reload
+    const cacheCheck = this.checkCacheValidity(xplanePath);
+
+    if (!cacheCheck.needsReload) {
+      logger.data.info('Airport cache is valid, skipping reload');
+      this.loadStatus.airports = true;
+      return;
+    }
+
+    if (cacheCheck.changedFiles.length > 0) {
+      logger.data.info(`Changed apt.dat files: ${cacheCheck.changedFiles.length}`);
+    }
+    if (cacheCheck.newFiles.length > 0) {
+      logger.data.info(`New apt.dat files: ${cacheCheck.newFiles.length}`);
+    }
+    if (cacheCheck.deletedFiles.length > 0) {
+      logger.data.info(`Deleted apt.dat files: ${cacheCheck.deletedFiles.length}`);
+    }
+
     const globalAptPath = getAptDataPath(xplanePath);
     const customAptFiles = this.getCustomSceneryAptFiles(xplanePath);
+    const currentFiles = this.getCurrentAptFiles(xplanePath);
 
     // Store all airports by ICAO (Custom Scenery will override Global)
-    const allAirports = new Map<
-      string,
-      {
-        icao: string;
-        name: string;
-        lat: number;
-        lon: number;
-        type: 'land' | 'seaplane' | 'heliport';
-        data: string;
-      }
-    >();
+    const allAirports = new Map<string, ParsedAirportEntry>();
+    const airportCounts = new Map<string, number>();
 
     // Track which ICAOs came from Global vs Custom
     const globalIcaos = new Set<string>();
@@ -536,6 +702,7 @@ export class XPlaneDataManager {
     if (fs.existsSync(globalAptPath)) {
       logger.data.info(`Loading Global Airports from: ${globalAptPath}`);
       const globalAirports = await this.parseAptFile(globalAptPath);
+      airportCounts.set(globalAptPath, globalAirports.size);
       for (const [icao, airport] of globalAirports) {
         allAirports.set(icao, airport);
         globalIcaos.add(icao);
@@ -550,6 +717,7 @@ export class XPlaneDataManager {
       logger.data.info(`Found ${customAptFiles.length} Custom Scenery apt.dat files`);
       for (const aptFile of customAptFiles) {
         const customAirports = await this.parseAptFile(aptFile);
+        airportCounts.set(aptFile, customAirports.size);
         for (const [icao, airport] of customAirports) {
           allAirports.set(icao, airport); // Override global
           customIcaos.add(icao);
@@ -558,8 +726,6 @@ export class XPlaneDataManager {
     }
 
     // Calculate source breakdown
-    // Custom scenery airports = those in customIcaos
-    // Global airports = those in globalIcaos but NOT in customIcaos (not overridden)
     const customCount = customIcaos.size;
     const globalOnlyCount = [...globalIcaos].filter((icao) => !customIcaos.has(icao)).length;
 
@@ -573,21 +739,52 @@ export class XPlaneDataManager {
       `Airport breakdown: ${globalOnlyCount} from Global, ${customCount} from Custom Scenery (${customAptFiles.length} packs)`
     );
 
-    // 3. Insert all airports into database
-    const sqlite = getSqlite();
-    if (sqlite && allAirports.size > 0) {
-      sqlite.run('DELETE FROM airports');
+    // 3. Batch insert all airports into database
+    const db = getDb();
+    const startInsert = Date.now();
 
-      for (const airport of allAirports.values()) {
-        sqlite.run(
-          'INSERT OR REPLACE INTO airports (icao, name, lat, lon, type, data) VALUES (?, ?, ?, ?, ?, ?)',
-          [airport.icao, airport.name, airport.lat, airport.lon, airport.type, airport.data]
-        );
-      }
+    // Clear existing airports
+    db.delete(airports).run();
 
-      saveDb();
-      logger.data.info(`Stored ${allAirports.size} total airports (Global + Custom Scenery)`);
+    // Convert to array for batch insert
+    const airportArray = Array.from(allAirports.values()).map((a) => ({
+      icao: a.icao,
+      name: a.name,
+      lat: a.lat,
+      lon: a.lon,
+      type: a.type,
+      elevation: a.elevation,
+      data: a.data,
+      sourceFile: a.sourceFile,
+      city: a.city,
+      country: a.country,
+      iataCode: a.iataCode,
+      faaCode: a.faaCode,
+      regionCode: a.regionCode,
+      state: a.state,
+      transitionAlt: a.transitionAlt,
+      transitionLevel: a.transitionLevel,
+      towerServiceType: a.towerServiceType,
+      driveOnLeft: a.driveOnLeft,
+      guiLabel: a.guiLabel,
+    }));
+
+    // Batch insert in chunks of 500
+    const CHUNK_SIZE = 500;
+    for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+      const chunk = airportArray.slice(i, i + CHUNK_SIZE);
+      db.insert(airports).values(chunk).run();
     }
+
+    const insertTime = Date.now() - startInsert;
+    logger.data.info(`Batch inserted ${allAirports.size} airports in ${insertTime}ms`);
+
+    // 4. Update file metadata cache
+    this.updateStoredFileMeta(currentFiles, airportCounts);
+
+    // 5. Save database
+    saveDb();
+    logger.data.info(`Stored ${allAirports.size} total airports (Global + Custom Scenery)`);
 
     this.loadStatus.airports = true;
   }
@@ -1427,6 +1624,7 @@ export class XPlaneDataManager {
 
     const db = getDb();
     db.delete(airports).run();
+    db.delete(aptFileMeta).run();
   }
 
   /**

@@ -28,6 +28,7 @@ import {
   useAirportRenderer,
   useMapSetup,
   useNavLayerSync,
+  useRouteLineSync,
   useVatsimSync,
 } from './hooks';
 import {
@@ -194,6 +195,12 @@ export default function Map({ airports }: MapProps) {
     vatsimData,
     vatsimEnabled,
     selectedAirportId: selectedAirportData?.id,
+  });
+
+  // Route line sync for Explore panel routes
+  useRouteLineSync({
+    mapRef,
+    airports,
   });
 
   // Load FIR boundaries on map load

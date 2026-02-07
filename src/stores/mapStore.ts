@@ -16,6 +16,24 @@ export interface FeatureDebugInfo {
   rawData?: string;
 }
 
+export interface ExploreFilters {
+  country: string | null;
+  region: string | null;
+  type: 'all' | 'land' | 'seaplane' | 'heliport';
+  hasIata: boolean;
+}
+
+export type ExploreTab = 'filters' | 'featured' | 'routes';
+export type FeaturedCategory = 'all' | 'challenging' | 'scenic' | 'unique' | 'historic';
+
+export interface ExploreState {
+  isOpen: boolean;
+  activeTab: ExploreTab;
+  selectedRoute: { from: string; to: string } | null;
+  filters: ExploreFilters;
+  featuredCategory: FeaturedCategory;
+}
+
 interface MapState {
   // Layer visibility
   layerVisibility: LayerVisibility;
@@ -33,6 +51,9 @@ interface MapState {
   // VATSIM
   vatsimEnabled: boolean;
 
+  // Explore
+  explore: ExploreState;
+
   // Actions
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -47,6 +68,13 @@ interface MapState {
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
+
+  // Explore actions
+  setExploreOpen: (isOpen: boolean) => void;
+  setExploreTab: (tab: ExploreTab) => void;
+  setSelectedRoute: (route: { from: string; to: string } | null) => void;
+  setExploreFilters: (filters: Partial<ExploreFilters>) => void;
+  setFeaturedCategory: (category: FeaturedCategory) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -61,6 +89,18 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
+      explore: {
+        isOpen: false,
+        activeTab: 'featured' as ExploreTab,
+        selectedRoute: null as { from: string; to: string } | null,
+        filters: {
+          country: null as string | null,
+          region: null as string | null,
+          type: 'all' as ExploreFilters['type'],
+          hasIata: false,
+        },
+        featuredCategory: 'all' as FeaturedCategory,
+      },
 
       // Actions
       setLayerVisibility: (visibility) =>
@@ -109,6 +149,18 @@ export const useMapStore = create<MapState>()(
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
           navVisibility: DEFAULT_NAV_VISIBILITY,
         }),
+
+      // Explore actions
+      setExploreOpen: (isOpen) => set((state) => ({ explore: { ...state.explore, isOpen } })),
+      setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
+      setSelectedRoute: (route) =>
+        set((state) => ({ explore: { ...state.explore, selectedRoute: route } })),
+      setExploreFilters: (filters) =>
+        set((state) => ({
+          explore: { ...state.explore, filters: { ...state.explore.filters, ...filters } },
+        })),
+      setFeaturedCategory: (category) =>
+        set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
     }),
     {
       name: 'xplane-viz-map',
@@ -128,3 +180,9 @@ const selectNavVisibility = (state: MapState) => state.navVisibility;
 const selectIsNightMode = (state: MapState) => state.isNightMode;
 const selectDebugEnabled = (state: MapState) => state.debugEnabled;
 const selectVatsimEnabled = (state: MapState) => state.vatsimEnabled;
+const selectExplore = (state: MapState) => state.explore;
+const selectExploreOpen = (state: MapState) => state.explore.isOpen;
+const selectExploreTab = (state: MapState) => state.explore.activeTab;
+const selectExploreFilters = (state: MapState) => state.explore.filters;
+const selectFeaturedCategory = (state: MapState) => state.explore.featuredCategory;
+const selectSelectedRoute = (state: MapState) => state.explore.selectedRoute;

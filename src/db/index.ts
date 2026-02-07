@@ -52,6 +52,9 @@ export function getDb(): DrizzleDatabase<typeof schema> {
 function initTables(): void {
   if (!sqlite) return;
 
+  // Drop and recreate airports table with new columns
+  sqlite.run(`DROP TABLE IF EXISTS airports`);
+  sqlite.run(`DROP TABLE IF EXISTS apt_file_meta`);
   sqlite.run(`
     CREATE TABLE IF NOT EXISTS airports (
       icao TEXT PRIMARY KEY,
@@ -59,12 +62,35 @@ function initTables(): void {
       lat REAL NOT NULL,
       lon REAL NOT NULL,
       type TEXT NOT NULL CHECK(type IN ('land', 'seaplane', 'heliport')),
-      elevation REAL,
-      data TEXT
+      elevation INTEGER,
+      data TEXT,
+      source_file TEXT,
+      city TEXT,
+      country TEXT,
+      iata_code TEXT,
+      faa_code TEXT,
+      region_code TEXT,
+      state TEXT,
+      transition_alt INTEGER,
+      transition_level TEXT,
+      tower_service_type TEXT,
+      drive_on_left INTEGER,
+      gui_label TEXT
     );
   `);
 
   sqlite.run(`CREATE INDEX IF NOT EXISTS idx_airports_coords ON airports(lat, lon);`);
+  sqlite.run(`CREATE INDEX IF NOT EXISTS idx_airports_iata ON airports(iata_code);`);
+  sqlite.run(`CREATE INDEX IF NOT EXISTS idx_airports_country ON airports(country);`);
+  sqlite.run(`CREATE INDEX IF NOT EXISTS idx_airports_region ON airports(region_code);`);
+
+  sqlite.run(`
+    CREATE TABLE IF NOT EXISTS apt_file_meta (
+      path TEXT PRIMARY KEY,
+      mtime INTEGER NOT NULL,
+      airport_count INTEGER
+    );
+  `);
 
   sqlite.run(`
     CREATE TABLE IF NOT EXISTS metadata (
