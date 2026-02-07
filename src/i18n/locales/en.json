@@ -86,6 +86,39 @@
     "navigationLayers": "Navigation Layers"
   },
 
+  "explore": {
+    "tabs": {
+      "filters": "Filters",
+      "featured": "Featured",
+      "routes": "Routes"
+    },
+    "filters": {
+      "country": "Country",
+      "region": "Region",
+      "type": "Type",
+      "allCountries": "All Countries",
+      "allRegions": "All Regions",
+      "allTypes": "All Types",
+      "land": "Land",
+      "seaplane": "Seaplane",
+      "heliport": "Heliport",
+      "hasIata": "Has IATA code"
+    },
+    "featured": {
+      "all": "All",
+      "challenging": "Challenging",
+      "scenic": "Scenic",
+      "unique": "Unique",
+      "historic": "Historic",
+      "icons": {
+        "mountain": "^",
+        "sunrise": "*",
+        "sparkles": "+",
+        "landmark": "#"
+      }
+    }
+  },
+
   "settings": {
     "title": "Settings",
     "subtitle": "Configure your preferences",
