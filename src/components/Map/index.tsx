@@ -176,8 +176,7 @@ export default function Map({ airports }: MapProps) {
   const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
   const navDataCounts = getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
 
-  // Always fetch VATSIM data for sidebar info (ATC, ATIS, traffic) - toggle only controls map aircraft
-  const { data: vatsimData } = useVatsimQuery(!!selectedICAO);
+  const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
 
   // Nav layer sync
   useNavLayerSync({
@@ -194,7 +193,6 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
-    selectedAirportId: selectedAirportData?.id,
   });
 
   // Route line sync for Explore panel routes

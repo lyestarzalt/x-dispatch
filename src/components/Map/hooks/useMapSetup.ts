@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
+import { setupGlobeProjection } from '../utils/globeUtils';
 
 export type MapRef = React.RefObject<maplibregl.Map | null>;
 export type PopupRef = React.MutableRefObject<maplibregl.Popup | null>;
@@ -59,8 +60,11 @@ export function useMapSetup({
       window.appAPI.log.error('MapLibre error', e.error);
     });
 
+    let cleanupGlobe: (() => void) | undefined;
+
     // Setup on load
     map.on('load', () => {
+      cleanupGlobe = setupGlobeProjection(map);
       setupAirportsLayer(map, airports);
       setupAirportPopup(map, airportPopupRef, onAirportClick);
       setupVatsimPopup(vatsimPopupRef);
@@ -68,6 +72,7 @@ export function useMapSetup({
     });
 
     return () => {
+      cleanupGlobe?.();
       map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
