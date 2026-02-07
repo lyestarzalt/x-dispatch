@@ -4,10 +4,9 @@ import { cn } from '@/lib/utils';
 import type { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
-import { FiltersTab } from './FiltersTab';
 import { RoutesTab } from './RoutesTab';
 
-const TABS = ['filters', 'featured', 'routes'] as const;
+const TABS = ['featured', 'routes'] as const;
 
 interface ExplorePanelProps {
   airports: Airport[];
@@ -19,7 +18,6 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
   const explore = useMapStore((s) => s.explore);
   const setExploreTab = useMapStore((s) => s.setExploreTab);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
-  const setExploreFilters = useMapStore((s) => s.setExploreFilters);
   const setFeaturedCategory = useMapStore((s) => s.setFeaturedCategory);
   const setSelectedRoute = useMapStore((s) => s.setSelectedRoute);
 
@@ -37,14 +35,14 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
   if (!explore.isOpen) return null;
 
   return (
-    <div className="absolute left-0 right-0 top-full z-40 border-b border-border bg-card shadow-lg">
+    <div className="absolute left-4 top-44 z-10 w-[340px] rounded-lg border border-border bg-card">
       <div className="flex border-b border-border">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setExploreTab(tab)}
             className={cn(
-              'flex-1 px-4 py-2 text-sm font-medium transition-colors',
+              'flex-1 px-4 py-2.5 text-xs font-medium uppercase tracking-wide transition-colors',
               explore.activeTab === tab
                 ? 'border-b-2 border-primary text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -55,19 +53,7 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
         ))}
       </div>
 
-      <div className="max-h-80 overflow-y-auto p-4">
-        {explore.activeTab === 'filters' && (
-          <FiltersTab
-            country={explore.filters.country}
-            region={explore.filters.region}
-            type={explore.filters.type}
-            hasIata={explore.filters.hasIata}
-            onCountryChange={(country) => setExploreFilters({ country })}
-            onRegionChange={(region) => setExploreFilters({ region })}
-            onTypeChange={(type) => setExploreFilters({ type })}
-            onHasIataChange={(hasIata) => setExploreFilters({ hasIata })}
-          />
-        )}
+      <div className="max-h-72 overflow-y-auto overflow-x-hidden p-4">
         {explore.activeTab === 'featured' && (
           <FeaturedTab
             category={explore.featuredCategory}
@@ -83,7 +69,6 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
   );
 }
 
-export { FiltersTab } from './FiltersTab';
 export { FeaturedTab } from './FeaturedTab';
 export { RoutesTab } from './RoutesTab';
 export type * from './types';

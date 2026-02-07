@@ -5,6 +5,7 @@ import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
+import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING, NAV_LIMITS } from '@/config/navLayerConfig';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Airport } from '@/lib/xplaneData';
@@ -503,6 +504,7 @@ export default function Map({ airports }: MapProps) {
       />
 
       <CompassWidget mapBearing={mapBearing} weather={weather} />
+      <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showSidebar && selectedAirportData && (
         <Sidebar

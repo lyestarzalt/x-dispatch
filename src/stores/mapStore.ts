@@ -23,7 +23,7 @@ export interface ExploreFilters {
   hasIata: boolean;
 }
 
-export type ExploreTab = 'filters' | 'featured' | 'routes';
+export type ExploreTab = 'featured' | 'routes';
 export type FeaturedCategory = 'all' | 'challenging' | 'scenic' | 'unique' | 'historic';
 
 export interface ExploreState {
