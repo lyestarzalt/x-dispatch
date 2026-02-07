@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cloud, Radio, Route } from 'lucide-react';
+import { Radar, Radio, Route } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -10,28 +10,19 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ParsedAirport } from '@/lib/aptParser';
 import { FrequencyType, Runway } from '@/lib/aptParser/types';
-import { FeatureDebugInfo } from '@/stores/mapStore';
-import { NamedPosition, Position } from '@/types/geo';
-import { WeatherData } from '@/types/weather';
+import { VatsimData } from '@/queries/useVatsimQuery';
+import { NamedPosition } from '@/types/geo';
+import { decodeMetar } from '@/utils/decodeMetar';
 import AirportHeader from './components/AirportHeader';
 import DepartureSelector from './components/DepartureSelector';
 import QuickWeather from './components/QuickWeather';
 import FrequenciesSection from './sections/FrequenciesSection';
 import ProceduresSection, { Procedure } from './sections/ProceduresSection';
-import WeatherDetails from './sections/WeatherDetails';
+import VatsimSection from './sections/VatsimSection';
 
 interface SidebarProps {
   airport: ParsedAirport | null;
   onCloseAirport: () => void;
-  weather: WeatherData;
-  gatewayInfo?: unknown;
-  onRefreshGateway?: () => void;
-  layerVisibility: unknown;
-  onLayerToggle: (layer: string) => void;
-  navVisibility: unknown;
-  onNavToggle: (layer: string) => void;
-  onLoadViewportNavaids: () => void;
-  isLoadingNav: boolean;
   navDataCounts: {
     vors: number;
     ndbs: number;
@@ -42,23 +33,20 @@ interface SidebarProps {
     highAirways: number;
     lowAirways: number;
   };
-  onNavigateToGate?: (gate: Position & { heading: number }) => void;
   onSelectRunway?: (runway: Runway) => void;
-  debugEnabled?: boolean;
-  onDebugToggle?: () => void;
-  selectedFeature?: FeatureDebugInfo | null;
-  onClearSelectedFeature?: () => void;
   onSelectProcedure?: (procedure: Procedure) => void;
   selectedProcedure?: Procedure | null;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
   selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
+  // VATSIM data
+  vatsimData?: VatsimData;
+  vatsimMetar?: string | null;
 }
 
 export default function Sidebar({
   airport,
   onCloseAirport,
-  weather,
   navDataCounts,
   onSelectRunway,
   onSelectProcedure,
@@ -66,10 +54,16 @@ export default function Sidebar({
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
   selectedStartPosition,
+  vatsimData,
+  vatsimMetar,
 }: SidebarProps) {
   const { t } = useTranslation();
 
-  const metar = weather.metar?.decoded;
+  // Decode VATSIM METAR for display
+  const metar = useMemo(() => {
+    if (!vatsimMetar) return null;
+    return decodeMetar(vatsimMetar);
+  }, [vatsimMetar]);
 
   // Get ATIS frequency for quick weather display
   const frequencies = airport?.frequencies;
@@ -110,16 +104,21 @@ export default function Sidebar({
 
             {/* Accordion sections for secondary info */}
             <Accordion type="multiple" className="w-full">
-              {/* Weather Details */}
-              <AccordionItem value="weather" className="border-border/50">
+              {/* VATSIM - always show ATC/ATIS/traffic info */}
+              <AccordionItem value="vatsim" className="border-border/50">
                 <AccordionTrigger className="py-2 text-xs hover:no-underline">
                   <div className="flex items-center gap-2">
-                    <Cloud className="h-3.5 w-3.5 text-info" />
-                    <span>{t('sidebar.weatherDetails')}</span>
+                    <Radar className="h-3.5 w-3.5 text-success" />
+                    <span>{t('sidebar.vatsim.title', 'VATSIM Live')}</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-2 pt-0">
-                  <WeatherDetails metar={metar} metarRaw={weather.metar?.raw} taf={weather.taf} />
+                  <VatsimSection
+                    icao={airport.id}
+                    vatsimData={vatsimData}
+                    vatsimMetar={vatsimMetar ?? null}
+                    lastUpdate={vatsimData?.lastUpdate}
+                  />
                 </AccordionContent>
               </AccordionItem>
 

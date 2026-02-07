@@ -23,7 +23,7 @@ export interface ExploreFilters {
   hasIata: boolean;
 }
 
-export type ExploreTab = 'filters' | 'featured' | 'routes';
+export type ExploreTab = 'featured' | 'routes' | 'vatsim';
 export type FeaturedCategory = 'all' | 'challenging' | 'scenic' | 'unique' | 'historic';
 
 export interface ExploreState {
@@ -173,16 +173,3 @@ export const useMapStore = create<MapState>()(
     }
   )
 );
-
-// Selectors
-const selectLayerVisibility = (state: MapState) => state.layerVisibility;
-const selectNavVisibility = (state: MapState) => state.navVisibility;
-const selectIsNightMode = (state: MapState) => state.isNightMode;
-const selectDebugEnabled = (state: MapState) => state.debugEnabled;
-const selectVatsimEnabled = (state: MapState) => state.vatsimEnabled;
-const selectExplore = (state: MapState) => state.explore;
-const selectExploreOpen = (state: MapState) => state.explore.isOpen;
-const selectExploreTab = (state: MapState) => state.explore.activeTab;
-const selectExploreFilters = (state: MapState) => state.explore.filters;
-const selectFeaturedCategory = (state: MapState) => state.explore.featuredCategory;
-const selectSelectedRoute = (state: MapState) => state.explore.selectedRoute;

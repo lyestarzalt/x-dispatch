@@ -27,7 +27,6 @@ import { cn } from '@/lib/utils';
 import { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
 import { AirwaysMode, NavLayerVisibility } from '@/types/layers';
-import { ExplorePanel } from './ExplorePanel';
 
 interface ToolbarProps {
   airports: Airport[];
@@ -318,8 +317,6 @@ export default function Toolbar({
           </Button>
         </div>
       </div>
-
-      <ExplorePanel airports={airports} onSelectAirport={onSelectAirport} />
     </div>
   );
 }

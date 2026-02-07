@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { WeatherData } from '@/types/weather';
+import { DecodedMETAR } from '@/utils/decodeMetar';
 
 interface CompassWidgetProps {
   mapBearing: number;
-  weather: WeatherData | null;
+  metar?: DecodedMETAR | null;
 }
 
 // Constants
@@ -58,9 +58,8 @@ const LABEL_POSITIONS = Object.entries({
 // Lubber line points (static)
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
-export default function CompassWidget({ mapBearing, weather }: CompassWidgetProps) {
-  const decoded = weather?.metar?.decoded;
-  const wind = decoded?.wind;
+export default function CompassWidget({ mapBearing, metar }: CompassWidgetProps) {
+  const wind = metar?.wind;
 
   // Memoize wind rotation calculation
   const windRotation = useMemo(() => {
@@ -265,7 +264,7 @@ export default function CompassWidget({ mapBearing, weather }: CompassWidgetProp
           ) : (
             <div className="flex h-14 w-14 items-center justify-center">
               <span className="font-mono text-xs text-muted-foreground">
-                {weather?.loading ? '---' : 'CALM'}
+                {metar ? 'CALM' : '---'}
               </span>
             </div>
           )}
