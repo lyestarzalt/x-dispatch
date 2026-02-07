@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import { Airport } from '@/lib/xplaneData';
 import { useMapStore } from '@/stores/mapStore';
-import { setupGlobeProjection } from '../utils/globeUtils';
+import { setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 
 export type MapRef = React.RefObject<maplibregl.Map | null>;
 export type PopupRef = React.MutableRefObject<maplibregl.Popup | null>;
@@ -65,6 +65,7 @@ export function useMapSetup({
     // Setup on load
     map.on('load', () => {
       cleanupGlobe = setupGlobeProjection(map);
+      setup3DTerrain(map);
       setupAirportsLayer(map, airports);
       setupAirportPopup(map, airportPopupRef, onAirportClick);
       setupVatsimPopup(vatsimPopupRef);
