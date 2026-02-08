@@ -35,26 +35,16 @@ export interface ExploreState {
 }
 
 interface MapState {
-  // Layer visibility
   layerVisibility: LayerVisibility;
   navVisibility: NavLayerVisibility;
-
-  // Map state
   isNightMode: boolean;
   currentZoom: number;
   mapBearing: number;
-
-  // Debug mode
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
-
-  // VATSIM
   vatsimEnabled: boolean;
-
-  // Explore
   explore: ExploreState;
 
-  // Actions
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
   setNavVisibility: (visibility: Partial<NavLayerVisibility>) => void;
@@ -69,7 +59,6 @@ interface MapState {
   setVatsimEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
 
-  // Explore actions
   setExploreOpen: (isOpen: boolean) => void;
   setExploreTab: (tab: ExploreTab) => void;
   setSelectedRoute: (route: { from: string; to: string } | null) => void;
@@ -80,7 +69,6 @@ interface MapState {
 export const useMapStore = create<MapState>()(
   persist(
     (set) => ({
-      // Initial state
       layerVisibility: DEFAULT_LAYER_VISIBILITY,
       navVisibility: DEFAULT_NAV_VISIBILITY,
       isNightMode: false,
@@ -102,7 +90,6 @@ export const useMapStore = create<MapState>()(
         featuredCategory: 'all' as FeaturedCategory,
       },
 
-      // Actions
       setLayerVisibility: (visibility) =>
         set((state) => ({
           layerVisibility: { ...state.layerVisibility, ...visibility },
@@ -150,7 +137,6 @@ export const useMapStore = create<MapState>()(
           navVisibility: DEFAULT_NAV_VISIBILITY,
         }),
 
-      // Explore actions
       setExploreOpen: (isOpen) => set((state) => ({ explore: { ...state.explore, isOpen } })),
       setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
       setSelectedRoute: (route) =>

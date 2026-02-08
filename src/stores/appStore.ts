@@ -22,22 +22,14 @@ interface SelectedProcedure {
 }
 
 interface AppState {
-  // Selected airport
   selectedICAO: string | null;
   selectedAirportData: ParsedAirport | null;
-
-  // UI panels
   showSidebar: boolean;
   showSettings: boolean;
   showLaunchDialog: boolean;
-
-  // Procedures
   selectedProcedure: SelectedProcedure | null;
-
-  // Launch configuration
   startPosition: StartPosition | null;
 
-  // Actions
   selectAirport: (icao: string, data: ParsedAirport) => void;
   clearAirport: () => void;
   setShowSidebar: (show: boolean) => void;
@@ -49,7 +41,6 @@ interface AppState {
 
 export const useAppStore = create<AppState>()(
   subscribeWithSelector((set) => ({
-    // Initial state
     selectedICAO: null as string | null,
     selectedAirportData: null as ParsedAirport | null,
     showSidebar: true,
@@ -58,7 +49,6 @@ export const useAppStore = create<AppState>()(
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
 
-    // Actions
     selectAirport: (icao, data) =>
       set({
         selectedICAO: icao,

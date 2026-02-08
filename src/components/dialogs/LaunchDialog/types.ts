@@ -27,7 +27,7 @@ export interface Aircraft {
 
 export type AircraftType = 'all' | 'fixed-wing' | 'helicopter';
 export type EngineType = 'all' | 'jet' | 'prop';
-export type EngineCount = 'all' | 'single' | 'multi';
+type EngineCount = 'all' | 'single' | 'multi';
 
 export function getAircraftType(ac: Aircraft): 'helicopter' | 'fixed-wing' {
   return ac.isHelicopter ? 'helicopter' : 'fixed-wing';
@@ -37,7 +37,7 @@ export function getEngineType(ac: Aircraft): 'jet' | 'prop' {
   return ac.propCount === 0 ? 'jet' : 'prop';
 }
 
-export function getEngineCount(ac: Aircraft): 'single' | 'multi' {
+function getEngineCount(ac: Aircraft): EngineCount {
   return ac.engineCount > 1 ? 'multi' : 'single';
 }
 

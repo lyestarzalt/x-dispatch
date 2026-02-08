@@ -32,7 +32,6 @@ export function useMapSetup({
 
   const { setCurrentZoom, setMapBearing } = useMapStore();
 
-  // Initialize map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -51,16 +50,13 @@ export function useMapSetup({
 
     mapRef.current = map;
 
-    // Add controls
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');
 
-    // Error handling
     map.on('error', (e) => {
       window.appAPI.log.error('MapLibre error', e.error);
     });
 
-    // Setup on load
     map.on('load', () => {
       setupGlobeProjection(map);
       setup3DTerrain(map);
@@ -96,7 +92,6 @@ function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
     data: { type: 'FeatureCollection', features },
   });
 
-  // Glow layer
   map.addLayer({
     id: 'airports-glow',
     type: 'circle',
@@ -110,7 +105,6 @@ function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
     },
   });
 
-  // Main airport dots
   map.addLayer({
     id: 'airports',
     type: 'circle',
@@ -125,7 +119,6 @@ function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
     },
   });
 
-  // Labels
   map.addLayer({
     id: 'airport-labels',
     type: 'symbol',

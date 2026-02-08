@@ -12,10 +12,6 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-/**
- * Error boundary component that catches JavaScript errors anywhere in the child
- * component tree and displays a fallback UI instead of crashing the whole app.
- */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -36,7 +32,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         componentStack: errorInfo.componentStack,
       });
     } catch {
-      // Ignore if logging fails
+      // Ignore
     }
   }
 
@@ -92,5 +88,3 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;

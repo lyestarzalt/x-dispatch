@@ -10,7 +10,6 @@ function createVORSymbolSVG(size: number = 48): string {
   const innerRadius = outerRadius * 0.7;
   const tickLength = 4;
 
-  // Create hexagon points
   const hexPoints: string[] = [];
   for (let i = 0; i < 6; i++) {
     const angle = ((i * 60 - 90) * Math.PI) / 180;
@@ -19,7 +18,6 @@ function createVORSymbolSVG(size: number = 48): string {
     hexPoints.push(`${x},${y}`);
   }
 
-  // Create compass tick marks (every 30 degrees)
   let ticks = '';
   for (let i = 0; i < 12; i++) {
     const angle = ((i * 30 - 90) * Math.PI) / 180;
@@ -44,7 +42,6 @@ function createVORTACSymbolSVG(size: number = 48): string {
   const outerRadius = size / 2 - 2;
   const innerRadius = outerRadius * 0.6;
 
-  // Create hexagon points
   const hexPoints: string[] = [];
   for (let i = 0; i < 6; i++) {
     const angle = ((i * 60 - 90) * Math.PI) / 180;
@@ -53,7 +50,6 @@ function createVORTACSymbolSVG(size: number = 48): string {
     hexPoints.push(`${x},${y}`);
   }
 
-  // Create three lines (every 120 degrees)
   let lines = '';
   for (let i = 0; i < 3; i++) {
     const angle = ((i * 120 - 90) * Math.PI) / 180;
@@ -75,7 +71,6 @@ function createVORDMESymbolSVG(size: number = 48): string {
   const outerRadius = size / 2 - 2;
   const innerRadius = outerRadius * 0.5;
 
-  // Create hexagon points
   const hexPoints: string[] = [];
   for (let i = 0; i < 6; i++) {
     const angle = ((i * 60 - 90) * Math.PI) / 180;
@@ -168,7 +163,6 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
 
   protected addLayers(map: maplibregl.Map): void {
     if (this.imagesLoaded && map.hasImage('vor-symbol')) {
-      // VOR symbols using custom icons
       map.addLayer({
         id: this.layerId,
         type: 'symbol',
