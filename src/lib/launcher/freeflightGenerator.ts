@@ -43,8 +43,8 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
   const weightJson = generateWeightJson(config.fuel);
   lines.push(`P _weight_and_balance ${aircraftKey} ${weightJson}`);
 
-  // Livery
-  lines.push(`P _livery ${aircraftKey} ${config.livery}`);
+  const liveryValue = config.livery === 'Default' ? '' : config.livery;
+  lines.push(`P _livery ${aircraftKey} ${liveryValue}`);
 
   // Per-airport settings
   const icao = config.startPosition.airport;
