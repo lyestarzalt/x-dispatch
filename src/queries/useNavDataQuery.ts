@@ -72,16 +72,6 @@ export function useNavDataQuery(
   });
 }
 
-function useGlobalAirspacesQuery(enabled: boolean = false) {
-  return useQuery({
-    queryKey: navDataKeys.airspaces,
-    queryFn: () => window.navAPI.getAllAirspaces(),
-    enabled,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  });
-}
-
 export function getNavDataCounts(
   data: NavigationData | undefined,
   airwaysData?: GlobalAirwaysData
