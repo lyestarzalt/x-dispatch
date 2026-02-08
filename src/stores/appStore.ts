@@ -1,13 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { ParsedAirport } from '@/lib/aptParser';
-import { Position } from '@/types/geo';
-
-interface StartPosition extends Position {
-  type: 'runway' | 'ramp';
-  name: string;
-  airport: string;
-}
+import type { StartPosition } from '@/types/position';
 
 interface SelectedProcedure {
   type: 'SID' | 'STAR' | 'APPROACH';
