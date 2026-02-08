@@ -2,6 +2,12 @@ import type { LonLat } from '@/types/geo';
 import { calculateBezier, calculateCubicBezier, mirrorControlPoint } from './bezier';
 import { CoordLineType, LineProps, ParsedPath, RowCode } from './types';
 
+const COORD_EPSILON = 1e-9;
+
+function coordsEqual(a: LonLat, b: LonLat): boolean {
+  return Math.abs(a[0] - b[0]) < COORD_EPSILON && Math.abs(a[1] - b[1]) < COORD_EPSILON;
+}
+
 function getSignedArea(coords: LonLat[]): number {
   let area = 0;
   for (let i = 0; i < coords.length - 1; i++) {
@@ -72,8 +78,7 @@ export class PathParser {
 
       const lastCoord = coordinates[coordinates.length - 1];
       const firstPoint = points[0];
-      const startIndex =
-        lastCoord && lastCoord[0] === firstPoint[0] && lastCoord[1] === firstPoint[1] ? 1 : 0;
+      const startIndex = lastCoord && coordsEqual(lastCoord, firstPoint) ? 1 : 0;
 
       for (let i = startIndex; i < points.length - 1; i++) {
         addCoord(points[i], segmentType, segmentLight);
@@ -111,7 +116,7 @@ export class PathParser {
           const p0 = tempBezierNodes[0];
 
           // Check for split bezier (same vertex) - skip curve if same position
-          if (p0[0] === coord[0] && p0[1] === coord[1]) {
+          if (coordsEqual(p0, coord)) {
             // Same position - this is a split bezier, don't draw curve to self
             // But still add the coordinate with its type for the next segment
             addCoord(coord, nodeLineType, nodeLightType);
@@ -173,7 +178,7 @@ export class PathParser {
           const p3 = coord;
 
           // Check for split bezier (same vertex with different controls) - skip curve if same position
-          if (p0[0] === p3[0] && p0[1] === p3[1]) {
+          if (coordsEqual(p0, p3)) {
             // Same position - this is a split bezier, don't draw curve to self
             // But still add the coordinate with its type for the next segment
             addCoord(coord, nodeLineType, nodeLightType);
@@ -195,7 +200,7 @@ export class PathParser {
           const lastPoint = coordinates[coordinates.length - 1];
 
           // Check for split bezier (same vertex) - skip curve if same position
-          if (lastPoint[0] === coord[0] && lastPoint[1] === coord[1]) {
+          if (coordsEqual(lastPoint, coord)) {
             // Same position - this is a split bezier, don't draw curve to self
             // But still add the coordinate with its type for the next segment
             addCoord(coord, nodeLineType, nodeLightType);

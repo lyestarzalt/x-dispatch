@@ -80,6 +80,7 @@
 
   "toolbar": {
     "searchPlaceholder": "Search airports...",
+    "clearSearch": "Clear search",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "launch": "Launch",
@@ -87,6 +88,8 @@
   },
 
   "explore": {
+    "title": "Explore",
+    "close": "Close explore",
     "tabs": {
       "filters": "Filters",
       "featured": "Featured",

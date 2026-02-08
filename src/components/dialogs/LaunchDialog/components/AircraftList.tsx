@@ -138,13 +138,13 @@ export function AircraftList({
         {/* Search Row */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t('launcher.aircraft.search')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="h-8 rounded-lg bg-secondary pl-8 text-sm"
+              className="h-8 rounded-lg bg-secondary pr-8 text-sm"
             />
+            <Search className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           </div>
           <Button
             variant={showFavoritesOnly ? 'default' : 'outline'}
@@ -243,13 +243,20 @@ export function AircraftList({
               const isFavorite = favorites.includes(ac.path);
 
               return (
-                <button
+                <div
                   key={ac.path}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectAircraft(ac)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectAircraft(ac);
+                    }
+                  }}
                   title={`${ac.name} - ${ac.manufacturer}`}
                   className={cn(
-                    'group relative flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    'group relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     isSelected
                       ? 'bg-primary/10 ring-2 ring-primary'
                       : 'bg-secondary hover:bg-accent'
@@ -300,7 +307,7 @@ export function AircraftList({
                   >
                     <Star className={cn('h-4 w-4', isFavorite && 'fill-current')} />
                   </button>
-                </button>
+                </div>
               );
             })
           )}

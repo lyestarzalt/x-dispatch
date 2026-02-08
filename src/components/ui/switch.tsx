@@ -23,4 +23,39 @@ const Switch = React.forwardRef<
 ));
 Switch.displayName = SwitchPrimitives.Root.displayName;
 
-export { Switch };
+/**
+ * X-Plane style labeled switch with labels on both sides
+ * "LABEL SELECTED" [toggle] "LABEL UNSELECTED"
+ */
+interface LabeledSwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {
+  checkedLabel: string;
+  uncheckedLabel: string;
+}
+
+const LabeledSwitch = React.forwardRef<
+  React.ElementRef<typeof SwitchPrimitives.Root>,
+  LabeledSwitchProps
+>(({ className, checkedLabel, uncheckedLabel, checked, ...props }, ref) => (
+  <div className={cn('flex items-center gap-2', className)}>
+    <span
+      className={cn(
+        'text-xs font-medium uppercase tracking-wide transition-colors',
+        checked ? 'text-foreground' : 'text-muted-foreground'
+      )}
+    >
+      {checkedLabel}
+    </span>
+    <Switch ref={ref} checked={checked} {...props} />
+    <span
+      className={cn(
+        'text-xs font-medium uppercase tracking-wide transition-colors',
+        !checked ? 'text-foreground' : 'text-muted-foreground'
+      )}
+    >
+      {uncheckedLabel}
+    </span>
+  </div>
+));
+LabeledSwitch.displayName = 'LabeledSwitch';
+
+export { Switch, LabeledSwitch };
