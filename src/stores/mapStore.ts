@@ -170,6 +170,14 @@ export const useMapStore = create<MapState>()(
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
       }),
+      migrate: (persisted, version) => {
+        // Handle future migrations when schema changes
+        if (version === 0) {
+          // Migration from version 0 to 1 (if needed)
+          return persisted;
+        }
+        return persisted;
+      },
     }
   )
 );

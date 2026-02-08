@@ -58,12 +58,14 @@ export function useNavDataQuery(
   radiusNm: number = 50,
   enabled?: boolean
 ) {
-  const isEnabled = enabled ?? (lat !== null && lon !== null);
+  const hasCoords = lat !== null && lon !== null;
+  const isEnabled = enabled ?? hasCoords;
 
   return useQuery({
-    queryKey: navDataKeys.byLocation(lat ?? 0, lon ?? 0, radiusNm),
+    // Only include coordinates in key when they're valid to avoid cache collisions
+    queryKey: hasCoords ? navDataKeys.byLocation(lat, lon, radiusNm) : ['navData', 'disabled'],
     queryFn: () => fetchNavData(lat!, lon!, radiusNm),
-    enabled: isEnabled && lat !== null && lon !== null,
+    enabled: isEnabled && hasCoords,
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     placeholderData: EMPTY_NAV_DATA,

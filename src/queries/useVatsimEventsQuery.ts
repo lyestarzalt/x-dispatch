@@ -15,13 +15,14 @@ async function fetchVatsimEvents(): Promise<VatsimEvent[]> {
   return response.data.data || [];
 }
 
-export function useVatsimEventsQuery() {
+export function useVatsimEventsQuery(enabled: boolean = true) {
   return useQuery({
     queryKey: vatsimEventsKeys.all,
     queryFn: fetchVatsimEvents,
+    enabled,
     staleTime: 5 * 60 * 1000, // 5 min - events don't change often
     gcTime: 30 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
+    refetchInterval: enabled ? 5 * 60 * 1000 : false,
   });
 }
 
