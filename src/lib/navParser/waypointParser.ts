@@ -2,7 +2,7 @@
  * Parser for X-Plane earth_fix.dat file (FIX1200 format)
  * Parses waypoints/fixes used in navigation
  */
-import { isValidCoordinate } from '@/lib/geo';
+import { isValidCoordinate } from '../geo';
 import { Waypoint } from './types';
 
 /**

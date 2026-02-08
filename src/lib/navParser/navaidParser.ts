@@ -2,7 +2,7 @@
  * Parser for X-Plane earth_nav.dat file (NAV1200 format)
  * Parses all navaid types: VOR, NDB, DME, ILS, markers, FPAP, GLS, LTP/FTP
  */
-import { isValidCoordinate } from '@/lib/geo';
+import { isValidCoordinate } from '../geo';
 import { Navaid, NavaidRowCode, NavaidType } from './types';
 
 /**

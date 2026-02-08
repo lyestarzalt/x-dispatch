@@ -13,7 +13,7 @@
  * DB = Define Arc by points
  * V = Variable definition (X=center, D=direction)
  */
-import { isValidCoordinate } from '@/lib/geo';
+import { isValidCoordinate } from '../geo';
 import { Airspace } from './types';
 
 /**
