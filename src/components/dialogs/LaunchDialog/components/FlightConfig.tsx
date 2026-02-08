@@ -9,6 +9,7 @@ import {
   CloudSnow,
   CloudSun,
   Fuel,
+  Globe,
   Loader2,
   Moon,
   Power,
@@ -46,6 +47,7 @@ interface FlightConfigProps {
 }
 
 const WEATHER_ICONS: Record<string, typeof Sun> = {
+  real: Globe,
   clear: Sun,
   cloudy: CloudSun,
   rainy: CloudRain,

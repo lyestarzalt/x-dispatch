@@ -365,6 +365,7 @@
     },
 
     "weather": {
+      "real": "Réel",
       "clear": "Dégagé",
       "cloudy": "Nuageux",
       "rainy": "Pluvieux",

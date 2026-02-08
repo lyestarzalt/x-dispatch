@@ -80,7 +80,7 @@ export function useMapSetup({
   };
 }
 
-function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
+export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
   const features = airports.map((airport) => ({
     type: 'Feature' as const,
     geometry: { type: 'Point' as const, coordinates: [airport.lon, airport.lat] },

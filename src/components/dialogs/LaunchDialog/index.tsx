@@ -138,8 +138,11 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     setLaunchError(null);
 
     try {
-      // Determine weather definition
-      const weatherPreset = weatherPresets.find((w) => w.name.toLowerCase() === selectedWeather);
+      // Determine weather definition - normalize preset names for matching
+      const weatherPreset = weatherPresets.find((w) => {
+        const normalizedName = w.name.toLowerCase().replace(/\s+/g, '');
+        return normalizedName === selectedWeather || normalizedName.startsWith(selectedWeather);
+      });
       const weatherDefinition = weatherPreset?.definition || '';
       const weatherName = weatherPreset?.name || selectedWeather;
 

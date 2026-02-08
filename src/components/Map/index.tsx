@@ -23,6 +23,7 @@ import { Coordinates } from '@/types/geo';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import {
   applyNavVisibilityChange,
+  setupAirportsLayer,
   toggleVatsimLayer,
   useAirportInteractions,
   useAirportRenderer,
@@ -92,6 +93,7 @@ export default function Map({ airports }: MapProps) {
   const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
   const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
   const bringVatsimToTopRef = useRef<(() => void) | null>(null);
+  const selectedICAORef = useRef<string | null>(null);
 
   // Stable callback for airport click - uses refs to access renderer functions
   const handleAirportClick = useCallback(async (icao: string) => {
@@ -144,6 +146,10 @@ export default function Map({ airports }: MapProps) {
   useEffect(() => {
     layerVisibilityRef.current = layerVisibility;
   }, [layerVisibility]);
+
+  useEffect(() => {
+    selectedICAORef.current = selectedICAO;
+  }, [selectedICAO]);
 
   // Airport interactions (gates, runway ends)
   const { selectGateAsStart, selectRunwayEndAsStart, navigateToGate, navigateToRunway } =
@@ -232,12 +238,15 @@ export default function Map({ airports }: MapProps) {
       return;
     }
 
-    const currentICAO = selectedICAO;
     const handleStyleLoad = async () => {
-      if (currentICAO) {
-        await renderAirport(currentICAO);
-        applyLayerVisibility(layerVisibility);
-        // Bring VATSIM layers to top after airport rendering
+      // Re-add airports layer (dots for all airports)
+      setupAirportsLayer(map, airports);
+
+      // Re-render selected airport if any
+      const icao = selectedICAORef.current;
+      if (icao && renderAirportRef.current && applyLayerVisibilityRef.current) {
+        await renderAirportRef.current(icao);
+        applyLayerVisibilityRef.current(layerVisibilityRef.current);
         bringVatsimLayersToTop(map);
       }
     };
@@ -248,8 +257,7 @@ export default function Map({ airports }: MapProps) {
     return () => {
       map.off('style.load', handleStyleLoad);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapStyleUrl]);
+  }, [mapStyleUrl, mapRef, airports]);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(

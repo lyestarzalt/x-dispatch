@@ -465,6 +465,7 @@
     },
 
     "weather": {
+      "real": "Real",
       "clear": "Clear",
       "cloudy": "Cloudy",
       "rainy": "Rainy",

@@ -61,7 +61,15 @@ interface FlightConfig {
   fuelPercentage: number;
 }
 
-export const WEATHER_OPTIONS = ['clear', 'cloudy', 'rainy', 'stormy', 'snowy', 'foggy'] as const;
+export const WEATHER_OPTIONS = [
+  'real',
+  'clear',
+  'cloudy',
+  'rainy',
+  'stormy',
+  'snowy',
+  'foggy',
+] as const;
 
 type WeatherOption = (typeof WEATHER_OPTIONS)[number];
 
