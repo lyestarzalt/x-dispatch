@@ -176,6 +176,7 @@ export default function Toolbar({
                   setSearchQuery('');
                   setShowResults(false);
                 }}
+                aria-label={t('toolbar.clearSearch')}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -211,7 +212,9 @@ export default function Toolbar({
             'flex h-10 w-10 items-center justify-center rounded-lg border border-input bg-card transition-colors hover:bg-accent',
             exploreOpen && 'border-primary/50 bg-primary/10'
           )}
-          title={exploreOpen ? t('explore.close') : t('explore.title')}
+          aria-label={exploreOpen ? t('explore.close') : t('explore.title')}
+          aria-expanded={exploreOpen}
+          aria-controls="explore-panel"
         >
           {exploreOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
@@ -311,7 +314,7 @@ export default function Toolbar({
             size="icon"
             onClick={onOpenSettings}
             className="h-10 w-10"
-            title={t('settings.title')}
+            aria-label={t('settings.title')}
           >
             <Settings className="h-4 w-4" />
           </Button>
