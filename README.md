@@ -12,13 +12,20 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download for Windows, macOS, Linux</a>
 </p>
 
-> **macOS users:** If the app shows "damaged" or won't open, run in Terminal:
+> **macOS Users (Sequoia/Tahoe):** The app is unsigned. To install:
 >
-> ```
-> sudo xattr -cr /Applications/X-Dispatch.app
+> 1. Download the `.dmg` from [Releases](https://github.com/lyestarzalt/x-dispatch/releases/latest)
+> 2. Drag to Applications and try to open - it will be blocked
+> 3. Go to **System Settings → Privacy & Security** → scroll down
+> 4. Click **"Open Anyway"** → enter your password
+>
+> **Or via Terminal:**
+>
+> ```bash
+> xattr -rd com.apple.quarantine /Applications/X-Dispatch.app
 > ```
 >
-> Homebrew install coming soon.
+> If you get "Permission denied", grant Terminal **Full Disk Access** in System Settings → Privacy & Security.
 
 ---
 
