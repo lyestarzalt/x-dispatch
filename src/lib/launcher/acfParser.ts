@@ -231,6 +231,12 @@ function findLiveryPreview(liveryDir: string): string | null {
  */
 export function generateAircraftKey(aircraftPath: string): string {
   return (
-    '_' + aircraftPath.replace(/\//g, '').replace(/\./g, '').replace(/-/g, '').replace(/ /g, '')
+    '_' +
+    aircraftPath
+      .replace(/\//g, '')
+      .replace(/\./g, '')
+      .replace(/-/g, '')
+      .replace(/ /g, '')
+      .replace(/_/g, '')
   );
 }

@@ -1,13 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { ParsedAirport } from '@/lib/aptParser';
-import { Position } from '@/types/geo';
-
-interface StartPosition extends Position {
-  type: 'runway' | 'ramp';
-  name: string;
-  airport: string;
-}
+import type { StartPosition } from '@/types/position';
 
 interface SelectedProcedure {
   type: 'SID' | 'STAR' | 'APPROACH';
@@ -91,11 +85,3 @@ export const useAppStore = create<AppState>()(
     setStartPosition: (position) => set({ startPosition: position }),
   }))
 );
-
-const selectSelectedICAO = (state: AppState) => state.selectedICAO;
-const selectSelectedAirport = (state: AppState) => state.selectedAirportData;
-const selectShowSidebar = (state: AppState) => state.showSidebar;
-const selectShowSettings = (state: AppState) => state.showSettings;
-const selectShowLaunchPanel = (state: AppState) => state.showLaunchDialog;
-const selectProcedure = (state: AppState) => state.selectedProcedure;
-const selectStartPosition = (state: AppState) => state.startPosition;

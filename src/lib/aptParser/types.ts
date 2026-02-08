@@ -270,16 +270,13 @@ export interface Helipad extends Coordinates {
   surface_type: SurfaceType;
 }
 
-interface ParsedAirport {
-  id: string;
-  name: string;
-  metadata: Record<string, string>;
-  runways: Runway[];
-  taxiways: any[];
-  boundaries: any[];
-  lines: any[];
-  frequencies: Frequency[];
-  towerLocation?: TowerLocation;
-  beacon?: Beacon;
-  helipads: Helipad[];
+export interface TaxiwayFeature {
+  surface: number;
+  smoothness: number;
+  orientation: number;
+  paths: ParsedPath[];
+}
+
+export interface BoundaryFeature {
+  paths: ParsedPath[];
 }

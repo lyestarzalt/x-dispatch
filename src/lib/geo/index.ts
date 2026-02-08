@@ -149,6 +149,16 @@ function offsetPoint(
   return { latitude, longitude };
 }
 
+/**
+ * Validate that coordinates are finite and within valid bounds
+ */
+export function isValidCoordinate(lat: number, lon: number): boolean {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  if (lat < -90 || lat > 90) return false;
+  if (lon < -180 || lon > 180) return false;
+  return true;
+}
+
 // Runway helpers
 export function runwayLength(end1: Coordinates, end2: Coordinates): Meters {
   return distanceBetween(end1, end2);

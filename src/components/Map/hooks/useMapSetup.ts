@@ -60,11 +60,9 @@ export function useMapSetup({
       window.appAPI.log.error('MapLibre error', e.error);
     });
 
-    let cleanupGlobe: (() => void) | undefined;
-
     // Setup on load
     map.on('load', () => {
-      cleanupGlobe = setupGlobeProjection(map);
+      setupGlobeProjection(map);
       setup3DTerrain(map);
       setupAirportsLayer(map, airports);
       setupAirportPopup(map, airportPopupRef, onAirportClick);
@@ -73,7 +71,6 @@ export function useMapSetup({
     });
 
     return () => {
-      cleanupGlobe?.();
       map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,6 +146,19 @@ function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
       'text-halo-width': 1,
     },
   });
+
+  // Hitbox layer for easier clicking
+  map.addLayer({
+    id: 'airports-hitbox',
+    type: 'circle',
+    source: 'airports',
+    minzoom: 4,
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 10, 6, 14, 10, 18, 14, 22],
+      'circle-color': 'transparent',
+      'circle-opacity': 0,
+    },
+  });
 }
 
 function setupAirportPopup(
@@ -162,7 +172,7 @@ function setupAirportPopup(
     className: 'airport-popup',
   });
 
-  map.on('mouseenter', 'airports', (e) => {
+  map.on('mouseenter', 'airports-hitbox', (e) => {
     if (!e.features || e.features[0].geometry.type !== 'Point') return;
     map.getCanvas().style.cursor = 'pointer';
 
@@ -177,12 +187,12 @@ function setupAirportPopup(
       .addTo(map);
   });
 
-  map.on('mouseleave', 'airports', () => {
+  map.on('mouseleave', 'airports-hitbox', () => {
     map.getCanvas().style.cursor = '';
     popupRef.current?.remove();
   });
 
-  map.on('click', 'airports', async (e) => {
+  map.on('click', 'airports-hitbox', async (e) => {
     if (!e.features || !e.features[0].properties?.icao) return;
     if (e.features[0].geometry.type !== 'Point') return;
     const icao = e.features[0].properties.icao;

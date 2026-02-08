@@ -13,6 +13,7 @@
  * DB = Define Arc by points
  * V = Variable definition (X=center, D=direction)
  */
+import { isValidCoordinate } from '../geo';
 import { Airspace } from './types';
 
 /**
@@ -31,7 +32,7 @@ function parseDMS(dms: string): number {
 
   const degrees = parseInt(coordParts[0], 10);
   const minutes = parseInt(coordParts[1], 10);
-  const seconds = parseInt(coordParts[2], 10);
+  const seconds = parseFloat(coordParts[2]); // Use parseFloat to preserve decimal precision
 
   if (isNaN(degrees) || isNaN(minutes) || isNaN(seconds)) return NaN;
 
@@ -62,7 +63,8 @@ function parsePoint(line: string): [number, number] | null {
   const lat = parseDMS(match[1]);
   const lon = parseDMS(match[2]);
 
-  if (isNaN(lat) || isNaN(lon)) return null;
+  // Validate coordinates (check for NaN, Infinity, and out-of-bounds)
+  if (!isValidCoordinate(lat, lon)) return null;
 
   return [lon, lat]; // GeoJSON uses [lon, lat] order
 }

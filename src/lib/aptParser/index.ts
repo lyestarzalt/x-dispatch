@@ -1,6 +1,7 @@
 import { PathParser } from './pathParser';
 import {
   Beacon,
+  BoundaryFeature,
   Frequency,
   FrequencyType,
   Helipad,
@@ -12,6 +13,7 @@ import {
   RunwayEnd,
   Sign,
   StartupLocation,
+  TaxiwayFeature,
   TowerLocation,
   Windsock,
 } from './types';
@@ -22,9 +24,10 @@ export interface ParsedAirport {
   elevation: number;
   metadata: Record<string, string>;
   runways: Runway[];
-  taxiways: any[];
-  boundaries: any[];
-  lines: any[];
+  taxiways: TaxiwayFeature[];
+  boundaries: BoundaryFeature[];
+  /** @deprecated Unused, kept for compatibility */
+  lines: never[];
   startupLocations: StartupLocation[];
   windsocks: Windsock[];
   signs: Sign[];
@@ -46,7 +49,8 @@ export class AirportParser {
       .filter((l) => l.length > 0);
   }
 
-  private parseRunwayEnd(tokens: string[]): RunwayEnd {
+  private parseRunwayEnd(tokens: string[]): RunwayEnd | null {
+    if (tokens.length < 9) return null;
     return {
       name: tokens[0],
       latitude: parseFloat(tokens[1]),
@@ -60,7 +64,8 @@ export class AirportParser {
     };
   }
 
-  private parseStartupLocation(tokens: string[]): StartupLocation {
+  private parseStartupLocation(tokens: string[]): StartupLocation | null {
+    if (tokens.length < 6) return null;
     return {
       latitude: parseFloat(tokens[1]),
       longitude: parseFloat(tokens[2]),
@@ -71,7 +76,8 @@ export class AirportParser {
     };
   }
 
-  private parseWindsock(tokens: string[]): Windsock {
+  private parseWindsock(tokens: string[]): Windsock | null {
+    if (tokens.length < 4) return null;
     return {
       latitude: parseFloat(tokens[1]),
       longitude: parseFloat(tokens[2]),
@@ -80,7 +86,8 @@ export class AirportParser {
     };
   }
 
-  private parseSign(tokens: string[]): Sign {
+  private parseSign(tokens: string[]): Sign | null {
+    if (tokens.length < 7) return null;
     return {
       latitude: parseFloat(tokens[1]),
       longitude: parseFloat(tokens[2]),
@@ -90,7 +97,8 @@ export class AirportParser {
     };
   }
 
-  private parsePavement(tokens: string[], paths: ParsedPath[]): Pavement {
+  private parsePavement(tokens: string[], paths: ParsedPath[]): Pavement | null {
+    if (tokens.length < 4) return null;
     // First path without isHole is the outer boundary, rest are holes
     const outer = paths.find((p) => !p.isHole);
     const holes = paths.filter((p) => p.isHole);
@@ -327,6 +335,7 @@ export class AirportParser {
           break;
 
         case RowCode.LAND_RUNWAY: {
+          if (tokens.length < 26) break; // Not enough tokens for runway
           // Token[3] encodes shoulder info:
           // If value >= 100: width = floor(value / 100) meters, surface = value % 100
           // If value < 100: just surface type (0=none, 1=asphalt, 2=concrete)
@@ -338,6 +347,10 @@ export class AirportParser {
             shoulder_surface_type = shoulderToken % 100;
           }
 
+          const end1 = this.parseRunwayEnd(tokens.slice(8, 17));
+          const end2 = this.parseRunwayEnd(tokens.slice(17, 26));
+          if (!end1 || !end2) break; // Invalid runway end data
+
           const runway: Runway = {
             width: parseFloat(tokens[1]),
             surface_type: parseInt(tokens[2]),
@@ -347,10 +360,7 @@ export class AirportParser {
             centerline_lights: Boolean(parseInt(tokens[5])),
             edge_lights: Boolean(parseInt(tokens[6])),
             auto_distance_remaining_signs: Boolean(parseInt(tokens[7])),
-            ends: [
-              this.parseRunwayEnd(tokens.slice(8, 17)),
-              this.parseRunwayEnd(tokens.slice(17, 26)),
-            ],
+            ends: [end1, end2],
           };
           airport.runways.push(runway);
           break;
@@ -372,7 +382,7 @@ export class AirportParser {
 
             // Also add to pavements
             const pavement = this.parsePavement(tokens, paths);
-            airport.pavements.push(pavement);
+            if (pavement) airport.pavements.push(pavement);
 
             // Extract edge markings (painted lines and lights on pavement boundary)
             const edgeFeatures = this.extractPavementEdgeFeatures(pavementName, paths);
@@ -395,19 +405,19 @@ export class AirportParser {
 
         case RowCode.START_LOCATION_NEW: {
           const startupLocation = this.parseStartupLocation(tokens);
-          airport.startupLocations.push(startupLocation);
+          if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
 
         case RowCode.WINDSOCK: {
           const windsock = this.parseWindsock(tokens);
-          airport.windsocks.push(windsock);
+          if (windsock) airport.windsocks.push(windsock);
           break;
         }
 
         case RowCode.TAXI_SIGN: {
           const sign = this.parseSign(tokens);
-          airport.signs.push(sign);
+          if (sign) airport.signs.push(sign);
           break;
         }
 

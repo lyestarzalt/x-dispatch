@@ -52,13 +52,8 @@ export interface WeatherPreset {
   definition: string;
 }
 
-export interface StartPosition {
-  type: 'runway' | 'ramp';
-  name: string;
-  airport: string;
-  latitude: number;
-  longitude: number;
-}
+// Re-export from shared types
+export type { StartPosition } from '@/types/position';
 
 interface FlightConfig {
   timeOfDay: number;

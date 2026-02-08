@@ -72,8 +72,20 @@ module.exports = {
           DEFAULT: 'oklch(var(--card) / <alpha-value>)',
           foreground: 'oklch(var(--card-foreground) / <alpha-value>)'
         },
-        // X-Plane extended colors
         xp: {
+          // Cyan scale
+          'cyan-glow': 'oklch(var(--xp-cyan-glow) / <alpha-value>)',
+          'cyan-light': 'oklch(var(--xp-cyan-light) / <alpha-value>)',
+          'cyan-hover': 'oklch(var(--xp-cyan-hover) / <alpha-value>)',
+          'cyan-primary': 'oklch(var(--xp-cyan-primary) / <alpha-value>)',
+          'cyan-muted': 'oklch(var(--xp-cyan-muted) / <alpha-value>)',
+          'cyan-dark': 'oklch(var(--xp-cyan-dark) / <alpha-value>)',
+          'cyan-deepest': 'oklch(var(--xp-cyan-deepest) / <alpha-value>)',
+          // Gray scale
+          'gray-100': 'oklch(var(--xp-gray-100) / <alpha-value>)',
+          'gray-200': 'oklch(var(--xp-gray-200) / <alpha-value>)',
+          'gray-300': 'oklch(var(--xp-gray-300) / <alpha-value>)',
+          // Legacy aliases
           'accent-hover': 'oklch(var(--xp-accent-hover) / <alpha-value>)',
           'accent-muted': 'oklch(var(--xp-accent-muted) / <alpha-value>)',
           'accent-subtle': 'oklch(var(--xp-accent-subtle) / <alpha-value>)',

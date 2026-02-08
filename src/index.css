@@ -66,13 +66,26 @@
     --violet: 0.6 0.2 300; /* Purple - procedures */
     --violet-foreground: 0.98 0 0;
 
-    /* X-Plane extended tokens */
-    --xp-accent-hover: 0.72 0.14 230; /* #4AB3F5 */
-    --xp-accent-muted: 0.5 0.12 230; /* #1678B5 */
-    --xp-accent-subtle: 0.35 0.1 230; /* #0F5079 */
-    --xp-accent-glow: 0.78 0.1 230; /* #77C6E7 */
-    --xp-text-secondary: 0.8 0.08 230; /* #A5D9FA - cyan-tinted text */
-    --xp-text-disabled: 0.4 0.02 250; /* #474F59 */
+    --xp-cyan-glow: 0.85 0.08 230; /* #A5D9FA - glowing text */
+    --xp-cyan-light: 0.78 0.1 230; /* #77C6E7 - hover glow */
+    --xp-cyan-hover: 0.72 0.14 230; /* #4AB3F5 - hover states */
+    --xp-cyan-primary: 0.65 0.15 230; /* #1DA0F2 - primary (same as --primary) */
+    --xp-cyan-muted: 0.5 0.12 230; /* #1678B5 - active states */
+    --xp-cyan-dark: 0.35 0.1 230; /* #0F5079 - subtle backgrounds */
+    --xp-cyan-deepest: 0.22 0.08 230; /* #07283D - very subtle */
+
+    /* X-Plane Gray Scale */
+    --xp-gray-100: 0.55 0.02 250; /* #717880 - muted text */
+    --xp-gray-200: 0.4 0.02 250; /* #474F59 - disabled text */
+    --xp-gray-300: 0.25 0.02 250; /* #263240 - borders */
+
+    /* Legacy aliases (keep for backward compatibility) */
+    --xp-accent-hover: var(--xp-cyan-hover);
+    --xp-accent-muted: var(--xp-cyan-muted);
+    --xp-accent-subtle: var(--xp-cyan-dark);
+    --xp-accent-glow: var(--xp-cyan-light);
+    --xp-text-secondary: var(--xp-cyan-glow);
+    --xp-text-disabled: var(--xp-gray-200);
 
     /* Chart colors for map layers */
     --chart-vor: 0.65 0.15 230; /* Cyan */

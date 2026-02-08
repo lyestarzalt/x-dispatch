@@ -36,11 +36,17 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
   if (!explore.isOpen) return null;
 
   return (
-    <div className="absolute left-4 top-44 z-10 w-[340px] rounded-lg border border-border bg-card">
-      <div className="flex border-b border-border">
+    <div
+      id="explore-panel"
+      className="absolute left-4 top-44 z-10 w-[340px] rounded-lg border border-border bg-card"
+    >
+      <div role="tablist" aria-label={t('explore.title')} className="flex border-b border-border">
         {TABS.map((tab) => (
           <button
             key={tab}
+            role="tab"
+            aria-selected={explore.activeTab === tab}
+            aria-controls={`explore-tabpanel-${tab}`}
             onClick={() => setExploreTab(tab)}
             className={cn(
               'flex-1 px-4 py-2.5 text-xs font-medium uppercase tracking-wide transition-colors',
@@ -54,7 +60,12 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
         ))}
       </div>
 
-      <div className="max-h-96 overflow-y-auto overflow-x-hidden p-4">
+      <div
+        role="tabpanel"
+        id={`explore-tabpanel-${explore.activeTab}`}
+        aria-labelledby={explore.activeTab}
+        className="max-h-96 overflow-y-auto overflow-x-hidden p-4"
+      >
         {explore.activeTab === 'featured' && (
           <FeaturedTab
             category={explore.featuredCategory}

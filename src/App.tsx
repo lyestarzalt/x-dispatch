@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
@@ -117,9 +118,11 @@ function AppContent() {
 
 function App() {
   return (
-    <QueryProvider>
-      <AppContent />
-    </QueryProvider>
+    <ErrorBoundary>
+      <QueryProvider>
+        <AppContent />
+      </QueryProvider>
+    </ErrorBoundary>
   );
 }
 

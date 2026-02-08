@@ -96,15 +96,15 @@ export default function DepartureSelector({
 
       {/* Search input */}
       <div className="relative mb-2">
-        <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t(
             departureType === 'gates' ? 'sidebar.searchGates' : 'sidebar.searchRunways'
           )}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-7 pl-7 text-xs"
+          className="h-7 pr-7 text-xs"
         />
+        <Search className="absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
       </div>
 
       {/* List */}

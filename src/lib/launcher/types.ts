@@ -53,7 +53,8 @@ export interface TimeConfig extends Coordinates {
   useSystemTime?: boolean;
 }
 
-export interface StartPosition {
+/** Start position for X-Plane launch config (position identifier, no coordinates) */
+export interface LaunchStartPosition {
   type: 'runway' | 'ramp';
   airport: string;
   position: string;
@@ -63,7 +64,7 @@ export interface LaunchConfig {
   aircraft: Aircraft;
   livery: string;
   fuel: FuelConfig;
-  startPosition: StartPosition;
+  startPosition: LaunchStartPosition;
   time: TimeConfig;
   weather: WeatherPreset;
   startEngineRunning?: boolean;
