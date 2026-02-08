@@ -156,7 +156,6 @@ export default function Toolbar({
         {/* Search */}
         <div ref={containerRef} className="relative">
           <div className="flex h-10 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <Input
               ref={inputRef}
               type="text"
@@ -167,11 +166,11 @@ export default function Toolbar({
               onKeyDown={handleKeyDown}
               className="h-8 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
             />
-            {searchQuery && (
+            {searchQuery ? (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-6 w-6 shrink-0"
                 onClick={() => {
                   setSearchQuery('');
                   setShowResults(false);
@@ -180,6 +179,8 @@ export default function Toolbar({
               >
                 <X className="h-4 w-4" />
               </Button>
+            ) : (
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             )}
           </div>
 
