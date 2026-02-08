@@ -243,13 +243,20 @@ export function AircraftList({
               const isFavorite = favorites.includes(ac.path);
 
               return (
-                <button
+                <div
                   key={ac.path}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectAircraft(ac)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectAircraft(ac);
+                    }
+                  }}
                   title={`${ac.name} - ${ac.manufacturer}`}
                   className={cn(
-                    'group relative flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    'group relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     isSelected
                       ? 'bg-primary/10 ring-2 ring-primary'
                       : 'bg-secondary hover:bg-accent'
@@ -300,7 +307,7 @@ export function AircraftList({
                   >
                     <Star className={cn('h-4 w-4', isFavorite && 'fill-current')} />
                   </button>
-                </button>
+                </div>
               );
             })
           )}

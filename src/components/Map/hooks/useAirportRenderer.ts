@@ -142,7 +142,7 @@ export function useAirportRenderer(
     let phase = 0;
     const animate = () => {
       if (!map.current || !animationsEnabled.current) {
-        animationFrameRef.current = requestAnimationFrame(animate);
+        animationFrameRef.current = null;
         return;
       }
 

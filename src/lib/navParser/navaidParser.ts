@@ -2,6 +2,7 @@
  * Parser for X-Plane earth_nav.dat file (NAV1200 format)
  * Parses all navaid types: VOR, NDB, DME, ILS, markers, FPAP, GLS, LTP/FTP
  */
+import { isValidCoordinate } from '@/lib/geo';
 import { Navaid, NavaidRowCode, NavaidType } from './types';
 
 /**
@@ -99,6 +100,10 @@ function parseNavaidLine(line: string): Navaid | null {
 
   const latitude = parseFloat(parts[1]);
   const longitude = parseFloat(parts[2]);
+
+  // Validate coordinates
+  if (!isValidCoordinate(latitude, longitude)) return null;
+
   const elevation = parseInt(parts[3], 10);
   const frequency = parseInt(parts[4], 10);
   const range = parseInt(parts[5], 10);

@@ -2,6 +2,7 @@
  * Parser for X-Plane earth_fix.dat file (FIX1200 format)
  * Parses waypoints/fixes used in navigation
  */
+import { isValidCoordinate } from '@/lib/geo';
 import { Waypoint } from './types';
 
 /**
@@ -22,8 +23,8 @@ function parseWaypointLine(line: string): Waypoint | null {
   // Remaining parts are description (may include spaces)
   const description = parts.slice(5).join(' ');
 
-  // Validate coordinates
-  if (isNaN(latitude) || isNaN(longitude)) {
+  // Validate coordinates (check for NaN, Infinity, and out-of-bounds)
+  if (!isValidCoordinate(latitude, longitude)) {
     return null;
   }
 

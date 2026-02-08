@@ -56,36 +56,31 @@ const CLICKABLE_LAYERS = [
 ];
 
 export default function Map({ airports }: MapProps) {
-  const {
-    selectedICAO,
-    selectedAirportData,
-    showSidebar,
-    showSettings,
-    showLaunchDialog,
-    selectedProcedure,
-    startPosition: selectedStartPosition,
-    selectAirport: storeSelectAirport,
-    setShowSidebar,
-    setShowSettings,
-    setShowLaunchDialog,
-    selectProcedure: setSelectedProcedure,
-  } = useAppStore();
+  const selectedICAO = useAppStore((s) => s.selectedICAO);
+  const selectedAirportData = useAppStore((s) => s.selectedAirportData);
+  const showSidebar = useAppStore((s) => s.showSidebar);
+  const showSettings = useAppStore((s) => s.showSettings);
+  const showLaunchDialog = useAppStore((s) => s.showLaunchDialog);
+  const selectedProcedure = useAppStore((s) => s.selectedProcedure);
+  const selectedStartPosition = useAppStore((s) => s.startPosition);
+  const storeSelectAirport = useAppStore((s) => s.selectAirport);
+  const setShowSidebar = useAppStore((s) => s.setShowSidebar);
+  const setShowSettings = useAppStore((s) => s.setShowSettings);
+  const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
+  const setSelectedProcedure = useAppStore((s) => s.selectProcedure);
 
-  const {
-    layerVisibility,
-    navVisibility,
-    isNightMode,
-    mapBearing,
-    debugEnabled,
-    selectedFeature,
-    vatsimEnabled,
-    toggleLayer,
-    toggleNavLayer,
-    setAirwaysMode,
-    setDebugEnabled,
-    setSelectedFeature,
-    setVatsimEnabled,
-  } = useMapStore();
+  const layerVisibility = useMapStore((s) => s.layerVisibility);
+  const navVisibility = useMapStore((s) => s.navVisibility);
+  const isNightMode = useMapStore((s) => s.isNightMode);
+  const mapBearing = useMapStore((s) => s.mapBearing);
+  const debugEnabled = useMapStore((s) => s.debugEnabled);
+  const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const toggleLayer = useMapStore((s) => s.toggleLayer);
+  const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
+  const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
+  const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
+  const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
+  const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
