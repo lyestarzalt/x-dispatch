@@ -91,7 +91,7 @@ function createWindow(): BrowserWindow {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
       webviewTag: false,
       allowRunningInsecureContent: false,
       devTools: !app.isPackaged,
@@ -226,7 +226,19 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('xplane:getPath', () => dataManager.getXPlanePath());
-  ipcMain.handle('xplane:setPath', (_, p: string) => dataManager.setXPlanePath(p));
+  ipcMain.handle('xplane:setPath', (_, p: string) => {
+    // Security: Validate path parameter
+    if (typeof p !== 'string' || p.length === 0 || p.length > 1000) {
+      logger.security.warn(`Invalid X-Plane path parameter: ${typeof p}`);
+      throw new Error('Invalid path');
+    }
+    // Prevent obvious path traversal attempts
+    if (p.includes('..')) {
+      logger.security.warn(`Blocked path traversal attempt in setPath: ${p}`);
+      throw new Error('Invalid path');
+    }
+    return dataManager.setXPlanePath(p);
+  });
   ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
   ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
   ipcMain.handle('xplane:browseForPath', async () => {
@@ -484,13 +496,30 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('launcher:getAircraftImage', async (_, imagePath: string) => {
-    if (!imagePath) return null;
+    if (!imagePath || typeof imagePath !== 'string') return null;
+
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) return null;
+
+    const allowedDir = path.resolve(xplanePath, 'Aircraft');
+    const resolved = path.resolve(imagePath);
+
+    if (!resolved.startsWith(allowedDir + path.sep)) {
+      logger.security.warn(`Blocked unauthorized file access attempt: ${resolved}`);
+      return null;
+    }
+
+    const ext = path.extname(imagePath).toLowerCase();
+    if (!['.png', '.jpg', '.jpeg', '.bmp', '.gif'].includes(ext)) {
+      logger.security.warn(`Blocked non-image file access: ${resolved}`);
+      return null;
+    }
+
     try {
       const fs = await import('fs');
-      if (!fs.existsSync(imagePath)) return null;
-      const data = fs.readFileSync(imagePath);
-      const ext = imagePath.split('.').pop()?.toLowerCase() || 'png';
-      return `data:image/${ext};base64,${data.toString('base64')}`;
+      if (!fs.existsSync(resolved)) return null;
+      const data = fs.readFileSync(resolved);
+      return `data:image/${ext.slice(1)};base64,${data.toString('base64')}`;
     } catch {
       return null;
     }
@@ -535,7 +564,7 @@ app.whenReady().then(async () => {
         ...details.responseHeaders,
         'Content-Security-Policy': [
           "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+            "script-src 'self' 'unsafe-inline'; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; " +
             "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com;" +
             "font-src 'self' data: https://fonts.gstatic.com; " +
