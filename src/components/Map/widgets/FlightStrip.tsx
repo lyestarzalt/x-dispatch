@@ -1,4 +1,4 @@
-import { Crosshair, Plane } from 'lucide-react';
+import { Crosshair, Plane, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PlaneState } from '@/types/xplane';
 
@@ -20,7 +20,17 @@ function formatHeading(heading: number | undefined): string {
 }
 
 export default function FlightStrip({ planeState, connected, onCenterPlane }: FlightStripProps) {
-  if (!connected) return null;
+  // Disconnected state
+  if (!connected) {
+    return (
+      <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
+        <div className="flex h-10 items-center gap-2 rounded-lg border border-destructive/50 bg-card/95 px-4 backdrop-blur-sm">
+          <WifiOff className="h-4 w-4 text-destructive" />
+          <span className="text-sm text-muted-foreground">X-Plane not detected</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
