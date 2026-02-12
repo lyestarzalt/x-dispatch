@@ -207,8 +207,15 @@ export class XPlaneWebSocketClient {
       if (!datarefName) continue;
 
       const stateKey = DATAREF_MAPPING[datarefName];
-      if (stateKey) {
-        (this.currentState as Record<string, unknown>)[stateKey] = value;
+      if (stateKey && typeof value === 'number') {
+        // Convert units: elevation (m→ft), groundspeed (m/s→kts)
+        let convertedValue = value;
+        if (datarefName === 'sim/flightmodel/position/elevation') {
+          convertedValue = value * 3.28084; // meters to feet
+        } else if (datarefName === 'sim/flightmodel/position/groundspeed') {
+          convertedValue = value * 1.94384; // m/s to knots
+        }
+        (this.currentState as Record<string, unknown>)[stateKey] = convertedValue;
       }
     }
 
