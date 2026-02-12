@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
-import logger from '@/lib/logger';
 import type { PlaneState } from '@/types/xplane';
+import logger from '../logger';
 
 const DEFAULT_PORT = 8086;
 const RECONNECT_DELAY = 3000;
