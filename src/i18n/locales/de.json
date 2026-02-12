@@ -224,7 +224,7 @@
   },
 
   "flightStrip": {
-    "notDetected": "X-Plane nicht erkannt",
+    "notDetected": "X-Plane läuft nicht",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",
