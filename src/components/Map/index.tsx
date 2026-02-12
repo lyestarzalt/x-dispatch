@@ -9,6 +9,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Airport } from '@/lib/xplaneData';
+import { usePlanePosition, useXPlaneStatus } from '@/queries';
 import {
   getNavDataCounts,
   useGlobalAirwaysQuery,
@@ -33,11 +34,15 @@ import {
   useVatsimSync,
 } from './hooks';
 import {
+  addPlaneLayer,
   addProcedureRouteLayer,
+  bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
+  removePlaneLayer,
   removeProcedureRouteLayer,
   removeVatsimPilotLayer,
+  updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
 import CompassWidget from './widgets/CompassWidget';
@@ -76,12 +81,14 @@ export default function Map({ airports }: MapProps) {
   const mapBearing = useMapStore((s) => s.mapBearing);
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const toggleLayer = useMapStore((s) => s.toggleLayer);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
   const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
   const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
+  const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
@@ -178,6 +185,45 @@ export default function Map({ airports }: MapProps) {
   const navDataCounts = getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+
+  // Plane tracker - check X-Plane status and get position when enabled
+  const { data: isXPlaneRunning = false } = useXPlaneStatus({
+    enabled: true,
+    refetchInterval: 3000,
+  });
+  const { position: planePosition, connected: isXPlaneConnected } = usePlanePosition();
+
+  // Auto-enable plane tracker ONCE when X-Plane is first detected
+  const hasAutoEnabledRef = useRef(false);
+  useEffect(() => {
+    if (isXPlaneRunning && !showPlaneTracker && !hasAutoEnabledRef.current) {
+      hasAutoEnabledRef.current = true;
+      setShowPlaneTracker(true);
+    }
+  }, [isXPlaneRunning, showPlaneTracker, setShowPlaneTracker]);
+
+  // Plane layer sync - update plane position on map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (showPlaneTracker && isXPlaneConnected && planePosition) {
+      updatePlaneLayer(map, planePosition);
+      bringPlaneLayerToTop(map);
+    } else if (!showPlaneTracker || !isXPlaneConnected) {
+      removePlaneLayer(map);
+    }
+  }, [mapRef, showPlaneTracker, isXPlaneConnected, planePosition]);
+
+  // Cleanup plane layer on unmount
+  useEffect(() => {
+    const map = mapRef.current;
+    return () => {
+      if (map) {
+        removePlaneLayer(map);
+      }
+    };
+  }, [mapRef]);
 
   // Nav layer sync
   useNavLayerSync({
@@ -392,6 +438,15 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, vatsimPopupRef, vatsimEnabled, setVatsimEnabled]);
 
+  const handleTogglePlaneTracker = useCallback(() => {
+    if (showPlaneTracker) {
+      setShowPlaneTracker(false);
+      if (mapRef.current) removePlaneLayer(mapRef.current);
+    } else {
+      setShowPlaneTracker(true);
+    }
+  }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
+
   const handleSelectProcedure = useCallback(
     async (procedure: any) => {
       setSelectedProcedure(procedure);
@@ -438,9 +493,12 @@ export default function Map({ airports }: MapProps) {
         onSelectAirport={selectAirport}
         onOpenSettings={() => setShowSettings(true)}
         onToggleVatsim={handleToggleVatsim}
+        onTogglePlaneTracker={handleTogglePlaneTracker}
         onOpenLauncher={() => setShowLaunchDialog(true)}
         isVatsimEnabled={vatsimEnabled}
         vatsimPilotCount={vatsimData?.pilots?.length}
+        isPlaneTrackerEnabled={showPlaneTracker}
+        isXPlaneConnected={isXPlaneConnected}
         hasStartPosition={!!selectedStartPosition}
         navVisibility={navVisibility}
         onNavToggle={handleNavLayerToggle}
