@@ -91,7 +91,7 @@ export class GateLayer extends BaseLayerRenderer {
     const geoJSON = this.createGeoJSON(airport.startupLocations, airport.helipads);
     this.addSource(map, geoJSON);
 
-    // Ring layer with unified colors
+    // Ring layer with unified colors (bottom)
     this.addLayer(map, {
       id: 'airport-gates-ring',
       type: 'circle',
@@ -131,19 +131,6 @@ export class GateLayer extends BaseLayerRenderer {
           '#ffffff',
           GATE_COLORS.hover,
         ],
-      },
-    });
-
-    // Hitbox layer for interactions
-    this.addLayer(map, {
-      id: 'airport-gates-hitbox',
-      type: 'circle',
-      source: this.sourceId,
-      minzoom: 15,
-      paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 14, 17, 18, 19, 24],
-        'circle-color': 'transparent',
-        'circle-opacity': 0,
       },
     });
 
@@ -200,6 +187,19 @@ export class GateLayer extends BaseLayerRenderer {
         ],
         'text-halo-color': '#0f172a',
         'text-halo-width': 1.5,
+      },
+    });
+
+    // Hitbox layer for interactions (on top, transparent)
+    this.addLayer(map, {
+      id: 'airport-gates-hitbox',
+      type: 'circle',
+      source: this.sourceId,
+      minzoom: 15,
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 16, 17, 20, 19, 26],
+        'circle-color': 'transparent',
+        'circle-opacity': 0,
       },
     });
   }
