@@ -66,11 +66,11 @@ const logger = {
     debug: (msg: string, ...args: unknown[]) => log.debug(`[Launcher] ${msg}`, ...args),
   },
 
-  xplane: {
-    info: (msg: string, ...args: unknown[]) => log.info(`[X-Plane] ${msg}`, ...args),
-    warn: (msg: string, ...args: unknown[]) => log.warn(`[X-Plane] ${msg}`, ...args),
-    error: (msg: string, ...args: unknown[]) => log.error(`[X-Plane] ${msg}`, ...args),
-    debug: (msg: string, ...args: unknown[]) => log.debug(`[X-Plane] ${msg}`, ...args),
+  tracker: {
+    info: (msg: string, ...args: unknown[]) => log.info(`[Tracker] ${msg}`, ...args),
+    warn: (msg: string, ...args: unknown[]) => log.warn(`[Tracker] ${msg}`, ...args),
+    error: (msg: string, ...args: unknown[]) => log.error(`[Tracker] ${msg}`, ...args),
+    debug: (msg: string, ...args: unknown[]) => log.debug(`[Tracker] ${msg}`, ...args),
   },
 };
 

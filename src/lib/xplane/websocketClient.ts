@@ -141,7 +141,7 @@ export class XPlaneWebSocketClient {
 
       this.ws.on('open', () => {
         this.isConnecting = false;
-        logger.xplane.info('WebSocket connected');
+        logger.tracker.info('WebSocket connected');
         this.onConnectionChange?.(true);
         this.subscribeToDatarefs();
       });
@@ -164,7 +164,7 @@ export class XPlaneWebSocketClient {
       this.ws.on('close', () => {
         this.isConnecting = false;
         this.ws = null;
-        logger.xplane.debug('WebSocket disconnected');
+        logger.tracker.debug('WebSocket disconnected');
         this.onConnectionChange?.(false);
         this.scheduleReconnect();
       });
