@@ -82,6 +82,8 @@
     "searchPlaceholder": "Rechercher des aéroports...",
     "nav": "NAV",
     "vatsim": "VATSIM",
+    "track": "Suivi",
+    "trackTooltip": "Suivre la position de votre avion",
     "launch": "Lancer",
     "navigationLayers": "Couches de navigation"
   },

@@ -83,6 +83,8 @@
     "clearSearch": "Clear search",
     "nav": "NAV",
     "vatsim": "VATSIM",
+    "track": "Track",
+    "trackTooltip": "Track your aircraft position",
     "launch": "Launch",
     "navigationLayers": "Navigation Layers"
   },
