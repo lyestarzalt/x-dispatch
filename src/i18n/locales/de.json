@@ -101,16 +101,30 @@
       "title": "X-Plane Installation",
       "description": "Konfigurieren Sie Ihre X-Plane Datenquelle",
       "currentPath": "Aktueller Pfad",
-      "detectedInstallations": "Erkannte Installationen"
+      "detectedInstallations": "Erkannte Installationen",
+      "selectInstallation": "Wählen Sie eine Installation aus",
+      "active": "Aktiv",
+      "custom": "Benutzerdefiniert"
     },
     "appearance": {
       "title": "Aussehen",
       "description": "Passen Sie das Erscheinungsbild an",
       "theme": "Design",
+      "themeDescription": "Wählen Sie Ihr bevorzugtes Farbschema",
       "light": "Hell",
       "dark": "Dunkel",
       "system": "System",
-      "language": "Sprache"
+      "mapStyle": "Kartenstil",
+      "mapStyleDescription": "Wählen Sie einen Kartenstil für den Hintergrund",
+      "unlimited": "Unbegrenzt",
+      "customStyleUrl": "Benutzerdefinierte URL",
+      "customStyleHint": "Fügen Sie eine beliebige MapLibre style.json URL ein",
+      "language": "Sprache",
+      "units": "Einheiten",
+      "unitsDescription": "Konfigurieren Sie die Anzeigeeinheiten für Messungen",
+      "weightUnit": "Gewicht",
+      "lbs": "Pfund (lbs)",
+      "kg": "Kilogramm (kg)"
     },
     "navigation": {
       "title": "Navigationsdaten",

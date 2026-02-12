@@ -149,6 +149,8 @@
       "currentPath": "Current Path",
       "detectedInstallations": "Detected Installations",
       "selectInstallation": "Select an installation to use",
+      "active": "Active",
+      "custom": "Custom",
       "dataLoaded": "Loaded Data",
       "dataType": "Type",
       "count": "Count",

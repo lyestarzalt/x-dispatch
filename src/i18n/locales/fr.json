@@ -101,16 +101,30 @@
       "title": "Installation X-Plane",
       "description": "Configurez votre source de données X-Plane",
       "currentPath": "Chemin actuel",
-      "detectedInstallations": "Installations détectées"
+      "detectedInstallations": "Installations détectées",
+      "selectInstallation": "Sélectionnez une installation à utiliser",
+      "active": "Actif",
+      "custom": "Personnalisé"
     },
     "appearance": {
       "title": "Apparence",
       "description": "Personnalisez l'apparence",
       "theme": "Thème",
+      "themeDescription": "Choisissez votre palette de couleurs préférée",
       "light": "Clair",
       "dark": "Sombre",
       "system": "Système",
-      "language": "Langue"
+      "mapStyle": "Style de carte",
+      "mapStyleDescription": "Sélectionnez un style de carte pour l'arrière-plan",
+      "unlimited": "Illimité",
+      "customStyleUrl": "URL personnalisée",
+      "customStyleHint": "Collez n'importe quelle URL style.json MapLibre",
+      "language": "Langue",
+      "units": "Unités",
+      "unitsDescription": "Configurez les unités d'affichage pour les mesures",
+      "weightUnit": "Poids",
+      "lbs": "Livres (lbs)",
+      "kg": "Kilogrammes (kg)"
     },
     "navigation": {
       "title": "Données de navigation",

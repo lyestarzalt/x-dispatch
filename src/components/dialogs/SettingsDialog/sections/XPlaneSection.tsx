@@ -5,7 +5,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import type { SettingsSectionProps } from '../types';
@@ -27,7 +26,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
       setXplanePath(path);
       const detected = await window.xplaneAPI.detectInstallations();
       setDetectedPaths([...new Set(detected)]);
-    } catch (err) {
+    } catch {
       setError('Failed to detect X-Plane installations');
     }
   }
@@ -67,6 +66,12 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
     }
   };
 
+  // Check if current path is a custom one (not in detected list)
+  const isCustomPath = xplanePath && !detectedPaths.includes(xplanePath);
+
+  // Build unified list: detected paths + custom path if any
+  const allPaths = isCustomPath ? [xplanePath, ...detectedPaths] : detectedPaths;
+
   return (
     <div className={cn('space-y-6', className)}>
       {/* Header */}
@@ -88,62 +93,63 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
         </Alert>
       )}
 
-      {/* Current Installation */}
+      {/* Installations List */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('settings.xplane.currentPath')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-4 py-3">
-            {xplanePath ? (
-              <>
-                <Check className="h-4 w-4 shrink-0 text-success" />
-                <span className="flex-1 truncate font-mono text-sm">{xplanePath}</span>
-                <Badge variant="outline" className="shrink-0">
-                  X-Plane 12
-                </Badge>
-              </>
-            ) : (
-              <span className="text-sm text-muted-foreground">{t('common.notConfigured')}</span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detected Installations */}
-      {detectedPaths.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">
-              {t('settings.xplane.detectedInstallations')}
-            </CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {t('settings.xplane.detectedInstallations')}
+          </CardTitle>
+          {allPaths.length > 1 && (
             <CardDescription>{t('settings.xplane.selectInstallation')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {detectedPaths.map((path) => {
+          )}
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {allPaths.length > 0 ? (
+            allPaths.map((path) => {
               const isSelected = path === xplanePath;
+              const isCustom = path === xplanePath && isCustomPath;
               return (
-                <Button
+                <div
                   key={path}
-                  variant={isSelected ? 'secondary' : 'outline'}
-                  className="h-auto w-full justify-start gap-3 py-3"
-                  disabled={pathLoading || isSelected}
-                  onClick={() => handleSelectPath(path)}
+                  className={cn(
+                    'flex h-auto w-full items-center gap-3 rounded-md border px-4 py-3',
+                    isSelected
+                      ? 'border-success/50 bg-success/10'
+                      : 'cursor-pointer border-border bg-background hover:bg-accent hover:text-accent-foreground',
+                    pathLoading && !isSelected && 'pointer-events-none opacity-50'
+                  )}
+                  onClick={() => !isSelected && !pathLoading && handleSelectPath(path)}
                 >
                   <div
                     className={cn(
-                      'h-2.5 w-2.5 rounded-full transition-colors',
+                      'h-2.5 w-2.5 shrink-0 rounded-full transition-colors',
                       isSelected ? 'bg-success' : 'bg-muted-foreground/30'
                     )}
                   />
                   <span className="flex-1 truncate text-left font-mono text-sm">{path}</span>
-                  {isSelected && <Check className="h-4 w-4 shrink-0 text-success" />}
-                </Button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {isCustom && (
+                      <Badge variant="outline" className="text-xs">
+                        {t('settings.xplane.custom', 'Custom')}
+                      </Badge>
+                    )}
+                    {isSelected && (
+                      <Badge variant="success" className="gap-1">
+                        <Check className="h-3 w-3" />
+                        {t('settings.xplane.active', 'Active')}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               );
-            })}
-          </CardContent>
-        </Card>
-      )}
+            })
+          ) : (
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              {t('setup.noInstallations')}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Browse Button */}
       <Button variant="outline" onClick={handleBrowse} disabled={pathLoading} className="gap-2">
