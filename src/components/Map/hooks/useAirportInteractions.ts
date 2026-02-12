@@ -189,9 +189,9 @@ export function useAirportInteractions({
 
     // Wait for map to be loaded before attaching events
     const attachEvents = () => {
-      map.on('mouseenter', 'airport-gates-hitbox', handleGateMouseEnter);
-      map.on('mouseleave', 'airport-gates-hitbox', handleGateMouseLeave);
-      map.on('click', 'airport-gates-hitbox', handleGateClick);
+      map.on('mouseenter', 'airport-gates-ring', handleGateMouseEnter);
+      map.on('mouseleave', 'airport-gates-ring', handleGateMouseLeave);
+      map.on('click', 'airport-gates-ring', handleGateClick);
       map.on('mouseenter', 'airport-runway-ends', handleRunwayEndMouseEnter);
       map.on('mouseleave', 'airport-runway-ends', handleRunwayEndMouseLeave);
       map.on('click', 'airport-runway-ends', handleRunwayEndClick);
@@ -204,9 +204,9 @@ export function useAirportInteractions({
     }
 
     return () => {
-      map.off('mouseenter', 'airport-gates-hitbox', handleGateMouseEnter);
-      map.off('mouseleave', 'airport-gates-hitbox', handleGateMouseLeave);
-      map.off('click', 'airport-gates-hitbox', handleGateClick);
+      map.off('mouseenter', 'airport-gates-ring', handleGateMouseEnter);
+      map.off('mouseleave', 'airport-gates-ring', handleGateMouseLeave);
+      map.off('click', 'airport-gates-ring', handleGateClick);
       map.off('mouseenter', 'airport-runway-ends', handleRunwayEndMouseEnter);
       map.off('mouseleave', 'airport-runway-ends', handleRunwayEndMouseLeave);
       map.off('click', 'airport-runway-ends', handleRunwayEndClick);
