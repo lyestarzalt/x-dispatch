@@ -25,6 +25,7 @@ import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers
 import type { PlanePosition, PlaneState } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
+  setupAirportPopup,
   setupAirportsLayer,
   toggleVatsimLayer,
   useAirportInteractions,
@@ -127,7 +128,7 @@ export default function Map({ airports }: MapProps) {
   }, []);
 
   // Map initialization
-  const { mapRef, mapContainerRef, vatsimPopupRef } = useMapSetup({
+  const { mapRef, mapContainerRef, airportPopupRef, vatsimPopupRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
@@ -302,8 +303,9 @@ export default function Map({ airports }: MapProps) {
     }
 
     const handleStyleLoad = async () => {
-      // Re-add airports layer (dots for all airports)
+      // Re-add airports layer and click handlers
       setupAirportsLayer(map, airports);
+      setupAirportPopup(map, airportPopupRef, handleAirportClick);
 
       // Re-render selected airport if any
       const icao = selectedICAORef.current;
@@ -320,7 +322,7 @@ export default function Map({ airports }: MapProps) {
     return () => {
       map.off('style.load', handleStyleLoad);
     };
-  }, [mapStyleUrl, mapRef, airports]);
+  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick]);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(

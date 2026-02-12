@@ -154,7 +154,7 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
   });
 }
 
-function setupAirportPopup(
+export function setupAirportPopup(
   map: maplibregl.Map,
   popupRef: PopupRef,
   onAirportClick: (icao: string) => Promise<void>
