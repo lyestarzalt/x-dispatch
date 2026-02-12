@@ -37,30 +37,31 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
     setError(null);
     try {
       const result = await window.xplaneAPI.browseForPath();
-      if (result?.valid) {
-        setXplanePath(result.path);
+      if (result?.valid && result.path !== xplanePath) {
         await window.xplaneAPI.setPath(result.path);
+        window.location.reload();
       }
     } catch {
-      setError('Failed to set X-Plane path');
+      setError(t('settings.xplane.setPathFailed', 'Failed to set X-Plane path'));
     } finally {
       setPathLoading(false);
     }
   };
 
   const handleSelectPath = async (path: string) => {
+    if (path === xplanePath) return;
     setPathLoading(true);
     setError(null);
     try {
       const validation = await window.xplaneAPI.validatePath(path);
       if (validation.valid) {
         await window.xplaneAPI.setPath(path);
-        setXplanePath(path);
+        window.location.reload();
       } else {
-        setError('Invalid X-Plane installation');
+        setError(t('settings.xplane.invalidInstallation', 'Invalid X-Plane installation'));
       }
     } catch {
-      setError('Failed to validate X-Plane path');
+      setError(t('settings.xplane.validationFailed', 'Failed to validate X-Plane path'));
     } finally {
       setPathLoading(false);
     }

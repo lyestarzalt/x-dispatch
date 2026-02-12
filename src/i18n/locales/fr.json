@@ -115,7 +115,17 @@
     "navigation": {
       "title": "Données de navigation",
       "description": "Configurez les paramètres de navigation et VATSIM",
+      "dataTitle": "Données de navigation",
+      "dataDescription": "Voir les sources de données de navigation chargées",
       "searchRadius": "Rayon de recherche",
+      "airportLayoutData": "Données de layout aéroport",
+      "airportLayoutDescription": "Géométrie des aéroports depuis les fichiers apt.dat (pistes, taxiways, portes, etc.)",
+      "globalAirports": "Aéroports globaux",
+      "customAirports": "Aéroports personnalisés",
+      "fromSceneryPacks": "depuis {{count}} pack(s) de scènes",
+      "totalAirports": "Total des aéroports",
+      "navDataSource": "Source des données de navigation",
+      "navDataSourceDescription": "Navaids, waypoints, airways, procédures et fréquences",
       "vatsim": {
         "title": "Trafic en direct VATSIM",
         "enable": "Activer VATSIM",
