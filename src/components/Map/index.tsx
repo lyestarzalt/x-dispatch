@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
@@ -9,7 +9,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Airport } from '@/lib/xplaneData';
-import { usePlanePosition, useXPlaneStatus } from '@/queries';
+import { usePlaneState, useXPlaneStatus } from '@/queries';
 import {
   getNavDataCounts,
   useGlobalAirwaysQuery,
@@ -22,6 +22,7 @@ import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Coordinates } from '@/types/geo';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
+import type { PlanePosition, PlaneState } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
   setupAirportsLayer,
@@ -46,6 +47,7 @@ import {
 } from './layers';
 import './map-animations.css';
 import CompassWidget from './widgets/CompassWidget';
+import FlightStrip from './widgets/FlightStrip';
 
 interface MapProps {
   airports: Airport[];
@@ -191,7 +193,22 @@ export default function Map({ airports }: MapProps) {
     enabled: true,
     refetchInterval: 3000,
   });
-  const { position: planePosition, connected: isXPlaneConnected } = usePlanePosition();
+  const { state: planeState, connected: isXPlaneConnected } = usePlaneState();
+
+  // Derive position from state for the map layer
+  const planePosition = useMemo<PlanePosition | null>(
+    () =>
+      planeState
+        ? {
+            lat: planeState.latitude,
+            lng: planeState.longitude,
+            altitude: planeState.altitudeMSL,
+            heading: planeState.heading,
+            groundspeed: planeState.groundspeed,
+          }
+        : null,
+    [planeState]
+  );
 
   // Auto-enable plane tracker ONCE when X-Plane is first detected
   const hasAutoEnabledRef = useRef(false);
@@ -447,6 +464,15 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
 
+  const handleCenterPlane = useCallback(() => {
+    if (!planePosition || !mapRef.current) return;
+    mapRef.current.flyTo({
+      center: [planePosition.lng, planePosition.lat],
+      zoom: 12,
+      duration: 1500,
+    });
+  }, [mapRef, planePosition]);
+
   const handleSelectProcedure = useCallback(
     async (procedure: any) => {
       setSelectedProcedure(procedure);
@@ -516,6 +542,14 @@ export default function Map({ airports }: MapProps) {
 
       <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
+
+      {showPlaneTracker && (
+        <FlightStrip
+          planeState={planeState}
+          connected={isXPlaneConnected}
+          onCenterPlane={handleCenterPlane}
+        />
+      )}
 
       {showSidebar && selectedAirportData && (
         <Sidebar
