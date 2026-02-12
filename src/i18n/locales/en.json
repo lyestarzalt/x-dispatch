@@ -308,6 +308,16 @@
     "calm": "Calm"
   },
 
+  "flightStrip": {
+    "notDetected": "X-Plane not detected",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "hdg": "HDG",
+    "center": "Center",
+    "centerTooltip": "Center map on aircraft"
+  },
+
   "weather": {
     "fetching": "Fetching weather...",
     "noData": "No weather data available",

@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { Crosshair, Plane, WifiOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import type { PlaneState } from '@/types/xplane';
 
 interface FlightStripProps {
@@ -20,21 +22,23 @@ function formatHeading(heading: number | undefined): string {
 }
 
 export default function FlightStrip({ planeState, connected, onCenterPlane }: FlightStripProps) {
+  const { t } = useTranslation();
+
   // Disconnected state
   if (!connected) {
     return (
       <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
-        <div className="flex h-10 items-center gap-2 rounded-lg border border-destructive/50 bg-card/95 px-4 backdrop-blur-sm">
+        <Card className="flex h-10 items-center gap-2 border-destructive/50 px-4">
           <WifiOff className="h-4 w-4 text-destructive" />
-          <span className="text-sm text-muted-foreground">X-Plane not detected</span>
-        </div>
+          <span className="text-sm text-muted-foreground">{t('flightStrip.notDetected')}</span>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
-      <div className="flex h-10 items-center gap-px rounded-lg border border-border bg-card/95 backdrop-blur-sm">
+      <Card className="flex h-10 items-center gap-px p-0">
         {/* Connection Status */}
         <div className="flex items-center gap-2 px-3">
           <div className="flex items-center gap-1.5">
@@ -45,40 +49,42 @@ export default function FlightStrip({ planeState, connected, onCenterPlane }: Fl
 
         <Separator />
 
-        {/* IAS */}
-        <DataBlock label="IAS" value={formatValue(planeState?.indicatedAirspeed)} unit="kt" />
-
+        <DataBlock
+          label={t('flightStrip.ias')}
+          value={formatValue(planeState?.indicatedAirspeed)}
+          unit={t('units.kt')}
+        />
+        <Separator />
+        <DataBlock
+          label={t('flightStrip.gs')}
+          value={formatValue(planeState?.groundspeed)}
+          unit={t('units.kt')}
+        />
+        <Separator />
+        <DataBlock
+          label={t('flightStrip.alt')}
+          value={formatValue(planeState?.altitudeMSL)}
+          unit={t('units.ft')}
+        />
+        <Separator />
+        <DataBlock
+          label={t('flightStrip.hdg')}
+          value={formatHeading(planeState?.heading)}
+          unit="°"
+        />
         <Separator />
 
-        {/* Ground Speed */}
-        <DataBlock label="GS" value={formatValue(planeState?.groundspeed)} unit="kt" />
-
-        <Separator />
-
-        {/* Altitude */}
-        <DataBlock label="ALT" value={formatValue(planeState?.altitudeMSL)} unit="ft" />
-
-        <Separator />
-
-        {/* Heading */}
-        <DataBlock label="HDG" value={formatHeading(planeState?.heading)} unit="°" />
-
-        <Separator />
-
-        {/* Center Button */}
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onCenterPlane}
-          className={cn(
-            'flex h-full items-center gap-1.5 px-3',
-            'text-xs text-muted-foreground hover:bg-accent/50 hover:text-primary',
-            'rounded-r-lg transition-colors'
-          )}
-          title="Center map on plane"
+          className="h-full rounded-l-none rounded-r-lg"
+          title={t('flightStrip.centerTooltip')}
         >
-          <Crosshair className="h-3.5 w-3.5" />
-          <span>Center</span>
-        </button>
-      </div>
+          <Crosshair className="mr-1.5 h-3.5 w-3.5" />
+          {t('flightStrip.center')}
+        </Button>
+      </Card>
     </div>
   );
 }

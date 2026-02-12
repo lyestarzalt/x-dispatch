@@ -223,6 +223,16 @@
     "calm": "Windstille"
   },
 
+  "flightStrip": {
+    "notDetected": "X-Plane nicht erkannt",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "hdg": "HDG",
+    "center": "Zentrieren",
+    "centerTooltip": "Karte auf Flugzeug zentrieren"
+  },
+
   "weather": {
     "fetching": "Wetter wird abgerufen...",
     "noData": "Keine Wetterdaten verfügbar",
