@@ -74,7 +74,7 @@ class XPlaneLauncher {
 
       logger.launcher.info('Launching X-Plane');
 
-      const launchArgs = ['--pref:_show_qfl_on_start=0'];
+      const launchArgs = ['--pref:_show_qfl_on_start=0', '--no_save_prefs'];
       const startRunning = config.startEngineRunning ?? true;
       launchArgs.push(`--start_running=${startRunning}`);
 
