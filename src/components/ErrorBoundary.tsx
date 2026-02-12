@@ -23,8 +23,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log error to main process
-    console.error('ErrorBoundary caught error:', error, errorInfo);
     try {
       window.appAPI?.log.error('React Error Boundary caught error', {
         error: error.message,
