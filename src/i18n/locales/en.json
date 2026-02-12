@@ -33,7 +33,8 @@
     "nm": "nm",
     "kt": "kt",
     "s": "s",
-    "kg": "kg"
+    "kg": "kg",
+    "fpm": "fpm"
   },
 
   "directions": {
@@ -313,6 +314,8 @@
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",
+    "agl": "AGL",
+    "vs": "VS",
     "hdg": "HDG",
     "center": "Center",
     "centerTooltip": "Center map on aircraft"

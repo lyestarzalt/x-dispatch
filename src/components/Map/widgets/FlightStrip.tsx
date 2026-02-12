@@ -21,6 +21,13 @@ function formatHeading(heading: number | undefined): string {
   return normalized.toFixed(0).padStart(3, '0');
 }
 
+function formatVS(vs: number | undefined): string {
+  if (vs === undefined || isNaN(vs)) return '---';
+  const rounded = Math.round(vs / 100) * 100;
+  if (rounded === 0) return '0';
+  return rounded > 0 ? `+${rounded}` : `${rounded}`;
+}
+
 export default function FlightStrip({ planeState, connected, onCenterPlane }: FlightStripProps) {
   const { t } = useTranslation();
 
@@ -65,6 +72,18 @@ export default function FlightStrip({ planeState, connected, onCenterPlane }: Fl
           label={t('flightStrip.alt')}
           value={formatValue(planeState?.altitudeMSL)}
           unit={t('units.ft')}
+        />
+        <Separator />
+        <DataBlock
+          label={t('flightStrip.agl')}
+          value={formatValue(planeState?.altitudeAGL)}
+          unit={t('units.ft')}
+        />
+        <Separator />
+        <DataBlock
+          label={t('flightStrip.vs')}
+          value={formatVS(planeState?.verticalSpeed)}
+          unit={t('units.fpm')}
         />
         <Separator />
         <DataBlock

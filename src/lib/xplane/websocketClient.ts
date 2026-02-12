@@ -16,6 +16,8 @@ const DATAREF_NAMES = [
   'sim/flightmodel/position/psi',
   'sim/flightmodel/position/groundspeed',
   'sim/flightmodel/position/indicated_airspeed',
+  'sim/flightmodel/position/y_agl',
+  'sim/cockpit2/gauges/indicators/vvi_fpm_pilot',
 ];
 
 interface DatarefInfo {
@@ -30,6 +32,8 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/flightmodel/position/psi': 'heading',
   'sim/flightmodel/position/groundspeed': 'groundspeed',
   'sim/flightmodel/position/indicated_airspeed': 'indicatedAirspeed',
+  'sim/flightmodel/position/y_agl': 'altitudeAGL',
+  'sim/cockpit2/gauges/indicators/vvi_fpm_pilot': 'verticalSpeed',
 };
 
 type StateUpdateCallback = (state: PlaneState) => void;
@@ -211,7 +215,10 @@ export class XPlaneWebSocketClient {
       const stateKey = DATAREF_MAPPING[datarefName];
       if (stateKey && typeof value === 'number') {
         let convertedValue = value;
-        if (datarefName === 'sim/flightmodel/position/elevation') {
+        if (
+          datarefName === 'sim/flightmodel/position/elevation' ||
+          datarefName === 'sim/flightmodel/position/y_agl'
+        ) {
           convertedValue = value * METERS_TO_FEET;
         } else if (datarefName === 'sim/flightmodel/position/groundspeed') {
           convertedValue = value * MPS_TO_KNOTS;
