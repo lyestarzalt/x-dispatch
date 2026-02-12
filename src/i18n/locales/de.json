@@ -317,6 +317,9 @@
     "title": "Flug-Konfiguration",
     "launch": "X-Plane starten",
     "launching": "Wird gestartet...",
+    "changeFlight": "Flug ändern",
+    "changingFlight": "Wird geändert...",
+    "xplaneRunning": "X-Plane läuft - Flug wird über API geändert",
     "selectDeparture": "Wählen Sie einen Abflugort auf der Karte",
     "selectAircraft": "Wählen Sie ein Flugzeug",
 

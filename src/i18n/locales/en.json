@@ -402,6 +402,9 @@
     "title": "Flight Setup",
     "launch": "Launch X-Plane",
     "launching": "Launching...",
+    "changeFlight": "Change Flight",
+    "changingFlight": "Changing...",
+    "xplaneRunning": "X-Plane is running - flight will be changed via API",
     "selectDeparture": "Select a departure on the map",
     "selectAircraft": "Select an aircraft",
 

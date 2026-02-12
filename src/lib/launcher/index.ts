@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import logger from '../logger';
+import { isXPlaneProcessRunning } from '../xplane/processCheck';
 import { scanAircraftDirectory } from './acfParser';
 import {
   calculateFuelWeights,
@@ -52,6 +53,13 @@ class XPlaneLauncher {
    */
   async launch(config: LaunchConfig): Promise<{ success: boolean; error?: string }> {
     try {
+      // Check if X-Plane process is already running
+      const isRunning = await isXPlaneProcessRunning();
+      if (isRunning) {
+        logger.launcher.warn('X-Plane is already running');
+        return { success: false, error: 'X-Plane is already running' };
+      }
+
       // Generate Freeflight.prf content
       const prfContent = generateFreeflightPrf(config);
       const writeSuccess = writeFreeflightPrf(this.xplanePath, prfContent);

@@ -38,6 +38,7 @@ interface FlightConfigProps {
   coldAndDark: boolean;
   isLoading: boolean;
   launchError: string | null;
+  isXPlaneRunning: boolean;
   onTimeChange: (time: number) => void;
   onWeatherChange: (weather: string) => void;
   onFuelChange: (fuel: number) => void;
@@ -67,6 +68,7 @@ export function FlightConfig({
   coldAndDark,
   isLoading,
   launchError,
+  isXPlaneRunning,
   onTimeChange,
   onWeatherChange,
   onFuelChange,
@@ -292,8 +294,10 @@ export function FlightConfig({
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('launcher.launching')}
+              {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
             </>
+          ) : isXPlaneRunning ? (
+            t('launcher.changeFlight')
           ) : (
             t('launcher.launch')
           )}
@@ -301,6 +305,11 @@ export function FlightConfig({
         {!startPosition && (
           <p className="mt-1.5 text-center text-xs text-muted-foreground">
             {t('launcher.selectDeparture')}
+          </p>
+        )}
+        {isXPlaneRunning && (
+          <p className="mt-1.5 text-center text-xs text-muted-foreground">
+            {t('launcher.xplaneRunning')}
           </p>
         )}
       </div>

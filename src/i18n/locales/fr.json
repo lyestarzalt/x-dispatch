@@ -317,6 +317,9 @@
     "title": "Configuration du vol",
     "launch": "Lancer X-Plane",
     "launching": "Lancement...",
+    "changeFlight": "Changer de vol",
+    "changingFlight": "Changement...",
+    "xplaneRunning": "X-Plane est en cours - le vol sera changé via l'API",
     "selectDeparture": "Sélectionnez un départ sur la carte",
     "selectAircraft": "Sélectionnez un aéronef",
 

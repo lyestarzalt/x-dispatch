@@ -123,6 +123,66 @@ contextBridge.exposeInMainWorld('launcherAPI', {
     ipcRenderer.invoke('launcher:getAircraftImage', imagePath),
 });
 
+contextBridge.exposeInMainWorld('xplaneServiceAPI', {
+  isRunning: () => ipcRenderer.invoke('xplaneService:isRunning'),
+  isProcessRunning: () => ipcRenderer.invoke('xplaneService:isProcessRunning'),
+  isAPIAvailable: () => ipcRenderer.invoke('xplaneService:isAPIAvailable'),
+  loadFlight: (config: XPlaneFlightConfig) =>
+    ipcRenderer.invoke('xplaneService:loadFlight', config),
+  getDataref: (dataref: string) => ipcRenderer.invoke('xplaneService:getDataref', dataref),
+  setDataref: (dataref: string, value: number | number[]) =>
+    ipcRenderer.invoke('xplaneService:setDataref', dataref, value),
+  startStateStream: () => ipcRenderer.invoke('xplaneService:startStateStream'),
+  stopStateStream: () => ipcRenderer.invoke('xplaneService:stopStateStream'),
+  isStreamConnected: () => ipcRenderer.invoke('xplaneService:isStreamConnected'),
+  onStateUpdate: (callback: (state: XPlanePlaneState) => void) => {
+    const listener = (_: IpcRendererEvent, state: XPlanePlaneState) => callback(state);
+    ipcRenderer.on('xplaneService:stateUpdate', listener);
+    return () => ipcRenderer.removeListener('xplaneService:stateUpdate', listener);
+  },
+  onConnectionChange: (callback: (connected: boolean) => void) => {
+    const listener = (_: IpcRendererEvent, connected: boolean) => callback(connected);
+    ipcRenderer.on('xplaneService:connectionChange', listener);
+    return () => ipcRenderer.removeListener('xplaneService:connectionChange', listener);
+  },
+});
+
+// X-Plane Service types for preload
+// Raw Flight Initialization API payload (flexible to match X-Plane's API spec)
+type XPlaneFlightConfig = Record<string, unknown>;
+
+interface XPlanePlaneState {
+  latitude: number;
+  longitude: number;
+  altitudeMSL: number;
+  altitudeAGL: number;
+  heading: number;
+  pitch: number;
+  roll: number;
+  groundspeed: number;
+  indicatedAirspeed: number;
+  trueAirspeed: number;
+  verticalSpeed: number;
+  mach: number;
+  throttle: number;
+  flaps: number;
+  gearDown: boolean;
+  parkingBrake: number;
+  speedBrake: number;
+  gForceNormal: number;
+  gForceAxial: number;
+  gForceSide: number;
+  apAltitude: number;
+  apHeading: number;
+  apAirspeed: number;
+  apVerticalSpeed: number;
+}
+
+interface XPlaneAPIResult {
+  success: boolean;
+  error?: string;
+}
+
 interface LaunchConfig {
   aircraft: Aircraft;
   livery: string;
@@ -602,6 +662,19 @@ declare global {
       getWeatherPresets: () => Promise<WeatherPreset[]>;
       launch: (config: LaunchConfig) => Promise<{ success: boolean; error?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
+    };
+    xplaneServiceAPI: {
+      isRunning: () => Promise<boolean>;
+      isProcessRunning: () => Promise<boolean>;
+      isAPIAvailable: () => Promise<boolean>;
+      loadFlight: (config: XPlaneFlightConfig) => Promise<XPlaneAPIResult>;
+      getDataref: (dataref: string) => Promise<number | number[] | null>;
+      setDataref: (dataref: string, value: number | number[]) => Promise<XPlaneAPIResult>;
+      startStateStream: () => Promise<XPlaneAPIResult>;
+      stopStateStream: () => Promise<XPlaneAPIResult>;
+      isStreamConnected: () => Promise<boolean>;
+      onStateUpdate: (callback: (state: XPlanePlaneState) => void) => () => void;
+      onConnectionChange: (callback: (connected: boolean) => void) => () => void;
     };
   }
 }
