@@ -43,6 +43,7 @@ interface MapState {
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
   vatsimEnabled: boolean;
+  showPlaneTracker: boolean;
   explore: ExploreState;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
@@ -57,6 +58,7 @@ interface MapState {
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
+  setShowPlaneTracker: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
 
   setExploreOpen: (isOpen: boolean) => void;
@@ -77,6 +79,7 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
+      showPlaneTracker: false,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -131,6 +134,7 @@ export const useMapStore = create<MapState>()(
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setVatsimEnabled: (enabled) => set({ vatsimEnabled: enabled }),
+      setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
