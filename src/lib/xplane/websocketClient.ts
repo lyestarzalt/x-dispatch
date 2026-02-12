@@ -1,11 +1,14 @@
 import WebSocket from 'ws';
+import logger from '@/lib/logger';
 import type { PlaneState } from '@/types/xplane';
 
 const DEFAULT_PORT = 8086;
 const RECONNECT_DELAY = 3000;
 const RESOLVE_TIMEOUT = 5000;
 
-// Core datarefs for plane tracking - only essential ones
+const METERS_TO_FEET = 3.28084;
+const MPS_TO_KNOTS = 1.94384;
+
 const DATAREF_NAMES = [
   'sim/flightmodel/position/latitude',
   'sim/flightmodel/position/longitude',
@@ -65,7 +68,6 @@ export class XPlaneWebSocketClient {
           this.datarefIdToName.set(dr.id, dr.name);
         }
       } catch {
-        // Failed to resolve, will retry on reconnect
         this.scheduleReconnect();
         return;
       }
@@ -79,7 +81,6 @@ export class XPlaneWebSocketClient {
     const timeoutId = setTimeout(() => controller.abort(), RESOLVE_TIMEOUT);
 
     try {
-      // Build filter query for all datarefs
       const filterParams = DATAREF_NAMES.map(
         (name) => `filter[name]=${encodeURIComponent(name)}`
       ).join('&');
@@ -119,7 +120,6 @@ export class XPlaneWebSocketClient {
       this.ws = null;
     }
     this.currentState = {};
-    // Clear resolved datarefs - IDs may change between X-Plane sessions
     this.resolvedDatarefs = [];
     this.datarefIdToName.clear();
   }
@@ -141,6 +141,7 @@ export class XPlaneWebSocketClient {
 
       this.ws.on('open', () => {
         this.isConnecting = false;
+        logger.xplane.info('WebSocket connected');
         this.onConnectionChange?.(true);
         this.subscribeToDatarefs();
       });
@@ -152,7 +153,7 @@ export class XPlaneWebSocketClient {
             this.handleDatarefUpdate(msg.data);
           }
         } catch {
-          // Ignore parse errors
+          // ignore
         }
       });
 
@@ -163,6 +164,7 @@ export class XPlaneWebSocketClient {
       this.ws.on('close', () => {
         this.isConnecting = false;
         this.ws = null;
+        logger.xplane.debug('WebSocket disconnected');
         this.onConnectionChange?.(false);
         this.scheduleReconnect();
       });
@@ -208,12 +210,11 @@ export class XPlaneWebSocketClient {
 
       const stateKey = DATAREF_MAPPING[datarefName];
       if (stateKey && typeof value === 'number') {
-        // Convert units: elevation (m→ft), groundspeed (m/s→kts)
         let convertedValue = value;
         if (datarefName === 'sim/flightmodel/position/elevation') {
-          convertedValue = value * 3.28084; // meters to feet
+          convertedValue = value * METERS_TO_FEET;
         } else if (datarefName === 'sim/flightmodel/position/groundspeed') {
-          convertedValue = value * 1.94384; // m/s to knots
+          convertedValue = value * MPS_TO_KNOTS;
         }
         (this.currentState as Record<string, unknown>)[stateKey] = convertedValue;
       }

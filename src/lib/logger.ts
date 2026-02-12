@@ -65,6 +65,13 @@ const logger = {
     error: (msg: string, ...args: unknown[]) => log.error(`[Launcher] ${msg}`, ...args),
     debug: (msg: string, ...args: unknown[]) => log.debug(`[Launcher] ${msg}`, ...args),
   },
+
+  xplane: {
+    info: (msg: string, ...args: unknown[]) => log.info(`[X-Plane] ${msg}`, ...args),
+    warn: (msg: string, ...args: unknown[]) => log.warn(`[X-Plane] ${msg}`, ...args),
+    error: (msg: string, ...args: unknown[]) => log.error(`[X-Plane] ${msg}`, ...args),
+    debug: (msg: string, ...args: unknown[]) => log.debug(`[X-Plane] ${msg}`, ...args),
+  },
 };
 
 export function getLogPath(): string {
