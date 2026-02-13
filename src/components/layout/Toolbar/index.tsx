@@ -86,9 +86,37 @@ export default function Toolbar({
   const filteredAirports = useMemo(() => {
     if (searchQuery.length < 2) return [];
     const query = searchQuery.toUpperCase();
-    return airports
-      .filter((a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query))
-      .slice(0, 8);
+
+    // Filter matching airports
+    const matches = airports.filter(
+      (a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query)
+    );
+
+    // Sort by relevance: exact ICAO > ICAO starts with > ICAO contains > name contains
+    matches.sort((a, b) => {
+      const aIcao = a.icao.toUpperCase();
+      const bIcao = b.icao.toUpperCase();
+
+      // Exact ICAO match first
+      if (aIcao === query && bIcao !== query) return -1;
+      if (bIcao === query && aIcao !== query) return 1;
+
+      // ICAO starts with query
+      const aStartsWith = aIcao.startsWith(query);
+      const bStartsWith = bIcao.startsWith(query);
+      if (aStartsWith && !bStartsWith) return -1;
+      if (bStartsWith && !aStartsWith) return 1;
+
+      // ICAO contains query
+      const aIcaoContains = aIcao.includes(query);
+      const bIcaoContains = bIcao.includes(query);
+      if (aIcaoContains && !bIcaoContains) return -1;
+      if (bIcaoContains && !aIcaoContains) return 1;
+
+      return 0;
+    });
+
+    return matches.slice(0, 8);
   }, [airports, searchQuery]);
 
   const handleSearch = useCallback((query: string) => {
