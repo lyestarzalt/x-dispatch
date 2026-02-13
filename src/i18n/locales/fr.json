@@ -33,7 +33,8 @@
     "nm": "nm",
     "kt": "kt",
     "s": "s",
-    "kg": "kg"
+    "kg": "kg",
+    "fpm": "fpm"
   },
 
   "directions": {
@@ -82,6 +83,8 @@
     "searchPlaceholder": "Rechercher des aéroports...",
     "nav": "NAV",
     "vatsim": "VATSIM",
+    "track": "Suivi",
+    "trackTooltip": "Suivre la position de votre avion",
     "launch": "Lancer",
     "navigationLayers": "Couches de navigation"
   },
@@ -98,21 +101,45 @@
       "title": "Installation X-Plane",
       "description": "Configurez votre source de données X-Plane",
       "currentPath": "Chemin actuel",
-      "detectedInstallations": "Installations détectées"
+      "detectedInstallations": "Installations détectées",
+      "selectInstallation": "Sélectionnez une installation à utiliser",
+      "active": "Actif",
+      "custom": "Personnalisé"
     },
     "appearance": {
       "title": "Apparence",
       "description": "Personnalisez l'apparence",
       "theme": "Thème",
+      "themeDescription": "Choisissez votre palette de couleurs préférée",
       "light": "Clair",
       "dark": "Sombre",
       "system": "Système",
-      "language": "Langue"
+      "mapStyle": "Style de carte",
+      "mapStyleDescription": "Sélectionnez un style de carte pour l'arrière-plan",
+      "unlimited": "Illimité",
+      "customStyleUrl": "URL personnalisée",
+      "customStyleHint": "Collez n'importe quelle URL style.json MapLibre",
+      "language": "Langue",
+      "units": "Unités",
+      "unitsDescription": "Configurez les unités d'affichage pour les mesures",
+      "weightUnit": "Poids",
+      "lbs": "Livres (lbs)",
+      "kg": "Kilogrammes (kg)"
     },
     "navigation": {
       "title": "Données de navigation",
       "description": "Configurez les paramètres de navigation et VATSIM",
+      "dataTitle": "Données de navigation",
+      "dataDescription": "Voir les sources de données de navigation chargées",
       "searchRadius": "Rayon de recherche",
+      "airportLayoutData": "Données de layout aéroport",
+      "airportLayoutDescription": "Géométrie des aéroports depuis les fichiers apt.dat (pistes, taxiways, portes, etc.)",
+      "globalAirports": "Aéroports globaux",
+      "customAirports": "Aéroports personnalisés",
+      "fromSceneryPacks": "depuis {{count}} pack(s) de scènes",
+      "totalAirports": "Total des aéroports",
+      "navDataSource": "Source des données de navigation",
+      "navDataSourceDescription": "Navaids, waypoints, airways, procédures et fréquences",
       "vatsim": {
         "title": "Trafic en direct VATSIM",
         "enable": "Activer VATSIM",
@@ -221,6 +248,18 @@
     "calm": "Calme"
   },
 
+  "flightStrip": {
+    "notDetected": "X-Plane non démarré",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "agl": "AGL",
+    "vs": "VS",
+    "hdg": "HDG",
+    "center": "Centrer",
+    "centerTooltip": "Centrer la carte sur l'avion"
+  },
+
   "weather": {
     "fetching": "Récupération de la météo...",
     "noData": "Aucune donnée météo disponible",
@@ -317,6 +356,9 @@
     "title": "Configuration du vol",
     "launch": "Lancer X-Plane",
     "launching": "Lancement...",
+    "changeFlight": "Changer de vol",
+    "changingFlight": "Changement...",
+    "xplaneRunning": "X-Plane est en cours - le vol sera changé via l'API",
     "selectDeparture": "Sélectionnez un départ sur la carte",
     "selectAircraft": "Sélectionnez un aéronef",
 
@@ -365,6 +407,7 @@
     },
 
     "weather": {
+      "real": "Réel",
       "clear": "Dégagé",
       "cloudy": "Nuageux",
       "rainy": "Pluvieux",

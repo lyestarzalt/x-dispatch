@@ -83,8 +83,3 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
     </div>
   );
 }
-
-export { FeaturedTab } from './FeaturedTab';
-export { RoutesTab } from './RoutesTab';
-export { VatsimEventsTab } from './VatsimEventsTab';
-export type * from './types';

@@ -16,42 +16,19 @@ const EARTH_RADIUS_M = 6371000;
 const METERS_PER_FOOT = 0.3048;
 const FEET_PER_METER = 3.28084;
 const METERS_PER_NM = 1852;
-const METERS_PER_SM = 1609.34;
 
-// Unit conversions
 export function metersToFeet(meters: number): Feet {
   return (meters * FEET_PER_METER) as Feet;
-}
-
-function feetToMeters(feet: number): Meters {
-  return (feet * METERS_PER_FOOT) as Meters;
-}
-
-function metersToNauticalMiles(meters: number): NauticalMiles {
-  return (meters / METERS_PER_NM) as NauticalMiles;
 }
 
 export function nauticalMilesToMeters(nm: number): Meters {
   return (nm * METERS_PER_NM) as Meters;
 }
 
-function metersToStatuteMiles(meters: number): number {
-  return meters / METERS_PER_SM;
+function metersToNauticalMiles(meters: number): NauticalMiles {
+  return (meters / METERS_PER_NM) as NauticalMiles;
 }
 
-function statuteMilesToMeters(sm: number): Meters {
-  return (sm * METERS_PER_SM) as Meters;
-}
-
-function kmToNauticalMiles(km: number): NauticalMiles {
-  return ((km * 1000) / METERS_PER_NM) as NauticalMiles;
-}
-
-function nauticalMilesToKm(nm: number): number {
-  return (nm * METERS_PER_NM) / 1000;
-}
-
-// Distance calculations (Haversine)
 export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): Meters {
   const φ1 = (lat1 * Math.PI) / 180;
   const φ2 = (lat2 * Math.PI) / 180;
@@ -78,7 +55,6 @@ export function distanceNm(lat1: number, lon1: number, lat2: number, lon2: numbe
   return metersToNauticalMiles(haversineDistance(lat1, lon1, lat2, lon2));
 }
 
-// Bearing calculations
 export function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): Degrees {
   const φ1 = (lat1 * Math.PI) / 180;
   const φ2 = (lat2 * Math.PI) / 180;
@@ -91,11 +67,6 @@ export function calculateBearing(lat1: number, lon1: number, lat2: number, lon2:
   return ((bearing + 360) % 360) as Degrees;
 }
 
-function bearingBetween(from: Coordinates, to: Coordinates): Degrees {
-  return calculateBearing(from.latitude, from.longitude, to.latitude, to.longitude);
-}
-
-// Destination point calculations
 function calculateDestination(
   lat: number,
   lon: number,
@@ -115,16 +86,6 @@ function calculateDestination(
   return [(φ2 * 180) / Math.PI, (λ2 * 180) / Math.PI] as LatLon;
 }
 
-function calculatePoint(
-  lat: number,
-  lon: number,
-  distanceMeters: number,
-  bearingDegrees: number
-): LatLon {
-  return calculateDestination(lat, lon, distanceMeters, bearingDegrees);
-}
-
-// Returns [lon, lat] for GeoJSON/MapLibre
 export function destinationPoint(
   lat: number,
   lon: number,
@@ -135,23 +96,6 @@ export function destinationPoint(
   return [destLon, destLat] as LonLat;
 }
 
-function offsetPoint(
-  point: Coordinates,
-  distanceMeters: number,
-  bearingDegrees: number
-): Coordinates {
-  const [latitude, longitude] = calculateDestination(
-    point.latitude,
-    point.longitude,
-    distanceMeters,
-    bearingDegrees
-  );
-  return { latitude, longitude };
-}
-
-/**
- * Validate that coordinates are finite and within valid bounds
- */
 export function isValidCoordinate(lat: number, lon: number): boolean {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
   if (lat < -90 || lat > 90) return false;
@@ -159,15 +103,10 @@ export function isValidCoordinate(lat: number, lon: number): boolean {
   return true;
 }
 
-// Runway helpers
 export function runwayLength(end1: Coordinates, end2: Coordinates): Meters {
   return distanceBetween(end1, end2);
 }
 
 export function runwayLengthFeet(end1: Coordinates, end2: Coordinates): Feet {
   return metersToFeet(distanceBetween(end1, end2));
-}
-
-function runwayHeading(end1: Coordinates, end2: Coordinates): Degrees {
-  return bearingBetween(end1, end2);
 }

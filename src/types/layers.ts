@@ -39,8 +39,6 @@ export interface NavLayerVisibility {
   airwaysMode: AirwaysMode;
 }
 
-interface UnifiedLayerVisibility extends LayerVisibility, NavLayerVisibility {}
-
 // Default airport layer visibility
 export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
   runways: true,

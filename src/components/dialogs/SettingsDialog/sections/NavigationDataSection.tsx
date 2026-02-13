@@ -13,7 +13,6 @@ import {
   Route,
   XCircle,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -146,11 +145,9 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Plane className="h-4 w-4" />
-            Airport Layout Data
+            {t('settings.navigation.airportLayoutData')}
           </CardTitle>
-          <CardDescription>
-            Airport geometry from apt.dat files (runways, taxiways, gates, etc.)
-          </CardDescription>
+          <CardDescription>{t('settings.navigation.airportLayoutDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {dataStatus && airportBreakdown && (
@@ -160,7 +157,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 <div className="rounded-lg border bg-muted/30 p-3">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Building2 className="h-3.5 w-3.5" />
-                    Global Airports
+                    {t('settings.navigation.globalAirports')}
                   </div>
                   <div className="mt-1 font-mono text-lg font-semibold">
                     {airportBreakdown.globalAirports.toLocaleString()}
@@ -169,22 +166,25 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 <div className="rounded-lg border border-violet/30 bg-violet/10 p-3">
                   <div className="flex items-center gap-2 text-xs text-violet">
                     <MapPin className="h-3.5 w-3.5" />
-                    Custom Airports
+                    {t('settings.navigation.customAirports')}
                   </div>
                   <div className="mt-1 font-mono text-lg font-semibold text-violet">
                     {airportBreakdown.customScenery.toLocaleString()}
                   </div>
                   {airportBreakdown.customSceneryPacks > 0 && (
                     <div className="text-xs text-violet/70">
-                      from {airportBreakdown.customSceneryPacks} scenery pack
-                      {airportBreakdown.customSceneryPacks !== 1 ? 's' : ''}
+                      {t('settings.navigation.fromSceneryPacks', {
+                        count: airportBreakdown.customSceneryPacks,
+                      })}
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs">
-                <span className="text-muted-foreground">Total Airports</span>
+                <span className="text-muted-foreground">
+                  {t('settings.navigation.totalAirports')}
+                </span>
                 <span className="font-mono font-medium">
                   {dataStatus.airports.count.toLocaleString()}
                 </span>
@@ -199,11 +199,9 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Radio className="h-4 w-4" />
-            Navigation Data Source
+            {t('settings.navigation.navDataSource')}
           </CardTitle>
-          <CardDescription>
-            Navaids, waypoints, airways, procedures, and frequencies
-          </CardDescription>
+          <CardDescription>{t('settings.navigation.navDataSourceDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {globalSource && (

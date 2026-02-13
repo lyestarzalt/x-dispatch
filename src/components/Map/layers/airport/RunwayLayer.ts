@@ -25,7 +25,6 @@ export class RunwayLayer extends BaseLayerRenderer {
   remove(map: maplibregl.Map): void {
     super.remove(map);
 
-    // Remove shoulder source
     if (map.getSource(this.shoulderSourceId)) {
       map.removeSource(this.shoulderSourceId);
     }
@@ -42,7 +41,6 @@ export class RunwayLayer extends BaseLayerRenderer {
         data: shoulderGeoJSON,
       });
 
-      // Shoulder fill (rendered below main runway)
       this.addLayer(map, {
         id: 'airport-runway-shoulders',
         type: 'fill',
@@ -58,10 +56,8 @@ export class RunwayLayer extends BaseLayerRenderer {
     const geoJSON = createRunwayGeoJSON(airport.runways);
     this.addSource(map, geoJSON);
 
-    // Build color expression for surface types
     const colorExpression = this.buildSurfaceColorExpression();
 
-    // Main runway fill (renders on top of shoulders)
     this.addLayer(map, {
       id: this.layerId,
       type: 'fill',
@@ -73,7 +69,6 @@ export class RunwayLayer extends BaseLayerRenderer {
       },
     });
 
-    // Runway centerlines (dashed white line)
     this.addLayer(map, {
       id: 'airport-runway-centerlines',
       type: 'line',
@@ -87,7 +82,6 @@ export class RunwayLayer extends BaseLayerRenderer {
       },
     });
 
-    // Runway labels (numbers)
     this.addLayer(map, {
       id: 'airport-runway-labels',
       type: 'symbol',

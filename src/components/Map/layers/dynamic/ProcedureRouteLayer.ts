@@ -127,16 +127,6 @@ export function addProcedureRouteLayer(
   const routeGeoJSON = createRouteGeoJSON(resolvedWaypoints);
   const waypointGeoJSON = createWaypointGeoJSON(resolvedWaypoints);
 
-  // Count unresolved waypoints for logging
-  const unresolvedCount = resolvedWaypoints.filter(
-    (wp) => wp.latitude === undefined || wp.longitude === undefined
-  ).length;
-  if (unresolvedCount > 0) {
-    console.debug(
-      `ProcedureRouteLayer: ${unresolvedCount}/${route.waypoints.length} waypoints unresolved for ${route.name}`
-    );
-  }
-
   if (routeGeoJSON.features.length === 0) {
     return;
   }

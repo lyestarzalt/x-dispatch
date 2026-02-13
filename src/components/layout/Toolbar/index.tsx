@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
   ChevronUp,
+  Locate,
   Navigation,
   Plane,
   Radar,
@@ -33,9 +34,12 @@ interface ToolbarProps {
   onSelectAirport: (airport: Airport) => void;
   onOpenSettings: () => void;
   onToggleVatsim: () => void;
+  onTogglePlaneTracker: () => void;
   onOpenLauncher: () => void;
   isVatsimEnabled: boolean;
   vatsimPilotCount?: number;
+  isPlaneTrackerEnabled: boolean;
+  isXPlaneConnected: boolean;
   hasStartPosition: boolean;
   navVisibility: NavLayerVisibility;
   onNavToggle: (layer: keyof NavLayerVisibility) => void;
@@ -57,9 +61,12 @@ export default function Toolbar({
   onSelectAirport,
   onOpenSettings,
   onToggleVatsim,
+  onTogglePlaneTracker,
   onOpenLauncher,
   isVatsimEnabled,
   vatsimPilotCount,
+  isPlaneTrackerEnabled,
+  isXPlaneConnected,
   hasStartPosition,
   navVisibility,
   onNavToggle,
@@ -79,9 +86,37 @@ export default function Toolbar({
   const filteredAirports = useMemo(() => {
     if (searchQuery.length < 2) return [];
     const query = searchQuery.toUpperCase();
-    return airports
-      .filter((a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query))
-      .slice(0, 8);
+
+    // Filter matching airports
+    const matches = airports.filter(
+      (a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query)
+    );
+
+    // Sort by relevance: exact ICAO > ICAO starts with > ICAO contains > name contains
+    matches.sort((a, b) => {
+      const aIcao = a.icao.toUpperCase();
+      const bIcao = b.icao.toUpperCase();
+
+      // Exact ICAO match first
+      if (aIcao === query && bIcao !== query) return -1;
+      if (bIcao === query && aIcao !== query) return 1;
+
+      // ICAO starts with query
+      const aStartsWith = aIcao.startsWith(query);
+      const bStartsWith = bIcao.startsWith(query);
+      if (aStartsWith && !bStartsWith) return -1;
+      if (bStartsWith && !aStartsWith) return 1;
+
+      // ICAO contains query
+      const aIcaoContains = aIcao.includes(query);
+      const bIcaoContains = bIcao.includes(query);
+      if (aIcaoContains && !bIcaoContains) return -1;
+      if (bIcaoContains && !aIcaoContains) return 1;
+
+      return 0;
+    });
+
+    return matches.slice(0, 8);
   }, [airports, searchQuery]);
 
   const handleSearch = useCallback((query: string) => {
@@ -288,6 +323,27 @@ export default function Toolbar({
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Button
+            variant="outline"
+            onClick={onTogglePlaneTracker}
+            className={cn(
+              'h-10 gap-2 px-3',
+              isPlaneTrackerEnabled && isXPlaneConnected && 'border-info/50 text-info'
+            )}
+            title={t('toolbar.trackTooltip')}
+          >
+            <Locate
+              className={cn(
+                'h-4 w-4',
+                isPlaneTrackerEnabled && isXPlaneConnected && 'animate-pulse'
+              )}
+            />
+            <span className="text-xs font-medium">{t('toolbar.track')}</span>
+            {isPlaneTrackerEnabled && isXPlaneConnected && (
+              <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
+            )}
+          </Button>
 
           <Button
             variant="outline"

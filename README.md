@@ -65,6 +65,13 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 
 </details>
 
+<details>
+<summary>Live Flight Tracking</summary>
+
+![Flight Tracking](screenshots/flight-tracking.png)
+
+</details>
+
 ## Features
 
 ### Airport Visualization
@@ -83,7 +90,6 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 - High and low altitude airways
 - Controlled airspace boundaries
 - SID, STAR, and approach procedures with route visualization
-- Transition altitude display (with Navigraph data)
 
 ### Weather
 
@@ -107,6 +113,20 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 - Weather presets
 - Start from any gate or runway
 - Direct X-Plane launch
+
+### Live Flight Tracking
+
+- Real-time aircraft position via X-Plane WebSocket API
+- Flight info strip: IAS, GS, ALT, AGL, VS, HDG
+- Auto-center map on aircraft
+- Connection status indicator
+
+### Multiple Installations
+
+- Automatic detection of X-Plane installations
+- Easy switching between installations (Demo, Steam, etc.)
+- Full data reload on installation change
+- Navigraph data detection per installation
 
 ### Data Sources
 

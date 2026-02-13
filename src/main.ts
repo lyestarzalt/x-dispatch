@@ -13,6 +13,7 @@ import {
   validateCoordinates,
 } from './lib/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
+import type { PlaneState } from './types/xplane';
 
 app.name = 'X-Dispatch';
 
@@ -20,6 +21,14 @@ let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
 let launcherModule: typeof import('./lib/launcher') | null = null;
+let xplaneModule: typeof import('./lib/xplane') | null = null;
+
+async function getXPlaneModule() {
+  if (!xplaneModule) {
+    xplaneModule = await import('./lib/xplane');
+  }
+  return xplaneModule;
+}
 
 interface LoadingProgress {
   step: string;
@@ -239,6 +248,42 @@ function registerIpcHandlers() {
     }
     return dataManager.setXPlanePath(p);
   });
+
+  // Change X-Plane path and reload with clean state
+  ipcMain.handle('xplane:changePath', (_, p: string) => {
+    // Security: Validate path parameter
+    if (typeof p !== 'string' || p.length === 0 || p.length > 1000) {
+      logger.security.warn(`Invalid X-Plane path parameter: ${typeof p}`);
+      return { success: false, errors: ['Invalid path'] };
+    }
+    if (p.includes('..')) {
+      logger.security.warn(`Blocked path traversal attempt in changePath: ${p}`);
+      return { success: false, errors: ['Invalid path'] };
+    }
+
+    const validation = dataManager.validatePath(p);
+    if (!validation.valid) {
+      return { success: false, errors: validation.errors };
+    }
+
+    // Clear all cached data (in-memory + SQLite)
+    dataManager.clear();
+
+    const result = dataManager.setXPlanePath(p);
+    if (!result.success) {
+      return result;
+    }
+
+    logger.main.info(`X-Plane path changed to: ${p}, clearing data and reloading...`);
+
+    // Reload the window to trigger fresh data load
+    if (mainWindow) {
+      mainWindow.webContents.reload();
+    }
+
+    return { success: true, errors: [] };
+  });
+
   ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
   ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
   ipcMain.handle('xplane:browseForPath', async () => {
@@ -522,6 +567,111 @@ function registerIpcHandlers() {
       return `data:image/${ext.slice(1)};base64,${data.toString('base64')}`;
     } catch {
       return null;
+    }
+  });
+
+  // X-Plane API handlers
+  ipcMain.handle('xplaneService:isRunning', async () => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().isSimRunning();
+    } catch (error) {
+      logger.main.error('Failed to check X-Plane status:', error);
+      return false;
+    }
+  });
+
+  ipcMain.handle('xplaneService:isProcessRunning', async () => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().isProcessRunning();
+    } catch (error) {
+      logger.main.error('Failed to check X-Plane process:', error);
+      return false;
+    }
+  });
+
+  ipcMain.handle('xplaneService:isAPIAvailable', async () => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().isAPIAvailable();
+    } catch (error) {
+      logger.main.error('Failed to check X-Plane API:', error);
+      return false;
+    }
+  });
+
+  ipcMain.handle('xplaneService:loadFlight', async (_, config: Record<string, unknown>) => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().loadFlightViaAPI(config);
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('xplaneService:getDataref', async (_, dataref: string) => {
+    if (!dataref || typeof dataref !== 'string') return null;
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().getDataref(dataref);
+    } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle(
+    'xplaneService:setDataref',
+    async (_, dataref: string, value: number | number[]) => {
+      if (!dataref || typeof dataref !== 'string') {
+        return { success: false, error: 'Invalid dataref' };
+      }
+      try {
+        const { getXPlaneService } = await getXPlaneModule();
+        return getXPlaneService().setDataref(dataref, value);
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    }
+  );
+
+  ipcMain.handle('xplaneService:startStateStream', async (event) => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      getXPlaneService().startStateStream(
+        (state: PlaneState) => {
+          if (!event.sender.isDestroyed()) {
+            event.sender.send('xplaneService:stateUpdate', state);
+          }
+        },
+        (connected: boolean) => {
+          if (!event.sender.isDestroyed()) {
+            event.sender.send('xplaneService:connectionChange', connected);
+          }
+        }
+      );
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('xplaneService:stopStateStream', async () => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      getXPlaneService().stopStateStream();
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('xplaneService:isStreamConnected', async () => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().isStreamConnected();
+    } catch {
+      return false;
     }
   });
 }
