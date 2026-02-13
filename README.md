@@ -90,7 +90,6 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 - High and low altitude airways
 - Controlled airspace boundaries
 - SID, STAR, and approach procedures with route visualization
-- Transition altitude display (with Navigraph data)
 
 ### Weather
 
