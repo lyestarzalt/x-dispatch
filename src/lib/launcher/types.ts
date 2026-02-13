@@ -57,6 +57,8 @@ export interface LaunchStartPosition {
   type: 'runway' | 'ramp';
   airport: string;
   position: string;
+  /** Index in airport's startupLocations/runways array - required for P _rwy_or_ramp */
+  index: number;
 }
 
 export interface LaunchConfig {

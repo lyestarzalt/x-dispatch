@@ -188,7 +188,7 @@ interface LaunchConfig {
   aircraft: Aircraft;
   livery: string;
   fuel: { percentage: number; tankWeights: number[] };
-  startPosition: { type: 'runway' | 'ramp'; airport: string; position: string };
+  startPosition: { type: 'runway' | 'ramp'; airport: string; position: string; index: number };
   time: { dayOfYear: number; timeInHours: number; latitude: number; longitude: number };
   weather: { name: string; definition: string };
 }

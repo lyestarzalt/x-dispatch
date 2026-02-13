@@ -14,10 +14,11 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
   lines.push('1100 Version');
 
   // Airport and start position
-  lines.push(`_default_to_ramps ${config.startPosition.type === 'ramp' ? '1' : '0'}`);
+  const isRamp = config.startPosition.type === 'ramp';
+  lines.push(`_default_to_ramps ${isRamp ? '1' : '0'}`);
   lines.push(`_airport ${config.startPosition.airport}`);
 
-  // Start position JSON
+  // Start position JSON - this should control the actual ramp/runway by name
   const startJson = generateStartPositionJson(config.startPosition);
   lines.push(`_last_start ${startJson}`);
 
@@ -48,15 +49,9 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
 
   // Per-airport settings
   const icao = config.startPosition.airport;
-  lines.push(`P _start_is_rwy ${icao} ${config.startPosition.type === 'runway' ? '1' : '0'}`);
-
-  // Runway or ramp index - we use the position name directly for _last_start
-  // but we also need to set the index for compatibility
-  if (config.startPosition.type === 'runway') {
-    lines.push(`P _rwy_or_ramp ${icao} 0_0`);
-  } else {
-    lines.push(`P _rwy_or_ramp ${icao} 0`);
-  }
+  lines.push(`P _start_is_rwy ${icao} ${isRamp ? '0' : '1'}`);
+  // Index in startupLocations/runways array - this overrides the _last_start JSON
+  lines.push(`P _rwy_or_ramp ${icao} ${config.startPosition.index}`);
 
   return lines.join('\n');
 }
@@ -67,7 +62,6 @@ function generateStartPositionJson(startPosition: {
   position: string;
 }): string {
   if (startPosition.type === 'runway') {
-    // Runway start: {"runway_start":{"airport_id":"KSFO","runway":"28R"}}
     return JSON.stringify({
       runway_start: {
         airport_id: startPosition.airport,
@@ -75,7 +69,6 @@ function generateStartPositionJson(startPosition: {
       },
     });
   } else {
-    // Ramp/gate start: {"ramp_start":{"airport":"KSFO","ramp":"Gate A1"}}
     return JSON.stringify({
       ramp_start: {
         airport_id: startPosition.airport,
@@ -91,8 +84,6 @@ function generateTimeJson(time: {
   latitude: number;
   longitude: number;
 }): string {
-  // Always use local_time format. X-Plane's system_time uses the user's computer
-  // timezone, not the airport's. We calculate the correct airport time in the UI.
   return JSON.stringify({
     local_time: {
       day_of_year: time.dayOfYear,
@@ -104,7 +95,6 @@ function generateTimeJson(time: {
 }
 
 function generateWeightJson(fuel: { tankWeights: number[] }): string {
-  // Ensure we have exactly 9 tank weights
   const tankWeights = [...fuel.tankWeights];
   while (tankWeights.length < 9) {
     tankWeights.push(0);
@@ -129,11 +119,9 @@ export function calculateFuelWeights(
   const totalFuel = maxFuel * (percentage / 100);
   const weights: number[] = new Array(9).fill(0);
 
-  // Simple distribution: split fuel evenly between available tanks
-  // For most aircraft, tanks 0 and 2 are left/right wing
   if (tankCount >= 2) {
-    weights[0] = totalFuel / 2; // Left wing
-    weights[2] = totalFuel / 2; // Right wing
+    weights[0] = totalFuel / 2;
+    weights[2] = totalFuel / 2;
   } else if (tankCount === 1) {
     weights[0] = totalFuel;
   }
@@ -167,19 +155,16 @@ export function getXPlaneExecutable(xplanePath: string): string | null {
   const platform = process.platform;
 
   if (platform === 'darwin') {
-    // macOS
     const macPath = path.join(xplanePath, 'X-Plane.app', 'Contents', 'MacOS', 'X-Plane');
     if (fs.existsSync(macPath)) {
       return macPath;
     }
   } else if (platform === 'win32') {
-    // Windows
     const winPath = path.join(xplanePath, 'X-Plane.exe');
     if (fs.existsSync(winPath)) {
       return winPath;
     }
   } else {
-    //  TODO, check Linux
     const linuxPath = path.join(xplanePath, 'X-Plane-x86_64');
     if (fs.existsSync(linuxPath)) {
       return linuxPath;

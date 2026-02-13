@@ -115,6 +115,7 @@ export function useAirportInteractions({
           airport: currentAirport.id,
           latitude: props.latitude,
           longitude: props.longitude,
+          index: featureId,
         });
       }
     };
@@ -183,6 +184,7 @@ export function useAirportInteractions({
           airport: currentAirport.id,
           latitude: props.latitude,
           longitude: props.longitude,
+          index: featureId,
         });
       }
     };
@@ -258,6 +260,7 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: gate.latitude,
         longitude: gate.longitude,
+        index: featureId ?? 0,
       });
 
       navigateToGate({ ...gate, heading: 0 });
@@ -296,6 +299,7 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: runwayEnd.latitude,
         longitude: runwayEnd.longitude,
+        index: featureId ?? 0,
       });
 
       map.flyTo({
