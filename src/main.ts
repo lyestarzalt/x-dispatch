@@ -1,6 +1,7 @@
 import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import path from 'path';
+import { updateElectronApp } from 'update-electron-app';
 import { initDb } from './db';
 import logger, { getLogPath } from './lib/logger';
 import { AirportProcedures } from './lib/navParser/cifpParser';
@@ -14,6 +15,9 @@ import {
 } from './lib/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
 import type { PlaneState } from './types/xplane';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
 
 app.name = 'X-Dispatch';
 
@@ -679,6 +683,24 @@ function registerIpcHandlers() {
 app.whenReady().then(async () => {
   logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
   logger.main.debug(`Log file: ${getLogPath()}`);
+
+  if (app.isPackaged && process.platform === 'win32') {
+    try {
+      updateElectronApp({
+        updateInterval: '10 minutes',
+        notifyUser: true,
+        logger: {
+          log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
+          info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
+          warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
+          error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
+        },
+      });
+      logger.main.info('Auto-updater initialized');
+    } catch (err) {
+      logger.main.error('Failed to initialize auto-updater', err);
+    }
+  }
 
   // Load React DevTools in development
   if (!app.isPackaged && process.platform === 'darwin') {

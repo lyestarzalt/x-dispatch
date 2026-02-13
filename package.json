@@ -112,6 +112,7 @@
     "cmdk": "^1.1.1",
     "drizzle-orm": "^0.38.4",
     "electron-log": "^5.4.3",
+    "electron-squirrel-startup": "^1.0.1",
     "electron-window-state": "^5.0.3",
     "i18next": "^25.8.0",
     "lucide-react": "^0.474.0",
@@ -122,6 +123,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tz-lookup": "^6.1.25",
+    "update-electron-app": "^3.1.2",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.19.0",
     "zustand": "^5.0.10"
