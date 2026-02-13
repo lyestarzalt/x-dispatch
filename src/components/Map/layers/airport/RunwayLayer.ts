@@ -36,10 +36,12 @@ export class RunwayLayer extends BaseLayerRenderer {
     // Create and add shoulder source/layer first (renders below runway)
     const shoulderGeoJSON = createRunwayShoulderGeoJSON(airport.runways);
     if (shoulderGeoJSON.features.length > 0) {
-      map.addSource(this.shoulderSourceId, {
-        type: 'geojson',
-        data: shoulderGeoJSON,
-      });
+      if (!map.getSource(this.shoulderSourceId)) {
+        map.addSource(this.shoulderSourceId, {
+          type: 'geojson',
+          data: shoulderGeoJSON,
+        });
+      }
 
       this.addLayer(map, {
         id: 'airport-runway-shoulders',
