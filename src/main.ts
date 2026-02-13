@@ -248,6 +248,42 @@ function registerIpcHandlers() {
     }
     return dataManager.setXPlanePath(p);
   });
+
+  // Change X-Plane path and reload with clean state
+  ipcMain.handle('xplane:changePath', (_, p: string) => {
+    // Security: Validate path parameter
+    if (typeof p !== 'string' || p.length === 0 || p.length > 1000) {
+      logger.security.warn(`Invalid X-Plane path parameter: ${typeof p}`);
+      return { success: false, errors: ['Invalid path'] };
+    }
+    if (p.includes('..')) {
+      logger.security.warn(`Blocked path traversal attempt in changePath: ${p}`);
+      return { success: false, errors: ['Invalid path'] };
+    }
+
+    const validation = dataManager.validatePath(p);
+    if (!validation.valid) {
+      return { success: false, errors: validation.errors };
+    }
+
+    // Clear all cached data (in-memory + SQLite)
+    dataManager.clear();
+
+    const result = dataManager.setXPlanePath(p);
+    if (!result.success) {
+      return result;
+    }
+
+    logger.main.info(`X-Plane path changed to: ${p}, clearing data and reloading...`);
+
+    // Reload the window to trigger fresh data load
+    if (mainWindow) {
+      mainWindow.webContents.reload();
+    }
+
+    return { success: true, errors: [] };
+  });
+
   ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
   ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
   ipcMain.handle('xplane:browseForPath', async () => {

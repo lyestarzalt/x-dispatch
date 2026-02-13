@@ -64,6 +64,7 @@ contextBridge.exposeInMainWorld('appAPI', {
 contextBridge.exposeInMainWorld('xplaneAPI', {
   getPath: () => ipcRenderer.invoke('xplane:getPath'),
   setPath: (path: string) => ipcRenderer.invoke('xplane:setPath', path),
+  changePath: (path: string) => ipcRenderer.invoke('xplane:changePath', path),
   validatePath: (path: string) => ipcRenderer.invoke('xplane:validatePath', path),
   detectInstallations: () => ipcRenderer.invoke('xplane:detectInstallations'),
   browseForPath: () => ipcRenderer.invoke('xplane:browseForPath'),
@@ -614,6 +615,7 @@ declare global {
     xplaneAPI: {
       getPath: () => Promise<string | null>;
       setPath: (path: string) => Promise<PathSetResult>;
+      changePath: (path: string) => Promise<PathSetResult>;
       validatePath: (path: string) => Promise<PathValidation>;
       detectInstallations: () => Promise<string[]>;
       browseForPath: () => Promise<BrowseResult | null>;

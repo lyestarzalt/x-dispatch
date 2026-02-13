@@ -37,12 +37,18 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
     try {
       const result = await window.xplaneAPI.browseForPath();
       if (result?.valid && result.path !== xplanePath) {
-        await window.xplaneAPI.setPath(result.path);
-        window.location.reload();
+        // changePath will restart the app with fresh state
+        const changeResult = await window.xplaneAPI.changePath(result.path);
+        if (!changeResult.success) {
+          setError(changeResult.errors?.[0] || t('settings.xplane.setPathFailed'));
+          setPathLoading(false);
+        }
+        // App will restart, no need to handle success case
+      } else {
+        setPathLoading(false);
       }
     } catch {
       setError(t('settings.xplane.setPathFailed', 'Failed to set X-Plane path'));
-    } finally {
       setPathLoading(false);
     }
   };
@@ -52,16 +58,15 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
     setPathLoading(true);
     setError(null);
     try {
-      const validation = await window.xplaneAPI.validatePath(path);
-      if (validation.valid) {
-        await window.xplaneAPI.setPath(path);
-        window.location.reload();
-      } else {
-        setError(t('settings.xplane.invalidInstallation', 'Invalid X-Plane installation'));
+      // changePath validates and restarts the app with fresh state
+      const result = await window.xplaneAPI.changePath(path);
+      if (!result.success) {
+        setError(result.errors?.[0] || t('settings.xplane.invalidInstallation'));
+        setPathLoading(false);
       }
+      // App will restart, no need to handle success case
     } catch {
       setError(t('settings.xplane.validationFailed', 'Failed to validate X-Plane path'));
-    } finally {
       setPathLoading(false);
     }
   };
