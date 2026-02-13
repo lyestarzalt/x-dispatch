@@ -9,6 +9,8 @@ export interface Position extends Coordinates {
 
 export interface NamedPosition extends Position {
   name: string;
+  /** Array index in source data (e.g., startupLocations index) */
+  index?: number;
 }
 
 export type LonLat = [number, number];

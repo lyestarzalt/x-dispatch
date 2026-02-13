@@ -38,7 +38,7 @@ interface SidebarProps {
   selectedProcedure?: Procedure | null;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
+  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string; index?: number } | null;
   // VATSIM data
   vatsimData?: VatsimData;
   vatsimMetar?: string | null;

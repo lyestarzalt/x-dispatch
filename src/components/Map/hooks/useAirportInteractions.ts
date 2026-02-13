@@ -11,14 +11,18 @@ interface UseAirportInteractionsOptions {
 }
 
 interface UseAirportInteractionsReturn {
-  selectGateAsStart: (
-    gate: { latitude: number; longitude: number; name: string },
-    featureId?: number
-  ) => void;
-  selectRunwayEndAsStart: (
-    runwayEnd: { name: string; latitude: number; longitude: number },
-    featureId?: number
-  ) => void;
+  selectGateAsStart: (gate: {
+    latitude: number;
+    longitude: number;
+    name: string;
+    index?: number;
+  }) => void;
+  selectRunwayEndAsStart: (runwayEnd: {
+    name: string;
+    latitude: number;
+    longitude: number;
+    index?: number;
+  }) => void;
   navigateToGate: (gate: {
     latitude: number;
     longitude: number;
@@ -230,9 +234,12 @@ export function useAirportInteractions({
   );
 
   const selectGateAsStart = useCallback(
-    (gate: { latitude: number; longitude: number; name: string }, featureId?: number) => {
+    (gate: { latitude: number; longitude: number; name: string; index?: number }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
+
+      // Use index from gate object (passed from sidebar or map click)
+      const gateIndex = gate.index;
 
       // Clear previous selections
       if (selectedGateId.current !== null) {
@@ -249,9 +256,9 @@ export function useAirportInteractions({
         selectedRunwayEndId.current = null;
       }
 
-      if (featureId !== undefined) {
-        selectedGateId.current = featureId;
-        map.setFeatureState({ source: 'airport-gates', id: featureId }, { selected: true });
+      if (gateIndex !== undefined) {
+        selectedGateId.current = gateIndex;
+        map.setFeatureState({ source: 'airport-gates', id: gateIndex }, { selected: true });
       }
 
       setStartPosition({
@@ -260,7 +267,7 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: gate.latitude,
         longitude: gate.longitude,
-        index: featureId ?? 0,
+        index: gateIndex ?? 0,
       });
 
       navigateToGate({ ...gate, heading: 0 });
@@ -269,9 +276,12 @@ export function useAirportInteractions({
   );
 
   const selectRunwayEndAsStart = useCallback(
-    (runwayEnd: { name: string; latitude: number; longitude: number }, featureId?: number) => {
+    (runwayEnd: { name: string; latitude: number; longitude: number; index?: number }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
+
+      // Use index from runwayEnd object (passed from sidebar or map click)
+      const endIndex = runwayEnd.index;
 
       // Clear previous selections
       if (selectedRunwayEndId.current !== null) {
@@ -288,9 +298,9 @@ export function useAirportInteractions({
         selectedGateId.current = null;
       }
 
-      if (featureId !== undefined) {
-        selectedRunwayEndId.current = featureId;
-        map.setFeatureState({ source: 'airport-runway-ends', id: featureId }, { selected: true });
+      if (endIndex !== undefined) {
+        selectedRunwayEndId.current = endIndex;
+        map.setFeatureState({ source: 'airport-runway-ends', id: endIndex }, { selected: true });
       }
 
       setStartPosition({
@@ -299,7 +309,7 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: runwayEnd.latitude,
         longitude: runwayEnd.longitude,
-        index: featureId ?? 0,
+        index: endIndex ?? 0,
       });
 
       map.flyTo({

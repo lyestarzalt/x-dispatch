@@ -19,7 +19,7 @@ interface DepartureSelectorProps {
   onSelectGate: (gate: NamedPosition) => void;
   onSelectRunwayEnd: (runwayEnd: NamedPosition) => void;
   onSelectRunway?: (runway: Runway) => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
+  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string; index?: number } | null;
   ilsCount?: number;
 }
 
@@ -112,18 +112,20 @@ export default function DepartureSelector({
         {departureType === 'gates' ? (
           <GateList
             gates={filteredGates}
+            allGates={gates}
             onSelect={onSelectGate}
-            selectedName={
-              selectedStartPosition?.type === 'ramp' ? selectedStartPosition.name : undefined
+            selectedIndex={
+              selectedStartPosition?.type === 'ramp' ? selectedStartPosition.index : undefined
             }
           />
         ) : (
           <RunwayList
             runways={filteredRunways}
+            allRunways={runways}
             onSelectEnd={onSelectRunwayEnd}
             onSelectRunway={onSelectRunway}
-            selectedName={
-              selectedStartPosition?.type === 'runway' ? selectedStartPosition.name : undefined
+            selectedIndex={
+              selectedStartPosition?.type === 'runway' ? selectedStartPosition.index : undefined
             }
             ilsCount={ilsCount}
           />
@@ -135,11 +137,12 @@ export default function DepartureSelector({
 
 interface GateListProps {
   gates: StartupLocation[];
+  allGates: StartupLocation[];
   onSelect: (gate: NamedPosition) => void;
-  selectedName?: string;
+  selectedIndex?: number;
 }
 
-function GateList({ gates, onSelect, selectedName }: GateListProps) {
+function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
   const { t } = useTranslation();
 
   if (gates.length === 0) {
@@ -150,17 +153,20 @@ function GateList({ gates, onSelect, selectedName }: GateListProps) {
 
   return (
     <div className="space-y-1 pr-2">
-      {gates.slice(0, 50).map((gate, i) => {
-        const isSelected = selectedName === gate.name;
+      {gates.map((gate) => {
+        // Find the original index in the full gates array (for X-Plane)
+        const originalIndex = allGates.indexOf(gate);
+        const isSelected = selectedIndex === originalIndex;
         return (
           <Button
-            key={i}
+            key={originalIndex}
             variant="ghost"
             onClick={() =>
               onSelect({
                 latitude: gate.latitude,
                 longitude: gate.longitude,
                 name: gate.name,
+                index: originalIndex,
               })
             }
             className={cn(
@@ -178,28 +184,25 @@ function GateList({ gates, onSelect, selectedName }: GateListProps) {
           </Button>
         );
       })}
-      {gates.length > 50 && (
-        <p className="pt-1 text-center text-xs text-muted-foreground/50">
-          +{gates.length - 50} {t('sidebar.more')}
-        </p>
-      )}
     </div>
   );
 }
 
 interface RunwayListProps {
   runways: Runway[];
+  allRunways: Runway[];
   onSelectEnd: (end: NamedPosition) => void;
   onSelectRunway?: (runway: Runway) => void;
-  selectedName?: string;
+  selectedIndex?: number;
   ilsCount?: number;
 }
 
 function RunwayList({
   runways,
+  allRunways,
   onSelectEnd,
   onSelectRunway,
-  selectedName,
+  selectedIndex,
   ilsCount,
 }: RunwayListProps) {
   const { t } = useTranslation();
@@ -214,29 +217,41 @@ function RunwayList({
 
   return (
     <div className="space-y-2 pr-2">
-      {runways.map((runway, i) => (
-        <RunwayItem
-          key={i}
-          runway={runway}
-          onSelectEnd={onSelectEnd}
-          onSelect={() => onSelectRunway?.(runway)}
-          selectedEndName={selectedName}
-          ilsCount={ilsCount}
-        />
-      ))}
+      {runways.map((runway) => {
+        const runwayIndex = allRunways.indexOf(runway);
+        return (
+          <RunwayItem
+            key={runwayIndex}
+            runway={runway}
+            runwayIndex={runwayIndex}
+            onSelectEnd={onSelectEnd}
+            onSelect={() => onSelectRunway?.(runway)}
+            selectedIndex={selectedIndex}
+            ilsCount={ilsCount}
+          />
+        );
+      })}
     </div>
   );
 }
 
 interface RunwayItemProps {
   runway: Runway;
+  runwayIndex: number;
   onSelect?: () => void;
   onSelectEnd: (end: NamedPosition) => void;
-  selectedEndName?: string;
+  selectedIndex?: number;
   ilsCount?: number;
 }
 
-function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }: RunwayItemProps) {
+function RunwayItem({
+  runway,
+  runwayIndex,
+  onSelect,
+  onSelectEnd,
+  selectedIndex,
+  ilsCount,
+}: RunwayItemProps) {
   const { t } = useTranslation();
   const e1 = runway.ends[0];
   const e2 = runway.ends[1];
@@ -293,8 +308,10 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
         <span className="self-center text-xs text-muted-foreground/50">
           {t('sidebar.startFrom')}
         </span>
-        {[e1, e2].map((end) => {
-          const isSelected = selectedEndName === end.name;
+        {[e1, e2].map((end, endIndex) => {
+          // Calculate global runway end index: runwayIndex * 2 + endIndex
+          const globalEndIndex = runwayIndex * 2 + endIndex;
+          const isSelected = selectedIndex === globalEndIndex;
           return (
             <Button
               key={end.name}
@@ -302,7 +319,12 @@ function RunwayItem({ runway, onSelect, onSelectEnd, selectedEndName, ilsCount }
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onSelectEnd({ name: end.name, latitude: end.latitude, longitude: end.longitude });
+                onSelectEnd({
+                  name: end.name,
+                  latitude: end.latitude,
+                  longitude: end.longitude,
+                  index: globalEndIndex,
+                });
               }}
               className={cn(
                 'h-auto flex-1 rounded-lg px-2 py-1 font-mono text-xs font-medium',
