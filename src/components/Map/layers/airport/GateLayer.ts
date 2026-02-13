@@ -75,7 +75,7 @@ const GATE_ICONS: Record<string, string> = {
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';
   sourceId = 'airport-gates';
-  additionalLayerIds = ['airport-gate-labels', 'airport-gates-hitbox', 'airport-gates-ring'];
+  additionalLayerIds = ['airport-gate-labels', 'airport-gates-ring'];
 
   hasData(airport: ParsedAirport): boolean {
     const hasGates = airport.startupLocations && airport.startupLocations.length > 0;
@@ -91,7 +91,7 @@ export class GateLayer extends BaseLayerRenderer {
     const geoJSON = this.createGeoJSON(airport.startupLocations, airport.helipads);
     this.addSource(map, geoJSON);
 
-    // Ring layer with unified colors
+    // Ring layer with unified colors (bottom)
     this.addLayer(map, {
       id: 'airport-gates-ring',
       type: 'circle',
@@ -134,19 +134,6 @@ export class GateLayer extends BaseLayerRenderer {
       },
     });
 
-    // Hitbox layer for interactions
-    this.addLayer(map, {
-      id: 'airport-gates-hitbox',
-      type: 'circle',
-      source: this.sourceId,
-      minzoom: 15,
-      paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 14, 17, 18, 19, 24],
-        'circle-color': 'transparent',
-        'circle-opacity': 0,
-      },
-    });
-
     // Icon layer with type-based icons
     this.addLayer(map, {
       id: this.layerId,
@@ -186,7 +173,7 @@ export class GateLayer extends BaseLayerRenderer {
       layout: {
         'text-field': ['get', 'name'],
         'text-font': ['Open Sans Bold'],
-        'text-size': 10,
+        'text-size': ['interpolate', ['linear'], ['zoom'], 17, 11, 19, 14],
         'text-offset': [0, 1.8],
         'text-anchor': 'top',
         'text-allow-overlap': false,

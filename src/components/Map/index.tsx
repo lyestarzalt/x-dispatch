@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
@@ -9,6 +9,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { ParsedAirport } from '@/lib/aptParser';
 import { Airport } from '@/lib/xplaneData';
+import { usePlaneState, useXPlaneStatus } from '@/queries';
 import {
   getNavDataCounts,
   useGlobalAirwaysQuery,
@@ -21,8 +22,11 @@ import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Coordinates } from '@/types/geo';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
+import type { PlanePosition, PlaneState } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
+  setupAirportPopup,
+  setupAirportsLayer,
   toggleVatsimLayer,
   useAirportInteractions,
   useAirportRenderer,
@@ -32,14 +36,19 @@ import {
   useVatsimSync,
 } from './hooks';
 import {
+  addPlaneLayer,
   addProcedureRouteLayer,
+  bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
+  removePlaneLayer,
   removeProcedureRouteLayer,
   removeVatsimPilotLayer,
+  updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
 import CompassWidget from './widgets/CompassWidget';
+import FlightStrip from './widgets/FlightStrip';
 
 interface MapProps {
   airports: Airport[];
@@ -75,12 +84,14 @@ export default function Map({ airports }: MapProps) {
   const mapBearing = useMapStore((s) => s.mapBearing);
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const toggleLayer = useMapStore((s) => s.toggleLayer);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
   const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
   const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
+  const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
@@ -92,6 +103,7 @@ export default function Map({ airports }: MapProps) {
   const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
   const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
   const bringVatsimToTopRef = useRef<(() => void) | null>(null);
+  const selectedICAORef = useRef<string | null>(null);
 
   // Stable callback for airport click - uses refs to access renderer functions
   const handleAirportClick = useCallback(async (icao: string) => {
@@ -116,7 +128,7 @@ export default function Map({ airports }: MapProps) {
   }, []);
 
   // Map initialization
-  const { mapRef, mapContainerRef, vatsimPopupRef } = useMapSetup({
+  const { mapRef, mapContainerRef, airportPopupRef, vatsimPopupRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
@@ -145,6 +157,10 @@ export default function Map({ airports }: MapProps) {
     layerVisibilityRef.current = layerVisibility;
   }, [layerVisibility]);
 
+  useEffect(() => {
+    selectedICAORef.current = selectedICAO;
+  }, [selectedICAO]);
+
   // Airport interactions (gates, runway ends)
   const { selectGateAsStart, selectRunwayEndAsStart, navigateToGate, navigateToRunway } =
     useAirportInteractions({
@@ -172,6 +188,60 @@ export default function Map({ airports }: MapProps) {
   const navDataCounts = getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+
+  // Plane tracker - check X-Plane status and get position when enabled
+  const { data: isXPlaneRunning = false } = useXPlaneStatus({
+    enabled: true,
+    refetchInterval: 3000,
+  });
+  const { state: planeState, connected: isXPlaneConnected } = usePlaneState();
+
+  // Derive position from state for the map layer
+  const planePosition = useMemo<PlanePosition | null>(
+    () =>
+      planeState
+        ? {
+            lat: planeState.latitude,
+            lng: planeState.longitude,
+            altitude: planeState.altitudeMSL,
+            heading: planeState.heading,
+            groundspeed: planeState.groundspeed,
+          }
+        : null,
+    [planeState]
+  );
+
+  // Auto-enable plane tracker ONCE when X-Plane is first detected
+  const hasAutoEnabledRef = useRef(false);
+  useEffect(() => {
+    if (isXPlaneRunning && !showPlaneTracker && !hasAutoEnabledRef.current) {
+      hasAutoEnabledRef.current = true;
+      setShowPlaneTracker(true);
+    }
+  }, [isXPlaneRunning, showPlaneTracker, setShowPlaneTracker]);
+
+  // Plane layer sync - update plane position on map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (showPlaneTracker && isXPlaneConnected && planePosition) {
+      updatePlaneLayer(map, planePosition);
+      bringPlaneLayerToTop(map);
+    } else if (!showPlaneTracker || !isXPlaneConnected) {
+      removePlaneLayer(map);
+    }
+  }, [mapRef, showPlaneTracker, isXPlaneConnected, planePosition]);
+
+  // Cleanup plane layer on unmount
+  useEffect(() => {
+    const map = mapRef.current;
+    return () => {
+      if (map) {
+        removePlaneLayer(map);
+      }
+    };
+  }, [mapRef]);
 
   // Nav layer sync
   useNavLayerSync({
@@ -232,12 +302,16 @@ export default function Map({ airports }: MapProps) {
       return;
     }
 
-    const currentICAO = selectedICAO;
     const handleStyleLoad = async () => {
-      if (currentICAO) {
-        await renderAirport(currentICAO);
-        applyLayerVisibility(layerVisibility);
-        // Bring VATSIM layers to top after airport rendering
+      // Re-add airports layer and click handlers
+      setupAirportsLayer(map, airports);
+      setupAirportPopup(map, airportPopupRef, handleAirportClick);
+
+      // Re-render selected airport if any
+      const icao = selectedICAORef.current;
+      if (icao && renderAirportRef.current && applyLayerVisibilityRef.current) {
+        await renderAirportRef.current(icao);
+        applyLayerVisibilityRef.current(layerVisibilityRef.current);
         bringVatsimLayersToTop(map);
       }
     };
@@ -248,8 +322,7 @@ export default function Map({ airports }: MapProps) {
     return () => {
       map.off('style.load', handleStyleLoad);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapStyleUrl]);
+  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick]);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(
@@ -384,6 +457,24 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, vatsimPopupRef, vatsimEnabled, setVatsimEnabled]);
 
+  const handleTogglePlaneTracker = useCallback(() => {
+    if (showPlaneTracker) {
+      setShowPlaneTracker(false);
+      if (mapRef.current) removePlaneLayer(mapRef.current);
+    } else {
+      setShowPlaneTracker(true);
+    }
+  }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
+
+  const handleCenterPlane = useCallback(() => {
+    if (!planePosition || !mapRef.current) return;
+    mapRef.current.flyTo({
+      center: [planePosition.lng, planePosition.lat],
+      zoom: 12,
+      duration: 1500,
+    });
+  }, [mapRef, planePosition]);
+
   const handleSelectProcedure = useCallback(
     async (procedure: any) => {
       setSelectedProcedure(procedure);
@@ -430,9 +521,12 @@ export default function Map({ airports }: MapProps) {
         onSelectAirport={selectAirport}
         onOpenSettings={() => setShowSettings(true)}
         onToggleVatsim={handleToggleVatsim}
+        onTogglePlaneTracker={handleTogglePlaneTracker}
         onOpenLauncher={() => setShowLaunchDialog(true)}
         isVatsimEnabled={vatsimEnabled}
         vatsimPilotCount={vatsimData?.pilots?.length}
+        isPlaneTrackerEnabled={showPlaneTracker}
+        isXPlaneConnected={isXPlaneConnected}
         hasStartPosition={!!selectedStartPosition}
         navVisibility={navVisibility}
         onNavToggle={handleNavLayerToggle}
@@ -450,6 +544,14 @@ export default function Map({ airports }: MapProps) {
 
       <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
+
+      {showPlaneTracker && (
+        <FlightStrip
+          planeState={planeState}
+          connected={isXPlaneConnected}
+          onCenterPlane={handleCenterPlane}
+        />
+      )}
 
       {showSidebar && selectedAirportData && (
         <Sidebar

@@ -33,7 +33,8 @@
     "nm": "nm",
     "kt": "kt",
     "s": "s",
-    "kg": "kg"
+    "kg": "kg",
+    "fpm": "fpm"
   },
 
   "directions": {
@@ -83,6 +84,8 @@
     "clearSearch": "Clear search",
     "nav": "NAV",
     "vatsim": "VATSIM",
+    "track": "Track",
+    "trackTooltip": "Track your aircraft position",
     "launch": "Launch",
     "navigationLayers": "Navigation Layers"
   },
@@ -146,6 +149,8 @@
       "currentPath": "Current Path",
       "detectedInstallations": "Detected Installations",
       "selectInstallation": "Select an installation to use",
+      "active": "Active",
+      "custom": "Custom",
       "dataLoaded": "Loaded Data",
       "dataType": "Type",
       "count": "Count",
@@ -187,6 +192,14 @@
       "dataDescription": "View loaded navigation data sources",
       "navigraphInfo": "Navigraph data provides enhanced navigation data including updated airways, procedures, and frequencies.",
       "searchRadius": "Search Radius",
+      "airportLayoutData": "Airport Layout Data",
+      "airportLayoutDescription": "Airport geometry from apt.dat files (runways, taxiways, gates, etc.)",
+      "globalAirports": "Global Airports",
+      "customAirports": "Custom Airports",
+      "fromSceneryPacks": "from {{count}} scenery pack(s)",
+      "totalAirports": "Total Airports",
+      "navDataSource": "Navigation Data Source",
+      "navDataSourceDescription": "Navaids, waypoints, airways, procedures, and frequencies",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live air traffic from the VATSIM network",
@@ -306,6 +319,18 @@
     "calm": "Calm"
   },
 
+  "flightStrip": {
+    "notDetected": "X-Plane not running",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "agl": "AGL",
+    "vs": "VS",
+    "hdg": "HDG",
+    "center": "Center",
+    "centerTooltip": "Center map on aircraft"
+  },
+
   "weather": {
     "fetching": "Fetching weather...",
     "noData": "No weather data available",
@@ -402,6 +427,9 @@
     "title": "Flight Setup",
     "launch": "Launch X-Plane",
     "launching": "Launching...",
+    "changeFlight": "Change Flight",
+    "changingFlight": "Changing...",
+    "xplaneRunning": "X-Plane is running - flight will be changed via API",
     "selectDeparture": "Select a departure on the map",
     "selectAircraft": "Select an aircraft",
 
@@ -465,6 +493,7 @@
     },
 
     "weather": {
+      "real": "Real",
       "clear": "Clear",
       "cloudy": "Cloudy",
       "rainy": "Rainy",

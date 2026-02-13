@@ -5,6 +5,7 @@ import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { useXPlaneStatus } from '@/queries';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import {
   Aircraft,
@@ -24,6 +25,9 @@ interface LaunchPanelProps {
 
 export default function LaunchPanel({ open, onClose, startPosition }: LaunchPanelProps) {
   const { t } = useTranslation();
+
+  // Check if X-Plane is already running
+  const { data: isXPlaneRunning = false } = useXPlaneStatus({ enabled: open });
 
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(null);
@@ -131,27 +135,31 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     loadAircraftImage(ac);
   };
 
-  // Launch
+  // Launch - uses REST API if X-Plane is running, otherwise Freeflight.prf
   const handleLaunch = async () => {
     if (!selectedAircraft || !startPosition) return;
     setIsLoading(true);
     setLaunchError(null);
 
     try {
-      // Determine weather definition
-      const weatherPreset = weatherPresets.find((w) => w.name.toLowerCase() === selectedWeather);
+      // Determine weather definition - normalize preset names for matching
+      const weatherPreset = weatherPresets.find((w) => {
+        const normalizedName = w.name.toLowerCase().replace(/\s+/g, '');
+        return normalizedName === selectedWeather || normalizedName.startsWith(selectedWeather);
+      });
       const weatherDefinition = weatherPreset?.definition || '';
       const weatherName = weatherPreset?.name || selectedWeather;
 
-      // Calculate fuel tank weights (auto distribution)
+      // Calculate fuel tank weights (auto distribution) - in kilograms for API
       const tankCount = selectedAircraft.tankNames.length || 2;
-      const totalFuel = selectedAircraft.maxFuel * (fuelPercentage / 100);
-      const tankWeights = new Array(9).fill(0);
+      const totalFuelLbs = selectedAircraft.maxFuel * (fuelPercentage / 100);
+      const totalFuelKg = totalFuelLbs * 0.453592; // Convert lbs to kg
+      const tankWeightsKg = new Array(9).fill(0);
       if (tankCount >= 2) {
-        tankWeights[0] = totalFuel / 2;
-        tankWeights[2] = totalFuel / 2;
+        tankWeightsKg[0] = totalFuelKg / 2;
+        tankWeightsKg[2] = totalFuelKg / 2;
       } else {
-        tankWeights[0] = totalFuel;
+        tankWeightsKg[0] = totalFuelKg;
       }
 
       const now = new Date();
@@ -159,35 +167,67 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
       );
 
-      const config = {
-        aircraft: selectedAircraft,
-        livery: selectedLivery,
-        fuel: { percentage: fuelPercentage, tankWeights },
-        startPosition: {
-          type: startPosition.type,
-          airport: startPosition.airport,
-          position: startPosition.name,
-        },
-        time: {
-          dayOfYear,
-          timeInHours: timeOfDay,
-          latitude: startPosition.latitude,
-          longitude: startPosition.longitude,
+      if (isXPlaneRunning) {
+        // Use REST API to change flight in running X-Plane
+        const apiConfig = buildFlightAPIPayload({
+          aircraft: selectedAircraft,
+          livery: selectedLivery,
+          startPosition,
+          weather: selectedWeather,
           useSystemTime,
-        },
-        weather: {
-          name: weatherName,
-          definition: weatherDefinition,
-        },
-        startEngineRunning: !coldAndDark,
-      };
+          dayOfYear,
+          timeOfDay,
+          fuelTanksKg: tankWeightsKg,
+          enginesRunning: !coldAndDark,
+        });
 
-      const result = await window.launcherAPI.launch(config);
-      if (result.success) {
-        onClose();
+        const result = await window.xplaneServiceAPI.loadFlight(apiConfig);
+        if (result.success) {
+          onClose();
+        } else {
+          window.appAPI.log.error('X-Plane flight change failed', result.error);
+          setLaunchError(result.error || 'Failed to change flight');
+        }
       } else {
-        window.appAPI.log.error('X-Plane launch failed', result.error);
-        setLaunchError(result.error || 'Failed to launch');
+        // Use Freeflight.prf to start X-Plane
+        const tankWeightsLbs = new Array(9).fill(0);
+        if (tankCount >= 2) {
+          tankWeightsLbs[0] = totalFuelLbs / 2;
+          tankWeightsLbs[2] = totalFuelLbs / 2;
+        } else {
+          tankWeightsLbs[0] = totalFuelLbs;
+        }
+
+        const config = {
+          aircraft: selectedAircraft,
+          livery: selectedLivery,
+          fuel: { percentage: fuelPercentage, tankWeights: tankWeightsLbs },
+          startPosition: {
+            type: startPosition.type,
+            airport: startPosition.airport,
+            position: startPosition.name,
+          },
+          time: {
+            dayOfYear,
+            timeInHours: timeOfDay,
+            latitude: startPosition.latitude,
+            longitude: startPosition.longitude,
+            useSystemTime,
+          },
+          weather: {
+            name: weatherName,
+            definition: weatherDefinition,
+          },
+          startEngineRunning: !coldAndDark,
+        };
+
+        const result = await window.launcherAPI.launch(config);
+        if (result.success) {
+          onClose();
+        } else {
+          window.appAPI.log.error('X-Plane launch failed', result.error);
+          setLaunchError(result.error || 'Failed to launch');
+        }
       }
     } catch (err) {
       window.appAPI.log.error('X-Plane launch error', err);
@@ -196,6 +236,125 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       setIsLoading(false);
     }
   };
+
+  // Build Flight Initialization API payload for REST API
+  function buildFlightAPIPayload(params: {
+    aircraft: Aircraft;
+    livery: string;
+    startPosition: StartPosition;
+    weather: string;
+    useSystemTime: boolean;
+    dayOfYear: number;
+    timeOfDay: number;
+    fuelTanksKg: number[];
+    enginesRunning: boolean;
+  }) {
+    const payload: Record<string, unknown> = {};
+
+    // Aircraft
+    payload.aircraft = {
+      path: params.aircraft.path,
+      ...(params.livery !== 'Default' && { livery: params.livery }),
+    };
+
+    // Start location
+    if (params.startPosition.type === 'ramp') {
+      payload.ramp_start = {
+        airport_id: params.startPosition.airport,
+        ramp: params.startPosition.name,
+      };
+    } else {
+      payload.runway_start = {
+        airport_id: params.startPosition.airport,
+        runway: params.startPosition.name,
+      };
+    }
+
+    // Weight (fuel)
+    payload.weight = {
+      fueltank_weight_in_kilograms: params.fuelTanksKg,
+    };
+
+    // Engine status
+    payload.engine_status = {
+      all_engines: { running: params.enginesRunning },
+    };
+
+    // Time
+    if (params.useSystemTime) {
+      payload.use_system_time = true;
+    } else {
+      payload.local_time = {
+        day_of_year: params.dayOfYear,
+        time_in_24_hours: params.timeOfDay,
+      };
+    }
+
+    // Weather
+    if (params.weather === 'real') {
+      payload.weather = 'use_real_weather';
+    } else {
+      const weatherDefinitions: Record<string, object> = {
+        clear: {
+          definition: 'vfr_few_clouds',
+          vertical_speed_in_thermal_in_feet_per_minute: 0,
+          wave_height_in_meters: 1,
+          wave_direction_in_degrees: 270,
+          terrain_state: 'dry',
+          variation_across_region_percentage: 0,
+          evolution_over_time_enum: 'static',
+        },
+        cloudy: {
+          definition: 'vfr_broken',
+          vertical_speed_in_thermal_in_feet_per_minute: 0,
+          wave_height_in_meters: 2,
+          wave_direction_in_degrees: 270,
+          terrain_state: 'dry',
+          variation_across_region_percentage: 50,
+          evolution_over_time_enum: 'static',
+        },
+        rainy: {
+          definition: 'ifr_non_precision',
+          vertical_speed_in_thermal_in_feet_per_minute: 0,
+          wave_height_in_meters: 4,
+          wave_direction_in_degrees: 200,
+          terrain_state: 'medium_wet',
+          variation_across_region_percentage: 50,
+          evolution_over_time_enum: 'gradually_deteriorating',
+        },
+        stormy: {
+          definition: 'large_cell_thunderstorm',
+          vertical_speed_in_thermal_in_feet_per_minute: 500,
+          wave_height_in_meters: 8,
+          wave_direction_in_degrees: 180,
+          terrain_state: 'very_wet',
+          variation_across_region_percentage: 100,
+          evolution_over_time_enum: 'rapidly_deteriorating',
+        },
+        snowy: {
+          definition: 'ifr_precision',
+          vertical_speed_in_thermal_in_feet_per_minute: 0,
+          wave_height_in_meters: 2,
+          wave_direction_in_degrees: 320,
+          terrain_state: 'medium_snowy',
+          variation_across_region_percentage: 30,
+          evolution_over_time_enum: 'static',
+        },
+        foggy: {
+          definition: 'ifr_precision',
+          vertical_speed_in_thermal_in_feet_per_minute: 0,
+          wave_height_in_meters: 1,
+          wave_direction_in_degrees: 270,
+          terrain_state: 'lightly_wet',
+          variation_across_region_percentage: 0,
+          evolution_over_time_enum: 'static',
+        },
+      };
+      payload.weather = weatherDefinitions[params.weather] || weatherDefinitions.clear;
+    }
+
+    return payload;
+  }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -272,6 +431,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               coldAndDark={coldAndDark}
               isLoading={isLoading}
               launchError={launchError}
+              isXPlaneRunning={isXPlaneRunning}
               onTimeChange={setTimeOfDay}
               onWeatherChange={setSelectedWeather}
               onFuelChange={setFuelPercentage}

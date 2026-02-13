@@ -52,9 +52,7 @@ export function getDb(): DrizzleDatabase<typeof schema> {
 function initTables(): void {
   if (!sqlite) return;
 
-  // Drop and recreate airports table with new columns
-  sqlite.run(`DROP TABLE IF EXISTS airports`);
-  sqlite.run(`DROP TABLE IF EXISTS apt_file_meta`);
+  // Create tables if they don't exist (preserves cached data)
   sqlite.run(`
     CREATE TABLE IF NOT EXISTS airports (
       icao TEXT PRIMARY KEY,

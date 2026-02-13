@@ -30,7 +30,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm run format:check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:xplane": "npx tsx scripts/test-xplane-websocket.ts"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.0",
@@ -51,6 +52,7 @@
     "@types/sql.js": "^1.4.9",
     "@types/suncalc": "^1.9.2",
     "@types/tz-lookup": "^6.1.2",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "electron": "^40.0.0",
@@ -104,6 +106,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-visually-hidden": "^1.2.4",
     "@tanstack/react-query": "^5.90.20",
+    "bufferutil": "^4.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -119,6 +122,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tz-lookup": "^6.1.25",
+    "utf-8-validate": "^6.0.6",
+    "ws": "^8.19.0",
     "zustand": "^5.0.10"
   }
 }
