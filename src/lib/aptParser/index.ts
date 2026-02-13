@@ -76,6 +76,19 @@ export class AirportParser {
     };
   }
 
+  private parseStartupLocationLegacy(tokens: string[]): StartupLocation | null {
+    // Row code 15: legacy format - lat lon heading name
+    if (tokens.length < 4) return null;
+    return {
+      latitude: parseFloat(tokens[1]),
+      longitude: parseFloat(tokens[2]),
+      heading: parseFloat(tokens[3]),
+      location_type: 'misc', // Default type for legacy locations
+      airplane_types: 'ABCDEF', // Accept all aircraft types
+      name: tokens.slice(4).join(' ') || 'Startup',
+    };
+  }
+
   private parseWindsock(tokens: string[]): Windsock | null {
     if (tokens.length < 4) return null;
     return {
@@ -400,6 +413,12 @@ export class AirportParser {
             airport.boundaries.push({ paths: boundaryPaths });
           }
           i += boundaryParser.getLinesConsumed();
+          break;
+        }
+
+        case RowCode.START_LOCATION_LEGACY: {
+          const startupLocation = this.parseStartupLocationLegacy(tokens);
+          if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
 
