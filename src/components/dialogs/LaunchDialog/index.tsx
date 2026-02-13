@@ -244,6 +244,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             airport: startPosition.airport,
             position: startPosition.name,
             index: startPosition.index,
+            xplaneIndex: startPosition.xplaneIndex,
           },
           time: {
             dayOfYear,

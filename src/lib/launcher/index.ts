@@ -154,7 +154,8 @@ class XPlaneLauncher {
     positionType: 'runway' | 'ramp',
     airportLat: number,
     airportLon: number,
-    positionIndex: number = 0
+    positionIndex: number = 0,
+    xplaneIndex?: number
   ): LaunchConfig {
     return {
       aircraft,
@@ -168,6 +169,7 @@ class XPlaneLauncher {
         airport,
         position,
         index: positionIndex,
+        xplaneIndex,
       },
       time: {
         dayOfYear: getCurrentDayOfYear(),

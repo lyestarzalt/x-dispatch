@@ -50,8 +50,13 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
   // Per-airport settings
   const icao = config.startPosition.airport;
   lines.push(`P _start_is_rwy ${icao} ${isRamp ? '0' : '1'}`);
-  // Index in startupLocations/runways array - this overrides the _last_start JSON
-  lines.push(`P _rwy_or_ramp ${icao} ${config.startPosition.index}`);
+  // X-Plane uses separate indices for gate vs non-gate positions
+  if (config.startPosition.xplaneIndex === undefined) {
+    throw new Error(
+      `Missing xplaneIndex for start position "${config.startPosition.position}" - this is required for correct X-Plane spawning`
+    );
+  }
+  lines.push(`P _rwy_or_ramp ${icao} ${config.startPosition.xplaneIndex}`);
 
   return lines.join('\n');
 }

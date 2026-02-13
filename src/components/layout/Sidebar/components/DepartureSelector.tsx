@@ -145,6 +145,18 @@ interface GateListProps {
 function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
   const { t } = useTranslation();
 
+  // Pre-compute X-Plane indices: gates and non-gates are indexed separately
+  // Must be before early return to satisfy React hooks rules
+  const xplaneIndices = useMemo(() => {
+    let gateIdx = 0;
+    let nonGateIdx = 0;
+    return allGates.map((g) => {
+      const isGateType = g.location_type === 'gate';
+      const idx = isGateType ? gateIdx++ : nonGateIdx++;
+      return { isGateType, xplaneIndex: idx };
+    });
+  }, [allGates]);
+
   if (gates.length === 0) {
     return (
       <p className="py-4 text-center text-xs text-muted-foreground">{t('sidebar.noGatesFound')}</p>
@@ -154,9 +166,11 @@ function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
   return (
     <div className="space-y-1 pr-2">
       {gates.map((gate) => {
-        // Find the original index in the full gates array (for X-Plane)
+        // Find the original index in the full gates array (for map selection state)
         const originalIndex = allGates.indexOf(gate);
         const isSelected = selectedIndex === originalIndex;
+        // X-Plane uses separate indices for "gate" vs non-gate types
+        const xplaneIndex = xplaneIndices[originalIndex]?.xplaneIndex ?? originalIndex;
         return (
           <Button
             key={originalIndex}
@@ -167,6 +181,8 @@ function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
                 longitude: gate.longitude,
                 name: gate.name,
                 index: originalIndex,
+                xplaneIndex: xplaneIndex,
+                locationType: gate.location_type,
               })
             }
             className={cn(

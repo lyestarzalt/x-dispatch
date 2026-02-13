@@ -57,8 +57,10 @@ export interface LaunchStartPosition {
   type: 'runway' | 'ramp';
   airport: string;
   position: string;
-  /** Index in airport's startupLocations/runways array - required for P _rwy_or_ramp */
+  /** Index in airport's startupLocations/runways array - for internal tracking */
   index: number;
+  /** X-Plane specific index - gates and non-gates are indexed separately */
+  xplaneIndex?: number;
 }
 
 export interface LaunchConfig {
