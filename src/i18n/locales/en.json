@@ -467,7 +467,7 @@
 
     "config": {
       "timeOfDay": "Time of Day",
-      "systemTime": "System",
+      "realWorldTime": "Real World",
       "coldAndDark": "Cold & Dark",
       "weather": "Weather",
       "fuel": "Fuel",

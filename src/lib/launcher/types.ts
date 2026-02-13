@@ -50,7 +50,6 @@ export interface WeatherPreset {
 export interface TimeConfig extends Coordinates {
   dayOfYear: number;
   timeInHours: number;
-  useSystemTime?: boolean;
 }
 
 /** Start position for X-Plane launch config (position identifier, no coordinates) */

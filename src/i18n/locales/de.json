@@ -383,6 +383,8 @@
 
     "config": {
       "timeOfDay": "Tageszeit",
+      "realWorldTime": "Echtzeit",
+      "coldAndDark": "Kaltstart",
       "weather": "Wetter",
       "fuel": "Treibstoff",
       "summary": "Zusammenfassung",

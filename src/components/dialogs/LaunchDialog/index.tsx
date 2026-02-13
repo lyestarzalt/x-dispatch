@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
+import tzLookup from 'tz-lookup';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { useXPlaneStatus } from '@/queries';
@@ -46,7 +47,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const [weatherPresets, setWeatherPresets] = useState<WeatherPreset[]>([]);
   const [selectedWeather, setSelectedWeather] = useState<string>('clear');
   const [timeOfDay, setTimeOfDay] = useState(12);
-  const [useSystemTime, setUseSystemTime] = useState(false);
+  const [useRealWorldTime, setUseRealWorldTime] = useState(false);
   const [coldAndDark, setColdAndDark] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -162,10 +163,46 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         tankWeightsKg[0] = totalFuelKg;
       }
 
-      const now = new Date();
-      const dayOfYear = Math.floor(
-        (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
-      );
+      // Calculate time - for real world time, we need airport's current time (not system time)
+      // X-Plane's system_time uses computer timezone, so we calculate it ourselves
+      let dayOfYear: number;
+      let timeInHours: number;
+
+      if (useRealWorldTime) {
+        // Get airport timezone and calculate current time there
+        const timezone = tzLookup(startPosition.latitude, startPosition.longitude);
+        const now = new Date();
+
+        // Get airport's current time components
+        const airportTimeStr = now.toLocaleString('en-US', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: false,
+        });
+
+        // Parse the airport time (format: "M/D/YYYY, HH:MM")
+        const [datePart, timePart] = airportTimeStr.split(', ');
+        const [month, day, year] = datePart.split('/').map(Number);
+        const [hours, minutes] = timePart.split(':').map(Number);
+
+        // Calculate day of year for the airport's date
+        const airportDate = new Date(year, month - 1, day);
+        const startOfYear = new Date(year, 0, 0);
+        dayOfYear = Math.floor(
+          (airportDate.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        timeInHours = hours + minutes / 60;
+      } else {
+        // Use today's date with user-selected time
+        const now = new Date();
+        const startOfYear = new Date(now.getFullYear(), 0, 0);
+        dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+        timeInHours = timeOfDay;
+      }
 
       if (isXPlaneRunning) {
         // Use REST API to change flight in running X-Plane
@@ -174,9 +211,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           livery: selectedLivery,
           startPosition,
           weather: selectedWeather,
-          useSystemTime,
+          useRealWorldTime,
           dayOfYear,
-          timeOfDay,
+          timeOfDay: timeInHours,
           fuelTanksKg: tankWeightsKg,
           enginesRunning: !coldAndDark,
         });
@@ -209,10 +246,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           },
           time: {
             dayOfYear,
-            timeInHours: timeOfDay,
+            timeInHours,
             latitude: startPosition.latitude,
             longitude: startPosition.longitude,
-            useSystemTime,
           },
           weather: {
             name: weatherName,
@@ -243,7 +279,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     livery: string;
     startPosition: StartPosition;
     weather: string;
-    useSystemTime: boolean;
+    useRealWorldTime: boolean;
     dayOfYear: number;
     timeOfDay: number;
     fuelTanksKg: number[];
@@ -281,7 +317,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     };
 
     // Time
-    if (params.useSystemTime) {
+    if (params.useRealWorldTime) {
       payload.use_system_time = true;
     } else {
       payload.local_time = {
@@ -427,7 +463,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               timeOfDay={timeOfDay}
               selectedWeather={selectedWeather}
               fuelPercentage={fuelPercentage}
-              useSystemTime={useSystemTime}
+              useRealWorldTime={useRealWorldTime}
               coldAndDark={coldAndDark}
               isLoading={isLoading}
               launchError={launchError}
@@ -435,7 +471,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               onTimeChange={setTimeOfDay}
               onWeatherChange={setSelectedWeather}
               onFuelChange={setFuelPercentage}
-              onSystemTimeChange={setUseSystemTime}
+              onRealWorldTimeChange={setUseRealWorldTime}
               onColdAndDarkChange={setColdAndDark}
               onLaunch={handleLaunch}
             />

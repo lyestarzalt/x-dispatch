@@ -78,7 +78,7 @@ function generateStartPositionJson(startPosition: {
     // Ramp/gate start: {"ramp_start":{"airport":"KSFO","ramp":"Gate A1"}}
     return JSON.stringify({
       ramp_start: {
-        airport: startPosition.airport,
+        airport_id: startPosition.airport,
         ramp: startPosition.position,
       },
     });
@@ -90,13 +90,9 @@ function generateTimeJson(time: {
   timeInHours: number;
   latitude: number;
   longitude: number;
-  useSystemTime?: boolean;
 }): string {
-  if (time.useSystemTime) {
-    return JSON.stringify({
-      system_time: { enabled: true },
-    });
-  }
+  // Always use local_time format. X-Plane's system_time uses the user's computer
+  // timezone, not the airport's. We calculate the correct airport time in the UI.
   return JSON.stringify({
     local_time: {
       day_of_year: time.dayOfYear,
