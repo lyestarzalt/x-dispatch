@@ -145,16 +145,28 @@ interface GateListProps {
 function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
   const { t } = useTranslation();
 
-  // Pre-compute X-Plane indices: gates and non-gates are indexed separately
+  // Pre-compute X-Plane indices: alphabetically sorted by name, then by latitude for duplicates
   // Must be before early return to satisfy React hooks rules
   const xplaneIndices = useMemo(() => {
-    let gateIdx = 0;
-    let nonGateIdx = 0;
-    return allGates.map((g) => {
-      const isGateType = g.location_type === 'gate';
-      const idx = isGateType ? gateIdx++ : nonGateIdx++;
-      return { isGateType, xplaneIndex: idx };
+    // Create sorted copy with original indices
+    const sortedWithIndices = allGates
+      .map((g, i) => ({ gate: g, originalIndex: i }))
+      .sort((a, b) => {
+        const nameCompare = a.gate.name.localeCompare(b.gate.name);
+        if (nameCompare !== 0) return nameCompare;
+        // For duplicate names, sort by latitude ascending
+        return a.gate.latitude - b.gate.latitude;
+      });
+
+    // Build map from original index to sorted position (xplaneIndex)
+    const indexMap = new Map<number, number>();
+    sortedWithIndices.forEach((item, sortedIdx) => {
+      indexMap.set(item.originalIndex, sortedIdx);
     });
+
+    return allGates.map((_, i) => ({
+      xplaneIndex: indexMap.get(i) ?? i,
+    }));
   }, [allGates]);
 
   if (gates.length === 0) {
@@ -169,7 +181,7 @@ function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
         // Find the original index in the full gates array (for map selection state)
         const originalIndex = allGates.indexOf(gate);
         const isSelected = selectedIndex === originalIndex;
-        // X-Plane uses separate indices for "gate" vs non-gate types
+        // X-Plane index is position in alphabetically sorted list
         const xplaneIndex = xplaneIndices[originalIndex]?.xplaneIndex ?? originalIndex;
         return (
           <Button
@@ -181,8 +193,7 @@ function GateList({ gates, allGates, onSelect, selectedIndex }: GateListProps) {
                 longitude: gate.longitude,
                 name: gate.name,
                 index: originalIndex,
-                xplaneIndex: xplaneIndex,
-                locationType: gate.location_type,
+                xplaneIndex,
               })
             }
             className={cn(

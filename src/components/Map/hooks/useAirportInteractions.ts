@@ -17,7 +17,6 @@ interface UseAirportInteractionsReturn {
     name: string;
     index?: number;
     xplaneIndex?: number;
-    locationType?: string;
   }) => void;
   selectRunwayEndAsStart: (runwayEnd: {
     name: string;
@@ -115,19 +114,18 @@ export function useAirportInteractions({
 
       const currentAirport = selectedAirportDataRef.current;
       if (props && currentAirport) {
-        // Calculate X-Plane index: gates and non-gates are indexed separately
-        const locationType = props.locationType;
-        const isGateType = locationType === 'gate';
-        let xplaneIndex = 0;
-        for (let i = 0; i < featureId && i < currentAirport.startupLocations.length; i++) {
-          const loc = currentAirport.startupLocations[i];
-          if (
-            (isGateType && loc.location_type === 'gate') ||
-            (!isGateType && loc.location_type !== 'gate')
-          ) {
-            xplaneIndex++;
-          }
-        }
+        // Calculate X-Plane index: alphabetically sorted by name, then by latitude
+        const locations = currentAirport.startupLocations;
+        const sortedLocations = [...locations]
+          .map((loc, i) => ({ loc, originalIndex: i }))
+          .sort((a, b) => {
+            const nameCompare = a.loc.name.localeCompare(b.loc.name);
+            if (nameCompare !== 0) return nameCompare;
+            return a.loc.latitude - b.loc.latitude;
+          });
+
+        // Find the xplaneIndex (position in sorted list) for this gate
+        const xplaneIndex = sortedLocations.findIndex((item) => item.originalIndex === featureId);
 
         setStartPosition({
           type: 'ramp',
@@ -136,8 +134,7 @@ export function useAirportInteractions({
           latitude: props.latitude,
           longitude: props.longitude,
           index: featureId,
-          xplaneIndex,
-          locationType,
+          xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
         });
       }
     };
@@ -258,7 +255,6 @@ export function useAirportInteractions({
       name: string;
       index?: number;
       xplaneIndex?: number;
-      locationType?: string;
     }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
@@ -297,7 +293,6 @@ export function useAirportInteractions({
         longitude: gate.longitude,
         index: gateIndex ?? 0,
         xplaneIndex: gate.xplaneIndex,
-        locationType: gate.locationType,
       });
 
       navigateToGate({ ...gate, heading: 0 });

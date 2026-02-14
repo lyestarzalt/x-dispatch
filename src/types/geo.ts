@@ -11,10 +11,8 @@ export interface NamedPosition extends Position {
   name: string;
   /** Array index in source data (e.g., startupLocations index) */
   index?: number;
-  /** X-Plane specific index - gates and non-gates are indexed separately */
+  /** X-Plane index - position in alphabetically sorted ramp list (by name, then latitude) */
   xplaneIndex?: number;
-  /** Location type from apt.dat (e.g., 'gate', 'tie_down', 'misc', 'hangar') */
-  locationType?: string;
 }
 
 export type LonLat = [number, number];
