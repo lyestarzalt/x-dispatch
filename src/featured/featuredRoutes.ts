@@ -259,7 +259,3 @@ export const FEATURED_ROUTES: FeaturedRoute[] = [
     description: 'Incheon to Tokyo, major Asian business route.',
   },
 ];
-
-export function getFeaturedRoute(from: string, to: string): FeaturedRoute | undefined {
-  return FEATURED_ROUTES.find((r) => r.from === from && r.to === to);
-}

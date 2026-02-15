@@ -1,6 +1,6 @@
 import type { FeaturedAirport } from '@/types/featured';
 
-export const FEATURED_AIRPORTS: FeaturedAirport[] = [
+const FEATURED_AIRPORTS: FeaturedAirport[] = [
   // === CHALLENGING ===
   {
     icao: 'VNLK',
@@ -278,8 +278,4 @@ export function getFeaturedAirportsByCategory(
 ): FeaturedAirport[] {
   if (category === 'all') return FEATURED_AIRPORTS;
   return FEATURED_AIRPORTS.filter((a) => a.category === category);
-}
-
-export function getFeaturedAirport(icao: string): FeaturedAirport | undefined {
-  return FEATURED_AIRPORTS.find((a) => a.icao === icao);
 }

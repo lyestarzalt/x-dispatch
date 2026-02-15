@@ -1,4 +1,2 @@
-// Re-export types for convenience (prefer direct import from @/types/featured)
-export * from '@/types/featured';
-export * from './featuredAirports';
-export * from './featuredRoutes';
+export { getFeaturedAirportsByCategory } from './featuredAirports';
+export { FEATURED_ROUTES } from './featuredRoutes';

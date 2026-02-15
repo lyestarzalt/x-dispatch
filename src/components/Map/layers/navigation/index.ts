@@ -1,9 +1,7 @@
-// Navigation layers - navaids, waypoints, airways, holding patterns
-export { NavLayerRenderer } from './NavLayerRenderer';
-export * from './VORLayer';
-export * from './NDBLayer';
-export * from './DMELayer';
-export * from './ILSLayer';
-export * from './WaypointLayer';
-export * from './AirwayLayer';
-export * from './HoldingPatternLayer';
+// Navigation layer singletons
+export { vorLayer } from './VORLayer';
+export { ndbLayer } from './NDBLayer';
+export { dmeLayer } from './DMELayer';
+export { ilsLayer } from './ILSLayer';
+export { waypointLayer } from './WaypointLayer';
+export { highAirwayLayer, lowAirwayLayer } from './AirwayLayer';

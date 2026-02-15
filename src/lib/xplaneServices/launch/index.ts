@@ -44,7 +44,6 @@ function getSteamAppId(xplanePath: string): string {
   return STEAM_APP_IDS['X-Plane 12'];
 }
 
-export type { Aircraft, LaunchConfig, WeatherPreset };
 export { WEATHER_PRESETS };
 
 class XPlaneLauncher {

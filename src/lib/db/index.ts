@@ -123,8 +123,4 @@ export function closeDb(): void {
   }
 }
 
-export function getSqlite(): SqlJsDatabase | null {
-  return sqlite;
-}
-
 export * from './schema';
