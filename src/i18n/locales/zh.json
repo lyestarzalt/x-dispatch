@@ -1,0 +1,571 @@
+{
+  "common": {
+    "search": "搜索",
+    "cancel": "取消",
+    "close": "关闭",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "noResults": "未找到结果",
+    "all": "全部",
+    "retry": "重试",
+    "continue": "继续",
+    "back": "返回",
+    "next": "下一步",
+    "browse": "浏览",
+    "refresh": "刷新",
+    "showMore": "显示全部 {{count}}",
+    "showLess": "显示更少",
+    "copiedToClipboard": "已复制到剪贴板！",
+    "notConfigured": "未配置",
+    "selected": "已选择",
+    "online": "在线",
+    "approved": "已批准",
+    "recommended": "推荐"
+  },
+
+  "units": {
+    "ft": "英尺",
+    "m": "米",
+    "nm": "海里",
+    "kt": "节",
+    "s": "秒",
+    "kg": "公斤",
+    "fpm": "英尺/分"
+  },
+
+  "directions": {
+    "n": "北",
+    "e": "东",
+    "s": "南",
+    "w": "西",
+    "ne": "东北",
+    "nw": "西北",
+    "se": "东南",
+    "sw": "西南"
+  },
+
+  "app": {
+    "title": "X-Dispatch"
+  },
+
+  "setup": {
+    "title": "X-Dispatch",
+    "subtitle": "选择您的 X-Plane 安装位置以开始使用",
+    "selectFolder": "选择 X-Plane 文件夹",
+    "changeFolder": "更改文件夹",
+    "browseManually": "手动浏览",
+    "noInstallations": "未找到 X-Plane 安装",
+    "failedToBrowse": "无法打开文件夹选择器",
+    "failedToSave": "保存失败"
+  },
+
+  "loading": {
+    "title": "X-Dispatch",
+    "badge": "加载数据中",
+    "initializing": "正在初始化...",
+    "steps": {
+      "airports": "机场",
+      "navaids": "导航设施",
+      "waypoints": "航路点",
+      "airspaces": "空域",
+      "airways": "航路"
+    },
+    "pathNotConfigured": "X-Plane 路径未配置",
+    "configurationRequired": "需要配置",
+    "configureXPlanePath": "配置 X-Plane 路径"
+  },
+
+  "toolbar": {
+    "searchPlaceholder": "搜索机场...",
+    "clearSearch": "清除搜索",
+    "nav": "导航",
+    "vatsim": "VATSIM",
+    "track": "跟踪",
+    "trackTooltip": "跟踪您的飞机位置",
+    "launch": "启动",
+    "navigationLayers": "导航图层"
+  },
+
+  "explore": {
+    "title": "探索",
+    "close": "关闭探索",
+    "tabs": {
+      "filters": "筛选",
+      "featured": "精选",
+      "routes": "航线",
+      "vatsim": "VATSIM"
+    },
+    "vatsim": {
+      "busiestNow": "当前最繁忙",
+      "events": "活动",
+      "noEvents": "暂无活动",
+      "viewRoute": "查看航线",
+      "goToDeparture": "前往出发地"
+    },
+    "filters": {
+      "country": "国家",
+      "region": "地区",
+      "type": "类型",
+      "allCountries": "所有国家",
+      "allRegions": "所有地区",
+      "allTypes": "所有类型",
+      "land": "陆地",
+      "seaplane": "水上飞机",
+      "heliport": "直升机场",
+      "hasIata": "有 IATA 代码"
+    },
+    "featured": {
+      "all": "全部",
+      "challenging": "挑战性",
+      "scenic": "风景优美",
+      "unique": "独特",
+      "historic": "历史性",
+      "icons": {
+        "mountain": "^",
+        "sunrise": "*",
+        "sparkles": "+",
+        "landmark": "#"
+      }
+    }
+  },
+
+  "settings": {
+    "title": "设置",
+    "subtitle": "配置您的偏好设置",
+    "tabs": {
+      "xplane": "X-Plane",
+      "data": "导航数据",
+      "appearance": "外观",
+      "navigation": "导航",
+      "vatsim": "VATSIM",
+      "about": "关于"
+    },
+    "about": {
+      "title": "关于",
+      "description": "X-Plane 飞行签派和机场可视化",
+      "credits": "制作人员",
+      "developer": "开发者",
+      "license": "许可证",
+      "links": "链接",
+      "sourceCode": "源代码",
+      "reportIssue": "报告问题",
+      "dataStorage": "数据与设置",
+      "dataStorageDescription": "应用程序偏好设置、缓存和数据库存储在此处。",
+      "settingsCache": "设置和缓存",
+      "logFile": "日志文件",
+      "openDataFolder": "打开数据文件夹",
+      "openLog": "打开日志文件",
+      "openLogFolder": "在文件夹中显示"
+    },
+    "xplane": {
+      "title": "X-Plane 安装",
+      "description": "配置您的 X-Plane 数据源",
+      "currentPath": "当前路径",
+      "detectedInstallations": "检测到的安装",
+      "selectInstallation": "选择要使用的安装",
+      "active": "活动",
+      "custom": "自定义",
+      "dataLoaded": "已加载数据",
+      "dataType": "类型",
+      "count": "数量",
+      "source": "来源",
+      "navDataSource": "导航数据来源",
+      "validDates": "有效期",
+      "expired": "已过期",
+      "current": "当前",
+      "atcFrequencies": "ATC 频率",
+      "holdingPatterns": "等待航线",
+      "airportMetadata": "机场元数据",
+      "moraGrid": "MORA 网格",
+      "msaSectors": "MSA 扇区"
+    },
+    "appearance": {
+      "title": "外观",
+      "description": "自定义外观",
+      "theme": "主题",
+      "themeDescription": "选择您喜欢的配色方案",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统",
+      "mapStyle": "地图样式",
+      "mapStyleDescription": "选择背景地图样式",
+      "unlimited": "无限制",
+      "customStyleUrl": "自定义 URL",
+      "customStyleHint": "粘贴任意 MapLibre style.json URL",
+      "language": "语言",
+      "units": "单位",
+      "unitsDescription": "配置测量单位",
+      "weightUnit": "重量",
+      "lbs": "磅 (lbs)",
+      "kg": "公斤 (kg)"
+    },
+    "navigation": {
+      "title": "导航",
+      "description": "配置导航设置",
+      "dataTitle": "导航数据",
+      "dataDescription": "查看已加载的导航数据源",
+      "navigraphInfo": "Navigraph 数据提供增强的导航数据，包括更新的航路、程序和频率。",
+      "searchRadius": "搜索半径",
+      "airportLayoutData": "机场布局数据",
+      "airportLayoutDescription": "来自 apt.dat 文件的机场几何数据（跑道、滑行道、登机口等）",
+      "globalAirports": "全球机场",
+      "customAirports": "自定义机场",
+      "fromSceneryPacks": "来自 {{count}} 个场景包",
+      "totalAirports": "机场总数",
+      "navDataSource": "导航数据来源",
+      "navDataSourceDescription": "导航设施、航路点、航路、程序和频率",
+      "vatsim": {
+        "title": "VATSIM",
+        "sectionDescription": "来自 VATSIM 网络的实时空中交通",
+        "enable": "启用 VATSIM 覆盖层",
+        "description": "在地图上显示实时飞行员位置",
+        "currentlyOnline": "当前在线",
+        "refreshRate": "刷新频率",
+        "autoRefresh": "自动刷新间隔",
+        "refreshNote": "VATSIM 数据每 15 秒刷新一次，以符合 API 指南。",
+        "aboutTitle": "关于 VATSIM 集成",
+        "aboutDescription": "飞行员在地图上显示为图标。点击飞行员可查看航班详情，包括呼号、机型、出发地和目的地。",
+        "refreshInterval": "刷新间隔",
+        "refreshHelp": "VATSIM 数据的刷新频率（推荐：15秒）"
+      }
+    }
+  },
+
+  "sidebar": {
+    "weather": "天气",
+    "weatherDetails": "天气详情",
+    "wind": "风",
+    "visibility": "能见度",
+    "ceiling": "云底高",
+    "altimeter": "高度表",
+    "temp": "温度",
+    "dewpoint": "露点",
+    "clouds": "云",
+    "noWeatherData": "无天气数据",
+    "noFrequencies": "无可用频率",
+    "searchGates": "搜索登机口...",
+    "searchRunways": "搜索跑道...",
+    "frequencies": "频率",
+    "runways": "跑道",
+    "gates": "登机口",
+    "gatesParking": "登机口和停机位",
+    "departurePosition": "出发位置",
+    "moreCount": "+{{count}} 更多",
+    "more": "更多",
+    "procedures": "程序",
+    "nearbyNavaids": "附近导航设施",
+    "withinRadius": "50海里范围内",
+    "ils": "ILS",
+    "startFrom": "从此开始：",
+    "noGatesFound": "未找到登机口",
+    "noRunwaysFound": "未找到跑道",
+    "copyFrequency": "复制频率",
+    "vatsim": {
+      "notEnabled": "在设置中启用 VATSIM 以查看实时数据",
+      "noActivity": "无 VATSIM 活动"
+    }
+  },
+
+  "airportInfo": {
+    "tabs": {
+      "info": "信息",
+      "runways": "跑道",
+      "gates": "登机口",
+      "radio": "无线电",
+      "gateway": "GATEWAY"
+    },
+    "stats": {
+      "elevation": "海拔",
+      "runways": "跑道",
+      "gates": "登机口",
+      "hangars": "机库"
+    },
+    "runwayCount": "{{count}} 条跑道",
+    "location": "位置",
+    "facilities": "设施",
+    "tower": "塔台",
+    "windsocks": "风向袋",
+    "beacon": "信标",
+    "helipads": "直升机停机坪",
+    "searchGates": "搜索登机口...",
+    "filterAll": "全部",
+    "filterGates": "登机口",
+    "filterHangars": "机库",
+    "filterOther": "其他",
+    "noGatesFound": "未找到登机口",
+    "noFrequencies": "无可用频率",
+    "xplaneGateway": "X-Plane Gateway",
+    "gatewayNotAvailable": "Gateway 数据不可用",
+    "gatewayLoading": "正在加载 Gateway 数据...",
+    "noGatewayData": "此机场无 Gateway 数据",
+    "gatewayDescription": "此数据显示该机场的提交内容。",
+    "viewOnGateway": "在 Gateway 上查看",
+    "accepted": "已接受",
+    "features": "特性",
+    "sceneryPacks": "场景包",
+    "moreOnGateway": "在 Gateway 上查看更多",
+    "refreshData": "刷新数据",
+    "artistComments": "作者评论",
+    "approvedDate": "批准日期：",
+    "beaconTypes": {
+      "civil": "民用 (白-绿)",
+      "seaplane": "水上飞机 (白-黄)",
+      "heliport": "直升机场",
+      "military": "军用"
+    },
+    "surfaces": {
+      "asphalt": "沥青",
+      "concrete": "混凝土",
+      "grass": "草地",
+      "dirt": "泥土",
+      "gravel": "砂砾",
+      "dryLake": "干涸湖床",
+      "water": "水面",
+      "snow": "雪地",
+      "transparent": "透明",
+      "unknown": "未知"
+    }
+  },
+
+  "navigation": {
+    "heading": "航向",
+    "wind": "风",
+    "calm": "无风"
+  },
+
+  "flightStrip": {
+    "notDetected": "X-Plane 未运行",
+    "ias": "指示空速",
+    "gs": "地速",
+    "alt": "高度",
+    "agl": "离地高度",
+    "vs": "垂直速度",
+    "hdg": "航向",
+    "center": "居中",
+    "centerTooltip": "将地图居中到飞机位置"
+  },
+
+  "weather": {
+    "fetching": "正在获取天气...",
+    "noData": "无天气数据",
+    "tabs": {
+      "metar": "METAR",
+      "taf": "TAF"
+    },
+    "visibility": "能见度",
+    "clouds": "云",
+    "tempDew": "温度/露点",
+    "altimeter": "高度表",
+    "showRaw": "显示原始数据",
+    "hideRaw": "隐藏原始数据",
+    "runway": "跑道 {{names}}",
+    "useRunway": "使用 {{name}}",
+    "headwind": "逆风",
+    "tailwind": "顺风",
+    "crosswind": "侧风"
+  },
+
+  "procedures": {
+    "noData": "无可用程序",
+    "noTypeData": "无可用 {{type}}",
+    "tabs": {
+      "sid": "SID",
+      "star": "STAR",
+      "app": "进近"
+    },
+    "allRunways": "全部"
+  },
+
+  "layers": {
+    "airport": {
+      "title": "机场图层",
+      "surfaces": "表面",
+      "markings": "标线",
+      "lights": "灯光",
+      "objects": "物体",
+      "effects": "效果"
+    },
+    "navigation": {
+      "title": "导航图层",
+      "navaids": "导航设施",
+      "fixes": "定位点",
+      "airspaces": "空域"
+    },
+    "items": {
+      "runways": "跑道",
+      "taxiways": "滑行道",
+      "aprons": "停机坪",
+      "boundary": "边界",
+      "rwyMarkings": "跑道标线",
+      "lines": "线条",
+      "signs": "标志",
+      "rwyLights": "跑道灯",
+      "twyLights": "滑行道灯",
+      "approach": "进近",
+      "gates": "登机口",
+      "windsocks": "风向袋",
+      "animations": "动画",
+      "weatherEffects": "天气",
+      "vors": "VOR",
+      "ndbs": "NDB",
+      "dmes": "DME",
+      "ils": "ILS",
+      "waypoints": "航路点",
+      "airwaysOff": "关闭",
+      "highAirways": "高空航路 (Jet)",
+      "lowAirways": "低空航路 (Victor)"
+    },
+    "loadViewport": "加载视口内导航设施",
+    "showAll": "全部显示",
+    "hideAll": "全部隐藏"
+  },
+
+  "debug": {
+    "title": "调试模式已启用",
+    "instruction": "点击地图上的任意要素以查看其属性。",
+    "descriptions": {
+      "lines": "线条（涂装标线）",
+      "signs": "标志（滑行道/跑道标志）",
+      "gates": "登机口和停机位",
+      "runways": "跑道和滑行道"
+    },
+    "properties": "属性",
+    "coordinates": "坐标",
+    "rawAptDat": "原始 apt.dat",
+    "lineTypesHeader": "X-Plane 线条类型 (apt.dat 1130)：",
+    "copyToClipboard": "复制到剪贴板",
+    "clearSelection": "清除选择"
+  },
+
+  "launcher": {
+    "title": "飞行设置",
+    "launch": "启动 X-Plane",
+    "launching": "正在启动...",
+    "changeFlight": "更改飞行",
+    "changingFlight": "正在更改...",
+    "xplaneRunning": "X-Plane 正在运行 - 将通过 API 更改飞行",
+    "selectDeparture": "在地图上选择出发地",
+    "selectAircraft": "选择飞机",
+
+    "aircraft": {
+      "title": "飞机",
+      "search": "搜索飞机...",
+      "allCategories": "所有类别",
+      "allManufacturers": "所有制造商",
+      "allTypes": "所有类型",
+      "allEngines": "所有发动机",
+      "fixedWing": "固定翼",
+      "helicopter": "直升机",
+      "jet": "喷气式",
+      "prop": "螺旋桨",
+      "count": "{{count}} 架飞机",
+      "favorites": "{{count}} 个收藏",
+      "noFavorites": "暂无收藏",
+      "noAircraft": "未找到飞机",
+      "showAll": "显示全部",
+      "showFavoritesOnly": "仅显示收藏"
+    },
+
+    "liveries": {
+      "title": "涂装",
+      "count": "涂装 ({{count}})",
+      "default": "默认"
+    },
+
+    "specs": {
+      "emptyWeight": "空重",
+      "maxWeight": "最大起飞重量",
+      "maxFuel": "燃油容量",
+      "tailNumber": "机尾号"
+    },
+
+    "config": {
+      "timeOfDay": "时间",
+      "realWorldTime": "真实时间",
+      "coldAndDark": "冷舱启动",
+      "weather": "天气",
+      "fuel": "燃油",
+      "summary": "摘要",
+      "departure": "出发",
+      "livery": "涂装"
+    },
+
+    "time": {
+      "dawn": "黎明",
+      "day": "白天",
+      "dusk": "黄昏",
+      "night": "夜晚"
+    },
+
+    "timePresets": {
+      "dawn": "黎明",
+      "sunrise": "日出",
+      "noon": "正午",
+      "sunset": "日落",
+      "dusk": "黄昏",
+      "night": "夜晚"
+    },
+
+    "weather": {
+      "real": "真实",
+      "clear": "晴朗",
+      "cloudy": "多云",
+      "rainy": "雨天",
+      "stormy": "暴风雨",
+      "snowy": "雪天",
+      "foggy": "雾天"
+    },
+
+    "weatherBuilder": {
+      "custom": "自定义天气",
+      "customize": "自定义天气",
+      "details": "天气详情",
+      "visibility": "能见度",
+      "wind": "风",
+      "direction": "方向",
+      "speed": "速度",
+      "gusts": "阵风",
+      "clouds": "云",
+      "addLayer": "添加层",
+      "noClouds": "无云层",
+      "layer": "层",
+      "coverage": "覆盖",
+      "cloudType": "类型",
+      "base": "云底 (ft)",
+      "tops": "云顶 (ft)",
+      "precipitation": "降水",
+      "temperature": "温度",
+      "dewpoint": "露点",
+      "pressure": "气压",
+      "atmosphere": "大气",
+      "cloudTypes": {
+        "stratus": "层云",
+        "cumulus": "积云",
+        "cumulonimbus": "积雨云"
+      }
+    },
+
+    "weatherModal": {
+      "presets": "预设",
+      "custom": "自定义",
+      "poor": "较差",
+      "unlimited": "无限制"
+    },
+
+    "fuelConfig": {
+      "auto": "自动",
+      "manual": "手动",
+      "total": "总计"
+    },
+
+    "fuelModal": {
+      "empty": "空",
+      "full": "满",
+      "of": "的"
+    }
+  }
+}
