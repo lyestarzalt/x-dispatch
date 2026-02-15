@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
-import { getFeaturedAirportsByCategory } from '@/featured';
+import { getFeaturedAirportsByCategory } from '@/components/layout/Toolbar/ExplorePanel/featured';
 import { cn } from '@/lib/utils/helpers';
 import type { FeaturedCategory } from '@/types/featured';
 import type { FeaturedTabProps } from './types';
