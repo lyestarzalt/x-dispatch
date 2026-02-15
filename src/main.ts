@@ -300,15 +300,23 @@ function registerIpcHandlers() {
   ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
   ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
   ipcMain.handle('xplane:browseForPath', async () => {
-    if (!mainWindow) return null;
-    const result = await dialog.showOpenDialog(mainWindow, {
-      properties: ['openDirectory'],
-      title: 'Select X-Plane Installation Folder',
-    });
-    if (result.canceled || result.filePaths.length === 0) return null;
-    const selectedPath = result.filePaths[0];
-    const validation = dataManager.validatePath(selectedPath);
-    return { path: selectedPath, valid: validation.valid, errors: validation.errors };
+    if (!mainWindow) {
+      logger.error('browseForPath: mainWindow is null');
+      return null;
+    }
+    try {
+      const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory'],
+        title: 'Select X-Plane Installation Folder',
+      });
+      if (result.canceled || result.filePaths.length === 0) return null;
+      const selectedPath = result.filePaths[0];
+      const validation = dataManager.validatePath(selectedPath);
+      return { path: selectedPath, valid: validation.valid, errors: validation.errors };
+    } catch (err) {
+      logger.error('browseForPath: dialog failed', err);
+      throw err;
+    }
   });
 
   ipcMain.handle('get-airports', () => dataManager.getAllAirports());

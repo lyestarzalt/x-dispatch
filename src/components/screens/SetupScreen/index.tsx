@@ -48,7 +48,8 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
       } else if (result) {
         setError(result.errors.join(', '));
       }
-    } catch {
+    } catch (err) {
+      window.appAPI.log.error('Browse failed', err);
       setError(t('setup.failedToBrowse'));
     } finally {
       setLoading(false);
