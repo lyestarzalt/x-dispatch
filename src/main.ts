@@ -136,6 +136,10 @@ function registerIpcHandlers() {
     const logPath = getLogPath();
     shell.showItemInFolder(logPath);
   });
+  ipcMain.handle('app:getConfigPath', () => app.getPath('userData'));
+  ipcMain.handle('app:openConfigFolder', () => {
+    shell.openPath(app.getPath('userData'));
+  });
   ipcMain.handle('app:getLoadingStatus', () => ({
     xplanePath: dataManager.getXPlanePath(),
     status: dataManager.getStatus(),
