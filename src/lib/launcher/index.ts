@@ -127,11 +127,20 @@ class XPlaneLauncher {
         return { success: false, error: 'X-Plane executable not found' };
       }
 
-      logger.launcher.info('Launching X-Plane directly');
+      logger.launcher.info(`Launching X-Plane directly: ${executable}`);
 
-      const xplaneProcess = spawn(executable, xplaneArgs, {
+      // Use shell on Windows to handle paths with spaces and avoid EACCES errors
+      const spawnOptions: Parameters<typeof spawn>[2] = {
         detached: true,
         stdio: 'ignore',
+        ...(process.platform === 'win32' && { shell: true }),
+      };
+
+      const xplaneProcess = spawn(executable, xplaneArgs, spawnOptions);
+
+      // Handle spawn errors (e.g., EACCES, ENOENT)
+      xplaneProcess.on('error', (err) => {
+        logger.launcher.error('Failed to spawn X-Plane process', err);
       });
 
       // Unref the process so it can run independently
@@ -153,7 +162,9 @@ class XPlaneLauncher {
     position: string,
     positionType: 'runway' | 'ramp',
     airportLat: number,
-    airportLon: number
+    airportLon: number,
+    positionIndex: number = 0,
+    xplaneIndex?: number
   ): LaunchConfig {
     return {
       aircraft,
@@ -166,6 +177,8 @@ class XPlaneLauncher {
         type: positionType,
         airport,
         position,
+        index: positionIndex,
+        xplaneIndex,
       },
       time: {
         dayOfYear: getCurrentDayOfYear(),

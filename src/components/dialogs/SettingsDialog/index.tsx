@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Database, Palette, Plane, Radar } from 'lucide-react';
+import { Database, Info, Palette, Plane, Radar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,13 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils';
-import { AppearanceSection, NavigationDataSection, VatsimSection, XPlaneSection } from './sections';
+import {
+  AboutSection,
+  AppearanceSection,
+  NavigationDataSection,
+  VatsimSection,
+  XPlaneSection,
+} from './sections';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -22,7 +28,7 @@ interface SettingsDialogProps {
   vatsimPilotCount?: number;
 }
 
-type TabId = 'xplane' | 'data' | 'appearance' | 'vatsim';
+type TabId = 'xplane' | 'data' | 'appearance' | 'vatsim' | 'about';
 
 interface TabConfig {
   id: TabId;
@@ -35,6 +41,7 @@ const TABS: TabConfig[] = [
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'vatsim', icon: Radar, labelKey: 'settings.tabs.vatsim' },
+  { id: 'about', icon: Info, labelKey: 'settings.tabs.about' },
 ];
 
 export default function SettingsDialog({
@@ -140,6 +147,15 @@ export default function SettingsDialog({
                   onToggleVatsim={onToggleVatsim || (() => {})}
                   vatsimPilotCount={vatsimPilotCount}
                 />
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="about"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <AboutSection />
               </div>
             </TabsContent>
           </div>

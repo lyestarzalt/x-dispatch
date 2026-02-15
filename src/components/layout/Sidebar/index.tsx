@@ -1,15 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radar, Radio, Route } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Radar, Radio, Route } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ParsedAirport } from '@/lib/aptParser';
 import { FrequencyType, Runway } from '@/lib/aptParser/types';
+import { cn } from '@/lib/utils';
 import { VatsimData } from '@/queries/useVatsimQuery';
 import { NamedPosition } from '@/types/geo';
 import { decodeMetar } from '@/utils/decodeMetar';
@@ -38,7 +40,7 @@ interface SidebarProps {
   selectedProcedure?: Procedure | null;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
+  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string; index?: number } | null;
   // VATSIM data
   vatsimData?: VatsimData;
   vatsimMetar?: string | null;
@@ -72,16 +74,60 @@ export default function Sidebar({
     return frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
   }, [frequencies]);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   if (!airport) return null;
 
   return (
-    <div className="absolute bottom-4 right-4 top-20 z-20 w-80">
-      <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
+    <div
+      className={cn(
+        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-in-out',
+        isCollapsed ? 'w-12' : 'w-80'
+      )}
+    >
+      <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
+        {/* Collapsed view overlay */}
+        <div
+          className={cn(
+            'absolute inset-0 z-20 flex flex-col items-center bg-card py-3 transition-opacity duration-300',
+            isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mb-2 h-8 w-8 shrink-0"
+            onClick={() => setIsCollapsed(false)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex flex-1 items-center justify-center">
+            <span
+              className="text-sm font-bold tracking-wider text-foreground"
+              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+            >
+              {airport.id}
+            </span>
+          </div>
+        </div>
+
+        {/* Collapse button (visible when expanded) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            'absolute right-1 top-1 z-10 h-7 w-7 transition-opacity duration-300',
+            isCollapsed ? 'pointer-events-none opacity-0' : 'opacity-60 hover:opacity-100'
+          )}
+          onClick={() => setIsCollapsed(true)}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+
         {/* Header */}
         <AirportHeader
           airport={airport}
           flightCategory={metar?.flightCategory}
-          onClose={onCloseAirport}
           selectedStartPosition={selectedStartPosition}
         />
 

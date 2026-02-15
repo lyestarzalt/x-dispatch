@@ -12,7 +12,7 @@ import { FlightCategory } from '@/utils/decodeMetar';
 interface AirportHeaderProps {
   airport: ParsedAirport;
   flightCategory?: FlightCategory | null;
-  onClose: () => void;
+  onClose?: () => void;
   selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
 }
 
@@ -110,14 +110,16 @@ export default function AirportHeader({
           </div>
           <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{airport.name}</p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Location row */}

@@ -50,7 +50,6 @@ export interface WeatherPreset {
 export interface TimeConfig extends Coordinates {
   dayOfYear: number;
   timeInHours: number;
-  useSystemTime?: boolean;
 }
 
 /** Start position for X-Plane launch config (position identifier, no coordinates) */
@@ -58,6 +57,10 @@ export interface LaunchStartPosition {
   type: 'runway' | 'ramp';
   airport: string;
   position: string;
+  /** Index in airport's startupLocations/runways array - for internal tracking */
+  index: number;
+  /** X-Plane specific index - gates and non-gates are indexed separately */
+  xplaneIndex?: number;
 }
 
 export interface LaunchConfig {

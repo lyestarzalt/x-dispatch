@@ -15,6 +15,7 @@ import {
   Power,
   Sun,
 } from 'lucide-react';
+import tzLookup from 'tz-lookup';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -34,7 +35,7 @@ interface FlightConfigProps {
   timeOfDay: number;
   selectedWeather: string;
   fuelPercentage: number;
-  useSystemTime: boolean;
+  useRealWorldTime: boolean;
   coldAndDark: boolean;
   isLoading: boolean;
   launchError: string | null;
@@ -42,7 +43,7 @@ interface FlightConfigProps {
   onTimeChange: (time: number) => void;
   onWeatherChange: (weather: string) => void;
   onFuelChange: (fuel: number) => void;
-  onSystemTimeChange: (useSystem: boolean) => void;
+  onRealWorldTimeChange: (useRealWorld: boolean) => void;
   onColdAndDarkChange: (coldDark: boolean) => void;
   onLaunch: () => void;
 }
@@ -57,6 +58,21 @@ const WEATHER_ICONS: Record<string, typeof Sun> = {
   foggy: CloudFog,
 };
 
+function getTimezoneOffset(timezone: string): string {
+  try {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'shortOffset',
+    });
+    const parts = formatter.formatToParts(now);
+    const offsetPart = parts.find((p) => p.type === 'timeZoneName');
+    return offsetPart?.value?.replace('GMT', 'UTC') || '';
+  } catch {
+    return '';
+  }
+}
+
 export function FlightConfig({
   aircraft,
   startPosition,
@@ -64,7 +80,7 @@ export function FlightConfig({
   timeOfDay,
   selectedWeather,
   fuelPercentage,
-  useSystemTime,
+  useRealWorldTime,
   coldAndDark,
   isLoading,
   launchError,
@@ -72,42 +88,59 @@ export function FlightConfig({
   onTimeChange,
   onWeatherChange,
   onFuelChange,
-  onSystemTimeChange,
+  onRealWorldTimeChange,
   onColdAndDarkChange,
   onLaunch,
 }: FlightConfigProps) {
   const { t } = useTranslation();
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
-  // Current time state - updates every minute when using system time
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
   useEffect(() => {
-    if (!useSystemTime) return;
+    if (!useRealWorldTime || !startPosition) return;
+    setCurrentTime(new Date());
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(interval);
-  }, [useSystemTime]);
+  }, [useRealWorldTime, startPosition]);
 
-  // Memoized time display values
-  const { localTimeStr, utcTimeStr, isDay } = useMemo(() => {
-    const hours = currentTime.getHours();
-    return {
-      localTimeStr: currentTime.toLocaleTimeString('en-GB', {
+  const airportTimeInfo = useMemo(() => {
+    if (!startPosition) return null;
+
+    try {
+      const timezone = tzLookup(startPosition.latitude, startPosition.longitude);
+      const offset = getTimezoneOffset(timezone);
+
+      const airportTimeStr = currentTime.toLocaleTimeString('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
-      }),
-      utcTimeStr: currentTime.toLocaleTimeString('en-GB', {
+        timeZone: timezone,
+      });
+
+      const airportDateStr = currentTime.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: timezone,
+      });
+
+      const utcTimeStr = currentTime.toLocaleTimeString('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
         timeZone: 'UTC',
-      }),
-      isDay: hours >= 6 && hours < 18,
-    };
-  }, [currentTime]);
+      });
 
-  // Calculate total fuel
+      const airportHours = parseInt(airportTimeStr.split(':')[0], 10);
+      const isDay = airportHours >= 6 && airportHours < 18;
+
+      return { airportTimeStr, airportDateStr, utcTimeStr, offset, isDay };
+    } catch {
+      return null;
+    }
+  }, [startPosition, currentTime]);
+
   const totalFuel = useMemo(() => {
     if (aircraft) {
       return (aircraft.maxFuel * fuelPercentage) / 100;
@@ -117,7 +150,6 @@ export function FlightConfig({
 
   return (
     <div className="flex w-64 min-w-[240px] flex-col border-l border-border bg-card lg:w-72">
-      {/* Section Header */}
       <div className="flex-shrink-0 border-b border-border px-4 py-2">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
       </div>
@@ -132,49 +164,63 @@ export function FlightConfig({
             </Label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {t('launcher.config.systemTime')}
+                {t('launcher.config.realWorldTime')}
               </span>
-              <Switch checked={useSystemTime} onCheckedChange={onSystemTimeChange} />
+              <Switch checked={useRealWorldTime} onCheckedChange={onRealWorldTimeChange} />
             </div>
           </div>
-          {useSystemTime ? (
-            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary px-3 py-2">
-              <div className="flex items-center gap-2">
-                {isDay ? (
-                  <Sun className="h-4 w-4 text-warning" />
-                ) : (
-                  <Moon className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="font-mono text-lg font-semibold">{localTimeStr}</span>
-                <span className="text-xs text-muted-foreground">local</span>
+
+          {useRealWorldTime && airportTimeInfo ? (
+            <div className="rounded-lg border border-border bg-secondary px-3 py-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {airportTimeInfo.isDay ? (
+                    <Sun className="h-4 w-4 text-warning" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className="font-mono text-lg font-semibold">
+                    {airportTimeInfo.airportTimeStr}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{airportTimeInfo.offset}</span>
+                </div>
+                <span className="font-mono text-sm text-muted-foreground">
+                  {airportTimeInfo.utcTimeStr}Z
+                </span>
               </div>
-              <span className="font-mono text-sm text-muted-foreground">{utcTimeStr}Z</span>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {airportTimeInfo.airportDateStr}
+              </div>
             </div>
-          ) : startPosition ? (
-            <SunArc
-              timeOfDay={timeOfDay}
-              latitude={startPosition.latitude}
-              longitude={startPosition.longitude}
-              onTimeChange={onTimeChange}
-            />
-          ) : (
-            <>
-              <Slider
-                value={[timeOfDay]}
-                onValueChange={(v) => onTimeChange(v[0])}
-                min={0}
-                max={24}
-                step={0.5}
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>00:00</span>
-                <span>06:00</span>
-                <span>12:00</span>
-                <span>18:00</span>
-                <span>24:00</span>
-              </div>
-            </>
-          )}
+          ) : !useRealWorldTime ? (
+            <div className="space-y-3">
+              {startPosition ? (
+                <SunArc
+                  timeOfDay={timeOfDay}
+                  latitude={startPosition.latitude}
+                  longitude={startPosition.longitude}
+                  onTimeChange={onTimeChange}
+                />
+              ) : (
+                <>
+                  <Slider
+                    value={[timeOfDay]}
+                    onValueChange={(v) => onTimeChange(v[0])}
+                    min={0}
+                    max={24}
+                    step={0.5}
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>00:00</span>
+                    <span>06:00</span>
+                    <span>12:00</span>
+                    <span>18:00</span>
+                    <span>24:00</span>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {/* Weather Presets */}

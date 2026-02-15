@@ -20,6 +20,7 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       setupIcon: './assets/icon.ico',
+      loadingGif: './assets/transparent.gif',
     }),
     new MakerDMG({
       icon: './assets/icon.icns',

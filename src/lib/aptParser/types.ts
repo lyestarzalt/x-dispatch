@@ -3,6 +3,7 @@ import { Coordinates, LonLatPath, LonLatPolygon } from '@/types/geo';
 export enum RowCode {
   AIRPORT_HEADER = 1,
   TOWER_LOCATION = 14,
+  START_LOCATION_LEGACY = 15,
   BEACON = 18,
   WINDSOCK = 19,
   FREQUENCY_AWOS = 50,
