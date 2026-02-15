@@ -4,6 +4,7 @@ import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import type { LoadingProgress } from '@/types/xplane';
 
@@ -147,12 +148,7 @@ export default function LoadingScreen({
         </div>
 
         {/* Progress bar */}
-        <div className="mb-8 h-1.5 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <Progress value={progress} className="mb-8 h-1.5" />
 
         {/* Steps list */}
         <div className="mb-6 space-y-3">
