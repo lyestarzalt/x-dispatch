@@ -59,6 +59,9 @@ contextBridge.exposeInMainWorld('appAPI', {
     warn: (message: string, ...args: unknown[]) => ipcRenderer.send('log:warn', message, args),
     info: (message: string, ...args: unknown[]) => ipcRenderer.send('log:info', message, args),
   },
+  getLogPath: () => ipcRenderer.invoke('app:getLogPath'),
+  openLogFile: () => ipcRenderer.invoke('app:openLogFile'),
+  openLogFolder: () => ipcRenderer.invoke('app:openLogFolder'),
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -600,6 +603,9 @@ declare global {
         warn: (message: string, ...args: unknown[]) => void;
         info: (message: string, ...args: unknown[]) => void;
       };
+      getLogPath: () => Promise<string>;
+      openLogFile: () => Promise<void>;
+      openLogFolder: () => Promise<void>;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;

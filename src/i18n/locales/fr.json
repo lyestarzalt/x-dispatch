@@ -95,7 +95,23 @@
     "tabs": {
       "xplane": "X-Plane",
       "appearance": "Apparence",
-      "navigation": "Navigation"
+      "navigation": "Navigation",
+      "data": "Données Nav",
+      "vatsim": "VATSIM",
+      "about": "À propos"
+    },
+    "about": {
+      "description": "Dispatch de vol et visualisation d'aéroports pour X-Plane",
+      "credits": "Crédits",
+      "developer": "Développeur",
+      "license": "Licence",
+      "links": "Liens",
+      "sourceCode": "Code source",
+      "reportIssue": "Signaler un problème",
+      "troubleshooting": "Dépannage",
+      "troubleshootingDescription": "Incluez les fichiers journaux lors du signalement de problèmes.",
+      "openLog": "Ouvrir le journal",
+      "openFolder": "Ouvrir le dossier"
     },
     "xplane": {
       "title": "Installation X-Plane",

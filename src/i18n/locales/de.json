@@ -95,7 +95,23 @@
     "tabs": {
       "xplane": "X-Plane",
       "appearance": "Aussehen",
-      "navigation": "Navigation"
+      "navigation": "Navigation",
+      "data": "Nav-Daten",
+      "vatsim": "VATSIM",
+      "about": "Über"
+    },
+    "about": {
+      "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
+      "credits": "Danksagungen",
+      "developer": "Entwickler",
+      "license": "Lizenz",
+      "links": "Links",
+      "sourceCode": "Quellcode",
+      "reportIssue": "Problem melden",
+      "troubleshooting": "Fehlerbehebung",
+      "troubleshootingDescription": "Fügen Sie Protokolldateien beim Melden von Problemen bei.",
+      "openLog": "Protokoll öffnen",
+      "openFolder": "Ordner öffnen"
     },
     "xplane": {
       "title": "X-Plane Installation",

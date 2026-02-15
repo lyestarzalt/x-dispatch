@@ -141,7 +141,21 @@
       "data": "Nav Data",
       "appearance": "Appearance",
       "navigation": "Navigation",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "about": "About"
+    },
+    "about": {
+      "description": "Flight dispatch and airport visualization for X-Plane",
+      "credits": "Credits",
+      "developer": "Developer",
+      "license": "License",
+      "links": "Links",
+      "sourceCode": "Source Code",
+      "reportIssue": "Report an Issue",
+      "troubleshooting": "Troubleshooting",
+      "troubleshootingDescription": "Include log files when reporting issues.",
+      "openLog": "Open Log",
+      "openFolder": "Open Folder"
     },
     "xplane": {
       "title": "X-Plane Installation",

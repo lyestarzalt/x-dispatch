@@ -127,6 +127,15 @@ function createWindow(): BrowserWindow {
 function registerIpcHandlers() {
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:getLogPath', () => getLogPath());
+  ipcMain.handle('app:openLogFile', () => {
+    const logPath = getLogPath();
+    shell.openPath(logPath);
+  });
+  ipcMain.handle('app:openLogFolder', () => {
+    const logPath = getLogPath();
+    shell.showItemInFolder(logPath);
+  });
   ipcMain.handle('app:getLoadingStatus', () => ({
     xplanePath: dataManager.getXPlanePath(),
     status: dataManager.getStatus(),
