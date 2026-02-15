@@ -1,28 +1,37 @@
 /**
  * X-Plane TanStack Query Hooks
- * React hooks for X-Plane API communication
+ *
+ * Uses IPC to call X-Plane REST API from main process (avoids CORS).
+ * Types from generated OpenAPI client at @/lib/xplaneServices/client/generated/xplaneApi.ts
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { PlanePosition, PlaneState } from '@/types/xplane';
+import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
+
+// Re-export types from generated client
+export type {
+  FlightInit,
+  Dataref,
+  Command,
+  ApiCapabilities,
+} from '@/lib/xplaneServices/client/generated/xplaneApi';
 
 // Query keys
-const xplaneKeys = {
+export const xplaneKeys = {
   all: ['xplane'] as const,
   status: ['xplane', 'status'] as const,
-  dataref: (ref: string) => ['xplane', 'dataref', ref] as const,
+  capabilities: ['xplane', 'capabilities'] as const,
+  dataref: (name: string) => ['xplane', 'dataref', name] as const,
 };
 
 /**
- * Check if X-Plane is currently running
- * Polls every 5 seconds by default
+ * Check if X-Plane API is available (running)
  */
 export function useXPlaneStatus(options?: { enabled?: boolean; refetchInterval?: number }) {
   const { enabled = true, refetchInterval = 5000 } = options ?? {};
 
   return useQuery({
     queryKey: xplaneKeys.status,
-    queryFn: () => window.xplaneServiceAPI.isRunning(),
+    queryFn: () => window.xplaneServiceAPI.isAPIAvailable(),
     enabled,
     staleTime: refetchInterval - 1000,
     refetchInterval: enabled ? refetchInterval : false,
@@ -30,158 +39,71 @@ export function useXPlaneStatus(options?: { enabled?: boolean; refetchInterval?:
 }
 
 /**
- * Load a new flight via the Web API (only works if X-Plane is running)
+ * Get X-Plane and API version info
  */
-export function useLoadFlight() {
-  const queryClient = useQueryClient();
+export function useXPlaneCapabilities(options?: { enabled?: boolean }) {
+  const { enabled = true } = options ?? {};
 
-  return useMutation({
-    mutationFn: (config: Record<string, unknown>) => window.xplaneServiceAPI.loadFlight(config),
-    onSuccess: () => {
-      // Invalidate status query to refresh
-      queryClient.invalidateQueries({ queryKey: xplaneKeys.status });
-    },
+  return useQuery({
+    queryKey: xplaneKeys.capabilities,
+    queryFn: () => window.xplaneServiceAPI.getCapabilities(),
+    enabled,
+    staleTime: 60 * 1000,
   });
 }
 
 /**
- * Get a dataref value from X-Plane
+ * Get a dataref value by name
  */
 export function useDataref(
-  dataref: string,
+  datarefName: string,
   options?: { enabled?: boolean; refetchInterval?: number }
 ) {
   const { enabled = true, refetchInterval } = options ?? {};
 
   return useQuery({
-    queryKey: xplaneKeys.dataref(dataref),
-    queryFn: () => window.xplaneServiceAPI.getDataref(dataref),
-    enabled: enabled && dataref.length > 0,
+    queryKey: xplaneKeys.dataref(datarefName),
+    queryFn: () => window.xplaneServiceAPI.getDataref(datarefName),
+    enabled: enabled && datarefName.length > 0,
     refetchInterval,
   });
 }
 
 /**
- * Set a dataref value in X-Plane
+ * Set a dataref value
  */
 export function useSetDataref() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ dataref, value }: { dataref: string; value: number | number[] }) =>
-      window.xplaneServiceAPI.setDataref(dataref, value),
+    mutationFn: ({ datarefName, value }: { datarefName: string; value: number | number[] }) =>
+      window.xplaneServiceAPI.setDataref(datarefName, value),
     onSuccess: (_, variables) => {
-      // Invalidate the specific dataref query
-      queryClient.invalidateQueries({ queryKey: xplaneKeys.dataref(variables.dataref) });
+      queryClient.invalidateQueries({ queryKey: xplaneKeys.dataref(variables.datarefName) });
     },
   });
 }
 
 /**
- * Live plane state streaming via WebSocket
- * Automatically connects when mounted and disconnects when unmounted
+ * Activate a command
  */
-export function usePlaneState() {
-  const [state, setState] = useState<PlaneState | null>(null);
-  const [connected, setConnected] = useState(false);
-  const unsubscribeRef = useRef<{ state: (() => void) | null; connection: (() => void) | null }>({
-    state: null,
-    connection: null,
+export function useActivateCommand() {
+  return useMutation({
+    mutationFn: ({ commandName, duration = 0 }: { commandName: string; duration?: number }) =>
+      window.xplaneServiceAPI.activateCommand(commandName, duration),
   });
-
-  useEffect(() => {
-    // Start streaming
-    window.xplaneServiceAPI.startStateStream();
-
-    // Subscribe to updates
-    const unsubState = window.xplaneServiceAPI.onStateUpdate(setState);
-    const unsubConnection = window.xplaneServiceAPI.onConnectionChange(setConnected);
-    unsubscribeRef.current = { state: unsubState, connection: unsubConnection };
-
-    return () => {
-      // Stop streaming and unsubscribe
-      window.xplaneServiceAPI.stopStateStream();
-      unsubState();
-      unsubConnection();
-    };
-  }, []);
-
-  return { state, connected };
 }
 
 /**
- * Simplified plane position for map display
+ * Start a new flight
  */
-export function usePlanePosition(): { connected: boolean; position: PlanePosition | null } {
-  const { state, connected } = usePlaneState();
+export function useStartFlight() {
+  const queryClient = useQueryClient();
 
-  const position: PlanePosition | null = state
-    ? {
-        lat: state.latitude,
-        lng: state.longitude,
-        altitude: state.altitudeMSL,
-        heading: state.heading,
-        groundspeed: state.groundspeed,
-      }
-    : null;
-
-  return { connected, position };
-}
-
-/**
- * Connection-aware state streaming with manual control
- */
-export function usePlaneStateManual() {
-  const [state, setState] = useState<PlaneState | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [streaming, setStreaming] = useState(false);
-  const unsubscribeRef = useRef<{ state: (() => void) | null; connection: (() => void) | null }>({
-    state: null,
-    connection: null,
-  });
-
-  const start = useCallback(() => {
-    if (streaming) return;
-
-    window.xplaneServiceAPI.startStateStream();
-    unsubscribeRef.current.state = window.xplaneServiceAPI.onStateUpdate(setState);
-    unsubscribeRef.current.connection = window.xplaneServiceAPI.onConnectionChange(setConnected);
-    setStreaming(true);
-  }, [streaming]);
-
-  const stop = useCallback(() => {
-    if (!streaming) return;
-
-    window.xplaneServiceAPI.stopStateStream();
-    unsubscribeRef.current.state?.();
-    unsubscribeRef.current.connection?.();
-    unsubscribeRef.current = { state: null, connection: null };
-    setStreaming(false);
-    setConnected(false);
-    setState(null);
-  }, [streaming]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (streaming) {
-        window.xplaneServiceAPI.stopStateStream();
-        unsubscribeRef.current.state?.();
-        unsubscribeRef.current.connection?.();
-      }
-    };
-  }, [streaming]);
-
-  return { state, connected, streaming, start, stop };
-}
-
-/**
- * Check WebSocket connection status
- */
-export function useStreamConnectionStatus() {
-  return useQuery({
-    queryKey: ['xplane', 'streamConnected'],
-    queryFn: () => window.xplaneServiceAPI.isStreamConnected(),
-    refetchInterval: 1000,
+  return useMutation({
+    mutationFn: (flightConfig: FlightInit) => window.xplaneServiceAPI.startFlight(flightConfig),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: xplaneKeys.status });
+    },
   });
 }
