@@ -22,7 +22,7 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   });
 
   map.addControl(
-    new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1.5 }),
-    'bottom-right'
+    new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1 }),
+    'bottom-left'
   );
 }

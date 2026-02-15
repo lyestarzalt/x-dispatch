@@ -50,8 +50,8 @@ export function useMapSetup({
 
     mapRef.current = map;
 
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
 
     map.on('error', (e) => {
       window.appAPI.log.error('MapLibre error', e.error);
