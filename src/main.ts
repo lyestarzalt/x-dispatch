@@ -590,27 +590,8 @@ function registerIpcHandlers() {
     }
   });
 
-  // X-Plane API handlers
-  ipcMain.handle('xplaneService:isRunning', async () => {
-    try {
-      const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().isSimRunning();
-    } catch (error) {
-      logger.main.error('Failed to check X-Plane status:', error);
-      return false;
-    }
-  });
-
-  ipcMain.handle('xplaneService:isProcessRunning', async () => {
-    try {
-      const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().isProcessRunning();
-    } catch (error) {
-      logger.main.error('Failed to check X-Plane process:', error);
-      return false;
-    }
-  });
-
+  // X-Plane API handlers (REST + WebSocket)
+  // REST goes through main process to avoid CORS issues with localhost
   ipcMain.handle('xplaneService:isAPIAvailable', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
@@ -621,20 +602,30 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:loadFlight', async (_, config: Record<string, unknown>) => {
+  ipcMain.handle('xplaneService:getCapabilities', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().loadFlightViaAPI(config);
+      return getXPlaneService().getCapabilities();
+    } catch (error) {
+      logger.main.error('Failed to get capabilities:', error);
+      return null;
+    }
+  });
+
+  ipcMain.handle('xplaneService:startFlight', async (_, payload) => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().startFlight(payload);
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
   });
 
-  ipcMain.handle('xplaneService:getDataref', async (_, dataref: string) => {
-    if (!dataref || typeof dataref !== 'string') return null;
+  ipcMain.handle('xplaneService:getDataref', async (_, datarefName: string) => {
+    if (!datarefName || typeof datarefName !== 'string') return null;
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().getDataref(dataref);
+      return getXPlaneService().getDataref(datarefName);
     } catch {
       return null;
     }
@@ -642,19 +633,35 @@ function registerIpcHandlers() {
 
   ipcMain.handle(
     'xplaneService:setDataref',
-    async (_, dataref: string, value: number | number[]) => {
-      if (!dataref || typeof dataref !== 'string') {
-        return { success: false, error: 'Invalid dataref' };
+    async (_, datarefName: string, value: number | number[]) => {
+      if (!datarefName || typeof datarefName !== 'string') {
+        return { success: false, error: 'Invalid dataref name' };
       }
       try {
         const { getXPlaneService } = await getXPlaneModule();
-        return getXPlaneService().setDataref(dataref, value);
+        return getXPlaneService().setDataref(datarefName, value);
       } catch (error) {
         return { success: false, error: (error as Error).message };
       }
     }
   );
 
+  ipcMain.handle(
+    'xplaneService:activateCommand',
+    async (_, commandName: string, duration: number = 0) => {
+      if (!commandName || typeof commandName !== 'string') {
+        return { success: false, error: 'Invalid command name' };
+      }
+      try {
+        const { getXPlaneService } = await getXPlaneModule();
+        return getXPlaneService().activateCommand(commandName, duration);
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    }
+  );
+
+  // WebSocket streaming
   ipcMain.handle('xplaneService:startStateStream', async (event) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();

@@ -20,7 +20,6 @@ import type {
   NavSearchResult,
   PathSetResult,
   PathValidation,
-  XPlaneFlightConfig,
 } from './types/ipc';
 import type {
   ATCController,
@@ -154,15 +153,19 @@ contextBridge.exposeInMainWorld('launcherAPI', {
     ipcRenderer.invoke('launcher:getAircraftImage', imagePath),
 });
 
+// X-Plane Service API - REST + WebSocket
+// REST goes through IPC to main process to avoid CORS issues with localhost
 contextBridge.exposeInMainWorld('xplaneServiceAPI', {
-  isRunning: () => ipcRenderer.invoke('xplaneService:isRunning'),
-  isProcessRunning: () => ipcRenderer.invoke('xplaneService:isProcessRunning'),
+  // REST API (via main process)
   isAPIAvailable: () => ipcRenderer.invoke('xplaneService:isAPIAvailable'),
-  loadFlight: (config: XPlaneFlightConfig) =>
-    ipcRenderer.invoke('xplaneService:loadFlight', config),
-  getDataref: (dataref: string) => ipcRenderer.invoke('xplaneService:getDataref', dataref),
-  setDataref: (dataref: string, value: number | number[]) =>
-    ipcRenderer.invoke('xplaneService:setDataref', dataref, value),
+  getCapabilities: () => ipcRenderer.invoke('xplaneService:getCapabilities'),
+  startFlight: (payload: unknown) => ipcRenderer.invoke('xplaneService:startFlight', payload),
+  getDataref: (name: string) => ipcRenderer.invoke('xplaneService:getDataref', name),
+  setDataref: (name: string, value: number | number[]) =>
+    ipcRenderer.invoke('xplaneService:setDataref', name, value),
+  activateCommand: (name: string, duration?: number) =>
+    ipcRenderer.invoke('xplaneService:activateCommand', name, duration ?? 0),
+  // WebSocket streaming
   startStateStream: () => ipcRenderer.invoke('xplaneService:startStateStream'),
   stopStateStream: () => ipcRenderer.invoke('xplaneService:stopStateStream'),
   isStreamConnected: () => ipcRenderer.invoke('xplaneService:isStreamConnected'),
@@ -261,13 +264,23 @@ declare global {
       launch: (config: LaunchConfig) => Promise<{ success: boolean; error?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
+    // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {
-      isRunning: () => Promise<boolean>;
-      isProcessRunning: () => Promise<boolean>;
       isAPIAvailable: () => Promise<boolean>;
-      loadFlight: (config: XPlaneFlightConfig) => Promise<XPlaneAPIResult>;
-      getDataref: (dataref: string) => Promise<number | number[] | null>;
-      setDataref: (dataref: string, value: number | number[]) => Promise<XPlaneAPIResult>;
+      getCapabilities: () => Promise<{
+        api: { versions: string[] };
+        'x-plane': { version: string };
+      } | null>;
+      startFlight: (payload: unknown) => Promise<{ success: boolean; error?: string }>;
+      getDataref: (name: string) => Promise<number | number[] | null>;
+      setDataref: (
+        name: string,
+        value: number | number[]
+      ) => Promise<{ success: boolean; error?: string }>;
+      activateCommand: (
+        name: string,
+        duration?: number
+      ) => Promise<{ success: boolean; error?: string }>;
       startStateStream: () => Promise<XPlaneAPIResult>;
       stopStateStream: () => Promise<XPlaneAPIResult>;
       isStreamConnected: () => Promise<boolean>;

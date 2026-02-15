@@ -1,25 +1,19 @@
-import type { XPlaneAPIResult } from '@/types/xplane';
+/**
+ * X-Plane REST API Client (Main Process)
+ *
+ * This runs in Electron's main process to avoid CORS issues.
+ * The renderer calls these via IPC through preload.
+ *
+ * Types are from the generated OpenAPI client at ./generated/xplaneApi.ts
+ */
+import type { FlightInit } from './generated/xplaneApi';
 
 const DEFAULT_PORT = 8086;
 const CONNECTION_TIMEOUT = 2000;
-const MIN_FLIGHT_API_VERSION = '12.4.0';
 
-export type FlightAPIPayload = Record<string, unknown>;
-
-interface APICapabilities {
+interface ApiCapabilities {
   api: { versions: string[] };
   'x-plane': { version: string };
-}
-
-function compareVersions(a: string, b: string): number {
-  const partsA = a.split('.').map(Number);
-  const partsB = b.split('.').map(Number);
-  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-    const numA = partsA[i] || 0;
-    const numB = partsB[i] || 0;
-    if (numA !== numB) return numA - numB;
-  }
-  return 0;
 }
 
 export class XPlaneRestClient {
@@ -52,9 +46,7 @@ export class XPlaneRestClient {
     }
   }
 
-  async getVersion(): Promise<string | null> {
-    if (this.cachedVersion) return this.cachedVersion;
-
+  async getCapabilities(): Promise<ApiCapabilities | null> {
     try {
       const response = await fetch(`http://localhost:${this.port}/api/capabilities`, {
         method: 'GET',
@@ -62,34 +54,13 @@ export class XPlaneRestClient {
       });
 
       if (!response.ok) return null;
-
-      const data = (await response.json()) as APICapabilities;
-      this.cachedVersion = data['x-plane']?.version || null;
-      return this.cachedVersion;
+      return (await response.json()) as ApiCapabilities;
     } catch {
       return null;
     }
   }
 
-  async isFlightAPIAvailable(): Promise<boolean> {
-    const version = await this.getVersion();
-    if (!version) return false;
-    return compareVersions(version, MIN_FLIGHT_API_VERSION) >= 0;
-  }
-
-  async loadFlight(payload: FlightAPIPayload): Promise<XPlaneAPIResult> {
-    const version = await this.getVersion();
-    if (!version) {
-      return { success: false, error: 'Cannot connect to X-Plane API' };
-    }
-
-    if (compareVersions(version, MIN_FLIGHT_API_VERSION) < 0) {
-      return {
-        success: false,
-        error: `Flight API requires X-Plane ${MIN_FLIGHT_API_VERSION}+. You have ${version}.`,
-      };
-    }
-
+  async startFlight(payload: FlightInit): Promise<{ success: boolean; error?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/flight`, {
         method: 'POST',
@@ -111,29 +82,27 @@ export class XPlaneRestClient {
     }
   }
 
-  async getDataref(dataref: string): Promise<number | number[] | null> {
+  async getDataref(datarefName: string): Promise<number | number[] | null> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(dataref)}&fields=id`,
-        {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-        }
+      // Find dataref ID by name
+      const listResponse = await fetch(
+        `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(datarefName)}&fields=id`,
+        { method: 'GET', headers: { Accept: 'application/json' } }
       );
 
-      if (!response.ok) return null;
+      if (!listResponse.ok) return null;
 
-      const listData = await response.json();
-      if (!listData.data?.[0]?.id) return null;
+      const listData = await listResponse.json();
+      const id = listData.data?.[0]?.id;
+      if (!id) return null;
 
-      const id = listData.data[0].id;
+      // Get value
       const valueResponse = await fetch(`${this.baseUrl}/datarefs/${id}/value`, {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
 
       if (!valueResponse.ok) return null;
-
       const valueData = await valueResponse.json();
       return valueData.data;
     } catch {
@@ -141,37 +110,67 @@ export class XPlaneRestClient {
     }
   }
 
-  async setDataref(dataref: string, value: number | number[]): Promise<XPlaneAPIResult> {
+  async setDataref(
+    datarefName: string,
+    value: number | number[]
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(dataref)}&fields=id`,
-        {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-        }
+      // Find dataref ID by name
+      const listResponse = await fetch(
+        `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(datarefName)}&fields=id`,
+        { method: 'GET', headers: { Accept: 'application/json' } }
       );
 
-      if (!response.ok) {
-        return { success: false, error: 'Dataref not found' };
-      }
+      if (!listResponse.ok) return { success: false, error: 'Dataref not found' };
 
-      const listData = await response.json();
-      if (!listData.data?.[0]?.id) {
-        return { success: false, error: 'Dataref not found' };
-      }
+      const listData = await listResponse.json();
+      const id = listData.data?.[0]?.id;
+      if (!id) return { success: false, error: 'Dataref not found' };
 
-      const id = listData.data[0].id;
+      // Set value
       const patchResponse = await fetch(`${this.baseUrl}/datarefs/${id}/value`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ data: value }),
       });
 
       if (!patchResponse.ok) {
         const error = await patchResponse.text();
+        return { success: false, error };
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: String(err) };
+    }
+  }
+
+  async activateCommand(
+    commandName: string,
+    duration: number = 0
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Find command ID by name
+      const listResponse = await fetch(
+        `${this.baseUrl}/commands?filter[name]=${encodeURIComponent(commandName)}&fields=id`,
+        { method: 'GET', headers: { Accept: 'application/json' } }
+      );
+
+      if (!listResponse.ok) return { success: false, error: 'Command not found' };
+
+      const listData = await listResponse.json();
+      const id = listData.data?.[0]?.id;
+      if (!id) return { success: false, error: 'Command not found' };
+
+      // Activate
+      const activateResponse = await fetch(`${this.baseUrl}/command/${id}/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ duration }),
+      });
+
+      if (!activateResponse.ok) {
+        const error = await activateResponse.text();
         return { success: false, error };
       }
 

@@ -1,49 +1,55 @@
-import type { PlaneState, XPlaneAPIResult } from '@/types/xplane';
+/**
+ * X-Plane Service
+ *
+ * Handles both REST API and WebSocket streaming.
+ * Runs in Electron's main process to avoid CORS issues.
+ */
+import type { PlaneState } from '@/types/xplane';
+import type { FlightInit } from './generated/xplaneApi';
 import { isXPlaneProcessRunning } from './processCheck';
-import type { FlightAPIPayload } from './restClient';
-import { XPlaneRestClient } from './restClient';
+import { getRestClient } from './restClient';
 import { XPlaneWebSocketClient } from './websocketClient';
 
 export class XPlaneService {
-  private restClient: XPlaneRestClient;
   private wsClient: XPlaneWebSocketClient;
   private apiPort: number;
 
   constructor(apiPort: number = 8086) {
     this.apiPort = apiPort;
-    this.restClient = new XPlaneRestClient(apiPort);
     this.wsClient = new XPlaneWebSocketClient(apiPort);
   }
 
+  // === REST API Methods ===
+
   async isAPIAvailable(): Promise<boolean> {
-    return this.restClient.isRunning();
+    return getRestClient(this.apiPort).isRunning();
   }
 
   async isProcessRunning(): Promise<boolean> {
     return isXPlaneProcessRunning();
   }
 
-  async isSimRunning(): Promise<boolean> {
-    const processRunning = await isXPlaneProcessRunning();
-    if (processRunning) return true;
-    return this.restClient.isRunning();
+  async getCapabilities() {
+    return getRestClient(this.apiPort).getCapabilities();
   }
 
-  async loadFlightViaAPI(payload: FlightAPIPayload): Promise<XPlaneAPIResult> {
-    const isRunning = await this.isSimRunning();
-    if (!isRunning) {
-      return { success: false, error: 'X-Plane is not running' };
-    }
-    return this.restClient.loadFlight(payload);
+  async startFlight(payload: FlightInit) {
+    return getRestClient(this.apiPort).startFlight(payload);
   }
 
-  async getDataref(dataref: string): Promise<number | number[] | null> {
-    return this.restClient.getDataref(dataref);
+  async getDataref(datarefName: string) {
+    return getRestClient(this.apiPort).getDataref(datarefName);
   }
 
-  async setDataref(dataref: string, value: number | number[]): Promise<XPlaneAPIResult> {
-    return this.restClient.setDataref(dataref, value);
+  async setDataref(datarefName: string, value: number | number[]) {
+    return getRestClient(this.apiPort).setDataref(datarefName, value);
   }
+
+  async activateCommand(commandName: string, duration: number = 0) {
+    return getRestClient(this.apiPort).activateCommand(commandName, duration);
+  }
+
+  // === WebSocket Methods ===
 
   startStateStream(
     onUpdate: (state: PlaneState) => void,
