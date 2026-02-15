@@ -1,0 +1,571 @@
+{
+  "common": {
+    "search": "Поиск",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "noResults": "Результаты не найдены",
+    "all": "Все",
+    "retry": "Повторить",
+    "continue": "Продолжить",
+    "back": "Назад",
+    "next": "Далее",
+    "browse": "Обзор",
+    "refresh": "Обновить",
+    "showMore": "Показать все {{count}}",
+    "showLess": "Показать меньше",
+    "copiedToClipboard": "Скопировано в буфер обмена!",
+    "notConfigured": "Не настроено",
+    "selected": "Выбрано",
+    "online": "онлайн",
+    "approved": "Одобрено",
+    "recommended": "Рекомендуется"
+  },
+
+  "units": {
+    "ft": "фут",
+    "m": "м",
+    "nm": "м. миля",
+    "kt": "уз",
+    "s": "с",
+    "kg": "кг",
+    "fpm": "фут/мин"
+  },
+
+  "directions": {
+    "n": "С",
+    "e": "В",
+    "s": "Ю",
+    "w": "З",
+    "ne": "СВ",
+    "nw": "СЗ",
+    "se": "ЮВ",
+    "sw": "ЮЗ"
+  },
+
+  "app": {
+    "title": "X-Dispatch"
+  },
+
+  "setup": {
+    "title": "X-Dispatch",
+    "subtitle": "Выберите установку X-Plane для начала работы",
+    "selectFolder": "Выбрать папку X-Plane",
+    "changeFolder": "Изменить папку",
+    "browseManually": "Выбрать вручную",
+    "noInstallations": "Установки X-Plane не найдены",
+    "failedToBrowse": "Не удалось открыть выбор папки",
+    "failedToSave": "Не удалось сохранить"
+  },
+
+  "loading": {
+    "title": "X-Dispatch",
+    "badge": "Загрузка данных",
+    "initializing": "Инициализация...",
+    "steps": {
+      "airports": "Аэропорты",
+      "navaids": "Навигационные средства",
+      "waypoints": "Путевые точки",
+      "airspaces": "Воздушные пространства",
+      "airways": "Воздушные трассы"
+    },
+    "pathNotConfigured": "Путь к X-Plane не настроен",
+    "configurationRequired": "Требуется настройка",
+    "configureXPlanePath": "Настроить путь к X-Plane"
+  },
+
+  "toolbar": {
+    "searchPlaceholder": "Поиск аэропортов...",
+    "clearSearch": "Очистить поиск",
+    "nav": "НАВ",
+    "vatsim": "VATSIM",
+    "track": "Отслеживать",
+    "trackTooltip": "Отслеживать положение вашего самолёта",
+    "launch": "Запуск",
+    "navigationLayers": "Навигационные слои"
+  },
+
+  "explore": {
+    "title": "Исследовать",
+    "close": "Закрыть исследование",
+    "tabs": {
+      "filters": "Фильтры",
+      "featured": "Избранное",
+      "routes": "Маршруты",
+      "vatsim": "VATSIM"
+    },
+    "vatsim": {
+      "busiestNow": "Самые загруженные сейчас",
+      "events": "События",
+      "noEvents": "Нет предстоящих событий",
+      "viewRoute": "Показать маршрут",
+      "goToDeparture": "Перейти к вылету"
+    },
+    "filters": {
+      "country": "Страна",
+      "region": "Регион",
+      "type": "Тип",
+      "allCountries": "Все страны",
+      "allRegions": "Все регионы",
+      "allTypes": "Все типы",
+      "land": "Наземный",
+      "seaplane": "Гидросамолёт",
+      "heliport": "Вертолётная площадка",
+      "hasIata": "Есть код IATA"
+    },
+    "featured": {
+      "all": "Все",
+      "challenging": "Сложные",
+      "scenic": "Живописные",
+      "unique": "Уникальные",
+      "historic": "Исторические",
+      "icons": {
+        "mountain": "^",
+        "sunrise": "*",
+        "sparkles": "+",
+        "landmark": "#"
+      }
+    }
+  },
+
+  "settings": {
+    "title": "Настройки",
+    "subtitle": "Настройте ваши предпочтения",
+    "tabs": {
+      "xplane": "X-Plane",
+      "data": "Нав. данные",
+      "appearance": "Внешний вид",
+      "navigation": "Навигация",
+      "vatsim": "VATSIM",
+      "about": "О программе"
+    },
+    "about": {
+      "title": "О программе",
+      "description": "Диспетчеризация полётов и визуализация аэропортов для X-Plane",
+      "credits": "Авторы",
+      "developer": "Разработчик",
+      "license": "Лицензия",
+      "links": "Ссылки",
+      "sourceCode": "Исходный код",
+      "reportIssue": "Сообщить о проблеме",
+      "dataStorage": "Данные и настройки",
+      "dataStorageDescription": "Настройки приложения, кэш и база данных хранятся здесь.",
+      "settingsCache": "Настройки и кэш",
+      "logFile": "Файл журнала",
+      "openDataFolder": "Открыть папку данных",
+      "openLog": "Открыть файл журнала",
+      "openLogFolder": "Показать в папке"
+    },
+    "xplane": {
+      "title": "Установка X-Plane",
+      "description": "Настройте источник данных X-Plane",
+      "currentPath": "Текущий путь",
+      "detectedInstallations": "Обнаруженные установки",
+      "selectInstallation": "Выберите установку для использования",
+      "active": "Активно",
+      "custom": "Пользовательский",
+      "dataLoaded": "Загруженные данные",
+      "dataType": "Тип",
+      "count": "Количество",
+      "source": "Источник",
+      "navDataSource": "Источник навигационных данных",
+      "validDates": "Действителен",
+      "expired": "Истёк",
+      "current": "Текущий",
+      "atcFrequencies": "Частоты УВД",
+      "holdingPatterns": "Схемы ожидания",
+      "airportMetadata": "Метаданные аэропорта",
+      "moraGrid": "Сетка MORA",
+      "msaSectors": "Секторы MSA"
+    },
+    "appearance": {
+      "title": "Внешний вид",
+      "description": "Настройте внешний вид",
+      "theme": "Тема",
+      "themeDescription": "Выберите предпочитаемую цветовую схему",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "system": "Системная",
+      "mapStyle": "Стиль карты",
+      "mapStyleDescription": "Выберите стиль карты для фона",
+      "unlimited": "Без ограничений",
+      "customStyleUrl": "Пользовательский URL",
+      "customStyleHint": "Вставьте любой URL style.json MapLibre",
+      "language": "Язык",
+      "units": "Единицы",
+      "unitsDescription": "Настройте единицы измерения",
+      "weightUnit": "Вес",
+      "lbs": "Фунты (lbs)",
+      "kg": "Килограммы (кг)"
+    },
+    "navigation": {
+      "title": "Навигация",
+      "description": "Настройте параметры навигации",
+      "dataTitle": "Навигационные данные",
+      "dataDescription": "Просмотр загруженных источников навигационных данных",
+      "navigraphInfo": "Данные Navigraph предоставляют улучшенные навигационные данные, включая обновлённые воздушные трассы, процедуры и частоты.",
+      "searchRadius": "Радиус поиска",
+      "airportLayoutData": "Данные планировки аэропорта",
+      "airportLayoutDescription": "Геометрия аэропорта из файлов apt.dat (ВПП, рулёжные дорожки, выходы и т.д.)",
+      "globalAirports": "Глобальные аэропорты",
+      "customAirports": "Пользовательские аэропорты",
+      "fromSceneryPacks": "из {{count}} пакетов сценария",
+      "totalAirports": "Всего аэропортов",
+      "navDataSource": "Источник навигационных данных",
+      "navDataSourceDescription": "Навигационные средства, путевые точки, воздушные трассы, процедуры и частоты",
+      "vatsim": {
+        "title": "VATSIM",
+        "sectionDescription": "Воздушное движение в реальном времени из сети VATSIM",
+        "enable": "Включить слой VATSIM",
+        "description": "Показывать позиции пилотов в реальном времени на карте",
+        "currentlyOnline": "Сейчас онлайн",
+        "refreshRate": "Частота обновления",
+        "autoRefresh": "Интервал автообновления",
+        "refreshNote": "Данные VATSIM обновляются каждые 15 секунд в соответствии с рекомендациями API.",
+        "aboutTitle": "Об интеграции VATSIM",
+        "aboutDescription": "Пилоты отображаются значками на карте. Нажмите на пилота, чтобы увидеть детали полёта, включая позывной, тип ВС, вылет и пункт назначения.",
+        "refreshInterval": "Интервал обновления",
+        "refreshHelp": "Как часто обновлять данные VATSIM (рекомендуется: 15с)"
+      }
+    }
+  },
+
+  "sidebar": {
+    "weather": "Погода",
+    "weatherDetails": "Детали погоды",
+    "wind": "Ветер",
+    "visibility": "Видимость",
+    "ceiling": "Потолок",
+    "altimeter": "Альтиметр",
+    "temp": "Темп",
+    "dewpoint": "Точка росы",
+    "clouds": "Облака",
+    "noWeatherData": "Нет данных о погоде",
+    "noFrequencies": "Нет доступных частот",
+    "searchGates": "Поиск выходов...",
+    "searchRunways": "Поиск ВПП...",
+    "frequencies": "Частоты",
+    "runways": "ВПП",
+    "gates": "Выходы",
+    "gatesParking": "Выходы и стоянки",
+    "departurePosition": "Позиция вылета",
+    "moreCount": "+{{count}} ещё",
+    "more": "ещё",
+    "procedures": "Процедуры",
+    "nearbyNavaids": "Ближайшие навсредства",
+    "withinRadius": "В радиусе 50 м. миль",
+    "ils": "ILS",
+    "startFrom": "Начать с:",
+    "noGatesFound": "Выходы не найдены",
+    "noRunwaysFound": "ВПП не найдены",
+    "copyFrequency": "Копировать частоту",
+    "vatsim": {
+      "notEnabled": "Включите VATSIM в настройках для просмотра данных в реальном времени",
+      "noActivity": "Нет активности VATSIM"
+    }
+  },
+
+  "airportInfo": {
+    "tabs": {
+      "info": "ИНФО",
+      "runways": "ВПП",
+      "gates": "Выходы",
+      "radio": "Радио",
+      "gateway": "GATEWAY"
+    },
+    "stats": {
+      "elevation": "ВЫСОТА",
+      "runways": "ВПП",
+      "gates": "ВЫХОДЫ",
+      "hangars": "АНГАРЫ"
+    },
+    "runwayCount": "{{count}} ВПП",
+    "location": "РАСПОЛОЖЕНИЕ",
+    "facilities": "ОБЪЕКТЫ",
+    "tower": "БАШНЯ",
+    "windsocks": "ВЕТРОУКАЗАТЕЛИ",
+    "beacon": "МАЯК",
+    "helipads": "ВЕРТОЛЁТНЫЕ ПЛОЩАДКИ",
+    "searchGates": "Поиск выходов...",
+    "filterAll": "ВСЕ",
+    "filterGates": "ВЫХОДЫ",
+    "filterHangars": "АНГАРЫ",
+    "filterOther": "ДРУГОЕ",
+    "noGatesFound": "ВЫХОДЫ НЕ НАЙДЕНЫ",
+    "noFrequencies": "Нет доступных частот",
+    "xplaneGateway": "X-Plane Gateway",
+    "gatewayNotAvailable": "ДАННЫЕ GATEWAY НЕДОСТУПНЫ",
+    "gatewayLoading": "ЗАГРУЗКА ДАННЫХ GATEWAY...",
+    "noGatewayData": "НЕТ ДАННЫХ GATEWAY ДЛЯ ЭТОГО АЭРОПОРТА",
+    "gatewayDescription": "Эти данные показывают публикации для этого аэропорта.",
+    "viewOnGateway": "Смотреть на Gateway",
+    "accepted": "ПРИНЯТО",
+    "features": "ОСОБЕННОСТИ",
+    "sceneryPacks": "ПАКЕТЫ СЦЕНАРИЯ",
+    "moreOnGateway": "БОЛЬШЕ НА GATEWAY",
+    "refreshData": "ОБНОВИТЬ ДАННЫЕ",
+    "artistComments": "КОММЕНТАРИИ АВТОРА",
+    "approvedDate": "Одобрено:",
+    "beaconTypes": {
+      "civil": "Гражданский (Б-З)",
+      "seaplane": "Гидросамолёт (Б-Ж)",
+      "heliport": "Вертолётная площадка",
+      "military": "Военный"
+    },
+    "surfaces": {
+      "asphalt": "Асфальт",
+      "concrete": "Бетон",
+      "grass": "Трава",
+      "dirt": "Грунт",
+      "gravel": "Гравий",
+      "dryLake": "Сухое озеро",
+      "water": "Вода",
+      "snow": "Снег",
+      "transparent": "Прозрачный",
+      "unknown": "Неизвестно"
+    }
+  },
+
+  "navigation": {
+    "heading": "КУРС",
+    "wind": "ВЕТЕР",
+    "calm": "Штиль"
+  },
+
+  "flightStrip": {
+    "notDetected": "X-Plane не запущен",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "agl": "AGL",
+    "vs": "VS",
+    "hdg": "HDG",
+    "center": "Центр",
+    "centerTooltip": "Центрировать карту на самолёте"
+  },
+
+  "weather": {
+    "fetching": "Получение погоды...",
+    "noData": "Нет данных о погоде",
+    "tabs": {
+      "metar": "METAR",
+      "taf": "TAF"
+    },
+    "visibility": "ВИДИМОСТЬ",
+    "clouds": "ОБЛАКА",
+    "tempDew": "ТЕМП/РОСА",
+    "altimeter": "АЛЬТИМЕТР",
+    "showRaw": "Показать сырые данные",
+    "hideRaw": "Скрыть сырые данные",
+    "runway": "ВПП {{names}}",
+    "useRunway": "Использовать {{name}}",
+    "headwind": "ВС",
+    "tailwind": "ПС",
+    "crosswind": "БС"
+  },
+
+  "procedures": {
+    "noData": "Нет доступных процедур",
+    "noTypeData": "Нет доступных {{type}}",
+    "tabs": {
+      "sid": "SID",
+      "star": "STAR",
+      "app": "APP"
+    },
+    "allRunways": "ВСЕ"
+  },
+
+  "layers": {
+    "airport": {
+      "title": "Слои аэропорта",
+      "surfaces": "Поверхности",
+      "markings": "Разметка",
+      "lights": "Огни",
+      "objects": "Объекты",
+      "effects": "Эффекты"
+    },
+    "navigation": {
+      "title": "Навигационные слои",
+      "navaids": "Навсредства",
+      "fixes": "Точки",
+      "airspaces": "Воздушные пространства"
+    },
+    "items": {
+      "runways": "ВПП",
+      "taxiways": "РД",
+      "aprons": "Перроны",
+      "boundary": "Граница",
+      "rwyMarkings": "Разметка ВПП",
+      "lines": "Линии",
+      "signs": "Знаки",
+      "rwyLights": "Огни ВПП",
+      "twyLights": "Огни РД",
+      "approach": "Заход",
+      "gates": "Выходы",
+      "windsocks": "Ветроуказатели",
+      "animations": "Анимации",
+      "weatherEffects": "Погода",
+      "vors": "VOR",
+      "ndbs": "NDB",
+      "dmes": "DME",
+      "ils": "ILS",
+      "waypoints": "Путевые точки",
+      "airwaysOff": "Выкл",
+      "highAirways": "Верхние трассы (Jet)",
+      "lowAirways": "Нижние трассы (Victor)"
+    },
+    "loadViewport": "Загрузить навсредства области",
+    "showAll": "Показать все",
+    "hideAll": "Скрыть все"
+  },
+
+  "debug": {
+    "title": "Режим отладки активен",
+    "instruction": "Нажмите на любой элемент на карте, чтобы просмотреть его свойства.",
+    "descriptions": {
+      "lines": "Линии (нарисованная разметка)",
+      "signs": "Знаки (знаки РД/ВПП)",
+      "gates": "Выходы и стоянки",
+      "runways": "ВПП и РД"
+    },
+    "properties": "Свойства",
+    "coordinates": "Координаты",
+    "rawAptDat": "Сырой apt.dat",
+    "lineTypesHeader": "Типы линий X-Plane (apt.dat 1130):",
+    "copyToClipboard": "Копировать в буфер",
+    "clearSelection": "Очистить выбор"
+  },
+
+  "launcher": {
+    "title": "Настройка полёта",
+    "launch": "Запустить X-Plane",
+    "launching": "Запуск...",
+    "changeFlight": "Изменить полёт",
+    "changingFlight": "Изменение...",
+    "xplaneRunning": "X-Plane запущен - полёт будет изменён через API",
+    "selectDeparture": "Выберите точку вылета на карте",
+    "selectAircraft": "Выберите самолёт",
+
+    "aircraft": {
+      "title": "Самолёт",
+      "search": "Поиск самолётов...",
+      "allCategories": "Все категории",
+      "allManufacturers": "Все производители",
+      "allTypes": "Все типы",
+      "allEngines": "Все двигатели",
+      "fixedWing": "Самолёт",
+      "helicopter": "Вертолёт",
+      "jet": "Реактивный",
+      "prop": "Винтовой",
+      "count": "{{count}} самолётов",
+      "favorites": "{{count}} избранных",
+      "noFavorites": "Пока нет избранных",
+      "noAircraft": "Самолёты не найдены",
+      "showAll": "Показать все",
+      "showFavoritesOnly": "Только избранные"
+    },
+
+    "liveries": {
+      "title": "Ливреи",
+      "count": "Ливреи ({{count}})",
+      "default": "По умолчанию"
+    },
+
+    "specs": {
+      "emptyWeight": "Пустой",
+      "maxWeight": "MTOW",
+      "maxFuel": "Ёмкость топлива",
+      "tailNumber": "Борт. номер"
+    },
+
+    "config": {
+      "timeOfDay": "Время суток",
+      "realWorldTime": "Реальное время",
+      "coldAndDark": "Холодный и тёмный",
+      "weather": "Погода",
+      "fuel": "Топливо",
+      "summary": "Сводка",
+      "departure": "Вылет",
+      "livery": "Ливрея"
+    },
+
+    "time": {
+      "dawn": "Рассвет",
+      "day": "День",
+      "dusk": "Сумерки",
+      "night": "Ночь"
+    },
+
+    "timePresets": {
+      "dawn": "Рассвет",
+      "sunrise": "Восход",
+      "noon": "Полдень",
+      "sunset": "Закат",
+      "dusk": "Сумерки",
+      "night": "Ночь"
+    },
+
+    "weather": {
+      "real": "Реальная",
+      "clear": "Ясно",
+      "cloudy": "Облачно",
+      "rainy": "Дождь",
+      "stormy": "Гроза",
+      "snowy": "Снег",
+      "foggy": "Туман"
+    },
+
+    "weatherBuilder": {
+      "custom": "Пользовательская погода",
+      "customize": "Настроить погоду",
+      "details": "Детали погоды",
+      "visibility": "Видимость",
+      "wind": "Ветер",
+      "direction": "Направление",
+      "speed": "Скорость",
+      "gusts": "Порывы",
+      "clouds": "Облака",
+      "addLayer": "Добавить слой",
+      "noClouds": "Нет слоёв облаков",
+      "layer": "Слой",
+      "coverage": "Покрытие",
+      "cloudType": "Тип",
+      "base": "База (фут)",
+      "tops": "Верхушки (фут)",
+      "precipitation": "Осадки",
+      "temperature": "Температура",
+      "dewpoint": "Точка росы",
+      "pressure": "Давление",
+      "atmosphere": "Атмосфера",
+      "cloudTypes": {
+        "stratus": "Слоистые",
+        "cumulus": "Кучевые",
+        "cumulonimbus": "Кучево-дождевые"
+      }
+    },
+
+    "weatherModal": {
+      "presets": "Пресеты",
+      "custom": "Пользовательская",
+      "poor": "Плохая",
+      "unlimited": "Неограниченная"
+    },
+
+    "fuelConfig": {
+      "auto": "Авто",
+      "manual": "Ручной",
+      "total": "Всего"
+    },
+
+    "fuelModal": {
+      "empty": "Пусто",
+      "full": "Полный",
+      "of": "из"
+    }
+  }
+}

@@ -10,15 +10,40 @@ interface XPlaneConfig {
 }
 
 const CONFIG_VERSION = 1;
-const CONFIG_FILENAME = 'xplane-config.json';
+const CONFIG_FILENAME = 'config.json';
+const OLD_CONFIG_FILENAME = 'xplane-config.json';
 
 function getConfigPath(): string {
   const userDataPath = app.getPath('userData');
   return path.join(userDataPath, CONFIG_FILENAME);
 }
 
+function getOldConfigPath(): string {
+  const userDataPath = app.getPath('userData');
+  return path.join(userDataPath, OLD_CONFIG_FILENAME);
+}
+
+/**
+ * Migrate old config file to new name
+ */
+function migrateOldConfig(): void {
+  try {
+    const oldPath = getOldConfigPath();
+    const newPath = getConfigPath();
+
+    if (fs.existsSync(oldPath) && !fs.existsSync(newPath)) {
+      fs.renameSync(oldPath, newPath);
+    }
+  } catch {
+    // Ignore migration errors
+  }
+}
+
 function loadConfig(): XPlaneConfig | null {
   try {
+    // Migrate old config file if needed
+    migrateOldConfig();
+
     const configPath = getConfigPath();
     if (!fs.existsSync(configPath)) {
       return null;
