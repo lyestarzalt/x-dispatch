@@ -2,7 +2,7 @@
  * X-Plane Data Manager
  * Unified manager for all X-Plane navigation and airport data
  */
-import { eq } from 'drizzle-orm';
+import { count, eq, like, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
@@ -352,6 +352,42 @@ export class XPlaneDataManager {
   }
 
   /**
+   * Compute airport breakdown from database (used when cache is valid)
+   */
+  private computeAirportBreakdownFromDb(xplanePath: string): void {
+    const db = getDb();
+
+    // Count total airports
+    const totalResult = db.select({ count: count() }).from(airports).get();
+    const total = totalResult?.count || 0;
+
+    // Count custom scenery airports (sourceFile contains 'Custom Scenery')
+    const customResult = db
+      .select({ count: count() })
+      .from(airports)
+      .where(like(airports.sourceFile, '%Custom Scenery%'))
+      .get();
+    const customCount = customResult?.count || 0;
+
+    // Count custom scenery packs from aptFileMeta
+    const customPacks = db
+      .select()
+      .from(aptFileMeta)
+      .where(like(aptFileMeta.path, '%Custom Scenery%'))
+      .all();
+
+    this.airportSourceCounts = {
+      globalAirports: total - customCount,
+      customScenery: customCount,
+      customSceneryPacks: customPacks.length,
+    };
+
+    logger.data.info(
+      `Airport breakdown from cache: ${this.airportSourceCounts.globalAirports} Global, ${customCount} Custom (${customPacks.length} packs)`
+    );
+  }
+
+  /**
    * Get file modification time in milliseconds
    */
   private getFileMtime(filePath: string): number | null {
@@ -672,6 +708,7 @@ export class XPlaneDataManager {
 
     if (!cacheCheck.needsReload) {
       logger.data.info('Airport cache is valid, skipping reload');
+      this.computeAirportBreakdownFromDb(xplanePath);
       this.loadStatus.airports = true;
       return;
     }
