@@ -7,7 +7,7 @@ import SetupScreen from './components/screens/SetupScreen';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import './i18n';
-import type { Airport } from './lib/xplaneData';
+import type { Airport } from './lib/xplaneServices/dataService';
 import { QueryProvider } from './queries';
 import { initializeTheme } from './stores/themeStore';
 

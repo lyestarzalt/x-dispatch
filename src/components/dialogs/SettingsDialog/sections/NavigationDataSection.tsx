@@ -25,8 +25,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatDate } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/utils/format';
+import { cn } from '@/lib/utils/helpers';
 import type { SettingsDataLoadStatus, SettingsSectionProps } from '../types';
 
 type SourceType = 'navigraph' | 'xplane-default' | 'custom-scenery' | 'unknown';

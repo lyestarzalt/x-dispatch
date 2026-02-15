@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
-import { svgToDataUrl } from '@/lib/svg';
+import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
 

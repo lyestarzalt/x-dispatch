@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { AirportParser, ParsedAirport } from '@/lib/aptParser';
+import { AirportParser } from '@/lib/parsers/apt';
+import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
 import { calculateAirportCenter, calculateOptimalZoom } from '../utils/zoomCalculator';

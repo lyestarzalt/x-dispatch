@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
-import type { HoldingPattern } from '@/lib/navParser/types';
+import type { HoldingPattern } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
 export interface HoldingPatternWithCoords extends HoldingPattern {

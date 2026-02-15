@@ -6,8 +6,8 @@ import {
   LIGHT_COLORS,
   LightColor,
   generateAirportLights,
-} from '@/lib/airportLighting';
-import { ParsedAirport } from '@/lib/aptParser';
+} from '@/lib/parsers/apt/lighting';
+import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 // Type for deck.gl color arrays

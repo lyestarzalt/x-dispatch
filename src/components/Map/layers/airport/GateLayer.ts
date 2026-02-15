@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Helipad, StartupLocation } from '@/lib/aptParser/types';
+import type { ParsedAirport } from '@/types/apt';
+import type { Helipad, StartupLocation } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 // Gate colors - simplified X-Plane design system

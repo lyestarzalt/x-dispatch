@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { DecodedMETAR } from '@/utils/decodeMetar';
+import { DecodedMETAR } from '@/lib/utils/format/metar';
 
 interface CompassWidgetProps {
   mapBearing: number;

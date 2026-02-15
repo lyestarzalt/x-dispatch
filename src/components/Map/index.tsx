@@ -7,8 +7,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Airport } from '@/lib/xplaneData';
+import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useXPlaneStatus } from '@/queries';
 import {
   getNavDataCounts,
@@ -20,6 +19,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import type { PlanePosition, PlaneState } from '@/types/xplane';

@@ -4,7 +4,7 @@ import { AlertCircle, Check, FolderOpen, Loader2, Plane } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import type { SettingsSectionProps } from '../types';
 
 export default function XPlaneSection({ className }: SettingsSectionProps) {

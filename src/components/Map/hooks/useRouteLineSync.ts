@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { Airport } from '@/lib/xplaneData';
+import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from '../layers';
 import type { MapRef } from './useMapSetup';

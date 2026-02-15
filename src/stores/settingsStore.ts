@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { WeightUnit } from '@/lib/format';
+import type { WeightUnit } from '@/lib/utils/format';
 
 interface MapStylePreset {
   id: string;

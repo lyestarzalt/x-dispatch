@@ -5,7 +5,7 @@ import { AppLogo } from '@/components/ui/AppLogo';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useAppVersion } from '@/hooks/useAppVersion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import type { SettingsSectionProps } from '../types';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';

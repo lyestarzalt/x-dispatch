@@ -1,6 +1,6 @@
-import { ParsedAirport } from '@/lib/aptParser';
-import { getRunwayPolygon, getRunwayShoulderPolygon } from '@/lib/aptParser/runwayHelper';
-import { LinearFeature, Pavement, Runway, Windsock } from '@/lib/aptParser/types';
+import { getRunwayPolygon, getRunwayShoulderPolygon } from '@/lib/parsers/apt/runwayHelper';
+import type { ParsedAirport } from '@/types/apt';
+import type { LinearFeature, Pavement, Runway, Windsock } from '@/types/apt';
 
 export function createRunwayGeoJSON(runways: Runway[]): GeoJSON.FeatureCollection {
   return {

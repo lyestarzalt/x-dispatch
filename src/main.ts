@@ -2,9 +2,9 @@ import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from '
 import windowStateKeeper from 'electron-window-state';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
-import { initDb } from './db';
-import logger, { getLogPath } from './lib/logger';
-import { AirportProcedures } from './lib/navParser/cifpParser';
+import { initDb } from './lib/db';
+import { AirportProcedures } from './lib/parsers/nav/cifpParser';
+import logger, { getLogPath } from './lib/utils/logger';
 import {
   isInvalidCoords,
   isValidICAO,
@@ -12,8 +12,8 @@ import {
   isValidSceneryId,
   isValidSearchQuery,
   validateCoordinates,
-} from './lib/validation';
-import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
+} from './lib/utils/validation';
+import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -27,19 +27,19 @@ app.name = 'X-Dispatch';
 let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
-let launcherModule: typeof import('./lib/launcher') | null = null;
-let xplaneModule: typeof import('./lib/xplane') | null = null;
+let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
+let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
 
 async function getXPlaneModule() {
   if (!xplaneModule) {
-    xplaneModule = await import('./lib/xplane');
+    xplaneModule = await import('./lib/xplaneServices/client');
   }
   return xplaneModule;
 }
 
 async function getLauncherModule() {
   if (!launcherModule) {
-    launcherModule = await import('./lib/launcher');
+    launcherModule = await import('./lib/xplaneServices/launch');
   }
   return launcherModule;
 }

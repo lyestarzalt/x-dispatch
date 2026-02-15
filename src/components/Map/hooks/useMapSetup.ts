@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { Airport } from '@/lib/xplaneData';
+import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 

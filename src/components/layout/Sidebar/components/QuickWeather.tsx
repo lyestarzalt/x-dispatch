@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Cloud, Radio, Thermometer, Wind } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Frequency } from '@/lib/aptParser/types';
-import { formatFrequency } from '@/lib/format';
-import { DecodedMETAR } from '@/utils/decodeMetar';
+import { formatFrequency } from '@/lib/utils/format';
+import { DecodedMETAR } from '@/lib/utils/format/metar';
+import type { Frequency } from '@/types/apt';
 
 interface QuickWeatherProps {
   metar?: DecodedMETAR | null;

@@ -1,24 +1,6 @@
 import maplibregl from 'maplibre-gl';
 
 /**
- * Base interface for all layer renderers
- */
-export interface BaseRenderer {
-  /** Main layer identifier */
-  layerId: string;
-  /** Source identifier for GeoJSON data */
-  sourceId: string;
-  /** Additional layer IDs this renderer creates (labels, borders, etc.) */
-  additionalLayerIds?: string[];
-
-  /** Remove all layers and sources from the map */
-  remove(map: maplibregl.Map): void;
-
-  /** Set visibility of all layers */
-  setVisibility(map: maplibregl.Map, visible: boolean): void;
-}
-
-/**
  * Helper to safely remove layers and source
  */
 export function removeLayersAndSource(

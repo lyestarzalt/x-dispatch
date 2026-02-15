@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { ParsedAirport } from '@/lib/aptParser';
+import type { ParsedAirport } from '@/types/apt';
 import type { StartPosition } from '@/types/position';
 
 interface SelectedProcedure {

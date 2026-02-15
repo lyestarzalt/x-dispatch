@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
-import { type FeaturedCategory, getFeaturedAirportsByCategory } from '@/data';
-import { cn } from '@/lib/utils';
+import { getFeaturedAirportsByCategory } from '@/featured';
+import { cn } from '@/lib/utils/helpers';
+import type { FeaturedCategory } from '@/types/featured';
 import type { FeaturedTabProps } from './types';
 
 const CATEGORIES: Array<FeaturedCategory | 'all'> = [

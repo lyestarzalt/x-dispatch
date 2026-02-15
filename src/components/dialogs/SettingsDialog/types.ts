@@ -2,8 +2,8 @@
  * Shared types for Settings dialog
  */
 // Import types from canonical sources
-import type { AirportSourceBreakdown } from '@/lib/xplaneData/XPlaneDataManager';
-import type { NavDataSources } from '@/lib/xplaneData/cycleInfo';
+import type { AirportSourceBreakdown } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
+import type { NavDataSources } from '@/lib/xplaneServices/dataService/cycleInfo';
 
 // Re-export for convenience
 export type { NavDataSources, AirportSourceBreakdown };

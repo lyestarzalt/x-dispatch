@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this import
 import appIcon from '../../../assets/icon.png';

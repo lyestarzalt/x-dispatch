@@ -1,7 +1,27 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
+import type {
+  Airport,
+  AirportSourceBreakdown,
+  DataLoadStatus,
+} from './lib/xplaneServices/dataService/XPlaneDataManager';
+import type {
+  DataSourceInfo,
+  DataSourceType,
+  NavDataSources,
+} from './lib/xplaneServices/dataService/cycleInfo';
 // Import types from canonical sources
-import type { Aircraft, LaunchConfig, WeatherPreset } from './lib/launcher/types';
-import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/navParser/cifpParser';
+import type { Aircraft, LaunchConfig, WeatherPreset } from './types/aircraft';
+import type {
+  ApiResponse,
+  BrowseResult,
+  NavDBStatus,
+  NavLoadResult,
+  NavSearchResult,
+  PathSetResult,
+  PathValidation,
+  XPlaneFlightConfig,
+} from './types/ipc';
 import type {
   ATCController,
   ATCRole,
@@ -10,13 +30,7 @@ import type {
   HoldingPattern,
   Navaid,
   Waypoint,
-} from './lib/navParser/types';
-import type {
-  Airport,
-  AirportSourceBreakdown,
-  DataLoadStatus,
-} from './lib/xplaneData/XPlaneDataManager';
-import type { DataSourceInfo, DataSourceType, NavDataSources } from './lib/xplaneData/cycleInfo';
+} from './types/navigation';
 import type { AirwaySegmentWithCoords } from './types/navigation';
 import type {
   VatsimATIS,
@@ -163,60 +177,6 @@ contextBridge.exposeInMainWorld('xplaneServiceAPI', {
     return () => ipcRenderer.removeListener('xplaneService:connectionChange', listener);
   },
 });
-
-// Preload-specific types (IPC response formats)
-type XPlaneFlightConfig = Record<string, unknown>;
-
-interface ApiResponse {
-  data: string | null;
-  error: string | null;
-}
-
-interface NavDBStatus {
-  status: {
-    navaids: boolean;
-    waypoints: boolean;
-    airspaces: boolean;
-    airways: boolean;
-  };
-  counts: {
-    navaids: number;
-    waypoints: number;
-    airspaces: number;
-    airways: number;
-  };
-}
-
-interface NavLoadResult {
-  success: boolean;
-  counts?: { navaids: number; waypoints: number; airspaces: number; airways: number };
-  error?: string;
-}
-
-interface NavSearchResult {
-  type: 'VOR' | 'NDB' | 'DME' | 'ILS' | 'WAYPOINT';
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-  frequency?: number;
-}
-
-interface PathValidation {
-  valid: boolean;
-  errors: string[];
-}
-
-interface PathSetResult {
-  success: boolean;
-  errors: string[];
-}
-
-interface BrowseResult {
-  path: string;
-  valid: boolean;
-  errors: string[];
-}
 
 declare global {
   interface Window {

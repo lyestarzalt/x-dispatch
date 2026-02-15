@@ -11,7 +11,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import {
   AboutSection,
   AppearanceSection,

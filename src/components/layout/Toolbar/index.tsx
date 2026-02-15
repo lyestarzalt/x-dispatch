@@ -24,8 +24,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import { Airport } from '@/lib/xplaneData';
+import { cn } from '@/lib/utils/helpers';
+import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { AirwaysMode, NavLayerVisibility } from '@/types/layers';
 

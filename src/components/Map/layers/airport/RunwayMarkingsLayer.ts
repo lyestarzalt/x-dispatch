@@ -1,7 +1,8 @@
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Runway, RunwayMarking } from '@/lib/aptParser/types';
-import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/geo';
+import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/utils/geomath';
+import type { ParsedAirport } from '@/types/apt';
+import type { Runway } from '@/types/apt';
+import { RunwayMarking } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**

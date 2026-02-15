@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Runway, StartupLocation } from '@/lib/aptParser/types';
-import { metersToFeet, runwayLengthFeet } from '@/lib/geo';
-import { cn } from '@/lib/utils';
+import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
+import { cn } from '@/lib/utils/helpers';
+import type { Runway, StartupLocation } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 
 type DepartureType = 'gates' | 'runways';

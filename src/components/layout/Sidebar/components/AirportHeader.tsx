@@ -4,10 +4,10 @@ import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket, X } from 'lu
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ParsedAirport } from '@/lib/aptParser';
-import { formatTransitionAltitude } from '@/lib/format';
-import { runwayLengthFeet } from '@/lib/geo';
-import { FlightCategory } from '@/utils/decodeMetar';
+import { formatTransitionAltitude } from '@/lib/utils/format';
+import { FlightCategory } from '@/lib/utils/format/metar';
+import { runwayLengthFeet } from '@/lib/utils/geomath';
+import type { ParsedAirport } from '@/types/apt';
 
 interface AirportHeaderProps {
   airport: ParsedAirport;

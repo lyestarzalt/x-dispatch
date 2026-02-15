@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AirportProcedures, Procedure } from '@/lib/navParser/cifpParser';
-import { cn } from '@/lib/utils';
+import type { AirportProcedures, Procedure } from '@/lib/parsers/nav/cifpParser';
+import { cn } from '@/lib/utils/helpers';
 
 // Re-export for components that import from here
-export type { Procedure } from '@/lib/navParser/cifpParser';
+export type { Procedure } from '@/lib/parsers/nav/cifpParser';
 
 interface ProceduresSectionProps {
   icao: string;

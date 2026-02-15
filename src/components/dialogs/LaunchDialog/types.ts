@@ -1,7 +1,7 @@
-import type { Aircraft } from '@/lib/launcher/types';
+import type { Aircraft } from '@/types/aircraft';
 
-// Import types from canonical source
-export type { Aircraft, Livery, WeatherPreset } from '@/lib/launcher/types';
+// Export types from canonical source
+export type { Aircraft, Livery, WeatherPreset } from '@/types/aircraft';
 
 export type AircraftType = 'all' | 'fixed-wing' | 'helicopter';
 export type EngineType = 'all' | 'jet' | 'prop';

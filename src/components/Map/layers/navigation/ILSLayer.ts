@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
-import { destinationPoint, nauticalMilesToMeters } from '@/lib/geo';
-import { svgToDataUrl } from '@/lib/svg';
+import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
+import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { removeLayersAndSource, setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';

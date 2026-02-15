@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import {
   Aircraft,
   AircraftType,

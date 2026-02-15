@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Check, Fuel, Plane, Scale, Settings, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatWeight } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { formatWeight } from '@/lib/utils/format';
+import { cn } from '@/lib/utils/helpers';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Aircraft } from '../types';
 

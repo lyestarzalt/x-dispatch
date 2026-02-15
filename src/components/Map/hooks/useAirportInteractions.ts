@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Runway } from '@/lib/aptParser/types';
 import { useAppStore } from '@/stores/appStore';
+import type { ParsedAirport } from '@/types/apt';
+import type { Runway } from '@/types/apt';
 import type { MapRef } from './useMapSetup';
 
 interface UseAirportInteractionsOptions {

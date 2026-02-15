@@ -1,5 +1,5 @@
-import { Runway } from '@/lib/aptParser/types';
-import { haversineDistance, runwayLength } from '@/lib/geo';
+import { haversineDistance, runwayLength } from '@/lib/utils/geomath';
+import type { Runway } from '@/types/apt';
 
 // Re-export haversineDistance for backward compatibility
 /**

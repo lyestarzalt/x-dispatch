@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, Plane } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import {
   getEventStatus,
   getEventTimeInfo,

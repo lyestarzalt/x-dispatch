@@ -9,12 +9,13 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ParsedAirport } from '@/lib/aptParser';
-import { FrequencyType, Runway } from '@/lib/aptParser/types';
-import { cn } from '@/lib/utils';
+import { decodeMetar } from '@/lib/utils/format/metar';
+import { cn } from '@/lib/utils/helpers';
 import { VatsimData } from '@/queries/useVatsimQuery';
+import type { ParsedAirport } from '@/types/apt';
+import type { Runway } from '@/types/apt';
+import { FrequencyType } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
-import { decodeMetar } from '@/utils/decodeMetar';
 import AirportHeader from './components/AirportHeader';
 import DepartureSelector from './components/DepartureSelector';
 import QuickWeather from './components/QuickWeather';

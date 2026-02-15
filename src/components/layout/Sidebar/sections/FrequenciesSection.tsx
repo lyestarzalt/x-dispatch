@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Copy, Radio } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Frequency, FrequencyType } from '@/lib/aptParser/types';
-import { formatFrequency } from '@/lib/format';
-import type { ATCController } from '@/lib/navParser/types';
+import { formatFrequency } from '@/lib/utils/format';
+import type { Frequency } from '@/types/apt';
+import { FrequencyType } from '@/types/apt';
+import type { ATCController } from '@/types/navigation';
 
 interface FrequenciesSectionProps {
   frequencies: Frequency[];
