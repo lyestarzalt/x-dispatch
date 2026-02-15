@@ -44,6 +44,7 @@
     "@electron-forge/plugin-vite": "^7.8.0",
     "@electron-forge/publisher-github": "^7.11.1",
     "@electron/fuses": "^1.8.0",
+    "@tanstack/react-query-devtools": "^5.91.3",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/electron-window-state": "^2.0.34",
     "@types/node": "^24.0.0",
