@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 import tzLookup from 'tz-lookup';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
-import { useXPlaneStatus } from '@/queries';
+import { type FlightInit, useStartFlight, useXPlaneStatus } from '@/queries';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import {
   Aircraft,
@@ -29,6 +29,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
   // Check if X-Plane is already running
   const { data: isXPlaneRunning = false } = useXPlaneStatus({ enabled: open });
+
+  // Mutation for starting a flight via REST API
+  const startFlightMutation = useStartFlight();
 
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(null);
@@ -206,7 +209,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
       if (isXPlaneRunning) {
         // Use REST API to change flight in running X-Plane
-        const apiConfig = buildFlightAPIPayload({
+        const flightConfig = buildFlightAPIPayload({
           aircraft: selectedAircraft,
           livery: selectedLivery,
           startPosition,
@@ -218,12 +221,13 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           enginesRunning: !coldAndDark,
         });
 
-        const result = await window.xplaneServiceAPI.loadFlight(apiConfig);
-        if (result.success) {
+        try {
+          await startFlightMutation.mutateAsync(flightConfig);
           onClose();
-        } else {
-          window.appAPI.log.error('X-Plane flight change failed', result.error);
-          setLaunchError(result.error || 'Failed to change flight');
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to change flight';
+          window.appAPI.log.error('X-Plane flight change failed', err);
+          setLaunchError(errorMessage);
         }
       } else {
         // Use Freeflight.prf to start X-Plane
@@ -286,13 +290,21 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     timeOfDay: number;
     fuelTanksKg: number[];
     enginesRunning: boolean;
-  }) {
-    const payload: Record<string, unknown> = {};
-
-    // Aircraft
-    payload.aircraft = {
-      path: params.aircraft.path,
-      ...(params.livery !== 'Default' && { livery: params.livery }),
+  }): FlightInit {
+    const payload: FlightInit = {
+      // Aircraft
+      aircraft: {
+        path: params.aircraft.path,
+        ...(params.livery !== 'Default' && { livery: params.livery }),
+      },
+      // Weight (fuel)
+      weight: {
+        fueltank_weight_in_kilograms: params.fuelTanksKg,
+      },
+      // Engine status
+      engine_status: {
+        all_engines: { running: params.enginesRunning },
+      },
     };
 
     // Start location
@@ -308,16 +320,6 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       };
     }
 
-    // Weight (fuel)
-    payload.weight = {
-      fueltank_weight_in_kilograms: params.fuelTanksKg,
-    };
-
-    // Engine status
-    payload.engine_status = {
-      all_engines: { running: params.enginesRunning },
-    };
-
     // Time
     if (params.useRealWorldTime) {
       payload.use_system_time = true;
@@ -332,7 +334,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     if (params.weather === 'real') {
       payload.weather = 'use_real_weather';
     } else {
-      const weatherDefinitions: Record<string, object> = {
+      type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
+      const weatherDefinitions: Record<string, WeatherDefinition> = {
         clear: {
           definition: 'vfr_few_clouds',
           vertical_speed_in_thermal_in_feet_per_minute: 0,
