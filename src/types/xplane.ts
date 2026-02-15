@@ -46,3 +46,12 @@ export interface XPlaneAPIResult {
   success: boolean;
   error?: string;
 }
+
+/** Progress event for X-Plane data loading */
+export interface LoadingProgress {
+  step: string;
+  status: 'pending' | 'loading' | 'complete' | 'error';
+  message: string;
+  count?: number;
+  error?: string;
+}

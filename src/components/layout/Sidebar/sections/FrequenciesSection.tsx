@@ -5,13 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Frequency, FrequencyType } from '@/lib/aptParser/types';
 import { formatFrequency } from '@/lib/format';
-
-interface ATCController {
-  name: string;
-  facilityId: string;
-  role: 'ctr' | 'app' | 'twr' | 'gnd' | 'del';
-  frequencies: number[];
-}
+import type { ATCController } from '@/lib/navParser/types';
 
 interface FrequenciesSectionProps {
   frequencies: Frequency[];

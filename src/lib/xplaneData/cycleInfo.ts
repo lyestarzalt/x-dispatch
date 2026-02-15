@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { XPLANE_PATHS } from './paths';
 
-type DataSourceType = 'navigraph' | 'xplane-default' | 'unknown';
+export type DataSourceType = 'navigraph' | 'xplane-default' | 'unknown';
 
 export interface DataSourceInfo {
   source: DataSourceType;

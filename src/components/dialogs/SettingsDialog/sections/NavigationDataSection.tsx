@@ -27,7 +27,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import type { DataLoadStatus, SettingsSectionProps } from '../types';
+import type { SettingsDataLoadStatus, SettingsSectionProps } from '../types';
 
 type SourceType = 'navigraph' | 'xplane-default' | 'custom-scenery' | 'unknown';
 
@@ -98,7 +98,7 @@ function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
 
 export default function NavigationDataSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
-  const [dataStatus, setDataStatus] = useState<DataLoadStatus | null>(null);
+  const [dataStatus, setDataStatus] = useState<SettingsDataLoadStatus | null>(null);
 
   useEffect(() => {
     let cancelled = false;

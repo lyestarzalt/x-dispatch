@@ -5,14 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppVersion } from '@/hooks/useAppVersion';
-
-interface LoadingProgress {
-  step: string;
-  status: 'pending' | 'loading' | 'complete' | 'error';
-  message: string;
-  count?: number;
-  error?: string;
-}
+import type { LoadingProgress } from '@/types/xplane';
 
 interface LoadingStep {
   id: string;

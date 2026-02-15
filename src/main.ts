@@ -14,7 +14,7 @@ import {
   validateCoordinates,
 } from './lib/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
-import type { PlaneState } from './types/xplane';
+import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
@@ -32,14 +32,6 @@ async function getXPlaneModule() {
     xplaneModule = await import('./lib/xplane');
   }
   return xplaneModule;
-}
-
-interface LoadingProgress {
-  step: string;
-  status: 'pending' | 'loading' | 'complete' | 'error';
-  message: string;
-  count?: number;
-  error?: string;
 }
 
 async function getLauncherModule() {

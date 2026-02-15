@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
+import type { AirwaySegmentWithCoords } from '@/types/navigation';
 import { airports, aptFileMeta, closeDb, getDb, saveDb } from '../../db';
 import { distanceNm } from '../geo';
 import logger from '../logger';
@@ -50,18 +51,7 @@ import {
 } from './paths';
 import type { AptFileInfo, CacheCheckResult, ParsedAirportEntry } from './types';
 
-interface AirwaySegmentWithCoords {
-  name: string;
-  fromFix: string;
-  toFix: string;
-  fromLat: number;
-  fromLon: number;
-  toLat: number;
-  toLon: number;
-  isHigh: boolean;
-  baseFl: number;
-  topFl: number;
-}
+export type { AirwaySegmentWithCoords } from '@/types/navigation';
 
 /**
  * Fast async file reader for large files
@@ -96,13 +86,13 @@ export interface Airport {
   type: 'land' | 'seaplane' | 'heliport';
 }
 
-interface AirportSourceBreakdown {
+export interface AirportSourceBreakdown {
   globalAirports: number;
   customScenery: number;
   customSceneryPacks: number;
 }
 
-interface DataLoadStatus {
+export interface DataLoadStatus {
   xplanePath: string | null;
   pathValid: boolean;
   airports: {

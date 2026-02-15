@@ -3,34 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { AirportProcedures, Procedure } from '@/lib/navParser/cifpParser';
 import { cn } from '@/lib/utils';
 
-interface ProcedureWaypoint {
-  fixId: string;
-  fixRegion: string;
-  fixType: string;
-  pathTerminator: string;
-  course: number | null;
-  distance: number | null;
-  altitude: { descriptor: string; altitude1: number | null; altitude2: number | null } | null;
-  speed: number | null;
-  turnDirection: 'L' | 'R' | null;
-}
-
-export interface Procedure {
-  type: 'SID' | 'STAR' | 'APPROACH';
-  name: string;
-  runway: string | null;
-  transition: string | null;
-  waypoints: ProcedureWaypoint[];
-}
-
-interface AirportProcedures {
-  icao: string;
-  sids: Procedure[];
-  stars: Procedure[];
-  approaches: Procedure[];
-}
+// Re-export for components that import from here
+export type { Procedure } from '@/lib/navParser/cifpParser';
 
 interface ProceduresSectionProps {
   icao: string;
