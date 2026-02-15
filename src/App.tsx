@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
+import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
-import { Button } from './components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { FullScreenSpinner } from './components/ui/spinner';
 import './i18n';
 import type { Airport } from './lib/xplaneServices/dataService';
 import { QueryProvider } from './queries';
@@ -61,11 +60,7 @@ function AppContent() {
   }, []);
 
   if (appState === 'checking') {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      </div>
-    );
+    return <FullScreenSpinner />;
   }
 
   if (appState === 'setup') {
@@ -84,28 +79,13 @@ function AppContent() {
 
   if (appState === 'error') {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-6 w-6 text-destructive" />
-            </div>
-            <CardTitle className="text-destructive">Loading Failed</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-muted-foreground">{loadError}</p>
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" onClick={handleConfigurePath}>
-                Configure Path
-              </Button>
-              <Button onClick={() => window.location.reload()}>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Retry
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ErrorScreen
+        title="Loading Failed"
+        message={loadError || 'An unknown error occurred'}
+        onConfigure={handleConfigurePath}
+        configureLabel="Configure Path"
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
