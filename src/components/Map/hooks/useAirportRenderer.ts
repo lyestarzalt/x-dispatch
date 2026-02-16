@@ -88,7 +88,13 @@ export function useAirportRenderer(
       if (!data) return null;
 
       const parser = new AirportParser(data);
-      const parsedAirport = parser.parse();
+      const { data: parsedAirport, errors, stats } = parser.parse();
+
+      if (errors.length > 0) {
+        window.appAPI.log.warn(
+          `AirportParser ${icao}: ${errors.length} errors, ${stats.skipped} skipped`
+        );
+      }
 
       for (const renderer of layerRenderers.current) {
         if (renderer.hasData(parsedAirport)) {

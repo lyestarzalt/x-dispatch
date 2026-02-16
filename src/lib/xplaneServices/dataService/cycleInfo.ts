@@ -304,18 +304,3 @@ function formatCycleDisplay(info: DataSourceInfo): string {
 
   return 'Unknown';
 }
-
-/**
- * Format date range for display
- */
-function formatValidityDates(info: DataSourceInfo): string | null {
-  if (!info.effectiveDate || !info.expirationDate) {
-    return null;
-  }
-
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-  const from = info.effectiveDate.toLocaleDateString('en-US', options);
-  const to = info.expirationDate.toLocaleDateString('en-US', options);
-
-  return `${from} - ${to}`;
-}

@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type {
   Beacon,
   BoundaryFeature,
@@ -16,10 +17,35 @@ import type {
   Windsock,
 } from '@/types/apt';
 import { FrequencyType, RowCode } from '@/types/apt';
+import { bearing, coordinate, latitude, longitude, nonNegative, positiveNumber } from '../schemas';
+import type { ParseError, ParseResult } from '../types';
 import { PathParser } from './pathParser';
+
+const RunwayEndSchema = z.object({
+  name: z.string(),
+  lat: latitude,
+  lon: longitude,
+  dthr_length: nonNegative,
+  overrun_length: nonNegative,
+  marking: z.number(),
+  lighting: z.number(),
+  tdz_lighting: z.boolean(),
+  reil: z.number(),
+});
+const StartupLocationSchema = z.object({
+  lat: latitude,
+  lon: longitude,
+  heading: bearing,
+  location_type: z.string(),
+  airplane_types: z.string(),
+  name: z.string(),
+});
 
 export class AirportParser {
   private lines: string[];
+  private errors: ParseError[] = [];
+  private skipped = 0;
+  private currentLine = 0;
 
   constructor(data: string) {
     this.lines = data
@@ -28,62 +54,189 @@ export class AirportParser {
       .filter((l) => l.length > 0);
   }
 
-  private parseRunwayEnd(tokens: string[]): RunwayEnd | null {
-    if (tokens.length < 9) return null;
-    return {
+  /**
+   * Map row code to frequency type
+   */
+  private getFrequencyType(code: number): FrequencyType {
+    switch (code) {
+      case RowCode.FREQUENCY_AWOS:
+        return FrequencyType.AWOS;
+      case RowCode.FREQUENCY_CTAF:
+        return FrequencyType.CTAF;
+      case RowCode.FREQUENCY_DELIVERY:
+        return FrequencyType.DELIVERY;
+      case RowCode.FREQUENCY_GROUND:
+        return FrequencyType.GROUND;
+      case RowCode.FREQUENCY_TOWER:
+        return FrequencyType.TOWER;
+      case RowCode.FREQUENCY_APPROACH:
+        return FrequencyType.APPROACH;
+      case RowCode.FREQUENCY_CENTER:
+        return FrequencyType.CENTER;
+      case RowCode.FREQUENCY_UNICOM:
+        return FrequencyType.UNICOM;
+      default:
+        return FrequencyType.CTAF;
+    }
+  }
+
+  private validateCoordinate(lat: number, lon: number, context: string, lineNum: number): boolean {
+    const result = coordinate.safeParse({ latitude: lat, longitude: lon });
+    if (!result.success) {
+      this.errors.push({
+        line: lineNum,
+        path: 'coordinate',
+        message: `Invalid coordinate in ${context}`,
+      });
+      return false;
+    }
+    return true;
+  }
+
+  private parseRunwayEnd(tokens: string[], lineNum: number): RunwayEnd | null {
+    if (tokens.length < 9) {
+      this.skipped++;
+      return null;
+    }
+
+    const result = RunwayEndSchema.safeParse({
       name: tokens[0],
-      latitude: parseFloat(tokens[1]),
-      longitude: parseFloat(tokens[2]),
-      dthr_length: parseFloat(tokens[3]),
-      overrun_length: parseFloat(tokens[4]),
+      lat: parseFloat(tokens[1]),
+      lon: parseFloat(tokens[2]),
+      dthr_length: Math.max(0, parseFloat(tokens[3]) || 0),
+      overrun_length: Math.max(0, parseFloat(tokens[4]) || 0),
       marking: parseInt(tokens[5]),
       lighting: parseInt(tokens[6]),
       tdz_lighting: Boolean(parseInt(tokens[7])),
       reil: parseInt(tokens[8]),
+    });
+
+    if (!result.success) {
+      this.skipped++;
+      return null;
+    }
+
+    return {
+      name: result.data.name,
+      latitude: result.data.lat,
+      longitude: result.data.lon,
+      dthr_length: result.data.dthr_length,
+      overrun_length: result.data.overrun_length,
+      marking: result.data.marking,
+      lighting: result.data.lighting,
+      tdz_lighting: result.data.tdz_lighting,
+      reil: result.data.reil,
     };
   }
 
-  private parseStartupLocation(tokens: string[]): StartupLocation | null {
-    if (tokens.length < 6) return null;
-    return {
-      latitude: parseFloat(tokens[1]),
-      longitude: parseFloat(tokens[2]),
-      heading: parseFloat(tokens[3]),
+  private parseStartupLocation(tokens: string[], lineNum: number): StartupLocation | null {
+    if (tokens.length < 6) {
+      this.skipped++;
+      return null;
+    }
+
+    const rawHeading = parseFloat(tokens[3]);
+    const result = StartupLocationSchema.safeParse({
+      lat: parseFloat(tokens[1]),
+      lon: parseFloat(tokens[2]),
+      heading: rawHeading >= 0 && rawHeading <= 360 ? rawHeading : 0,
       location_type: tokens[4],
       airplane_types: tokens[5],
       name: tokens.slice(6).join(' '),
+    });
+
+    if (!result.success) {
+      this.skipped++;
+      return null;
+    }
+
+    return {
+      latitude: result.data.lat,
+      longitude: result.data.lon,
+      heading: result.data.heading,
+      location_type: result.data.location_type,
+      airplane_types: result.data.airplane_types,
+      name: result.data.name,
     };
   }
 
-  private parseStartupLocationLegacy(tokens: string[]): StartupLocation | null {
-    // Row code 15: legacy format - lat lon heading name
-    if (tokens.length < 4) return null;
-    return {
-      latitude: parseFloat(tokens[1]),
-      longitude: parseFloat(tokens[2]),
-      heading: parseFloat(tokens[3]),
-      location_type: 'misc', // Default type for legacy locations
-      airplane_types: 'ABCDEF', // Accept all aircraft types
+  private parseStartupLocationLegacy(tokens: string[], lineNum: number): StartupLocation | null {
+    if (tokens.length < 4) {
+      this.skipped++;
+      return null;
+    }
+
+    const rawHeading = parseFloat(tokens[3]);
+    const result = StartupLocationSchema.safeParse({
+      lat: parseFloat(tokens[1]),
+      lon: parseFloat(tokens[2]),
+      heading: rawHeading >= 0 && rawHeading <= 360 ? rawHeading : 0,
+      location_type: 'misc',
+      airplane_types: 'ABCDEF',
       name: tokens.slice(4).join(' ') || 'Startup',
+    });
+
+    if (!result.success) {
+      this.skipped++;
+      return null;
+    }
+
+    return {
+      latitude: result.data.lat,
+      longitude: result.data.lon,
+      heading: result.data.heading,
+      location_type: result.data.location_type,
+      airplane_types: result.data.airplane_types,
+      name: result.data.name,
     };
   }
 
-  private parseWindsock(tokens: string[]): Windsock | null {
-    if (tokens.length < 4) return null;
-    return {
+  private parseWindsock(tokens: string[], lineNum: number): Windsock | null {
+    if (tokens.length < 4) {
+      this.skipped++;
+      return null;
+    }
+
+    const result = coordinate.safeParse({
       latitude: parseFloat(tokens[1]),
       longitude: parseFloat(tokens[2]),
+    });
+
+    if (!result.success) {
+      this.skipped++;
+      return null;
+    }
+
+    return {
+      latitude: result.data.latitude,
+      longitude: result.data.longitude,
       illuminated: Boolean(parseInt(tokens[3])),
       name: tokens.slice(4).join(' '),
     };
   }
 
-  private parseSign(tokens: string[]): Sign | null {
-    if (tokens.length < 7) return null;
-    return {
+  private parseSign(tokens: string[], lineNum: number): Sign | null {
+    if (tokens.length < 7) {
+      this.skipped++;
+      return null;
+    }
+
+    const rawHeading = parseFloat(tokens[3]);
+    const coordResult = coordinate.safeParse({
       latitude: parseFloat(tokens[1]),
       longitude: parseFloat(tokens[2]),
-      heading: parseFloat(tokens[3]),
+    });
+    const headingResult = bearing.safeParse(rawHeading);
+
+    if (!coordResult.success) {
+      this.skipped++;
+      return null;
+    }
+
+    return {
+      latitude: coordResult.data.latitude,
+      longitude: coordResult.data.longitude,
+      heading: headingResult.success ? headingResult.data : 0,
       size: parseInt(tokens[5]),
       text: tokens[6],
     };
@@ -195,7 +348,8 @@ export class AirportParser {
     return features;
   }
 
-  parse(): ParsedAirport {
+  parse(): ParseResult<ParsedAirport> {
+    const startTime = Date.now();
     const airport: ParsedAirport = {
       id: '',
       name: '',
@@ -215,122 +369,111 @@ export class AirportParser {
     };
 
     for (let i = 0; i < this.lines.length; i++) {
+      const lineNum = i + 1; // 1-indexed for human readability
       const line = this.lines[i];
       const tokens = line.split(/\s+/);
       const code = parseInt(tokens[0]);
 
       switch (code) {
-        case RowCode.AIRPORT_HEADER:
-          airport.elevation = parseFloat(tokens[1]);
-          airport.id = tokens[4];
+        case RowCode.AIRPORT_HEADER: {
+          const elevation = parseFloat(tokens[1]);
+          airport.elevation = Number.isFinite(elevation) ? elevation : 0;
+          airport.id = tokens[4] || '';
           airport.name = tokens.slice(5).join(' ');
           break;
+        }
 
-        case RowCode.TOWER_LOCATION:
-          airport.towerLocation = {
-            latitude: parseFloat(tokens[1]),
-            longitude: parseFloat(tokens[2]),
-            height: parseFloat(tokens[3]),
-            name: tokens.slice(4).join(' '),
-          };
-          break;
+        case RowCode.TOWER_LOCATION: {
+          const lat = parseFloat(tokens[1]);
+          const lon = parseFloat(tokens[2]);
+          const height = parseFloat(tokens[3]);
 
-        case RowCode.BEACON:
-          airport.beacon = {
-            latitude: parseFloat(tokens[1]),
-            longitude: parseFloat(tokens[2]),
-            type: parseInt(tokens[3]),
-            name: tokens.slice(4).join(' '),
-          };
+          if (this.validateCoordinate(lat, lon, 'tower location', lineNum)) {
+            airport.towerLocation = {
+              latitude: lat,
+              longitude: lon,
+              height: Number.isFinite(height) ? height : 0,
+              name: tokens.slice(4).join(' '),
+            };
+          }
           break;
+        }
+
+        case RowCode.BEACON: {
+          const lat = parseFloat(tokens[1]);
+          const lon = parseFloat(tokens[2]);
+
+          if (this.validateCoordinate(lat, lon, 'beacon', lineNum)) {
+            airport.beacon = {
+              latitude: lat,
+              longitude: lon,
+              type: parseInt(tokens[3]),
+              name: tokens.slice(4).join(' '),
+            };
+          }
+          break;
+        }
 
         case RowCode.HELIPAD: {
-          const helipad: Helipad = {
+          const lat = parseFloat(tokens[2]);
+          const lon = parseFloat(tokens[3]);
+          const rawHeading = parseFloat(tokens[4]);
+          const rawLength = parseFloat(tokens[5]);
+          const rawWidth = parseFloat(tokens[6]);
+
+          const coordResult = coordinate.safeParse({ latitude: lat, longitude: lon });
+          if (!coordResult.success) {
+            this.skipped++;
+            break;
+          }
+
+          const headingResult = bearing.safeParse(rawHeading);
+          const lengthResult = positiveNumber.safeParse(rawLength);
+          const widthResult = positiveNumber.safeParse(rawWidth);
+
+          airport.helipads.push({
             name: tokens[1],
-            latitude: parseFloat(tokens[2]),
-            longitude: parseFloat(tokens[3]),
-            heading: parseFloat(tokens[4]),
-            length: parseFloat(tokens[5]),
-            width: parseFloat(tokens[6]),
+            latitude: lat,
+            longitude: lon,
+            heading: headingResult.success ? headingResult.data : 0,
+            length: lengthResult.success ? lengthResult.data : 1,
+            width: widthResult.success ? widthResult.data : 1,
             surface_type: parseInt(tokens[7]),
-          };
-          airport.helipads.push(helipad);
+          });
           break;
         }
 
         case RowCode.FREQUENCY_AWOS:
-          airport.frequencies.push({
-            type: FrequencyType.AWOS,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
-
         case RowCode.FREQUENCY_CTAF:
-          airport.frequencies.push({
-            type: FrequencyType.CTAF,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
-
         case RowCode.FREQUENCY_DELIVERY:
-          airport.frequencies.push({
-            type: FrequencyType.DELIVERY,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
-
         case RowCode.FREQUENCY_GROUND:
-          airport.frequencies.push({
-            type: FrequencyType.GROUND,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
-
         case RowCode.FREQUENCY_TOWER:
-          airport.frequencies.push({
-            type: FrequencyType.TOWER,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
-
         case RowCode.FREQUENCY_APPROACH:
-          airport.frequencies.push({
-            type: FrequencyType.APPROACH,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
-
         case RowCode.FREQUENCY_CENTER:
+        case RowCode.FREQUENCY_UNICOM: {
+          const freqType = this.getFrequencyType(code);
+          const freq = parseFloat(tokens[1]) / 100;
           airport.frequencies.push({
-            type: FrequencyType.CENTER,
-            frequency: parseFloat(tokens[1]) / 100,
+            type: freqType,
+            frequency: freq,
             name: tokens.slice(2).join(' '),
           });
           break;
-
-        case RowCode.FREQUENCY_UNICOM:
-          airport.frequencies.push({
-            type: FrequencyType.UNICOM,
-            frequency: parseFloat(tokens[1]) / 100,
-            name: tokens.slice(2).join(' '),
-          });
-          break;
+        }
 
         case RowCode.METADATA:
           airport.metadata[tokens[1]] = tokens[2];
           break;
 
         case RowCode.LAND_RUNWAY: {
-          if (tokens.length < 26) break; // Not enough tokens for runway
-          // Token[3] encodes shoulder info:
-          // If value >= 100: width = floor(value / 100) meters, surface = value % 100
-          // If value < 100: just surface type (0=none, 1=asphalt, 2=concrete)
+          if (tokens.length < 26) {
+            this.skipped++;
+            break;
+          }
+
+          const rawWidth = parseFloat(tokens[1]);
+          const widthResult = positiveNumber.safeParse(rawWidth);
+
           const shoulderToken = parseInt(tokens[3]);
           let shoulder_surface_type = shoulderToken;
           let shoulder_width = 0;
@@ -339,12 +482,15 @@ export class AirportParser {
             shoulder_surface_type = shoulderToken % 100;
           }
 
-          const end1 = this.parseRunwayEnd(tokens.slice(8, 17));
-          const end2 = this.parseRunwayEnd(tokens.slice(17, 26));
-          if (!end1 || !end2) break; // Invalid runway end data
+          const end1 = this.parseRunwayEnd(tokens.slice(8, 17), lineNum);
+          const end2 = this.parseRunwayEnd(tokens.slice(17, 26), lineNum);
+          if (!end1 || !end2) {
+            this.skipped++;
+            break;
+          }
 
-          const runway: Runway = {
-            width: parseFloat(tokens[1]),
+          airport.runways.push({
+            width: widthResult.success ? widthResult.data : 30,
             surface_type: parseInt(tokens[2]),
             shoulder_surface_type,
             shoulder_width,
@@ -353,8 +499,7 @@ export class AirportParser {
             edge_lights: Boolean(parseInt(tokens[6])),
             auto_distance_remaining_signs: Boolean(parseInt(tokens[7])),
             ends: [end1, end2],
-          };
-          airport.runways.push(runway);
+          });
           break;
         }
 
@@ -396,25 +541,25 @@ export class AirportParser {
         }
 
         case RowCode.START_LOCATION_LEGACY: {
-          const startupLocation = this.parseStartupLocationLegacy(tokens);
+          const startupLocation = this.parseStartupLocationLegacy(tokens, lineNum);
           if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
 
         case RowCode.START_LOCATION_NEW: {
-          const startupLocation = this.parseStartupLocation(tokens);
+          const startupLocation = this.parseStartupLocation(tokens, lineNum);
           if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
 
         case RowCode.WINDSOCK: {
-          const windsock = this.parseWindsock(tokens);
+          const windsock = this.parseWindsock(tokens, lineNum);
           if (windsock) airport.windsocks.push(windsock);
           break;
         }
 
         case RowCode.TAXI_SIGN: {
-          const sign = this.parseSign(tokens);
+          const sign = this.parseSign(tokens, lineNum);
           if (sign) airport.signs.push(sign);
           break;
         }
@@ -432,6 +577,27 @@ export class AirportParser {
       }
     }
 
-    return airport;
+    // Calculate stats
+    const parsedCount =
+      airport.runways.length +
+      airport.taxiways.length +
+      airport.startupLocations.length +
+      airport.windsocks.length +
+      airport.signs.length +
+      airport.helipads.length +
+      airport.frequencies.length +
+      (airport.towerLocation ? 1 : 0) +
+      (airport.beacon ? 1 : 0);
+
+    return {
+      data: airport,
+      errors: this.errors,
+      stats: {
+        total: this.lines.length,
+        parsed: parsedCount,
+        skipped: this.skipped,
+        timeMs: Date.now() - startTime,
+      },
+    };
   }
 }

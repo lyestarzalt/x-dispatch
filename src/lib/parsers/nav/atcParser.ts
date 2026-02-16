@@ -1,20 +1,14 @@
 /**
- * ATC Data Parser
- * Parses Navigraph atc.dat file containing ATC controller information
- *
- * File format example:
- * CONTROLLER
- * NAME ALGIERS
- * FACILITY_ID DAAA
- * ROLE ctr
- * FREQ 12045
- * AIRSPACE_POLYGON_BEGIN 0 60000
- * POINT 39.000000 4.666667
- * ...
- * AIRSPACE_POLYGON_END
+ * Parser for Navigraph atc.dat file
+ * Parses ATC controller data with frequencies and airspace polygons
  */
+import { z } from 'zod';
 import { LonLatPath } from '@/types/geo';
 import type { ATCController, ATCRole } from '@/types/navigation';
+import { lonLat, vhfFrequency } from '../schemas';
+import type { ParseError, ParseResult } from '../types';
+
+const ATCRoleSchema = z.enum(['ctr', 'app', 'twr', 'gnd', 'del']);
 
 interface ParsedAirspace {
   minAlt: number;
@@ -22,170 +16,94 @@ interface ParsedAirspace {
   polygon: LonLatPath;
 }
 
-/**
- * Parse ATC data content into ATCController array
- */
-export function parseATCData(content: string): ATCController[] {
+export function parseATCData(content: string): ParseResult<ATCController[]> {
+  const startTime = Date.now();
   const controllers: ATCController[] = [];
   const lines = content.split('\n');
+  const errors: ParseError[] = [];
+  let skipped = 0;
 
-  let currentController: Partial<ATCController> | null = null;
-  let currentAirspace: ParsedAirspace | null = null;
+  let current: Partial<ATCController> | null = null;
+  let airspace: ParsedAirspace | null = null;
   let inPolygon = false;
+
+  const finalize = () => {
+    if (!current?.name || !current?.facilityId || !current?.role) {
+      if (current) skipped++;
+      return;
+    }
+
+    controllers.push({
+      name: current.name,
+      facilityId: current.facilityId,
+      role: current.role,
+      frequencies: current.frequencies || [],
+      airspace: airspace || undefined,
+    });
+  };
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
 
-    if (!line || line.startsWith('#')) {
-      continue;
-    }
-
-    // Start of a new controller
     if (line === 'CONTROLLER') {
-      // Save previous controller if exists
-      if (
-        currentController &&
-        currentController.name &&
-        currentController.facilityId &&
-        currentController.role
-      ) {
-        controllers.push({
-          name: currentController.name,
-          facilityId: currentController.facilityId,
-          role: currentController.role,
-          frequencies: currentController.frequencies || [],
-          airspace: currentAirspace || undefined,
-        });
-      }
-
-      currentController = {
-        frequencies: [],
-      };
-      currentAirspace = null;
+      finalize();
+      current = { frequencies: [] };
+      airspace = null;
       inPolygon = false;
       continue;
     }
 
-    if (!currentController) {
-      continue;
-    }
+    if (!current) continue;
 
-    // Parse controller properties
     if (line.startsWith('NAME ')) {
-      currentController.name = line.substring(5).trim();
-      continue;
-    }
-
-    if (line.startsWith('FACILITY_ID ')) {
-      currentController.facilityId = line.substring(12).trim();
-      continue;
-    }
-
-    if (line.startsWith('ROLE ')) {
+      current.name = line.substring(5).trim();
+    } else if (line.startsWith('FACILITY_ID ')) {
+      current.facilityId = line.substring(12).trim();
+    } else if (line.startsWith('ROLE ')) {
       const role = line.substring(5).trim().toLowerCase();
-      if (isValidATCRole(role)) {
-        currentController.role = role;
-      }
-      continue;
-    }
-
-    if (line.startsWith('FREQ ')) {
-      const freqStr = line.substring(5).trim();
-      const freq = parseInt(freqStr, 10);
+      const result = ATCRoleSchema.safeParse(role);
+      if (result.success) current.role = result.data;
+    } else if (line.startsWith('FREQ ')) {
+      const freq = parseInt(line.substring(5).trim(), 10);
       if (!isNaN(freq)) {
-        // Convert from integer format (12045) to MHz (120.45)
         const freqMHz = freq / 100;
-        if (!currentController.frequencies) {
-          currentController.frequencies = [];
+        if (vhfFrequency.safeParse(freqMHz).success) {
+          current.frequencies = current.frequencies || [];
+          current.frequencies.push(freqMHz);
         }
-        currentController.frequencies.push(freqMHz);
       }
-      continue;
-    }
-
-    // Parse airspace polygon
-    if (line.startsWith('AIRSPACE_POLYGON_BEGIN')) {
+    } else if (line.startsWith('AIRSPACE_POLYGON_BEGIN')) {
       const parts = line.split(/\s+/);
-      const minAlt = parts[1] ? parseInt(parts[1], 10) : 0;
-      const maxAlt = parts[2] ? parseInt(parts[2], 10) : 99999;
-
-      currentAirspace = {
-        minAlt: isNaN(minAlt) ? 0 : minAlt,
-        maxAlt: isNaN(maxAlt) ? 99999 : maxAlt,
+      airspace = {
+        minAlt: parseInt(parts[1], 10) || 0,
+        maxAlt: parseInt(parts[2], 10) || 99999,
         polygon: [],
       };
       inPolygon = true;
-      continue;
-    }
-
-    if (line === 'AIRSPACE_POLYGON_END') {
+    } else if (line === 'AIRSPACE_POLYGON_END') {
       inPolygon = false;
-      continue;
-    }
-
-    if (inPolygon && line.startsWith('POINT ') && currentAirspace) {
+    } else if (inPolygon && line.startsWith('POINT ') && airspace) {
       const parts = line.split(/\s+/);
       if (parts.length >= 3) {
         const lat = parseFloat(parts[1]);
         const lon = parseFloat(parts[2]);
-        if (!isNaN(lat) && !isNaN(lon)) {
-          currentAirspace.polygon.push([lon, lat]);
-        }
+        const result = lonLat.safeParse([lon, lat]);
+        if (result.success) airspace.polygon.push([result.data[0], result.data[1]]);
       }
-      continue;
     }
   }
 
-  // Don't forget the last controller
-  if (
-    currentController &&
-    currentController.name &&
-    currentController.facilityId &&
-    currentController.role
-  ) {
-    controllers.push({
-      name: currentController.name,
-      facilityId: currentController.facilityId,
-      role: currentController.role,
-      frequencies: currentController.frequencies || [],
-      airspace: currentAirspace || undefined,
-    });
-  }
+  finalize();
 
-  return controllers;
-}
-
-/**
- * Type guard for ATCRole
- */
-function isValidATCRole(role: string): role is ATCRole {
-  return ['ctr', 'app', 'twr', 'gnd', 'del'].includes(role);
-}
-
-/**
- * Get controllers by role
- */
-function filterControllersByRole(controllers: ATCController[], role: ATCRole): ATCController[] {
-  return controllers.filter((c) => c.role === role);
-}
-
-/**
- * Get controller by facility ID
- */
-function getControllerByFacility(
-  controllers: ATCController[],
-  facilityId: string
-): ATCController | null {
-  return controllers.find((c) => c.facilityId.toUpperCase() === facilityId.toUpperCase()) || null;
-}
-
-/**
- * Search controllers by name or facility ID
- */
-function searchControllers(controllers: ATCController[], query: string): ATCController[] {
-  const upperQuery = query.toUpperCase();
-  return controllers.filter(
-    (c) =>
-      c.name.toUpperCase().includes(upperQuery) || c.facilityId.toUpperCase().includes(upperQuery)
-  );
+  return {
+    data: controllers,
+    errors,
+    stats: {
+      total: lines.length,
+      parsed: controllers.length,
+      skipped,
+      timeMs: Date.now() - startTime,
+    },
+  };
 }

@@ -6,15 +6,7 @@
  * because renderer can't directly connect to local WebSocket.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PlaneState } from '@/types/xplane';
-
-export interface PlanePosition {
-  lat: number;
-  lng: number;
-  altitude: number;
-  heading: number;
-  groundspeed: number;
-}
+import type { PlanePosition, PlaneState } from '@/types/xplane';
 
 /**
  * Live plane state streaming via WebSocket

@@ -157,11 +157,9 @@ export interface HoldingPattern {
 // Airport Metadata (from nav data)
 // ============================================================================
 
-export interface AirportMetadata {
+export interface AirportMetadata extends Coordinates {
   icao: string;
   region: string;
-  latitude: number;
-  longitude: number;
   elevation: number;
   airportClass: 'C' | 'P';
   longestRunway: number;

@@ -1,3 +1,5 @@
+import type { Coordinates } from './geo';
+
 export type WeatherPresetName =
   | 'real'
   | 'clear'
@@ -7,9 +9,7 @@ export type WeatherPresetName =
   | 'snowy'
   | 'foggy';
 
-export interface PlaneState {
-  latitude: number;
-  longitude: number;
+export interface PlaneState extends Coordinates {
   altitudeMSL: number;
   altitudeAGL: number;
   heading: number;

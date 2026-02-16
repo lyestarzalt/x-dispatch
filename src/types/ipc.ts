@@ -2,6 +2,7 @@
  * IPC Types - Electron IPC response formats
  * Types used for communication between main and renderer processes
  */
+import type { Coordinates } from './geo';
 
 // ============================================================================
 // API Response Types
@@ -43,12 +44,10 @@ export interface NavLoadResult {
   error?: string;
 }
 
-export interface NavSearchResult {
+export interface NavSearchResult extends Coordinates {
   type: 'VOR' | 'NDB' | 'DME' | 'ILS' | 'WAYPOINT';
   id: string;
   name: string;
-  latitude: number;
-  longitude: number;
   frequency?: number;
 }
 

@@ -2,24 +2,15 @@
  * X-Plane Data Manager
  * Unified manager for all X-Plane navigation and airport data
  */
-import { count, eq, like, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
-import * as path from 'path';
-import * as readline from 'readline';
-import { airports, aptFileMeta, closeDb, getDb, saveDb } from '@/lib/db';
-import { parseAirspaces } from '@/lib/parsers/nav/airspaceParser';
-import { parseAirways } from '@/lib/parsers/nav/airwayParser';
-import { parseAirportMetadata } from '@/lib/parsers/nav/aptMetaParser';
-import { parseATCData } from '@/lib/parsers/nav/atcParser';
-import { AirportProcedures, parseCIFP } from '@/lib/parsers/nav/cifpParser';
-import { parseHoldingPatterns } from '@/lib/parsers/nav/holdParser';
-import { parseNavaids } from '@/lib/parsers/nav/navaidParser';
+import { airports, aptFileMeta, closeDb, getDb } from '@/lib/db';
+import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
 import {
   ResolvedAirportProcedures,
   createProcedureCoordResolver,
   enrichProceduresWithCoordinates,
 } from '@/lib/parsers/nav/procedureCoordResolver';
-import { parseWaypoints } from '@/lib/parsers/nav/waypointParser';
 import { distanceNm } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
@@ -34,8 +25,22 @@ import type {
   NavaidType,
   Waypoint,
 } from '@/types/navigation';
+import {
+  getAllAirports as getAllAirportsFromDb,
+  getCustomSceneryAptFiles,
+  loadAirports,
+} from './airports';
 import { getXPlanePath, setXPlanePath } from './config';
 import { NavDataSources, detectAllDataSources } from './cycleInfo';
+import {
+  loadATCData,
+  loadAirportMetadata,
+  loadAirspaces,
+  loadAirways,
+  loadHoldingPatterns,
+  loadNavaids,
+  loadWaypoints,
+} from './navdata';
 import {
   detectXPlanePaths,
   getAirspaceDataPath,
@@ -49,95 +54,11 @@ import {
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
-import type { AptFileInfo, CacheCheckResult, ParsedAirportEntry } from './types';
+import type { Airport, AirportSourceBreakdown, DataLoadStatus, LoadStatusFlags } from './types';
+import { isInBoundingBox } from './utils';
 
+export type { Airport, AirportSourceBreakdown, DataLoadStatus } from './types';
 export type { AirwaySegmentWithCoords } from '@/types/navigation';
-
-/**
- * Fast async file reader for large files
- */
-class FastFileReader {
-  private filePath: string;
-
-  constructor(filePath: string) {
-    this.filePath = filePath;
-  }
-
-  async *readLines(): AsyncGenerator<{ line: string; position: number }> {
-    const fileStream = fs.createReadStream(this.filePath, { encoding: 'utf-8' });
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity,
-    });
-
-    let position = 0;
-    for await (const line of rl) {
-      position += Buffer.byteLength(line, 'utf-8') + 1; // +1 for newline
-      yield { line, position };
-    }
-  }
-}
-
-export interface Airport {
-  icao: string;
-  name: string;
-  lat: number;
-  lon: number;
-  type: 'land' | 'seaplane' | 'heliport';
-}
-
-export interface AirportSourceBreakdown {
-  globalAirports: number;
-  customScenery: number;
-  customSceneryPacks: number;
-}
-
-export interface DataLoadStatus {
-  xplanePath: string | null;
-  pathValid: boolean;
-  airports: {
-    loaded: boolean;
-    count: number;
-    source: string | null;
-    breakdown: AirportSourceBreakdown;
-  };
-  navaids: {
-    loaded: boolean;
-    count: number;
-    byType: Record<string, number>;
-    source: string | null;
-  };
-  waypoints: { loaded: boolean; count: number; source: string | null };
-  airspaces: { loaded: boolean; count: number; source: string | null };
-  airways: { loaded: boolean; count: number; source: string | null };
-  // New data types
-  atc: { loaded: boolean; count: number; source: string | null } | null;
-  holds: { loaded: boolean; count: number; source: string | null } | null;
-  aptMeta: { loaded: boolean; count: number; source: string | null } | null;
-  // Data sources info
-  sources: NavDataSources | null;
-}
-
-/**
- * Quick bounding box check
- */
-function isInBoundingBox(
-  lat: number,
-  lon: number,
-  centerLat: number,
-  centerLon: number,
-  radiusNm: number
-): boolean {
-  const degPerNm = 1 / 60;
-  const latRange = radiusNm * degPerNm;
-  const lonRange = (radiusNm * degPerNm) / Math.cos((centerLat * Math.PI) / 180);
-  return (
-    lat >= centerLat - latRange &&
-    lat <= centerLat + latRange &&
-    lon >= centerLon - lonRange &&
-    lon <= centerLon + lonRange
-  );
-}
 
 export class XPlaneDataManager {
   private xplanePath: string | null = null;
@@ -156,7 +77,7 @@ export class XPlaneDataManager {
   // Data sources info
   private dataSources: NavDataSources | null = null;
 
-  private loadStatus = {
+  private loadStatus: LoadStatusFlags = {
     airports: false,
     navaids: false,
     waypoints: false,
@@ -168,14 +89,13 @@ export class XPlaneDataManager {
   };
 
   // Track airport source breakdown
-  private airportSourceCounts = {
+  private airportSourceCounts: AirportSourceBreakdown = {
     globalAirports: 0,
     customScenery: 0,
     customSceneryPacks: 0,
   };
 
   constructor() {
-    // Initialize Drizzle database (creates tables if needed)
     getDb();
   }
 
@@ -251,11 +171,11 @@ export class XPlaneDataManager {
 
     // Load all data in parallel (core data)
     const results = await Promise.allSettled([
-      this.loadAirports(pathToUse),
-      this.loadNavaids(pathToUse),
-      this.loadWaypoints(pathToUse),
-      this.loadAirspaces(pathToUse),
-      this.loadAirways(pathToUse),
+      this.loadAirportsInternal(pathToUse),
+      this.loadNavaidsInternal(pathToUse),
+      this.loadWaypointsInternal(pathToUse),
+      this.loadAirspacesInternal(pathToUse),
+      this.loadAirwaysInternal(pathToUse),
     ]);
 
     // Log any failures
@@ -268,9 +188,9 @@ export class XPlaneDataManager {
 
     // Load optional/new data types (non-blocking)
     await Promise.allSettled([
-      this.loadATCData(pathToUse),
-      this.loadHoldingPatterns(pathToUse),
-      this.loadAirportMetadata(pathToUse),
+      this.loadATCDataInternal(pathToUse),
+      this.loadHoldingPatternsInternal(pathToUse),
+      this.loadAirportMetadataInternal(pathToUse),
     ]);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -282,690 +202,125 @@ export class XPlaneDataManager {
     return status;
   }
 
-  /**
-   * Public methods for individual data loading (used for progress reporting)
-   */
+  // ==================== Internal Load Methods ====================
+
+  private async loadAirportsInternal(xplanePath: string): Promise<void> {
+    const result = await loadAirports(xplanePath);
+    this.airportSourceCounts = result.breakdown;
+    this.loadStatus.airports = true;
+  }
+
+  private async loadNavaidsInternal(xplanePath: string): Promise<void> {
+    const result = await loadNavaids(xplanePath);
+    this.navaids = result.data;
+    this.loadStatus.navaids = result.loaded;
+  }
+
+  private async loadWaypointsInternal(xplanePath: string): Promise<void> {
+    const result = await loadWaypoints(xplanePath);
+    this.waypoints = result.data;
+    this.loadStatus.waypoints = result.loaded;
+  }
+
+  private async loadAirspacesInternal(xplanePath: string): Promise<void> {
+    const result = await loadAirspaces(xplanePath);
+    this.airspaces = result.data;
+    this.loadStatus.airspaces = result.loaded;
+  }
+
+  private async loadAirwaysInternal(xplanePath: string): Promise<void> {
+    const result = await loadAirways(xplanePath);
+    this.airways = result.data;
+    this.loadStatus.airways = result.loaded;
+  }
+
+  private async loadATCDataInternal(xplanePath: string): Promise<void> {
+    const result = await loadATCData(xplanePath);
+    this.atcControllers = result.data;
+    this.loadStatus.atc = result.loaded;
+  }
+
+  private async loadHoldingPatternsInternal(xplanePath: string): Promise<void> {
+    const result = await loadHoldingPatterns(xplanePath);
+    this.holdingPatterns = result.data;
+    this.loadStatus.holds = result.loaded;
+  }
+
+  private async loadAirportMetadataInternal(xplanePath: string): Promise<void> {
+    const result = await loadAirportMetadata(xplanePath);
+    this.airportMetadata = result.data;
+    this.loadStatus.aptMeta = result.loaded;
+  }
+
+  // ==================== Public Individual Load Methods ====================
+
   async loadAirportsOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadAirports(pathToUse);
+    await this.loadAirportsInternal(pathToUse);
   }
 
   async loadNavaidsOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadNavaids(pathToUse);
+    await this.loadNavaidsInternal(pathToUse);
   }
 
   async loadWaypointsOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadWaypoints(pathToUse);
+    await this.loadWaypointsInternal(pathToUse);
   }
 
   async loadAirspacesOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadAirspaces(pathToUse);
+    await this.loadAirspacesInternal(pathToUse);
   }
 
   async loadAirwaysOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadAirways(pathToUse);
+    await this.loadAirwaysInternal(pathToUse);
   }
 
   async loadATCDataOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadATCData(pathToUse);
+    await this.loadATCDataInternal(pathToUse);
   }
 
   async loadHoldingPatternsOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadHoldingPatterns(pathToUse);
+    await this.loadHoldingPatternsInternal(pathToUse);
   }
 
   async loadAirportMetadataOnly(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadAirportMetadata(pathToUse);
-  }
-
-  /**
-   * Compute airport breakdown from database (used when cache is valid)
-   */
-  private computeAirportBreakdownFromDb(xplanePath: string): void {
-    const db = getDb();
-
-    // Count total airports
-    const totalResult = db.select({ count: count() }).from(airports).get();
-    const total = totalResult?.count || 0;
-
-    // Count custom scenery airports (sourceFile contains 'Custom Scenery')
-    const customResult = db
-      .select({ count: count() })
-      .from(airports)
-      .where(like(airports.sourceFile, '%Custom Scenery%'))
-      .get();
-    const customCount = customResult?.count || 0;
-
-    // Count custom scenery packs from aptFileMeta
-    const customPacks = db
-      .select()
-      .from(aptFileMeta)
-      .where(like(aptFileMeta.path, '%Custom Scenery%'))
-      .all();
-
-    this.airportSourceCounts = {
-      globalAirports: total - customCount,
-      customScenery: customCount,
-      customSceneryPacks: customPacks.length,
-    };
-
-    logger.data.info(
-      `Airport breakdown from cache: ${this.airportSourceCounts.globalAirports} Global, ${customCount} Custom (${customPacks.length} packs)`
-    );
-  }
-
-  /**
-   * Get file modification time in milliseconds
-   */
-  private getFileMtime(filePath: string): number | null {
-    try {
-      const stat = fs.statSync(filePath);
-      return Math.floor(stat.mtimeMs);
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Get stored file metadata from database
-   */
-  private getStoredFileMeta(): Map<string, number> {
-    const db = getDb();
-    const stored = db.select().from(aptFileMeta).all();
-    const map = new Map<string, number>();
-    for (const row of stored) {
-      map.set(row.path, row.mtime);
-    }
-    return map;
-  }
-
-  /**
-   * Get current apt.dat files with their mtimes
-   */
-  private getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
-    const files: AptFileInfo[] = [];
-
-    // Global apt.dat
-    const globalPath = getAptDataPath(xplanePath);
-    const globalMtime = this.getFileMtime(globalPath);
-    if (globalMtime !== null) {
-      files.push({ path: globalPath, mtime: globalMtime });
-    }
-
-    // Custom Scenery apt.dat files
-    const customFiles = this.getCustomSceneryAptFiles(xplanePath);
-    for (const customPath of customFiles) {
-      const mtime = this.getFileMtime(customPath);
-      if (mtime !== null) {
-        files.push({ path: customPath, mtime });
-      }
-    }
-
-    return files;
-  }
-
-  /**
-   * Check if cache needs to be reloaded
-   */
-  private checkCacheValidity(xplanePath: string): CacheCheckResult {
-    const stored = this.getStoredFileMeta();
-    const current = this.getCurrentAptFiles(xplanePath);
-
-    const changedFiles: string[] = [];
-    const newFiles: string[] = [];
-    const deletedFiles: string[] = [];
-
-    const currentPaths = new Set(current.map((f) => f.path));
-
-    // Check for changed or new files
-    for (const file of current) {
-      const storedMtime = stored.get(file.path);
-      if (storedMtime === undefined) {
-        newFiles.push(file.path);
-      } else if (storedMtime !== file.mtime) {
-        changedFiles.push(file.path);
-      }
-    }
-
-    // Check for deleted files
-    for (const storedPath of stored.keys()) {
-      if (!currentPaths.has(storedPath)) {
-        deletedFiles.push(storedPath);
-      }
-    }
-
-    const needsReload = changedFiles.length > 0 || newFiles.length > 0 || deletedFiles.length > 0;
-
-    return { needsReload, changedFiles, newFiles, deletedFiles };
-  }
-
-  /**
-   * Update stored file metadata after successful load
-   */
-  private updateStoredFileMeta(files: AptFileInfo[], airportCounts: Map<string, number>): void {
-    const db = getDb();
-
-    // Clear existing
-    db.delete(aptFileMeta).run();
-
-    // Insert current state
-    const entries = files.map((f) => ({
-      path: f.path,
-      mtime: f.mtime,
-      airportCount: airportCounts.get(f.path) ?? 0,
-    }));
-
-    if (entries.length > 0) {
-      db.insert(aptFileMeta).values(entries).run();
-    }
-  }
-
-  /**
-   * Find all Custom Scenery apt.dat files
-   */
-  private getCustomSceneryAptFiles(xplanePath: string): string[] {
-    const customSceneryPath = path.join(xplanePath, 'Custom Scenery');
-    const aptFiles: string[] = [];
-
-    if (!fs.existsSync(customSceneryPath)) {
-      return aptFiles;
-    }
-
-    try {
-      const entries = fs.readdirSync(customSceneryPath, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const aptPath = path.join(customSceneryPath, entry.name, 'Earth nav data', 'apt.dat');
-          if (fs.existsSync(aptPath)) {
-            aptFiles.push(aptPath);
-          }
-        }
-      }
-    } catch (err) {
-      logger.data.warn('Error scanning Custom Scenery:', err);
-    }
-
-    return aptFiles;
-  }
-
-  /**
-   * Parse a single apt.dat file and return airport data with metadata
-   */
-  private async parseAptFile(aptPath: string): Promise<Map<string, ParsedAirportEntry>> {
-    const airports = new Map<string, ParsedAirportEntry>();
-
-    const reader = new FastFileReader(aptPath);
-
-    let currentAirport: {
-      icao: string;
-      name: string;
-      datumLat: number;
-      datumLon: number;
-      runwayLat: number;
-      runwayLon: number;
-      elevation: number;
-      type: 'land' | 'seaplane' | 'heliport';
-      data: string[];
-      // Metadata
-      city?: string;
-      country?: string;
-      iataCode?: string;
-      faaCode?: string;
-      regionCode?: string;
-      state?: string;
-      transitionAlt?: number;
-      transitionLevel?: string;
-      towerServiceType?: string;
-      driveOnLeft?: boolean;
-      guiLabel?: string;
-    } | null = null;
-
-    const finalizeAirport = () => {
-      if (!currentAirport) return;
-
-      // Prefer datum coordinates, fallback to runway/helipad coordinates
-      const lat = currentAirport.datumLat || currentAirport.runwayLat;
-      const lon = currentAirport.datumLon || currentAirport.runwayLon;
-
-      if (lat && lon) {
-        airports.set(currentAirport.icao, {
-          icao: currentAirport.icao,
-          name: currentAirport.name,
-          lat,
-          lon,
-          type: currentAirport.type,
-          elevation: currentAirport.elevation || undefined,
-          data: currentAirport.data.join('\n'),
-          sourceFile: aptPath,
-          // Metadata
-          city: currentAirport.city,
-          country: currentAirport.country,
-          iataCode: currentAirport.iataCode,
-          faaCode: currentAirport.faaCode,
-          regionCode: currentAirport.regionCode,
-          state: currentAirport.state,
-          transitionAlt: currentAirport.transitionAlt,
-          transitionLevel: currentAirport.transitionLevel,
-          towerServiceType: currentAirport.towerServiceType,
-          driveOnLeft: currentAirport.driveOnLeft,
-          guiLabel: currentAirport.guiLabel,
-        });
-      }
-    };
-
-    for await (const { line } of reader.readLines()) {
-      if (line.trim() === '99') {
-        finalizeAirport();
-        break;
-      }
-
-      // Airport/Seaplane/Heliport header (row codes 1, 16, 17)
-      if (line.match(/^(1|16|17)\s/)) {
-        finalizeAirport();
-
-        const parts = line.split(/\s+/);
-        if (parts.length >= 5) {
-          currentAirport = {
-            icao: parts[4],
-            name: parts.slice(5).join(' '),
-            datumLat: 0,
-            datumLon: 0,
-            runwayLat: 0,
-            runwayLon: 0,
-            elevation: parseInt(parts[1]) || 0,
-            type: parts[0] === '1' ? 'land' : parts[0] === '16' ? 'seaplane' : 'heliport',
-            data: [line],
-          };
-        }
-        continue;
-      }
-
-      if (!currentAirport) continue;
-
-      // Metadata (row code 1302)
-      if (line.startsWith('1302 ')) {
-        const parts = line.split(/\s+/);
-        const key = parts[1];
-        const value = parts.slice(2).join(' ').trim();
-
-        if (value) {
-          switch (key) {
-            case 'city':
-              currentAirport.city = value;
-              break;
-            case 'country':
-              currentAirport.country = value;
-              break;
-            case 'iata_code':
-              currentAirport.iataCode = value;
-              break;
-            case 'faa_code':
-              currentAirport.faaCode = value;
-              break;
-            case 'region_code':
-              currentAirport.regionCode = value;
-              break;
-            case 'state':
-              currentAirport.state = value;
-              break;
-            case 'transition_alt':
-              currentAirport.transitionAlt = parseInt(value) || undefined;
-              break;
-            case 'transition_level':
-              currentAirport.transitionLevel = value;
-              break;
-            case 'tower_service_type':
-              currentAirport.towerServiceType = value;
-              break;
-            case 'drive_on_left':
-              currentAirport.driveOnLeft = value === '1';
-              break;
-            case 'gui_label':
-              currentAirport.guiLabel = value;
-              break;
-            case 'datum_lat':
-              currentAirport.datumLat = parseFloat(value);
-              break;
-            case 'datum_lon':
-              currentAirport.datumLon = parseFloat(value);
-              break;
-          }
-        }
-      }
-
-      // Runway (row code 100) - extract first runway end coordinates as fallback
-      if (line.startsWith('100 ') && !currentAirport.runwayLat) {
-        const parts = line.split(/\s+/);
-        if (parts.length >= 10) {
-          const lat = parseFloat(parts[9]);
-          const lon = parseFloat(parts[10]);
-          if (!isNaN(lat) && !isNaN(lon)) {
-            currentAirport.runwayLat = lat;
-            currentAirport.runwayLon = lon;
-          }
-        }
-      }
-
-      // Helipad (row code 102) - extract coordinates as fallback
-      if (line.startsWith('102 ') && !currentAirport.runwayLat) {
-        const parts = line.split(/\s+/);
-        if (parts.length >= 4) {
-          const lat = parseFloat(parts[2]);
-          const lon = parseFloat(parts[3]);
-          if (!isNaN(lat) && !isNaN(lon)) {
-            currentAirport.runwayLat = lat;
-            currentAirport.runwayLon = lon;
-          }
-        }
-      }
-
-      currentAirport.data.push(line);
-    }
-
-    return airports;
-  }
-
-  /**
-   * Load airport data from Global Airports and Custom Scenery
-   * Uses batch inserts for performance and checks cache validity
-   */
-  private async loadAirports(xplanePath: string): Promise<void> {
-    // Check if we need to reload
-    const cacheCheck = this.checkCacheValidity(xplanePath);
-
-    if (!cacheCheck.needsReload) {
-      logger.data.info('Airport cache is valid, skipping reload');
-      this.computeAirportBreakdownFromDb(xplanePath);
-      this.loadStatus.airports = true;
-      return;
-    }
-
-    if (cacheCheck.changedFiles.length > 0) {
-      logger.data.info(`Changed apt.dat files: ${cacheCheck.changedFiles.length}`);
-    }
-    if (cacheCheck.newFiles.length > 0) {
-      logger.data.info(`New apt.dat files: ${cacheCheck.newFiles.length}`);
-    }
-    if (cacheCheck.deletedFiles.length > 0) {
-      logger.data.info(`Deleted apt.dat files: ${cacheCheck.deletedFiles.length}`);
-    }
-
-    const globalAptPath = getAptDataPath(xplanePath);
-    const customAptFiles = this.getCustomSceneryAptFiles(xplanePath);
-    const currentFiles = this.getCurrentAptFiles(xplanePath);
-
-    // Store all airports by ICAO (Custom Scenery will override Global)
-    const allAirports = new Map<string, ParsedAirportEntry>();
-    const airportCounts = new Map<string, number>();
-
-    // Track which ICAOs came from Global vs Custom
-    const globalIcaos = new Set<string>();
-    const customIcaos = new Set<string>();
-
-    // 1. Load Global Airports first
-    if (fs.existsSync(globalAptPath)) {
-      logger.data.info(`Loading Global Airports from: ${globalAptPath}`);
-      const globalAirports = await this.parseAptFile(globalAptPath);
-      airportCounts.set(globalAptPath, globalAirports.size);
-      for (const [icao, airport] of globalAirports) {
-        allAirports.set(icao, airport);
-        globalIcaos.add(icao);
-      }
-      logger.data.info(`Loaded ${globalAirports.size} airports from Global Airports`);
-    } else {
-      logger.data.warn(`Global apt.dat not found: ${globalAptPath}`);
-    }
-
-    // 2. Load Custom Scenery (overrides Global)
-    if (customAptFiles.length > 0) {
-      logger.data.info(`Found ${customAptFiles.length} Custom Scenery apt.dat files`);
-      for (const aptFile of customAptFiles) {
-        const customAirports = await this.parseAptFile(aptFile);
-        airportCounts.set(aptFile, customAirports.size);
-        for (const [icao, airport] of customAirports) {
-          allAirports.set(icao, airport); // Override global
-          customIcaos.add(icao);
-        }
-      }
-    }
-
-    // Calculate source breakdown
-    const customCount = customIcaos.size;
-    const globalOnlyCount = [...globalIcaos].filter((icao) => !customIcaos.has(icao)).length;
-
-    this.airportSourceCounts = {
-      globalAirports: globalOnlyCount,
-      customScenery: customCount,
-      customSceneryPacks: customAptFiles.length,
-    };
-
-    logger.data.info(
-      `Airport breakdown: ${globalOnlyCount} from Global, ${customCount} from Custom Scenery (${customAptFiles.length} packs)`
-    );
-
-    // 3. Batch insert all airports into database
-    const db = getDb();
-    const startInsert = Date.now();
-
-    // Clear existing airports
-    db.delete(airports).run();
-
-    // Convert to array for batch insert
-    const airportArray = Array.from(allAirports.values()).map((a) => ({
-      icao: a.icao,
-      name: a.name,
-      lat: a.lat,
-      lon: a.lon,
-      type: a.type,
-      elevation: a.elevation,
-      data: a.data,
-      sourceFile: a.sourceFile,
-      city: a.city,
-      country: a.country,
-      iataCode: a.iataCode,
-      faaCode: a.faaCode,
-      regionCode: a.regionCode,
-      state: a.state,
-      transitionAlt: a.transitionAlt,
-      transitionLevel: a.transitionLevel,
-      towerServiceType: a.towerServiceType,
-      driveOnLeft: a.driveOnLeft,
-      guiLabel: a.guiLabel,
-    }));
-
-    // Batch insert in chunks of 500
-    const CHUNK_SIZE = 500;
-    for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
-      const chunk = airportArray.slice(i, i + CHUNK_SIZE);
-      db.insert(airports).values(chunk).run();
-    }
-
-    const insertTime = Date.now() - startInsert;
-    logger.data.info(`Batch inserted ${allAirports.size} airports in ${insertTime}ms`);
-
-    // 4. Update file metadata cache
-    this.updateStoredFileMeta(currentFiles, airportCounts);
-
-    // 5. Save database
-    saveDb();
-    logger.data.info(`Stored ${allAirports.size} total airports (Global + Custom Scenery)`);
-
-    this.loadStatus.airports = true;
-  }
-
-  /**
-   * Load navaids from earth_nav.dat
-   */
-  private async loadNavaids(xplanePath: string): Promise<void> {
-    const navPath = getNavDataPath(xplanePath);
-
-    if (!fs.existsSync(navPath)) {
-      logger.data.warn(`earth_nav.dat not found: ${navPath}`);
-      return;
-    }
-
-    const content = await fs.promises.readFile(navPath, 'utf-8');
-    this.navaids = parseNavaids(content);
-    this.loadStatus.navaids = true;
-  }
-
-  /**
-   * Load waypoints from earth_fix.dat
-   */
-  private async loadWaypoints(xplanePath: string): Promise<void> {
-    const fixPath = getFixDataPath(xplanePath);
-
-    if (!fs.existsSync(fixPath)) {
-      logger.data.warn(`earth_fix.dat not found: ${fixPath}`);
-      return;
-    }
-
-    const content = await fs.promises.readFile(fixPath, 'utf-8');
-    this.waypoints = parseWaypoints(content);
-    this.loadStatus.waypoints = true;
-  }
-
-  /**
-   * Load airspaces from airspace.txt
-   */
-  private async loadAirspaces(xplanePath: string): Promise<void> {
-    const airspacePath = getAirspaceDataPath(xplanePath);
-
-    if (!fs.existsSync(airspacePath)) {
-      logger.data.warn(`airspace.txt not found: ${airspacePath}`);
-      return;
-    }
-
-    const content = await fs.promises.readFile(airspacePath, 'utf-8');
-    this.airspaces = parseAirspaces(content);
-    this.loadStatus.airspaces = true;
-  }
-
-  /**
-   * Load airways from earth_awy.dat
-   */
-  private async loadAirways(xplanePath: string): Promise<void> {
-    const awyPath = getAirwayDataPath(xplanePath);
-
-    if (!fs.existsSync(awyPath)) {
-      logger.data.warn(`earth_awy.dat not found: ${awyPath}`);
-      return;
-    }
-
-    const content = await fs.promises.readFile(awyPath, 'utf-8');
-    this.airways = parseAirways(content);
-    this.loadStatus.airways = true;
-  }
-
-  /**
-   * Load ATC data from Navigraph atc.dat
-   */
-  private async loadATCData(xplanePath: string): Promise<void> {
-    const atcPath = getAtcDataPath(xplanePath);
-
-    if (!atcPath) {
-      logger.data.debug('ATC data file not found (Navigraph-only feature)');
-      return;
-    }
-
-    try {
-      const content = await fs.promises.readFile(atcPath, 'utf-8');
-      this.atcControllers = parseATCData(content);
-      this.loadStatus.atc = true;
-      logger.data.info(`Loaded ${this.atcControllers.length} ATC controllers`);
-    } catch (error) {
-      logger.data.warn('Failed to load ATC data:', error);
-    }
-  }
-
-  /**
-   * Load holding patterns from earth_hold.dat
-   */
-  private async loadHoldingPatterns(xplanePath: string): Promise<void> {
-    const holdPath = getHoldDataPath(xplanePath);
-
-    if (!fs.existsSync(holdPath)) {
-      logger.data.debug(`earth_hold.dat not found: ${holdPath}`);
-      return;
-    }
-
-    try {
-      const content = await fs.promises.readFile(holdPath, 'utf-8');
-      this.holdingPatterns = parseHoldingPatterns(content);
-      this.loadStatus.holds = true;
-      logger.data.info(`Loaded ${this.holdingPatterns.length} holding patterns`);
-    } catch (error) {
-      logger.data.warn('Failed to load holding patterns:', error);
-    }
-  }
-
-  /**
-   * Load airport metadata from earth_aptmeta.dat
-   */
-  private async loadAirportMetadata(xplanePath: string): Promise<void> {
-    const aptMetaPath = getAptMetaDataPath(xplanePath);
-
-    if (!fs.existsSync(aptMetaPath)) {
-      logger.data.debug(`earth_aptmeta.dat not found: ${aptMetaPath}`);
-      return;
-    }
-
-    try {
-      const content = await fs.promises.readFile(aptMetaPath, 'utf-8');
-      this.airportMetadata = parseAirportMetadata(content);
-      this.loadStatus.aptMeta = true;
-      logger.data.info(`Loaded ${this.airportMetadata.size} airport metadata entries`);
-    } catch (error) {
-      logger.data.warn('Failed to load airport metadata:', error);
-    }
+    await this.loadAirportMetadataInternal(pathToUse);
   }
 
   // ==================== Query Methods ====================
 
   /**
-   * Get all airports using Drizzle
+   * Get all airports using database
    */
   getAllAirports(): Airport[] {
-    const db = getDb();
-    const results = db
-      .select({
-        icao: airports.icao,
-        name: airports.name,
-        lat: airports.lat,
-        lon: airports.lon,
-        type: airports.type,
-      })
-      .from(airports)
-      .all();
-
-    return results as Airport[];
+    return getAllAirportsFromDb();
   }
 
   /**
-   * Get airport data by ICAO using Drizzle
+   * Get airport data by ICAO
    */
   getAirportData(icao: string): string | null {
     const db = getDb();
@@ -1012,11 +367,10 @@ export class XPlaneDataManager {
       const airportCoords = this.getAirportCoordinates(icao);
 
       // Create resolver with global waypoint and navaid data + airport location
-      // The airport location is used for proximity-based fallback when region match fails
       const resolver = createProcedureCoordResolver(this.waypoints, this.navaids, {
         airportLat: airportCoords?.lat,
         airportLon: airportCoords?.lon,
-        maxFallbackDistanceNm: 500, // Only match waypoints within 500nm of airport
+        maxFallbackDistanceNm: 500,
       });
 
       // Enrich procedures with resolved coordinates
@@ -1205,7 +559,6 @@ export class XPlaneDataManager {
 
   /**
    * Get airways within radius with resolved coordinates
-   * Builds a fix lookup map from waypoints + navaids, then resolves airway endpoints
    */
   getAirwaysInRadius(
     lat: number,
@@ -1213,43 +566,20 @@ export class XPlaneDataManager {
     radiusNm: number,
     limit: number = 3000
   ): AirwaySegmentWithCoords[] {
-    // Build fix lookup map: key = "fixId:region" or just "fixId"
-    const fixCoords = new Map<string, { lat: number; lon: number }>();
-
-    // Add waypoints to lookup
-    for (const wp of this.waypoints) {
-      // Key with region for specificity
-      fixCoords.set(`${wp.id}:${wp.region}`, { lat: wp.latitude, lon: wp.longitude });
-      // Also key without region as fallback
-      if (!fixCoords.has(wp.id)) {
-        fixCoords.set(wp.id, { lat: wp.latitude, lon: wp.longitude });
-      }
-    }
-
-    // Add navaids to lookup (VOR, NDB, DME can be airway fixes)
-    for (const nav of this.navaids) {
-      fixCoords.set(`${nav.id}:${nav.region}`, { lat: nav.latitude, lon: nav.longitude });
-      if (!fixCoords.has(nav.id)) {
-        fixCoords.set(nav.id, { lat: nav.latitude, lon: nav.longitude });
-      }
-    }
-
+    const fixCoords = this.buildFixLookupMap();
     const results: AirwaySegmentWithCoords[] = [];
 
     for (const segment of this.airways) {
       if (results.length >= limit) break;
 
-      // Try to resolve coordinates for both endpoints
       const fromKey1 = `${segment.fromFix}:${segment.fromRegion}`;
       const toKey1 = `${segment.toFix}:${segment.toRegion}`;
 
       const fromCoords = fixCoords.get(fromKey1) || fixCoords.get(segment.fromFix);
       const toCoords = fixCoords.get(toKey1) || fixCoords.get(segment.toFix);
 
-      // Skip if we can't resolve both coordinates
       if (!fromCoords || !toCoords) continue;
 
-      // Check if either endpoint is within radius (bounding box first for speed)
       const fromInRange =
         isInBoundingBox(fromCoords.lat, fromCoords.lon, lat, lon, radiusNm) &&
         distanceNm(lat, lon, fromCoords.lat, fromCoords.lon) <= radiusNm;
@@ -1278,41 +608,20 @@ export class XPlaneDataManager {
 
   /**
    * Get ALL airways with resolved coordinates (no radius filter)
-   * Used for global airway display
    */
   getAllAirwaysWithCoords(limit: number = 50000): AirwaySegmentWithCoords[] {
-    // Build fix lookup map: key = "fixId:region" or just "fixId"
-    const fixCoords = new Map<string, { lat: number; lon: number }>();
-
-    // Add waypoints to lookup
-    for (const wp of this.waypoints) {
-      fixCoords.set(`${wp.id}:${wp.region}`, { lat: wp.latitude, lon: wp.longitude });
-      if (!fixCoords.has(wp.id)) {
-        fixCoords.set(wp.id, { lat: wp.latitude, lon: wp.longitude });
-      }
-    }
-
-    // Add navaids to lookup (VOR, NDB, DME can be airway fixes)
-    for (const nav of this.navaids) {
-      fixCoords.set(`${nav.id}:${nav.region}`, { lat: nav.latitude, lon: nav.longitude });
-      if (!fixCoords.has(nav.id)) {
-        fixCoords.set(nav.id, { lat: nav.latitude, lon: nav.longitude });
-      }
-    }
-
+    const fixCoords = this.buildFixLookupMap();
     const results: AirwaySegmentWithCoords[] = [];
 
     for (const segment of this.airways) {
       if (results.length >= limit) break;
 
-      // Try to resolve coordinates for both endpoints
       const fromKey1 = `${segment.fromFix}:${segment.fromRegion}`;
       const toKey1 = `${segment.toFix}:${segment.toRegion}`;
 
       const fromCoords = fixCoords.get(fromKey1) || fixCoords.get(segment.fromFix);
       const toCoords = fixCoords.get(toKey1) || fixCoords.get(segment.toFix);
 
-      // Skip if we can't resolve both coordinates
       if (!fromCoords || !toCoords) continue;
 
       results.push({
@@ -1332,7 +641,30 @@ export class XPlaneDataManager {
     return results;
   }
 
-  // ==================== New Data Type Query Methods ====================
+  /**
+   * Build fix lookup map from waypoints and navaids
+   */
+  private buildFixLookupMap(): Map<string, { lat: number; lon: number }> {
+    const fixCoords = new Map<string, { lat: number; lon: number }>();
+
+    for (const wp of this.waypoints) {
+      fixCoords.set(`${wp.id}:${wp.region}`, { lat: wp.latitude, lon: wp.longitude });
+      if (!fixCoords.has(wp.id)) {
+        fixCoords.set(wp.id, { lat: wp.latitude, lon: wp.longitude });
+      }
+    }
+
+    for (const nav of this.navaids) {
+      fixCoords.set(`${nav.id}:${nav.region}`, { lat: nav.latitude, lon: nav.longitude });
+      if (!fixCoords.has(nav.id)) {
+        fixCoords.set(nav.id, { lat: nav.latitude, lon: nav.longitude });
+      }
+    }
+
+    return fixCoords;
+  }
+
+  // ==================== ATC & Holdings Query Methods ====================
 
   /**
    * Get ATC controller by facility ID
@@ -1394,29 +726,10 @@ export class XPlaneDataManager {
 
   /**
    * Get holding patterns with resolved coordinates for map rendering
-   * Resolves fixId to lat/lon using waypoints and navaids
    */
   getAllHoldingPatternsWithCoords(): (HoldingPattern & { latitude: number; longitude: number })[] {
     const result: (HoldingPattern & { latitude: number; longitude: number })[] = [];
-
-    // Build a lookup map for fixes
-    const fixCoords = new Map<string, { lat: number; lon: number }>();
-
-    for (const wp of this.waypoints) {
-      const key = `${wp.id}:${wp.region}`;
-      fixCoords.set(key, { lat: wp.latitude, lon: wp.longitude });
-      if (!fixCoords.has(wp.id)) {
-        fixCoords.set(wp.id, { lat: wp.latitude, lon: wp.longitude });
-      }
-    }
-
-    for (const nav of this.navaids) {
-      const key = `${nav.id}:${nav.region}`;
-      fixCoords.set(key, { lat: nav.latitude, lon: nav.longitude });
-      if (!fixCoords.has(nav.id)) {
-        fixCoords.set(nav.id, { lat: nav.latitude, lon: nav.longitude });
-      }
-    }
+    const fixCoords = this.buildFixLookupMap();
 
     for (const hold of this.holdingPatterns) {
       const key = `${hold.fixId}:${hold.fixRegion}`;
@@ -1432,6 +745,8 @@ export class XPlaneDataManager {
 
     return result;
   }
+
+  // ==================== Airport Metadata Query Methods ====================
 
   /**
    * Get airport metadata by ICAO
@@ -1462,6 +777,8 @@ export class XPlaneDataManager {
   getDataSources(): NavDataSources | null {
     return this.dataSources;
   }
+
+  // ==================== Search Methods ====================
 
   /**
    * Search navaids by ID/name
@@ -1541,18 +858,19 @@ export class XPlaneDataManager {
     return counts;
   }
 
+  // ==================== Status Methods ====================
+
   /**
-   * Get data load status using Drizzle
+   * Get data load status
    */
   getStatus(): DataLoadStatus {
-    // Try to get airport count from database, default to 0 if not initialized
     let airportCount = 0;
     try {
       const db = getDb();
       const countResult = db.select({ count: airports.icao }).from(airports).all();
       airportCount = countResult.length;
     } catch {
-      // Database not initialized yet, continue with 0 count
+      // Database not initialized yet
     }
 
     const xp = this.xplanePath;
@@ -1560,7 +878,7 @@ export class XPlaneDataManager {
     // Build airport source description
     let airportSource: string | null = null;
     if (xp) {
-      const customCount = this.getCustomSceneryAptFiles(xp).length;
+      const customCount = getCustomSceneryAptFiles(xp).length;
       const globalPath = getAptDataPath(xp);
       if (customCount > 0) {
         airportSource = `${globalPath} + ${customCount} Custom Scenery`;
@@ -1599,7 +917,6 @@ export class XPlaneDataManager {
         count: this.airways.length,
         source: xp ? getAirwayDataPath(xp) : null,
       },
-      // New data types
       atc: this.loadStatus.atc
         ? {
             loaded: true,
@@ -1621,7 +938,6 @@ export class XPlaneDataManager {
             source: xp ? getAptMetaDataPath(xp) : null,
           }
         : null,
-      // Data sources info
       sources: this.dataSources,
     };
   }

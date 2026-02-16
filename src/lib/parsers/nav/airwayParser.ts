@@ -1,113 +1,73 @@
-import type { AirwaySegment } from '@/types/navigation';
-
 /**
- * Parse a single line from earth_awy.dat
- * Format: from_fix from_region from_type to_fix to_region to_type high_low direction base_fl top_fl airway_name
- * Example: AADCO K2 11 LOLIC K2 11 N 1 115 179 V257
+ * Parser for X-Plane earth_awy.dat file
+ * Parses airway segments connecting waypoints with altitude restrictions
  */
-function parseAirwayLine(line: string): AirwaySegment | null {
-  const parts = line.trim().split(/\s+/);
-  if (parts.length < 11) return null;
+import { z } from 'zod';
+import type { AirwaySegment } from '@/types/navigation';
+import { flightLevel } from '../schemas';
+import type { ParseError, ParseResult } from '../types';
 
-  const fromFix = parts[0];
-  const fromRegion = parts[1];
-  const fromNavaidType = parseInt(parts[2], 10);
-  const toFix = parts[3];
-  const toRegion = parts[4];
-  const toNavaidType = parseInt(parts[5], 10);
-  const highLow = parts[6]; // N = low altitude, F = high altitude
-  const direction = parseInt(parts[7], 10); // 1 = forward, 2 = backward, 3 = both (unused typically)
-  const baseFl = parseInt(parts[8], 10);
-  const topFl = parseInt(parts[9], 10);
-  const name = parts[10];
+const AirwayLineSchema = z.object({
+  fromFix: z.string(),
+  fromRegion: z.string(),
+  fromNavaidType: z.number(),
+  toFix: z.string(),
+  toRegion: z.string(),
+  toNavaidType: z.number(),
+  isHigh: z.boolean(),
+  direction: z.number(),
+  baseFl: flightLevel,
+  topFl: flightLevel,
+  name: z.string(),
+});
 
-  // Validate numeric fields
-  if (
-    isNaN(fromNavaidType) ||
-    isNaN(toNavaidType) ||
-    isNaN(direction) ||
-    isNaN(baseFl) ||
-    isNaN(topFl)
-  ) {
-    return null;
+export function parseAirways(content: string): ParseResult<AirwaySegment[]> {
+  const startTime = Date.now();
+  const lines = content.split('\n');
+  const segments: AirwaySegment[] = [];
+  const errors: ParseError[] = [];
+  let skipped = 0;
+
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line === '99') continue;
+
+    const parts = line.split(/\s+/);
+    if (parts.length < 11) {
+      skipped++;
+      continue;
+    }
+
+    const result = AirwayLineSchema.safeParse({
+      fromFix: parts[0],
+      fromRegion: parts[1],
+      fromNavaidType: parseInt(parts[2], 10),
+      toFix: parts[3],
+      toRegion: parts[4],
+      toNavaidType: parseInt(parts[5], 10),
+      isHigh: parts[6] === 'F',
+      direction: parseInt(parts[7], 10),
+      baseFl: parseInt(parts[8], 10),
+      topFl: parseInt(parts[9], 10),
+      name: parts[10],
+    });
+
+    if (!result.success) {
+      skipped++;
+      continue;
+    }
+
+    segments.push(result.data);
   }
 
   return {
-    name,
-    fromFix,
-    fromRegion,
-    fromNavaidType,
-    toFix,
-    toRegion,
-    toNavaidType,
-    isHigh: highLow === 'F',
-    direction,
-    baseFl,
-    topFl,
+    data: segments,
+    errors,
+    stats: {
+      total: lines.length - 2,
+      parsed: segments.length,
+      skipped,
+      timeMs: Date.now() - startTime,
+    },
   };
-}
-
-/**
- * Parse earth_awy.dat file content into airway segments
- * @param content Raw file content
- * @returns Array of parsed airway segments
- */
-export function parseAirways(content: string): AirwaySegment[] {
-  const lines = content.split('\n');
-  const segments: AirwaySegment[] = [];
-
-  // Skip header lines (first 2 lines are version info)
-  for (let i = 2; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line || line === '99') continue; // Skip empty lines and file end marker
-
-    const segment = parseAirwayLine(line);
-    if (segment) {
-      segments.push(segment);
-    }
-  }
-
-  return segments;
-}
-
-/**
- * Group airway segments by airway name
- */
-function groupByAirway(segments: AirwaySegment[]): Map<string, AirwaySegment[]> {
-  const grouped = new Map<string, AirwaySegment[]>();
-
-  for (const segment of segments) {
-    const existing = grouped.get(segment.name);
-    if (existing) {
-      existing.push(segment);
-    } else {
-      grouped.set(segment.name, [segment]);
-    }
-  }
-
-  return grouped;
-}
-
-/**
- * Get high altitude airways (jet routes)
- */
-function getHighAirways(segments: AirwaySegment[]): AirwaySegment[] {
-  return segments.filter((s) => s.isHigh);
-}
-
-/**
- * Get low altitude airways (victor routes)
- */
-function getLowAirways(segments: AirwaySegment[]): AirwaySegment[] {
-  return segments.filter((s) => !s.isHigh);
-}
-
-/**
- * Find all airways that pass through a specific fix
- */
-function findAirwaysByFix(segments: AirwaySegment[], fixId: string): AirwaySegment[] {
-  const upperFix = fixId.toUpperCase();
-  return segments.filter(
-    (s) => s.fromFix.toUpperCase() === upperFix || s.toFix.toUpperCase() === upperFix
-  );
 }

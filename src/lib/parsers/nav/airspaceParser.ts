@@ -1,239 +1,120 @@
 /**
- * Parser for OpenAir airspace format
- * Used by X-Plane's airspace.txt file
- *
- * OpenAir format commands:
- * AC = Airspace Class (A, B, C, D, CTR, TMA, R, P, etc.)
- * AN = Airspace Name
- * AH = Altitude High (upper limit)
- * AL = Altitude Low (lower limit)
- * DP = Define Point (DMS format: dd:mm:ss N/S ddd:mm:ss E/W)
- * DC = Define Circle (radius in NM)
- * DA = Define Arc (radius, start angle, end angle)
- * DB = Define Arc by points
- * V = Variable definition (X=center, D=direction)
+ * Parser for OpenAir format airspace files (airspace.txt)
+ * Parses airspace boundaries with class, name, limits, and polygon coordinates
  */
-import { isValidCoordinate } from '@/lib/utils/geomath';
+import { z } from 'zod';
 import type { Airspace } from '@/types/navigation';
+import { lonLat } from '../schemas';
+import type { ParseError, ParseResult } from '../types';
 
-/**
- * Parse DMS (degrees:minutes:seconds) coordinate to decimal degrees
- * Format: "dd:mm:ss N" or "ddd:mm:ss W"
- */
 function parseDMS(dms: string): number {
   const parts = dms.trim().split(/\s+/);
   if (parts.length !== 2) return NaN;
 
-  const coordStr = parts[0];
-  const direction = parts[1].toUpperCase();
-
-  const coordParts = coordStr.split(':');
+  const coordParts = parts[0].split(':');
   if (coordParts.length !== 3) return NaN;
 
   const degrees = parseInt(coordParts[0], 10);
   const minutes = parseInt(coordParts[1], 10);
-  const seconds = parseFloat(coordParts[2]); // Use parseFloat to preserve decimal precision
+  const seconds = parseFloat(coordParts[2]);
 
   if (isNaN(degrees) || isNaN(minutes) || isNaN(seconds)) return NaN;
 
   let decimal = degrees + minutes / 60 + seconds / 3600;
-
-  // Apply direction (S and W are negative)
-  if (direction === 'S' || direction === 'W') {
-    decimal = -decimal;
-  }
+  const direction = parts[1].toUpperCase();
+  if (direction === 'S' || direction === 'W') decimal = -decimal;
 
   return decimal;
 }
 
-/**
- * Parse a DP (Define Point) line
- * Format: DP dd:mm:ss N ddd:mm:ss W
- * Returns [longitude, latitude] for GeoJSON compatibility
- */
 function parsePoint(line: string): [number, number] | null {
-  // Remove "DP" prefix and trim
   const content = line.replace(/^DP\s+/i, '').trim();
-
-  // Split into lat and lon parts
-  // Format: "dd:mm:ss N ddd:mm:ss W" or similar
   const match = content.match(/(\d+:\d+:\d+\s+[NS])\s+(\d+:\d+:\d+\s+[EW])/i);
   if (!match) return null;
 
   const lat = parseDMS(match[1]);
   const lon = parseDMS(match[2]);
+  const result = lonLat.safeParse([lon, lat]);
 
-  // Validate coordinates (check for NaN, Infinity, and out-of-bounds)
-  if (!isValidCoordinate(lat, lon)) return null;
-
-  return [lon, lat]; // GeoJSON uses [lon, lat] order
+  return result.success ? [result.data[0], result.data[1]] : null;
 }
 
-/**
- * Normalize airspace class to our enum
- */
 function normalizeAirspaceClass(classStr: string): string {
   const upperClass = classStr.toUpperCase().trim();
-
-  switch (upperClass) {
-    case 'A':
-      return 'A';
-    case 'B':
-      return 'B';
-    case 'C':
-      return 'C';
-    case 'D':
-      return 'D';
-    case 'E':
-      return 'E';
-    case 'F':
-      return 'F';
-    case 'G':
-      return 'G';
-    case 'CTR':
-      return 'CTR';
-    case 'TMA':
-      return 'TMA';
-    case 'R':
-      return 'R';
-    case 'P':
-      return 'P';
-    case 'Q':
-      return 'Q';
-    case 'W':
-      return 'W';
-    case 'GP':
-      return 'GP';
-    default:
-      return 'OTHER';
-  }
+  const validClasses = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'CTR', 'TMA', 'R', 'P', 'Q', 'W', 'GP'];
+  return validClasses.includes(upperClass) ? upperClass : 'OTHER';
 }
 
-/**
- * Parse OpenAir airspace file content
- * @param content Raw file content
- * @returns Array of parsed airspaces
- */
-export function parseAirspaces(content: string): Airspace[] {
+export function parseAirspaces(content: string): ParseResult<Airspace[]> {
+  const startTime = Date.now();
   const lines = content.split('\n');
   const airspaces: Airspace[] = [];
+  const errors: ParseError[] = [];
+  let skipped = 0;
 
-  let currentAirspace: Partial<Airspace> | null = null;
-  let currentCoordinates: [number, number][] = [];
+  let current: Partial<Airspace> | null = null;
+  let coords: [number, number][] = [];
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-
-    // Skip empty lines and comments
-    if (!line || line.startsWith('*')) continue;
-
-    // Get the command
-    const command = line.substring(0, 2).toUpperCase();
-
-    switch (command) {
-      case 'AC':
-        // New airspace class - save previous if exists
-        if (currentAirspace && currentCoordinates.length >= 3) {
-          // Close the polygon if needed
-          if (currentCoordinates.length > 0) {
-            const first = currentCoordinates[0];
-            const last = currentCoordinates[currentCoordinates.length - 1];
-            if (first[0] !== last[0] || first[1] !== last[1]) {
-              currentCoordinates.push([...first]);
-            }
-          }
-
-          airspaces.push({
-            class: currentAirspace.class || 'OTHER',
-            name: currentAirspace.name || 'Unknown',
-            upperLimit: currentAirspace.upperLimit || 'UNL',
-            lowerLimit: currentAirspace.lowerLimit || 'GND',
-            coordinates: currentCoordinates,
-          });
-        }
-
-        // Start new airspace
-        currentAirspace = {
-          class: normalizeAirspaceClass(line.substring(2).trim()),
-        };
-        currentCoordinates = [];
-        break;
-
-      case 'AN':
-        if (currentAirspace) {
-          currentAirspace.name = line.substring(2).trim();
-        }
-        break;
-
-      case 'AH':
-        if (currentAirspace) {
-          currentAirspace.upperLimit = line.substring(2).trim();
-        }
-        break;
-
-      case 'AL':
-        if (currentAirspace) {
-          currentAirspace.lowerLimit = line.substring(2).trim();
-        }
-        break;
-
-      case 'DP': {
-        const point = parsePoint(line);
-        if (point) {
-          currentCoordinates.push(point);
-        }
-        break;
-      }
-
-      // Skip circle and arc definitions for now
-      // TODO require more complex geometry calculations
-      case 'DC':
-      case 'DA':
-      case 'DB':
-      case 'V ':
-        // TODO: Implement circle and arc support
-        break;
+  const finalize = () => {
+    if (!current || coords.length < 3) {
+      if (current) skipped++;
+      return;
     }
-  }
 
-  // TODO Don't forget the last airspace
-  if (currentAirspace && currentCoordinates.length >= 3) {
-    // Close the polygon if needed
-    const first = currentCoordinates[0];
-    const last = currentCoordinates[currentCoordinates.length - 1];
+    const first = coords[0];
+    const last = coords[coords.length - 1];
     if (first[0] !== last[0] || first[1] !== last[1]) {
-      currentCoordinates.push([...first]);
+      coords.push([...first]);
     }
 
     airspaces.push({
-      class: currentAirspace.class || 'OTHER',
-      name: currentAirspace.name || 'Unknown',
-      upperLimit: currentAirspace.upperLimit || 'UNL',
-      lowerLimit: currentAirspace.lowerLimit || 'GND',
-      coordinates: currentCoordinates,
+      class: current.class || 'OTHER',
+      name: current.name || 'Unknown',
+      upperLimit: current.upperLimit || 'UNL',
+      lowerLimit: current.lowerLimit || 'GND',
+      coordinates: coords,
     });
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('*')) continue;
+
+    const cmd = line.substring(0, 2).toUpperCase();
+
+    switch (cmd) {
+      case 'AC':
+        finalize();
+        current = { class: normalizeAirspaceClass(line.substring(2).trim()) };
+        coords = [];
+        break;
+      case 'AN':
+        if (current) current.name = line.substring(2).trim();
+        break;
+      case 'AH':
+        if (current) current.upperLimit = line.substring(2).trim();
+        break;
+      case 'AL':
+        if (current) current.lowerLimit = line.substring(2).trim();
+        break;
+      case 'DP': {
+        const point = parsePoint(line);
+        if (point) coords.push(point);
+        break;
+      }
+    }
   }
 
-  return airspaces;
-}
+  finalize();
 
-/**
- * Filter airspaces by class
- */
-function filterAirspacesByClass(airspaces: Airspace[], classes: string[]): Airspace[] {
-  return airspaces.filter((a) => classes.includes(a.class));
-}
-
-/**
- * Get controlled airspaces (A, B, C, D, CTR, TMA)
- */
-function getControlledAirspaces(airspaces: Airspace[]): Airspace[] {
-  return filterAirspacesByClass(airspaces, ['A', 'B', 'C', 'D', 'CTR', 'TMA']);
-}
-
-/**
- * Get restricted/prohibited airspaces (R, P)
- */
-function getRestrictedAirspaces(airspaces: Airspace[]): Airspace[] {
-  return filterAirspacesByClass(airspaces, ['R', 'P']);
+  return {
+    data: airspaces,
+    errors,
+    stats: {
+      total: lines.length,
+      parsed: airspaces.length,
+      skipped,
+      timeMs: Date.now() - startTime,
+    },
+  };
 }

@@ -1,77 +1,64 @@
 /**
- * Parser for X-Plane earth_fix.dat file (FIX1200 format)
- * Parses waypoints/fixes used in navigation
+ * Parser for X-Plane earth_fix.dat file
+ * Parses waypoints/fixes with coordinates, region, and area codes
  */
-import { isValidCoordinate } from '@/lib/utils/geomath';
+import { z } from 'zod';
 import type { Waypoint } from '@/types/navigation';
+import { latitude, longitude } from '../schemas';
+import type { ParseError, ParseResult } from '../types';
 
-/**
- * Parse a single line from earth_fix.dat
- * Format: lat lon id region areaCode description
- * Example: -1.000000000  -10.000000000  0110W ENRT GO 2115159 01S010W
- */
-function parseWaypointLine(line: string): Waypoint | null {
-  const parts = line.trim().split(/\s+/);
-  if (parts.length < 5) return null;
+const WaypointLineSchema = z.object({
+  latitude,
+  longitude,
+  id: z.string().min(1),
+  region: z.string(),
+  areaCode: z.string(),
+});
 
-  const latitude = parseFloat(parts[0]);
-  const longitude = parseFloat(parts[1]);
-  const id = parts[2];
-  const region = parts[3]; // e.g., "ENRT" for en-route
-  const areaCode = parts[4]; // ICAO region code (2 letters)
+export function parseWaypoints(content: string): ParseResult<Waypoint[]> {
+  const startTime = Date.now();
+  const lines = content.split('\n');
+  const waypoints: Waypoint[] = [];
+  const errors: ParseError[] = [];
+  let skipped = 0;
 
-  // Remaining parts are description (may include spaces)
-  const description = parts.slice(5).join(' ');
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line === '99') continue;
 
-  // Validate coordinates (check for NaN, Infinity, and out-of-bounds)
-  if (!isValidCoordinate(latitude, longitude)) {
-    return null;
+    const parts = line.split(/\s+/);
+    if (parts.length < 5) {
+      skipped++;
+      continue;
+    }
+
+    const result = WaypointLineSchema.safeParse({
+      latitude: parseFloat(parts[0]),
+      longitude: parseFloat(parts[1]),
+      id: parts[2],
+      region: parts[3],
+      areaCode: parts[4],
+    });
+
+    if (!result.success) {
+      skipped++;
+      continue;
+    }
+
+    waypoints.push({
+      ...result.data,
+      description: parts.slice(5).join(' '),
+    });
   }
 
   return {
-    id,
-    latitude,
-    longitude,
-    region,
-    areaCode,
-    description,
+    data: waypoints,
+    errors,
+    stats: {
+      total: lines.length - 2,
+      parsed: waypoints.length,
+      skipped,
+      timeMs: Date.now() - startTime,
+    },
   };
-}
-
-/**
- * Parse earth_fix.dat file content into waypoints array
- * @param content Raw file content
- * @returns Array of parsed waypoints
- */
-export function parseWaypoints(content: string): Waypoint[] {
-  const lines = content.split('\n');
-  const waypoints: Waypoint[] = [];
-
-  // Skip header lines (first 2 lines are version info)
-  for (let i = 2; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line || line === '99') continue; // Skip empty lines and file end marker
-
-    const waypoint = parseWaypointLine(line);
-    if (waypoint) {
-      waypoints.push(waypoint);
-    }
-  }
-
-  return waypoints;
-}
-
-/**
- * Filter waypoints by region code
- */
-function filterWaypointsByRegion(waypoints: Waypoint[], regionCode: string): Waypoint[] {
-  return waypoints.filter((w) => w.areaCode === regionCode);
-}
-
-/**
- * Search waypoints by ID (case-insensitive partial match)
- */
-function searchWaypointsById(waypoints: Waypoint[], searchTerm: string): Waypoint[] {
-  const term = searchTerm.toUpperCase();
-  return waypoints.filter((w) => w.id.toUpperCase().includes(term));
 }

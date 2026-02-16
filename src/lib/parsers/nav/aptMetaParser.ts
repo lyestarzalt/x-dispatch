@@ -7,39 +7,37 @@
  *
  * Example:
  * OTHH OT  25.274563889   51.608377778    13 C 15900 I 13000 FL150
- *
- * Fields:
- * - ICAO: Airport ICAO code
- * - Region: ICAO region code
- * - Latitude: Airport latitude
- * - Longitude: Airport longitude
- * - Elevation: Airport elevation in feet
- * - Class: C = Controlled, P = Private
- * - LongestRWY: Longest runway in feet
- * - IFR: I = IFR capable, V = VFR only
- * - TransitionAlt: Transition altitude in feet
- * - TransitionLevel: Transition level (FL or feet)
  */
+import { z } from 'zod';
 import type { AirportMetadata } from '@/types/navigation';
+import { altitude, latitude, longitude, nonNegative } from '../schemas';
+import type { ParseError, ParseResult } from '../types';
 
-/**
- * Parse earth_aptmeta.dat content into AirportMetadata map
- */
-export function parseAirportMetadata(content: string): Map<string, AirportMetadata> {
+const AirportMetaSchema = z.object({
+  icao: z.string().min(3).max(4),
+  region: z.string(),
+  latitude,
+  longitude,
+  elevation: z.number(),
+  airportClass: z.enum(['C', 'P']),
+  longestRunway: nonNegative,
+  ifrCapable: z.boolean(),
+  transitionAlt: altitude,
+  transitionLevel: z.string(),
+});
+
+export function parseAirportMetadata(content: string): ParseResult<Map<string, AirportMetadata>> {
+  const startTime = Date.now();
   const metadata = new Map<string, AirportMetadata>();
   const lines = content.split('\n');
-
+  const errors: ParseError[] = [];
+  let skipped = 0;
   let headerSkipped = false;
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line.startsWith('#')) continue;
 
-    // Skip empty lines and comments
-    if (!line || line.startsWith('#')) {
-      continue;
-    }
-
-    // Skip header lines
     if (!headerSkipped) {
       if (
         line.startsWith('I') ||
@@ -52,56 +50,44 @@ export function parseAirportMetadata(content: string): Map<string, AirportMetada
       headerSkipped = true;
     }
 
-    // Skip end-of-file marker
-    if (line === '99') {
-      break;
-    }
+    if (line === '99') break;
 
-    // Parse airport metadata line
     const parts = line.split(/\s+/);
     if (parts.length < 10) {
+      skipped++;
       continue;
     }
 
-    try {
-      const icao = parts[0].toUpperCase();
-      const region = parts[1];
-      const latitude = parseFloat(parts[2]);
-      const longitude = parseFloat(parts[3]);
-      const elevation = parseInt(parts[4], 10);
-      const airportClass = parts[5] as 'C' | 'P';
-      const longestRunway = parseInt(parts[6], 10);
-      const ifrFlag = parts[7];
-      const transitionAlt = parseInt(parts[8], 10);
-      const transitionLevel = parts[9];
+    const rawClass = parts[5].toUpperCase();
+    const result = AirportMetaSchema.safeParse({
+      icao: parts[0].toUpperCase(),
+      region: parts[1],
+      latitude: parseFloat(parts[2]),
+      longitude: parseFloat(parts[3]),
+      elevation: parseInt(parts[4], 10) || 0,
+      airportClass: rawClass === 'C' || rawClass === 'P' ? rawClass : 'C',
+      longestRunway: parseInt(parts[6], 10) || 0,
+      ifrCapable: parts[7] === 'I',
+      transitionAlt: parseInt(parts[8], 10) || 18000,
+      transitionLevel: parts[9] || 'FL180',
+    });
 
-      // Validate required fields
-      if (!icao || isNaN(latitude) || isNaN(longitude)) {
-        continue;
-      }
-
-      // Validate airport class
-      if (airportClass !== 'C' && airportClass !== 'P') {
-        continue;
-      }
-
-      metadata.set(icao, {
-        icao,
-        region,
-        latitude,
-        longitude,
-        elevation: isNaN(elevation) ? 0 : elevation,
-        airportClass,
-        longestRunway: isNaN(longestRunway) ? 0 : longestRunway,
-        ifrCapable: ifrFlag === 'I',
-        transitionAlt: isNaN(transitionAlt) ? 18000 : transitionAlt,
-        transitionLevel: transitionLevel || 'FL180',
-      });
-    } catch {
-      // Skip malformed lines
+    if (!result.success) {
+      skipped++;
       continue;
     }
+
+    metadata.set(result.data.icao, result.data);
   }
 
-  return metadata;
+  return {
+    data: metadata,
+    errors,
+    stats: {
+      total: lines.length,
+      parsed: metadata.size,
+      skipped,
+      timeMs: Date.now() - startTime,
+    },
+  };
 }
