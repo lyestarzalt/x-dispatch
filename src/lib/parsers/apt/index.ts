@@ -21,6 +21,14 @@ import { bearing, coordinate, latitude, longitude, nonNegative, positiveNumber }
 import type { ParseError, ParseResult } from '../types';
 import { PathParser } from './pathParser';
 
+/**
+ * Safely get a token from the array, returning empty string if not found.
+ * Use after verifying array length to satisfy TypeScript strict mode.
+ */
+function token(tokens: string[], index: number): string {
+  return tokens[index] ?? '';
+}
+
 const RunwayEndSchema = z.object({
   name: z.string(),
   lat: latitude,
@@ -100,15 +108,15 @@ export class AirportParser {
     }
 
     const result = RunwayEndSchema.safeParse({
-      name: tokens[0],
-      lat: parseFloat(tokens[1]),
-      lon: parseFloat(tokens[2]),
-      dthr_length: Math.max(0, parseFloat(tokens[3]) || 0),
-      overrun_length: Math.max(0, parseFloat(tokens[4]) || 0),
-      marking: parseInt(tokens[5]),
-      lighting: parseInt(tokens[6]),
-      tdz_lighting: Boolean(parseInt(tokens[7])),
-      reil: parseInt(tokens[8]),
+      name: token(tokens, 0),
+      lat: parseFloat(token(tokens, 1)),
+      lon: parseFloat(token(tokens, 2)),
+      dthr_length: Math.max(0, parseFloat(token(tokens, 3)) || 0),
+      overrun_length: Math.max(0, parseFloat(token(tokens, 4)) || 0),
+      marking: parseInt(token(tokens, 5)),
+      lighting: parseInt(token(tokens, 6)),
+      tdz_lighting: Boolean(parseInt(token(tokens, 7))),
+      reil: parseInt(token(tokens, 8)),
     });
 
     if (!result.success) {
@@ -135,13 +143,13 @@ export class AirportParser {
       return null;
     }
 
-    const rawHeading = parseFloat(tokens[3]);
+    const rawHeading = parseFloat(token(tokens, 3));
     const result = StartupLocationSchema.safeParse({
-      lat: parseFloat(tokens[1]),
-      lon: parseFloat(tokens[2]),
+      lat: parseFloat(token(tokens, 1)),
+      lon: parseFloat(token(tokens, 2)),
       heading: rawHeading >= 0 && rawHeading <= 360 ? rawHeading : 0,
-      location_type: tokens[4],
-      airplane_types: tokens[5],
+      location_type: token(tokens, 4),
+      airplane_types: token(tokens, 5),
       name: tokens.slice(6).join(' '),
     });
 
@@ -166,10 +174,10 @@ export class AirportParser {
       return null;
     }
 
-    const rawHeading = parseFloat(tokens[3]);
+    const rawHeading = parseFloat(token(tokens, 3));
     const result = StartupLocationSchema.safeParse({
-      lat: parseFloat(tokens[1]),
-      lon: parseFloat(tokens[2]),
+      lat: parseFloat(token(tokens, 1)),
+      lon: parseFloat(token(tokens, 2)),
       heading: rawHeading >= 0 && rawHeading <= 360 ? rawHeading : 0,
       location_type: 'misc',
       airplane_types: 'ABCDEF',

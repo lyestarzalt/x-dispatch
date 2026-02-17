@@ -162,6 +162,9 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     if (this.imagesLoaded && map.hasImage('vor-symbol')) {
       map.addLayer({
         id: this.layerId,
@@ -190,7 +193,7 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
 
     // VOR labels
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 7,

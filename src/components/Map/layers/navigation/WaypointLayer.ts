@@ -34,6 +34,9 @@ export class WaypointLayerRenderer extends NavLayerRenderer<Waypoint> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     const sizes = NAV_SYMBOL_SIZES.waypoint;
 
     // Waypoint symbol - small circle
@@ -62,7 +65,7 @@ export class WaypointLayerRenderer extends NavLayerRenderer<Waypoint> {
 
     // Waypoint labels - only at high zoom
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: NAV_ZOOM_LEVELS.waypoints.labels,

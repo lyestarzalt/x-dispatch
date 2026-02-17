@@ -5,6 +5,27 @@ import type { Runway } from '@/types/apt';
 import { RunwayMarking } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
+type LonLat = [number, number];
+
+/**
+ * Create a rectangle polygon from a center point, dimensions, and heading
+ */
+function createRectPolygon(
+  centerLat: number,
+  centerLon: number,
+  length: number,
+  width: number,
+  heading: number
+): LonLat[] {
+  const corner1 = calculatePoint(centerLat, centerLon, length / 2, heading);
+  const corner2 = calculatePoint(centerLat, centerLon, length / 2, heading + 180);
+  const p1 = calculatePoint(corner1[1], corner1[0], width / 2, heading - 90);
+  const p2 = calculatePoint(corner1[1], corner1[0], width / 2, heading + 90);
+  const p3 = calculatePoint(corner2[1], corner2[0], width / 2, heading + 90);
+  const p4 = calculatePoint(corner2[1], corner2[0], width / 2, heading - 90);
+  return [p1, p2, p3, p4, p1]; // Closed polygon
+}
+
 /**
  * Runway Markings Layer - Creates realistic runway markings
  * Includes threshold bars, numbers, aiming points, touchdown zone, centerline
@@ -234,18 +255,13 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       );
 
       // Create bar polygon
-      const corners = [
-        calculatePoint(barCenterOffset[1], barCenterOffset[0], barLength / 2, heading),
-        calculatePoint(barCenterOffset[1], barCenterOffset[0], barLength / 2, heading + 180),
-      ];
-
-      const polygon = [
-        calculatePoint(corners[0][1], corners[0][0], barWidth / 2, heading - 90),
-        calculatePoint(corners[0][1], corners[0][0], barWidth / 2, heading + 90),
-        calculatePoint(corners[1][1], corners[1][0], barWidth / 2, heading + 90),
-        calculatePoint(corners[1][1], corners[1][0], barWidth / 2, heading - 90),
-      ];
-      polygon.push(polygon[0]); // Close polygon
+      const polygon = createRectPolygon(
+        barCenterOffset[1],
+        barCenterOffset[0],
+        barLength,
+        barWidth,
+        heading
+      );
 
       features.push({
         type: 'Feature',
@@ -271,18 +287,13 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       const center = calculatePoint(end.latitude, end.longitude, distance, heading);
       const offsetCenter = calculatePoint(center[1], center[0], sideOffset, heading + side * 90);
 
-      const corners = [
-        calculatePoint(offsetCenter[1], offsetCenter[0], length / 2, heading),
-        calculatePoint(offsetCenter[1], offsetCenter[0], length / 2, heading + 180),
-      ];
-
-      const polygon = [
-        calculatePoint(corners[0][1], corners[0][0], rectWidth / 2, heading - 90),
-        calculatePoint(corners[0][1], corners[0][0], rectWidth / 2, heading + 90),
-        calculatePoint(corners[1][1], corners[1][0], rectWidth / 2, heading + 90),
-        calculatePoint(corners[1][1], corners[1][0], rectWidth / 2, heading - 90),
-      ];
-      polygon.push(polygon[0]);
+      const polygon = createRectPolygon(
+        offsetCenter[1],
+        offsetCenter[0],
+        length,
+        rectWidth,
+        heading
+      );
 
       features.push({
         type: 'Feature',
@@ -308,7 +319,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
     const pairCounts = [3, 3, 2, 2, 1, 1];
 
     distances.forEach((dist, idx) => {
-      const numPairs = pairCounts[idx];
+      const numPairs = pairCounts[idx] ?? 1;
 
       for (let pair = 0; pair < numPairs; pair++) {
         const pairOffset = pair * 1.5;
@@ -322,18 +333,13 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
             heading + side * 90
           );
 
-          const corners = [
-            calculatePoint(offsetCenter[1], offsetCenter[0], markLength / 2, heading),
-            calculatePoint(offsetCenter[1], offsetCenter[0], markLength / 2, heading + 180),
-          ];
-
-          const polygon = [
-            calculatePoint(corners[0][1], corners[0][0], markWidth / 2, heading - 90),
-            calculatePoint(corners[0][1], corners[0][0], markWidth / 2, heading + 90),
-            calculatePoint(corners[1][1], corners[1][0], markWidth / 2, heading + 90),
-            calculatePoint(corners[1][1], corners[1][0], markWidth / 2, heading - 90),
-          ];
-          polygon.push(polygon[0]);
+          const polygon = createRectPolygon(
+            offsetCenter[1],
+            offsetCenter[0],
+            markLength,
+            markWidth,
+            heading
+          );
 
           features.push({
             type: 'Feature',

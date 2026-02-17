@@ -113,7 +113,7 @@ export default function LoadingScreen({
         const result = await window.appAPI.startLoading();
 
         // If loading returned success with status, data was loaded
-        if (result.success && result.status?.airports?.count > 0) {
+        if (result.success && (result.status?.airports?.count ?? 0) > 0) {
           onCompleteRef.current();
           return;
         }

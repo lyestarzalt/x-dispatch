@@ -59,9 +59,10 @@ export function useAirportInteractions({
     const handleGateMouseEnter = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       map.getCanvas().style.cursor = 'pointer';
-      const featureId = e.features[0].id as number;
+      const featureId = feature.id as number;
 
       if (hoveredGateId.current !== null && hoveredGateId.current !== featureId) {
         map.setFeatureState(
@@ -87,10 +88,10 @@ export function useAirportInteractions({
     const handleGateClick = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       e.originalEvent.stopPropagation();
 
-      const feature = e.features[0];
       const props = feature.properties;
       const featureId = feature.id as number;
 
@@ -142,9 +143,10 @@ export function useAirportInteractions({
     const handleRunwayEndMouseEnter = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       map.getCanvas().style.cursor = 'pointer';
-      const featureId = e.features[0].id as number;
+      const featureId = feature.id as number;
 
       if (hoveredRunwayEndId.current !== null && hoveredRunwayEndId.current !== featureId) {
         map.setFeatureState(
@@ -170,10 +172,10 @@ export function useAirportInteractions({
     const handleRunwayEndClick = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       e.originalEvent.stopPropagation();
 
-      const feature = e.features[0];
       const props = feature.properties;
       const featureId = feature.id as number;
 

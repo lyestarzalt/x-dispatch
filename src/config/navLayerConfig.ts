@@ -56,6 +56,8 @@ export const NAV_COLORS = {
   msa: '#9370DB',
 };
 
+const DEFAULT_AIRSPACE_STYLE = { fill: '#6b7280', border: '#4b5563', opacity: 0.1 };
+
 export const AIRSPACE_STYLES: Record<string, { fill: string; border: string; opacity: number }> = {
   A: { fill: '#3b82f6', border: '#1d4ed8', opacity: 0.15 },
   B: { fill: '#3b82f6', border: '#1d4ed8', opacity: 0.15 },
@@ -147,8 +149,9 @@ export function getAirspaceStyle(airspaceClass: string): {
   border: string;
   opacity: number;
 } {
-  if (!airspaceClass) return AIRSPACE_STYLES.OTHER;
-  return AIRSPACE_STYLES[airspaceClass.toUpperCase()] || AIRSPACE_STYLES.OTHER;
+  if (!airspaceClass) return DEFAULT_AIRSPACE_STYLE;
+  const style = AIRSPACE_STYLES[airspaceClass.toUpperCase()];
+  return style ?? DEFAULT_AIRSPACE_STYLE;
 }
 
 export function getAirspaceColor(airspaceClass: string): string {

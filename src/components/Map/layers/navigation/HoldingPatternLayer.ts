@@ -60,8 +60,10 @@ function createHoldingTrackCoordinates(hold: HoldingPatternWithCoords): [number,
   }
 
   // Outbound leg end point
-  const outboundStartLon = points[points.length - 1][0];
-  const outboundStartLat = points[points.length - 1][1];
+  const lastPoint = points[points.length - 1];
+  if (!lastPoint) return points;
+  const outboundStartLon = lastPoint[0];
+  const outboundStartLat = lastPoint[1];
   const outboundEndLon = outboundStartLon + legDeg * Math.cos(outboundRad);
   const outboundEndLat = outboundStartLat + legDeg * Math.sin(outboundRad);
   points.push([outboundEndLon, outboundEndLat]);
@@ -137,6 +139,9 @@ export class HoldingPatternLayerRenderer extends NavLayerRenderer<HoldingPattern
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     // Holding pattern track (race-track shape)
     map.addLayer({
       id: this.layerId,
@@ -154,7 +159,7 @@ export class HoldingPatternLayerRenderer extends NavLayerRenderer<HoldingPattern
 
     // Holding pattern labels
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       filter: ['==', '$type', 'Point'],

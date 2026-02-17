@@ -14,6 +14,7 @@ import {
   validateCoordinates,
 } from './lib/utils/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
+import type { LaunchConfig } from './types/aircraft';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -552,11 +553,27 @@ function registerIpcHandlers() {
   ipcMain.handle('launcher:launch', async (_, config: unknown) => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return { success: false, error: 'X-Plane path not configured' };
+
+    // Validate config has required LaunchConfig properties
+    if (
+      !config ||
+      typeof config !== 'object' ||
+      !('aircraft' in config) ||
+      !('livery' in config) ||
+      !('fuel' in config) ||
+      !('startPosition' in config) ||
+      !('time' in config) ||
+      !('weather' in config)
+    ) {
+      return { success: false, error: 'Invalid launch configuration' };
+    }
+
     try {
       const { getLauncher } = await getLauncherModule();
-      return await getLauncher(xplanePath).launch(config as any);
+      return await getLauncher(xplanePath).launch(config as LaunchConfig);
     } catch (error) {
-      return { success: false, error: (error as Error).message };
+      const message = error instanceof Error ? error.message : String(error);
+      return { success: false, error: message };
     }
   });
 

@@ -171,12 +171,13 @@ export default function Map({ airports }: MapProps) {
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
   const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
 
-  const navDataLocation: Coordinates | null = selectedAirportData?.metadata
-    ? {
-        latitude: parseFloat(selectedAirportData.metadata.datum_lat),
-        longitude: parseFloat(selectedAirportData.metadata.datum_lon),
-      }
-    : null;
+  const navDataLocation: Coordinates | null =
+    selectedAirportData?.metadata?.datum_lat && selectedAirportData?.metadata?.datum_lon
+      ? {
+          latitude: parseFloat(selectedAirportData.metadata.datum_lat),
+          longitude: parseFloat(selectedAirportData.metadata.datum_lon),
+        }
+      : null;
   const { data: navData, isLoading: navLoading } = useNavDataQuery(
     navDataLocation?.latitude ?? null,
     navDataLocation?.longitude ?? null,
@@ -327,9 +328,9 @@ export default function Map({ airports }: MapProps) {
   // Debug mode click handler
   const handleFeatureClick = useCallback(
     (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
-      if (!debugEnabled || !e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!debugEnabled || !feature) return;
 
-      const feature = e.features[0];
       const props = feature.properties || {};
       const geom = feature.geometry;
       const layerId = feature.layer?.id || 'unknown';
@@ -362,21 +363,36 @@ export default function Map({ airports }: MapProps) {
     const map = mapRef.current;
     if (!map) return;
 
+    // Store handlers for cleanup (use globalThis.Map to avoid conflict with component name)
+    const mouseEnterHandlers = new globalThis.Map<string, () => void>();
+    const mouseLeaveHandlers = new globalThis.Map<string, () => void>();
+
     if (debugEnabled) {
       CLICKABLE_LAYERS.forEach((layerId) => {
-        map.on('click', layerId, handleFeatureClick);
-        map.on('mouseenter', layerId, () => {
+        const enterHandler = () => {
           map.getCanvas().style.cursor = 'crosshair';
-        });
-        map.on('mouseleave', layerId, () => {
+        };
+        const leaveHandler = () => {
           map.getCanvas().style.cursor = '';
-        });
+        };
+
+        mouseEnterHandlers.set(layerId, enterHandler);
+        mouseLeaveHandlers.set(layerId, leaveHandler);
+
+        map.on('click', layerId, handleFeatureClick);
+        map.on('mouseenter', layerId, enterHandler);
+        map.on('mouseleave', layerId, leaveHandler);
       });
     }
 
     return () => {
       CLICKABLE_LAYERS.forEach((layerId) => {
         map.off('click', layerId, handleFeatureClick);
+
+        const enterHandler = mouseEnterHandlers.get(layerId);
+        const leaveHandler = mouseLeaveHandlers.get(layerId);
+        if (enterHandler) map.off('mouseenter', layerId, enterHandler);
+        if (leaveHandler) map.off('mouseleave', layerId, leaveHandler);
       });
     };
   }, [mapRef, debugEnabled, handleFeatureClick]);

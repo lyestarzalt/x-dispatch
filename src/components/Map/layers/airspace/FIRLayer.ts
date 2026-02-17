@@ -50,8 +50,11 @@ export class FIRLayerRenderer extends NavLayerRenderer<Airspace> {
     });
 
     // Label layer
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: NAV_ZOOM_LEVELS.firBoundaries.labels,
