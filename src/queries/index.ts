@@ -31,5 +31,10 @@ export {
   useAirportMetadata,
   useATCControllers,
   useAirportProcedures,
+  useLogPath,
+  useConfigPath,
   appKeys,
 } from './useAppQuery';
+
+// Launch dialog hooks
+export { useAircraftList, useWeatherPresets, useAircraftImage, launchKeys } from './useLaunchQuery';

@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, FolderOpen } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
+import { useAppVersion, useConfigPath, useLogPath } from '@/queries';
 import type { SettingsSectionProps } from '../types';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
@@ -13,14 +12,11 @@ const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
 
 export default function AboutSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
-  const { data: version } = useAppVersion();
-  const [logPath, setLogPath] = useState<string | null>(null);
-  const [configPath, setConfigPath] = useState<string | null>(null);
 
-  useEffect(() => {
-    window.appAPI.getLogPath().then(setLogPath);
-    window.appAPI.getConfigPath().then(setConfigPath);
-  }, []);
+  // TanStack Query hooks
+  const { data: version } = useAppVersion();
+  const { data: logPath } = useLogPath();
+  const { data: configPath } = useConfigPath();
 
   const handleOpenExternal = (url: string) => {
     window.open(url, '_blank');

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -7,17 +7,16 @@ import tzLookup from 'tz-lookup';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
-import { type FlightInit, useStartFlight, useXPlaneStatus } from '@/queries';
-import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import {
-  Aircraft,
-  AircraftType,
-  EngineType,
-  StartPosition,
-  WeatherPreset,
-  getFavorites,
-  saveFavorites,
-} from './types';
+  type FlightInit,
+  useAircraftList,
+  useStartFlight,
+  useWeatherPresets,
+  useXPlaneStatus,
+} from '@/queries';
+import { useLaunchStore } from '@/stores/launchStore';
+import { AircraftList, AircraftPreview, FlightConfig } from './components';
+import type { StartPosition } from './types';
 
 interface LaunchPanelProps {
   open: boolean;
@@ -34,116 +33,35 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   // Mutation for starting a flight via REST API
   const startFlightMutation = useStartFlight();
 
-  const [aircraft, setAircraft] = useState<Aircraft[]>([]);
-  const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterManufacturer, setFilterManufacturer] = useState<string>('all');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterAircraftType, setFilterAircraftType] = useState<AircraftType>('all');
-  const [filterEngineType, setFilterEngineType] = useState<EngineType>('all');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>(getFavorites());
+  // TanStack Query for data fetching
+  const { data: aircraftList = [], isLoading: isScanning } = useAircraftList(open);
+  const { data: weatherPresets = [] } = useWeatherPresets(open);
 
-  const [selectedLivery, setSelectedLivery] = useState<string>('Default');
-  const [liveryImages, setLiveryImages] = useState<Record<string, string>>({});
+  // Zustand store state
+  const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
+  const selectedLivery = useLaunchStore((s) => s.selectedLivery);
+  const fuelPercentage = useLaunchStore((s) => s.fuelPercentage);
+  const timeOfDay = useLaunchStore((s) => s.timeOfDay);
+  const useRealWorldTime = useLaunchStore((s) => s.useRealWorldTime);
+  const coldAndDark = useLaunchStore((s) => s.coldAndDark);
+  const selectedWeather = useLaunchStore((s) => s.selectedWeather);
 
-  const [fuelPercentage, setFuelPercentage] = useState(50);
-  const [weatherPresets, setWeatherPresets] = useState<WeatherPreset[]>([]);
-  const [selectedWeather, setSelectedWeather] = useState<string>('clear');
-  const [timeOfDay, setTimeOfDay] = useState(12);
-  const [useRealWorldTime, setUseRealWorldTime] = useState(false);
-  const [coldAndDark, setColdAndDark] = useState(false);
+  // Zustand store actions
+  const setIsLaunching = useLaunchStore((s) => s.setIsLaunching);
+  const setLaunchError = useLaunchStore((s) => s.setLaunchError);
+  const resetConfig = useLaunchStore((s) => s.resetConfig);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [aircraftImages, setAircraftImages] = useState<Record<string, string>>({});
-  const [launchError, setLaunchError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const loadData = async () => {
-      setIsScanning(true);
-      try {
-        const cached = await window.launcherAPI.getAircraft();
-        if (cached.length > 0) {
-          setAircraft(cached);
-        } else {
-          const result = await window.launcherAPI.scanAircraft();
-          if (result.success) setAircraft(result.aircraft);
-        }
-        const presets = await window.launcherAPI.getWeatherPresets();
-        setWeatherPresets(presets);
-      } catch (err) {
-        window.appAPI.log.error('Failed to load launch panel data', err);
-      } finally {
-        setIsScanning(false);
-      }
-    };
-    loadData();
-  }, [open]);
-
+  // Reset config when dialog closes
   useEffect(() => {
     if (!open) {
-      setSearchQuery('');
-      setFilterManufacturer('all');
-      setFilterCategory('all');
-      setFilterAircraftType('all');
-      setFilterEngineType('all');
-      setShowFavoritesOnly(false);
+      resetConfig();
     }
-  }, [open]);
-
-  const toggleFavorite = useCallback((path: string) => {
-    setFavorites((prev) => {
-      const next = prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path];
-      saveFavorites(next);
-      return next;
-    });
-  }, []);
-
-  const loadAircraftImage = useCallback(
-    async (ac: Aircraft) => {
-      if (!ac.previewImage || aircraftImages[ac.path]) return;
-      const data = await window.launcherAPI.getAircraftImage(ac.previewImage);
-      if (data) setAircraftImages((prev) => ({ ...prev, [ac.path]: data }));
-    },
-    [aircraftImages]
-  );
-
-  const loadLiveryImage = useCallback(
-    async (path: string | null, key: string) => {
-      if (!path || liveryImages[key]) return;
-      const data = await window.launcherAPI.getAircraftImage(path);
-      if (data) setLiveryImages((prev) => ({ ...prev, [key]: data }));
-    },
-    [liveryImages]
-  );
-
-  useEffect(() => {
-    aircraft.slice(0, 20).forEach(loadAircraftImage);
-  }, [aircraft, loadAircraftImage]);
-
-  useEffect(() => {
-    if (selectedAircraft) {
-      selectedAircraft.liveries.forEach((liv) => {
-        if (liv.previewImage) {
-          loadLiveryImage(liv.previewImage, `${selectedAircraft.path}:${liv.name}`);
-        }
-      });
-    }
-  }, [selectedAircraft, loadLiveryImage]);
-
-  const handleSelectAircraft = (ac: Aircraft) => {
-    setSelectedAircraft(ac);
-    setSelectedLivery('Default');
-    loadAircraftImage(ac);
-  };
+  }, [open, resetConfig]);
 
   // Launch - uses REST API if X-Plane is running, otherwise Freeflight.prf
   const handleLaunch = async () => {
     if (!selectedAircraft || !startPosition) return;
-    setIsLoading(true);
+    setIsLaunching(true);
     setLaunchError(null);
 
     try {
@@ -276,13 +194,13 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       window.appAPI.log.error('X-Plane launch error', err);
       setLaunchError((err as Error).message);
     } finally {
-      setIsLoading(false);
+      setIsLaunching(false);
     }
   };
 
   // Build Flight Initialization API payload for REST API
   function buildFlightAPIPayload(params: {
-    aircraft: Aircraft;
+    aircraft: NonNullable<typeof selectedAircraft>;
     livery: string;
     startPosition: StartPosition;
     weather: string;
@@ -433,57 +351,17 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           {/* Main content */}
           <div className="flex min-h-0 flex-1">
             <SectionErrorBoundary name="Aircraft List">
-              <AircraftList
-                aircraft={aircraft}
-                selectedAircraft={selectedAircraft}
-                isScanning={isScanning}
-                searchQuery={searchQuery}
-                filterCategory={filterCategory}
-                filterManufacturer={filterManufacturer}
-                filterAircraftType={filterAircraftType}
-                filterEngineType={filterEngineType}
-                showFavoritesOnly={showFavoritesOnly}
-                favorites={favorites}
-                aircraftImages={aircraftImages}
-                onSearchChange={setSearchQuery}
-                onCategoryChange={setFilterCategory}
-                onManufacturerChange={setFilterManufacturer}
-                onAircraftTypeChange={setFilterAircraftType}
-                onEngineTypeChange={setFilterEngineType}
-                onToggleFavoritesOnly={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                onSelectAircraft={handleSelectAircraft}
-                onToggleFavorite={toggleFavorite}
-              />
+              <AircraftList aircraftList={aircraftList} isScanning={isScanning} />
             </SectionErrorBoundary>
 
             <SectionErrorBoundary name="Aircraft Preview">
-              <AircraftPreview
-                aircraft={selectedAircraft}
-                selectedLivery={selectedLivery}
-                aircraftImages={aircraftImages}
-                liveryImages={liveryImages}
-                onSelectLivery={setSelectedLivery}
-              />
+              <AircraftPreview />
             </SectionErrorBoundary>
 
             <SectionErrorBoundary name="Flight Config">
               <FlightConfig
-                aircraft={selectedAircraft}
                 startPosition={startPosition}
-                selectedLivery={selectedLivery}
-                timeOfDay={timeOfDay}
-                selectedWeather={selectedWeather}
-                fuelPercentage={fuelPercentage}
-                useRealWorldTime={useRealWorldTime}
-                coldAndDark={coldAndDark}
-                isLoading={isLoading}
-                launchError={launchError}
                 isXPlaneRunning={isXPlaneRunning}
-                onTimeChange={setTimeOfDay}
-                onWeatherChange={setSelectedWeather}
-                onFuelChange={setFuelPercentage}
-                onRealWorldTimeChange={setUseRealWorldTime}
-                onColdAndDarkChange={setColdAndDark}
                 onLaunch={handleLaunch}
               />
             </SectionErrorBoundary>

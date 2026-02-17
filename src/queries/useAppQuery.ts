@@ -7,6 +7,8 @@ export const appKeys = {
   version: ['app', 'version'] as const,
   xplanePath: ['app', 'xplanePath'] as const,
   loadingStatus: ['app', 'loadingStatus'] as const,
+  logPath: ['app', 'logPath'] as const,
+  configPath: ['app', 'configPath'] as const,
   airportMetadata: (icao: string) => ['app', 'airportMetadata', icao] as const,
   atcControllers: (icao: string) => ['app', 'atcControllers', icao] as const,
   procedures: (icao: string) => ['app', 'procedures', icao] as const,
@@ -88,5 +90,21 @@ export function useAirportProcedures(icao: string | null) {
     },
     enabled: !!icao,
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useLogPath() {
+  return useQuery({
+    queryKey: appKeys.logPath,
+    queryFn: () => window.appAPI.getLogPath(),
+    staleTime: Infinity,
+  });
+}
+
+export function useConfigPath() {
+  return useQuery({
+    queryKey: appKeys.configPath,
+    queryFn: () => window.appAPI.getConfigPath(),
+    staleTime: Infinity,
   });
 }
