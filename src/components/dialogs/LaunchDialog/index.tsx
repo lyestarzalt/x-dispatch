@@ -4,6 +4,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
 import tzLookup from 'tz-lookup';
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { type FlightInit, useStartFlight, useXPlaneStatus } from '@/queries';
@@ -431,55 +432,61 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
           {/* Main content */}
           <div className="flex min-h-0 flex-1">
-            <AircraftList
-              aircraft={aircraft}
-              selectedAircraft={selectedAircraft}
-              isScanning={isScanning}
-              searchQuery={searchQuery}
-              filterCategory={filterCategory}
-              filterManufacturer={filterManufacturer}
-              filterAircraftType={filterAircraftType}
-              filterEngineType={filterEngineType}
-              showFavoritesOnly={showFavoritesOnly}
-              favorites={favorites}
-              aircraftImages={aircraftImages}
-              onSearchChange={setSearchQuery}
-              onCategoryChange={setFilterCategory}
-              onManufacturerChange={setFilterManufacturer}
-              onAircraftTypeChange={setFilterAircraftType}
-              onEngineTypeChange={setFilterEngineType}
-              onToggleFavoritesOnly={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              onSelectAircraft={handleSelectAircraft}
-              onToggleFavorite={toggleFavorite}
-            />
+            <SectionErrorBoundary name="Aircraft List">
+              <AircraftList
+                aircraft={aircraft}
+                selectedAircraft={selectedAircraft}
+                isScanning={isScanning}
+                searchQuery={searchQuery}
+                filterCategory={filterCategory}
+                filterManufacturer={filterManufacturer}
+                filterAircraftType={filterAircraftType}
+                filterEngineType={filterEngineType}
+                showFavoritesOnly={showFavoritesOnly}
+                favorites={favorites}
+                aircraftImages={aircraftImages}
+                onSearchChange={setSearchQuery}
+                onCategoryChange={setFilterCategory}
+                onManufacturerChange={setFilterManufacturer}
+                onAircraftTypeChange={setFilterAircraftType}
+                onEngineTypeChange={setFilterEngineType}
+                onToggleFavoritesOnly={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                onSelectAircraft={handleSelectAircraft}
+                onToggleFavorite={toggleFavorite}
+              />
+            </SectionErrorBoundary>
 
-            <AircraftPreview
-              aircraft={selectedAircraft}
-              selectedLivery={selectedLivery}
-              aircraftImages={aircraftImages}
-              liveryImages={liveryImages}
-              onSelectLivery={setSelectedLivery}
-            />
+            <SectionErrorBoundary name="Aircraft Preview">
+              <AircraftPreview
+                aircraft={selectedAircraft}
+                selectedLivery={selectedLivery}
+                aircraftImages={aircraftImages}
+                liveryImages={liveryImages}
+                onSelectLivery={setSelectedLivery}
+              />
+            </SectionErrorBoundary>
 
-            <FlightConfig
-              aircraft={selectedAircraft}
-              startPosition={startPosition}
-              selectedLivery={selectedLivery}
-              timeOfDay={timeOfDay}
-              selectedWeather={selectedWeather}
-              fuelPercentage={fuelPercentage}
-              useRealWorldTime={useRealWorldTime}
-              coldAndDark={coldAndDark}
-              isLoading={isLoading}
-              launchError={launchError}
-              isXPlaneRunning={isXPlaneRunning}
-              onTimeChange={setTimeOfDay}
-              onWeatherChange={setSelectedWeather}
-              onFuelChange={setFuelPercentage}
-              onRealWorldTimeChange={setUseRealWorldTime}
-              onColdAndDarkChange={setColdAndDark}
-              onLaunch={handleLaunch}
-            />
+            <SectionErrorBoundary name="Flight Config">
+              <FlightConfig
+                aircraft={selectedAircraft}
+                startPosition={startPosition}
+                selectedLivery={selectedLivery}
+                timeOfDay={timeOfDay}
+                selectedWeather={selectedWeather}
+                fuelPercentage={fuelPercentage}
+                useRealWorldTime={useRealWorldTime}
+                coldAndDark={coldAndDark}
+                isLoading={isLoading}
+                launchError={launchError}
+                isXPlaneRunning={isXPlaneRunning}
+                onTimeChange={setTimeOfDay}
+                onWeatherChange={setSelectedWeather}
+                onFuelChange={setFuelPercentage}
+                onRealWorldTimeChange={setUseRealWorldTime}
+                onColdAndDarkChange={setColdAndDark}
+                onLaunch={handleLaunch}
+              />
+            </SectionErrorBoundary>
           </div>
         </DialogPrimitive.Content>
       </DialogPortal>
