@@ -9,10 +9,9 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { decodeMetar } from '@/lib/utils/format/metar';
 import { cn } from '@/lib/utils/helpers';
-import { VatsimData } from '@/queries/useVatsimQuery';
-import type { ParsedAirport } from '@/types/apt';
+import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
+import { useAppStore } from '@/stores/appStore';
 import type { Runway } from '@/types/apt';
 import { FrequencyType } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
@@ -20,53 +19,29 @@ import AirportHeader from './components/AirportHeader';
 import DepartureSelector from './components/DepartureSelector';
 import QuickWeather from './components/QuickWeather';
 import FrequenciesSection from './sections/FrequenciesSection';
-import ProceduresSection, { Procedure } from './sections/ProceduresSection';
+import ProceduresSection from './sections/ProceduresSection';
 import VatsimSection from './sections/VatsimSection';
 
 interface SidebarProps {
-  airport: ParsedAirport | null;
-  onCloseAirport: () => void;
-  navDataCounts: {
-    vors: number;
-    ndbs: number;
-    dmes: number;
-    ils: number;
-    waypoints: number;
-    airspaces: number;
-    highAirways: number;
-    lowAirways: number;
-  };
   onSelectRunway?: (runway: Runway) => void;
-  onSelectProcedure?: (procedure: Procedure) => void;
-  selectedProcedure?: Procedure | null;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string; index?: number } | null;
-  // VATSIM data
-  vatsimData?: VatsimData;
-  vatsimMetar?: string | null;
 }
 
 export default function Sidebar({
-  airport,
-  onCloseAirport,
-  navDataCounts,
   onSelectRunway,
-  onSelectProcedure,
-  selectedProcedure,
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
-  selectedStartPosition,
-  vatsimData,
-  vatsimMetar,
 }: SidebarProps) {
   const { t } = useTranslation();
 
-  // Decode VATSIM METAR for display
-  const metar = useMemo(() => {
-    if (!vatsimMetar) return null;
-    return decodeMetar(vatsimMetar);
-  }, [vatsimMetar]);
+  // Get state from stores
+  const airport = useAppStore((s) => s.selectedAirportData);
+  const icao = useAppStore((s) => s.selectedICAO);
+
+  // Use METAR query directly for decoded data
+  const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
+  const metar = vatsimMetarData?.decoded ?? null;
 
   // Get ATIS frequency for quick weather display
   const frequencies = airport?.frequencies;
@@ -126,11 +101,7 @@ export default function Sidebar({
         </Button>
 
         {/* Header */}
-        <AirportHeader
-          airport={airport}
-          flightCategory={metar?.flightCategory}
-          selectedStartPosition={selectedStartPosition}
-        />
+        <AirportHeader flightCategory={metar?.flightCategory} />
 
         {/* Scrollable content */}
         <ScrollArea className="flex-1">
@@ -140,13 +111,9 @@ export default function Sidebar({
 
             {/* Departure Position Selector - Primary action */}
             <DepartureSelector
-              runways={airport.runways}
-              gates={airport.startupLocations || []}
               onSelectGate={(gate) => onSelectGateAsStart?.(gate)}
               onSelectRunwayEnd={(end) => onSelectRunwayEndAsStart?.(end)}
               onSelectRunway={onSelectRunway}
-              selectedStartPosition={selectedStartPosition}
-              ilsCount={navDataCounts.ils}
             />
 
             {/* Accordion sections for secondary info */}
@@ -160,12 +127,7 @@ export default function Sidebar({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-2 pt-0">
-                  <VatsimSection
-                    icao={airport.id}
-                    vatsimData={vatsimData}
-                    vatsimMetar={vatsimMetar ?? null}
-                    lastUpdate={vatsimData?.lastUpdate}
-                  />
+                  <VatsimSection />
                 </AccordionContent>
               </AccordionItem>
 
@@ -181,7 +143,7 @@ export default function Sidebar({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-2 pt-0">
-                  <FrequenciesSection frequencies={airport.frequencies} airportIcao={airport.id} />
+                  <FrequenciesSection />
                 </AccordionContent>
               </AccordionItem>
 
@@ -194,11 +156,7 @@ export default function Sidebar({
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-2 pt-0">
-                  <ProceduresSection
-                    icao={airport.id}
-                    onSelectProcedure={onSelectProcedure || (() => {})}
-                    selectedProcedure={selectedProcedure || null}
-                  />
+                  <ProceduresSection />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

@@ -16,7 +16,12 @@ export {
 export { usePlaneState, usePlanePosition, usePlaneStateManual } from './useXPlaneWebSocket';
 
 // Nav data hooks
-export { useNavDataQuery, useGlobalAirwaysQuery, getNavDataCounts } from './useNavDataQuery';
+export {
+  useNavDataQuery,
+  useGlobalAirwaysQuery,
+  useNavDataCounts,
+  getNavDataCounts,
+} from './useNavDataQuery';
 
 // VATSIM hooks
 export { useVatsimQuery } from './useVatsimQuery';

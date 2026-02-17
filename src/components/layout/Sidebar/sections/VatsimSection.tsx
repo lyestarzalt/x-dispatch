@@ -4,21 +4,17 @@ import { Copy, Info, Plane, Radio, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import {
-  VatsimData,
   getATISForAirport,
   getControllersForAirport,
   getPrefilesForAirport,
   getTrafficCountsForAirport,
   parseATISRunways,
 } from '@/queries/useVatsimQuery';
-
-interface VatsimSectionProps {
-  icao: string;
-  vatsimData: VatsimData | undefined;
-  vatsimMetar: string | null;
-  lastUpdate: Date | undefined;
-}
+import { useVatsimQuery } from '@/queries/useVatsimQuery';
+import { useAppStore } from '@/stores/appStore';
+import { useMapStore } from '@/stores/mapStore';
 
 function formatTimeSince(date: Date | undefined): string {
   if (!date) return '';
@@ -28,22 +24,30 @@ function formatTimeSince(date: Date | undefined): string {
   return `${minutes}m ago`;
 }
 
-export default function VatsimSection({
-  icao,
-  vatsimData,
-  vatsimMetar,
-  lastUpdate,
-}: VatsimSectionProps) {
+export default function VatsimSection() {
   const { t } = useTranslation();
 
-  const controllers = useMemo(() => getControllersForAirport(vatsimData, icao), [vatsimData, icao]);
+  // Get state from stores
+  const icao = useAppStore((s) => s.selectedICAO);
+  const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
 
-  const atis = useMemo(() => getATISForAirport(vatsimData, icao), [vatsimData, icao]);
+  // Use queries directly
+  const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+  const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
+  const vatsimMetar = vatsimMetarData?.raw ?? null;
+  const lastUpdate = vatsimData?.lastUpdate;
 
-  const prefiles = useMemo(() => getPrefilesForAirport(vatsimData, icao), [vatsimData, icao]);
+  const controllers = useMemo(
+    () => getControllersForAirport(vatsimData, icao ?? ''),
+    [vatsimData, icao]
+  );
+
+  const atis = useMemo(() => getATISForAirport(vatsimData, icao ?? ''), [vatsimData, icao]);
+
+  const prefiles = useMemo(() => getPrefilesForAirport(vatsimData, icao ?? ''), [vatsimData, icao]);
 
   const trafficCounts = useMemo(
-    () => getTrafficCountsForAirport(vatsimData, icao),
+    () => getTrafficCountsForAirport(vatsimData, icao ?? ''),
     [vatsimData, icao]
   );
 

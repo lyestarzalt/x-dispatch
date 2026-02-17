@@ -6,25 +6,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures } from '@/queries';
+import { useAppStore } from '@/stores/appStore';
 
 // Re-export for components that import from here
 export type { Procedure } from '@/lib/parsers/nav/cifpParser';
 
-interface ProceduresSectionProps {
-  icao: string;
-  onSelectProcedure: (procedure: Procedure) => void;
-  selectedProcedure: Procedure | null;
-}
-
 type TabType = 'SID' | 'STAR' | 'APP';
 
-export default function ProceduresSection({
-  icao,
-  onSelectProcedure,
-  selectedProcedure,
-}: ProceduresSectionProps) {
+export default function ProceduresSection() {
   const { t } = useTranslation();
-  const { data: procedures, isLoading: loading } = useAirportProcedures(icao || null);
+
+  // Get state from stores
+  const icao = useAppStore((s) => s.selectedICAO);
+  const selectedProcedure = useAppStore((s) => s.selectedProcedure);
+  const selectProcedure = useAppStore((s) => s.selectProcedure);
+
+  const { data: procedures, isLoading: loading } = useAirportProcedures(icao);
   const [activeTab, setActiveTab] = useState<TabType>('SID');
 
   const counts = {
@@ -64,6 +61,11 @@ export default function ProceduresSection({
     }
   };
 
+  const handleSelectProcedure = (proc: Procedure) => {
+    // Cast to the store's expected type - the actual runtime data includes coordinates
+    selectProcedure(proc as Parameters<typeof selectProcedure>[0]);
+  };
+
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="w-full">
       <TabsList className="grid h-8 grid-cols-3 bg-muted/50">
@@ -101,7 +103,7 @@ export default function ProceduresSection({
                       <Button
                         key={`${proc.name}-${proc.runway}-${idx}`}
                         variant="ghost"
-                        onClick={() => onSelectProcedure(proc)}
+                        onClick={() => handleSelectProcedure(proc)}
                         className={cn(
                           'h-auto w-full justify-between px-2 py-1.5 font-mono text-xs',
                           isSelected

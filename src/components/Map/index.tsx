@@ -10,11 +10,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useXPlaneStatus } from '@/queries';
-import {
-  getNavDataCounts,
-  useGlobalAirwaysQuery,
-  useNavDataQuery,
-} from '@/queries/useNavDataQuery';
+import { useGlobalAirwaysQuery, useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -33,17 +29,15 @@ import {
   useAirportRenderer,
   useMapSetup,
   useNavLayerSync,
+  useProcedureRouteSync,
   useRouteLineSync,
   useVatsimSync,
 } from './hooks';
 import {
-  addPlaneLayer,
-  addProcedureRouteLayer,
   bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
   removePlaneLayer,
-  removeProcedureRouteLayer,
   removeVatsimPilotLayer,
   updatePlaneLayer,
 } from './layers';
@@ -71,13 +65,10 @@ export default function Map({ airports }: MapProps) {
   const showSidebar = useAppStore((s) => s.showSidebar);
   const showSettings = useAppStore((s) => s.showSettings);
   const showLaunchDialog = useAppStore((s) => s.showLaunchDialog);
-  const selectedProcedure = useAppStore((s) => s.selectedProcedure);
-  const selectedStartPosition = useAppStore((s) => s.startPosition);
+  const startPosition = useAppStore((s) => s.startPosition);
   const storeSelectAirport = useAppStore((s) => s.selectAirport);
-  const setShowSidebar = useAppStore((s) => s.setShowSidebar);
   const setShowSettings = useAppStore((s) => s.setShowSettings);
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
-  const setSelectedProcedure = useAppStore((s) => s.selectProcedure);
 
   const layerVisibility = useMapStore((s) => s.layerVisibility);
   const navVisibility = useMapStore((s) => s.navVisibility);
@@ -187,7 +178,6 @@ export default function Map({ airports }: MapProps) {
 
   const shouldLoadAirways = navVisibility.airwaysMode !== 'off';
   const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
-  const navDataCounts = getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
 
@@ -267,6 +257,9 @@ export default function Map({ airports }: MapProps) {
     mapRef,
     airports,
   });
+
+  // Procedure route sync - renders selected procedure on map
+  useProcedureRouteSync({ mapRef });
 
   // Load FIR boundaries on map load
   useEffect(() => {
@@ -492,37 +485,6 @@ export default function Map({ airports }: MapProps) {
     });
   }, [mapRef, planePosition]);
 
-  const handleSelectProcedure = useCallback(
-    async (procedure: any) => {
-      setSelectedProcedure(procedure);
-
-      const map = mapRef.current;
-      if (!map || !procedure) {
-        if (map) removeProcedureRouteLayer(map);
-        return;
-      }
-
-      addProcedureRouteLayer(map, {
-        type: procedure.type as 'SID' | 'STAR' | 'APPROACH',
-        name: procedure.name,
-        waypoints: procedure.waypoints.map(
-          (wp: { fixId: string; latitude?: number; longitude?: number; resolved?: boolean }) => ({
-            fixId: wp.fixId,
-            latitude: wp.latitude,
-            longitude: wp.longitude,
-            resolved: wp.resolved,
-          })
-        ),
-      });
-    },
-    [mapRef, setSelectedProcedure]
-  );
-
-  const closeSidebar = useCallback(() => {
-    setShowSidebar(false);
-    setSelectedFeature(null);
-  }, [setShowSidebar, setSelectedFeature]);
-
   return (
     <div
       className="relative overflow-hidden bg-background"
@@ -536,19 +498,9 @@ export default function Map({ airports }: MapProps) {
       <Toolbar
         airports={airports}
         onSelectAirport={selectAirport}
-        onOpenSettings={() => setShowSettings(true)}
         onToggleVatsim={handleToggleVatsim}
         onTogglePlaneTracker={handleTogglePlaneTracker}
-        onOpenLauncher={() => setShowLaunchDialog(true)}
-        isVatsimEnabled={vatsimEnabled}
-        vatsimPilotCount={vatsimData?.pilots?.length}
-        isPlaneTrackerEnabled={showPlaneTracker}
-        isXPlaneConnected={isXPlaneConnected}
-        hasStartPosition={!!selectedStartPosition}
-        navVisibility={navVisibility}
         onNavToggle={handleNavLayerToggle}
-        onSetAirwaysMode={handleSetAirwaysMode}
-        navDataCounts={navDataCounts}
       />
 
       <SettingsDialog
@@ -573,17 +525,9 @@ export default function Map({ airports }: MapProps) {
       {showSidebar && selectedAirportData && (
         <SectionErrorBoundary name="Sidebar">
           <Sidebar
-            airport={selectedAirportData}
-            onCloseAirport={closeSidebar}
-            navDataCounts={navDataCounts}
             onSelectRunway={navigateToRunway}
-            onSelectProcedure={handleSelectProcedure}
-            selectedProcedure={selectedProcedure}
             onSelectGateAsStart={selectGateAsStart}
             onSelectRunwayEndAsStart={selectRunwayEndAsStart}
-            selectedStartPosition={selectedStartPosition}
-            vatsimData={vatsimData}
-            vatsimMetar={vatsimMetar?.raw ?? null}
           />
         </SectionErrorBoundary>
       )}
@@ -591,7 +535,7 @@ export default function Map({ airports }: MapProps) {
       <LaunchDialog
         open={showLaunchDialog}
         onClose={() => setShowLaunchDialog(false)}
-        startPosition={selectedStartPosition}
+        startPosition={startPosition}
       />
     </div>
   );

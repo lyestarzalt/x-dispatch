@@ -8,33 +8,50 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { useNavDataCounts } from '@/queries/useNavDataQuery';
+import { useAppStore } from '@/stores/appStore';
+import { useMapStore } from '@/stores/mapStore';
 import type { Runway, StartupLocation } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 
 type DepartureType = 'gates' | 'runways';
 
 interface DepartureSelectorProps {
-  runways: Runway[];
-  gates: StartupLocation[];
   onSelectGate: (gate: NamedPosition) => void;
   onSelectRunwayEnd: (runwayEnd: NamedPosition) => void;
   onSelectRunway?: (runway: Runway) => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string; index?: number } | null;
-  ilsCount?: number;
 }
 
 export default function DepartureSelector({
-  runways,
-  gates,
   onSelectGate,
   onSelectRunwayEnd,
   onSelectRunway,
-  selectedStartPosition,
-  ilsCount,
 }: DepartureSelectorProps) {
   const { t } = useTranslation();
   const [departureType, setDepartureType] = useState<DepartureType>('gates');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Get state from stores
+  const airport = useAppStore((s) => s.selectedAirportData);
+  const selectedStartPosition = useAppStore((s) => s.startPosition);
+  const airwaysMode = useMapStore((s) => s.navVisibility.airwaysMode);
+
+  // Extract lat/lon from airport for nav data query
+  const airportLat = useMemo(() => {
+    if (!airport?.metadata?.datum_lat) return null;
+    return parseFloat(airport.metadata.datum_lat);
+  }, [airport?.metadata?.datum_lat]);
+
+  const airportLon = useMemo(() => {
+    if (!airport?.metadata?.datum_lon) return null;
+    return parseFloat(airport.metadata.datum_lon);
+  }, [airport?.metadata?.datum_lon]);
+
+  // Get nav data counts (including ILS count)
+  const navDataCounts = useNavDataCounts(airportLat, airportLon, airwaysMode);
+
+  const runways = useMemo(() => airport?.runways ?? [], [airport?.runways]);
+  const gates = useMemo(() => airport?.startupLocations ?? [], [airport?.startupLocations]);
 
   const filteredGates = useMemo(() => {
     if (!searchQuery) return gates;
@@ -127,7 +144,7 @@ export default function DepartureSelector({
             selectedIndex={
               selectedStartPosition?.type === 'runway' ? selectedStartPosition.index : undefined
             }
-            ilsCount={ilsCount}
+            ilsCount={navDataCounts.ils}
           />
         )}
       </ScrollArea>

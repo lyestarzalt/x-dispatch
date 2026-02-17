@@ -1,20 +1,16 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket, X } from 'lucide-react';
+import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { formatTransitionAltitude } from '@/lib/utils/format';
 import { FlightCategory } from '@/lib/utils/format/metar';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { useAirportMetadata } from '@/queries';
-import type { ParsedAirport } from '@/types/apt';
+import { useAppStore } from '@/stores/appStore';
 
 interface AirportHeaderProps {
-  airport: ParsedAirport;
   flightCategory?: FlightCategory | null;
-  onClose?: () => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
 }
 
 const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'violet'> = {
@@ -24,17 +20,17 @@ const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'dan
   LIFR: 'violet',
 };
 
-export default function AirportHeader({
-  airport,
-  flightCategory,
-  onClose,
-  selectedStartPosition,
-}: AirportHeaderProps) {
+export default function AirportHeader({ flightCategory }: AirportHeaderProps) {
   const { t } = useTranslation();
-  const { data: metadata } = useAirportMetadata(airport.id);
+
+  // Get state from stores
+  const airport = useAppStore((s) => s.selectedAirportData);
+  const selectedStartPosition = useAppStore((s) => s.startPosition);
+
+  const { data: metadata } = useAirportMetadata(airport?.id ?? null);
 
   // Calculate local time from airport position
-  const rwy = airport.runways[0];
+  const rwy = airport?.runways[0];
   const lon = rwy ? (rwy.ends[0].longitude + rwy.ends[1].longitude) / 2 : 0;
   const tzOffset = Math.round(lon / 15);
   const localTime = new Date();
@@ -49,16 +45,18 @@ export default function AirportHeader({
   // Calculate longest runway from airport data (in feet)
   const longestRunwayFt = useMemo(() => {
     if (metadata?.longestRunway) return metadata.longestRunway;
-    if (!airport.runways.length) return 0;
+    if (!airport?.runways.length) return 0;
     return Math.max(...airport.runways.map((r) => runwayLengthFeet(r.ends[0], r.ends[1])));
-  }, [airport.runways, metadata?.longestRunway]);
+  }, [airport?.runways, metadata?.longestRunway]);
+
+  if (!airport) return null;
 
   const gatesCount = airport.startupLocations?.length || 0;
   const runwaysCount = airport.runways.length;
 
   return (
     <div className="border-b border-border p-4">
-      {/* Top row: ICAO + Badge + Close button */}
+      {/* Top row: ICAO + Badge */}
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -84,16 +82,6 @@ export default function AirportHeader({
           </div>
           <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{airport.name}</p>
         </div>
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
       </div>
 
       {/* Location row */}

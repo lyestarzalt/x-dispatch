@@ -3,22 +3,28 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { ParsedAirport } from '@/types/apt';
 import type { StartPosition } from '@/types/position';
 
+interface SelectedProcedureWaypoint {
+  fixId: string;
+  fixRegion: string;
+  fixType: string;
+  pathTerminator: string;
+  course: number | null;
+  distance: number | null;
+  altitude: { descriptor: string; altitude1: number | null; altitude2: number | null } | null;
+  speed: number | null;
+  turnDirection: 'L' | 'R' | null;
+  // Resolved coordinates (from ResolvedAirportProcedures)
+  latitude?: number;
+  longitude?: number;
+  resolved?: boolean;
+}
+
 interface SelectedProcedure {
   type: 'SID' | 'STAR' | 'APPROACH';
   name: string;
   runway: string | null;
   transition: string | null;
-  waypoints: Array<{
-    fixId: string;
-    fixRegion: string;
-    fixType: string;
-    pathTerminator: string;
-    course: number | null;
-    distance: number | null;
-    altitude: { descriptor: string; altitude1: number | null; altitude2: number | null } | null;
-    speed: number | null;
-    turnDirection: 'L' | 'R' | null;
-  }>;
+  waypoints: SelectedProcedureWaypoint[];
 }
 
 interface AppState {

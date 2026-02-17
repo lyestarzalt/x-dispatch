@@ -5,13 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatFrequency } from '@/lib/utils/format';
 import { useATCControllers } from '@/queries';
+import { useAppStore } from '@/stores/appStore';
 import type { Frequency } from '@/types/apt';
 import { FrequencyType } from '@/types/apt';
-
-interface FrequenciesSectionProps {
-  frequencies: Frequency[];
-  airportIcao?: string;
-}
 
 const FREQ_ORDER: FrequencyType[] = [
   FrequencyType.AWOS,
@@ -43,9 +39,15 @@ const ATC_ROLE_LABELS: Record<string, string> = {
   del: 'DEL',
 };
 
-export default function FrequenciesSection({ frequencies, airportIcao }: FrequenciesSectionProps) {
+export default function FrequenciesSection() {
   const { t } = useTranslation();
-  const { data: atcControllers = [] } = useATCControllers(airportIcao ?? null);
+
+  // Get state from stores
+  const airport = useAppStore((s) => s.selectedAirportData);
+  const airportIcao = useAppStore((s) => s.selectedICAO);
+
+  const frequencies = useMemo(() => airport?.frequencies ?? [], [airport?.frequencies]);
+  const { data: atcControllers = [] } = useATCControllers(airportIcao);
 
   const groupedFrequencies = useMemo(
     () =>
