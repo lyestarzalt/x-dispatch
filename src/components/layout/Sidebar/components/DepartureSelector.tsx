@@ -346,11 +346,14 @@ function RunwayItem({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
+                // Calculate X-Plane index: "row_end" format
+                const xplaneIndex = `${runwayIndex}_${endIndex}`;
                 onSelectEnd({
                   name: end.name,
                   latitude: end.latitude,
                   longitude: end.longitude,
                   index: globalEndIndex,
+                  xplaneIndex,
                 });
               }}
               className={cn(

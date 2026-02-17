@@ -16,13 +16,14 @@ interface UseAirportInteractionsReturn {
     longitude: number;
     name: string;
     index?: number;
-    xplaneIndex?: number;
+    xplaneIndex?: number | string;
   }) => void;
   selectRunwayEndAsStart: (runwayEnd: {
     name: string;
     latitude: number;
     longitude: number;
     index?: number;
+    xplaneIndex?: number | string;
   }) => void;
   navigateToGate: (gate: {
     latitude: number;
@@ -199,6 +200,12 @@ export function useAirportInteractions({
 
       const currentAirport = selectedAirportDataRef.current;
       if (props && currentAirport) {
+        // Calculate X-Plane index for runway: "row_end" format
+        // featureId is the global end index (runwayIndex * 2 + endIndex)
+        const runwayIndex = Math.floor(featureId / 2);
+        const whichEnd = featureId % 2;
+        const xplaneIndex = `${runwayIndex}_${whichEnd}`;
+
         setStartPosition({
           type: 'runway',
           name: props.name || `Runway End ${featureId}`,
@@ -206,6 +213,7 @@ export function useAirportInteractions({
           latitude: props.latitude,
           longitude: props.longitude,
           index: featureId,
+          xplaneIndex,
         });
       }
     };
@@ -256,7 +264,7 @@ export function useAirportInteractions({
       longitude: number;
       name: string;
       index?: number;
-      xplaneIndex?: number;
+      xplaneIndex?: number | string;
     }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
@@ -303,7 +311,13 @@ export function useAirportInteractions({
   );
 
   const selectRunwayEndAsStart = useCallback(
-    (runwayEnd: { name: string; latitude: number; longitude: number; index?: number }) => {
+    (runwayEnd: {
+      name: string;
+      latitude: number;
+      longitude: number;
+      index?: number;
+      xplaneIndex?: number | string;
+    }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
 
@@ -330,6 +344,12 @@ export function useAirportInteractions({
         map.setFeatureState({ source: 'airport-runway-ends', id: endIndex }, { selected: true });
       }
 
+      // Use provided xplaneIndex or calculate it
+      // X-Plane index for runway: "row_end" format
+      // endIndex is the global end index (runwayIndex * 2 + whichEnd)
+      const xplaneIndex =
+        runwayEnd.xplaneIndex ?? `${Math.floor((endIndex ?? 0) / 2)}_${(endIndex ?? 0) % 2}`;
+
       setStartPosition({
         type: 'runway',
         name: runwayEnd.name,
@@ -337,6 +357,7 @@ export function useAirportInteractions({
         latitude: runwayEnd.latitude,
         longitude: runwayEnd.longitude,
         index: endIndex ?? 0,
+        xplaneIndex,
       });
 
       map.flyTo({

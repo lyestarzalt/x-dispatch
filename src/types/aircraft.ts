@@ -77,7 +77,8 @@ export interface LaunchStartPosition {
   airport: string;
   position: string;
   index: number;
-  xplaneIndex?: number;
+  /** X-Plane index - for ramps: number (sorted position); for runways: "row_end" string format */
+  xplaneIndex?: number | string;
 }
 
 export interface LaunchConfig {
