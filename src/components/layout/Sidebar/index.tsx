@@ -1,23 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Radar, Radio, Route } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import type { Runway } from '@/types/apt';
-import { FrequencyType } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import AirportHeader from './components/AirportHeader';
 import DepartureSelector from './components/DepartureSelector';
-import QuickWeather from './components/QuickWeather';
 import FrequenciesSection from './sections/FrequenciesSection';
 import ProceduresSection from './sections/ProceduresSection';
 import VatsimSection from './sections/VatsimSection';
@@ -35,65 +27,90 @@ export default function Sidebar({
 }: SidebarProps) {
   const { t } = useTranslation();
 
-  // Get state from stores
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
 
-  // Use METAR query directly for decoded data
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const metar = vatsimMetarData?.decoded ?? null;
 
-  // Get ATIS frequency for quick weather display
-  const frequencies = airport?.frequencies;
-  const atisFrequency = useMemo(() => {
-    if (!frequencies) return null;
-    return frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
-  }, [frequencies]);
+  // Format weather as single line
+  const weatherLine = useMemo(() => {
+    if (!metar) return null;
+    const parts: string[] = [];
+
+    if (metar.temperature !== null) {
+      parts.push(`${metar.temperature}°C`);
+    }
+
+    if (metar.wind) {
+      const dir = metar.wind.direction === 'VRB' ? 'VRB' : `${metar.wind.direction}°`;
+      const wind = metar.wind.gust
+        ? `${dir}/${metar.wind.speed}G${metar.wind.gust}kt`
+        : `${dir}/${metar.wind.speed}kt`;
+      parts.push(wind);
+    }
+
+    if (metar.visibility) {
+      const vis = metar.visibility;
+      if (vis.unit === 'SM') {
+        parts.push(`${vis.modifier === 'P' ? '>' : ''}${vis.value}SM`);
+      } else {
+        parts.push(
+          `${vis.modifier === 'P' ? '>' : ''}${vis.value >= 9999 ? '>10' : vis.value / 1000}km`
+        );
+      }
+    }
+
+    return parts.length > 0 ? parts.join(' · ') : null;
+  }, [metar]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   if (!airport) return null;
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
 
   return (
     <div
       className={cn(
-        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-in-out',
+        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-out',
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
-      <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
-        {/* Collapsed view overlay */}
+      <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/95 shadow-xl backdrop-blur-sm">
+        {/* Collapsed state */}
         <div
           className={cn(
-            'absolute inset-0 z-20 flex flex-col items-center bg-card py-3 transition-opacity duration-300',
+            'absolute inset-0 z-20 flex flex-col items-center bg-card/95 py-5 transition-opacity duration-200',
             isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
           )}
         >
           <Button
             variant="ghost"
             size="icon"
-            className="mb-2 h-8 w-8 shrink-0"
+            className="mb-4 h-8 w-8"
             onClick={() => setIsCollapsed(false)}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="flex flex-1 items-center justify-center">
-            <span
-              className="text-sm font-bold tracking-wider text-foreground"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-            >
-              {airport.id}
-            </span>
-          </div>
+          <span
+            className="font-mono text-sm font-bold tracking-wider text-foreground"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            {airport.id}
+          </span>
         </div>
 
-        {/* Collapse button (visible when expanded) */}
+        {/* Collapse button */}
         <Button
           variant="ghost"
           size="icon"
           className={cn(
-            'absolute right-1 top-1 z-10 h-7 w-7 transition-opacity duration-300',
-            isCollapsed ? 'pointer-events-none opacity-0' : 'opacity-60 hover:opacity-100'
+            'absolute right-3 top-3 z-10 h-7 w-7 text-muted-foreground/40 hover:text-foreground',
+            isCollapsed && 'pointer-events-none opacity-0'
           )}
           onClick={() => setIsCollapsed(true)}
         >
@@ -101,68 +118,71 @@ export default function Sidebar({
         </Button>
 
         {/* Header */}
-        <AirportHeader flightCategory={metar?.flightCategory} />
+        <AirportHeader flightCategory={metar?.flightCategory} weatherLine={weatherLine} />
 
-        {/* Scrollable content */}
+        {/* Content */}
         <ScrollArea className="flex-1">
-          <div className="space-y-4 p-3">
-            {/* Quick Weather Strip */}
-            <QuickWeather metar={metar} atisFrequency={atisFrequency} />
-
-            {/* Departure Position Selector - Primary action */}
+          <div className="px-5 pb-5">
+            {/* Departure Selector */}
             <DepartureSelector
               onSelectGate={(gate) => onSelectGateAsStart?.(gate)}
               onSelectRunwayEnd={(end) => onSelectRunwayEndAsStart?.(end)}
               onSelectRunway={onSelectRunway}
             />
 
-            {/* Accordion sections for secondary info */}
-            <Accordion type="multiple" className="w-full">
-              {/* VATSIM - always show ATC/ATIS/traffic info */}
-              <AccordionItem value="vatsim" className="border-border/50">
-                <AccordionTrigger className="py-2 text-xs hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Radar className="h-3.5 w-3.5 text-success" />
-                    <span>{t('sidebar.vatsim.title', 'VATSIM Live')}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-2 pt-0">
-                  <VatsimSection />
-                </AccordionContent>
-              </AccordionItem>
+            {/* Expandable sections - minimal treatment */}
+            <div className="mt-8 space-y-1">
+              <ExpandableSection
+                title={t('sidebar.frequencies')}
+                isExpanded={expandedSection === 'frequencies'}
+                onToggle={() => toggleSection('frequencies')}
+              >
+                <FrequenciesSection />
+              </ExpandableSection>
 
-              {/* Frequencies */}
-              <AccordionItem value="frequencies" className="border-border/50">
-                <AccordionTrigger className="py-2 text-xs hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Radio className="h-3.5 w-3.5 text-success" />
-                    <span>{t('sidebar.frequencies')}</span>
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      ({airport.frequencies.length})
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-2 pt-0">
-                  <FrequenciesSection />
-                </AccordionContent>
-              </AccordionItem>
+              <ExpandableSection
+                title={t('sidebar.procedures')}
+                isExpanded={expandedSection === 'procedures'}
+                onToggle={() => toggleSection('procedures')}
+              >
+                <ProceduresSection />
+              </ExpandableSection>
 
-              {/* Procedures */}
-              <AccordionItem value="procedures" className="border-border/50">
-                <AccordionTrigger className="py-2 text-xs hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Route className="h-3.5 w-3.5 text-violet" />
-                    <span>{t('sidebar.procedures')}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-2 pt-0">
-                  <ProceduresSection />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+              <ExpandableSection
+                title="VATSIM"
+                isExpanded={expandedSection === 'vatsim'}
+                onToggle={() => toggleSection('vatsim')}
+              >
+                <VatsimSection />
+              </ExpandableSection>
+            </div>
           </div>
         </ScrollArea>
       </div>
+    </div>
+  );
+}
+
+interface ExpandableSectionProps {
+  title: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+function ExpandableSection({ title, isExpanded, onToggle, children }: ExpandableSectionProps) {
+  return (
+    <div>
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between py-2.5 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <span>{title}</span>
+        <ChevronDown
+          className={cn('h-4 w-4 transition-transform duration-200', isExpanded && 'rotate-180')}
+        />
+      </button>
+      {isExpanded && <div className="pb-4 pt-2">{children}</div>}
     </div>
   );
 }

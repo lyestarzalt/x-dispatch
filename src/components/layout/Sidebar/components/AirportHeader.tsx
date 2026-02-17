@@ -1,145 +1,67 @@
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { formatTransitionAltitude } from '@/lib/utils/format';
 import { FlightCategory } from '@/lib/utils/format/metar';
-import { runwayLengthFeet } from '@/lib/utils/geomath';
-import { useAirportMetadata } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 
 interface AirportHeaderProps {
   flightCategory?: FlightCategory | null;
+  weatherLine?: string | null;
 }
 
-const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'violet'> = {
-  VFR: 'success',
-  MVFR: 'info',
-  IFR: 'danger',
-  LIFR: 'violet',
+const FLIGHT_CATEGORY_COLORS: Record<FlightCategory, string> = {
+  VFR: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  MVFR: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+  IFR: 'bg-red-500/15 text-red-400 border-red-500/30',
+  LIFR: 'bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30',
 };
 
-export default function AirportHeader({ flightCategory }: AirportHeaderProps) {
-  const { t } = useTranslation();
-
-  // Get state from stores
+export default function AirportHeader({ flightCategory, weatherLine }: AirportHeaderProps) {
   const airport = useAppStore((s) => s.selectedAirportData);
-  const selectedStartPosition = useAppStore((s) => s.startPosition);
-
-  const { data: metadata } = useAirportMetadata(airport?.id ?? null);
-
-  // Calculate local time from airport position
-  const rwy = airport?.runways[0];
-  const lon = rwy ? (rwy.ends[0].longitude + rwy.ends[1].longitude) / 2 : 0;
-  const tzOffset = Math.round(lon / 15);
-  const localTime = new Date();
-  localTime.setHours(localTime.getUTCHours() + tzOffset);
-  const timeStr = localTime.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-  const tzStr = tzOffset >= 0 ? `UTC+${tzOffset}` : `UTC${tzOffset}`;
-
-  // Calculate longest runway from airport data (in feet)
-  const longestRunwayFt = useMemo(() => {
-    if (metadata?.longestRunway) return metadata.longestRunway;
-    if (!airport?.runways.length) return 0;
-    return Math.max(...airport.runways.map((r) => runwayLengthFeet(r.ends[0], r.ends[1])));
-  }, [airport?.runways, metadata?.longestRunway]);
 
   if (!airport) return null;
 
-  const gatesCount = airport.startupLocations?.length || 0;
-  const runwaysCount = airport.runways.length;
+  const elevation = Math.round(airport.elevation);
+  const runwayCount = airport.runways.length;
+  const gateCount = airport.startupLocations?.length || 0;
 
   return (
-    <div className="border-b border-border p-4">
-      {/* Top row: ICAO + Badge */}
+    <div className="p-5">
+      {/* Identity */}
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <Plane className="h-4 w-4 text-info" />
-            <h2 className="xp-detail-heading font-mono">{airport.id}</h2>
-            {flightCategory && (
-              <Badge
-                variant={FLIGHT_CATEGORY_VARIANTS[flightCategory]}
-                className="rounded px-1.5 py-0.5 font-mono text-xs font-bold"
-              >
-                {flightCategory}
-              </Badge>
-            )}
-            {metadata?.transitionAlt && (
-              <Badge
-                variant="outline"
-                className="rounded px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
-                title={t('sidebar.transitionAltitude')}
-              >
-                TA {formatTransitionAltitude(metadata.transitionAlt)}
-              </Badge>
-            )}
-          </div>
-          <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{airport.name}</p>
+        <div>
+          <h1 className="font-mono text-3xl font-bold tracking-tight text-foreground">
+            {airport.id}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground/80">{airport.name}</p>
+        </div>
+        {flightCategory && (
+          <Badge
+            variant="outline"
+            className={`border px-2.5 py-1 font-mono text-xs font-bold ${FLIGHT_CATEGORY_COLORS[flightCategory]}`}
+          >
+            {flightCategory}
+          </Badge>
+        )}
+      </div>
+
+      {/* Quick stats - inline, not boxed */}
+      <div className="mt-4 flex items-center gap-6 text-sm">
+        <div>
+          <span className="text-muted-foreground/60">Elev</span>
+          <span className="ml-2 font-mono text-foreground">{elevation}'</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground/60">Rwy</span>
+          <span className="ml-2 font-mono text-foreground">{runwayCount}</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground/60">Gates</span>
+          <span className="ml-2 font-mono text-foreground">{gateCount}</span>
         </div>
       </div>
 
-      {/* Location row */}
-      <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-        <MapPin className="h-3 w-3" />
-        <span>
-          {airport.metadata.city || '--'}, {airport.metadata.country || '--'}
-        </span>
-      </div>
-
-      {/* Stats grid */}
-      <div className="mt-3 grid grid-cols-4 gap-1.5">
-        <div className="min-w-0 rounded-lg bg-secondary px-1.5 py-1.5 text-center">
-          <div className="xp-label">ELEV</div>
-          <div className="truncate font-mono text-xs text-foreground">
-            {Math.round(airport.elevation)}ft
-          </div>
-        </div>
-        <div className="min-w-0 rounded-lg bg-secondary px-1.5 py-1.5 text-center">
-          <div className="xp-label flex items-center justify-center gap-0.5">
-            <ArrowUpRight className="h-2.5 w-2.5" />
-            RWY
-          </div>
-          <div className="truncate font-mono text-xs text-foreground">{runwaysCount}</div>
-        </div>
-        <div className="min-w-0 rounded-lg bg-secondary px-1.5 py-1.5 text-center">
-          <div className="xp-label flex items-center justify-center gap-0.5">
-            <ParkingCircle className="h-2.5 w-2.5" />
-            GATES
-          </div>
-          <div className="truncate font-mono text-xs text-foreground">{gatesCount}</div>
-        </div>
-        <div className="min-w-0 rounded-lg bg-secondary px-1.5 py-1.5 text-center">
-          <div className="xp-label">MAX</div>
-          <div className="truncate font-mono text-xs text-foreground">
-            {Math.round(longestRunwayFt)}ft
-          </div>
-        </div>
-      </div>
-
-      {/* Time row */}
-      <div className="mt-2 flex items-center justify-end gap-2 text-xs text-muted-foreground">
-        <Clock className="h-3 w-3" />
-        <span className="font-mono text-foreground">{timeStr}</span>
-        <span className="opacity-60">{tzStr}</span>
-      </div>
-
-      {/* Selected Start Position */}
-      {selectedStartPosition && (
-        <Alert variant="success" className="mt-3 p-2">
-          <AlertDescription className="flex items-center gap-2">
-            <Rocket className="h-3.5 w-3.5" />
-            <span className="text-xs">{t('launcher.config.departure')}:</span>
-            <span className="truncate text-xs font-medium text-foreground">
-              {selectedStartPosition.name}
-            </span>
-          </AlertDescription>
-        </Alert>
+      {/* Weather - subtle, integrated */}
+      {weatherLine && (
+        <p className="mt-3 font-mono text-xs text-muted-foreground/70">{weatherLine}</p>
       )}
     </div>
   );
