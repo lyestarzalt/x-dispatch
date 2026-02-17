@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AirportProcedures, Procedure } from '@/lib/parsers/nav/cifpParser';
+import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
+import { useAirportProcedures } from '@/queries';
 
 // Re-export for components that import from here
 export type { Procedure } from '@/lib/parsers/nav/cifpParser';
@@ -23,32 +24,8 @@ export default function ProceduresSection({
   selectedProcedure,
 }: ProceduresSectionProps) {
   const { t } = useTranslation();
-  const [procedures, setProcedures] = useState<AirportProcedures | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { data: procedures, isLoading: loading } = useAirportProcedures(icao || null);
   const [activeTab, setActiveTab] = useState<TabType>('SID');
-
-  // Load procedures when airport changes
-  useEffect(() => {
-    if (!icao) {
-      setProcedures(null);
-      return;
-    }
-
-    const loadProcedures = async () => {
-      setLoading(true);
-      try {
-        const data = await window.navAPI.getAirportProcedures(icao);
-        setProcedures(data);
-      } catch (err) {
-        window.appAPI.log.error(`Failed to load procedures for ${icao}`, err);
-        setProcedures(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProcedures();
-  }, [icao]);
 
   const counts = {
     SID: procedures?.sids.length || 0,

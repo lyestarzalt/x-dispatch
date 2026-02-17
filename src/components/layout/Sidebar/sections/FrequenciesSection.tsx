@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, Radio } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatFrequency } from '@/lib/utils/format';
+import { useATCControllers } from '@/queries';
 import type { Frequency } from '@/types/apt';
 import { FrequencyType } from '@/types/apt';
-import type { ATCController } from '@/types/navigation';
 
 interface FrequenciesSectionProps {
   frequencies: Frequency[];
@@ -45,40 +45,16 @@ const ATC_ROLE_LABELS: Record<string, string> = {
 
 export default function FrequenciesSection({ frequencies, airportIcao }: FrequenciesSectionProps) {
   const { t } = useTranslation();
-  const [atcControllers, setAtcControllers] = useState<ATCController[]>([]);
+  const { data: atcControllers = [] } = useATCControllers(airportIcao ?? null);
 
-  // Fetch ATC controllers for this airport area
-  useEffect(() => {
-    async function fetchATCData() {
-      if (!airportIcao) return;
-      try {
-        const controllers = await window.navAPI.getAllATCControllers();
-        // Filter controllers whose facility ID starts with the airport's region prefix
-        // or whose name contains the airport code
-        const prefix = airportIcao.substring(0, 2).toUpperCase();
-        const relevant = controllers.filter(
-          (c: ATCController) =>
-            c.facilityId.toUpperCase().startsWith(prefix) ||
-            c.name.toUpperCase().includes(airportIcao.toUpperCase())
-        );
-        setAtcControllers(relevant.slice(0, 10)); // Limit to 10 controllers
-      } catch {
-        setAtcControllers([]);
-      }
-    }
-    fetchATCData();
-  }, [airportIcao]);
-
-  const groupedFrequencies = useMemo(() => {
-    const groups: Partial<Record<FrequencyType, Frequency[]>> = {};
-    frequencies.forEach((freq) => {
-      if (!groups[freq.type]) {
-        groups[freq.type] = [];
-      }
-      groups[freq.type]!.push(freq);
-    });
-    return groups;
-  }, [frequencies]);
+  const groupedFrequencies = useMemo(
+    () =>
+      frequencies.reduce<Partial<Record<FrequencyType, Frequency[]>>>((groups, freq) => {
+        const existing = groups[freq.type] ?? [];
+        return { ...groups, [freq.type]: [...existing, freq] };
+      }, {}),
+    [frequencies]
+  );
 
   const handleCopy = (frequency: number) => {
     navigator.clipboard.writeText(formatFrequency(frequency));

@@ -27,7 +27,7 @@ export default function LoadingScreen({
   onConfigurePath,
 }: LoadingScreenProps) {
   const { t } = useTranslation();
-  const version = useAppVersion();
+  const { data: version } = useAppVersion();
   const [steps, setSteps] = useState<LoadingStep[]>([
     { id: 'airports', labelKey: 'loading.steps.airports', status: 'pending' },
     { id: 'navaids', labelKey: 'loading.steps.navaids', status: 'pending' },
@@ -35,13 +35,8 @@ export default function LoadingScreen({
     { id: 'airspaces', labelKey: 'loading.steps.airspaces', status: 'pending' },
     { id: 'airways', labelKey: 'loading.steps.airways', status: 'pending' },
   ]);
-  const [currentMessage, setCurrentMessage] = useState('');
+  const [currentMessage, setCurrentMessage] = useState(() => t('loading.initializing'));
   const [error, setError] = useState<string | null>(null);
-
-  // Set initial message after mount
-  useEffect(() => {
-    setCurrentMessage(t('loading.initializing'));
-  }, [t]);
 
   // Use refs to avoid stale closure issues
   const onCompleteRef = useRef(onComplete);

@@ -52,7 +52,7 @@ export default function SettingsDialog({
   vatsimPilotCount,
 }: SettingsDialogProps) {
   const { t } = useTranslation();
-  const version = useAppVersion();
+  const { data: version } = useAppVersion();
   const [activeTab, setActiveTab] = useState<TabId>('xplane');
 
   return (

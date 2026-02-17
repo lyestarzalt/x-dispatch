@@ -13,7 +13,7 @@ const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
 
 export default function AboutSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
-  const version = useAppVersion();
+  const { data: version } = useAppVersion();
   const [logPath, setLogPath] = useState<string | null>(null);
   const [configPath, setConfigPath] = useState<string | null>(null);
 

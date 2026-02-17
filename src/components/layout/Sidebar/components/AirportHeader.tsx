@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Clock, MapPin, ParkingCircle, Plane, Rocket, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { formatTransitionAltitude } from '@/lib/utils/format';
 import { FlightCategory } from '@/lib/utils/format/metar';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
+import { useAirportMetadata } from '@/queries';
 import type { ParsedAirport } from '@/types/apt';
 
 interface AirportHeaderProps {
@@ -14,12 +15,6 @@ interface AirportHeaderProps {
   flightCategory?: FlightCategory | null;
   onClose?: () => void;
   selectedStartPosition?: { type: 'runway' | 'ramp'; name: string } | null;
-}
-
-interface AirportMetadataInfo {
-  transitionAlt: number | null;
-  transitionLevel: string | null;
-  longestRunway: number | null;
 }
 
 const FLIGHT_CATEGORY_VARIANTS: Record<FlightCategory, 'success' | 'info' | 'danger' | 'violet'> = {
@@ -36,28 +31,7 @@ export default function AirportHeader({
   selectedStartPosition,
 }: AirportHeaderProps) {
   const { t } = useTranslation();
-  const [metadata, setMetadata] = useState<AirportMetadataInfo | null>(null);
-
-  // Fetch airport metadata for transition altitude
-  useEffect(() => {
-    async function fetchMetadata() {
-      try {
-        const meta = await window.navAPI.getAirportMetadata(airport.id);
-        if (meta) {
-          setMetadata({
-            transitionAlt: meta.transitionAlt,
-            transitionLevel: meta.transitionLevel,
-            longestRunway: meta.longestRunway,
-          });
-        } else {
-          setMetadata(null);
-        }
-      } catch {
-        setMetadata(null);
-      }
-    }
-    fetchMetadata();
-  }, [airport.id]);
+  const { data: metadata } = useAirportMetadata(airport.id);
 
   // Calculate local time from airport position
   const rwy = airport.runways[0];

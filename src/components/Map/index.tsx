@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import Sidebar from '@/components/layout/Sidebar';
@@ -570,19 +571,21 @@ export default function Map({ airports }: MapProps) {
       )}
 
       {showSidebar && selectedAirportData && (
-        <Sidebar
-          airport={selectedAirportData}
-          onCloseAirport={closeSidebar}
-          navDataCounts={navDataCounts}
-          onSelectRunway={navigateToRunway}
-          onSelectProcedure={handleSelectProcedure}
-          selectedProcedure={selectedProcedure}
-          onSelectGateAsStart={selectGateAsStart}
-          onSelectRunwayEndAsStart={selectRunwayEndAsStart}
-          selectedStartPosition={selectedStartPosition}
-          vatsimData={vatsimData}
-          vatsimMetar={vatsimMetar?.raw ?? null}
-        />
+        <SectionErrorBoundary name="Sidebar">
+          <Sidebar
+            airport={selectedAirportData}
+            onCloseAirport={closeSidebar}
+            navDataCounts={navDataCounts}
+            onSelectRunway={navigateToRunway}
+            onSelectProcedure={handleSelectProcedure}
+            selectedProcedure={selectedProcedure}
+            onSelectGateAsStart={selectGateAsStart}
+            onSelectRunwayEndAsStart={selectRunwayEndAsStart}
+            selectedStartPosition={selectedStartPosition}
+            vatsimData={vatsimData}
+            vatsimMetar={vatsimMetar?.raw ?? null}
+          />
+        </SectionErrorBoundary>
       )}
 
       <LaunchDialog

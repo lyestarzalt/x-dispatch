@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
+import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
@@ -91,7 +92,9 @@ function AppContent() {
 
   return (
     <div className="h-screen w-screen bg-background">
-      <Map airports={airports} />
+      <SectionErrorBoundary name="Map">
+        <Map airports={airports} />
+      </SectionErrorBoundary>
     </div>
   );
 }

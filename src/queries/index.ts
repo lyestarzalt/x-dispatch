@@ -22,3 +22,14 @@ export { useNavDataQuery, useGlobalAirwaysQuery, getNavDataCounts } from './useN
 export { useVatsimQuery } from './useVatsimQuery';
 export { useVatsimMetarQuery } from './useVatsimMetarQuery';
 export { useVatsimEventsQuery } from './useVatsimEventsQuery';
+
+// App data hooks
+export {
+  useAppVersion,
+  useXPlanePath,
+  useLoadingStatus,
+  useAirportMetadata,
+  useATCControllers,
+  useAirportProcedures,
+  appKeys,
+} from './useAppQuery';

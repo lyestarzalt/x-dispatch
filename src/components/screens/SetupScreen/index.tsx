@@ -12,7 +12,7 @@ interface SetupScreenProps {
 
 export default function SetupScreen({ onComplete }: SetupScreenProps) {
   const { t } = useTranslation();
-  const version = useAppVersion();
+  const { data: version } = useAppVersion();
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

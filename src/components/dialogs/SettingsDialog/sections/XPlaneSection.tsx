@@ -1,21 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Check, FolderOpen, Loader2, Plane } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
+import { useXPlanePath } from '@/queries';
 import type { SettingsSectionProps } from '../types';
 
 export default function XPlaneSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
-  const [xplanePath, setXplanePath] = useState<string | null>(null);
+  const { data: xplanePath } = useXPlanePath();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    window.xplaneAPI.getPath().then(setXplanePath);
-  }, []);
 
   const handleBrowse = async () => {
     setLoading(true);
