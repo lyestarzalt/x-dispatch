@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
-import { ParsedAirport } from '@/lib/aptParser';
+import type { ParsedAirport } from '@/types/apt';
 import { createWindsockGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 

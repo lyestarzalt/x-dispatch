@@ -1,4 +1,4 @@
-import type { FeaturedCategory } from '@/data';
+import type { FeaturedCategory } from '@/types/featured';
 
 export interface FeaturedTabProps {
   category: FeaturedCategory | 'all';

@@ -92,6 +92,9 @@ export class HighAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithC
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     const highStyle = NAV_LINE_STYLES.airways.high;
 
     // Add thin line layer - X-Plane style
@@ -137,7 +140,7 @@ export class HighAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithC
 
     // Add label layer - small box style
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.labelSourceId,
       minzoom: NAV_ZOOM_LEVELS.highAirways.labels,
@@ -229,6 +232,9 @@ export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCo
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     const lowStyle = NAV_LINE_STYLES.airways.low;
 
     // Add thin line layer - X-Plane style (dashed for low airways)
@@ -275,7 +281,7 @@ export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCo
 
     // Add label layer
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.labelSourceId,
       minzoom: NAV_ZOOM_LEVELS.lowAirways.labels,

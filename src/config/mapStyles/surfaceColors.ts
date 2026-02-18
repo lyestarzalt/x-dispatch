@@ -1,4 +1,4 @@
-import { SurfaceType } from '@/lib/aptParser/types';
+import { SurfaceType } from '@/types/apt';
 
 /**
  * Surface type to color mapping for realistic airport visualization

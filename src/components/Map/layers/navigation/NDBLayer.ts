@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
-import { svgToDataUrl } from '@/lib/svg';
+import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
@@ -87,6 +87,9 @@ export class NDBLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     if (this.imagesLoaded && map.hasImage('ndb-symbol')) {
       // NDB symbols using custom icon
       map.addLayer({
@@ -116,7 +119,7 @@ export class NDBLayerRenderer extends NavLayerRenderer<Navaid> {
 
     // NDB labels
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 8,

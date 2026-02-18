@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import { SURFACE_TYPES, getSurfaceColor } from '@/config/mapStyles/surfaceColors';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
-import { ParsedAirport } from '@/lib/aptParser';
+import type { ParsedAirport } from '@/types/apt';
 import { createRunwayGeoJSON, createRunwayShoulderGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 

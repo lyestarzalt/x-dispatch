@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Runway } from '@/lib/aptParser/types';
+import type { ParsedAirport } from '@/types/apt';
+import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**

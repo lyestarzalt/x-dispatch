@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
+import type { ParsedAirport } from '@/types/apt';
 
 /**
  * Interface for all layer renderers

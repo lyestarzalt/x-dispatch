@@ -1,0 +1,571 @@
+{
+  "common": {
+    "search": "Pesquisar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "noResults": "Nenhum resultado encontrado",
+    "all": "Tudo",
+    "retry": "Tentar novamente",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "browse": "Explorar",
+    "refresh": "Atualizar",
+    "showMore": "Mostrar todos {{count}}",
+    "showLess": "Mostrar menos",
+    "copiedToClipboard": "Copiado para a área de transferência!",
+    "notConfigured": "Não configurado",
+    "selected": "Selecionado",
+    "online": "online",
+    "approved": "Aprovado",
+    "recommended": "Recomendado"
+  },
+
+  "units": {
+    "ft": "ft",
+    "m": "m",
+    "nm": "nm",
+    "kt": "kt",
+    "s": "s",
+    "kg": "kg",
+    "fpm": "fpm"
+  },
+
+  "directions": {
+    "n": "N",
+    "e": "L",
+    "s": "S",
+    "w": "O",
+    "ne": "NE",
+    "nw": "NO",
+    "se": "SE",
+    "sw": "SO"
+  },
+
+  "app": {
+    "title": "X-Dispatch"
+  },
+
+  "setup": {
+    "title": "X-Dispatch",
+    "subtitle": "Selecione sua instalação do X-Plane para começar",
+    "selectFolder": "Selecionar pasta do X-Plane",
+    "changeFolder": "Alterar pasta",
+    "browseManually": "Procurar manualmente",
+    "noInstallations": "Nenhuma instalação do X-Plane encontrada",
+    "failedToBrowse": "Falha ao abrir seletor de pastas",
+    "failedToSave": "Falha ao salvar"
+  },
+
+  "loading": {
+    "title": "X-Dispatch",
+    "badge": "Carregando dados",
+    "initializing": "Inicializando...",
+    "steps": {
+      "airports": "Aeroportos",
+      "navaids": "Auxílios de navegação",
+      "waypoints": "Waypoints",
+      "airspaces": "Espaços aéreos",
+      "airways": "Aerovias"
+    },
+    "pathNotConfigured": "Caminho do X-Plane não configurado",
+    "configurationRequired": "Configuração necessária",
+    "configureXPlanePath": "Configurar caminho do X-Plane"
+  },
+
+  "toolbar": {
+    "searchPlaceholder": "Pesquisar aeroportos...",
+    "clearSearch": "Limpar pesquisa",
+    "nav": "NAV",
+    "vatsim": "VATSIM",
+    "track": "Rastrear",
+    "trackTooltip": "Rastrear a posição da sua aeronave",
+    "launch": "Iniciar",
+    "navigationLayers": "Camadas de navegação"
+  },
+
+  "explore": {
+    "title": "Explorar",
+    "close": "Fechar exploração",
+    "tabs": {
+      "filters": "Filtros",
+      "featured": "Destaques",
+      "routes": "Rotas",
+      "vatsim": "VATSIM"
+    },
+    "vatsim": {
+      "busiestNow": "Mais movimentados agora",
+      "events": "Eventos",
+      "noEvents": "Sem eventos próximos",
+      "viewRoute": "Ver rota",
+      "goToDeparture": "Ir para partida"
+    },
+    "filters": {
+      "country": "País",
+      "region": "Região",
+      "type": "Tipo",
+      "allCountries": "Todos os países",
+      "allRegions": "Todas as regiões",
+      "allTypes": "Todos os tipos",
+      "land": "Terra",
+      "seaplane": "Hidroavião",
+      "heliport": "Heliporto",
+      "hasIata": "Possui código IATA"
+    },
+    "featured": {
+      "all": "Todos",
+      "challenging": "Desafiadores",
+      "scenic": "Cênicos",
+      "unique": "Únicos",
+      "historic": "Históricos",
+      "icons": {
+        "mountain": "^",
+        "sunrise": "*",
+        "sparkles": "+",
+        "landmark": "#"
+      }
+    }
+  },
+
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Configure suas preferências",
+    "tabs": {
+      "xplane": "X-Plane",
+      "data": "Dados Nav",
+      "appearance": "Aparência",
+      "navigation": "Navegação",
+      "vatsim": "VATSIM",
+      "about": "Sobre"
+    },
+    "about": {
+      "title": "Sobre",
+      "description": "Despacho de voos e visualização de aeroportos para X-Plane",
+      "credits": "Créditos",
+      "developer": "Desenvolvedor",
+      "license": "Licença",
+      "links": "Links",
+      "sourceCode": "Código fonte",
+      "reportIssue": "Reportar um problema",
+      "dataStorage": "Dados e configurações",
+      "dataStorageDescription": "Preferências do app, cache e banco de dados são armazenados aqui.",
+      "settingsCache": "Configurações e cache",
+      "logFile": "Arquivo de log",
+      "openDataFolder": "Abrir pasta de dados",
+      "openLog": "Abrir arquivo de log",
+      "openLogFolder": "Mostrar na pasta"
+    },
+    "xplane": {
+      "title": "Instalação do X-Plane",
+      "description": "Configure sua fonte de dados do X-Plane",
+      "currentPath": "Caminho atual",
+      "detectedInstallations": "Instalações detectadas",
+      "selectInstallation": "Selecione uma instalação para usar",
+      "active": "Ativo",
+      "custom": "Personalizado",
+      "dataLoaded": "Dados carregados",
+      "dataType": "Tipo",
+      "count": "Quantidade",
+      "source": "Fonte",
+      "navDataSource": "Fonte de dados de navegação",
+      "validDates": "Válido",
+      "expired": "Expirado",
+      "current": "Atual",
+      "atcFrequencies": "Frequências ATC",
+      "holdingPatterns": "Padrões de espera",
+      "airportMetadata": "Metadados do aeroporto",
+      "moraGrid": "Grade MORA",
+      "msaSectors": "Setores MSA"
+    },
+    "appearance": {
+      "title": "Aparência",
+      "description": "Personalize a aparência visual",
+      "theme": "Tema",
+      "themeDescription": "Escolha seu esquema de cores preferido",
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema",
+      "mapStyle": "Estilo do mapa",
+      "mapStyleDescription": "Selecione um estilo de mapa para o fundo",
+      "unlimited": "Ilimitado",
+      "customStyleUrl": "URL personalizada",
+      "customStyleHint": "Cole qualquer URL de style.json do MapLibre",
+      "language": "Idioma",
+      "units": "Unidades",
+      "unitsDescription": "Configure as unidades de medida",
+      "weightUnit": "Peso",
+      "lbs": "Libras (lbs)",
+      "kg": "Quilogramas (kg)"
+    },
+    "navigation": {
+      "title": "Navegação",
+      "description": "Configure as opções de navegação",
+      "dataTitle": "Dados de navegação",
+      "dataDescription": "Visualizar fontes de dados de navegação carregadas",
+      "navigraphInfo": "Os dados do Navigraph fornecem dados de navegação aprimorados incluindo aerovias, procedimentos e frequências atualizadas.",
+      "searchRadius": "Raio de pesquisa",
+      "airportLayoutData": "Dados de layout do aeroporto",
+      "airportLayoutDescription": "Geometria do aeroporto de arquivos apt.dat (pistas, taxiways, portões, etc.)",
+      "globalAirports": "Aeroportos globais",
+      "customAirports": "Aeroportos personalizados",
+      "fromSceneryPacks": "de {{count}} pacote(s) de cenário",
+      "totalAirports": "Total de aeroportos",
+      "navDataSource": "Fonte de dados de navegação",
+      "navDataSourceDescription": "Auxílios de navegação, waypoints, aerovias, procedimentos e frequências",
+      "vatsim": {
+        "title": "VATSIM",
+        "sectionDescription": "Tráfego aéreo ao vivo da rede VATSIM",
+        "enable": "Habilitar camada VATSIM",
+        "description": "Mostrar posições de pilotos ao vivo no mapa",
+        "currentlyOnline": "Atualmente online",
+        "refreshRate": "Taxa de atualização",
+        "autoRefresh": "Intervalo de atualização automática",
+        "refreshNote": "Os dados do VATSIM são atualizados a cada 15 segundos conforme as diretrizes da API.",
+        "aboutTitle": "Sobre a integração VATSIM",
+        "aboutDescription": "Os pilotos são exibidos como ícones no mapa. Clique em um piloto para ver os detalhes do voo incluindo indicativo, aeronave, partida e destino.",
+        "refreshInterval": "Intervalo de atualização",
+        "refreshHelp": "Com que frequência atualizar os dados do VATSIM (recomendado: 15s)"
+      }
+    }
+  },
+
+  "sidebar": {
+    "weather": "Clima",
+    "weatherDetails": "Detalhes do clima",
+    "wind": "Vento",
+    "visibility": "Visibilidade",
+    "ceiling": "Teto",
+    "altimeter": "Altímetro",
+    "temp": "Temp",
+    "dewpoint": "Ponto de orvalho",
+    "clouds": "Nuvens",
+    "noWeatherData": "Sem dados meteorológicos disponíveis",
+    "noFrequencies": "Sem frequências disponíveis",
+    "searchGates": "Pesquisar portões...",
+    "searchRunways": "Pesquisar pistas...",
+    "frequencies": "Frequências",
+    "runways": "Pistas",
+    "gates": "Portões",
+    "gatesParking": "Portões e estacionamento",
+    "departurePosition": "Posição de partida",
+    "moreCount": "+{{count}} mais",
+    "more": "mais",
+    "procedures": "Procedimentos",
+    "nearbyNavaids": "Auxílios de navegação próximos",
+    "withinRadius": "Dentro de um raio de 50nm",
+    "ils": "ILS",
+    "startFrom": "Iniciar de:",
+    "noGatesFound": "Nenhum portão encontrado",
+    "noRunwaysFound": "Nenhuma pista encontrada",
+    "copyFrequency": "Copiar frequência",
+    "vatsim": {
+      "notEnabled": "Habilite o VATSIM nas configurações para ver dados ao vivo",
+      "noActivity": "Sem atividade VATSIM"
+    }
+  },
+
+  "airportInfo": {
+    "tabs": {
+      "info": "INFO",
+      "runways": "Pistas",
+      "gates": "Portões",
+      "radio": "Rádio",
+      "gateway": "GATEWAY"
+    },
+    "stats": {
+      "elevation": "ELEV",
+      "runways": "PISTA",
+      "gates": "PORTÕES",
+      "hangars": "HANGARES"
+    },
+    "runwayCount": "{{count}} PISTA",
+    "location": "LOCALIZAÇÃO",
+    "facilities": "INSTALAÇÕES",
+    "tower": "TORRE",
+    "windsocks": "BIRUTA",
+    "beacon": "FAROL",
+    "helipads": "HELIPONTOS",
+    "searchGates": "Pesquisar portões...",
+    "filterAll": "TODOS",
+    "filterGates": "PORTÕES",
+    "filterHangars": "HANGARES",
+    "filterOther": "OUTROS",
+    "noGatesFound": "NENHUM PORTÃO ENCONTRADO",
+    "noFrequencies": "Sem frequências disponíveis",
+    "xplaneGateway": "X-Plane Gateway",
+    "gatewayNotAvailable": "DADOS DO GATEWAY NÃO DISPONÍVEIS",
+    "gatewayLoading": "CARREGANDO DADOS DO GATEWAY...",
+    "noGatewayData": "SEM DADOS DO GATEWAY PARA ESTE AEROPORTO",
+    "gatewayDescription": "Estes dados mostram as contribuições para este aeroporto.",
+    "viewOnGateway": "Ver no Gateway",
+    "accepted": "ACEITO",
+    "features": "RECURSOS",
+    "sceneryPacks": "PACOTES DE CENÁRIO",
+    "moreOnGateway": "MAIS NO GATEWAY",
+    "refreshData": "ATUALIZAR DADOS",
+    "artistComments": "COMENTÁRIOS DO ARTISTA",
+    "approvedDate": "Aprovado:",
+    "beaconTypes": {
+      "civil": "Civil (B-V)",
+      "seaplane": "Hidroavião (B-A)",
+      "heliport": "Heliporto",
+      "military": "Militar"
+    },
+    "surfaces": {
+      "asphalt": "Asfalto",
+      "concrete": "Concreto",
+      "grass": "Grama",
+      "dirt": "Terra",
+      "gravel": "Cascalho",
+      "dryLake": "Lago seco",
+      "water": "Água",
+      "snow": "Neve",
+      "transparent": "Transparente",
+      "unknown": "Desconhecido"
+    }
+  },
+
+  "navigation": {
+    "heading": "PROA",
+    "wind": "VENTO",
+    "calm": "Calmo"
+  },
+
+  "flightStrip": {
+    "notDetected": "X-Plane não está rodando",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "agl": "AGL",
+    "vs": "VS",
+    "hdg": "HDG",
+    "center": "Centralizar",
+    "centerTooltip": "Centralizar mapa na aeronave"
+  },
+
+  "weather": {
+    "fetching": "Obtendo clima...",
+    "noData": "Sem dados meteorológicos disponíveis",
+    "tabs": {
+      "metar": "METAR",
+      "taf": "TAF"
+    },
+    "visibility": "VISIBILIDADE",
+    "clouds": "NUVENS",
+    "tempDew": "TEMP/ORVALHO",
+    "altimeter": "ALTÍMETRO",
+    "showRaw": "Mostrar bruto",
+    "hideRaw": "Ocultar bruto",
+    "runway": "PISTA {{names}}",
+    "useRunway": "Usar {{name}}",
+    "headwind": "HW",
+    "tailwind": "TW",
+    "crosswind": "XW"
+  },
+
+  "procedures": {
+    "noData": "Sem procedimentos disponíveis",
+    "noTypeData": "Sem {{type}}s disponíveis",
+    "tabs": {
+      "sid": "SID",
+      "star": "STAR",
+      "app": "APP"
+    },
+    "allRunways": "TODOS"
+  },
+
+  "layers": {
+    "airport": {
+      "title": "Camadas do aeroporto",
+      "surfaces": "Superfícies",
+      "markings": "Marcações",
+      "lights": "Luzes",
+      "objects": "Objetos",
+      "effects": "Efeitos"
+    },
+    "navigation": {
+      "title": "Camadas de navegação",
+      "navaids": "Auxílios de navegação",
+      "fixes": "Fixos",
+      "airspaces": "Espaços aéreos"
+    },
+    "items": {
+      "runways": "Pistas",
+      "taxiways": "Taxiways",
+      "aprons": "Pátios",
+      "boundary": "Limite",
+      "rwyMarkings": "Marcações de pista",
+      "lines": "Linhas",
+      "signs": "Placas",
+      "rwyLights": "Luzes de pista",
+      "twyLights": "Luzes de taxiway",
+      "approach": "Aproximação",
+      "gates": "Portões",
+      "windsocks": "Birutas",
+      "animations": "Animações",
+      "weatherEffects": "Clima",
+      "vors": "VORs",
+      "ndbs": "NDBs",
+      "dmes": "DMEs",
+      "ils": "ILS",
+      "waypoints": "Waypoints",
+      "airwaysOff": "Desligado",
+      "highAirways": "Aerovias altas (Jet)",
+      "lowAirways": "Aerovias baixas (Victor)"
+    },
+    "loadViewport": "Carregar auxílios de navegação do viewport",
+    "showAll": "Mostrar tudo",
+    "hideAll": "Ocultar tudo"
+  },
+
+  "debug": {
+    "title": "Modo debug ativo",
+    "instruction": "Clique em qualquer elemento no mapa para inspecionar suas propriedades.",
+    "descriptions": {
+      "lines": "Linhas (marcações pintadas)",
+      "signs": "Placas (placas de pista/taxiway)",
+      "gates": "Portões e estacionamentos",
+      "runways": "Pistas e taxiways"
+    },
+    "properties": "Propriedades",
+    "coordinates": "Coordenadas",
+    "rawAptDat": "apt.dat bruto",
+    "lineTypesHeader": "Tipos de linha X-Plane (apt.dat 1130):",
+    "copyToClipboard": "Copiar para área de transferência",
+    "clearSelection": "Limpar seleção"
+  },
+
+  "launcher": {
+    "title": "Configuração do voo",
+    "launch": "Iniciar X-Plane",
+    "launching": "Iniciando...",
+    "changeFlight": "Alterar voo",
+    "changingFlight": "Alterando...",
+    "xplaneRunning": "X-Plane está rodando - o voo será alterado via API",
+    "selectDeparture": "Selecione uma partida no mapa",
+    "selectAircraft": "Selecione uma aeronave",
+
+    "aircraft": {
+      "title": "Aeronave",
+      "search": "Pesquisar aeronave...",
+      "allCategories": "Todas as categorias",
+      "allManufacturers": "Todos os fabricantes",
+      "allTypes": "Todos os tipos",
+      "allEngines": "Todos os motores",
+      "fixedWing": "Asa fixa",
+      "helicopter": "Helicóptero",
+      "jet": "Jato",
+      "prop": "Hélice",
+      "count": "{{count}} aeronaves",
+      "favorites": "{{count}} favoritos",
+      "noFavorites": "Sem favoritos ainda",
+      "noAircraft": "Nenhuma aeronave encontrada",
+      "showAll": "Mostrar todos",
+      "showFavoritesOnly": "Mostrar apenas favoritos"
+    },
+
+    "liveries": {
+      "title": "Pinturas",
+      "count": "Pinturas ({{count}})",
+      "default": "Padrão"
+    },
+
+    "specs": {
+      "emptyWeight": "Vazio",
+      "maxWeight": "MTOW",
+      "maxFuel": "Cap. combustível",
+      "tailNumber": "Matrícula"
+    },
+
+    "config": {
+      "timeOfDay": "Hora do dia",
+      "realWorldTime": "Mundo real",
+      "coldAndDark": "Frio e escuro",
+      "weather": "Clima",
+      "fuel": "Combustível",
+      "summary": "Resumo",
+      "departure": "Partida",
+      "livery": "Pintura"
+    },
+
+    "time": {
+      "dawn": "Amanhecer",
+      "day": "Dia",
+      "dusk": "Entardecer",
+      "night": "Noite"
+    },
+
+    "timePresets": {
+      "dawn": "Amanhecer",
+      "sunrise": "Nascer do sol",
+      "noon": "Meio-dia",
+      "sunset": "Pôr do sol",
+      "dusk": "Entardecer",
+      "night": "Noite"
+    },
+
+    "weather": {
+      "real": "Real",
+      "clear": "Limpo",
+      "cloudy": "Nublado",
+      "rainy": "Chuvoso",
+      "stormy": "Tempestuoso",
+      "snowy": "Nevando",
+      "foggy": "Nevoeiro"
+    },
+
+    "weatherBuilder": {
+      "custom": "Clima personalizado",
+      "customize": "Personalizar clima",
+      "details": "Detalhes do clima",
+      "visibility": "Visibilidade",
+      "wind": "Vento",
+      "direction": "Direção",
+      "speed": "Velocidade",
+      "gusts": "Rajadas",
+      "clouds": "Nuvens",
+      "addLayer": "Adicionar camada",
+      "noClouds": "Sem camadas de nuvens",
+      "layer": "Camada",
+      "coverage": "Cobertura",
+      "cloudType": "Tipo",
+      "base": "Base (ft)",
+      "tops": "Topo (ft)",
+      "precipitation": "Precipitação",
+      "temperature": "Temperatura",
+      "dewpoint": "Ponto de orvalho",
+      "pressure": "Pressão",
+      "atmosphere": "Atmosfera",
+      "cloudTypes": {
+        "stratus": "Stratus",
+        "cumulus": "Cumulus",
+        "cumulonimbus": "Cumulonimbus"
+      }
+    },
+
+    "weatherModal": {
+      "presets": "Predefinições",
+      "custom": "Personalizado",
+      "poor": "Ruim",
+      "unlimited": "Ilimitada"
+    },
+
+    "fuelConfig": {
+      "auto": "Auto",
+      "manual": "Manual",
+      "total": "Total"
+    },
+
+    "fuelModal": {
+      "empty": "Vazio",
+      "full": "Cheio",
+      "of": "de"
+    }
+  }
+}

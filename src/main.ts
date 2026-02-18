@@ -2,9 +2,9 @@ import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from '
 import windowStateKeeper from 'electron-window-state';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
-import { initDb } from './db';
-import logger, { getLogPath } from './lib/logger';
-import { AirportProcedures } from './lib/navParser/cifpParser';
+import { initDb } from './lib/db';
+import { AirportProcedures } from './lib/parsers/nav/cifpParser';
+import logger, { getLogPath } from './lib/utils/logger';
 import {
   isInvalidCoords,
   isValidICAO,
@@ -12,9 +12,13 @@ import {
   isValidSceneryId,
   isValidSearchQuery,
   validateCoordinates,
-} from './lib/validation';
-import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneData';
-import type { PlaneState } from './types/xplane';
+} from './lib/utils/validation';
+import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
+import type { LaunchConfig } from './types/aircraft';
+import type { LoadingProgress, PlaneState } from './types/xplane';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
@@ -24,27 +28,19 @@ app.name = 'X-Dispatch';
 let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
-let launcherModule: typeof import('./lib/launcher') | null = null;
-let xplaneModule: typeof import('./lib/xplane') | null = null;
+let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
+let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
 
 async function getXPlaneModule() {
   if (!xplaneModule) {
-    xplaneModule = await import('./lib/xplane');
+    xplaneModule = await import('./lib/xplaneServices/client');
   }
   return xplaneModule;
 }
 
-interface LoadingProgress {
-  step: string;
-  status: 'pending' | 'loading' | 'complete' | 'error';
-  message: string;
-  count?: number;
-  error?: string;
-}
-
 async function getLauncherModule() {
   if (!launcherModule) {
-    launcherModule = await import('./lib/launcher');
+    launcherModule = await import('./lib/xplaneServices/launch');
   }
   return launcherModule;
 }
@@ -135,6 +131,10 @@ function registerIpcHandlers() {
   ipcMain.handle('app:openLogFolder', () => {
     const logPath = getLogPath();
     shell.showItemInFolder(logPath);
+  });
+  ipcMain.handle('app:getConfigPath', () => app.getPath('userData'));
+  ipcMain.handle('app:openConfigFolder', () => {
+    shell.openPath(app.getPath('userData'));
   });
   ipcMain.handle('app:getLoadingStatus', () => ({
     xplanePath: dataManager.getXPlanePath(),
@@ -300,15 +300,23 @@ function registerIpcHandlers() {
   ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
   ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
   ipcMain.handle('xplane:browseForPath', async () => {
-    if (!mainWindow) return null;
-    const result = await dialog.showOpenDialog(mainWindow, {
-      properties: ['openDirectory'],
-      title: 'Select X-Plane Installation Folder',
-    });
-    if (result.canceled || result.filePaths.length === 0) return null;
-    const selectedPath = result.filePaths[0];
-    const validation = dataManager.validatePath(selectedPath);
-    return { path: selectedPath, valid: validation.valid, errors: validation.errors };
+    if (!mainWindow) {
+      logger.error('browseForPath: mainWindow is null');
+      return null;
+    }
+    try {
+      const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory'],
+        title: 'Select X-Plane Installation Folder',
+      });
+      if (result.canceled || result.filePaths.length === 0) return null;
+      const selectedPath = result.filePaths[0];
+      const validation = dataManager.validatePath(selectedPath);
+      return { path: selectedPath, valid: validation.valid, errors: validation.errors };
+    } catch (err) {
+      logger.error('browseForPath: dialog failed', err);
+      throw err;
+    }
   });
 
   ipcMain.handle('get-airports', () => dataManager.getAllAirports());
@@ -545,11 +553,27 @@ function registerIpcHandlers() {
   ipcMain.handle('launcher:launch', async (_, config: unknown) => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return { success: false, error: 'X-Plane path not configured' };
+
+    // Validate config has required LaunchConfig properties
+    if (
+      !config ||
+      typeof config !== 'object' ||
+      !('aircraft' in config) ||
+      !('livery' in config) ||
+      !('fuel' in config) ||
+      !('startPosition' in config) ||
+      !('time' in config) ||
+      !('weather' in config)
+    ) {
+      return { success: false, error: 'Invalid launch configuration' };
+    }
+
     try {
       const { getLauncher } = await getLauncherModule();
-      return await getLauncher(xplanePath).launch(config as any);
+      return await getLauncher(xplanePath).launch(config as LaunchConfig);
     } catch (error) {
-      return { success: false, error: (error as Error).message };
+      const message = error instanceof Error ? error.message : String(error);
+      return { success: false, error: message };
     }
   });
 
@@ -583,27 +607,8 @@ function registerIpcHandlers() {
     }
   });
 
-  // X-Plane API handlers
-  ipcMain.handle('xplaneService:isRunning', async () => {
-    try {
-      const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().isSimRunning();
-    } catch (error) {
-      logger.main.error('Failed to check X-Plane status:', error);
-      return false;
-    }
-  });
-
-  ipcMain.handle('xplaneService:isProcessRunning', async () => {
-    try {
-      const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().isProcessRunning();
-    } catch (error) {
-      logger.main.error('Failed to check X-Plane process:', error);
-      return false;
-    }
-  });
-
+  // X-Plane API handlers (REST + WebSocket)
+  // REST goes through main process to avoid CORS issues with localhost
   ipcMain.handle('xplaneService:isAPIAvailable', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
@@ -614,20 +619,30 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:loadFlight', async (_, config: Record<string, unknown>) => {
+  ipcMain.handle('xplaneService:getCapabilities', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().loadFlightViaAPI(config);
+      return getXPlaneService().getCapabilities();
+    } catch (error) {
+      logger.main.error('Failed to get capabilities:', error);
+      return null;
+    }
+  });
+
+  ipcMain.handle('xplaneService:startFlight', async (_, payload) => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().startFlight(payload);
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
   });
 
-  ipcMain.handle('xplaneService:getDataref', async (_, dataref: string) => {
-    if (!dataref || typeof dataref !== 'string') return null;
+  ipcMain.handle('xplaneService:getDataref', async (_, datarefName: string) => {
+    if (!datarefName || typeof datarefName !== 'string') return null;
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      return getXPlaneService().getDataref(dataref);
+      return getXPlaneService().getDataref(datarefName);
     } catch {
       return null;
     }
@@ -635,19 +650,35 @@ function registerIpcHandlers() {
 
   ipcMain.handle(
     'xplaneService:setDataref',
-    async (_, dataref: string, value: number | number[]) => {
-      if (!dataref || typeof dataref !== 'string') {
-        return { success: false, error: 'Invalid dataref' };
+    async (_, datarefName: string, value: number | number[]) => {
+      if (!datarefName || typeof datarefName !== 'string') {
+        return { success: false, error: 'Invalid dataref name' };
       }
       try {
         const { getXPlaneService } = await getXPlaneModule();
-        return getXPlaneService().setDataref(dataref, value);
+        return getXPlaneService().setDataref(datarefName, value);
       } catch (error) {
         return { success: false, error: (error as Error).message };
       }
     }
   );
 
+  ipcMain.handle(
+    'xplaneService:activateCommand',
+    async (_, commandName: string, duration: number = 0) => {
+      if (!commandName || typeof commandName !== 'string') {
+        return { success: false, error: 'Invalid command name' };
+      }
+      try {
+        const { getXPlaneService } = await getXPlaneModule();
+        return getXPlaneService().activateCommand(commandName, duration);
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    }
+  );
+
+  // WebSocket streaming
   ipcMain.handle('xplaneService:startStateStream', async (event) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();

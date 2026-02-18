@@ -55,11 +55,11 @@
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "Sélectionnez votre installation X-Plane pour commencer",
-    "scanning": "Recherche des installations...",
-    "noInstallations": "Aucune installation X-Plane trouvée",
-    "selectManually": "Utilisez le bouton ci-dessous pour sélectionner manuellement",
+    "selectFolder": "Sélectionner le dossier X-Plane",
+    "changeFolder": "Changer de dossier",
     "browseManually": "Parcourir manuellement",
-    "failedToBrowse": "Échec de la navigation",
+    "noInstallations": "Aucune installation X-Plane trouvée",
+    "failedToBrowse": "Impossible d'ouvrir le sélecteur de dossier",
     "failedToSave": "Échec de l'enregistrement"
   },
 
@@ -101,6 +101,7 @@
       "about": "À propos"
     },
     "about": {
+      "title": "À propos",
       "description": "Dispatch de vol et visualisation d'aéroports pour X-Plane",
       "credits": "Crédits",
       "developer": "Développeur",
@@ -108,10 +109,13 @@
       "links": "Liens",
       "sourceCode": "Code source",
       "reportIssue": "Signaler un problème",
-      "troubleshooting": "Dépannage",
-      "troubleshootingDescription": "Incluez les fichiers journaux lors du signalement de problèmes.",
+      "dataStorage": "Données et paramètres",
+      "dataStorageDescription": "Les préférences, le cache et la base de données sont stockés ici.",
+      "settingsCache": "Paramètres et cache",
+      "logFile": "Fichier journal",
+      "openDataFolder": "Ouvrir le dossier de données",
       "openLog": "Ouvrir le journal",
-      "openFolder": "Ouvrir le dossier"
+      "openLogFolder": "Afficher dans le dossier"
     },
     "xplane": {
       "title": "Installation X-Plane",

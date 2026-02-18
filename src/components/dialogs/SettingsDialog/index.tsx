@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Database, Info, Palette, Plane, Radar } from 'lucide-react';
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import {
   AboutSection,
   AppearanceSection,
@@ -52,7 +53,7 @@ export default function SettingsDialog({
   vatsimPilotCount,
 }: SettingsDialogProps) {
   const { t } = useTranslation();
-  const version = useAppVersion();
+  const { data: version } = useAppVersion();
   const [activeTab, setActiveTab] = useState<TabId>('xplane');
 
   return (
@@ -115,7 +116,9 @@ export default function SettingsDialog({
               className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
             >
               <div className="p-6">
-                <XPlaneSection />
+                <SectionErrorBoundary name="X-Plane Settings">
+                  <XPlaneSection />
+                </SectionErrorBoundary>
               </div>
             </TabsContent>
 
@@ -124,7 +127,9 @@ export default function SettingsDialog({
               className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
             >
               <div className="p-6">
-                <NavigationDataSection />
+                <SectionErrorBoundary name="Navigation Data">
+                  <NavigationDataSection />
+                </SectionErrorBoundary>
               </div>
             </TabsContent>
 
@@ -133,7 +138,9 @@ export default function SettingsDialog({
               className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
             >
               <div className="p-6">
-                <AppearanceSection />
+                <SectionErrorBoundary name="Appearance">
+                  <AppearanceSection />
+                </SectionErrorBoundary>
               </div>
             </TabsContent>
 
@@ -142,11 +149,13 @@ export default function SettingsDialog({
               className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
             >
               <div className="p-6">
-                <VatsimSection
-                  isVatsimEnabled={isVatsimEnabled}
-                  onToggleVatsim={onToggleVatsim || (() => {})}
-                  vatsimPilotCount={vatsimPilotCount}
-                />
+                <SectionErrorBoundary name="VATSIM">
+                  <VatsimSection
+                    isVatsimEnabled={isVatsimEnabled}
+                    onToggleVatsim={onToggleVatsim || (() => {})}
+                    vatsimPilotCount={vatsimPilotCount}
+                  />
+                </SectionErrorBoundary>
               </div>
             </TabsContent>
 
@@ -155,7 +164,9 @@ export default function SettingsDialog({
               className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
             >
               <div className="p-6">
-                <AboutSection />
+                <SectionErrorBoundary name="About">
+                  <AboutSection />
+                </SectionErrorBoundary>
               </div>
             </TabsContent>
           </div>

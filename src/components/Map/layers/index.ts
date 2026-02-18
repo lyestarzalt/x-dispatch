@@ -9,7 +9,6 @@ import {
   RunwayLayer,
   RunwayLightsLayer,
   RunwayMarkingsLayer,
-  // SignLayer, // TODO: rework sign rendering
   TaxiwayLayer,
   TaxiwayLightsLayer,
   TowerLayer,
@@ -20,11 +19,34 @@ import type { LayerRenderer } from './airport/BaseLayerRenderer';
 // Re-export base types
 export { type LayerRenderer } from './airport/BaseLayerRenderer';
 
-// Re-export all layer implementations by category
-export * from './airport';
-export * from './navigation';
-export * from './airspace';
-export * from './dynamic';
+// Navigation layer singletons
+export { airspaceLayer } from './airspace/AirspaceLayer';
+export { firLayer } from './airspace/FIRLayer';
+export {
+  dmeLayer,
+  highAirwayLayer,
+  ilsLayer,
+  lowAirwayLayer,
+  ndbLayer,
+  vorLayer,
+  waypointLayer,
+} from './navigation';
+
+// Dynamic layer functions
+export {
+  addPlaneLayer,
+  bringPlaneLayerToTop,
+  removePlaneLayer,
+  updatePlaneLayer,
+} from './dynamic/PlaneLayer';
+export { addProcedureRouteLayer, removeProcedureRouteLayer } from './dynamic/ProcedureRouteLayer';
+export { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from './dynamic/RouteLineLayer';
+export {
+  bringVatsimLayersToTop,
+  removeVatsimPilotLayer,
+  setupVatsimClickHandler,
+  updateVatsimPilotLayer,
+} from './dynamic/VatsimLayer';
 
 export function createLayerRenderers(): LayerRenderer[] {
   return [

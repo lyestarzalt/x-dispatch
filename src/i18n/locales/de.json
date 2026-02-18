@@ -55,11 +55,11 @@
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "Wählen Sie Ihre X-Plane Installation aus, um zu beginnen",
-    "scanning": "Suche nach Installationen...",
-    "noInstallations": "Keine X-Plane Installation gefunden",
-    "selectManually": "Verwenden Sie die Schaltfläche unten zur manuellen Auswahl",
+    "selectFolder": "X-Plane Ordner auswählen",
+    "changeFolder": "Ordner ändern",
     "browseManually": "Manuell durchsuchen",
-    "failedToBrowse": "Durchsuchen fehlgeschlagen",
+    "noInstallations": "Keine X-Plane Installation gefunden",
+    "failedToBrowse": "Ordnerauswahl konnte nicht geöffnet werden",
     "failedToSave": "Speichern fehlgeschlagen"
   },
 
@@ -101,6 +101,7 @@
       "about": "Über"
     },
     "about": {
+      "title": "Über",
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
       "credits": "Danksagungen",
       "developer": "Entwickler",
@@ -108,10 +109,13 @@
       "links": "Links",
       "sourceCode": "Quellcode",
       "reportIssue": "Problem melden",
-      "troubleshooting": "Fehlerbehebung",
-      "troubleshootingDescription": "Fügen Sie Protokolldateien beim Melden von Problemen bei.",
+      "dataStorage": "Daten & Einstellungen",
+      "dataStorageDescription": "App-Einstellungen, Cache und Datenbank werden hier gespeichert.",
+      "settingsCache": "Einstellungen & Cache",
+      "logFile": "Protokolldatei",
+      "openDataFolder": "Datenordner öffnen",
       "openLog": "Protokoll öffnen",
-      "openFolder": "Ordner öffnen"
+      "openLogFolder": "Im Ordner anzeigen"
     },
     "xplane": {
       "title": "X-Plane Installation",

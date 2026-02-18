@@ -10,3 +10,4 @@ export { useNavLayerSync, applyNavVisibilityChange } from './useNavLayerSync';
 export { useVatsimSync, toggleVatsimLayer } from './useVatsimSync';
 export { useAirportInteractions } from './useAirportInteractions';
 export { useRouteLineSync } from './useRouteLineSync';
+export { useProcedureRouteSync } from './useProcedureRouteSync';

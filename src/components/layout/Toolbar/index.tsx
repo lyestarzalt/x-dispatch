@@ -24,54 +24,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import { Airport } from '@/lib/xplaneData';
+import { cn } from '@/lib/utils/helpers';
+import type { Airport } from '@/lib/xplaneServices/dataService';
+import { useNavDataCounts, usePlaneState } from '@/queries';
+import { useVatsimQuery } from '@/queries/useVatsimQuery';
+import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
-import { AirwaysMode, NavLayerVisibility } from '@/types/layers';
+import type { AirwaysMode, NavLayerVisibility } from '@/types/layers';
 
 interface ToolbarProps {
   airports: Airport[];
   onSelectAirport: (airport: Airport) => void;
-  onOpenSettings: () => void;
   onToggleVatsim: () => void;
   onTogglePlaneTracker: () => void;
-  onOpenLauncher: () => void;
-  isVatsimEnabled: boolean;
-  vatsimPilotCount?: number;
-  isPlaneTrackerEnabled: boolean;
-  isXPlaneConnected: boolean;
-  hasStartPosition: boolean;
-  navVisibility: NavLayerVisibility;
   onNavToggle: (layer: keyof NavLayerVisibility) => void;
-  onSetAirwaysMode: (mode: AirwaysMode) => void;
-  navDataCounts: {
-    vors: number;
-    ndbs: number;
-    dmes: number;
-    ils: number;
-    waypoints: number;
-    airspaces: number;
-    highAirways: number;
-    lowAirways: number;
-  };
 }
 
 export default function Toolbar({
   airports,
   onSelectAirport,
-  onOpenSettings,
   onToggleVatsim,
   onTogglePlaneTracker,
-  onOpenLauncher,
-  isVatsimEnabled,
-  vatsimPilotCount,
-  isPlaneTrackerEnabled,
-  isXPlaneConnected,
-  hasStartPosition,
-  navVisibility,
   onNavToggle,
-  onSetAirwaysMode,
-  navDataCounts,
 }: ToolbarProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,8 +54,33 @@ export default function Toolbar({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // App store
+  const selectedAirportData = useAppStore((s) => s.selectedAirportData);
+  const hasStartPosition = useAppStore((s) => !!s.startPosition);
+  const setShowSettings = useAppStore((s) => s.setShowSettings);
+  const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
+
+  // Map store
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
+  const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
+  const navVisibility = useMapStore((s) => s.navVisibility);
+  const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
+
+  // Queries
+  const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+  const vatsimPilotCount = vatsimData?.pilots?.length;
+  const { connected: isXPlaneConnected } = usePlaneState();
+
+  // Nav data counts - derived from airport location
+  const airportLat = selectedAirportData?.metadata?.datum_lat
+    ? parseFloat(selectedAirportData.metadata.datum_lat)
+    : null;
+  const airportLon = selectedAirportData?.metadata?.datum_lon
+    ? parseFloat(selectedAirportData.metadata.datum_lon)
+    : null;
+  const navDataCounts = useNavDataCounts(airportLat, airportLon, navVisibility.airwaysMode);
 
   const filteredAirports = useMemo(() => {
     if (searchQuery.length < 2) return [];
@@ -299,7 +298,7 @@ export default function Toolbar({
               </DropdownMenuLabel>
               <DropdownMenuRadioGroup
                 value={navVisibility.airwaysMode}
-                onValueChange={(value) => onSetAirwaysMode(value as AirwaysMode)}
+                onValueChange={(value) => setAirwaysMode(value as AirwaysMode)}
               >
                 <DropdownMenuRadioItem value="off">
                   {t('layers.items.airwaysOff')}
@@ -329,18 +328,15 @@ export default function Toolbar({
             onClick={onTogglePlaneTracker}
             className={cn(
               'h-10 gap-2 px-3',
-              isPlaneTrackerEnabled && isXPlaneConnected && 'border-info/50 text-info'
+              showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
             )}
             title={t('toolbar.trackTooltip')}
           >
             <Locate
-              className={cn(
-                'h-4 w-4',
-                isPlaneTrackerEnabled && isXPlaneConnected && 'animate-pulse'
-              )}
+              className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
             />
             <span className="text-xs font-medium">{t('toolbar.track')}</span>
-            {isPlaneTrackerEnabled && isXPlaneConnected && (
+            {showPlaneTracker && isXPlaneConnected && (
               <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
             )}
           </Button>
@@ -348,18 +344,18 @@ export default function Toolbar({
           <Button
             variant="outline"
             onClick={onToggleVatsim}
-            className={cn('h-10 gap-2 px-3', isVatsimEnabled && 'border-success/50 text-success')}
+            className={cn('h-10 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
           >
-            <Radar className={cn('h-4 w-4', isVatsimEnabled && 'animate-pulse')} />
+            <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
             <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
-            {isVatsimEnabled && vatsimPilotCount !== undefined && (
+            {vatsimEnabled && vatsimPilotCount !== undefined && (
               <Badge className="bg-success/20 px-1.5 py-0.5 text-success">{vatsimPilotCount}</Badge>
             )}
           </Button>
 
           <Button
             variant="outline"
-            onClick={onOpenLauncher}
+            onClick={() => setShowLaunchDialog(true)}
             className={cn('h-10 gap-2 px-3', hasStartPosition && 'border-success/50 text-success')}
           >
             <Plane className="h-4 w-4" />
@@ -369,7 +365,7 @@ export default function Toolbar({
           <Button
             variant="outline"
             size="icon"
-            onClick={onOpenSettings}
+            onClick={() => setShowSettings(true)}
             className="h-10 w-10"
             aria-label={t('settings.title')}
           >

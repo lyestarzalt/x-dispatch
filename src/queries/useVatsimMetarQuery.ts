@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { DecodedMETAR, decodeMetar } from '@/utils/decodeMetar';
+import { DecodedMETAR, decodeMetar } from '@/lib/utils/format/metar';
 
 interface VatsimMetarData {
   raw: string;

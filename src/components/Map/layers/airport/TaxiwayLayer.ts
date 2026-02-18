@@ -5,7 +5,7 @@ import {
   getSurfaceOutlineColor,
 } from '@/config/mapStyles/surfaceColors';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
-import { ParsedAirport } from '@/lib/aptParser';
+import type { ParsedAirport } from '@/types/apt';
 import { createTaxiwayGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 

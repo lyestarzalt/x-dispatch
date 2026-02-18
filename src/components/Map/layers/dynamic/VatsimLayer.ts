@@ -234,9 +234,10 @@ export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.P
   clickHandlerSetup.add(map);
 
   map.on('click', PILOT_LAYER_ID, (e) => {
-    if (!e.features || e.features.length === 0) return;
-    const props = e.features[0].properties;
-    const coords = (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number];
+    const feature = e.features?.[0];
+    if (!feature) return;
+    const props = feature.properties;
+    const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
 
     const routeTruncated = props.route
       ? props.route.length > 40

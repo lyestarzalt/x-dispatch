@@ -21,30 +21,17 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { formatWeight } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { formatWeight } from '@/lib/utils/format';
+import { cn } from '@/lib/utils/helpers';
+import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import type { Aircraft, StartPosition } from '../types';
+import type { StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
 import { SunArc } from './SunArc';
 
 interface FlightConfigProps {
-  aircraft: Aircraft | null;
   startPosition: StartPosition | null;
-  selectedLivery: string;
-  timeOfDay: number;
-  selectedWeather: string;
-  fuelPercentage: number;
-  useRealWorldTime: boolean;
-  coldAndDark: boolean;
-  isLoading: boolean;
-  launchError: string | null;
   isXPlaneRunning: boolean;
-  onTimeChange: (time: number) => void;
-  onWeatherChange: (weather: string) => void;
-  onFuelChange: (fuel: number) => void;
-  onRealWorldTimeChange: (useRealWorld: boolean) => void;
-  onColdAndDarkChange: (coldDark: boolean) => void;
   onLaunch: () => void;
 }
 
@@ -73,27 +60,27 @@ function getTimezoneOffset(timezone: string): string {
   }
 }
 
-export function FlightConfig({
-  aircraft,
-  startPosition,
-  selectedLivery,
-  timeOfDay,
-  selectedWeather,
-  fuelPercentage,
-  useRealWorldTime,
-  coldAndDark,
-  isLoading,
-  launchError,
-  isXPlaneRunning,
-  onTimeChange,
-  onWeatherChange,
-  onFuelChange,
-  onRealWorldTimeChange,
-  onColdAndDarkChange,
-  onLaunch,
-}: FlightConfigProps) {
+export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: FlightConfigProps) {
   const { t } = useTranslation();
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
+
+  // Zustand store state
+  const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
+  const selectedLivery = useLaunchStore((s) => s.selectedLivery);
+  const fuelPercentage = useLaunchStore((s) => s.fuelPercentage);
+  const timeOfDay = useLaunchStore((s) => s.timeOfDay);
+  const useRealWorldTime = useLaunchStore((s) => s.useRealWorldTime);
+  const coldAndDark = useLaunchStore((s) => s.coldAndDark);
+  const selectedWeather = useLaunchStore((s) => s.selectedWeather);
+  const isLaunching = useLaunchStore((s) => s.isLaunching);
+  const launchError = useLaunchStore((s) => s.launchError);
+
+  // Zustand store actions
+  const setFuelPercentage = useLaunchStore((s) => s.setFuelPercentage);
+  const setTimeOfDay = useLaunchStore((s) => s.setTimeOfDay);
+  const setUseRealWorldTime = useLaunchStore((s) => s.setUseRealWorldTime);
+  const setColdAndDark = useLaunchStore((s) => s.setColdAndDark);
+  const setSelectedWeather = useLaunchStore((s) => s.setSelectedWeather);
 
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
@@ -142,11 +129,11 @@ export function FlightConfig({
   }, [startPosition, currentTime]);
 
   const totalFuel = useMemo(() => {
-    if (aircraft) {
-      return (aircraft.maxFuel * fuelPercentage) / 100;
+    if (selectedAircraft) {
+      return (selectedAircraft.maxFuel * fuelPercentage) / 100;
     }
     return 0;
-  }, [aircraft, fuelPercentage]);
+  }, [selectedAircraft, fuelPercentage]);
 
   return (
     <div className="flex w-64 min-w-[240px] flex-col border-l border-border bg-card lg:w-72">
@@ -166,7 +153,7 @@ export function FlightConfig({
               <span className="text-xs text-muted-foreground">
                 {t('launcher.config.realWorldTime')}
               </span>
-              <Switch checked={useRealWorldTime} onCheckedChange={onRealWorldTimeChange} />
+              <Switch checked={useRealWorldTime} onCheckedChange={setUseRealWorldTime} />
             </div>
           </div>
 
@@ -199,13 +186,13 @@ export function FlightConfig({
                   timeOfDay={timeOfDay}
                   latitude={startPosition.latitude}
                   longitude={startPosition.longitude}
-                  onTimeChange={onTimeChange}
+                  onTimeChange={setTimeOfDay}
                 />
               ) : (
                 <>
                   <Slider
                     value={[timeOfDay]}
-                    onValueChange={(v) => onTimeChange(v[0])}
+                    onValueChange={(v) => setTimeOfDay(v[0])}
                     min={0}
                     max={24}
                     step={0.5}
@@ -237,7 +224,7 @@ export function FlightConfig({
                 <button
                   key={weather}
                   type="button"
-                  onClick={() => onWeatherChange(weather)}
+                  onClick={() => setSelectedWeather(weather)}
                   className={cn(
                     'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     isActive
@@ -262,7 +249,7 @@ export function FlightConfig({
             </Label>
             <span className="font-mono text-sm">
               {fuelPercentage}%
-              {aircraft && aircraft.maxFuel > 0 && (
+              {selectedAircraft && selectedAircraft.maxFuel > 0 && (
                 <span className="ml-1.5 text-xs text-muted-foreground">
                   ({formatWeight(totalFuel, weightUnit)})
                 </span>
@@ -271,7 +258,7 @@ export function FlightConfig({
           </div>
           <Slider
             value={[fuelPercentage]}
-            onValueChange={(v) => onFuelChange(v[0])}
+            onValueChange={(v) => setFuelPercentage(v[0])}
             min={0}
             max={100}
             step={5}
@@ -288,7 +275,7 @@ export function FlightConfig({
             <Power className="h-4 w-4 text-muted-foreground" />
             {t('launcher.config.coldAndDark')}
           </Label>
-          <Switch checked={coldAndDark} onCheckedChange={onColdAndDarkChange} />
+          <Switch checked={coldAndDark} onCheckedChange={setColdAndDark} />
         </div>
 
         {/* Flight Summary */}
@@ -297,9 +284,9 @@ export function FlightConfig({
             <span className="xp-label">{t('launcher.aircraft.title')}</span>
             <span
               className="max-w-[130px] truncate font-mono text-xs text-foreground"
-              title={aircraft?.name || undefined}
+              title={selectedAircraft?.name || undefined}
             >
-              {aircraft?.name || '—'}
+              {selectedAircraft?.name || '—'}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -333,11 +320,11 @@ export function FlightConfig({
       <div className="flex-shrink-0 border-t p-3">
         <Button
           onClick={onLaunch}
-          disabled={!aircraft || !startPosition || isLoading}
+          disabled={!selectedAircraft || !startPosition || isLaunching}
           className="w-full"
           size="lg"
         >
-          {isLoading ? (
+          {isLaunching ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}

@@ -1,13 +1,45 @@
 export { QueryProvider } from './QueryProvider';
 
-// X-Plane API hooks
+// X-Plane API hooks (REST via IPC)
 export {
   useXPlaneStatus,
-  useLoadFlight,
+  useXPlaneCapabilities,
   useDataref,
   useSetDataref,
-  usePlaneState,
-  usePlanePosition,
-  usePlaneStateManual,
-  useStreamConnectionStatus,
+  useActivateCommand,
+  useStartFlight,
+  xplaneKeys,
+  type FlightInit,
 } from './useXPlaneQuery';
+
+// X-Plane WebSocket hooks (live streaming)
+export { usePlaneState, usePlanePosition, usePlaneStateManual } from './useXPlaneWebSocket';
+
+// Nav data hooks
+export {
+  useNavDataQuery,
+  useGlobalAirwaysQuery,
+  useNavDataCounts,
+  getNavDataCounts,
+} from './useNavDataQuery';
+
+// VATSIM hooks
+export { useVatsimQuery } from './useVatsimQuery';
+export { useVatsimMetarQuery } from './useVatsimMetarQuery';
+export { useVatsimEventsQuery } from './useVatsimEventsQuery';
+
+// App data hooks
+export {
+  useAppVersion,
+  useXPlanePath,
+  useLoadingStatus,
+  useAirportMetadata,
+  useATCControllers,
+  useAirportProcedures,
+  useLogPath,
+  useConfigPath,
+  appKeys,
+} from './useAppQuery';
+
+// Launch dialog hooks
+export { useAircraftList, useWeatherPresets, useAircraftImage, launchKeys } from './useLaunchQuery';

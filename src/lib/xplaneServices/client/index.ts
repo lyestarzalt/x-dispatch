@@ -1,0 +1,1 @@
+export { getXPlaneService } from './service';

@@ -1,3 +1,4 @@
+import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig, mergeConfig } from 'vite';
 import { external, getBuildConfig, pluginHotRestart } from './vite.base.config';
@@ -24,6 +25,11 @@ export default defineConfig((env) => {
       },
     },
     plugins: [pluginHotRestart('reload')],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
   };
 
   return mergeConfig(getBuildConfig(forgeEnv), config);

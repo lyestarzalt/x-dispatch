@@ -1,22 +1,46 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
-
-interface LoadingProgress {
-  step: string;
-  status: 'pending' | 'loading' | 'complete' | 'error';
-  message: string;
-  count?: number;
-  error?: string;
-}
-
-interface Airport {
-  icao: string;
-  name: string;
-  lat: number;
-  lon: number;
-  fileOffset: number;
-  dataLength: number;
-  type: 'land' | 'seaplane' | 'heliport';
-}
+import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
+import type {
+  Airport,
+  AirportSourceBreakdown,
+  DataLoadStatus,
+} from './lib/xplaneServices/dataService/XPlaneDataManager';
+import type {
+  DataSourceInfo,
+  DataSourceType,
+  NavDataSources,
+} from './lib/xplaneServices/dataService/cycleInfo';
+// Import types from canonical sources
+import type { Aircraft, LaunchConfig, WeatherPreset } from './types/aircraft';
+import type {
+  ApiResponse,
+  BrowseResult,
+  NavDBStatus,
+  NavLoadResult,
+  NavSearchResult,
+  PathSetResult,
+  PathValidation,
+} from './types/ipc';
+import type {
+  ATCController,
+  ATCRole,
+  AirportMetadata,
+  Airspace,
+  HoldingPattern,
+  Navaid,
+  Waypoint,
+} from './types/navigation';
+import type { AirwaySegmentWithCoords } from './types/navigation';
+import type {
+  VatsimATIS,
+  VatsimController,
+  VatsimData,
+  VatsimEvent,
+  VatsimEventsResponse,
+  VatsimPilot,
+  VatsimPrefile,
+} from './types/vatsim';
+import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
 
 contextBridge.exposeInMainWorld('airportAPI', {
   getAirports: () => ipcRenderer.invoke('get-airports'),
@@ -62,6 +86,8 @@ contextBridge.exposeInMainWorld('appAPI', {
   getLogPath: () => ipcRenderer.invoke('app:getLogPath'),
   openLogFile: () => ipcRenderer.invoke('app:openLogFile'),
   openLogFolder: () => ipcRenderer.invoke('app:openLogFolder'),
+  getConfigPath: () => ipcRenderer.invoke('app:getConfigPath'),
+  openConfigFolder: () => ipcRenderer.invoke('app:openConfigFolder'),
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -127,20 +153,24 @@ contextBridge.exposeInMainWorld('launcherAPI', {
     ipcRenderer.invoke('launcher:getAircraftImage', imagePath),
 });
 
+// X-Plane Service API - REST + WebSocket
+// REST goes through IPC to main process to avoid CORS issues with localhost
 contextBridge.exposeInMainWorld('xplaneServiceAPI', {
-  isRunning: () => ipcRenderer.invoke('xplaneService:isRunning'),
-  isProcessRunning: () => ipcRenderer.invoke('xplaneService:isProcessRunning'),
+  // REST API (via main process)
   isAPIAvailable: () => ipcRenderer.invoke('xplaneService:isAPIAvailable'),
-  loadFlight: (config: XPlaneFlightConfig) =>
-    ipcRenderer.invoke('xplaneService:loadFlight', config),
-  getDataref: (dataref: string) => ipcRenderer.invoke('xplaneService:getDataref', dataref),
-  setDataref: (dataref: string, value: number | number[]) =>
-    ipcRenderer.invoke('xplaneService:setDataref', dataref, value),
+  getCapabilities: () => ipcRenderer.invoke('xplaneService:getCapabilities'),
+  startFlight: (payload: unknown) => ipcRenderer.invoke('xplaneService:startFlight', payload),
+  getDataref: (name: string) => ipcRenderer.invoke('xplaneService:getDataref', name),
+  setDataref: (name: string, value: number | number[]) =>
+    ipcRenderer.invoke('xplaneService:setDataref', name, value),
+  activateCommand: (name: string, duration?: number) =>
+    ipcRenderer.invoke('xplaneService:activateCommand', name, duration ?? 0),
+  // WebSocket streaming
   startStateStream: () => ipcRenderer.invoke('xplaneService:startStateStream'),
   stopStateStream: () => ipcRenderer.invoke('xplaneService:stopStateStream'),
   isStreamConnected: () => ipcRenderer.invoke('xplaneService:isStreamConnected'),
-  onStateUpdate: (callback: (state: XPlanePlaneState) => void) => {
-    const listener = (_: IpcRendererEvent, state: XPlanePlaneState) => callback(state);
+  onStateUpdate: (callback: (state: PlaneState) => void) => {
+    const listener = (_: IpcRendererEvent, state: PlaneState) => callback(state);
     ipcRenderer.on('xplaneService:stateUpdate', listener);
     return () => ipcRenderer.removeListener('xplaneService:stateUpdate', listener);
   },
@@ -150,445 +180,6 @@ contextBridge.exposeInMainWorld('xplaneServiceAPI', {
     return () => ipcRenderer.removeListener('xplaneService:connectionChange', listener);
   },
 });
-
-// X-Plane Service types for preload
-// Raw Flight Initialization API payload (flexible to match X-Plane's API spec)
-type XPlaneFlightConfig = Record<string, unknown>;
-
-interface XPlanePlaneState {
-  latitude: number;
-  longitude: number;
-  altitudeMSL: number;
-  altitudeAGL: number;
-  heading: number;
-  pitch: number;
-  roll: number;
-  groundspeed: number;
-  indicatedAirspeed: number;
-  trueAirspeed: number;
-  verticalSpeed: number;
-  mach: number;
-  throttle: number;
-  flaps: number;
-  gearDown: boolean;
-  parkingBrake: number;
-  speedBrake: number;
-  gForceNormal: number;
-  gForceAxial: number;
-  gForceSide: number;
-  apAltitude: number;
-  apHeading: number;
-  apAirspeed: number;
-  apVerticalSpeed: number;
-}
-
-interface XPlaneAPIResult {
-  success: boolean;
-  error?: string;
-}
-
-interface LaunchConfig {
-  aircraft: Aircraft;
-  livery: string;
-  fuel: { percentage: number; tankWeights: number[] };
-  startPosition: { type: 'runway' | 'ramp'; airport: string; position: string; index: number };
-  time: { dayOfYear: number; timeInHours: number; latitude: number; longitude: number };
-  weather: { name: string; definition: string };
-}
-
-interface Aircraft {
-  path: string;
-  name: string;
-  icao: string;
-  description: string;
-  manufacturer: string;
-  studio: string;
-  author: string;
-  tailNumber: string;
-  // Weights (lbs)
-  emptyWeight: number;
-  maxWeight: number;
-  maxFuel: number;
-  tankNames: string[];
-  // Aircraft type
-  isHelicopter: boolean;
-  engineCount: number;
-  propCount: number;
-  // Speeds (knots)
-  vneKts: number;
-  vnoKts: number;
-  // Images
-  previewImage: string | null;
-  thumbnailImage: string | null;
-  liveries: { name: string; displayName: string; previewImage: string | null }[];
-}
-
-interface WeatherPreset {
-  name: string;
-  definition: string;
-}
-
-interface ApiResponse {
-  data: string | null;
-  error: string | null;
-}
-
-// VATSIM data types
-interface VatsimPilot {
-  cid: number;
-  name: string;
-  callsign: string;
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  groundspeed: number;
-  transponder: string;
-  heading: number;
-  flight_plan: {
-    departure: string;
-    arrival: string;
-    aircraft_short: string;
-    aircraft_faa: string;
-    route: string;
-  } | null;
-}
-
-interface VatsimData {
-  general: {
-    version: number;
-    update_timestamp: string;
-    connected_clients: number;
-    unique_users: number;
-  };
-  pilots: VatsimPilot[];
-  controllers: VatsimController[];
-  atis: VatsimATIS[];
-  prefiles: VatsimPrefile[];
-}
-
-interface VatsimController {
-  cid: number;
-  name: string;
-  callsign: string;
-  frequency: string;
-  facility: number;
-  rating: number;
-  server: string;
-  visual_range: number;
-  text_atis: string[] | null;
-  last_updated: string;
-  logon_time: string;
-}
-
-interface VatsimATIS {
-  cid: number;
-  name: string;
-  callsign: string;
-  frequency: string;
-  facility: number;
-  rating: number;
-  server: string;
-  visual_range: number;
-  atis_code: string;
-  text_atis: string[] | null;
-  last_updated: string;
-  logon_time: string;
-}
-
-interface VatsimPrefile {
-  cid: number;
-  name: string;
-  callsign: string;
-  flight_plan: {
-    flight_rules: string;
-    aircraft: string;
-    aircraft_faa: string;
-    aircraft_short: string;
-    departure: string;
-    arrival: string;
-    alternate: string;
-    deptime: string;
-    enroute_time: string;
-    fuel_time: string;
-    remarks: string;
-    route: string;
-    revision_id: number;
-    assigned_transponder: string;
-  } | null;
-  last_updated: string;
-}
-
-interface VatsimEvent {
-  id: number;
-  type: string;
-  name: string;
-  link: string;
-  organisers: {
-    region: string | null;
-    division: string | null;
-    subdivision: string | null;
-    organised_by_vatsim: boolean;
-  }[];
-  airports: { icao: string }[];
-  routes: { departure: string; arrival: string; route: string }[];
-  start_time: string;
-  end_time: string;
-  short_description: string;
-  description: string;
-  banner: string;
-}
-
-interface VatsimEventsResponse {
-  data: VatsimEvent[];
-}
-
-// Navigation data types (mirrored from navParser/types.ts for renderer process)
-interface Navaid {
-  type:
-    | 'VOR'
-    | 'VORTAC'
-    | 'VOR-DME'
-    | 'NDB'
-    | 'DME'
-    | 'TACAN'
-    | 'ILS'
-    | 'LOC'
-    | 'GS'
-    | 'OM'
-    | 'MM'
-    | 'IM'
-    | 'FPAP'
-    | 'GLS'
-    | 'LTP'
-    | 'FTP';
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-  elevation: number;
-  frequency: number;
-  range: number;
-  magneticVariation: number;
-  region: string;
-  country: string;
-  // Extended fields for approach aids
-  bearing?: number;
-  associatedAirport?: string;
-  associatedRunway?: string;
-  glidepathAngle?: number;
-  course?: number;
-  lengthOffset?: number;
-  thresholdCrossingHeight?: number;
-  refPathIdentifier?: string;
-  approachPerformance?: 'LP' | 'LPV' | 'APV-II' | 'GLS';
-}
-
-interface Waypoint {
-  id: string;
-  latitude: number;
-  longitude: number;
-  region: string;
-  areaCode: string;
-  description: string;
-}
-
-interface Airspace {
-  class: string;
-  name: string;
-  upperLimit: string;
-  lowerLimit: string;
-  coordinates: [number, number][];
-}
-
-interface AirwaySegmentWithCoords {
-  name: string;
-  fromFix: string;
-  toFix: string;
-  fromLat: number;
-  fromLon: number;
-  toLat: number;
-  toLon: number;
-  isHigh: boolean;
-  baseFl: number;
-  topFl: number;
-}
-
-interface NavDBStatus {
-  status: {
-    navaids: boolean;
-    waypoints: boolean;
-    airspaces: boolean;
-    airways: boolean;
-  };
-  counts: {
-    navaids: number;
-    waypoints: number;
-    airspaces: number;
-    airways: number;
-  };
-}
-
-interface NavLoadResult {
-  success: boolean;
-  counts?: { navaids: number; waypoints: number; airspaces: number; airways: number };
-  error?: string;
-}
-
-interface NavSearchResult {
-  type: 'VOR' | 'NDB' | 'DME' | 'ILS' | 'WAYPOINT';
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-  frequency?: number;
-}
-
-interface ProcedureWaypoint {
-  fixId: string;
-  fixRegion: string;
-  fixType: string;
-  pathTerminator: string;
-  course: number | null;
-  distance: number | null;
-  altitude: { descriptor: string; altitude1: number | null; altitude2: number | null } | null;
-  speed: number | null;
-  turnDirection: 'L' | 'R' | null;
-}
-
-interface Procedure {
-  type: 'SID' | 'STAR' | 'APPROACH';
-  name: string;
-  runway: string | null;
-  transition: string | null;
-  waypoints: ProcedureWaypoint[];
-}
-
-interface AirportProcedures {
-  icao: string;
-  sids: Procedure[];
-  stars: Procedure[];
-  approaches: Procedure[];
-}
-
-// Data source types
-type DataSourceType = 'navigraph' | 'xplane-default' | 'unknown';
-
-interface DataSourceInfo {
-  source: DataSourceType;
-  cycle: string | null;
-  revision: string | null;
-  effectiveDate: Date | null;
-  expirationDate: Date | null;
-  isExpired: boolean;
-  isCustomData: boolean;
-}
-
-interface NavDataSources {
-  global: DataSourceInfo;
-  navaids: DataSourceInfo;
-  waypoints: DataSourceInfo;
-  airways: DataSourceInfo;
-  procedures: DataSourceInfo;
-  airspaces: DataSourceInfo;
-  atc: DataSourceInfo | null;
-  holds: DataSourceInfo | null;
-  aptMeta: DataSourceInfo | null;
-}
-
-// ATC Controller
-type ATCRole = 'ctr' | 'app' | 'twr' | 'gnd' | 'del';
-
-interface ATCController {
-  name: string;
-  facilityId: string;
-  role: ATCRole;
-  frequencies: number[];
-  airspace?: {
-    minAlt: number;
-    maxAlt: number;
-    polygon: [number, number][];
-  };
-}
-
-// Holding Pattern
-interface HoldingPattern {
-  fixId: string;
-  fixRegion: string;
-  airport: string;
-  fixType: number;
-  inboundCourse: number;
-  legTime: number;
-  legDistance: number;
-  turnDirection: 'L' | 'R';
-  minAlt: number;
-  maxAlt: number;
-  speedKts: number;
-}
-
-// Airport Metadata
-interface AirportMetadata {
-  icao: string;
-  region: string;
-  latitude: number;
-  longitude: number;
-  elevation: number;
-  airportClass: 'C' | 'P';
-  longestRunway: number;
-  ifrCapable: boolean;
-  transitionAlt: number;
-  transitionLevel: string;
-}
-
-// X-Plane path validation result
-interface PathValidation {
-  valid: boolean;
-  errors: string[];
-}
-
-// X-Plane path set result
-interface PathSetResult {
-  success: boolean;
-  errors: string[];
-}
-
-// Browse result
-interface BrowseResult {
-  path: string;
-  valid: boolean;
-  errors: string[];
-}
-
-// Airport source breakdown
-interface AirportSourceBreakdown {
-  globalAirports: number;
-  customScenery: number;
-  customSceneryPacks: number;
-}
-
-// Data load status
-interface DataLoadStatus {
-  xplanePath: string | null;
-  pathValid: boolean;
-  airports: {
-    loaded: boolean;
-    count: number;
-    source: string | null;
-    breakdown: AirportSourceBreakdown;
-  };
-  navaids: {
-    loaded: boolean;
-    count: number;
-    byType: Record<string, number>;
-    source: string | null;
-  };
-  waypoints: { loaded: boolean; count: number; source: string | null };
-  airspaces: { loaded: boolean; count: number; source: string | null };
-  airways: { loaded: boolean; count: number; source: string | null };
-  atc: { loaded: boolean; count: number; source: string | null } | null;
-  holds: { loaded: boolean; count: number; source: string | null } | null;
-  aptMeta: { loaded: boolean; count: number; source: string | null } | null;
-  sources: NavDataSources | null;
-}
 
 declare global {
   interface Window {
@@ -606,6 +197,8 @@ declare global {
       getLogPath: () => Promise<string>;
       openLogFile: () => Promise<void>;
       openLogFolder: () => Promise<void>;
+      getConfigPath: () => Promise<string>;
+      openConfigFolder: () => Promise<void>;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;
@@ -671,17 +264,27 @@ declare global {
       launch: (config: LaunchConfig) => Promise<{ success: boolean; error?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
+    // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {
-      isRunning: () => Promise<boolean>;
-      isProcessRunning: () => Promise<boolean>;
       isAPIAvailable: () => Promise<boolean>;
-      loadFlight: (config: XPlaneFlightConfig) => Promise<XPlaneAPIResult>;
-      getDataref: (dataref: string) => Promise<number | number[] | null>;
-      setDataref: (dataref: string, value: number | number[]) => Promise<XPlaneAPIResult>;
+      getCapabilities: () => Promise<{
+        api: { versions: string[] };
+        'x-plane': { version: string };
+      } | null>;
+      startFlight: (payload: unknown) => Promise<{ success: boolean; error?: string }>;
+      getDataref: (name: string) => Promise<number | number[] | null>;
+      setDataref: (
+        name: string,
+        value: number | number[]
+      ) => Promise<{ success: boolean; error?: string }>;
+      activateCommand: (
+        name: string,
+        duration?: number
+      ) => Promise<{ success: boolean; error?: string }>;
       startStateStream: () => Promise<XPlaneAPIResult>;
       stopStateStream: () => Promise<XPlaneAPIResult>;
       isStreamConnected: () => Promise<boolean>;
-      onStateUpdate: (callback: (state: XPlanePlaneState) => void) => () => void;
+      onStateUpdate: (callback: (state: PlaneState) => void) => () => void;
       onConnectionChange: (callback: (connected: boolean) => void) => () => void;
     };
   }

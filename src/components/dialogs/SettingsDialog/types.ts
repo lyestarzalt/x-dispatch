@@ -1,43 +1,21 @@
 /**
  * Shared types for Settings dialog
  */
+// Import types from canonical sources
+import type { AirportSourceBreakdown } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
+import type { NavDataSources } from '@/lib/xplaneServices/dataService/cycleInfo';
 
-type DataSourceType = 'navigraph' | 'xplane-default' | 'unknown';
+// Re-export for convenience
+export type { NavDataSources, AirportSourceBreakdown };
 
-interface DataSourceInfo {
-  source: DataSourceType;
-  cycle: string | null;
-  revision: string | null;
-  effectiveDate: Date | string | null;
-  expirationDate: Date | string | null;
-  isExpired: boolean;
-  isCustomData: boolean;
-}
-
+// Component-specific types (simplified view of data status)
 export interface DataTypeStatus {
   count: number;
   source: string | null;
 }
 
-export interface AirportSourceBreakdown {
-  globalAirports: number;
-  customScenery: number;
-  customSceneryPacks: number;
-}
-
-export interface NavDataSources {
-  global: DataSourceInfo;
-  navaids: DataSourceInfo;
-  waypoints: DataSourceInfo;
-  airways: DataSourceInfo;
-  procedures: DataSourceInfo;
-  airspaces: DataSourceInfo;
-  atc: DataSourceInfo | null;
-  holds: DataSourceInfo | null;
-  aptMeta: DataSourceInfo | null;
-}
-
-export interface DataLoadStatus {
+// Settings-specific DataLoadStatus (different from XPlaneDataManager's full version)
+export interface SettingsDataLoadStatus {
   airports: DataTypeStatus & { breakdown: AirportSourceBreakdown };
   navaids: DataTypeStatus & { byType: Record<string, number> };
   waypoints: DataTypeStatus;

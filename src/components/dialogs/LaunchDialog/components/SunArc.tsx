@@ -3,7 +3,7 @@ import { Moon, Sun, Sunrise, Sunset } from 'lucide-react';
 import SunCalc from 'suncalc';
 import tzlookup from 'tz-lookup';
 import { Slider } from '@/components/ui/slider';
-import { formatZulu } from '@/lib/format';
+import { formatZulu } from '@/lib/utils/format';
 
 interface SunArcProps {
   timeOfDay: number;

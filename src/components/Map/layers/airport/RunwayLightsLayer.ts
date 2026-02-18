@@ -1,8 +1,12 @@
 import maplibregl from 'maplibre-gl';
 import { RUNWAY_LIGHT_COLORS } from '@/config/mapStyles/theme';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Runway } from '@/lib/aptParser/types';
-import { calculateBearing, destinationPoint as calculatePoint, haversineDistance } from '@/lib/geo';
+import {
+  calculateBearing,
+  destinationPoint as calculatePoint,
+  haversineDistance,
+} from '@/lib/utils/geomath';
+import type { ParsedAirport } from '@/types/apt';
+import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 /**

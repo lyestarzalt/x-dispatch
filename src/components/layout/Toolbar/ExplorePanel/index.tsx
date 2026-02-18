@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
-import type { Airport } from '@/lib/xplaneData';
+import { cn } from '@/lib/utils/helpers';
+import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
 import { RoutesTab } from './RoutesTab';

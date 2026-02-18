@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl';
 
-interface ProcedureWaypoint {
+/** Waypoint with resolved coordinates for map rendering */
+interface ResolvedWaypoint {
   fixId: string;
   latitude?: number;
   longitude?: number;
@@ -10,7 +11,7 @@ interface ProcedureWaypoint {
 interface RouteData {
   type: 'SID' | 'STAR' | 'APPROACH';
   name: string;
-  waypoints: ProcedureWaypoint[];
+  waypoints: ResolvedWaypoint[];
 }
 
 const ROUTE_LAYER_ID = 'procedure-route';
@@ -27,7 +28,7 @@ const ROUTE_COLORS = {
   APPROACH: '#FF6B6B', // Coral for approaches
 };
 
-function createRouteGeoJSON(waypoints: ProcedureWaypoint[]): GeoJSON.FeatureCollection {
+function createRouteGeoJSON(waypoints: ResolvedWaypoint[]): GeoJSON.FeatureCollection {
   // Filter waypoints that have coordinates
   const validWaypoints = waypoints.filter(
     (wp) => wp.latitude !== undefined && wp.longitude !== undefined
@@ -54,7 +55,7 @@ function createRouteGeoJSON(waypoints: ProcedureWaypoint[]): GeoJSON.FeatureColl
   };
 }
 
-function createWaypointGeoJSON(waypoints: ProcedureWaypoint[]): GeoJSON.FeatureCollection {
+function createWaypointGeoJSON(waypoints: ResolvedWaypoint[]): GeoJSON.FeatureCollection {
   const validWaypoints = waypoints.filter(
     (wp) => wp.latitude !== undefined && wp.longitude !== undefined
   );
@@ -77,7 +78,7 @@ function createWaypointGeoJSON(waypoints: ProcedureWaypoint[]): GeoJSON.FeatureC
 }
 
 function createUnresolvedWaypointsGeoJSON(
-  waypoints: ProcedureWaypoint[],
+  waypoints: ResolvedWaypoint[],
   lastKnownPosition?: { lat: number; lon: number }
 ): GeoJSON.FeatureCollection {
   // For unresolved waypoints, we can't show them on the map without coordinates
@@ -105,7 +106,7 @@ export function addProcedureRouteLayer(
 
   // Resolve waypoint coordinates
   // Prefer embedded coordinates (from procedureCoordResolver), fallback to external map
-  const resolvedWaypoints: ProcedureWaypoint[] = route.waypoints.map((wp) => {
+  const resolvedWaypoints: ResolvedWaypoint[] = route.waypoints.map((wp) => {
     // If waypoint already has embedded coordinates, use them
     if (wp.latitude !== undefined && wp.longitude !== undefined) {
       return {

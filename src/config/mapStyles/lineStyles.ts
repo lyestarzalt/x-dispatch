@@ -1,4 +1,4 @@
-import { LineType } from '@/lib/aptParser/types';
+import { LineType } from '@/types/apt';
 
 interface LineStyle {
   color: string;
