@@ -14,6 +14,7 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
   lines.push('1100 Version');
 
   // Airport and start position
+  // Runways and helipads use _default_to_ramps = 0, only ramps use 1
   const isRamp = config.startPosition.type === 'ramp';
   lines.push(`_default_to_ramps ${isRamp ? '1' : '0'}`);
   lines.push(`_airport ${config.startPosition.airport}`);
@@ -49,6 +50,7 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
 
   // Per-airport settings
   const icao = config.startPosition.airport;
+  // Runways and helipads use _start_is_rwy = 1, only ramps use 0
   lines.push(`P _start_is_rwy ${icao} ${isRamp ? '0' : '1'}`);
   // X-Plane uses separate indices for gate vs non-gate positions
   if (config.startPosition.xplaneIndex === undefined) {
@@ -62,22 +64,24 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
 }
 
 function generateStartPositionJson(startPosition: {
-  type: 'runway' | 'ramp';
+  type: 'runway' | 'ramp' | 'helipad';
   airport: string;
   position: string;
 }): string {
-  if (startPosition.type === 'runway') {
-    return JSON.stringify({
-      runway_start: {
-        airport_id: startPosition.airport,
-        runway: startPosition.position,
-      },
-    });
-  } else {
+  if (startPosition.type === 'ramp') {
     return JSON.stringify({
       ramp_start: {
         airport_id: startPosition.airport,
         ramp: startPosition.position,
+      },
+    });
+  } else {
+    // Both runways AND helipads use runway_start
+    // For helipads, position is the base name (e.g., "H3") without N/S suffix
+    return JSON.stringify({
+      runway_start: {
+        airport_id: startPosition.airport,
+        runway: startPosition.position,
       },
     });
   }
