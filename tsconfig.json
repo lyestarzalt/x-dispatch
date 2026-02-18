@@ -5,7 +5,8 @@
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "noImplicitAny": true,
+    "strict": true,
+    "noImplicitReturns": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
@@ -13,7 +14,8 @@
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@assets/*": ["./assets/*"]
     }
   }
 }

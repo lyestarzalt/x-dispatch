@@ -55,11 +55,11 @@
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "Select your X-Plane installation to get started",
-    "scanning": "Scanning for installations...",
-    "noInstallations": "No X-Plane installations found",
-    "selectManually": "Use the button below to select manually",
+    "selectFolder": "Select X-Plane Folder",
+    "changeFolder": "Change Folder",
     "browseManually": "Browse manually",
-    "failedToBrowse": "Failed to browse",
+    "noInstallations": "No X-Plane installations found",
+    "failedToBrowse": "Failed to open folder picker",
     "failedToSave": "Failed to save"
   },
 
@@ -145,6 +145,7 @@
       "about": "About"
     },
     "about": {
+      "title": "About",
       "description": "Flight dispatch and airport visualization for X-Plane",
       "credits": "Credits",
       "developer": "Developer",
@@ -152,10 +153,13 @@
       "links": "Links",
       "sourceCode": "Source Code",
       "reportIssue": "Report an Issue",
-      "troubleshooting": "Troubleshooting",
-      "troubleshootingDescription": "Include log files when reporting issues.",
-      "openLog": "Open Log",
-      "openFolder": "Open Folder"
+      "dataStorage": "Data & Settings",
+      "dataStorageDescription": "App preferences, cache, and database are stored here.",
+      "settingsCache": "Settings & Cache",
+      "logFile": "Log File",
+      "openDataFolder": "Open data folder",
+      "openLog": "Open log file",
+      "openLogFolder": "Show in folder"
     },
     "xplane": {
       "title": "X-Plane Installation",

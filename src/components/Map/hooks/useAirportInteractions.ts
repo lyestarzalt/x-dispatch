@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Runway } from '@/lib/aptParser/types';
 import { useAppStore } from '@/stores/appStore';
+import type { ParsedAirport } from '@/types/apt';
+import type { Runway } from '@/types/apt';
 import type { MapRef } from './useMapSetup';
 
 interface UseAirportInteractionsOptions {
@@ -16,13 +16,21 @@ interface UseAirportInteractionsReturn {
     longitude: number;
     name: string;
     index?: number;
-    xplaneIndex?: number;
+    xplaneIndex?: number | string;
   }) => void;
   selectRunwayEndAsStart: (runwayEnd: {
     name: string;
     latitude: number;
     longitude: number;
     index?: number;
+    xplaneIndex?: number | string;
+  }) => void;
+  selectHelipadAsStart: (helipad: {
+    name: string;
+    latitude: number;
+    longitude: number;
+    index?: number;
+    xplaneIndex?: number | string;
   }) => void;
   navigateToGate: (gate: {
     latitude: number;
@@ -59,9 +67,10 @@ export function useAirportInteractions({
     const handleGateMouseEnter = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       map.getCanvas().style.cursor = 'pointer';
-      const featureId = e.features[0].id as number;
+      const featureId = feature.id as number;
 
       if (hoveredGateId.current !== null && hoveredGateId.current !== featureId) {
         map.setFeatureState(
@@ -87,10 +96,10 @@ export function useAirportInteractions({
     const handleGateClick = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       e.originalEvent.stopPropagation();
 
-      const feature = e.features[0];
       const props = feature.properties;
       const featureId = feature.id as number;
 
@@ -114,37 +123,56 @@ export function useAirportInteractions({
 
       const currentAirport = selectedAirportDataRef.current;
       if (props && currentAirport) {
-        // Calculate X-Plane index: alphabetically sorted by name, then by latitude
-        const locations = currentAirport.startupLocations;
-        const sortedLocations = [...locations]
-          .map((loc, i) => ({ loc, originalIndex: i }))
-          .sort((a, b) => {
-            const nameCompare = a.loc.name.localeCompare(b.loc.name);
-            if (nameCompare !== 0) return nameCompare;
-            return a.loc.latitude - b.loc.latitude;
+        const isHelipad = props.locationType === 'helipad';
+
+        if (isHelipad) {
+          // Helipads use type 'runway' (X-Plane treats them identically)
+          // xplaneIndex = "row_0" where row = runways.length + helipadIndex
+          const helipadIndex = props.helipadIndex as number;
+          const row = currentAirport.runways.length + helipadIndex;
+
+          setStartPosition({
+            type: 'runway',
+            name: props.name || `Helipad ${featureId}`,
+            airport: currentAirport.id,
+            latitude: props.latitude,
+            longitude: props.longitude,
+            index: helipadIndex,
+            xplaneIndex: `${row}_0`,
           });
+        } else {
+          // Gates/ramps: xplaneIndex = position in alphabetically sorted list
+          const locations = currentAirport.startupLocations;
+          const sortedLocations = [...locations]
+            .map((loc, i) => ({ loc, originalIndex: i }))
+            .sort((a, b) => {
+              const nameCompare = a.loc.name.localeCompare(b.loc.name);
+              if (nameCompare !== 0) return nameCompare;
+              return a.loc.latitude - b.loc.latitude;
+            });
 
-        // Find the xplaneIndex (position in sorted list) for this gate
-        const xplaneIndex = sortedLocations.findIndex((item) => item.originalIndex === featureId);
+          const xplaneIndex = sortedLocations.findIndex((item) => item.originalIndex === featureId);
 
-        setStartPosition({
-          type: 'ramp',
-          name: props.name || `Gate ${featureId}`,
-          airport: currentAirport.id,
-          latitude: props.latitude,
-          longitude: props.longitude,
-          index: featureId,
-          xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
-        });
+          setStartPosition({
+            type: 'ramp',
+            name: props.name || `Gate ${featureId}`,
+            airport: currentAirport.id,
+            latitude: props.latitude,
+            longitude: props.longitude,
+            index: featureId,
+            xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
+          });
+        }
       }
     };
 
     const handleRunwayEndMouseEnter = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       map.getCanvas().style.cursor = 'pointer';
-      const featureId = e.features[0].id as number;
+      const featureId = feature.id as number;
 
       if (hoveredRunwayEndId.current !== null && hoveredRunwayEndId.current !== featureId) {
         map.setFeatureState(
@@ -170,10 +198,10 @@ export function useAirportInteractions({
     const handleRunwayEndClick = (
       e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
     ) => {
-      if (!e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
       e.originalEvent.stopPropagation();
 
-      const feature = e.features[0];
       const props = feature.properties;
       const featureId = feature.id as number;
 
@@ -197,6 +225,12 @@ export function useAirportInteractions({
 
       const currentAirport = selectedAirportDataRef.current;
       if (props && currentAirport) {
+        // Calculate X-Plane index for runway: "row_end" format
+        // featureId is the global end index (runwayIndex * 2 + endIndex)
+        const runwayIndex = Math.floor(featureId / 2);
+        const whichEnd = featureId % 2;
+        const xplaneIndex = `${runwayIndex}_${whichEnd}`;
+
         setStartPosition({
           type: 'runway',
           name: props.name || `Runway End ${featureId}`,
@@ -204,6 +238,7 @@ export function useAirportInteractions({
           latitude: props.latitude,
           longitude: props.longitude,
           index: featureId,
+          xplaneIndex,
         });
       }
     };
@@ -254,7 +289,7 @@ export function useAirportInteractions({
       longitude: number;
       name: string;
       index?: number;
-      xplaneIndex?: number;
+      xplaneIndex?: number | string;
     }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
@@ -301,7 +336,13 @@ export function useAirportInteractions({
   );
 
   const selectRunwayEndAsStart = useCallback(
-    (runwayEnd: { name: string; latitude: number; longitude: number; index?: number }) => {
+    (runwayEnd: {
+      name: string;
+      latitude: number;
+      longitude: number;
+      index?: number;
+      xplaneIndex?: number | string;
+    }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
 
@@ -328,6 +369,12 @@ export function useAirportInteractions({
         map.setFeatureState({ source: 'airport-runway-ends', id: endIndex }, { selected: true });
       }
 
+      // Use provided xplaneIndex or calculate it
+      // X-Plane index for runway: "row_end" format
+      // endIndex is the global end index (runwayIndex * 2 + whichEnd)
+      const xplaneIndex =
+        runwayEnd.xplaneIndex ?? `${Math.floor((endIndex ?? 0) / 2)}_${(endIndex ?? 0) % 2}`;
+
       setStartPosition({
         type: 'runway',
         name: runwayEnd.name,
@@ -335,11 +382,60 @@ export function useAirportInteractions({
         latitude: runwayEnd.latitude,
         longitude: runwayEnd.longitude,
         index: endIndex ?? 0,
+        xplaneIndex,
       });
 
       map.flyTo({
         center: [runwayEnd.longitude, runwayEnd.latitude],
         zoom: 17,
+        duration: 1500,
+      });
+    },
+    [mapRef, selectedAirportData, setStartPosition]
+  );
+
+  const selectHelipadAsStart = useCallback(
+    (helipad: {
+      name: string;
+      latitude: number;
+      longitude: number;
+      index?: number;
+      xplaneIndex?: number | string;
+    }) => {
+      const map = mapRef.current;
+      if (!selectedAirportData || !map) return;
+
+      // Clear previous selections
+      if (selectedGateId.current !== null) {
+        map.setFeatureState(
+          { source: 'airport-gates', id: selectedGateId.current },
+          { selected: false }
+        );
+        selectedGateId.current = null;
+      }
+      if (selectedRunwayEndId.current !== null) {
+        map.setFeatureState(
+          { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
+          { selected: false }
+        );
+        selectedRunwayEndId.current = null;
+      }
+
+      // Helipads use type 'runway' since X-Plane treats them identically
+      setStartPosition({
+        type: 'runway',
+        name: helipad.name,
+        airport: selectedAirportData.id,
+        latitude: helipad.latitude,
+        longitude: helipad.longitude,
+        index: helipad.index ?? 0,
+        xplaneIndex: helipad.xplaneIndex,
+        isHelipad: true,
+      });
+
+      map.flyTo({
+        center: [helipad.longitude, helipad.latitude],
+        zoom: 18,
         duration: 1500,
       });
     },
@@ -377,6 +473,7 @@ export function useAirportInteractions({
   return {
     selectGateAsStart,
     selectRunwayEndAsStart,
+    selectHelipadAsStart,
     navigateToGate,
     navigateToRunway,
   };

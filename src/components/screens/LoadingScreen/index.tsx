@@ -4,15 +4,9 @@ import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { useAppVersion } from '@/hooks/useAppVersion';
-
-interface LoadingProgress {
-  step: string;
-  status: 'pending' | 'loading' | 'complete' | 'error';
-  message: string;
-  count?: number;
-  error?: string;
-}
+import type { LoadingProgress } from '@/types/xplane';
 
 interface LoadingStep {
   id: string;
@@ -33,7 +27,7 @@ export default function LoadingScreen({
   onConfigurePath,
 }: LoadingScreenProps) {
   const { t } = useTranslation();
-  const version = useAppVersion();
+  const { data: version } = useAppVersion();
   const [steps, setSteps] = useState<LoadingStep[]>([
     { id: 'airports', labelKey: 'loading.steps.airports', status: 'pending' },
     { id: 'navaids', labelKey: 'loading.steps.navaids', status: 'pending' },
@@ -41,13 +35,8 @@ export default function LoadingScreen({
     { id: 'airspaces', labelKey: 'loading.steps.airspaces', status: 'pending' },
     { id: 'airways', labelKey: 'loading.steps.airways', status: 'pending' },
   ]);
-  const [currentMessage, setCurrentMessage] = useState('');
+  const [currentMessage, setCurrentMessage] = useState(() => t('loading.initializing'));
   const [error, setError] = useState<string | null>(null);
-
-  // Set initial message after mount
-  useEffect(() => {
-    setCurrentMessage(t('loading.initializing'));
-  }, [t]);
 
   // Use refs to avoid stale closure issues
   const onCompleteRef = useRef(onComplete);
@@ -119,7 +108,7 @@ export default function LoadingScreen({
         const result = await window.appAPI.startLoading();
 
         // If loading returned success with status, data was loaded
-        if (result.success && result.status?.airports?.count > 0) {
+        if (result.success && (result.status?.airports?.count ?? 0) > 0) {
           onCompleteRef.current();
           return;
         }
@@ -154,12 +143,7 @@ export default function LoadingScreen({
         </div>
 
         {/* Progress bar */}
-        <div className="mb-8 h-1.5 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <Progress value={progress} className="mb-8 h-1.5" />
 
         {/* Steps list */}
         <div className="mb-6 space-y-3">

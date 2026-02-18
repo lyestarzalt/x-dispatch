@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Plane, Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,73 +11,128 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
+import { useAircraftImage } from '@/queries';
+import { useLaunchStore } from '@/stores/launchStore';
+import type { Aircraft } from '@/types/aircraft';
 import {
-  Aircraft,
-  AircraftType,
-  EngineType,
+  type AircraftType,
+  type EngineType,
   getAircraftType,
   getCategory,
   getEngineType,
 } from '../types';
 
 interface AircraftListProps {
-  aircraft: Aircraft[];
-  selectedAircraft: Aircraft | null;
+  aircraftList: Aircraft[];
   isScanning: boolean;
-  searchQuery: string;
-  filterCategory: string;
-  filterManufacturer: string;
-  filterAircraftType: AircraftType;
-  filterEngineType: EngineType;
-  showFavoritesOnly: boolean;
-  favorites: string[];
-  aircraftImages: Record<string, string>;
-  onSearchChange: (query: string) => void;
-  onCategoryChange: (category: string) => void;
-  onManufacturerChange: (manufacturer: string) => void;
-  onAircraftTypeChange: (type: AircraftType) => void;
-  onEngineTypeChange: (type: EngineType) => void;
-  onToggleFavoritesOnly: () => void;
-  onSelectAircraft: (aircraft: Aircraft) => void;
-  onToggleFavorite: (path: string) => void;
 }
 
-export function AircraftList({
+// Individual list item - uses TanStack Query for image loading
+function AircraftListItem({
   aircraft,
-  selectedAircraft,
-  isScanning,
-  searchQuery,
-  filterCategory,
-  filterManufacturer,
-  filterAircraftType,
-  filterEngineType,
-  showFavoritesOnly,
-  favorites,
-  aircraftImages,
-  onSearchChange,
-  onCategoryChange,
-  onManufacturerChange,
-  onAircraftTypeChange,
-  onEngineTypeChange,
-  onToggleFavoritesOnly,
-  onSelectAircraft,
+  isSelected,
+  isFavorite,
+  onSelect,
   onToggleFavorite,
-}: AircraftListProps) {
+}: {
+  aircraft: Aircraft;
+  isSelected: boolean;
+  isFavorite: boolean;
+  onSelect: () => void;
+  onToggleFavorite: () => void;
+}) {
+  const { data: imageUrl } = useAircraftImage(aircraft.previewImage);
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      title={`${aircraft.name} - ${aircraft.manufacturer}`}
+      className={cn(
+        'group relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        isSelected ? 'bg-primary/10 ring-2 ring-primary' : 'bg-secondary hover:bg-accent'
+      )}
+    >
+      {/* Aircraft Thumbnail */}
+      <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+        {imageUrl ? (
+          <img src={imageUrl} alt={aircraft.name} className="h-full w-full object-contain" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <Plane className="h-5 w-5 text-muted-foreground/20" />
+          </div>
+        )}
+      </div>
+
+      {/* Aircraft Info */}
+      <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            'truncate text-sm font-medium',
+            isSelected ? 'text-primary' : 'text-foreground'
+          )}
+        >
+          {aircraft.name}
+        </div>
+        <div className="truncate text-xs text-muted-foreground">{aircraft.manufacturer}</div>
+      </div>
+
+      {/* Favorite Button */}
+      <button
+        type="button"
+        className={cn(
+          'flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
+          isFavorite ? 'text-warning' : 'text-muted-foreground/30 hover:text-muted-foreground'
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFavorite();
+        }}
+        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        <Star className={cn('h-4 w-4', isFavorite && 'fill-current')} />
+      </button>
+    </div>
+  );
+}
+
+export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   const { t } = useTranslation();
 
+  // Local filter state (only this component uses it)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterManufacturer, setFilterManufacturer] = useState('all');
+  const [filterAircraftType, setFilterAircraftType] = useState<AircraftType>('all');
+  const [filterEngineType, setFilterEngineType] = useState<EngineType>('all');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Shared state from Zustand
+  const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
+  const favorites = useLaunchStore((s) => s.favorites);
+  const selectAircraft = useLaunchStore((s) => s.selectAircraft);
+  const toggleFavorite = useLaunchStore((s) => s.toggleFavorite);
+
   const manufacturers = useMemo(() => {
-    const set = new Set(aircraft.map((ac) => ac.manufacturer).filter(Boolean));
+    const set = new Set(aircraftList.map((ac) => ac.manufacturer).filter(Boolean));
     return Array.from(set).sort();
-  }, [aircraft]);
+  }, [aircraftList]);
 
   const categories = useMemo(() => {
-    const set = new Set(aircraft.map((ac) => getCategory(ac.path)));
+    const set = new Set(aircraftList.map((ac) => getCategory(ac.path)));
     return Array.from(set).sort();
-  }, [aircraft]);
+  }, [aircraftList]);
 
   const filteredAircraft = useMemo(() => {
-    let result = aircraft;
+    let result = aircraftList;
 
     if (showFavoritesOnly) {
       result = result.filter((ac) => favorites.includes(ac.path));
@@ -116,7 +171,7 @@ export function AircraftList({
       return a.name.localeCompare(b.name);
     });
   }, [
-    aircraft,
+    aircraftList,
     searchQuery,
     filterManufacturer,
     filterCategory,
@@ -128,7 +183,7 @@ export function AircraftList({
 
   return (
     <div className="flex w-[320px] min-w-[280px] flex-col border-r border-border bg-card lg:w-[360px]">
-      {/* Section Header - X-Plane style */}
+      {/* Section Header */}
       <div className="flex-shrink-0 border-b border-border px-3 py-2">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.aircraft.title')}</h3>
       </div>
@@ -141,7 +196,7 @@ export function AircraftList({
             <Input
               placeholder={t('launcher.aircraft.search')}
               value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="h-8 rounded-lg bg-secondary pr-8 text-sm"
             />
             <Search className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -150,7 +205,7 @@ export function AircraftList({
             variant={showFavoritesOnly ? 'default' : 'outline'}
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={onToggleFavoritesOnly}
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             aria-label={
               showFavoritesOnly
                 ? t('launcher.aircraft.showAll')
@@ -164,7 +219,10 @@ export function AircraftList({
 
         {/* Filter Dropdowns - Row 1: Type & Engine */}
         <div className="flex gap-2">
-          <Select value={filterAircraftType} onValueChange={onAircraftTypeChange}>
+          <Select
+            value={filterAircraftType}
+            onValueChange={(v) => setFilterAircraftType(v as AircraftType)}
+          >
             <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
               <SelectValue placeholder={t('launcher.aircraft.allTypes')} />
             </SelectTrigger>
@@ -174,7 +232,10 @@ export function AircraftList({
               <SelectItem value="helicopter">{t('launcher.aircraft.helicopter')}</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={filterEngineType} onValueChange={onEngineTypeChange}>
+          <Select
+            value={filterEngineType}
+            onValueChange={(v) => setFilterEngineType(v as EngineType)}
+          >
             <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
               <SelectValue placeholder={t('launcher.aircraft.allEngines')} />
             </SelectTrigger>
@@ -188,7 +249,7 @@ export function AircraftList({
 
         {/* Filter Dropdowns - Row 2: Category & Manufacturer */}
         <div className="flex gap-2">
-          <Select value={filterCategory} onValueChange={onCategoryChange}>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
               <SelectValue placeholder={t('launcher.aircraft.allCategories')} />
             </SelectTrigger>
@@ -201,7 +262,7 @@ export function AircraftList({
               ))}
             </SelectContent>
           </Select>
-          <Select value={filterManufacturer} onValueChange={onManufacturerChange}>
+          <Select value={filterManufacturer} onValueChange={setFilterManufacturer}>
             <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
               <SelectValue placeholder={t('launcher.aircraft.allManufacturers')} />
             </SelectTrigger>
@@ -238,78 +299,16 @@ export function AircraftList({
                 : t('launcher.aircraft.noAircraft')}
             </div>
           ) : (
-            filteredAircraft.map((ac) => {
-              const isSelected = selectedAircraft?.path === ac.path;
-              const isFavorite = favorites.includes(ac.path);
-
-              return (
-                <div
-                  key={ac.path}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onSelectAircraft(ac)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onSelectAircraft(ac);
-                    }
-                  }}
-                  title={`${ac.name} - ${ac.manufacturer}`}
-                  className={cn(
-                    'group relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                    isSelected
-                      ? 'bg-primary/10 ring-2 ring-primary'
-                      : 'bg-secondary hover:bg-accent'
-                  )}
-                >
-                  {/* Aircraft Thumbnail */}
-                  <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-                    {aircraftImages[ac.path] ? (
-                      <img
-                        src={aircraftImages[ac.path]}
-                        alt={ac.name}
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Plane className="h-5 w-5 text-muted-foreground/20" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Aircraft Info */}
-                  <div className="min-w-0 flex-1">
-                    <div
-                      className={cn(
-                        'truncate text-sm font-medium',
-                        isSelected ? 'text-primary' : 'text-foreground'
-                      )}
-                    >
-                      {ac.name}
-                    </div>
-                    <div className="truncate text-xs text-muted-foreground">{ac.manufacturer}</div>
-                  </div>
-
-                  {/* Favorite Button */}
-                  <button
-                    type="button"
-                    className={cn(
-                      'flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
-                      isFavorite
-                        ? 'text-warning'
-                        : 'text-muted-foreground/30 hover:text-muted-foreground'
-                    )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleFavorite(ac.path);
-                    }}
-                    aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                  >
-                    <Star className={cn('h-4 w-4', isFavorite && 'fill-current')} />
-                  </button>
-                </div>
-              );
-            })
+            filteredAircraft.map((ac) => (
+              <AircraftListItem
+                key={ac.path}
+                aircraft={ac}
+                isSelected={selectedAircraft?.path === ac.path}
+                isFavorite={favorites.includes(ac.path)}
+                onSelect={() => selectAircraft(ac)}
+                onToggleFavorite={() => toggleFavorite(ac.path)}
+              />
+            ))
           )}
         </div>
       </ScrollArea>

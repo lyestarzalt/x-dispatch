@@ -1,0 +1,571 @@
+{
+  "common": {
+    "search": "検索",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "noResults": "結果が見つかりません",
+    "all": "すべて",
+    "retry": "再試行",
+    "continue": "続行",
+    "back": "戻る",
+    "next": "次へ",
+    "browse": "参照",
+    "refresh": "更新",
+    "showMore": "{{count}}件すべて表示",
+    "showLess": "表示を減らす",
+    "copiedToClipboard": "クリップボードにコピーしました！",
+    "notConfigured": "未設定",
+    "selected": "選択済み",
+    "online": "オンライン",
+    "approved": "承認済み",
+    "recommended": "推奨"
+  },
+
+  "units": {
+    "ft": "ft",
+    "m": "m",
+    "nm": "nm",
+    "kt": "kt",
+    "s": "s",
+    "kg": "kg",
+    "fpm": "fpm"
+  },
+
+  "directions": {
+    "n": "北",
+    "e": "東",
+    "s": "南",
+    "w": "西",
+    "ne": "北東",
+    "nw": "北西",
+    "se": "南東",
+    "sw": "南西"
+  },
+
+  "app": {
+    "title": "X-Dispatch"
+  },
+
+  "setup": {
+    "title": "X-Dispatch",
+    "subtitle": "開始するにはX-Planeのインストール先を選択してください",
+    "selectFolder": "X-Planeフォルダを選択",
+    "changeFolder": "フォルダを変更",
+    "browseManually": "手動で参照",
+    "noInstallations": "X-Planeのインストールが見つかりません",
+    "failedToBrowse": "フォルダ選択を開けませんでした",
+    "failedToSave": "保存に失敗しました"
+  },
+
+  "loading": {
+    "title": "X-Dispatch",
+    "badge": "データ読み込み中",
+    "initializing": "初期化中...",
+    "steps": {
+      "airports": "空港",
+      "navaids": "航法援助施設",
+      "waypoints": "ウェイポイント",
+      "airspaces": "空域",
+      "airways": "航空路"
+    },
+    "pathNotConfigured": "X-Planeのパスが設定されていません",
+    "configurationRequired": "設定が必要です",
+    "configureXPlanePath": "X-Planeのパスを設定"
+  },
+
+  "toolbar": {
+    "searchPlaceholder": "空港を検索...",
+    "clearSearch": "検索をクリア",
+    "nav": "NAV",
+    "vatsim": "VATSIM",
+    "track": "追跡",
+    "trackTooltip": "機体の位置を追跡",
+    "launch": "起動",
+    "navigationLayers": "ナビゲーションレイヤー"
+  },
+
+  "explore": {
+    "title": "探索",
+    "close": "探索を閉じる",
+    "tabs": {
+      "filters": "フィルター",
+      "featured": "注目",
+      "routes": "ルート",
+      "vatsim": "VATSIM"
+    },
+    "vatsim": {
+      "busiestNow": "現在最も混雑",
+      "events": "イベント",
+      "noEvents": "予定されているイベントはありません",
+      "viewRoute": "ルートを表示",
+      "goToDeparture": "出発地へ移動"
+    },
+    "filters": {
+      "country": "国",
+      "region": "地域",
+      "type": "タイプ",
+      "allCountries": "すべての国",
+      "allRegions": "すべての地域",
+      "allTypes": "すべてのタイプ",
+      "land": "陸上",
+      "seaplane": "水上機",
+      "heliport": "ヘリポート",
+      "hasIata": "IATAコードあり"
+    },
+    "featured": {
+      "all": "すべて",
+      "challenging": "チャレンジング",
+      "scenic": "景色が良い",
+      "unique": "ユニーク",
+      "historic": "歴史的",
+      "icons": {
+        "mountain": "^",
+        "sunrise": "*",
+        "sparkles": "+",
+        "landmark": "#"
+      }
+    }
+  },
+
+  "settings": {
+    "title": "設定",
+    "subtitle": "設定をカスタマイズ",
+    "tabs": {
+      "xplane": "X-Plane",
+      "data": "Navデータ",
+      "appearance": "外観",
+      "navigation": "ナビゲーション",
+      "vatsim": "VATSIM",
+      "about": "情報"
+    },
+    "about": {
+      "title": "情報",
+      "description": "X-Plane用フライトディスパッチと空港可視化",
+      "credits": "クレジット",
+      "developer": "開発者",
+      "license": "ライセンス",
+      "links": "リンク",
+      "sourceCode": "ソースコード",
+      "reportIssue": "問題を報告",
+      "dataStorage": "データと設定",
+      "dataStorageDescription": "アプリの設定、キャッシュ、データベースはここに保存されます。",
+      "settingsCache": "設定とキャッシュ",
+      "logFile": "ログファイル",
+      "openDataFolder": "データフォルダを開く",
+      "openLog": "ログファイルを開く",
+      "openLogFolder": "フォルダで表示"
+    },
+    "xplane": {
+      "title": "X-Planeインストール",
+      "description": "X-Planeデータソースを設定",
+      "currentPath": "現在のパス",
+      "detectedInstallations": "検出されたインストール",
+      "selectInstallation": "使用するインストールを選択",
+      "active": "アクティブ",
+      "custom": "カスタム",
+      "dataLoaded": "読み込まれたデータ",
+      "dataType": "タイプ",
+      "count": "件数",
+      "source": "ソース",
+      "navDataSource": "ナビゲーションデータソース",
+      "validDates": "有効期間",
+      "expired": "期限切れ",
+      "current": "現在",
+      "atcFrequencies": "ATC周波数",
+      "holdingPatterns": "ホールディングパターン",
+      "airportMetadata": "空港メタデータ",
+      "moraGrid": "MORAグリッド",
+      "msaSectors": "MSAセクター"
+    },
+    "appearance": {
+      "title": "外観",
+      "description": "見た目をカスタマイズ",
+      "theme": "テーマ",
+      "themeDescription": "お好みの配色を選択",
+      "light": "ライト",
+      "dark": "ダーク",
+      "system": "システム",
+      "mapStyle": "マップスタイル",
+      "mapStyleDescription": "背景のマップスタイルを選択",
+      "unlimited": "無制限",
+      "customStyleUrl": "カスタムURL",
+      "customStyleHint": "MapLibreのstyle.json URLを貼り付け",
+      "language": "言語",
+      "units": "単位",
+      "unitsDescription": "測定単位を設定",
+      "weightUnit": "重量",
+      "lbs": "ポンド (lbs)",
+      "kg": "キログラム (kg)"
+    },
+    "navigation": {
+      "title": "ナビゲーション",
+      "description": "ナビゲーション設定を構成",
+      "dataTitle": "ナビゲーションデータ",
+      "dataDescription": "読み込まれたナビゲーションデータソースを表示",
+      "navigraphInfo": "Navigraphデータは、更新された航空路、手順、周波数を含む強化されたナビゲーションデータを提供します。",
+      "searchRadius": "検索半径",
+      "airportLayoutData": "空港レイアウトデータ",
+      "airportLayoutDescription": "apt.datファイルからの空港ジオメトリ（滑走路、誘導路、ゲートなど）",
+      "globalAirports": "グローバル空港",
+      "customAirports": "カスタム空港",
+      "fromSceneryPacks": "{{count}}個のシーナリーパックから",
+      "totalAirports": "空港合計",
+      "navDataSource": "ナビゲーションデータソース",
+      "navDataSourceDescription": "航法援助施設、ウェイポイント、航空路、手順、周波数",
+      "vatsim": {
+        "title": "VATSIM",
+        "sectionDescription": "VATSIMネットワークからのライブ航空交通",
+        "enable": "VATSIMオーバーレイを有効化",
+        "description": "マップ上にライブパイロット位置を表示",
+        "currentlyOnline": "現在オンライン",
+        "refreshRate": "更新頻度",
+        "autoRefresh": "自動更新間隔",
+        "refreshNote": "VATSIMデータはAPIガイドラインに従い15秒ごとに更新されます。",
+        "aboutTitle": "VATSIM統合について",
+        "aboutDescription": "パイロットはマップ上にアイコンで表示されます。パイロットをクリックすると、コールサイン、機体、出発地、目的地などのフライト詳細が表示されます。",
+        "refreshInterval": "更新間隔",
+        "refreshHelp": "VATSIMデータの更新頻度（推奨：15秒）"
+      }
+    }
+  },
+
+  "sidebar": {
+    "weather": "天気",
+    "weatherDetails": "天気の詳細",
+    "wind": "風",
+    "visibility": "視程",
+    "ceiling": "雲底高度",
+    "altimeter": "高度計",
+    "temp": "気温",
+    "dewpoint": "露点",
+    "clouds": "雲",
+    "noWeatherData": "気象データがありません",
+    "noFrequencies": "周波数がありません",
+    "searchGates": "ゲートを検索...",
+    "searchRunways": "滑走路を検索...",
+    "frequencies": "周波数",
+    "runways": "滑走路",
+    "gates": "ゲート",
+    "gatesParking": "ゲートと駐機場",
+    "departurePosition": "出発位置",
+    "moreCount": "+{{count}}件",
+    "more": "件",
+    "procedures": "手順",
+    "nearbyNavaids": "近くの航法援助施設",
+    "withinRadius": "50nm圏内",
+    "ils": "ILS",
+    "startFrom": "開始位置:",
+    "noGatesFound": "ゲートが見つかりません",
+    "noRunwaysFound": "滑走路が見つかりません",
+    "copyFrequency": "周波数をコピー",
+    "vatsim": {
+      "notEnabled": "ライブデータを表示するには設定でVATSIMを有効にしてください",
+      "noActivity": "VATSIMアクティビティなし"
+    }
+  },
+
+  "airportInfo": {
+    "tabs": {
+      "info": "情報",
+      "runways": "滑走路",
+      "gates": "ゲート",
+      "radio": "無線",
+      "gateway": "GATEWAY"
+    },
+    "stats": {
+      "elevation": "標高",
+      "runways": "滑走路",
+      "gates": "ゲート",
+      "hangars": "格納庫"
+    },
+    "runwayCount": "滑走路{{count}}本",
+    "location": "位置",
+    "facilities": "施設",
+    "tower": "管制塔",
+    "windsocks": "吹き流し",
+    "beacon": "ビーコン",
+    "helipads": "ヘリパッド",
+    "searchGates": "ゲートを検索...",
+    "filterAll": "すべて",
+    "filterGates": "ゲート",
+    "filterHangars": "格納庫",
+    "filterOther": "その他",
+    "noGatesFound": "ゲートが見つかりません",
+    "noFrequencies": "周波数がありません",
+    "xplaneGateway": "X-Plane Gateway",
+    "gatewayNotAvailable": "Gatewayデータが利用できません",
+    "gatewayLoading": "Gatewayデータを読み込み中...",
+    "noGatewayData": "この空港のGatewayデータはありません",
+    "gatewayDescription": "このデータはこの空港への投稿を表示します。",
+    "viewOnGateway": "Gatewayで表示",
+    "accepted": "承認済み",
+    "features": "特徴",
+    "sceneryPacks": "シーナリーパック",
+    "moreOnGateway": "Gatewayで詳細を見る",
+    "refreshData": "データを更新",
+    "artistComments": "アーティストコメント",
+    "approvedDate": "承認日:",
+    "beaconTypes": {
+      "civil": "民間 (白-緑)",
+      "seaplane": "水上機 (白-黄)",
+      "heliport": "ヘリポート",
+      "military": "軍用"
+    },
+    "surfaces": {
+      "asphalt": "アスファルト",
+      "concrete": "コンクリート",
+      "grass": "草地",
+      "dirt": "土",
+      "gravel": "砂利",
+      "dryLake": "乾燥湖",
+      "water": "水上",
+      "snow": "雪",
+      "transparent": "透明",
+      "unknown": "不明"
+    }
+  },
+
+  "navigation": {
+    "heading": "方位",
+    "wind": "風",
+    "calm": "穏やか"
+  },
+
+  "flightStrip": {
+    "notDetected": "X-Planeが実行されていません",
+    "ias": "IAS",
+    "gs": "GS",
+    "alt": "ALT",
+    "agl": "AGL",
+    "vs": "VS",
+    "hdg": "HDG",
+    "center": "中央",
+    "centerTooltip": "機体を中心にマップを表示"
+  },
+
+  "weather": {
+    "fetching": "天気を取得中...",
+    "noData": "気象データがありません",
+    "tabs": {
+      "metar": "METAR",
+      "taf": "TAF"
+    },
+    "visibility": "視程",
+    "clouds": "雲",
+    "tempDew": "気温/露点",
+    "altimeter": "高度計",
+    "showRaw": "生データを表示",
+    "hideRaw": "生データを隠す",
+    "runway": "滑走路 {{names}}",
+    "useRunway": "{{name}}を使用",
+    "headwind": "向風",
+    "tailwind": "追風",
+    "crosswind": "横風"
+  },
+
+  "procedures": {
+    "noData": "手順がありません",
+    "noTypeData": "{{type}}がありません",
+    "tabs": {
+      "sid": "SID",
+      "star": "STAR",
+      "app": "APP"
+    },
+    "allRunways": "すべて"
+  },
+
+  "layers": {
+    "airport": {
+      "title": "空港レイヤー",
+      "surfaces": "サーフェス",
+      "markings": "マーキング",
+      "lights": "ライト",
+      "objects": "オブジェクト",
+      "effects": "エフェクト"
+    },
+    "navigation": {
+      "title": "ナビゲーションレイヤー",
+      "navaids": "航法援助施設",
+      "fixes": "フィックス",
+      "airspaces": "空域"
+    },
+    "items": {
+      "runways": "滑走路",
+      "taxiways": "誘導路",
+      "aprons": "エプロン",
+      "boundary": "境界",
+      "rwyMarkings": "滑走路マーキング",
+      "lines": "ライン",
+      "signs": "標識",
+      "rwyLights": "滑走路灯",
+      "twyLights": "誘導路灯",
+      "approach": "進入",
+      "gates": "ゲート",
+      "windsocks": "吹き流し",
+      "animations": "アニメーション",
+      "weatherEffects": "天候",
+      "vors": "VOR",
+      "ndbs": "NDB",
+      "dmes": "DME",
+      "ils": "ILS",
+      "waypoints": "ウェイポイント",
+      "airwaysOff": "オフ",
+      "highAirways": "高高度航空路 (Jet)",
+      "lowAirways": "低高度航空路 (Victor)"
+    },
+    "loadViewport": "表示範囲の航法援助施設を読み込む",
+    "showAll": "すべて表示",
+    "hideAll": "すべて非表示"
+  },
+
+  "debug": {
+    "title": "デバッグモード有効",
+    "instruction": "マップ上の任意の要素をクリックしてプロパティを確認してください。",
+    "descriptions": {
+      "lines": "ライン（塗装マーキング）",
+      "signs": "標識（誘導路/滑走路標識）",
+      "gates": "ゲートと駐機場",
+      "runways": "滑走路と誘導路"
+    },
+    "properties": "プロパティ",
+    "coordinates": "座標",
+    "rawAptDat": "生のapt.dat",
+    "lineTypesHeader": "X-Planeラインタイプ（apt.dat 1130）:",
+    "copyToClipboard": "クリップボードにコピー",
+    "clearSelection": "選択をクリア"
+  },
+
+  "launcher": {
+    "title": "フライト設定",
+    "launch": "X-Planeを起動",
+    "launching": "起動中...",
+    "changeFlight": "フライトを変更",
+    "changingFlight": "変更中...",
+    "xplaneRunning": "X-Planeが実行中 - フライトはAPIで変更されます",
+    "selectDeparture": "マップ上で出発地を選択",
+    "selectAircraft": "機体を選択",
+
+    "aircraft": {
+      "title": "機体",
+      "search": "機体を検索...",
+      "allCategories": "すべてのカテゴリ",
+      "allManufacturers": "すべてのメーカー",
+      "allTypes": "すべてのタイプ",
+      "allEngines": "すべてのエンジン",
+      "fixedWing": "固定翼",
+      "helicopter": "ヘリコプター",
+      "jet": "ジェット",
+      "prop": "プロペラ",
+      "count": "{{count}}機",
+      "favorites": "お気に入り{{count}}件",
+      "noFavorites": "お気に入りはまだありません",
+      "noAircraft": "機体が見つかりません",
+      "showAll": "すべて表示",
+      "showFavoritesOnly": "お気に入りのみ表示"
+    },
+
+    "liveries": {
+      "title": "塗装",
+      "count": "塗装（{{count}}）",
+      "default": "デフォルト"
+    },
+
+    "specs": {
+      "emptyWeight": "空虚重量",
+      "maxWeight": "MTOW",
+      "maxFuel": "燃料容量",
+      "tailNumber": "機体番号"
+    },
+
+    "config": {
+      "timeOfDay": "時刻",
+      "realWorldTime": "実時間",
+      "coldAndDark": "コールド＆ダーク",
+      "weather": "天候",
+      "fuel": "燃料",
+      "summary": "概要",
+      "departure": "出発",
+      "livery": "塗装"
+    },
+
+    "time": {
+      "dawn": "夜明け",
+      "day": "昼",
+      "dusk": "夕暮れ",
+      "night": "夜"
+    },
+
+    "timePresets": {
+      "dawn": "夜明け",
+      "sunrise": "日の出",
+      "noon": "正午",
+      "sunset": "日没",
+      "dusk": "夕暮れ",
+      "night": "夜"
+    },
+
+    "weather": {
+      "real": "実際",
+      "clear": "快晴",
+      "cloudy": "曇り",
+      "rainy": "雨",
+      "stormy": "嵐",
+      "snowy": "雪",
+      "foggy": "霧"
+    },
+
+    "weatherBuilder": {
+      "custom": "カスタム天候",
+      "customize": "天候をカスタマイズ",
+      "details": "天候の詳細",
+      "visibility": "視程",
+      "wind": "風",
+      "direction": "方向",
+      "speed": "速度",
+      "gusts": "突風",
+      "clouds": "雲",
+      "addLayer": "レイヤーを追加",
+      "noClouds": "雲レイヤーなし",
+      "layer": "レイヤー",
+      "coverage": "雲量",
+      "cloudType": "タイプ",
+      "base": "雲底 (ft)",
+      "tops": "雲頂 (ft)",
+      "precipitation": "降水",
+      "temperature": "気温",
+      "dewpoint": "露点",
+      "pressure": "気圧",
+      "atmosphere": "大気",
+      "cloudTypes": {
+        "stratus": "層雲",
+        "cumulus": "積雲",
+        "cumulonimbus": "積乱雲"
+      }
+    },
+
+    "weatherModal": {
+      "presets": "プリセット",
+      "custom": "カスタム",
+      "poor": "悪い",
+      "unlimited": "無制限"
+    },
+
+    "fuelConfig": {
+      "auto": "自動",
+      "manual": "手動",
+      "total": "合計"
+    },
+
+    "fuelModal": {
+      "empty": "空",
+      "full": "満タン",
+      "of": "の"
+    }
+  }
+}

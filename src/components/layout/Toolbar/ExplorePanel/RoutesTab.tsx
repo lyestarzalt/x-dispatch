@@ -1,6 +1,6 @@
 import { Plane } from 'lucide-react';
-import { FEATURED_ROUTES } from '@/data';
-import { cn } from '@/lib/utils';
+import { FEATURED_ROUTES } from '@/components/layout/Toolbar/ExplorePanel/featured';
+import { cn } from '@/lib/utils/helpers';
 import type { RoutesTabProps } from './types';
 
 export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {

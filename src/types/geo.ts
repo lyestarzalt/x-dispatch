@@ -11,8 +11,8 @@ export interface NamedPosition extends Position {
   name: string;
   /** Array index in source data (e.g., startupLocations index) */
   index?: number;
-  /** X-Plane index - position in alphabetically sorted ramp list (by name, then latitude) */
-  xplaneIndex?: number;
+  /** X-Plane index - for ramps: number (sorted position); for runways: "row_end" string format */
+  xplaneIndex?: number | string;
 }
 
 export type LonLat = [number, number];

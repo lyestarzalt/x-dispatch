@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { changeLanguage, languages } from '@/i18n';
-import type { WeightUnit } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import type { WeightUnit } from '@/lib/utils/format';
+import { cn } from '@/lib/utils/helpers';
 import { MAP_STYLE_PRESETS, MapSettings, useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
 

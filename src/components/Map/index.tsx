@@ -1,25 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
-import { ParsedAirport } from '@/lib/aptParser';
-import { Airport } from '@/lib/xplaneData';
+import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useXPlaneStatus } from '@/queries';
-import {
-  getNavDataCounts,
-  useGlobalAirwaysQuery,
-  useNavDataQuery,
-} from '@/queries/useNavDataQuery';
+import { useGlobalAirwaysQuery, useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
 import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import type { PlanePosition, PlaneState } from '@/types/xplane';
@@ -32,17 +29,15 @@ import {
   useAirportRenderer,
   useMapSetup,
   useNavLayerSync,
+  useProcedureRouteSync,
   useRouteLineSync,
   useVatsimSync,
 } from './hooks';
 import {
-  addPlaneLayer,
-  addProcedureRouteLayer,
   bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
   removePlaneLayer,
-  removeProcedureRouteLayer,
   removeVatsimPilotLayer,
   updatePlaneLayer,
 } from './layers';
@@ -70,13 +65,10 @@ export default function Map({ airports }: MapProps) {
   const showSidebar = useAppStore((s) => s.showSidebar);
   const showSettings = useAppStore((s) => s.showSettings);
   const showLaunchDialog = useAppStore((s) => s.showLaunchDialog);
-  const selectedProcedure = useAppStore((s) => s.selectedProcedure);
-  const selectedStartPosition = useAppStore((s) => s.startPosition);
+  const startPosition = useAppStore((s) => s.startPosition);
   const storeSelectAirport = useAppStore((s) => s.selectAirport);
-  const setShowSidebar = useAppStore((s) => s.setShowSidebar);
   const setShowSettings = useAppStore((s) => s.setShowSettings);
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
-  const setSelectedProcedure = useAppStore((s) => s.selectProcedure);
 
   const layerVisibility = useMapStore((s) => s.layerVisibility);
   const navVisibility = useMapStore((s) => s.navVisibility);
@@ -161,22 +153,28 @@ export default function Map({ airports }: MapProps) {
     selectedICAORef.current = selectedICAO;
   }, [selectedICAO]);
 
-  // Airport interactions (gates, runway ends)
-  const { selectGateAsStart, selectRunwayEndAsStart, navigateToGate, navigateToRunway } =
-    useAirportInteractions({
-      mapRef,
-      selectedAirportData,
-    });
+  // Airport interactions (gates, runway ends, helipads)
+  const {
+    selectGateAsStart,
+    selectRunwayEndAsStart,
+    selectHelipadAsStart,
+    navigateToGate,
+    navigateToRunway,
+  } = useAirportInteractions({
+    mapRef,
+    selectedAirportData,
+  });
 
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
   const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
 
-  const navDataLocation: Coordinates | null = selectedAirportData?.metadata
-    ? {
-        latitude: parseFloat(selectedAirportData.metadata.datum_lat),
-        longitude: parseFloat(selectedAirportData.metadata.datum_lon),
-      }
-    : null;
+  const navDataLocation: Coordinates | null =
+    selectedAirportData?.metadata?.datum_lat && selectedAirportData?.metadata?.datum_lon
+      ? {
+          latitude: parseFloat(selectedAirportData.metadata.datum_lat),
+          longitude: parseFloat(selectedAirportData.metadata.datum_lon),
+        }
+      : null;
   const { data: navData, isLoading: navLoading } = useNavDataQuery(
     navDataLocation?.latitude ?? null,
     navDataLocation?.longitude ?? null,
@@ -185,7 +183,6 @@ export default function Map({ airports }: MapProps) {
 
   const shouldLoadAirways = navVisibility.airwaysMode !== 'off';
   const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
-  const navDataCounts = getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
 
@@ -266,6 +263,9 @@ export default function Map({ airports }: MapProps) {
     airports,
   });
 
+  // Procedure route sync - renders selected procedure on map
+  useProcedureRouteSync({ mapRef });
+
   // Load FIR boundaries on map load
   useEffect(() => {
     const map = mapRef.current;
@@ -327,9 +327,9 @@ export default function Map({ airports }: MapProps) {
   // Debug mode click handler
   const handleFeatureClick = useCallback(
     (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
-      if (!debugEnabled || !e.features || e.features.length === 0) return;
+      const feature = e.features?.[0];
+      if (!debugEnabled || !feature) return;
 
-      const feature = e.features[0];
       const props = feature.properties || {};
       const geom = feature.geometry;
       const layerId = feature.layer?.id || 'unknown';
@@ -362,21 +362,36 @@ export default function Map({ airports }: MapProps) {
     const map = mapRef.current;
     if (!map) return;
 
+    // Store handlers for cleanup (use globalThis.Map to avoid conflict with component name)
+    const mouseEnterHandlers = new globalThis.Map<string, () => void>();
+    const mouseLeaveHandlers = new globalThis.Map<string, () => void>();
+
     if (debugEnabled) {
       CLICKABLE_LAYERS.forEach((layerId) => {
-        map.on('click', layerId, handleFeatureClick);
-        map.on('mouseenter', layerId, () => {
+        const enterHandler = () => {
           map.getCanvas().style.cursor = 'crosshair';
-        });
-        map.on('mouseleave', layerId, () => {
+        };
+        const leaveHandler = () => {
           map.getCanvas().style.cursor = '';
-        });
+        };
+
+        mouseEnterHandlers.set(layerId, enterHandler);
+        mouseLeaveHandlers.set(layerId, leaveHandler);
+
+        map.on('click', layerId, handleFeatureClick);
+        map.on('mouseenter', layerId, enterHandler);
+        map.on('mouseleave', layerId, leaveHandler);
       });
     }
 
     return () => {
       CLICKABLE_LAYERS.forEach((layerId) => {
         map.off('click', layerId, handleFeatureClick);
+
+        const enterHandler = mouseEnterHandlers.get(layerId);
+        const leaveHandler = mouseLeaveHandlers.get(layerId);
+        if (enterHandler) map.off('mouseenter', layerId, enterHandler);
+        if (leaveHandler) map.off('mouseleave', layerId, leaveHandler);
       });
     };
   }, [mapRef, debugEnabled, handleFeatureClick]);
@@ -475,37 +490,6 @@ export default function Map({ airports }: MapProps) {
     });
   }, [mapRef, planePosition]);
 
-  const handleSelectProcedure = useCallback(
-    async (procedure: any) => {
-      setSelectedProcedure(procedure);
-
-      const map = mapRef.current;
-      if (!map || !procedure) {
-        if (map) removeProcedureRouteLayer(map);
-        return;
-      }
-
-      addProcedureRouteLayer(map, {
-        type: procedure.type as 'SID' | 'STAR' | 'APPROACH',
-        name: procedure.name,
-        waypoints: procedure.waypoints.map(
-          (wp: { fixId: string; latitude?: number; longitude?: number; resolved?: boolean }) => ({
-            fixId: wp.fixId,
-            latitude: wp.latitude,
-            longitude: wp.longitude,
-            resolved: wp.resolved,
-          })
-        ),
-      });
-    },
-    [mapRef, setSelectedProcedure]
-  );
-
-  const closeSidebar = useCallback(() => {
-    setShowSidebar(false);
-    setSelectedFeature(null);
-  }, [setShowSidebar, setSelectedFeature]);
-
   return (
     <div
       className="relative overflow-hidden bg-background"
@@ -519,19 +503,9 @@ export default function Map({ airports }: MapProps) {
       <Toolbar
         airports={airports}
         onSelectAirport={selectAirport}
-        onOpenSettings={() => setShowSettings(true)}
         onToggleVatsim={handleToggleVatsim}
         onTogglePlaneTracker={handleTogglePlaneTracker}
-        onOpenLauncher={() => setShowLaunchDialog(true)}
-        isVatsimEnabled={vatsimEnabled}
-        vatsimPilotCount={vatsimData?.pilots?.length}
-        isPlaneTrackerEnabled={showPlaneTracker}
-        isXPlaneConnected={isXPlaneConnected}
-        hasStartPosition={!!selectedStartPosition}
-        navVisibility={navVisibility}
         onNavToggle={handleNavLayerToggle}
-        onSetAirwaysMode={handleSetAirwaysMode}
-        navDataCounts={navDataCounts}
       />
 
       <SettingsDialog
@@ -554,25 +528,20 @@ export default function Map({ airports }: MapProps) {
       )}
 
       {showSidebar && selectedAirportData && (
-        <Sidebar
-          airport={selectedAirportData}
-          onCloseAirport={closeSidebar}
-          navDataCounts={navDataCounts}
-          onSelectRunway={navigateToRunway}
-          onSelectProcedure={handleSelectProcedure}
-          selectedProcedure={selectedProcedure}
-          onSelectGateAsStart={selectGateAsStart}
-          onSelectRunwayEndAsStart={selectRunwayEndAsStart}
-          selectedStartPosition={selectedStartPosition}
-          vatsimData={vatsimData}
-          vatsimMetar={vatsimMetar?.raw ?? null}
-        />
+        <SectionErrorBoundary name="Sidebar">
+          <Sidebar
+            onSelectRunway={navigateToRunway}
+            onSelectGateAsStart={selectGateAsStart}
+            onSelectRunwayEndAsStart={selectRunwayEndAsStart}
+            onSelectHelipadAsStart={selectHelipadAsStart}
+          />
+        </SectionErrorBoundary>
       )}
 
       <LaunchDialog
         open={showLaunchDialog}
         onClose={() => setShowLaunchDialog(false)}
-        startPosition={selectedStartPosition}
+        startPosition={startPosition}
       />
     </div>
   );

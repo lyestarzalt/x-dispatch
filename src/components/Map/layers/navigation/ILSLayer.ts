@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
-import { destinationPoint, nauticalMilesToMeters } from '@/lib/geo';
-import { svgToDataUrl } from '@/lib/svg';
+import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
+import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { removeLayersAndSource, setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
@@ -155,9 +155,14 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0]; // nav-ils-labels
+    const coneLayerId = this.additionalLayerIds[1]; // nav-ils-cone
+    const courseLayerId = this.additionalLayerIds[2]; // nav-ils-course
+    if (!labelsLayerId || !coneLayerId || !courseLayerId) return;
+
     // Cone fill layer
     map.addLayer({
-      id: this.additionalLayerIds[1], // nav-ils-cone
+      id: coneLayerId,
       type: 'fill',
       source: this.coneSourceId,
       paint: {
@@ -168,7 +173,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
 
     // Course line layer
     map.addLayer({
-      id: this.additionalLayerIds[2], // nav-ils-course
+      id: courseLayerId,
       type: 'line',
       source: this.courseSourceId,
       paint: {
@@ -209,7 +214,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
 
     // ILS labels
     map.addLayer({
-      id: this.additionalLayerIds[0], // nav-ils-labels
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 10,

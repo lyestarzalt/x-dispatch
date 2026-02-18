@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 
 /**
  * X-Plane Tile Grid Component

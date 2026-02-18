@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { Airport } from '@/lib/xplaneData';
+import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 
@@ -30,7 +30,15 @@ export function useMapSetup({
   const airportPopupRef = useRef<maplibregl.Popup | null>(null);
   const vatsimPopupRef = useRef<maplibregl.Popup | null>(null);
 
+  const onAirportClickRef = useRef(onAirportClick);
+  onAirportClickRef.current = onAirportClick;
+
   const { setCurrentZoom, setMapBearing } = useMapStore();
+
+  const setCurrentZoomRef = useRef(setCurrentZoom);
+  const setMapBearingRef = useRef(setMapBearing);
+  setCurrentZoomRef.current = setCurrentZoom;
+  setMapBearingRef.current = setMapBearing;
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -61,16 +69,19 @@ export function useMapSetup({
       setupGlobeProjection(map);
       setup3DTerrain(map);
       setupAirportsLayer(map, airports);
-      setupAirportPopup(map, airportPopupRef, onAirportClick);
+      setupAirportPopup(map, airportPopupRef, (icao: string) => onAirportClickRef.current(icao));
       setupVatsimPopup(vatsimPopupRef);
-      setupMapEvents(map, setCurrentZoom, setMapBearing);
+      setupMapEvents(
+        map,
+        (zoom: number) => setCurrentZoomRef.current(zoom),
+        (bearing: number) => setMapBearingRef.current(bearing)
+      );
     });
 
     return () => {
       map.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [airports]);
+  }, [airports, mapStyleUrl]);
 
   return {
     mapRef,
@@ -166,11 +177,12 @@ export function setupAirportPopup(
   });
 
   map.on('mouseenter', 'airports-hitbox', (e) => {
-    if (!e.features || e.features[0].geometry.type !== 'Point') return;
+    const feature = e.features?.[0];
+    if (!feature || feature.geometry.type !== 'Point') return;
     map.getCanvas().style.cursor = 'pointer';
 
-    const coordinates = e.features[0].geometry.coordinates.slice() as [number, number];
-    const { name, icao } = e.features[0].properties as { name: string; icao: string };
+    const coordinates = feature.geometry.coordinates.slice() as [number, number];
+    const { name, icao } = feature.properties as { name: string; icao: string };
 
     popupRef.current
       ?.setLngLat(coordinates)
@@ -186,9 +198,10 @@ export function setupAirportPopup(
   });
 
   map.on('click', 'airports-hitbox', async (e) => {
-    if (!e.features || !e.features[0].properties?.icao) return;
-    if (e.features[0].geometry.type !== 'Point') return;
-    const icao = e.features[0].properties.icao;
+    const feature = e.features?.[0];
+    if (!feature?.properties?.icao) return;
+    if (feature.geometry.type !== 'Point') return;
+    const icao = feature.properties.icao as string;
     await onAirportClick(icao);
   });
 }

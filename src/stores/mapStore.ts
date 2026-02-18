@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { FeaturedCategory } from '@/types/featured';
 import {
   AirwaysMode,
   DEFAULT_LAYER_VISIBILITY,
@@ -24,14 +25,15 @@ export interface ExploreFilters {
 }
 
 export type ExploreTab = 'featured' | 'routes' | 'vatsim';
-export type FeaturedCategory = 'all' | 'challenging' | 'scenic' | 'unique' | 'historic';
+/** Filter variant includes 'all' option for UI */
+export type FeaturedCategoryFilter = 'all' | FeaturedCategory;
 
 export interface ExploreState {
   isOpen: boolean;
   activeTab: ExploreTab;
   selectedRoute: { from: string; to: string } | null;
   filters: ExploreFilters;
-  featuredCategory: FeaturedCategory;
+  featuredCategory: FeaturedCategoryFilter;
 }
 
 interface MapState {
@@ -65,7 +67,7 @@ interface MapState {
   setExploreTab: (tab: ExploreTab) => void;
   setSelectedRoute: (route: { from: string; to: string } | null) => void;
   setExploreFilters: (filters: Partial<ExploreFilters>) => void;
-  setFeaturedCategory: (category: FeaturedCategory) => void;
+  setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -90,7 +92,7 @@ export const useMapStore = create<MapState>()(
           type: 'all' as ExploreFilters['type'],
           hasIata: false,
         },
-        featuredCategory: 'all' as FeaturedCategory,
+        featuredCategory: 'all' as FeaturedCategoryFilter,
       },
 
       setLayerVisibility: (visibility) =>

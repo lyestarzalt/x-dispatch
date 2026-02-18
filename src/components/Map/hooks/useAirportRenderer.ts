@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { AirportParser, ParsedAirport } from '@/lib/aptParser';
+import { AirportParser } from '@/lib/parsers/apt';
+import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
 import { calculateAirportCenter, calculateOptimalZoom } from '../utils/zoomCalculator';
@@ -87,7 +88,13 @@ export function useAirportRenderer(
       if (!data) return null;
 
       const parser = new AirportParser(data);
-      const parsedAirport = parser.parse();
+      const { data: parsedAirport, errors, stats } = parser.parse();
+
+      if (errors.length > 0) {
+        window.appAPI.log.warn(
+          `AirportParser ${icao}: ${errors.length} errors, ${stats.skipped} skipped`
+        );
+      }
 
       for (const renderer of layerRenderers.current) {
         if (renderer.hasData(parsedAirport)) {

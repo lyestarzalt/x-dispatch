@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
-import { svgToDataUrl } from '@/lib/svg';
+import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
@@ -162,6 +162,9 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     if (this.imagesLoaded && map.hasImage('vor-symbol')) {
       map.addLayer({
         id: this.layerId,
@@ -190,7 +193,7 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
 
     // VOR labels
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 7,

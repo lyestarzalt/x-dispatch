@@ -107,3 +107,24 @@ export function useGlobalAirwaysQuery(enabled: boolean = false) {
     placeholderData: EMPTY_AIRWAYS_DATA,
   });
 }
+
+/**
+ * Combined hook that returns nav data counts for the currently selected airport.
+ * Encapsulates the logic for fetching local nav data and global airways.
+ *
+ * @param airportLat - Airport latitude (optional, will fetch when provided)
+ * @param airportLon - Airport longitude (optional, will fetch when provided)
+ * @param airwaysMode - Current airways mode from mapStore
+ */
+export function useNavDataCounts(
+  airportLat: number | null,
+  airportLon: number | null,
+  airwaysMode: 'off' | 'high' | 'low'
+) {
+  const { data: navData } = useNavDataQuery(airportLat, airportLon, 50);
+
+  const shouldLoadAirways = airwaysMode !== 'off';
+  const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
+
+  return getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
+}

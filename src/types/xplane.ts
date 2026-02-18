@@ -1,3 +1,5 @@
+import type { Coordinates } from './geo';
+
 export type WeatherPresetName =
   | 'real'
   | 'clear'
@@ -7,9 +9,7 @@ export type WeatherPresetName =
   | 'snowy'
   | 'foggy';
 
-export interface PlaneState {
-  latitude: number;
-  longitude: number;
+export interface PlaneState extends Coordinates {
   altitudeMSL: number;
   altitudeAGL: number;
   heading: number;
@@ -44,5 +44,14 @@ export interface PlanePosition {
 
 export interface XPlaneAPIResult {
   success: boolean;
+  error?: string;
+}
+
+/** Progress event for X-Plane data loading */
+export interface LoadingProgress {
+  step: string;
+  status: 'pending' | 'loading' | 'complete' | 'error';
+  message: string;
+  count?: number;
   error?: string;
 }

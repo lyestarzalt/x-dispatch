@@ -9,10 +9,22 @@ interface ZoomBehavior {
   fadeInRange?: number; // Zoom range over which feature fades in
 }
 
+type ZoomBehaviorKey =
+  | 'runways'
+  | 'boundaries'
+  | 'taxiways'
+  | 'pavements'
+  | 'linearFeatures'
+  | 'startupLocations'
+  | 'windsocks'
+  | 'signs'
+  | 'lighting'
+  | 'labels';
+
 /**
  * Default zoom behaviors for each feature type
  */
-export const ZOOM_BEHAVIORS: Record<string, ZoomBehavior> = {
+export const ZOOM_BEHAVIORS: Record<ZoomBehaviorKey, ZoomBehavior> = {
   // Large features visible from far away
   runways: {
     minZoom: 10,

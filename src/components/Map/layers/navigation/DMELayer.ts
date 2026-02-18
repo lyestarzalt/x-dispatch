@@ -31,6 +31,9 @@ export class DMELayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
+    const labelsLayerId = this.additionalLayerIds[0];
+    if (!labelsLayerId) return;
+
     // DME symbol - small circle outline
     map.addLayer({
       id: this.layerId,
@@ -46,7 +49,7 @@ export class DMELayerRenderer extends NavLayerRenderer<Navaid> {
 
     // DME labels
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 9,

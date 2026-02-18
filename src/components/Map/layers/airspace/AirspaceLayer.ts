@@ -1,12 +1,12 @@
 import maplibregl from 'maplibre-gl';
-import { AIRSPACE_STYLES } from '@/config/navLayerConfig';
+import { getAirspaceStyle } from '@/config/navLayerConfig';
 import type { Airspace } from '@/types/navigation';
 import { NavLayerRenderer } from '../navigation/NavLayerRenderer';
 
 const DASHED_CLASSES = ['D', 'E', 'F', 'G', 'Q', 'W', 'GP', 'OTHER'];
 
 function getLocalAirspaceStyle(airspaceClass: string) {
-  const style = AIRSPACE_STYLES[airspaceClass] || AIRSPACE_STYLES.OTHER;
+  const style = getAirspaceStyle(airspaceClass);
   return { color: style.border, dashed: DASHED_CLASSES.includes(airspaceClass) };
 }
 
@@ -57,8 +57,12 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
     });
 
     // Outline layer - the main visual
+    const outlineLayerId = this.additionalLayerIds[0];
+    const labelsLayerId = this.additionalLayerIds[1];
+    if (!outlineLayerId || !labelsLayerId) return;
+
     map.addLayer({
-      id: this.additionalLayerIds[0],
+      id: outlineLayerId,
       type: 'line',
       source: this.sourceId,
       paint: {
@@ -70,7 +74,7 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
 
     // Labels along boundary - large halo creates "cut" effect in the border
     map.addLayer({
-      id: this.additionalLayerIds[1],
+      id: labelsLayerId,
       type: 'symbol',
       source: this.sourceId,
       minzoom: 8,

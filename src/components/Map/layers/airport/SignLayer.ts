@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
-import type { ParsedAirport } from '@/lib/aptParser';
-import { parseSignText } from '@/lib/signRenderer';
+import { parseSignText } from '@/lib/parsers/apt/signs';
+import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 const SIGN_COLORS = {

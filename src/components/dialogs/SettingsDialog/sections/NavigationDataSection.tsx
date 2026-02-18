@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
@@ -25,11 +24,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatDate } from '@/lib/format';
-import { cn } from '@/lib/utils';
-import type { DataLoadStatus, SettingsSectionProps } from '../types';
+import { formatDate } from '@/lib/utils/format';
+import { cn } from '@/lib/utils/helpers';
+import { useLoadingStatus } from '@/queries';
+import type { SettingsSectionProps } from '../types';
 
 type SourceType = 'navigraph' | 'xplane-default' | 'custom-scenery' | 'unknown';
+type SettingsDataLoadStatus = NonNullable<
+  Awaited<ReturnType<typeof window.appAPI.getLoadingStatus>>['status']
+>;
 
 interface DataRowProps {
   label: string;
@@ -98,28 +101,8 @@ function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
 
 export default function NavigationDataSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
-  const [dataStatus, setDataStatus] = useState<DataLoadStatus | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadDataStatus() {
-      try {
-        const result = await window.appAPI.getLoadingStatus();
-        if (!cancelled) {
-          setDataStatus(result.status);
-        }
-      } catch {
-        // Ignore errors
-      }
-    }
-
-    loadDataStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: loadingResult } = useLoadingStatus();
+  const dataStatus = loadingResult?.status as SettingsDataLoadStatus | undefined;
 
   const globalSource = dataStatus?.sources?.global;
   const isNavigraph = globalSource?.source === 'navigraph';

@@ -1,206 +1,191 @@
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Radar, Radio, Route } from 'lucide-react';
+import { useState } from 'react';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Info,
+  MessageSquare,
+  PlaneTakeoff,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ParsedAirport } from '@/lib/aptParser';
-import { FrequencyType, Runway } from '@/lib/aptParser/types';
-import { cn } from '@/lib/utils';
-import { VatsimData } from '@/queries/useVatsimQuery';
+import { cn } from '@/lib/utils/helpers';
+import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
+import { useAppStore } from '@/stores/appStore';
+import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
-import { decodeMetar } from '@/utils/decodeMetar';
-import AirportHeader from './components/AirportHeader';
-import DepartureSelector from './components/DepartureSelector';
-import QuickWeather from './components/QuickWeather';
-import FrequenciesSection from './sections/FrequenciesSection';
-import ProceduresSection, { Procedure } from './sections/ProceduresSection';
-import VatsimSection from './sections/VatsimSection';
+import CommsTab from './tabs/CommsTab';
+import InfoTab from './tabs/InfoTab';
+import RouteTab from './tabs/RouteTab';
+import StartTab from './tabs/StartTab';
+
+type TabId = 'info' | 'start' | 'route' | 'comms';
+
+interface Tab {
+  id: TabId;
+  icon: React.ReactNode;
+}
+
+const TABS: Tab[] = [
+  { id: 'info', icon: <Info className="h-4 w-4" /> },
+  { id: 'start', icon: <PlaneTakeoff className="h-4 w-4" /> },
+  { id: 'route', icon: <Compass className="h-4 w-4" /> },
+  { id: 'comms', icon: <MessageSquare className="h-4 w-4" /> },
+];
+
+const TAB_LABELS: Record<TabId, string> = {
+  info: 'Info',
+  start: 'Start',
+  route: 'Route',
+  comms: 'Comms',
+};
 
 interface SidebarProps {
-  airport: ParsedAirport | null;
-  onCloseAirport: () => void;
-  navDataCounts: {
-    vors: number;
-    ndbs: number;
-    dmes: number;
-    ils: number;
-    waypoints: number;
-    airspaces: number;
-    highAirways: number;
-    lowAirways: number;
-  };
   onSelectRunway?: (runway: Runway) => void;
-  onSelectProcedure?: (procedure: Procedure) => void;
-  selectedProcedure?: Procedure | null;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
-  selectedStartPosition?: { type: 'runway' | 'ramp'; name: string; index?: number } | null;
-  // VATSIM data
-  vatsimData?: VatsimData;
-  vatsimMetar?: string | null;
+  onSelectHelipadAsStart?: (helipad: NamedPosition) => void;
 }
 
 export default function Sidebar({
-  airport,
-  onCloseAirport,
-  navDataCounts,
   onSelectRunway,
-  onSelectProcedure,
-  selectedProcedure,
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
-  selectedStartPosition,
-  vatsimData,
-  vatsimMetar,
+  onSelectHelipadAsStart,
 }: SidebarProps) {
-  const { t } = useTranslation();
+  const airport = useAppStore((s) => s.selectedAirportData);
+  const icao = useAppStore((s) => s.selectedICAO);
+  const selectedStartPosition = useAppStore((s) => s.startPosition);
 
-  // Decode VATSIM METAR for display
-  const metar = useMemo(() => {
-    if (!vatsimMetar) return null;
-    return decodeMetar(vatsimMetar);
-  }, [vatsimMetar]);
-
-  // Get ATIS frequency for quick weather display
-  const frequencies = airport?.frequencies;
-  const atisFrequency = useMemo(() => {
-    if (!frequencies) return null;
-    return frequencies.find((f) => f.type === FrequencyType.AWOS) || null;
-  }, [frequencies]);
+  const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
+  const flightCategory = vatsimMetarData?.decoded?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('info');
 
   if (!airport) return null;
 
   return (
     <div
       className={cn(
-        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-in-out',
+        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-out',
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
-      <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
-        {/* Collapsed view overlay */}
+      <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/95 shadow-xl backdrop-blur-sm">
+        {/* Collapsed state */}
         <div
           className={cn(
-            'absolute inset-0 z-20 flex flex-col items-center bg-card py-3 transition-opacity duration-300',
+            'absolute inset-0 z-20 flex flex-col items-center bg-card/95 py-5 transition-opacity duration-200',
             isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
           )}
         >
           <Button
             variant="ghost"
             size="icon"
-            className="mb-2 h-8 w-8 shrink-0"
+            className="mb-4 h-8 w-8"
             onClick={() => setIsCollapsed(false)}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="flex flex-1 items-center justify-center">
-            <span
-              className="text-sm font-bold tracking-wider text-foreground"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-            >
-              {airport.id}
-            </span>
-          </div>
+          <span
+            className="font-mono text-sm font-bold tracking-wider text-foreground"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            {airport.id}
+          </span>
         </div>
 
-        {/* Collapse button (visible when expanded) */}
+        {/* Collapse button */}
         <Button
           variant="ghost"
           size="icon"
           className={cn(
-            'absolute right-1 top-1 z-10 h-7 w-7 transition-opacity duration-300',
-            isCollapsed ? 'pointer-events-none opacity-0' : 'opacity-60 hover:opacity-100'
+            'absolute right-3 top-3 z-10 h-7 w-7 text-muted-foreground/40 hover:text-foreground',
+            isCollapsed && 'pointer-events-none opacity-0'
           )}
           onClick={() => setIsCollapsed(true)}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {/* Header */}
-        <AirportHeader
-          airport={airport}
-          flightCategory={metar?.flightCategory}
-          selectedStartPosition={selectedStartPosition}
-        />
+        {/* Header - ICAO + Location + Flight Category */}
+        <div className="px-5 pb-4 pt-5">
+          <div className="flex items-center justify-between">
+            <h1 className="font-mono text-2xl font-bold tracking-tight text-foreground">
+              {airport.id}
+            </h1>
+            {flightCategory && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'border px-2.5 py-1 font-mono text-xs font-bold',
+                  flightCategory === 'VFR' &&
+                    'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
+                  flightCategory === 'MVFR' && 'border-sky-500/30 bg-sky-500/10 text-sky-400',
+                  flightCategory === 'IFR' && 'border-red-500/30 bg-red-500/10 text-red-400',
+                  flightCategory === 'LIFR' &&
+                    'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-400'
+                )}
+              >
+                {flightCategory}
+              </Badge>
+            )}
+          </div>
+          {/* Location from metadata */}
+          {(airport.metadata.city || airport.metadata.country) && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {[airport.metadata.city, airport.metadata.state || airport.metadata.country]
+                .filter(Boolean)
+                .join(', ')}
+            </p>
+          )}
+        </div>
 
-        {/* Scrollable content */}
+        {/* Selected position indicator */}
+        {selectedStartPosition && (
+          <div className="mx-5 mb-4 flex items-center justify-between rounded-lg bg-emerald-500/10 px-3 py-2">
+            <span className="text-xs text-emerald-400/70">Starting position</span>
+            <span className="font-mono text-sm font-medium text-emerald-400">
+              {selectedStartPosition.name}
+            </span>
+          </div>
+        )}
+
+        {/* Tab Navigation */}
+        <div className="flex border-b border-border/50">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'flex flex-1 flex-col items-center gap-1 border-b-2 py-3 transition-colors',
+                activeTab === tab.id
+                  ? 'border-foreground text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {tab.icon}
+              <span className="text-xs font-medium">{TAB_LABELS[tab.id]}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
         <ScrollArea className="flex-1">
-          <div className="space-y-4 p-3">
-            {/* Quick Weather Strip */}
-            <QuickWeather metar={metar} atisFrequency={atisFrequency} />
-
-            {/* Departure Position Selector - Primary action */}
-            <DepartureSelector
-              runways={airport.runways}
-              gates={airport.startupLocations || []}
-              onSelectGate={(gate) => onSelectGateAsStart?.(gate)}
-              onSelectRunwayEnd={(end) => onSelectRunwayEndAsStart?.(end)}
-              onSelectRunway={onSelectRunway}
-              selectedStartPosition={selectedStartPosition}
-              ilsCount={navDataCounts.ils}
-            />
-
-            {/* Accordion sections for secondary info */}
-            <Accordion type="multiple" className="w-full">
-              {/* VATSIM - always show ATC/ATIS/traffic info */}
-              <AccordionItem value="vatsim" className="border-border/50">
-                <AccordionTrigger className="py-2 text-xs hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Radar className="h-3.5 w-3.5 text-success" />
-                    <span>{t('sidebar.vatsim.title', 'VATSIM Live')}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-2 pt-0">
-                  <VatsimSection
-                    icao={airport.id}
-                    vatsimData={vatsimData}
-                    vatsimMetar={vatsimMetar ?? null}
-                    lastUpdate={vatsimData?.lastUpdate}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Frequencies */}
-              <AccordionItem value="frequencies" className="border-border/50">
-                <AccordionTrigger className="py-2 text-xs hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Radio className="h-3.5 w-3.5 text-success" />
-                    <span>{t('sidebar.frequencies')}</span>
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      ({airport.frequencies.length})
-                    </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-2 pt-0">
-                  <FrequenciesSection frequencies={airport.frequencies} airportIcao={airport.id} />
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* Procedures */}
-              <AccordionItem value="procedures" className="border-border/50">
-                <AccordionTrigger className="py-2 text-xs hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <Route className="h-3.5 w-3.5 text-violet" />
-                    <span>{t('sidebar.procedures')}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-2 pt-0">
-                  <ProceduresSection
-                    icao={airport.id}
-                    onSelectProcedure={onSelectProcedure || (() => {})}
-                    selectedProcedure={selectedProcedure || null}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+          <div className="p-5">
+            {activeTab === 'info' && <InfoTab />}
+            {activeTab === 'start' && (
+              <StartTab
+                onSelectGate={onSelectGateAsStart}
+                onSelectRunwayEnd={onSelectRunwayEndAsStart}
+                onSelectRunway={onSelectRunway}
+                onSelectHelipad={onSelectHelipadAsStart}
+              />
+            )}
+            {activeTab === 'route' && <RouteTab />}
+            {activeTab === 'comms' && <CommsTab />}
           </div>
         </ScrollArea>
       </div>
