@@ -1,6 +1,13 @@
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Info,
+  MessageSquare,
+  PlaneTakeoff,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/helpers';
@@ -8,70 +15,56 @@ import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
-import AirportHeader from './components/AirportHeader';
-import DepartureSelector from './components/DepartureSelector';
-import FrequenciesSection from './sections/FrequenciesSection';
-import ProceduresSection from './sections/ProceduresSection';
-import VatsimSection from './sections/VatsimSection';
+import CommsTab from './tabs/CommsTab';
+import InfoTab from './tabs/InfoTab';
+import RouteTab from './tabs/RouteTab';
+import StartTab from './tabs/StartTab';
+
+type TabId = 'info' | 'start' | 'route' | 'comms';
+
+interface Tab {
+  id: TabId;
+  icon: React.ReactNode;
+}
+
+const TABS: Tab[] = [
+  { id: 'info', icon: <Info className="h-4 w-4" /> },
+  { id: 'start', icon: <PlaneTakeoff className="h-4 w-4" /> },
+  { id: 'route', icon: <Compass className="h-4 w-4" /> },
+  { id: 'comms', icon: <MessageSquare className="h-4 w-4" /> },
+];
+
+const TAB_LABELS: Record<TabId, string> = {
+  info: 'Info',
+  start: 'Start',
+  route: 'Route',
+  comms: 'Comms',
+};
 
 interface SidebarProps {
   onSelectRunway?: (runway: Runway) => void;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
+  onSelectHelipadAsStart?: (helipad: NamedPosition) => void;
 }
 
 export default function Sidebar({
   onSelectRunway,
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
+  onSelectHelipadAsStart,
 }: SidebarProps) {
-  const { t } = useTranslation();
-
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
+  const selectedStartPosition = useAppStore((s) => s.startPosition);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
-  const metar = vatsimMetarData?.decoded ?? null;
-
-  // Format weather as single line
-  const weatherLine = useMemo(() => {
-    if (!metar) return null;
-    const parts: string[] = [];
-
-    if (metar.temperature !== null) {
-      parts.push(`${metar.temperature}°C`);
-    }
-
-    if (metar.wind) {
-      const dir = metar.wind.direction === 'VRB' ? 'VRB' : `${metar.wind.direction}°`;
-      const wind = metar.wind.gust
-        ? `${dir}/${metar.wind.speed}G${metar.wind.gust}kt`
-        : `${dir}/${metar.wind.speed}kt`;
-      parts.push(wind);
-    }
-
-    if (metar.visibility) {
-      const vis = metar.visibility;
-      if (vis.unit === 'SM') {
-        parts.push(`${vis.modifier === 'P' ? '>' : ''}${vis.value}SM`);
-      } else {
-        parts.push(
-          `${vis.modifier === 'P' ? '>' : ''}${vis.value >= 9999 ? '>10' : vis.value / 1000}km`
-        );
-      }
-    }
-
-    return parts.length > 0 ? parts.join(' · ') : null;
-  }, [metar]);
+  const flightCategory = vatsimMetarData?.decoded?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>('info');
 
   if (!airport) return null;
-
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
 
   return (
     <div
@@ -117,72 +110,85 @@ export default function Sidebar({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {/* Header */}
-        <AirportHeader flightCategory={metar?.flightCategory} weatherLine={weatherLine} />
+        {/* Header - ICAO + Location + Flight Category */}
+        <div className="px-5 pb-4 pt-5">
+          <div className="flex items-center justify-between">
+            <h1 className="font-mono text-2xl font-bold tracking-tight text-foreground">
+              {airport.id}
+            </h1>
+            {flightCategory && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'border px-2.5 py-1 font-mono text-xs font-bold',
+                  flightCategory === 'VFR' &&
+                    'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
+                  flightCategory === 'MVFR' && 'border-sky-500/30 bg-sky-500/10 text-sky-400',
+                  flightCategory === 'IFR' && 'border-red-500/30 bg-red-500/10 text-red-400',
+                  flightCategory === 'LIFR' &&
+                    'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-400'
+                )}
+              >
+                {flightCategory}
+              </Badge>
+            )}
+          </div>
+          {/* Location from metadata */}
+          {(airport.metadata.city || airport.metadata.country) && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {[airport.metadata.city, airport.metadata.state || airport.metadata.country]
+                .filter(Boolean)
+                .join(', ')}
+            </p>
+          )}
+        </div>
 
-        {/* Content */}
+        {/* Selected position indicator */}
+        {selectedStartPosition && (
+          <div className="mx-5 mb-4 flex items-center justify-between rounded-lg bg-emerald-500/10 px-3 py-2">
+            <span className="text-xs text-emerald-400/70">Starting position</span>
+            <span className="font-mono text-sm font-medium text-emerald-400">
+              {selectedStartPosition.name}
+            </span>
+          </div>
+        )}
+
+        {/* Tab Navigation */}
+        <div className="flex border-b border-border/50">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'flex flex-1 flex-col items-center gap-1 border-b-2 py-3 transition-colors',
+                activeTab === tab.id
+                  ? 'border-foreground text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {tab.icon}
+              <span className="text-xs font-medium">{TAB_LABELS[tab.id]}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
         <ScrollArea className="flex-1">
-          <div className="px-5 pb-5">
-            {/* Departure Selector */}
-            <DepartureSelector
-              onSelectGate={(gate) => onSelectGateAsStart?.(gate)}
-              onSelectRunwayEnd={(end) => onSelectRunwayEndAsStart?.(end)}
-              onSelectRunway={onSelectRunway}
-            />
-
-            {/* Expandable sections - minimal treatment */}
-            <div className="mt-8 space-y-1">
-              <ExpandableSection
-                title={t('sidebar.frequencies')}
-                isExpanded={expandedSection === 'frequencies'}
-                onToggle={() => toggleSection('frequencies')}
-              >
-                <FrequenciesSection />
-              </ExpandableSection>
-
-              <ExpandableSection
-                title={t('sidebar.procedures')}
-                isExpanded={expandedSection === 'procedures'}
-                onToggle={() => toggleSection('procedures')}
-              >
-                <ProceduresSection />
-              </ExpandableSection>
-
-              <ExpandableSection
-                title="VATSIM"
-                isExpanded={expandedSection === 'vatsim'}
-                onToggle={() => toggleSection('vatsim')}
-              >
-                <VatsimSection />
-              </ExpandableSection>
-            </div>
+          <div className="p-5">
+            {activeTab === 'info' && <InfoTab />}
+            {activeTab === 'start' && (
+              <StartTab
+                onSelectGate={onSelectGateAsStart}
+                onSelectRunwayEnd={onSelectRunwayEndAsStart}
+                onSelectRunway={onSelectRunway}
+                onSelectHelipad={onSelectHelipadAsStart}
+              />
+            )}
+            {activeTab === 'route' && <RouteTab />}
+            {activeTab === 'comms' && <CommsTab />}
           </div>
         </ScrollArea>
       </div>
-    </div>
-  );
-}
-
-interface ExpandableSectionProps {
-  title: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}
-
-function ExpandableSection({ title, isExpanded, onToggle, children }: ExpandableSectionProps) {
-  return (
-    <div>
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between py-2.5 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <span>{title}</span>
-        <ChevronDown
-          className={cn('h-4 w-4 transition-transform duration-200', isExpanded && 'rotate-180')}
-        />
-      </button>
-      {isExpanded && <div className="pb-4 pt-2">{children}</div>}
     </div>
   );
 }

@@ -153,12 +153,17 @@ export default function Map({ airports }: MapProps) {
     selectedICAORef.current = selectedICAO;
   }, [selectedICAO]);
 
-  // Airport interactions (gates, runway ends)
-  const { selectGateAsStart, selectRunwayEndAsStart, navigateToGate, navigateToRunway } =
-    useAirportInteractions({
-      mapRef,
-      selectedAirportData,
-    });
+  // Airport interactions (gates, runway ends, helipads)
+  const {
+    selectGateAsStart,
+    selectRunwayEndAsStart,
+    selectHelipadAsStart,
+    navigateToGate,
+    navigateToRunway,
+  } = useAirportInteractions({
+    mapRef,
+    selectedAirportData,
+  });
 
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
   const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
@@ -528,6 +533,7 @@ export default function Map({ airports }: MapProps) {
             onSelectRunway={navigateToRunway}
             onSelectGateAsStart={selectGateAsStart}
             onSelectRunwayEndAsStart={selectRunwayEndAsStart}
+            onSelectHelipadAsStart={selectHelipadAsStart}
           />
         </SectionErrorBoundary>
       )}

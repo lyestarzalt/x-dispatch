@@ -25,6 +25,13 @@ interface UseAirportInteractionsReturn {
     index?: number;
     xplaneIndex?: number | string;
   }) => void;
+  selectHelipadAsStart: (helipad: {
+    name: string;
+    latitude: number;
+    longitude: number;
+    index?: number;
+    xplaneIndex?: number | string;
+  }) => void;
   navigateToGate: (gate: {
     latitude: number;
     longitude: number;
@@ -369,6 +376,52 @@ export function useAirportInteractions({
     [mapRef, selectedAirportData, setStartPosition]
   );
 
+  const selectHelipadAsStart = useCallback(
+    (helipad: {
+      name: string;
+      latitude: number;
+      longitude: number;
+      index?: number;
+      xplaneIndex?: number | string;
+    }) => {
+      const map = mapRef.current;
+      if (!selectedAirportData || !map) return;
+
+      // Clear previous selections
+      if (selectedGateId.current !== null) {
+        map.setFeatureState(
+          { source: 'airport-gates', id: selectedGateId.current },
+          { selected: false }
+        );
+        selectedGateId.current = null;
+      }
+      if (selectedRunwayEndId.current !== null) {
+        map.setFeatureState(
+          { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
+          { selected: false }
+        );
+        selectedRunwayEndId.current = null;
+      }
+
+      setStartPosition({
+        type: 'helipad',
+        name: helipad.name,
+        airport: selectedAirportData.id,
+        latitude: helipad.latitude,
+        longitude: helipad.longitude,
+        index: helipad.index ?? 0,
+        xplaneIndex: helipad.xplaneIndex,
+      });
+
+      map.flyTo({
+        center: [helipad.longitude, helipad.latitude],
+        zoom: 18,
+        duration: 1500,
+      });
+    },
+    [mapRef, selectedAirportData, setStartPosition]
+  );
+
   const navigateToRunway = useCallback(
     (runway: Runway) => {
       const map = mapRef.current;
@@ -400,6 +453,7 @@ export function useAirportInteractions({
   return {
     selectGateAsStart,
     selectRunwayEndAsStart,
+    selectHelipadAsStart,
     navigateToGate,
     navigateToRunway,
   };

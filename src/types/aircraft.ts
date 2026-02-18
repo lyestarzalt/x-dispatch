@@ -73,7 +73,7 @@ export interface TimeConfig extends Coordinates {
 // ============================================================================
 
 export interface LaunchStartPosition {
-  type: 'runway' | 'ramp';
+  type: 'runway' | 'ramp' | 'helipad';
   airport: string;
   position: string;
   index: number;
