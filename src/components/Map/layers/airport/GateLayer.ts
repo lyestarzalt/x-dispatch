@@ -238,7 +238,7 @@ export class GateLayer extends BaseLayerRenderer {
     const helipadFeatures = (helipads || []).map((helipad, index) => {
       const typeConfig = GATE_TYPES.helipad;
       const featureId = locationFeatures.length + index;
-
+      //TODO MOVE HELIPADS TO SEPARATE LAYER? FOR NOW JUST REUSE GATE LAYER WITH DIFFERENT ICON AND TYPE
       return {
         type: 'Feature' as const,
         id: featureId,
@@ -251,6 +251,7 @@ export class GateLayer extends BaseLayerRenderer {
           name: helipad.name,
           locationType: 'helipad',
           gateType: 'helipad' as GateType,
+          helipadIndex: index,
           heading: helipad.heading,
           airplaneTypes: 'F',
           iconScale: 1.0,

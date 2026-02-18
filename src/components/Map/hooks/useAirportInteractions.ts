@@ -123,28 +123,46 @@ export function useAirportInteractions({
 
       const currentAirport = selectedAirportDataRef.current;
       if (props && currentAirport) {
-        // Calculate X-Plane index: alphabetically sorted by name, then by latitude
-        const locations = currentAirport.startupLocations;
-        const sortedLocations = [...locations]
-          .map((loc, i) => ({ loc, originalIndex: i }))
-          .sort((a, b) => {
-            const nameCompare = a.loc.name.localeCompare(b.loc.name);
-            if (nameCompare !== 0) return nameCompare;
-            return a.loc.latitude - b.loc.latitude;
+        const isHelipad = props.locationType === 'helipad';
+
+        if (isHelipad) {
+          // Helipads use type 'runway' (X-Plane treats them identically)
+          // xplaneIndex = "row_0" where row = runways.length + helipadIndex
+          const helipadIndex = props.helipadIndex as number;
+          const row = currentAirport.runways.length + helipadIndex;
+
+          setStartPosition({
+            type: 'runway',
+            name: props.name || `Helipad ${featureId}`,
+            airport: currentAirport.id,
+            latitude: props.latitude,
+            longitude: props.longitude,
+            index: helipadIndex,
+            xplaneIndex: `${row}_0`,
           });
+        } else {
+          // Gates/ramps: xplaneIndex = position in alphabetically sorted list
+          const locations = currentAirport.startupLocations;
+          const sortedLocations = [...locations]
+            .map((loc, i) => ({ loc, originalIndex: i }))
+            .sort((a, b) => {
+              const nameCompare = a.loc.name.localeCompare(b.loc.name);
+              if (nameCompare !== 0) return nameCompare;
+              return a.loc.latitude - b.loc.latitude;
+            });
 
-        // Find the xplaneIndex (position in sorted list) for this gate
-        const xplaneIndex = sortedLocations.findIndex((item) => item.originalIndex === featureId);
+          const xplaneIndex = sortedLocations.findIndex((item) => item.originalIndex === featureId);
 
-        setStartPosition({
-          type: 'ramp',
-          name: props.name || `Gate ${featureId}`,
-          airport: currentAirport.id,
-          latitude: props.latitude,
-          longitude: props.longitude,
-          index: featureId,
-          xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
-        });
+          setStartPosition({
+            type: 'ramp',
+            name: props.name || `Gate ${featureId}`,
+            airport: currentAirport.id,
+            latitude: props.latitude,
+            longitude: props.longitude,
+            index: featureId,
+            xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
+          });
+        }
       }
     };
 
