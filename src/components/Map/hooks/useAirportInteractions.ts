@@ -412,6 +412,7 @@ export function useAirportInteractions({
         longitude: helipad.longitude,
         index: helipad.index ?? 0,
         xplaneIndex: helipad.xplaneIndex,
+        isHelipad: true,
       });
 
       map.flyTo({

@@ -99,12 +99,7 @@ export default function StartTab({
           helipads={helipads}
           runwayCount={runways.length}
           onSelect={onSelectHelipad}
-          selectedIndex={
-            // Helipads use type 'runway' but names start with 'H'
-            selectedStartPosition?.type === 'runway' && selectedStartPosition.name.startsWith('H')
-              ? selectedStartPosition.index
-              : undefined
-          }
+          selectedIndex={selectedStartPosition?.isHelipad ? selectedStartPosition.index : undefined}
         />
       )}
     </div>

@@ -10,6 +10,8 @@ export interface StartPosition extends Coordinates {
   airport: string;
   /** Index in airport's startupLocations/runways/helipads array - used for map selection state */
   index: number;
-  /** X-Plane index - for ramps: position in alphabetically sorted list; for runways: "row_end" format */
+  /** X-Plane index - for ramps: position in alphabetically sorted list; for runways/helipads: "row_end" format */
   xplaneIndex?: number | string;
+  /** True if this is a helipad (uses type 'runway' but needs separate UI tracking) */
+  isHelipad?: boolean;
 }
