@@ -97,9 +97,13 @@ export default function StartTab({
       {viewType === 'helipads' && (
         <HelipadList
           helipads={helipads}
+          runwayCount={runways.length}
           onSelect={onSelectHelipad}
           selectedIndex={
-            selectedStartPosition?.type === 'helipad' ? selectedStartPosition.index : undefined
+            // Helipads use type 'runway' but names start with 'H'
+            selectedStartPosition?.type === 'runway' && selectedStartPosition.name.startsWith('H')
+              ? selectedStartPosition.index
+              : undefined
           }
         />
       )}
@@ -258,11 +262,12 @@ function RunwayList({ runways, onSelectEnd, onSelectRunway, selectedIndex }: Run
 
 interface HelipadListProps {
   helipads: Helipad[];
+  runwayCount: number;
   onSelect?: (helipad: NamedPosition) => void;
   selectedIndex?: number;
 }
 
-function HelipadList({ helipads, onSelect, selectedIndex }: HelipadListProps) {
+function HelipadList({ helipads, runwayCount, onSelect, selectedIndex }: HelipadListProps) {
   if (helipads.length === 0) {
     return <p className="py-12 text-center text-sm text-muted-foreground/60">No helipads found</p>;
   }
@@ -272,6 +277,8 @@ function HelipadList({ helipads, onSelect, selectedIndex }: HelipadListProps) {
       {helipads.map((helipad, idx) => {
         const isSelected = selectedIndex === idx;
         const sizeFt = `${Math.round(metersToFeet(helipad.length))}' × ${Math.round(metersToFeet(helipad.width))}'`;
+        // X-Plane index: helipads share row counter with runways, format is "row_0"
+        const xplaneIndex = `${runwayCount + idx}_0`;
 
         return (
           <button
@@ -282,7 +289,7 @@ function HelipadList({ helipads, onSelect, selectedIndex }: HelipadListProps) {
                 longitude: helipad.longitude,
                 name: helipad.name,
                 index: idx,
-                xplaneIndex: idx,
+                xplaneIndex,
               })
             }
             className={cn(

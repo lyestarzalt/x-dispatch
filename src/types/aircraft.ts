@@ -73,11 +73,12 @@ export interface TimeConfig extends Coordinates {
 // ============================================================================
 
 export interface LaunchStartPosition {
-  type: 'runway' | 'ramp' | 'helipad';
+  /** Note: Helipads use type 'runway' since X-Plane treats them identically */
+  type: 'runway' | 'ramp';
   airport: string;
   position: string;
   index: number;
-  /** X-Plane index - for ramps: number (sorted position); for runways: "row_end" string format */
+  /** X-Plane index - for ramps: number (sorted position); for runways/helipads: "row_end" string format */
   xplaneIndex?: number | string;
 }
 

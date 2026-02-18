@@ -64,7 +64,7 @@ export function generateFreeflightPrf(config: LaunchConfig): string {
 }
 
 function generateStartPositionJson(startPosition: {
-  type: 'runway' | 'ramp' | 'helipad';
+  type: 'runway' | 'ramp';
   airport: string;
   position: string;
 }): string {
@@ -76,8 +76,7 @@ function generateStartPositionJson(startPosition: {
       },
     });
   } else {
-    // Both runways AND helipads use runway_start
-    // For helipads, position is the base name (e.g., "H3") without N/S suffix
+    // Runways and helipads both use runway_start
     return JSON.stringify({
       runway_start: {
         airport_id: startPosition.airport,

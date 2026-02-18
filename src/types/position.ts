@@ -1,10 +1,11 @@
 import type { Coordinates } from './geo';
 
 /**
- * A start position for flight (runway threshold, ramp/gate, or helipad)
+ * A start position for flight (runway threshold, helipad, or ramp/gate)
+ * Note: Helipads use type 'runway' since X-Plane treats them identically
  */
 export interface StartPosition extends Coordinates {
-  type: 'runway' | 'ramp' | 'helipad';
+  type: 'runway' | 'ramp';
   name: string;
   airport: string;
   /** Index in airport's startupLocations/runways/helipads array - used for map selection state */

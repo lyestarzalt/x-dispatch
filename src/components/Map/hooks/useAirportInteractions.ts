@@ -403,8 +403,9 @@ export function useAirportInteractions({
         selectedRunwayEndId.current = null;
       }
 
+      // Helipads use type 'runway' since X-Plane treats them identically
       setStartPosition({
-        type: 'helipad',
+        type: 'runway',
         name: helipad.name,
         airport: selectedAirportData.id,
         latitude: helipad.latitude,
