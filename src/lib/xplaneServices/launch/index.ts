@@ -1,16 +1,48 @@
+import { exec, spawn } from 'child_process';
+import * as fs from 'fs';
 import logger from '@/lib/utils/logger';
 import type { Aircraft, LaunchConfig, WeatherPreset } from '@/types/aircraft';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { scanAircraftDirectory } from './acfParser';
-import { executeXPlaneLaunch } from './executor';
 import {
   calculateFuelWeights,
   generateFreeflightPrf,
   getCurrentDayOfYear,
   getCurrentTimeInHours,
+  getXPlaneExecutable,
   writeFreeflightPrf,
 } from './freeflightGenerator';
 import { WEATHER_PRESETS } from './types';
+
+// Steam App IDs
+const STEAM_APP_IDS = {
+  'X-Plane 12': '2014780',
+  'X-Plane 11': '269950',
+} as const;
+
+/**
+ * Check if the X-Plane installation is from Steam
+ */
+function isSteamInstallation(xplanePath: string): boolean {
+  // Check if path contains Steam directories
+  if (xplanePath.toLowerCase().includes('steamapps')) {
+    return true;
+  }
+  // Check for steam_appid.txt file
+  const steamAppIdFile = `${xplanePath}/steam_appid.txt`;
+  return fs.existsSync(steamAppIdFile);
+}
+
+/**
+ * Get Steam App ID based on X-Plane version in path
+ */
+function getSteamAppId(xplanePath: string): string {
+  if (xplanePath.includes('X-Plane 11')) {
+    return STEAM_APP_IDS['X-Plane 11'];
+  }
+  // Default to X-Plane 12
+  return STEAM_APP_IDS['X-Plane 12'];
+}
 
 export { WEATHER_PRESETS };
 
@@ -65,13 +97,55 @@ class XPlaneLauncher {
         return { success: false, error: 'Failed to write Freeflight.prf' };
       }
 
-      // Build launch arguments
       const xplaneArgs = ['--pref:_show_qfl_on_start=0', '--no_save_prefs'];
       const startRunning = config.startEngineRunning ?? true;
       xplaneArgs.push(`--start_running=${startRunning}`);
 
-      // Execute launch (handles Steam vs direct, all platforms)
-      return await executeXPlaneLaunch(this.xplanePath, xplaneArgs);
+      // macOS + Steam installation: launch via Steam URL protocol
+      if (process.platform === 'darwin' && isSteamInstallation(this.xplanePath)) {
+        const appId = getSteamAppId(this.xplanePath);
+        logger.launcher.info(`Launching X-Plane via Steam (macOS, appId: ${appId})`);
+
+        // Format: steam://rungameid/<appid>//<args>/
+        // Args separated by %20, entire args section URL-encoded
+        const argsEncoded = xplaneArgs.map((arg) => encodeURIComponent(arg)).join('%20');
+        const steamUrl = `steam://rungameid/${appId}//${argsEncoded}/`;
+
+        exec(`open "${steamUrl}"`, (error) => {
+          if (error) {
+            logger.launcher.error('Failed to launch via Steam URL', error);
+          }
+        });
+
+        return { success: true };
+      }
+
+      // Direct launch for non-Steam or Windows/Linux
+      const executable = getXPlaneExecutable(this.xplanePath);
+      if (!executable) {
+        return { success: false, error: 'X-Plane executable not found' };
+      }
+
+      logger.launcher.info(`Launching X-Plane directly: ${executable}`);
+
+      // Use shell on Windows to handle paths with spaces and avoid EACCES errors
+      const spawnOptions: Parameters<typeof spawn>[2] = {
+        detached: true,
+        stdio: 'ignore',
+        ...(process.platform === 'win32' && { shell: true }),
+      };
+
+      const xplaneProcess = spawn(executable, xplaneArgs, spawnOptions);
+
+      // Handle spawn errors (e.g., EACCES, ENOENT)
+      xplaneProcess.on('error', (err) => {
+        logger.launcher.error('Failed to spawn X-Plane process', err);
+      });
+
+      // Unref the process so it can run independently
+      xplaneProcess.unref();
+
+      return { success: true };
     } catch (err) {
       logger.launcher.error('Launch failed', err);
       return { success: false, error: (err as Error).message };
