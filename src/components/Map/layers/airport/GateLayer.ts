@@ -231,6 +231,10 @@ export class GateLayer extends BaseLayerRenderer {
           iconName: typeConfig.icon,
           latitude: location.latitude,
           longitude: location.longitude,
+          // 1301 metadata
+          icaoWidthCode: location.icaoWidthCode,
+          operationType: location.operationType,
+          airlines: location.airlines?.join(','),
         },
       };
     });

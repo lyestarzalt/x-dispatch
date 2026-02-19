@@ -20,6 +20,7 @@ const STEAM_APP_IDS = {
   'X-Plane 11': '269950',
 } as const;
 
+// TODO: Check for a better way to detect if Steam version
 /**
  * Check if the X-Plane installation is from Steam
  */
@@ -90,8 +91,8 @@ class XPlaneLauncher {
         return { success: false, error: 'X-Plane is already running' };
       }
 
-      // Generate Freeflight.prf content
-      const prfContent = generateFreeflightPrf(config);
+      // Generate Freeflight.prf content (preserves existing user preferences)
+      const prfContent = generateFreeflightPrf(config, this.xplanePath);
       const writeSuccess = writeFreeflightPrf(this.xplanePath, prfContent);
       if (!writeSuccess) {
         return { success: false, error: 'Failed to write Freeflight.prf' };
