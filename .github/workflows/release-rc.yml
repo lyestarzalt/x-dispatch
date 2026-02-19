@@ -1,0 +1,61 @@
+name: Release RC
+
+on:
+  workflow_dispatch:
+    inputs:
+      rc_number:
+        description: RC number (e.g., 1 for rc.1)
+        required: true
+        default: '1'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build RC ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set RC version
+        id: version
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          RC_VERSION="${CURRENT}-rc.${{ inputs.rc_number }}"
+          npm version $RC_VERSION --no-git-tag-version
+          echo "version=$RC_VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - run: npm ci
+
+      - name: Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
+
+      - name: macOS deps
+        if: matrix.os == 'macos-latest'
+        run: brew install python-setuptools
+
+      - name: Build
+        run: npm run make
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-${{ steps.version.outputs.version }}-${{ matrix.os }}
+          path: |
+            out/make/**/*.exe
+            out/make/**/*.dmg
+            out/make/**/*.deb
+            out/make/**/*.rpm
+          retention-days: 7
