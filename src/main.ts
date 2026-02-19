@@ -20,9 +20,6 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
-
 app.name = 'X-Dispatch';
 
 let dataManager: ReturnType<typeof getXPlaneDataManager>;

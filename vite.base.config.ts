@@ -7,7 +7,14 @@ export const builtins = ['electron', ...builtinModules.map((m) => [m, `node:${m}
 // Modules that should not be bundled:
 // - sql.js: WASM-based SQLite, needs to load .wasm files at runtime
 // - ws, bufferutil, utf-8-validate: WebSocket with native C++ bindings
-export const external = [...builtins, 'sql.js', 'ws', 'bufferutil', 'utf-8-validate'];
+export const external = [
+  ...builtins,
+  'sql.js',
+  'ws',
+  'bufferutil',
+  'utf-8-validate',
+  'electron-squirrel-startup',
+];
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   const { root, mode, command } = env;
