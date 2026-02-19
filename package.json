@@ -1,7 +1,7 @@
 {
   "name": "x-dispatch",
   "productName": "X-Dispatch",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Flight dispatch and airport visualization for X-Plane",
   "author": {
     "name": "Lyes Tarzalt"
