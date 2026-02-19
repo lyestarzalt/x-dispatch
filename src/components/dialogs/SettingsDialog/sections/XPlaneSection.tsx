@@ -17,8 +17,11 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
   const handleBrowse = async () => {
     setLoading(true);
     setError(null);
+    window.appAPI.log.info('XPlaneSection: handleBrowse called');
     try {
+      window.appAPI.log.info('XPlaneSection: calling browseForPath');
       const result = await window.xplaneAPI.browseForPath();
+      window.appAPI.log.info(`XPlaneSection: browseForPath returned: ${JSON.stringify(result)}`);
       if (result?.valid && result.path !== xplanePath) {
         const changeResult = await window.xplaneAPI.changePath(result.path);
         if (!changeResult.success) {
@@ -32,8 +35,10 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
       } else {
         setLoading(false);
       }
-    } catch {
-      setError('Failed to open folder picker');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      window.appAPI.log.error(`XPlaneSection: Browse failed - ${errorMsg}`, err);
+      setError(errorMsg || 'Failed to open folder picker');
       setLoading(false);
     }
   };
