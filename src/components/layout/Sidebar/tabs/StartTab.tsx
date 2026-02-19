@@ -153,6 +153,7 @@ function GateList({ gates, onSelect, selectedIndex }: GateListProps) {
                 latitude: gate.latitude,
                 longitude: gate.longitude,
                 name: gate.name,
+                heading: gate.heading,
                 index: idx,
                 xplaneIndex: xplaneIndices[idx],
               })
@@ -283,6 +284,7 @@ function HelipadList({ helipads, runwayCount, onSelect, selectedIndex }: Helipad
                 latitude: helipad.latitude,
                 longitude: helipad.longitude,
                 name: helipad.name,
+                heading: helipad.heading,
                 index: idx,
                 xplaneIndex,
               })

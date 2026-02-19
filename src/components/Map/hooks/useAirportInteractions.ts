@@ -137,6 +137,7 @@ export function useAirportInteractions({
             airport: currentAirport.id,
             latitude: props.latitude,
             longitude: props.longitude,
+            heading: props.heading ?? 0,
             index: helipadIndex,
             xplaneIndex: `${row}_0`,
           });
@@ -159,6 +160,7 @@ export function useAirportInteractions({
             airport: currentAirport.id,
             latitude: props.latitude,
             longitude: props.longitude,
+            heading: props.heading ?? 0,
             index: featureId,
             xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
           });
@@ -237,6 +239,7 @@ export function useAirportInteractions({
           airport: currentAirport.id,
           latitude: props.latitude,
           longitude: props.longitude,
+          heading: props.heading ?? 0,
           index: featureId,
           xplaneIndex,
         });
@@ -288,6 +291,7 @@ export function useAirportInteractions({
       latitude: number;
       longitude: number;
       name: string;
+      heading?: number;
       index?: number;
       xplaneIndex?: number | string;
     }) => {
@@ -326,11 +330,12 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: gate.latitude,
         longitude: gate.longitude,
+        heading: gate.heading ?? 0,
         index: gateIndex ?? 0,
         xplaneIndex: gate.xplaneIndex,
       });
 
-      navigateToGate({ ...gate, heading: 0 });
+      navigateToGate({ ...gate, heading: gate.heading ?? 0 });
     },
     [mapRef, selectedAirportData, setStartPosition, navigateToGate]
   );
@@ -340,6 +345,7 @@ export function useAirportInteractions({
       name: string;
       latitude: number;
       longitude: number;
+      heading?: number;
       index?: number;
       xplaneIndex?: number | string;
     }) => {
@@ -381,6 +387,7 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: runwayEnd.latitude,
         longitude: runwayEnd.longitude,
+        heading: runwayEnd.heading ?? 0,
         index: endIndex ?? 0,
         xplaneIndex,
       });
@@ -399,6 +406,7 @@ export function useAirportInteractions({
       name: string;
       latitude: number;
       longitude: number;
+      heading?: number;
       index?: number;
       xplaneIndex?: number | string;
     }) => {
@@ -428,6 +436,7 @@ export function useAirportInteractions({
         airport: selectedAirportData.id,
         latitude: helipad.latitude,
         longitude: helipad.longitude,
+        heading: helipad.heading ?? 0,
         index: helipad.index ?? 0,
         xplaneIndex: helipad.xplaneIndex,
         isHelipad: true,

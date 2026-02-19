@@ -560,6 +560,20 @@ export class AirportParser {
           break;
         }
 
+        case RowCode.START_LOCATION_METADATA: {
+          // 1301 metadata applies to the previous 1300 startup location
+          const lastLocation = airport.startupLocations[airport.startupLocations.length - 1];
+          if (lastLocation && tokens.length >= 3) {
+            lastLocation.icaoWidthCode = token(tokens, 1);
+            lastLocation.operationType = token(tokens, 2);
+            // Airlines are optional, tokens[3+] are 3-letter airline codes
+            if (tokens.length > 3) {
+              lastLocation.airlines = tokens.slice(3);
+            }
+          }
+          break;
+        }
+
         case RowCode.WINDSOCK: {
           const windsock = this.parseWindsock(tokens, lineNum);
           if (windsock) airport.windsocks.push(windsock);
