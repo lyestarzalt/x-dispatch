@@ -82,7 +82,13 @@ const config: ForgeConfig = {
   ],
   hooks: {
     async packageAfterCopy(_forgeConfig, buildPath) {
-      const requiredPackages = ['sql.js', 'electron-squirrel-startup'];
+      const requiredPackages = [
+        'sql.js',
+        'electron-squirrel-startup',
+        'ws',
+        'bufferutil',
+        'utf-8-validate',
+      ];
 
       const sourceNodeModulesPath = path.resolve(__dirname, 'node_modules');
       const destNodeModulesPath = path.resolve(buildPath, 'node_modules');
