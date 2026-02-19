@@ -8,6 +8,8 @@ export interface StartPosition extends Coordinates {
   type: 'runway' | 'ramp';
   name: string;
   airport: string;
+  /** Heading in degrees (0-360) */
+  heading: number;
   /** Index in airport's startupLocations/runways/helipads array - used for map selection state */
   index: number;
   /** X-Plane index - for ramps: position in alphabetically sorted list; for runways/helipads: "row_end" format */
