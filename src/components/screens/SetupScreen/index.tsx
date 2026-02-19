@@ -20,16 +20,20 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
   const handleBrowse = async () => {
     setLoading(true);
     setError(null);
+    window.appAPI.log.info('SetupScreen: handleBrowse called');
     try {
+      window.appAPI.log.info('SetupScreen: calling browseForPath');
       const result = await window.xplaneAPI.browseForPath();
+      window.appAPI.log.info(`SetupScreen: browseForPath returned: ${JSON.stringify(result)}`);
       if (result?.valid) {
         setSelectedPath(result.path);
       } else if (result) {
         setError(result.errors.join(', '));
       }
     } catch (err) {
-      window.appAPI.log.error('Browse failed', err);
-      setError(t('setup.failedToBrowse'));
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      window.appAPI.log.error(`SetupScreen: Browse failed - ${errorMsg}`, err);
+      setError(errorMsg || t('setup.failedToBrowse'));
     } finally {
       setLoading(false);
     }

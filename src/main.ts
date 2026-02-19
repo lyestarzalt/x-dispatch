@@ -297,22 +297,42 @@ function registerIpcHandlers() {
   ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
   ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
   ipcMain.handle('xplane:browseForPath', async () => {
-    if (!mainWindow) {
-      logger.error('browseForPath: mainWindow is null');
-      return null;
-    }
+    logger.main.info('browseForPath: called');
+
+    const dialogOptions: Electron.OpenDialogOptions = {
+      properties: ['openDirectory'],
+      title: 'Select X-Plane Installation Folder',
+    };
+
     try {
-      const result = await dialog.showOpenDialog(mainWindow, {
-        properties: ['openDirectory'],
-        title: 'Select X-Plane Installation Folder',
-      });
+      let result: Electron.OpenDialogReturnValue;
+
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        // Ensure window is focused before showing dialog (fixes macOS issues)
+        if (!mainWindow.isFocused()) {
+          logger.main.info('browseForPath: focusing window first');
+          mainWindow.focus();
+        }
+        logger.main.info('browseForPath: opening dialog with parent window');
+        result = await dialog.showOpenDialog(mainWindow, dialogOptions);
+      } else {
+        // Fallback: show dialog without parent window
+        logger.main.info('browseForPath: opening dialog without parent window');
+        result = await dialog.showOpenDialog(dialogOptions);
+      }
+
+      logger.main.info(
+        `browseForPath: dialog result - canceled: ${result.canceled}, paths: ${result.filePaths.length}`
+      );
       if (result.canceled || result.filePaths.length === 0) return null;
       const selectedPath = result.filePaths[0];
+      logger.main.info(`browseForPath: selected path: ${selectedPath}`);
       const validation = dataManager.validatePath(selectedPath);
       return { path: selectedPath, valid: validation.valid, errors: validation.errors };
     } catch (err) {
-      logger.error('browseForPath: dialog failed', err);
-      throw err;
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      logger.main.error(`browseForPath: dialog failed - ${errorMsg}`, err);
+      throw new Error(`Failed to open folder picker: ${errorMsg}`);
     }
   });
 

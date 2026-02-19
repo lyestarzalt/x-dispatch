@@ -105,14 +105,19 @@ class XPlaneLauncher {
       // macOS + Steam installation: launch via Steam URL protocol
       if (process.platform === 'darwin' && isSteamInstallation(this.xplanePath)) {
         const appId = getSteamAppId(this.xplanePath);
-        logger.launcher.info(`Launching X-Plane via Steam (macOS, appId: ${appId})`);
 
         // Format: steam://rungameid/<appid>//<args>/
         // Args separated by %20, entire args section URL-encoded
         const argsEncoded = xplaneArgs.map((arg) => encodeURIComponent(arg)).join('%20');
         const steamUrl = `steam://rungameid/${appId}//${argsEncoded}/`;
+        const execCmd = `open "${steamUrl}"`;
 
-        exec(`open "${steamUrl}"`, (error) => {
+        logger.launcher.info(`Launch method: Steam URL (macOS)`);
+        logger.launcher.info(`Steam App ID: ${appId}`);
+        logger.launcher.info(`Steam URL: ${steamUrl}`);
+        logger.launcher.info(`Exec command: ${execCmd}`);
+
+        exec(execCmd, (error) => {
           if (error) {
             logger.launcher.error('Failed to launch via Steam URL', error);
           }
@@ -124,28 +129,32 @@ class XPlaneLauncher {
       // Direct launch for non-Steam or Windows/Linux
       const executable = getXPlaneExecutable(this.xplanePath);
       if (!executable) {
+        logger.launcher.error(`X-Plane executable not found in: ${this.xplanePath}`);
         return { success: false, error: 'X-Plane executable not found' };
       }
 
-      logger.launcher.info(`Launching X-Plane directly: ${executable}`);
-
-      // Use shell on Windows to handle paths with spaces and avoid EACCES errors
       const spawnOptions: Parameters<typeof spawn>[2] = {
         detached: true,
         stdio: 'ignore',
-        ...(process.platform === 'win32' && { shell: true }),
       };
+
+      logger.launcher.info(`Launch method: Direct spawn`);
+      logger.launcher.info(`Platform: ${process.platform}`);
+      logger.launcher.info(`Executable: ${executable}`);
+      logger.launcher.info(`Arguments: ${xplaneArgs.join(' ')}`);
+      logger.launcher.info(`Spawn options: ${JSON.stringify(spawnOptions)}`);
 
       const xplaneProcess = spawn(executable, xplaneArgs, spawnOptions);
 
       // Handle spawn errors (e.g., EACCES, ENOENT)
       xplaneProcess.on('error', (err) => {
-        logger.launcher.error('Failed to spawn X-Plane process', err);
+        logger.launcher.error(`Spawn error: ${err.message}`, err);
       });
 
       // Unref the process so it can run independently
       xplaneProcess.unref();
 
+      logger.launcher.info(`Spawn completed, process unref'd`);
       return { success: true };
     } catch (err) {
       logger.launcher.error('Launch failed', err);
