@@ -5,6 +5,9 @@ import type { LaunchConfig } from '@/types/aircraft';
 import { generateAircraftKey } from './acfParser';
 import { DEFAULT_WEATHER_DEFINITION } from './types';
 
+// TODO: Refactor - move FreeflightPrf types to types.ts or dedicated file
+// TODO: Consider extracting parser/serializer into separate module
+
 // ============================================================================
 // Types
 // ============================================================================
