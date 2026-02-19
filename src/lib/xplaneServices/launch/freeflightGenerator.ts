@@ -327,32 +327,6 @@ export function calculateFuelWeights(
 }
 
 /**
- * Get X-Plane executable path for current platform
- */
-export function getXPlaneExecutable(xplanePath: string): string | null {
-  const platform = process.platform;
-
-  if (platform === 'darwin') {
-    const macPath = path.join(xplanePath, 'X-Plane.app', 'Contents', 'MacOS', 'X-Plane');
-    if (fs.existsSync(macPath)) {
-      return macPath;
-    }
-  } else if (platform === 'win32') {
-    const winPath = path.join(xplanePath, 'X-Plane.exe');
-    if (fs.existsSync(winPath)) {
-      return winPath;
-    }
-  } else {
-    const linuxPath = path.join(xplanePath, 'X-Plane-x86_64');
-    if (fs.existsSync(linuxPath)) {
-      return linuxPath;
-    }
-  }
-
-  return null;
-}
-
-/**
  * Get current day of year (1-365)
  */
 export function getCurrentDayOfYear(): number {
