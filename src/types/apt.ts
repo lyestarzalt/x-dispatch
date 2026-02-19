@@ -35,6 +35,7 @@ export enum RowCode {
   END_SEGMENT = 115,
   END_CURVE = 116,
   START_LOCATION_NEW = 1300,
+  START_LOCATION_METADATA = 1301,
   METADATA = 1302,
 }
 
@@ -235,6 +236,13 @@ export interface StartupLocation extends Coordinates {
   location_type: string;
   airplane_types: string;
   name: string;
+  // 1301 metadata (optional - not all airports have this)
+  /** ICAO aircraft width code: A, B, C, D, E, F */
+  icaoWidthCode?: string;
+  /** Operation type: none, general_aviation, airline, cargo, military */
+  operationType?: string;
+  /** Airlines permitted to use this ramp (3-letter codes like AAL, SWA) */
+  airlines?: string[];
 }
 
 export interface Windsock extends Coordinates {
