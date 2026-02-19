@@ -20,6 +20,7 @@ const STEAM_APP_IDS = {
   'X-Plane 11': '269950',
 } as const;
 
+// TODO: Check for a better way to detect if Steam version
 /**
  * Check if the X-Plane installation is from Steam
  */
