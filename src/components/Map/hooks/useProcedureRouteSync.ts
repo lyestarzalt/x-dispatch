@@ -1,20 +1,22 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
-import { useMapStore } from '@/stores/mapStore';
 import { addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseProcedureRouteSyncOptions {
   mapRef: MapRef;
+  styleVersion: number;
 }
 
 /**
  * Syncs the selected procedure from appStore to the map layer.
  * Automatically adds/removes the procedure route layer when selection changes.
  */
-export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions): void {
+export function useProcedureRouteSync({
+  mapRef,
+  styleVersion,
+}: UseProcedureRouteSyncOptions): void {
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
-  const styleVersion = useMapStore((s) => s.styleVersion);
 
   useEffect(() => {
     const map = mapRef.current;
