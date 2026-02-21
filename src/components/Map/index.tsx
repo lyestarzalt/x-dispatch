@@ -578,19 +578,13 @@ export default function Map({ airports }: MapProps) {
     const map = mapRef.current;
     if (!map || !followPlane || !planePosition) return;
 
-    // Mark as programmatic movement
+    // Use jumpTo for instant updates - no lag from overlapping animations
     isProgrammaticMoveRef.current = true;
-    map.easeTo({
+    map.jumpTo({
       center: [planePosition.lng, planePosition.lat],
       bearing: planePosition.heading ?? 0,
-      duration: 500,
     });
-    // Reset after animation
-    const timer = setTimeout(() => {
-      isProgrammaticMoveRef.current = false;
-    }, 550);
-
-    return () => clearTimeout(timer);
+    isProgrammaticMoveRef.current = false;
   }, [mapRef, followPlane, planePosition]);
 
   // Disable follow mode when user interacts with the map (not programmatic)

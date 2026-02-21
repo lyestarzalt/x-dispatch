@@ -3,10 +3,30 @@ import maplibregl from 'maplibre-gl';
 const TERRAIN_SOURCE_ID = 'terrain-dem';
 const TERRAIN_TILES_URL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 
+// Zoom level at which to switch from globe to mercator projection
+// Globe projection causes layer displacement issues when rotated at higher zooms
+const GLOBE_TO_MERCATOR_ZOOM = 7;
+
 export function setupGlobeProjection(map: maplibregl.Map): void {
+  // Start with globe projection
   map.setProjection({ type: 'globe' });
   map.setSky({
     'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
+  });
+
+  // Switch projection based on zoom level to avoid layer displacement
+  let currentProjection: 'globe' | 'mercator' = 'globe';
+
+  map.on('zoom', () => {
+    const zoom = map.getZoom();
+
+    if (zoom > GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'globe') {
+      map.setProjection({ type: 'mercator' });
+      currentProjection = 'mercator';
+    } else if (zoom <= GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'mercator') {
+      map.setProjection({ type: 'globe' });
+      currentProjection = 'globe';
+    }
   });
 }
 
