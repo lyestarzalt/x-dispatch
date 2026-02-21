@@ -88,6 +88,8 @@ export default function Map({ airports }: MapProps) {
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
   const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
+  const styleVersion = useMapStore((s) => s.styleVersion);
+  const incrementStyleVersion = useMapStore((s) => s.incrementStyleVersion);
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
@@ -258,6 +260,7 @@ export default function Map({ airports }: MapProps) {
     mapRef,
     navData,
     navVisibility,
+    styleVersion,
   });
 
   // Vatsim sync
@@ -266,22 +269,23 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
+    styleVersion,
   });
 
   // Route line sync for Explore panel routes
   useRouteLineSync({
     mapRef,
     airports,
+    styleVersion,
   });
 
   // Procedure route sync - renders selected procedure on map
-  useProcedureRouteSync({ mapRef });
+  useProcedureRouteSync({ mapRef, styleVersion });
 
   // Flight plan state
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
-  const styleVersion = useMapStore((s) => s.styleVersion);
 
   // Flight plan layer sync
   useEffect(() => {
@@ -358,7 +362,6 @@ export default function Map({ airports }: MapProps) {
 
   // Style change handler
   const initialStyleRef = useRef(true);
-  const incrementStyleVersion = useMapStore((s) => s.incrementStyleVersion);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;

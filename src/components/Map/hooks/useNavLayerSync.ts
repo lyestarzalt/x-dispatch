@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { NavigationData } from '@/queries/useNavDataQuery';
-import { useMapStore } from '@/stores/mapStore';
 import type { NavLayerVisibility } from '@/types/layers';
 import { airspaceLayer, ilsLayer, navaidLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
@@ -10,11 +9,15 @@ interface UseNavLayerSyncOptions {
   mapRef: MapRef;
   navData: NavigationData | undefined;
   navVisibility: NavLayerVisibility;
+  styleVersion: number;
 }
 
-export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerSyncOptions): void {
-  const styleVersion = useMapStore((s) => s.styleVersion);
-
+export function useNavLayerSync({
+  mapRef,
+  navData,
+  navVisibility,
+  styleVersion,
+}: UseNavLayerSyncOptions): void {
   // Sync local nav layers (navaids, ILS, airspaces)
   useEffect(() => {
     const map = mapRef.current;
