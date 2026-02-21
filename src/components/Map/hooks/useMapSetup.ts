@@ -81,7 +81,10 @@ export function useMapSetup({
     return () => {
       map.remove();
     };
-  }, [airports, mapStyleUrl]);
+    // Note: mapStyleUrl changes are handled by Map/index.tsx style change handler
+    // to preserve map state. Only recreate map when airports change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [airports]);
 
   return {
     mapRef,

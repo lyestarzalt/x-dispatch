@@ -47,6 +47,8 @@ interface MapState {
   vatsimEnabled: boolean;
   showPlaneTracker: boolean;
   explore: ExploreState;
+  /** Incremented when map style changes to trigger layer re-adds */
+  styleVersion: number;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -68,6 +70,7 @@ interface MapState {
   setSelectedRoute: (route: { from: string; to: string } | null) => void;
   setExploreFilters: (filters: Partial<ExploreFilters>) => void;
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
+  incrementStyleVersion: () => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -94,6 +97,7 @@ export const useMapStore = create<MapState>()(
         },
         featuredCategory: 'all' as FeaturedCategoryFilter,
       },
+      styleVersion: 0,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -153,6 +157,7 @@ export const useMapStore = create<MapState>()(
         })),
       setFeaturedCategory: (category) =>
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
+      incrementStyleVersion: () => set((state) => ({ styleVersion: state.styleVersion + 1 })),
     }),
     {
       name: 'xplane-viz-map',

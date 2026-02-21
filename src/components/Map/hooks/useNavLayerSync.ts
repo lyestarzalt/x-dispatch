@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { NavigationData } from '@/queries/useNavDataQuery';
+import { useMapStore } from '@/stores/mapStore';
 import type { NavLayerVisibility } from '@/types/layers';
 import { airspaceLayer, ilsLayer, navaidLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
@@ -12,6 +13,8 @@ interface UseNavLayerSyncOptions {
 }
 
 export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerSyncOptions): void {
+  const styleVersion = useMapStore((s) => s.styleVersion);
+
   // Sync local nav layers (navaids, ILS, airspaces)
   useEffect(() => {
     const map = mapRef.current;
@@ -48,7 +51,7 @@ export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerS
     };
 
     updateNavLayers();
-  }, [mapRef, navData, navVisibility]);
+  }, [mapRef, navData, navVisibility, styleVersion]);
 }
 
 // Helper to apply visibility changes for individual nav layers

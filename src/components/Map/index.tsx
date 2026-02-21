@@ -281,19 +281,26 @@ export default function Map({ airports }: MapProps) {
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
+  const styleVersion = useMapStore((s) => s.styleVersion);
 
   // Flight plan layer sync
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
+    // Wait for style to be loaded
+    if (!map.isStyleLoaded()) return;
+
     if (fmsData) {
       addFlightPlanLayer(map, fmsData);
-      fitMapToFlightPlan(map, fmsData);
+      // Only fit on initial load, not on style change
+      if (styleVersion === 0) {
+        fitMapToFlightPlan(map, fmsData);
+      }
     } else {
       removeFlightPlanLayer(map);
     }
-  }, [mapRef, fmsData]);
+  }, [mapRef, fmsData, styleVersion]);
 
   // Fly to selected waypoint
   useEffect(() => {
@@ -324,7 +331,7 @@ export default function Map({ airports }: MapProps) {
     [mapRef]
   );
 
-  // Load FIR boundaries on map load
+  // Load FIR boundaries on map load and style change
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !NAV_GLOBAL_LOADING.firBoundaries) return;
@@ -347,10 +354,11 @@ export default function Map({ airports }: MapProps) {
     };
 
     loadFIR();
-  }, [mapRef]);
+  }, [mapRef, styleVersion]);
 
   // Style change handler
   const initialStyleRef = useRef(true);
+  const incrementStyleVersion = useMapStore((s) => s.incrementStyleVersion);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -372,6 +380,9 @@ export default function Map({ airports }: MapProps) {
         applyLayerVisibilityRef.current(layerVisibilityRef.current);
         bringVatsimLayersToTop(map);
       }
+
+      // Trigger all sync hooks to re-add their layers
+      incrementStyleVersion();
     };
 
     map.once('style.load', handleStyleLoad);
@@ -380,7 +391,7 @@ export default function Map({ airports }: MapProps) {
     return () => {
       map.off('style.load', handleStyleLoad);
     };
-  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick]);
+  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick, incrementStyleVersion]);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(
