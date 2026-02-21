@@ -108,6 +108,13 @@ function initTables(): void {
     );
   `);
 
+  // Migration: Add source_type column if it doesn't exist (for existing databases)
+  try {
+    sqlite.run(`ALTER TABLE nav_file_meta ADD COLUMN source_type TEXT NOT NULL DEFAULT 'unknown';`);
+  } catch {
+    // Column already exists, ignore error
+  }
+
   sqlite.run(`
     CREATE TABLE IF NOT EXISTS navaids (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
