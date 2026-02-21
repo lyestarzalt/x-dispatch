@@ -48,7 +48,7 @@ export default function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
       : 0;
 
   return (
-    <div className="absolute left-4 right-4 top-[60px] z-40">
+    <div className="absolute bottom-4 left-4 right-4 z-40">
       <Card className="flex flex-col gap-0 overflow-hidden p-0">
         {/* Waypoint chips row */}
         <div className="flex h-10 items-center gap-1 px-2">

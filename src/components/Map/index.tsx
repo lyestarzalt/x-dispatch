@@ -583,7 +583,8 @@ export default function Map({ airports }: MapProps) {
         vatsimPilotCount={vatsimData?.pilots?.length}
       />
 
-      <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} />
+      {/* CompassWidget hidden for cleaner UI - keeping code for future use */}
+      {/* <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} /> */}
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && (

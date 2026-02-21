@@ -87,6 +87,7 @@
     "track": "Track",
     "trackTooltip": "Track your aircraft position",
     "launch": "Launch",
+    "launchDisabled": "Select an airport first",
     "loadPlan": "Load Plan",
     "navigationLayers": "Navigation Layers"
   },
