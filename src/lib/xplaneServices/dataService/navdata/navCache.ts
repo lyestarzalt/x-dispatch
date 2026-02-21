@@ -3,15 +3,18 @@
  * SQLite caching for parsed navigation data (navaids, waypoints, airways, airspaces).
  * Tracks file modification times to invalidate cache when data files change.
  */
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, saveDb, waypoints } from '@/lib/db';
 import logger from '@/lib/utils/logger';
+import type { Coordinates } from '@/types/geo';
 import type {
   Airspace,
   AirspaceClass,
   AirwayDirection,
   AirwaySegment,
+  CoordResolver,
+  FixTypeCode,
   Navaid,
   Waypoint,
 } from '@/types/navigation';
@@ -249,6 +252,309 @@ export function getNavaidCount(): number {
 }
 
 // ============================================================================
+// Navaid Query Functions (Efficient SQLite Queries)
+// ============================================================================
+
+/**
+ * Get a navaid by ID and region (exact match)
+ * Uses composite index for fast lookup
+ */
+export function getNavaidByIdRegion(
+  navaidId: string,
+  region: string
+): { id: string; latitude: number; longitude: number; type: string; region: string } | null {
+  const db = getDb();
+  const result = db
+    .select({
+      navaidId: navaids.navaidId,
+      lat: navaids.lat,
+      lon: navaids.lon,
+      type: navaids.type,
+      region: navaids.region,
+    })
+    .from(navaids)
+    .where(
+      sql`${navaids.navaidId} = ${navaidId.toUpperCase()} AND ${navaids.region} = ${region.toUpperCase()}`
+    )
+    .get();
+
+  return result
+    ? {
+        id: result.navaidId,
+        latitude: result.lat,
+        longitude: result.lon,
+        type: result.type,
+        region: result.region ?? '',
+      }
+    : null;
+}
+
+/**
+ * Get the nearest navaid by ID within a max distance from a point
+ * Used as fallback when region doesn't match
+ */
+export function getNavaidNearestById(
+  navaidId: string,
+  lat: number,
+  lon: number,
+  maxDistNm: number
+): { id: string; latitude: number; longitude: number; type: string; region: string } | null {
+  const db = getDb();
+
+  // Approximate bounding box (1 degree ≈ 60nm)
+  const degBuffer = maxDistNm / 60;
+  const minLat = lat - degBuffer;
+  const maxLat = lat + degBuffer;
+  const minLon = lon - degBuffer;
+  const maxLon = lon + degBuffer;
+
+  const results = db
+    .select({
+      navaidId: navaids.navaidId,
+      lat: navaids.lat,
+      lon: navaids.lon,
+      type: navaids.type,
+      region: navaids.region,
+    })
+    .from(navaids)
+    .where(
+      sql`${navaids.navaidId} = ${navaidId.toUpperCase()}
+          AND ${navaids.lat} BETWEEN ${minLat} AND ${maxLat}
+          AND ${navaids.lon} BETWEEN ${minLon} AND ${maxLon}`
+    )
+    .all();
+
+  if (results.length === 0) return null;
+
+  // Find nearest (simple distance calculation)
+  let nearest = results[0];
+  let nearestDist = Infinity;
+
+  for (const r of results) {
+    const dLat = (r.lat - lat) * 60;
+    const dLon = (r.lon - lon) * 60 * Math.cos((lat * Math.PI) / 180);
+    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = r;
+    }
+  }
+
+  if (!nearest || nearestDist > maxDistNm) return null;
+
+  return {
+    id: nearest.navaidId,
+    latitude: nearest.lat,
+    longitude: nearest.lon,
+    type: nearest.type,
+    region: nearest.region ?? '',
+  };
+}
+
+/**
+ * Get navaids within geographic bounds (for viewport display)
+ * Optionally filter by type (VOR, NDB, DME, etc.)
+ */
+export function getNavaidsInBounds(
+  minLat: number,
+  maxLat: number,
+  minLon: number,
+  maxLon: number,
+  types?: string[],
+  limit: number = 5000
+): Navaid[] {
+  const db = getDb();
+
+  const query = db
+    .select()
+    .from(navaids)
+    .where(
+      types && types.length > 0
+        ? sql`${navaids.lat} BETWEEN ${minLat} AND ${maxLat}
+              AND ${navaids.lon} BETWEEN ${minLon} AND ${maxLon}
+              AND ${navaids.type} IN (${sql.join(
+                types.map((t) => sql`${t}`),
+                sql`, `
+              )})`
+        : sql`${navaids.lat} BETWEEN ${minLat} AND ${maxLat}
+              AND ${navaids.lon} BETWEEN ${minLon} AND ${maxLon}`
+    )
+    .limit(limit);
+
+  const results = query.all();
+
+  return results.map((r) => ({
+    id: r.navaidId,
+    name: r.name,
+    type: r.type as Navaid['type'],
+    latitude: r.lat,
+    longitude: r.lon,
+    elevation: r.elevation ?? 0,
+    frequency: r.frequency ?? 0,
+    range: r.range ?? 0,
+    magneticVariation: r.magneticVariation ?? 0,
+    region: r.region ?? '',
+    country: r.country ?? '',
+    bearing: r.bearing ?? undefined,
+    associatedAirport: r.associatedAirport ?? undefined,
+    associatedRunway: r.associatedRunway ?? undefined,
+    glidepathAngle: r.glidepathAngle ?? undefined,
+    course: r.course ?? undefined,
+    lengthOffset: r.lengthOffset ?? undefined,
+    thresholdCrossingHeight: r.thresholdCrossingHeight ?? undefined,
+    refPathIdentifier: r.refPathIdentifier ?? undefined,
+    approachPerformance: r.approachPerformance as Navaid['approachPerformance'],
+  }));
+}
+
+/**
+ * Get approach navaids by associated airport (ILS, LOC, GS, markers, etc.)
+ */
+export function getNavaidsByAirport(airportIcao: string): Navaid[] {
+  const db = getDb();
+  const results = db
+    .select()
+    .from(navaids)
+    .where(sql`${navaids.associatedAirport} = ${airportIcao.toUpperCase()}`)
+    .all();
+
+  return results.map((r) => ({
+    id: r.navaidId,
+    name: r.name,
+    type: r.type as Navaid['type'],
+    latitude: r.lat,
+    longitude: r.lon,
+    elevation: r.elevation ?? 0,
+    frequency: r.frequency ?? 0,
+    range: r.range ?? 0,
+    magneticVariation: r.magneticVariation ?? 0,
+    region: r.region ?? '',
+    country: r.country ?? '',
+    bearing: r.bearing ?? undefined,
+    associatedAirport: r.associatedAirport ?? undefined,
+    associatedRunway: r.associatedRunway ?? undefined,
+    glidepathAngle: r.glidepathAngle ?? undefined,
+    course: r.course ?? undefined,
+    lengthOffset: r.lengthOffset ?? undefined,
+    thresholdCrossingHeight: r.thresholdCrossingHeight ?? undefined,
+    refPathIdentifier: r.refPathIdentifier ?? undefined,
+    approachPerformance: r.approachPerformance as Navaid['approachPerformance'],
+  }));
+}
+
+/**
+ * Get approach navaids by associated airport and runway
+ */
+export function getNavaidsByAirportRunway(airportIcao: string, runway: string): Navaid[] {
+  const db = getDb();
+  const results = db
+    .select()
+    .from(navaids)
+    .where(
+      sql`${navaids.associatedAirport} = ${airportIcao.toUpperCase()}
+          AND ${navaids.associatedRunway} = ${runway.toUpperCase()}`
+    )
+    .all();
+
+  return results.map((r) => ({
+    id: r.navaidId,
+    name: r.name,
+    type: r.type as Navaid['type'],
+    latitude: r.lat,
+    longitude: r.lon,
+    elevation: r.elevation ?? 0,
+    frequency: r.frequency ?? 0,
+    range: r.range ?? 0,
+    magneticVariation: r.magneticVariation ?? 0,
+    region: r.region ?? '',
+    country: r.country ?? '',
+    bearing: r.bearing ?? undefined,
+    associatedAirport: r.associatedAirport ?? undefined,
+    associatedRunway: r.associatedRunway ?? undefined,
+    glidepathAngle: r.glidepathAngle ?? undefined,
+    course: r.course ?? undefined,
+    lengthOffset: r.lengthOffset ?? undefined,
+    thresholdCrossingHeight: r.thresholdCrossingHeight ?? undefined,
+    refPathIdentifier: r.refPathIdentifier ?? undefined,
+    approachPerformance: r.approachPerformance as Navaid['approachPerformance'],
+  }));
+}
+
+/**
+ * Search navaids by ID or name (with limit)
+ */
+export function searchNavaidsDb(query: string, limit: number = 20): Navaid[] {
+  const db = getDb();
+  const upperQuery = `%${query.toUpperCase()}%`;
+  const results = db
+    .select()
+    .from(navaids)
+    .where(sql`${navaids.navaidId} LIKE ${upperQuery} OR ${navaids.name} LIKE ${upperQuery}`)
+    .limit(limit)
+    .all();
+
+  return results.map((r) => ({
+    id: r.navaidId,
+    name: r.name,
+    type: r.type as Navaid['type'],
+    latitude: r.lat,
+    longitude: r.lon,
+    elevation: r.elevation ?? 0,
+    frequency: r.frequency ?? 0,
+    range: r.range ?? 0,
+    magneticVariation: r.magneticVariation ?? 0,
+    region: r.region ?? '',
+    country: r.country ?? '',
+    bearing: r.bearing ?? undefined,
+    associatedAirport: r.associatedAirport ?? undefined,
+    associatedRunway: r.associatedRunway ?? undefined,
+    glidepathAngle: r.glidepathAngle ?? undefined,
+    course: r.course ?? undefined,
+    lengthOffset: r.lengthOffset ?? undefined,
+    thresholdCrossingHeight: r.thresholdCrossingHeight ?? undefined,
+    refPathIdentifier: r.refPathIdentifier ?? undefined,
+    approachPerformance: r.approachPerformance as Navaid['approachPerformance'],
+  }));
+}
+
+/**
+ * Search waypoints by ID (with limit)
+ */
+export function searchWaypointsDb(query: string, limit: number = 20): Waypoint[] {
+  const db = getDb();
+  const upperQuery = `%${query.toUpperCase()}%`;
+  const results = db
+    .select()
+    .from(waypoints)
+    .where(sql`${waypoints.waypointId} LIKE ${upperQuery}`)
+    .limit(limit)
+    .all();
+
+  return results.map((r) => ({
+    id: r.waypointId,
+    latitude: r.lat,
+    longitude: r.lon,
+    region: r.region,
+    areaCode: r.areaCode,
+    description: r.description ?? '',
+  }));
+}
+
+/**
+ * Get navaid counts grouped by type
+ */
+export function getNavaidCountsByType(): Record<string, number> {
+  const db = getDb();
+  const results = db.select({ type: navaids.type }).from(navaids).all();
+
+  const counts: Record<string, number> = {};
+  for (const r of results) {
+    counts[r.type] = (counts[r.type] || 0) + 1;
+  }
+  return counts;
+}
+
+// ============================================================================
 // Waypoints Database Operations
 // ============================================================================
 
@@ -307,6 +613,128 @@ export function getWaypointCount(): number {
   const db = getDb();
   const results = db.select().from(waypoints).all();
   return results.length;
+}
+
+// ============================================================================
+// Waypoint Query Functions (Efficient SQLite Queries)
+// ============================================================================
+
+/**
+ * Get a waypoint by ID and region (exact match)
+ * Uses composite index for fast lookup
+ */
+export function getWaypointByIdRegion(
+  waypointId: string,
+  region: string
+): { id: string; latitude: number; longitude: number; region: string } | null {
+  const db = getDb();
+  const result = db
+    .select({
+      waypointId: waypoints.waypointId,
+      lat: waypoints.lat,
+      lon: waypoints.lon,
+      region: waypoints.region,
+    })
+    .from(waypoints)
+    .where(
+      sql`${waypoints.waypointId} = ${waypointId.toUpperCase()} AND ${waypoints.region} = ${region.toUpperCase()}`
+    )
+    .get();
+
+  return result
+    ? { id: result.waypointId, latitude: result.lat, longitude: result.lon, region: result.region }
+    : null;
+}
+
+/**
+ * Get the nearest waypoint by ID within a max distance from a point
+ * Used as fallback when region doesn't match
+ */
+export function getWaypointNearestById(
+  waypointId: string,
+  lat: number,
+  lon: number,
+  maxDistNm: number
+): { id: string; latitude: number; longitude: number; region: string } | null {
+  const db = getDb();
+
+  // Approximate bounding box (1 degree ≈ 60nm)
+  const degBuffer = maxDistNm / 60;
+  const minLat = lat - degBuffer;
+  const maxLat = lat + degBuffer;
+  const minLon = lon - degBuffer;
+  const maxLon = lon + degBuffer;
+
+  const results = db
+    .select({
+      waypointId: waypoints.waypointId,
+      lat: waypoints.lat,
+      lon: waypoints.lon,
+      region: waypoints.region,
+    })
+    .from(waypoints)
+    .where(
+      sql`${waypoints.waypointId} = ${waypointId.toUpperCase()}
+          AND ${waypoints.lat} BETWEEN ${minLat} AND ${maxLat}
+          AND ${waypoints.lon} BETWEEN ${minLon} AND ${maxLon}`
+    )
+    .all();
+
+  if (results.length === 0) return null;
+
+  // Find nearest (simple distance calculation)
+  let nearest = results[0];
+  let nearestDist = Infinity;
+
+  for (const r of results) {
+    const dLat = (r.lat - lat) * 60;
+    const dLon = (r.lon - lon) * 60 * Math.cos((lat * Math.PI) / 180);
+    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = r;
+    }
+  }
+
+  if (!nearest || nearestDist > maxDistNm) return null;
+
+  return {
+    id: nearest.waypointId,
+    latitude: nearest.lat,
+    longitude: nearest.lon,
+    region: nearest.region,
+  };
+}
+
+/**
+ * Get waypoints within geographic bounds (for viewport display)
+ */
+export function getWaypointsInBounds(
+  minLat: number,
+  maxLat: number,
+  minLon: number,
+  maxLon: number,
+  limit: number = 5000
+): Waypoint[] {
+  const db = getDb();
+  const results = db
+    .select()
+    .from(waypoints)
+    .where(
+      sql`${waypoints.lat} BETWEEN ${minLat} AND ${maxLat}
+          AND ${waypoints.lon} BETWEEN ${minLon} AND ${maxLon}`
+    )
+    .limit(limit)
+    .all();
+
+  return results.map((r) => ({
+    id: r.waypointId,
+    latitude: r.lat,
+    longitude: r.lon,
+    region: r.region,
+    areaCode: r.areaCode,
+    description: r.description ?? '',
+  }));
 }
 
 // ============================================================================
@@ -380,6 +808,33 @@ export function getAirwayCount(): number {
   return results.length;
 }
 
+/**
+ * Get airway segments by name (for flight plan route expansion)
+ * Returns all segments of a specific airway
+ */
+export function getAirwaysByName(airwayName: string): AirwaySegment[] {
+  const db = getDb();
+  const results = db
+    .select()
+    .from(airways)
+    .where(sql`${airways.name} = ${airwayName.toUpperCase()}`)
+    .all();
+
+  return results.map((r) => ({
+    name: r.name,
+    fromFix: r.fromFix,
+    fromRegion: r.fromRegion,
+    fromNavaidType: r.fromNavaidType as FixTypeNumber,
+    toFix: r.toFix,
+    toRegion: r.toRegion,
+    toNavaidType: r.toNavaidType as FixTypeNumber,
+    isHigh: r.isHigh,
+    baseFl: r.baseFl,
+    topFl: r.topFl,
+    direction: r.direction as AirwayDirection,
+  }));
+}
+
 // ============================================================================
 // Airspaces Database Operations
 // ============================================================================
@@ -393,18 +848,49 @@ export function clearAirspaces(): void {
 }
 
 /**
+ * Calculate bounding box for airspace coordinates
+ */
+function calculateAirspaceBounds(
+  coordinates: [number, number][]
+): { minLat: number; maxLat: number; minLon: number; maxLon: number } | null {
+  if (coordinates.length === 0) return null;
+
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+  let minLon = Infinity;
+  let maxLon = -Infinity;
+
+  for (const [lon, lat] of coordinates) {
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lon < minLon) minLon = lon;
+    if (lon > maxLon) maxLon = lon;
+  }
+
+  return { minLat, maxLat, minLon, maxLon };
+}
+
+/**
  * Batch insert airspaces into database
+ * Calculates and stores bounding box for efficient spatial queries
  */
 export function insertAirspaces(airspaceList: Airspace[]): void {
   const db = getDb();
 
-  const airspaceArray = airspaceList.map((a) => ({
-    name: a.name,
-    airspaceClass: a.class,
-    upperLimit: a.upperLimit,
-    lowerLimit: a.lowerLimit,
-    coordinates: JSON.stringify(a.coordinates),
-  }));
+  const airspaceArray = airspaceList.map((a) => {
+    const bounds = calculateAirspaceBounds(a.coordinates);
+    return {
+      name: a.name,
+      airspaceClass: a.class,
+      upperLimit: a.upperLimit,
+      lowerLimit: a.lowerLimit,
+      coordinates: JSON.stringify(a.coordinates),
+      minLat: bounds?.minLat,
+      maxLat: bounds?.maxLat,
+      minLon: bounds?.minLon,
+      maxLon: bounds?.maxLon,
+    };
+  });
 
   // Batch insert in chunks
   const CHUNK_SIZE = 500;
@@ -439,6 +925,64 @@ export function getAirspaceCount(): number {
   return results.length;
 }
 
+/**
+ * Get airspaces that intersect with a geographic bounding box
+ * Uses stored bounding box for efficient SQLite query (consistent with navaids/waypoints)
+ */
+export function getAirspacesInBounds(
+  minLat: number,
+  maxLat: number,
+  minLon: number,
+  maxLon: number,
+  limit: number = 1000
+): Airspace[] {
+  const db = getDb();
+
+  // Query airspaces where bounding boxes overlap
+  // An airspace's bbox overlaps query bbox if:
+  // airspace.minLat <= query.maxLat AND airspace.maxLat >= query.minLat
+  // AND airspace.minLon <= query.maxLon AND airspace.maxLon >= query.minLon
+  const results = db
+    .select()
+    .from(airspaces)
+    .where(
+      sql`${airspaces.minLat} <= ${maxLat}
+          AND ${airspaces.maxLat} >= ${minLat}
+          AND ${airspaces.minLon} <= ${maxLon}
+          AND ${airspaces.maxLon} >= ${minLon}`
+    )
+    .limit(limit)
+    .all();
+
+  return results.map((r) => ({
+    name: r.name,
+    class: r.airspaceClass as AirspaceClass,
+    upperLimit: r.upperLimit ?? '',
+    lowerLimit: r.lowerLimit ?? '',
+    coordinates: JSON.parse(r.coordinates) as [number, number][],
+  }));
+}
+
+/**
+ * Get airspaces near a point (radius-based query using bounding box)
+ * Consistent with getNavaidsInRadius pattern
+ */
+export function getAirspacesNearPoint(
+  lat: number,
+  lon: number,
+  radiusNm: number = 50,
+  limit: number = 1000
+): Airspace[] {
+  // Convert radius to bounding box (1 degree ≈ 60nm)
+  const degBuffer = radiusNm / 60;
+  const minLat = lat - degBuffer;
+  const maxLat = lat + degBuffer;
+  const minLon = lon - degBuffer;
+  const maxLon = lon + degBuffer;
+
+  return getAirspacesInBounds(minLat, maxLat, minLon, maxLon, limit);
+}
+
 // ============================================================================
 // Utility Functions
 // ============================================================================
@@ -469,4 +1013,123 @@ export function logNavCacheStatus(): void {
   logger.data.info(
     `Nav cache status: ${getNavaidCount()} navaids, ${getWaypointCount()} waypoints, ${getAirwayCount()} airways, ${getAirspaceCount()} airspaces`
   );
+}
+
+// ============================================================================
+// SQL-Based Procedure Coordinate Resolver
+// ============================================================================
+
+export interface SqlResolverOptions {
+  /** Airport coordinates for proximity-based fallback */
+  airportLat?: number;
+  airportLon?: number;
+  /** Maximum distance in nm for fallback matching (default: 500nm) */
+  maxFallbackDistanceNm?: number;
+}
+
+/**
+ * Create a procedure coordinate resolver that queries SQLite directly
+ * instead of building in-memory maps. Much more memory efficient for
+ * large datasets (200k+ waypoints, 50k+ navaids).
+ *
+ * @param options - Optional airport location for proximity fallback
+ * @returns CoordResolver function that queries SQLite on each call
+ */
+export function createSqlCoordResolver(options?: SqlResolverOptions): CoordResolver {
+  const airportLat = options?.airportLat;
+  const airportLon = options?.airportLon;
+  const maxFallbackDistance = options?.maxFallbackDistanceNm ?? 500;
+
+  return (fixId: string, region: string, type: FixTypeCode): Coordinates | null => {
+    const upperFixId = fixId.toUpperCase();
+    const upperRegion = region.toUpperCase();
+
+    // Runway waypoints (RW09, RW27L, etc.) - pseudo-fixes from airport data
+    // Don't do global lookup - they should be resolved from airport runway data
+    if (upperFixId.startsWith('RW') && /^RW\d{2}[LRC]?$/.test(upperFixId)) {
+      return null;
+    }
+
+    // Fix type determines where to look first
+    // V = VOR, N = NDB, D = DME
+    if (type === 'V' || type === 'N' || type === 'D') {
+      // VOR, NDB, or DME - look in navaids first (region-matched)
+      const nav = getNavaidByIdRegion(upperFixId, upperRegion);
+      if (nav) {
+        return { latitude: nav.latitude, longitude: nav.longitude };
+      }
+
+      // Proximity-based fallback for navaids
+      if (airportLat !== undefined && airportLon !== undefined) {
+        const nearestNav = getNavaidNearestById(
+          upperFixId,
+          airportLat,
+          airportLon,
+          maxFallbackDistance
+        );
+        if (nearestNav) {
+          return { latitude: nearestNav.latitude, longitude: nearestNav.longitude };
+        }
+      }
+    }
+
+    // Try waypoints with region match first
+    const wp = getWaypointByIdRegion(upperFixId, upperRegion);
+    if (wp) {
+      return { latitude: wp.latitude, longitude: wp.longitude };
+    }
+
+    // Proximity-based fallback: find nearest waypoint within max distance
+    if (airportLat !== undefined && airportLon !== undefined) {
+      const nearestWp = getWaypointNearestById(
+        upperFixId,
+        airportLat,
+        airportLon,
+        maxFallbackDistance
+      );
+      if (nearestWp) {
+        return { latitude: nearestWp.latitude, longitude: nearestWp.longitude };
+      }
+    }
+
+    // Try navaids with region match
+    const nav = getNavaidByIdRegion(upperFixId, upperRegion);
+    if (nav) {
+      return { latitude: nav.latitude, longitude: nav.longitude };
+    }
+
+    // Proximity-based fallback for navaids
+    if (airportLat !== undefined && airportLon !== undefined) {
+      const nearestNav = getNavaidNearestById(
+        upperFixId,
+        airportLat,
+        airportLon,
+        maxFallbackDistance
+      );
+      if (nearestNav) {
+        return { latitude: nearestNav.latitude, longitude: nearestNav.longitude };
+      }
+    }
+
+    return null;
+  };
+}
+
+/**
+ * Resolve a single fix ID to coordinates using SQLite queries
+ * Convenience function for one-off lookups (flight plan entry, etc.)
+ */
+export function resolveFixCoordinates(
+  fixId: string,
+  region: string,
+  type: FixTypeCode,
+  airportLat?: number,
+  airportLon?: number
+): Coordinates | null {
+  const resolver = createSqlCoordResolver({
+    airportLat,
+    airportLon,
+    maxFallbackDistanceNm: 500,
+  });
+  return resolver(fixId, region, type);
 }

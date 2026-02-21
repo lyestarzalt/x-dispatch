@@ -1,5 +1,6 @@
 import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
+import * as fs from 'fs';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { initDb } from './lib/db';
@@ -487,13 +488,11 @@ function registerIpcHandlers() {
 
   ipcMain.handle('nav:getAllAirspaces', () => dataManager.getAllAirspaces());
 
-  ipcMain.handle('nav:getAirwaysInRadius', (_, lat: number, lon: number, radiusNm: number) => {
-    const c = validateCoordinates(lat, lon, radiusNm);
-    if (isInvalidCoords(c)) throw new Error(c.error);
-    return dataManager.getAirwaysInRadius(c.lat, c.lon, c.radius);
+  // Airways are queried by name for flight plans (no more global display)
+  ipcMain.handle('nav:getAirwaySegments', (_, airwayName: string) => {
+    if (!airwayName || typeof airwayName !== 'string' || airwayName.length > 10) return [];
+    return dataManager.getAirwaySegments(airwayName.toUpperCase());
   });
-
-  ipcMain.handle('nav:getAllAirwaysWithCoords', () => dataManager.getAllAirwaysWithCoords());
 
   ipcMain.handle('nav:searchNavaids', (_, query: string, limit = 20) => {
     if (!isValidSearchQuery(query)) return [];
@@ -533,6 +532,48 @@ function registerIpcHandlers() {
   // Bulk data retrieval for map layers (with coordinates resolved)
   ipcMain.handle('nav:getAllHoldingPatterns', () => dataManager.getAllHoldingPatternsWithCoords());
 
+  // ==========================================================================
+  // Bounds-based queries (SQLite direct - more efficient for large datasets)
+  // ==========================================================================
+
+  ipcMain.handle(
+    'nav:getNavaidsInBounds',
+    (
+      _,
+      minLat: number,
+      maxLat: number,
+      minLon: number,
+      maxLon: number,
+      types?: string[],
+      limit?: number
+    ) => {
+      return dataManager.getNavaidsInBoundsSql(minLat, maxLat, minLon, maxLon, types, limit);
+    }
+  );
+
+  ipcMain.handle(
+    'nav:getWaypointsInBounds',
+    (_, minLat: number, maxLat: number, minLon: number, maxLon: number, limit?: number) => {
+      return dataManager.getWaypointsInBoundsSql(minLat, maxLat, minLon, maxLon, limit);
+    }
+  );
+
+  ipcMain.handle(
+    'nav:resolveWaypointCoords',
+    (_, waypointId: string, region?: string, airportLat?: number, airportLon?: number) => {
+      if (!waypointId || typeof waypointId !== 'string') return null;
+      return dataManager.resolveWaypointCoords(waypointId, region, airportLat, airportLon);
+    }
+  );
+
+  ipcMain.handle(
+    'nav:resolveNavaidCoords',
+    (_, navaidId: string, region?: string, airportLat?: number, airportLon?: number) => {
+      if (!navaidId || typeof navaidId !== 'string') return null;
+      return dataManager.resolveNavaidCoords(navaidId, region, airportLat, airportLon);
+    }
+  );
+
   ipcMain.on('log:error', (_, msg: string, args: unknown[]) =>
     logger.error(`[Renderer] ${msg}`, ...args)
   );
@@ -542,6 +583,40 @@ function registerIpcHandlers() {
   ipcMain.on('log:info', (_, msg: string, args: unknown[]) =>
     logger.info(`[Renderer] ${msg}`, ...args)
   );
+
+  // Flight plan file handling
+  ipcMain.handle('flightplan:openFile', async () => {
+    const dialogOptions: Electron.OpenDialogOptions = {
+      title: 'Open Flight Plan',
+      filters: [
+        { name: 'X-Plane Flight Plans', extensions: ['fms'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+      properties: ['openFile'],
+    };
+
+    try {
+      let result: Electron.OpenDialogReturnValue;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        result = await dialog.showOpenDialog(mainWindow, dialogOptions);
+      } else {
+        result = await dialog.showOpenDialog(dialogOptions);
+      }
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      const filePath = result.filePaths[0];
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const fileName = path.basename(filePath);
+
+      return { content, fileName };
+    } catch (err) {
+      logger.main.error('Failed to open flight plan file', err);
+      return null;
+    }
+  });
 
   ipcMain.handle('launcher:scanAircraft', async () => {
     const xplanePath = dataManager.getXPlanePath();
@@ -782,6 +857,11 @@ app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
   await initDb();
   dataManager = getXPlaneDataManager();
+
+  // If setup is complete, load cached data into memory
+  if (isSetupComplete()) {
+    dataManager.initFromCache();
+  }
 
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
     callback(['clipboard-read', 'clipboard-write'].includes(permission));

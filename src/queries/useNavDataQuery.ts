@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Airspace, AirwaySegmentWithCoords, Navaid, Waypoint } from '@/types/navigation';
+import type { Airspace, Navaid, Waypoint } from '@/types/navigation';
 
 // Local nav data (around airport)
 export interface NavigationData {
@@ -11,12 +11,6 @@ export interface NavigationData {
   airspaces: Airspace[];
 }
 
-// Global airways data (separate from local nav)
-export interface GlobalAirwaysData {
-  highAirways: AirwaySegmentWithCoords[];
-  lowAirways: AirwaySegmentWithCoords[];
-}
-
 const EMPTY_NAV_DATA: NavigationData = {
   vors: [],
   ndbs: [],
@@ -26,17 +20,11 @@ const EMPTY_NAV_DATA: NavigationData = {
   airspaces: [],
 };
 
-const EMPTY_AIRWAYS_DATA: GlobalAirwaysData = {
-  highAirways: [],
-  lowAirways: [],
-};
-
 const navDataKeys = {
   all: ['navData'] as const,
   byLocation: (lat: number, lon: number, radius: number) =>
     ['navData', { lat, lon, radius }] as const,
   airspaces: ['navData', 'airspaces', 'global'] as const,
-  airways: ['navData', 'airways', 'global'] as const,
 };
 
 async function fetchNavData(lat: number, lon: number, radiusNm: number): Promise<NavigationData> {
@@ -72,59 +60,26 @@ export function useNavDataQuery(
   });
 }
 
-export function getNavDataCounts(
-  data: NavigationData | undefined,
-  airwaysData?: GlobalAirwaysData
-) {
-  const baseCounts = {
-    vors: data?.vors.length ?? 0,
-    ndbs: data?.ndbs.length ?? 0,
-    dmes: data?.dmes.length ?? 0,
-    ils: data?.ils.length ?? 0,
-    waypoints: data?.waypoints.length ?? 0,
-    airspaces: data?.airspaces.length ?? 0,
-    highAirways: airwaysData?.highAirways.length ?? 0,
-    lowAirways: airwaysData?.lowAirways.length ?? 0,
-  };
-  return baseCounts;
-}
+export function getNavDataCounts(data: NavigationData | undefined) {
+  const vors = data?.vors.length ?? 0;
+  const ndbs = data?.ndbs.length ?? 0;
+  const dmes = data?.dmes.length ?? 0;
 
-async function fetchGlobalAirways(): Promise<GlobalAirwaysData> {
-  const airways = await window.navAPI.getAllAirwaysWithCoords();
   return {
-    highAirways: airways.filter((a) => a.isHigh),
-    lowAirways: airways.filter((a) => !a.isHigh),
+    // Consolidated navaid count
+    navaids: vors + ndbs + dmes,
+    ils: data?.ils.length ?? 0,
+    airspaces: data?.airspaces.length ?? 0,
   };
-}
-
-export function useGlobalAirwaysQuery(enabled: boolean = false) {
-  return useQuery({
-    queryKey: navDataKeys.airways,
-    queryFn: fetchGlobalAirways,
-    enabled,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    placeholderData: EMPTY_AIRWAYS_DATA,
-  });
 }
 
 /**
  * Combined hook that returns nav data counts for the currently selected airport.
- * Encapsulates the logic for fetching local nav data and global airways.
  *
  * @param airportLat - Airport latitude (optional, will fetch when provided)
  * @param airportLon - Airport longitude (optional, will fetch when provided)
- * @param airwaysMode - Current airways mode from mapStore
  */
-export function useNavDataCounts(
-  airportLat: number | null,
-  airportLon: number | null,
-  airwaysMode: 'off' | 'high' | 'low'
-) {
+export function useNavDataCounts(airportLat: number | null, airportLon: number | null) {
   const { data: navData } = useNavDataQuery(airportLat, airportLon, 50);
-
-  const shouldLoadAirways = airwaysMode !== 'off';
-  const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
-
-  return getNavDataCounts(navData, airwaysFetched ? airwaysData : undefined);
+  return getNavDataCounts(navData);
 }

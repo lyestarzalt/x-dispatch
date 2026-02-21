@@ -4,21 +4,23 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
+import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useXPlaneStatus } from '@/queries';
-import { useGlobalAirwaysQuery, useNavDataQuery } from '@/queries/useNavDataQuery';
+import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
-import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
+import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import type { PlanePosition, PlaneState } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
@@ -34,9 +36,12 @@ import {
   useVatsimSync,
 } from './hooks';
 import {
+  addFlightPlanLayer,
   bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
+  fitMapToFlightPlan,
+  removeFlightPlanLayer,
   removePlaneLayer,
   removeVatsimPilotLayer,
   updatePlaneLayer,
@@ -79,7 +84,6 @@ export default function Map({ airports }: MapProps) {
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const toggleLayer = useMapStore((s) => s.toggleLayer);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
-  const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
   const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
@@ -168,21 +172,30 @@ export default function Map({ airports }: MapProps) {
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
   const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
 
-  const navDataLocation: Coordinates | null =
-    selectedAirportData?.metadata?.datum_lat && selectedAirportData?.metadata?.datum_lon
-      ? {
-          latitude: parseFloat(selectedAirportData.metadata.datum_lat),
-          longitude: parseFloat(selectedAirportData.metadata.datum_lon),
-        }
-      : null;
-  const { data: navData, isLoading: navLoading } = useNavDataQuery(
+  // Get airport coordinates - prefer airports array, fallback to metadata
+  const selectedAirport = useMemo(
+    () => airports.find((a) => a.icao === selectedICAO),
+    [airports, selectedICAO]
+  );
+  const navDataLocation: Coordinates | null = useMemo(() => {
+    // First try the airports array (always has coords)
+    if (selectedAirport) {
+      return { latitude: selectedAirport.lat, longitude: selectedAirport.lon };
+    }
+    // Fallback to metadata
+    if (selectedAirportData?.metadata?.datum_lat && selectedAirportData?.metadata?.datum_lon) {
+      return {
+        latitude: parseFloat(selectedAirportData.metadata.datum_lat),
+        longitude: parseFloat(selectedAirportData.metadata.datum_lon),
+      };
+    }
+    return null;
+  }, [selectedAirport, selectedAirportData]);
+  const { data: navData } = useNavDataQuery(
     navDataLocation?.latitude ?? null,
     navDataLocation?.longitude ?? null,
     50
   );
-
-  const shouldLoadAirways = navVisibility.airwaysMode !== 'off';
-  const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
 
@@ -244,8 +257,6 @@ export default function Map({ airports }: MapProps) {
   useNavLayerSync({
     mapRef,
     navData,
-    airwaysData,
-    airwaysFetched,
     navVisibility,
   });
 
@@ -265,6 +276,53 @@ export default function Map({ airports }: MapProps) {
 
   // Procedure route sync - renders selected procedure on map
   useProcedureRouteSync({ mapRef });
+
+  // Flight plan state
+  const fmsData = useFlightPlanStore((s) => s.fmsData);
+  const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
+  const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
+
+  // Flight plan layer sync
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (fmsData) {
+      addFlightPlanLayer(map, fmsData);
+      fitMapToFlightPlan(map, fmsData);
+    } else {
+      removeFlightPlanLayer(map);
+    }
+  }, [mapRef, fmsData]);
+
+  // Fly to selected waypoint
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || selectedWaypointIndex === null || !fmsData) return;
+
+    const wp = fmsData.waypoints[selectedWaypointIndex];
+    if (wp) {
+      map.flyTo({
+        center: [wp.longitude, wp.latitude],
+        zoom: 10,
+        duration: 1500,
+      });
+    }
+  }, [mapRef, selectedWaypointIndex, fmsData]);
+
+  // Handle waypoint click from FlightPlanBar
+  const handleWaypointClick = useCallback(
+    (chip: import('@/types/fms').FlightPlanChip) => {
+      if (chip.latitude !== undefined && chip.longitude !== undefined) {
+        mapRef.current?.flyTo({
+          center: [chip.longitude, chip.latitude],
+          zoom: 10,
+          duration: 1500,
+        });
+      }
+    },
+    [mapRef]
+  );
 
   // Load FIR boundaries on map load
   useEffect(() => {
@@ -453,13 +511,6 @@ export default function Map({ airports }: MapProps) {
     [mapRef, toggleNavLayer, navVisibility]
   );
 
-  const handleSetAirwaysMode = useCallback(
-    (mode: AirwaysMode) => {
-      setAirwaysMode(mode);
-    },
-    [setAirwaysMode]
-  );
-
   const handleLoadViewportNavaids = useCallback(async () => {}, []);
 
   const handleToggleVatsim = useCallback(() => {
@@ -507,6 +558,8 @@ export default function Map({ airports }: MapProps) {
         onTogglePlaneTracker={handleTogglePlaneTracker}
         onNavToggle={handleNavLayerToggle}
       />
+
+      <FlightPlanBar onWaypointClick={handleWaypointClick} />
 
       <SettingsDialog
         open={showSettings}

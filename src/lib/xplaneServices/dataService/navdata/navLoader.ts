@@ -266,13 +266,17 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
 
   if (!cacheCheck.needsReload) {
     const count = getAirspaceCount();
-    logger.data.info(`Airspaces cache valid (${sourceType}), loaded ${count} from database`);
-    return {
-      data: getAllAirspacesFromDb(),
-      loaded: true,
-      source: airspacePath,
-      fromCache: true,
-    };
+    // Safety check: if cache says valid but table is empty, force reload
+    if (count > 0) {
+      logger.data.info(`Airspaces cache valid (${sourceType}), loaded ${count} from database`);
+      return {
+        data: getAllAirspacesFromDb(),
+        loaded: true,
+        source: airspacePath,
+        fromCache: true,
+      };
+    }
+    logger.data.warn(`Airspaces cache metadata valid but table empty, forcing reload`);
   }
 
   logger.data.info(`Airspaces cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
