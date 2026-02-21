@@ -103,7 +103,8 @@ function initTables(): void {
       path TEXT PRIMARY KEY,
       mtime INTEGER NOT NULL,
       record_count INTEGER,
-      data_type TEXT NOT NULL
+      data_type TEXT NOT NULL,
+      source_type TEXT NOT NULL DEFAULT 'unknown'
     );
   `);
 

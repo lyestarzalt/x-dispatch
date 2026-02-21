@@ -14,16 +14,32 @@ import type { Airspace, AirwaySegment, Navaid, Waypoint } from '@/types/navigati
 // ============================================================================
 
 export type NavDataType = 'navaids' | 'waypoints' | 'airways' | 'airspaces';
+export type NavSourceType = 'navigraph' | 'xplane-default' | 'unknown';
 
 export interface NavFileInfo {
   path: string;
   mtime: number;
   dataType: NavDataType;
+  sourceType: NavSourceType;
 }
 
 export interface NavCacheCheckResult {
   needsReload: boolean;
   reason?: string;
+}
+
+/**
+ * Detect source type from file path
+ * Custom Data/ = Navigraph, Resources/default data/ = X-Plane default
+ */
+export function detectSourceType(filePath: string): NavSourceType {
+  if (filePath.includes('Custom Data')) {
+    return 'navigraph';
+  }
+  if (filePath.includes('Resources') && filePath.includes('default data')) {
+    return 'xplane-default';
+  }
+  return 'unknown';
 }
 
 // ============================================================================
@@ -47,15 +63,22 @@ export function getFileMtime(filePath: string): number | null {
  */
 export function getStoredNavFileMeta(
   dataType: NavDataType
-): { path: string; mtime: number } | null {
+): { path: string; mtime: number; sourceType: NavSourceType } | null {
   const db = getDb();
   const stored = db.select().from(navFileMeta).where(eq(navFileMeta.dataType, dataType)).get();
 
-  return stored ? { path: stored.path, mtime: stored.mtime } : null;
+  return stored
+    ? {
+        path: stored.path,
+        mtime: stored.mtime,
+        sourceType: (stored.sourceType as NavSourceType) || 'unknown',
+      }
+    : null;
 }
 
 /**
  * Check if cache needs to be reloaded for a specific data type
+ * Validates: path, mtime, and source type (Navigraph vs X-Plane)
  */
 export function checkNavCacheValidity(
   currentPath: string,
@@ -67,15 +90,27 @@ export function checkNavCacheValidity(
     return { needsReload: true, reason: 'No cached data' };
   }
 
+  // Check if source changed (Navigraph ↔ X-Plane)
+  const currentSource = detectSourceType(currentPath);
+  if (stored.sourceType !== currentSource) {
+    return {
+      needsReload: true,
+      reason: `Source changed: ${stored.sourceType} → ${currentSource}`,
+    };
+  }
+
+  // Check if path changed (handles file location changes within same source)
   if (stored.path !== currentPath) {
     return { needsReload: true, reason: 'File path changed' };
   }
 
+  // Check if file exists
   const currentMtime = getFileMtime(currentPath);
   if (currentMtime === null) {
     return { needsReload: true, reason: 'File not found' };
   }
 
+  // Check if file was modified
   if (stored.mtime !== currentMtime) {
     return { needsReload: true, reason: 'File modified' };
   }
@@ -95,18 +130,25 @@ export function updateNavFileMeta(
   const mtime = getFileMtime(filePath);
   if (mtime === null) return;
 
+  const sourceType = detectSourceType(filePath);
+
   // Delete existing entry for this data type
   db.delete(navFileMeta).where(eq(navFileMeta.dataType, dataType)).run();
 
-  // Insert new entry
+  // Insert new entry with source type
   db.insert(navFileMeta)
     .values({
       path: filePath,
       mtime,
       recordCount,
       dataType,
+      sourceType,
     })
     .run();
+
+  logger.data.debug(
+    `Updated ${dataType} cache: ${recordCount} records from ${sourceType} (${filePath})`
+  );
 }
 
 // ============================================================================

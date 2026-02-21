@@ -68,6 +68,7 @@ export const navFileMeta = sqliteTable('nav_file_meta', {
   mtime: integer('mtime').notNull(),
   recordCount: integer('record_count'),
   dataType: text('data_type').notNull(), // 'navaids', 'waypoints', 'airways', 'airspaces'
+  sourceType: text('source_type').notNull().default('unknown'), // 'navigraph', 'xplane-default', 'unknown'
 });
 
 /**

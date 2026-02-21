@@ -44,6 +44,7 @@ import {
   clearAirways,
   clearNavaids,
   clearWaypoints,
+  detectSourceType,
   getAirspaceCount,
   getAirwayCount,
   getAllAirspacesFromDb,
@@ -88,10 +89,11 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
 
   // Check cache validity
   const cacheCheck = checkNavCacheValidity(navPath, 'navaids');
+  const sourceType = detectSourceType(navPath);
 
   if (!cacheCheck.needsReload) {
     const count = getNavaidCount();
-    logger.data.info(`Navaids cache valid, loaded ${count} from database`);
+    logger.data.info(`Navaids cache valid (${sourceType}), loaded ${count} from database`);
     return {
       data: getAllNavaidsFromDb(),
       loaded: true,
@@ -100,7 +102,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
     };
   }
 
-  logger.data.info(`Navaids cache stale (${cacheCheck.reason}), reloading from file`);
+  logger.data.info(`Navaids cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
 
   // Parse file
   const startTime = Date.now();
@@ -144,10 +146,11 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
 
   // Check cache validity
   const cacheCheck = checkNavCacheValidity(fixPath, 'waypoints');
+  const sourceType = detectSourceType(fixPath);
 
   if (!cacheCheck.needsReload) {
     const count = getWaypointCount();
-    logger.data.info(`Waypoints cache valid, loaded ${count} from database`);
+    logger.data.info(`Waypoints cache valid (${sourceType}), loaded ${count} from database`);
     return {
       data: getAllWaypointsFromDb(),
       loaded: true,
@@ -156,7 +159,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
     };
   }
 
-  logger.data.info(`Waypoints cache stale (${cacheCheck.reason}), reloading from file`);
+  logger.data.info(`Waypoints cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
 
   // Parse file
   const startTime = Date.now();
@@ -200,10 +203,11 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
 
   // Check cache validity
   const cacheCheck = checkNavCacheValidity(awyPath, 'airways');
+  const sourceType = detectSourceType(awyPath);
 
   if (!cacheCheck.needsReload) {
     const count = getAirwayCount();
-    logger.data.info(`Airways cache valid, loaded ${count} from database`);
+    logger.data.info(`Airways cache valid (${sourceType}), loaded ${count} from database`);
     return {
       data: getAllAirwaysFromDb(),
       loaded: true,
@@ -212,7 +216,7 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
     };
   }
 
-  logger.data.info(`Airways cache stale (${cacheCheck.reason}), reloading from file`);
+  logger.data.info(`Airways cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
 
   // Parse file
   const startTime = Date.now();
@@ -258,10 +262,11 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
 
   // Check cache validity
   const cacheCheck = checkNavCacheValidity(airspacePath, 'airspaces');
+  const sourceType = detectSourceType(airspacePath);
 
   if (!cacheCheck.needsReload) {
     const count = getAirspaceCount();
-    logger.data.info(`Airspaces cache valid, loaded ${count} from database`);
+    logger.data.info(`Airspaces cache valid (${sourceType}), loaded ${count} from database`);
     return {
       data: getAllAirspacesFromDb(),
       loaded: true,
@@ -270,7 +275,7 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
     };
   }
 
-  logger.data.info(`Airspaces cache stale (${cacheCheck.reason}), reloading from file`);
+  logger.data.info(`Airspaces cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
 
   // Parse file
   const startTime = Date.now();
