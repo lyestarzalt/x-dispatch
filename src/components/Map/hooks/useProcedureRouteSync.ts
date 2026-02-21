@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
+import { useMapStore } from '@/stores/mapStore';
 import { addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
 
@@ -13,6 +14,7 @@ interface UseProcedureRouteSyncOptions {
  */
 export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions): void {
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
+  const styleVersion = useMapStore((s) => s.styleVersion);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -20,6 +22,11 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
 
     if (!selectedProcedure) {
       removeProcedureRouteLayer(map);
+      return;
+    }
+
+    // Wait for style to be loaded before adding layers
+    if (!map.isStyleLoaded()) {
       return;
     }
 
@@ -38,5 +45,5 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
       // Use captured map reference for cleanup
       removeProcedureRouteLayer(map);
     };
-  }, [mapRef, selectedProcedure]);
+  }, [mapRef, selectedProcedure, styleVersion]);
 }

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { VatsimData, getPilotsInBounds } from '@/queries/useVatsimQuery';
+import { useMapStore } from '@/stores/mapStore';
 import { removeVatsimPilotLayer, setupVatsimClickHandler, updateVatsimPilotLayer } from '../layers';
 import type { MapRef, PopupRef } from './useMapSetup';
 
@@ -16,6 +17,8 @@ export function useVatsimSync({
   vatsimData,
   vatsimEnabled,
 }: UseVatsimSyncOptions): void {
+  const styleVersion = useMapStore((s) => s.styleVersion);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !vatsimEnabled) return;
@@ -50,7 +53,7 @@ export function useVatsimSync({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled]);
+  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled, styleVersion]);
 }
 
 export function toggleVatsimLayer(mapRef: MapRef, vatsimPopupRef: PopupRef, enable: boolean): void {
