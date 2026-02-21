@@ -3,43 +3,27 @@
  * Resolves waypoint coordinates for CIFP procedures by looking up
  * fixes in the waypoint and navaid databases.
  */
-import { Coordinates } from '@/types/geo';
-import type { Navaid, Waypoint } from '@/types/navigation';
-import { AirportProcedures, Procedure, ProcedureWaypoint } from './cifpParser';
+import type { Coordinates } from '@/types/geo';
+import type {
+  AirportProcedures,
+  CoordResolver,
+  FixTypeCode,
+  Navaid,
+  Procedure,
+  ProcedureWaypoint,
+  ResolvedAirportProcedures,
+  ResolvedProcedure,
+  ResolvedProcedureWaypoint,
+  Waypoint,
+} from '@/types/navigation';
 
-/**
- * Extended waypoint with resolved coordinates
- */
-interface ResolvedProcedureWaypoint extends ProcedureWaypoint {
-  latitude?: number;
-  longitude?: number;
-  resolved: boolean;
-}
-
-/**
- * Procedure with resolved waypoint coordinates
- */
-export interface ResolvedProcedure extends Omit<Procedure, 'waypoints'> {
-  waypoints: ResolvedProcedureWaypoint[];
-}
-
-/**
- * Airport procedures with resolved coordinates
- */
-export interface ResolvedAirportProcedures {
-  icao: string;
-  sids: ResolvedProcedure[];
-  stars: ResolvedProcedure[];
-  approaches: ResolvedProcedure[];
-}
-
-/**
- * Coordinate resolver function type
- * @param fixId - The fix identifier
- * @param region - The ICAO region code
- * @param type - Fix type (E=waypoint, V=VOR, N=NDB, A=Airport, etc.)
- */
-export type CoordResolver = (fixId: string, region: string, type: string) => Coordinates | null;
+// Re-export types for backward compatibility
+export type {
+  CoordResolver,
+  ResolvedAirportProcedures,
+  ResolvedProcedure,
+  ResolvedProcedureWaypoint,
+} from '@/types/navigation';
 
 /**
  * Calculate distance between two points in nautical miles (approximate)
@@ -153,7 +137,7 @@ export function createProcedureCoordResolver(
     return nearest;
   }
 
-  return (fixId: string, region: string, type: string): Coordinates | null => {
+  return (fixId: string, region: string, type: FixTypeCode): Coordinates | null => {
     const upperFixId = fixId.toUpperCase();
     const upperRegion = region.toUpperCase();
     const key = `${upperFixId}:${upperRegion}`;
@@ -256,7 +240,7 @@ export function enrichProceduresWithCoordinates(
 /**
  * Get resolution statistics for a set of procedures
  */
-function getProcedureResolutionStats(procedures: ResolvedAirportProcedures): {
+export function getProcedureResolutionStats(procedures: ResolvedAirportProcedures): {
   totalWaypoints: number;
   resolvedWaypoints: number;
   unresolvedWaypoints: number;
@@ -289,7 +273,7 @@ function getProcedureResolutionStats(procedures: ResolvedAirportProcedures): {
 /**
  * Get list of unresolved waypoint IDs from procedures
  */
-function getUnresolvedWaypoints(procedures: ResolvedAirportProcedures): string[] {
+export function getUnresolvedWaypoints(procedures: ResolvedAirportProcedures): string[] {
   const unresolved = new Set<string>();
 
   const collectUnresolved = (procs: ResolvedProcedure[]) => {

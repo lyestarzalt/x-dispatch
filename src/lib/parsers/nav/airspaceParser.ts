@@ -3,9 +3,28 @@
  * Parses airspace boundaries with class, name, limits, and polygon coordinates
  */
 import { z } from 'zod';
-import type { Airspace } from '@/types/navigation';
+import type { Airspace, AirspaceClass } from '@/types/navigation';
 import { lonLat } from '../schemas';
 import type { ParseError, ParseResult } from '../types';
+
+// Valid airspace classes
+const VALID_AIRSPACE_CLASSES: AirspaceClass[] = [
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'CTR',
+  'TMA',
+  'R',
+  'P',
+  'Q',
+  'W',
+  'GP',
+  'OTHER',
+];
 
 function parseDMS(dms: string): number {
   const parts = dms.trim().split(/\s+/);
@@ -39,10 +58,11 @@ function parsePoint(line: string): [number, number] | null {
   return result.success ? [result.data[0], result.data[1]] : null;
 }
 
-function normalizeAirspaceClass(classStr: string): string {
+function normalizeAirspaceClass(classStr: string): AirspaceClass {
   const upperClass = classStr.toUpperCase().trim();
-  const validClasses = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'CTR', 'TMA', 'R', 'P', 'Q', 'W', 'GP'];
-  return validClasses.includes(upperClass) ? upperClass : 'OTHER';
+  return VALID_AIRSPACE_CLASSES.includes(upperClass as AirspaceClass)
+    ? (upperClass as AirspaceClass)
+    : 'OTHER';
 }
 
 export function parseAirspaces(content: string): ParseResult<Airspace[]> {

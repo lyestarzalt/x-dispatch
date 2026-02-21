@@ -7,7 +7,15 @@ import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, saveDb, waypoints } from '@/lib/db';
 import logger from '@/lib/utils/logger';
-import type { Airspace, AirwaySegment, Navaid, Waypoint } from '@/types/navigation';
+import type {
+  Airspace,
+  AirspaceClass,
+  AirwayDirection,
+  AirwaySegment,
+  Navaid,
+  Waypoint,
+} from '@/types/navigation';
+import { FixTypeNumber } from '@/types/navigation';
 
 // ============================================================================
 // Types
@@ -352,14 +360,14 @@ export function getAllAirwaysFromDb(): AirwaySegment[] {
     name: r.name,
     fromFix: r.fromFix,
     fromRegion: r.fromRegion,
-    fromNavaidType: r.fromNavaidType,
+    fromNavaidType: r.fromNavaidType as FixTypeNumber,
     toFix: r.toFix,
     toRegion: r.toRegion,
-    toNavaidType: r.toNavaidType,
+    toNavaidType: r.toNavaidType as FixTypeNumber,
     isHigh: r.isHigh,
     baseFl: r.baseFl,
     topFl: r.topFl,
-    direction: r.direction,
+    direction: r.direction as AirwayDirection,
   }));
 }
 
@@ -415,7 +423,7 @@ export function getAllAirspacesFromDb(): Airspace[] {
 
   return results.map((r) => ({
     name: r.name,
-    class: r.airspaceClass,
+    class: r.airspaceClass as AirspaceClass,
     upperLimit: r.upperLimit ?? '',
     lowerLimit: r.lowerLimit ?? '',
     coordinates: JSON.parse(r.coordinates) as [number, number][],

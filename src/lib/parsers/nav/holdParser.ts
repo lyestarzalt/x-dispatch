@@ -3,19 +3,28 @@
  * Parses holding patterns with fix, course, timing, and altitude data
  */
 import { z } from 'zod';
-import type { HoldingPattern } from '@/types/navigation';
+import type { HoldingPattern, TurnDirection } from '@/types/navigation';
+import { FixTypeNumber } from '@/types/navigation';
 import { altitude, bearing, nonNegative } from '../schemas';
 import type { ParseError, ParseResult } from '../types';
+
+// Valid fix type numbers in holdings
+const VALID_FIX_TYPE_NUMBERS = [
+  FixTypeNumber.NDB,
+  FixTypeNumber.VOR,
+  FixTypeNumber.WAYPOINT,
+  FixTypeNumber.DME_STANDALONE,
+];
 
 const HoldingPatternSchema = z.object({
   fixId: z.string().min(1),
   fixRegion: z.string(),
   airport: z.string(),
-  fixType: z.number(),
+  fixType: z.number().refine((n) => VALID_FIX_TYPE_NUMBERS.includes(n)),
   inboundCourse: bearing,
   legTime: nonNegative,
   legDistance: nonNegative,
-  turnDirection: z.enum(['L', 'R']),
+  turnDirection: z.enum(['L', 'R']) as z.ZodType<TurnDirection>,
   minAlt: altitude,
   maxAlt: altitude,
   speedKts: nonNegative,
