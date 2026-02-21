@@ -4,11 +4,13 @@ import maplibregl from 'maplibre-gl';
  * Helper to safely remove layers and source
  */
 export function removeLayersAndSource(
-  map: maplibregl.Map,
+  map: maplibregl.Map | null | undefined,
   layerId: string,
   sourceId: string,
   additionalLayerIds?: string[]
 ): void {
+  if (!map) return;
+
   // Remove additional layers first
   if (additionalLayerIds) {
     for (const id of additionalLayerIds) {
@@ -33,10 +35,12 @@ export function removeLayersAndSource(
  * Helper to set visibility on multiple layers
  */
 export function setLayersVisibility(
-  map: maplibregl.Map,
+  map: maplibregl.Map | null | undefined,
   layerIds: string[],
   visible: boolean
 ): void {
+  if (!map) return;
+
   const visibility = visible ? 'visible' : 'none';
   for (const id of layerIds) {
     if (map.getLayer(id)) {

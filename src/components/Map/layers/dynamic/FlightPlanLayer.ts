@@ -161,7 +161,9 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: FMSFlightPlan):
   });
 }
 
-export function removeFlightPlanLayer(map: maplibregl.Map): void {
+export function removeFlightPlanLayer(map: maplibregl.Map | null | undefined): void {
+  if (!map) return;
+
   const layers = [LABELS_ID, WAYPOINTS_ID, LINE_ID, LINE_CASING_ID];
   const sources = [WAYPOINT_SOURCE_ID, SOURCE_ID];
 

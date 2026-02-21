@@ -287,12 +287,21 @@ export default function Map({ airports }: MapProps) {
     const map = mapRef.current;
     if (!map) return;
 
-    if (fmsData) {
-      addFlightPlanLayer(map, fmsData);
-      fitMapToFlightPlan(map, fmsData);
-    } else {
-      removeFlightPlanLayer(map);
-    }
+    const updateFlightPlanLayer = () => {
+      if (!map.isStyleLoaded()) {
+        map.once('styledata', updateFlightPlanLayer);
+        return;
+      }
+
+      if (fmsData) {
+        addFlightPlanLayer(map, fmsData);
+        fitMapToFlightPlan(map, fmsData);
+      } else {
+        removeFlightPlanLayer(map);
+      }
+    };
+
+    updateFlightPlanLayer();
   }, [mapRef, fmsData]);
 
   // Fly to selected waypoint
