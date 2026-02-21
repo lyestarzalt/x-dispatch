@@ -548,17 +548,29 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
 
+  // Track programmatic map movements to avoid disabling follow mode
+  const isProgrammaticMoveRef = useRef(false);
+
   const handleCenterPlane = useCallback(() => {
     if (!planePosition || !mapRef.current) return;
     // Toggle follow mode
-    setFollowPlane(!followPlane);
-    // Initial fly to plane position with heading
-    mapRef.current.flyTo({
-      center: [planePosition.lng, planePosition.lat],
-      bearing: planePosition.heading ?? 0,
-      zoom: 12,
-      duration: 1500,
-    });
+    const newFollowState = !followPlane;
+    setFollowPlane(newFollowState);
+
+    if (newFollowState) {
+      // Mark as programmatic to avoid triggering disable
+      isProgrammaticMoveRef.current = true;
+      mapRef.current.flyTo({
+        center: [planePosition.lng, planePosition.lat],
+        bearing: planePosition.heading ?? 0,
+        zoom: 12,
+        duration: 1500,
+      });
+      // Reset after animation completes
+      setTimeout(() => {
+        isProgrammaticMoveRef.current = false;
+      }, 1600);
+    }
   }, [mapRef, planePosition, followPlane, setFollowPlane]);
 
   // Follow plane position and heading when follow mode is active
@@ -566,34 +578,38 @@ export default function Map({ airports }: MapProps) {
     const map = mapRef.current;
     if (!map || !followPlane || !planePosition) return;
 
-    // Smoothly update map to follow plane
+    // Mark as programmatic movement
+    isProgrammaticMoveRef.current = true;
     map.easeTo({
       center: [planePosition.lng, planePosition.lat],
       bearing: planePosition.heading ?? 0,
       duration: 500,
     });
+    // Reset after animation
+    const timer = setTimeout(() => {
+      isProgrammaticMoveRef.current = false;
+    }, 550);
+
+    return () => clearTimeout(timer);
   }, [mapRef, followPlane, planePosition]);
 
-  // Disable follow mode when user interacts with the map
+  // Disable follow mode when user interacts with the map (not programmatic)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const disableFollow = () => {
-      if (followPlane) {
+      // Only disable if this is a user interaction, not programmatic
+      if (!isProgrammaticMoveRef.current && followPlane) {
         setFollowPlane(false);
       }
     };
 
     // User interactions that should disable follow mode
     map.on('dragstart', disableFollow);
-    map.on('zoomstart', disableFollow);
-    map.on('rotatestart', disableFollow);
 
     return () => {
       map.off('dragstart', disableFollow);
-      map.off('zoomstart', disableFollow);
-      map.off('rotatestart', disableFollow);
     };
   }, [mapRef, followPlane, setFollowPlane]);
 
