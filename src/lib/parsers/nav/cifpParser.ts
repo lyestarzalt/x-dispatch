@@ -1,63 +1,64 @@
-export interface ProcedureWaypoint {
-  fixId: string;
-  fixRegion: string;
-  fixType: string; // E = Enroute waypoint, V = VOR, N = NDB, A = Airport
-  pathTerminator: string; // IF, TF, CF, DF, VA, VM, etc.
-  course: number | null;
-  distance: number | null;
-  altitude: {
-    descriptor: string; // +, -, @, B (at or above, at or below, at, between)
-    altitude1: number | null;
-    altitude2: number | null;
-  } | null;
-  speed: number | null;
-  turnDirection: 'L' | 'R' | null;
-}
+/**
+ * CIFP Parser
+ * Parses X-Plane CIFP/{ICAO}.dat files for SID, STAR, and Approach procedures
+ */
+import type {
+  AirportProcedures,
+  AltitudeConstraint,
+  AltitudeDescriptor,
+  FixTypeCode,
+  PathTerminator,
+  Procedure,
+  ProcedureType,
+  ProcedureWaypoint,
+  TurnDirection,
+} from '@/types/navigation';
 
-export interface Procedure {
-  type: 'SID' | 'STAR' | 'APPROACH';
-  name: string;
-  runway: string | null; // null for "ALL" runways
-  transition: string | null;
-  waypoints: ProcedureWaypoint[];
-}
+// Re-export types for backward compatibility
+export type {
+  AirportProcedures,
+  AltitudeConstraint,
+  AltitudeDescriptor,
+  FixTypeCode,
+  PathTerminator,
+  Procedure,
+  ProcedureType,
+  ProcedureWaypoint,
+  TurnDirection,
+} from '@/types/navigation';
 
-export interface AirportProcedures {
-  icao: string;
-  sids: Procedure[];
-  stars: Procedure[];
-  approaches: Procedure[];
-}
-
-// Path terminator types
-const PATH_TERMINATORS: Record<string, string> = {
-  IF: 'Initial Fix',
-  TF: 'Track to Fix',
-  CF: 'Course to Fix',
-  DF: 'Direct to Fix',
-  FA: 'Fix to Altitude',
-  FC: 'Track from Fix to DME',
-  FD: 'Track from Fix to DME Distance',
-  FM: 'From Fix to Manual',
-  CA: 'Course to Altitude',
-  CD: 'Course to DME',
-  CI: 'Course to Intercept',
-  CR: 'Course to Radial',
-  RF: 'Constant Radius Arc',
-  AF: 'Arc to Fix',
-  VA: 'Heading to Altitude',
-  VD: 'Heading to DME',
-  VI: 'Heading to Intercept',
-  VM: 'Heading to Manual',
-  VR: 'Heading to Radial',
-  PI: 'Procedure Turn',
-  HA: 'Racetrack to Altitude',
-  HF: 'Racetrack to Fix',
-  HM: 'Racetrack to Manual',
-};
+// Valid values for type checking
+const VALID_FIX_TYPES: FixTypeCode[] = ['A', 'C', 'D', 'E', 'N', 'P', 'V'];
+const VALID_PATH_TERMINATORS: PathTerminator[] = [
+  'IF',
+  'TF',
+  'CF',
+  'DF',
+  'FA',
+  'FC',
+  'FD',
+  'FM',
+  'CA',
+  'CD',
+  'CI',
+  'CR',
+  'RF',
+  'AF',
+  'VA',
+  'VD',
+  'VI',
+  'VM',
+  'VR',
+  'PI',
+  'HA',
+  'HF',
+  'HM',
+];
+const VALID_ALTITUDE_DESCRIPTORS: AltitudeDescriptor[] = ['+', '-', '@', 'B'];
+const VALID_TURN_DIRECTIONS: TurnDirection[] = ['L', 'R'];
 
 /**
- * Parse a CIFP line
+ * Parse a CIFP line into type and data fields
  * Format: TYPE:SEQ,ROUTE_TYPE,NAME,RUNWAY,FIX,FIX_REGION,FIX_TYPE,DESC_CODE,...
  */
 function parseCIFPLine(line: string): { type: string; data: string[] } | null {
@@ -74,35 +75,55 @@ function parseCIFPLine(line: string): { type: string; data: string[] } | null {
 }
 
 /**
- * Parse altitude from CIFP format
- * Examples: "+02500", "-05000", "@10000", "B0500018000"
+ * Parse fix type from CIFP field
  */
-function parseAltitude(
-  altStr: string
-): { descriptor: string; altitude1: number | null; altitude2: number | null } | null {
-  if (!altStr || altStr.trim() === '') return null;
+function parseFixType(value: string): FixTypeCode {
+  const trimmed = value.trim().charAt(0).toUpperCase();
+  return VALID_FIX_TYPES.includes(trimmed as FixTypeCode) ? (trimmed as FixTypeCode) : 'E';
+}
 
-  const str = altStr.trim();
-  if (str.length === 0) return null;
+/**
+ * Parse path terminator from CIFP field
+ */
+function parsePathTerminator(value: string): PathTerminator {
+  const trimmed = value.trim().toUpperCase();
+  return VALID_PATH_TERMINATORS.includes(trimmed as PathTerminator)
+    ? (trimmed as PathTerminator)
+    : 'TF';
+}
 
-  const descriptor = str[0];
-  const rest = str.substring(1);
+/**
+ * Parse altitude descriptor
+ */
+function parseAltitudeDescriptor(value: string): AltitudeDescriptor {
+  const trimmed = value.trim();
+  return VALID_ALTITUDE_DESCRIPTORS.includes(trimmed as AltitudeDescriptor)
+    ? (trimmed as AltitudeDescriptor)
+    : '@';
+}
 
-  if (descriptor === 'B' && rest.length >= 10) {
-    // Between altitudes
-    return {
-      descriptor: 'B',
-      altitude1: parseInt(rest.substring(0, 5), 10) || null,
-      altitude2: parseInt(rest.substring(5, 10), 10) || null,
-    };
-  }
+/**
+ * Parse turn direction
+ */
+function parseTurnDirection(value: string): TurnDirection | null {
+  const trimmed = value.trim().toUpperCase();
+  return VALID_TURN_DIRECTIONS.includes(trimmed as TurnDirection)
+    ? (trimmed as TurnDirection)
+    : null;
+}
 
-  const alt = parseInt(rest, 10);
-  if (isNaN(alt)) return null;
+/**
+ * Parse altitude constraint from CIFP fields
+ */
+function parseAltitude(descriptor: string, alt1Str: string): AltitudeConstraint | null {
+  if (!alt1Str || alt1Str.trim() === '') return null;
+
+  const alt1 = parseInt(alt1Str, 10);
+  if (isNaN(alt1)) return null;
 
   return {
-    descriptor: ['+', '-', '@'].includes(descriptor) ? descriptor : '@',
-    altitude1: alt,
+    descriptor: parseAltitudeDescriptor(descriptor),
+    altitude1: alt1,
     altitude2: null,
   };
 }
@@ -118,8 +139,11 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
   if (!fixId) return null; // Skip lines without a fix
 
   const fixRegion = data[5]?.trim() || '';
-  const fixType = data[6]?.trim() || '';
-  const pathTerminator = data[11]?.trim() || '';
+  const fixType = parseFixType(data[6] || '');
+  const pathTerminator = parsePathTerminator(data[11] || '');
+
+  // Parse turn direction from field 9
+  const turnDirection = parseTurnDirection(data[9] || '');
 
   // Parse course from field 18 (if present)
   const courseStr = data[18]?.trim() || '';
@@ -132,17 +156,7 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
   // Parse altitude - descriptor at index 22, altitude at index 23
   const altDescriptor = data[22]?.trim() || '';
   const alt1Str = data[23]?.trim() || '';
-  let altitude: ProcedureWaypoint['altitude'] = null;
-  if (alt1Str) {
-    const alt1 = parseInt(alt1Str, 10);
-    if (!isNaN(alt1)) {
-      altitude = {
-        descriptor: ['+', '-', '@', 'B'].includes(altDescriptor) ? altDescriptor : '@',
-        altitude1: alt1,
-        altitude2: null,
-      };
-    }
-  }
+  const altitude = parseAltitude(altDescriptor, alt1Str);
 
   // Parse speed from field 25 (if present)
   const speedStr = data[25]?.trim() || '';
@@ -157,7 +171,7 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
     distance,
     altitude,
     speed,
-    turnDirection: null,
+    turnDirection,
   };
 }
 
@@ -174,8 +188,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
   };
 
   // Group lines by procedure
-  const procedureGroups: Map<string, { type: 'SID' | 'STAR' | 'APPROACH'; lines: string[] }> =
-    new Map();
+  const procedureGroups: Map<string, { type: ProcedureType; lines: string[] }> = new Map();
 
   for (const line of lines) {
     if (!line.trim()) continue;
@@ -186,7 +199,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
     const { type, data } = parsed;
 
     // Determine procedure type
-    let procType: 'SID' | 'STAR' | 'APPROACH' | null = null;
+    let procType: ProcedureType | null = null;
     if (type === 'SID') procType = 'SID';
     else if (type === 'STAR') procType = 'STAR';
     else if (type === 'APPCH' || type === 'FINAL' || type.startsWith('RWY')) procType = 'APPROACH';
@@ -198,9 +211,9 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
     const name = data[2]?.trim() || '';
     const runway = data[3]?.trim() || '';
 
-    // Route types: 1=runway transition, 4=common route, 5=enroute transition, 6=runway transition
+    // Route types: 1=runway transition, 2=common route, 5=enroute transition, 6=runway transition
     const transition = routeType === '6' || routeType === '5' ? runway : null;
-    const actualRunway = routeType === '1' || routeType === '4' ? runway : null;
+    const actualRunway = routeType === '1' || routeType === '2' ? runway : null;
 
     const key = `${procType}-${name}-${actualRunway || 'ALL'}-${transition || ''}`;
 
@@ -213,7 +226,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
   // Process each procedure group
   for (const [key, group] of procedureGroups) {
     const parts = key.split('-');
-    const procType = parts[0] as 'SID' | 'STAR' | 'APPROACH';
+    const procType = parts[0] as ProcedureType;
     const name = parts[1];
     const runway = parts[2] === 'ALL' ? null : parts[2];
     const transition = parts[3] || null;
@@ -256,7 +269,10 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
   return procedures;
 }
 
-function getUniqueProcedureNames(procedures: Procedure[]): string[] {
+/**
+ * Get unique procedure names from a list of procedures
+ */
+export function getUniqueProcedureNames(procedures: Procedure[]): string[] {
   const names = new Set<string>();
   for (const proc of procedures) {
     names.add(proc.name);
@@ -264,7 +280,10 @@ function getUniqueProcedureNames(procedures: Procedure[]): string[] {
   return Array.from(names).sort();
 }
 
-function getProcedureRunways(procedures: Procedure[], name: string): string[] {
+/**
+ * Get runways for a specific procedure name
+ */
+export function getProcedureRunways(procedures: Procedure[], name: string): string[] {
   const runways = new Set<string>();
   for (const proc of procedures) {
     if (proc.name === name && proc.runway) {
@@ -274,7 +293,10 @@ function getProcedureRunways(procedures: Procedure[], name: string): string[] {
   return Array.from(runways).sort();
 }
 
-function getProcedureTransitions(procedures: Procedure[], name: string): string[] {
+/**
+ * Get transitions for a specific procedure name
+ */
+export function getProcedureTransitions(procedures: Procedure[], name: string): string[] {
   const transitions = new Set<string>();
   for (const proc of procedures) {
     if (proc.name === name && proc.transition) {
