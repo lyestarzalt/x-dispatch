@@ -346,7 +346,13 @@ export default function Toolbar({
           <Button
             variant="outline"
             onClick={() => setShowLaunchDialog(true)}
-            className={cn('h-10 gap-2 px-3', hasStartPosition && 'border-success/50 text-success')}
+            disabled={!selectedICAO}
+            className={cn(
+              'h-10 gap-2 px-3',
+              hasStartPosition && 'border-success/50 text-success',
+              !selectedICAO && 'opacity-50'
+            )}
+            title={!selectedICAO ? t('toolbar.launchDisabled') : undefined}
           >
             <Plane className="h-4 w-4" />
             <span className="text-xs font-medium">{t('toolbar.launch')}</span>
