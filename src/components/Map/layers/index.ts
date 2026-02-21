@@ -19,20 +19,15 @@ import type { LayerRenderer } from './airport/BaseLayerRenderer';
 // Re-export base types
 export { type LayerRenderer } from './airport/BaseLayerRenderer';
 
-// Navigation layer singletons
-export { airspaceLayer } from './airspace/AirspaceLayer';
-export { firLayer } from './airspace/FIRLayer';
-export {
-  dmeLayer,
-  highAirwayLayer,
-  ilsLayer,
-  lowAirwayLayer,
-  ndbLayer,
-  vorLayer,
-  waypointLayer,
-} from './navigation';
+// Navigation layer singletons (consolidated)
+export { airspaceLayer, firLayer, holdingPatternLayer, ilsLayer, navaidLayer } from './navigation';
 
 // Dynamic layer functions
+export {
+  addFlightPlanLayer,
+  fitMapToFlightPlan,
+  removeFlightPlanLayer,
+} from './dynamic/FlightPlanLayer';
 export {
   addPlaneLayer,
   bringPlaneLayerToTop,

@@ -87,6 +87,7 @@
     "track": "Track",
     "trackTooltip": "Track your aircraft position",
     "launch": "Launch",
+    "loadPlan": "Load Plan",
     "navigationLayers": "Navigation Layers"
   },
 
@@ -410,11 +411,8 @@
       "windsocks": "Windsocks",
       "animations": "Animations",
       "weatherEffects": "Weather",
-      "vors": "VORs",
-      "ndbs": "NDBs",
-      "dmes": "DMEs",
+      "navaids": "Navaids (VOR/NDB/DME)",
       "ils": "ILS",
-      "waypoints": "Waypoints",
       "airwaysOff": "Off",
       "highAirways": "High Airways (Jet)",
       "lowAirways": "Low Airways (Victor)"

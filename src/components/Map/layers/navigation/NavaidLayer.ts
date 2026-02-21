@@ -1,8 +1,16 @@
+/**
+ * Consolidated Navaid Layer
+ * Renders all radio navigation aids: VOR, VORTAC, VOR-DME, NDB, DME, TACAN
+ */
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
+
+// ============================================================================
+// SVG Symbol Generators
+// ============================================================================
 
 function createVORSymbolSVG(size: number = 48): string {
   const center = size / 2;
@@ -88,37 +96,144 @@ function createVORDMESymbolSVG(size: number = 48): string {
   </svg>`;
 }
 
+function createNDBSymbolSVG(size: number = 40): string {
+  const center = size / 2;
+  const outerRadius = size / 2 - 4;
+  const innerRadius = 5;
+  const dotRadius = 2;
+
+  let dots = '';
+  for (let ring = 1; ring <= 2; ring++) {
+    const ringRadius = innerRadius + ring * 6;
+    for (let i = 0; i < 8; i++) {
+      const angle = ((i * 45 - 90) * Math.PI) / 180;
+      const x = center + ringRadius * Math.cos(angle);
+      const y = center + ringRadius * Math.sin(angle);
+      dots += `<circle cx="${x}" cy="${y}" r="${dotRadius}" fill="${NAV_COLORS.ndb}" opacity="${ring === 1 ? 1 : 0.6}"/>`;
+    }
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${center}" cy="${center}" r="${outerRadius}" fill="none" stroke="${NAV_COLORS.ndb}" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <circle cx="${center}" cy="${center}" r="${innerRadius}" fill="${NAV_COLORS.ndb}"/>
+    ${dots}
+  </svg>`;
+}
+
+function createDMESymbolSVG(size: number = 32): string {
+  const center = size / 2;
+  const outerRadius = size / 2 - 4;
+  const innerRadius = outerRadius * 0.5;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <rect x="${center - outerRadius}" y="${center - outerRadius}" width="${outerRadius * 2}" height="${outerRadius * 2}" fill="none" stroke="${NAV_COLORS.dme}" stroke-width="2" transform="rotate(45 ${center} ${center})"/>
+    <circle cx="${center}" cy="${center}" r="${innerRadius}" fill="none" stroke="${NAV_COLORS.dme}" stroke-width="1.5"/>
+    <circle cx="${center}" cy="${center}" r="2" fill="${NAV_COLORS.dme}"/>
+  </svg>`;
+}
+
+function createTACANSymbolSVG(size: number = 40): string {
+  const center = size / 2;
+  const outerRadius = size / 2 - 4;
+
+  // Three pointed star shape
+  let points = '';
+  for (let i = 0; i < 3; i++) {
+    const angle = ((i * 120 - 90) * Math.PI) / 180;
+    const x = center + outerRadius * Math.cos(angle);
+    const y = center + outerRadius * Math.sin(angle);
+    points += `${x},${y} `;
+    // Inner point
+    const innerAngle = ((i * 120 + 60 - 90) * Math.PI) / 180;
+    const ix = center + outerRadius * 0.4 * Math.cos(innerAngle);
+    const iy = center + outerRadius * 0.4 * Math.sin(innerAngle);
+    points += `${ix},${iy} `;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <polygon points="${points.trim()}" fill="none" stroke="${NAV_COLORS.dme}" stroke-width="2"/>
+    <circle cx="${center}" cy="${center}" r="4" fill="${NAV_COLORS.dme}"/>
+  </svg>`;
+}
+
+// ============================================================================
+// Symbol Type Mapping
+// ============================================================================
+
+type NavaidSymbolType = 'vor' | 'vortac' | 'vor-dme' | 'ndb' | 'dme' | 'tacan';
+
+function getSymbolType(navaid: Navaid): NavaidSymbolType {
+  switch (navaid.type) {
+    case 'VORTAC':
+      return 'vortac';
+    case 'VOR-DME':
+      return 'vor-dme';
+    case 'NDB':
+      return 'ndb';
+    case 'DME':
+      return 'dme';
+    case 'TACAN':
+      return 'tacan';
+    default:
+      return 'vor';
+  }
+}
+
+function getNavaidColor(navaid: Navaid): string {
+  switch (navaid.type) {
+    case 'VORTAC':
+      return NAV_COLORS.vortac;
+    case 'VOR-DME':
+      return NAV_COLORS.vorDme;
+    case 'NDB':
+      return NAV_COLORS.ndb;
+    case 'DME':
+    case 'TACAN':
+      return NAV_COLORS.dme;
+    default:
+      return NAV_COLORS.vor;
+  }
+}
+
+function formatFrequency(navaid: Navaid): string {
+  if (navaid.type === 'NDB') {
+    return `${navaid.frequency} kHz`;
+  }
+  return `${(navaid.frequency / 100).toFixed(2)}`;
+}
+
+// ============================================================================
+// Navaid Layer Renderer
+// ============================================================================
+
 /**
- * VOR Layer - renders VOR, VORTAC, and VOR-DME navaids
+ * Consolidated Navaid Layer
+ * Renders VOR, VORTAC, VOR-DME, NDB, DME, and TACAN navaids
  */
-export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
-  readonly layerId = 'nav-vors';
-  readonly sourceId = 'nav-vors-source';
-  readonly additionalLayerIds = ['nav-vors-labels'];
+export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
+  readonly layerId = 'nav-navaids';
+  readonly sourceId = 'nav-navaids-source';
+  readonly additionalLayerIds = ['nav-navaids-labels'];
 
   private imagesLoaded = false;
 
-  protected createGeoJSON(vors: Navaid[]): GeoJSON.FeatureCollection {
+  protected createGeoJSON(navaids: Navaid[]): GeoJSON.FeatureCollection {
     return {
       type: 'FeatureCollection',
-      features: vors.map((vor) => ({
+      features: navaids.map((navaid) => ({
         type: 'Feature' as const,
         geometry: {
           type: 'Point' as const,
-          coordinates: [vor.longitude, vor.latitude],
+          coordinates: [navaid.longitude, navaid.latitude],
         },
         properties: {
-          id: vor.id,
-          name: vor.name,
-          type: vor.type,
-          frequency: vor.frequency,
-          freqDisplay: `${(vor.frequency / 100).toFixed(2)}`,
-          symbolType:
-            vor.type === 'VORTAC'
-              ? 'vortac-symbol'
-              : vor.type === 'VOR-DME'
-                ? 'vor-dme-symbol'
-                : 'vor-symbol',
+          id: navaid.id,
+          name: navaid.name,
+          type: navaid.type,
+          frequency: navaid.frequency,
+          freqDisplay: formatFrequency(navaid),
+          symbolType: `navaid-${getSymbolType(navaid)}`,
+          color: getNavaidColor(navaid),
         },
       })),
     };
@@ -126,9 +241,12 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
 
   protected async loadImages(map: maplibregl.Map): Promise<boolean> {
     const symbols = [
-      { id: 'vor-symbol', svg: createVORSymbolSVG(48) },
-      { id: 'vortac-symbol', svg: createVORTACSymbolSVG(48) },
-      { id: 'vor-dme-symbol', svg: createVORDMESymbolSVG(48) },
+      { id: 'navaid-vor', svg: createVORSymbolSVG(48) },
+      { id: 'navaid-vortac', svg: createVORTACSymbolSVG(48) },
+      { id: 'navaid-vor-dme', svg: createVORDMESymbolSVG(48) },
+      { id: 'navaid-ndb', svg: createNDBSymbolSVG(40) },
+      { id: 'navaid-dme', svg: createDMESymbolSVG(32) },
+      { id: 'navaid-tacan', svg: createTACANSymbolSVG(40) },
     ];
 
     let allLoaded = true;
@@ -165,7 +283,8 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
     const labelsLayerId = this.additionalLayerIds[0];
     if (!labelsLayerId) return;
 
-    if (this.imagesLoaded && map.hasImage('vor-symbol')) {
+    if (this.imagesLoaded) {
+      // Symbol layer with custom icons
       map.addLayer({
         id: this.layerId,
         type: 'symbol',
@@ -177,13 +296,13 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
         },
       });
     } else {
-      // Fallback to circle layer if images failed to load
+      // Fallback to colored circles
       map.addLayer({
         id: this.layerId,
         type: 'circle',
         source: this.sourceId,
         paint: {
-          'circle-color': NAV_COLORS.vor,
+          'circle-color': ['get', 'color'],
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 8, 16, 10],
           'circle-stroke-color': '#FFFFFF',
           'circle-stroke-width': 2,
@@ -191,7 +310,7 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
       });
     }
 
-    // VOR labels
+    // Labels
     map.addLayer({
       id: labelsLayerId,
       type: 'symbol',
@@ -206,7 +325,7 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
         'text-allow-overlap': false,
       },
       paint: {
-        'text-color': NAV_COLORS.vor,
+        'text-color': ['get', 'color'],
         'text-halo-color': '#000000',
         'text-halo-width': 1.5,
       },
@@ -214,5 +333,5 @@ export class VORLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 }
 
-export const vorLayer = new VORLayerRenderer();
-export const VOR_LAYER_IDS = vorLayer.getAllLayerIds();
+export const navaidLayer = new NavaidLayerRenderer();
+export const NAVAID_LAYER_IDS = navaidLayer.getAllLayerIds();

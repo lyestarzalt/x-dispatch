@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
   ChevronUp,
+  FileUp,
   Locate,
   Navigation,
   Plane,
@@ -18,9 +19,6 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -29,8 +27,9 @@ import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useNavDataCounts, usePlaneState } from '@/queries';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
-import type { AirwaysMode, NavLayerVisibility } from '@/types/layers';
+import type { NavLayerVisibility } from '@/types/layers';
 
 interface ToolbarProps {
   airports: Airport[];
@@ -55,6 +54,7 @@ export default function Toolbar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // App store
+  const selectedICAO = useAppStore((s) => s.selectedICAO);
   const selectedAirportData = useAppStore((s) => s.selectedAirportData);
   const hasStartPosition = useAppStore((s) => !!s.startPosition);
   const setShowSettings = useAppStore((s) => s.setShowSettings);
@@ -66,7 +66,10 @@ export default function Toolbar({
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
-  const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
+
+  // Flight plan store
+  const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
+  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
 
   // Queries
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
@@ -74,13 +77,22 @@ export default function Toolbar({
   const { connected: isXPlaneConnected } = usePlaneState();
 
   // Nav data counts - derived from airport location
-  const airportLat = selectedAirportData?.metadata?.datum_lat
-    ? parseFloat(selectedAirportData.metadata.datum_lat)
-    : null;
-  const airportLon = selectedAirportData?.metadata?.datum_lon
-    ? parseFloat(selectedAirportData.metadata.datum_lon)
-    : null;
-  const navDataCounts = useNavDataCounts(airportLat, airportLon, navVisibility.airwaysMode);
+  // Use airport coords from airports array, fallback to metadata
+  const selectedAirport = useMemo(
+    () => airports.find((a) => a.icao === selectedICAO),
+    [airports, selectedICAO]
+  );
+  const airportLat =
+    selectedAirport?.lat ??
+    (selectedAirportData?.metadata?.datum_lat
+      ? parseFloat(selectedAirportData.metadata.datum_lat)
+      : null);
+  const airportLon =
+    selectedAirport?.lon ??
+    (selectedAirportData?.metadata?.datum_lon
+      ? parseFloat(selectedAirportData.metadata.datum_lon)
+      : null);
+  const navDataCounts = useNavDataCounts(airportLat, airportLon);
 
   const filteredAirports = useMemo(() => {
     if (searchQuery.length < 2) return [];
@@ -165,22 +177,18 @@ export default function Toolbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const totalNavItems =
-    navDataCounts.vors +
-    navDataCounts.ndbs +
-    navDataCounts.dmes +
-    navDataCounts.ils +
-    navDataCounts.waypoints +
-    navDataCounts.airspaces +
-    navDataCounts.highAirways +
-    navDataCounts.lowAirways;
+  const handleLoadFlightPlan = useCallback(async () => {
+    const result = await window.flightPlanAPI.openFile();
+    if (result) {
+      loadFMSFile(result.content, result.fileName);
+    }
+  }, [loadFMSFile]);
+
+  const totalNavItems = navDataCounts.navaids + navDataCounts.ils + navDataCounts.airspaces;
 
   const localNavLayers: { key: keyof NavLayerVisibility; labelKey: string; count: number }[] = [
-    { key: 'vors', labelKey: 'layers.items.vors', count: navDataCounts.vors },
-    { key: 'ndbs', labelKey: 'layers.items.ndbs', count: navDataCounts.ndbs },
-    { key: 'dmes', labelKey: 'layers.items.dmes', count: navDataCounts.dmes },
+    { key: 'navaids', labelKey: 'layers.items.navaids', count: navDataCounts.navaids },
     { key: 'ils', labelKey: 'layers.items.ils', count: navDataCounts.ils },
-    { key: 'waypoints', labelKey: 'layers.items.waypoints', count: navDataCounts.waypoints },
     { key: 'airspaces', labelKey: 'layers.navigation.airspaces', count: navDataCounts.airspaces },
   ];
 
@@ -254,6 +262,16 @@ export default function Toolbar({
           {exploreOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
 
+        {/* Load Flight Plan */}
+        <Button
+          variant="outline"
+          onClick={handleLoadFlightPlan}
+          className={cn('h-10 gap-2 px-3', showFlightPlanBar && 'border-info/50 text-info')}
+        >
+          <FileUp className="h-4 w-4" />
+          <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
+        </Button>
+
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
@@ -292,34 +310,6 @@ export default function Toolbar({
                   </span>
                 </DropdownMenuCheckboxItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-                Global Airways
-              </DropdownMenuLabel>
-              <DropdownMenuRadioGroup
-                value={navVisibility.airwaysMode}
-                onValueChange={(value) => setAirwaysMode(value as AirwaysMode)}
-              >
-                <DropdownMenuRadioItem value="off">
-                  {t('layers.items.airwaysOff')}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="high">
-                  <span className="flex-1">{t('layers.items.highAirways')}</span>
-                  {navDataCounts.highAirways > 0 && (
-                    <span className="ml-2 font-mono text-xs text-muted-foreground">
-                      {navDataCounts.highAirways}
-                    </span>
-                  )}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="low">
-                  <span className="flex-1">{t('layers.items.lowAirways')}</span>
-                  {navDataCounts.lowAirways > 0 && (
-                    <span className="ml-2 font-mono text-xs text-muted-foreground">
-                      {navDataCounts.lowAirways}
-                    </span>
-                  )}
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 

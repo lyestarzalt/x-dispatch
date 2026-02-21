@@ -99,7 +99,9 @@ export default function LoadingScreen({
         if (
           dataStatus?.airports?.count > 0 &&
           dataStatus?.navaids?.count > 0 &&
-          dataStatus?.waypoints?.count > 0
+          dataStatus?.waypoints?.count > 0 &&
+          dataStatus?.airspaces?.count > 0 &&
+          dataStatus?.airways?.count > 0
         ) {
           onCompleteRef.current();
           return;

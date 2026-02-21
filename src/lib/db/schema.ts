@@ -104,6 +104,8 @@ export const navaids = sqliteTable(
     index('idx_navaids_type').on(table.type),
     index('idx_navaids_navaid_id').on(table.navaidId),
     index('idx_navaids_airport').on(table.associatedAirport),
+    // Composite index for fast ID+region lookups (flight plan resolution)
+    index('idx_navaids_id_region').on(table.navaidId, table.region),
   ]
 );
 
@@ -125,6 +127,8 @@ export const waypoints = sqliteTable(
     index('idx_waypoints_coords').on(table.lat, table.lon),
     index('idx_waypoints_waypoint_id').on(table.waypointId),
     index('idx_waypoints_region').on(table.region),
+    // Composite index for fast ID+region lookups (flight plan resolution)
+    index('idx_waypoints_id_region').on(table.waypointId, table.region),
   ]
 );
 
@@ -156,6 +160,7 @@ export const airways = sqliteTable(
 
 /**
  * Airspaces table - stores airspace boundaries from airspace.txt
+ * Includes bounding box columns for efficient spatial queries
  */
 export const airspaces = sqliteTable(
   'airspaces',
@@ -166,8 +171,16 @@ export const airspaces = sqliteTable(
     upperLimit: text('upper_limit'),
     lowerLimit: text('lower_limit'),
     coordinates: text('coordinates').notNull(), // JSON array of [lon, lat] pairs
+    // Bounding box for efficient spatial queries (consistent with navaids/waypoints)
+    minLat: real('min_lat'),
+    maxLat: real('max_lat'),
+    minLon: real('min_lon'),
+    maxLon: real('max_lon'),
   },
-  (table) => [index('idx_airspaces_class').on(table.airspaceClass)]
+  (table) => [
+    index('idx_airspaces_class').on(table.airspaceClass),
+    index('idx_airspaces_bounds').on(table.minLat, table.maxLat, table.minLon, table.maxLon),
+  ]
 );
 
 // Type exports

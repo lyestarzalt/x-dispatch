@@ -156,19 +156,29 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
       }),
       migrate: (persisted, version) => {
-        // Handle future migrations when schema changes
-        if (version === 0) {
-          // Migration from version 0 to 1 (if needed)
-          return persisted;
+        const state = persisted as Record<string, unknown>;
+        // Migration from v1 to v2: consolidate navVisibility
+        if (version === 1) {
+          const oldNav = state.navVisibility as Record<string, unknown> | undefined;
+          if (oldNav) {
+            // Convert old separate vors/ndbs/dmes to consolidated navaids
+            const hadNavaids = oldNav.vors || oldNav.ndbs || oldNav.dmes;
+            state.navVisibility = {
+              navaids: hadNavaids ?? true,
+              ils: oldNav.ils ?? true,
+              airspaces: oldNav.airspaces ?? true,
+              airwaysMode: oldNav.airwaysMode ?? 'off',
+            };
+          }
         }
-        return persisted;
+        return state;
       },
     }
   )

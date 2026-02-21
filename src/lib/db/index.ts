@@ -49,6 +49,56 @@ export function getDb(): DrizzleDatabase<typeof schema> {
   return db;
 }
 
+/**
+ * Check if a column exists in a table
+ */
+function columnExists(sqlite: SqlJsDatabase, table: string, column: string): boolean {
+  const result = sqlite.exec(`PRAGMA table_info(${table});`);
+  if (result.length === 0) return false;
+
+  const columns = result[0].values.map((row) => row[1] as string);
+  return columns.includes(column);
+}
+
+/**
+ * Migration: Add bounding box columns to airspaces table
+ * Enables efficient spatial queries consistent with navaids/waypoints
+ */
+function migrateAirspacesBoundingBox(sqlite: SqlJsDatabase): void {
+  // Check if columns exist
+  const columnsExist = columnExists(sqlite, 'airspaces', 'min_lat');
+
+  if (!columnsExist) {
+    logger.data.info('Migrating airspaces table: adding bounding box columns');
+
+    // Add bounding box columns
+    sqlite.run(`ALTER TABLE airspaces ADD COLUMN min_lat REAL;`);
+    sqlite.run(`ALTER TABLE airspaces ADD COLUMN max_lat REAL;`);
+    sqlite.run(`ALTER TABLE airspaces ADD COLUMN min_lon REAL;`);
+    sqlite.run(`ALTER TABLE airspaces ADD COLUMN max_lon REAL;`);
+  }
+
+  // Create spatial index
+  sqlite.run(
+    `CREATE INDEX IF NOT EXISTS idx_airspaces_bounds ON airspaces(min_lat, max_lat, min_lon, max_lon);`
+  );
+
+  // Check if existing data has NULL bounding boxes (needs re-import)
+  const result = sqlite.exec(
+    `SELECT COUNT(*) FROM airspaces WHERE min_lat IS NULL AND (SELECT COUNT(*) FROM airspaces) > 0;`
+  );
+  const nullCount = result.length > 0 ? (result[0].values[0][0] as number) : 0;
+
+  if (nullCount > 0) {
+    logger.data.info(
+      `Airspaces migration: ${nullCount} records missing bounding boxes, clearing cache`
+    );
+    sqlite.run(`DELETE FROM nav_file_meta WHERE data_type = 'airspaces';`);
+    sqlite.run(`DELETE FROM airspaces;`);
+    logger.data.info('Migration complete: airspaces will reload with spatial indexing');
+  }
+}
+
 function initTables(): void {
   if (!sqlite) return;
 
@@ -187,10 +237,17 @@ function initTables(): void {
       airspace_class TEXT NOT NULL,
       upper_limit TEXT,
       lower_limit TEXT,
-      coordinates TEXT NOT NULL
+      coordinates TEXT NOT NULL,
+      min_lat REAL,
+      max_lat REAL,
+      min_lon REAL,
+      max_lon REAL
     );
   `);
   sqlite.run(`CREATE INDEX IF NOT EXISTS idx_airspaces_class ON airspaces(airspace_class);`);
+
+  // Migration: Add bounding box columns for spatial queries (consistent with navaids/waypoints)
+  migrateAirspacesBoundingBox(sqlite);
 }
 
 export function saveDb(): void {
