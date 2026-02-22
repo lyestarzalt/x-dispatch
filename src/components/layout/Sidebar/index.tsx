@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import CommsTab from './tabs/CommsTab';
@@ -61,6 +62,7 @@ export default function Sidebar({
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
+  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const flightCategory = vatsimMetarData?.decoded?.flightCategory ?? null;
@@ -73,7 +75,8 @@ export default function Sidebar({
   return (
     <div
       className={cn(
-        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-out',
+        'absolute bottom-4 right-4 z-20 transition-all duration-300 ease-out',
+        showFlightPlanBar ? 'top-28' : 'top-16',
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >

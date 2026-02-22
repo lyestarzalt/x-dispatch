@@ -38,7 +38,7 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
   return (
     <div
       id="explore-panel"
-      className="absolute left-4 top-44 z-10 w-[340px] rounded-lg border border-border bg-card"
+      className="absolute left-4 top-28 z-10 w-[340px] rounded-lg border border-border bg-card"
     >
       <div role="tablist" aria-label={t('explore.title')} className="flex border-b border-border">
         {TABS.map((tab) => (

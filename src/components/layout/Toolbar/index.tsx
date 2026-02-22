@@ -197,7 +197,7 @@ export default function Toolbar({
     <div className="relative flex items-center gap-3">
       {/* Search */}
       <div ref={containerRef} className="relative">
-        <div className="flex h-10 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
+        <div className="flex h-9 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
           <Input
             ref={inputRef}
             type="text"
@@ -252,7 +252,7 @@ export default function Toolbar({
       <button
         onClick={() => setExploreOpen(!exploreOpen)}
         className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-lg border border-input bg-card transition-colors hover:bg-accent',
+          'flex h-9 w-10 items-center justify-center rounded-lg border border-input bg-card transition-colors hover:bg-accent',
           exploreOpen && 'border-primary/50 bg-primary/10'
         )}
         aria-label={exploreOpen ? t('explore.close') : t('explore.title')}
@@ -266,7 +266,7 @@ export default function Toolbar({
       <Button
         variant="outline"
         onClick={handleLoadFlightPlan}
-        className={cn('h-10 gap-2 px-3', fmsData && 'border-info/50 text-info')}
+        className={cn('h-9 gap-2 px-3', fmsData && 'border-info/50 text-info')}
       >
         <FileUp className="h-4 w-4" />
         <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
@@ -280,7 +280,7 @@ export default function Toolbar({
             <Button
               variant="outline"
               className={cn(
-                'h-10 gap-2 px-3',
+                'h-9 gap-2 px-3',
                 totalNavItems > 0 && 'border-primary/50 text-primary'
               )}
             >
@@ -315,7 +315,7 @@ export default function Toolbar({
           variant="outline"
           onClick={onTogglePlaneTracker}
           className={cn(
-            'h-10 gap-2 px-3',
+            'h-9 gap-2 px-3',
             showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
           )}
           title={t('toolbar.trackTooltip')}
@@ -332,7 +332,7 @@ export default function Toolbar({
         <Button
           variant="outline"
           onClick={onToggleVatsim}
-          className={cn('h-10 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
+          className={cn('h-9 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
         >
           <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
           <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
@@ -350,7 +350,7 @@ export default function Toolbar({
                   onClick={() => setShowLaunchDialog(true)}
                   disabled={!selectedICAO}
                   className={cn(
-                    'h-10 gap-2 px-3',
+                    'h-9 gap-2 px-3',
                     hasStartPosition && 'border-success/50 text-success',
                     !selectedICAO && 'opacity-50'
                   )}
@@ -372,7 +372,7 @@ export default function Toolbar({
           variant="outline"
           size="icon"
           onClick={() => setShowSettings(true)}
-          className="h-10 w-10"
+          className="h-9 w-10"
           aria-label={t('settings.title')}
         >
           <Settings className="h-4 w-4" />
