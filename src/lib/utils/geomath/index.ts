@@ -1,5 +1,13 @@
 import type { Coordinates } from '@/types/geo';
 
+// Re-export arc utilities
+export {
+  interpolateRFArc,
+  createHoldingPattern,
+  createProcedureTurn,
+  type TurnDirection,
+} from './arcs';
+
 type Brand<Base, Label extends string> = Base & { readonly __brand: Label };
 
 export type Degrees = Brand<number, 'degrees'>;

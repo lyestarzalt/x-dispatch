@@ -10,7 +10,13 @@
  * - Different styling for departure vs arrival vs approach
  */
 import maplibregl from 'maplibre-gl';
-import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
+import { createHoldingPattern, createProcedureTurn, interpolateRFArc } from '@/lib/utils/geomath';
+import type { LonLat } from '@/types/geo';
+import type {
+  AltitudeConstraint,
+  ResolvedProcedureWaypoint,
+  TurnDirection,
+} from '@/types/navigation';
 
 // ============================================================================
 // Types
@@ -29,6 +35,12 @@ export interface RouteWaypoint {
   flyover?: boolean;
   /** Path terminator type */
   pathTerminator?: string;
+  /** Course/bearing in degrees (used for RF, HA/HF/HM, PI legs) */
+  course?: number | null;
+  /** Distance in nautical miles (used for RF radius, hold leg length) */
+  distance?: number | null;
+  /** Turn direction for arcs and holds */
+  turnDirection?: TurnDirection | null;
 }
 
 export interface RouteData {
@@ -56,47 +68,47 @@ const CONSTRAINT_LAYER_ID = 'procedure-constraints';
 // ============================================================================
 
 const COLORS = {
-  // Procedure tracks - using Jeppesen-inspired colors
+  // High contrast colors - visible on both dark and light backgrounds
   SID: {
-    line: '#1a1a1a', // Dark gray/black for departure
-    casing: '#ffffff',
-    waypoint: '#0066cc', // Blue waypoint fill
-    waypointStroke: '#003366',
-    label: '#1a1a1a',
-    constraint: '#cc0000', // Red for altitude constraints
+    line: '#00ffff', // Cyan
+    casing: '#000000',
+    waypoint: '#00ffff',
+    waypointStroke: '#000000',
+    label: '#ffffff',
+    constraint: '#ffff00',
   },
   STAR: {
-    line: '#1a1a1a', // Dark gray/black for arrival
-    casing: '#ffffff',
-    waypoint: '#006633', // Green waypoint fill
-    waypointStroke: '#003311',
-    label: '#1a1a1a',
-    constraint: '#cc0000',
+    line: '#00ff00', // Lime green
+    casing: '#000000',
+    waypoint: '#00ff00',
+    waypointStroke: '#000000',
+    label: '#ffffff',
+    constraint: '#ffff00',
   },
   APPROACH: {
-    line: '#000000', // Solid black for approach
-    casing: '#ffffff',
-    waypoint: '#990000', // Dark red for approach waypoints
-    waypointStroke: '#660000',
-    label: '#000000',
-    constraint: '#cc0000',
+    line: '#ffff00', // Yellow - highest visibility
+    casing: '#000000',
+    waypoint: '#ffff00',
+    waypointStroke: '#000000',
+    label: '#ffffff',
+    constraint: '#ffff00',
   },
   ROUTE: {
-    line: '#6600cc', // Purple for enroute
-    casing: '#ffffff',
-    waypoint: '#6600cc',
-    waypointStroke: '#330066',
-    label: '#6600cc',
-    constraint: '#cc6600',
+    line: '#ff66ff', // Pink
+    casing: '#000000',
+    waypoint: '#ff66ff',
+    waypointStroke: '#000000',
+    label: '#ffffff',
+    constraint: '#ffff00',
   },
 };
 
-// Line widths (thicker for visibility)
+// Line widths
 const LINE_WIDTH = {
-  route: 4, // Main route line
-  casing: 6, // White casing for contrast
-  waypointRadius: 5,
-  waypointStroke: 2,
+  route: 5, // Main route line
+  casing: 8, // Dark casing for contrast
+  waypointRadius: 4, // Smaller waypoints
+  waypointStroke: 1.5,
 };
 
 // ============================================================================
@@ -143,7 +155,12 @@ function formatSpeedConstraint(speed: number | null | undefined): string {
 // GeoJSON Generators
 // ============================================================================
 
+/**
+ * Create route GeoJSON with path-terminator-aware geometry
+ * Handles RF arcs, holding patterns, and procedure turns
+ */
 function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
   const validWaypoints = waypoints.filter(
     (wp) => wp.latitude !== undefined && wp.longitude !== undefined && wp.resolved !== false
   );
@@ -152,36 +169,125 @@ function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollecti
     return { type: 'FeatureCollection', features: [] };
   }
 
-  const coordinates = validWaypoints.map((wp) => [wp.longitude!, wp.latitude!]);
+  const allCoordinates: LonLat[] = [];
 
-  return {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates,
-        },
-        properties: {},
-      },
-    ],
-  };
+  for (let i = 0; i < validWaypoints.length; i++) {
+    const wp = validWaypoints[i];
+    const currentPos: LonLat = [wp.longitude!, wp.latitude!];
+
+    if (i === 0) {
+      allCoordinates.push(currentPos);
+      continue;
+    }
+
+    const prevWp = validWaypoints[i - 1];
+    const prevPos: LonLat = [prevWp.longitude!, prevWp.latitude!];
+
+    switch (wp.pathTerminator) {
+      case 'RF':
+        // Constant radius arc (Radius to Fix)
+        if (wp.course != null && wp.distance != null && wp.turnDirection) {
+          try {
+            const arcPoints = interpolateRFArc(
+              prevPos,
+              currentPos,
+              wp.course,
+              wp.distance,
+              wp.turnDirection
+            );
+            // Skip first point (duplicate of prevPos)
+            allCoordinates.push(...arcPoints.slice(1));
+          } catch {
+            // Fallback to straight line if arc calculation fails
+            allCoordinates.push(currentPos);
+          }
+        } else {
+          // Missing arc parameters, fall back to straight line
+          allCoordinates.push(currentPos);
+        }
+        break;
+
+      case 'HA':
+      case 'HF':
+      case 'HM':
+        // Holding pattern - add as separate feature (racetrack shape)
+        if (wp.course != null && wp.turnDirection) {
+          try {
+            const holdPattern = createHoldingPattern(
+              currentPos,
+              wp.course,
+              wp.distance ?? 1.0,
+              wp.turnDirection
+            );
+            features.push({
+              type: 'Feature',
+              geometry: { type: 'LineString', coordinates: holdPattern },
+              properties: { type: 'holding', fixId: wp.fixId },
+            });
+          } catch {
+            // Ignore holding pattern rendering errors
+          }
+        }
+        // Still add the waypoint position to the main route
+        allCoordinates.push(currentPos);
+        break;
+
+      case 'PI':
+        // Procedure turn (45/180 pattern) - add as separate feature
+        if (wp.course != null && wp.turnDirection) {
+          try {
+            const ptGeom = createProcedureTurn(
+              prevPos,
+              wp.course,
+              wp.turnDirection,
+              wp.distance ?? 2.0
+            );
+            features.push({
+              type: 'Feature',
+              geometry: { type: 'LineString', coordinates: ptGeom },
+              properties: { type: 'procedure_turn', fixId: wp.fixId },
+            });
+          } catch {
+            // Ignore procedure turn rendering errors
+          }
+        }
+        allCoordinates.push(currentPos);
+        break;
+
+      default:
+        // TF, DF, CF, IF, FA, CA, VA, etc. - straight line to waypoint
+        allCoordinates.push(currentPos);
+        break;
+    }
+  }
+
+  // Main route line (insert as first feature)
+  if (allCoordinates.length >= 2) {
+    features.unshift({
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: allCoordinates },
+      properties: { type: 'route' },
+    });
+  }
+
+  return { type: 'FeatureCollection', features };
 }
 
 function createWaypointGeoJSON(
   waypoints: RouteWaypoint[],
   routeType: RouteData['type']
 ): GeoJSON.FeatureCollection {
-  const validWaypoints = waypoints.filter(
-    (wp) => wp.latitude !== undefined && wp.longitude !== undefined && wp.resolved !== false
+  // Include waypoints with coordinates, but track resolution status
+  const waypointsWithCoords = waypoints.filter(
+    (wp) => wp.latitude !== undefined && wp.longitude !== undefined
   );
 
   return {
     type: 'FeatureCollection',
-    features: validWaypoints.map((wp, idx) => {
+    features: waypointsWithCoords.map((wp, idx) => {
       const altText = formatAltitudeConstraint(wp.altitude);
       const spdText = formatSpeedConstraint(wp.speed);
+      const isResolved = wp.resolved !== false;
 
       // Build constraint label
       let constraintLabel = '';
@@ -209,6 +315,8 @@ function createWaypointGeoJSON(
           constraintLabel,
           // Full label includes sequence, ID, and constraints
           fullLabel: `${wp.fixId}`,
+          // Resolution status for data-driven styling (unresolved = red)
+          resolved: isResolved,
         },
       };
     }),
@@ -261,7 +369,7 @@ export function addProcedureRouteLayer(
     data: waypointGeoJSON,
   });
 
-  // Route casing (white outline for contrast)
+  // Route casing (dark outline for contrast on satellite)
   map.addLayer({
     id: ROUTE_CASING_LAYER_ID,
     type: 'line',
@@ -273,11 +381,11 @@ export function addProcedureRouteLayer(
     paint: {
       'line-color': colors.casing,
       'line-width': LINE_WIDTH.casing,
-      'line-opacity': 0.9,
+      'line-opacity': 0.8,
     },
   });
 
-  // Main route line
+  // Main route line (solid, no dashes)
   map.addLayer({
     id: ROUTE_LAYER_ID,
     type: 'line',
@@ -290,30 +398,38 @@ export function addProcedureRouteLayer(
       'line-color': colors.line,
       'line-width': LINE_WIDTH.route,
       'line-opacity': 1,
-      // Dashed for approach
-      ...(route.type === 'APPROACH' ? { 'line-dasharray': [4, 2] } : {}),
     },
   });
 
-  // Waypoint symbols
+  // Waypoint symbols (unresolved waypoints shown in red)
   map.addLayer({
     id: WAYPOINT_LAYER_ID,
     type: 'circle',
     source: WAYPOINT_SOURCE_ID,
     paint: {
-      'circle-color': colors.waypoint,
+      'circle-color': [
+        'case',
+        ['get', 'resolved'],
+        colors.waypoint,
+        '#ff3333', // Red for unresolved waypoints
+      ],
       'circle-radius': [
         'case',
         ['get', 'flyover'],
-        LINE_WIDTH.waypointRadius + 2, // Larger for flyover
+        LINE_WIDTH.waypointRadius + 1, // Slightly larger for flyover
         LINE_WIDTH.waypointRadius,
       ],
       'circle-stroke-width': LINE_WIDTH.waypointStroke,
-      'circle-stroke-color': colors.waypointStroke,
+      'circle-stroke-color': [
+        'case',
+        ['get', 'resolved'],
+        colors.waypointStroke,
+        '#ffffff', // White stroke for unresolved (contrast)
+      ],
     },
   });
 
-  // Waypoint ID labels
+  // Waypoint ID labels - white text with thick black outline
   map.addLayer({
     id: LABEL_LAYER_ID,
     type: 'symbol',
@@ -321,19 +437,19 @@ export function addProcedureRouteLayer(
     layout: {
       'text-field': ['get', 'fullLabel'],
       'text-font': ['Open Sans Bold'],
-      'text-size': 12,
-      'text-offset': [0, -1.8],
+      'text-size': 11,
+      'text-offset': [0, -1.2],
       'text-anchor': 'bottom',
       'text-allow-overlap': false,
     },
     paint: {
-      'text-color': colors.label,
-      'text-halo-color': '#ffffff',
+      'text-color': '#ffffff',
+      'text-halo-color': '#000000',
       'text-halo-width': 2,
     },
   });
 
-  // Altitude/Speed constraint labels (below waypoint)
+  // Altitude/Speed constraint labels (below waypoint) - white text with black outline
   map.addLayer({
     id: CONSTRAINT_LAYER_ID,
     type: 'symbol',
@@ -341,17 +457,17 @@ export function addProcedureRouteLayer(
     filter: ['any', ['get', 'hasAltitude'], ['get', 'hasSpeed']],
     layout: {
       'text-field': ['get', 'constraintLabel'],
-      'text-font': ['Open Sans Semibold'],
+      'text-font': ['Open Sans Bold'],
       'text-size': 10,
-      'text-offset': [0, 1.5],
+      'text-offset': [0, 1.2],
       'text-anchor': 'top',
       'text-allow-overlap': true,
       'text-line-height': 1.2,
     },
     paint: {
-      'text-color': colors.constraint,
-      'text-halo-color': '#ffffff',
-      'text-halo-width': 1.5,
+      'text-color': '#ffffff',
+      'text-halo-color': '#000000',
+      'text-halo-width': 2,
     },
   });
 

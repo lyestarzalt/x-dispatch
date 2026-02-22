@@ -24,6 +24,7 @@ import type {
   Waypoint,
 } from '@/types/navigation';
 import {
+  computeBreakdownFromDb,
   getAllAirports as getAllAirportsFromDb,
   getCustomSceneryAptFiles,
   loadAirports,
@@ -129,6 +130,24 @@ export class XPlaneDataManager {
     }
 
     // Check cache status for load flags (all data queried from SQLite on-demand)
+    // Compute airport breakdown from cached database
+    const breakdown = computeBreakdownFromDb();
+    const airportCount = breakdown.globalAirports + breakdown.customScenery;
+    if (airportCount > 0) {
+      this.airportSourceCounts = breakdown;
+      this.loadStatus.airports = true;
+    }
+
+    const navaidCount = getNavaidCount();
+    if (navaidCount > 0) {
+      this.loadStatus.navaids = true;
+    }
+
+    const waypointCount = getWaypointCount();
+    if (waypointCount > 0) {
+      this.loadStatus.waypoints = true;
+    }
+
     const airspaceCount = getAirspaceCount();
     if (airspaceCount > 0) {
       this.loadStatus.airspaces = true;
@@ -140,7 +159,8 @@ export class XPlaneDataManager {
     }
 
     logger.data.info(
-      `Cache status: ${airspaceCount} airspaces, ${airwayCount} airways (queried from SQLite)`
+      `Cache status: ${airportCount} airports (${breakdown.globalAirports} global, ${breakdown.customScenery} custom), ` +
+        `${navaidCount} navaids, ${waypointCount} waypoints, ${airspaceCount} airspaces, ${airwayCount} airways`
     );
   }
 
@@ -414,11 +434,38 @@ export class XPlaneDataManager {
       // Get airport coordinates for proximity-based fallback
       const airportCoords = this.getAirportCoordinates(icao);
 
+      // Extract runway ends from airport data for runway waypoint resolution (RW09, RW27L, etc.)
+      const runwayEnds: Array<{ name: string; latitude: number; longitude: number }> = [];
+      const airportDataJson = this.getAirportData(icao);
+      if (airportDataJson) {
+        try {
+          const airportData = JSON.parse(airportDataJson);
+          if (airportData.runways && Array.isArray(airportData.runways)) {
+            for (const runway of airportData.runways) {
+              if (runway.ends && Array.isArray(runway.ends)) {
+                for (const end of runway.ends) {
+                  if (end.name && end.latitude !== undefined && end.longitude !== undefined) {
+                    runwayEnds.push({
+                      name: end.name,
+                      latitude: end.latitude,
+                      longitude: end.longitude,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        } catch {
+          // Ignore JSON parse errors - runway resolution will just not work
+        }
+      }
+
       // Create SQL-based resolver (queries SQLite directly, no memory arrays)
       const resolver = createSqlCoordResolver({
         airportLat: airportCoords?.lat,
         airportLon: airportCoords?.lon,
         maxFallbackDistanceNm: 500,
+        runwayEnds,
       });
 
       // Enrich procedures with resolved coordinates

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
-import { addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
+import { type RouteWaypoint, addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseProcedureRouteSyncOptions {
@@ -40,6 +40,12 @@ export function useProcedureRouteSync({
             latitude: wp.latitude,
             longitude: wp.longitude,
             resolved: wp.resolved,
+            altitude: wp.altitude as RouteWaypoint['altitude'],
+            speed: wp.speed,
+            pathTerminator: wp.pathTerminator,
+            course: wp.course,
+            distance: wp.distance,
+            turnDirection: wp.turnDirection,
           })),
         });
       } catch (err) {

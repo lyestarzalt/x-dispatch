@@ -109,14 +109,26 @@ export default function RouteTab() {
             const isExpanded = expandedProcedure === group.name;
             const hasMultipleVariants = group.variants.length > 1;
             const isAnyVariantSelected = group.variants.some(
-              (v) => selectedProcedure?.name === v.name && selectedProcedure?.runway === v.runway
+              (v) =>
+                selectedProcedure?.name === v.name &&
+                selectedProcedure?.transition === v.transition &&
+                selectedProcedure?.runway === v.runway
             );
 
             // Single variant - direct selection
             if (!hasMultipleVariants) {
               const proc = group.variants[0];
               const isSelected =
-                selectedProcedure?.name === proc.name && selectedProcedure?.runway === proc.runway;
+                selectedProcedure?.name === proc.name &&
+                selectedProcedure?.transition === proc.transition &&
+                selectedProcedure?.runway === proc.runway;
+
+              // Show transition or runway as subtitle
+              const subtitle = proc.transition
+                ? proc.transition
+                : proc.runway
+                  ? `RWY ${proc.runway}`
+                  : null;
 
               return (
                 <button
@@ -131,8 +143,8 @@ export default function RouteTab() {
                 >
                   <span className="font-mono text-sm">{proc.name}</span>
                   <div className="flex items-center gap-2">
-                    {proc.runway && (
-                      <span className="text-xs text-muted-foreground/50">RWY {proc.runway}</span>
+                    {subtitle && (
+                      <span className="text-xs text-muted-foreground/50">{subtitle}</span>
                     )}
                     {isSelected && <Check className="h-4 w-4" />}
                   </div>
@@ -141,6 +153,22 @@ export default function RouteTab() {
             }
 
             // Multiple variants - expandable
+            // Determine variant type based on what's actually in the data
+            // - Approaches: transitions
+            // - STARs: transitions (enroute entry points) or runways
+            // - SIDs: runways or transitions (enroute exit points)
+            const hasTransitions = group.variants.some((v) => v.transition);
+            const hasRunways = group.variants.some((v) => v.runway);
+
+            let variantLabel: string;
+            if (hasTransitions && !hasRunways) {
+              variantLabel = `${group.variants.length} transition${group.variants.length > 1 ? 's' : ''}`;
+            } else if (hasRunways && !hasTransitions) {
+              variantLabel = `${group.variants.length} runway${group.variants.length > 1 ? 's' : ''}`;
+            } else {
+              variantLabel = `${group.variants.length} variant${group.variants.length > 1 ? 's' : ''}`;
+            }
+
             return (
               <div key={group.name}>
                 <button
@@ -154,9 +182,7 @@ export default function RouteTab() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm">{group.name}</span>
-                    <span className="text-xs text-muted-foreground/50">
-                      {group.variants.length} runways
-                    </span>
+                    <span className="text-xs text-muted-foreground/50">{variantLabel}</span>
                   </div>
                   <ChevronRight
                     className={cn(
@@ -166,17 +192,28 @@ export default function RouteTab() {
                   />
                 </button>
 
-                {/* Runway variants */}
+                {/* Variants: transitions for approaches, runways for SID/STAR */}
                 {isExpanded && (
                   <div className="ml-4 mt-1 space-y-1 border-l border-border/30 pl-3">
                     {group.variants.map((proc, idx) => {
                       const isSelected =
                         selectedProcedure?.name === proc.name &&
+                        selectedProcedure?.transition === proc.transition &&
                         selectedProcedure?.runway === proc.runway;
+
+                      // Display label - show transition if present, otherwise runway
+                      let displayLabel: string;
+                      if (proc.transition) {
+                        displayLabel = proc.transition;
+                      } else if (proc.runway) {
+                        displayLabel = `RWY ${proc.runway}`;
+                      } else {
+                        displayLabel = 'All';
+                      }
 
                       return (
                         <button
-                          key={`${proc.runway}-${idx}`}
+                          key={`${proc.runway}-${proc.transition}-${idx}`}
                           onClick={() => handleSelect(proc)}
                           className={cn(
                             'flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors',
@@ -185,9 +222,7 @@ export default function RouteTab() {
                               : 'text-foreground/70 hover:bg-muted/50'
                           )}
                         >
-                          <span className="text-sm">
-                            {proc.runway ? `RWY ${proc.runway}` : 'All runways'}
-                          </span>
+                          <span className="text-sm">{displayLabel}</span>
                           {isSelected && <Check className="h-3.5 w-3.5" />}
                         </button>
                       );
