@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Compass, Info, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,13 +19,13 @@ type TabId = 'info' | 'start' | 'proc';
 interface Tab {
   id: TabId;
   icon: React.ReactNode;
-  label: string;
+  labelKey: string;
 }
 
 const TABS: Tab[] = [
-  { id: 'info', label: 'Info', icon: <Info className="h-4 w-4" /> },
-  { id: 'start', label: 'Start', icon: <PlaneTakeoff className="h-4 w-4" /> },
-  { id: 'proc', label: 'Proc', icon: <Compass className="h-4 w-4" /> },
+  { id: 'info', labelKey: 'airportInfo.tabs.info', icon: <Info className="h-4 w-4" /> },
+  { id: 'start', labelKey: 'airportInfo.tabs.start', icon: <PlaneTakeoff className="h-4 w-4" /> },
+  { id: 'proc', labelKey: 'airportInfo.tabs.proc', icon: <Compass className="h-4 w-4" /> },
 ];
 
 interface AirportInfoPanelProps {
@@ -40,6 +41,7 @@ export default function AirportInfoPanel({
   onSelectRunwayEndAsStart,
   onSelectHelipadAsStart,
 }: AirportInfoPanelProps) {
+  const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
@@ -104,7 +106,7 @@ export default function AirportInfoPanel({
         {/* Header - Dense pilot info */}
         <div className="border-b border-border/30 px-4 pb-3 pt-4">
           {/* Row 1: ICAO + Flight Category */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pr-8">
             <div className="flex items-baseline gap-2">
               <h1 className="font-mono text-xl font-bold tracking-tight text-foreground">
                 {airport.id}
@@ -154,7 +156,7 @@ export default function AirportInfoPanel({
         {/* Selected position indicator */}
         {selectedStartPosition && (
           <div className="flex items-center justify-between border-b border-border/30 bg-emerald-500/5 px-4 py-2">
-            <span className="text-xs text-emerald-400/70">Start</span>
+            <span className="text-xs text-emerald-400/70">{t('airportInfo.tabs.start')}</span>
             <span className="font-mono text-sm font-medium text-emerald-400">
               {selectedStartPosition.name}
             </span>
@@ -175,7 +177,7 @@ export default function AirportInfoPanel({
               )}
             >
               {tab.icon}
-              <span>{tab.label}</span>
+              <span>{t(tab.labelKey)}</span>
             </button>
           ))}
         </div>

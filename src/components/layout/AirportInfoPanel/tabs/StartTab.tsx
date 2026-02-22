@@ -45,9 +45,9 @@ export default function StartTab({
 
   // Only show tabs that have data
   const tabs = [
-    { id: 'gates' as const, label: 'Gates', count: gates.length },
-    { id: 'runways' as const, label: 'Runways', count: runways.length },
-    { id: 'helipads' as const, label: 'Helipads', count: helipads.length },
+    { id: 'gates' as const, labelKey: 'airportInfo.tabs.gates', count: gates.length },
+    { id: 'runways' as const, labelKey: 'airportInfo.tabs.runways', count: runways.length },
+    { id: 'helipads' as const, labelKey: 'airportInfo.tabs.helipads', count: helipads.length },
   ].filter((tab) => tab.count > 0);
 
   // Current list count for showing search
@@ -58,7 +58,7 @@ export default function StartTab({
   if (tabs.length === 0) {
     return (
       <p className="py-12 text-center text-sm text-muted-foreground/60">
-        No starting positions available
+        {t('airportInfo.noStartPositions')}
       </p>
     );
   }
@@ -79,7 +79,7 @@ export default function StartTab({
                   : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
               )}
             >
-              {tab.label}
+              {t(tab.labelKey)}
               <span className="ml-1.5 text-muted-foreground/50">{tab.count}</span>
             </button>
           ))}
@@ -92,7 +92,7 @@ export default function StartTab({
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder={`Search ${viewType}...`}
+            placeholder={t('airportInfo.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-8 w-full rounded-md border border-border/50 bg-muted/30 pl-8 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
@@ -151,21 +151,24 @@ interface GateListProps {
 }
 
 // Human-readable aircraft size from ICAO width code
-const SIZE_LABELS: Record<string, { label: string; class: string }> = {
-  A: { label: 'Small', class: 'bg-muted/50 text-muted-foreground' },
-  B: { label: 'Small', class: 'bg-muted/50 text-muted-foreground' },
-  C: { label: 'Narrow', class: 'bg-sky-500/15 text-sky-400' },
-  D: { label: 'Wide', class: 'bg-sky-500/15 text-sky-400' },
-  E: { label: 'Heavy', class: 'bg-amber-500/15 text-amber-400' },
-  F: { label: 'Super', class: 'bg-red-500/15 text-red-400' },
+const SIZE_LABELS: Record<string, { labelKey: string; class: string }> = {
+  A: { labelKey: 'airportInfo.sizes.small', class: 'bg-muted/50 text-muted-foreground' },
+  B: { labelKey: 'airportInfo.sizes.small', class: 'bg-muted/50 text-muted-foreground' },
+  C: { labelKey: 'airportInfo.sizes.narrow', class: 'bg-sky-500/15 text-sky-400' },
+  D: { labelKey: 'airportInfo.sizes.wide', class: 'bg-sky-500/15 text-sky-400' },
+  E: { labelKey: 'airportInfo.sizes.heavy', class: 'bg-amber-500/15 text-amber-400' },
+  F: { labelKey: 'airportInfo.sizes.super', class: 'bg-red-500/15 text-red-400' },
 };
 
 // Operation type badges
-const OP_TYPE_LABELS: Record<string, { label: string; class: string }> = {
-  airline: { label: 'Airline', class: 'bg-primary/15 text-primary' },
-  cargo: { label: 'Cargo', class: 'bg-amber-500/15 text-amber-400' },
-  general_aviation: { label: 'GA', class: 'bg-emerald-500/15 text-emerald-400' },
-  military: { label: 'Military', class: 'bg-red-500/15 text-red-400' },
+const OP_TYPE_LABELS: Record<string, { labelKey: string; class: string }> = {
+  airline: { labelKey: 'airportInfo.opTypes.airline', class: 'bg-primary/15 text-primary' },
+  cargo: { labelKey: 'airportInfo.opTypes.cargo', class: 'bg-amber-500/15 text-amber-400' },
+  general_aviation: {
+    labelKey: 'airportInfo.opTypes.ga',
+    class: 'bg-emerald-500/15 text-emerald-400',
+  },
+  military: { labelKey: 'airportInfo.opTypes.military', class: 'bg-red-500/15 text-red-400' },
 };
 
 function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps) {
@@ -196,8 +199,10 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
       .map((g, i) => ({ gate: g, originalIndex: i }))
       .filter((item) => {
         const gate = item.gate;
-        const sizeLabel = gate.icaoWidthCode ? SIZE_LABELS[gate.icaoWidthCode]?.label : '';
-        const opLabel = gate.operationType ? OP_TYPE_LABELS[gate.operationType]?.label : '';
+        const sizeLabelKey = gate.icaoWidthCode ? SIZE_LABELS[gate.icaoWidthCode]?.labelKey : '';
+        const opLabelKey = gate.operationType ? OP_TYPE_LABELS[gate.operationType]?.labelKey : '';
+        const sizeLabel = sizeLabelKey ? t(sizeLabelKey) : '';
+        const opLabel = opLabelKey ? t(opLabelKey) : '';
         return (
           gate.name.toLowerCase().includes(query) ||
           sizeLabel.toLowerCase().includes(query) ||
@@ -205,7 +210,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
           gate.airlines?.some((a) => a.toLowerCase().includes(query))
         );
       });
-  }, [gates, searchQuery]);
+  }, [gates, searchQuery, t]);
 
   if (gates.length === 0) {
     return (
@@ -218,7 +223,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
   if (filteredGates.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground/60">
-        No gates matching "{searchQuery}"
+        {t('airportInfo.noMatchingGates', { query: searchQuery })}
       </p>
     );
   }
@@ -269,7 +274,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
                     variant="secondary"
                     className={cn('h-4 px-1.5 text-[9px]', sizeConfig.class)}
                   >
-                    {sizeConfig.label}
+                    {t(sizeConfig.labelKey)}
                   </Badge>
                 )}
                 {opConfig && (
@@ -277,7 +282,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
                     variant="secondary"
                     className={cn('h-4 px-1.5 text-[9px]', opConfig.class)}
                   >
-                    {opConfig.label}
+                    {t(opConfig.labelKey)}
                   </Badge>
                 )}
               </div>

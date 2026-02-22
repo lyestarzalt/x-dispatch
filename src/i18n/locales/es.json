@@ -85,9 +85,19 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Seguir",
-    "trackTooltip": "Seguir la posición de tu aeronave",
     "launch": "Iniciar",
-    "navigationLayers": "Capas de navegación"
+    "loadPlan": "Cargar plan",
+    "navigationLayers": "Capas de navegación",
+    "tooltips": {
+      "loadPlan": "Cargar archivos de plan de vuelo X-Plane .fms",
+      "explore": "Descubrir aeropuertos y rutas destacados",
+      "nav": "Mostrar capas de navegación cerca del aeropuerto",
+      "track": "Seguir tu avión en X-Plane",
+      "vatsim": "Mostrar tráfico VATSIM en vivo",
+      "launch": "Iniciar X-Plane con la posición seleccionada",
+      "launchDisabled": "Selecciona primero un aeropuerto",
+      "settings": "Abrir ajustes"
+    }
   },
 
   "explore": {
@@ -272,9 +282,12 @@
 
   "airportInfo": {
     "tabs": {
-      "info": "INFO",
+      "info": "Info",
+      "start": "Inicio",
+      "proc": "Proc",
       "runways": "Pistas",
       "gates": "Puertas",
+      "helipads": "Helipuertos",
       "radio": "Radio",
       "gateway": "GATEWAY"
     },
@@ -328,7 +341,23 @@
       "snow": "Nieve",
       "transparent": "Transparente",
       "unknown": "Desconocido"
-    }
+    },
+    "sizes": {
+      "small": "Pequeño",
+      "narrow": "Estrecho",
+      "wide": "Ancho",
+      "heavy": "Pesado",
+      "super": "Super"
+    },
+    "opTypes": {
+      "airline": "Aerolínea",
+      "cargo": "Carga",
+      "ga": "AG",
+      "military": "Militar"
+    },
+    "noStartPositions": "No hay posiciones de inicio disponibles",
+    "searchPlaceholder": "Buscar...",
+    "noMatchingGates": "No se encontraron puertas para \"{{query}}\""
   },
 
   "navigation": {

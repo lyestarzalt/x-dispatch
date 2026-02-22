@@ -85,9 +85,19 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "追跡",
-    "trackTooltip": "機体の位置を追跡",
     "launch": "起動",
-    "navigationLayers": "ナビゲーションレイヤー"
+    "loadPlan": "プラン読込",
+    "navigationLayers": "ナビゲーションレイヤー",
+    "tooltips": {
+      "loadPlan": "X-Plane .fmsフライトプランファイルを読み込む",
+      "explore": "おすすめの空港とルートを発見",
+      "nav": "空港周辺のナビゲーションレイヤーを表示",
+      "track": "X-Planeで機体を追跡",
+      "vatsim": "VATSIMライブトラフィックを表示",
+      "launch": "選択した位置でX-Planeを起動",
+      "launchDisabled": "最初に空港を選択してください",
+      "settings": "設定を開く"
+    }
   },
 
   "explore": {
@@ -273,8 +283,11 @@
   "airportInfo": {
     "tabs": {
       "info": "情報",
+      "start": "開始",
+      "proc": "手順",
       "runways": "滑走路",
       "gates": "ゲート",
+      "helipads": "ヘリパッド",
       "radio": "無線",
       "gateway": "GATEWAY"
     },
@@ -328,7 +341,23 @@
       "snow": "雪",
       "transparent": "透明",
       "unknown": "不明"
-    }
+    },
+    "sizes": {
+      "small": "小型",
+      "narrow": "狭い",
+      "wide": "広い",
+      "heavy": "大型",
+      "super": "超大型"
+    },
+    "opTypes": {
+      "airline": "航空会社",
+      "cargo": "貨物",
+      "ga": "GA",
+      "military": "軍用"
+    },
+    "noStartPositions": "利用可能な開始位置がありません",
+    "searchPlaceholder": "検索...",
+    "noMatchingGates": "「{{query}}」に一致するゲートが見つかりません"
   },
 
   "navigation": {

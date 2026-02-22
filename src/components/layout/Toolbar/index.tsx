@@ -249,24 +249,42 @@ export default function Toolbar({
       </div>
 
       {/* Load Flight Plan */}
-      <Button
-        variant="outline"
-        onClick={handleLoadFlightPlan}
-        className={cn('h-9 gap-2 px-3', fmsData && 'border-info/50 text-info')}
-      >
-        <FileUp className="h-4 w-4" />
-        <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={handleLoadFlightPlan}
+              className={cn('h-9 gap-2 px-3', fmsData && 'border-info/50 text-info')}
+            >
+              <FileUp className="h-4 w-4" />
+              <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.loadPlan')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Explore Toggle */}
-      <Button
-        variant="outline"
-        onClick={() => setExploreOpen(!exploreOpen)}
-        className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
-      >
-        <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
-        <span className="text-xs font-medium">{t('explore.title')}</span>
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={() => setExploreOpen(!exploreOpen)}
+              className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
+            >
+              <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
+              <span className="text-xs font-medium">{t('explore.title')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.explore')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <div className="flex-1" />
 
@@ -307,35 +325,57 @@ export default function Toolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant="outline"
-          onClick={onTogglePlaneTracker}
-          className={cn(
-            'h-9 gap-2 px-3',
-            showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
-          )}
-          title={t('toolbar.trackTooltip')}
-        >
-          <Locate
-            className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
-          />
-          <span className="text-xs font-medium">{t('toolbar.track')}</span>
-          {showPlaneTracker && isXPlaneConnected && (
-            <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
-          )}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={onTogglePlaneTracker}
+                className={cn(
+                  'h-9 gap-2 px-3',
+                  showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
+                )}
+              >
+                <Locate
+                  className={cn(
+                    'h-4 w-4',
+                    showPlaneTracker && isXPlaneConnected && 'animate-pulse'
+                  )}
+                />
+                <span className="text-xs font-medium">{t('toolbar.track')}</span>
+                {showPlaneTracker && isXPlaneConnected && (
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.track')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button
-          variant="outline"
-          onClick={onToggleVatsim}
-          className={cn('h-9 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
-        >
-          <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
-          <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
-          {vatsimEnabled && vatsimPilotCount !== undefined && (
-            <Badge className="bg-success/20 px-1.5 py-0.5 text-success">{vatsimPilotCount}</Badge>
-          )}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={onToggleVatsim}
+                className={cn('h-9 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
+              >
+                <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
+                <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
+                {vatsimEnabled && vatsimPilotCount !== undefined && (
+                  <Badge className="bg-success/20 px-1.5 py-0.5 text-success">
+                    {vatsimPilotCount}
+                  </Badge>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.vatsim')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <TooltipProvider>
           <Tooltip>
@@ -356,23 +396,32 @@ export default function Toolbar({
                 </Button>
               </span>
             </TooltipTrigger>
-            {!selectedICAO && (
-              <TooltipContent>
-                <p>{t('toolbar.launchDisabled')}</p>
-              </TooltipContent>
-            )}
+            <TooltipContent>
+              <p>
+                {selectedICAO ? t('toolbar.tooltips.launch') : t('toolbar.tooltips.launchDisabled')}
+              </p>
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setShowSettings(true)}
-          className="h-9 w-10"
-          aria-label={t('settings.title')}
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowSettings(true)}
+                className="h-9 w-10"
+                aria-label={t('settings.title')}
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.settings')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
