@@ -4,7 +4,7 @@
  */
 import { create } from 'zustand';
 import { parseFMSFile } from '@/lib/parsers/fms';
-import type { FMSFlightPlan, FlightPlanChip } from '@/types/fms';
+import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
 
 export interface FlightPlanWaypoint {
   id: string; // Fix ID (e.g., "LOGEN", "BOS", "J42")
@@ -28,9 +28,10 @@ interface FlightPlanState {
   route: FlightPlanWaypoint[];
   cruiseAltitude: number | null;
 
-  // FMS-specific
-  fmsData: FMSFlightPlan | null;
+  // FMS-specific (enriched with nav database data)
+  fmsData: EnrichedFlightPlan | null;
   fileName: string | null;
+  isEnriching: boolean;
 
   // UI state
   selectedWaypointIndex: number | null;
@@ -48,7 +49,7 @@ interface FlightPlanState {
   clearAll: () => void;
 
   // FMS Actions
-  loadFMSFile: (content: string, fileName: string) => boolean;
+  loadFMSFile: (content: string, fileName: string) => Promise<boolean>;
   setSelectedWaypoint: (index: number | null) => void;
   clearFlightPlan: () => void;
   getChips: () => FlightPlanChip[];
@@ -64,6 +65,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
   cruiseAltitude: null,
   fmsData: null,
   fileName: null,
+  isEnriching: false,
   selectedWaypointIndex: null,
   showFlightPlanBar: false,
 
@@ -100,34 +102,77 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       cruiseAltitude: null,
       fmsData: null,
       fileName: null,
+      isEnriching: false,
       selectedWaypointIndex: null,
       showFlightPlanBar: false,
     }),
 
-  loadFMSFile: (content, fileName) => {
+  loadFMSFile: async (content, fileName) => {
     const result = parseFMSFile(content);
-    if (result.success && result.data) {
-      set({
-        fmsData: result.data,
-        fileName,
-        showFlightPlanBar: true,
-        selectedWaypointIndex: null,
-        departure: {
-          icao: result.data.departure.icao,
-          runway: result.data.departure.runway,
-          procedure: result.data.departure.sid,
-          transition: result.data.departure.sidTransition,
-        },
-        arrival: {
-          icao: result.data.arrival.icao,
-          runway: result.data.arrival.runway,
-          procedure: result.data.arrival.star,
-          transition: result.data.arrival.starTransition,
-        },
-      });
-      return true;
+    if (!result.success || !result.data) {
+      return false;
     }
-    return false;
+
+    // Set initial state with parsed data
+    set({
+      isEnriching: true,
+      showFlightPlanBar: true,
+      selectedWaypointIndex: null,
+      departure: {
+        icao: result.data.departure.icao,
+        runway: result.data.departure.runway,
+        procedure: result.data.departure.sid,
+        transition: result.data.departure.sidTransition,
+      },
+      arrival: {
+        icao: result.data.arrival.icao,
+        runway: result.data.arrival.runway,
+        procedure: result.data.arrival.star,
+        transition: result.data.arrival.starTransition,
+      },
+    });
+
+    // Enrich with nav database data
+    try {
+      console.log('[FlightPlan] Enriching flight plan...');
+      const enriched = await window.flightPlanAPI.enrich(result.data);
+      if (enriched) {
+        console.log('[FlightPlan] Enrichment result:', {
+          total: enriched.resolution.total,
+          found: enriched.resolution.found,
+          notFound: enriched.resolution.notFound,
+          cycleMatch: enriched.resolution.cycleMatch,
+          sampleWaypoint: enriched.waypoints[1], // Skip departure airport
+        });
+        set({
+          fmsData: enriched,
+          fileName,
+          isEnriching: false,
+        });
+        return true;
+      } else {
+        console.warn('[FlightPlan] Enrichment returned null');
+      }
+    } catch (err) {
+      console.error('[FlightPlan] Failed to enrich flight plan:', err);
+    }
+
+    // Fallback: use raw FMS data if enrichment fails
+    set({
+      fmsData: {
+        ...result.data,
+        waypoints: result.data.waypoints.map((wp) => ({ ...wp, found: true })),
+        resolution: {
+          total: result.data.waypoints.length,
+          found: result.data.waypoints.length,
+          notFound: 0,
+          cycleMatch: true,
+        },
+      },
+      fileName,
+      isEnriching: false,
+    });
+    return true;
   },
 
   setSelectedWaypoint: (index) => set({ selectedWaypointIndex: index }),
@@ -136,6 +181,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
     set({
       fmsData: null,
       fileName: null,
+      isEnriching: false,
       selectedWaypointIndex: null,
       showFlightPlanBar: false,
       departure: null,

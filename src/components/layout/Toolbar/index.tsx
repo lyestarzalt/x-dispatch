@@ -180,7 +180,7 @@ export default function Toolbar({
   const handleLoadFlightPlan = useCallback(async () => {
     const result = await window.flightPlanAPI.openFile();
     if (result) {
-      loadFMSFile(result.content, result.fileName);
+      await loadFMSFile(result.content, result.fileName);
     }
   }, [loadFMSFile]);
 

@@ -352,6 +352,80 @@ export function getNavaidNearestById(
 }
 
 /**
+ * Get the nearest navaid by ID with full enriched data (name, frequency)
+ * Used for flight plan waypoint enrichment
+ */
+export function getNavaidEnrichedById(
+  navaidId: string,
+  lat: number,
+  lon: number,
+  maxDistNm: number
+): {
+  id: string;
+  name: string;
+  type: string;
+  frequency: number;
+  region: string;
+  latitude: number;
+  longitude: number;
+} | null {
+  const db = getDb();
+
+  // Approximate bounding box (1 degree ≈ 60nm)
+  const degBuffer = maxDistNm / 60;
+  const minLat = lat - degBuffer;
+  const maxLat = lat + degBuffer;
+  const minLon = lon - degBuffer;
+  const maxLon = lon + degBuffer;
+
+  const results = db
+    .select({
+      navaidId: navaids.navaidId,
+      name: navaids.name,
+      lat: navaids.lat,
+      lon: navaids.lon,
+      type: navaids.type,
+      frequency: navaids.frequency,
+      region: navaids.region,
+    })
+    .from(navaids)
+    .where(
+      sql`${navaids.navaidId} = ${navaidId.toUpperCase()}
+          AND ${navaids.lat} BETWEEN ${minLat} AND ${maxLat}
+          AND ${navaids.lon} BETWEEN ${minLon} AND ${maxLon}`
+    )
+    .all();
+
+  if (results.length === 0) return null;
+
+  // Find nearest (simple distance calculation)
+  let nearest = results[0];
+  let nearestDist = Infinity;
+
+  for (const r of results) {
+    const dLat = (r.lat - lat) * 60;
+    const dLon = (r.lon - lon) * 60 * Math.cos((lat * Math.PI) / 180);
+    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = r;
+    }
+  }
+
+  if (!nearest || nearestDist > maxDistNm) return null;
+
+  return {
+    id: nearest.navaidId,
+    name: nearest.name,
+    type: nearest.type,
+    frequency: nearest.frequency ?? 0,
+    region: nearest.region ?? '',
+    latitude: nearest.lat,
+    longitude: nearest.lon,
+  };
+}
+
+/**
  * Get navaids within geographic bounds (for viewport display)
  * Optionally filter by type (VOR, NDB, DME, etc.)
  */
