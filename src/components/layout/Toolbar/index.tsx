@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useNavDataCounts, usePlaneState } from '@/queries';
@@ -340,20 +341,32 @@ export default function Toolbar({
           )}
         </Button>
 
-        <Button
-          variant="outline"
-          onClick={() => setShowLaunchDialog(true)}
-          disabled={!selectedICAO}
-          className={cn(
-            'h-10 gap-2 px-3',
-            hasStartPosition && 'border-success/50 text-success',
-            !selectedICAO && 'opacity-50'
-          )}
-          title={!selectedICAO ? t('toolbar.launchDisabled') : undefined}
-        >
-          <Plane className="h-4 w-4" />
-          <span className="text-xs font-medium">{t('toolbar.launch')}</span>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLaunchDialog(true)}
+                  disabled={!selectedICAO}
+                  className={cn(
+                    'h-10 gap-2 px-3',
+                    hasStartPosition && 'border-success/50 text-success',
+                    !selectedICAO && 'opacity-50'
+                  )}
+                >
+                  <Plane className="h-4 w-4" />
+                  <span className="text-xs font-medium">{t('toolbar.launch')}</span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {!selectedICAO && (
+              <TooltipContent>
+                <p>{t('toolbar.launchDisabled')}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
 
         <Button
           variant="outline"
