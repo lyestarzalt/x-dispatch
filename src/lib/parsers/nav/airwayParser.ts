@@ -3,19 +3,35 @@
  * Parses airway segments connecting waypoints with altitude restrictions
  */
 import { z } from 'zod';
-import type { AirwaySegment } from '@/types/navigation';
+import type { AirwayDirection, AirwaySegment } from '@/types/navigation';
+import { FixTypeNumber } from '@/types/navigation';
 import { flightLevel } from '../schemas';
 import type { ParseError, ParseResult } from '../types';
+
+// Valid fix type numbers in airways
+const VALID_FIX_TYPE_NUMBERS = [
+  FixTypeNumber.NDB,
+  FixTypeNumber.VOR,
+  FixTypeNumber.LOC,
+  FixTypeNumber.LOC_STANDALONE,
+  FixTypeNumber.GS,
+  FixTypeNumber.OM,
+  FixTypeNumber.MM,
+  FixTypeNumber.IM,
+  FixTypeNumber.WAYPOINT,
+  FixTypeNumber.DME_STANDALONE,
+  FixTypeNumber.DME_NDB,
+];
 
 const AirwayLineSchema = z.object({
   fromFix: z.string(),
   fromRegion: z.string(),
-  fromNavaidType: z.number(),
+  fromNavaidType: z.number().refine((n) => VALID_FIX_TYPE_NUMBERS.includes(n)),
   toFix: z.string(),
   toRegion: z.string(),
-  toNavaidType: z.number(),
+  toNavaidType: z.number().refine((n) => VALID_FIX_TYPE_NUMBERS.includes(n)),
   isHigh: z.boolean(),
-  direction: z.number(),
+  direction: z.number().refine((n): n is AirwayDirection => n === 0 || n === 1 || n === 2),
   baseFl: flightLevel,
   topFl: flightLevel,
   name: z.string(),

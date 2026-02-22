@@ -5,13 +5,17 @@ import type { MapRef } from './useMapSetup';
 
 interface UseProcedureRouteSyncOptions {
   mapRef: MapRef;
+  styleVersion: number;
 }
 
 /**
  * Syncs the selected procedure from appStore to the map layer.
  * Automatically adds/removes the procedure route layer when selection changes.
  */
-export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions): void {
+export function useProcedureRouteSync({
+  mapRef,
+  styleVersion,
+}: UseProcedureRouteSyncOptions): void {
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
 
   useEffect(() => {
@@ -20,6 +24,11 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
 
     if (!selectedProcedure) {
       removeProcedureRouteLayer(map);
+      return;
+    }
+
+    // Wait for style to be loaded before adding layers
+    if (!map.isStyleLoaded()) {
       return;
     }
 
@@ -38,5 +47,5 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
       // Use captured map reference for cleanup
       removeProcedureRouteLayer(map);
     };
-  }, [mapRef, selectedProcedure]);
+  }, [mapRef, selectedProcedure, styleVersion]);
 }

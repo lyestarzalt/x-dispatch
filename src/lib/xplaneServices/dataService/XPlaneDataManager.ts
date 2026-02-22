@@ -8,7 +8,6 @@ import { airports, aptFileMeta, closeDb, getDb } from '@/lib/db';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
 import {
   ResolvedAirportProcedures,
-  createProcedureCoordResolver,
   enrichProceduresWithCoordinates,
 } from '@/lib/parsers/nav/procedureCoordResolver';
 import { distanceNm } from '@/lib/utils/geomath';
@@ -19,7 +18,6 @@ import type {
   ATCRole,
   AirportMetadata,
   Airspace,
-  AirwaySegment,
   HoldingPattern,
   Navaid,
   NavaidType,
@@ -42,6 +40,27 @@ import {
   loadWaypoints,
 } from './navdata';
 import {
+  createSqlCoordResolver,
+  getAirspaceCount,
+  getAirspacesNearPoint as getAirspacesNearPointSql,
+  getAirwayCount,
+  getAirwaysByName,
+  getAllAirspacesFromDb,
+  getNavaidByIdRegion,
+  getNavaidCount,
+  getNavaidCountsByType,
+  getNavaidNearestById,
+  getNavaidsByAirport,
+  getNavaidsByAirportRunway,
+  getNavaidsInBounds,
+  getWaypointByIdRegion,
+  getWaypointCount,
+  getWaypointNearestById,
+  getWaypointsInBounds,
+  searchNavaidsDb,
+  searchWaypointsDb,
+} from './navdata/navCache';
+import {
   detectXPlanePaths,
   getAirspaceDataPath,
   getAirwayDataPath,
@@ -55,7 +74,6 @@ import {
   validateXPlanePath,
 } from './paths';
 import type { Airport, AirportSourceBreakdown, DataLoadStatus, LoadStatusFlags } from './types';
-import { isInBoundingBox } from './utils';
 
 export type { Airport, AirportSourceBreakdown, DataLoadStatus } from './types';
 export type { AirwaySegmentWithCoords } from '@/types/navigation';
@@ -63,13 +81,8 @@ export type { AirwaySegmentWithCoords } from '@/types/navigation';
 export class XPlaneDataManager {
   private xplanePath: string | null = null;
 
-  // In-memory data stores
-  private navaids: Navaid[] = [];
-  private waypoints: Waypoint[] = [];
-  private airspaces: Airspace[] = [];
-  private airways: AirwaySegment[] = [];
-
-  // New data stores
+  // In-memory data stores (small datasets that need complex filtering)
+  // NOTE: navaids, waypoints, airspaces, and airways are now queried directly from SQLite
   private atcControllers: ATCController[] = [];
   private holdingPatterns: HoldingPattern[] = [];
   private airportMetadata: Map<string, AirportMetadata> = new Map();
@@ -97,6 +110,38 @@ export class XPlaneDataManager {
 
   constructor() {
     getDb();
+  }
+
+  /**
+   * Initialize from SQLite cache (call on app start when setup is complete)
+   * All nav data is now queried directly from SQLite
+   */
+  initFromCache(): void {
+    const xplanePath = this.getXPlanePath();
+
+    // Detect data sources (Navigraph vs X-Plane default)
+    // This is needed even when loading from cache to show correct source in settings
+    if (xplanePath) {
+      this.dataSources = detectAllDataSources(xplanePath);
+      logger.data.info(
+        `Data sources: ${this.dataSources.global.source}${this.dataSources.global.cycle ? ` (AIRAC ${this.dataSources.global.cycle})` : ''}`
+      );
+    }
+
+    // Check cache status for load flags (all data queried from SQLite on-demand)
+    const airspaceCount = getAirspaceCount();
+    if (airspaceCount > 0) {
+      this.loadStatus.airspaces = true;
+    }
+
+    const airwayCount = getAirwayCount();
+    if (airwayCount > 0) {
+      this.loadStatus.airways = true;
+    }
+
+    logger.data.info(
+      `Cache status: ${airspaceCount} airspaces, ${airwayCount} airways (queried from SQLite)`
+    );
   }
 
   /**
@@ -212,26 +257,28 @@ export class XPlaneDataManager {
 
   private async loadNavaidsInternal(xplanePath: string): Promise<void> {
     const result = await loadNavaids(xplanePath);
-    this.navaids = result.data;
+    // Data is stored in SQLite, no need to keep in memory
     this.loadStatus.navaids = result.loaded;
   }
 
   private async loadWaypointsInternal(xplanePath: string): Promise<void> {
     const result = await loadWaypoints(xplanePath);
-    this.waypoints = result.data;
+    // Data is stored in SQLite, no need to keep in memory
     this.loadStatus.waypoints = result.loaded;
   }
 
   private async loadAirspacesInternal(xplanePath: string): Promise<void> {
     const result = await loadAirspaces(xplanePath);
-    this.airspaces = result.data;
+    // Airspaces are stored in SQLite, queried directly (consistent with navaids/waypoints)
     this.loadStatus.airspaces = result.loaded;
+    logger.data.info(`Loaded ${result.data.length} airspaces to SQLite`);
   }
 
   private async loadAirwaysInternal(xplanePath: string): Promise<void> {
     const result = await loadAirways(xplanePath);
-    this.airways = result.data;
+    // Airways are stored in SQLite, queried on-demand for flight plans
     this.loadStatus.airways = result.loaded;
+    logger.data.info(`Loaded ${result.data.length} airways to SQLite`);
   }
 
   private async loadATCDataInternal(xplanePath: string): Promise<void> {
@@ -349,6 +396,7 @@ export class XPlaneDataManager {
 
   /**
    * Get airport procedures (CIFP) with resolved coordinates
+   * Uses SQL-based coordinate resolver for memory efficiency
    */
   getAirportProcedures(icao: string): ResolvedAirportProcedures | null {
     const xplanePath = this.getXPlanePath();
@@ -366,8 +414,8 @@ export class XPlaneDataManager {
       // Get airport coordinates for proximity-based fallback
       const airportCoords = this.getAirportCoordinates(icao);
 
-      // Create resolver with global waypoint and navaid data + airport location
-      const resolver = createProcedureCoordResolver(this.waypoints, this.navaids, {
+      // Create SQL-based resolver (queries SQLite directly, no memory arrays)
+      const resolver = createSqlCoordResolver({
         airportLat: airportCoords?.lat,
         airportLon: airportCoords?.lon,
         maxFallbackDistanceNm: 500,
@@ -405,19 +453,21 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Get navaids within radius
+   * Get navaids within radius (uses SQLite bounds query)
    */
   getNavaidsInRadius(lat: number, lon: number, radiusNm: number, types?: NavaidType[]): Navaid[] {
-    let filtered = this.navaids;
+    // Convert radius to bounds (1 degree ≈ 60nm)
+    const degBuffer = radiusNm / 60;
+    const minLat = lat - degBuffer;
+    const maxLat = lat + degBuffer;
+    const minLon = lon - degBuffer;
+    const maxLon = lon + degBuffer;
 
-    if (types && types.length > 0) {
-      filtered = filtered.filter((n) => types.includes(n.type));
-    }
+    // Query SQLite with bounds
+    const results = getNavaidsInBounds(minLat, maxLat, minLon, maxLon, types);
 
-    return filtered.filter((n) => {
-      if (!isInBoundingBox(n.latitude, n.longitude, lat, lon, radiusNm)) return false;
-      return distanceNm(lat, lon, n.latitude, n.longitude) <= radiusNm;
-    });
+    // Filter by actual distance (bounds is a square, we want a circle)
+    return results.filter((n) => distanceNm(lat, lon, n.latitude, n.longitude) <= radiusNm);
   }
 
   /**
@@ -477,150 +527,153 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Get approach navaids by airport
+   * Get approach navaids by airport (uses SQLite query)
    */
   getApproachNavaidsByAirport(airportIcao: string): Navaid[] {
-    const approachTypes: NavaidType[] = [
-      'ILS',
-      'LOC',
-      'GS',
-      'OM',
-      'MM',
-      'IM',
-      'FPAP',
-      'GLS',
-      'LTP',
-      'FTP',
-    ];
-    return this.navaids.filter(
-      (n) => approachTypes.includes(n.type) && n.associatedAirport === airportIcao
-    );
+    return getNavaidsByAirport(airportIcao);
   }
 
   /**
-   * Get approach navaids by runway
+   * Get approach navaids by runway (uses SQLite query)
    */
   getApproachNavaidsByRunway(airportIcao: string, runway: string): Navaid[] {
-    const approachTypes: NavaidType[] = [
-      'ILS',
-      'LOC',
-      'GS',
-      'OM',
-      'MM',
-      'IM',
-      'FPAP',
-      'GLS',
-      'LTP',
-      'FTP',
-    ];
-    return this.navaids.filter(
-      (n) =>
-        approachTypes.includes(n.type) &&
-        n.associatedAirport === airportIcao &&
-        n.associatedRunway === runway
-    );
+    return getNavaidsByAirportRunway(airportIcao, runway);
   }
 
   /**
-   * Get waypoints within radius
+   * Get waypoints within radius (uses SQLite bounds query)
    */
   getWaypointsInRadius(lat: number, lon: number, radiusNm: number): Waypoint[] {
-    return this.waypoints.filter((w) => {
-      if (!isInBoundingBox(w.latitude, w.longitude, lat, lon, radiusNm)) return false;
-      return distanceNm(lat, lon, w.latitude, w.longitude) <= radiusNm;
-    });
+    // Convert radius to bounds (1 degree ≈ 60nm)
+    const degBuffer = radiusNm / 60;
+    const minLat = lat - degBuffer;
+    const maxLat = lat + degBuffer;
+    const minLon = lon - degBuffer;
+    const maxLon = lon + degBuffer;
+
+    // Query SQLite with bounds
+    const results = getWaypointsInBounds(minLat, maxLat, minLon, maxLon);
+
+    // Filter by actual distance (bounds is a square, we want a circle)
+    return results.filter((w) => distanceNm(lat, lon, w.latitude, w.longitude) <= radiusNm);
+  }
+
+  // ==========================================================================
+  // Bounds-Based Queries (SQLite Direct - More Efficient)
+  // ==========================================================================
+
+  /**
+   * Get navaids within geographic bounds (uses SQLite directly)
+   * Much more efficient than loading all into memory
+   */
+  getNavaidsInBoundsSql(
+    minLat: number,
+    maxLat: number,
+    minLon: number,
+    maxLon: number,
+    types?: string[],
+    limit?: number
+  ): Navaid[] {
+    return getNavaidsInBounds(minLat, maxLat, minLon, maxLon, types, limit);
   }
 
   /**
-   * Get all airspaces
+   * Get waypoints within geographic bounds (uses SQLite directly)
    */
-  getAllAirspaces(): Airspace[] {
-    return this.airspaces;
+  getWaypointsInBoundsSql(
+    minLat: number,
+    maxLat: number,
+    minLon: number,
+    maxLon: number,
+    limit?: number
+  ): Waypoint[] {
+    return getWaypointsInBounds(minLat, maxLat, minLon, maxLon, limit);
   }
 
   /**
-   * Get airspaces near a point
+   * Resolve a waypoint ID to coordinates using SQLite
+   * For flight plan entry - no need to load all waypoints
    */
-  getAirspacesNearPoint(lat: number, lon: number, radiusNm = 50): Airspace[] {
-    const degRange = radiusNm / 60;
-    return this.airspaces.filter((a) =>
-      a.coordinates.some(
-        ([aLon, aLat]) => Math.abs(aLat - lat) <= degRange && Math.abs(aLon - lon) <= degRange
-      )
-    );
-  }
-
-  /**
-   * Get all airways
-   */
-  getAllAirways(): AirwaySegment[] {
-    return this.airways;
-  }
-
-  /**
-   * Get airways within radius with resolved coordinates
-   */
-  getAirwaysInRadius(
-    lat: number,
-    lon: number,
-    radiusNm: number,
-    limit: number = 3000
-  ): AirwaySegmentWithCoords[] {
-    const fixCoords = this.buildFixLookupMap();
-    const results: AirwaySegmentWithCoords[] = [];
-
-    for (const segment of this.airways) {
-      if (results.length >= limit) break;
-
-      const fromKey1 = `${segment.fromFix}:${segment.fromRegion}`;
-      const toKey1 = `${segment.toFix}:${segment.toRegion}`;
-
-      const fromCoords = fixCoords.get(fromKey1) || fixCoords.get(segment.fromFix);
-      const toCoords = fixCoords.get(toKey1) || fixCoords.get(segment.toFix);
-
-      if (!fromCoords || !toCoords) continue;
-
-      const fromInRange =
-        isInBoundingBox(fromCoords.lat, fromCoords.lon, lat, lon, radiusNm) &&
-        distanceNm(lat, lon, fromCoords.lat, fromCoords.lon) <= radiusNm;
-      const toInRange =
-        isInBoundingBox(toCoords.lat, toCoords.lon, lat, lon, radiusNm) &&
-        distanceNm(lat, lon, toCoords.lat, toCoords.lon) <= radiusNm;
-
-      if (fromInRange || toInRange) {
-        results.push({
-          name: segment.name,
-          fromFix: segment.fromFix,
-          toFix: segment.toFix,
-          fromLat: fromCoords.lat,
-          fromLon: fromCoords.lon,
-          toLat: toCoords.lat,
-          toLon: toCoords.lon,
-          isHigh: segment.isHigh,
-          baseFl: segment.baseFl,
-          topFl: segment.topFl,
-        });
-      }
+  resolveWaypointCoords(
+    waypointId: string,
+    region?: string,
+    airportLat?: number,
+    airportLon?: number
+  ): { latitude: number; longitude: number } | null {
+    // Try exact match with region if provided
+    if (region) {
+      const exact = getWaypointByIdRegion(waypointId, region);
+      if (exact) return { latitude: exact.latitude, longitude: exact.longitude };
     }
 
-    return results;
+    // Fallback: find nearest to airport if coords provided
+    if (airportLat !== undefined && airportLon !== undefined) {
+      const nearest = getWaypointNearestById(waypointId, airportLat, airportLon, 500);
+      if (nearest) return { latitude: nearest.latitude, longitude: nearest.longitude };
+    }
+
+    return null;
   }
 
   /**
-   * Get ALL airways with resolved coordinates (no radius filter)
+   * Resolve a navaid ID to coordinates using SQLite
    */
-  getAllAirwaysWithCoords(limit: number = 50000): AirwaySegmentWithCoords[] {
-    const fixCoords = this.buildFixLookupMap();
+  resolveNavaidCoords(
+    navaidId: string,
+    region?: string,
+    airportLat?: number,
+    airportLon?: number
+  ): { latitude: number; longitude: number; type: string } | null {
+    // Try exact match with region if provided
+    if (region) {
+      const exact = getNavaidByIdRegion(navaidId, region);
+      if (exact) return { latitude: exact.latitude, longitude: exact.longitude, type: exact.type };
+    }
+
+    // Fallback: find nearest to airport if coords provided
+    if (airportLat !== undefined && airportLon !== undefined) {
+      const nearest = getNavaidNearestById(navaidId, airportLat, airportLon, 500);
+      if (nearest)
+        return { latitude: nearest.latitude, longitude: nearest.longitude, type: nearest.type };
+    }
+
+    return null;
+  }
+
+  /**
+   * Create a SQL-based procedure coord resolver
+   * Use this instead of the in-memory resolver for better memory efficiency
+   */
+  createSqlCoordResolver(airportLat?: number, airportLon?: number) {
+    return createSqlCoordResolver({ airportLat, airportLon, maxFallbackDistanceNm: 500 });
+  }
+
+  /**
+   * Get all airspaces (uses SQLite query)
+   */
+  getAllAirspaces(): Airspace[] {
+    return getAllAirspacesFromDb();
+  }
+
+  /**
+   * Get airspaces near a point (uses SQLite bounds query)
+   * Consistent with getNavaidsInRadius pattern
+   */
+  getAirspacesNearPoint(lat: number, lon: number, radiusNm = 50): Airspace[] {
+    return getAirspacesNearPointSql(lat, lon, radiusNm);
+  }
+
+  /**
+   * Get airway segments by name (for flight plan route expansion)
+   * Queries SQLite directly, resolves coordinates for each segment
+   */
+  getAirwaySegments(airwayName: string): AirwaySegmentWithCoords[] {
+    const segments = getAirwaysByName(airwayName);
     const results: AirwaySegmentWithCoords[] = [];
 
-    for (const segment of this.airways) {
-      if (results.length >= limit) break;
-
-      const fromKey1 = `${segment.fromFix}:${segment.fromRegion}`;
-      const toKey1 = `${segment.toFix}:${segment.toRegion}`;
-
-      const fromCoords = fixCoords.get(fromKey1) || fixCoords.get(segment.fromFix);
-      const toCoords = fixCoords.get(toKey1) || fixCoords.get(segment.toFix);
+    for (const segment of segments) {
+      const fromCoords = this.resolveFixCoordsSql(segment.fromFix, segment.fromRegion);
+      const toCoords = this.resolveFixCoordsSql(segment.toFix, segment.toRegion);
 
       if (!fromCoords || !toCoords) continue;
 
@@ -642,26 +695,29 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Build fix lookup map from waypoints and navaids
+   * Resolve a fix ID to coordinates using SQL queries
+   * Used for airway and holding pattern coordinate resolution
    */
-  private buildFixLookupMap(): Map<string, { lat: number; lon: number }> {
-    const fixCoords = new Map<string, { lat: number; lon: number }>();
+  private resolveFixCoordsSql(
+    fixId: string,
+    fixRegion: string
+  ): { lat: number; lon: number } | null {
+    // Try waypoint first (most fixes are waypoints)
+    const wp = getWaypointByIdRegion(fixId, fixRegion);
+    if (wp) return { lat: wp.latitude, lon: wp.longitude };
 
-    for (const wp of this.waypoints) {
-      fixCoords.set(`${wp.id}:${wp.region}`, { lat: wp.latitude, lon: wp.longitude });
-      if (!fixCoords.has(wp.id)) {
-        fixCoords.set(wp.id, { lat: wp.latitude, lon: wp.longitude });
-      }
-    }
+    // Try navaid
+    const nav = getNavaidByIdRegion(fixId, fixRegion);
+    if (nav) return { lat: nav.latitude, lon: nav.longitude };
 
-    for (const nav of this.navaids) {
-      fixCoords.set(`${nav.id}:${nav.region}`, { lat: nav.latitude, lon: nav.longitude });
-      if (!fixCoords.has(nav.id)) {
-        fixCoords.set(nav.id, { lat: nav.latitude, lon: nav.longitude });
-      }
-    }
+    // Fallback: try without region (less specific)
+    const wpAny = getWaypointNearestById(fixId, 0, 0, 99999);
+    if (wpAny) return { lat: wpAny.latitude, lon: wpAny.longitude };
 
-    return fixCoords;
+    const navAny = getNavaidNearestById(fixId, 0, 0, 99999);
+    if (navAny) return { lat: navAny.latitude, lon: navAny.longitude };
+
+    return null;
   }
 
   // ==================== ATC & Holdings Query Methods ====================
@@ -726,14 +782,13 @@ export class XPlaneDataManager {
 
   /**
    * Get holding patterns with resolved coordinates for map rendering
+   * Uses SQL lookups for coordinate resolution
    */
   getAllHoldingPatternsWithCoords(): (HoldingPattern & { latitude: number; longitude: number })[] {
     const result: (HoldingPattern & { latitude: number; longitude: number })[] = [];
-    const fixCoords = this.buildFixLookupMap();
 
     for (const hold of this.holdingPatterns) {
-      const key = `${hold.fixId}:${hold.fixRegion}`;
-      const coords = fixCoords.get(key) || fixCoords.get(hold.fixId);
+      const coords = this.resolveFixCoordsSql(hold.fixId, hold.fixRegion);
       if (coords) {
         result.push({
           ...hold,
@@ -781,7 +836,7 @@ export class XPlaneDataManager {
   // ==================== Search Methods ====================
 
   /**
-   * Search navaids by ID/name
+   * Search navaids by ID/name (uses SQLite queries)
    */
   searchNavaids(
     query: string,
@@ -794,7 +849,6 @@ export class XPlaneDataManager {
     longitude: number;
     frequency?: number;
   }> {
-    const upperQuery = query.toUpperCase();
     const results: Array<{
       type: string;
       id: string;
@@ -804,43 +858,37 @@ export class XPlaneDataManager {
       frequency?: number;
     }> = [];
 
-    // Search navaids
-    for (const nav of this.navaids) {
-      if (results.length >= limit) break;
-      if (
-        nav.id.toUpperCase().includes(upperQuery) ||
-        nav.name.toUpperCase().includes(upperQuery)
-      ) {
-        results.push({
-          type: ['ILS', 'LOC', 'GS'].includes(nav.type)
-            ? 'ILS'
-            : nav.type === 'NDB'
-              ? 'NDB'
-              : ['DME', 'TACAN'].includes(nav.type)
-                ? 'DME'
-                : 'VOR',
-          id: nav.id,
-          name: nav.name,
-          latitude: nav.latitude,
-          longitude: nav.longitude,
-          frequency: nav.frequency,
-        });
-      }
+    // Search navaids using SQL
+    const navaids = searchNavaidsDb(query, limit);
+    for (const nav of navaids) {
+      results.push({
+        type: ['ILS', 'LOC', 'GS'].includes(nav.type)
+          ? 'ILS'
+          : nav.type === 'NDB'
+            ? 'NDB'
+            : ['DME', 'TACAN'].includes(nav.type)
+              ? 'DME'
+              : 'VOR',
+        id: nav.id,
+        name: nav.name,
+        latitude: nav.latitude,
+        longitude: nav.longitude,
+        frequency: nav.frequency,
+      });
     }
 
     // Search waypoints if needed
     if (results.length < limit) {
-      for (const wp of this.waypoints) {
-        if (results.length >= limit) break;
-        if (wp.id.toUpperCase().includes(upperQuery)) {
-          results.push({
-            type: 'WAYPOINT',
-            id: wp.id,
-            name: wp.description || wp.id,
-            latitude: wp.latitude,
-            longitude: wp.longitude,
-          });
-        }
+      const remaining = limit - results.length;
+      const waypoints = searchWaypointsDb(query, remaining);
+      for (const wp of waypoints) {
+        results.push({
+          type: 'WAYPOINT',
+          id: wp.id,
+          name: wp.description || wp.id,
+          latitude: wp.latitude,
+          longitude: wp.longitude,
+        });
       }
     }
 
@@ -848,14 +896,10 @@ export class XPlaneDataManager {
   }
 
   /**
-   * Get navaid counts by type
+   * Get navaid counts by type (uses SQLite query)
    */
   getNavaidCountsByType(): Record<string, number> {
-    const counts: Record<string, number> = {};
-    for (const navaid of this.navaids) {
-      counts[navaid.type] = (counts[navaid.type] || 0) + 1;
-    }
-    return counts;
+    return getNavaidCountsByType();
   }
 
   // ==================== Status Methods ====================
@@ -898,23 +942,23 @@ export class XPlaneDataManager {
       },
       navaids: {
         loaded: this.loadStatus.navaids,
-        count: this.navaids.length,
+        count: getNavaidCount(),
         byType: this.getNavaidCountsByType(),
         source: xp ? getNavDataPath(xp) : null,
       },
       waypoints: {
         loaded: this.loadStatus.waypoints,
-        count: this.waypoints.length,
+        count: getWaypointCount(),
         source: xp ? getFixDataPath(xp) : null,
       },
       airspaces: {
         loaded: this.loadStatus.airspaces,
-        count: this.airspaces.length,
+        count: getAirspaceCount(),
         source: xp ? getAirspaceDataPath(xp) : null,
       },
       airways: {
         loaded: this.loadStatus.airways,
-        count: this.airways.length,
+        count: getAirwayCount(),
         source: xp ? getAirwayDataPath(xp) : null,
       },
       atc: this.loadStatus.atc
@@ -946,10 +990,7 @@ export class XPlaneDataManager {
    * Clear all loaded data
    */
   clear(): void {
-    this.navaids = [];
-    this.waypoints = [];
-    this.airspaces = [];
-    this.airways = [];
+    // Clear in-memory data (small datasets only)
     this.atcControllers = [];
     this.holdingPatterns = [];
     this.airportMetadata = new Map();
@@ -965,9 +1006,11 @@ export class XPlaneDataManager {
       aptMeta: false,
     };
 
+    // Clear database tables
     const db = getDb();
     db.delete(airports).run();
     db.delete(aptFileMeta).run();
+    // Note: navaids/waypoints/airspaces/airways tables are cleared by navCache when reloading
   }
 
   /**

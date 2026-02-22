@@ -87,6 +87,8 @@
     "track": "Track",
     "trackTooltip": "Track your aircraft position",
     "launch": "Launch",
+    "launchDisabled": "Select an airport first",
+    "loadPlan": "Load Plan",
     "navigationLayers": "Navigation Layers"
   },
 
@@ -346,7 +348,9 @@
     "vs": "VS",
     "hdg": "HDG",
     "center": "Center",
-    "centerTooltip": "Center map on aircraft"
+    "centerTooltip": "Center map on aircraft",
+    "following": "Following",
+    "followingTooltip": "Click to stop following aircraft"
   },
 
   "weather": {
@@ -410,11 +414,8 @@
       "windsocks": "Windsocks",
       "animations": "Animations",
       "weatherEffects": "Weather",
-      "vors": "VORs",
-      "ndbs": "NDBs",
-      "dmes": "DMEs",
+      "navaids": "Navaids (VOR/NDB/DME)",
       "ils": "ILS",
-      "waypoints": "Waypoints",
       "airwaysOff": "Off",
       "highAirways": "High Airways (Jet)",
       "lowAirways": "Low Airways (Victor)"

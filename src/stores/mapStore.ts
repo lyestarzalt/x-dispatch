@@ -46,7 +46,11 @@ interface MapState {
   selectedFeature: FeatureDebugInfo | null;
   vatsimEnabled: boolean;
   showPlaneTracker: boolean;
+  /** When true, map follows plane position and heading */
+  followPlane: boolean;
   explore: ExploreState;
+  /** Incremented when map style changes to trigger layer re-adds */
+  styleVersion: number;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -61,6 +65,7 @@ interface MapState {
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setShowPlaneTracker: (enabled: boolean) => void;
+  setFollowPlane: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
 
   setExploreOpen: (isOpen: boolean) => void;
@@ -68,6 +73,7 @@ interface MapState {
   setSelectedRoute: (route: { from: string; to: string } | null) => void;
   setExploreFilters: (filters: Partial<ExploreFilters>) => void;
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
+  incrementStyleVersion: () => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -82,6 +88,7 @@ export const useMapStore = create<MapState>()(
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
       showPlaneTracker: false,
+      followPlane: false,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -94,6 +101,7 @@ export const useMapStore = create<MapState>()(
         },
         featuredCategory: 'all' as FeaturedCategoryFilter,
       },
+      styleVersion: 0,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -137,6 +145,7 @@ export const useMapStore = create<MapState>()(
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setVatsimEnabled: (enabled) => set({ vatsimEnabled: enabled }),
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
+      setFollowPlane: (enabled) => set({ followPlane: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
@@ -153,22 +162,33 @@ export const useMapStore = create<MapState>()(
         })),
       setFeaturedCategory: (category) =>
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
+      incrementStyleVersion: () => set((state) => ({ styleVersion: state.styleVersion + 1 })),
     }),
     {
       name: 'xplane-viz-map',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
       }),
       migrate: (persisted, version) => {
-        // Handle future migrations when schema changes
-        if (version === 0) {
-          // Migration from version 0 to 1 (if needed)
-          return persisted;
+        const state = persisted as Record<string, unknown>;
+        // Migration from v1 to v2: consolidate navVisibility
+        if (version === 1) {
+          const oldNav = state.navVisibility as Record<string, unknown> | undefined;
+          if (oldNav) {
+            // Convert old separate vors/ndbs/dmes to consolidated navaids
+            const hadNavaids = oldNav.vors || oldNav.ndbs || oldNav.dmes;
+            state.navVisibility = {
+              navaids: hadNavaids ?? true,
+              ils: oldNav.ils ?? true,
+              airspaces: oldNav.airspaces ?? true,
+              airwaysMode: oldNav.airwaysMode ?? 'off',
+            };
+          }
         }
-        return persisted;
+        return state;
       },
     }
   )

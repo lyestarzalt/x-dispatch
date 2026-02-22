@@ -4,21 +4,23 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
+import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useXPlaneStatus } from '@/queries';
-import { useGlobalAirwaysQuery, useNavDataQuery } from '@/queries/useNavDataQuery';
+import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
-import { AirwaysMode, LayerVisibility, NavLayerVisibility } from '@/types/layers';
+import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import type { PlanePosition, PlaneState } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
@@ -34,9 +36,12 @@ import {
   useVatsimSync,
 } from './hooks';
 import {
+  addFlightPlanLayer,
   bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
+  fitMapToFlightPlan,
+  removeFlightPlanLayer,
   removePlaneLayer,
   removeVatsimPilotLayer,
   updatePlaneLayer,
@@ -77,13 +82,16 @@ export default function Map({ airports }: MapProps) {
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
+  const followPlane = useMapStore((s) => s.followPlane);
+  const setFollowPlane = useMapStore((s) => s.setFollowPlane);
   const toggleLayer = useMapStore((s) => s.toggleLayer);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
-  const setAirwaysMode = useMapStore((s) => s.setAirwaysMode);
   const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
   const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
+  const styleVersion = useMapStore((s) => s.styleVersion);
+  const incrementStyleVersion = useMapStore((s) => s.incrementStyleVersion);
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
@@ -168,21 +176,30 @@ export default function Map({ airports }: MapProps) {
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
   const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
 
-  const navDataLocation: Coordinates | null =
-    selectedAirportData?.metadata?.datum_lat && selectedAirportData?.metadata?.datum_lon
-      ? {
-          latitude: parseFloat(selectedAirportData.metadata.datum_lat),
-          longitude: parseFloat(selectedAirportData.metadata.datum_lon),
-        }
-      : null;
-  const { data: navData, isLoading: navLoading } = useNavDataQuery(
+  // Get airport coordinates - prefer airports array, fallback to metadata
+  const selectedAirport = useMemo(
+    () => airports.find((a) => a.icao === selectedICAO),
+    [airports, selectedICAO]
+  );
+  const navDataLocation: Coordinates | null = useMemo(() => {
+    // First try the airports array (always has coords)
+    if (selectedAirport) {
+      return { latitude: selectedAirport.lat, longitude: selectedAirport.lon };
+    }
+    // Fallback to metadata
+    if (selectedAirportData?.metadata?.datum_lat && selectedAirportData?.metadata?.datum_lon) {
+      return {
+        latitude: parseFloat(selectedAirportData.metadata.datum_lat),
+        longitude: parseFloat(selectedAirportData.metadata.datum_lon),
+      };
+    }
+    return null;
+  }, [selectedAirport, selectedAirportData]);
+  const { data: navData } = useNavDataQuery(
     navDataLocation?.latitude ?? null,
     navDataLocation?.longitude ?? null,
     50
   );
-
-  const shouldLoadAirways = navVisibility.airwaysMode !== 'off';
-  const { data: airwaysData, isFetched: airwaysFetched } = useGlobalAirwaysQuery(shouldLoadAirways);
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
 
@@ -244,9 +261,8 @@ export default function Map({ airports }: MapProps) {
   useNavLayerSync({
     mapRef,
     navData,
-    airwaysData,
-    airwaysFetched,
     navVisibility,
+    styleVersion,
   });
 
   // Vatsim sync
@@ -255,18 +271,73 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
+    styleVersion,
   });
 
   // Route line sync for Explore panel routes
   useRouteLineSync({
     mapRef,
     airports,
+    styleVersion,
   });
 
   // Procedure route sync - renders selected procedure on map
-  useProcedureRouteSync({ mapRef });
+  useProcedureRouteSync({ mapRef, styleVersion });
 
-  // Load FIR boundaries on map load
+  // Flight plan state
+  const fmsData = useFlightPlanStore((s) => s.fmsData);
+  const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
+  const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
+
+  // Flight plan layer sync
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Wait for style to be loaded
+    if (!map.isStyleLoaded()) return;
+
+    if (fmsData) {
+      addFlightPlanLayer(map, fmsData);
+      // Only fit on initial load, not on style change
+      if (styleVersion === 0) {
+        fitMapToFlightPlan(map, fmsData);
+      }
+    } else {
+      removeFlightPlanLayer(map);
+    }
+  }, [mapRef, fmsData, styleVersion]);
+
+  // Fly to selected waypoint
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || selectedWaypointIndex === null || !fmsData) return;
+
+    const wp = fmsData.waypoints[selectedWaypointIndex];
+    if (wp) {
+      map.flyTo({
+        center: [wp.longitude, wp.latitude],
+        zoom: 10,
+        duration: 1500,
+      });
+    }
+  }, [mapRef, selectedWaypointIndex, fmsData]);
+
+  // Handle waypoint click from FlightPlanBar
+  const handleWaypointClick = useCallback(
+    (chip: import('@/types/fms').FlightPlanChip) => {
+      if (chip.latitude !== undefined && chip.longitude !== undefined) {
+        mapRef.current?.flyTo({
+          center: [chip.longitude, chip.latitude],
+          zoom: 10,
+          duration: 1500,
+        });
+      }
+    },
+    [mapRef]
+  );
+
+  // Load FIR boundaries on map load and style change
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !NAV_GLOBAL_LOADING.firBoundaries) return;
@@ -289,7 +360,7 @@ export default function Map({ airports }: MapProps) {
     };
 
     loadFIR();
-  }, [mapRef]);
+  }, [mapRef, styleVersion]);
 
   // Style change handler
   const initialStyleRef = useRef(true);
@@ -314,6 +385,9 @@ export default function Map({ airports }: MapProps) {
         applyLayerVisibilityRef.current(layerVisibilityRef.current);
         bringVatsimLayersToTop(map);
       }
+
+      // Trigger all sync hooks to re-add their layers
+      incrementStyleVersion();
     };
 
     map.once('style.load', handleStyleLoad);
@@ -322,7 +396,7 @@ export default function Map({ airports }: MapProps) {
     return () => {
       map.off('style.load', handleStyleLoad);
     };
-  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick]);
+  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick, incrementStyleVersion]);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(
@@ -453,13 +527,6 @@ export default function Map({ airports }: MapProps) {
     [mapRef, toggleNavLayer, navVisibility]
   );
 
-  const handleSetAirwaysMode = useCallback(
-    (mode: AirwaysMode) => {
-      setAirwaysMode(mode);
-    },
-    [setAirwaysMode]
-  );
-
   const handleLoadViewportNavaids = useCallback(async () => {}, []);
 
   const handleToggleVatsim = useCallback(() => {
@@ -481,14 +548,64 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
 
+  // Track programmatic map movements to avoid disabling follow mode
+  const isProgrammaticMoveRef = useRef(false);
+
   const handleCenterPlane = useCallback(() => {
     if (!planePosition || !mapRef.current) return;
-    mapRef.current.flyTo({
+    // Toggle follow mode
+    const newFollowState = !followPlane;
+    setFollowPlane(newFollowState);
+
+    if (newFollowState) {
+      // Mark as programmatic to avoid triggering disable
+      isProgrammaticMoveRef.current = true;
+      mapRef.current.flyTo({
+        center: [planePosition.lng, planePosition.lat],
+        bearing: planePosition.heading ?? 0,
+        zoom: 12,
+        duration: 1500,
+      });
+      // Reset after animation completes
+      setTimeout(() => {
+        isProgrammaticMoveRef.current = false;
+      }, 1600);
+    }
+  }, [mapRef, planePosition, followPlane, setFollowPlane]);
+
+  // Follow plane position and heading when follow mode is active
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !followPlane || !planePosition) return;
+
+    // Use jumpTo for instant updates - no lag from overlapping animations
+    isProgrammaticMoveRef.current = true;
+    map.jumpTo({
       center: [planePosition.lng, planePosition.lat],
-      zoom: 12,
-      duration: 1500,
+      bearing: planePosition.heading ?? 0,
     });
-  }, [mapRef, planePosition]);
+    isProgrammaticMoveRef.current = false;
+  }, [mapRef, followPlane, planePosition]);
+
+  // Disable follow mode when user interacts with the map (not programmatic)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const disableFollow = () => {
+      // Only disable if this is a user interaction, not programmatic
+      if (!isProgrammaticMoveRef.current && followPlane) {
+        setFollowPlane(false);
+      }
+    };
+
+    // User interactions that should disable follow mode
+    map.on('dragstart', disableFollow);
+
+    return () => {
+      map.off('dragstart', disableFollow);
+    };
+  }, [mapRef, followPlane, setFollowPlane]);
 
   return (
     <div
@@ -500,13 +617,17 @@ export default function Map({ airports }: MapProps) {
         style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
       />
 
-      <Toolbar
-        airports={airports}
-        onSelectAirport={selectAirport}
-        onToggleVatsim={handleToggleVatsim}
-        onTogglePlaneTracker={handleTogglePlaneTracker}
-        onNavToggle={handleNavLayerToggle}
-      />
+      {/* Top bar layout container - handles positioning for both bars */}
+      <div className="absolute left-4 right-4 top-4 z-50 flex flex-col gap-2">
+        <FlightPlanBar onWaypointClick={handleWaypointClick} />
+        <Toolbar
+          airports={airports}
+          onSelectAirport={selectAirport}
+          onToggleVatsim={handleToggleVatsim}
+          onTogglePlaneTracker={handleTogglePlaneTracker}
+          onNavToggle={handleNavLayerToggle}
+        />
+      </div>
 
       <SettingsDialog
         open={showSettings}
@@ -516,7 +637,8 @@ export default function Map({ airports }: MapProps) {
         vatsimPilotCount={vatsimData?.pilots?.length}
       />
 
-      <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} />
+      {/* CompassWidget hidden for cleaner UI - keeping code for future use */}
+      {/* <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} /> */}
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && (

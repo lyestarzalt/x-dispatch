@@ -1,4 +1,5 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import * as Sentry from '@sentry/electron/renderer';
 import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
 import type {
   Airport,
@@ -41,6 +42,10 @@ import type {
   VatsimPrefile,
 } from './types/vatsim';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
+
+Sentry.init({
+  dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
+});
 
 contextBridge.exposeInMainWorld('airportAPI', {
   getAirports: () => ipcRenderer.invoke('get-airports'),
@@ -115,9 +120,8 @@ contextBridge.exposeInMainWorld('navAPI', {
   getAirspacesNearPoint: (lat: number, lon: number, radiusNm: number) =>
     ipcRenderer.invoke('nav:getAirspacesNearPoint', lat, lon, radiusNm),
   getAllAirspaces: () => ipcRenderer.invoke('nav:getAllAirspaces'),
-  getAirwaysInRadius: (lat: number, lon: number, radiusNm: number) =>
-    ipcRenderer.invoke('nav:getAirwaysInRadius', lat, lon, radiusNm),
-  getAllAirwaysWithCoords: () => ipcRenderer.invoke('nav:getAllAirwaysWithCoords'),
+  getAirwaySegments: (airwayName: string) =>
+    ipcRenderer.invoke('nav:getAirwaySegments', airwayName),
   getGlideSlopesInRadius: (lat: number, lon: number, radiusNm: number) =>
     ipcRenderer.invoke('nav:getGlideSlopesInRadius', lat, lon, radiusNm),
   getMarkersInRadius: (lat: number, lon: number, radiusNm: number) =>
@@ -142,6 +146,34 @@ contextBridge.exposeInMainWorld('navAPI', {
   getTransitionAltitude: (icao: string) => ipcRenderer.invoke('nav:getTransitionAltitude', icao),
   // Bulk data retrieval for map layers
   getAllHoldingPatterns: () => ipcRenderer.invoke('nav:getAllHoldingPatterns'),
+  // Bounds-based queries (SQLite direct - more efficient)
+  getNavaidsInBounds: (
+    minLat: number,
+    maxLat: number,
+    minLon: number,
+    maxLon: number,
+    types?: string[],
+    limit?: number
+  ) => ipcRenderer.invoke('nav:getNavaidsInBounds', minLat, maxLat, minLon, maxLon, types, limit),
+  getWaypointsInBounds: (
+    minLat: number,
+    maxLat: number,
+    minLon: number,
+    maxLon: number,
+    limit?: number
+  ) => ipcRenderer.invoke('nav:getWaypointsInBounds', minLat, maxLat, minLon, maxLon, limit),
+  resolveWaypointCoords: (
+    waypointId: string,
+    region?: string,
+    airportLat?: number,
+    airportLon?: number
+  ) => ipcRenderer.invoke('nav:resolveWaypointCoords', waypointId, region, airportLat, airportLon),
+  resolveNavaidCoords: (
+    navaidId: string,
+    region?: string,
+    airportLat?: number,
+    airportLon?: number
+  ) => ipcRenderer.invoke('nav:resolveNavaidCoords', navaidId, region, airportLat, airportLon),
 });
 
 contextBridge.exposeInMainWorld('launcherAPI', {
@@ -151,6 +183,12 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   launch: (config: LaunchConfig) => ipcRenderer.invoke('launcher:launch', config),
   getAircraftImage: (imagePath: string) =>
     ipcRenderer.invoke('launcher:getAircraftImage', imagePath),
+});
+
+contextBridge.exposeInMainWorld('flightPlanAPI', {
+  openFile: () => ipcRenderer.invoke('flightplan:openFile'),
+  enrich: (fmsData: import('./types/fms').FMSFlightPlan) =>
+    ipcRenderer.invoke('flightplan:enrich', fmsData),
 });
 
 // X-Plane Service API - REST + WebSocket
@@ -229,12 +267,7 @@ declare global {
       getWaypointsInRadius: (lat: number, lon: number, radiusNm: number) => Promise<Waypoint[]>;
       getAirspacesNearPoint: (lat: number, lon: number, radiusNm: number) => Promise<Airspace[]>;
       getAllAirspaces: () => Promise<Airspace[]>;
-      getAirwaysInRadius: (
-        lat: number,
-        lon: number,
-        radiusNm: number
-      ) => Promise<AirwaySegmentWithCoords[]>;
-      getAllAirwaysWithCoords: () => Promise<AirwaySegmentWithCoords[]>;
+      getAirwaySegments: (airwayName: string) => Promise<AirwaySegmentWithCoords[]>;
       // New ILS/approach component queries
       getGlideSlopesInRadius: (lat: number, lon: number, radiusNm: number) => Promise<Navaid[]>;
       getMarkersInRadius: (lat: number, lon: number, radiusNm: number) => Promise<Navaid[]>;
@@ -256,6 +289,34 @@ declare global {
       getAllHoldingPatterns: () => Promise<
         (HoldingPattern & { latitude: number; longitude: number })[]
       >;
+      // Bounds-based queries (SQLite direct - more efficient)
+      getNavaidsInBounds: (
+        minLat: number,
+        maxLat: number,
+        minLon: number,
+        maxLon: number,
+        types?: string[],
+        limit?: number
+      ) => Promise<Navaid[]>;
+      getWaypointsInBounds: (
+        minLat: number,
+        maxLat: number,
+        minLon: number,
+        maxLon: number,
+        limit?: number
+      ) => Promise<Waypoint[]>;
+      resolveWaypointCoords: (
+        waypointId: string,
+        region?: string,
+        airportLat?: number,
+        airportLon?: number
+      ) => Promise<{ latitude: number; longitude: number } | null>;
+      resolveNavaidCoords: (
+        navaidId: string,
+        region?: string,
+        airportLat?: number,
+        airportLon?: number
+      ) => Promise<{ latitude: number; longitude: number; type: string } | null>;
     };
     launcherAPI: {
       scanAircraft: () => Promise<{ success: boolean; aircraft: Aircraft[]; error?: string }>;
@@ -263,6 +324,12 @@ declare global {
       getWeatherPresets: () => Promise<WeatherPreset[]>;
       launch: (config: LaunchConfig) => Promise<{ success: boolean; error?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
+    };
+    flightPlanAPI: {
+      openFile: () => Promise<{ content: string; fileName: string } | null>;
+      enrich: (
+        fmsData: import('./types/fms').FMSFlightPlan
+      ) => Promise<import('./types/fms').EnrichedFlightPlan | null>;
     };
     // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {

@@ -6,6 +6,7 @@ import {
   Info,
   MessageSquare,
   PlaneTakeoff,
+  Route,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,12 @@ import { useAppStore } from '@/stores/appStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import CommsTab from './tabs/CommsTab';
+import FlightPlanTab from './tabs/FlightPlanTab';
 import InfoTab from './tabs/InfoTab';
 import RouteTab from './tabs/RouteTab';
 import StartTab from './tabs/StartTab';
 
-type TabId = 'info' | 'start' | 'route' | 'comms';
+type TabId = 'info' | 'start' | 'route' | 'plan' | 'comms';
 
 interface Tab {
   id: TabId;
@@ -31,6 +33,7 @@ const TABS: Tab[] = [
   { id: 'info', icon: <Info className="h-4 w-4" /> },
   { id: 'start', icon: <PlaneTakeoff className="h-4 w-4" /> },
   { id: 'route', icon: <Compass className="h-4 w-4" /> },
+  { id: 'plan', icon: <Route className="h-4 w-4" /> },
   { id: 'comms', icon: <MessageSquare className="h-4 w-4" /> },
 ];
 
@@ -38,6 +41,7 @@ const TAB_LABELS: Record<TabId, string> = {
   info: 'Info',
   start: 'Start',
   route: 'Route',
+  plan: 'Plan',
   comms: 'Comms',
 };
 
@@ -185,6 +189,7 @@ export default function Sidebar({
               />
             )}
             {activeTab === 'route' && <RouteTab />}
+            {activeTab === 'plan' && <FlightPlanTab />}
             {activeTab === 'comms' && <CommsTab />}
           </div>
         </ScrollArea>

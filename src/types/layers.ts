@@ -28,14 +28,15 @@ export interface LayerVisibility {
 // Airways display mode - radio selection (only one at a time)
 export type AirwaysMode = 'off' | 'high' | 'low';
 
-// Navigation layer visibility (navaids, airspaces, airways)
+// Navigation layer visibility (consolidated navaids, ILS, airspaces, airways)
 export interface NavLayerVisibility {
-  vors: boolean;
-  ndbs: boolean;
-  dmes: boolean;
+  /** All radio navaids: VOR, VORTAC, VOR-DME, NDB, DME, TACAN */
+  navaids: boolean;
+  /** ILS/LOC with cone and course line */
   ils: boolean;
-  waypoints: boolean;
+  /** Airspace boundaries (Class A/B/C/D, FIR, etc.) */
   airspaces: boolean;
+  /** Airways display mode */
   airwaysMode: AirwaysMode;
 }
 
@@ -57,13 +58,10 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
   weather: true,
 };
 
-// Default navigation layer visibility - show key navaids by default
+// Default navigation layer visibility
 export const DEFAULT_NAV_VISIBILITY: NavLayerVisibility = {
-  vors: true,
-  ndbs: true,
-  dmes: false,
+  navaids: true,
   ils: true,
-  waypoints: false,
   airspaces: true,
   airwaysMode: 'off',
 };
