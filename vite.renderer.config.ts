@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
@@ -16,8 +17,17 @@ export default defineConfig((env) => {
     base: './',
     build: {
       outDir: `.vite/renderer/${name}`,
+      sourcemap: true,
     },
-    plugins: [react(), pluginExposeRenderer(name)],
+    plugins: [
+      react(),
+      pluginExposeRenderer(name),
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: 'lyes-personal',
+        project: 'x-dispatch',
+      }),
+    ],
     resolve: {
       preserveSymlinks: true,
       alias: {

@@ -73,3 +73,6 @@ CLAUDE.md
 .idea/
 yarn.lock
 docs/
+
+# Sentry Config File
+.env.sentry-build-plugin
