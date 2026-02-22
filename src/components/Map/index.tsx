@@ -362,31 +362,34 @@ export default function Map({ airports }: MapProps) {
     loadFIR();
   }, [mapRef, styleVersion]);
 
-  // Style change handler
-  const initialStyleRef = useRef(true);
+  // Style change handler - only triggers when mapStyleUrl actually changes
+  const previousStyleUrlRef = useRef<string | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    if (initialStyleRef.current) {
-      initialStyleRef.current = false;
+    // Skip if this is the initial render or style URL hasn't changed
+    if (previousStyleUrlRef.current === null) {
+      previousStyleUrlRef.current = mapStyleUrl;
       return;
     }
 
-    const handleStyleLoad = async () => {
-      // Re-add airports layer and click handlers
+    if (previousStyleUrlRef.current === mapStyleUrl) {
+      return;
+    }
+
+    previousStyleUrlRef.current = mapStyleUrl;
+
+    // SIMPLE APPROACH: Clear all selections, let user re-select after style change
+    // This avoids complex race conditions with layer restoration
+    useAppStore.getState().clearAirport(); // Clears airport + procedure selection
+
+    const handleStyleLoad = () => {
+      // Re-add base airports layer (the clickable dots)
       setupAirportsLayer(map, airports);
       setupAirportPopup(map, airportPopupRef, handleAirportClick);
 
-      // Re-render selected airport if any
-      const icao = selectedICAORef.current;
-      if (icao && renderAirportRef.current && applyLayerVisibilityRef.current) {
-        await renderAirportRef.current(icao);
-        applyLayerVisibilityRef.current(layerVisibilityRef.current);
-        bringVatsimLayersToTop(map);
-      }
-
-      // Trigger all sync hooks to re-add their layers
+      // Trigger sync hooks to re-add nav layers, VATSIM, etc.
       incrementStyleVersion();
     };
 

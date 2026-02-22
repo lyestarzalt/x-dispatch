@@ -27,21 +27,36 @@ export function useProcedureRouteSync({
       return;
     }
 
+    const addLayer = () => {
+      // Safety check - map may have been destroyed while waiting
+      if (!mapRef.current) return;
+
+      try {
+        addProcedureRouteLayer(map, {
+          type: selectedProcedure.type as 'SID' | 'STAR' | 'APPROACH',
+          name: selectedProcedure.name,
+          waypoints: selectedProcedure.waypoints.map((wp) => ({
+            fixId: wp.fixId,
+            latitude: wp.latitude,
+            longitude: wp.longitude,
+            resolved: wp.resolved,
+          })),
+        });
+      } catch (err) {
+        window.appAPI?.log?.error?.('Failed to add procedure route layer', err);
+      }
+    };
+
     // Wait for style to be loaded before adding layers
     if (!map.isStyleLoaded()) {
-      return;
+      map.once('styledata', addLayer);
+      return () => {
+        map.off('styledata', addLayer);
+        removeProcedureRouteLayer(map);
+      };
     }
 
-    addProcedureRouteLayer(map, {
-      type: selectedProcedure.type as 'SID' | 'STAR' | 'APPROACH',
-      name: selectedProcedure.name,
-      waypoints: selectedProcedure.waypoints.map((wp) => ({
-        fixId: wp.fixId,
-        latitude: wp.latitude,
-        longitude: wp.longitude,
-        resolved: wp.resolved,
-      })),
-    });
+    addLayer();
 
     return () => {
       // Use captured map reference for cleanup
