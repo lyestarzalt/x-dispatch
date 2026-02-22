@@ -46,7 +46,7 @@ export default function AirportInfoPanel({
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
-  const flightCategory = vatsimMetarData?.decoded?.flightCategory ?? null;
+  const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('info');

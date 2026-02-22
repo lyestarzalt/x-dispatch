@@ -1,28 +1,36 @@
-import { useMemo, useState } from 'react';
-import { ChevronDown, Copy } from 'lucide-react';
+import { useMemo } from 'react';
+import { Copy, Plane, Radio } from 'lucide-react';
+import { CloudQuantity, Descriptive, DistanceUnit, Intensity, Phenomenon } from 'metar-taf-parser';
+// Formatters for metar-taf-parser types
+import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
 import { Badge } from '@/components/ui/badge';
 import { formatFrequency } from '@/lib/utils/format';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures, useNavDataQuery } from '@/queries';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
-import { getATISForAirport, parseATISRunways, useVatsimQuery } from '@/queries/useVatsimQuery';
+import {
+  getATISForAirport,
+  getControllersForAirport,
+  getTrafficCountsForAirport,
+  parseATISRunways,
+  useVatsimQuery,
+} from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
-import type { Frequency, Runway } from '@/types/apt';
+import type { Frequency } from '@/types/apt';
 import { FrequencyType, SurfaceType } from '@/types/apt';
 
-const SURFACE_SHORT: Partial<Record<SurfaceType, string>> = {
-  [SurfaceType.ASPHALT]: 'ASPH',
-  [SurfaceType.CONCRETE]: 'CONC',
-  [SurfaceType.TURF_OR_GRASS]: 'GRASS',
-  [SurfaceType.DIRT]: 'DIRT',
-  [SurfaceType.GRAVEL]: 'GRVL',
-  [SurfaceType.WATER_RUNWAY]: 'WATER',
-  [SurfaceType.SNOW_OR_ICE]: 'SNOW',
+const SURFACE_NAMES: Partial<Record<SurfaceType, string>> = {
+  [SurfaceType.ASPHALT]: 'Asphalt',
+  [SurfaceType.CONCRETE]: 'Concrete',
+  [SurfaceType.TURF_OR_GRASS]: 'Grass',
+  [SurfaceType.DIRT]: 'Dirt',
+  [SurfaceType.GRAVEL]: 'Gravel',
+  [SurfaceType.WATER_RUNWAY]: 'Water',
+  [SurfaceType.SNOW_OR_ICE]: 'Snow',
 };
 
-// Priority order for displaying frequencies
 const FREQ_PRIORITY: FrequencyType[] = [
   FrequencyType.TOWER,
   FrequencyType.GROUND,
@@ -30,9 +38,10 @@ const FREQ_PRIORITY: FrequencyType[] = [
   FrequencyType.DELIVERY,
   FrequencyType.CTAF,
   FrequencyType.AWOS,
+  FrequencyType.UNICOM,
 ];
 
-const FREQ_SHORT: Partial<Record<FrequencyType, string>> = {
+const FREQ_LABELS: Partial<Record<FrequencyType, string>> = {
   [FrequencyType.TOWER]: 'TWR',
   [FrequencyType.GROUND]: 'GND',
   [FrequencyType.APPROACH]: 'APP',
@@ -57,49 +66,48 @@ export default function InfoTab() {
   );
   const { data: procedures } = useAirportProcedures(icao);
 
-  const metar = vatsimMetarData?.decoded ?? null;
+  const metar = vatsimMetarData?.parsed ?? null;
+  const rawMetar = vatsimMetarData?.raw ?? null;
+
+  // VATSIM data
   const atis = useMemo(() => getATISForAirport(vatsimData, icao ?? ''), [vatsimData, icao]);
+  const controllers = useMemo(
+    () => getControllersForAirport(vatsimData, icao ?? ''),
+    [vatsimData, icao]
+  );
+  const traffic = useMemo(
+    () => getTrafficCountsForAirport(vatsimData, icao ?? ''),
+    [vatsimData, icao]
+  );
   const primaryAtis = atis[0];
   const atisRunways = primaryAtis ? parseATISRunways(primaryAtis) : [];
+  const hasVatsimActivity =
+    controllers.length > 0 || atis.length > 0 || traffic.departures > 0 || traffic.arrivals > 0;
 
-  const [showMetar, setShowMetar] = useState(false);
-
-  // Find longest runway
-  const longestRunway = useMemo(() => {
-    if (!airport?.runways.length) return null;
-    return airport.runways.reduce<Runway | null>((longest, rwy) => {
-      const length = runwayLengthFeet(rwy.ends[0], rwy.ends[1]);
-      if (!longest) return rwy;
-      const longestLength = runwayLengthFeet(longest.ends[0], longest.ends[1]);
-      return length > longestLength ? rwy : longest;
-    }, null);
+  // Runways sorted by length
+  const sortedRunways = useMemo(() => {
+    if (!airport?.runways) return [];
+    return [...airport.runways].sort((a, b) => {
+      const lenA = runwayLengthFeet(a.ends[0], a.ends[1]);
+      const lenB = runwayLengthFeet(b.ends[0], b.ends[1]);
+      return lenB - lenA;
+    });
   }, [airport?.runways]);
 
-  const longestRunwayInfo = useMemo(() => {
-    if (!longestRunway) return null;
-    const e1 = longestRunway.ends[0];
-    const e2 = longestRunway.ends[1];
-    return {
-      name: `${e1.name}/${e2.name}`,
-      length: Math.round(runwayLengthFeet(e1, e2)),
-      width: Math.round(metersToFeet(longestRunway.width)),
-      surface: SURFACE_SHORT[longestRunway.surface_type] || '?',
-      hasLighting: longestRunway.edge_lights || longestRunway.centerline_lights,
-    };
-  }, [longestRunway]);
-
-  // Get top frequencies (max 4)
-  const topFrequencies = useMemo(() => {
+  // Get frequencies sorted by priority
+  const frequencies = useMemo(() => {
     if (!airport?.frequencies) return [];
-    const freqMap = new Map<FrequencyType, Frequency>();
+    const freqMap = new Map<FrequencyType, Frequency[]>();
     for (const freq of airport.frequencies) {
-      if (!freqMap.has(freq.type)) {
-        freqMap.set(freq.type, freq);
-      }
+      const existing = freqMap.get(freq.type) ?? [];
+      freqMap.set(freq.type, [...existing, freq]);
     }
-    return FREQ_PRIORITY.filter((type) => freqMap.has(type))
-      .slice(0, 4)
-      .map((type) => freqMap.get(type)!);
+    const result: Frequency[] = [];
+    for (const type of FREQ_PRIORITY) {
+      const freqs = freqMap.get(type);
+      if (freqs) result.push(...freqs);
+    }
+    return result.slice(0, 6); // Max 6 frequencies
   }, [airport?.frequencies]);
 
   // Counts
@@ -107,159 +115,201 @@ export default function InfoTab() {
   const sidCount = procedures?.sids.length ?? 0;
   const starCount = procedures?.stars.length ?? 0;
   const approachCount = procedures?.approaches.length ?? 0;
+  const procCount = sidCount + starCount + approachCount;
 
-  const handleCopyFreq = (freq: number) => {
-    navigator.clipboard.writeText(formatFrequency(freq));
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
   };
 
   if (!airport) return null;
 
   return (
-    <div className="space-y-3">
-      {/* ATIS - if VATSIM active */}
-      {primaryAtis && (
-        <div className="flex items-center gap-2 rounded bg-primary/5 px-2.5 py-1.5">
-          <Badge variant="secondary" className="font-mono text-sm font-bold">
-            {primaryAtis.atis_code || '?'}
-          </Badge>
-          <span className="text-xs text-muted-foreground">ATIS</span>
-          {atisRunways.length > 0 && (
-            <>
-              <span className="text-muted-foreground/30">•</span>
-              <span className="font-mono text-xs text-foreground">
-                RWY {atisRunways.join(', ')}
-              </span>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Runway - Compact single line */}
-      {longestRunwayInfo && (
-        <div className="rounded border border-border/40 bg-muted/10 px-3 py-2">
-          <div className="flex items-baseline justify-between">
-            <div className="flex items-baseline gap-2">
-              <span className="font-mono text-base font-semibold text-foreground">
-                {longestRunwayInfo.name}
-              </span>
-              <span className="text-[10px] text-muted-foreground">LONGEST</span>
+    <div className="space-y-4">
+      {/* VATSIM Live Section */}
+      {vatsimEnabled && hasVatsimActivity && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+              <span className="text-xs font-medium text-emerald-400">VATSIM LIVE</span>
             </div>
-            <span className="font-mono text-xs text-muted-foreground">
-              {longestRunwayInfo.length.toLocaleString()}'×{longestRunwayInfo.width}'
-            </span>
-          </div>
-          <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
-            <span>{longestRunwayInfo.surface}</span>
-            {longestRunwayInfo.hasLighting && (
-              <>
-                <span className="text-muted-foreground/30">•</span>
-                <span>LGT</span>
-              </>
+            {(traffic.departures > 0 || traffic.arrivals > 0) && (
+              <div className="flex items-center gap-3 font-mono text-xs">
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <Plane className="h-3 w-3 rotate-45" />
+                  {traffic.departures}
+                </span>
+                <span className="flex items-center gap-1 text-amber-400">
+                  <Plane className="h-3 w-3 -rotate-45" />
+                  {traffic.arrivals}
+                </span>
+              </div>
             )}
           </div>
-        </div>
-      )}
 
-      {/* Weather - Ultra compact */}
-      {metar ? (
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 px-1 font-mono text-xs">
-            <span className="text-foreground">{formatWind(metar.wind)}</span>
-            <span className="text-muted-foreground/30">|</span>
-            <span className="text-foreground">{formatVisibility(metar.visibility)}</span>
-            <span className="text-muted-foreground/30">|</span>
-            <span className="text-foreground">{formatCeiling(metar.clouds)}</span>
-          </div>
-          <div className="flex items-center justify-between px-1 font-mono text-[10px] text-muted-foreground">
-            <span>QNH {formatAltimeter(metar.altimeter, metar.altimeterUnit)}</span>
-            <span>
-              {metar.temperature ?? '—'}°/{metar.dewpoint ?? '—'}°C
-            </span>
-          </div>
-          {metar.weather.length > 0 && (
-            <div className="flex flex-wrap gap-1 px-1">
-              {metar.weather.map((wx, i) => (
-                <Badge key={i} variant="outline" className="h-4 px-1.5 text-[9px]">
-                  {wx}
+          {/* ATC Online */}
+          {controllers.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {controllers.map((atc) => (
+                <Badge
+                  key={atc.callsign}
+                  variant="secondary"
+                  className="gap-1 bg-emerald-500/20 text-[10px] text-emerald-300"
+                >
+                  <Radio className="h-2.5 w-2.5" />
+                  {atc.callsign.split('_')[1] || atc.callsign}
                 </Badge>
               ))}
             </div>
           )}
-        </div>
-      ) : (
-        <div className="px-1 text-xs text-muted-foreground">No weather data</div>
-      )}
 
-      {/* Stats - Compact row */}
-      <div className="grid grid-cols-4 gap-1.5">
-        <StatBox label="RWY" value={airport.runways.length} />
-        <StatBox label="ILS" value={ilsCount} highlight={ilsCount > 0} />
-        <StatBox label="PROC" value={sidCount + starCount + approachCount} />
-        <StatBox label="RAMP" value={airport.startupLocations?.length ?? 0} />
-      </div>
-
-      {/* Frequencies - Compact grid */}
-      {topFrequencies.length > 0 && (
-        <div className="grid grid-cols-2 gap-1.5">
-          {topFrequencies.map((freq, i) => (
-            <button
-              key={i}
-              onClick={() => handleCopyFreq(freq.frequency)}
-              className="group flex items-center justify-between rounded bg-muted/30 px-2 py-1.5 transition-colors hover:bg-muted/50"
-            >
-              <span className="text-[10px] text-muted-foreground">
-                {FREQ_SHORT[freq.type] || freq.type}
-              </span>
-              <div className="flex items-center gap-1">
-                <span className="font-mono text-xs text-foreground">
-                  {formatFrequency(freq.frequency)}
-                </span>
-                <Copy className="h-2.5 w-2.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Collapsible METAR */}
-      {vatsimMetarData?.raw && (
-        <div>
-          <button
-            onClick={() => setShowMetar(!showMetar)}
-            className="flex w-full items-center justify-between px-1 py-1 text-left"
-          >
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              METAR
-            </span>
-            <ChevronDown
-              className={cn(
-                'h-3 w-3 text-muted-foreground transition-transform',
-                showMetar && 'rotate-180'
+          {/* ATIS */}
+          {primaryAtis && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-mono text-sm font-bold">
+                {primaryAtis.atis_code || '?'}
+              </Badge>
+              <span className="text-xs text-muted-foreground">ATIS</span>
+              {atisRunways.length > 0 && (
+                <>
+                  <span className="text-muted-foreground/30">•</span>
+                  <span className="font-mono text-xs text-foreground">
+                    RWY {atisRunways.join(', ')}
+                  </span>
+                </>
               )}
-            />
-          </button>
-          {showMetar && (
-            <p className="rounded bg-muted/20 p-2 font-mono text-[9px] leading-relaxed text-foreground/60">
-              {vatsimMetarData.raw}
-            </p>
+            </div>
           )}
         </div>
       )}
+
+      {/* Weather */}
+      {metar ? (
+        <div>
+          <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Weather
+          </div>
+          <div className="space-y-2">
+            {/* Raw METAR */}
+            <div className="rounded bg-muted/30 p-2">
+              <p className="break-all font-mono text-[10px] leading-relaxed text-muted-foreground">
+                {rawMetar}
+              </p>
+            </div>
+            {/* Decoded weather */}
+            <div className="rounded-lg bg-muted/20 p-2.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-foreground">
+                <span>{formatWind(metar.wind)}</span>
+                <span className="text-muted-foreground/40">|</span>
+                <span>{formatVisibility(metar.visibility, metar.cavok)}</span>
+                <span className="text-muted-foreground/40">|</span>
+                <span>{formatCeiling(metar.clouds, metar.verticalVisibility)}</span>
+                <span className="text-muted-foreground/40">|</span>
+                <span>QNH {formatAltimeter(metar.altimeter)}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                <span>
+                  {metar.temperature ?? '—'}°C / {metar.dewPoint ?? '—'}°C
+                </span>
+                {metar.weatherConditions.length > 0 && (
+                  <span className="font-mono">
+                    {formatWeatherConditions(metar.weatherConditions)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-lg bg-muted/10 p-3 text-center text-xs text-muted-foreground">
+          No weather data available
+        </div>
+      )}
+
+      {/* Runways */}
+      {sortedRunways.length > 0 && (
+        <div>
+          <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Runways
+          </div>
+          <div className="space-y-1">
+            {sortedRunways.map((rwy, i) => {
+              const length = Math.round(runwayLengthFeet(rwy.ends[0], rwy.ends[1]));
+              const width = Math.round(metersToFeet(rwy.width));
+              const surface = SURFACE_NAMES[rwy.surface_type] || 'Unknown';
+
+              return (
+                <div
+                  key={i}
+                  className="flex items-center justify-between rounded bg-muted/20 px-2.5 py-1.5"
+                >
+                  <span className="font-mono text-sm font-medium text-foreground">
+                    {rwy.ends[0].name}/{rwy.ends[1].name}
+                  </span>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="font-mono">{length.toLocaleString()}'</span>
+                    <span>{surface}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Frequencies */}
+      {frequencies.length > 0 && (
+        <div>
+          <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Frequencies
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {frequencies.map((freq, i) => (
+              <button
+                key={i}
+                onClick={() => handleCopy(formatFrequency(freq.frequency))}
+                className="group flex items-center justify-between rounded bg-muted/20 px-2.5 py-1.5 transition-colors hover:bg-muted/40"
+              >
+                <span className="text-[10px] text-muted-foreground">
+                  {FREQ_LABELS[freq.type] || freq.type}
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-xs text-foreground">
+                    {formatFrequency(freq.frequency)}
+                  </span>
+                  <Copy className="h-2.5 w-2.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stats Row */}
+      <div className="flex items-center justify-between rounded-lg bg-muted/10 px-3 py-2">
+        <StatItem label="RWY" value={airport.runways.length} />
+        <div className="h-4 w-px bg-border/50" />
+        <StatItem label="ILS" value={ilsCount} highlight={ilsCount > 0} />
+        <div className="h-4 w-px bg-border/50" />
+        <StatItem label="PROC" value={procCount} />
+        <div className="h-4 w-px bg-border/50" />
+        <StatItem label="Gates" value={airport.startupLocations?.length ?? 0} />
+      </div>
     </div>
   );
 }
 
-interface StatBoxProps {
+function StatItem({
+  label,
+  value,
+  highlight,
+}: {
   label: string;
   value: number;
   highlight?: boolean;
-}
-
-function StatBox({ label, value, highlight }: StatBoxProps) {
+}) {
   return (
-    <div
-      className={cn('rounded px-2 py-1.5 text-center', highlight ? 'bg-primary/10' : 'bg-muted/30')}
-    >
+    <div className="text-center">
       <p
         className={cn(
           'font-mono text-sm font-semibold',
@@ -273,45 +323,68 @@ function StatBox({ label, value, highlight }: StatBoxProps) {
   );
 }
 
-// Compact formatters
-function formatWind(
-  wind: { direction: number | 'VRB'; speed: number; gust?: number } | null
-): string {
+function formatWind(wind: IWind | undefined): string {
   if (!wind) return '—';
   if (wind.speed === 0) return 'CALM';
-  const dir = wind.direction === 'VRB' ? 'VRB' : `${String(wind.direction).padStart(3, '0')}`;
+  const dir = wind.degrees !== undefined ? `${String(wind.degrees).padStart(3, '0')}°` : 'VRB';
   const gust = wind.gust ? `G${wind.gust}` : '';
-  return `${dir}/${wind.speed}${gust}KT`;
+  return `${dir}/${wind.speed}${gust}kt`;
 }
 
-function formatVisibility(
-  vis: { value: number; unit: 'SM' | 'M'; modifier?: 'M' | 'P' } | null
-): string {
+function formatVisibility(vis: Visibility | undefined, cavok?: true): string {
+  if (cavok) return 'CAVOK';
   if (!vis) return '—';
-  if (vis.unit === 'SM') {
-    if (vis.value >= 10) return 'P10SM';
+  if (vis.unit === DistanceUnit.StatuteMiles) {
+    if (vis.value >= 10) return '>10SM';
     return `${vis.value}SM`;
   }
-  if (vis.value >= 9999) return '9999';
-  return `${vis.value}M`;
+  // Meters
+  if (vis.value >= 9999) return '>10km';
+  return `${(vis.value / 1000).toFixed(1)}km`;
 }
 
-function formatCeiling(clouds: Array<{ cover: string; altitude?: number }>): string {
+function formatCeiling(clouds: ICloud[], verticalVisibility?: number): string {
+  // Check vertical visibility first
+  if (verticalVisibility !== undefined) {
+    return `VV${String(verticalVisibility).padStart(3, '0')}`;
+  }
+  // Find ceiling (BKN or OVC)
   for (const cloud of clouds) {
     if (
-      (cloud.cover === 'BKN' || cloud.cover === 'OVC' || cloud.cover === 'VV') &&
-      cloud.altitude
+      (cloud.quantity === CloudQuantity.BKN || cloud.quantity === CloudQuantity.OVC) &&
+      cloud.height !== undefined
     ) {
-      return `${cloud.cover}${String(cloud.altitude).padStart(3, '0')}`;
+      return `${cloud.quantity}${String(cloud.height).padStart(3, '0')}`;
     }
   }
-  const hasClear = clouds.some((c) => ['CLR', 'SKC', 'NSC', 'NCD'].includes(c.cover));
+  // Check for clear conditions
+  const hasClear = clouds.some(
+    (c) => c.quantity === CloudQuantity.SKC || c.quantity === CloudQuantity.NSC
+  );
   if (hasClear || clouds.length === 0) return 'CLR';
+  // Show lowest cloud layer
+  if (clouds[0]?.height !== undefined) {
+    return `${clouds[0].quantity}${String(clouds[0].height).padStart(3, '0')}`;
+  }
   return '—';
 }
 
-function formatAltimeter(value: number | null, unit: 'inHg' | 'hPa'): string {
-  if (value === null) return '—';
-  if (unit === 'inHg') return `${value.toFixed(2)}`;
-  return `${value}`;
+function formatAltimeter(alt: IAltimeter | undefined): string {
+  if (!alt) return '—';
+  if (alt.unit === 'inHg') return `${alt.value.toFixed(2)}"`;
+  return `${alt.value}hPa`;
+}
+
+function formatWeatherConditions(conditions: IWeatherCondition[]): string {
+  return conditions
+    .map((c) => {
+      let str = '';
+      if (c.intensity === Intensity.LIGHT) str += '-';
+      else if (c.intensity === Intensity.HEAVY) str += '+';
+      else if (c.intensity === Intensity.IN_VICINITY) str += 'VC';
+      if (c.descriptive) str += c.descriptive;
+      str += c.phenomenons.join('');
+      return str;
+    })
+    .join(' ');
 }
