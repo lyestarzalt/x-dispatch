@@ -5,7 +5,9 @@
 
 export function isValidICAO(icao: unknown): icao is string {
   if (typeof icao !== 'string') return false;
-  return /^[A-Z0-9]{3,4}$/i.test(icao);
+  // Standard ICAO: 3-4 chars (KJFK, LAX)
+  // X-Plane internal: up to 7 chars (XLF00AW for airports without official ICAO)
+  return /^[A-Z0-9]{3,7}$/i.test(icao);
 }
 
 export function isValidLatitude(lat: unknown): lat is number {
