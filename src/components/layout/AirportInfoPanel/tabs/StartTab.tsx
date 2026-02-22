@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { Check, Search, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
@@ -34,6 +35,13 @@ export default function StartTab({
   // Default to first non-empty category
   const defaultView = gates.length > 0 ? 'gates' : runways.length > 0 ? 'runways' : 'helipads';
   const [viewType, setViewType] = useState<ViewType>(defaultView);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Clear search when switching tabs
+  const handleTabChange = (tab: ViewType) => {
+    setViewType(tab);
+    setSearchQuery('');
+  };
 
   // Only show tabs that have data
   const tabs = [
@@ -42,7 +50,11 @@ export default function StartTab({
     { id: 'helipads' as const, label: 'Helipads', count: helipads.length },
   ].filter((tab) => tab.count > 0);
 
-  // If only one category exists, don't show tabs
+  // Current list count for showing search
+  const currentCount =
+    viewType === 'gates' ? gates.length : viewType === 'runways' ? runways.length : helipads.length;
+  const showSearch = currentCount > 8;
+
   if (tabs.length === 0) {
     return (
       <p className="py-12 text-center text-sm text-muted-foreground/60">
@@ -52,25 +64,47 @@ export default function StartTab({
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       {/* View toggle - only show if multiple categories */}
       {tabs.length > 1 && (
-        <div className="mb-6 flex gap-4 border-b border-border/30">
+        <div className="flex gap-3 border-b border-border/30">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setViewType(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={cn(
-                '-mb-px pb-3 text-sm font-medium transition-colors',
+                '-mb-px pb-2 text-xs font-medium transition-colors',
                 viewType === tab.id
                   ? 'border-b-2 border-foreground text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
               )}
             >
               {tab.label}
-              <span className="ml-2 text-muted-foreground/50">{tab.count}</span>
+              <span className="ml-1.5 text-muted-foreground/50">{tab.count}</span>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Search input - only show for lists > 8 items */}
+      {showSearch && (
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder={`Search ${viewType}...`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-8 w-full rounded-md border border-border/50 bg-muted/30 pl-8 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       )}
 
@@ -78,6 +112,7 @@ export default function StartTab({
       {viewType === 'gates' && (
         <GateList
           gates={gates}
+          searchQuery={searchQuery}
           onSelect={onSelectGate}
           selectedIndex={
             selectedStartPosition?.type === 'ramp' ? selectedStartPosition.index : undefined
@@ -87,6 +122,7 @@ export default function StartTab({
       {viewType === 'runways' && (
         <RunwayList
           runways={runways}
+          searchQuery={searchQuery}
           onSelectEnd={onSelectRunwayEnd}
           onSelectRunway={onSelectRunway}
           selectedIndex={
@@ -97,6 +133,7 @@ export default function StartTab({
       {viewType === 'helipads' && (
         <HelipadList
           helipads={helipads}
+          searchQuery={searchQuery}
           runwayCount={runways.length}
           onSelect={onSelectHelipad}
           selectedIndex={selectedStartPosition?.isHelipad ? selectedStartPosition.index : undefined}
@@ -108,11 +145,30 @@ export default function StartTab({
 
 interface GateListProps {
   gates: StartupLocation[];
+  searchQuery: string;
   onSelect?: (gate: NamedPosition) => void;
   selectedIndex?: number;
 }
 
-function GateList({ gates, onSelect, selectedIndex }: GateListProps) {
+// Human-readable aircraft size from ICAO width code
+const SIZE_LABELS: Record<string, { label: string; class: string }> = {
+  A: { label: 'Small', class: 'bg-muted/50 text-muted-foreground' },
+  B: { label: 'Small', class: 'bg-muted/50 text-muted-foreground' },
+  C: { label: 'Narrow', class: 'bg-sky-500/15 text-sky-400' },
+  D: { label: 'Wide', class: 'bg-sky-500/15 text-sky-400' },
+  E: { label: 'Heavy', class: 'bg-amber-500/15 text-amber-400' },
+  F: { label: 'Super', class: 'bg-red-500/15 text-red-400' },
+};
+
+// Operation type badges
+const OP_TYPE_LABELS: Record<string, { label: string; class: string }> = {
+  airline: { label: 'Airline', class: 'bg-primary/15 text-primary' },
+  cargo: { label: 'Cargo', class: 'bg-amber-500/15 text-amber-400' },
+  general_aviation: { label: 'GA', class: 'bg-emerald-500/15 text-emerald-400' },
+  military: { label: 'Military', class: 'bg-red-500/15 text-red-400' },
+};
+
+function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps) {
   const { t } = useTranslation();
 
   const xplaneIndices = useMemo(() => {
@@ -132,44 +188,100 @@ function GateList({ gates, onSelect, selectedIndex }: GateListProps) {
     return gates.map((_, i) => indexMap.get(i) ?? i);
   }, [gates]);
 
+  // Filter gates by search (also search by operation type, size, and airlines)
+  const filteredGates = useMemo(() => {
+    if (!searchQuery.trim()) return gates.map((g, i) => ({ gate: g, originalIndex: i }));
+    const query = searchQuery.toLowerCase();
+    return gates
+      .map((g, i) => ({ gate: g, originalIndex: i }))
+      .filter((item) => {
+        const gate = item.gate;
+        const sizeLabel = gate.icaoWidthCode ? SIZE_LABELS[gate.icaoWidthCode]?.label : '';
+        const opLabel = gate.operationType ? OP_TYPE_LABELS[gate.operationType]?.label : '';
+        return (
+          gate.name.toLowerCase().includes(query) ||
+          sizeLabel.toLowerCase().includes(query) ||
+          opLabel.toLowerCase().includes(query) ||
+          gate.airlines?.some((a) => a.toLowerCase().includes(query))
+        );
+      });
+  }, [gates, searchQuery]);
+
   if (gates.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-muted-foreground/60">
+      <p className="py-8 text-center text-sm text-muted-foreground/60">
         {t('sidebar.noGatesFound')}
+      </p>
+    );
+  }
+
+  if (filteredGates.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground/60">
+        No gates matching "{searchQuery}"
       </p>
     );
   }
 
   return (
     <div className="space-y-1">
-      {gates.map((gate, idx) => {
-        const isSelected = selectedIndex === idx;
+      {filteredGates.map(({ gate, originalIndex }) => {
+        const isSelected = selectedIndex === originalIndex;
+        const sizeConfig = gate.icaoWidthCode ? SIZE_LABELS[gate.icaoWidthCode] : null;
+        const opConfig = gate.operationType ? OP_TYPE_LABELS[gate.operationType] : null;
+        const hasBadges = sizeConfig || opConfig;
 
         return (
           <button
-            key={idx}
+            key={originalIndex}
             onClick={() =>
               onSelect?.({
                 latitude: gate.latitude,
                 longitude: gate.longitude,
                 name: gate.name,
                 heading: gate.heading,
-                index: idx,
-                xplaneIndex: xplaneIndices[idx],
+                index: originalIndex,
+                xplaneIndex: xplaneIndices[originalIndex],
               })
             }
             className={cn(
-              'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-colors',
+              'flex w-full flex-col rounded px-2.5 py-2 text-left transition-colors',
               isSelected
                 ? 'bg-emerald-500/10 text-emerald-400'
                 : 'text-foreground/80 hover:bg-muted/50'
             )}
           >
-            <span className="font-mono text-sm">{gate.name}</span>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground/50">{Math.round(gate.heading)}°</span>
-              {isSelected && <Check className="h-4 w-4" />}
+            {/* Row 1: Name + Heading */}
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-sm">{gate.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground/50">
+                  {Math.round(gate.heading)}°
+                </span>
+                {isSelected && <Check className="h-3.5 w-3.5" />}
+              </div>
             </div>
+            {/* Row 2: Badges */}
+            {hasBadges && (
+              <div className="mt-1 flex gap-1.5">
+                {sizeConfig && (
+                  <Badge
+                    variant="secondary"
+                    className={cn('h-4 px-1.5 text-[9px]', sizeConfig.class)}
+                  >
+                    {sizeConfig.label}
+                  </Badge>
+                )}
+                {opConfig && (
+                  <Badge
+                    variant="secondary"
+                    className={cn('h-4 px-1.5 text-[9px]', opConfig.class)}
+                  >
+                    {opConfig.label}
+                  </Badge>
+                )}
+              </div>
+            )}
           </button>
         );
       })}
@@ -179,49 +291,77 @@ function GateList({ gates, onSelect, selectedIndex }: GateListProps) {
 
 interface RunwayListProps {
   runways: Runway[];
+  searchQuery: string;
   onSelectEnd?: (end: NamedPosition) => void;
   onSelectRunway?: (runway: Runway) => void;
   selectedIndex?: number;
 }
 
-function RunwayList({ runways, onSelectEnd, onSelectRunway, selectedIndex }: RunwayListProps) {
+function RunwayList({
+  runways,
+  searchQuery,
+  onSelectEnd,
+  onSelectRunway,
+  selectedIndex,
+}: RunwayListProps) {
   const { t } = useTranslation();
+
+  // Filter runways by search (match either end name)
+  const filteredRunways = useMemo(() => {
+    if (!searchQuery.trim()) return runways.map((r, i) => ({ runway: r, originalIndex: i }));
+    const query = searchQuery.toLowerCase();
+    return runways
+      .map((r, i) => ({ runway: r, originalIndex: i }))
+      .filter(
+        (item) =>
+          item.runway.ends[0].name.toLowerCase().includes(query) ||
+          item.runway.ends[1].name.toLowerCase().includes(query)
+      );
+  }, [runways, searchQuery]);
 
   if (runways.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-muted-foreground/60">
+      <p className="py-8 text-center text-sm text-muted-foreground/60">
         {t('sidebar.noRunwaysFound')}
       </p>
     );
   }
 
+  if (filteredRunways.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground/60">
+        No runways matching "{searchQuery}"
+      </p>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {runways.map((runway, runwayIndex) => {
+    <div className="space-y-3">
+      {filteredRunways.map(({ runway, originalIndex }) => {
         const e1 = runway.ends[0];
         const e2 = runway.ends[1];
         const lengthFt = Math.round(runwayLengthFeet(e1, e2));
         const widthFt = Math.round(metersToFeet(runway.width));
 
         return (
-          <div key={runwayIndex}>
+          <div key={originalIndex}>
             {/* Runway header */}
             <button
               onClick={() => onSelectRunway?.(runway)}
-              className="mb-2 flex w-full items-baseline justify-between text-left"
+              className="mb-1.5 flex w-full items-baseline justify-between text-left"
             >
               <span className="font-mono text-sm font-semibold text-foreground">
                 {e1.name}/{e2.name}
               </span>
-              <span className="text-xs text-muted-foreground/50">
-                {lengthFt.toLocaleString()}' × {widthFt}'
+              <span className="text-[10px] text-muted-foreground/50">
+                {lengthFt.toLocaleString()}'×{widthFt}'
               </span>
             </button>
 
             {/* Runway ends */}
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               {[e1, e2].map((end, endIndex) => {
-                const globalEndIndex = runwayIndex * 2 + endIndex;
+                const globalEndIndex = originalIndex * 2 + endIndex;
                 const isSelected = selectedIndex === globalEndIndex;
 
                 return (
@@ -233,18 +373,18 @@ function RunwayList({ runways, onSelectEnd, onSelectRunway, selectedIndex }: Run
                         latitude: end.latitude,
                         longitude: end.longitude,
                         index: globalEndIndex,
-                        xplaneIndex: `${runwayIndex}_${endIndex}`,
+                        xplaneIndex: `${originalIndex}_${endIndex}`,
                       })
                     }
                     className={cn(
-                      'flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 font-mono text-sm transition-colors',
+                      'flex flex-1 items-center justify-center gap-1.5 rounded py-2 font-mono text-sm transition-colors',
                       isSelected
                         ? 'bg-emerald-500/10 text-emerald-400'
                         : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                     )}
                   >
                     {end.name}
-                    {isSelected && <Check className="h-3.5 w-3.5" />}
+                    {isSelected && <Check className="h-3 w-3" />}
                   </button>
                 );
               })}
@@ -258,48 +398,71 @@ function RunwayList({ runways, onSelectEnd, onSelectRunway, selectedIndex }: Run
 
 interface HelipadListProps {
   helipads: Helipad[];
+  searchQuery: string;
   runwayCount: number;
   onSelect?: (helipad: NamedPosition) => void;
   selectedIndex?: number;
 }
 
-function HelipadList({ helipads, runwayCount, onSelect, selectedIndex }: HelipadListProps) {
+function HelipadList({
+  helipads,
+  searchQuery,
+  runwayCount,
+  onSelect,
+  selectedIndex,
+}: HelipadListProps) {
+  // Filter helipads by search
+  const filteredHelipads = useMemo(() => {
+    if (!searchQuery.trim()) return helipads.map((h, i) => ({ helipad: h, originalIndex: i }));
+    const query = searchQuery.toLowerCase();
+    return helipads
+      .map((h, i) => ({ helipad: h, originalIndex: i }))
+      .filter((item) => item.helipad.name.toLowerCase().includes(query));
+  }, [helipads, searchQuery]);
+
   if (helipads.length === 0) {
-    return <p className="py-12 text-center text-sm text-muted-foreground/60">No helipads found</p>;
+    return <p className="py-8 text-center text-sm text-muted-foreground/60">No helipads found</p>;
+  }
+
+  if (filteredHelipads.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground/60">
+        No helipads matching "{searchQuery}"
+      </p>
+    );
   }
 
   return (
-    <div className="space-y-1">
-      {helipads.map((helipad, idx) => {
-        const isSelected = selectedIndex === idx;
-        const sizeFt = `${Math.round(metersToFeet(helipad.length))}' × ${Math.round(metersToFeet(helipad.width))}'`;
-        // X-Plane index: helipads share row counter with runways, format is "row_0"
-        const xplaneIndex = `${runwayCount + idx}_0`;
+    <div className="space-y-0.5">
+      {filteredHelipads.map(({ helipad, originalIndex }) => {
+        const isSelected = selectedIndex === originalIndex;
+        const sizeFt = `${Math.round(metersToFeet(helipad.length))}'×${Math.round(metersToFeet(helipad.width))}'`;
+        const xplaneIndex = `${runwayCount + originalIndex}_0`;
 
         return (
           <button
-            key={idx}
+            key={originalIndex}
             onClick={() =>
               onSelect?.({
                 latitude: helipad.latitude,
                 longitude: helipad.longitude,
                 name: helipad.name,
                 heading: helipad.heading,
-                index: idx,
+                index: originalIndex,
                 xplaneIndex,
               })
             }
             className={cn(
-              'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-colors',
+              'flex w-full items-center justify-between rounded px-2.5 py-2 text-left transition-colors',
               isSelected
                 ? 'bg-emerald-500/10 text-emerald-400'
                 : 'text-foreground/80 hover:bg-muted/50'
             )}
           >
             <span className="font-mono text-sm">{helipad.name}</span>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground/50">{sizeFt}</span>
-              {isSelected && <Check className="h-4 w-4" />}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground/50">{sizeFt}</span>
+              {isSelected && <Check className="h-3.5 w-3.5" />}
             </div>
           </button>
         );
