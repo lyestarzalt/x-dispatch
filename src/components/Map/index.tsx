@@ -611,18 +611,12 @@ export default function Map({ airports }: MapProps) {
   }, [mapRef, followPlane, setFollowPlane]);
 
   return (
-    <div
-      className="relative overflow-hidden bg-background"
-      style={{ width: '100vw', height: '100vh' }}
-    >
-      <div
-        ref={mapContainerRef}
-        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-      />
+    <div className="relative h-screen w-screen overflow-hidden">
+      {/* MapLibre container - fills entire viewport */}
+      <div ref={mapContainerRef} className="absolute inset-0" />
 
-      {/* Top bar layout container - handles positioning for both bars */}
-      <div className="absolute left-4 right-4 top-4 z-50 flex flex-col gap-2">
-        <FlightPlanBar onWaypointClick={handleWaypointClick} />
+      {/* Top bar overlay - full width, above sidebar */}
+      <div className="absolute left-4 right-4 top-4 z-30 space-y-2">
         <Toolbar
           airports={airports}
           onSelectAirport={selectAirport}
@@ -630,18 +624,10 @@ export default function Map({ airports }: MapProps) {
           onTogglePlaneTracker={handleTogglePlaneTracker}
           onNavToggle={handleNavLayerToggle}
         />
+        <FlightPlanBar onWaypointClick={handleWaypointClick} />
       </div>
 
-      <SettingsDialog
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        isVatsimEnabled={vatsimEnabled}
-        onToggleVatsim={handleToggleVatsim}
-        vatsimPilotCount={vatsimData?.pilots?.length}
-      />
-
-      {/* CompassWidget hidden for cleaner UI - keeping code for future use */}
-      {/* <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} /> */}
+      {/* Other map overlays */}
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && (
@@ -652,6 +638,7 @@ export default function Map({ airports }: MapProps) {
         />
       )}
 
+      {/* Sidebar - floating overlay */}
       {showSidebar && selectedAirportData && (
         <SectionErrorBoundary name="Sidebar">
           <Sidebar
@@ -662,6 +649,15 @@ export default function Map({ airports }: MapProps) {
           />
         </SectionErrorBoundary>
       )}
+
+      {/* Dialogs - render as modals, positioning handled by dialog component */}
+      <SettingsDialog
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        isVatsimEnabled={vatsimEnabled}
+        onToggleVatsim={handleToggleVatsim}
+        vatsimPilotCount={vatsimData?.pilots?.length}
+      />
 
       <LaunchDialog
         open={showLaunchDialog}
