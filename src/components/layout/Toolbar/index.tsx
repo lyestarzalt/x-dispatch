@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
-  ChevronUp,
+  Compass,
   FileUp,
   Locate,
   Navigation,
@@ -62,11 +62,11 @@ export default function Toolbar({
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
 
   // Map store
-  const exploreOpen = useMapStore((s) => s.explore.isOpen);
-  const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
+  const exploreOpen = useMapStore((s) => s.explore.isOpen);
+  const setExploreOpen = useMapStore((s) => s.setExploreOpen);
 
   // Flight plan store
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
@@ -248,20 +248,6 @@ export default function Toolbar({
         )}
       </div>
 
-      {/* Explore Toggle */}
-      <button
-        onClick={() => setExploreOpen(!exploreOpen)}
-        className={cn(
-          'flex h-9 w-10 items-center justify-center rounded-lg border border-input bg-card transition-colors hover:bg-accent',
-          exploreOpen && 'border-primary/50 bg-primary/10'
-        )}
-        aria-label={exploreOpen ? t('explore.close') : t('explore.title')}
-        aria-expanded={exploreOpen}
-        aria-controls="explore-panel"
-      >
-        {exploreOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </button>
-
       {/* Load Flight Plan */}
       <Button
         variant="outline"
@@ -270,6 +256,16 @@ export default function Toolbar({
       >
         <FileUp className="h-4 w-4" />
         <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
+      </Button>
+
+      {/* Explore Toggle */}
+      <Button
+        variant="outline"
+        onClick={() => setExploreOpen(!exploreOpen)}
+        className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
+      >
+        <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
+        <span className="text-xs font-medium">{t('explore.title')}</span>
       </Button>
 
       <div className="flex-1" />

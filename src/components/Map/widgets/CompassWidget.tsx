@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
-import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils/helpers';
-import { useFlightPlanStore } from '@/stores/flightPlanStore';
 
 interface CompassWidgetProps {
   mapBearing: number;
@@ -59,8 +57,6 @@ const LABEL_POSITIONS = Object.entries({
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
 export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
-  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
-
   // Format heading for display
   const headingDisplay = useMemo(
     () => Math.round(mapBearing).toString().padStart(3, '0'),
@@ -68,15 +64,14 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
   );
 
   return (
-    <Card
-      className={cn(
-        'absolute left-4 z-10 border-border bg-card p-2',
-        showFlightPlanBar ? 'top-28' : 'top-16'
-      )}
-      role="region"
-      aria-label="Compass heading"
-    >
-      <div className="flex flex-col items-center" aria-label={`Heading ${headingDisplay} degrees`}>
+    <div className="absolute bottom-10 left-12 z-10" role="region" aria-label="Compass heading">
+      <div
+        className={cn(
+          'flex flex-col items-center rounded-xl border p-3',
+          'border-white/[0.08] bg-[#0d1117]/90 shadow-2xl shadow-black/50',
+          'backdrop-blur-xl'
+        )}
+      >
         <div className="relative" style={{ width: SIZE, height: SIZE }}>
           <svg
             viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -84,17 +79,26 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
             role="img"
             aria-hidden="true"
           >
+            {/* Outer glow ring */}
+            <circle
+              cx={CENTER}
+              cy={CENTER}
+              r={RADIUS + 4}
+              fill="none"
+              stroke="rgba(34, 211, 238, 0.1)"
+              strokeWidth="1"
+            />
             {/* Bezel - outer ring */}
             <circle
               cx={CENTER}
               cy={CENTER}
-              r={RADIUS + 3}
+              r={RADIUS + 2}
               fill="none"
-              className="stroke-border"
-              strokeWidth="2"
+              stroke="rgba(255, 255, 255, 0.15)"
+              strokeWidth="1.5"
             />
             {/* Inner background */}
-            <circle cx={CENTER} cy={CENTER} r={RADIUS} className="fill-card" />
+            <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="rgba(13, 17, 23, 0.8)" />
 
             {/* Rotating compass rose with smooth transition */}
             <g
@@ -112,7 +116,7 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
                   y1={CENTER - RADIUS + 2}
                   x2={CENTER}
                   y2={CENTER - RADIUS + 2 + tick.tickLength}
-                  stroke={tick.isNorth ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'}
+                  stroke={tick.isNorth ? '#f87171' : 'rgba(255, 255, 255, 0.5)'}
                   strokeOpacity={tick.opacity}
                   strokeWidth={tick.tickWidth}
                   transform={`rotate(${tick.deg}, ${CENTER}, ${CENTER})`}
@@ -128,9 +132,9 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
                   textAnchor="middle"
                   dominantBaseline="central"
                   fontSize={pos.fontSize}
-                  fontFamily="monospace"
+                  fontFamily="ui-monospace, monospace"
                   fontWeight={pos.fontWeight}
-                  fill={pos.isNorth ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'}
+                  fill={pos.isNorth ? '#f87171' : 'rgba(255, 255, 255, 0.6)'}
                 >
                   {pos.label}
                 </text>
@@ -138,21 +142,21 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
             </g>
 
             {/* Fixed lubber line (top reference) */}
-            <polygon points={LUBBER_POINTS} className="fill-primary" />
+            <polygon points={LUBBER_POINTS} fill="#22d3ee" />
 
             {/* Center aircraft symbol */}
             <g transform={`translate(${CENTER}, ${CENTER})`}>
-              <line x1="0" y1="-8" x2="0" y2="8" className="stroke-primary" strokeWidth="2" />
-              <line x1="-10" y1="2" x2="10" y2="2" className="stroke-primary" strokeWidth="2" />
-              <line x1="-4" y1="7" x2="4" y2="7" className="stroke-primary" strokeWidth="1.5" />
+              <line x1="0" y1="-8" x2="0" y2="8" stroke="#22d3ee" strokeWidth="2" />
+              <line x1="-10" y1="2" x2="10" y2="2" stroke="#22d3ee" strokeWidth="2" />
+              <line x1="-4" y1="7" x2="4" y2="7" stroke="#22d3ee" strokeWidth="1.5" />
             </g>
           </svg>
         </div>
         {/* Digital readout */}
-        <div className="mt-1 rounded bg-card px-2 py-0.5 font-mono text-sm font-bold tabular-nums text-foreground">
+        <div className="mt-2 rounded-md border border-white/[0.08] bg-black/30 px-3 py-1 font-mono text-sm font-bold tabular-nums tracking-wider text-cyan-400">
           {headingDisplay}°
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

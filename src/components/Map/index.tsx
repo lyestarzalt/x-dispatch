@@ -627,9 +627,9 @@ export default function Map({ airports }: MapProps) {
         <FlightPlanBar onWaypointClick={handleWaypointClick} />
       </div>
 
-      {/* Other map overlays */}
-      <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
+      {/* Map widgets - left side */}
       <CompassWidget mapBearing={mapBearing} />
+      <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && (
         <FlightStrip
