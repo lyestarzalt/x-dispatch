@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +27,10 @@ export class SectionErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    Sentry.captureException(error, {
+      extra: { componentStack: errorInfo.componentStack },
+      tags: { section: this.props.name },
+    });
     try {
       window.appAPI?.log.error(`Error in ${this.props.name}`, {
         error: error.message,

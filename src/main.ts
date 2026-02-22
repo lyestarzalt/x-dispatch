@@ -1,5 +1,6 @@
 import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
+import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
@@ -17,6 +18,12 @@ import {
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
 import type { LaunchConfig } from './types/aircraft';
 import type { LoadingProgress, PlaneState } from './types/xplane';
+
+Sentry.init({
+  dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
+  environment: app.isPackaged ? 'production' : 'development',
+  release: `x-dispatch@${app.getVersion()}`,
+});
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
@@ -614,6 +621,18 @@ function registerIpcHandlers() {
       return { content, fileName };
     } catch (err) {
       logger.main.error('Failed to open flight plan file', err);
+      return null;
+    }
+  });
+
+  ipcMain.handle('flightplan:enrich', async (_, fmsData: unknown) => {
+    try {
+      // Lazy import to avoid loading at startup
+      const { enrichFlightPlan } = await import('./lib/flightplan/fmsResolver');
+      const ourCycle = dataManager.getDataSources()?.global?.cycle ?? undefined;
+      return enrichFlightPlan(fmsData as import('./types/fms').FMSFlightPlan, ourCycle);
+    } catch (err) {
+      logger.main.error('Failed to enrich flight plan', err);
       return null;
     }
   });

@@ -1,4 +1,5 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import * as Sentry from '@sentry/electron/renderer';
 import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
 import type {
   Airport,
@@ -41,6 +42,10 @@ import type {
   VatsimPrefile,
 } from './types/vatsim';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
+
+Sentry.init({
+  dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
+});
 
 contextBridge.exposeInMainWorld('airportAPI', {
   getAirports: () => ipcRenderer.invoke('get-airports'),
@@ -182,6 +187,8 @@ contextBridge.exposeInMainWorld('launcherAPI', {
 
 contextBridge.exposeInMainWorld('flightPlanAPI', {
   openFile: () => ipcRenderer.invoke('flightplan:openFile'),
+  enrich: (fmsData: import('./types/fms').FMSFlightPlan) =>
+    ipcRenderer.invoke('flightplan:enrich', fmsData),
 });
 
 // X-Plane Service API - REST + WebSocket
@@ -320,6 +327,9 @@ declare global {
     };
     flightPlanAPI: {
       openFile: () => Promise<{ content: string; fileName: string } | null>;
+      enrich: (
+        fmsData: import('./types/fms').FMSFlightPlan
+      ) => Promise<import('./types/fms').EnrichedFlightPlan | null>;
     };
     // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {
