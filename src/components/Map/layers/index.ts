@@ -34,7 +34,11 @@ export {
   removePlaneLayer,
   updatePlaneLayer,
 } from './dynamic/PlaneLayer';
-export { addProcedureRouteLayer, removeProcedureRouteLayer } from './dynamic/ProcedureRouteLayer';
+export {
+  addProcedureRouteLayer,
+  removeProcedureRouteLayer,
+  type RouteWaypoint,
+} from './dynamic/ProcedureRouteLayer';
 export { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from './dynamic/RouteLineLayer';
 export {
   bringVatsimLayersToTop,

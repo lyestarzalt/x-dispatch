@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
-  ChevronUp,
+  Compass,
   FileUp,
   Locate,
   Navigation,
@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useNavDataCounts, usePlaneState } from '@/queries';
@@ -61,11 +62,11 @@ export default function Toolbar({
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
 
   // Map store
-  const exploreOpen = useMapStore((s) => s.explore.isOpen);
-  const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
+  const exploreOpen = useMapStore((s) => s.explore.isOpen);
+  const setExploreOpen = useMapStore((s) => s.setExploreOpen);
 
   // Flight plan store
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
@@ -196,7 +197,7 @@ export default function Toolbar({
     <div className="relative flex items-center gap-3">
       {/* Search */}
       <div ref={containerRef} className="relative">
-        <div className="flex h-10 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
+        <div className="flex h-9 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
           <Input
             ref={inputRef}
             type="text"
@@ -247,29 +248,43 @@ export default function Toolbar({
         )}
       </div>
 
-      {/* Explore Toggle */}
-      <button
-        onClick={() => setExploreOpen(!exploreOpen)}
-        className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-lg border border-input bg-card transition-colors hover:bg-accent',
-          exploreOpen && 'border-primary/50 bg-primary/10'
-        )}
-        aria-label={exploreOpen ? t('explore.close') : t('explore.title')}
-        aria-expanded={exploreOpen}
-        aria-controls="explore-panel"
-      >
-        {exploreOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </button>
-
       {/* Load Flight Plan */}
-      <Button
-        variant="outline"
-        onClick={handleLoadFlightPlan}
-        className={cn('h-10 gap-2 px-3', fmsData && 'border-info/50 text-info')}
-      >
-        <FileUp className="h-4 w-4" />
-        <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={handleLoadFlightPlan}
+              className={cn('h-9 gap-2 px-3', fmsData && 'border-info/50 text-info')}
+            >
+              <FileUp className="h-4 w-4" />
+              <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.loadPlan')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Explore Toggle */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={() => setExploreOpen(!exploreOpen)}
+              className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
+            >
+              <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
+              <span className="text-xs font-medium">{t('explore.title')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.explore')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <div className="flex-1" />
 
@@ -279,7 +294,7 @@ export default function Toolbar({
             <Button
               variant="outline"
               className={cn(
-                'h-10 gap-2 px-3',
+                'h-9 gap-2 px-3',
                 totalNavItems > 0 && 'border-primary/50 text-primary'
               )}
             >
@@ -310,60 +325,103 @@ export default function Toolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          variant="outline"
-          onClick={onTogglePlaneTracker}
-          className={cn(
-            'h-10 gap-2 px-3',
-            showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
-          )}
-          title={t('toolbar.trackTooltip')}
-        >
-          <Locate
-            className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
-          />
-          <span className="text-xs font-medium">{t('toolbar.track')}</span>
-          {showPlaneTracker && isXPlaneConnected && (
-            <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
-          )}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={onTogglePlaneTracker}
+                className={cn(
+                  'h-9 gap-2 px-3',
+                  showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
+                )}
+              >
+                <Locate
+                  className={cn(
+                    'h-4 w-4',
+                    showPlaneTracker && isXPlaneConnected && 'animate-pulse'
+                  )}
+                />
+                <span className="text-xs font-medium">{t('toolbar.track')}</span>
+                {showPlaneTracker && isXPlaneConnected && (
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.track')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button
-          variant="outline"
-          onClick={onToggleVatsim}
-          className={cn('h-10 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
-        >
-          <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
-          <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
-          {vatsimEnabled && vatsimPilotCount !== undefined && (
-            <Badge className="bg-success/20 px-1.5 py-0.5 text-success">{vatsimPilotCount}</Badge>
-          )}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={onToggleVatsim}
+                className={cn('h-9 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
+              >
+                <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
+                <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
+                {vatsimEnabled && vatsimPilotCount !== undefined && (
+                  <Badge className="bg-success/20 px-1.5 py-0.5 text-success">
+                    {vatsimPilotCount}
+                  </Badge>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.vatsim')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button
-          variant="outline"
-          onClick={() => setShowLaunchDialog(true)}
-          disabled={!selectedICAO}
-          className={cn(
-            'h-10 gap-2 px-3',
-            hasStartPosition && 'border-success/50 text-success',
-            !selectedICAO && 'opacity-50'
-          )}
-          title={!selectedICAO ? t('toolbar.launchDisabled') : undefined}
-        >
-          <Plane className="h-4 w-4" />
-          <span className="text-xs font-medium">{t('toolbar.launch')}</span>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLaunchDialog(true)}
+                  disabled={!selectedICAO}
+                  className={cn(
+                    'h-9 gap-2 px-3',
+                    hasStartPosition && 'border-success/50 text-success',
+                    !selectedICAO && 'opacity-50'
+                  )}
+                >
+                  <Plane className="h-4 w-4" />
+                  <span className="text-xs font-medium">{t('toolbar.launch')}</span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {selectedICAO ? t('toolbar.tooltips.launch') : t('toolbar.tooltips.launchDisabled')}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setShowSettings(true)}
-          className="h-10 w-10"
-          aria-label={t('settings.title')}
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowSettings(true)}
+                className="h-9 w-10"
+                aria-label={t('settings.title')}
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.settings')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

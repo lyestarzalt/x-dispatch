@@ -1,5 +1,4 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
-import * as Sentry from '@sentry/electron/renderer';
 import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
 import type {
   Airport,
@@ -42,10 +41,6 @@ import type {
   VatsimPrefile,
 } from './types/vatsim';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
-
-Sentry.init({
-  dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
-});
 
 contextBridge.exposeInMainWorld('airportAPI', {
   getAirports: () => ipcRenderer.invoke('get-airports'),

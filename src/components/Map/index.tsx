@@ -4,8 +4,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
+import AirportInfoPanel from '@/components/layout/AirportInfoPanel';
 import FlightPlanBar from '@/components/layout/FlightPlanBar';
-import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
@@ -362,31 +362,34 @@ export default function Map({ airports }: MapProps) {
     loadFIR();
   }, [mapRef, styleVersion]);
 
-  // Style change handler
-  const initialStyleRef = useRef(true);
+  // Style change handler - only triggers when mapStyleUrl actually changes
+  const previousStyleUrlRef = useRef<string | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    if (initialStyleRef.current) {
-      initialStyleRef.current = false;
+    // Skip if this is the initial render or style URL hasn't changed
+    if (previousStyleUrlRef.current === null) {
+      previousStyleUrlRef.current = mapStyleUrl;
       return;
     }
 
-    const handleStyleLoad = async () => {
-      // Re-add airports layer and click handlers
+    if (previousStyleUrlRef.current === mapStyleUrl) {
+      return;
+    }
+
+    previousStyleUrlRef.current = mapStyleUrl;
+
+    // SIMPLE APPROACH: Clear all selections, let user re-select after style change
+    // This avoids complex race conditions with layer restoration
+    useAppStore.getState().clearAirport(); // Clears airport + procedure selection
+
+    const handleStyleLoad = () => {
+      // Re-add base airports layer (the clickable dots)
       setupAirportsLayer(map, airports);
       setupAirportPopup(map, airportPopupRef, handleAirportClick);
 
-      // Re-render selected airport if any
-      const icao = selectedICAORef.current;
-      if (icao && renderAirportRef.current && applyLayerVisibilityRef.current) {
-        await renderAirportRef.current(icao);
-        applyLayerVisibilityRef.current(layerVisibilityRef.current);
-        bringVatsimLayersToTop(map);
-      }
-
-      // Trigger all sync hooks to re-add their layers
+      // Trigger sync hooks to re-add nav layers, VATSIM, etc.
       incrementStyleVersion();
     };
 
@@ -608,18 +611,12 @@ export default function Map({ airports }: MapProps) {
   }, [mapRef, followPlane, setFollowPlane]);
 
   return (
-    <div
-      className="relative overflow-hidden bg-background"
-      style={{ width: '100vw', height: '100vh' }}
-    >
-      <div
-        ref={mapContainerRef}
-        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-      />
+    <div className="relative h-screen w-screen overflow-hidden">
+      {/* MapLibre container - fills entire viewport */}
+      <div ref={mapContainerRef} className="absolute inset-0" />
 
-      {/* Top bar layout container - handles positioning for both bars */}
-      <div className="absolute left-4 right-4 top-4 z-50 flex flex-col gap-2">
-        <FlightPlanBar onWaypointClick={handleWaypointClick} />
+      {/* Top bar overlay - full width, above sidebar */}
+      <div className="absolute left-4 right-4 top-4 z-30 space-y-2">
         <Toolbar
           airports={airports}
           onSelectAirport={selectAirport}
@@ -627,18 +624,11 @@ export default function Map({ airports }: MapProps) {
           onTogglePlaneTracker={handleTogglePlaneTracker}
           onNavToggle={handleNavLayerToggle}
         />
+        <FlightPlanBar onWaypointClick={handleWaypointClick} />
       </div>
 
-      <SettingsDialog
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        isVatsimEnabled={vatsimEnabled}
-        onToggleVatsim={handleToggleVatsim}
-        vatsimPilotCount={vatsimData?.pilots?.length}
-      />
-
-      {/* CompassWidget hidden for cleaner UI - keeping code for future use */}
-      {/* <CompassWidget mapBearing={mapBearing} metar={vatsimMetar?.decoded} /> */}
+      {/* Map widgets - left side */}
+      <CompassWidget mapBearing={mapBearing} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && (
@@ -649,9 +639,10 @@ export default function Map({ airports }: MapProps) {
         />
       )}
 
+      {/* Airport Info Panel - floating overlay */}
       {showSidebar && selectedAirportData && (
-        <SectionErrorBoundary name="Sidebar">
-          <Sidebar
+        <SectionErrorBoundary name="AirportInfoPanel">
+          <AirportInfoPanel
             onSelectRunway={navigateToRunway}
             onSelectGateAsStart={selectGateAsStart}
             onSelectRunwayEndAsStart={selectRunwayEndAsStart}
@@ -659,6 +650,15 @@ export default function Map({ airports }: MapProps) {
           />
         </SectionErrorBoundary>
       )}
+
+      {/* Dialogs - render as modals, positioning handled by dialog component */}
+      <SettingsDialog
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        isVatsimEnabled={vatsimEnabled}
+        onToggleVatsim={handleToggleVatsim}
+        vatsimPilotCount={vatsimData?.pilots?.length}
+      />
 
       <LaunchDialog
         open={showLaunchDialog}

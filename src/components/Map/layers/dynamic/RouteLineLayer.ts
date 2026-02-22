@@ -6,6 +6,7 @@ const LAYER_ID = 'route-line';
 export const ROUTE_LINE_LAYER_IDS = [LAYER_ID];
 
 // Calculate intermediate points along a great circle arc
+// Handles antimeridian crossing by unwrapping longitudes
 function greatCircleArc(
   from: [number, number],
   to: [number, number],
@@ -31,6 +32,8 @@ function greatCircleArc(
   }
 
   const points: [number, number][] = [];
+  let prevLon: number | null = null;
+  let lonOffset = 0;
 
   for (let i = 0; i <= numPoints; i++) {
     const f = i / numPoints;
@@ -46,7 +49,24 @@ function greatCircleArc(
     const lat = Math.atan2(z, Math.sqrt(x * x + y * y));
     const lon = Math.atan2(y, x);
 
-    points.push([(lon * 180) / Math.PI, (lat * 180) / Math.PI]);
+    // Convert to degrees
+    let lonDeg = (lon * 180) / Math.PI;
+    const latDeg = (lat * 180) / Math.PI;
+
+    // Unwrap longitude to handle antimeridian crossing
+    // If there's a jump > 180°, adjust the offset
+    if (prevLon !== null) {
+      const delta = lonDeg - prevLon;
+      if (delta > 180) {
+        lonOffset -= 360;
+      } else if (delta < -180) {
+        lonOffset += 360;
+      }
+    }
+    prevLon = lonDeg;
+    lonDeg += lonOffset;
+
+    points.push([lonDeg, latDeg]);
   }
 
   return points;

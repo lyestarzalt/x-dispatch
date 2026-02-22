@@ -4,6 +4,73 @@ import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
 import { setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 
+// ============================================================================
+// Safe Map Proxy
+// ============================================================================
+// Wraps MapLibre map to prevent crashes after map.remove() is called.
+// After destruction, all method calls become safe no-ops.
+
+const DESTROYED_MAPS = new WeakSet<maplibregl.Map>();
+
+function createSafeMapProxy(map: maplibregl.Map): maplibregl.Map {
+  const handler: ProxyHandler<maplibregl.Map> = {
+    get(target, prop) {
+      // Check if this map has been destroyed
+      if (DESTROYED_MAPS.has(target)) {
+        // Return safe no-op values
+        if (typeof prop === 'string') {
+          // Methods that return boolean
+          if (prop === 'hasImage' || prop === 'isStyleLoaded' || prop === 'loaded') {
+            return () => false;
+          }
+          // Methods that return objects/values - return undefined
+          if (
+            prop === 'getLayer' ||
+            prop === 'getSource' ||
+            prop === 'getStyle' ||
+            prop === 'getCanvas' ||
+            prop === 'getContainer' ||
+            prop === 'getBounds' ||
+            prop === 'getCenter' ||
+            prop === 'getFilter' ||
+            prop === 'getPaintProperty' ||
+            prop === 'getLayoutProperty'
+          ) {
+            return () => undefined;
+          }
+          // Numeric getters
+          if (prop === 'getZoom' || prop === 'getBearing' || prop === 'getPitch') {
+            return () => 0;
+          }
+        }
+        // All other methods become no-ops
+        const originalValue = Reflect.get(target, prop);
+        if (typeof originalValue === 'function') {
+          return () => undefined;
+        }
+        return undefined;
+      }
+
+      // Intercept remove() to mark as destroyed
+      if (prop === 'remove') {
+        return () => {
+          DESTROYED_MAPS.add(target);
+          target.remove();
+        };
+      }
+
+      // Normal operation - bind functions to target
+      const value = Reflect.get(target, prop);
+      if (typeof value === 'function') {
+        return value.bind(target);
+      }
+      return value;
+    },
+  };
+
+  return new Proxy(map, handler);
+}
+
 export type MapRef = React.RefObject<maplibregl.Map | null>;
 export type PopupRef = React.MutableRefObject<maplibregl.Popup | null>;
 
@@ -43,7 +110,7 @@ export function useMapSetup({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const map = new maplibregl.Map({
+    const rawMap = new maplibregl.Map({
       container: mapContainerRef.current,
       style: mapStyleUrl,
       center: [0, 30],
@@ -56,6 +123,8 @@ export function useMapSetup({
       refreshExpiredTiles: false,
     });
 
+    // Wrap with proxy for safe access after destruction
+    const map = createSafeMapProxy(rawMap);
     mapRef.current = map;
 
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');

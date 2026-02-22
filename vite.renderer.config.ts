@@ -24,8 +24,8 @@ export default defineConfig((env) => {
       pluginExposeRenderer(name),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
-        org: 'lyes-personal',
-        project: 'x-dispatch',
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
       }),
     ],
     resolve: {

@@ -1093,12 +1093,23 @@ export function logNavCacheStatus(): void {
 // SQL-Based Procedure Coordinate Resolver
 // ============================================================================
 
+/**
+ * Runway end data for resolving runway waypoints (RW09, RW27L, etc.)
+ */
+export interface RunwayEndData {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface SqlResolverOptions {
   /** Airport coordinates for proximity-based fallback */
   airportLat?: number;
   airportLon?: number;
   /** Maximum distance in nm for fallback matching (default: 500nm) */
   maxFallbackDistanceNm?: number;
+  /** Runway ends for resolving runway waypoints (RW09, RW27L, etc.) */
+  runwayEnds?: RunwayEndData[];
 }
 
 /**
@@ -1113,15 +1124,56 @@ export function createSqlCoordResolver(options?: SqlResolverOptions): CoordResol
   const airportLat = options?.airportLat;
   const airportLon = options?.airportLon;
   const maxFallbackDistance = options?.maxFallbackDistanceNm ?? 500;
+  const runwayEnds = options?.runwayEnds;
+
+  // Build runway end lookup map if runway data provided
+  const runwayEndMap = new Map<string, RunwayEndData>();
+  if (runwayEnds) {
+    for (const end of runwayEnds) {
+      // Store both with and without leading zeros for flexibility
+      // RW09, RW9, RW09L, RW9L all map to the same end
+      runwayEndMap.set(end.name.toUpperCase(), end);
+    }
+  }
+
+  /**
+   * Resolve runway waypoint from airport runway data
+   * Handles formats like RW09, RW27L, RW09R, RW27C
+   */
+  function resolveRunwayWaypoint(fixId: string): Coordinates | null {
+    if (runwayEnds === undefined || runwayEnds.length === 0) return null;
+
+    // Parse runway waypoint: RW + 2 digits + optional L/C/R
+    const match = fixId.match(/^RW(\d{2})([LCR])?$/i);
+    if (!match) return null;
+
+    const runwayNumber = match[1];
+    const suffix = match[2]?.toUpperCase() || '';
+    const searchName = `${runwayNumber}${suffix}`;
+
+    // Try exact match first
+    const exactMatch = runwayEndMap.get(searchName);
+    if (exactMatch) {
+      return { latitude: exactMatch.latitude, longitude: exactMatch.longitude };
+    }
+
+    // Try without leading zero (e.g., "9" instead of "09")
+    const noLeadingZero = runwayNumber.replace(/^0/, '') + suffix;
+    const noZeroMatch = runwayEndMap.get(noLeadingZero);
+    if (noZeroMatch) {
+      return { latitude: noZeroMatch.latitude, longitude: noZeroMatch.longitude };
+    }
+
+    return null;
+  }
 
   return (fixId: string, region: string, type: FixTypeCode): Coordinates | null => {
     const upperFixId = fixId.toUpperCase();
     const upperRegion = region.toUpperCase();
 
-    // Runway waypoints (RW09, RW27L, etc.) - pseudo-fixes from airport data
-    // Don't do global lookup - they should be resolved from airport runway data
+    // Runway waypoints (RW09, RW27L, etc.) - resolve from airport runway data
     if (upperFixId.startsWith('RW') && /^RW\d{2}[LRC]?$/.test(upperFixId)) {
-      return null;
+      return resolveRunwayWaypoint(upperFixId);
     }
 
     // Fix type determines where to look first

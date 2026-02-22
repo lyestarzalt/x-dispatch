@@ -1,79 +1,68 @@
 import { useState } from 'react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Compass,
-  Info,
-  MessageSquare,
-  PlaneTakeoff,
-  Route,
-} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ChevronLeft, ChevronRight, Compass, Info, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
-import CommsTab from './tabs/CommsTab';
-import FlightPlanTab from './tabs/FlightPlanTab';
 import InfoTab from './tabs/InfoTab';
 import RouteTab from './tabs/RouteTab';
 import StartTab from './tabs/StartTab';
 
-type TabId = 'info' | 'start' | 'route' | 'plan' | 'comms';
+type TabId = 'info' | 'start' | 'proc';
 
 interface Tab {
   id: TabId;
   icon: React.ReactNode;
+  labelKey: string;
 }
 
 const TABS: Tab[] = [
-  { id: 'info', icon: <Info className="h-4 w-4" /> },
-  { id: 'start', icon: <PlaneTakeoff className="h-4 w-4" /> },
-  { id: 'route', icon: <Compass className="h-4 w-4" /> },
-  { id: 'plan', icon: <Route className="h-4 w-4" /> },
-  { id: 'comms', icon: <MessageSquare className="h-4 w-4" /> },
+  { id: 'info', labelKey: 'airportInfo.tabs.info', icon: <Info className="h-4 w-4" /> },
+  { id: 'start', labelKey: 'airportInfo.tabs.start', icon: <PlaneTakeoff className="h-4 w-4" /> },
+  { id: 'proc', labelKey: 'airportInfo.tabs.proc', icon: <Compass className="h-4 w-4" /> },
 ];
 
-const TAB_LABELS: Record<TabId, string> = {
-  info: 'Info',
-  start: 'Start',
-  route: 'Route',
-  plan: 'Plan',
-  comms: 'Comms',
-};
-
-interface SidebarProps {
+interface AirportInfoPanelProps {
   onSelectRunway?: (runway: Runway) => void;
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
   onSelectHelipadAsStart?: (helipad: NamedPosition) => void;
 }
 
-export default function Sidebar({
+export default function AirportInfoPanel({
   onSelectRunway,
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
   onSelectHelipadAsStart,
-}: SidebarProps) {
+}: AirportInfoPanelProps) {
+  const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
+  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
-  const flightCategory = vatsimMetarData?.decoded?.flightCategory ?? null;
+  const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('info');
 
   if (!airport) return null;
 
+  const elevation = Math.round(airport.elevation);
+  const transitionAlt = airport.metadata.transition_alt;
+
   return (
     <div
       className={cn(
-        'absolute bottom-4 right-4 top-20 z-20 transition-all duration-300 ease-out',
+        'absolute bottom-4 right-4 z-20 transition-all duration-300 ease-out',
+        showFlightPlanBar ? 'top-28' : 'top-16',
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
@@ -114,17 +103,23 @@ export default function Sidebar({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {/* Header - ICAO + Location + Flight Category */}
-        <div className="px-5 pb-4 pt-5">
-          <div className="flex items-center justify-between">
-            <h1 className="font-mono text-2xl font-bold tracking-tight text-foreground">
-              {airport.id}
-            </h1>
+        {/* Header - Dense pilot info */}
+        <div className="border-b border-border/30 px-4 pb-3 pt-4">
+          {/* Row 1: ICAO + Flight Category */}
+          <div className="flex items-center justify-between pr-8">
+            <div className="flex items-baseline gap-2">
+              <h1 className="font-mono text-xl font-bold tracking-tight text-foreground">
+                {airport.id}
+              </h1>
+              <span className="font-mono text-xs text-muted-foreground">
+                {elevation}' {transitionAlt && `TA${transitionAlt}'`}
+              </span>
+            </div>
             {flightCategory && (
               <Badge
                 variant="outline"
                 className={cn(
-                  'border px-2.5 py-1 font-mono text-xs font-bold',
+                  'px-2 py-0.5 font-mono text-xs font-bold',
                   flightCategory === 'VFR' &&
                     'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
                   flightCategory === 'MVFR' && 'border-sky-500/30 bg-sky-500/10 text-sky-400',
@@ -137,9 +132,20 @@ export default function Sidebar({
               </Badge>
             )}
           </div>
-          {/* Location from metadata */}
+
+          {/* Row 2: Airport Name + IATA */}
+          <div className="mt-1 flex items-baseline gap-2">
+            <p className="text-sm text-foreground">{airport.name}</p>
+            {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
+              <span className="font-mono text-xs text-muted-foreground">
+                ({airport.metadata.iata_code})
+              </span>
+            )}
+          </div>
+
+          {/* Row 3: Location */}
           {(airport.metadata.city || airport.metadata.country) && (
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {[airport.metadata.city, airport.metadata.state || airport.metadata.country]
                 .filter(Boolean)
                 .join(', ')}
@@ -149,36 +155,36 @@ export default function Sidebar({
 
         {/* Selected position indicator */}
         {selectedStartPosition && (
-          <div className="mx-5 mb-4 flex items-center justify-between rounded-lg bg-emerald-500/10 px-3 py-2">
-            <span className="text-xs text-emerald-400/70">Starting position</span>
+          <div className="flex items-center justify-between border-b border-border/30 bg-emerald-500/5 px-4 py-2">
+            <span className="text-xs text-emerald-400/70">{t('airportInfo.tabs.start')}</span>
             <span className="font-mono text-sm font-medium text-emerald-400">
               {selectedStartPosition.name}
             </span>
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-border/50">
+        {/* Tab Navigation - Compact */}
+        <div className="flex border-b border-border/30">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex flex-1 flex-col items-center gap-1 border-b-2 py-3 transition-colors',
+                'flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors',
                 activeTab === tab.id
-                  ? 'border-foreground text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  ? 'border-b-2 border-foreground text-foreground'
+                  : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
               )}
             >
               {tab.icon}
-              <span className="text-xs font-medium">{TAB_LABELS[tab.id]}</span>
+              <span>{t(tab.labelKey)}</span>
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
         <ScrollArea className="flex-1">
-          <div className="p-5">
+          <div className="p-4">
             {activeTab === 'info' && <InfoTab />}
             {activeTab === 'start' && (
               <StartTab
@@ -188,9 +194,7 @@ export default function Sidebar({
                 onSelectHelipad={onSelectHelipadAsStart}
               />
             )}
-            {activeTab === 'route' && <RouteTab />}
-            {activeTab === 'plan' && <FlightPlanTab />}
-            {activeTab === 'comms' && <CommsTab />}
+            {activeTab === 'proc' && <RouteTab />}
           </div>
         </ScrollArea>
       </div>

@@ -85,9 +85,19 @@
     "nav": "НАВ",
     "vatsim": "VATSIM",
     "track": "Отслеживать",
-    "trackTooltip": "Отслеживать положение вашего самолёта",
     "launch": "Запуск",
-    "navigationLayers": "Навигационные слои"
+    "loadPlan": "Загрузить план",
+    "navigationLayers": "Навигационные слои",
+    "tooltips": {
+      "loadPlan": "Загрузить файлы плана полёта X-Plane .fms",
+      "explore": "Откройте для себя избранные аэропорты и маршруты",
+      "nav": "Показать навигационные слои вокруг аэропорта",
+      "track": "Отслеживать ваш самолёт в X-Plane",
+      "vatsim": "Показать трафик VATSIM в реальном времени",
+      "launch": "Запустить X-Plane с выбранной позицией",
+      "launchDisabled": "Сначала выберите аэропорт",
+      "settings": "Открыть настройки"
+    }
   },
 
   "explore": {
@@ -272,9 +282,12 @@
 
   "airportInfo": {
     "tabs": {
-      "info": "ИНФО",
+      "info": "Инфо",
+      "start": "Старт",
+      "proc": "Проц",
       "runways": "ВПП",
       "gates": "Выходы",
+      "helipads": "Вертолётные площадки",
       "radio": "Радио",
       "gateway": "GATEWAY"
     },
@@ -328,7 +341,23 @@
       "snow": "Снег",
       "transparent": "Прозрачный",
       "unknown": "Неизвестно"
-    }
+    },
+    "sizes": {
+      "small": "Малый",
+      "narrow": "Узкий",
+      "wide": "Широкий",
+      "heavy": "Тяжёлый",
+      "super": "Супер"
+    },
+    "opTypes": {
+      "airline": "Авиакомпания",
+      "cargo": "Грузовой",
+      "ga": "GA",
+      "military": "Военный"
+    },
+    "noStartPositions": "Нет доступных стартовых позиций",
+    "searchPlaceholder": "Поиск...",
+    "noMatchingGates": "Выходы для \"{{query}}\" не найдены"
   },
 
   "navigation": {

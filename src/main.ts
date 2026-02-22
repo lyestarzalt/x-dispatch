@@ -20,7 +20,7 @@ import type { LaunchConfig } from './types/aircraft';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 Sentry.init({
-  dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
+  dsn: 'https://93939f3ad736f402a616188303a369cf@o4510928623173632.ingest.de.sentry.io/4510928631365712',
   environment: app.isPackaged ? 'production' : 'development',
   release: `x-dispatch@${app.getVersion()}`,
 });

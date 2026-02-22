@@ -58,10 +58,10 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
   weather: true,
 };
 
-// Default navigation layer visibility
+// Default navigation layer visibility (off by default, user enables as needed)
 export const DEFAULT_NAV_VISIBILITY: NavLayerVisibility = {
-  navaids: true,
-  ils: true,
-  airspaces: true,
+  navaids: false,
+  ils: false,
+  airspaces: false,
   airwaysMode: 'off',
 };

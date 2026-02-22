@@ -85,9 +85,19 @@
     "nav": "导航",
     "vatsim": "VATSIM",
     "track": "跟踪",
-    "trackTooltip": "跟踪您的飞机位置",
     "launch": "启动",
-    "navigationLayers": "导航图层"
+    "loadPlan": "加载计划",
+    "navigationLayers": "导航图层",
+    "tooltips": {
+      "loadPlan": "加载X-Plane .fms飞行计划文件",
+      "explore": "发现精选机场和航线",
+      "nav": "显示机场周围的导航图层",
+      "track": "在X-Plane中跟踪您的飞机",
+      "vatsim": "显示VATSIM实时交通",
+      "launch": "使用所选位置启动X-Plane",
+      "launchDisabled": "请先选择一个机场",
+      "settings": "打开设置"
+    }
   },
 
   "explore": {
@@ -273,8 +283,11 @@
   "airportInfo": {
     "tabs": {
       "info": "信息",
+      "start": "出发",
+      "proc": "程序",
       "runways": "跑道",
       "gates": "登机口",
+      "helipads": "直升机坪",
       "radio": "无线电",
       "gateway": "GATEWAY"
     },
@@ -328,7 +341,23 @@
       "snow": "雪地",
       "transparent": "透明",
       "unknown": "未知"
-    }
+    },
+    "sizes": {
+      "small": "小型",
+      "narrow": "窄体",
+      "wide": "宽体",
+      "heavy": "重型",
+      "super": "超大型"
+    },
+    "opTypes": {
+      "airline": "航空公司",
+      "cargo": "货运",
+      "ga": "通航",
+      "military": "军用"
+    },
+    "noStartPositions": "没有可用的出发位置",
+    "searchPlaceholder": "搜索...",
+    "noMatchingGates": "未找到与\"{{query}}\"匹配的登机口"
   },
 
   "navigation": {
