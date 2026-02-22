@@ -48,6 +48,8 @@ jobs:
 
       - name: Build
         run: npm run make
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
