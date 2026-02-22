@@ -4,8 +4,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
+import AirportInfoPanel from '@/components/layout/AirportInfoPanel';
 import FlightPlanBar from '@/components/layout/FlightPlanBar';
-import Sidebar from '@/components/layout/Sidebar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
@@ -638,10 +638,10 @@ export default function Map({ airports }: MapProps) {
         />
       )}
 
-      {/* Sidebar - floating overlay */}
+      {/* Airport Info Panel - floating overlay */}
       {showSidebar && selectedAirportData && (
-        <SectionErrorBoundary name="Sidebar">
-          <Sidebar
+        <SectionErrorBoundary name="AirportInfoPanel">
+          <AirportInfoPanel
             onSelectRunway={navigateToRunway}
             onSelectGateAsStart={selectGateAsStart}
             onSelectRunwayEndAsStart={selectRunwayEndAsStart}
