@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Fuel, Plane, Scale, Settings, Tag } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Fuel, Plane, Scale, Tag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
@@ -8,65 +9,83 @@ import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Livery } from '@/types/aircraft';
 
-// Individual livery tile - uses TanStack Query for image loading
-function LiveryTile({
+// Livery grid layout constants (in pixels)
+const LIVERY_CARD_HEIGHT = 80;
+const LIVERY_GAP = 12;
+const LIVERY_PADDING = 12;
+const LIVERY_VISIBLE_ROWS = 2;
+
+// Main preview image for selected livery
+function LiveryPreview({
+  livery,
+  fallbackImage,
+}: {
+  livery: Livery;
+  fallbackImage: string | undefined;
+}) {
+  const { data: liveryImage } = useAircraftImage(livery.previewImage);
+  const displayImage = liveryImage || (livery.name === 'Default' ? fallbackImage : undefined);
+
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      {displayImage ? (
+        <img
+          src={displayImage}
+          alt={livery.displayName}
+          className="h-full w-full object-contain p-4"
+        />
+      ) : (
+        <Plane className="h-20 w-20 text-muted-foreground/10" />
+      )}
+    </div>
+  );
+}
+
+// Livery thumbnail card for selection grid
+function LiveryCard({
   livery,
   isSelected,
   fallbackImage,
-  onSelect,
+  onClick,
 }: {
   livery: Livery;
   isSelected: boolean;
   fallbackImage: string | undefined;
-  onSelect: () => void;
+  onClick: () => void;
 }) {
   const { data: liveryImage } = useAircraftImage(livery.previewImage);
-  // Use livery image, or fallback to main aircraft image for Default
   const displayImage = liveryImage || (livery.name === 'Default' ? fallbackImage : undefined);
 
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={onClick}
       title={livery.displayName}
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        isSelected ? 'bg-primary/5 ring-2 ring-primary' : 'bg-secondary hover:bg-accent'
+        'group flex h-20 flex-col overflow-hidden rounded-lg border transition-all',
+        isSelected
+          ? 'border-primary bg-primary/5'
+          : 'border-transparent bg-secondary hover:border-border hover:bg-accent'
       )}
     >
-      {/* Tile Image */}
-      <div className="relative aspect-[16/10] w-full">
+      <div className="relative flex-1 overflow-hidden">
         {displayImage ? (
           <img src={displayImage} alt={livery.displayName} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted">
-            <Plane className="h-4 w-4 text-muted-foreground/30" />
+            <Plane className="h-5 w-5 text-muted-foreground/20" />
           </div>
-        )}
-
-        {/* Selected indicator */}
-        {isSelected && (
-          <div className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/90">
-            <Settings className="h-3 w-3 text-primary-foreground" />
-          </div>
-        )}
-
-        {/* Hover overlay */}
-        {!isSelected && (
-          <div className="absolute inset-0 bg-primary/0 transition-colors group-hover:bg-primary/10" />
         )}
       </div>
-
-      {/* Tile Label */}
-      <div className="px-1 py-1">
-        <div
+      <div className="flex-shrink-0 px-2 py-1">
+        <span
           className={cn(
-            'truncate text-center text-xs',
+            'block truncate text-center text-xs',
             isSelected ? 'font-medium text-primary' : 'text-muted-foreground'
           )}
         >
           {livery.displayName}
-        </div>
+        </span>
       </div>
     </button>
   );
@@ -81,12 +100,30 @@ export function AircraftPreview() {
   const selectedLivery = useLaunchStore((s) => s.selectedLivery);
   const setSelectedLivery = useLaunchStore((s) => s.setSelectedLivery);
 
-  // TanStack Query for main aircraft image
+  // TanStack Query for main aircraft image (fallback)
   const { data: aircraftImage } = useAircraftImage(selectedAircraft?.previewImage ?? null);
 
-  // Get current livery's image
-  const currentLivery = selectedAircraft?.liveries.find((l) => l.name === selectedLivery);
-  const { data: currentLiveryImage } = useAircraftImage(currentLivery?.previewImage ?? null);
+  // Find current livery index
+  const currentIndex = selectedAircraft?.liveries.findIndex((l) => l.name === selectedLivery) ?? 0;
+  const currentLivery = selectedAircraft?.liveries[currentIndex];
+
+  // Navigation handlers
+  const goToPrevious = () => {
+    if (!selectedAircraft) return;
+    const newIndex = currentIndex <= 0 ? selectedAircraft.liveries.length - 1 : currentIndex - 1;
+    setSelectedLivery(selectedAircraft.liveries[newIndex].name);
+  };
+
+  const goToNext = () => {
+    if (!selectedAircraft) return;
+    const newIndex = currentIndex >= selectedAircraft.liveries.length - 1 ? 0 : currentIndex + 1;
+    setSelectedLivery(selectedAircraft.liveries[newIndex].name);
+  };
+
+  const selectLivery = (index: number) => {
+    if (!selectedAircraft) return;
+    setSelectedLivery(selectedAircraft.liveries[index].name);
+  };
 
   if (!selectedAircraft) {
     return (
@@ -96,119 +133,120 @@ export function AircraftPreview() {
     );
   }
 
-  // Use current livery image, or fall back to main aircraft image
-  const previewImage = currentLiveryImage || aircraftImage;
-
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      {/* Preview Image */}
-      <div className="relative flex-1 bg-gradient-to-b from-secondary/50 to-background">
-        {previewImage ? (
-          <img
-            src={previewImage}
-            alt={selectedAircraft.name}
-            className="h-full w-full object-contain p-4"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Plane className="h-20 w-20 text-muted-foreground/10" />
-          </div>
-        )}
-      </div>
-
-      {/* Aircraft Info Panel */}
-      <div className="flex-shrink-0 border-y border-border bg-card">
-        {/* Aircraft Name Header */}
-        <div className="border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2">
-            <h2 className="xp-detail-heading">{selectedAircraft.name}</h2>
-            {selectedAircraft.icao && (
-              <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-                {selectedAircraft.icao}
+      {/* Aircraft Preview with Info */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* Aircraft Info Header */}
+        <div className="flex-shrink-0 bg-gradient-to-b from-background to-transparent px-4 py-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold text-foreground">{selectedAircraft.name}</h2>
+                {selectedAircraft.icao && (
+                  <span className="rounded bg-secondary/80 px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+                    {selectedAircraft.icao}
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
+                <span>{selectedAircraft.manufacturer}</span>
+                {selectedAircraft.emptyWeight > 0 && (
+                  <>
+                    <span className="text-border">·</span>
+                    <span className="flex items-center gap-1">
+                      <Scale className="h-3.5 w-3.5" />
+                      {formatWeight(selectedAircraft.emptyWeight, weightUnit)}
+                    </span>
+                  </>
+                )}
+                {selectedAircraft.maxFuel > 0 && (
+                  <>
+                    <span className="text-border">·</span>
+                    <span className="flex items-center gap-1">
+                      <Fuel className="h-3.5 w-3.5" />
+                      {formatWeight(selectedAircraft.maxFuel, weightUnit)}
+                    </span>
+                  </>
+                )}
+                {selectedAircraft.tailNumber && (
+                  <>
+                    <span className="text-border">·</span>
+                    <span className="flex items-center gap-1">
+                      <Tag className="h-3.5 w-3.5" />
+                      <span className="font-mono font-medium text-primary">
+                        {selectedAircraft.tailNumber}
+                      </span>
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="flex-shrink-0 rounded-lg bg-secondary/80 px-2.5 py-1.5 backdrop-blur-sm">
+              <span className="text-sm font-medium">{currentLivery?.displayName ?? 'Default'}</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                {currentIndex + 1}/{selectedAircraft.liveries.length}
               </span>
-            )}
-          </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {selectedAircraft.manufacturer}
-            {selectedAircraft.studio && ` · ${selectedAircraft.studio}`}
-            {selectedAircraft.author && !selectedAircraft.studio && ` · ${selectedAircraft.author}`}
-          </p>
-        </div>
-
-        {/* Specs Grid */}
-        <div className="grid grid-cols-3 divide-x divide-border">
-          {/* Empty Weight */}
-          <div className="px-3 py-2.5">
-            <div className="flex items-center gap-1.5">
-              <Scale className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="xp-label">{t('launcher.specs.emptyWeight')}</span>
-            </div>
-            <div className="mt-1 font-mono text-sm text-foreground">
-              {selectedAircraft.emptyWeight > 0
-                ? formatWeight(selectedAircraft.emptyWeight, weightUnit)
-                : '—'}
-            </div>
-          </div>
-
-          {/* Max Weight */}
-          <div className="px-3 py-2.5">
-            <div className="flex items-center gap-1.5">
-              <Scale className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="xp-label">{t('launcher.specs.maxWeight')}</span>
-            </div>
-            <div className="mt-1 font-mono text-sm text-foreground">
-              {selectedAircraft.maxWeight > 0
-                ? formatWeight(selectedAircraft.maxWeight, weightUnit)
-                : '—'}
-            </div>
-          </div>
-
-          {/* Max Fuel */}
-          <div className="px-3 py-2.5">
-            <div className="flex items-center gap-1.5">
-              <Fuel className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="xp-label">{t('launcher.specs.maxFuel')}</span>
-            </div>
-            <div className="mt-1 font-mono text-sm text-foreground">
-              {selectedAircraft.maxFuel > 0
-                ? formatWeight(selectedAircraft.maxFuel, weightUnit)
-                : '—'}
             </div>
           </div>
         </div>
 
-        {/* Tail Number (if available) */}
-        {selectedAircraft.tailNumber && (
-          <div className="flex items-center gap-2 border-t border-border px-4 py-2">
-            <Tag className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="xp-label">{t('launcher.specs.tailNumber')}</span>
-            <span className="ml-auto font-mono text-sm text-primary">
-              {selectedAircraft.tailNumber}
-            </span>
-          </div>
-        )}
+        {/* Preview Image with Nav Buttons */}
+        <div className="relative min-h-0 flex-1">
+          {currentLivery && (
+            <LiveryPreview livery={currentLivery} fallbackImage={aircraftImage ?? undefined} />
+          )}
+
+          {/* Previous/Next Buttons */}
+          {selectedAircraft.liveries.length > 1 && (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-3 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+                onClick={goToPrevious}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Previous livery</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute right-3 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+                onClick={goToNext}
+              >
+                <ArrowRight className="h-4 w-4" />
+                <span className="sr-only">Next livery</span>
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Liveries Section */}
-      <div className="flex h-[160px] flex-shrink-0 flex-col">
-        {/* Section Header */}
-        <div className="xp-section-heading mx-3 mb-0 mt-2 flex items-center justify-between">
-          <span>{t('launcher.liveries.title')}</span>
-          <span className="text-xs normal-case text-muted-foreground">
-            {selectedAircraft.liveries.length}
+      {/* Livery Selection Grid - Shows 2 rows, scrolls if more */}
+      <div className="flex flex-shrink-0 flex-col bg-card/50">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-border/30 px-4 py-2">
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {t('launcher.liveries.title')}
           </span>
+          <span className="text-xs text-muted-foreground">{selectedAircraft.liveries.length}</span>
         </div>
-
-        {/* Livery Grid */}
-        <ScrollArea className="flex-1">
-          <div className="grid grid-cols-5 gap-1.5 p-2">
-            {selectedAircraft.liveries.map((liv) => (
-              <LiveryTile
-                key={liv.name}
-                livery={liv}
-                isSelected={selectedLivery === liv.name}
+        <ScrollArea
+          style={{
+            maxHeight:
+              LIVERY_CARD_HEIGHT * LIVERY_VISIBLE_ROWS +
+              LIVERY_GAP * (LIVERY_VISIBLE_ROWS - 1) +
+              LIVERY_PADDING * 2,
+          }}
+        >
+          <div className="grid grid-cols-4 gap-3 p-3">
+            {selectedAircraft.liveries.map((livery, index) => (
+              <LiveryCard
+                key={livery.name}
+                livery={livery}
+                isSelected={selectedLivery === livery.name}
                 fallbackImage={aircraftImage ?? undefined}
-                onSelect={() => setSelectedLivery(liv.name)}
+                onClick={() => selectLivery(index)}
               />
             ))}
           </div>

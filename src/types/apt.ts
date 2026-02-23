@@ -315,6 +315,8 @@ export interface BoundaryFeature {
 export interface ParsedAirport {
   id: string;
   name: string;
+  latitude: number;
+  longitude: number;
   elevation: number;
   metadata: Record<string, string>;
   runways: Runway[];

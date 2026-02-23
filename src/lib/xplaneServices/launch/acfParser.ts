@@ -64,7 +64,8 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       thumbnailImage,
       liveries,
     };
-  } catch {
+  } catch (err) {
+    logger.launcher.debug(`Failed to parse: ${acfPath}`, err);
     return null;
   }
 }
@@ -73,20 +74,28 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
  * Scan the Aircraft directory for all .acf files
  */
 export function scanAircraftDirectory(xplanePath: string): Aircraft[] {
+  const startTime = Date.now();
   const aircraftDir = path.join(xplanePath, 'Aircraft');
   const aircraft: Aircraft[] = [];
 
+  logger.launcher.info(`Scanning aircraft directory: ${aircraftDir}`);
+
   if (!fs.existsSync(aircraftDir)) {
+    logger.launcher.warn(`Aircraft directory not found: ${aircraftDir}`);
     return aircraft;
   }
 
   // Recursively find all .acf files
   const acfFiles = findAcfFiles(aircraftDir);
+  logger.launcher.info(`Found ${acfFiles.length} .acf files`);
 
+  let parseErrors = 0;
   for (const acfFile of acfFiles) {
     const parsed = parseAcfFile(acfFile, xplanePath);
     if (parsed) {
       aircraft.push(parsed);
+    } else {
+      parseErrors++;
     }
   }
 
@@ -96,6 +105,24 @@ export function scanAircraftDirectory(xplanePath: string): Aircraft[] {
     if (mfgCompare !== 0) return mfgCompare;
     return a.name.localeCompare(b.name);
   });
+
+  // Log summary stats
+  const elapsed = Date.now() - startTime;
+  const manufacturers = new Set(aircraft.map((a) => a.manufacturer)).size;
+  const helicopters = aircraft.filter((a) => a.isHelicopter).length;
+  const fixedWing = aircraft.length - helicopters;
+  const withLiveries = aircraft.filter((a) => a.liveries.length > 1).length;
+  const totalLiveries = aircraft.reduce((sum, a) => sum + a.liveries.length, 0);
+
+  logger.launcher.info(
+    `Aircraft scan complete in ${elapsed}ms: ${aircraft.length} aircraft (${fixedWing} fixed-wing, ${helicopters} helicopters), ${manufacturers} manufacturers, ${totalLiveries} liveries total`
+  );
+  if (parseErrors > 0) {
+    logger.launcher.warn(`Failed to parse ${parseErrors} .acf files`);
+  }
+  if (withLiveries > 0) {
+    logger.launcher.debug(`${withLiveries} aircraft have custom liveries`);
+  }
 
   return aircraft;
 }

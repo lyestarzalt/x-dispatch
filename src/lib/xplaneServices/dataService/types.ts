@@ -13,6 +13,7 @@ export interface Airport {
   lat: number;
   lon: number;
   type: 'land' | 'seaplane' | 'heliport';
+  isCustom: boolean;
 }
 
 export interface AirportSourceBreakdown {

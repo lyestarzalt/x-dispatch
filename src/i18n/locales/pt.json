@@ -96,6 +96,7 @@
       "vatsim": "Mostrar tráfego VATSIM ao vivo",
       "launch": "Iniciar X-Plane com a posição selecionada",
       "launchDisabled": "Selecione primeiro um aeroporto",
+      "launchSelectPosition": "Selecione primeiro um portão, pista ou heliporto",
       "settings": "Abrir configurações"
     }
   },
@@ -169,7 +170,11 @@
       "logFile": "Arquivo de log",
       "openDataFolder": "Abrir pasta de dados",
       "openLog": "Abrir arquivo de log",
-      "openLogFolder": "Mostrar na pasta"
+      "openLogFolder": "Mostrar na pasta",
+      "privacy": "Privacidade",
+      "crashReports": "Enviar relatórios de falhas",
+      "crashReportsDescription": "Ajude a melhorar o X-Dispatch enviando automaticamente relatórios de falhas",
+      "crashReportsNote": "Requer reinício. Nenhum dado pessoal é coletado."
     },
     "xplane": {
       "title": "Instalação do X-Plane",
@@ -516,6 +521,7 @@
       "timeOfDay": "Hora do dia",
       "realWorldTime": "Mundo real",
       "coldAndDark": "Frio e escuro",
+      "startState": "Estado inicial",
       "weather": "Clima",
       "fuel": "Combustível",
       "summary": "Resumo",
@@ -523,7 +529,14 @@
       "livery": "Pintura"
     },
 
+    "startState": {
+      "ready": "Pronto",
+      "cold": "Frio e Desligado"
+    },
+
     "time": {
+      "live": "Ao vivo",
+      "set": "Definir",
       "dawn": "Amanhecer",
       "day": "Dia",
       "dusk": "Entardecer",

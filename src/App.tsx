@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
@@ -104,6 +105,7 @@ function App() {
     <ErrorBoundary>
       <QueryProvider>
         <AppContent />
+        <Toaster position="bottom-center" theme="dark" />
       </QueryProvider>
     </ErrorBoundary>
   );

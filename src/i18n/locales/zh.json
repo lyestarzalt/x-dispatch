@@ -96,6 +96,7 @@
       "vatsim": "显示VATSIM实时交通",
       "launch": "使用所选位置启动X-Plane",
       "launchDisabled": "请先选择一个机场",
+      "launchSelectPosition": "请先选择登机口、跑道或直升机坪",
       "settings": "打开设置"
     }
   },
@@ -169,7 +170,11 @@
       "logFile": "日志文件",
       "openDataFolder": "打开数据文件夹",
       "openLog": "打开日志文件",
-      "openLogFolder": "在文件夹中显示"
+      "openLogFolder": "在文件夹中显示",
+      "privacy": "隐私",
+      "crashReports": "发送崩溃报告",
+      "crashReportsDescription": "通过自动发送崩溃报告帮助改进 X-Dispatch",
+      "crashReportsNote": "需要重启。不收集任何个人数据。"
     },
     "xplane": {
       "title": "X-Plane 安装",
@@ -516,6 +521,7 @@
       "timeOfDay": "时间",
       "realWorldTime": "真实时间",
       "coldAndDark": "冷舱启动",
+      "startState": "启动状态",
       "weather": "天气",
       "fuel": "燃油",
       "summary": "摘要",
@@ -523,7 +529,14 @@
       "livery": "涂装"
     },
 
+    "startState": {
+      "ready": "就绪",
+      "cold": "冷舱启动"
+    },
+
     "time": {
+      "live": "实时",
+      "set": "设置",
       "dawn": "黎明",
       "day": "白天",
       "dusk": "黄昏",
