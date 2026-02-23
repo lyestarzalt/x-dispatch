@@ -96,6 +96,7 @@
       "vatsim": "Live VATSIM-Verkehr anzeigen",
       "launch": "X-Plane mit ausgewählter Position starten",
       "launchDisabled": "Wählen Sie zuerst einen Flughafen",
+      "launchSelectPosition": "Wählen Sie zuerst ein Gate, eine Landebahn oder einen Hubschrauberlandeplatz",
       "settings": "Einstellungen öffnen"
     }
   },
@@ -435,6 +436,7 @@
       "timeOfDay": "Tageszeit",
       "realWorldTime": "Echtzeit",
       "coldAndDark": "Kaltstart",
+      "startState": "Startzustand",
       "weather": "Wetter",
       "fuel": "Treibstoff",
       "summary": "Zusammenfassung",
@@ -442,7 +444,14 @@
       "livery": "Bemalung"
     },
 
+    "startState": {
+      "ready": "Bereit",
+      "cold": "Kalt & Dunkel"
+    },
+
     "time": {
+      "live": "Live",
+      "set": "Einstellen",
       "dawn": "Morgengrauen",
       "day": "Tag",
       "dusk": "Dämmerung",

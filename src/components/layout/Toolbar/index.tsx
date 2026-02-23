@@ -12,6 +12,7 @@ import {
   Settings,
   X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -377,32 +378,28 @@ export default function Toolbar({
           </Tooltip>
         </TooltipProvider>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowLaunchDialog(true)}
-                  disabled={!selectedICAO}
-                  className={cn(
-                    'h-9 gap-2 px-3',
-                    hasStartPosition && 'border-success/50 text-success',
-                    !selectedICAO && 'opacity-50'
-                  )}
-                >
-                  <Plane className="h-4 w-4" />
-                  <span className="text-xs font-medium">{t('toolbar.launch')}</span>
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {selectedICAO ? t('toolbar.tooltips.launch') : t('toolbar.tooltips.launchDisabled')}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (hasStartPosition) {
+              setShowLaunchDialog(true);
+            } else {
+              toast.info(
+                selectedICAO
+                  ? t('toolbar.tooltips.launchSelectPosition')
+                  : t('toolbar.tooltips.launchDisabled')
+              );
+            }
+          }}
+          className={cn(
+            'h-9 gap-2 px-3',
+            hasStartPosition && 'border-success/50 text-success',
+            !hasStartPosition && 'opacity-50'
+          )}
+        >
+          <Plane className="h-4 w-4" />
+          <span className="text-xs font-medium">{t('toolbar.launch')}</span>
+        </Button>
 
         <TooltipProvider>
           <Tooltip>

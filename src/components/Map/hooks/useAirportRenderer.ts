@@ -87,6 +87,10 @@ export function useAirportRenderer(
       const parser = new AirportParser(data);
       const { data: parsedAirport, errors, stats } = parser.parse();
 
+      // Enrich with coordinates from click location
+      parsedAirport.longitude = center[0];
+      parsedAirport.latitude = center[1];
+
       if (errors.length > 0) {
         window.appAPI.log.warn(
           `AirportParser ${icao}: ${errors.length} errors, ${stats.skipped} skipped`

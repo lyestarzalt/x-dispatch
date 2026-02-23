@@ -96,6 +96,7 @@
       "vatsim": "Pokaż ruch VATSIM na żywo",
       "launch": "Uruchom X-Plane z wybraną pozycją",
       "launchDisabled": "Najpierw wybierz lotnisko",
+      "launchSelectPosition": "Najpierw wybierz bramkę, pas startowy lub lądowisko",
       "settings": "Otwórz ustawienia"
     }
   },
@@ -516,6 +517,7 @@
       "timeOfDay": "Pora dnia",
       "realWorldTime": "Czas rzeczywisty",
       "coldAndDark": "Zimny i ciemny",
+      "startState": "Stan początkowy",
       "weather": "Pogoda",
       "fuel": "Paliwo",
       "summary": "Podsumowanie",
@@ -523,7 +525,14 @@
       "livery": "Malowanie"
     },
 
+    "startState": {
+      "ready": "Gotowy",
+      "cold": "Zimny i Wyłączony"
+    },
+
     "time": {
+      "live": "Na żywo",
+      "set": "Ustaw",
       "dawn": "Świt",
       "day": "Dzień",
       "dusk": "Zmierzch",

@@ -96,6 +96,7 @@
       "vatsim": "Mostrar tráfico VATSIM en vivo",
       "launch": "Iniciar X-Plane con la posición seleccionada",
       "launchDisabled": "Selecciona primero un aeropuerto",
+      "launchSelectPosition": "Selecciona primero una puerta, pista o helipuerto",
       "settings": "Abrir ajustes"
     }
   },
@@ -516,6 +517,7 @@
       "timeOfDay": "Hora del día",
       "realWorldTime": "Mundo real",
       "coldAndDark": "Frío y oscuro",
+      "startState": "Estado inicial",
       "weather": "Clima",
       "fuel": "Combustible",
       "summary": "Resumen",
@@ -523,7 +525,14 @@
       "livery": "Librea"
     },
 
+    "startState": {
+      "ready": "Listo",
+      "cold": "Frío y Apagado"
+    },
+
     "time": {
+      "live": "En vivo",
+      "set": "Establecer",
       "dawn": "Amanecer",
       "day": "Día",
       "dusk": "Atardecer",

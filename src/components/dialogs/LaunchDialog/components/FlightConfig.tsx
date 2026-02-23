@@ -11,8 +11,9 @@ import {
   Fuel,
   Globe,
   Loader2,
-  Moon,
   Power,
+  PowerOff,
+  Radio,
   Sun,
 } from 'lucide-react';
 import tzLookup from 'tz-lookup';
@@ -20,9 +21,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
+import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { StartPosition } from '../types';
@@ -64,6 +65,20 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   const { t } = useTranslation();
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
+  // Get selected airport data for lat/lon (enriched with coordinates at parse time)
+  const selectedAirportData = useAppStore((s) => s.selectedAirportData);
+
+  // Get airport coordinates - prefer startPosition, fall back to airport coords
+  const airportCoords = useMemo(() => {
+    if (startPosition) {
+      return { latitude: startPosition.latitude, longitude: startPosition.longitude };
+    }
+    if (selectedAirportData) {
+      return { latitude: selectedAirportData.latitude, longitude: selectedAirportData.longitude };
+    }
+    return null;
+  }, [startPosition, selectedAirportData]);
+
   // Zustand store state
   const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
   const selectedLivery = useLaunchStore((s) => s.selectedLivery);
@@ -85,17 +100,17 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
   useEffect(() => {
-    if (!useRealWorldTime || !startPosition) return;
+    if (!useRealWorldTime || !airportCoords) return;
     setCurrentTime(new Date());
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(interval);
-  }, [useRealWorldTime, startPosition]);
+  }, [useRealWorldTime, airportCoords]);
 
   const airportTimeInfo = useMemo(() => {
-    if (!startPosition) return null;
+    if (!airportCoords) return null;
 
     try {
-      const timezone = tzLookup(startPosition.latitude, startPosition.longitude);
+      const timezone = tzLookup(airportCoords.latitude, airportCoords.longitude);
       const offset = getTimezoneOffset(timezone);
 
       const airportTimeStr = currentTime.toLocaleTimeString('en-GB', {
@@ -126,7 +141,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
     } catch {
       return null;
     }
-  }, [startPosition, currentTime]);
+  }, [airportCoords, currentTime]);
 
   const totalFuel = useMemo(() => {
     if (selectedAircraft) {
@@ -142,72 +157,57 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
       </div>
 
       <div className="flex-1 space-y-4 overflow-auto px-4 pb-4">
-        {/* Time of Day */}
+        {/* Time */}
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              {t('launcher.config.timeOfDay')}
-            </Label>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {t('launcher.config.realWorldTime')}
-              </span>
-              <Switch checked={useRealWorldTime} onCheckedChange={setUseRealWorldTime} />
-            </div>
+          <Label className="flex items-center gap-2 text-sm">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            {t('launcher.config.timeOfDay')}
+          </Label>
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => setUseRealWorldTime(true)}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                useRealWorldTime
+                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
+                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              <Radio className="h-5 w-5" />
+              <span className="text-xs">{t('launcher.time.live')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUseRealWorldTime(false)}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                !useRealWorldTime
+                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
+                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              <Clock className="h-5 w-5" />
+              <span className="text-xs">{t('launcher.time.set')}</span>
+            </button>
           </div>
 
-          {useRealWorldTime && airportTimeInfo ? (
-            <div className="rounded-lg border border-border bg-secondary px-3 py-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {airportTimeInfo.isDay ? (
-                    <Sun className="h-4 w-4 text-warning" />
-                  ) : (
-                    <Moon className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <span className="font-mono text-lg font-semibold">
-                    {airportTimeInfo.airportTimeStr}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{airportTimeInfo.offset}</span>
-                </div>
-                <span className="font-mono text-sm text-muted-foreground">
-                  {airportTimeInfo.utcTimeStr}Z
-                </span>
-              </div>
-              <div className="mt-1 text-xs text-muted-foreground">
-                {airportTimeInfo.airportDateStr}
-              </div>
+          {useRealWorldTime && airportTimeInfo && (
+            <div className="text-center font-mono text-lg text-foreground">
+              {airportTimeInfo.airportTimeStr}
+              <span className="ml-2 text-xs text-muted-foreground">{airportTimeInfo.offset}</span>
             </div>
-          ) : !useRealWorldTime ? (
-            <div className="space-y-3">
-              {startPosition ? (
-                <SunArc
-                  timeOfDay={timeOfDay}
-                  latitude={startPosition.latitude}
-                  longitude={startPosition.longitude}
-                  onTimeChange={setTimeOfDay}
-                />
-              ) : (
-                <>
-                  <Slider
-                    value={[timeOfDay]}
-                    onValueChange={(v) => setTimeOfDay(v[0])}
-                    min={0}
-                    max={24}
-                    step={0.5}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>00:00</span>
-                    <span>06:00</span>
-                    <span>12:00</span>
-                    <span>18:00</span>
-                    <span>24:00</span>
-                  </div>
-                </>
-              )}
-            </div>
-          ) : null}
+          )}
+
+          {!useRealWorldTime && airportCoords && (
+            <SunArc
+              timeOfDay={timeOfDay}
+              latitude={airportCoords.latitude}
+              longitude={airportCoords.longitude}
+              onTimeChange={setTimeOfDay}
+            />
+          )}
         </div>
 
         {/* Weather Presets */}
@@ -269,41 +269,57 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
           </div>
         </div>
 
-        {/* Cold & Dark Toggle */}
-        <div className="flex items-center justify-between rounded-lg bg-secondary px-3 py-2.5">
+        {/* Aircraft Start State */}
+        <div className="space-y-2.5">
           <Label className="flex items-center gap-2 text-sm">
             <Power className="h-4 w-4 text-muted-foreground" />
-            {t('launcher.config.coldAndDark')}
+            {t('launcher.config.startState')}
           </Label>
-          <Switch checked={coldAndDark} onCheckedChange={setColdAndDark} />
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => setColdAndDark(false)}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                !coldAndDark
+                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
+                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              <Power className="h-5 w-5" />
+              <span className="text-xs">{t('launcher.startState.ready')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setColdAndDark(true)}
+              className={cn(
+                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                coldAndDark
+                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
+                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              <PowerOff className="h-5 w-5" />
+              <span className="text-xs">{t('launcher.startState.cold')}</span>
+            </button>
+          </div>
         </div>
 
         {/* Flight Summary */}
-        <div className="space-y-2 rounded-lg bg-secondary p-3">
-          <div className="flex items-center justify-between">
-            <span className="xp-label">{t('launcher.aircraft.title')}</span>
-            <span
-              className="max-w-[130px] truncate font-mono text-xs text-foreground"
-              title={selectedAircraft?.name || undefined}
-            >
+        <div className="space-y-1.5 rounded-lg bg-secondary p-3">
+          <div className="flex items-start justify-between gap-2">
+            <span className="xp-label shrink-0">{t('launcher.aircraft.title')}</span>
+            <span className="text-right font-mono text-xs text-foreground">
               {selectedAircraft?.name || '—'}
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="xp-label">{t('launcher.config.livery')}</span>
-            <span
-              className="max-w-[130px] truncate font-mono text-xs text-foreground"
-              title={selectedLivery}
-            >
-              {selectedLivery}
-            </span>
+          <div className="flex items-start justify-between gap-2">
+            <span className="xp-label shrink-0">{t('launcher.config.livery')}</span>
+            <span className="text-right font-mono text-xs text-foreground">{selectedLivery}</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="xp-label">{t('launcher.config.departure')}</span>
-            <span
-              className="max-w-[130px] truncate font-mono text-xs text-primary"
-              title={startPosition ? `${startPosition.airport} ${startPosition.name}` : undefined}
-            >
+          <div className="flex items-start justify-between gap-2">
+            <span className="xp-label shrink-0">{t('launcher.config.departure')}</span>
+            <span className="text-right font-mono text-xs text-primary">
               {startPosition ? `${startPosition.airport} ${startPosition.name}` : '—'}
             </span>
           </div>

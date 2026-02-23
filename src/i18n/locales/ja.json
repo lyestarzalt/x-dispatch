@@ -96,6 +96,7 @@
       "vatsim": "VATSIMライブトラフィックを表示",
       "launch": "選択した位置でX-Planeを起動",
       "launchDisabled": "最初に空港を選択してください",
+      "launchSelectPosition": "最初にゲート、滑走路、またはヘリポートを選択してください",
       "settings": "設定を開く"
     }
   },
@@ -516,6 +517,7 @@
       "timeOfDay": "時刻",
       "realWorldTime": "実時間",
       "coldAndDark": "コールド＆ダーク",
+      "startState": "開始状態",
       "weather": "天候",
       "fuel": "燃料",
       "summary": "概要",
@@ -523,7 +525,14 @@
       "livery": "塗装"
     },
 
+    "startState": {
+      "ready": "準備完了",
+      "cold": "コールド＆ダーク"
+    },
+
     "time": {
+      "live": "ライブ",
+      "set": "設定",
       "dawn": "夜明け",
       "day": "昼",
       "dusk": "夕暮れ",

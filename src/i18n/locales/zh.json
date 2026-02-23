@@ -96,6 +96,7 @@
       "vatsim": "显示VATSIM实时交通",
       "launch": "使用所选位置启动X-Plane",
       "launchDisabled": "请先选择一个机场",
+      "launchSelectPosition": "请先选择登机口、跑道或直升机坪",
       "settings": "打开设置"
     }
   },
@@ -516,6 +517,7 @@
       "timeOfDay": "时间",
       "realWorldTime": "真实时间",
       "coldAndDark": "冷舱启动",
+      "startState": "启动状态",
       "weather": "天气",
       "fuel": "燃油",
       "summary": "摘要",
@@ -523,7 +525,14 @@
       "livery": "涂装"
     },
 
+    "startState": {
+      "ready": "就绪",
+      "cold": "冷舱启动"
+    },
+
     "time": {
+      "live": "实时",
+      "set": "设置",
       "dawn": "黎明",
       "day": "白天",
       "dusk": "黄昏",

@@ -96,6 +96,7 @@
       "vatsim": "Show live VATSIM traffic",
       "launch": "Launch X-Plane with selected position",
       "launchDisabled": "Select an airport first",
+      "launchSelectPosition": "Select a gate or runway / Helipad first",
       "settings": "Open settings"
     }
   },
@@ -519,6 +520,7 @@
       "timeOfDay": "Time of Day",
       "realWorldTime": "Real World",
       "coldAndDark": "Cold & Dark",
+      "startState": "Start State",
       "weather": "Weather",
       "fuel": "Fuel",
       "summary": "Summary",
@@ -526,7 +528,16 @@
       "livery": "Livery"
     },
 
+    "startState": {
+      "ready": "Ready",
+      "cold": "Cold & Dark"
+    },
+
     "time": {
+      "live": "Live",
+      "set": "Set",
+      "now": "Now",
+      "custom": "Custom",
       "dawn": "Dawn",
       "day": "Day",
       "dusk": "Dusk",
