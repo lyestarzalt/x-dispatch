@@ -166,9 +166,32 @@ export function useMapSetup({
 }
 
 export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
-  // Colors
-  const COLOR_CUSTOM = '#f5c842'; // Bright gold star
-  const COLOR_DEFAULT = '#4a90d9'; // Standard blue
+  const COLOR_DEFAULT = '#4a90d9';
+
+  // Create pin beacon SVG for custom airports
+  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
+    <defs>
+      <linearGradient id="pinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#ffb347"/>
+        <stop offset="100%" style="stop-color:#e67e22"/>
+      </linearGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="M12 0C6.5 0 2 4.5 2 10c0 7.4 10 20 10 20s10-12.6 10-20c0-5.5-4.5-10-10-10z"
+          fill="url(#pinGrad)" stroke="#c0392b" stroke-width="1" filter="url(#glow)"/>
+    <circle cx="12" cy="10" r="4" fill="#fff" opacity="0.9"/>
+  </svg>`;
+
+  const pinImage = new Image();
+  pinImage.onload = () => {
+    if (!map.hasImage('custom-pin')) {
+      map.addImage('custom-pin', pinImage, { sdf: false });
+    }
+  };
+  pinImage.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(pinSvg);
 
   const features = airports.map((airport) => ({
     type: 'Feature' as const,
@@ -181,52 +204,20 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
     data: { type: 'FeatureCollection', features },
   });
 
-  // Filter expressions
   const filterCustom: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 1];
   const filterDefault: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 0];
 
-  // === CUSTOM AIRPORTS: Star glow layers ===
-
-  // Outer galaxy glow
-  map.addLayer({
-    id: 'airports-custom-glow-outer',
-    type: 'circle',
-    source: 'airports',
-    filter: filterCustom,
-    paint: {
-      'circle-color': COLOR_CUSTOM,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 8, 4, 14, 8, 20, 12, 28],
-      'circle-blur': 1,
-      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.2, 4, 0.25, 8, 0.35],
-    },
-  });
-
-  // Inner glow
-  map.addLayer({
-    id: 'airports-custom-glow-inner',
-    type: 'circle',
-    source: 'airports',
-    filter: filterCustom,
-    paint: {
-      'circle-color': COLOR_CUSTOM,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 4, 4, 8, 8, 12, 12, 16],
-      'circle-blur': 0.5,
-      'circle-opacity': 0.4,
-    },
-  });
-
-  // Custom airport core - white-gold with gold stroke
+  // === CUSTOM AIRPORTS: Pin beacon icon ===
   map.addLayer({
     id: 'airports-custom',
-    type: 'circle',
+    type: 'symbol',
     source: 'airports',
     filter: filterCustom,
-    paint: {
-      'circle-color': '#fffbe6',
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 3, 3, 6, 6, 10, 8, 14, 10],
-      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 0, 1.5, 4, 2, 8, 2.5],
-      'circle-stroke-color': COLOR_CUSTOM,
-      'circle-opacity': 1,
+    layout: {
+      'icon-image': 'custom-pin',
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 4, 0.6, 8, 0.8, 12, 1],
+      'icon-anchor': 'bottom',
+      'icon-allow-overlap': true,
     },
   });
 
