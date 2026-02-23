@@ -51,7 +51,10 @@ export async function loadGlobalAirports(xplanePath: string): Promise<GlobalAptL
     };
   }
 
-  logger.data.info(`Loading Global Airports from: ${globalPath}`);
+  // Get file size for logging
+  const fileStat = fs.statSync(globalPath);
+  const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
+  logger.data.info(`Loading Global Airports: ${globalPath} (${fileSizeMB}MB)`);
 
   const startTime = Date.now();
   const result = await scanAptFile(globalPath);

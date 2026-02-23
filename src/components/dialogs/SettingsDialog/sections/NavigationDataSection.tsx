@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
@@ -5,14 +6,17 @@ import {
   CheckCircle2,
   Database,
   Layers,
+  Loader2,
   MapPin,
   Navigation,
   Plane,
   Radio,
+  RefreshCw,
   Route,
   XCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -103,10 +107,25 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
   const { t } = useTranslation();
   const { data: loadingResult } = useLoadingStatus();
   const dataStatus = loadingResult?.status as SettingsDataLoadStatus | undefined;
+  const [isClearing, setIsClearing] = useState(false);
 
   const globalSource = dataStatus?.sources?.global;
   const isNavigraph = globalSource?.source === 'navigraph';
   const airportBreakdown = dataStatus?.airports?.breakdown;
+
+  const handleClearCache = async () => {
+    setIsClearing(true);
+    try {
+      await window.appAPI.clearCache();
+      // Trigger reload by starting loading again
+      await window.appAPI.startLoading();
+      // Reload page to refresh all data
+      window.location.reload();
+    } catch (error) {
+      window.appAPI.log.error('Failed to clear cache', error);
+      setIsClearing(false);
+    }
+  };
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -310,6 +329,39 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
           </CardContent>
         </Card>
       )}
+
+      {/* Cache Management */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <RefreshCw className="h-4 w-4" />
+            {t('settings.navigation.cacheManagement', 'Cache Management')}
+          </CardTitle>
+          <CardDescription>
+            {t(
+              'settings.navigation.cacheDescription',
+              'Clear cached data to force a full reload from X-Plane files'
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="outline"
+            onClick={handleClearCache}
+            disabled={isClearing}
+            className="gap-2"
+          >
+            {isClearing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {isClearing
+              ? t('settings.navigation.clearingCache', 'Clearing...')
+              : t('settings.navigation.clearCache', 'Clear Cache & Reload')}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

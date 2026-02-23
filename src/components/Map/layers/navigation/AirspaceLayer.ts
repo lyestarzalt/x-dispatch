@@ -26,6 +26,40 @@ function getLocalAirspaceStyle(airspaceClass: string) {
   return { color: style.border, dashed: DASHED_CLASSES.includes(airspaceClass) };
 }
 
+/**
+ * Check if airspace can be rendered (doesn't cross antimeridian).
+ * Polygons spanning > 180° longitude can't be rendered correctly in MapLibre.
+ */
+function isRenderable(airspace: Airspace): boolean {
+  if (airspace.coordinates.length < 3) return false;
+  const lons = airspace.coordinates.map((c) => c[0]);
+  return Math.max(...lons) - Math.min(...lons) <= 180;
+}
+
+/**
+ * Calculate signed area using Shoelace formula.
+ * Positive = clockwise, Negative = counter-clockwise
+ */
+function signedArea(coords: [number, number][]): number {
+  let sum = 0;
+  for (let i = 0; i < coords.length; i++) {
+    const [x1, y1] = coords[i];
+    const [x2, y2] = coords[(i + 1) % coords.length];
+    sum += x1 * y2 - x2 * y1;
+  }
+  return sum / 2;
+}
+
+/**
+ * Ensure polygon is wound counter-clockwise (GeoJSON exterior ring spec).
+ */
+function ensureCounterClockwise(coords: [number, number][]): [number, number][] {
+  if (signedArea(coords) > 0) {
+    return [...coords].reverse();
+  }
+  return coords;
+}
+
 // ============================================================================
 // Airspace Layer Renderer
 // ============================================================================
@@ -42,28 +76,26 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
   protected createGeoJSON(airspaces: Airspace[]): GeoJSON.FeatureCollection {
     return {
       type: 'FeatureCollection',
-      features: airspaces
-        .filter((a) => a.coordinates.length >= 3)
-        .map((airspace) => {
-          const style = getLocalAirspaceStyle(airspace.class);
-          return {
-            type: 'Feature' as const,
-            geometry: {
-              type: 'Polygon' as const,
-              coordinates: [airspace.coordinates],
-            },
-            properties: {
-              class: airspace.class,
-              name: airspace.name,
-              upperLimit: airspace.upperLimit,
-              lowerLimit: airspace.lowerLimit,
-              color: style.color,
-              dashed: style.dashed ? 1 : 0,
-              // For labeling
-              label: `${airspace.class} ${airspace.name}`,
-            },
-          };
-        }),
+      features: airspaces.filter(isRenderable).map((airspace) => {
+        const style = getLocalAirspaceStyle(airspace.class);
+        const coords = ensureCounterClockwise(airspace.coordinates);
+        return {
+          type: 'Feature' as const,
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+          properties: {
+            class: airspace.class,
+            name: airspace.name,
+            upperLimit: airspace.upperLimit,
+            lowerLimit: airspace.lowerLimit,
+            color: style.color,
+            dashed: style.dashed ? 1 : 0,
+            label: `${airspace.class} ${airspace.name}`,
+          },
+        };
+      }),
     };
   }
 
@@ -135,21 +167,23 @@ export class FIRLayerRenderer extends NavLayerRenderer<Airspace> {
   readonly additionalLayerIds = ['nav-global-airspace-labels'];
 
   protected createGeoJSON(airspaces: Airspace[]): GeoJSON.FeatureCollection {
-    const filtered = airspaces.filter((a) => a.coordinates.length >= 3);
     return {
       type: 'FeatureCollection',
-      features: filtered.map((airspace) => ({
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Polygon' as const,
-          coordinates: [airspace.coordinates],
-        },
-        properties: {
-          name: airspace.name,
-          class: airspace.class,
-          color: getAirspaceColor(airspace.class),
-        },
-      })),
+      features: airspaces.filter(isRenderable).map((airspace) => {
+        const coords = ensureCounterClockwise(airspace.coordinates);
+        return {
+          type: 'Feature' as const,
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+          properties: {
+            name: airspace.name,
+            class: airspace.class,
+            color: getAirspaceColor(airspace.class),
+          },
+        };
+      }),
     };
   }
 

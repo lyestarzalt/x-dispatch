@@ -102,7 +102,12 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
     };
   }
 
-  logger.data.info(`Navaids cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
+  // Get file size for logging
+  const fileStat = fs.statSync(navPath);
+  const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
+  logger.data.info(
+    `Navaids cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
+  );
 
   // Parse file
   const startTime = Date.now();
@@ -124,7 +129,20 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
   persistNavDatabase();
 
   const elapsed = Date.now() - startTime;
-  logger.data.info(`Loaded ${stats.parsed} navaids in ${elapsed}ms (insert: ${insertTime}ms)`);
+
+  // Count navaids by type for detailed logging
+  const typeCounts = new Map<string, number>();
+  for (const nav of data) {
+    typeCounts.set(nav.type, (typeCounts.get(nav.type) || 0) + 1);
+  }
+  const typeBreakdown = Array.from(typeCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => `${type}: ${count}`)
+    .join(', ');
+
+  logger.data.info(
+    `Loaded ${stats.parsed} navaids in ${elapsed}ms (insert: ${insertTime}ms) - ${typeBreakdown}`
+  );
 
   return { data, loaded: true, source: navPath, fromCache: false };
 }
@@ -159,7 +177,12 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
     };
   }
 
-  logger.data.info(`Waypoints cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
+  // Get file size for logging
+  const fileStat = fs.statSync(fixPath);
+  const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
+  logger.data.info(
+    `Waypoints cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
+  );
 
   // Parse file
   const startTime = Date.now();
@@ -216,7 +239,12 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
     };
   }
 
-  logger.data.info(`Airways cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
+  // Get file size for logging
+  const fileStat = fs.statSync(awyPath);
+  const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
+  logger.data.info(
+    `Airways cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
+  );
 
   // Parse file
   const startTime = Date.now();
@@ -279,7 +307,12 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
     logger.data.warn(`Airspaces cache metadata valid but table empty, forcing reload`);
   }
 
-  logger.data.info(`Airspaces cache stale (${cacheCheck.reason}), reloading from ${sourceType}`);
+  // Get file size for logging
+  const fileStat = fs.statSync(airspacePath);
+  const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
+  logger.data.info(
+    `Airspaces cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
+  );
 
   // Parse file
   const startTime = Date.now();

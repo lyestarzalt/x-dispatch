@@ -169,11 +169,19 @@ export function getAllAirportsFromDb(): Airport[] {
       lat: airports.lat,
       lon: airports.lon,
       type: airports.type,
+      sourceFile: airports.sourceFile,
     })
     .from(airports)
     .all();
 
-  return results as Airport[];
+  return results.map((r) => ({
+    icao: r.icao,
+    name: r.name,
+    lat: r.lat,
+    lon: r.lon,
+    type: r.type as Airport['type'],
+    isCustom: r.sourceFile?.includes('Custom Scenery') ?? false,
+  }));
 }
 
 /**

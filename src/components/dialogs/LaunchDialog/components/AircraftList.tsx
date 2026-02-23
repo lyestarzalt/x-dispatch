@@ -182,14 +182,14 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   ]);
 
   return (
-    <div className="flex w-[320px] min-w-[280px] flex-col border-r border-border bg-card lg:w-[360px]">
+    <div className="flex w-[320px] min-w-[280px] flex-col border-r border-border/50 bg-card lg:w-[360px]">
       {/* Section Header */}
-      <div className="flex-shrink-0 border-b border-border px-3 py-2">
+      <div className="flex-shrink-0 px-3 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.aircraft.title')}</h3>
       </div>
 
       {/* Filters */}
-      <div className="flex-shrink-0 space-y-2 border-b border-border p-2">
+      <div className="flex-shrink-0 space-y-2 p-2">
         {/* Search Row */}
         <div className="flex gap-2">
           <div className="relative flex-1">

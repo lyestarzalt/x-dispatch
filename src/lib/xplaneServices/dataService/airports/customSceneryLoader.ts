@@ -79,6 +79,7 @@ export async function loadCustomSceneryAirports(
   const aptFiles = findCustomSceneryAptFiles(xplanePath);
 
   if (aptFiles.length === 0) {
+    logger.data.debug('No Custom Scenery apt.dat files found');
     return {
       airports: new Map(),
       fileInfos: [],
@@ -87,7 +88,11 @@ export async function loadCustomSceneryAirports(
     };
   }
 
-  logger.data.info(`Found ${aptFiles.length} Custom Scenery apt.dat files`);
+  // Extract pack names from paths for logging
+  const packNames = aptFiles.map((f) => path.basename(path.dirname(path.dirname(f))));
+  logger.data.info(
+    `Found ${aptFiles.length} Custom Scenery packs with apt.dat: ${packNames.slice(0, 10).join(', ')}${packNames.length > 10 ? ` (+${packNames.length - 10} more)` : ''}`
+  );
 
   const airports = new Map<string, ParsedAirportEntry>();
   const fileInfos: AptFileInfo[] = [];

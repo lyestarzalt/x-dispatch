@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, FolderOpen } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
 import { useAppVersion, useConfigPath, useLogPath } from '@/queries';
 import type { SettingsSectionProps } from '../types';
@@ -17,6 +19,22 @@ export default function AboutSection({ className }: SettingsSectionProps) {
   const { data: version } = useAppVersion();
   const { data: logPath } = useLogPath();
   const { data: configPath } = useConfigPath();
+
+  // Crash reports setting (persisted in main process config)
+  const [sendCrashReports, setSendCrashReports] = useState(false);
+  const [isLoadingCrashReports, setIsLoadingCrashReports] = useState(true);
+
+  useEffect(() => {
+    window.appAPI.getSendCrashReports().then((enabled) => {
+      setSendCrashReports(enabled);
+      setIsLoadingCrashReports(false);
+    });
+  }, []);
+
+  const handleCrashReportsChange = async (enabled: boolean) => {
+    setSendCrashReports(enabled);
+    await window.appAPI.setSendCrashReports(enabled);
+  };
 
   const handleOpenExternal = (url: string) => {
     window.open(url, '_blank');
@@ -140,6 +158,27 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             </p>
           )}
         </div>
+      </div>
+
+      <Separator />
+
+      {/* Privacy */}
+      <div className="space-y-3">
+        <h3 className="xp-section-heading">{t('settings.about.privacy')}</h3>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">{t('settings.about.crashReports')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.about.crashReportsDescription')}
+            </p>
+          </div>
+          <Switch
+            checked={sendCrashReports}
+            onCheckedChange={handleCrashReportsChange}
+            disabled={isLoadingCrashReports}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
       </div>
     </div>
   );

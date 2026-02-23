@@ -60,8 +60,9 @@ export const useAppStore = create<AppState>()(
         selectedICAO: icao,
         selectedAirportData: data,
         showSidebar: true,
-        // Clear procedure when airport changes
+        // Clear procedure and start position when airport changes
         selectedProcedure: null,
+        startPosition: null,
       }),
 
     clearAirport: () =>

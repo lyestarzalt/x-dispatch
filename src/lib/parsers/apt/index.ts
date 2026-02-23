@@ -361,6 +361,8 @@ export class AirportParser {
     const airport: ParsedAirport = {
       id: '',
       name: '',
+      latitude: 0,
+      longitude: 0,
       elevation: 0,
       metadata: {},
       runways: [],

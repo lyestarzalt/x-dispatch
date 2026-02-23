@@ -41,6 +41,7 @@ import {
   loadWaypoints,
 } from './navdata';
 import {
+  clearAllNavData,
   createSqlCoordResolver,
   getAirspaceCount,
   getAirspacesNearPoint as getAirspacesNearPointSql,
@@ -1058,6 +1059,21 @@ export class XPlaneDataManager {
     db.delete(airports).run();
     db.delete(aptFileMeta).run();
     // Note: navaids/waypoints/airspaces/airways tables are cleared by navCache when reloading
+  }
+
+  /**
+   * Clear all cached data (airports + nav data) to force a full reload
+   */
+  clearCache(): void {
+    logger.data.info('Clearing all cached data...');
+
+    // Clear in-memory data
+    this.clear();
+
+    // Clear all nav data from database (navaids, waypoints, airways, airspaces)
+    clearAllNavData();
+
+    logger.data.info('Cache cleared successfully');
   }
 
   /**

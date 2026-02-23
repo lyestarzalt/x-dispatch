@@ -124,6 +124,7 @@
     "maplibre-gl": "^5.1.0",
     "metar-taf-parser": "^9.1.2",
     "react-i18next": "^16.5.3",
+    "sonner": "^2.0.7",
     "sql.js": "^1.13.0",
     "suncalc": "^1.9.0",
     "tailwind-merge": "^2.6.0",

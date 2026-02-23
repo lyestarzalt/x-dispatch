@@ -12,15 +12,10 @@ interface SunArcProps {
   onTimeChange: (time: number) => void;
 }
 
-function formatTimeInZone(hours: number, timezone: string): string {
-  const date = new Date();
-  date.setUTCHours(Math.floor(hours), Math.round((hours % 1) * 60), 0, 0);
-  return date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: timezone,
-    hour12: false,
-  });
+function formatHours(hours: number): string {
+  const h = Math.floor(hours) % 24;
+  const m = Math.round((hours % 1) * 60);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 function getHoursInTimezone(date: Date, timezone: string): number {
@@ -44,7 +39,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       timezone: tz,
       sunriseHours: getHoursInTimezone(times.sunrise, tz),
       sunsetHours: getHoursInTimezone(times.sunset, tz),
-      localTime: formatTimeInZone(timeOfDay, tz),
+      localTime: formatHours(timeOfDay),
       zuluTime: formatZulu(timeOfDay),
     };
   }, [latitude, longitude, timeOfDay]);
@@ -82,14 +77,14 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       <div className="flex justify-between text-xs">
         <div className="flex items-center gap-1 text-warning">
           <Sunrise className="h-3 w-3" />
-          <span>{formatTimeInZone(sunriseHours, timezone)}</span>
+          <span>{formatHours(sunriseHours)}</span>
         </div>
         <span className="text-muted-foreground">
           {timezone.split('/').pop()?.replace('_', ' ')}
         </span>
         <div className="flex items-center gap-1 text-warning">
           <Sunset className="h-3 w-3" />
-          <span>{formatTimeInZone(sunsetHours, timezone)}</span>
+          <span>{formatHours(sunsetHours)}</span>
         </div>
       </div>
     </div>
