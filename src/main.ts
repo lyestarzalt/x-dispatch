@@ -1,7 +1,8 @@
-import { BrowserWindow, Menu, app, dialog, ipcMain, net, session, shell } from 'electron';
+import { BrowserWindow, Menu, app, dialog, ipcMain, net, screen, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
+import * as os from 'os';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { initDb } from './lib/db';
@@ -33,6 +34,7 @@ app.name = 'X-Dispatch';
 let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
+const sessionStartTime = Date.now();
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
 
@@ -353,6 +355,7 @@ function registerIpcHandlers() {
   ipcMain.handle('get-airports', () => dataManager.getAllAirports());
   ipcMain.handle('get-airport-data', (_, icao: string) => {
     if (!isValidICAO(icao)) throw new Error('Invalid ICAO code');
+    logger.main.info(`[User] Airport selected: ${icao.toUpperCase()}`);
     return dataManager.getAirportData(icao.toUpperCase());
   });
 
@@ -514,7 +517,13 @@ function registerIpcHandlers() {
 
   ipcMain.handle('nav:getAirportProcedures', (_, icao: string): AirportProcedures | null => {
     if (!isValidICAO(icao)) return null;
-    return dataManager.getAirportProcedures(icao.toUpperCase());
+    const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
+    if (procedures) {
+      logger.main.info(
+        `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
+      );
+    }
+    return procedures;
   });
 
   // New navigation data handlers
@@ -685,11 +694,23 @@ function registerIpcHandlers() {
       return { success: false, error: 'Invalid launch configuration' };
     }
 
+    const launchConfig = config as LaunchConfig;
+    logger.launcher.info(
+      `[User] Launch attempt: ${launchConfig.aircraft.name} at ${launchConfig.startPosition.airport} ${launchConfig.startPosition.position}`
+    );
+
     try {
       const { getLauncher } = await getLauncherModule();
-      return await getLauncher(xplanePath).launch(config as LaunchConfig);
+      const result = await getLauncher(xplanePath).launch(launchConfig);
+      if (result.success) {
+        logger.launcher.info('[User] Launch successful');
+      } else {
+        logger.launcher.error(`[User] Launch failed: ${result.error}`);
+      }
+      return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      logger.launcher.error(`[User] Launch exception: ${message}`);
       return { success: false, error: message };
     }
   });
@@ -838,7 +859,21 @@ function registerIpcHandlers() {
 }
 
 app.whenReady().then(async () => {
+  // Environment snapshot for production support
+  const displays = screen.getAllDisplays();
+  const primaryDisplay = displays[0];
+  logger.main.info('════════════════════════════════════════════════════════════════');
   logger.main.info(`X-Dispatch v${app.getVersion()} starting`);
+  logger.main.info('════════════════════════════════════════════════════════════════');
+  logger.main.info(`OS: ${os.platform()} ${os.release()} (${os.arch()})`);
+  logger.main.info(
+    `System: ${os.cpus()[0]?.model || 'Unknown CPU'}, ${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB RAM`
+  );
+  logger.main.info(
+    `Display: ${displays.length} monitor(s), primary ${primaryDisplay?.size.width}x${primaryDisplay?.size.height}`
+  );
+  logger.main.info(`Locale: ${app.getLocale()}`);
+  logger.main.info(`Paths: userData=${app.getPath('userData')}`);
   logger.main.debug(`Log file: ${getLogPath()}`);
 
   if (app.isPackaged && process.platform === 'win32') {
@@ -885,7 +920,17 @@ app.whenReady().then(async () => {
 
   // If setup is complete, load cached data into memory
   if (isSetupComplete()) {
+    const xplanePath = dataManager.getXPlanePath();
+    logger.main.info(`X-Plane: ${xplanePath}`);
     dataManager.initFromCache();
+    const sources = dataManager.getDataSources();
+    if (sources?.global) {
+      logger.main.info(
+        `Nav Data: ${sources.global.source}${sources.global.cycle ? ` (AIRAC ${sources.global.cycle})` : ''}`
+      );
+    }
+  } else {
+    logger.main.info('X-Plane: Not configured (first run)');
   }
 
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
@@ -948,6 +993,12 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  // Session summary
+  const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000 / 60);
+  logger.main.info('════════════════════════════════════════════════════════════════');
+  logger.main.info(`Session ended - Duration: ${sessionDuration} minutes`);
+  logger.main.info('════════════════════════════════════════════════════════════════');
+
   // Close DB when app is actually quitting (handles macOS Cmd+Q)
   dataManager.close();
 });
