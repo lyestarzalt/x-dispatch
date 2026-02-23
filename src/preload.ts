@@ -73,6 +73,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
   startLoading: () => ipcRenderer.invoke('app:startLoading'),
   getLoadingStatus: () => ipcRenderer.invoke('app:getLoadingStatus'),
+  clearCache: () => ipcRenderer.invoke('app:clearCache'),
   onLoadingProgress: (callback: (progress: LoadingProgress) => void) => {
     const handler = (_event: IpcRendererEvent, progress: LoadingProgress) => callback(progress);
     ipcRenderer.on('loading-progress', handler);
@@ -221,6 +222,7 @@ declare global {
       getVersion: () => Promise<string>;
       startLoading: () => Promise<{ success: boolean; status?: DataLoadStatus; error?: string }>;
       getLoadingStatus: () => Promise<{ xplanePath: string | null; status: DataLoadStatus }>;
+      clearCache: () => Promise<{ success: boolean }>;
       onLoadingProgress: (callback: (progress: LoadingProgress) => void) => () => void;
       log: {
         error: (message: string, ...args: unknown[]) => void;

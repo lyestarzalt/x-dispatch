@@ -228,6 +228,10 @@
       "totalAirports": "Total Airports",
       "navDataSource": "Navigation Data Source",
       "navDataSourceDescription": "Navaids, waypoints, airways, procedures, and frequencies",
+      "cacheManagement": "Cache Management",
+      "cacheDescription": "Clear cached data to force a full reload from X-Plane files",
+      "clearCache": "Clear Cache & Reload",
+      "clearingCache": "Clearing...",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live air traffic from the VATSIM network",

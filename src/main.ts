@@ -146,6 +146,12 @@ function registerIpcHandlers() {
     status: dataManager.getStatus(),
   }));
 
+  ipcMain.handle('app:clearCache', () => {
+    logger.main.info('Clearing cache via IPC');
+    dataManager.clearCache();
+    return { success: true };
+  });
+
   ipcMain.handle('app:startLoading', async () => {
     if (isLoading) {
       return { success: false, error: 'Loading already in progress' };

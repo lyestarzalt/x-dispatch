@@ -97,7 +97,9 @@ export default function Map({ airports }: MapProps) {
   const mapStyleUrl = mapSettings.mapStyleUrl;
 
   // Refs for stable airport click callback (avoids circular dependency)
-  const renderAirportRef = useRef<((icao: string) => Promise<ParsedAirport | null>) | null>(null);
+  const renderAirportRef = useRef<
+    ((icao: string, center: [number, number]) => Promise<ParsedAirport | null>) | null
+  >(null);
   const startAnimationsRef = useRef<(() => void) | null>(null);
   const stopAnimationsRef = useRef<(() => void) | null>(null);
   const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
@@ -106,10 +108,10 @@ export default function Map({ airports }: MapProps) {
   const selectedICAORef = useRef<string | null>(null);
 
   // Stable callback for airport click - uses refs to access renderer functions
-  const handleAirportClick = useCallback(async (icao: string) => {
+  const handleAirportClick = useCallback(async (icao: string, coords: [number, number]) => {
     try {
       useMapStore.getState().setSelectedFeature(null);
-      const parsedAirport = await renderAirportRef.current?.(icao);
+      const parsedAirport = await renderAirportRef.current?.(icao, coords);
       if (parsedAirport) {
         useAppStore.getState().selectAirport(icao, parsedAirport);
         setTimeout(() => {
@@ -473,17 +475,10 @@ export default function Map({ airports }: MapProps) {
     };
   }, [mapRef, debugEnabled, handleFeatureClick]);
 
-  // Callbacks
   const selectAirport = useCallback(
     async (airport: Airport) => {
       setSelectedFeature(null);
-      mapRef.current?.flyTo({
-        center: [airport.lon, airport.lat],
-        zoom: 14,
-        duration: 2000,
-      });
-
-      const parsedAirport = await renderAirport(airport.icao);
+      const parsedAirport = await renderAirport(airport.icao, [airport.lon, airport.lat]);
       if (parsedAirport) {
         storeSelectAirport(airport.icao, parsedAirport);
         setTimeout(() => {

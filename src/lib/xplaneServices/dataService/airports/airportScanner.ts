@@ -7,7 +7,8 @@
  * - Row code 1: Land airport header
  * - Row code 16: Seaplane base header
  * - Row code 17: Heliport header
- * - Row code 100: Runway (used for fallback coordinates)
+ * - Row code 100: Land runway (used for fallback coordinates)
+ * - Row code 101: Water runway (used for fallback coordinates for seaplane bases)
  * - Row code 102: Helipad (used for fallback coordinates)
  * - Row code 1302: Airport metadata
  * - Row code 99: End of file
@@ -145,6 +146,22 @@ function parseHelipadCoords(line: string): { lat: number; lon: number } | null {
   const result = AirportCoordsSchema.safeParse({
     lat: parseFloat(parts[2]),
     lon: parseFloat(parts[3]),
+  });
+
+  return result.success ? result.data : null;
+}
+
+/**
+ * Parse water runway line (row code 101) for fallback coordinates
+ * Format: 101 width buoys num1 lat1 lon1 num2 lat2 lon2
+ */
+function parseWaterRunwayCoords(line: string): { lat: number; lon: number } | null {
+  const parts = line.split(/\s+/);
+  if (parts.length < 6) return null;
+
+  const result = AirportCoordsSchema.safeParse({
+    lat: parseFloat(parts[4]),
+    lon: parseFloat(parts[5]),
   });
 
   return result.success ? result.data : null;
@@ -312,6 +329,15 @@ export async function scanAptFile(aptPath: string): Promise<ScanResult> {
     // Runway (row code 100) - extract first runway coordinates as fallback
     if (line.startsWith('100 ') && !currentAirport.runwayLat) {
       const coords = parseRunwayCoords(line);
+      if (coords) {
+        currentAirport.runwayLat = coords.lat;
+        currentAirport.runwayLon = coords.lon;
+      }
+    }
+
+    // Water runway (row code 101) - extract coordinates as fallback for seaplane bases
+    if (line.startsWith('101 ') && !currentAirport.runwayLat) {
+      const coords = parseWaterRunwayCoords(line);
       if (coords) {
         currentAirport.runwayLat = coords.lat;
         currentAirport.runwayLon = coords.lon;
