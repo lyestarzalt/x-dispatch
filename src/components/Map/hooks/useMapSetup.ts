@@ -77,7 +77,7 @@ export type PopupRef = React.MutableRefObject<maplibregl.Popup | null>;
 interface UseMapSetupOptions {
   airports: Airport[];
   mapStyleUrl: string;
-  onAirportClick: (icao: string) => Promise<void>;
+  onAirportClick: (icao: string, coords: [number, number]) => Promise<void>;
 }
 
 interface UseMapSetupReturn {
@@ -138,7 +138,9 @@ export function useMapSetup({
       setupGlobeProjection(map);
       setup3DTerrain(map);
       setupAirportsLayer(map, airports);
-      setupAirportPopup(map, airportPopupRef, (icao: string) => onAirportClickRef.current(icao));
+      setupAirportPopup(map, airportPopupRef, (icao: string, coords: [number, number]) =>
+        onAirportClickRef.current(icao, coords)
+      );
       setupVatsimPopup(vatsimPopupRef);
       setupMapEvents(
         map,
@@ -164,10 +166,14 @@ export function useMapSetup({
 }
 
 export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
+  // Colors
+  const COLOR_CUSTOM = '#f5c842'; // Bright gold star
+  const COLOR_DEFAULT = '#4a90d9'; // Standard blue
+
   const features = airports.map((airport) => ({
     type: 'Feature' as const,
     geometry: { type: 'Point' as const, coordinates: [airport.lon, airport.lat] },
-    properties: { icao: airport.icao, name: airport.name },
+    properties: { icao: airport.icao, name: airport.name, isCustom: airport.isCustom ? 1 : 0 },
   }));
 
   map.addSource('airports', {
@@ -175,33 +181,87 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
     data: { type: 'FeatureCollection', features },
   });
 
+  // Filter expressions
+  const filterCustom: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 1];
+  const filterDefault: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 0];
+
+  // === CUSTOM AIRPORTS: Star glow layers ===
+
+  // Outer galaxy glow
+  map.addLayer({
+    id: 'airports-custom-glow-outer',
+    type: 'circle',
+    source: 'airports',
+    filter: filterCustom,
+    paint: {
+      'circle-color': COLOR_CUSTOM,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 8, 4, 14, 8, 20, 12, 28],
+      'circle-blur': 1,
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.2, 4, 0.25, 8, 0.35],
+    },
+  });
+
+  // Inner glow
+  map.addLayer({
+    id: 'airports-custom-glow-inner',
+    type: 'circle',
+    source: 'airports',
+    filter: filterCustom,
+    paint: {
+      'circle-color': COLOR_CUSTOM,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 4, 4, 8, 8, 12, 12, 16],
+      'circle-blur': 0.5,
+      'circle-opacity': 0.4,
+    },
+  });
+
+  // Custom airport core - white-gold with gold stroke
+  map.addLayer({
+    id: 'airports-custom',
+    type: 'circle',
+    source: 'airports',
+    filter: filterCustom,
+    paint: {
+      'circle-color': '#fffbe6',
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 3, 3, 6, 6, 10, 8, 14, 10],
+      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 0, 1.5, 4, 2, 8, 2.5],
+      'circle-stroke-color': COLOR_CUSTOM,
+      'circle-opacity': 1,
+    },
+  });
+
+  // === DEFAULT AIRPORTS: Subtle blue ===
+
+  // Default glow
   map.addLayer({
     id: 'airports-glow',
     type: 'circle',
     source: 'airports',
-    minzoom: 5,
+    filter: filterDefault,
     paint: {
-      'circle-color': '#4a90d9',
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 8],
+      'circle-color': COLOR_DEFAULT,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 5, 4, 8, 6, 12, 8],
       'circle-blur': 0.6,
-      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.1, 8, 0.2],
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.05, 5, 0.1, 8, 0.2],
     },
   });
 
+  // Default airport dots
   map.addLayer({
     id: 'airports',
     type: 'circle',
     source: 'airports',
-    minzoom: 4,
+    filter: filterDefault,
     paint: {
-      'circle-color': '#4a90d9',
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 1.5, 6, 3, 10, 5, 14, 6],
-      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 4, 0.5, 8, 1],
+      'circle-color': COLOR_DEFAULT,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 3, 1, 6, 3, 10, 5, 14, 6],
+      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 0, 0, 4, 0.5, 8, 1],
       'circle-stroke-color': '#ffffff',
-      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.6, 6, 0.9, 8, 1],
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 4, 0.6, 6, 0.9, 8, 1],
     },
   });
 
+  // Labels - appear at zoom 6+
   map.addLayer({
     id: 'airport-labels',
     type: 'symbol',
@@ -217,20 +277,19 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
       'text-ignore-placement': false,
     },
     paint: {
-      'text-color': '#cccccc',
+      'text-color': ['case', ['==', ['get', 'isCustom'], 1], '#e8c36a', '#cccccc'],
       'text-halo-color': '#000000',
       'text-halo-width': 1,
     },
   });
 
-  // Hitbox layer for easier clicking
+  // Hitbox layer for easier clicking - visible at all zoom levels
   map.addLayer({
     id: 'airports-hitbox',
     type: 'circle',
     source: 'airports',
-    minzoom: 4,
     paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 10, 6, 14, 10, 18, 14, 22],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 4, 10, 6, 14, 10, 18, 14, 22],
       'circle-color': 'transparent',
       'circle-opacity': 0,
     },
@@ -240,7 +299,7 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
 export function setupAirportPopup(
   map: maplibregl.Map,
   popupRef: PopupRef,
-  onAirportClick: (icao: string) => Promise<void>
+  onAirportClick: (icao: string, coords: [number, number]) => Promise<void>
 ) {
   popupRef.current = new maplibregl.Popup({
     closeButton: false,
@@ -274,7 +333,8 @@ export function setupAirportPopup(
     if (!feature?.properties?.icao) return;
     if (feature.geometry.type !== 'Point') return;
     const icao = feature.properties.icao as string;
-    await onAirportClick(icao);
+    const coords = feature.geometry.coordinates.slice() as [number, number];
+    await onAirportClick(icao, coords);
   });
 }
 

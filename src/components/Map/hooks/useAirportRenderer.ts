@@ -4,7 +4,7 @@ import { AirportParser } from '@/lib/parsers/apt';
 import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
-import { calculateAirportCenter, calculateOptimalZoom } from '../utils/zoomCalculator';
+import { calculateOptimalZoom } from '../utils/zoomCalculator';
 
 // Map layer IDs to visibility keys
 // NOTE: Taxiway lights are now rendered via deck.gl overlay, not MapLibre layers
@@ -36,7 +36,7 @@ const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
 };
 
 interface UseAirportRendererResult {
-  renderAirport: (icao: string) => Promise<ParsedAirport | null>;
+  renderAirport: (icao: string, center: [number, number]) => Promise<ParsedAirport | null>;
   clearAirport: () => void;
   selectedAirport: React.MutableRefObject<string | null>;
   setLayerVisibility: (visibility: LayerVisibility) => void;
@@ -70,11 +70,8 @@ export function useAirportRenderer(
     selectedAirport.current = null;
   }, [map]);
 
-  /**
-   * Render airport features on the map
-   */
   const renderAirport = useCallback(
-    async (icao: string): Promise<ParsedAirport | null> => {
+    async (icao: string, center: [number, number]): Promise<ParsedAirport | null> => {
       if (!map.current) return null;
 
       if (selectedAirport.current === icao) {
@@ -103,7 +100,6 @@ export function useAirportRenderer(
       }
 
       const optimalZoom = calculateOptimalZoom(parsedAirport.runways);
-      const center = calculateAirportCenter(parsedAirport.runways, parsedAirport.metadata);
 
       map.current.flyTo({
         center,
