@@ -26,6 +26,31 @@ function getLocalAirspaceStyle(airspaceClass: string) {
   return { color: style.border, dashed: DASHED_CLASSES.includes(airspaceClass) };
 }
 
+/**
+ * Calculate signed area of polygon (Shoelace formula)
+ * Positive = counter-clockwise, Negative = clockwise
+ */
+function signedArea(coords: [number, number][]): number {
+  let sum = 0;
+  for (let i = 0; i < coords.length; i++) {
+    const [x1, y1] = coords[i];
+    const [x2, y2] = coords[(i + 1) % coords.length];
+    sum += (x2 - x1) * (y2 + y1);
+  }
+  return sum / 2;
+}
+
+/**
+ * Ensure polygon is wound counter-clockwise (GeoJSON exterior ring requirement)
+ * Prevents "inverted" polygons that fill the entire globe
+ */
+function ensureCounterClockwise(coords: [number, number][]): [number, number][] {
+  if (signedArea(coords) > 0) {
+    return [...coords].reverse();
+  }
+  return coords;
+}
+
 // ============================================================================
 // Airspace Layer Renderer
 // ============================================================================
@@ -46,11 +71,12 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
         .filter((a) => a.coordinates.length >= 3)
         .map((airspace) => {
           const style = getLocalAirspaceStyle(airspace.class);
+          const coords = ensureCounterClockwise(airspace.coordinates);
           return {
             type: 'Feature' as const,
             geometry: {
               type: 'Polygon' as const,
-              coordinates: [airspace.coordinates],
+              coordinates: [coords],
             },
             properties: {
               class: airspace.class,
@@ -59,7 +85,6 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
               lowerLimit: airspace.lowerLimit,
               color: style.color,
               dashed: style.dashed ? 1 : 0,
-              // For labeling
               label: `${airspace.class} ${airspace.name}`,
             },
           };
@@ -138,18 +163,21 @@ export class FIRLayerRenderer extends NavLayerRenderer<Airspace> {
     const filtered = airspaces.filter((a) => a.coordinates.length >= 3);
     return {
       type: 'FeatureCollection',
-      features: filtered.map((airspace) => ({
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Polygon' as const,
-          coordinates: [airspace.coordinates],
-        },
-        properties: {
-          name: airspace.name,
-          class: airspace.class,
-          color: getAirspaceColor(airspace.class),
-        },
-      })),
+      features: filtered.map((airspace) => {
+        const coords = ensureCounterClockwise(airspace.coordinates);
+        return {
+          type: 'Feature' as const,
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [coords],
+          },
+          properties: {
+            name: airspace.name,
+            class: airspace.class,
+            color: getAirspaceColor(airspace.class),
+          },
+        };
+      }),
     };
   }
 
