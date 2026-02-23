@@ -136,12 +136,12 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   }, [selectedAircraft, fuelPercentage]);
 
   return (
-    <div className="flex w-64 min-w-[240px] flex-col border-l border-border bg-card lg:w-72">
-      <div className="flex-shrink-0 border-b border-border px-4 py-2">
+    <div className="flex w-64 min-w-[240px] flex-col border-l border-border/50 bg-card lg:w-72">
+      <div className="flex-shrink-0 px-4 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-auto p-4">
+      <div className="flex-1 space-y-4 overflow-auto px-4 pb-4">
         {/* Time of Day */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between">
@@ -317,7 +317,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
       </div>
 
       {/* Launch button */}
-      <div className="flex-shrink-0 border-t p-3">
+      <div className="flex-shrink-0 p-3">
         <Button
           onClick={onLaunch}
           disabled={!selectedAircraft || !startPosition || isLaunching}
