@@ -5,15 +5,25 @@ import { init as reactInit } from '@sentry/react';
 import App from './App';
 import './index.css';
 
-sentryInit(
-  {
-    dsn: 'https://93939f3ad736f402a616188303a369cf@o4510928623173632.ingest.de.sentry.io/4510928631365712',
-  },
-  reactInit
-);
+// Initialize app - check crash reports setting first
+(async () => {
+  try {
+    const sendCrashReports = await window.appAPI.getSendCrashReports();
+    if (sendCrashReports) {
+      sentryInit(
+        {
+          dsn: 'https://93939f3ad736f402a616188303a369cf@o4510928623173632.ingest.de.sentry.io/4510928631365712',
+        },
+        reactInit
+      );
+    }
+  } catch {
+    // Config not available yet (first run), skip Sentry
+  }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+  ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+})();

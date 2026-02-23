@@ -127,7 +127,11 @@
       "logFile": "Protokolldatei",
       "openDataFolder": "Datenordner öffnen",
       "openLog": "Protokoll öffnen",
-      "openLogFolder": "Im Ordner anzeigen"
+      "openLogFolder": "Im Ordner anzeigen",
+      "privacy": "Datenschutz",
+      "crashReports": "Absturzberichte senden",
+      "crashReportsDescription": "Helfen Sie, X-Dispatch zu verbessern, indem Sie automatisch Absturzberichte senden",
+      "crashReportsNote": "Neustart erforderlich. Es werden keine persönlichen Daten erfasst."
     },
     "xplane": {
       "title": "X-Plane Installation",

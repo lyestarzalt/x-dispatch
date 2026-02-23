@@ -170,7 +170,11 @@
       "logFile": "ログファイル",
       "openDataFolder": "データフォルダを開く",
       "openLog": "ログファイルを開く",
-      "openLogFolder": "フォルダで表示"
+      "openLogFolder": "フォルダで表示",
+      "privacy": "プライバシー",
+      "crashReports": "クラッシュレポートを送信",
+      "crashReportsDescription": "クラッシュレポートを自動送信してX-Dispatchの改善に協力",
+      "crashReportsNote": "再起動が必要です。個人データは収集されません。"
     },
     "xplane": {
       "title": "X-Planeインストール",

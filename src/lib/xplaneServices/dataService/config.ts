@@ -7,6 +7,8 @@ interface XPlaneConfig {
   xplanePath: string;
   version: number;
   lastUpdated: string;
+  /** Whether to send crash reports to Sentry (opt-in, default false) */
+  sendCrashReports?: boolean;
 }
 
 const CONFIG_VERSION = 1;
@@ -68,9 +70,10 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
     const existing = loadConfig();
 
     const newConfig: XPlaneConfig = {
-      xplanePath: config.xplanePath || existing?.xplanePath || '',
+      xplanePath: config.xplanePath ?? existing?.xplanePath ?? '',
       version: CONFIG_VERSION,
       lastUpdated: new Date().toISOString(),
+      sendCrashReports: config.sendCrashReports ?? existing?.sendCrashReports ?? true,
     };
 
     fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
@@ -110,4 +113,19 @@ export function setXPlanePath(xplanePath: string): { success: boolean; errors: s
   }
 
   return { success: true, errors: [] };
+}
+
+/**
+ * Get crash reports setting (opt-out, default true)
+ */
+export function getSendCrashReports(): boolean {
+  const config = loadConfig();
+  return config?.sendCrashReports ?? true;
+}
+
+/**
+ * Set crash reports setting
+ */
+export function setSendCrashReports(enabled: boolean): boolean {
+  return saveConfig({ sendCrashReports: enabled });
 }

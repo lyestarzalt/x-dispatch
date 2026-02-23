@@ -127,7 +127,11 @@
       "logFile": "Fichier journal",
       "openDataFolder": "Ouvrir le dossier de données",
       "openLog": "Ouvrir le journal",
-      "openLogFolder": "Afficher dans le dossier"
+      "openLogFolder": "Afficher dans le dossier",
+      "privacy": "Confidentialité",
+      "crashReports": "Envoyer les rapports de plantage",
+      "crashReportsDescription": "Aidez à améliorer X-Dispatch en envoyant automatiquement les rapports de plantage",
+      "crashReportsNote": "Redémarrage requis. Aucune donnée personnelle n'est collectée."
     },
     "xplane": {
       "title": "Installation X-Plane",

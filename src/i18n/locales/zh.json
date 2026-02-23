@@ -170,7 +170,11 @@
       "logFile": "日志文件",
       "openDataFolder": "打开数据文件夹",
       "openLog": "打开日志文件",
-      "openLogFolder": "在文件夹中显示"
+      "openLogFolder": "在文件夹中显示",
+      "privacy": "隐私",
+      "crashReports": "发送崩溃报告",
+      "crashReportsDescription": "通过自动发送崩溃报告帮助改进 X-Dispatch",
+      "crashReportsNote": "需要重启。不收集任何个人数据。"
     },
     "xplane": {
       "title": "X-Plane 安装",

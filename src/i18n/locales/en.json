@@ -170,7 +170,11 @@
       "logFile": "Log File",
       "openDataFolder": "Open data folder",
       "openLog": "Open log file",
-      "openLogFolder": "Show in folder"
+      "openLogFolder": "Show in folder",
+      "privacy": "Privacy",
+      "crashReports": "Send crash reports",
+      "crashReportsDescription": "Help improve X-Dispatch by automatically sending crash reports",
+      "crashReportsNote": "Restart required for changes to take effect. No personal data is collected."
     },
     "xplane": {
       "title": "X-Plane Installation",

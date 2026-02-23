@@ -170,7 +170,11 @@
       "logFile": "File di log",
       "openDataFolder": "Apri cartella dati",
       "openLog": "Apri file di log",
-      "openLogFolder": "Mostra nella cartella"
+      "openLogFolder": "Mostra nella cartella",
+      "privacy": "Privacy",
+      "crashReports": "Invia rapporti sugli errori",
+      "crashReportsDescription": "Aiuta a migliorare X-Dispatch inviando automaticamente rapporti sugli errori",
+      "crashReportsNote": "Richiede riavvio. Nessun dato personale viene raccolto."
     },
     "xplane": {
       "title": "Installazione X-Plane",

@@ -170,7 +170,11 @@
       "logFile": "Файл журнала",
       "openDataFolder": "Открыть папку данных",
       "openLog": "Открыть файл журнала",
-      "openLogFolder": "Показать в папке"
+      "openLogFolder": "Показать в папке",
+      "privacy": "Конфиденциальность",
+      "crashReports": "Отправлять отчёты об ошибках",
+      "crashReportsDescription": "Помогите улучшить X-Dispatch, автоматически отправляя отчёты об ошибках",
+      "crashReportsNote": "Требуется перезапуск. Личные данные не собираются."
     },
     "xplane": {
       "title": "Установка X-Plane",

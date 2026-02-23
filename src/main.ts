@@ -17,14 +17,31 @@ import {
   validateCoordinates,
 } from './lib/utils/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
+import { getSendCrashReports, setSendCrashReports } from './lib/xplaneServices/dataService/config';
 import type { LaunchConfig } from './types/aircraft';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
-Sentry.init({
-  dsn: 'https://93939f3ad736f402a616188303a369cf@o4510928623173632.ingest.de.sentry.io/4510928631365712',
-  environment: app.isPackaged ? 'production' : 'development',
-  release: `x-dispatch@${app.getVersion()}`,
-});
+// This reads config.json directly since getSendCrashReports() uses app.getPath which works before ready
+const shouldInitSentry = (() => {
+  try {
+    const configPath = path.join(app.getPath('userData'), 'config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return config.sendCrashReports ?? true; // Default: enabled (opt-out)
+    }
+    return true; // Default for new installs
+  } catch {
+    return true; // Default on error
+  }
+})();
+
+if (shouldInitSentry) {
+  Sentry.init({
+    dsn: 'https://93939f3ad736f402a616188303a369cf@o4510928623173632.ingest.de.sentry.io/4510928631365712',
+    environment: app.isPackaged ? 'production' : 'development',
+    release: `x-dispatch@${app.getVersion()}`,
+  });
+}
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (process.platform === 'win32' && require('electron-squirrel-startup')) app.quit();
@@ -142,6 +159,14 @@ function registerIpcHandlers() {
   ipcMain.handle('app:getConfigPath', () => app.getPath('userData'));
   ipcMain.handle('app:openConfigFolder', () => {
     shell.openPath(app.getPath('userData'));
+  });
+  ipcMain.handle('app:getSendCrashReports', () => getSendCrashReports());
+  ipcMain.handle('app:setSendCrashReports', (_, enabled: boolean) => {
+    const success = setSendCrashReports(enabled);
+    if (success) {
+      logger.main.info(`Crash reporting ${enabled ? 'enabled' : 'disabled'} by user`);
+    }
+    return success;
   });
   ipcMain.handle('app:getLoadingStatus', () => ({
     xplanePath: dataManager.getXPlanePath(),
@@ -875,6 +900,9 @@ app.whenReady().then(async () => {
   logger.main.info(`Locale: ${app.getLocale()}`);
   logger.main.info(`Paths: userData=${app.getPath('userData')}`);
   logger.main.debug(`Log file: ${getLogPath()}`);
+
+  // Log crash reporting status (Sentry already initialized at module load)
+  logger.main.info(`Crash reporting: ${shouldInitSentry ? 'enabled' : 'disabled'}`);
 
   if (app.isPackaged && process.platform === 'win32') {
     try {
