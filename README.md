@@ -87,6 +87,13 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 
 </details>
 
+<details>
+<summary>Flight Plan</summary>
+
+![Flight Plan](screenshots/flight-plan.png)
+
+</details>
+
 ## Features
 
 ### Airport Visualization
