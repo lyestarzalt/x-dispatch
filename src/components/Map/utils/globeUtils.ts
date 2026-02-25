@@ -41,6 +41,12 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     maxzoom: 15,
   });
 
+  // TODO: Replace TerrainControl with custom SafeTerrainControl
+  // Issue: MapLibre's built-in TerrainControl calls map.setTerrain() internally
+  // when user clicks the button. If map is mid-render, this crashes with:
+  // "TypeError: Cannot read properties of undefined (reading 'key')"
+  // in _updateRetainedTiles during DEM tile loading.
+  // Fix: Create custom control that checks map.isStyleLoaded() before toggling terrain.
   map.addControl(
     new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1 }),
     'bottom-left'
