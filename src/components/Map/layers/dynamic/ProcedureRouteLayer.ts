@@ -500,11 +500,20 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
   ];
   const sources = [WAYPOINT_SOURCE_ID, ROUTE_SOURCE_ID];
 
-  for (const layerId of layers) {
-    if (map.getLayer(layerId)) map.removeLayer(layerId);
-  }
-  for (const sourceId of sources) {
-    if (map.getSource(sourceId)) map.removeSource(sourceId);
+  const doRemove = () => {
+    for (const layerId of layers) {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+    }
+    for (const sourceId of sources) {
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    }
+  };
+
+  // Defer removal if map is mid-render to prevent crash
+  if (!map.isStyleLoaded()) {
+    map.once('idle', doRemove);
+  } else {
+    doRemove();
   }
 }
 

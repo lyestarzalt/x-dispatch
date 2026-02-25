@@ -146,12 +146,22 @@ export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | nul
 
 export function removePlaneLayer(map: maplibregl.Map | null | undefined): void {
   if (!map) return;
-  try {
-    if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-    if (map.getLayer(`${LAYER_ID}-glow`)) map.removeLayer(`${LAYER_ID}-glow`);
-    if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-  } catch {
-    // Map might be in invalid state during unmount
+
+  const doRemove = () => {
+    try {
+      if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
+      if (map.getLayer(`${LAYER_ID}-glow`)) map.removeLayer(`${LAYER_ID}-glow`);
+      if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+    } catch {
+      // Map might be in invalid state during unmount
+    }
+  };
+
+  // Defer removal if map is mid-render to prevent crash
+  if (!map.isStyleLoaded()) {
+    map.once('idle', doRemove);
+  } else {
+    doRemove();
   }
 }
 

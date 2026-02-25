@@ -129,6 +129,15 @@ export function updateRouteLine(
 }
 
 export function removeRouteLineLayer(map: Map): void {
-  if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-  if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+  const doRemove = () => {
+    if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
+    if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+  };
+
+  // Defer removal if map is mid-render to prevent crash
+  if (!map.isStyleLoaded()) {
+    map.once('idle', doRemove);
+  } else {
+    doRemove();
+  }
 }

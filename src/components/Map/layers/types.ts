@@ -1,7 +1,8 @@
 import maplibregl from 'maplibre-gl';
 
 /**
- * Helper to safely remove layers and source
+ * Helper to safely remove layers and source.
+ * Defers removal if map is mid-render to prevent MapLibre crash.
  */
 export function removeLayersAndSource(
   map: maplibregl.Map,
@@ -9,23 +10,32 @@ export function removeLayersAndSource(
   sourceId: string,
   additionalLayerIds?: string[]
 ): void {
-  // Remove additional layers first
-  if (additionalLayerIds) {
-    for (const id of additionalLayerIds) {
-      if (map.getLayer(id)) {
-        map.removeLayer(id);
+  const doRemove = () => {
+    // Remove additional layers first
+    if (additionalLayerIds) {
+      for (const id of additionalLayerIds) {
+        if (map.getLayer(id)) {
+          map.removeLayer(id);
+        }
       }
     }
-  }
 
-  // Remove main layer
-  if (map.getLayer(layerId)) {
-    map.removeLayer(layerId);
-  }
+    // Remove main layer
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
 
-  // Remove source
-  if (map.getSource(sourceId)) {
-    map.removeSource(sourceId);
+    // Remove source
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId);
+    }
+  };
+
+  // If map is not loaded or mid-render, defer to next frame
+  if (!map.isStyleLoaded()) {
+    map.once('idle', doRemove);
+  } else {
+    doRemove();
   }
 }
 

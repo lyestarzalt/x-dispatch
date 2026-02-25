@@ -206,12 +206,21 @@ export function addVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]):
 }
 
 export function removeVatsimPilotLayer(map: maplibregl.Map): void {
-  if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
-  if (map.getLayer(PILOT_LAYER_ID)) map.removeLayer(PILOT_LAYER_ID);
-  if (map.getLayer(`${PILOT_LAYER_ID}-glow`)) map.removeLayer(`${PILOT_LAYER_ID}-glow`);
-  if (map.getLayer(TRAIL_LAYER_ID)) map.removeLayer(TRAIL_LAYER_ID);
-  if (map.getSource(PILOT_SOURCE_ID)) map.removeSource(PILOT_SOURCE_ID);
-  if (map.getSource(TRAIL_SOURCE_ID)) map.removeSource(TRAIL_SOURCE_ID);
+  const doRemove = () => {
+    if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
+    if (map.getLayer(PILOT_LAYER_ID)) map.removeLayer(PILOT_LAYER_ID);
+    if (map.getLayer(`${PILOT_LAYER_ID}-glow`)) map.removeLayer(`${PILOT_LAYER_ID}-glow`);
+    if (map.getLayer(TRAIL_LAYER_ID)) map.removeLayer(TRAIL_LAYER_ID);
+    if (map.getSource(PILOT_SOURCE_ID)) map.removeSource(PILOT_SOURCE_ID);
+    if (map.getSource(TRAIL_SOURCE_ID)) map.removeSource(TRAIL_SOURCE_ID);
+  };
+
+  // Defer removal if map is mid-render to prevent crash
+  if (!map.isStyleLoaded()) {
+    map.once('idle', doRemove);
+  } else {
+    doRemove();
+  }
 }
 
 export function updateVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]): void {
