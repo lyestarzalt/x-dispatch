@@ -147,14 +147,24 @@ export function useAirportRenderer(
     if (!map.current) return;
 
     let phase = 0;
+    let lastFrameTime = 0;
+
     const animate = () => {
       if (!map.current || !animationsEnabled.current) {
         animationFrameRef.current = null;
         return;
       }
 
-      // phase increments at ~60fps, so 0.016 per frame = ~1 second per 60 frames
-      phase += 0.016;
+      // Throttle to ~30fps to avoid overwhelming MapLibre's render loop
+      const now = performance.now();
+      if (now - lastFrameTime < 33) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrameTime = now;
+
+      // phase increments at ~30fps, so 0.033 per frame
+      phase += 0.033;
 
       try {
         // Approach lights "rabbit" effect
