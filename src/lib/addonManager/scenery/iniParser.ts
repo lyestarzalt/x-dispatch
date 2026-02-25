@@ -25,7 +25,14 @@ export function parseSceneryPacksIni(
     return err({ code: 'INI_NOT_FOUND', path: iniPath });
   }
 
-  const content = fs.readFileSync(iniPath, 'utf-8');
+  let content: string;
+  try {
+    content = fs.readFileSync(iniPath, 'utf-8');
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return err({ code: 'INI_PARSE_ERROR', line: 0, content: message });
+  }
+
   const lines = content.split('\n');
   const entries: ParsedIniEntry[] = [];
 
@@ -135,9 +142,12 @@ export function writeSceneryPacksIni(
   }
 }
 
+const MAX_BACKUPS = 10;
+
 /**
  * Create a backup of scenery_packs.ini.
  * Returns the backup file path.
+ * Automatically cleans up old backups, keeping only the last MAX_BACKUPS.
  */
 export function backupSceneryPacksIni(
   iniPath: string,
@@ -158,9 +168,37 @@ export function backupSceneryPacksIni(
     const backupPath = path.join(backupDir, `scenery_packs_${timestamp}.ini`);
 
     fs.copyFileSync(iniPath, backupPath);
+
+    // Cleanup old backups - keep only last MAX_BACKUPS
+    cleanupOldBackups(backupDir);
+
     return ok(backupPath);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return err({ code: 'BACKUP_FAILED', reason: message });
+  }
+}
+
+/**
+ * Remove old backups, keeping only the most recent MAX_BACKUPS files.
+ */
+function cleanupOldBackups(backupDir: string): void {
+  try {
+    const files = fs
+      .readdirSync(backupDir)
+      .filter((f) => f.startsWith('scenery_packs_') && f.endsWith('.ini'))
+      .map((f) => ({
+        name: f,
+        path: path.join(backupDir, f),
+        mtime: fs.statSync(path.join(backupDir, f)).mtime.getTime(),
+      }))
+      .sort((a, b) => b.mtime - a.mtime); // Newest first
+
+    // Delete all but the newest MAX_BACKUPS
+    for (let i = MAX_BACKUPS; i < files.length; i++) {
+      fs.unlinkSync(files[i].path);
+    }
+  } catch {
+    // Ignore cleanup errors - not critical
   }
 }
