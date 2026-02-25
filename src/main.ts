@@ -873,6 +873,16 @@ function registerIpcHandlers() {
     }
   });
 
+  ipcMain.handle('xplaneService:forceReconnect', async () => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      getXPlaneService().forceReconnect();
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
   ipcMain.handle('xplaneService:isStreamConnected', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();

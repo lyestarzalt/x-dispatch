@@ -136,6 +136,35 @@ export class XPlaneWebSocketClient {
     return this.port;
   }
 
+  /**
+   * Force reconnect - closes existing connection and reconnects fresh.
+   * Clears all cached state to ensure fresh data from simulator.
+   */
+  forceReconnect(): void {
+    logger.tracker.info('Force reconnect requested');
+
+    // Clear any pending reconnect
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+
+    // Close existing connection
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+
+    // Clear all cached state
+    this.currentState = {};
+    this.isConnecting = false;
+
+    // Reconnect immediately if we should be connected
+    if (this.shouldReconnect && this.onStateUpdate) {
+      this.resolveDatarefsAndConnect();
+    }
+  }
+
   private createConnection(): void {
     if (this.isConnecting) return;
     this.isConnecting = true;
@@ -168,6 +197,8 @@ export class XPlaneWebSocketClient {
       this.ws.on('close', () => {
         this.isConnecting = false;
         this.ws = null;
+        // Clear stale state on disconnect to prevent showing old position on reconnect
+        this.currentState = {};
         logger.tracker.debug('WebSocket disconnected');
         this.onConnectionChange?.(false);
         this.scheduleReconnect();

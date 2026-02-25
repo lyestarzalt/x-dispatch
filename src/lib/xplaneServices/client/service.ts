@@ -62,6 +62,10 @@ export class XPlaneService {
     this.wsClient.disconnect();
   }
 
+  forceReconnect(): void {
+    this.wsClient.forceReconnect();
+  }
+
   isStreamConnected(): boolean {
     return this.wsClient.isConnected();
   }

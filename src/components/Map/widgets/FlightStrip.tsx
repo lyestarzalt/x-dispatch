@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Crosshair, Plane, WifiOff } from 'lucide-react';
+import { Crosshair, Plane, RefreshCw, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils/helpers';
@@ -10,6 +10,7 @@ interface FlightStripProps {
   planeState: Partial<PlaneState> | null;
   connected: boolean;
   onCenterPlane: () => void;
+  onReconnect?: () => void;
 }
 
 function formatValue(value: number | undefined, decimals = 0): string {
@@ -30,7 +31,12 @@ function formatVS(vs: number | undefined): string {
   return rounded > 0 ? `+${rounded}` : `${rounded}`;
 }
 
-export default function FlightStrip({ planeState, connected, onCenterPlane }: FlightStripProps) {
+export default function FlightStrip({
+  planeState,
+  connected,
+  onCenterPlane,
+  onReconnect,
+}: FlightStripProps) {
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
 
@@ -41,6 +47,18 @@ export default function FlightStrip({ planeState, connected, onCenterPlane }: Fl
         <Card className="flex h-10 items-center gap-2 border-destructive/50 px-4">
           <WifiOff className="h-4 w-4 text-destructive" />
           <span className="text-sm text-muted-foreground">{t('flightStrip.notDetected')}</span>
+          {onReconnect && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onReconnect}
+              className="ml-2 h-7 gap-1.5 text-xs"
+              title={t('flightStrip.reconnectTooltip')}
+            >
+              <RefreshCw className="h-3 w-3" />
+              {t('flightStrip.reconnect')}
+            </Button>
+          )}
         </Card>
       </div>
     );

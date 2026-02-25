@@ -204,6 +204,7 @@ contextBridge.exposeInMainWorld('xplaneServiceAPI', {
   // WebSocket streaming
   startStateStream: () => ipcRenderer.invoke('xplaneService:startStateStream'),
   stopStateStream: () => ipcRenderer.invoke('xplaneService:stopStateStream'),
+  forceReconnect: () => ipcRenderer.invoke('xplaneService:forceReconnect'),
   isStreamConnected: () => ipcRenderer.invoke('xplaneService:isStreamConnected'),
   onStateUpdate: (callback: (state: PlaneState) => void) => {
     const listener = (_: IpcRendererEvent, state: PlaneState) => callback(state);
@@ -351,6 +352,7 @@ declare global {
       ) => Promise<{ success: boolean; error?: string }>;
       startStateStream: () => Promise<XPlaneAPIResult>;
       stopStateStream: () => Promise<XPlaneAPIResult>;
+      forceReconnect: () => Promise<XPlaneAPIResult>;
       isStreamConnected: () => Promise<boolean>;
       onStateUpdate: (callback: (state: PlaneState) => void) => () => void;
       onConnectionChange: (callback: (connected: boolean) => void) => () => void;

@@ -26,7 +26,13 @@ export function usePlaneState() {
 
     // Subscribe to updates
     const unsubState = window.xplaneServiceAPI.onStateUpdate(setState);
-    const unsubConnection = window.xplaneServiceAPI.onConnectionChange(setConnected);
+    const unsubConnection = window.xplaneServiceAPI.onConnectionChange((isConnected) => {
+      setConnected(isConnected);
+      // Clear stale state on disconnect to prevent showing old position
+      if (!isConnected) {
+        setState(null);
+      }
+    });
     unsubscribeRef.current = { state: unsubState, connection: unsubConnection };
 
     return () => {

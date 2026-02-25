@@ -574,6 +574,11 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, planePosition, followPlane, setFollowPlane]);
 
+  // Force reconnect to X-Plane - clears stale data and re-establishes connection
+  const handleReconnect = useCallback(() => {
+    window.xplaneServiceAPI.forceReconnect();
+  }, []);
+
   // Follow plane position and heading when follow mode is active
   useEffect(() => {
     const map = mapRef.current;
@@ -634,6 +639,7 @@ export default function Map({ airports }: MapProps) {
           planeState={planeState}
           connected={isXPlaneConnected}
           onCenterPlane={handleCenterPlane}
+          onReconnect={handleReconnect}
         />
       )}
 

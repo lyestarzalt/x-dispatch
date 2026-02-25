@@ -376,7 +376,7 @@
   },
 
   "flightStrip": {
-    "notDetected": "X-Plane not running",
+    "notDetected": "X-Plane not detected",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",
@@ -386,7 +386,9 @@
     "center": "Center",
     "centerTooltip": "Center map on aircraft",
     "following": "Following",
-    "followingTooltip": "Click to stop following aircraft"
+    "followingTooltip": "Click to stop following aircraft",
+    "reconnect": "Reconnect",
+    "reconnectTooltip": "Force reconnect to X-Plane simulator"
   },
 
   "weather": {
