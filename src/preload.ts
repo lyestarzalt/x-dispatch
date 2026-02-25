@@ -89,6 +89,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   openLogFolder: () => ipcRenderer.invoke('app:openLogFolder'),
   getConfigPath: () => ipcRenderer.invoke('app:getConfigPath'),
   openConfigFolder: () => ipcRenderer.invoke('app:openConfigFolder'),
+  openPath: (path: string) => ipcRenderer.invoke('app:openPath', path),
   getSendCrashReports: () => ipcRenderer.invoke('app:getSendCrashReports'),
   setSendCrashReports: (enabled: boolean) => ipcRenderer.invoke('app:setSendCrashReports', enabled),
 });
@@ -218,6 +219,22 @@ contextBridge.exposeInMainWorld('xplaneServiceAPI', {
   },
 });
 
+// Addon Manager API
+contextBridge.exposeInMainWorld('addonManagerAPI', {
+  scenery: {
+    analyze: () => ipcRenderer.invoke('addon:scenery:analyze'),
+    sort: () => ipcRenderer.invoke('addon:scenery:sort'),
+    saveOrder: (folderNames: string[]) =>
+      ipcRenderer.invoke('addon:scenery:saveOrder', folderNames),
+    toggle: (folderName: string) => ipcRenderer.invoke('addon:scenery:toggle', folderName),
+    move: (folderName: string, direction: 'up' | 'down') =>
+      ipcRenderer.invoke('addon:scenery:move', folderName, direction),
+    backup: () => ipcRenderer.invoke('addon:scenery:backup'),
+    listBackups: () => ipcRenderer.invoke('addon:scenery:listBackups'),
+    restore: (backupPath: string) => ipcRenderer.invoke('addon:scenery:restore', backupPath),
+  },
+});
+
 declare global {
   interface Window {
     appAPI: {
@@ -237,6 +254,7 @@ declare global {
       openLogFolder: () => Promise<void>;
       getConfigPath: () => Promise<string>;
       openConfigFolder: () => Promise<void>;
+      openPath: (path: string) => Promise<void>;
       getSendCrashReports: () => Promise<boolean>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;
     };
@@ -356,6 +374,48 @@ declare global {
       isStreamConnected: () => Promise<boolean>;
       onStateUpdate: (callback: (state: PlaneState) => void) => () => void;
       onConnectionChange: (callback: (connected: boolean) => void) => () => void;
+    };
+    addonManagerAPI: {
+      scenery: {
+        analyze: () => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').SceneryEntry[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        sort: () => Promise<
+          | { ok: true; value: { backupPath: string } }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        saveOrder: (
+          folderNames: string[]
+        ) => Promise<
+          | { ok: true; value: { backupPath: string } }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        toggle: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').SceneryEntry }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        move: (
+          folderName: string,
+          direction: 'up' | 'down'
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').SceneryEntry[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        backup: () => Promise<
+          | { ok: true; value: string }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        listBackups: () => Promise<{ path: string; timestamp: string }[]>;
+        restore: (
+          backupPath: string
+        ) => Promise<
+          | { ok: true; value: void }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+      };
     };
   }
 }

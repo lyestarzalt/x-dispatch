@@ -6,6 +6,7 @@ import {
   FileUp,
   Locate,
   Navigation,
+  Package,
   Plane,
   Radar,
   Search,
@@ -13,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AddonManager } from '@/components/dialogs/AddonManager';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,6 +54,7 @@ export default function Toolbar({
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [addonManagerOpen, setAddonManagerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -249,6 +252,25 @@ export default function Toolbar({
         )}
       </div>
 
+      {/* Addon Manager */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setAddonManagerOpen(true)}
+              className="h-9 w-9"
+            >
+              <Package className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Addon Manager</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       {/* Load Flight Plan */}
       <TooltipProvider>
         <Tooltip>
@@ -420,6 +442,9 @@ export default function Toolbar({
           </Tooltip>
         </TooltipProvider>
       </div>
+
+      {/* Addon Manager Dialog */}
+      <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
     </div>
   );
 }

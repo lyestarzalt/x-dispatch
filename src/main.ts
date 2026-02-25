@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
+import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import logger, { getLogPath } from './lib/utils/logger';
@@ -159,6 +160,13 @@ function registerIpcHandlers() {
   ipcMain.handle('app:getConfigPath', () => app.getPath('userData'));
   ipcMain.handle('app:openConfigFolder', () => {
     shell.openPath(app.getPath('userData'));
+  });
+  ipcMain.handle('app:openPath', (_, p: string) => {
+    // Security: Validate path
+    if (typeof p !== 'string' || p.includes('..') || p.length > 1000) {
+      return;
+    }
+    shell.openPath(p);
   });
   ipcMain.handle('app:getSendCrashReports', () => getSendCrashReports());
   ipcMain.handle('app:setSendCrashReports', (_, enabled: boolean) => {
@@ -891,6 +899,9 @@ function registerIpcHandlers() {
       return false;
     }
   });
+
+  // Addon Manager IPC handlers (extracted to separate module)
+  registerAddonManagerIPC(() => dataManager.getXPlanePath());
 }
 
 app.whenReady().then(async () => {
