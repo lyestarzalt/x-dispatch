@@ -86,6 +86,12 @@ function createTrailGeoJSON(pilots: VatsimPilot[]): GeoJSON.FeatureCollection {
 const iconLoaded = new WeakSet<maplibregl.Map>();
 
 export function addVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]): void {
+  // Wait for style to load before adding layers
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addVatsimPilotLayer(map, pilots));
+    return;
+  }
+
   removeVatsimPilotLayer(map);
   if (pilots.length === 0) return;
 
@@ -95,11 +101,19 @@ export function addVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]):
   if (!iconLoaded.has(map) && !map.hasImage('aircraft-icon')) {
     const img = new Image();
     img.onload = () => {
+      if (!map.isStyleLoaded()) {
+        map.once('style.load', () => addVatsimPilotLayer(map, pilots));
+        return;
+      }
       if (!map.hasImage('aircraft-icon')) map.addImage('aircraft-icon', img, { sdf: false });
       iconLoaded.add(map);
       addVatsimPilotLayer(map, pilots);
     };
     img.onerror = () => {
+      if (!map.isStyleLoaded()) {
+        map.once('style.load', () => addVatsimPilotLayer(map, pilots));
+        return;
+      }
       iconLoaded.add(map);
       addVatsimPilotLayer(map, pilots);
     };

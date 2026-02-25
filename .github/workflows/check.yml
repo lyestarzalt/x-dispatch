@@ -31,3 +31,14 @@ jobs:
 
       - name: Prettier
         run: npm run format:check
+
+      - name: Check Drizzle migrations
+        run: |
+          npx drizzle-kit generate --name ci-check
+          if [ -n "$(git status drizzle/ --porcelain)" ]; then
+            echo "❌ Schema changes detected but migrations not generated!"
+            echo "Run: npx drizzle-kit generate --name describe-change"
+            git diff drizzle/
+            exit 1
+          fi
+          echo "✅ Drizzle migrations are up to date"

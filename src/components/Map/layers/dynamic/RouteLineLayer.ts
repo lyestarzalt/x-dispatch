@@ -73,6 +73,12 @@ function greatCircleArc(
 }
 
 export function addRouteLineLayer(map: Map): void {
+  // Wait for style to load before adding layers
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addRouteLineLayer(map));
+    return;
+  }
+
   if (map.getSource(SOURCE_ID)) return;
 
   map.addSource(SOURCE_ID, {

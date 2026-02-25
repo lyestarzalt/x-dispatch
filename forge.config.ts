@@ -15,6 +15,7 @@ const config: ForgeConfig = {
     asar: true,
     icon: './assets/icon',
     executableName: 'x-dispatch',
+    extraResource: ['./assets'],
   },
   rebuildConfig: {},
   makers: [

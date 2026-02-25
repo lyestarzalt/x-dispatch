@@ -62,12 +62,22 @@ function createGeoJSON(position: PlanePosition | null): GeoJSON.FeatureCollectio
 const iconLoaded = new WeakSet<maplibregl.Map>();
 
 export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | null): void {
+  // Wait for style to load before adding layers
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addPlaneLayer(map, position));
+    return;
+  }
+
   removePlaneLayer(map);
 
   // Load icon first if needed
   if (!iconLoaded.has(map) && !map.hasImage('player-plane-icon')) {
     const img = new Image();
     img.onload = () => {
+      if (!map.isStyleLoaded()) {
+        map.once('style.load', () => addPlaneLayer(map, position));
+        return;
+      }
       if (!map.hasImage('player-plane-icon')) {
         map.addImage('player-plane-icon', img, { sdf: false });
       }
@@ -75,6 +85,10 @@ export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | nul
       addPlaneLayer(map, position);
     };
     img.onerror = () => {
+      if (!map.isStyleLoaded()) {
+        map.once('style.load', () => addPlaneLayer(map, position));
+        return;
+      }
       iconLoaded.add(map);
       addPlaneLayer(map, position);
     };
@@ -145,7 +159,7 @@ export function updatePlaneLayer(
   map: maplibregl.Map | null | undefined,
   position: PlanePosition | null
 ): void {
-  if (!map) return;
+  if (!map || !map.isStyleLoaded()) return;
   try {
     const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
     if (source) {

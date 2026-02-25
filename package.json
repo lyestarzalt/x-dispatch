@@ -76,6 +76,10 @@
     "vite": "^6.0.11"
   },
   "lint-staged": {
+    "src/lib/db/schema.ts": [
+      "bash -c 'npx drizzle-kit generate --name auto-$(date +%Y%m%d%H%M%S) && git add drizzle/'",
+      "prettier --write"
+    ],
     "*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"

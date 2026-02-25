@@ -1014,7 +1014,7 @@ app.whenReady().then(async () => {
 // TODO: Revisit DB lifecycle management - ensure proper cleanup on all platforms
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    dataManager.close();
+    dataManager?.close();
     app.quit();
   }
   // On macOS, keep DB open since app stays running
@@ -1028,7 +1028,7 @@ app.on('before-quit', () => {
   logger.main.info('════════════════════════════════════════════════════════════════');
 
   // Close DB when app is actually quitting (handles macOS Cmd+Q)
-  dataManager.close();
+  dataManager?.close();
 });
 
 app.on('activate', () => {

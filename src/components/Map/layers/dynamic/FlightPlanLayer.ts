@@ -125,6 +125,12 @@ function loadImage(map: maplibregl.Map, id: string, svg: string): void {
 // ============================================================================
 
 export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightPlan): void {
+  // Wait for style to load before adding layers
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addFlightPlanLayer(map, fmsData));
+    return;
+  }
+
   removeFlightPlanLayer(map);
 
   const waypoints = fmsData.waypoints;

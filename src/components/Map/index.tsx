@@ -346,7 +346,7 @@ export default function Map({ airports }: MapProps) {
 
     const loadFIR = async () => {
       if (!map.isStyleLoaded()) {
-        map.once('load', loadFIR);
+        map.once('style.load', loadFIR);
         return;
       }
 
@@ -382,10 +382,6 @@ export default function Map({ airports }: MapProps) {
 
     previousStyleUrlRef.current = mapStyleUrl;
 
-    // SIMPLE APPROACH: Clear all selections, let user re-select after style change
-    // This avoids complex race conditions with layer restoration
-    useAppStore.getState().clearAirport(); // Clears airport + procedure selection
-
     const handleStyleLoad = () => {
       // Re-add base airports layer (the clickable dots)
       setupAirportsLayer(map, airports);
@@ -393,6 +389,13 @@ export default function Map({ airports }: MapProps) {
 
       // Trigger sync hooks to re-add nav layers, VATSIM, etc.
       incrementStyleVersion();
+
+      // Re-render the selected airport if one exists (store state persists)
+      const { selectedICAO } = useAppStore.getState();
+      const airport = airports.find((a) => a.icao === selectedICAO);
+      if (selectedICAO && airport) {
+        handleAirportClick(selectedICAO, [airport.lon, airport.lat]);
+      }
     };
 
     map.once('style.load', handleStyleLoad);

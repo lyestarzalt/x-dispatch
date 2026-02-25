@@ -332,6 +332,12 @@ export function addProcedureRouteLayer(
   route: RouteData,
   waypointCoords?: Map<string, { lat: number; lon: number }>
 ): void {
+  // Wait for style to load before adding layers
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addProcedureRouteLayer(map, route, waypointCoords));
+    return;
+  }
+
   removeProcedureRouteLayer(map);
 
   // Resolve waypoint coordinates if needed
