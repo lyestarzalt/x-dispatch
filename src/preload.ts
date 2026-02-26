@@ -270,6 +270,7 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
       ipcRenderer.invoke('addon:browser:getAircraftIcon', iconPath),
   },
   installer: {
+    browse: () => ipcRenderer.invoke('addon:installer:browse'),
     analyze: (filePaths: string[]) => ipcRenderer.invoke('addon:installer:analyze', filePaths),
   },
 });
@@ -544,6 +545,9 @@ declare global {
         getAircraftIcon: (iconPath: string) => Promise<string | null>;
       };
       installer: {
+        browse: () => Promise<
+          { ok: true; value: string[] } | { ok: false; error: { code: string; reason: string } }
+        >;
         analyze: (
           filePaths: string[]
         ) => Promise<

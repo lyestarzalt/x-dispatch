@@ -440,6 +440,34 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== INSTALLER =====
 
+  ipcMain.handle('addon:installer:browse', async () => {
+    const { dialog, BrowserWindow } = await import('electron');
+    const mainWindow = BrowserWindow.getFocusedWindow();
+
+    const dialogOptions: Electron.OpenDialogOptions = {
+      title: 'Select Addon Archives',
+      filters: [
+        { name: 'Archive Files', extensions: ['zip', '7z', 'rar'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+      properties: ['openFile', 'multiSelections'],
+    };
+
+    try {
+      const result = mainWindow
+        ? await dialog.showOpenDialog(mainWindow, dialogOptions)
+        : await dialog.showOpenDialog(dialogOptions);
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { ok: true, value: [] };
+      }
+
+      return { ok: true, value: result.filePaths };
+    } catch (e) {
+      return { ok: false, error: { code: 'BROWSE_FAILED', reason: String(e) } };
+    }
+  });
+
   ipcMain.handle('addon:installer:analyze', async (_event, filePaths: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
