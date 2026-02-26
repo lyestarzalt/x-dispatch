@@ -48,22 +48,49 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
     [disabled, onFilesDropped]
   );
 
+  const handleClick = useCallback(async () => {
+    if (disabled) return;
+
+    const result = await window.addonManagerAPI.installer.browse();
+    if (result.ok && result.value.length > 0) {
+      onFilesDropped(result.value);
+    }
+  }, [disabled, onFilesDropped]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleClick();
+      }
+    },
+    [handleClick]
+  );
+
   return (
     <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled}
+      aria-label="Drop or click to select addon archive files"
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
         'flex h-48 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
         isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25',
-        disabled && 'cursor-not-allowed opacity-50'
+        disabled
+          ? 'cursor-not-allowed opacity-50'
+          : 'cursor-pointer hover:border-primary/50 hover:bg-muted/50'
       )}
     >
       <Upload
         className={cn('mb-3 h-10 w-10', isDragOver ? 'text-primary' : 'text-muted-foreground')}
       />
-      <p className="text-sm font-medium">Drop ZIP, 7z, or RAR files here</p>
-      <p className="mt-1 text-xs text-muted-foreground">Aircraft, Scenery, Plugins, and more</p>
+      <p className="text-sm font-medium">Drop or click to select files</p>
+      <p className="mt-1 text-xs text-muted-foreground">ZIP, 7z, or RAR archives</p>
     </div>
   );
 }
