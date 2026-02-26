@@ -122,3 +122,96 @@ export function getSceneryErrorMessage(error: SceneryError): string {
       return `Backup failed: ${error.reason}`;
   }
 }
+
+/**
+ * Error types for browser operations.
+ */
+export type BrowserError =
+  | { code: 'NOT_FOUND'; path: string }
+  | { code: 'SCAN_FAILED'; path: string; reason: string }
+  | { code: 'TOGGLE_FAILED'; path: string; reason: string }
+  | { code: 'DELETE_FAILED'; path: string; reason: string }
+  | { code: 'PATH_TRAVERSAL'; path: string }
+  | { code: 'INVALID_INPUT'; field: string };
+
+/**
+ * Get user-friendly error message from BrowserError.
+ */
+export function getBrowserErrorMessage(error: BrowserError): string {
+  switch (error.code) {
+    case 'NOT_FOUND':
+      return `Not found: ${error.path}`;
+    case 'SCAN_FAILED':
+      return `Scan failed: ${error.reason}`;
+    case 'TOGGLE_FAILED':
+      return `Toggle failed: ${error.reason}`;
+    case 'DELETE_FAILED':
+      return `Delete failed: ${error.reason}`;
+    case 'PATH_TRAVERSAL':
+      return `Invalid path: ${error.path}`;
+    case 'INVALID_INPUT':
+      return `Invalid input: ${error.field}`;
+  }
+}
+
+/**
+ * Scanned aircraft information.
+ */
+export interface AircraftInfo {
+  folderName: string; // Relative path from Aircraft root
+  displayName: string; // Folder name only
+  acfFile: string; // Filename (.acf or .xfma)
+  enabled: boolean; // .acf exists = enabled
+  hasLiveries: boolean;
+  liveryCount: number;
+  version?: string;
+  updateUrl?: string;
+  latestVersion?: string;
+  hasUpdate: boolean;
+  locked: boolean;
+}
+
+/**
+ * Scanned plugin information.
+ */
+export interface PluginInfo {
+  folderName: string;
+  displayName: string;
+  xplFiles: string[]; // Relative paths to .xpl/.xfmp files
+  enabled: boolean; // Any .xpl exists = enabled
+  platform: 'win' | 'mac' | 'lin' | 'multi' | 'unknown';
+  version?: string;
+  updateUrl?: string;
+  latestVersion?: string;
+  hasUpdate: boolean;
+  locked: boolean;
+  hasScripts: boolean; // FlyWithLua only
+  scriptCount: number;
+}
+
+/**
+ * Lua script in FlyWithLua/Scripts.
+ */
+export interface LuaScriptInfo {
+  fileName: string; // With extension
+  displayName: string; // Without extension
+  enabled: boolean; // .lua = enabled, .xfml = disabled
+}
+
+/**
+ * Livery for an aircraft.
+ */
+export interface LiveryInfo {
+  folderName: string;
+  displayName: string;
+  iconPath?: string; // Full path to icon, undefined if not found
+}
+
+/**
+ * Version data parsed from skunkcrafts_updater.cfg or version files.
+ */
+export interface VersionData {
+  version: string;
+  updateUrl?: string;
+  cfgDisabled?: boolean;
+}
