@@ -10,6 +10,8 @@ import type { Coordinates, LonLatPath, LonLatPolygon } from './geo';
 
 export enum RowCode {
   AIRPORT_HEADER = 1,
+  SEAPLANE_HEADER = 16,
+  HELIPORT_HEADER = 17,
   TOWER_LOCATION = 14,
   START_LOCATION_LEGACY = 15,
   BEACON = 18,

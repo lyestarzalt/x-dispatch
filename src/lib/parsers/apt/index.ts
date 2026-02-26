@@ -385,7 +385,9 @@ export class AirportParser {
       const code = parseInt(tokens[0]);
 
       switch (code) {
-        case RowCode.AIRPORT_HEADER: {
+        case RowCode.AIRPORT_HEADER:
+        case RowCode.SEAPLANE_HEADER:
+        case RowCode.HELIPORT_HEADER: {
           const elevation = parseFloat(tokens[1]);
           airport.elevation = Number.isFinite(elevation) ? elevation : 0;
           airport.id = tokens[4] || '';
