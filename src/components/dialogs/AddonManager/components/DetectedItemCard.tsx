@@ -1,5 +1,14 @@
 // src/components/dialogs/AddonManager/components/DetectedItemCard.tsx
-import { AlertTriangle, Database, FileCode, Map, Paintbrush, Plane, Puzzle } from 'lucide-react';
+import {
+  AlertTriangle,
+  Database,
+  FileCode,
+  HelpCircle,
+  Map,
+  Paintbrush,
+  Plane,
+  Puzzle,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import type { DetectedItem } from '@/lib/addonManager/installer/types';
@@ -29,8 +38,8 @@ interface DetectedItemCardProps {
 }
 
 export function DetectedItemCard({ item }: DetectedItemCardProps) {
-  const Icon = TYPE_ICONS[item.addonType];
-  const colorClass = TYPE_COLORS[item.addonType];
+  const Icon = TYPE_ICONS[item.addonType] ?? HelpCircle;
+  const colorClass = TYPE_COLORS[item.addonType] ?? 'bg-gray-500/10 text-gray-500';
 
   const formatSize = (bytes: number) => {
     if (bytes >= 1024 * 1024 * 1024) {

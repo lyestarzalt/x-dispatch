@@ -42,7 +42,7 @@ function getAddonRoot(markerPath: string, markerType: AddonType): string | null 
       if (parentName === '_TCAS_AI_') {
         return parts.length > 1 ? parts[0] + '/' : null;
       }
-      return parent === '.' ? null : parts[0] + '/';
+      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
     }
 
     case 'Scenery': {
@@ -58,7 +58,7 @@ function getAddonRoot(markerPath: string, markerType: AddonType): string | null 
 
     case 'SceneryLibrary': {
       const parent = path.dirname(markerPath);
-      return parent === '.' ? null : parts[0] + '/';
+      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
     }
 
     case 'Navdata': {
@@ -73,12 +73,12 @@ function getAddonRoot(markerPath: string, markerType: AddonType): string | null 
       if (PLATFORM_FOLDERS.includes(parentName.toLowerCase())) {
         return parts.length > 1 ? parts[0] + '/' : null;
       }
-      return parent === '.' ? null : parts[0] + '/';
+      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
     }
 
     case 'LuaScript': {
       const parent = path.dirname(markerPath);
-      return parent === '.' ? null : parts[0] + '/';
+      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
     }
 
     default:
