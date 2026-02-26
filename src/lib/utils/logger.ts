@@ -72,6 +72,13 @@ const logger = {
     error: (msg: string, ...args: unknown[]) => log.error(`[Tracker] ${msg}`, ...args),
     debug: (msg: string, ...args: unknown[]) => log.debug(`[Tracker] ${msg}`, ...args),
   },
+
+  addon: {
+    info: (msg: string, ...args: unknown[]) => log.info(`[Addon] ${msg}`, ...args),
+    warn: (msg: string, ...args: unknown[]) => log.warn(`[Addon] ${msg}`, ...args),
+    error: (msg: string, ...args: unknown[]) => log.error(`[Addon] ${msg}`, ...args),
+    debug: (msg: string, ...args: unknown[]) => log.debug(`[Addon] ${msg}`, ...args),
+  },
 };
 
 export function getLogPath(): string {

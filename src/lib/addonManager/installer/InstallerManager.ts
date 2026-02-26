@@ -2,6 +2,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import logger from '@/lib/utils/logger';
 import type { Result } from '../core/types';
 import { err, ok } from '../core/types';
 import {
@@ -75,6 +76,7 @@ export class InstallerManager {
       );
 
       if (suspicious) {
+        logger.security.warn(`Suspicious compression ratio ${ratio.toFixed(0)}x in: ${filePath}`);
         return err({
           code: 'SUSPICIOUS_RATIO',
           ratio,
@@ -211,6 +213,9 @@ export class InstallerManager {
       });
 
       if (!extractResult.ok) {
+        logger.addon.error(
+          `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
+        );
         return {
           taskId: task.id,
           success: false,
@@ -256,6 +261,7 @@ export class InstallerManager {
         verificationStats: extractResult.value.stats,
       };
     } catch (e) {
+      logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
       // Cleanup temp on failure
       if (fs.existsSync(tempDir)) {
         fs.rmSync(tempDir, { recursive: true, force: true });

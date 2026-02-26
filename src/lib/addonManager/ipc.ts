@@ -3,6 +3,7 @@
 import { app, ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
+import logger from '@/lib/utils/logger';
 import { BrowserManager } from './browser';
 import type { BrowserError } from './core/types';
 import { err } from './core/types';
@@ -217,9 +218,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
       return err({ code: 'INVALID_INPUT', field: 'folderName' } as BrowserError);
     }
+    logger.addon.info(`Deleting aircraft: ${folderName}`);
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return manager.deleteAircraft(folderName);
+    const result = manager.deleteAircraft(folderName);
+    if (!result.ok) {
+      logger.addon.error(`Failed to delete aircraft ${folderName}: ${result.error.code}`);
+    }
+    return result;
   });
 
   ipcMain.handle('addon:browser:lockAircraft', async (_event, folderName: unknown) => {
@@ -274,9 +280,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
       return err({ code: 'INVALID_INPUT', field: 'folderName' } as BrowserError);
     }
+    logger.addon.info(`Deleting plugin: ${folderName}`);
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return manager.deletePlugin(folderName);
+    const result = manager.deletePlugin(folderName);
+    if (!result.ok) {
+      logger.addon.error(`Failed to delete plugin ${folderName}: ${result.error.code}`);
+    }
+    return result;
   });
 
   ipcMain.handle('addon:browser:lockPlugin', async (_event, folderName: unknown) => {
@@ -337,9 +348,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       ) {
         return err({ code: 'INVALID_INPUT', field: 'folder' } as BrowserError);
       }
+      logger.addon.info(`Deleting livery: ${liveryFolder} from ${aircraftFolder}`);
       const appDataPath = app.getPath('userData');
       const manager = new BrowserManager(xplanePath, appDataPath);
-      return manager.deleteLivery(aircraftFolder, liveryFolder);
+      const result = manager.deleteLivery(aircraftFolder, liveryFolder);
+      if (!result.ok) {
+        logger.addon.error(`Failed to delete livery: ${result.error.code}`);
+      }
+      return result;
     }
   );
 
@@ -376,9 +392,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     if (typeof fileName !== 'string' || fileName.length === 0 || fileName.length > 255) {
       return err({ code: 'INVALID_INPUT', field: 'fileName' } as BrowserError);
     }
+    logger.addon.info(`Deleting Lua script: ${fileName}`);
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return manager.deleteLuaScript(fileName);
+    const result = manager.deleteLuaScript(fileName);
+    if (!result.ok) {
+      logger.addon.error(`Failed to delete Lua script ${fileName}: ${result.error.code}`);
+    }
+    return result;
   });
 
   // ===== BROWSER: UPDATES =====
@@ -425,7 +446,8 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     const aircraftDir = path.join(xplanePath, 'Aircraft');
     const resolvedPath = path.resolve(iconPath);
     if (!resolvedPath.startsWith(aircraftDir)) {
-      return null; // Path traversal attempt
+      logger.security.warn(`Icon path traversal blocked: ${iconPath}`);
+      return null;
     }
 
     try {
@@ -482,14 +504,17 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     // Security: validate paths
     for (const filePath of filePaths) {
       if (filePath.includes('..') || filePath.length > 1000) {
+        logger.security.warn(`Path traversal attempt in installer analyze: ${filePath}`);
         return { ok: false, error: { code: 'PATH_TRAVERSAL', path: filePath } };
       }
     }
 
     try {
+      logger.addon.debug(`Analyzing ${filePaths.length} archive(s)`);
       const manager = new InstallerManager(xplanePath);
       return manager.analyze(filePaths as string[]);
     } catch (e) {
+      logger.addon.error(`Analyze failed: ${e}`);
       return { ok: false, error: { code: 'EXTRACTION_FAILED', path: '', reason: String(e) } };
     }
   });
@@ -514,7 +539,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
   });
 
-  ipcMain.handle('addon:installer:install', async (event, tasks: unknown) => {
+  ipcMain.handle('addon:installer:install', async (_event, tasks: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -537,11 +562,13 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
         typeof t.targetPath !== 'string' ||
         t.targetPath.includes('..')
       ) {
+        logger.security.warn(`Path traversal attempt in install task: ${t.sourcePath}`);
         return { ok: false, error: { code: 'PATH_TRAVERSAL', path: String(t.sourcePath) } };
       }
     }
 
     try {
+      logger.addon.info(`Installing ${tasks.length} addon(s)`);
       const manager = new InstallerManager(xplanePath);
       const { BrowserWindow } = await import('electron');
 
@@ -554,8 +581,15 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
         },
       });
 
+      if (result.ok) {
+        const succeeded = result.value.filter((r) => r.success).length;
+        const failed = result.value.filter((r) => !r.success).length;
+        logger.addon.info(`Installation complete: ${succeeded} succeeded, ${failed} failed`);
+      }
+
       return result;
     } catch (e) {
+      logger.addon.error(`Installation failed: ${e}`);
       return { ok: false, error: { code: 'INSTALL_FAILED', path: '', reason: String(e) } };
     }
   });
