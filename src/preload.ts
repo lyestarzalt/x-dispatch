@@ -269,6 +269,9 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
     getAircraftIcon: (iconPath: string) =>
       ipcRenderer.invoke('addon:browser:getAircraftIcon', iconPath),
   },
+  installer: {
+    analyze: (filePaths: string[]) => ipcRenderer.invoke('addon:installer:analyze', filePaths),
+  },
 });
 
 declare global {
@@ -539,6 +542,14 @@ declare global {
           | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
         >;
         getAircraftIcon: (iconPath: string) => Promise<string | null>;
+      };
+      installer: {
+        analyze: (
+          filePaths: string[]
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/installer/types').DetectedItem[] }
+          | { ok: false; error: import('./lib/addonManager/installer/types').InstallerError }
+        >;
       };
     };
   }
