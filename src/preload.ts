@@ -272,6 +272,21 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
   installer: {
     browse: () => ipcRenderer.invoke('addon:installer:browse'),
     analyze: (filePaths: string[]) => ipcRenderer.invoke('addon:installer:analyze', filePaths),
+    prepareInstall: (items: import('./lib/addonManager/installer/types').DetectedItem[]) =>
+      ipcRenderer.invoke('addon:installer:prepareInstall', items),
+    install: (tasks: import('./lib/addonManager/installer/types').InstallTask[]) =>
+      ipcRenderer.invoke('addon:installer:install', tasks),
+    onProgress: (
+      callback: (progress: import('./lib/addonManager/installer/types').InstallProgress) => void
+    ) => {
+      const handler = (_event: Electron.IpcRendererEvent, progress: unknown) => {
+        callback(progress as import('./lib/addonManager/installer/types').InstallProgress);
+      };
+      ipcRenderer.on('addon:installer:progress', handler);
+      return () => {
+        ipcRenderer.removeListener('addon:installer:progress', handler);
+      };
+    },
   },
 });
 
@@ -554,6 +569,21 @@ declare global {
           | { ok: true; value: import('./lib/addonManager/installer/types').DetectedItem[] }
           | { ok: false; error: import('./lib/addonManager/installer/types').InstallerError }
         >;
+        prepareInstall: (
+          items: import('./lib/addonManager/installer/types').DetectedItem[]
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/installer/types').InstallTask[] }
+          | { ok: false; error: import('./lib/addonManager/installer/types').InstallerError }
+        >;
+        install: (
+          tasks: import('./lib/addonManager/installer/types').InstallTask[]
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/installer/types').InstallResult[] }
+          | { ok: false; error: import('./lib/addonManager/installer/types').InstallerError }
+        >;
+        onProgress: (
+          callback: (progress: import('./lib/addonManager/installer/types').InstallProgress) => void
+        ) => () => void;
       };
     };
   }

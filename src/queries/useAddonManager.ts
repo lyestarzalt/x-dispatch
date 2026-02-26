@@ -432,3 +432,32 @@ export function useInstallerAnalyze() {
     },
   });
 }
+
+export function useInstallerInstall() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (items: import('@/lib/addonManager/installer/types').DetectedItem[]) => {
+      // First prepare install tasks
+      const prepareResult = await window.addonManagerAPI.installer.prepareInstall(items);
+      if (!prepareResult.ok) {
+        throw new Error(getInstallerErrorMessage(prepareResult.error));
+      }
+
+      // Then execute installation
+      const installResult = await window.addonManagerAPI.installer.install(prepareResult.value);
+      if (!installResult.ok) {
+        throw new Error(getInstallerErrorMessage(installResult.error));
+      }
+
+      return installResult.value;
+    },
+    onSuccess: () => {
+      // Invalidate relevant queries to refresh lists
+      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
+      queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
+      queryClient.invalidateQueries({ queryKey: addonKeys.luaScripts });
+    },
+  });
+}

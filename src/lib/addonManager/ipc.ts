@@ -493,4 +493,70 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       return { ok: false, error: { code: 'EXTRACTION_FAILED', path: '', reason: String(e) } };
     }
   });
+
+  ipcMain.handle('addon:installer:prepareInstall', async (_event, items: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    // Validate input
+    if (!Array.isArray(items)) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'items' } };
+    }
+
+    try {
+      const manager = new InstallerManager(xplanePath);
+      const tasks = manager.prepareInstallTasks(items);
+      return { ok: true, value: tasks };
+    } catch (e) {
+      return { ok: false, error: { code: 'INSTALL_FAILED', path: '', reason: String(e) } };
+    }
+  });
+
+  ipcMain.handle('addon:installer:install', async (event, tasks: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    // Validate input
+    if (!Array.isArray(tasks)) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'tasks' } };
+    }
+
+    // Security: validate task paths
+    for (const task of tasks) {
+      if (typeof task !== 'object' || task === null) {
+        return { ok: false, error: { code: 'INVALID_INPUT', field: 'task' } };
+      }
+      const t = task as Record<string, unknown>;
+      if (
+        typeof t.sourcePath !== 'string' ||
+        t.sourcePath.includes('..') ||
+        typeof t.targetPath !== 'string' ||
+        t.targetPath.includes('..')
+      ) {
+        return { ok: false, error: { code: 'PATH_TRAVERSAL', path: String(t.sourcePath) } };
+      }
+    }
+
+    try {
+      const manager = new InstallerManager(xplanePath);
+      const { BrowserWindow } = await import('electron');
+
+      const result = await manager.install(tasks as never[], {
+        onProgress: (progress) => {
+          // Send progress to all windows
+          BrowserWindow.getAllWindows().forEach((win) => {
+            win.webContents.send('addon:installer:progress', progress);
+          });
+        },
+      });
+
+      return result;
+    } catch (e) {
+      return { ok: false, error: { code: 'INSTALL_FAILED', path: '', reason: String(e) } };
+    }
+  });
 }
