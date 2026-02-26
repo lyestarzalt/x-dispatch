@@ -609,5 +609,114 @@
       "full": "Pełny",
       "of": "z"
     }
+  },
+
+  "addonManager": {
+    "title": "Menedżer dodatków",
+    "openXPlaneFolder": "Otwórz folder X-Plane",
+    "tabs": {
+      "scenery": "Kolejność scenerii",
+      "browser": "Przeglądarka",
+      "installer": "Instalator"
+    },
+    "installer": {
+      "dropZone": {
+        "title": "Upuść lub kliknij, aby wybrać",
+        "subtitle": "Archiwa ZIP, 7z lub RAR",
+        "ariaLabel": "Upuść lub kliknij, aby wybrać archiwa dodatków"
+      },
+      "analyzing": "Analizowanie...",
+      "analysisFailed": "Analiza plików nie powiodła się",
+      "installing": "Instalowanie...",
+      "installFailed": "Instalacja nie powiodła się",
+      "progress": "Instalowanie {{current}} z {{total}}",
+      "successOne": "Pomyślnie zainstalowano 1 dodatek",
+      "successMany": "Pomyślnie zainstalowano {{count}} dodatków",
+      "partialSuccess": "Zainstalowano {{success}} z {{total}} dodatków",
+      "failed": "Błąd: {{error}}",
+      "detectedOne": "Wykryto 1 dodatek",
+      "detectedMany": "Wykryto {{count}} dodatków",
+      "installOne": "Zainstaluj 1 dodatek",
+      "installMany": "Zainstaluj {{count}} dodatków",
+      "emptyState": "Upuść archiwa, aby je przeanalizować",
+      "clear": "Wyczyść"
+    },
+    "browser": {
+      "searchPlaceholder": "Szukaj...",
+      "stats": {
+        "total": "{{count}} łącznie",
+        "enabled": "{{count}} włączonych",
+        "updates": "{{count}} aktualizacji"
+      },
+      "checkUpdates": "Sprawdź aktualizacje",
+      "aircraft": "Samoloty",
+      "plugins": "Wtyczki",
+      "scanningAircraft": "Skanowanie samolotów...",
+      "scanningPlugins": "Skanowanie wtyczek...",
+      "loadFailed": "Nie udało się załadować {{type}}",
+      "noMatch": "Brak {{type}} pasujących do wyszukiwania",
+      "notFound": "Nie znaleziono {{type}}",
+      "confirmDelete": "Usunąć \"{{name}}\"? Tej operacji nie można cofnąć."
+    },
+    "scenery": {
+      "loading": "Skanowanie folderów scenerii...",
+      "loadFailed": "Nie udało się załadować scenerii",
+      "packages": "{{count}} pakietów scenerii",
+      "unsavedChanges": "Niezapisane zmiany",
+      "safeMode": "Tryb bezpieczny",
+      "safeModeOn": "Przeciąganie ograniczone do tej samej kategorii. Wyłącz, aby swobodnie zmieniać kolejność (zaawansowane).",
+      "safeModeOff": "Włączono swobodne sortowanie. Elementy można przeciągać między kategoriami - ostrożnie!",
+      "dragHintSafe": "Przeciągnij, aby zmienić kolejność w tej samej kategorii. Zmiany są zapisywane po kliknięciu Zapisz kolejność.",
+      "dragHintUnsafe": "⚠️ Tryb bezpieczny WYŁĄCZONY - Możesz przeciągać elementy między kategoriami. Może to powodować problemy ze scenerią.",
+      "saveOrder": "Zapisz kolejność",
+      "autoSort": "Automatyczne sortowanie",
+      "backups": "Kopie zapasowe ({{count}})",
+      "backupsTitle": "Kopie zapasowe scenerii",
+      "backupsDescription": "Przywróć poprzednią wersję scenery_packs.ini",
+      "noBackups": "Brak kopii zapasowych. Są tworzone automatycznie przy zapisywaniu zmian.",
+      "restore": "Przywróć"
+    },
+    "liveryDialog": {
+      "title": "Malowania",
+      "loading": "Ładowanie malowań...",
+      "loadFailed": "Nie udało się załadować malowań",
+      "notFound": "Nie znaleziono malowań",
+      "confirmDelete": "Usunąć malowanie \"{{name}}\"? Tej operacji nie można cofnąć."
+    },
+    "scriptsDialog": {
+      "title": "Skrypty Lua",
+      "subtitle": "Folder skryptów FlyWithLua",
+      "loading": "Ładowanie skryptów...",
+      "loadFailed": "Nie udało się załadować skryptów",
+      "notFound": "Nie znaleziono skryptów",
+      "confirmDelete": "Usunąć skrypt \"{{name}}\"? Tej operacji nie można cofnąć."
+    },
+    "aircraftCard": {
+      "liveries": "{{count}} malowań",
+      "viewLiveries": "Zobacz {{count}} malowań",
+      "openFolder": "Otwórz folder",
+      "lock": "Zablokuj",
+      "unlock": "Odblokuj"
+    },
+    "pluginEntry": {
+      "scripts": "{{count}} skryptów",
+      "manageScripts": "Zarządzaj skryptami Lua",
+      "lock": "Zablokuj (zapobiegaj zmianom)",
+      "unlock": "Odblokuj",
+      "openFolder": "Otwórz folder",
+      "deletePlugin": "Usuń wtyczkę"
+    },
+    "sceneryEntry": {
+      "openFolder": "Otwórz folder"
+    },
+    "addonTypes": {
+      "Aircraft": "Samolot",
+      "Scenery": "Sceneria",
+      "SceneryLibrary": "Biblioteka scenerii",
+      "Plugin": "Wtyczka",
+      "Livery": "Malowanie",
+      "LuaScript": "Skrypt Lua",
+      "Navdata": "Dane nawigacyjne"
+    }
   }
 }
