@@ -1,5 +1,6 @@
 // src/components/dialogs/AddonManager/tabs/InstallerTab.tsx
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { DetectedItemCard } from '../components/DetectedItemCard';
 import { DropZone } from '../components/DropZone';
 
 export function InstallerTab() {
+  const { t } = useTranslation();
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const [results, setResults] = useState<InstallResult[] | null>(null);
@@ -75,7 +77,7 @@ export function InstallerTab() {
       {isAnalyzing && (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="ml-2 text-sm">Analyzing...</span>
+          <span className="ml-2 text-sm">{t('addonManager.installer.analyzing')}</span>
         </div>
       )}
 
@@ -85,7 +87,7 @@ export function InstallerTab() {
           <AlertDescription>
             {analyzeMutation.error instanceof Error
               ? analyzeMutation.error.message
-              : 'Failed to analyze files'}
+              : t('addonManager.installer.analysisFailed')}
           </AlertDescription>
         </Alert>
       )}
@@ -95,7 +97,10 @@ export function InstallerTab() {
         <div className="space-y-2 rounded-lg border p-4">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium">
-              Installing {progress.currentTaskIndex + 1} of {progress.totalTasks}
+              {t('addonManager.installer.progress', {
+                current: progress.currentTaskIndex + 1,
+                total: progress.totalTasks,
+              })}
             </span>
             <span className="text-muted-foreground">{progress.overallPercent}%</span>
           </div>
@@ -117,17 +122,24 @@ export function InstallerTab() {
           )}
           <AlertDescription>
             {results.every((r) => r.success) ? (
-              `Successfully installed ${results.length} addon${results.length !== 1 ? 's' : ''}`
+              results.length === 1 ? (
+                t('addonManager.installer.successOne')
+              ) : (
+                t('addonManager.installer.successMany', { count: results.length })
+              )
             ) : (
               <div className="space-y-1">
                 <span>
-                  Installed {results.filter((r) => r.success).length} of {results.length} addons
+                  {t('addonManager.installer.partialSuccess', {
+                    success: results.filter((r) => r.success).length,
+                    total: results.length,
+                  })}
                 </span>
                 {results
                   .filter((r) => !r.success)
                   .map((r) => (
                     <p key={r.taskId} className="text-xs">
-                      Failed: {r.error}
+                      {t('addonManager.installer.failed', { error: r.error })}
                     </p>
                   ))}
               </div>
@@ -142,7 +154,7 @@ export function InstallerTab() {
           <AlertDescription>
             {installMutation.error instanceof Error
               ? installMutation.error.message
-              : 'Installation failed'}
+              : t('addonManager.installer.installFailed')}
           </AlertDescription>
         </Alert>
       )}
@@ -151,10 +163,12 @@ export function InstallerTab() {
         <>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">
-              Detected {detectedItems.length} addon{detectedItems.length !== 1 ? 's' : ''}
+              {detectedItems.length === 1
+                ? t('addonManager.installer.detectedOne')
+                : t('addonManager.installer.detectedMany', { count: detectedItems.length })}
             </h3>
             <Button variant="ghost" size="sm" onClick={handleClear} disabled={isDisabled}>
-              Clear
+              {t('addonManager.installer.clear')}
             </Button>
           </div>
 
@@ -170,10 +184,12 @@ export function InstallerTab() {
             {isInstalling ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Installing...
+                {t('addonManager.installer.installing')}
               </>
+            ) : detectedItems.length === 1 ? (
+              t('addonManager.installer.installOne')
             ) : (
-              `Install ${detectedItems.length} addon${detectedItems.length !== 1 ? 's' : ''}`
+              t('addonManager.installer.installMany', { count: detectedItems.length })
             )}
           </Button>
         </>
@@ -181,7 +197,7 @@ export function InstallerTab() {
 
       {detectedItems.length === 0 && !isAnalyzing && !results && (
         <p className="text-center text-sm text-muted-foreground">
-          Drop addon archives to analyze them
+          {t('addonManager.installer.emptyState')}
         </p>
       )}
     </div>

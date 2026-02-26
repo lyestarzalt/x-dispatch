@@ -1,5 +1,6 @@
 // src/components/dialogs/AddonManager/tabs/SceneryTab.tsx
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   type DragEndEvent,
@@ -49,6 +50,7 @@ import {
 import { SortableSceneryEntry } from '../components/SceneryEntry';
 
 export function SceneryTab() {
+  const { t } = useTranslation();
   const { data: entries = [], isLoading, error } = useSceneryList();
   const sortMutation = useScenerySort();
   const saveOrderMutation = useScenarySaveOrder();
@@ -118,7 +120,7 @@ export function SceneryTab() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Scanning scenery folders...</span>
+        <span className="text-sm text-muted-foreground">{t('addonManager.scenery.loading')}</span>
       </div>
     );
   }
@@ -128,7 +130,7 @@ export function SceneryTab() {
       <Alert variant="destructive" className="m-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          {error instanceof Error ? error.message : 'Failed to load scenery'}
+          {error instanceof Error ? error.message : t('addonManager.scenery.loadFailed')}
         </AlertDescription>
       </Alert>
     );

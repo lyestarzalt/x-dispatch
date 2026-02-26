@@ -1,5 +1,6 @@
 // src/components/dialogs/AddonManager/tabs/BrowserTab.tsx
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, Plane, Plug, RefreshCw, Search } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import { ScriptsDialog } from '../components/ScriptsDialog';
 type SubTab = 'aircraft' | 'plugins';
 
 export function BrowserTab() {
+  const { t } = useTranslation();
   const [subTab, setSubTab] = useState<SubTab>('aircraft');
   const [search, setSearch] = useState('');
   const [liveryDialog, setLiveryDialog] = useState<{
@@ -102,14 +104,14 @@ export function BrowserTab() {
   const handleDeleteAircraft = async (folderName: string) => {
     const ac = aircraft.find((a) => a.folderName === folderName);
     if (!ac) return;
-    if (!confirm(`Delete "${ac.displayName}"? This cannot be undone.`)) return;
+    if (!confirm(t('addonManager.browser.confirmDelete', { name: ac.displayName }))) return;
     await aircraftDelete.mutateAsync(folderName);
   };
 
   const handleDeletePlugin = async (folderName: string) => {
     const pl = plugins.find((p) => p.folderName === folderName);
     if (!pl) return;
-    if (!confirm(`Delete "${pl.displayName}"? This cannot be undone.`)) return;
+    if (!confirm(t('addonManager.browser.confirmDelete', { name: pl.displayName }))) return;
     await pluginDelete.mutateAsync(folderName);
   };
 
@@ -138,7 +140,7 @@ export function BrowserTab() {
         <div className="relative w-64">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search..."
+            placeholder={t('addonManager.browser.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -147,10 +149,12 @@ export function BrowserTab() {
 
         {/* Stats */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{currentStats.total} total</span>
-          <span>{currentStats.enabled} enabled</span>
+          <span>{t('addonManager.browser.stats.total', { count: currentStats.total })}</span>
+          <span>{t('addonManager.browser.stats.enabled', { count: currentStats.enabled })}</span>
           {currentStats.updates > 0 && (
-            <span className="text-warning">{currentStats.updates} updates</span>
+            <span className="text-warning">
+              {t('addonManager.browser.stats.updates', { count: currentStats.updates })}
+            </span>
           )}
         </div>
 
@@ -166,7 +170,7 @@ export function BrowserTab() {
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
-          Check Updates
+          {t('addonManager.browser.checkUpdates')}
         </Button>
       </div>
 
@@ -174,11 +178,11 @@ export function BrowserTab() {
         <TabsList className="grid w-fit grid-cols-2">
           <TabsTrigger value="aircraft" className="gap-2">
             <Plane className="h-4 w-4" />
-            Aircraft ({aircraft.length})
+            {t('addonManager.browser.aircraft')} ({aircraft.length})
           </TabsTrigger>
           <TabsTrigger value="plugins" className="gap-2">
             <Plug className="h-4 w-4" />
-            Plugins ({plugins.length})
+            {t('addonManager.browser.plugins')} ({plugins.length})
           </TabsTrigger>
         </TabsList>
 
@@ -187,18 +191,24 @@ export function BrowserTab() {
           {aircraftLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Scanning aircraft...</span>
+              <span className="text-sm text-muted-foreground">
+                {t('addonManager.browser.scanningAircraft')}
+              </span>
             </div>
           ) : aircraftError ? (
             <Alert variant="destructive" className="m-4">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {aircraftError instanceof Error ? aircraftError.message : 'Failed to load aircraft'}
+                {aircraftError instanceof Error
+                  ? aircraftError.message
+                  : t('addonManager.browser.loadFailed', { type: 'aircraft' })}
               </AlertDescription>
             </Alert>
           ) : filteredAircraft.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
-              {search ? 'No aircraft match your search' : 'No aircraft found'}
+              {search
+                ? t('addonManager.browser.noMatch', { type: 'aircraft' })
+                : t('addonManager.browser.notFound', { type: 'aircraft' })}
             </p>
           ) : (
             <ScrollArea className="h-[calc(100vh-380px)]">
@@ -231,18 +241,24 @@ export function BrowserTab() {
           {pluginsLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Scanning plugins...</span>
+              <span className="text-sm text-muted-foreground">
+                {t('addonManager.browser.scanningPlugins')}
+              </span>
             </div>
           ) : pluginsError ? (
             <Alert variant="destructive" className="m-4">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {pluginsError instanceof Error ? pluginsError.message : 'Failed to load plugins'}
+                {pluginsError instanceof Error
+                  ? pluginsError.message
+                  : t('addonManager.browser.loadFailed', { type: 'plugins' })}
               </AlertDescription>
             </Alert>
           ) : filteredPlugins.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
-              {search ? 'No plugins match your search' : 'No plugins found'}
+              {search
+                ? t('addonManager.browser.noMatch', { type: 'plugins' })
+                : t('addonManager.browser.notFound', { type: 'plugins' })}
             </p>
           ) : (
             <ScrollArea className="h-[calc(100vh-380px)]">
