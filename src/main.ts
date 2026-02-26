@@ -22,6 +22,8 @@ import { getSendCrashReports, setSendCrashReports } from './lib/xplaneServices/d
 import type { LaunchConfig } from './types/aircraft';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
+// TODO: Memory optimization - consider lazy nav data loading, reduce sql.js footprint, limit MapLibre tile cache
+
 // This reads config.json directly since getSendCrashReports() uses app.getPath which works before ready
 const shouldInitSentry = (() => {
   try {
