@@ -692,18 +692,37 @@
       "restore": "Restore"
     },
     "liveryDialog": {
-      "title": "Liveries for {{aircraft}}",
+      "title": "Liveries",
       "loading": "Loading liveries...",
       "loadFailed": "Failed to load liveries",
       "notFound": "No liveries found",
       "confirmDelete": "Delete livery \"{{name}}\"? This cannot be undone."
     },
     "scriptsDialog": {
-      "title": "FlyWithLua Scripts",
+      "title": "Lua Scripts",
+      "subtitle": "FlyWithLua Scripts folder",
       "loading": "Loading scripts...",
       "loadFailed": "Failed to load scripts",
       "notFound": "No scripts found",
       "confirmDelete": "Delete script \"{{name}}\"? This cannot be undone."
+    },
+    "aircraftCard": {
+      "liveries": "{{count}} liveries",
+      "viewLiveries": "View {{count}} liveries",
+      "openFolder": "Open folder",
+      "lock": "Lock",
+      "unlock": "Unlock"
+    },
+    "pluginEntry": {
+      "scripts": "{{count}} scripts",
+      "manageScripts": "Manage Lua scripts",
+      "lock": "Lock (prevent changes)",
+      "unlock": "Unlock",
+      "openFolder": "Open folder",
+      "deletePlugin": "Delete plugin"
+    },
+    "sceneryEntry": {
+      "openFolder": "Open folder"
     },
     "addonTypes": {
       "Aircraft": "Aircraft",

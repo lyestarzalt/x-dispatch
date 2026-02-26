@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/SceneryEntry.tsx
+import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FolderOpen, GripVertical } from 'lucide-react';
@@ -22,6 +23,7 @@ export function SortableSceneryEntry({
   onOpenFolder,
   disabled,
 }: SortableSceneryEntryProps) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: entry.folderName,
   });
@@ -80,7 +82,7 @@ export function SortableSceneryEntry({
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Open folder</TooltipContent>
+        <TooltipContent>{t('addonManager.sceneryEntry.openFolder')}</TooltipContent>
       </Tooltip>
     </div>
   );

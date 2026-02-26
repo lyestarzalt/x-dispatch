@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/PluginEntry.tsx
+import { useTranslation } from 'react-i18next';
 import { Code, FolderOpen, Lock, Plug, Trash2, Unlock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ export function PluginEntry({
   onOpenScripts,
   disabled,
 }: PluginEntryProps) {
+  const { t } = useTranslation();
   const isFlyWithLua = plugin.folderName.toLowerCase() === 'flywithlua';
 
   return (
@@ -82,10 +84,10 @@ export function PluginEntry({
               onClick={onOpenScripts}
             >
               <Code className="h-3.5 w-3.5" />
-              {plugin.scriptCount} scripts
+              {t('addonManager.pluginEntry.scripts', { count: plugin.scriptCount })}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Manage Lua scripts</TooltipContent>
+          <TooltipContent>{t('addonManager.pluginEntry.manageScripts')}</TooltipContent>
         </Tooltip>
       )}
 
@@ -106,7 +108,11 @@ export function PluginEntry({
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{plugin.locked ? 'Unlock' : 'Lock (prevent changes)'}</TooltipContent>
+        <TooltipContent>
+          {plugin.locked
+            ? t('addonManager.pluginEntry.unlock')
+            : t('addonManager.pluginEntry.lock')}
+        </TooltipContent>
       </Tooltip>
 
       {/* Open folder button */}
@@ -121,7 +127,7 @@ export function PluginEntry({
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Open folder</TooltipContent>
+        <TooltipContent>{t('addonManager.pluginEntry.openFolder')}</TooltipContent>
       </Tooltip>
 
       {/* Delete button */}
@@ -137,7 +143,7 @@ export function PluginEntry({
             <Trash2 className="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Delete plugin</TooltipContent>
+        <TooltipContent>{t('addonManager.pluginEntry.deletePlugin')}</TooltipContent>
       </Tooltip>
     </div>
   );

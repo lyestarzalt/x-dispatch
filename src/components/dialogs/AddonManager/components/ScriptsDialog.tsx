@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/ScriptsDialog.tsx
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,13 @@ interface ScriptsDialogProps {
 }
 
 export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
+  const { t } = useTranslation();
   const { data: scripts = [], isLoading, error } = useLuaScriptList(open);
   const toggleMutation = useLuaScriptToggle();
   const deleteMutation = useLuaScriptDelete();
 
   const handleDelete = async (fileName: string) => {
-    if (!confirm(`Delete script "${fileName}"? This cannot be undone.`)) return;
+    if (!confirm(t('addonManager.scriptsDialog.confirmDelete', { name: fileName }))) return;
     await deleteMutation.mutateAsync(fileName);
   };
 
@@ -39,8 +41,8 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Lua Scripts</DialogTitle>
-          <DialogDescription>FlyWithLua Scripts folder</DialogDescription>
+          <DialogTitle>{t('addonManager.scriptsDialog.title')}</DialogTitle>
+          <DialogDescription>{t('addonManager.scriptsDialog.subtitle')}</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -51,11 +53,13 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {error instanceof Error ? error.message : 'Failed to load scripts'}
+              {error instanceof Error ? error.message : t('addonManager.scriptsDialog.loadFailed')}
             </AlertDescription>
           </Alert>
         ) : scripts.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No scripts found</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {t('addonManager.scriptsDialog.notFound')}
+          </p>
         ) : (
           <ScrollArea className="max-h-[400px]">
             <div className="flex flex-col gap-2 pr-4">

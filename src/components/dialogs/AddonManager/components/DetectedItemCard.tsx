@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/DetectedItemCard.tsx
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   Database,
@@ -38,6 +39,7 @@ interface DetectedItemCardProps {
 }
 
 export function DetectedItemCard({ item }: DetectedItemCardProps) {
+  const { t } = useTranslation();
   const Icon = TYPE_ICONS[item.addonType] ?? HelpCircle;
   const colorClass = TYPE_COLORS[item.addonType] ?? 'bg-gray-500/10 text-gray-500';
 
@@ -61,7 +63,7 @@ export function DetectedItemCard({ item }: DetectedItemCardProps) {
           <p className="truncate font-medium">{item.displayName}</p>
           <div className="mt-1 flex items-center gap-2">
             <Badge variant="secondary" className="text-xs">
-              {item.addonType}
+              {t(`addonManager.addonTypes.${item.addonType}`)}
             </Badge>
             <span className="text-xs text-muted-foreground">{formatSize(item.estimatedSize)}</span>
           </div>

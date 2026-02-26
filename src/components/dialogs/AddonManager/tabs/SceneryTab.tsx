@@ -148,9 +148,11 @@ export function SceneryTab() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
-            {localEntries.length} scenery packages
+            {t('addonManager.scenery.packages', { count: localEntries.length })}
           </span>
-          {hasUnsavedChanges && <span className="text-xs text-warning">Unsaved changes</span>}
+          {hasUnsavedChanges && (
+            <span className="text-xs text-warning">{t('addonManager.scenery.unsavedChanges')}</span>
+          )}
 
           {/* Safe mode toggle */}
           <TooltipProvider>
@@ -164,15 +166,15 @@ export function SceneryTab() {
                   )}
                   <Switch id="safe-mode" checked={safeMode} onCheckedChange={setSafeMode} />
                   <Label htmlFor="safe-mode" className="cursor-pointer text-xs">
-                    Safe mode
+                    {t('addonManager.scenery.safeMode')}
                   </Label>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[250px]">
                 <p className="text-xs">
                   {safeMode
-                    ? 'Drag restricted to same category. Turn off to freely reorder (advanced).'
-                    : 'Free reorder enabled. Items can be dragged across categories - use with caution!'}
+                    ? t('addonManager.scenery.safeModeOn')
+                    : t('addonManager.scenery.safeModeOff')}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -186,7 +188,7 @@ export function SceneryTab() {
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
-              Save Order
+              {t('addonManager.scenery.saveOrder')}
             </Button>
           )}
           <Button variant="secondary" size="sm" onClick={handleAutoSort} disabled={isPending}>
@@ -195,11 +197,11 @@ export function SceneryTab() {
             ) : (
               <ArrowUpDown className="mr-2 h-4 w-4" />
             )}
-            Auto-Sort
+            {t('addonManager.scenery.autoSort')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowBackups(true)}>
             <RotateCcw className="mr-2 h-4 w-4" />
-            Backups ({backups.length})
+            {t('addonManager.scenery.backups', { count: backups.length })}
           </Button>
         </div>
       </div>
@@ -207,8 +209,8 @@ export function SceneryTab() {
       {/* Drag hint */}
       <p className="text-xs text-muted-foreground">
         {safeMode
-          ? 'Drag to reorder within the same category. Changes are saved when you click Save Order.'
-          : '⚠️ Safe mode OFF - You can drag items across categories. This may cause scenery issues if done incorrectly.'}
+          ? t('addonManager.scenery.dragHintSafe')
+          : t('addonManager.scenery.dragHintUnsafe')}
       </p>
 
       {/* Scenery list with drag-and-drop */}
@@ -237,13 +239,13 @@ export function SceneryTab() {
       <Dialog open={showBackups} onOpenChange={setShowBackups}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Scenery Backups</DialogTitle>
-            <DialogDescription>Restore a previous version of scenery_packs.ini</DialogDescription>
+            <DialogTitle>{t('addonManager.scenery.backupsTitle')}</DialogTitle>
+            <DialogDescription>{t('addonManager.scenery.backupsDescription')}</DialogDescription>
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
             {backups.length === 0 ? (
               <p className="py-4 text-center text-sm text-muted-foreground">
-                No backups available yet. Backups are created automatically when you save changes.
+                {t('addonManager.scenery.noBackups')}
               </p>
             ) : (
               <div className="flex flex-col gap-2">
@@ -262,7 +264,7 @@ export function SceneryTab() {
                       {restoreMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        'Restore'
+                        t('addonManager.scenery.restore')
                       )}
                     </Button>
                   </div>

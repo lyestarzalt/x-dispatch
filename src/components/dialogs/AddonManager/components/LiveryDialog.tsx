@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/LiveryDialog.tsx
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, Plane, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -58,11 +59,12 @@ interface LiveryDialogProps {
 }
 
 export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: LiveryDialogProps) {
+  const { t } = useTranslation();
   const { data: liveries = [], isLoading, error } = useLiveryList(aircraftFolder, open);
   const deleteMutation = useLiveryDelete();
 
   const handleDelete = async (liveryFolder: string) => {
-    if (!confirm(`Delete livery "${liveryFolder}"? This cannot be undone.`)) return;
+    if (!confirm(t('addonManager.liveryDialog.confirmDelete', { name: liveryFolder }))) return;
     await deleteMutation.mutateAsync({ aircraftFolder, liveryFolder });
   };
 
@@ -70,7 +72,7 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Liveries</DialogTitle>
+          <DialogTitle>{t('addonManager.liveryDialog.title')}</DialogTitle>
           <DialogDescription>{aircraftName}</DialogDescription>
         </DialogHeader>
 
@@ -82,11 +84,13 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {error instanceof Error ? error.message : 'Failed to load liveries'}
+              {error instanceof Error ? error.message : t('addonManager.liveryDialog.loadFailed')}
             </AlertDescription>
           </Alert>
         ) : liveries.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No liveries found</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {t('addonManager.liveryDialog.notFound')}
+          </p>
         ) : (
           <ScrollArea className="max-h-[400px]">
             <div className="flex flex-col gap-2 pr-4">

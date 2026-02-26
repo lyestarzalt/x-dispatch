@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/AircraftCard.tsx
+import { useTranslation } from 'react-i18next';
 import { FolderOpen, Lock, MoreVertical, Plane, Trash2, Unlock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ export function AircraftCard({
   onOpenLiveries,
   disabled,
 }: AircraftCardProps) {
+  const { t } = useTranslation();
   const { data: iconSrc } = useAircraftIcon(aircraft.iconPath);
 
   return (
@@ -78,7 +80,7 @@ export function AircraftCard({
               className="cursor-pointer text-xs hover:bg-accent"
               onClick={() => onOpenLiveries(aircraft.folderName)}
             >
-              {aircraft.liveryCount} liveries
+              {t('addonManager.aircraftCard.liveries', { count: aircraft.liveryCount })}
             </Badge>
           )}
         </div>
@@ -109,7 +111,11 @@ export function AircraftCard({
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{aircraft.locked ? 'Unlock' : 'Lock'}</TooltipContent>
+              <TooltipContent>
+                {aircraft.locked
+                  ? t('addonManager.aircraftCard.unlock')
+                  : t('addonManager.aircraftCard.lock')}
+              </TooltipContent>
             </Tooltip>
 
             {/* More menu */}
@@ -122,12 +128,12 @@ export function AircraftCard({
               <DropdownMenuContent align="end">
                 {aircraft.hasLiveries && (
                   <DropdownMenuItem onClick={() => onOpenLiveries(aircraft.folderName)}>
-                    View {aircraft.liveryCount} liveries
+                    {t('addonManager.aircraftCard.viewLiveries', { count: aircraft.liveryCount })}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={() => onOpenFolder(aircraft.folderName)}>
                   <FolderOpen className="mr-2 h-4 w-4" />
-                  Open folder
+                  {t('addonManager.aircraftCard.openFolder')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onDelete(aircraft.folderName)}
@@ -135,7 +141,7 @@ export function AircraftCard({
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  {t('common.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
