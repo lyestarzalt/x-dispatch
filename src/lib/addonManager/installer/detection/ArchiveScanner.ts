@@ -122,8 +122,8 @@ async function listSevenZipEntries(
         entries.push({
           path: data.file,
           isDirectory: data.attributes?.startsWith('D') ?? false,
-          uncompressedSize: data.size || 0,
-          compressedSize: data.sizeCompressed || 0,
+          uncompressedSize: data.size ?? 0,
+          compressedSize: data.sizeCompressed ?? 0,
           encrypted: data.encrypted === '+',
         });
       });

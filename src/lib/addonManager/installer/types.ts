@@ -186,5 +186,8 @@ export function getInstallerErrorMessage(error: InstallerError): string {
       return `Insufficient disk space: need ${(error.required / 1024 / 1024 / 1024).toFixed(1)} GB, have ${(error.available / 1024 / 1024 / 1024).toFixed(1)} GB`;
     case 'INSTALL_FAILED':
       return `Installation failed: ${error.reason}`;
+    default:
+      // Handle any unexpected error codes (e.g., from IPC layer)
+      return `Installation error: ${(error as { code: string }).code}`;
   }
 }

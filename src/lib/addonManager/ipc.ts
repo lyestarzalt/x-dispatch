@@ -458,7 +458,11 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       }
     }
 
-    const manager = new InstallerManager(xplanePath);
-    return manager.analyze(filePaths as string[]);
+    try {
+      const manager = new InstallerManager(xplanePath);
+      return manager.analyze(filePaths as string[]);
+    } catch (e) {
+      return { ok: false, error: { code: 'EXTRACTION_FAILED', path: '', reason: String(e) } };
+    }
   });
 }
