@@ -66,6 +66,7 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
 
   let acfFile: string | undefined;
   let xfmaFile: string | undefined;
+  let iconPath: string | undefined;
   let hasLiveries = false;
   let liveryCount = 0;
 
@@ -78,6 +79,12 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
         acfFile = entry.name;
       } else if (ext === '.xfma' && !xfmaFile) {
         xfmaFile = entry.name;
+      }
+      // Check for icon files (prefer icon11 over icon10, exact match or with prefix)
+      if (lower.endsWith('_icon11.png') || lower === 'icon11.png') {
+        iconPath = path.join(folderPath, entry.name);
+      } else if (!iconPath && (lower.endsWith('_icon10.png') || lower === 'icon10.png')) {
+        iconPath = path.join(folderPath, entry.name);
       }
     }
 
@@ -113,10 +120,12 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
     enabled,
     hasLiveries,
     liveryCount,
+    iconPath,
     version: versionData?.version,
     updateUrl: versionData?.updateUrl,
     latestVersion: undefined,
     hasUpdate: false,
     locked: false,
+    cfgDisabled: versionData?.cfgDisabled,
   };
 }

@@ -80,11 +80,20 @@ export function parseSceneryPacksIni(
 
     // Build full path - scenery paths are relative to X-Plane root
     // They look like: "Custom Scenery/FolderName/"
-    const fullPath = path.join(path.dirname(customSceneryPath), sceneryPath);
+    const xplaneRoot = path.dirname(customSceneryPath);
+    const fullPath = path.join(xplaneRoot, sceneryPath);
+
+    // Defense-in-depth: validate resolved path is within X-Plane directory
+    // Skip entries with path traversal attempts
+    const resolvedFull = path.resolve(fullPath);
+    const resolvedRoot = path.resolve(xplaneRoot);
+    if (!resolvedFull.startsWith(resolvedRoot + path.sep)) {
+      continue; // Skip this entry - potential path traversal
+    }
 
     entries.push({
       folderName,
-      fullPath,
+      fullPath: resolvedFull,
       enabled,
       isGlobalAirports: false,
       originalLine: line,

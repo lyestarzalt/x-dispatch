@@ -233,6 +233,42 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
     listBackups: () => ipcRenderer.invoke('addon:scenery:listBackups'),
     restore: (backupPath: string) => ipcRenderer.invoke('addon:scenery:restore', backupPath),
   },
+  browser: {
+    // Aircraft
+    scanAircraft: () => ipcRenderer.invoke('addon:browser:scanAircraft'),
+    toggleAircraft: (folderName: string) =>
+      ipcRenderer.invoke('addon:browser:toggleAircraft', folderName),
+    deleteAircraft: (folderName: string) =>
+      ipcRenderer.invoke('addon:browser:deleteAircraft', folderName),
+    lockAircraft: (folderName: string) =>
+      ipcRenderer.invoke('addon:browser:lockAircraft', folderName),
+    // Plugins
+    scanPlugins: () => ipcRenderer.invoke('addon:browser:scanPlugins'),
+    togglePlugin: (folderName: string) =>
+      ipcRenderer.invoke('addon:browser:togglePlugin', folderName),
+    deletePlugin: (folderName: string) =>
+      ipcRenderer.invoke('addon:browser:deletePlugin', folderName),
+    lockPlugin: (folderName: string) => ipcRenderer.invoke('addon:browser:lockPlugin', folderName),
+    // Liveries
+    scanLiveries: (aircraftFolder: string) =>
+      ipcRenderer.invoke('addon:browser:scanLiveries', aircraftFolder),
+    deleteLivery: (aircraftFolder: string, liveryFolder: string) =>
+      ipcRenderer.invoke('addon:browser:deleteLivery', aircraftFolder, liveryFolder),
+    // Lua Scripts
+    scanLuaScripts: () => ipcRenderer.invoke('addon:browser:scanLuaScripts'),
+    toggleLuaScript: (fileName: string) =>
+      ipcRenderer.invoke('addon:browser:toggleLuaScript', fileName),
+    deleteLuaScript: (fileName: string) =>
+      ipcRenderer.invoke('addon:browser:deleteLuaScript', fileName),
+    // Updates
+    checkAircraftUpdates: (aircraft: import('./lib/addonManager/core/types').AircraftInfo[]) =>
+      ipcRenderer.invoke('addon:browser:checkAircraftUpdates', aircraft),
+    checkPluginUpdates: (plugins: import('./lib/addonManager/core/types').PluginInfo[]) =>
+      ipcRenderer.invoke('addon:browser:checkPluginUpdates', plugins),
+    // Icon
+    getAircraftIcon: (iconPath: string) =>
+      ipcRenderer.invoke('addon:browser:getAircraftIcon', iconPath),
+  },
 });
 
 declare global {
@@ -415,6 +451,94 @@ declare global {
           | { ok: true; value: void }
           | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
         >;
+      };
+      browser: {
+        scanAircraft: () => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').AircraftInfo[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        toggleAircraft: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: boolean }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        deleteAircraft: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: void }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        lockAircraft: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: boolean }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        scanPlugins: () => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').PluginInfo[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        togglePlugin: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: boolean }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        deletePlugin: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: void }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        lockPlugin: (
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: boolean }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        scanLiveries: (
+          aircraftFolder: string
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').LiveryInfo[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        deleteLivery: (
+          aircraftFolder: string,
+          liveryFolder: string
+        ) => Promise<
+          | { ok: true; value: void }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        scanLuaScripts: () => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').LuaScriptInfo[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        toggleLuaScript: (
+          fileName: string
+        ) => Promise<
+          | { ok: true; value: boolean }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        deleteLuaScript: (
+          fileName: string
+        ) => Promise<
+          | { ok: true; value: void }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        checkAircraftUpdates: (
+          aircraft: import('./lib/addonManager/core/types').AircraftInfo[]
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').AircraftInfo[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        checkPluginUpdates: (
+          plugins: import('./lib/addonManager/core/types').PluginInfo[]
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/core/types').PluginInfo[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
+        >;
+        getAircraftIcon: (iconPath: string) => Promise<string | null>;
       };
     };
   }

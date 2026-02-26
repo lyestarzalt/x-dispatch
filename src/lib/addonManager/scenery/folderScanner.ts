@@ -19,6 +19,11 @@ const MAX_DSF_SEARCH_DEPTH = 3;
 export function scanSceneryFolder(folderPath: string): SceneryClassification {
   const classification = createDefaultClassification();
 
+  // Security: basic path validation
+  if (!folderPath || folderPath.includes('..')) {
+    return classification;
+  }
+
   if (!fs.existsSync(folderPath)) {
     return classification;
   }

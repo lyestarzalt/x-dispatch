@@ -169,6 +169,8 @@ export interface AircraftInfo {
   latestVersion?: string;
   hasUpdate: boolean;
   locked: boolean;
+  cfgDisabled?: boolean; // From skunkcrafts_updater.cfg disabled| field
+  iconPath?: string; // Full path to icon11.png or icon10.png thumbnail
 }
 
 /**
@@ -187,6 +189,7 @@ export interface PluginInfo {
   locked: boolean;
   hasScripts: boolean; // FlyWithLua only
   scriptCount: number;
+  cfgDisabled?: boolean; // From skunkcrafts_updater.cfg disabled| field
 }
 
 /**

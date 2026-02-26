@@ -49,7 +49,7 @@ import {
 import { SortableSceneryEntry } from '../components/SceneryEntry';
 
 export function SceneryTab() {
-  const { data: entries = [], isLoading, error, refetch } = useSceneryList();
+  const { data: entries = [], isLoading, error } = useSceneryList();
   const sortMutation = useScenerySort();
   const saveOrderMutation = useScenarySaveOrder();
   const toggleMutation = useSceneryToggle();
@@ -101,20 +101,17 @@ export function SceneryTab() {
     const folderNames = localEntries.map((e) => e.folderName);
     await saveOrderMutation.mutateAsync(folderNames);
     setHasUnsavedChanges(false);
-    refetch();
   };
 
   const handleAutoSort = async () => {
     await sortMutation.mutateAsync();
     setHasUnsavedChanges(false);
-    refetch();
   };
 
   const handleRestore = async (backupPath: string) => {
     await restoreMutation.mutateAsync(backupPath);
     setShowBackups(false);
     setHasUnsavedChanges(false);
-    refetch();
   };
 
   if (isLoading) {

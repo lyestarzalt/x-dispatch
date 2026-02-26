@@ -1,7 +1,14 @@
 // src/queries/useAddonManager.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { SceneryEntry, SceneryError } from '@/lib/addonManager/core/types';
-import { getSceneryErrorMessage } from '@/lib/addonManager/core/types';
+import type {
+  AircraftInfo,
+  LiveryInfo,
+  LuaScriptInfo,
+  PluginInfo,
+  SceneryEntry,
+  SceneryError,
+} from '@/lib/addonManager/core/types';
+import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
 
 // Query keys
 export const addonKeys = {
@@ -9,6 +16,11 @@ export const addonKeys = {
   scenery: ['addon', 'scenery'] as const,
   sceneryList: ['addon', 'scenery', 'list'] as const,
   sceneryBackups: ['addon', 'scenery', 'backups'] as const,
+  aircraft: ['addon', 'aircraft'] as const,
+  aircraftIcon: (iconPath: string) => ['addon', 'aircraftIcon', iconPath] as const,
+  plugins: ['addon', 'plugins'] as const,
+  liveries: (aircraftFolder: string) => ['addon', 'liveries', aircraftFolder] as const,
+  luaScripts: ['addon', 'luaScripts'] as const,
 };
 
 /**
@@ -163,6 +175,245 @@ export function useSceneryRestore() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
       queryClient.invalidateQueries({ queryKey: addonKeys.sceneryBackups });
+    },
+  });
+}
+
+// ===== AIRCRAFT =====
+
+export function useAircraftList(enabled = true) {
+  return useQuery({
+    queryKey: addonKeys.aircraft,
+    queryFn: async (): Promise<AircraftInfo[]> => {
+      const result = await window.addonManagerAPI.browser.scanAircraft();
+      if (!result.ok) {
+        throw new Error(getBrowserErrorMessage(result.error));
+      }
+      return result.value;
+    },
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function useAircraftToggle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.browser.toggleAircraft(folderName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.aircraft }),
+  });
+}
+
+export function useAircraftDelete() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.browser.deleteAircraft(folderName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.aircraft }),
+  });
+}
+
+export function useAircraftLock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.browser.lockAircraft(folderName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.aircraft }),
+  });
+}
+
+export function useAircraftIcon(iconPath: string | undefined) {
+  return useQuery({
+    queryKey: addonKeys.aircraftIcon(iconPath ?? ''),
+    queryFn: async (): Promise<string | null> => {
+      if (!iconPath) return null;
+      return window.addonManagerAPI.browser.getAircraftIcon(iconPath);
+    },
+    enabled: !!iconPath,
+    staleTime: Infinity, // Icons don't change
+    gcTime: 1000 * 60 * 30, // Keep in cache 30 minutes
+  });
+}
+
+// ===== PLUGINS =====
+
+export function usePluginList(enabled = true) {
+  return useQuery({
+    queryKey: addonKeys.plugins,
+    queryFn: async (): Promise<PluginInfo[]> => {
+      const result = await window.addonManagerAPI.browser.scanPlugins();
+      if (!result.ok) {
+        throw new Error(getBrowserErrorMessage(result.error));
+      }
+      return result.value;
+    },
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function usePluginToggle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.browser.togglePlugin(folderName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.plugins }),
+  });
+}
+
+export function usePluginDelete() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.browser.deletePlugin(folderName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.plugins }),
+  });
+}
+
+export function usePluginLock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderName: string) => {
+      const result = await window.addonManagerAPI.browser.lockPlugin(folderName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.plugins }),
+  });
+}
+
+// ===== LIVERIES =====
+
+export function useLiveryList(aircraftFolder: string, enabled = true) {
+  return useQuery({
+    queryKey: addonKeys.liveries(aircraftFolder),
+    queryFn: async (): Promise<LiveryInfo[]> => {
+      const result = await window.addonManagerAPI.browser.scanLiveries(aircraftFolder);
+      if (!result.ok) {
+        throw new Error(getBrowserErrorMessage(result.error));
+      }
+      return result.value;
+    },
+    enabled: enabled && !!aircraftFolder,
+    staleTime: 30_000,
+  });
+}
+
+export function useLiveryDelete() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      aircraftFolder,
+      liveryFolder,
+    }: {
+      aircraftFolder: string;
+      liveryFolder: string;
+    }) => {
+      const result = await window.addonManagerAPI.browser.deleteLivery(
+        aircraftFolder,
+        liveryFolder
+      );
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: (_, { aircraftFolder }) => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.liveries(aircraftFolder) });
+      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+    },
+  });
+}
+
+// ===== LUA SCRIPTS =====
+
+export function useLuaScriptList(enabled = true) {
+  return useQuery({
+    queryKey: addonKeys.luaScripts,
+    queryFn: async (): Promise<LuaScriptInfo[]> => {
+      const result = await window.addonManagerAPI.browser.scanLuaScripts();
+      if (!result.ok) {
+        throw new Error(getBrowserErrorMessage(result.error));
+      }
+      return result.value;
+    },
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function useLuaScriptToggle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (fileName: string) => {
+      const result = await window.addonManagerAPI.browser.toggleLuaScript(fileName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.luaScripts });
+      queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
+    },
+  });
+}
+
+export function useLuaScriptDelete() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (fileName: string) => {
+      const result = await window.addonManagerAPI.browser.deleteLuaScript(fileName);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.luaScripts });
+      queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
+    },
+  });
+}
+
+// ===== UPDATE CHECKS =====
+
+export function useAircraftCheckUpdates() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (aircraft: AircraftInfo[]) => {
+      const result = await window.addonManagerAPI.browser.checkAircraftUpdates(aircraft);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: (data) => {
+      // Use setQueryData to preserve update results instead of refetching
+      queryClient.setQueryData(addonKeys.aircraft, data);
+    },
+  });
+}
+
+export function usePluginCheckUpdates() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (plugins: PluginInfo[]) => {
+      const result = await window.addonManagerAPI.browser.checkPluginUpdates(plugins);
+      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      return result.value;
+    },
+    onSuccess: (data) => {
+      // Use setQueryData to preserve update results instead of refetching
+      queryClient.setQueryData(addonKeys.plugins, data);
     },
   });
 }

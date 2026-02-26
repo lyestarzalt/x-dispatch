@@ -1,6 +1,11 @@
 // src/lib/addonManager/ipc.ts
 // IPC handlers for Addon Manager features
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
+import * as fs from 'fs';
+import * as path from 'path';
+import { BrowserManager } from './browser';
+import type { BrowserError } from './core/types';
+import { err } from './core/types';
 import { SceneryManager } from './scenery/SceneryManager';
 
 // TODO: Refactor main.ts - move other IPC handlers to separate files based on module:
@@ -58,6 +63,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       };
     }
 
+    // Security: validate no path traversal in any folder name
+    if (folderNames.some((n) => n.includes('..') || n.length > 500)) {
+      return {
+        ok: false,
+        error: { code: 'WRITE_FAILED', path: '', reason: 'Invalid folder name' },
+      };
+    }
+
     const manager = new SceneryManager(xplanePath);
 
     // Get current entries
@@ -88,7 +101,12 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
 
     // Validate input
-    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+    if (
+      typeof folderName !== 'string' ||
+      folderName.length === 0 ||
+      folderName.length > 500 ||
+      folderName.includes('..')
+    ) {
       return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderName) } };
     }
 
@@ -103,7 +121,12 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
 
     // Validate input
-    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+    if (
+      typeof folderName !== 'string' ||
+      folderName.length === 0 ||
+      folderName.length > 500 ||
+      folderName.includes('..')
+    ) {
       return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderName) } };
     }
     if (direction !== 'up' && direction !== 'down') {
@@ -141,7 +164,12 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
 
     // Validate input
-    if (typeof backupPath !== 'string' || backupPath.includes('..')) {
+    if (
+      typeof backupPath !== 'string' ||
+      backupPath.length === 0 ||
+      backupPath.length > 1000 ||
+      backupPath.includes('..')
+    ) {
       return {
         ok: false,
         error: { code: 'WRITE_FAILED', path: String(backupPath), reason: 'Invalid path' },
@@ -150,5 +178,262 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
     const manager = new SceneryManager(xplanePath);
     return manager.restore(backupPath);
+  });
+
+  // ===== BROWSER: AIRCRAFT =====
+
+  ipcMain.handle('addon:browser:scanAircraft', async () => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return {
+        ok: false,
+        error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError,
+      };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return { ok: true, value: manager.scanAircraft() };
+  });
+
+  ipcMain.handle('addon:browser:toggleAircraft', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+    }
+    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+      return err({ code: 'INVALID_INPUT', field: 'folderName' } as BrowserError);
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.toggleAircraft(folderName);
+  });
+
+  ipcMain.handle('addon:browser:deleteAircraft', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+    }
+    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+      return err({ code: 'INVALID_INPUT', field: 'folderName' } as BrowserError);
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.deleteAircraft(folderName);
+  });
+
+  ipcMain.handle('addon:browser:lockAircraft', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return {
+        ok: false,
+        error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError,
+      };
+    }
+    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'folderName' } as BrowserError };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return { ok: true, value: manager.lockAircraft(folderName) };
+  });
+
+  // ===== BROWSER: PLUGINS =====
+
+  ipcMain.handle('addon:browser:scanPlugins', async () => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return {
+        ok: false,
+        error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError,
+      };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return { ok: true, value: manager.scanPlugins() };
+  });
+
+  ipcMain.handle('addon:browser:togglePlugin', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+    }
+    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+      return err({ code: 'INVALID_INPUT', field: 'folderName' } as BrowserError);
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.togglePlugin(folderName);
+  });
+
+  ipcMain.handle('addon:browser:deletePlugin', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+    }
+    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+      return err({ code: 'INVALID_INPUT', field: 'folderName' } as BrowserError);
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.deletePlugin(folderName);
+  });
+
+  ipcMain.handle('addon:browser:lockPlugin', async (_event, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return {
+        ok: false,
+        error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError,
+      };
+    }
+    if (typeof folderName !== 'string' || folderName.length === 0 || folderName.length > 500) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'folderName' } as BrowserError };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return { ok: true, value: manager.lockPlugin(folderName) };
+  });
+
+  // ===== BROWSER: LIVERIES =====
+
+  ipcMain.handle('addon:browser:scanLiveries', async (_event, aircraftFolder: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return {
+        ok: false,
+        error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError,
+      };
+    }
+    if (
+      typeof aircraftFolder !== 'string' ||
+      aircraftFolder.length === 0 ||
+      aircraftFolder.length > 500
+    ) {
+      return {
+        ok: false,
+        error: { code: 'INVALID_INPUT', field: 'aircraftFolder' } as BrowserError,
+      };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.scanLiveries(aircraftFolder);
+  });
+
+  ipcMain.handle(
+    'addon:browser:deleteLivery',
+    async (_event, aircraftFolder: unknown, liveryFolder: unknown) => {
+      const xplanePath = getXPlanePath();
+      if (!xplanePath) {
+        return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+      }
+      if (
+        typeof aircraftFolder !== 'string' ||
+        typeof liveryFolder !== 'string' ||
+        aircraftFolder.length === 0 ||
+        aircraftFolder.length > 500 ||
+        liveryFolder.length === 0 ||
+        liveryFolder.length > 255
+      ) {
+        return err({ code: 'INVALID_INPUT', field: 'folder' } as BrowserError);
+      }
+      const appDataPath = app.getPath('userData');
+      const manager = new BrowserManager(xplanePath, appDataPath);
+      return manager.deleteLivery(aircraftFolder, liveryFolder);
+    }
+  );
+
+  // ===== BROWSER: LUA SCRIPTS =====
+
+  ipcMain.handle('addon:browser:scanLuaScripts', async () => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: true, value: [] };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return { ok: true, value: manager.scanLuaScripts() };
+  });
+
+  ipcMain.handle('addon:browser:toggleLuaScript', async (_event, fileName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+    }
+    if (typeof fileName !== 'string' || fileName.length === 0 || fileName.length > 255) {
+      return err({ code: 'INVALID_INPUT', field: 'fileName' } as BrowserError);
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.toggleLuaScript(fileName);
+  });
+
+  ipcMain.handle('addon:browser:deleteLuaScript', async (_event, fileName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
+    }
+    if (typeof fileName !== 'string' || fileName.length === 0 || fileName.length > 255) {
+      return err({ code: 'INVALID_INPUT', field: 'fileName' } as BrowserError);
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    return manager.deleteLuaScript(fileName);
+  });
+
+  // ===== BROWSER: UPDATES =====
+
+  ipcMain.handle('addon:browser:checkAircraftUpdates', async (_event, aircraft: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: true, value: [] };
+    }
+    if (!Array.isArray(aircraft)) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'aircraft' } as BrowserError };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    await manager.checkAircraftUpdates(aircraft);
+    return { ok: true, value: aircraft };
+  });
+
+  ipcMain.handle('addon:browser:checkPluginUpdates', async (_event, plugins: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: true, value: [] };
+    }
+    if (!Array.isArray(plugins)) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'plugins' } as BrowserError };
+    }
+    const appDataPath = app.getPath('userData');
+    const manager = new BrowserManager(xplanePath, appDataPath);
+    await manager.checkPluginUpdates(plugins);
+    return { ok: true, value: plugins };
+  });
+
+  // ===== BROWSER: ICONS =====
+
+  ipcMain.handle('addon:browser:getAircraftIcon', async (_event, iconPath: unknown) => {
+    if (typeof iconPath !== 'string' || !iconPath || iconPath.length > 1000) {
+      return null;
+    }
+
+    // Security: only allow paths within X-Plane Aircraft folder
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) return null;
+
+    const aircraftDir = path.join(xplanePath, 'Aircraft');
+    const resolvedPath = path.resolve(iconPath);
+    if (!resolvedPath.startsWith(aircraftDir)) {
+      return null; // Path traversal attempt
+    }
+
+    try {
+      if (!fs.existsSync(resolvedPath)) return null;
+      const buffer = fs.readFileSync(resolvedPath);
+      const base64 = buffer.toString('base64');
+      return `data:image/png;base64,${base64}`;
+    } catch {
+      return null;
+    }
   });
 }

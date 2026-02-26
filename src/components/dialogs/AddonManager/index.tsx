@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { BrowserTab } from './tabs/BrowserTab';
 import { SceneryTab } from './tabs/SceneryTab';
 
 interface AddonManagerProps {
@@ -66,9 +67,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
             >
               <TabsList className="mx-4 mt-4 grid w-fit grid-cols-3">
                 <TabsTrigger value="scenery">Scenery Order</TabsTrigger>
-                <TabsTrigger value="browser" disabled>
-                  Browser
-                </TabsTrigger>
+                <TabsTrigger value="browser">Browser</TabsTrigger>
                 <TabsTrigger value="installer" disabled>
                   Installer
                 </TabsTrigger>
@@ -78,10 +77,8 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                 <SceneryTab />
               </TabsContent>
 
-              <TabsContent value="browser" className="flex-1">
-                <div className="flex h-full items-center justify-center text-muted-foreground">
-                  Coming soon
-                </div>
+              <TabsContent value="browser" className="flex-1 overflow-hidden">
+                <BrowserTab />
               </TabsContent>
 
               <TabsContent value="installer" className="flex-1">
