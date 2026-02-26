@@ -609,5 +609,114 @@
       "full": "Cheio",
       "of": "de"
     }
+  },
+
+  "addonManager": {
+    "title": "Gerenciador de Addons",
+    "openXPlaneFolder": "Abrir pasta X-Plane",
+    "tabs": {
+      "scenery": "Ordem de Cenários",
+      "browser": "Navegador",
+      "installer": "Instalador"
+    },
+    "installer": {
+      "dropZone": {
+        "title": "Solte ou clique para selecionar",
+        "subtitle": "Arquivos ZIP, 7z ou RAR",
+        "ariaLabel": "Solte ou clique para selecionar arquivos de addons"
+      },
+      "analyzing": "Analisando...",
+      "analysisFailed": "Falha ao analisar arquivos",
+      "installing": "Instalando...",
+      "installFailed": "Falha na instalação",
+      "progress": "Instalando {{current}} de {{total}}",
+      "successOne": "1 addon instalado com sucesso",
+      "successMany": "{{count}} addons instalados com sucesso",
+      "partialSuccess": "{{success}} de {{total}} addons instalados",
+      "failed": "Falha: {{error}}",
+      "detectedOne": "1 addon detectado",
+      "detectedMany": "{{count}} addons detectados",
+      "installOne": "Instalar 1 addon",
+      "installMany": "Instalar {{count}} addons",
+      "emptyState": "Solte arquivos para analisá-los",
+      "clear": "Limpar"
+    },
+    "browser": {
+      "searchPlaceholder": "Pesquisar...",
+      "stats": {
+        "total": "{{count}} no total",
+        "enabled": "{{count}} ativos",
+        "updates": "{{count}} atualizações"
+      },
+      "checkUpdates": "Verificar atualizações",
+      "aircraft": "Aeronaves",
+      "plugins": "Plugins",
+      "scanningAircraft": "Escaneando aeronaves...",
+      "scanningPlugins": "Escaneando plugins...",
+      "loadFailed": "Falha ao carregar {{type}}",
+      "noMatch": "Nenhum(a) {{type}} corresponde à pesquisa",
+      "notFound": "Nenhum(a) {{type}} encontrado(a)",
+      "confirmDelete": "Excluir \"{{name}}\"? Esta ação não pode ser desfeita."
+    },
+    "scenery": {
+      "loading": "Escaneando pastas de cenários...",
+      "loadFailed": "Falha ao carregar cenários",
+      "packages": "{{count}} pacotes de cenário",
+      "unsavedChanges": "Alterações não salvas",
+      "safeMode": "Modo seguro",
+      "safeModeOn": "Arraste limitado à mesma categoria. Desative para reordenar livremente (avançado).",
+      "safeModeOff": "Reordenação livre ativada. Itens podem ser arrastados entre categorias - cuidado!",
+      "dragHintSafe": "Arraste para reordenar na mesma categoria. As alterações são salvas ao clicar em Salvar ordem.",
+      "dragHintUnsafe": "⚠️ Modo seguro DESATIVADO - Você pode arrastar itens entre categorias. Isso pode causar problemas se feito incorretamente.",
+      "saveOrder": "Salvar ordem",
+      "autoSort": "Ordenar automaticamente",
+      "backups": "Backups ({{count}})",
+      "backupsTitle": "Backups de cenários",
+      "backupsDescription": "Restaurar uma versão anterior do scenery_packs.ini",
+      "noBackups": "Sem backups ainda. Backups são criados automaticamente ao salvar alterações.",
+      "restore": "Restaurar"
+    },
+    "liveryDialog": {
+      "title": "Pinturas",
+      "loading": "Carregando pinturas...",
+      "loadFailed": "Falha ao carregar pinturas",
+      "notFound": "Nenhuma pintura encontrada",
+      "confirmDelete": "Excluir pintura \"{{name}}\"? Esta ação não pode ser desfeita."
+    },
+    "scriptsDialog": {
+      "title": "Scripts Lua",
+      "subtitle": "Pasta de Scripts FlyWithLua",
+      "loading": "Carregando scripts...",
+      "loadFailed": "Falha ao carregar scripts",
+      "notFound": "Nenhum script encontrado",
+      "confirmDelete": "Excluir script \"{{name}}\"? Esta ação não pode ser desfeita."
+    },
+    "aircraftCard": {
+      "liveries": "{{count}} pinturas",
+      "viewLiveries": "Ver {{count}} pinturas",
+      "openFolder": "Abrir pasta",
+      "lock": "Bloquear",
+      "unlock": "Desbloquear"
+    },
+    "pluginEntry": {
+      "scripts": "{{count}} scripts",
+      "manageScripts": "Gerenciar scripts Lua",
+      "lock": "Bloquear (prevenir alterações)",
+      "unlock": "Desbloquear",
+      "openFolder": "Abrir pasta",
+      "deletePlugin": "Excluir plugin"
+    },
+    "sceneryEntry": {
+      "openFolder": "Abrir pasta"
+    },
+    "addonTypes": {
+      "Aircraft": "Aeronave",
+      "Scenery": "Cenário",
+      "SceneryLibrary": "Biblioteca de cenários",
+      "Plugin": "Plugin",
+      "Livery": "Pintura",
+      "LuaScript": "Script Lua",
+      "Navdata": "Dados de navegação"
+    }
   }
 }

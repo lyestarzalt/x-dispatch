@@ -609,5 +609,114 @@
       "full": "Pieno",
       "of": "di"
     }
+  },
+
+  "addonManager": {
+    "title": "Gestore addon",
+    "openXPlaneFolder": "Apri cartella X-Plane",
+    "tabs": {
+      "scenery": "Ordine scenari",
+      "browser": "Browser",
+      "installer": "Installatore"
+    },
+    "installer": {
+      "dropZone": {
+        "title": "Trascina o clicca per selezionare",
+        "subtitle": "Archivi ZIP, 7z o RAR",
+        "ariaLabel": "Trascina o clicca per selezionare archivi addon"
+      },
+      "analyzing": "Analisi in corso...",
+      "analysisFailed": "Analisi file fallita",
+      "installing": "Installazione in corso...",
+      "installFailed": "Installazione fallita",
+      "progress": "Installazione {{current}} di {{total}}",
+      "successOne": "1 addon installato con successo",
+      "successMany": "{{count}} addon installati con successo",
+      "partialSuccess": "{{success}} di {{total}} addon installati",
+      "failed": "Fallito: {{error}}",
+      "detectedOne": "1 addon rilevato",
+      "detectedMany": "{{count}} addon rilevati",
+      "installOne": "Installa 1 addon",
+      "installMany": "Installa {{count}} addon",
+      "emptyState": "Trascina archivi per analizzarli",
+      "clear": "Pulisci"
+    },
+    "browser": {
+      "searchPlaceholder": "Cerca...",
+      "stats": {
+        "total": "{{count}} totali",
+        "enabled": "{{count}} attivi",
+        "updates": "{{count}} aggiornamenti"
+      },
+      "checkUpdates": "Verifica aggiornamenti",
+      "aircraft": "Aerei",
+      "plugins": "Plugin",
+      "scanningAircraft": "Scansione aerei...",
+      "scanningPlugins": "Scansione plugin...",
+      "loadFailed": "Caricamento {{type}} fallito",
+      "noMatch": "Nessun {{type}} corrisponde alla ricerca",
+      "notFound": "Nessun {{type}} trovato",
+      "confirmDelete": "Eliminare \"{{name}}\"? Questa azione non può essere annullata."
+    },
+    "scenery": {
+      "loading": "Scansione cartelle scenari...",
+      "loadFailed": "Caricamento scenari fallito",
+      "packages": "{{count}} pacchetti scenari",
+      "unsavedChanges": "Modifiche non salvate",
+      "safeMode": "Modalità sicura",
+      "safeModeOn": "Trascinamento limitato alla stessa categoria. Disattiva per riordinare liberamente (avanzato).",
+      "safeModeOff": "Riordinamento libero attivato. Gli elementi possono essere trascinati tra categorie - attenzione!",
+      "dragHintSafe": "Trascina per riordinare nella stessa categoria. Le modifiche vengono salvate cliccando Salva ordine.",
+      "dragHintUnsafe": "⚠️ Modalità sicura DISATTIVATA - Puoi trascinare elementi tra categorie. Ciò può causare problemi se fatto in modo errato.",
+      "saveOrder": "Salva ordine",
+      "autoSort": "Ordinamento automatico",
+      "backups": "Backup ({{count}})",
+      "backupsTitle": "Backup scenari",
+      "backupsDescription": "Ripristina una versione precedente di scenery_packs.ini",
+      "noBackups": "Nessun backup disponibile. I backup vengono creati automaticamente al salvataggio.",
+      "restore": "Ripristina"
+    },
+    "liveryDialog": {
+      "title": "Livree",
+      "loading": "Caricamento livree...",
+      "loadFailed": "Caricamento livree fallito",
+      "notFound": "Nessuna livrea trovata",
+      "confirmDelete": "Eliminare la livrea \"{{name}}\"? Questa azione non può essere annullata."
+    },
+    "scriptsDialog": {
+      "title": "Script Lua",
+      "subtitle": "Cartella Scripts FlyWithLua",
+      "loading": "Caricamento script...",
+      "loadFailed": "Caricamento script fallito",
+      "notFound": "Nessuno script trovato",
+      "confirmDelete": "Eliminare lo script \"{{name}}\"? Questa azione non può essere annullata."
+    },
+    "aircraftCard": {
+      "liveries": "{{count}} livree",
+      "viewLiveries": "Vedi {{count}} livree",
+      "openFolder": "Apri cartella",
+      "lock": "Blocca",
+      "unlock": "Sblocca"
+    },
+    "pluginEntry": {
+      "scripts": "{{count}} script",
+      "manageScripts": "Gestisci script Lua",
+      "lock": "Blocca (previeni modifiche)",
+      "unlock": "Sblocca",
+      "openFolder": "Apri cartella",
+      "deletePlugin": "Elimina plugin"
+    },
+    "sceneryEntry": {
+      "openFolder": "Apri cartella"
+    },
+    "addonTypes": {
+      "Aircraft": "Aereo",
+      "Scenery": "Scenario",
+      "SceneryLibrary": "Libreria scenari",
+      "Plugin": "Plugin",
+      "Livery": "Livrea",
+      "LuaScript": "Script Lua",
+      "Navdata": "Dati di navigazione"
+    }
   }
 }

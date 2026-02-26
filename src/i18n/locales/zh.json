@@ -609,5 +609,114 @@
       "full": "满",
       "of": "的"
     }
+  },
+
+  "addonManager": {
+    "title": "插件管理器",
+    "openXPlaneFolder": "打开 X-Plane 文件夹",
+    "tabs": {
+      "scenery": "场景顺序",
+      "browser": "浏览器",
+      "installer": "安装器"
+    },
+    "installer": {
+      "dropZone": {
+        "title": "拖放或点击选择文件",
+        "subtitle": "ZIP、7z 或 RAR 压缩包",
+        "ariaLabel": "拖放或点击选择插件压缩文件"
+      },
+      "analyzing": "正在分析...",
+      "analysisFailed": "分析文件失败",
+      "installing": "正在安装...",
+      "installFailed": "安装失败",
+      "progress": "正在安装 {{current}}/{{total}}",
+      "successOne": "成功安装 1 个插件",
+      "successMany": "成功安装 {{count}} 个插件",
+      "partialSuccess": "已安装 {{success}}/{{total}} 个插件",
+      "failed": "失败：{{error}}",
+      "detectedOne": "检测到 1 个插件",
+      "detectedMany": "检测到 {{count}} 个插件",
+      "installOne": "安装 1 个插件",
+      "installMany": "安装 {{count}} 个插件",
+      "emptyState": "拖放插件压缩包进行分析",
+      "clear": "清除"
+    },
+    "browser": {
+      "searchPlaceholder": "搜索...",
+      "stats": {
+        "total": "共 {{count}} 个",
+        "enabled": "已启用 {{count}} 个",
+        "updates": "{{count}} 个更新"
+      },
+      "checkUpdates": "检查更新",
+      "aircraft": "飞机",
+      "plugins": "插件",
+      "scanningAircraft": "正在扫描飞机...",
+      "scanningPlugins": "正在扫描插件...",
+      "loadFailed": "加载{{type}}失败",
+      "noMatch": "没有匹配的{{type}}",
+      "notFound": "未找到{{type}}",
+      "confirmDelete": "删除 \"{{name}}\"？此操作无法撤销。"
+    },
+    "scenery": {
+      "loading": "正在扫描场景文件夹...",
+      "loadFailed": "加载场景失败",
+      "packages": "{{count}} 个场景包",
+      "unsavedChanges": "未保存的更改",
+      "safeMode": "安全模式",
+      "safeModeOn": "拖动限制在同一类别内。关闭可自由排序（高级）。",
+      "safeModeOff": "已启用自由排序。可跨类别拖动项目 - 请谨慎使用！",
+      "dragHintSafe": "拖动可在同一类别内重新排序。点击保存顺序后更改才会生效。",
+      "dragHintUnsafe": "⚠️ 安全模式已关闭 - 您可以跨类别拖动项目。操作不当可能导致场景问题。",
+      "saveOrder": "保存顺序",
+      "autoSort": "自动排序",
+      "backups": "备份 ({{count}})",
+      "backupsTitle": "场景备份",
+      "backupsDescription": "恢复 scenery_packs.ini 的历史版本",
+      "noBackups": "暂无备份。保存更改时会自动创建备份。",
+      "restore": "恢复"
+    },
+    "liveryDialog": {
+      "title": "涂装",
+      "loading": "正在加载涂装...",
+      "loadFailed": "加载涂装失败",
+      "notFound": "未找到涂装",
+      "confirmDelete": "删除涂装 \"{{name}}\"？此操作无法撤销。"
+    },
+    "scriptsDialog": {
+      "title": "Lua 脚本",
+      "subtitle": "FlyWithLua 脚本文件夹",
+      "loading": "正在加载脚本...",
+      "loadFailed": "加载脚本失败",
+      "notFound": "未找到脚本",
+      "confirmDelete": "删除脚本 \"{{name}}\"？此操作无法撤销。"
+    },
+    "aircraftCard": {
+      "liveries": "{{count}} 个涂装",
+      "viewLiveries": "查看 {{count}} 个涂装",
+      "openFolder": "打开文件夹",
+      "lock": "锁定",
+      "unlock": "解锁"
+    },
+    "pluginEntry": {
+      "scripts": "{{count}} 个脚本",
+      "manageScripts": "管理 Lua 脚本",
+      "lock": "锁定（防止更改）",
+      "unlock": "解锁",
+      "openFolder": "打开文件夹",
+      "deletePlugin": "删除插件"
+    },
+    "sceneryEntry": {
+      "openFolder": "打开文件夹"
+    },
+    "addonTypes": {
+      "Aircraft": "飞机",
+      "Scenery": "场景",
+      "SceneryLibrary": "场景库",
+      "Plugin": "插件",
+      "Livery": "涂装",
+      "LuaScript": "Lua 脚本",
+      "Navdata": "导航数据"
+    }
   }
 }
