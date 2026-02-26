@@ -1,5 +1,6 @@
 // src/components/dialogs/AddonManager/components/DropZone.tsx
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 
@@ -14,6 +15,7 @@ interface DropZoneProps {
 }
 
 export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
+  const { t } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = useCallback(
@@ -72,7 +74,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
-      aria-label="Drop or click to select addon archive files"
+      aria-label={t('addonManager.installer.dropZone.ariaLabel')}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onDragOver={handleDragOver}
@@ -89,8 +91,10 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       <Upload
         className={cn('mb-3 h-10 w-10', isDragOver ? 'text-primary' : 'text-muted-foreground')}
       />
-      <p className="text-sm font-medium">Drop or click to select files</p>
-      <p className="mt-1 text-xs text-muted-foreground">ZIP, 7z, or RAR archives</p>
+      <p className="text-sm font-medium">{t('addonManager.installer.dropZone.title')}</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {t('addonManager.installer.dropZone.subtitle')}
+      </p>
     </div>
   );
 }

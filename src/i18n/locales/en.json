@@ -616,5 +616,103 @@
       "full": "Full",
       "of": "of"
     }
+  },
+
+  "addonManager": {
+    "title": "Addon Manager",
+    "openXPlaneFolder": "Open X-Plane Folder",
+    "tabs": {
+      "scenery": "Scenery Order",
+      "browser": "Browser",
+      "installer": "Installer"
+    },
+    "installer": {
+      "dropZone": {
+        "title": "Drop or click to select files",
+        "subtitle": "ZIP, 7z, or RAR archives",
+        "ariaLabel": "Drop or click to select addon archive files"
+      },
+      "analyzing": "Analyzing...",
+      "analysisFailed": "Failed to analyze files",
+      "installing": "Installing...",
+      "installFailed": "Installation failed",
+      "progress": "Installing {{current}} of {{total}}",
+      "successOne": "Successfully installed 1 addon",
+      "successMany": "Successfully installed {{count}} addons",
+      "partialSuccess": "Installed {{success}} of {{total}} addons",
+      "failed": "Failed: {{error}}",
+      "detectedOne": "Detected 1 addon",
+      "detectedMany": "Detected {{count}} addons",
+      "installOne": "Install 1 addon",
+      "installMany": "Install {{count}} addons",
+      "emptyState": "Drop addon archives to analyze them",
+      "clear": "Clear"
+    },
+    "browser": {
+      "searchPlaceholder": "Search...",
+      "stats": {
+        "total": "{{count}} total",
+        "enabled": "{{count}} enabled",
+        "updates": "{{count}} updates"
+      },
+      "checkUpdates": "Check Updates",
+      "aircraft": "Aircraft",
+      "plugins": "Plugins",
+      "scanningAircraft": "Scanning aircraft...",
+      "scanningPlugins": "Scanning plugins...",
+      "loadFailed": "Failed to load {{type}}",
+      "noMatch": "No {{type}} match your search",
+      "notFound": "No {{type}} found",
+      "confirmDelete": "Delete \"{{name}}\"? This cannot be undone.",
+      "disabled": "Disabled",
+      "hasUpdate": "Update available",
+      "locked": "Locked",
+      "liveries": "Liveries",
+      "openFolder": "Open Folder",
+      "toggle": "Toggle",
+      "lock": "Lock",
+      "unlock": "Unlock"
+    },
+    "scenery": {
+      "loading": "Scanning scenery folders...",
+      "loadFailed": "Failed to load scenery",
+      "packages": "{{count}} scenery packages",
+      "unsavedChanges": "Unsaved changes",
+      "safeMode": "Safe mode",
+      "safeModeOn": "Drag restricted to same category. Turn off to freely reorder (advanced).",
+      "safeModeOff": "Free reorder enabled. Items can be dragged across categories - use with caution!",
+      "dragHintSafe": "Drag to reorder within the same category. Changes are saved when you click Save Order.",
+      "dragHintUnsafe": "Safe mode OFF - You can drag items across categories. This may cause scenery issues if done incorrectly.",
+      "saveOrder": "Save Order",
+      "autoSort": "Auto-Sort",
+      "backups": "Backups ({{count}})",
+      "backupsTitle": "Scenery Backups",
+      "backupsDescription": "Restore a previous version of scenery_packs.ini",
+      "noBackups": "No backups available yet. Backups are created automatically when you save changes.",
+      "restore": "Restore"
+    },
+    "liveryDialog": {
+      "title": "Liveries for {{aircraft}}",
+      "loading": "Loading liveries...",
+      "loadFailed": "Failed to load liveries",
+      "notFound": "No liveries found",
+      "confirmDelete": "Delete livery \"{{name}}\"? This cannot be undone."
+    },
+    "scriptsDialog": {
+      "title": "FlyWithLua Scripts",
+      "loading": "Loading scripts...",
+      "loadFailed": "Failed to load scripts",
+      "notFound": "No scripts found",
+      "confirmDelete": "Delete script \"{{name}}\"? This cannot be undone."
+    },
+    "addonTypes": {
+      "Aircraft": "Aircraft",
+      "Scenery": "Scenery",
+      "SceneryLibrary": "Scenery Library",
+      "Plugin": "Plugin",
+      "Livery": "Livery",
+      "LuaScript": "Lua Script",
+      "Navdata": "Navigation Data"
+    }
   }
 }

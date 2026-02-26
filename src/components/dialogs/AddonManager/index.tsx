@@ -1,5 +1,6 @@
 // src/components/dialogs/AddonManager/index.tsx
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { FolderOpen, X } from 'lucide-react';
@@ -19,6 +20,7 @@ interface AddonManagerProps {
 type TabValue = 'scenery' | 'browser' | 'installer';
 
 export function AddonManager({ open, onClose }: AddonManagerProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabValue>('scenery');
 
   const handleOpenXPlaneFolder = async () => {
@@ -37,12 +39,12 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
-            <DialogTitle>Addon Manager</DialogTitle>
+            <DialogTitle>{t('addonManager.title')}</DialogTitle>
           </VisuallyHidden.Root>
 
           {/* Header */}
           <div className="flex h-11 shrink-0 items-center justify-between rounded-t-lg border-b border-border bg-card px-4">
-            <span className="text-sm font-medium">Addon Manager</span>
+            <span className="text-sm font-medium">{t('addonManager.title')}</span>
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
@@ -51,7 +53,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                 className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
               >
                 <FolderOpen className="h-3.5 w-3.5" />
-                Open X-Plane Folder
+                {t('addonManager.openXPlaneFolder')}
               </Button>
               <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
                 <X className="h-4 w-4" />
@@ -67,9 +69,9 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
               className="flex flex-1 flex-col overflow-hidden"
             >
               <TabsList className="mx-4 mt-4 grid w-fit grid-cols-3">
-                <TabsTrigger value="scenery">Scenery Order</TabsTrigger>
-                <TabsTrigger value="browser">Browser</TabsTrigger>
-                <TabsTrigger value="installer">Installer</TabsTrigger>
+                <TabsTrigger value="scenery">{t('addonManager.tabs.scenery')}</TabsTrigger>
+                <TabsTrigger value="browser">{t('addonManager.tabs.browser')}</TabsTrigger>
+                <TabsTrigger value="installer">{t('addonManager.tabs.installer')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="scenery" className="flex-1 overflow-hidden">
