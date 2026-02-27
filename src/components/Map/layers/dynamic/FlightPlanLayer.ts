@@ -125,13 +125,9 @@ function loadImage(map: maplibregl.Map, id: string, svg: string): void {
 // ============================================================================
 
 export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightPlan): void {
-  console.log('[FlightPlanLayer] addFlightPlanLayer called, styleLoaded:', map.isStyleLoaded());
-
   // Wait for style to load before adding layers
   if (!map.isStyleLoaded()) {
-    console.log('[FlightPlanLayer] Style not loaded, waiting...');
     map.once('style.load', () => {
-      console.log('[FlightPlanLayer] Style loaded, retrying...');
       addFlightPlanLayer(map, fmsData);
     });
     return;
@@ -140,9 +136,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   removeFlightPlanLayer(map);
 
   const waypoints = fmsData.waypoints;
-  console.log('[FlightPlanLayer] Processing waypoints:', waypoints.length);
   if (waypoints.length < 2) {
-    console.log('[FlightPlanLayer] Not enough waypoints, skipping');
     return;
   }
 
@@ -259,8 +253,6 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       'text-halo-width': 1.5,
     },
   });
-
-  console.log('[FlightPlanLayer] All layers added successfully');
 }
 
 export function removeFlightPlanLayer(map: maplibregl.Map): void {

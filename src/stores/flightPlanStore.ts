@@ -143,16 +143,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
 
     // Enrich with nav database data
     try {
-      console.log('[FlightPlan] Enriching flight plan...');
       const enriched = await window.flightPlanAPI.enrich(result.data);
       if (enriched) {
-        console.log('[FlightPlan] Enrichment result:', {
-          total: enriched.resolution.total,
-          found: enriched.resolution.found,
-          notFound: enriched.resolution.notFound,
-          cycleMatch: enriched.resolution.cycleMatch,
-          sampleWaypoint: enriched.waypoints[1], // Skip departure airport
-        });
         set({
           fmsData: enriched,
           fileName,
@@ -200,9 +192,6 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
     }),
 
   loadFromSimbrief: (data) => {
-    console.log('[FlightPlanStore] loadFromSimbrief called');
-    console.log('[FlightPlanStore] navlog fixes:', data.navlog?.fix?.length);
-
     // Map SimBrief fix type to FMS waypoint type
     const mapFixType = (type: string): 1 | 2 | 3 | 11 | 28 => {
       switch (type) {
@@ -248,13 +237,6 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       },
     };
 
-    console.log('[FlightPlanStore] Setting fmsData with waypoints:', enrichedPlan.waypoints.length);
-    console.log('[FlightPlanStore] First waypoint:', enrichedPlan.waypoints[0]);
-    console.log(
-      '[FlightPlanStore] Last waypoint:',
-      enrichedPlan.waypoints[enrichedPlan.waypoints.length - 1]
-    );
-
     set({
       simbriefData: data,
       fmsData: enrichedPlan,
@@ -269,8 +251,6 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
         runway: data.destination.plan_rwy,
       },
     });
-
-    console.log('[FlightPlanStore] State updated');
   },
 
   getChips: () => {
