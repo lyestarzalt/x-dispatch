@@ -298,7 +298,6 @@ export default function Map({ airports }: MapProps) {
     if (!map) return;
 
     if (fmsData) {
-      console.log('[FlightPlan] Adding flight plan layer, waypoints:', fmsData.waypoints.length);
       addFlightPlanLayer(map, fmsData);
       // Only fit on initial load, not on style change
       if (styleVersion === 0) {
