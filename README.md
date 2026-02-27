@@ -5,7 +5,7 @@
 <h1 align="center">X-Dispatch</h1>
 
 <p align="center">
-  Interactive airport map and flight launcher for X-Plane 12
+  Flight dispatch, airport visualization, and addon management for X-Plane 12
 </p>
 
 <p align="center">
@@ -46,11 +46,29 @@
 
 ![Map Overview](screenshots/map-overview.png)
 
-X-Plane shows airport diagrams but has no global map to explore and discover airports. You need to already know the ICAO code to load an airport. This app gives you a world map to browse, search, and explore all airports visually.
+X-Plane has detailed airport diagrams but no global map to explore them. You need to already know the ICAO code to load an airport. I always wanted a world map to browse, search, and discover airports visually — so I built this.
 
-Click on any airport to see detailed maps with runways, taxiways, gates, and markings. Select a start position, configure your flight, and launch X-Plane directly.
+Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief. Select a starting position, configure your flight, and launch X-Plane directly.
+
+The app has grown to include SimBrief integration, live flight tracking, SID/STAR visualization, and an addon manager to keep your aircraft and scenery organized.
 
 ## Screenshots
+
+<details>
+<summary>SimBrief Integration</summary>
+
+![SimBrief Import](screenshots/simbrief-1.png)
+![SimBrief Flight Info](screenshots/simbrief-2.png)
+
+</details>
+
+<details>
+<summary>Addon Manager</summary>
+
+![Addon Browser](screenshots/addon-manager-1.png)
+![Addon Details](screenshots/addon-manager-2.png)
+
+</details>
 
 <details>
 <summary>Airport Detail View</summary>
@@ -74,13 +92,6 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 </details>
 
 <details>
-<summary>Settings</summary>
-
-![Settings](screenshots/settings.png)
-
-</details>
-
-<details>
 <summary>Live Flight Tracking</summary>
 
 ![Flight Tracking](screenshots/flight-tracking.png)
@@ -94,7 +105,31 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 
 </details>
 
+<details>
+<summary>Settings</summary>
+
+![Settings](screenshots/settings.png)
+
+</details>
+
 ## Features
+
+### SimBrief Integration
+
+- Import your latest OFP with one click
+- Full route visualization on the map
+- Fuel breakdown: block, taxi, enroute, reserves, contingency
+- Weight summary: ZFW, TOW, landing weight
+- Flight times and distance
+- Aircraft and callsign info
+
+### Addon Manager
+
+- Browse aircraft and scenery from trusted sources
+- One-click install and update
+- Track installed addons and available updates
+- Automatic extraction to correct X-Plane folders
+- Support for ZIP, RAR, and 7z archives
 
 ### Airport Visualization
 
@@ -161,11 +196,15 @@ Click on any airport to see detailed maps with runways, taxiways, gates, and mar
 ## How It Works
 
 1. Point the app to your X-Plane installation
-2. It parses X-Plane's data files (apt.dat, nav data, CIFP procedures) and caches them in SQLite
+2. The app parses X-Plane's data files (apt.dat, nav data, CIFP procedures) and caches them
 3. Browse the world map and click any airport
-4. The airport renders with full geometry from apt.dat
+4. Import your flight plan from SimBrief or load an FMS file
 5. Select a gate or runway, pick your aircraft, configure the flight
-6. The app writes a `Freeflight.prf` file and launches X-Plane with your configuration
+6. Launch X-Plane — or if it's already running, relocate mid-flight
+
+Once flying, connect to X-Plane's WebSocket API to track your aircraft live on the map with speed, altitude, heading, and vertical speed indicators.
+
+For addons, browse the catalog, click install, and the app handles downloading and extracting to the correct folder.
 
 ## Development
 
