@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "Search airports...",
     "clearSearch": "Clear search",
+    "addons": "Addons",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Track",
@@ -89,6 +90,7 @@
     "loadPlan": "Load Plan",
     "navigationLayers": "Navigation Layers",
     "tooltips": {
+      "addons": "Manage aircraft, plugins, and scenery",
       "loadPlan": "Load X-Plane .fms flight plan files",
       "explore": "Discover featured airports and routes",
       "nav": "Toggle navigation layers around airport",
@@ -623,30 +625,57 @@
     "openXPlaneFolder": "Open X-Plane Folder",
     "tabs": {
       "scenery": "Scenery Order",
-      "browser": "Browser",
+      "installed": "Installed",
       "installer": "Installer"
+    },
+    "nav": {
+      "sceneryDesc": "Manage scenery load order",
+      "installedDesc": "Aircraft and plugins",
+      "installerDesc": "Install new addons"
+    },
+    "installed": {
+      "total": "installed",
+      "searchPlaceholder": "Search addons...",
+      "checkUpdates": "Check Updates",
+      "updatesAvailable": "{{count}} updates",
+      "aircraft": "Aircraft",
+      "plugins": "Plugins",
+      "disabled": "disabled",
+      "updates": "updates",
+      "scanningAircraft": "Scanning aircraft...",
+      "scanningPlugins": "Scanning plugins...",
+      "loadFailed": "Failed to load {{type}}",
+      "noMatch": "No {{type}} match your search",
+      "notFound": "No {{type}} found"
     },
     "installer": {
       "dropZone": {
-        "title": "Drop or click to select files",
+        "title": "Drop files to install",
         "subtitle": "ZIP, 7z, or RAR archives",
-        "ariaLabel": "Drop or click to select addon archive files"
+        "ariaLabel": "Drop or click to select addon archive files",
+        "addMore": "Add more files",
+        "browse": "or browse files"
       },
-      "analyzing": "Analyzing...",
+      "itemsDetected": "items ready",
+      "analyzing": "Analyzing files",
+      "analyzingHint": "Detecting addon types and contents",
       "analysisFailed": "Failed to analyze files",
       "installing": "Installing...",
       "installFailed": "Installation failed",
       "progress": "Installing {{current}} of {{total}}",
-      "successOne": "Successfully installed 1 addon",
-      "successMany": "Successfully installed {{count}} addons",
+      "successOne": "Installation complete!",
+      "successMany": "{{count}} addons installed!",
+      "successHint": "Your addons are ready to use",
       "partialSuccess": "Installed {{success}} of {{total}} addons",
       "failed": "Failed: {{error}}",
       "detectedOne": "Detected 1 addon",
       "detectedMany": "Detected {{count}} addons",
-      "installOne": "Install 1 addon",
+      "installOne": "Install addon",
       "installMany": "Install {{count}} addons",
-      "emptyState": "Drop addon archives to analyze them",
-      "clear": "Clear"
+      "emptyState": "Drop addon archives to install",
+      "supportedTypes": "Aircraft, plugins, scenery, liveries, and more",
+      "installMore": "Install more addons",
+      "clear": "Clear all"
     },
     "browser": {
       "searchPlaceholder": "Search...",
@@ -675,21 +704,36 @@
     },
     "scenery": {
       "loading": "Scanning scenery folders...",
+      "loadingHint": "This may take a moment for large installations",
       "loadFailed": "Failed to load scenery",
+      "total": "packages",
       "packages": "{{count}} scenery packages",
-      "unsavedChanges": "Unsaved changes",
-      "safeMode": "Safe mode",
+      "unsavedChanges": "Unsaved",
+      "safeMode": "Safe",
+      "unsafeMode": "Unsafe",
       "safeModeOn": "Drag restricted to same category. Turn off to freely reorder (advanced).",
       "safeModeOff": "Free reorder enabled. Items can be dragged across categories - use with caution!",
+      "priorityHint": "Lower numbers load first and have lower priority. Higher numbers override lower ones.",
       "dragHintSafe": "Drag to reorder within the same category. Changes are saved when you click Save Order.",
       "dragHintUnsafe": "Safe mode OFF - You can drag items across categories. This may cause scenery issues if done incorrectly.",
-      "saveOrder": "Save Order",
+      "saveOrder": "Save",
       "autoSort": "Auto-Sort",
       "backups": "Backups ({{count}})",
       "backupsTitle": "Scenery Backups",
       "backupsDescription": "Restore a previous version of scenery_packs.ini",
       "noBackups": "No backups available yet. Backups are created automatically when you save changes.",
-      "restore": "Restore"
+      "restore": "Restore",
+      "groups": {
+        "fixedHigh": "System Libraries",
+        "airports": "Custom Airports",
+        "defaultAirports": "Default Airports",
+        "libraries": "Scenery Libraries",
+        "other": "Other",
+        "overlays": "Overlays",
+        "airportMesh": "Airport Mesh",
+        "mesh": "Terrain Mesh",
+        "unrecognized": "Unrecognized"
+      }
     },
     "liveryDialog": {
       "title": "Liveries",

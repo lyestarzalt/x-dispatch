@@ -1,5 +1,5 @@
 // src/components/dialogs/AddonManager/tabs/SceneryTab.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -18,12 +18,12 @@ import {
 } from '@dnd-kit/sortable';
 import {
   AlertCircle,
-  ArrowUpDown,
+  History,
   Loader2,
-  RotateCcw,
   Save,
   ShieldCheck,
   ShieldOff,
+  Sparkles,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -34,11 +34,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
+import { cn } from '@/lib/utils/helpers';
 import {
   useScenarySaveOrder,
   useSceneryBackups,
@@ -70,6 +69,13 @@ export function SceneryTab() {
     }
   }, [entries, hasUnsavedChanges]);
 
+  // Count stats
+  const stats = useMemo(() => {
+    const enabled = localEntries.filter((e) => e.enabled).length;
+    const disabled = localEntries.length - enabled;
+    return { total: localEntries.length, enabled, disabled };
+  }, [localEntries]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -99,7 +105,6 @@ export function SceneryTab() {
   };
 
   const handleSaveOrder = async () => {
-    // Save the current order to file
     const folderNames = localEntries.map((e) => e.folderName);
     await saveOrderMutation.mutateAsync(folderNames);
     setHasUnsavedChanges(false);
@@ -118,21 +123,31 @@ export function SceneryTab() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">{t('addonManager.scenery.loading')}</span>
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <div className="relative">
+          <div className="h-16 w-16 rounded-full border-2 border-primary/20" />
+          <Loader2 className="absolute inset-0 m-auto h-8 w-8 animate-spin text-primary" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-medium">{t('addonManager.scenery.loading')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('addonManager.scenery.loadingHint')}
+          </p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="destructive" className="m-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {error instanceof Error ? error.message : t('addonManager.scenery.loadFailed')}
-        </AlertDescription>
-      </Alert>
+      <div className="flex h-full items-center justify-center p-6">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error instanceof Error ? error.message : t('addonManager.scenery.loadFailed')}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
@@ -143,88 +158,131 @@ export function SceneryTab() {
     restoreMutation.isPending;
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
-      {/* Header bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">
-            {t('addonManager.scenery.packages', { count: localEntries.length })}
-          </span>
-          {hasUnsavedChanges && (
-            <span className="text-xs text-warning">{t('addonManager.scenery.unsavedChanges')}</span>
-          )}
+    <div className="flex h-full flex-col">
+      {/* Stats Bar */}
+      <div className="flex items-center justify-between border-b border-border bg-card/30 px-4 py-3">
+        <div className="flex items-center gap-6">
+          {/* Total count */}
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold tabular-nums text-foreground">{stats.total}</span>
+            <span className="text-xs text-muted-foreground">{t('addonManager.scenery.total')}</span>
+          </div>
 
-          {/* Safe mode toggle */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-2">
-                  {safeMode ? (
-                    <ShieldCheck className="h-4 w-4 text-success" />
-                  ) : (
-                    <ShieldOff className="h-4 w-4 text-warning" />
-                  )}
-                  <Switch id="safe-mode" checked={safeMode} onCheckedChange={setSafeMode} />
-                  <Label htmlFor="safe-mode" className="cursor-pointer text-xs">
-                    {t('addonManager.scenery.safeMode')}
-                  </Label>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[250px]">
-                <p className="text-xs">
-                  {safeMode
-                    ? t('addonManager.scenery.safeModeOn')
-                    : t('addonManager.scenery.safeModeOff')}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <div className="flex gap-2">
+          {/* Enabled/Disabled */}
+          <div className="flex items-center gap-4 border-l border-border pl-6">
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-success" />
+              <span className="text-sm tabular-nums text-muted-foreground">{stats.enabled}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
+              <span className="text-sm tabular-nums text-muted-foreground">{stats.disabled}</span>
+            </div>
+          </div>
+
+          {/* Unsaved indicator */}
           {hasUnsavedChanges && (
-            <Button variant="default" size="sm" onClick={handleSaveOrder} disabled={isPending}>
+            <div className="flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1">
+              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
+              <span className="text-xs font-medium text-warning">
+                {t('addonManager.scenery.unsavedChanges')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {/* Safe mode toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={safeMode ? 'outline' : 'destructive'}
+                size="sm"
+                onClick={() => setSafeMode(!safeMode)}
+                className={cn('gap-2', safeMode && 'border-success/50 text-success')}
+              >
+                {safeMode ? <ShieldCheck className="h-4 w-4" /> : <ShieldOff className="h-4 w-4" />}
+                {safeMode
+                  ? t('addonManager.scenery.safeMode')
+                  : t('addonManager.scenery.unsafeMode')}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[280px]">
+              <p className="text-xs">
+                {safeMode
+                  ? t('addonManager.scenery.safeModeOn')
+                  : t('addonManager.scenery.safeModeOff')}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Auto-sort */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleAutoSort}
+            disabled={isPending}
+            className="gap-2"
+          >
+            {sortMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {t('addonManager.scenery.autoSort')}
+          </Button>
+
+          {/* Backups */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowBackups(true)}
+            className="gap-2 text-muted-foreground"
+          >
+            <History className="h-4 w-4" />
+            {backups.length}
+          </Button>
+
+          {/* Save */}
+          {hasUnsavedChanges && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSaveOrder}
+              disabled={isPending}
+              className="gap-2"
+            >
               {saveOrderMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="h-4 w-4" />
               )}
               {t('addonManager.scenery.saveOrder')}
             </Button>
           )}
-          <Button variant="secondary" size="sm" onClick={handleAutoSort} disabled={isPending}>
-            {sortMutation.isPending && !hasUnsavedChanges ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <ArrowUpDown className="mr-2 h-4 w-4" />
-            )}
-            {t('addonManager.scenery.autoSort')}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowBackups(true)}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            {t('addonManager.scenery.backups', { count: backups.length })}
-          </Button>
         </div>
       </div>
 
-      {/* Drag hint */}
-      <p className="text-xs text-muted-foreground">
-        {safeMode
-          ? t('addonManager.scenery.dragHintSafe')
-          : t('addonManager.scenery.dragHintUnsafe')}
-      </p>
+      {/* Priority explanation */}
+      <div className="border-b border-border bg-muted/20 px-4 py-2">
+        <p className="text-xs text-muted-foreground">{t('addonManager.scenery.priorityHint')}</p>
+      </div>
 
-      {/* Scenery list with drag-and-drop */}
+      {/* Scenery list - flat, no groups */}
       <ScrollArea className="flex-1">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext
             items={localEntries.map((e) => e.folderName)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="flex flex-col gap-2 pr-4">
-              {localEntries.map((entry) => (
+            <div className="flex flex-col gap-1 p-4">
+              {localEntries.map((entry, index) => (
                 <SortableSceneryEntry
                   key={entry.folderName}
                   entry={entry}
+                  position={index + 1}
+                  totalCount={stats.total}
                   onToggle={(name) => toggleMutation.mutate(name)}
                   onOpenFolder={handleOpenFolder}
                   disabled={isPending}
@@ -244,17 +302,25 @@ export function SceneryTab() {
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
             {backups.length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                {t('addonManager.scenery.noBackups')}
-              </p>
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <History className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">
+                  {t('addonManager.scenery.noBackups')}
+                </p>
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {backups.map((backup) => (
+                {backups.map((backup, index) => (
                   <div
                     key={backup.path}
-                    className="flex items-center justify-between rounded-md border border-border p-3"
+                    className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-3 transition-colors hover:bg-accent"
                   >
-                    <span className="text-sm">{new Date(backup.timestamp).toLocaleString()}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm">{new Date(backup.timestamp).toLocaleString()}</span>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"

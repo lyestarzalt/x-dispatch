@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "Rechercher des aéroports...",
     "clearSearch": "Effacer la recherche",
+    "addons": "Addons",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Suivi",
@@ -89,6 +90,7 @@
     "loadPlan": "Charger plan",
     "navigationLayers": "Couches de navigation",
     "tooltips": {
+      "addons": "Gérer les avions, plugins et scènes",
       "loadPlan": "Charger des fichiers de plan de vol X-Plane .fms",
       "explore": "Découvrir les aéroports et routes en vedette",
       "nav": "Afficher/masquer les couches de navigation",
@@ -535,30 +537,57 @@
     "openXPlaneFolder": "Ouvrir le dossier X-Plane",
     "tabs": {
       "scenery": "Ordre des scènes",
-      "browser": "Navigateur",
+      "installed": "Installés",
       "installer": "Installateur"
+    },
+    "nav": {
+      "sceneryDesc": "Gérer l'ordre de chargement des scènes",
+      "installedDesc": "Aéronefs et plugins",
+      "installerDesc": "Installer de nouveaux addons"
+    },
+    "installed": {
+      "total": "installés",
+      "searchPlaceholder": "Rechercher des addons...",
+      "checkUpdates": "Vérifier les mises à jour",
+      "updatesAvailable": "{{count}} mises à jour",
+      "aircraft": "Aéronefs",
+      "plugins": "Plugins",
+      "disabled": "désactivés",
+      "updates": "mises à jour",
+      "scanningAircraft": "Scan des aéronefs...",
+      "scanningPlugins": "Scan des plugins...",
+      "loadFailed": "Échec du chargement des {{type}}",
+      "noMatch": "Aucun(e) {{type}} ne correspond",
+      "notFound": "Aucun(e) {{type}} trouvé(e)"
     },
     "installer": {
       "dropZone": {
-        "title": "Déposez ou cliquez pour sélectionner",
+        "title": "Déposez des fichiers à installer",
         "subtitle": "Archives ZIP, 7z ou RAR",
-        "ariaLabel": "Déposez ou cliquez pour sélectionner des archives d'addons"
+        "ariaLabel": "Déposez ou cliquez pour sélectionner des archives d'addons",
+        "addMore": "Ajouter d'autres fichiers",
+        "browse": "ou parcourir les fichiers"
       },
-      "analyzing": "Analyse en cours...",
+      "itemsDetected": "éléments prêts",
+      "analyzing": "Analyse des fichiers",
+      "analyzingHint": "Détection des types d'addons et du contenu",
       "analysisFailed": "Échec de l'analyse",
       "installing": "Installation en cours...",
       "installFailed": "Échec de l'installation",
       "progress": "Installation de {{current}} sur {{total}}",
-      "successOne": "1 addon installé avec succès",
-      "successMany": "{{count}} addons installés avec succès",
+      "successOne": "Installation terminée !",
+      "successMany": "{{count}} addons installés !",
+      "successHint": "Vos addons sont prêts à l'emploi",
       "partialSuccess": "{{success}} addons installés sur {{total}}",
       "failed": "Échec : {{error}}",
       "detectedOne": "1 addon détecté",
       "detectedMany": "{{count}} addons détectés",
-      "installOne": "Installer 1 addon",
+      "installOne": "Installer l'addon",
       "installMany": "Installer {{count}} addons",
-      "emptyState": "Déposez des archives pour les analyser",
-      "clear": "Effacer"
+      "emptyState": "Déposez des archives à installer",
+      "supportedTypes": "Avions, plugins, scènes, livrées et plus",
+      "installMore": "Installer d'autres addons",
+      "clear": "Tout effacer"
     },
     "browser": {
       "searchPlaceholder": "Rechercher...",
@@ -579,21 +608,36 @@
     },
     "scenery": {
       "loading": "Scan des dossiers de scènes...",
+      "loadingHint": "Cela peut prendre un moment pour les grandes installations",
       "loadFailed": "Échec du chargement des scènes",
+      "total": "packs",
       "packages": "{{count}} packs de scènes",
-      "unsavedChanges": "Modifications non enregistrées",
-      "safeMode": "Mode sécurisé",
+      "unsavedChanges": "Non enregistré",
+      "safeMode": "Sécurisé",
+      "unsafeMode": "Non sécurisé",
       "safeModeOn": "Glissement limité à la même catégorie. Désactivez pour réorganiser librement (avancé).",
       "safeModeOff": "Réorganisation libre activée. Les éléments peuvent être glissés entre catégories - prudence !",
+      "priorityHint": "Les numéros inférieurs se chargent en premier et ont une priorité plus basse. Les numéros supérieurs remplacent les inférieurs.",
       "dragHintSafe": "Glissez pour réorganiser dans la même catégorie. Les modifications sont enregistrées en cliquant sur Sauvegarder.",
-      "dragHintUnsafe": "⚠️ Mode sécurisé DÉSACTIVÉ - Vous pouvez glisser les éléments entre catégories. Cela peut causer des problèmes de scènes si mal fait.",
-      "saveOrder": "Sauvegarder l'ordre",
-      "autoSort": "Tri automatique",
+      "dragHintUnsafe": "Mode sécurisé DÉSACTIVÉ - Vous pouvez glisser les éléments entre catégories. Cela peut causer des problèmes de scènes si mal fait.",
+      "saveOrder": "Sauvegarder",
+      "autoSort": "Tri auto",
       "backups": "Sauvegardes ({{count}})",
       "backupsTitle": "Sauvegardes des scènes",
       "backupsDescription": "Restaurer une version précédente de scenery_packs.ini",
       "noBackups": "Aucune sauvegarde disponible. Les sauvegardes sont créées automatiquement lors de l'enregistrement.",
-      "restore": "Restaurer"
+      "restore": "Restaurer",
+      "groups": {
+        "fixedHigh": "Bibliothèques système",
+        "airports": "Aéroports personnalisés",
+        "defaultAirports": "Aéroports par défaut",
+        "libraries": "Bibliothèques de scènes",
+        "other": "Autres",
+        "overlays": "Superpositions",
+        "airportMesh": "Maillage aéroport",
+        "mesh": "Maillage terrain",
+        "unrecognized": "Non reconnu"
+      }
     },
     "liveryDialog": {
       "title": "Livrées",

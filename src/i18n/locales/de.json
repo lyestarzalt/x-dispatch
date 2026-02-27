@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "Flughäfen suchen...",
     "clearSearch": "Suche löschen",
+    "addons": "Addons",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Verfolgen",
@@ -89,6 +90,7 @@
     "loadPlan": "Plan laden",
     "navigationLayers": "Navigationsebenen",
     "tooltips": {
+      "addons": "Flugzeuge, Plugins und Szenerie verwalten",
       "loadPlan": "X-Plane .fms Flugplandateien laden",
       "explore": "Empfohlene Flughäfen und Routen entdecken",
       "nav": "Navigationsebenen um Flughafen anzeigen",
@@ -535,30 +537,57 @@
     "openXPlaneFolder": "X-Plane Ordner öffnen",
     "tabs": {
       "scenery": "Szenerie-Reihenfolge",
-      "browser": "Browser",
+      "installed": "Installiert",
       "installer": "Installer"
+    },
+    "nav": {
+      "sceneryDesc": "Szenerie-Ladereihenfolge verwalten",
+      "installedDesc": "Flugzeuge und Plugins",
+      "installerDesc": "Neue Addons installieren"
+    },
+    "installed": {
+      "total": "installiert",
+      "searchPlaceholder": "Addons suchen...",
+      "checkUpdates": "Updates prüfen",
+      "updatesAvailable": "{{count}} Updates",
+      "aircraft": "Flugzeuge",
+      "plugins": "Plugins",
+      "disabled": "deaktiviert",
+      "updates": "Updates",
+      "scanningAircraft": "Scanne Flugzeuge...",
+      "scanningPlugins": "Scanne Plugins...",
+      "loadFailed": "Laden von {{type}} fehlgeschlagen",
+      "noMatch": "Keine {{type}} entsprechen Ihrer Suche",
+      "notFound": "Keine {{type}} gefunden"
     },
     "installer": {
       "dropZone": {
-        "title": "Dateien ablegen oder klicken zum Auswählen",
+        "title": "Dateien zum Installieren ablegen",
         "subtitle": "ZIP-, 7z- oder RAR-Archive",
-        "ariaLabel": "Addon-Archive ablegen oder klicken zum Auswählen"
+        "ariaLabel": "Addon-Archive ablegen oder klicken zum Auswählen",
+        "addMore": "Weitere Dateien hinzufügen",
+        "browse": "oder Dateien durchsuchen"
       },
-      "analyzing": "Analysiere...",
+      "itemsDetected": "Elemente bereit",
+      "analyzing": "Dateien werden analysiert",
+      "analyzingHint": "Addon-Typen und Inhalte werden erkannt",
       "analysisFailed": "Analyse fehlgeschlagen",
       "installing": "Installiere...",
       "installFailed": "Installation fehlgeschlagen",
       "progress": "Installiere {{current}} von {{total}}",
-      "successOne": "1 Addon erfolgreich installiert",
-      "successMany": "{{count}} Addons erfolgreich installiert",
+      "successOne": "Installation abgeschlossen!",
+      "successMany": "{{count}} Addons installiert!",
+      "successHint": "Ihre Addons sind einsatzbereit",
       "partialSuccess": "{{success}} von {{total}} Addons installiert",
       "failed": "Fehlgeschlagen: {{error}}",
       "detectedOne": "1 Addon erkannt",
       "detectedMany": "{{count}} Addons erkannt",
-      "installOne": "1 Addon installieren",
+      "installOne": "Addon installieren",
       "installMany": "{{count}} Addons installieren",
-      "emptyState": "Archive ablegen zum Analysieren",
-      "clear": "Leeren"
+      "emptyState": "Archive zum Installieren ablegen",
+      "supportedTypes": "Flugzeuge, Plugins, Szenerie, Lackierungen und mehr",
+      "installMore": "Weitere Addons installieren",
+      "clear": "Alle löschen"
     },
     "browser": {
       "searchPlaceholder": "Suchen...",
@@ -579,21 +608,36 @@
     },
     "scenery": {
       "loading": "Scanne Szenerie-Ordner...",
+      "loadingHint": "Dies kann bei großen Installationen einen Moment dauern",
       "loadFailed": "Laden der Szenerie fehlgeschlagen",
+      "total": "Pakete",
       "packages": "{{count}} Szenerie-Pakete",
-      "unsavedChanges": "Ungespeicherte Änderungen",
-      "safeMode": "Sicherer Modus",
+      "unsavedChanges": "Ungespeichert",
+      "safeMode": "Sicher",
+      "unsafeMode": "Unsicher",
       "safeModeOn": "Ziehen nur innerhalb der gleichen Kategorie. Ausschalten für freies Sortieren (Fortgeschritten).",
       "safeModeOff": "Freies Sortieren aktiviert. Elemente können zwischen Kategorien gezogen werden - Vorsicht!",
+      "priorityHint": "Niedrigere Nummern laden zuerst und haben niedrigere Priorität. Höhere Nummern überschreiben niedrigere.",
       "dragHintSafe": "Ziehen zum Sortieren innerhalb der gleichen Kategorie. Änderungen werden beim Klicken auf Speichern übernommen.",
-      "dragHintUnsafe": "⚠️ Sicherer Modus AUS - Sie können Elemente zwischen Kategorien ziehen. Bei falscher Handhabung können Szenerie-Probleme auftreten.",
-      "saveOrder": "Reihenfolge speichern",
+      "dragHintUnsafe": "Sicherer Modus AUS - Sie können Elemente zwischen Kategorien ziehen. Bei falscher Handhabung können Szenerie-Probleme auftreten.",
+      "saveOrder": "Speichern",
       "autoSort": "Auto-Sortieren",
       "backups": "Backups ({{count}})",
       "backupsTitle": "Szenerie-Backups",
       "backupsDescription": "Eine frühere Version von scenery_packs.ini wiederherstellen",
       "noBackups": "Noch keine Backups. Backups werden automatisch beim Speichern erstellt.",
-      "restore": "Wiederherstellen"
+      "restore": "Wiederherstellen",
+      "groups": {
+        "fixedHigh": "System-Bibliotheken",
+        "airports": "Benutzerdefinierte Flughäfen",
+        "defaultAirports": "Standard-Flughäfen",
+        "libraries": "Szenerie-Bibliotheken",
+        "other": "Sonstige",
+        "overlays": "Overlays",
+        "airportMesh": "Flughafen-Mesh",
+        "mesh": "Gelände-Mesh",
+        "unrecognized": "Nicht erkannt"
+      }
     },
     "liveryDialog": {
       "title": "Bemalungen",
