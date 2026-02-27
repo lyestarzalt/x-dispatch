@@ -274,23 +274,6 @@ export function InstallerTab() {
             </Alert>
           </div>
         )}
-
-        {/* Empty state - only when no item and not analyzing */}
-        {!hasItem && !isAnalyzing && !result && !analyzeMutation.isError && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 pb-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
-              <Download className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {t('addonManager.installer.emptyState')}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground/70">
-                {t('addonManager.installer.supportedTypes')}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Install button - sticky at bottom */}
