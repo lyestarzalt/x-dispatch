@@ -237,6 +237,17 @@ export default function Map({ airports }: MapProps) {
     }
   }, [isXPlaneRunning, showPlaneTracker, setShowPlaneTracker]);
 
+  // Force disconnect WebSocket when X-Plane process stops
+  // This ensures the plane marker is removed immediately rather than waiting for TCP timeout
+  const wasRunningRef = useRef(false);
+  useEffect(() => {
+    if (wasRunningRef.current && !isXPlaneRunning) {
+      // X-Plane just stopped - force disconnect to clear stale connection state
+      window.xplaneServiceAPI.forceReconnect();
+    }
+    wasRunningRef.current = isXPlaneRunning;
+  }, [isXPlaneRunning]);
+
   // Plane layer sync - update plane position on map
   useEffect(() => {
     const map = mapRef.current;
