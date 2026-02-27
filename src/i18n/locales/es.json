@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "Buscar aeropuertos...",
     "clearSearch": "Limpiar búsqueda",
+    "addons": "Addons",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Seguir",
@@ -89,6 +90,7 @@
     "loadPlan": "Cargar plan",
     "navigationLayers": "Capas de navegación",
     "tooltips": {
+      "addons": "Gestionar aeronaves, plugins y escenarios",
       "loadPlan": "Cargar archivos de plan de vuelo X-Plane .fms",
       "explore": "Descubrir aeropuertos y rutas destacados",
       "nav": "Mostrar capas de navegación cerca del aeropuerto",
@@ -616,30 +618,57 @@
     "openXPlaneFolder": "Abrir carpeta X-Plane",
     "tabs": {
       "scenery": "Orden de escenarios",
-      "browser": "Explorador",
+      "installed": "Instalados",
       "installer": "Instalador"
+    },
+    "nav": {
+      "sceneryDesc": "Gestionar orden de carga de escenarios",
+      "installedDesc": "Aeronaves y plugins",
+      "installerDesc": "Instalar nuevos addons"
+    },
+    "installed": {
+      "total": "instalados",
+      "searchPlaceholder": "Buscar addons...",
+      "checkUpdates": "Buscar actualizaciones",
+      "updatesAvailable": "{{count}} actualizaciones",
+      "aircraft": "Aeronaves",
+      "plugins": "Plugins",
+      "disabled": "desactivados",
+      "updates": "actualizaciones",
+      "scanningAircraft": "Escaneando aeronaves...",
+      "scanningPlugins": "Escaneando plugins...",
+      "loadFailed": "Error al cargar {{type}}",
+      "noMatch": "No hay {{type}} que coincidan",
+      "notFound": "No se encontraron {{type}}"
     },
     "installer": {
       "dropZone": {
-        "title": "Suelta o haz clic para seleccionar",
+        "title": "Suelta archivos para instalar",
         "subtitle": "Archivos ZIP, 7z o RAR",
-        "ariaLabel": "Suelta o haz clic para seleccionar archivos de addons"
+        "ariaLabel": "Suelta o haz clic para seleccionar archivos de addons",
+        "addMore": "Añadir más archivos",
+        "browse": "o examinar archivos"
       },
-      "analyzing": "Analizando...",
+      "itemsDetected": "elementos listos",
+      "analyzing": "Analizando archivos",
+      "analyzingHint": "Detectando tipos de addon y contenido",
       "analysisFailed": "Error al analizar archivos",
       "installing": "Instalando...",
       "installFailed": "Error de instalación",
       "progress": "Instalando {{current}} de {{total}}",
-      "successOne": "1 addon instalado correctamente",
-      "successMany": "{{count}} addons instalados correctamente",
+      "successOne": "¡Instalación completa!",
+      "successMany": "¡{{count}} addons instalados!",
+      "successHint": "Tus addons están listos para usar",
       "partialSuccess": "{{success}} de {{total}} addons instalados",
       "failed": "Error: {{error}}",
       "detectedOne": "1 addon detectado",
       "detectedMany": "{{count}} addons detectados",
-      "installOne": "Instalar 1 addon",
+      "installOne": "Instalar addon",
       "installMany": "Instalar {{count}} addons",
-      "emptyState": "Suelta archivos para analizarlos",
-      "clear": "Limpiar"
+      "emptyState": "Suelta archivos para instalar",
+      "supportedTypes": "Aeronaves, plugins, escenarios, libreas y más",
+      "installMore": "Instalar más addons",
+      "clear": "Limpiar todo"
     },
     "browser": {
       "searchPlaceholder": "Buscar...",
@@ -660,21 +689,36 @@
     },
     "scenery": {
       "loading": "Escaneando carpetas de escenarios...",
+      "loadingHint": "Esto puede tardar un momento para instalaciones grandes",
       "loadFailed": "Error al cargar escenarios",
+      "total": "paquetes",
       "packages": "{{count}} paquetes de escenario",
-      "unsavedChanges": "Cambios sin guardar",
-      "safeMode": "Modo seguro",
+      "unsavedChanges": "Sin guardar",
+      "safeMode": "Seguro",
+      "unsafeMode": "Inseguro",
       "safeModeOn": "Arrastre limitado a la misma categoría. Desactiva para reordenar libremente (avanzado).",
       "safeModeOff": "Reordenación libre activada. Los elementos pueden arrastrarse entre categorías - ¡precaución!",
-      "dragHintSafe": "Arrastra para reordenar dentro de la misma categoría. Los cambios se guardan al hacer clic en Guardar orden.",
-      "dragHintUnsafe": "⚠️ Modo seguro DESACTIVADO - Puedes arrastrar elementos entre categorías. Esto puede causar problemas si se hace incorrectamente.",
-      "saveOrder": "Guardar orden",
-      "autoSort": "Ordenar automáticamente",
+      "priorityHint": "Los números menores se cargan primero y tienen menor prioridad. Los números mayores anulan a los menores.",
+      "dragHintSafe": "Arrastra para reordenar dentro de la misma categoría. Los cambios se guardan al hacer clic en Guardar.",
+      "dragHintUnsafe": "Modo seguro DESACTIVADO - Puedes arrastrar elementos entre categorías. Esto puede causar problemas si se hace incorrectamente.",
+      "saveOrder": "Guardar",
+      "autoSort": "Auto-Ordenar",
       "backups": "Copias de seguridad ({{count}})",
       "backupsTitle": "Copias de seguridad de escenarios",
       "backupsDescription": "Restaurar una versión anterior de scenery_packs.ini",
       "noBackups": "Sin copias de seguridad aún. Se crean automáticamente al guardar cambios.",
-      "restore": "Restaurar"
+      "restore": "Restaurar",
+      "groups": {
+        "fixedHigh": "Bibliotecas del sistema",
+        "airports": "Aeropuertos personalizados",
+        "defaultAirports": "Aeropuertos predeterminados",
+        "libraries": "Bibliotecas de escenarios",
+        "other": "Otros",
+        "overlays": "Superposiciones",
+        "airportMesh": "Malla de aeropuerto",
+        "mesh": "Malla de terreno",
+        "unrecognized": "No reconocido"
+      }
     },
     "liveryDialog": {
       "title": "Libreas",

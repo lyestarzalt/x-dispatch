@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "Szukaj lotnisk...",
     "clearSearch": "Wyczyść wyszukiwanie",
+    "addons": "Dodatki",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Śledź",
@@ -89,6 +90,7 @@
     "loadPlan": "Wczytaj plan",
     "navigationLayers": "Warstwy nawigacyjne",
     "tooltips": {
+      "addons": "Zarządzaj samolotami, wtyczkami i scenerią",
       "loadPlan": "Wczytaj pliki planu lotu X-Plane .fms",
       "explore": "Odkryj polecane lotniska i trasy",
       "nav": "Pokaż warstwy nawigacyjne wokół lotniska",
@@ -616,30 +618,57 @@
     "openXPlaneFolder": "Otwórz folder X-Plane",
     "tabs": {
       "scenery": "Kolejność scenerii",
-      "browser": "Przeglądarka",
+      "installed": "Zainstalowane",
       "installer": "Instalator"
+    },
+    "nav": {
+      "sceneryDesc": "Zarządzaj kolejnością ładowania scenerii",
+      "installedDesc": "Samoloty i wtyczki",
+      "installerDesc": "Zainstaluj nowe dodatki"
+    },
+    "installed": {
+      "total": "zainstalowanych",
+      "searchPlaceholder": "Szukaj dodatków...",
+      "checkUpdates": "Sprawdź aktualizacje",
+      "updatesAvailable": "{{count}} aktualizacji",
+      "aircraft": "Samoloty",
+      "plugins": "Wtyczki",
+      "disabled": "wyłączonych",
+      "updates": "aktualizacji",
+      "scanningAircraft": "Skanowanie samolotów...",
+      "scanningPlugins": "Skanowanie wtyczek...",
+      "loadFailed": "Nie udało się załadować {{type}}",
+      "noMatch": "Brak {{type}} pasujących do wyszukiwania",
+      "notFound": "Nie znaleziono {{type}}"
     },
     "installer": {
       "dropZone": {
-        "title": "Upuść lub kliknij, aby wybrać",
+        "title": "Upuść pliki do instalacji",
         "subtitle": "Archiwa ZIP, 7z lub RAR",
-        "ariaLabel": "Upuść lub kliknij, aby wybrać archiwa dodatków"
+        "ariaLabel": "Upuść lub kliknij, aby wybrać archiwa dodatków",
+        "addMore": "Dodaj więcej plików",
+        "browse": "lub przeglądaj pliki"
       },
-      "analyzing": "Analizowanie...",
+      "itemsDetected": "elementów gotowych",
+      "analyzing": "Analizowanie plików",
+      "analyzingHint": "Wykrywanie typów dodatków i zawartości",
       "analysisFailed": "Analiza plików nie powiodła się",
       "installing": "Instalowanie...",
       "installFailed": "Instalacja nie powiodła się",
       "progress": "Instalowanie {{current}} z {{total}}",
-      "successOne": "Pomyślnie zainstalowano 1 dodatek",
-      "successMany": "Pomyślnie zainstalowano {{count}} dodatków",
+      "successOne": "Instalacja zakończona!",
+      "successMany": "Zainstalowano {{count}} dodatków!",
+      "successHint": "Twoje dodatki są gotowe do użycia",
       "partialSuccess": "Zainstalowano {{success}} z {{total}} dodatków",
       "failed": "Błąd: {{error}}",
       "detectedOne": "Wykryto 1 dodatek",
       "detectedMany": "Wykryto {{count}} dodatków",
-      "installOne": "Zainstaluj 1 dodatek",
+      "installOne": "Zainstaluj dodatek",
       "installMany": "Zainstaluj {{count}} dodatków",
-      "emptyState": "Upuść archiwa, aby je przeanalizować",
-      "clear": "Wyczyść"
+      "emptyState": "Upuść archiwa do zainstalowania",
+      "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i więcej",
+      "installMore": "Zainstaluj więcej dodatków",
+      "clear": "Wyczyść wszystko"
     },
     "browser": {
       "searchPlaceholder": "Szukaj...",
@@ -660,21 +689,36 @@
     },
     "scenery": {
       "loading": "Skanowanie folderów scenerii...",
+      "loadingHint": "Może to chwilę potrwać przy dużych instalacjach",
       "loadFailed": "Nie udało się załadować scenerii",
+      "total": "pakietów",
       "packages": "{{count}} pakietów scenerii",
-      "unsavedChanges": "Niezapisane zmiany",
-      "safeMode": "Tryb bezpieczny",
+      "unsavedChanges": "Niezapisane",
+      "safeMode": "Bezpieczny",
+      "unsafeMode": "Niebezpieczny",
       "safeModeOn": "Przeciąganie ograniczone do tej samej kategorii. Wyłącz, aby swobodnie zmieniać kolejność (zaawansowane).",
       "safeModeOff": "Włączono swobodne sortowanie. Elementy można przeciągać między kategoriami - ostrożnie!",
-      "dragHintSafe": "Przeciągnij, aby zmienić kolejność w tej samej kategorii. Zmiany są zapisywane po kliknięciu Zapisz kolejność.",
-      "dragHintUnsafe": "⚠️ Tryb bezpieczny WYŁĄCZONY - Możesz przeciągać elementy między kategoriami. Może to powodować problemy ze scenerią.",
-      "saveOrder": "Zapisz kolejność",
-      "autoSort": "Automatyczne sortowanie",
+      "priorityHint": "Niższe numery ładują się najpierw i mają niższy priorytet. Wyższe numery nadpisują niższe.",
+      "dragHintSafe": "Przeciągnij, aby zmienić kolejność w tej samej kategorii. Zmiany są zapisywane po kliknięciu Zapisz.",
+      "dragHintUnsafe": "Tryb bezpieczny WYŁĄCZONY - Możesz przeciągać elementy między kategoriami. Może to powodować problemy ze scenerią.",
+      "saveOrder": "Zapisz",
+      "autoSort": "Auto-Sortuj",
       "backups": "Kopie zapasowe ({{count}})",
       "backupsTitle": "Kopie zapasowe scenerii",
       "backupsDescription": "Przywróć poprzednią wersję scenery_packs.ini",
       "noBackups": "Brak kopii zapasowych. Są tworzone automatycznie przy zapisywaniu zmian.",
-      "restore": "Przywróć"
+      "restore": "Przywróć",
+      "groups": {
+        "fixedHigh": "Biblioteki systemowe",
+        "airports": "Niestandardowe lotniska",
+        "defaultAirports": "Domyślne lotniska",
+        "libraries": "Biblioteki scenerii",
+        "other": "Inne",
+        "overlays": "Nakładki",
+        "airportMesh": "Siatka lotniska",
+        "mesh": "Siatka terenu",
+        "unrecognized": "Nierozpoznane"
+      }
     },
     "liveryDialog": {
       "title": "Malowania",

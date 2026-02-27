@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "空港を検索...",
     "clearSearch": "検索をクリア",
+    "addons": "アドオン",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "追跡",
@@ -89,6 +90,7 @@
     "loadPlan": "プラン読込",
     "navigationLayers": "ナビゲーションレイヤー",
     "tooltips": {
+      "addons": "機体、プラグイン、シーナリーを管理",
       "loadPlan": "X-Plane .fmsフライトプランファイルを読み込む",
       "explore": "おすすめの空港とルートを発見",
       "nav": "空港周辺のナビゲーションレイヤーを表示",
@@ -616,30 +618,57 @@
     "openXPlaneFolder": "X-Planeフォルダを開く",
     "tabs": {
       "scenery": "シーナリー順序",
-      "browser": "ブラウザ",
+      "installed": "インストール済み",
       "installer": "インストーラー"
+    },
+    "nav": {
+      "sceneryDesc": "シーナリーの読み込み順序を管理",
+      "installedDesc": "機体とプラグイン",
+      "installerDesc": "新しいアドオンをインストール"
+    },
+    "installed": {
+      "total": "インストール済み",
+      "searchPlaceholder": "アドオンを検索...",
+      "checkUpdates": "更新を確認",
+      "updatesAvailable": "{{count}}件の更新",
+      "aircraft": "機体",
+      "plugins": "プラグイン",
+      "disabled": "無効",
+      "updates": "更新",
+      "scanningAircraft": "機体をスキャン中...",
+      "scanningPlugins": "プラグインをスキャン中...",
+      "loadFailed": "{{type}}の読み込みに失敗",
+      "noMatch": "一致する{{type}}がありません",
+      "notFound": "{{type}}が見つかりません"
     },
     "installer": {
       "dropZone": {
-        "title": "ドロップまたはクリックして選択",
+        "title": "インストールするファイルをドロップ",
         "subtitle": "ZIP、7z、RARアーカイブ",
-        "ariaLabel": "アドオンアーカイブをドロップまたはクリックして選択"
+        "ariaLabel": "アドオンアーカイブをドロップまたはクリックして選択",
+        "addMore": "ファイルを追加",
+        "browse": "または参照"
       },
-      "analyzing": "分析中...",
+      "itemsDetected": "件準備完了",
+      "analyzing": "ファイルを分析中",
+      "analyzingHint": "アドオンの種類と内容を検出中",
       "analysisFailed": "ファイル分析に失敗しました",
       "installing": "インストール中...",
       "installFailed": "インストールに失敗しました",
       "progress": "{{current}}/{{total}}をインストール中",
-      "successOne": "1件のアドオンを正常にインストールしました",
-      "successMany": "{{count}}件のアドオンを正常にインストールしました",
+      "successOne": "インストール完了！",
+      "successMany": "{{count}}件のアドオンをインストールしました！",
+      "successHint": "アドオンは使用可能です",
       "partialSuccess": "{{total}}件中{{success}}件のアドオンをインストールしました",
       "failed": "失敗：{{error}}",
       "detectedOne": "1件のアドオンを検出",
       "detectedMany": "{{count}}件のアドオンを検出",
-      "installOne": "1件のアドオンをインストール",
+      "installOne": "アドオンをインストール",
       "installMany": "{{count}}件のアドオンをインストール",
-      "emptyState": "分析するアーカイブをドロップしてください",
-      "clear": "クリア"
+      "emptyState": "インストールするアーカイブをドロップ",
+      "supportedTypes": "機体、プラグイン、シーナリー、リバリーなど",
+      "installMore": "他のアドオンをインストール",
+      "clear": "すべてクリア"
     },
     "browser": {
       "searchPlaceholder": "検索...",
@@ -660,21 +689,36 @@
     },
     "scenery": {
       "loading": "シーナリーフォルダをスキャン中...",
+      "loadingHint": "大規模なインストールでは時間がかかる場合があります",
       "loadFailed": "シーナリーの読み込みに失敗しました",
+      "total": "パッケージ",
       "packages": "{{count}}個のシーナリーパッケージ",
-      "unsavedChanges": "未保存の変更",
-      "safeMode": "セーフモード",
+      "unsavedChanges": "未保存",
+      "safeMode": "安全",
+      "unsafeMode": "危険",
       "safeModeOn": "同じカテゴリ内でのみドラッグ可能。オフにすると自由に並べ替え可能（上級者向け）。",
       "safeModeOff": "自由な並べ替えが有効。カテゴリ間でアイテムをドラッグできます - 注意してください！",
-      "dragHintSafe": "ドラッグして同じカテゴリ内で並べ替えます。「順序を保存」をクリックすると変更が保存されます。",
-      "dragHintUnsafe": "⚠️ セーフモード無効 - カテゴリ間でアイテムをドラッグできます。間違えるとシーナリーの問題が発生する可能性があります。",
-      "saveOrder": "順序を保存",
+      "priorityHint": "小さい番号が先に読み込まれ、優先度が低くなります。大きい番号は小さい番号を上書きします。",
+      "dragHintSafe": "ドラッグして同じカテゴリ内で並べ替えます。「保存」をクリックすると変更が保存されます。",
+      "dragHintUnsafe": "セーフモード無効 - カテゴリ間でアイテムをドラッグできます。間違えるとシーナリーの問題が発生する可能性があります。",
+      "saveOrder": "保存",
       "autoSort": "自動ソート",
       "backups": "バックアップ（{{count}}）",
       "backupsTitle": "シーナリーバックアップ",
       "backupsDescription": "scenery_packs.iniの以前のバージョンを復元",
       "noBackups": "バックアップはまだありません。変更を保存すると自動的に作成されます。",
-      "restore": "復元"
+      "restore": "復元",
+      "groups": {
+        "fixedHigh": "システムライブラリ",
+        "airports": "カスタム空港",
+        "defaultAirports": "デフォルト空港",
+        "libraries": "シーナリーライブラリ",
+        "other": "その他",
+        "overlays": "オーバーレイ",
+        "airportMesh": "空港メッシュ",
+        "mesh": "地形メッシュ",
+        "unrecognized": "認識不能"
+      }
     },
     "liveryDialog": {
       "title": "塗装",

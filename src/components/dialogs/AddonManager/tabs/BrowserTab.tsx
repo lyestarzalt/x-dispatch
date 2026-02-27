@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/tabs/BrowserTab.tsx
+// Shows installed addons - Aircraft and Plugins with tabs (Plugins first)
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, Plane, Plug, RefreshCw, Search } from 'lucide-react';
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AircraftInfo, PluginInfo } from '@/lib/addonManager/core/types';
 import {
   useAircraftCheckUpdates,
   useAircraftDelete,
@@ -25,11 +25,12 @@ import { LiveryDialog } from '../components/LiveryDialog';
 import { PluginEntry } from '../components/PluginEntry';
 import { ScriptsDialog } from '../components/ScriptsDialog';
 
-type SubTab = 'aircraft' | 'plugins';
+type SubTab = 'plugins' | 'aircraft';
 
 export function BrowserTab() {
   const { t } = useTranslation();
-  const [subTab, setSubTab] = useState<SubTab>('aircraft');
+  // Default to plugins tab
+  const [subTab, setSubTab] = useState<SubTab>('plugins');
   const [search, setSearch] = useState('');
   const [liveryDialog, setLiveryDialog] = useState<{
     open: boolean;
@@ -38,7 +39,7 @@ export function BrowserTab() {
   }>({ open: false, folder: '', name: '' });
   const [scriptsOpen, setScriptsOpen] = useState(false);
 
-  // Aircraft queries - always fetch for tab counts
+  // Aircraft queries
   const {
     data: aircraft = [],
     isLoading: aircraftLoading,
@@ -49,7 +50,7 @@ export function BrowserTab() {
   const aircraftLock = useAircraftLock();
   const aircraftCheckUpdates = useAircraftCheckUpdates();
 
-  // Plugin queries - always fetch for tab counts
+  // Plugin queries
   const { data: plugins = [], isLoading: pluginsLoading, error: pluginsError } = usePluginList();
   const pluginToggle = usePluginToggle();
   const pluginDelete = usePluginDelete();
@@ -132,67 +133,177 @@ export function BrowserTab() {
   const currentStats = subTab === 'aircraft' ? aircraftStats : pluginStats;
   const isLoading = subTab === 'aircraft' ? aircraftLoading : pluginsLoading;
 
+  const totalAddons = aircraft.length + plugins.length;
+  const totalEnabled = aircraftStats.enabled + pluginStats.enabled;
+  const totalUpdates = aircraftStats.updates + pluginStats.updates;
+
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
-      {/* Header with search and stats */}
-      <div className="flex items-center justify-between gap-4">
-        {/* Search */}
-        <div className="relative w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t('addonManager.browser.searchPlaceholder')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{t('addonManager.browser.stats.total', { count: currentStats.total })}</span>
-          <span>{t('addonManager.browser.stats.enabled', { count: currentStats.enabled })}</span>
-          {currentStats.updates > 0 && (
-            <span className="text-warning">
-              {t('addonManager.browser.stats.updates', { count: currentStats.updates })}
+    <div className="flex h-full flex-col">
+      {/* Stats Bar */}
+      <div className="flex items-center justify-between border-b border-border bg-card/30 px-4 py-3">
+        <div className="flex items-center gap-6">
+          {/* Total count */}
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold tabular-nums text-foreground">{totalAddons}</span>
+            <span className="text-xs text-muted-foreground">
+              {t('addonManager.installed.total')}
             </span>
+          </div>
+
+          {/* Enabled/Disabled */}
+          <div className="flex items-center gap-4 border-l border-border pl-6">
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-success" />
+              <span className="text-sm tabular-nums text-muted-foreground">{totalEnabled}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
+              <span className="text-sm tabular-nums text-muted-foreground">
+                {totalAddons - totalEnabled}
+              </span>
+            </div>
+          </div>
+
+          {/* Updates badge */}
+          {totalUpdates > 0 && (
+            <div className="flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1">
+              <RefreshCw className="h-3 w-3 text-warning" />
+              <span className="text-xs font-medium text-warning">
+                {t('addonManager.installed.updatesAvailable', { count: totalUpdates })}
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Check for Updates */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCheckUpdates}
-          disabled={isLoading || checkingUpdates}
-        >
-          {checkingUpdates ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="mr-2 h-4 w-4" />
-          )}
-          {t('addonManager.browser.checkUpdates')}
-        </Button>
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('addonManager.installed.searchPlaceholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 w-48 bg-background pl-9 text-sm"
+            />
+          </div>
+
+          {/* Check Updates */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCheckUpdates}
+            disabled={isLoading || checkingUpdates}
+            className="gap-2"
+          >
+            {checkingUpdates ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {t('addonManager.installed.checkUpdates')}
+          </Button>
+        </div>
       </div>
 
-      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as SubTab)} className="flex-1">
-        <TabsList className="grid w-fit grid-cols-2">
-          <TabsTrigger value="aircraft" className="gap-2">
-            <Plane className="h-4 w-4" />
-            {t('addonManager.browser.aircraft')} ({aircraft.length})
-          </TabsTrigger>
-          <TabsTrigger value="plugins" className="gap-2">
-            <Plug className="h-4 w-4" />
-            {t('addonManager.browser.plugins')} ({plugins.length})
-          </TabsTrigger>
-        </TabsList>
+      {/* Tabs - Plugins first */}
+      <Tabs
+        value={subTab}
+        onValueChange={(v) => setSubTab(v as SubTab)}
+        className="flex flex-1 flex-col"
+      >
+        <div className="border-b border-border px-4">
+          <TabsList className="h-12 w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
+            {/* Plugins tab first */}
+            <TabsTrigger
+              value="plugins"
+              className="relative h-12 gap-2 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground data-[state=active]:border-violet-500 data-[state=active]:text-violet-400 data-[state=active]:shadow-none"
+            >
+              <Plug className="h-4 w-4" />
+              <span>{t('addonManager.installed.plugins')}</span>
+              <span className="ml-1 rounded-full bg-violet-500/20 px-2 py-0.5 text-xs tabular-nums text-violet-400">
+                {plugins.length}
+              </span>
+              {pluginStats.updates > 0 && (
+                <span className="rounded-full bg-warning/20 px-1.5 py-0.5 text-xs tabular-nums text-warning">
+                  {pluginStats.updates}
+                </span>
+              )}
+            </TabsTrigger>
+            {/* Aircraft tab second */}
+            <TabsTrigger
+              value="aircraft"
+              className="relative h-12 gap-2 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground data-[state=active]:border-sky-500 data-[state=active]:text-sky-400 data-[state=active]:shadow-none"
+            >
+              <Plane className="h-4 w-4" />
+              <span>{t('addonManager.installed.aircraft')}</span>
+              <span className="ml-1 rounded-full bg-sky-500/20 px-2 py-0.5 text-xs tabular-nums text-sky-400">
+                {aircraft.length}
+              </span>
+              {aircraftStats.updates > 0 && (
+                <span className="rounded-full bg-warning/20 px-1.5 py-0.5 text-xs tabular-nums text-warning">
+                  {aircraftStats.updates}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        {/* Aircraft Tab */}
-        <TabsContent value="aircraft" className="mt-4 flex-1">
+        {/* Plugins Tab Content */}
+        <TabsContent value="plugins" className="mt-0 flex-1 data-[state=inactive]:hidden">
+          {pluginsLoading ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
+              <span className="text-sm text-muted-foreground">
+                {t('addonManager.installed.scanningPlugins')}
+              </span>
+            </div>
+          ) : pluginsError ? (
+            <Alert variant="destructive" className="m-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {pluginsError instanceof Error
+                  ? pluginsError.message
+                  : t('addonManager.installed.loadFailed', { type: 'plugins' })}
+              </AlertDescription>
+            </Alert>
+          ) : filteredPlugins.length === 0 ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              {search
+                ? t('addonManager.installed.noMatch', { type: 'plugins' })
+                : t('addonManager.installed.notFound', { type: 'plugins' })}
+            </p>
+          ) : (
+            <ScrollArea className="h-[calc(100vh-340px)]">
+              <div className="flex flex-col gap-2 p-4">
+                {filteredPlugins.map((plugin) => (
+                  <PluginEntry
+                    key={plugin.folderName}
+                    plugin={plugin}
+                    onToggle={(name) => pluginToggle.mutate(name)}
+                    onDelete={handleDeletePlugin}
+                    onLock={(name) => pluginLock.mutate(name)}
+                    onOpenFolder={(name) => handleOpenFolder(name, 'plugins')}
+                    onOpenScripts={
+                      plugin.folderName.toLowerCase() === 'flywithlua'
+                        ? () => setScriptsOpen(true)
+                        : undefined
+                    }
+                    disabled={isPluginPending}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </TabsContent>
+
+        {/* Aircraft Tab Content */}
+        <TabsContent value="aircraft" className="mt-0 flex-1 data-[state=inactive]:hidden">
           {aircraftLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-sky-400" />
               <span className="text-sm text-muted-foreground">
-                {t('addonManager.browser.scanningAircraft')}
+                {t('addonManager.installed.scanningAircraft')}
               </span>
             </div>
           ) : aircraftError ? (
@@ -201,18 +312,18 @@ export function BrowserTab() {
               <AlertDescription>
                 {aircraftError instanceof Error
                   ? aircraftError.message
-                  : t('addonManager.browser.loadFailed', { type: 'aircraft' })}
+                  : t('addonManager.installed.loadFailed', { type: 'aircraft' })}
               </AlertDescription>
             </Alert>
           ) : filteredAircraft.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
               {search
-                ? t('addonManager.browser.noMatch', { type: 'aircraft' })
-                : t('addonManager.browser.notFound', { type: 'aircraft' })}
+                ? t('addonManager.installed.noMatch', { type: 'aircraft' })
+                : t('addonManager.installed.notFound', { type: 'aircraft' })}
             </p>
           ) : (
-            <ScrollArea className="h-[calc(100vh-380px)]">
-              <div className="grid grid-cols-2 gap-3 pr-4 lg:grid-cols-3">
+            <ScrollArea className="h-[calc(100vh-340px)]">
+              <div className="grid grid-cols-2 gap-3 p-4 lg:grid-cols-3">
                 {filteredAircraft.map((ac) => (
                   <AircraftCard
                     key={ac.folderName}
@@ -229,54 +340,6 @@ export function BrowserTab() {
                       })
                     }
                     disabled={isAircraftPending}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-        </TabsContent>
-
-        {/* Plugins Tab */}
-        <TabsContent value="plugins" className="mt-4 flex-1">
-          {pluginsLoading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">
-                {t('addonManager.browser.scanningPlugins')}
-              </span>
-            </div>
-          ) : pluginsError ? (
-            <Alert variant="destructive" className="m-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {pluginsError instanceof Error
-                  ? pluginsError.message
-                  : t('addonManager.browser.loadFailed', { type: 'plugins' })}
-              </AlertDescription>
-            </Alert>
-          ) : filteredPlugins.length === 0 ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              {search
-                ? t('addonManager.browser.noMatch', { type: 'plugins' })
-                : t('addonManager.browser.notFound', { type: 'plugins' })}
-            </p>
-          ) : (
-            <ScrollArea className="h-[calc(100vh-380px)]">
-              <div className="flex flex-col gap-2 pr-4">
-                {filteredPlugins.map((plugin) => (
-                  <PluginEntry
-                    key={plugin.folderName}
-                    plugin={plugin}
-                    onToggle={(name) => pluginToggle.mutate(name)}
-                    onDelete={handleDeletePlugin}
-                    onLock={(name) => pluginLock.mutate(name)}
-                    onOpenFolder={(name) => handleOpenFolder(name, 'plugins')}
-                    onOpenScripts={
-                      plugin.folderName.toLowerCase() === 'flywithlua'
-                        ? () => setScriptsOpen(true)
-                        : undefined
-                    }
-                    disabled={isPluginPending}
                   />
                 ))}
               </div>

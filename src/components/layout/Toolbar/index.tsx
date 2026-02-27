@@ -257,16 +257,16 @@ export default function Toolbar({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
               onClick={() => setAddonManagerOpen(true)}
-              className="h-9 w-9"
+              className="h-9 gap-2 px-3"
             >
-              <Package className="h-5 w-5" />
+              <Package className="h-4 w-4" />
+              <span className="text-xs font-medium">{t('toolbar.addons')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Addon Manager</p>
+            <p>{t('toolbar.tooltips.addons')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

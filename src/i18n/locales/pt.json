@@ -82,6 +82,7 @@
   "toolbar": {
     "searchPlaceholder": "Pesquisar aeroportos...",
     "clearSearch": "Limpar pesquisa",
+    "addons": "Addons",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Rastrear",
@@ -89,6 +90,7 @@
     "loadPlan": "Carregar plano",
     "navigationLayers": "Camadas de navegação",
     "tooltips": {
+      "addons": "Gerenciar aeronaves, plugins e cenários",
       "loadPlan": "Carregar arquivos de plano de voo X-Plane .fms",
       "explore": "Descobrir aeroportos e rotas em destaque",
       "nav": "Mostrar camadas de navegação ao redor do aeroporto",
@@ -616,30 +618,57 @@
     "openXPlaneFolder": "Abrir pasta X-Plane",
     "tabs": {
       "scenery": "Ordem de Cenários",
-      "browser": "Navegador",
+      "installed": "Instalados",
       "installer": "Instalador"
+    },
+    "nav": {
+      "sceneryDesc": "Gerenciar ordem de carregamento de cenários",
+      "installedDesc": "Aeronaves e plugins",
+      "installerDesc": "Instalar novos addons"
+    },
+    "installed": {
+      "total": "instalados",
+      "searchPlaceholder": "Pesquisar addons...",
+      "checkUpdates": "Verificar atualizações",
+      "updatesAvailable": "{{count}} atualizações",
+      "aircraft": "Aeronaves",
+      "plugins": "Plugins",
+      "disabled": "desativados",
+      "updates": "atualizações",
+      "scanningAircraft": "Escaneando aeronaves...",
+      "scanningPlugins": "Escaneando plugins...",
+      "loadFailed": "Falha ao carregar {{type}}",
+      "noMatch": "Nenhum(a) {{type}} corresponde",
+      "notFound": "Nenhum(a) {{type}} encontrado(a)"
     },
     "installer": {
       "dropZone": {
-        "title": "Solte ou clique para selecionar",
+        "title": "Solte arquivos para instalar",
         "subtitle": "Arquivos ZIP, 7z ou RAR",
-        "ariaLabel": "Solte ou clique para selecionar arquivos de addons"
+        "ariaLabel": "Solte ou clique para selecionar arquivos de addons",
+        "addMore": "Adicionar mais arquivos",
+        "browse": "ou procurar arquivos"
       },
-      "analyzing": "Analisando...",
+      "itemsDetected": "itens prontos",
+      "analyzing": "Analisando arquivos",
+      "analyzingHint": "Detectando tipos de addon e conteúdo",
       "analysisFailed": "Falha ao analisar arquivos",
       "installing": "Instalando...",
       "installFailed": "Falha na instalação",
       "progress": "Instalando {{current}} de {{total}}",
-      "successOne": "1 addon instalado com sucesso",
-      "successMany": "{{count}} addons instalados com sucesso",
+      "successOne": "Instalação concluída!",
+      "successMany": "{{count}} addons instalados!",
+      "successHint": "Seus addons estão prontos para uso",
       "partialSuccess": "{{success}} de {{total}} addons instalados",
       "failed": "Falha: {{error}}",
       "detectedOne": "1 addon detectado",
       "detectedMany": "{{count}} addons detectados",
-      "installOne": "Instalar 1 addon",
+      "installOne": "Instalar addon",
       "installMany": "Instalar {{count}} addons",
-      "emptyState": "Solte arquivos para analisá-los",
-      "clear": "Limpar"
+      "emptyState": "Solte arquivos para instalar",
+      "supportedTypes": "Aeronaves, plugins, cenários, pinturas e mais",
+      "installMore": "Instalar mais addons",
+      "clear": "Limpar tudo"
     },
     "browser": {
       "searchPlaceholder": "Pesquisar...",
@@ -660,21 +689,36 @@
     },
     "scenery": {
       "loading": "Escaneando pastas de cenários...",
+      "loadingHint": "Isso pode levar um momento para instalações grandes",
       "loadFailed": "Falha ao carregar cenários",
+      "total": "pacotes",
       "packages": "{{count}} pacotes de cenário",
-      "unsavedChanges": "Alterações não salvas",
-      "safeMode": "Modo seguro",
+      "unsavedChanges": "Não salvo",
+      "safeMode": "Seguro",
+      "unsafeMode": "Inseguro",
       "safeModeOn": "Arraste limitado à mesma categoria. Desative para reordenar livremente (avançado).",
       "safeModeOff": "Reordenação livre ativada. Itens podem ser arrastados entre categorias - cuidado!",
-      "dragHintSafe": "Arraste para reordenar na mesma categoria. As alterações são salvas ao clicar em Salvar ordem.",
-      "dragHintUnsafe": "⚠️ Modo seguro DESATIVADO - Você pode arrastar itens entre categorias. Isso pode causar problemas se feito incorretamente.",
-      "saveOrder": "Salvar ordem",
-      "autoSort": "Ordenar automaticamente",
+      "priorityHint": "Números menores carregam primeiro e têm menor prioridade. Números maiores substituem os menores.",
+      "dragHintSafe": "Arraste para reordenar na mesma categoria. As alterações são salvas ao clicar em Salvar.",
+      "dragHintUnsafe": "Modo seguro DESATIVADO - Você pode arrastar itens entre categorias. Isso pode causar problemas se feito incorretamente.",
+      "saveOrder": "Salvar",
+      "autoSort": "Auto-Ordenar",
       "backups": "Backups ({{count}})",
       "backupsTitle": "Backups de cenários",
       "backupsDescription": "Restaurar uma versão anterior do scenery_packs.ini",
       "noBackups": "Sem backups ainda. Backups são criados automaticamente ao salvar alterações.",
-      "restore": "Restaurar"
+      "restore": "Restaurar",
+      "groups": {
+        "fixedHigh": "Bibliotecas do sistema",
+        "airports": "Aeroportos personalizados",
+        "defaultAirports": "Aeroportos padrão",
+        "libraries": "Bibliotecas de cenário",
+        "other": "Outros",
+        "overlays": "Sobreposições",
+        "airportMesh": "Malha de aeroporto",
+        "mesh": "Malha de terreno",
+        "unrecognized": "Não reconhecido"
+      }
     },
     "liveryDialog": {
       "title": "Pinturas",

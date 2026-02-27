@@ -1,7 +1,7 @@
 // src/components/dialogs/AddonManager/components/DropZone.tsx
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload } from 'lucide-react';
+import { FolderOpen, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 
 // Electron extends File with a path property for local files
@@ -42,9 +42,10 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       if (disabled) return;
 
       const files = Array.from(e.dataTransfer.files) as ElectronFile[];
-      const paths = files.map((f) => f.path).filter(Boolean);
-      if (paths.length > 0) {
-        onFilesDropped(paths);
+      // Only take the first file for single-item installation
+      const path = files[0]?.path;
+      if (path) {
+        onFilesDropped([path]);
       }
     },
     [disabled, onFilesDropped]
@@ -55,7 +56,8 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
 
     const result = await window.addonManagerAPI.installer.browse();
     if (result.ok && result.value.length > 0) {
-      onFilesDropped(result.value);
+      // Only take the first file
+      onFilesDropped([result.value[0]]);
     }
   }, [disabled, onFilesDropped]);
 
@@ -81,20 +83,68 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={cn(
-        'flex h-48 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
-        isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25',
+        'group relative flex h-44 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-all duration-200',
+        isDragOver
+          ? 'border-primary bg-primary/5 shadow-xl shadow-primary/10'
+          : 'border-muted-foreground/20 bg-gradient-to-b from-muted/20 to-muted/5',
         disabled
           ? 'cursor-not-allowed opacity-50'
-          : 'cursor-pointer hover:border-primary/50 hover:bg-muted/50'
+          : 'cursor-pointer hover:border-primary/40 hover:bg-muted/30 hover:shadow-lg'
       )}
     >
-      <Upload
-        className={cn('mb-3 h-10 w-10', isDragOver ? 'text-primary' : 'text-muted-foreground')}
-      />
-      <p className="text-sm font-medium">{t('addonManager.installer.dropZone.title')}</p>
+      {/* Background pattern */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
+        <div
+          className="h-full w-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+            backgroundSize: '24px 24px',
+          }}
+        />
+      </div>
+
+      {/* Icon */}
+      <div
+        className={cn(
+          'relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-200',
+          isDragOver
+            ? 'scale-110 bg-primary/20 text-primary'
+            : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+        )}
+      >
+        <Upload
+          className={cn(
+            'h-7 w-7 transition-transform duration-200',
+            isDragOver && 'animate-bounce'
+          )}
+        />
+      </div>
+
+      {/* Text */}
+      <p
+        className={cn(
+          'text-sm font-semibold transition-colors',
+          isDragOver ? 'text-primary' : 'text-foreground'
+        )}
+      >
+        {t('addonManager.installer.dropZone.title')}
+      </p>
       <p className="mt-1 text-xs text-muted-foreground">
         {t('addonManager.installer.dropZone.subtitle')}
       </p>
+
+      {/* Browse button hint */}
+      <div
+        className={cn(
+          'mt-3 flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors',
+          isDragOver
+            ? 'border-primary/30 bg-primary/10 text-primary'
+            : 'border-border bg-card text-muted-foreground group-hover:border-primary/30 group-hover:text-primary'
+        )}
+      >
+        <FolderOpen className="h-3.5 w-3.5" />
+        {t('addonManager.installer.dropZone.browse')}
+      </div>
     </div>
   );
 }
