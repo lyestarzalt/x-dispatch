@@ -52,6 +52,8 @@ Click any airport to see detailed diagrams with runways, taxiways, gates, and ma
 
 The app has grown to include SimBrief integration, live flight tracking, SID/STAR visualization, and an addon manager to keep your aircraft and scenery organized.
 
+If you find this useful, consider giving it a star, it helps others discover the project.
+
 ## Screenshots
 
 <details>
