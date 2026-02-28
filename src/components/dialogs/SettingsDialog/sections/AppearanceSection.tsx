@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Map, Palette, Scale } from 'lucide-react';
+import { Globe, Map, Palette, Scale, Type } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,12 +17,13 @@ import { Separator } from '@/components/ui/separator';
 import { changeLanguage, languages } from '@/i18n';
 import type { WeightUnit } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
+import type { FontSize } from '@/stores/settingsStore';
 import { MAP_STYLE_PRESETS, MapSettings, useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
 
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
-  const { map: mapSettings, updateMapSettings } = useSettingsStore();
+  const { map: mapSettings, updateMapSettings, appearance, setFontSize } = useSettingsStore();
 
   const handleChange = useCallback(
     <K extends keyof MapSettings>(key: K, value: MapSettings[K]) => {
@@ -150,6 +151,35 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
               ))}
             </SelectContent>
           </Select>
+        </CardContent>
+      </Card>
+
+      {/* Font Size */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Type className="h-4 w-4" />
+            {t('settings.appearance.fontSize')}
+          </CardTitle>
+          <CardDescription>{t('settings.appearance.fontSizeDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-2">
+            {(['small', 'medium', 'large'] as const).map((size) => (
+              <Button
+                key={size}
+                variant={appearance.fontSize === size ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFontSize(size as FontSize)}
+                className={cn(
+                  appearance.fontSize === size &&
+                    'ring-1 ring-primary ring-offset-1 ring-offset-background'
+                )}
+              >
+                {t(`settings.appearance.fontSize${size.charAt(0).toUpperCase() + size.slice(1)}`)}
+              </Button>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

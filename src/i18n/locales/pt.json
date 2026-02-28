@@ -229,7 +229,12 @@
       "unitsDescription": "Configure as unidades de medida",
       "weightUnit": "Peso",
       "lbs": "Libras (lbs)",
-      "kg": "Quilogramas (kg)"
+      "kg": "Quilogramas (kg)",
+      "fontSize": "Tamanho da fonte",
+      "fontSizeDescription": "Ajustar o tamanho do texto da interface",
+      "fontSizeSmall": "Pequeno",
+      "fontSizeMedium": "Médio",
+      "fontSizeLarge": "Grande"
     },
     "navigation": {
       "title": "Navegação",

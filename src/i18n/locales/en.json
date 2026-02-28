@@ -230,7 +230,12 @@
       "unitsDescription": "Configure display units for measurements",
       "weightUnit": "Weight",
       "lbs": "Pounds (lbs)",
-      "kg": "Kilograms (kg)"
+      "kg": "Kilograms (kg)",
+      "fontSize": "Font Size",
+      "fontSizeDescription": "Adjust the interface text size",
+      "fontSizeSmall": "Small",
+      "fontSizeMedium": "Medium",
+      "fontSizeLarge": "Large"
     },
     "navigation": {
       "title": "Navigation",

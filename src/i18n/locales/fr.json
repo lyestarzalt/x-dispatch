@@ -173,7 +173,12 @@
       "unitsDescription": "Configurez les unités d'affichage pour les mesures",
       "weightUnit": "Poids",
       "lbs": "Livres (lbs)",
-      "kg": "Kilogrammes (kg)"
+      "kg": "Kilogrammes (kg)",
+      "fontSize": "Taille de police",
+      "fontSizeDescription": "Ajuster la taille du texte de l'interface",
+      "fontSizeSmall": "Petit",
+      "fontSizeMedium": "Moyen",
+      "fontSizeLarge": "Grand"
     },
     "navigation": {
       "title": "Données de navigation",

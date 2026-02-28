@@ -10,11 +10,13 @@ import { FullScreenSpinner } from './components/ui/spinner';
 import './i18n';
 import type { Airport } from './lib/xplaneServices/dataService';
 import { QueryProvider } from './queries';
+import { initializeFontSize } from './stores/settingsStore';
 import { initializeTheme } from './stores/themeStore';
 
 type AppState = 'checking' | 'setup' | 'loading' | 'ready' | 'error';
 
 initializeTheme();
+initializeFontSize();
 
 function AppContent() {
   const [appState, setAppState] = useState<AppState>('checking');

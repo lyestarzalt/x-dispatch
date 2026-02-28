@@ -229,7 +229,12 @@
       "unitsDescription": "配置测量单位",
       "weightUnit": "重量",
       "lbs": "磅 (lbs)",
-      "kg": "公斤 (kg)"
+      "kg": "公斤 (kg)",
+      "fontSize": "字体大小",
+      "fontSizeDescription": "调整界面文字大小",
+      "fontSizeSmall": "小",
+      "fontSizeMedium": "中",
+      "fontSizeLarge": "大"
     },
     "navigation": {
       "title": "导航",
