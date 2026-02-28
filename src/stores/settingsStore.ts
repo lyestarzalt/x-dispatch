@@ -2,6 +2,18 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { WeightUnit } from '@/lib/utils/format';
 
+export type FontSize = 'small' | 'medium' | 'large';
+
+const FONT_SIZE_MAP: Record<FontSize, string> = {
+  small: '14px',
+  medium: '16px',
+  large: '18px',
+};
+
+function applyFontSize(size: FontSize) {
+  document.documentElement.style.fontSize = FONT_SIZE_MAP[size];
+}
+
 interface MapStylePreset {
   id: string;
   name: string;
@@ -64,11 +76,17 @@ export interface SimBriefSettings {
   pilotId: string;
 }
 
+export interface AppearanceSettings {
+  fontSize: FontSize;
+}
+
 interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
+  appearance: AppearanceSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
+  setFontSize: (size: FontSize) => void;
   resetToDefaults: () => void;
 }
 
@@ -85,11 +103,16 @@ const DEFAULT_SIMBRIEF_SETTINGS: SimBriefSettings = {
   pilotId: '',
 };
 
+const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
+  fontSize: 'medium',
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       map: DEFAULT_MAP_SETTINGS,
       simbrief: DEFAULT_SIMBRIEF_SETTINGS,
+      appearance: DEFAULT_APPEARANCE_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -101,15 +124,30 @@ export const useSettingsStore = create<SettingsState>()(
           simbrief: { ...state.simbrief, ...settings },
         })),
 
-      resetToDefaults: () =>
-        set({ map: DEFAULT_MAP_SETTINGS, simbrief: DEFAULT_SIMBRIEF_SETTINGS }),
+      setFontSize: (size: FontSize) => {
+        applyFontSize(size);
+        set({ appearance: { fontSize: size } });
+      },
+
+      resetToDefaults: () => {
+        applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
+        set({
+          map: DEFAULT_MAP_SETTINGS,
+          simbrief: DEFAULT_SIMBRIEF_SETTINGS,
+          appearance: DEFAULT_APPEARANCE_SETTINGS,
+        });
+      },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 8,
+      version: 9,
       migrate: (persistedState, version) => {
         if (version < 6) {
-          return { map: DEFAULT_MAP_SETTINGS, simbrief: DEFAULT_SIMBRIEF_SETTINGS };
+          return {
+            map: DEFAULT_MAP_SETTINGS,
+            simbrief: DEFAULT_SIMBRIEF_SETTINGS,
+            appearance: DEFAULT_APPEARANCE_SETTINGS,
+          };
         }
         if (version < 7) {
           // Add units preference
@@ -130,8 +168,26 @@ export const useSettingsStore = create<SettingsState>()(
             simbrief: DEFAULT_SIMBRIEF_SETTINGS,
           };
         }
+        if (version < 9) {
+          // Add appearance settings
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            appearance: DEFAULT_APPEARANCE_SETTINGS,
+          };
+        }
         return persistedState as SettingsState;
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          applyFontSize(state.appearance.fontSize);
+        }
       },
     }
   )
 );
+
+export function initializeFontSize() {
+  const { fontSize } = useSettingsStore.getState().appearance;
+  applyFontSize(fontSize);
+}

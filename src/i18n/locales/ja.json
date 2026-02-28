@@ -229,7 +229,12 @@
       "unitsDescription": "測定単位を設定",
       "weightUnit": "重量",
       "lbs": "ポンド (lbs)",
-      "kg": "キログラム (kg)"
+      "kg": "キログラム (kg)",
+      "fontSize": "フォントサイズ",
+      "fontSizeDescription": "インターフェースのテキストサイズを調整",
+      "fontSizeSmall": "小",
+      "fontSizeMedium": "中",
+      "fontSizeLarge": "大"
     },
     "navigation": {
       "title": "ナビゲーション",

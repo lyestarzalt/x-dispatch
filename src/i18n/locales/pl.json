@@ -229,7 +229,12 @@
       "unitsDescription": "Skonfiguruj jednostki miary",
       "weightUnit": "Waga",
       "lbs": "Funty (lbs)",
-      "kg": "Kilogramy (kg)"
+      "kg": "Kilogramy (kg)",
+      "fontSize": "Rozmiar czcionki",
+      "fontSizeDescription": "Dostosuj rozmiar tekstu interfejsu",
+      "fontSizeSmall": "Mały",
+      "fontSizeMedium": "Średni",
+      "fontSizeLarge": "Duży"
     },
     "navigation": {
       "title": "Nawigacja",

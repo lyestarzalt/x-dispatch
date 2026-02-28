@@ -173,7 +173,12 @@
       "unitsDescription": "Konfigurieren Sie die Anzeigeeinheiten für Messungen",
       "weightUnit": "Gewicht",
       "lbs": "Pfund (lbs)",
-      "kg": "Kilogramm (kg)"
+      "kg": "Kilogramm (kg)",
+      "fontSize": "Schriftgröße",
+      "fontSizeDescription": "Textgröße der Benutzeroberfläche anpassen",
+      "fontSizeSmall": "Klein",
+      "fontSizeMedium": "Mittel",
+      "fontSizeLarge": "Groß"
     },
     "navigation": {
       "title": "Navigationsdaten",

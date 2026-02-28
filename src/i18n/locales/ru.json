@@ -229,7 +229,12 @@
       "unitsDescription": "Настройте единицы измерения",
       "weightUnit": "Вес",
       "lbs": "Фунты (lbs)",
-      "kg": "Килограммы (кг)"
+      "kg": "Килограммы (кг)",
+      "fontSize": "Размер шрифта",
+      "fontSizeDescription": "Настройка размера текста интерфейса",
+      "fontSizeSmall": "Маленький",
+      "fontSizeMedium": "Средний",
+      "fontSizeLarge": "Большой"
     },
     "navigation": {
       "title": "Навигация",
