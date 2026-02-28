@@ -1,13 +1,24 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.2.1 - 2026-02-28
 
-## Unreleased
+### Bug Fixes
+
+- gates pointing wrong direction due to negative headings in apt.dat ([8d7c896](https://github.com/lyestarzalt/x-dispatch/commit/8d7c896e8fe90d44da24b4aabfd7b8e048eecede))
+
+### Documentation
+
+- add CHANGELOG.md and auto-update on release ([7722a2f](https://github.com/lyestarzalt/x-dispatch/commit/7722a2fe62031d3d8b16a6736a179d70e20c28f4))
+- add star prompt to README ([c036324](https://github.com/lyestarzalt/x-dispatch/commit/c036324ddc7967e743a2cc5b7be8282758c07a6b))
+
+### Features
+
+- square helipad backgrounds with heading indicator ([9990d19](https://github.com/lyestarzalt/x-dispatch/commit/9990d19317e20b1fc848aeeb22f7b927eb853478))
 
 ### Miscellaneous
 
 - update package.json keywords and description ([8ee7887](https://github.com/lyestarzalt/x-dispatch/commit/8ee78879518f127a597ef80fc3226a851f6f2800))
-
 ## v1.2.0 - 2026-02-28
 
 ### Bug Fixes
@@ -22,7 +33,6 @@ All notable changes to this project will be documented in this file.
 
 - add phase-colored route, T/C T/D markers, and alternate airport to flight plan layer ([0e77f64](https://github.com/lyestarzalt/x-dispatch/commit/0e77f64a8f4ab2e67219d9d0e5f428d9fcb18820))
 - expand OFP dialog with vertical profile, navlog, performance, and briefing tabs ([b0e3189](https://github.com/lyestarzalt/x-dispatch/commit/b0e31896afd45ec1dd54f1f24809404e117ad21a))
-
 ## v1.1.0 - 2026-02-27
 
 ### Bug Fixes
@@ -89,7 +99,6 @@ All notable changes to this project will be documented in this file.
 ### Refactor
 
 - replace manual SQL with Drizzle migrations ([09fa50b](https://github.com/lyestarzalt/x-dispatch/commit/09fa50b7b2c637ba8a44c776d6a92b3102bee409))
-
 ## v1.0.0 - 2026-02-24
 
 ### Bug Fixes
@@ -150,13 +159,11 @@ All notable changes to this project will be documented in this file.
 - remove wind indicator, keep only heading ([0a1c747](https://github.com/lyestarzalt/x-dispatch/commit/0a1c7472b37f276328c23a63418cf916fc3643af))
 - redesign AirportInfoPanel with better info hierarchy ([d6a4cc3](https://github.com/lyestarzalt/x-dispatch/commit/d6a4cc38665c7e95b770fc584a6e001f61ead484))
 - redesign aircraft preview with livery navigation ([3c75994](https://github.com/lyestarzalt/x-dispatch/commit/3c75994ec66631dd34ed8b60ae9b0f9ce2a8836a))
-
 ## v0.9.4 - 2026-02-19
 
 ### Bug Fixes
 
 - improve launch logging and folder picker reliability ([8866d5c](https://github.com/lyestarzalt/x-dispatch/commit/8866d5c5a367c29ab83eddc929e33e688f32fcc6))
-
 ## v0.9.3 - 2026-02-19
 
 ### Bug Fixes
@@ -177,25 +184,21 @@ All notable changes to this project will be documented in this file.
 ### Refactor
 
 - extract launch execution logic to dedicated executor module ([03a5104](https://github.com/lyestarzalt/x-dispatch/commit/03a51046cc6c1b8a2ddfa650c7cac09cb2bb5043))
-
 ## v0.9.2 - 2026-02-19
 
 ### Bug Fixes
 
 - package electron-squirrel-startup for Windows builds ([ea9eb33](https://github.com/lyestarzalt/x-dispatch/commit/ea9eb332d8358b2d613a57b8bcfdd65573aec9e4))
-
 ## v0.9.1 - 2026-02-18
 
 ### Refactor
 
 - architecture overhaul with TanStack Query, centralized types, and spawn fixes (#24) ([800544f](https://github.com/lyestarzalt/x-dispatch/commit/800544f02f06dd2c8710872d99da4cb913d4f631))
-
 ## v0.9.0 - 2026-02-13
 
 ### Documentation
 
 - update screenshots to reflect new UI ([e905f30](https://github.com/lyestarzalt/x-dispatch/commit/e905f30ffa6ce0196f6a44a7c73acd5399fa4f93))
-
 ## v0.7.0 - 2026-02-07
 
 ### Bug Fixes
@@ -241,14 +244,12 @@ All notable changes to this project will be documented in this file.
 - standardize map layers with class-based architecture ([ad53489](https://github.com/lyestarzalt/x-dispatch/commit/ad534898c942da3992cf18b3678992025130fd5f))
 - consolidate config and remove legacy exports ([c90e53c](https://github.com/lyestarzalt/x-dispatch/commit/c90e53cbd28fc0e6417802acfc1d5deb8f062970))
 - use text labels instead of SVG images, fix CSP for Google Fonts ([5b6f3c1](https://github.com/lyestarzalt/x-dispatch/commit/5b6f3c17295fa9990749bef396aaee95b0c1972d))
-
 ## v0.6.1 - 2026-02-03
 
 ### Miscellaneous
 
 - fix repo URLs and add macOS install note (#10) ([440fb3c](https://github.com/lyestarzalt/x-dispatch/commit/440fb3c21d53d37c3b580656b747b2597ff97324))
-- shadcn components, semantic colors, Map refactor & compass redesign (#11) ([17db16f](https://github.com/lyestarzalt/x-dispatch/commit/17db16f2c2a98a9461be69cfbd63a3a96d7aacd9))
-
+- shadcn components, semantic colors, Map refactor & compass redesign  (#11) ([17db16f](https://github.com/lyestarzalt/x-dispatch/commit/17db16f2c2a98a9461be69cfbd63a3a96d7aacd9))
 ## v0.6.0 - 2026-02-02
 
 ### Documentation
@@ -264,7 +265,6 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous
 
 - change license (#6) ([d2ece52](https://github.com/lyestarzalt/x-dispatch/commit/d2ece522274ff0f99bba6290cc749ebc4171f19d))
-
 ## v0.5.3 - 2026-02-02
 
 ### Bug Fixes
