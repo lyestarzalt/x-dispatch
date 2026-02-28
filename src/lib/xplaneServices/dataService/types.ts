@@ -14,6 +14,9 @@ export interface Airport {
   lon: number;
   type: 'land' | 'seaplane' | 'heliport';
   isCustom: boolean;
+  runwayCount: number;
+  surfaceType: 'paved' | 'unpaved' | 'water' | 'other';
+  elevation: number;
 }
 
 export interface AirportSourceBreakdown {
@@ -29,6 +32,8 @@ export interface ParsedAirportEntry {
   lon: number;
   type: 'land' | 'seaplane' | 'heliport';
   elevation?: number;
+  runwayCount?: number;
+  primarySurfaceType?: number;
   data: string;
   sourceFile: string;
   city?: string;

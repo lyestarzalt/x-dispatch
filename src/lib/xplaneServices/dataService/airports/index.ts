@@ -21,7 +21,9 @@ import {
   getAirportCount,
   getAllAirportsFromDb,
   insertAirports,
+  isDataVersionStale,
   persistDatabase,
+  updateDataVersion,
   updateStoredFileMeta,
 } from './airportCache';
 import {
@@ -53,14 +55,19 @@ export async function loadAirports(xplanePath: string): Promise<AirportLoadResul
   // Gather current file infos
   const currentFiles = getCurrentAptFiles(xplanePath);
 
-  // Check cache validity
+  // Check cache validity (file changes + data version)
   const cacheCheck = checkCacheValidity(currentFiles);
+  const dataStale = isDataVersionStale();
 
-  if (!cacheCheck.needsReload) {
+  if (!cacheCheck.needsReload && !dataStale) {
     logger.data.info('Airport cache is valid, skipping reload');
     const breakdown = computeBreakdownFromDb();
     const count = getAirportCount();
     return { count, breakdown, fromCache: true };
+  }
+
+  if (dataStale) {
+    logger.data.info('Airport data version changed, forcing full rescan');
   }
 
   // Log what changed
@@ -113,7 +120,10 @@ export async function loadAirports(xplanePath: string): Promise<AirportLoadResul
   }
   updateStoredFileMeta(currentFiles, airportCounts);
 
-  // 6. Persist
+  // 6. Stamp data version so future loads skip rescan
+  updateDataVersion();
+
+  // 7. Persist
   persistDatabase();
 
   const elapsed = Date.now() - startTime;

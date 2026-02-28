@@ -28,6 +28,7 @@ import {
   setupAirportPopup,
   setupAirportsLayer,
   toggleVatsimLayer,
+  useAirportFilters,
   useAirportInteractions,
   useAirportRenderer,
   useMapSetup,
@@ -297,6 +298,9 @@ export default function Map({ airports }: MapProps) {
 
   // Procedure route sync - renders selected procedure on map
   useProcedureRouteSync({ mapRef, styleVersion });
+
+  // Airport dot filters (type, surface, IATA, custom, runways)
+  useAirportFilters(mapRef);
 
   // Flight plan state
   const fmsData = useFlightPlanStore((s) => s.fmsData);

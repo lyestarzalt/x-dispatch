@@ -104,6 +104,24 @@
     }
   },
 
+  "airportFilters": {
+    "title": "空港",
+    "type": "種類",
+    "land": "陸上空港",
+    "seaplane": "水上飛行場",
+    "heliport": "ヘリポート",
+    "surface": "路面",
+    "paved": "舗装 (アスファルト/コンクリート)",
+    "unpaved": "未舗装 (芝生/土/砂利)",
+    "showOnly": "表示のみ",
+    "iataOnly": "商用空港 (IATA)",
+    "customOnly": "カスタムシーナリー",
+    "runways": "滑走路",
+    "anyRunways": "すべて",
+    "minRunways": "{{count}}本以上",
+    "reset": "フィルターをリセット"
+  },
+
   "explore": {
     "title": "探索",
     "close": "探索を閉じる",

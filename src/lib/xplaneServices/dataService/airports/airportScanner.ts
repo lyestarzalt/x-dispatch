@@ -63,6 +63,8 @@ interface ScanningAirport {
   datumLon: number;
   runwayLat: number;
   runwayLon: number;
+  runwayCount: number;
+  primarySurfaceType: number;
   data: string[];
   // Metadata
   city?: string;
@@ -117,6 +119,8 @@ function parseAirportHeader(line: string): ScanningAirport | null {
     datumLon: 0,
     runwayLat: 0,
     runwayLon: 0,
+    runwayCount: 0,
+    primarySurfaceType: 0,
     data: [line],
   };
 }
@@ -273,6 +277,8 @@ function finalizeAirport(
     lon: coordsResult.data.lon,
     type: airport.type,
     elevation: airport.elevation || undefined,
+    runwayCount: airport.runwayCount || undefined,
+    primarySurfaceType: airport.primarySurfaceType || undefined,
     data: airport.data.join('\n'),
     sourceFile,
     ...metadata,
@@ -326,12 +332,28 @@ export async function scanAptFile(aptPath: string): Promise<ScanResult> {
       parseMetadata(line, currentAirport);
     }
 
-    // Runway (row code 100) - extract first runway coordinates as fallback
-    if (line.startsWith('100 ') && !currentAirport.runwayLat) {
-      const coords = parseRunwayCoords(line);
-      if (coords) {
-        currentAirport.runwayLat = coords.lat;
-        currentAirport.runwayLon = coords.lon;
+    // Runway (row code 100) - count runways, track surface type, extract first coordinates
+    if (line.startsWith('100 ')) {
+      currentAirport.runwayCount++;
+      const parts = line.split(/\s+/);
+      if (parts.length >= 3) {
+        const surfaceCode = parseInt(parts[2], 10);
+        if (!isNaN(surfaceCode)) {
+          // Lower surface code = better surface (1=asphalt, 2=concrete, etc.)
+          if (
+            currentAirport.primarySurfaceType === 0 ||
+            surfaceCode < currentAirport.primarySurfaceType
+          ) {
+            currentAirport.primarySurfaceType = surfaceCode;
+          }
+        }
+      }
+      if (!currentAirport.runwayLat) {
+        const coords = parseRunwayCoords(line);
+        if (coords) {
+          currentAirport.runwayLat = coords.lat;
+          currentAirport.runwayLon = coords.lon;
+        }
       }
     }
 
