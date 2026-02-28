@@ -104,6 +104,24 @@
     }
   },
 
+  "airportFilters": {
+    "title": "Flughäfen",
+    "type": "Typ",
+    "land": "Landflughäfen",
+    "seaplane": "Wasserflughäfen",
+    "heliport": "Hubschrauberlandeplätze",
+    "surface": "Oberfläche",
+    "paved": "Befestigt (Asphalt/Beton)",
+    "unpaved": "Unbefestigt (Gras/Erde/Schotter)",
+    "showOnly": "Nur anzeigen",
+    "iataOnly": "Kommerziell (IATA)",
+    "customOnly": "Custom Scenery",
+    "runways": "Start-/Landebahnen",
+    "anyRunways": "Alle",
+    "minRunways": "{{count}}+ Bahnen",
+    "reset": "Filter zurücksetzen"
+  },
+
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Konfigurieren Sie Ihre Präferenzen",

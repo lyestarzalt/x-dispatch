@@ -17,6 +17,20 @@ export interface FeatureDebugInfo {
   rawData?: string;
 }
 
+export interface AirportFilterState {
+  showLand: boolean;
+  showSeaplane: boolean;
+  showHeliport: boolean;
+  onlyCustom: boolean;
+}
+
+export const DEFAULT_AIRPORT_FILTERS: AirportFilterState = {
+  showLand: true,
+  showSeaplane: true,
+  showHeliport: true,
+  onlyCustom: false,
+};
+
 export interface ExploreFilters {
   country: string | null;
   region: string | null;
@@ -51,6 +65,7 @@ interface MapState {
   explore: ExploreState;
   /** Incremented when map style changes to trigger layer re-adds */
   styleVersion: number;
+  airportFilters: AirportFilterState;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -67,6 +82,8 @@ interface MapState {
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
+  setAirportFilters: (filters: Partial<AirportFilterState>) => void;
+  resetAirportFilters: () => void;
 
   setExploreOpen: (isOpen: boolean) => void;
   setExploreTab: (tab: ExploreTab) => void;
@@ -102,6 +119,7 @@ export const useMapStore = create<MapState>()(
         featuredCategory: 'all' as FeaturedCategoryFilter,
       },
       styleVersion: 0,
+      airportFilters: DEFAULT_AIRPORT_FILTERS,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -152,6 +170,13 @@ export const useMapStore = create<MapState>()(
           navVisibility: DEFAULT_NAV_VISIBILITY,
         }),
 
+      setAirportFilters: (filters) =>
+        set((state) => ({
+          airportFilters: { ...state.airportFilters, ...filters },
+        })),
+
+      resetAirportFilters: () => set({ airportFilters: DEFAULT_AIRPORT_FILTERS }),
+
       setExploreOpen: (isOpen) => set((state) => ({ explore: { ...state.explore, isOpen } })),
       setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
       setSelectedRoute: (route) =>
@@ -166,11 +191,12 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 2,
+      version: 4,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
+        airportFilters: state.airportFilters,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -178,7 +204,6 @@ export const useMapStore = create<MapState>()(
         if (version === 1) {
           const oldNav = state.navVisibility as Record<string, unknown> | undefined;
           if (oldNav) {
-            // Convert old separate vors/ndbs/dmes to consolidated navaids
             const hadNavaids = oldNav.vors || oldNav.ndbs || oldNav.dmes;
             state.navVisibility = {
               navaids: hadNavaids ?? true,
@@ -187,6 +212,21 @@ export const useMapStore = create<MapState>()(
               airwaysMode: oldNav.airwaysMode ?? 'off',
             };
           }
+        }
+        // Migration to v3+: add airportFilters
+        if (version < 3) {
+          state.airportFilters = DEFAULT_AIRPORT_FILTERS;
+        }
+        // Migration to v4: remove deprecated filter keys, reset to clean state
+        if (version < 4) {
+          const old = state.airportFilters as Record<string, unknown> | undefined;
+          if (old) {
+            delete old.onlyWithIata;
+            delete old.showPaved;
+            delete old.showUnpaved;
+            delete old.minRunways;
+          }
+          state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
         }
         return state;
       },

@@ -6,6 +6,7 @@ import {
   Compass,
   FileUp,
   Locate,
+  MapPin,
   Navigation,
   Package,
   Plane,
@@ -15,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
 import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +26,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -74,6 +77,10 @@ export default function Toolbar({
   const navVisibility = useMapStore((s) => s.navVisibility);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
+  const airportFilters = useMapStore((s) => s.airportFilters);
+  const setAirportFilters = useMapStore((s) => s.setAirportFilters);
+  const resetAirportFilters = useMapStore((s) => s.resetAirportFilters);
+  const filtersActive = isAirportFiltersActive(airportFilters);
 
   // Flight plan store
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
@@ -341,6 +348,74 @@ export default function Toolbar({
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
+        {/* Airport Filters */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                'h-9 gap-2 px-3',
+                filtersActive && 'border-amber-500/50 text-amber-500'
+              )}
+            >
+              <MapPin className="h-4 w-4" />
+              <span className="text-sm font-medium">{t('airportFilters.title')}</span>
+              {filtersActive && <span className="h-2 w-2 rounded-full bg-amber-500" />}
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              {t('airportFilters.type')}
+            </DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              checked={airportFilters.showLand}
+              onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
+            >
+              {t('airportFilters.land')}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={airportFilters.showSeaplane}
+              onCheckedChange={() =>
+                setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
+              }
+            >
+              {t('airportFilters.seaplane')}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={airportFilters.showHeliport}
+              onCheckedChange={() =>
+                setAirportFilters({ showHeliport: !airportFilters.showHeliport })
+              }
+            >
+              {t('airportFilters.heliport')}
+            </DropdownMenuCheckboxItem>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              {t('airportFilters.showOnly')}
+            </DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              checked={airportFilters.onlyCustom}
+              onCheckedChange={() => setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })}
+            >
+              {t('airportFilters.customOnly')}
+            </DropdownMenuCheckboxItem>
+
+            {filtersActive && (
+              <>
+                <DropdownMenuSeparator />
+                <button
+                  onClick={resetAirportFilters}
+                  className="w-full px-2 py-1.5 text-center text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {t('airportFilters.reset')}
+                </button>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

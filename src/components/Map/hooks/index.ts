@@ -11,3 +11,4 @@ export { useVatsimSync, toggleVatsimLayer } from './useVatsimSync';
 export { useAirportInteractions } from './useAirportInteractions';
 export { useRouteLineSync } from './useRouteLineSync';
 export { useProcedureRouteSync } from './useProcedureRouteSync';
+export { useAirportFilters } from './useAirportFilters';

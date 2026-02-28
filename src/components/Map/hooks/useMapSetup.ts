@@ -196,7 +196,15 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
   const features = airports.map((airport) => ({
     type: 'Feature' as const,
     geometry: { type: 'Point' as const, coordinates: [airport.lon, airport.lat] },
-    properties: { icao: airport.icao, name: airport.name, isCustom: airport.isCustom ? 1 : 0 },
+    properties: {
+      icao: airport.icao,
+      name: airport.name,
+      isCustom: airport.isCustom ? 1 : 0,
+      type: airport.type,
+      surfaceType: airport.surfaceType,
+      runwayCount: airport.runwayCount,
+      elevation: airport.elevation,
+    },
   }));
 
   map.addSource('airports', {

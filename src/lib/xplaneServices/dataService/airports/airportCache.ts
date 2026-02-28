@@ -3,9 +3,9 @@
  * SQLite caching for parsed airport data.
  * Tracks file modification times to invalidate cache when apt.dat files change.
  */
-import { count, like } from 'drizzle-orm';
+import { count, eq, like } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airports, aptFileMeta, getDb, saveDb } from '@/lib/db';
+import { airports, aptFileMeta, getDb, metadata, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
 import type {
   Airport,
@@ -14,6 +14,32 @@ import type {
   CacheCheckResult,
   ParsedAirportEntry,
 } from '../types';
+
+// ============================================================================
+// Data Version — bump to force a full rescan when parsed fields change
+// ============================================================================
+
+/**
+ * Increment this when the scanner extracts new data from apt.dat
+ * that existing cached rows won't have (e.g. runwayCount, surfaceType).
+ */
+const AIRPORT_DATA_VERSION = '2';
+const DATA_VERSION_KEY = 'airport_data_version';
+
+/** Returns true when cached data is outdated and needs a full rescan. */
+export function isDataVersionStale(): boolean {
+  const db = getDb();
+  const row = db.select().from(metadata).where(eq(metadata.key, DATA_VERSION_KEY)).get();
+  return row?.value !== AIRPORT_DATA_VERSION;
+}
+
+/** Stamp the current data version after a successful scan. */
+export function updateDataVersion(): void {
+  const db = getDb();
+  // Upsert
+  db.delete(metadata).where(eq(metadata.key, DATA_VERSION_KEY)).run();
+  db.insert(metadata).values({ key: DATA_VERSION_KEY, value: AIRPORT_DATA_VERSION }).run();
+}
 
 // ============================================================================
 // File Metadata Operations
@@ -127,6 +153,8 @@ export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
     lon: a.lon,
     type: a.type,
     elevation: a.elevation,
+    runwayCount: a.runwayCount,
+    primarySurfaceType: a.primarySurfaceType,
     data: a.data,
     sourceFile: a.sourceFile,
     city: a.city,
@@ -160,6 +188,19 @@ export function persistDatabase(): void {
 /**
  * Get all airports from database
  */
+/**
+ * Derive a human-readable surface type from apt.dat surface code.
+ * Codes: 1=asphalt, 2=concrete, 3=turf/grass, 4=dirt, 5=gravel,
+ *        12=dry lakebed, 13=water, 14=snow/ice, 15=transparent
+ */
+function deriveSurfaceType(code: number | null): Airport['surfaceType'] {
+  if (code === null || code === 0) return 'other';
+  if (code === 13) return 'water';
+  if (code <= 2) return 'paved'; // asphalt, concrete
+  if (code <= 5 || code === 12) return 'unpaved'; // turf, dirt, gravel, dry lakebed
+  return 'other';
+}
+
 export function getAllAirportsFromDb(): Airport[] {
   const db = getDb();
   const results = db
@@ -169,7 +210,10 @@ export function getAllAirportsFromDb(): Airport[] {
       lat: airports.lat,
       lon: airports.lon,
       type: airports.type,
+      elevation: airports.elevation,
       sourceFile: airports.sourceFile,
+      runwayCount: airports.runwayCount,
+      primarySurfaceType: airports.primarySurfaceType,
     })
     .from(airports)
     .all();
@@ -181,6 +225,9 @@ export function getAllAirportsFromDb(): Airport[] {
     lon: r.lon,
     type: r.type as Airport['type'],
     isCustom: r.sourceFile?.includes('Custom Scenery') ?? false,
+    runwayCount: r.runwayCount ?? 0,
+    surfaceType: deriveSurfaceType(r.primarySurfaceType ?? null),
+    elevation: r.elevation ?? 0,
   }));
 }
 

@@ -104,6 +104,24 @@
     }
   },
 
+  "airportFilters": {
+    "title": "Aeropuertos",
+    "type": "Tipo",
+    "land": "Aeropuertos terrestres",
+    "seaplane": "Bases de hidroaviones",
+    "heliport": "Helipuertos",
+    "surface": "Superficie",
+    "paved": "Pavimentado (Asfalto/Hormigón)",
+    "unpaved": "Sin pavimentar (Hierba/Tierra/Grava)",
+    "showOnly": "Mostrar solo",
+    "iataOnly": "Comercial (IATA)",
+    "customOnly": "Escenarios personalizados",
+    "runways": "Pistas",
+    "anyRunways": "Todas",
+    "minRunways": "{{count}}+ Pistas",
+    "reset": "Restablecer filtros"
+  },
+
   "explore": {
     "title": "Explorar",
     "close": "Cerrar exploración",

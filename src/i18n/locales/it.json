@@ -104,6 +104,24 @@
     }
   },
 
+  "airportFilters": {
+    "title": "Aeroporti",
+    "type": "Tipo",
+    "land": "Aeroporti terrestri",
+    "seaplane": "Idroscali",
+    "heliport": "Eliporti",
+    "surface": "Superficie",
+    "paved": "Pavimentato (Asfalto/Calcestruzzo)",
+    "unpaved": "Non pavimentato (Erba/Terra/Ghiaia)",
+    "showOnly": "Mostra solo",
+    "iataOnly": "Commerciale (IATA)",
+    "customOnly": "Scenari personalizzati",
+    "runways": "Piste",
+    "anyRunways": "Tutte",
+    "minRunways": "{{count}}+ Piste",
+    "reset": "Reimposta filtri"
+  },
+
   "explore": {
     "title": "Esplora",
     "close": "Chiudi esplorazione",

@@ -104,6 +104,24 @@
     }
   },
 
+  "airportFilters": {
+    "title": "Lotniska",
+    "type": "Typ",
+    "land": "Lotniska lądowe",
+    "seaplane": "Lotniska wodne",
+    "heliport": "Lądowiska śmigłowców",
+    "surface": "Nawierzchnia",
+    "paved": "Utwardzona (Asfalt/Beton)",
+    "unpaved": "Nieutwardzona (Trawa/Ziemia/Żwir)",
+    "showOnly": "Pokaż tylko",
+    "iataOnly": "Komercyjne (IATA)",
+    "customOnly": "Scenerie użytkownika",
+    "runways": "Pasy startowe",
+    "anyRunways": "Wszystkie",
+    "minRunways": "{{count}}+ Pasów",
+    "reset": "Resetuj filtry"
+  },
+
   "explore": {
     "title": "Eksploruj",
     "close": "Zamknij eksplorację",

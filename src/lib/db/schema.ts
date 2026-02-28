@@ -30,6 +30,8 @@ export const airports = sqliteTable(
     towerServiceType: text('tower_service_type'),
     driveOnLeft: integer('drive_on_left', { mode: 'boolean' }),
     guiLabel: text('gui_label'),
+    runwayCount: integer('runway_count'),
+    primarySurfaceType: integer('primary_surface_type'),
   },
   (table) => [
     index('idx_airports_coords').on(table.lat, table.lon),

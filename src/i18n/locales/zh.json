@@ -104,6 +104,24 @@
     }
   },
 
+  "airportFilters": {
+    "title": "机场",
+    "type": "类型",
+    "land": "陆地机场",
+    "seaplane": "水上机场",
+    "heliport": "直升机场",
+    "surface": "跑道面",
+    "paved": "铺装 (沥青/混凝土)",
+    "unpaved": "未铺装 (草地/泥土/碎石)",
+    "showOnly": "仅显示",
+    "iataOnly": "商用航空 (IATA)",
+    "customOnly": "自定义场景",
+    "runways": "跑道",
+    "anyRunways": "全部",
+    "minRunways": "{{count}}条以上",
+    "reset": "重置筛选"
+  },
+
   "explore": {
     "title": "探索",
     "close": "关闭探索",
