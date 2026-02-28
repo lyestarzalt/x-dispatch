@@ -101,3 +101,12 @@ jobs:
           body: ${{ steps.changelog.outputs.content }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Discord
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: "X-Dispatch ${{ needs.version.outputs.tag }} Released"
+          embed-url: "https://github.com/${{ github.repository }}/releases/tag/${{ needs.version.outputs.tag }}"
+          embed-description: ${{ steps.changelog.outputs.content }}
+          embed-color: 3447003
