@@ -71,7 +71,7 @@ export default function SettingsDialog({
             <div className="p-4">
               <DialogHeader>
                 <DialogTitle className="text-base font-semibold">{t('settings.title')}</DialogTitle>
-                <DialogDescription className="text-xs">{t('settings.subtitle')}</DialogDescription>
+                <DialogDescription className="text-sm">{t('settings.subtitle')}</DialogDescription>
               </DialogHeader>
             </div>
 
@@ -107,7 +107,7 @@ export default function SettingsDialog({
 
             {/* Version Footer */}
             <div className="border-t p-4">
-              <p className="font-mono text-xs text-muted-foreground">{version && `v${version}`}</p>
+              <p className="font-mono text-sm text-muted-foreground">{version && `v${version}`}</p>
             </div>
           </div>
 

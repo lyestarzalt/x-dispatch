@@ -145,7 +145,7 @@ export function BrowserTab() {
           {/* Total count */}
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold tabular-nums text-foreground">{totalAddons}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {t('addonManager.installed.total')}
             </span>
           </div>

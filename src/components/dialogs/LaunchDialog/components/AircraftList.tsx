@@ -82,7 +82,7 @@ function AircraftListItem({
         >
           {aircraft.name}
         </div>
-        <div className="truncate text-xs text-muted-foreground">{aircraft.manufacturer}</div>
+        <div className="truncate text-sm text-muted-foreground">{aircraft.manufacturer}</div>
       </div>
 
       {/* Favorite Button */}
@@ -223,7 +223,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             value={filterAircraftType}
             onValueChange={(v) => setFilterAircraftType(v as AircraftType)}
           >
-            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
+            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allTypes')} />
             </SelectTrigger>
             <SelectContent>
@@ -236,7 +236,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             value={filterEngineType}
             onValueChange={(v) => setFilterEngineType(v as EngineType)}
           >
-            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
+            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allEngines')} />
             </SelectTrigger>
             <SelectContent>
@@ -250,7 +250,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         {/* Filter Dropdowns - Row 2: Category & Manufacturer */}
         <div className="flex gap-2">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
+            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allCategories')} />
             </SelectTrigger>
             <SelectContent>
@@ -263,7 +263,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             </SelectContent>
           </Select>
           <Select value={filterManufacturer} onValueChange={setFilterManufacturer}>
-            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-xs">
+            <SelectTrigger className="h-7 flex-1 rounded-lg bg-secondary text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allManufacturers')} />
             </SelectTrigger>
             <SelectContent>
@@ -278,7 +278,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         </div>
 
         {/* Count */}
-        <div className="text-xs text-muted-foreground">
+        <div className="text-sm text-muted-foreground">
           {t('launcher.aircraft.count', { count: filteredAircraft.length })}
           {showFavoritesOnly &&
             ` · ${t('launcher.aircraft.favorites', { count: favorites.length })}`}

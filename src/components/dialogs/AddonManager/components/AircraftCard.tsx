@@ -69,7 +69,7 @@ export function AircraftCard({
         {/* Badges row */}
         <div className="mt-1 flex flex-wrap gap-1">
           {aircraft.version && (
-            <Badge variant={aircraft.hasUpdate ? 'destructive' : 'secondary'} className="text-xs">
+            <Badge variant={aircraft.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
               v{aircraft.version}
               {aircraft.hasUpdate && aircraft.latestVersion && ` → ${aircraft.latestVersion}`}
             </Badge>

@@ -55,7 +55,7 @@ export class SectionErrorBoundary extends Component<
             <span className="text-sm font-medium">{this.props.name} failed to load</span>
           </div>
           {this.state.error && (
-            <p className="max-w-xs text-center text-xs text-muted-foreground">
+            <p className="max-w-xs text-center text-sm text-muted-foreground">
               {this.state.error.message}
             </p>
           )}

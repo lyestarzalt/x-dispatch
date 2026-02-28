@@ -73,7 +73,7 @@ export default function StartTab({
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={cn(
-                '-mb-px pb-2 text-xs font-medium transition-colors',
+                '-mb-px pb-2 text-sm font-medium transition-colors',
                 viewType === tab.id
                   ? 'border-b-2 border-foreground text-foreground'
                   : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'

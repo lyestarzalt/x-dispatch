@@ -110,7 +110,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                       <div className="text-sm font-medium">{t(item.labelKey)}</div>
                       <div
                         className={cn(
-                          'mt-0.5 text-xs transition-colors',
+                          'mt-0.5 text-sm transition-colors',
                           isActive ? 'text-primary/70' : 'text-muted-foreground/70'
                         )}
                       >
@@ -132,7 +132,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleOpenXPlaneFolder}
-                className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+                className="w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground"
               >
                 <FolderOpen className="h-3.5 w-3.5" />
                 {t('addonManager.openXPlaneFolder')}

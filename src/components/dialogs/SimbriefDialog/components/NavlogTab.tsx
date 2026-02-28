@@ -119,7 +119,7 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
       </ScrollArea>
 
       {/* Footer summary */}
-      <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-2 text-xs">
+      <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-2 text-sm">
         <span className="text-muted-foreground">{fixes.length} waypoints</span>
         <span className="text-muted-foreground">
           Total: {Math.round(processedFixes[processedFixes.length - 1]?.cumulativeDistance || 0)} nm
@@ -204,7 +204,7 @@ function NavlogRow({
             className="h-3 w-3 text-muted-foreground"
             style={{ transform: `rotate(${windDir}deg)` }}
           />
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="font-mono text-sm text-muted-foreground">
             {windDir.toString().padStart(3, '0')}/{windSpd}
           </span>
         </div>
@@ -239,7 +239,7 @@ function NavlogRow({
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="grid grid-cols-4 gap-4 border-t border-dashed bg-muted/20 px-4 py-3 text-xs">
+        <div className="grid grid-cols-4 gap-4 border-t border-dashed bg-muted/20 px-4 py-3 text-sm">
           <div>
             <p className="text-muted-foreground">Position</p>
             <p className="font-mono">

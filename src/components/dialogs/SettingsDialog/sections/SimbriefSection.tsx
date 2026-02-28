@@ -88,7 +88,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             <div className="rounded-md bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400">
               {t('settings.simbrief.testSuccess', 'Found flight plan')}:{' '}
               {fetchMutation.data.origin.icao_code} → {fetchMutation.data.destination.icao_code}
-              <span className="ml-2 text-xs opacity-80">
+              <span className="ml-2 text-sm opacity-80">
                 ({fetchMutation.data.aircraft.icao_code})
               </span>
             </div>
@@ -100,7 +100,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {t(
               'settings.simbrief.pilotIdNote',
               'Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.'
@@ -116,7 +116,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             <p className="text-sm font-medium">
               {t('settings.simbrief.needAccount', "Don't have a SimBrief account?")}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {t('settings.simbrief.freeService', 'SimBrief is a free flight planning service')}
             </p>
           </div>

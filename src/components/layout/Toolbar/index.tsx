@@ -266,7 +266,7 @@ export default function Toolbar({
               className="h-9 gap-2 px-3"
             >
               <Package className="h-4 w-4" />
-              <span className="text-xs font-medium">{t('toolbar.addons')}</span>
+              <span className="text-sm font-medium">{t('toolbar.addons')}</span>
               <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-500">
                 Alpha
               </span>
@@ -291,7 +291,7 @@ export default function Toolbar({
               )}
             >
               <FileUp className="h-4 w-4" />
-              <span className="text-xs font-medium">{t('toolbar.loadPlan')}</span>
+              <span className="text-sm font-medium">{t('toolbar.loadPlan')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -310,7 +310,7 @@ export default function Toolbar({
               className={cn('h-9 gap-2 px-3', simbriefData && 'border-info/50 text-info')}
             >
               <CloudDownload className="h-4 w-4" />
-              <span className="text-xs font-medium">SimBrief</span>
+              <span className="text-sm font-medium">SimBrief</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -329,7 +329,7 @@ export default function Toolbar({
               className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
             >
               <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
-              <span className="text-xs font-medium">{t('explore.title')}</span>
+              <span className="text-sm font-medium">{t('explore.title')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -351,7 +351,7 @@ export default function Toolbar({
               )}
             >
               <Navigation className="h-4 w-4" />
-              <span className="text-xs font-medium">{t('toolbar.nav')}</span>
+              <span className="text-sm font-medium">{t('toolbar.nav')}</span>
               {totalNavItems > 0 && (
                 <Badge variant="secondary" className="px-1.5 py-0.5">
                   {totalNavItems}
@@ -394,7 +394,7 @@ export default function Toolbar({
                     showPlaneTracker && isXPlaneConnected && 'animate-pulse'
                   )}
                 />
-                <span className="text-xs font-medium">{t('toolbar.track')}</span>
+                <span className="text-sm font-medium">{t('toolbar.track')}</span>
                 {showPlaneTracker && isXPlaneConnected && (
                   <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
                 )}
@@ -415,7 +415,7 @@ export default function Toolbar({
                 className={cn('h-9 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
               >
                 <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
-                <span className="text-xs font-medium">{t('toolbar.vatsim')}</span>
+                <span className="text-sm font-medium">{t('toolbar.vatsim')}</span>
                 {vatsimEnabled && vatsimPilotCount !== undefined && (
                   <Badge className="bg-success/20 px-1.5 py-0.5 text-success">
                     {vatsimPilotCount}
@@ -449,7 +449,7 @@ export default function Toolbar({
           )}
         >
           <Plane className="h-4 w-4" />
-          <span className="text-xs font-medium">{t('toolbar.launch')}</span>
+          <span className="text-sm font-medium">{t('toolbar.launch')}</span>
         </Button>
 
         <TooltipProvider>

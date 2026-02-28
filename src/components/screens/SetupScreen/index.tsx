@@ -76,7 +76,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
                 {selectedPath.split('/').pop() || selectedPath.split('\\').pop()}
               </span>
             </div>
-            <p className="truncate font-mono text-xs text-muted-foreground">{selectedPath}</p>
+            <p className="truncate font-mono text-sm text-muted-foreground">{selectedPath}</p>
           </div>
         )}
 
@@ -118,7 +118,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
         </div>
 
         {/* Version */}
-        <p className="mt-8 text-center font-mono text-xs text-muted-foreground/50">
+        <p className="mt-8 text-center font-mono text-sm text-muted-foreground/50">
           {version && `v${version}`}
         </p>
       </div>

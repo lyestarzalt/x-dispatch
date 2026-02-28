@@ -73,7 +73,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
               {xplanePath.split('/').pop() || xplanePath.split('\\').pop()}
             </span>
           </div>
-          <p className="truncate font-mono text-xs text-muted-foreground">{xplanePath}</p>
+          <p className="truncate font-mono text-sm text-muted-foreground">{xplanePath}</p>
         </div>
       )}
 

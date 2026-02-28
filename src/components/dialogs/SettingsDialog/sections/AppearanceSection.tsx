@@ -66,7 +66,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           {/* OpenFreeMap */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium">OpenFreeMap</span>
+              <span className="text-sm font-medium">OpenFreeMap</span>
               <Badge variant="secondary" className="px-1.5 py-0 text-xs">
                 {t('settings.appearance.unlimited')}
               </Badge>
@@ -91,7 +91,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
 
           {/* CARTO */}
           <div className="space-y-2">
-            <span className="text-xs font-medium">CARTO</span>
+            <span className="text-sm font-medium">CARTO</span>
             <div className="grid grid-cols-3 gap-2">
               {cartoStyles.map((preset) => (
                 <Button
@@ -114,15 +114,15 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
 
           {/* Custom URL */}
           <div className="space-y-2">
-            <Label className="text-xs">{t('settings.appearance.customStyleUrl')}</Label>
+            <Label className="text-sm">{t('settings.appearance.customStyleUrl')}</Label>
             <Input
               type="url"
               placeholder="https://example.com/style.json"
               value={mapSettings.mapStyleUrl}
               onChange={(e) => handleChange('mapStyleUrl', e.target.value)}
-              className="h-9 font-mono text-xs"
+              className="h-9 font-mono text-sm"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {t('settings.appearance.customStyleHint')}
             </p>
           </div>

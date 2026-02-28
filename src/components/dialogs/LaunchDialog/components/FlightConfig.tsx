@@ -176,7 +176,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               )}
             >
               <Radio className="h-5 w-5" />
-              <span className="text-xs">{t('launcher.time.live')}</span>
+              <span className="text-sm">{t('launcher.time.live')}</span>
             </button>
             <button
               type="button"
@@ -189,7 +189,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               )}
             >
               <Clock className="h-5 w-5" />
-              <span className="text-xs">{t('launcher.time.set')}</span>
+              <span className="text-sm">{t('launcher.time.set')}</span>
             </button>
           </div>
 
@@ -233,7 +233,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
                   )}
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="text-xs">{t(`launcher.weather.${weather}`)}</span>
+                  <span className="text-sm">{t(`launcher.weather.${weather}`)}</span>
                 </button>
               );
             })}
@@ -250,7 +250,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
             <span className="font-mono text-sm">
               {fuelPercentage}%
               {selectedAircraft && selectedAircraft.maxFuel > 0 && (
-                <span className="ml-1.5 text-xs text-muted-foreground">
+                <span className="ml-1.5 text-sm text-muted-foreground">
                   ({formatWeight(totalFuel, weightUnit)})
                 </span>
               )}
@@ -263,7 +263,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
             max={100}
             step={5}
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>{t('launcher.fuelModal.empty')}</span>
             <span>{t('launcher.fuelModal.full')}</span>
           </div>
@@ -287,7 +287,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               )}
             >
               <Power className="h-5 w-5" />
-              <span className="text-xs">{t('launcher.startState.ready')}</span>
+              <span className="text-sm">{t('launcher.startState.ready')}</span>
             </button>
             <button
               type="button"
@@ -300,7 +300,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               )}
             >
               <PowerOff className="h-5 w-5" />
-              <span className="text-xs">{t('launcher.startState.cold')}</span>
+              <span className="text-sm">{t('launcher.startState.cold')}</span>
             </button>
           </div>
         </div>
@@ -309,17 +309,17 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
         <div className="space-y-1.5 rounded-lg bg-secondary p-3">
           <div className="flex items-start justify-between gap-2">
             <span className="xp-label shrink-0">{t('launcher.aircraft.title')}</span>
-            <span className="text-right font-mono text-xs text-foreground">
+            <span className="text-right font-mono text-sm text-foreground">
               {selectedAircraft?.name || '—'}
             </span>
           </div>
           <div className="flex items-start justify-between gap-2">
             <span className="xp-label shrink-0">{t('launcher.config.livery')}</span>
-            <span className="text-right font-mono text-xs text-foreground">{selectedLivery}</span>
+            <span className="text-right font-mono text-sm text-foreground">{selectedLivery}</span>
           </div>
           <div className="flex items-start justify-between gap-2">
             <span className="xp-label shrink-0">{t('launcher.config.departure')}</span>
-            <span className="text-right font-mono text-xs text-primary">
+            <span className="text-right font-mono text-sm text-primary">
               {startPosition ? `${startPosition.airport} ${startPosition.name}` : '—'}
             </span>
           </div>
@@ -327,7 +327,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
 
         {launchError && (
           <Alert variant="destructive" className="p-2">
-            <AlertDescription className="text-xs">{launchError}</AlertDescription>
+            <AlertDescription className="text-sm">{launchError}</AlertDescription>
           </Alert>
         )}
       </div>
@@ -352,12 +352,12 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
           )}
         </Button>
         {!startPosition && (
-          <p className="mt-1.5 text-center text-xs text-muted-foreground">
+          <p className="mt-1.5 text-center text-sm text-muted-foreground">
             {t('launcher.selectDeparture')}
           </p>
         )}
         {isXPlaneRunning && (
-          <p className="mt-1.5 text-center text-xs text-muted-foreground">
+          <p className="mt-1.5 text-center text-sm text-muted-foreground">
             {t('launcher.xplaneRunning')}
           </p>
         )}

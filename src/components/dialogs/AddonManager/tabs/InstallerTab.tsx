@@ -115,7 +115,7 @@ export function InstallerTab() {
             </div>
             <div className="text-center">
               <p className="text-sm font-medium">{t('addonManager.installer.analyzing')}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {t('addonManager.installer.analyzingHint')}
               </p>
             </div>
@@ -250,7 +250,7 @@ export function InstallerTab() {
                   <h3 className="text-lg font-semibold text-destructive">
                     {t('addonManager.installer.installFailed')}
                   </h3>
-                  <p className="mt-2 text-xs text-destructive/80">{result.error}</p>
+                  <p className="mt-2 text-sm text-destructive/80">{result.error}</p>
                 </>
               )}
 

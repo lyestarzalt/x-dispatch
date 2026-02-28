@@ -130,7 +130,7 @@ export function SceneryTab() {
         </div>
         <div className="text-center">
           <p className="text-sm font-medium">{t('addonManager.scenery.loading')}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             {t('addonManager.scenery.loadingHint')}
           </p>
         </div>
@@ -165,7 +165,7 @@ export function SceneryTab() {
           {/* Total count */}
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold tabular-nums text-foreground">{stats.total}</span>
-            <span className="text-xs text-muted-foreground">{t('addonManager.scenery.total')}</span>
+            <span className="text-sm text-muted-foreground">{t('addonManager.scenery.total')}</span>
           </div>
 
           {/* Enabled/Disabled */}
@@ -209,7 +209,7 @@ export function SceneryTab() {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-[280px]">
-              <p className="text-xs">
+              <p className="text-sm">
                 {safeMode
                   ? t('addonManager.scenery.safeModeOn')
                   : t('addonManager.scenery.safeModeOff')}
