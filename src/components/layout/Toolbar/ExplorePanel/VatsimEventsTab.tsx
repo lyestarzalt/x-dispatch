@@ -66,10 +66,10 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                 className="flex w-full items-center justify-between rounded-lg border border-border bg-background p-2 text-left transition-colors hover:bg-muted"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-4 text-xs text-muted-foreground">{index + 1}.</span>
+                  <span className="w-4 text-sm text-muted-foreground">{index + 1}.</span>
                   <span className="font-mono text-sm font-medium">{airport.icao}</span>
                 </div>
-                <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-3 text-sm">
                   <span className="text-success">↗ {airport.departures}</span>
                   <span className="text-warning">↘ {airport.arrivals}</span>
                   <MapPin className="h-3 w-3 text-muted-foreground" />
@@ -88,7 +88,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
         </h4>
 
         {sortedEvents.length === 0 ? (
-          <p className="py-4 text-center text-xs text-muted-foreground">
+          <p className="py-4 text-center text-sm text-muted-foreground">
             {t('explore.vatsim.noEvents', 'No upcoming events')}
           </p>
         ) : (
@@ -110,7 +110,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                         >
                           {STATUS_LABELS[status]}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">{timeInfo}</span>
+                        <span className="text-sm text-muted-foreground">{timeInfo}</span>
                       </div>
                       <h5 className="mt-1 truncate text-sm font-medium">{event.name}</h5>
                     </div>
@@ -131,7 +131,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 gap-1.5 text-xs"
+                        className="h-7 gap-1.5 text-sm"
                         onClick={() => onSelectAirport(primaryRoute.departure)}
                       >
                         <MapPin className="h-3 w-3" />

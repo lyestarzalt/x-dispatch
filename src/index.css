@@ -122,7 +122,7 @@
   }
 
   .xp-label {
-    @apply text-xs text-muted-foreground;
+    @apply text-sm text-muted-foreground;
   }
 
   .xp-value {

@@ -50,7 +50,7 @@ export function AircraftEntry({
 
       {/* Version badge */}
       {aircraft.version && (
-        <Badge variant={aircraft.hasUpdate ? 'destructive' : 'outline'} className="text-xs">
+        <Badge variant={aircraft.hasUpdate ? 'destructive' : 'outline'} className="text-sm">
           v{aircraft.version}
           {aircraft.hasUpdate && aircraft.latestVersion && ` → ${aircraft.latestVersion}`}
         </Badge>
@@ -63,7 +63,7 @@ export function AircraftEntry({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 gap-1 px-2 text-xs"
+              className="h-7 gap-1 px-2 text-sm"
               onClick={() => onOpenLiveries(aircraft.folderName)}
             >
               {aircraft.liveryCount} liveries

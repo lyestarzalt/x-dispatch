@@ -145,7 +145,7 @@ export default function AirportInfoPanel({
 
           {/* Row 3: Location */}
           {(airport.metadata.city || airport.metadata.country) && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {[airport.metadata.city, airport.metadata.state || airport.metadata.country]
                 .filter(Boolean)
                 .join(', ')}

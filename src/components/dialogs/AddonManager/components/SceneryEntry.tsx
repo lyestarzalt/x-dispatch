@@ -55,7 +55,7 @@ export function SortableSceneryEntry({
       {/* Position number */}
       <div
         className={cn(
-          'flex h-7 items-center justify-center rounded-md bg-muted/50 font-mono text-xs font-semibold tabular-nums text-muted-foreground',
+          'flex h-7 items-center justify-center rounded-md bg-muted/50 font-mono text-sm font-semibold tabular-nums text-muted-foreground',
           isDragging && 'bg-primary/20 text-primary'
         )}
         style={{ minWidth: `${positionWidth + 0.5}rem` }}

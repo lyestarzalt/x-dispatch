@@ -61,13 +61,13 @@ export function PluginEntry({
       <span className="flex-1 truncate font-mono text-sm">{plugin.displayName}</span>
 
       {/* Platform badge */}
-      <Badge variant="outline" className="text-xs">
+      <Badge variant="outline" className="text-sm">
         {PLATFORM_LABELS[plugin.platform]}
       </Badge>
 
       {/* Version badge */}
       {plugin.version && (
-        <Badge variant={plugin.hasUpdate ? 'destructive' : 'secondary'} className="text-xs">
+        <Badge variant={plugin.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
           v{plugin.version}
           {plugin.hasUpdate && plugin.latestVersion && ` → ${plugin.latestVersion}`}
         </Badge>
@@ -80,7 +80,7 @@ export function PluginEntry({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 gap-1 px-2 text-xs"
+              className="h-7 gap-1 px-2 text-sm"
               onClick={onOpenScripts}
             >
               <Code className="h-3.5 w-3.5" />

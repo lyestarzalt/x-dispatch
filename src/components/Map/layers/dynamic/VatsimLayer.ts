@@ -274,9 +274,9 @@ export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.P
             <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
             <span class="text-success font-bold font-mono text-sm">${props.callsign}</span>
           </div>
-          <span class="text-xs px-1.5 py-0.5 rounded bg-muted font-mono">${props.flightRules || 'N/A'}</span>
+          <span class="text-sm px-1.5 py-0.5 rounded bg-muted font-mono">${props.flightRules || 'N/A'}</span>
         </div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
           <div class="flex justify-between"><span class="text-muted-foreground">Aircraft</span><span class="font-mono">${props.aircraft || 'N/A'}</span></div>
           <div class="flex justify-between"><span class="text-muted-foreground">Squawk</span><span class="font-mono">${props.transponder || 'N/A'}</span></div>
           <div class="flex justify-between"><span class="text-muted-foreground">Altitude</span><span class="font-mono">${props.altitude?.toLocaleString() || 0} ft</span></div>
@@ -300,7 +300,7 @@ export function setupVatsimClickHandler(map: maplibregl.Map, popup: maplibregl.P
         </div>`
             : ''
         }
-        <div class="mt-3 pt-2 border-t border-border text-xs text-muted-foreground">${props.name}</div>
+        <div class="mt-3 pt-2 border-t border-border text-sm text-muted-foreground">${props.name}</div>
       </div>
     `;
     popup.setLngLat(coords).setHTML(html).addTo(map);

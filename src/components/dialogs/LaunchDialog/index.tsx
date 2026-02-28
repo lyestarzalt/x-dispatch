@@ -336,7 +336,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">{t('launcher.title')}</span>
               {startPosition && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   {startPosition.airport} · {startPosition.name}
                 </span>
               )}

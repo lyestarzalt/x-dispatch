@@ -135,7 +135,7 @@ export default function FlightInfoPanel() {
               </Badge>
             </div>
             <div className="text-right">
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="font-mono text-sm text-muted-foreground">
                 {simbriefData.aircraft.icao_code}
               </span>
             </div>
@@ -219,19 +219,19 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 
       {/* Wind */}
       <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
-        <span className="text-xs text-muted-foreground">Avg Wind</span>
-        <span className="font-mono text-xs font-medium">
+        <span className="text-sm text-muted-foreground">Avg Wind</span>
+        <span className="font-mono text-sm font-medium">
           {data.general.avg_wind_dir}°/{data.general.avg_wind_spd}kt
         </span>
       </div>
 
       {/* Fuel Summary */}
       <div className="rounded-lg bg-muted/40 p-3">
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Block Fuel</span>
           <span className="font-mono font-medium">{formatFuel(data.fuel.plan_ramp, apiUnit)}</span>
         </div>
-        <div className="mt-1 flex items-center justify-between text-xs">
+        <div className="mt-1 flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Landing</span>
           <span className="font-mono font-medium text-green-500">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
@@ -241,13 +241,13 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 
       {/* Weights Summary */}
       <div className="rounded-lg bg-muted/40 p-3">
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">TOW</span>
           <span className="font-mono font-medium">
             {formatWeight(data.weights.est_tow, apiUnit)}
           </span>
         </div>
-        <div className="mt-1 flex items-center justify-between text-xs">
+        <div className="mt-1 flex items-center justify-between text-sm">
           <span className="text-muted-foreground">PAX / Cargo</span>
           <span className="font-mono font-medium">
             {data.weights.pax_count} / {formatWeight(data.weights.cargo, apiUnit)}
@@ -258,7 +258,7 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       {/* Alternate */}
       {data.alternate && (
         <div className="flex items-center justify-between rounded-lg bg-amber-500/10 px-3 py-2">
-          <span className="text-xs text-amber-500/70">Alternate</span>
+          <span className="text-sm text-amber-500/70">Alternate</span>
           <span className="font-mono text-sm font-medium text-amber-500">
             {data.alternate.icao_code}
           </span>
@@ -281,7 +281,7 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-muted/40 p-2 text-center">
-      <p className="font-mono text-xs font-medium">{value}</p>
+      <p className="font-mono text-sm font-medium">{value}</p>
       <p className="text-[9px] text-muted-foreground">{label}</p>
     </div>
   );
@@ -308,7 +308,7 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         if (amount === 0) return null;
         return (
           <div key={item.label} className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <div className={cn('h-2 w-2 rounded-full', item.color)} />
                 <span className="text-muted-foreground">{item.label}</span>
@@ -375,7 +375,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         const isCritical = percentage > 100;
         return (
           <div key={w.label} className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-sm">
               <span className="font-mono font-medium text-muted-foreground">{w.label}</span>
               <div>
                 <span
@@ -410,19 +410,19 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
       {/* Payload */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">OEW</span>
           <span className="font-mono font-medium">{formatWeight(data.weights.oew, apiUnit)}</span>
         </div>
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Passengers</span>
           <span className="font-mono font-medium">{data.weights.pax_count}</span>
         </div>
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Cargo</span>
           <span className="font-mono font-medium">{formatWeight(data.weights.cargo, apiUnit)}</span>
         </div>
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Payload</span>
           <span className="font-mono font-medium">
             {formatWeight(data.weights.payload, apiUnit)}
@@ -474,7 +474,7 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
       {/* Alternate */}
       {data.alternate && (
         <div className="rounded-lg bg-amber-500/10 p-2">
-          <div className="flex items-center gap-2 text-xs text-amber-500">
+          <div className="flex items-center gap-2 text-sm text-amber-500">
             <Route className="h-3 w-3" />
             <span className="font-mono font-medium">{data.alternate.icao_code}</span>
             <span className="text-amber-500/70">Alternate</span>
@@ -500,7 +500,7 @@ function WeatherCard({
     <div className="rounded-lg bg-muted/40 p-3">
       <div className="mb-2 flex items-center gap-2">
         <Icon className="h-3 w-3 text-muted-foreground" />
-        <span className="font-mono text-xs font-medium">{icao}</span>
+        <span className="font-mono text-sm font-medium">{icao}</span>
       </div>
 
       {metar && (

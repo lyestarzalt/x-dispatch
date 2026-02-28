@@ -36,7 +36,7 @@ export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {
               <span className="font-mono text-sm font-medium">{route.to}</span>
             </div>
             <div className="mt-1 text-sm text-foreground">{route.name}</div>
-            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{route.description}</p>
+            <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{route.description}</p>
           </div>
         </button>
       ))}

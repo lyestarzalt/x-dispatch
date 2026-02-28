@@ -82,7 +82,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                   <span className="flex-1 truncate font-mono text-sm">{script.displayName}</span>
 
                   {/* Extension indicator */}
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {script.enabled ? '.lua' : '.xfml'}
                   </span>
 

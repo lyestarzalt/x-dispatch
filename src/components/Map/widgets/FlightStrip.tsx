@@ -52,7 +52,7 @@ export default function FlightStrip({
               variant="ghost"
               size="sm"
               onClick={onReconnect}
-              className="ml-2 h-7 gap-1.5 text-xs"
+              className="ml-2 h-7 gap-1.5 text-sm"
               title={t('flightStrip.reconnectTooltip')}
             >
               <RefreshCw className="h-3 w-3" />

@@ -105,7 +105,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         {/* Config Path */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {t('settings.about.settingsCache', 'Settings & Cache')}
             </span>
             <Button
@@ -119,7 +119,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             </Button>
           </div>
           {configPath && (
-            <p className="truncate rounded bg-secondary/50 px-3 py-2 font-mono text-xs text-muted-foreground">
+            <p className="truncate rounded bg-secondary/50 px-3 py-2 font-mono text-sm text-muted-foreground">
               {configPath}
             </p>
           )}
@@ -128,7 +128,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         {/* Log Path */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {t('settings.about.logFile', 'Log File')}
             </span>
             <div className="flex gap-1">
@@ -153,7 +153,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             </div>
           </div>
           {logPath && (
-            <p className="truncate rounded bg-secondary/50 px-3 py-2 font-mono text-xs text-muted-foreground">
+            <p className="truncate rounded bg-secondary/50 px-3 py-2 font-mono text-sm text-muted-foreground">
               {logPath}
             </p>
           )}
@@ -168,7 +168,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="space-y-1">
             <p className="text-sm font-medium">{t('settings.about.crashReports')}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {t('settings.about.crashReportsDescription')}
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             disabled={isLoadingCrashReports}
           />
         </div>
-        <p className="text-xs text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
+        <p className="text-sm text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
       </div>
     </div>
   );

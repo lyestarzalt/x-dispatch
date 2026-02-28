@@ -80,7 +80,7 @@ function LiveryCard({
       <div className="flex-shrink-0 px-2 py-1">
         <span
           className={cn(
-            'block truncate text-center text-xs',
+            'block truncate text-center text-sm',
             isSelected ? 'font-medium text-primary' : 'text-muted-foreground'
           )}
         >
@@ -184,7 +184,7 @@ export function AircraftPreview() {
             </div>
             <div className="flex-shrink-0 rounded-lg bg-secondary/80 px-2.5 py-1.5 backdrop-blur-sm">
               <span className="text-sm font-medium">{currentLivery?.displayName ?? 'Default'}</span>
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {currentIndex + 1}/{selectedAircraft.liveries.length}
               </span>
             </div>
@@ -229,7 +229,7 @@ export function AircraftPreview() {
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {t('launcher.liveries.title')}
           </span>
-          <span className="text-xs text-muted-foreground">{selectedAircraft.liveries.length}</span>
+          <span className="text-sm text-muted-foreground">{selectedAircraft.liveries.length}</span>
         </div>
         <ScrollArea
           style={{

@@ -78,15 +78,15 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
 
               {/* Runway Info */}
               <div className="rounded-md bg-muted/50 p-2">
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Flaps</span>
                   <span className="font-mono font-medium">{takeoffRunway.flap_setting}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Thrust</span>
                   <span className="font-mono font-medium">{takeoffRunway.thrust_setting}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">RWY Length</span>
                   <span className="font-mono font-medium">
                     {parseInt(takeoffRunway.length, 10).toLocaleString()}m
@@ -152,20 +152,20 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
 
               {/* Landing Distances */}
               <div className="rounded-md bg-muted/50 p-2">
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">LDA (Dry)</span>
                   <span className="font-mono font-medium">
                     {parseInt(tlr.landing.distance_dry.factored_distance, 10).toLocaleString()}m
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">LDA (Wet)</span>
                   <span className="font-mono font-medium">
                     {parseInt(tlr.landing.distance_wet.factored_distance, 10).toLocaleString()}m
                   </span>
                 </div>
                 {landingRunway && (
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">RWY Length</span>
                     <span className="font-mono font-medium">
                       {parseInt(landingRunway.length, 10).toLocaleString()}m
@@ -213,7 +213,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
           <>
             <Separator className="my-4" />
             <div>
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Step Climbs</p>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">Step Climbs</p>
               <div className="flex flex-wrap gap-2">
                 {stepClimbs.map((step, i) => (
                   <Badge key={i} variant="secondary" className="font-mono">
@@ -231,7 +231,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">{origin.icao_code} Trans Alt</p>
+              <p className="text-sm text-muted-foreground">{origin.icao_code} Trans Alt</p>
               <p className="font-mono text-lg font-bold">{origin.trans_alt || '—'} ft</p>
             </div>
             <PlaneTakeoff className="h-5 w-5 text-muted-foreground" />
@@ -240,7 +240,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">{destination.icao_code} Trans Level</p>
+              <p className="text-sm text-muted-foreground">{destination.icao_code} Trans Level</p>
               <p className="font-mono text-lg font-bold">FL{destination.trans_level || '—'}</p>
             </div>
             <PlaneLanding className="h-5 w-5 text-muted-foreground" />

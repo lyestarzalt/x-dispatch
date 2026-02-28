@@ -112,7 +112,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               <DialogTitle className="text-lg font-semibold text-white">
                 {t('simbrief.title', 'Operational Flight Plan')}
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-400">
+              <DialogDescription className="text-sm text-slate-400">
                 {t('simbrief.description', 'Import your latest dispatch from SimBrief')}
               </DialogDescription>
             </div>
@@ -219,31 +219,31 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               <div className="p-4">
                 <Tabs defaultValue="flight" className="w-full">
                   <TabsList className="mb-4 grid w-full grid-cols-7">
-                    <TabsTrigger value="flight" className="gap-1.5 text-xs">
+                    <TabsTrigger value="flight" className="gap-1.5 text-sm">
                       <Route className="h-3.5 w-3.5" />
                       Flight
                     </TabsTrigger>
-                    <TabsTrigger value="performance" className="gap-1.5 text-xs">
+                    <TabsTrigger value="performance" className="gap-1.5 text-sm">
                       <Zap className="h-3.5 w-3.5" />
                       Perf
                     </TabsTrigger>
-                    <TabsTrigger value="navlog" className="gap-1.5 text-xs">
+                    <TabsTrigger value="navlog" className="gap-1.5 text-sm">
                       <List className="h-3.5 w-3.5" />
                       Navlog
                     </TabsTrigger>
-                    <TabsTrigger value="fuel" className="gap-1.5 text-xs">
+                    <TabsTrigger value="fuel" className="gap-1.5 text-sm">
                       <Fuel className="h-3.5 w-3.5" />
                       Fuel
                     </TabsTrigger>
-                    <TabsTrigger value="weights" className="gap-1.5 text-xs">
+                    <TabsTrigger value="weights" className="gap-1.5 text-sm">
                       <Scale className="h-3.5 w-3.5" />
                       Weights
                     </TabsTrigger>
-                    <TabsTrigger value="weather" className="gap-1.5 text-xs">
+                    <TabsTrigger value="weather" className="gap-1.5 text-sm">
                       <Cloud className="h-3.5 w-3.5" />
                       Weather
                     </TabsTrigger>
-                    <TabsTrigger value="briefing" className="gap-1.5 text-xs">
+                    <TabsTrigger value="briefing" className="gap-1.5 text-sm">
                       <FileText className="h-3.5 w-3.5" />
                       Briefing
                     </TabsTrigger>
@@ -289,7 +289,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleOpenPDF}
-                className="gap-2 text-xs text-muted-foreground"
+                className="gap-2 text-sm text-muted-foreground"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 View Full OFP (PDF)
@@ -329,8 +329,8 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
             <p className="font-mono text-3xl font-bold tracking-tight text-white">
               {data.origin.icao_code}
             </p>
-            <p className="mt-0.5 text-xs text-slate-400">{data.origin.name}</p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-sm text-slate-400">{data.origin.name}</p>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-slate-500">
               <PlaneTakeoff className="h-3 w-3" />
               <span>RWY {data.origin.plan_rwy}</span>
             </div>
@@ -353,8 +353,8 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
             <p className="font-mono text-3xl font-bold tracking-tight text-white">
               {data.destination.icao_code}
             </p>
-            <p className="mt-0.5 text-xs text-slate-400">{data.destination.name}</p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-sm text-slate-400">{data.destination.name}</p>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-slate-500">
               <PlaneLanding className="h-3 w-3" />
               <span>RWY {data.destination.plan_rwy}</span>
             </div>
@@ -368,7 +368,7 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
               {flightNumber}
             </Badge>
           </div>
-          <div className="mt-3 space-y-1 text-xs">
+          <div className="mt-3 space-y-1 text-sm">
             <div className="flex items-center justify-end gap-2 text-slate-400">
               <span>{data.aircraft.icao_code}</span>
               <span className="text-slate-600">|</span>
@@ -455,7 +455,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
             {data.navlog.fix.length} fixes
           </Badge>
         </div>
-        <p className="font-mono text-xs leading-relaxed text-foreground/80">{data.general.route}</p>
+        <p className="font-mono text-sm leading-relaxed text-foreground/80">{data.general.route}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -554,7 +554,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               <span className="font-mono text-xl font-bold">{data.alternate.icao_code}</span>
               <div>
                 <p className="text-sm">{data.alternate.name}</p>
-                <p className="text-xs text-muted-foreground">RWY {data.alternate.plan_rwy}</p>
+                <p className="text-sm text-muted-foreground">RWY {data.alternate.plan_rwy}</p>
               </div>
             </div>
           </div>
@@ -673,7 +673,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-bold">{w.abbr}</span>
-                    <span className="text-xs text-muted-foreground">{w.label}</span>
+                    <span className="text-sm text-muted-foreground">{w.label}</span>
                   </div>
                   <div className="text-right">
                     <span
@@ -685,7 +685,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                     >
                       {formatWeight(w.est.toString(), apiUnit)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {' '}
                       / {formatWeight(w.max.toString(), apiUnit)}
                     </span>
@@ -907,7 +907,7 @@ function MetarCard({
       {parsedMetar?.weatherConditions && parsedMetar.weatherConditions.length > 0 && (
         <div className="mb-3 flex items-center gap-2">
           <Droplets className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-mono text-xs font-medium">
+          <span className="font-mono text-sm font-medium">
             {formatWeatherConditions(parsedMetar.weatherConditions)}
           </span>
         </div>
@@ -915,7 +915,7 @@ function MetarCard({
 
       {/* Raw METAR */}
       <div className="rounded bg-muted/50 p-3">
-        <p className="font-mono text-xs leading-relaxed">{rawMetar || 'No METAR available'}</p>
+        <p className="font-mono text-sm leading-relaxed">{rawMetar || 'No METAR available'}</p>
       </div>
 
       {/* TAF */}
@@ -925,7 +925,7 @@ function MetarCard({
             TAF
           </Badge>
           <div className="rounded bg-muted/50 p-3">
-            <p className="font-mono text-xs leading-relaxed">{taf}</p>
+            <p className="font-mono text-sm leading-relaxed">{taf}</p>
           </div>
         </div>
       )}

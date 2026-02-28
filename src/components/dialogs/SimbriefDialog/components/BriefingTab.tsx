@@ -162,18 +162,18 @@ export function BriefingTab({ data }: BriefingTabProps) {
           </p>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-xs text-muted-foreground">{origin.icao_code}</p>
+              <p className="text-sm text-muted-foreground">{origin.icao_code}</p>
               <p className="font-mono text-sm font-medium">TA: {origin.trans_alt || '—'} ft</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{destination.icao_code}</p>
+              <p className="text-sm text-muted-foreground">{destination.icao_code}</p>
               <p className="font-mono text-sm font-medium">
                 TL: FL{destination.trans_level || '—'}
               </p>
             </div>
             {alternate && (
               <div>
-                <p className="text-xs text-muted-foreground">{alternate.icao_code}</p>
+                <p className="text-sm text-muted-foreground">{alternate.icao_code}</p>
                 <p className="font-mono text-sm font-medium">
                   TL: FL{alternate.trans_level || '—'}
                 </p>
@@ -219,7 +219,7 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
         >
           <div className="flex items-center gap-2">
             <HazardIcon className="h-4 w-4" />
-            <span className="text-xs font-medium uppercase">
+            <span className="text-sm font-medium uppercase">
               {sigmet.qualifier} {sigmet.hazard}
             </span>
             <Badge variant="outline" className="text-[10px]">
@@ -230,7 +230,7 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-1 rounded-md bg-muted/30 p-3 text-xs">
+        <div className="mt-1 rounded-md bg-muted/30 p-3 text-sm">
           <p className="font-mono leading-relaxed">{sigmet.text}</p>
           <div className="mt-2 flex items-center gap-4 text-[10px] text-muted-foreground">
             <span>
@@ -282,7 +282,7 @@ function NotamSection({
                   {label}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">{name}</p>
+              <p className="text-sm text-muted-foreground">{name}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
   return (
     <div
       className={cn(
-        'rounded-md border p-2 text-xs',
+        'rounded-md border p-2 text-sm',
         isRunway ? 'border-warning/30 bg-warning/5' : 'bg-card'
       )}
     >

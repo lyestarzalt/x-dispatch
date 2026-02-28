@@ -169,11 +169,11 @@ export default function InfoTab() {
               <Badge variant="secondary" className="font-mono text-sm font-bold">
                 {primaryAtis.atis_code || '?'}
               </Badge>
-              <span className="text-xs text-muted-foreground">ATIS</span>
+              <span className="text-sm text-muted-foreground">ATIS</span>
               {atisRunways.length > 0 && (
                 <>
                   <span className="text-muted-foreground/30">•</span>
-                  <span className="font-mono text-xs text-foreground">
+                  <span className="font-mono text-sm text-foreground">
                     RWY {atisRunways.join(', ')}
                   </span>
                 </>
@@ -198,7 +198,7 @@ export default function InfoTab() {
             </div>
             {/* Decoded weather */}
             <div className="rounded-lg bg-muted/20 p-2.5">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-foreground">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-foreground">
                 <span>{formatWind(metar.wind)}</span>
                 <span className="text-muted-foreground/40">|</span>
                 <span>{formatVisibility(metar.visibility, metar.cavok)}</span>
@@ -221,7 +221,7 @@ export default function InfoTab() {
           </div>
         </div>
       ) : (
-        <div className="rounded-lg bg-muted/10 p-3 text-center text-xs text-muted-foreground">
+        <div className="rounded-lg bg-muted/10 p-3 text-center text-sm text-muted-foreground">
           No weather data available
         </div>
       )}
@@ -246,7 +246,7 @@ export default function InfoTab() {
                   <span className="font-mono text-sm font-medium text-foreground">
                     {rwy.ends[0].name}/{rwy.ends[1].name}
                   </span>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <span className="font-mono">{length.toLocaleString()}'</span>
                     <span>{surface}</span>
                   </div>
@@ -274,7 +274,7 @@ export default function InfoTab() {
                   {FREQ_LABELS[freq.type] || freq.type}
                 </span>
                 <div className="flex items-center gap-1">
-                  <span className="font-mono text-xs text-foreground">
+                  <span className="font-mono text-sm text-foreground">
                     {formatFrequency(freq.frequency)}
                   </span>
                   <Copy className="h-2.5 w-2.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />

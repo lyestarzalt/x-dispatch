@@ -178,7 +178,7 @@ export default function LoadingScreen({
               </div>
 
               {step.count !== undefined && step.status === 'complete' && (
-                <span className="font-mono text-xs text-muted-foreground">
+                <span className="font-mono text-sm text-muted-foreground">
                   {step.count.toLocaleString()}
                 </span>
               )}
@@ -187,7 +187,7 @@ export default function LoadingScreen({
         </div>
 
         {/* Current message */}
-        <p className="text-center text-xs text-muted-foreground">{currentMessage}</p>
+        <p className="text-center text-sm text-muted-foreground">{currentMessage}</p>
 
         {/* Error */}
         {error && (
@@ -212,7 +212,7 @@ export default function LoadingScreen({
         )}
 
         {/* Version */}
-        <p className="mt-8 text-center font-mono text-xs text-muted-foreground/50">
+        <p className="mt-8 text-center font-mono text-sm text-muted-foreground/50">
           {version && `v${version}`}
         </p>
       </div>

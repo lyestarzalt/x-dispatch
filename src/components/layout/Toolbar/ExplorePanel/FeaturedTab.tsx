@@ -32,7 +32,7 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
             key={cat}
             onClick={() => onCategoryChange(cat)}
             className={cn(
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              'rounded-full px-3 py-1 text-sm font-medium transition-colors',
               category === cat
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -58,7 +58,7 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
                 <span className="font-mono text-sm font-medium">{airport.icao}</span>
                 <span className="truncate text-sm text-muted-foreground">{airport.tagline}</span>
               </div>
-              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                 {airport.description}
               </p>
             </div>
