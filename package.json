@@ -2,7 +2,7 @@
   "name": "x-dispatch",
   "productName": "X-Dispatch",
   "version": "1.2.0",
-  "description": "Flight dispatch and airport visualization for X-Plane",
+  "description": "Flight dispatch, airport visualization, and addon management for X-Plane 12",
   "author": {
     "name": "Lyes Tarzalt"
   },
@@ -14,9 +14,17 @@
   "homepage": "https://github.com/lyestarzalt/x-dispatch#readme",
   "keywords": [
     "x-plane",
+    "x-plane-12",
     "flight-simulator",
+    "flight-planning",
+    "flight-dispatch",
     "airport",
-    "aviation"
+    "aviation",
+    "addon-manager",
+    "simbrief",
+    "vatsim",
+    "electron",
+    "maplibre"
   ],
   "main": ".vite/build/main.js",
   "scripts": {
