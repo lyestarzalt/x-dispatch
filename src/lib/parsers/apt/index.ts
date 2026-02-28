@@ -147,7 +147,7 @@ export class AirportParser {
     const result = StartupLocationSchema.safeParse({
       lat: parseFloat(token(tokens, 1)),
       lon: parseFloat(token(tokens, 2)),
-      heading: rawHeading >= 0 && rawHeading <= 360 ? rawHeading : 0,
+      heading: Number.isFinite(rawHeading) ? ((rawHeading % 360) + 360) % 360 : 0,
       location_type: token(tokens, 4),
       airplane_types: token(tokens, 5),
       name: tokens.slice(6).join(' '),
@@ -178,7 +178,7 @@ export class AirportParser {
     const result = StartupLocationSchema.safeParse({
       lat: parseFloat(token(tokens, 1)),
       lon: parseFloat(token(tokens, 2)),
-      heading: rawHeading >= 0 && rawHeading <= 360 ? rawHeading : 0,
+      heading: Number.isFinite(rawHeading) ? ((rawHeading % 360) + 360) % 360 : 0,
       location_type: 'misc',
       airplane_types: 'ABCDEF',
       name: tokens.slice(4).join(' ') || 'Startup',
@@ -439,7 +439,9 @@ export class AirportParser {
             break;
           }
 
-          const headingResult = bearing.safeParse(rawHeading);
+          const normalizedHeading = Number.isFinite(rawHeading)
+            ? ((rawHeading % 360) + 360) % 360
+            : 0;
           const lengthResult = positiveNumber.safeParse(rawLength);
           const widthResult = positiveNumber.safeParse(rawWidth);
 
@@ -447,7 +449,7 @@ export class AirportParser {
             name: tokens[1],
             latitude: lat,
             longitude: lon,
-            heading: headingResult.success ? headingResult.data : 0,
+            heading: normalizedHeading,
             length: lengthResult.success ? lengthResult.data : 1,
             width: widthResult.success ? widthResult.data : 1,
             surface_type: parseInt(tokens[7]),
