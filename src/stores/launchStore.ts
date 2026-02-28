@@ -89,6 +89,13 @@ export const useLaunchStore = create<LaunchState>()(
       name: 'launch-store',
       partialize: (state) => ({
         favorites: state.favorites,
+        selectedAircraft: state.selectedAircraft,
+        selectedLivery: state.selectedLivery,
+        fuelPercentage: state.fuelPercentage,
+        timeOfDay: state.timeOfDay,
+        useRealWorldTime: state.useRealWorldTime,
+        coldAndDark: state.coldAndDark,
+        selectedWeather: state.selectedWeather,
       }),
     }
   )
