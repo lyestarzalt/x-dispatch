@@ -66,16 +66,22 @@ const GATE_ICONS: Record<string, string> = {
     <line stroke="white" stroke-width="2" x1="10" y1="20" x2="38" y2="20"/>
   </svg>`,
 
-  // Helipad - just H letter
+  // Helipad - H letter with bold arrow notch at top
   'gate-helipad': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-    <path fill="white" d="M12 8v32h6V28h12v12h6V8h-6v14H18V8z"/>
+    <polygon fill="white" points="24,0 32,10 18,10"/>
+    <path fill="white" d="M14 14v28h5.5V30h9v12H34V14h-5.5v12h-9V14z"/>
+  </svg>`,
+
+  // Helipad square background (SDF)
+  'gate-helipad-bg': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <rect fill="white" x="2" y="2" width="44" height="44" rx="6"/>
   </svg>`,
 };
 
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';
   sourceId = 'airport-gates';
-  additionalLayerIds = ['airport-gate-labels', 'airport-gates-ring'];
+  additionalLayerIds = ['airport-gate-labels', 'airport-gates-ring', 'airport-gates-helipad-bg'];
 
   hasData(airport: ParsedAirport): boolean {
     const hasGates = airport.startupLocations && airport.startupLocations.length > 0;
@@ -91,12 +97,13 @@ export class GateLayer extends BaseLayerRenderer {
     const geoJSON = this.createGeoJSON(airport.startupLocations, airport.helipads);
     this.addSource(map, geoJSON);
 
-    // Ring layer with unified colors (bottom)
+    // Ring layer with unified colors (bottom) — excludes helipads
     this.addLayer(map, {
       id: 'airport-gates-ring',
       type: 'circle',
       source: this.sourceId,
       minzoom: 15,
+      filter: ['!=', ['get', 'locationType'], 'helipad'],
       paint: {
         'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 12, 17, 16, 19, 22],
         'circle-color': [
@@ -130,6 +137,41 @@ export class GateLayer extends BaseLayerRenderer {
           ['boolean', ['feature-state', 'hover'], false],
           '#ffffff',
           GATE_COLORS.hover,
+        ],
+      },
+    });
+
+    // Helipad square background layer
+    this.addLayer(map, {
+      id: 'airport-gates-helipad-bg',
+      type: 'symbol',
+      source: this.sourceId,
+      minzoom: 15,
+      filter: ['==', ['get', 'locationType'], 'helipad'],
+      layout: {
+        'icon-image': 'gate-helipad-bg',
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 15, 0.55, 17, 0.75, 19, 1.0],
+        'icon-rotate': ['get', 'heading'],
+        'icon-rotation-alignment': 'map',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      paint: {
+        'icon-color': [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false],
+          GATE_COLORS.selected,
+          ['boolean', ['feature-state', 'hover'], false],
+          GATE_COLORS.hover,
+          GATE_COLORS.default,
+        ],
+        'icon-opacity': [
+          'case',
+          ['boolean', ['feature-state', 'selected'], false],
+          0.95,
+          ['boolean', ['feature-state', 'hover'], false],
+          0.85,
+          0.7,
         ],
       },
     });
