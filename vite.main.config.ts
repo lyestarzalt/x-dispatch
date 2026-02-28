@@ -1,6 +1,8 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig, mergeConfig } from 'vite';
+import pkg from './package.json';
 import { external, getBuildConfig, getBuildDefine, pluginHotRestart } from './vite.base.config';
 
 // https://vitejs.dev/config
@@ -19,8 +21,17 @@ export default defineConfig((env) => {
       rollupOptions: {
         external,
       },
+      sourcemap: true,
     },
-    plugins: [pluginHotRestart('restart')],
+    plugins: [
+      pluginHotRestart('restart'),
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        release: { name: `x-dispatch@${pkg.version}` },
+      }),
+    ],
     define,
     resolve: {
       // Load the Node.js entry.

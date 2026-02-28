@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig } from 'vite';
+import pkg from './package.json';
 import { pluginExposeRenderer } from './vite.base.config';
 
 // https://vitejs.dev/config
@@ -26,6 +27,7 @@ export default defineConfig((env) => {
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
+        release: { name: `x-dispatch@${pkg.version}` },
       }),
     ],
     resolve: {

@@ -43,6 +43,8 @@ if (shouldInitSentry) {
     dsn: 'https://93939f3ad736f402a616188303a369cf@o4510928623173632.ingest.de.sentry.io/4510928631365712',
     environment: app.isPackaged ? 'production' : 'development',
     release: `x-dispatch@${app.getVersion()}`,
+    tracesSampleRate: 1.0,
+    integrations: [Sentry.startupTracingIntegration()],
   });
 }
 
