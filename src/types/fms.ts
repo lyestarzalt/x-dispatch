@@ -75,6 +75,9 @@ export interface EnrichedWaypoint extends FMSWaypoint {
   navaidType?: string; // "VOR-DME", "NDB", etc.
   region?: string; // ICAO region code "DA"
 
+  // Flight phase (SimBrief only)
+  stage?: 'CLB' | 'CRZ' | 'DSC';
+
   // Resolution status
   found: boolean; // Was it found in our database?
 }
@@ -103,6 +106,9 @@ export interface EnrichedFlightPlan {
 
   // Enriched waypoints
   waypoints: EnrichedWaypoint[];
+
+  // Alternate airport (SimBrief only)
+  alternate?: { icao: string; latitude: number; longitude: number };
 
   // Resolution summary
   resolution: {

@@ -228,7 +228,16 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
         latitude: parseFloat(fix.pos_lat),
         longitude: parseFloat(fix.pos_long),
         found: true,
+        stage: fix.stage as 'CLB' | 'CRZ' | 'DSC',
+        frequency: fix.frequency ? parseFloat(fix.frequency) : undefined,
       })),
+      alternate: data.alternate
+        ? {
+            icao: data.alternate.icao_code,
+            latitude: parseFloat(data.alternate.pos_lat),
+            longitude: parseFloat(data.alternate.pos_long),
+          }
+        : undefined,
       resolution: {
         total: data.navlog.fix.length,
         found: data.navlog.fix.length,
