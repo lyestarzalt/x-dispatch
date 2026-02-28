@@ -49,14 +49,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   // Zustand store actions
   const setIsLaunching = useLaunchStore((s) => s.setIsLaunching);
   const setLaunchError = useLaunchStore((s) => s.setLaunchError);
-  const resetConfig = useLaunchStore((s) => s.resetConfig);
 
-  // Reset config when dialog closes
+  // Reset transient UI state when dialog closes
   useEffect(() => {
     if (!open) {
-      resetConfig();
+      setIsLaunching(false);
+      setLaunchError(null);
     }
-  }, [open, resetConfig]);
+  }, [open, setIsLaunching, setLaunchError]);
 
   // Launch - uses REST API if X-Plane is running, otherwise Freeflight.prf
   const handleLaunch = async () => {
