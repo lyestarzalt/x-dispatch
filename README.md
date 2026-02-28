@@ -28,6 +28,18 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download for Windows, macOS, Linux</a>
 </p>
 
+---
+
+![Map Overview](screenshots/map-overview.png)
+
+X-Plane has detailed airport diagrams but no global map to explore them. You need to already know the ICAO code to load an airport. I always wanted a world map to browse, search, and discover airports visually — so I built this.
+
+Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief. Select a starting position, configure your flight, and launch X-Plane directly.
+
+The app has grown to include SimBrief integration, live flight tracking, SID/STAR visualization, and an addon manager to keep your aircraft and scenery organized.
+
+If you find this useful, consider giving it a star, it helps others discover the project.
+
 > **macOS Users (Sequoia/Tahoe):** The app is unsigned. To install:
 >
 > 1. Download the `.dmg` from [Releases](https://github.com/lyestarzalt/x-dispatch/releases/latest)
@@ -42,18 +54,6 @@
 > ```
 >
 > If you get "Permission denied", grant Terminal **Full Disk Access** in System Settings → Privacy & Security.
-
----
-
-![Map Overview](screenshots/map-overview.png)
-
-X-Plane has detailed airport diagrams but no global map to explore them. You need to already know the ICAO code to load an airport. I always wanted a world map to browse, search, and discover airports visually — so I built this.
-
-Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief. Select a starting position, configure your flight, and launch X-Plane directly.
-
-The app has grown to include SimBrief integration, live flight tracking, SID/STAR visualization, and an addon manager to keep your aircraft and scenery organized.
-
-If you find this useful, consider giving it a star, it helps others discover the project.
 
 ## Screenshots
 
