@@ -1,6 +1,6 @@
 import { getRunwayPolygon, getRunwayShoulderPolygon } from '@/lib/parsers/apt/runwayHelper';
 import type { ParsedAirport } from '@/types/apt';
-import type { LinearFeature, Pavement, Runway, Windsock } from '@/types/apt';
+import type { LinearFeature, Pavement, Runway, TaxiNetwork, Windsock } from '@/types/apt';
 
 export function createRunwayGeoJSON(runways: Runway[]): GeoJSON.FeatureCollection {
   return {
@@ -186,4 +186,42 @@ export function createWindsockGeoJSON(windsocks: Windsock[]): GeoJSON.FeatureCol
       },
     })),
   };
+}
+
+/**
+ * Create GeoJSON FeatureCollection for taxiway name labels.
+ * Places a Point at the midpoint of each taxi network edge.
+ * Skips edges with runway-style names (containing '/').
+ */
+export function createTaxiwayNameGeoJSON(taxiNetwork: TaxiNetwork): GeoJSON.FeatureCollection {
+  const nodeMap = new Map<number, { lat: number; lon: number }>();
+  for (const node of taxiNetwork.nodes) {
+    nodeMap.set(node.id, { lat: node.latitude, lon: node.longitude });
+  }
+
+  const features: GeoJSON.Feature[] = [];
+  for (const edge of taxiNetwork.edges) {
+    // Skip runway-style names (e.g. "09L/27R")
+    if (edge.name.includes('/')) continue;
+
+    const from = nodeMap.get(edge.fromNodeId);
+    const to = nodeMap.get(edge.toNodeId);
+    if (!from || !to) continue;
+
+    const midLat = (from.lat + to.lat) / 2;
+    const midLon = (from.lon + to.lon) / 2;
+
+    features.push({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [midLon, midLat],
+      },
+      properties: {
+        name: edge.name,
+      },
+    });
+  }
+
+  return { type: 'FeatureCollection', features };
 }

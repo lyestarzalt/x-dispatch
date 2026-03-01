@@ -23,7 +23,8 @@ type ZoomBehaviorKey =
   | 'beacon'
   | 'signs'
   | 'lighting'
-  | 'labels';
+  | 'labels'
+  | 'taxiwayNames';
 
 /**
  * Named zoom level thresholds — single source of truth.
@@ -107,6 +108,10 @@ export const ZOOM_BEHAVIORS: Record<ZoomBehaviorKey, ZoomBehavior> = {
     maxZoom: ZOOM_LEVEL.MAX,
   },
   labels: {
+    minZoom: ZOOM_LEVEL.DETAILED,
+    maxZoom: ZOOM_LEVEL.MAX,
+  },
+  taxiwayNames: {
     minZoom: ZOOM_LEVEL.DETAILED,
     maxZoom: ZOOM_LEVEL.MAX,
   },
