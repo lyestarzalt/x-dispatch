@@ -3,9 +3,9 @@
  * SQLite caching for parsed airport data.
  * Tracks file modification times to invalidate cache when apt.dat files change.
  */
-import { count, eq, like } from 'drizzle-orm';
+import { count, like } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airports, aptFileMeta, getDb, metadata, saveDb } from '@/lib/db';
+import { airports, aptFileMeta, getDb, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
 import type {
   Airport,
@@ -14,32 +14,6 @@ import type {
   CacheCheckResult,
   ParsedAirportEntry,
 } from '../types';
-
-// ============================================================================
-// Data Version — bump to force a full rescan when parsed fields change
-// ============================================================================
-
-/**
- * Increment this when the scanner extracts new data from apt.dat
- * that existing cached rows won't have (e.g. runwayCount, surfaceType).
- */
-const AIRPORT_DATA_VERSION = '2';
-const DATA_VERSION_KEY = 'airport_data_version';
-
-/** Returns true when cached data is outdated and needs a full rescan. */
-export function isDataVersionStale(): boolean {
-  const db = getDb();
-  const row = db.select().from(metadata).where(eq(metadata.key, DATA_VERSION_KEY)).get();
-  return row?.value !== AIRPORT_DATA_VERSION;
-}
-
-/** Stamp the current data version after a successful scan. */
-export function updateDataVersion(): void {
-  const db = getDb();
-  // Upsert
-  db.delete(metadata).where(eq(metadata.key, DATA_VERSION_KEY)).run();
-  db.insert(metadata).values({ key: DATA_VERSION_KEY, value: AIRPORT_DATA_VERSION }).run();
-}
 
 // ============================================================================
 // File Metadata Operations

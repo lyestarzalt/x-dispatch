@@ -17,7 +17,9 @@ CREATE TABLE `airports` (
 	`transition_level` text,
 	`tower_service_type` text,
 	`drive_on_left` integer,
-	`gui_label` text
+	`gui_label` text,
+	`runway_count` integer,
+	`primary_surface_type` integer
 );
 --> statement-breakpoint
 CREATE INDEX `idx_airports_coords` ON `airports` (`lat`,`lon`);--> statement-breakpoint
