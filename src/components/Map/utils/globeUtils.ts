@@ -38,7 +38,7 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     encoding: 'terrarium',
     tiles: [TERRAIN_TILES_URL],
     tileSize: 256,
-    maxzoom: 15,
+    maxzoom: 9,
   });
 
   // TODO: Replace TerrainControl with custom SafeTerrainControl

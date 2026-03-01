@@ -28,15 +28,15 @@ export function BriefingTab({ data }: BriefingTabProps) {
   const { t } = useTranslation();
   const { origin, destination, alternate, sigmets, atc } = data;
 
-  // Collect NOTAMs from airports
-  const originNotams = origin.notam || [];
-  const destNotams = destination.notam || [];
-  const altNotams = alternate?.notam || [];
+  // SimBrief XML-to-JSON may return a single object instead of an array
+  // when there's only one item, so always coerce to array
+  const originNotams = Array.isArray(origin?.notam) ? origin.notam : [];
+  const destNotams = Array.isArray(destination?.notam) ? destination.notam : [];
+  const altNotams = Array.isArray(alternate?.notam) ? alternate.notam : [];
 
-  const sigmetList = sigmets?.sigmet || [];
+  const sigmetList = Array.isArray(sigmets?.sigmet) ? sigmets.sigmet : [];
 
-  // FIR route
-  const firRoute = atc.fir_enroute || [];
+  const firRoute = Array.isArray(atc?.fir_enroute) ? atc.fir_enroute : [];
 
   const hasNotams = originNotams.length > 0 || destNotams.length > 0 || altNotams.length > 0;
   const hasSigmets = sigmetList.length > 0;
@@ -205,8 +205,8 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
     return 'text-warning bg-warning/10 border-warning/30';
   };
 
-  const HazardIcon = getHazardIcon(sigmet.hazard);
-  const colorClasses = getHazardColor(sigmet.qualifier || sigmet.hazard);
+  const HazardIcon = getHazardIcon(sigmet.hazard || '');
+  const colorClasses = getHazardColor(sigmet.qualifier || sigmet.hazard || '');
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
