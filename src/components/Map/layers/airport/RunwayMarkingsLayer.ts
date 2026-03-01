@@ -374,14 +374,13 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
     });
   }
 
-  remove(map: maplibregl.Map): void {
-    // Remove number source
+  protected performRemove(map: maplibregl.Map): void {
     if (map.getLayer('airport-runway-numbers')) {
       map.removeLayer('airport-runway-numbers');
     }
     if (map.getSource(this.numberSourceId)) {
       map.removeSource(this.numberSourceId);
     }
-    super.remove(map);
+    super.performRemove(map);
   }
 }

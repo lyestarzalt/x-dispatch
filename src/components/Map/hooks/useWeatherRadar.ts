@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type maplibregl from 'maplibre-gl';
+import { safeRemove } from '../layers/types';
 import type { MapRef } from './useMapSetup';
 
 interface RadarFrame {
@@ -41,12 +42,14 @@ function radarLayerId(index: number) {
 }
 
 function removeAllRadar(map: maplibregl.Map, count: number) {
-  for (let i = 0; i < count; i++) {
-    const layerId = radarLayerId(i);
-    const sourceId = radarSourceId(i);
-    if (map.getLayer(layerId)) map.removeLayer(layerId);
-    if (map.getSource(sourceId)) map.removeSource(sourceId);
-  }
+  safeRemove(map, () => {
+    for (let i = 0; i < count; i++) {
+      const layerId = radarLayerId(i);
+      const sourceId = radarSourceId(i);
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    }
+  });
 }
 
 export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarControls {

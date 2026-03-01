@@ -3,7 +3,7 @@ import { NAV_COLORS } from '@/config/navLayerConfig';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
-import { removeLayersAndSource, setLayersVisibility } from '../types';
+import { setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
 function createILSSymbolSVG(size: number = 36): string {
@@ -283,12 +283,8 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     }
   }
 
-  // Override remove to handle multiple sources
-  remove(map: maplibregl.Map): void {
-    // Remove main layers and source via base helper
-    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
-
-    // Remove additional sources
+  protected performRemove(map: maplibregl.Map): void {
+    super.performRemove(map);
     if (map.getSource(this.coneSourceId)) map.removeSource(this.coneSourceId);
     if (map.getSource(this.courseSourceId)) map.removeSource(this.courseSourceId);
   }

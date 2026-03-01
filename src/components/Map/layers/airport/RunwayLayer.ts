@@ -19,12 +19,8 @@ export class RunwayLayer extends BaseLayerRenderer {
     return airport.runways && airport.runways.length > 0;
   }
 
-  /**
-   * Override remove to also clean up shoulder source
-   */
-  remove(map: maplibregl.Map): void {
-    super.remove(map);
-
+  protected performRemove(map: maplibregl.Map): void {
+    super.performRemove(map);
     if (map.getSource(this.shoulderSourceId)) {
       map.removeSource(this.shoulderSourceId);
     }

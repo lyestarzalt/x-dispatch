@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl';
-import { removeLayersAndSource, setLayersVisibility } from '../types';
+import { safeRemove, setLayersVisibility } from '../types';
 
 /**
  * Base class for navigation layer renderers (VOR, NDB, DME, ILS, Waypoint, etc.)
@@ -69,7 +69,16 @@ export abstract class NavLayerRenderer<T> {
    * Remove the layer and source from the map
    */
   remove(map: maplibregl.Map): void {
-    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
+    safeRemove(map, () => this.performRemove(map));
+  }
+
+  /** Raw removal logic — override in subclasses for extra cleanup. */
+  protected performRemove(map: maplibregl.Map): void {
+    for (const id of this.additionalLayerIds) {
+      if (map.getLayer(id)) map.removeLayer(id);
+    }
+    if (map.getLayer(this.layerId)) map.removeLayer(this.layerId);
+    if (map.getSource(this.sourceId)) map.removeSource(this.sourceId);
   }
 
   /**

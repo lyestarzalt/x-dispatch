@@ -226,11 +226,9 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
     }
   }
 
-  remove(map: maplibregl.Map): void {
-    // Stop animation
+  protected performRemove(map: maplibregl.Map): void {
     this.stopAnimation();
 
-    // Remove deck.gl overlay
     if (this.overlay && this.map) {
       try {
         (this.map as unknown as { removeControl: (ctrl: unknown) => void }).removeControl(
@@ -244,7 +242,6 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
     this.overlay = null;
     this.lights = [];
 
-    // Parent class cleanup (if any MapLibre layers were added)
-    super.remove(map);
+    super.performRemove(map);
   }
 }

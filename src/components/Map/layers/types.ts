@@ -1,6 +1,18 @@
 import maplibregl from 'maplibre-gl';
 
 /**
+ * Run a map mutation (layer/source removal etc.) safely.
+ * If the map style isn't fully loaded (mid-render), defers to the next idle event.
+ */
+export function safeRemove(map: maplibregl.Map, fn: () => void): void {
+  if (!map.isStyleLoaded()) {
+    map.once('idle', fn);
+  } else {
+    fn();
+  }
+}
+
+/**
  * Helper to safely remove layers and source.
  * Defers removal if map is mid-render to prevent MapLibre crash.
  */
@@ -10,7 +22,7 @@ export function removeLayersAndSource(
   sourceId: string,
   additionalLayerIds?: string[]
 ): void {
-  const doRemove = () => {
+  safeRemove(map, () => {
     // Remove additional layers first
     if (additionalLayerIds) {
       for (const id of additionalLayerIds) {
@@ -29,14 +41,7 @@ export function removeLayersAndSource(
     if (map.getSource(sourceId)) {
       map.removeSource(sourceId);
     }
-  };
-
-  // If map is not loaded or mid-render, defer to next frame
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
-  }
+  });
 }
 
 /**

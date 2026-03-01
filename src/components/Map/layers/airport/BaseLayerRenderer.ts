@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import type { ParsedAirport } from '@/types/apt';
+import { safeRemove } from '../types';
 
 /**
  * Interface for all layer renderers
@@ -45,7 +46,11 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
   abstract hasData(airport: ParsedAirport): boolean;
 
   remove(map: maplibregl.Map): void {
-    // Remove additional layers first
+    safeRemove(map, () => this.performRemove(map));
+  }
+
+  /** Raw removal logic — override in subclasses for extra cleanup. */
+  protected performRemove(map: maplibregl.Map): void {
     if (this.additionalLayerIds) {
       for (const layerId of this.additionalLayerIds) {
         if (map.getLayer(layerId)) {
@@ -54,12 +59,10 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
       }
     }
 
-    // Remove main layer
     if (map.getLayer(this.layerId)) {
       map.removeLayer(this.layerId);
     }
 
-    // Remove source
     if (map.getSource(this.sourceId)) {
       map.removeSource(this.sourceId);
     }

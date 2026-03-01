@@ -7,7 +7,7 @@ import {
   NAV_ZOOM_LEVELS,
 } from '@/config/navLayerConfig';
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
-import { removeLayersAndSource, setLayersVisibility } from '../types';
+import { setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
 function createAirwayGeoJSON(airways: AirwaySegmentWithCoords[]): GeoJSON.FeatureCollection {
@@ -206,9 +206,8 @@ export class HighAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithC
     }
   }
 
-  // Override remove to handle label source
-  remove(map: maplibregl.Map): void {
-    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
+  protected performRemove(map: maplibregl.Map): void {
+    super.performRemove(map);
     if (map.getSource(this.labelSourceId)) map.removeSource(this.labelSourceId);
   }
 
@@ -347,9 +346,8 @@ export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCo
     }
   }
 
-  // Override remove to handle label source
-  remove(map: maplibregl.Map): void {
-    removeLayersAndSource(map, this.layerId, this.sourceId, this.additionalLayerIds);
+  protected performRemove(map: maplibregl.Map): void {
+    super.performRemove(map);
     if (map.getSource(this.labelSourceId)) map.removeSource(this.labelSourceId);
   }
 
