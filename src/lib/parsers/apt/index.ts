@@ -12,6 +12,9 @@ import type {
   RunwayEnd,
   Sign,
   StartupLocation,
+  TaxiEdge,
+  TaxiNetwork,
+  TaxiNode,
   TaxiwayFeature,
   TowerLocation,
   Windsock,
@@ -376,6 +379,7 @@ export class AirportParser {
       linearFeatures: [],
       frequencies: [],
       helipads: [],
+      taxiNetwork: { nodes: [], edges: [] },
     };
 
     for (let i = 0; i < this.lines.length; i++) {
@@ -600,6 +604,51 @@ export class AirportParser {
             airport.linearFeatures.push(...linearFeatures);
           }
           i += linearFeatureParser.getLinesConsumed();
+          break;
+        }
+
+        case RowCode.TAXI_NETWORK_HEADER:
+          // Header row, no data to parse
+          break;
+
+        case RowCode.TAXI_NETWORK_NODE: {
+          if (tokens.length < 4) break;
+          const lat = parseFloat(token(tokens, 1));
+          const lon = parseFloat(token(tokens, 2));
+          const nodeId = parseInt(token(tokens, 4));
+          if (
+            Number.isFinite(lat) &&
+            Number.isFinite(lon) &&
+            Number.isFinite(nodeId) &&
+            airport.taxiNetwork
+          ) {
+            airport.taxiNetwork.nodes.push({ id: nodeId, latitude: lat, longitude: lon });
+          }
+          break;
+        }
+
+        case RowCode.TAXI_NETWORK_EDGE: {
+          if (tokens.length < 5) break;
+          const fromId = parseInt(token(tokens, 1));
+          const toId = parseInt(token(tokens, 2));
+          // token[3] = direction (twoway/oneway)
+          // token[4] = restriction (taxiway_X or runway)
+          // token[5+] = actual taxiway name
+          const restriction = token(tokens, 4);
+          if (restriction === 'runway') break;
+          const taxiwayName = tokens.slice(5).join(' ');
+          if (
+            Number.isFinite(fromId) &&
+            Number.isFinite(toId) &&
+            taxiwayName &&
+            airport.taxiNetwork
+          ) {
+            airport.taxiNetwork.edges.push({
+              fromNodeId: fromId,
+              toNodeId: toId,
+              name: taxiwayName,
+            });
+          }
           break;
         }
       }

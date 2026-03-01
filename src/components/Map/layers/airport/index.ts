@@ -11,5 +11,6 @@ export { RunwayLightsLayer } from './RunwayLightsLayer';
 export { RunwayMarkingsLayer } from './RunwayMarkingsLayer';
 export { TaxiwayLayer } from './TaxiwayLayer';
 export { TaxiwayLightsLayer } from './TaxiwayLightsLayer';
+export { TaxiwayNameLayer } from './TaxiwayNameLayer';
 export { TowerLayer } from './TowerLayer';
 export { WindsockLayer } from './WindsockLayer';

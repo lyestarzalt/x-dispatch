@@ -11,6 +11,7 @@ import {
   RunwayMarkingsLayer,
   TaxiwayLayer,
   TaxiwayLightsLayer,
+  TaxiwayNameLayer,
   TowerLayer,
   WindsockLayer,
 } from './airport';
@@ -55,6 +56,7 @@ export function createLayerRenderers(): LayerRenderer[] {
     new RunwayLayer(),
     new RunwayMarkingsLayer(),
     new LinearFeatureLayer(),
+    new TaxiwayNameLayer(),
     new RunwayLightsLayer(),
     new TaxiwayLightsLayer(),
     new GateLayer(),

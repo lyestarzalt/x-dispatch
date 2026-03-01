@@ -36,6 +36,9 @@ export enum RowCode {
   RING_CURVE = 114,
   END_SEGMENT = 115,
   END_CURVE = 116,
+  TAXI_NETWORK_HEADER = 1200,
+  TAXI_NETWORK_NODE = 1201,
+  TAXI_NETWORK_EDGE = 1202,
   START_LOCATION_NEW = 1300,
   START_LOCATION_METADATA = 1301,
   METADATA = 1302,
@@ -310,6 +313,23 @@ export interface BoundaryFeature {
   paths: ParsedPath[];
 }
 
+export interface TaxiNode {
+  id: number;
+  latitude: number;
+  longitude: number;
+}
+
+export interface TaxiEdge {
+  fromNodeId: number;
+  toNodeId: number;
+  name: string;
+}
+
+export interface TaxiNetwork {
+  nodes: TaxiNode[];
+  edges: TaxiEdge[];
+}
+
 // ============================================================================
 // Parsed Airport - Complete parsed apt.dat airport data
 // ============================================================================
@@ -335,4 +355,5 @@ export interface ParsedAirport {
   towerLocation?: TowerLocation;
   beacon?: Beacon;
   helipads: Helipad[];
+  taxiNetwork?: TaxiNetwork;
 }
