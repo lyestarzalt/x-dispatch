@@ -37,6 +37,48 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: ProfileDataPoint }>;
+}) {
+  if (!active || !payload?.length) return null;
+  const point = payload[0].payload;
+  if (!point?.ident) return null;
+
+  return (
+    <div className="rounded-lg border bg-background px-3 py-2 shadow-xl">
+      <div className="mb-1 flex items-center gap-2">
+        <span className="font-mono font-semibold">{point.ident}</span>
+        {point.isTopOfClimb && (
+          <Badge className="bg-success/20 text-[10px] text-success">T/C</Badge>
+        )}
+        {point.isTopOfDescent && (
+          <Badge className="bg-warning/20 text-[10px] text-warning">T/D</Badge>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+        <span className="text-muted-foreground">Altitude</span>
+        <span className="text-right font-mono">
+          {point.altitude >= 10000
+            ? `FL${Math.round(point.altitude / 100)}`
+            : `${point.altitude.toLocaleString()} ft`}
+        </span>
+        <span className="text-muted-foreground">Distance</span>
+        <span className="text-right font-mono">{point.distance} nm</span>
+        <span className="text-muted-foreground">Wind</span>
+        <span className="text-right font-mono">{point.wind}</span>
+        <span className="text-muted-foreground">OAT</span>
+        <span className="text-right font-mono">{point.oat}</span>
+        <span className="text-muted-foreground">Terrain</span>
+        <span className="text-right font-mono">{point.groundHeight.toLocaleString()} ft</span>
+      </div>
+    </div>
+  );
+}
+
 export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
   const { data, tocDistance, todDistance, maxAltitude } = useMemo(() => {
     if (!fixes || fixes.length < 2) {
@@ -102,50 +144,8 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
 
   const totalDistance = data[data.length - 1]?.distance || 0;
 
-  // Custom tooltip
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: {
-    active?: boolean;
-    payload?: Array<{ payload: ProfileDataPoint }>;
-  }) => {
-    if (!active || !payload?.length) return null;
-    const point = payload[0].payload;
-
-    return (
-      <div className="rounded-lg border bg-background px-3 py-2 shadow-xl">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="font-mono font-semibold">{point.ident}</span>
-          {point.isTopOfClimb && (
-            <Badge className="bg-success/20 text-[10px] text-success">T/C</Badge>
-          )}
-          {point.isTopOfDescent && (
-            <Badge className="bg-warning/20 text-[10px] text-warning">T/D</Badge>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-          <span className="text-muted-foreground">Altitude</span>
-          <span className="text-right font-mono">
-            {point.altitude >= 10000
-              ? `FL${Math.round(point.altitude / 100)}`
-              : `${point.altitude.toLocaleString()} ft`}
-          </span>
-          <span className="text-muted-foreground">Distance</span>
-          <span className="text-right font-mono">{point.distance} nm</span>
-          <span className="text-muted-foreground">Wind</span>
-          <span className="text-right font-mono">{point.wind}</span>
-          <span className="text-muted-foreground">OAT</span>
-          <span className="text-right font-mono">{point.oat}</span>
-          <span className="text-muted-foreground">Terrain</span>
-          <span className="text-right font-mono">{point.groundHeight.toLocaleString()} ft</span>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className={className}>
+    <div className={className} style={{ minHeight: 100 }}>
       <ChartContainer config={chartConfig} className="h-full w-full">
         <AreaChart data={data} margin={{ top: 24, right: 10, left: 0, bottom: 0 }}>
           <defs>

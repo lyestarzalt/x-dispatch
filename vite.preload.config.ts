@@ -25,7 +25,7 @@ export default defineConfig((env) => {
           assetFileNames: '[name].[ext]',
         },
       },
-      sourcemap: true,
+      sourcemap: 'hidden',
     },
     plugins: [
       pluginHotRestart('reload'),
@@ -34,6 +34,10 @@ export default defineConfig((env) => {
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
         release: { name: `x-dispatch@${pkg.version}` },
+        sourcemaps: {
+          filesToDeleteAfterUpload: ['.vite/build/**/*.map'],
+        },
+        telemetry: false,
       }),
     ],
     resolve: {

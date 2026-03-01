@@ -18,7 +18,7 @@ export default defineConfig((env) => {
     base: './',
     build: {
       outDir: `.vite/renderer/${name}`,
-      sourcemap: true,
+      sourcemap: 'hidden',
     },
     plugins: [
       react(),
@@ -28,6 +28,10 @@ export default defineConfig((env) => {
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
         release: { name: `x-dispatch@${pkg.version}` },
+        sourcemaps: {
+          filesToDeleteAfterUpload: [`.vite/renderer/${name}/**/*.map`],
+        },
+        telemetry: false,
       }),
     ],
     resolve: {

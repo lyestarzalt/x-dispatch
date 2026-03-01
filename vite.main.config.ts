@@ -21,7 +21,7 @@ export default defineConfig((env) => {
       rollupOptions: {
         external,
       },
-      sourcemap: true,
+      sourcemap: 'hidden',
     },
     plugins: [
       pluginHotRestart('restart'),
@@ -30,6 +30,10 @@ export default defineConfig((env) => {
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
         release: { name: `x-dispatch@${pkg.version}` },
+        sourcemaps: {
+          filesToDeleteAfterUpload: ['.vite/build/**/*.map'],
+        },
+        telemetry: false,
       }),
     ],
     define,
