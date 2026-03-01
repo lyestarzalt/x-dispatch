@@ -80,7 +80,9 @@ function sendLoadingProgress(progress: LoadingProgress) {
   }
 }
 
-async function proxyFetch(url: string): Promise<{ data: string | null; error: string | null }> {
+async function proxyFetch(
+  url: string
+): Promise<{ data: string | null; error: string | null; statusCode?: number }> {
   return new Promise((resolve) => {
     const request = net.request(url);
     let data = '';
@@ -91,9 +93,13 @@ async function proxyFetch(url: string): Promise<{ data: string | null; error: st
       });
       response.on('end', () => {
         if (response.statusCode === 200) {
-          resolve({ data, error: null });
+          resolve({ data, error: null, statusCode: response.statusCode });
         } else {
-          resolve({ data: null, error: `HTTP ${response.statusCode}` });
+          resolve({
+            data: data || null,
+            error: `HTTP ${response.statusCode}`,
+            statusCode: response.statusCode,
+          });
         }
       });
     });
@@ -741,19 +747,20 @@ function registerIpcHandlers() {
       const url = `https://www.simbrief.com/api/xml.fetcher.php?userid=${encodeURIComponent(pilotId)}&json=1`;
       const result = await proxyFetch(url);
 
-      if (result.error) {
-        return { success: false, error: result.error };
-      }
-
       if (!result.data) {
-        return { success: false, error: 'No data received' };
+        return { success: false, error: result.error || 'No data received' };
       }
 
       const data = JSON.parse(result.data);
 
-      // Check for SimBrief error response
-      if (data.fetch?.status === 'Error') {
-        return { success: false, error: 'No flight plan found' };
+      // Check for SimBrief error response (API returns 400 with error details)
+      if (data.fetch?.status?.startsWith('Error')) {
+        const msg = data.fetch.status.replace(/^Error:\s*/, '');
+        return { success: false, error: msg };
+      }
+
+      if (result.error) {
+        return { success: false, error: result.error };
       }
 
       return { success: true, data };
