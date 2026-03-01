@@ -1,6 +1,34 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.3.0 - 2026-03-01
+
+### Bug Fixes
+
+- increase base text size from text-xs to text-sm across all components ([a1d9492](https://github.com/lyestarzalt/x-dispatch/commit/a1d9492b0cb460190a26affe1cc5acdd34261924))
+- replace broken migration system with schema fingerprinting ([3322bc3](https://github.com/lyestarzalt/x-dispatch/commit/3322bc331bc3e4cfd23005609b295ae5b259eaf0))
+- retry DB init on failure to prevent zombie app state ([9bfe1c0](https://github.com/lyestarzalt/x-dispatch/commit/9bfe1c0ac46fa94fbd9289f38ca3589b190e7448))
+- harden startup against all DB failure paths ([2029349](https://github.com/lyestarzalt/x-dispatch/commit/20293494eb807eb38dade26cd4447eaec3ab2b6d))
+- move window security handlers into createWindow ([889f8a4](https://github.com/lyestarzalt/x-dispatch/commit/889f8a4f47a516dced3fe8417d7832145523e880))
+
+### Documentation
+
+- update CHANGELOG.md for v1.2.1 ([6ac181c](https://github.com/lyestarzalt/x-dispatch/commit/6ac181cd11b3c747fac50b0fa0f4c52675f76af1))
+- add Ko-fi donation badge and link ([283f2d6](https://github.com/lyestarzalt/x-dispatch/commit/283f2d63aad0233d202a6c05c6b7e3aab98f2fba))
+- move macOS install notice below intro section ([e3f69e4](https://github.com/lyestarzalt/x-dispatch/commit/e3f69e4a0eaefd7c55c898e8c881c138de3a6440))
+- update X-Plane requirement to 12.4+ ([b333058](https://github.com/lyestarzalt/x-dispatch/commit/b333058ae3d29d84604c7b3fabbdeef091905c06))
+
+### Features
+
+- add user-configurable font size (small/medium/large) ([69042ad](https://github.com/lyestarzalt/x-dispatch/commit/69042ad0db574bec43a128acf5055dc6fb270dc0))
+- persist flight config across sessions ([77566f6](https://github.com/lyestarzalt/x-dispatch/commit/77566f6135806437ec6f04f5584988965b5d3d69))
+- add airport dot filters (type, custom scenery) ([a5cd8cd](https://github.com/lyestarzalt/x-dispatch/commit/a5cd8cd5633faf90537874147d40d9757a77e00f))
+- add taxiway name labels from taxi route network ([b975ecb](https://github.com/lyestarzalt/x-dispatch/commit/b975ecb73f3d3dc5979a8590852bf690f2084eed))
+- add live weather radar overlay using RainViewer API ([52b5068](https://github.com/lyestarzalt/x-dispatch/commit/52b5068bdc9962bf31f1c2c0745efd0a846f12de))
+
+### Refactor
+
+- centralize zoom levels with named ZOOM_LEVEL constants ([562ae3c](https://github.com/lyestarzalt/x-dispatch/commit/562ae3c1ae40d5a10a0d645bd36c8d1ead278d53))
 ## v1.2.1 - 2026-02-28
 
 ### Bug Fixes
