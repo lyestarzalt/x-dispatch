@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "abf1682d-8f6f-45b1-b024-c73f31237e3c",
+  "id": "afabaa95-f3f7-4fb9-95ff-9e41b1e1e22f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "airports": {
@@ -136,6 +136,20 @@
         "gui_label": {
           "name": "gui_label",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "runway_count": {
+          "name": "runway_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "primary_surface_type": {
+          "name": "primary_surface_type",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
