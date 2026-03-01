@@ -1,6 +1,21 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.3.1 - 2026-03-01
+
+### Bug Fixes
+
+- defer layer removal when MapLibre is mid-render ([3b7ad64](https://github.com/lyestarzalt/x-dispatch/commit/3b7ad64d03c674f1b4db0b688b50541a02e98f64))
+- surface real API error message instead of generic HTTP 400 ([91e52be](https://github.com/lyestarzalt/x-dispatch/commit/91e52be3c41ad486e17814c3eddc604a72e55d9d))
+- fix taxiway name layer interpolation and visibility ([8bf1e79](https://github.com/lyestarzalt/x-dispatch/commit/8bf1e79efd4d73a3b0ca78a5182ece82a019f2df))
+- sanitize API response to handle empty objects ([5d2bd71](https://github.com/lyestarzalt/x-dispatch/commit/5d2bd71393d9580e0436acd425436e160ceba792))
+- terrain DEM maxzoom and SimBrief array coercion crashes ([b0aed02](https://github.com/lyestarzalt/x-dispatch/commit/b0aed02e71ae4cd8e7eb0f6844aadc430d12d49e))
+- fix source map uploads and VerticalProfile crash ([0805250](https://github.com/lyestarzalt/x-dispatch/commit/0805250c758a22be000cd8697b4c55368f81a782))
+- tell user to generate a flight plan on simbrief.com first ([b24ddb1](https://github.com/lyestarzalt/x-dispatch/commit/b24ddb15087599e9f4c041cb09873836ce16d7b3))
+
+### Documentation
+
+- update CHANGELOG.md for v1.3.0 ([af9842a](https://github.com/lyestarzalt/x-dispatch/commit/af9842a7fd0fdb63a18f54e6b55a8266499d83e5))
 ## v1.3.0 - 2026-03-01
 
 ### Bug Fixes
