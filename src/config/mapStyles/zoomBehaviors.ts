@@ -112,7 +112,7 @@ export const ZOOM_BEHAVIORS: Record<ZoomBehaviorKey, ZoomBehavior> = {
     maxZoom: ZOOM_LEVEL.MAX,
   },
   taxiwayNames: {
-    minZoom: ZOOM_LEVEL.DETAILED,
+    minZoom: ZOOM_LEVEL.MEDIUM,
     maxZoom: ZOOM_LEVEL.MAX,
   },
 };

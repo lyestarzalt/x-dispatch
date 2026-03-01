@@ -33,16 +33,16 @@ export class TaxiwayNameLayer extends BaseLayerRenderer {
       layout: {
         'text-field': ['get', 'name'],
         'text-font': ['Open Sans Bold'],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 19, 13, 18, 17],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 16, 16, 19, 22],
         'text-allow-overlap': false,
         'text-ignore-placement': false,
         'text-padding': 29,
       },
       paint: {
         'text-color': '#1a1a2e',
-        'text-halo-color': 'rgba(255, 255, 255, 0.9)',
+        'text-halo-color': '#e6c619',
         'text-halo-width': 4,
-        'text-halo-blur': 2,
+        'text-halo-blur': 0,
       },
     });
   }

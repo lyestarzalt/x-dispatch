@@ -56,7 +56,6 @@ export function createLayerRenderers(): LayerRenderer[] {
     new RunwayLayer(),
     new RunwayMarkingsLayer(),
     new LinearFeatureLayer(),
-    new TaxiwayNameLayer(),
     new RunwayLightsLayer(),
     new TaxiwayLightsLayer(),
     new GateLayer(),
@@ -65,5 +64,6 @@ export function createLayerRenderers(): LayerRenderer[] {
     // new SignLayer(), // TODO: rework sign rendering
     new BeaconLayer(),
     new TowerLayer(),
+    new TaxiwayNameLayer(),
   ];
 }
