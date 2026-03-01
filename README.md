@@ -221,7 +221,7 @@ For addons, browse the catalog, click install, and the app handles downloading a
 ### Requirements
 
 - Node.js 20+
-- X-Plane 12
+- X-Plane 12.4+
 
 ### Setup
 
