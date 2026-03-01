@@ -37,6 +37,7 @@ import {
   useRouteLineSync,
   useVatsimSync,
 } from './hooks';
+import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   addFlightPlanLayer,
   bringPlaneLayerToTop,
@@ -83,6 +84,8 @@ export default function Map({ airports }: MapProps) {
   const mapBearing = useMapStore((s) => s.mapBearing);
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
+  const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const followPlane = useMapStore((s) => s.followPlane);
   const setFollowPlane = useMapStore((s) => s.setFollowPlane);
@@ -298,6 +301,9 @@ export default function Map({ airports }: MapProps) {
 
   // Procedure route sync - renders selected procedure on map
   useProcedureRouteSync({ mapRef, styleVersion });
+
+  // Weather radar overlay
+  const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -543,6 +549,10 @@ export default function Map({ airports }: MapProps) {
 
   const handleLoadViewportNavaids = useCallback(async () => {}, []);
 
+  const handleToggleWeatherRadar = useCallback(() => {
+    setWeatherRadarEnabled(!weatherRadarEnabled);
+  }, [weatherRadarEnabled, setWeatherRadarEnabled]);
+
   const handleToggleVatsim = useCallback(() => {
     if (vatsimEnabled) {
       setVatsimEnabled(false);
@@ -638,6 +648,8 @@ export default function Map({ airports }: MapProps) {
           onSelectAirport={selectAirport}
           onToggleVatsim={handleToggleVatsim}
           onTogglePlaneTracker={handleTogglePlaneTracker}
+          onToggleWeatherRadar={handleToggleWeatherRadar}
+          weatherRadarControls={weatherRadarControls}
           onNavToggle={handleNavLayerToggle}
         />
         <FlightPlanBar onWaypointClick={handleWaypointClick} />

@@ -62,6 +62,7 @@ interface MapState {
   showPlaneTracker: boolean;
   /** When true, map follows plane position and heading */
   followPlane: boolean;
+  weatherRadarEnabled: boolean;
   explore: ExploreState;
   /** Incremented when map style changes to trigger layer re-adds */
   styleVersion: number;
@@ -81,6 +82,7 @@ interface MapState {
   setVatsimEnabled: (enabled: boolean) => void;
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
+  setWeatherRadarEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
   setAirportFilters: (filters: Partial<AirportFilterState>) => void;
   resetAirportFilters: () => void;
@@ -106,6 +108,7 @@ export const useMapStore = create<MapState>()(
       vatsimEnabled: false,
       showPlaneTracker: false,
       followPlane: false,
+      weatherRadarEnabled: false,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -164,6 +167,7 @@ export const useMapStore = create<MapState>()(
       setVatsimEnabled: (enabled) => set({ vatsimEnabled: enabled }),
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
+      setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
@@ -191,12 +195,11 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 4,
+      version: 5,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
-        airportFilters: state.airportFilters,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;

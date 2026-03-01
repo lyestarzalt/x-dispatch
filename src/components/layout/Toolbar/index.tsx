@@ -2,14 +2,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CloudDownload,
+  CloudRain,
   Compass,
   FileUp,
   Locate,
   MapPin,
   Navigation,
   Package,
+  Pause,
   Plane,
+  Play,
   Radar,
   Search,
   Settings,
@@ -17,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
+import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
 import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +51,8 @@ interface ToolbarProps {
   onSelectAirport: (airport: Airport) => void;
   onToggleVatsim: () => void;
   onTogglePlaneTracker: () => void;
+  onToggleWeatherRadar: () => void;
+  weatherRadarControls: WeatherRadarControls;
   onNavToggle: (layer: keyof NavLayerVisibility) => void;
 }
 
@@ -53,6 +61,8 @@ export default function Toolbar({
   onSelectAirport,
   onToggleVatsim,
   onTogglePlaneTracker,
+  onToggleWeatherRadar,
+  weatherRadarControls,
   onNavToggle,
 }: ToolbarProps) {
   const { t } = useTranslation();
@@ -75,6 +85,7 @@ export default function Toolbar({
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
+  const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
@@ -481,6 +492,14 @@ export default function Toolbar({
           </Tooltip>
         </TooltipProvider>
 
+        <WeatherRadarButton
+          enabled={weatherRadarEnabled}
+          controls={weatherRadarControls}
+          onToggle={onToggleWeatherRadar}
+          label={t('toolbar.weather')}
+          tooltip={t('toolbar.tooltips.weather')}
+        />
+
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -553,5 +572,108 @@ export default function Toolbar({
       {/* SimBrief Dialog */}
       <SimbriefDialog open={simbriefOpen} onClose={() => setSimbriefOpen(false)} />
     </div>
+  );
+}
+
+/* ---------- Weather radar inline button with expandable playback controls ---------- */
+
+function WeatherRadarButton({
+  enabled,
+  controls,
+  onToggle,
+  label,
+  tooltip,
+}: {
+  enabled: boolean;
+  controls: WeatherRadarControls;
+  onToggle: () => void;
+  label: string;
+  tooltip: string;
+}) {
+  const {
+    isPlaying,
+    currentTimestamp,
+    frameIndex,
+    frameCount,
+    play,
+    pause,
+    stepForward,
+    stepBack,
+  } = controls;
+
+  const timeDisplay = useMemo(() => {
+    if (currentTimestamp === null) return '--:--';
+    const date = new Date(currentTimestamp * 1000);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }, [currentTimestamp]);
+
+  const showControls = enabled && frameCount > 0;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className={cn(
+              'flex h-9 items-center overflow-hidden rounded-md border transition-all duration-300',
+              enabled
+                ? 'border-cyan-500/50 bg-cyan-500/10'
+                : 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
+            )}
+          >
+            {/* Toggle button */}
+            <button
+              onClick={onToggle}
+              className={cn(
+                'flex h-full items-center gap-2 px-3 transition-colors',
+                enabled ? 'text-cyan-400' : 'text-foreground'
+              )}
+            >
+              <CloudRain className={cn('h-4 w-4', enabled && 'animate-pulse')} />
+              <span className="text-sm font-medium">{label}</span>
+            </button>
+
+            {/* Playback controls — slide in from right */}
+            {showControls && (
+              <div className="flex items-center gap-0.5 border-l border-cyan-500/30 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
+                <button
+                  onClick={stepBack}
+                  className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label="Previous frame"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+
+                <button
+                  onClick={isPlaying ? pause : play}
+                  className="rounded p-1 text-cyan-400 transition-colors hover:bg-white/10 hover:text-cyan-300"
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                >
+                  {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                </button>
+
+                <button
+                  onClick={stepForward}
+                  className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label="Next frame"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+
+                <span className="ml-1 font-mono text-xs tabular-nums text-cyan-400">
+                  {timeDisplay}
+                </span>
+                <span className="ml-0.5 mr-1 text-[10px] text-white/40">
+                  {frameIndex + 1}/{frameCount}
+                </span>
+              </div>
+            )}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
