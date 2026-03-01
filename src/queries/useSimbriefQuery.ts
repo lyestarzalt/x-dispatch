@@ -6,12 +6,33 @@ export const simbriefKeys = {
   latest: (pilotId: string) => ['simbrief', 'latest', pilotId] as const,
 };
 
+/**
+ * Recursively sanitize SimBrief API response.
+ * The API returns empty objects `{}` instead of null for missing fields,
+ * which crashes React when rendered as children. This converts them to undefined.
+ */
+function sanitize<T>(value: T): T {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(sanitize) as T;
+  if (typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return undefined as T;
+    const cleaned: Record<string, unknown> = {};
+    for (const key of keys) {
+      cleaned[key] = sanitize(obj[key]);
+    }
+    return cleaned as T;
+  }
+  return value;
+}
+
 async function fetchSimbrief(pilotId: string): Promise<SimBriefOFP> {
   const response = await window.simbriefAPI.fetchLatest(pilotId);
   if (!response.success) {
     throw new Error(response.error);
   }
-  return response.data;
+  return sanitize(response.data);
 }
 
 /**
