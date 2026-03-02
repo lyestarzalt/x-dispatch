@@ -1,5 +1,6 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
+import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type {
   Airport,
   AirportSourceBreakdown,
@@ -11,7 +12,7 @@ import type {
   NavDataSources,
 } from './lib/xplaneServices/dataService/cycleInfo';
 // Import types from canonical sources
-import type { Aircraft, LaunchConfig, WeatherPreset } from './types/aircraft';
+import type { Aircraft, WeatherPreset } from './types/aircraft';
 import type {
   ApiResponse,
   BrowseResult,
@@ -180,7 +181,7 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   scanAircraft: () => ipcRenderer.invoke('launcher:scanAircraft'),
   getAircraft: () => ipcRenderer.invoke('launcher:getAircraft'),
   getWeatherPresets: () => ipcRenderer.invoke('launcher:getWeatherPresets'),
-  launch: (config: LaunchConfig) => ipcRenderer.invoke('launcher:launch', config),
+  launch: (payload: FlightInit) => ipcRenderer.invoke('launcher:launch', payload),
   getAircraftImage: (imagePath: string) =>
     ipcRenderer.invoke('launcher:getAircraftImage', imagePath),
 });
@@ -403,7 +404,7 @@ declare global {
       scanAircraft: () => Promise<{ success: boolean; aircraft: Aircraft[]; error?: string }>;
       getAircraft: () => Promise<Aircraft[]>;
       getWeatherPresets: () => Promise<WeatherPreset[]>;
-      launch: (config: LaunchConfig) => Promise<{ success: boolean; error?: string }>;
+      launch: (payload: FlightInit) => Promise<{ success: boolean; error?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
     flightPlanAPI: {

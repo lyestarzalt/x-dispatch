@@ -19,7 +19,6 @@ import {
 } from './lib/utils/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
 import { getSendCrashReports, setSendCrashReports } from './lib/xplaneServices/dataService/config';
-import type { LaunchConfig } from './types/aircraft';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // TODO: Memory optimization - consider lazy nav data loading, reduce sql.js footprint, limit MapLibre tile cache
@@ -800,32 +799,25 @@ function registerIpcHandlers() {
     return WEATHER_PRESETS;
   });
 
-  ipcMain.handle('launcher:launch', async (_, config: unknown) => {
+  ipcMain.handle('launcher:launch', async (_, payload: unknown) => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return { success: false, error: 'X-Plane path not configured' };
 
-    // Validate config has required LaunchConfig properties
-    if (
-      !config ||
-      typeof config !== 'object' ||
-      !('aircraft' in config) ||
-      !('livery' in config) ||
-      !('fuel' in config) ||
-      !('startPosition' in config) ||
-      !('time' in config) ||
-      !('weather' in config)
-    ) {
-      return { success: false, error: 'Invalid launch configuration' };
+    // Validate payload has required FlightInit properties (same schema as REST API)
+    if (!payload || typeof payload !== 'object' || !('aircraft' in payload)) {
+      return { success: false, error: 'Invalid flight configuration' };
     }
 
-    const launchConfig = config as LaunchConfig;
-    logger.launcher.info(
-      `[User] Launch attempt: ${launchConfig.aircraft.name} at ${launchConfig.startPosition.airport} ${launchConfig.startPosition.position}`
-    );
+    const flightPayload =
+      payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
+    const aircraftPath = flightPayload.aircraft?.path || 'unknown';
+    const airport =
+      flightPayload.ramp_start?.airport_id || flightPayload.runway_start?.airport_id || 'unknown';
+    logger.launcher.info(`[User] Launch attempt: ${aircraftPath} at ${airport}`);
 
     try {
       const { getLauncher } = await getLauncherModule();
-      const result = await getLauncher(xplanePath).launch(launchConfig);
+      const result = await getLauncher(xplanePath).launch(flightPayload);
       if (result.success) {
         logger.launcher.info('[User] Launch successful');
       } else {

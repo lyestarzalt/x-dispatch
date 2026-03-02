@@ -1,17 +1,13 @@
 import { exec, spawn } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import logger from '@/lib/utils/logger';
-import type { Aircraft, LaunchConfig, WeatherPreset } from '@/types/aircraft';
+import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
+import type { Aircraft, WeatherPreset } from '@/types/aircraft';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { scanAircraftDirectory } from './acfParser';
-import {
-  calculateFuelWeights,
-  generateFreeflightPrf,
-  getCurrentDayOfYear,
-  getCurrentTimeInHours,
-  getXPlaneExecutable,
-  writeFreeflightPrf,
-} from './freeflightGenerator';
+import { getXPlaneExecutable } from './freeflightGenerator';
 import { WEATHER_PRESETS } from './types';
 
 // Steam App IDs
@@ -80,34 +76,28 @@ class XPlaneLauncher {
   }
 
   /**
-   * Launch X-Plane with the given configuration
+   * Launch X-Plane with FlightInit payload (same schema as REST API, no { data } wrapper).
+   * Writes raw payload to a temp JSON file and passes --new_flight_json flag.
    */
-  async launch(config: LaunchConfig): Promise<{ success: boolean; error?: string }> {
+  async launch(payload: FlightInit): Promise<{ success: boolean; error?: string }> {
     try {
-      // Check if X-Plane process is already running
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
         logger.launcher.warn('X-Plane is already running');
-        return { success: false, error: 'X-Plane is already running' };
+        return {
+          success: false,
+          error: 'X-Plane is already running. Use the Change Flight button instead.',
+        };
       }
 
-      // Generate Freeflight.prf content (preserves existing user preferences)
-      const prfContent = generateFreeflightPrf(config, this.xplanePath);
-      const writeSuccess = writeFreeflightPrf(this.xplanePath, prfContent);
-      if (!writeSuccess) {
-        return { success: false, error: 'Failed to write Freeflight.prf' };
-      }
+      // Same FlightInit schema as REST API, but NO { data: ... } wrapper for CLI
+      const flightJson = payload;
+      const jsonPath = path.join(os.tmpdir(), 'x-dispatch-flight.json');
+      fs.writeFileSync(jsonPath, JSON.stringify(flightJson, null, 2), 'utf-8');
+      logger.launcher.info(`Flight JSON written to: ${jsonPath}`);
+      logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
 
-      // TODO: --no_save_prefs prevents ALL user preference saves (graphics, throttle, etc.)
-      // which causes user settings to reset every dispatch launch.
-      // Option A: Drop all flags, launch XP normally, user clicks "Resume Last Flight"
-      //   to load our Freeflight.prf. One extra click but zero settings issues.
-      // Option B: Set _show_qfl_on_start=0 directly in X-Plane.prf before launch,
-      //   drop --pref and --no_save_prefs, then poll for XP exit with
-      //   isXPlaneProcessRunning() and restore _show_qfl_on_start=1 after.
-      const xplaneArgs = ['--pref:_show_qfl_on_start=0', '--no_save_prefs'];
-      const startRunning = config.startEngineRunning ?? true;
-      xplaneArgs.push(`--start_running=${startRunning}`);
+      const xplaneArgs = [`--new_flight_json=${jsonPath}`];
 
       // macOS + Steam installation: launch via Steam URL protocol
       if (process.platform === 'darwin' && isSteamInstallation(this.xplanePath)) {
@@ -167,43 +157,6 @@ class XPlaneLauncher {
       logger.launcher.error('Launch failed', err);
       return { success: false, error: (err as Error).message };
     }
-  }
-
-  /**
-   * Create a default launch config for an aircraft and start position
-   */
-  createDefaultConfig(
-    aircraft: Aircraft,
-    airport: string,
-    position: string,
-    positionType: 'runway' | 'ramp',
-    airportLat: number,
-    airportLon: number,
-    positionIndex: number = 0,
-    xplaneIndex?: number
-  ): LaunchConfig {
-    return {
-      aircraft,
-      livery: 'Default',
-      fuel: {
-        percentage: 50,
-        tankWeights: calculateFuelWeights(aircraft.maxFuel, 50, aircraft.tankNames.length || 2),
-      },
-      startPosition: {
-        type: positionType,
-        airport,
-        position,
-        index: positionIndex,
-        xplaneIndex,
-      },
-      time: {
-        dayOfYear: getCurrentDayOfYear(),
-        timeInHours: getCurrentTimeInHours(),
-        latitude: airportLat,
-        longitude: airportLon,
-      },
-      weather: WEATHER_PRESETS[0], // Clear weather by default
-    };
   }
 }
 

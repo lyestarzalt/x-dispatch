@@ -58,25 +58,16 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     }
   }, [open, setIsLaunching, setLaunchError]);
 
-  // Launch - uses REST API if X-Plane is running, otherwise Freeflight.prf
+  // Launch - same FlightInit payload for both: REST API (running) or --new_flight_json (cold start)
   const handleLaunch = async () => {
     if (!selectedAircraft || !startPosition) return;
     setIsLaunching(true);
     setLaunchError(null);
 
     try {
-      // Determine weather definition - normalize preset names for matching
-      const weatherPreset = weatherPresets.find((w) => {
-        const normalizedName = w.name.toLowerCase().replace(/\s+/g, '');
-        return normalizedName === selectedWeather || normalizedName.startsWith(selectedWeather);
-      });
-      const weatherDefinition = weatherPreset?.definition || '';
-      const weatherName = weatherPreset?.name || selectedWeather;
-
       // Calculate fuel tank weights (auto distribution) - in kilograms for API
       const tankCount = selectedAircraft.tankNames.length || 2;
-      const totalFuelLbs = selectedAircraft.maxFuel * (fuelPercentage / 100);
-      const totalFuelKg = totalFuelLbs * 0.453592; // Convert lbs to kg
+      const totalFuelKg = selectedAircraft.maxFuel * (fuelPercentage / 100) * 0.453592;
       const tankWeightsKg = new Array(9).fill(0);
       if (tankCount >= 2) {
         tankWeightsKg[0] = totalFuelKg / 2;
@@ -126,20 +117,21 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         timeInHours = timeOfDay;
       }
 
-      if (isXPlaneRunning) {
-        // Use REST API to change flight in running X-Plane
-        const flightConfig = buildFlightAPIPayload({
-          aircraft: selectedAircraft,
-          livery: selectedLivery,
-          startPosition,
-          weather: selectedWeather,
-          useRealWorldTime,
-          dayOfYear,
-          timeOfDay: timeInHours,
-          fuelTanksKg: tankWeightsKg,
-          enginesRunning: !coldAndDark,
-        });
+      // Same FlightInit payload for both paths (REST API and --new_flight_json)
+      const flightConfig = buildFlightAPIPayload({
+        aircraft: selectedAircraft,
+        livery: selectedLivery,
+        startPosition,
+        weather: selectedWeather,
+        useRealWorldTime,
+        dayOfYear,
+        timeOfDay: timeInHours,
+        fuelTanksKg: tankWeightsKg,
+        enginesRunning: !coldAndDark,
+      });
 
+      if (isXPlaneRunning) {
+        // X-Plane running → send via REST API
         try {
           await startFlightMutation.mutateAsync(flightConfig);
           onClose();
@@ -149,40 +141,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           setLaunchError(errorMessage);
         }
       } else {
-        // Use Freeflight.prf to start X-Plane
-        const tankWeightsLbs = new Array(9).fill(0);
-        if (tankCount >= 2) {
-          tankWeightsLbs[0] = totalFuelLbs / 2;
-          tankWeightsLbs[2] = totalFuelLbs / 2;
-        } else {
-          tankWeightsLbs[0] = totalFuelLbs;
-        }
-
-        const config = {
-          aircraft: selectedAircraft,
-          livery: selectedLivery,
-          fuel: { percentage: fuelPercentage, tankWeights: tankWeightsLbs },
-          startPosition: {
-            type: startPosition.type,
-            airport: startPosition.airport,
-            position: startPosition.name,
-            index: startPosition.index,
-            xplaneIndex: startPosition.xplaneIndex,
-          },
-          time: {
-            dayOfYear,
-            timeInHours,
-            latitude: startPosition.latitude,
-            longitude: startPosition.longitude,
-          },
-          weather: {
-            name: weatherName,
-            definition: weatherDefinition,
-          },
-          startEngineRunning: !coldAndDark,
-        };
-
-        const result = await window.launcherAPI.launch(config);
+        // X-Plane not running → write JSON file and launch with --new_flight_json
+        const result = await window.launcherAPI.launch(flightConfig);
         if (result.success) {
           onClose();
         } else {

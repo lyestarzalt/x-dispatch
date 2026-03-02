@@ -4,7 +4,8 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 /**
- * Check if X-Plane process is running (cross-platform)
+ * Check if X-Plane process is actually running (cross-platform).
+ * Filters out zombie/dead processes that linger after --version or --help calls.
  */
 export async function isXPlaneProcessRunning(): Promise<boolean> {
   const platform = process.platform;
@@ -13,13 +14,14 @@ export async function isXPlaneProcessRunning(): Promise<boolean> {
       const { stdout } = await execAsync('tasklist /FI "IMAGENAME eq X-Plane.exe" /NH');
       return stdout.toLowerCase().includes('x-plane.exe');
     } else if (platform === 'darwin') {
-      // TODO: pgrep -x "X-Plane" gives false positives — it matches zombie/hung
-      // processes from --version, -v, --help calls. Need to filter by args or
-      // use a different detection method (e.g. check if process has a window).
-      const { stdout } = await execAsync('pgrep -x "X-Plane"');
+      // Only match S (sleeping/idle) or R (running) — filters out Z (zombie)
+      // and UE (stuck exiting) ghost processes from --version/--help calls
+      const { stdout } = await execAsync(`ps -axo state,comm | grep 'X-Plane$' | grep '^[SR]'`);
       return stdout.trim().length > 0;
     } else {
-      const { stdout } = await execAsync('pgrep -x "X-Plane-x86_64"');
+      const { stdout } = await execAsync(
+        `ps -axo state,comm | grep 'X-Plane-x86_64$' | grep '^[SR]'`
+      );
       return stdout.trim().length > 0;
     }
   } catch {
