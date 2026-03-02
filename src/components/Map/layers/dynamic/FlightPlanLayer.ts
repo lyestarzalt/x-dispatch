@@ -452,8 +452,16 @@ export function setFlightPlanVisibility(map: maplibregl.Map, visible: boolean): 
 export function fitMapToFlightPlan(map: maplibregl.Map, fmsData: EnrichedFlightPlan): void {
   if (fmsData.waypoints.length === 0) return;
   const bounds = new maplibregl.LngLatBounds();
-  fmsData.waypoints.forEach((wp) => bounds.extend([wp.longitude, wp.latitude]));
-  if (fmsData.alternate) {
+  fmsData.waypoints.forEach((wp) => {
+    if (isFinite(wp.longitude) && isFinite(wp.latitude)) {
+      bounds.extend([wp.longitude, wp.latitude]);
+    }
+  });
+  if (
+    fmsData.alternate &&
+    isFinite(fmsData.alternate.longitude) &&
+    isFinite(fmsData.alternate.latitude)
+  ) {
     bounds.extend([fmsData.alternate.longitude, fmsData.alternate.latitude]);
   }
   if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 100, duration: 1500 });
