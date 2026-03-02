@@ -71,6 +71,7 @@ CLAUDE.md
 
 # IDE
 .idea/
+.vscode/
 yarn.lock
 docs/
 

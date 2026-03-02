@@ -205,8 +205,8 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
     return 'text-warning bg-warning/10 border-warning/30';
   };
 
-  const HazardIcon = getHazardIcon(sigmet.hazard || '');
-  const colorClasses = getHazardColor(sigmet.qualifier || sigmet.hazard || '');
+  const HazardIcon = getHazardIcon(String(sigmet.hazard ?? ''));
+  const colorClasses = getHazardColor(String(sigmet.qualifier ?? sigmet.hazard ?? ''));
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -260,13 +260,13 @@ function NotamSection({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Categorize NOTAMs
-  const runwayNotams = notams.filter(
-    (n) =>
-      n.notam_qcode_subject?.toLowerCase().includes('rwy') ||
-      n.notam_text?.toLowerCase().includes('rwy') ||
-      n.notam_text?.toLowerCase().includes('runway')
-  );
+  // Categorize NOTAMs — SimBrief XML-to-JSON may return non-string values
+  const runwayNotams = notams.filter((n) => {
+    const subject = typeof n.notam_qcode_subject === 'string' ? n.notam_qcode_subject : '';
+    const text = typeof n.notam_text === 'string' ? n.notam_text : '';
+    const lower = subject.toLowerCase() + ' ' + text.toLowerCase();
+    return lower.includes('rwy') || lower.includes('runway');
+  });
   const otherNotams = notams.filter((n) => !runwayNotams.includes(n));
 
   return (
