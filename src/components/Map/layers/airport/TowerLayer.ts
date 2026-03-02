@@ -75,6 +75,9 @@ export class TowerLayer extends BaseLayerRenderer {
         map.addImage('tower-icon', img, { sdf: true });
       }
     };
-    img.src = 'data:image/svg+xml,' + encodeURIComponent(TOWER_ICON);
+    img.onerror = () => {
+      window.appAPI.log.warn('[TowerLayer] Failed to load tower-icon SVG');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(TOWER_ICON);
   }
 }

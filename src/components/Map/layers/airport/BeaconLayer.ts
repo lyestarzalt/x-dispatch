@@ -75,6 +75,9 @@ export class BeaconLayer extends BaseLayerRenderer {
         map.addImage('beacon-icon', img, { sdf: true });
       }
     };
-    img.src = 'data:image/svg+xml,' + encodeURIComponent(BEACON_ICON);
+    img.onerror = () => {
+      window.appAPI.log.warn('[BeaconLayer] Failed to load beacon-icon SVG');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(BEACON_ICON);
   }
 }

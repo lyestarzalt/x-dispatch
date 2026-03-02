@@ -131,7 +131,12 @@ export function useMapSetup({
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
 
     map.on('error', (e) => {
-      window.appAPI.log.error('MapLibre error', e.error);
+      const ev = e as unknown as Record<string, unknown>;
+      const parts: string[] = [];
+      if (ev.sourceId) parts.push(`source: ${ev.sourceId}`);
+      if (ev.tileId) parts.push(`tile: ${JSON.stringify(ev.tileId)}`);
+      const detail = parts.length ? ` [${parts.join(', ')}]` : '';
+      window.appAPI.log.error(`MapLibre error${detail}`, e.error?.message ?? e.error);
     });
 
     map.on('load', () => {

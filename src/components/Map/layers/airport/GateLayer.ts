@@ -266,7 +266,10 @@ export class GateLayer extends BaseLayerRenderer {
           map.addImage(iconName, img, { sdf: true });
         }
       };
-      img.src = 'data:image/svg+xml,' + encodeURIComponent(svgContent);
+      img.onerror = () => {
+        window.appAPI.log.warn(`[GateLayer] Failed to load ${iconName} SVG`);
+      };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent);
     }
   }
 
