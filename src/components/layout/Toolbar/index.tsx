@@ -10,6 +10,7 @@ import {
   FileUp,
   Layers,
   Locate,
+  Package,
   Pause,
   Plane,
   Play,
@@ -21,6 +22,7 @@ import {
 import { toast } from 'sonner';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
+import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -68,6 +70,7 @@ export default function Toolbar({
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [simbriefOpen, setSimbriefOpen] = useState(false);
+  const [addonManagerOpen, setAddonManagerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -266,6 +269,25 @@ export default function Toolbar({
           </div>
         )}
       </div>
+
+      {/* Addon Manager */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={() => setAddonManagerOpen(true)}
+              className="h-9 gap-2 px-3"
+            >
+              <Package className="h-4 w-4" />
+              <span className="text-sm font-medium">Addons</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Manage aircraft, scenery & plugins</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Flight Plan dropdown */}
       <TooltipProvider>
@@ -519,8 +541,9 @@ export default function Toolbar({
         </TooltipProvider>
       </div>
 
-      {/* SimBrief Dialog */}
+      {/* Dialogs */}
       <SimbriefDialog open={simbriefOpen} onClose={() => setSimbriefOpen(false)} />
+      <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
     </div>
   );
 }
