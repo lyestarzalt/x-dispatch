@@ -8,10 +8,8 @@ import {
   CloudRain,
   Compass,
   FileUp,
+  Layers,
   Locate,
-  MapPin,
-  Navigation,
-  Package,
   Pause,
   Plane,
   Play,
@@ -23,7 +21,6 @@ import {
 import { toast } from 'sonner';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
-import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +28,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -69,7 +67,6 @@ export default function Toolbar({
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [addonManagerOpen, setAddonManagerOpen] = useState(false);
   const [simbriefOpen, setSimbriefOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,7 +101,6 @@ export default function Toolbar({
   const { connected: isXPlaneConnected } = usePlaneState();
 
   // Nav data counts - derived from airport location
-  // Use airport coords from airports array, fallback to metadata
   const selectedAirport = useMemo(
     () => airports.find((a) => a.icao === selectedICAO),
     [airports, selectedICAO]
@@ -125,27 +121,22 @@ export default function Toolbar({
     if (searchQuery.length < 2) return [];
     const query = searchQuery.toUpperCase();
 
-    // Filter matching airports
     const matches = airports.filter(
       (a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query)
     );
 
-    // Sort by relevance: exact ICAO > ICAO starts with > ICAO contains > name contains
     matches.sort((a, b) => {
       const aIcao = a.icao.toUpperCase();
       const bIcao = b.icao.toUpperCase();
 
-      // Exact ICAO match first
       if (aIcao === query && bIcao !== query) return -1;
       if (bIcao === query && aIcao !== query) return 1;
 
-      // ICAO starts with query
       const aStartsWith = aIcao.startsWith(query);
       const bStartsWith = bIcao.startsWith(query);
       if (aStartsWith && !bStartsWith) return -1;
       if (bStartsWith && !aStartsWith) return 1;
 
-      // ICAO contains query
       const aIcaoContains = aIcao.includes(query);
       const bIcaoContains = bIcao.includes(query);
       if (aIcaoContains && !bIcaoContains) return -1;
@@ -219,6 +210,8 @@ export default function Toolbar({
     { key: 'airspaces', labelKey: 'layers.navigation.airspaces', count: navDataCounts.airspaces },
   ];
 
+  const layersActive = filtersActive || totalNavItems > 0 || weatherRadarEnabled || vatsimEnabled;
+
   return (
     <div className="relative flex items-center gap-3">
       {/* Search */}
@@ -274,70 +267,49 @@ export default function Toolbar({
         )}
       </div>
 
-      {/* Addon Manager */}
+      {/* Flight Plan dropdown */}
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={() => setAddonManagerOpen(true)}
-              className="h-9 gap-2 px-3"
-            >
-              <Package className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('toolbar.addons')}</span>
-              <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-500">
-                Alpha
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('toolbar.tooltips.addons')}</p>
-          </TooltipContent>
+          <DropdownMenu>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'h-9 gap-2 px-3',
+                    (fmsData || simbriefData) && 'border-info/50 text-info'
+                  )}
+                >
+                  <FileUp className="h-4 w-4" />
+                  <span className="text-sm font-medium">{t('toolbar.flightPlan')}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('toolbar.tooltips.flightPlan')}</p>
+            </TooltipContent>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuItem
+                onClick={handleLoadFlightPlan}
+                className={cn(fmsData && !simbriefData && 'text-info')}
+              >
+                <FileUp className="mr-2 h-4 w-4" />
+                {t('toolbar.loadPlan')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setSimbriefOpen(true)}
+                className={cn(simbriefData && 'text-info')}
+              >
+                <CloudDownload className="mr-2 h-4 w-4" />
+                SimBrief
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </Tooltip>
       </TooltipProvider>
 
-      {/* Load Flight Plan */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={handleLoadFlightPlan}
-              className={cn(
-                'h-9 gap-2 px-3',
-                fmsData && !simbriefData && 'border-info/50 text-info'
-              )}
-            >
-              <FileUp className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('toolbar.loadPlan')}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('toolbar.tooltips.loadPlan')}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* SimBrief */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={() => setSimbriefOpen(true)}
-              className={cn('h-9 gap-2 px-3', simbriefData && 'border-info/50 text-info')}
-            >
-              <CloudDownload className="h-4 w-4" />
-              <span className="text-sm font-medium">SimBrief</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('toolbar.tooltips.simbrief', 'Import flight plan from SimBrief')}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Explore Toggle */}
+      {/* Explore button */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -356,173 +328,153 @@ export default function Toolbar({
         </Tooltip>
       </TooltipProvider>
 
+      {/* Track button */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={onTogglePlaneTracker}
+              className={cn(
+                'h-9 gap-2 px-3',
+                showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
+              )}
+            >
+              <Locate
+                className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
+              />
+              <span className="text-sm font-medium">{t('toolbar.track')}</span>
+              {showPlaneTracker && isXPlaneConnected && (
+                <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.track')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        {/* Airport Filters */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                'h-9 gap-2 px-3',
-                filtersActive && 'border-amber-500/50 text-amber-500'
-              )}
-            >
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('airportFilters.title')}</span>
-              {filtersActive && <span className="h-2 w-2 rounded-full bg-amber-500" />}
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-              {t('airportFilters.type')}
-            </DropdownMenuLabel>
-            <DropdownMenuCheckboxItem
-              checked={airportFilters.showLand}
-              onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
-            >
-              {t('airportFilters.land')}
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={airportFilters.showSeaplane}
-              onCheckedChange={() =>
-                setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
-              }
-            >
-              {t('airportFilters.seaplane')}
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={airportFilters.showHeliport}
-              onCheckedChange={() =>
-                setAirportFilters({ showHeliport: !airportFilters.showHeliport })
-              }
-            >
-              {t('airportFilters.heliport')}
-            </DropdownMenuCheckboxItem>
-
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-              {t('airportFilters.showOnly')}
-            </DropdownMenuLabel>
-            <DropdownMenuCheckboxItem
-              checked={airportFilters.onlyCustom}
-              onCheckedChange={() => setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })}
-            >
-              {t('airportFilters.customOnly')}
-            </DropdownMenuCheckboxItem>
-
-            {filtersActive && (
-              <>
-                <DropdownMenuSeparator />
-                <button
-                  onClick={resetAirportFilters}
-                  className="w-full px-2 py-1.5 text-center text-sm text-muted-foreground hover:text-foreground"
+        {/* Layers dropdown */}
+        <TooltipProvider>
+          <Tooltip>
+            <DropdownMenu>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      'h-9 gap-2 px-3',
+                      layersActive && 'border-primary/50 text-primary'
+                    )}
+                  >
+                    <Layers className="h-4 w-4" />
+                    <span className="text-sm font-medium">{t('toolbar.layers')}</span>
+                    {layersActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('toolbar.tooltips.layers')}</p>
+              </TooltipContent>
+              <DropdownMenuContent align="end" className="w-56">
+                {/* Airports section */}
+                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                  {t('airportFilters.title')}
+                </DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={airportFilters.showLand}
+                  onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
                 >
-                  {t('airportFilters.reset')}
-                </button>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                'h-9 gap-2 px-3',
-                totalNavItems > 0 && 'border-primary/50 text-primary'
-              )}
-            >
-              <Navigation className="h-4 w-4" />
-              <span className="text-sm font-medium">{t('toolbar.nav')}</span>
-              {totalNavItems > 0 && (
-                <Badge variant="secondary" className="px-1.5 py-0.5">
-                  {totalNavItems}
-                </Badge>
-              )}
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-              Around Airport (50nm)
-            </DropdownMenuLabel>
-            {localNavLayers.map((layer) => (
-              <DropdownMenuCheckboxItem
-                key={layer.key}
-                checked={navVisibility[layer.key] as boolean}
-                onCheckedChange={() => onNavToggle(layer.key)}
-              >
-                <span className="flex-1">{t(layer.labelKey)}</span>
-                <span className="ml-2 font-mono text-xs text-muted-foreground">{layer.count}</span>
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                onClick={onTogglePlaneTracker}
-                className={cn(
-                  'h-9 gap-2 px-3',
-                  showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
+                  {t('airportFilters.land')}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={airportFilters.showSeaplane}
+                  onCheckedChange={() =>
+                    setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
+                  }
+                >
+                  {t('airportFilters.seaplane')}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={airportFilters.showHeliport}
+                  onCheckedChange={() =>
+                    setAirportFilters({ showHeliport: !airportFilters.showHeliport })
+                  }
+                >
+                  {t('airportFilters.heliport')}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={airportFilters.onlyCustom}
+                  onCheckedChange={() =>
+                    setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })
+                  }
+                >
+                  {t('airportFilters.customOnly')}
+                </DropdownMenuCheckboxItem>
+                {filtersActive && (
+                  <button
+                    onClick={resetAirportFilters}
+                    className="w-full px-2 py-1.5 text-center text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {t('airportFilters.reset')}
+                  </button>
                 )}
-              >
-                <Locate
-                  className={cn(
-                    'h-4 w-4',
-                    showPlaneTracker && isXPlaneConnected && 'animate-pulse'
+
+                <DropdownMenuSeparator />
+
+                {/* Navigation section */}
+                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                  Around Airport (50nm)
+                </DropdownMenuLabel>
+                {localNavLayers.map((layer) => (
+                  <DropdownMenuCheckboxItem
+                    key={layer.key}
+                    checked={navVisibility[layer.key] as boolean}
+                    onCheckedChange={() => onNavToggle(layer.key)}
+                  >
+                    <span className="flex-1">{t(layer.labelKey)}</span>
+                    <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      {layer.count}
+                    </span>
+                  </DropdownMenuCheckboxItem>
+                ))}
+
+                <DropdownMenuSeparator />
+
+                {/* Overlays section */}
+                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                  {t('toolbar.overlays')}
+                </DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={weatherRadarEnabled}
+                  onCheckedChange={onToggleWeatherRadar}
+                >
+                  <CloudRain className="mr-2 h-4 w-4" />
+                  {t('toolbar.weather')}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
+                  <Radar className="mr-2 h-4 w-4" />
+                  {t('toolbar.vatsim')}
+                  {vatsimEnabled && vatsimPilotCount !== undefined && (
+                    <Badge className="ml-auto bg-success/20 px-1.5 py-0.5 text-success">
+                      {vatsimPilotCount}
+                    </Badge>
                   )}
-                />
-                <span className="text-sm font-medium">{t('toolbar.track')}</span>
-                {showPlaneTracker && isXPlaneConnected && (
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('toolbar.tooltips.track')}</p>
-            </TooltipContent>
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </Tooltip>
         </TooltipProvider>
 
-        <WeatherRadarButton
-          enabled={weatherRadarEnabled}
-          controls={weatherRadarControls}
-          onToggle={onToggleWeatherRadar}
-          label={t('toolbar.weather')}
-          tooltip={t('toolbar.tooltips.weather')}
-        />
+        {/* Weather playback controls (inline, no toggle) */}
+        {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                onClick={onToggleVatsim}
-                className={cn('h-9 gap-2 px-3', vatsimEnabled && 'border-success/50 text-success')}
-              >
-                <Radar className={cn('h-4 w-4', vatsimEnabled && 'animate-pulse')} />
-                <span className="text-sm font-medium">{t('toolbar.vatsim')}</span>
-                {vatsimEnabled && vatsimPilotCount !== undefined && (
-                  <Badge className="bg-success/20 px-1.5 py-0.5 text-success">
-                    {vatsimPilotCount}
-                  </Badge>
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('toolbar.tooltips.vatsim')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
+        {/* Launch */}
         <Button
           variant="outline"
           onClick={() => {
@@ -546,6 +498,7 @@ export default function Toolbar({
           <span className="text-sm font-medium">{t('toolbar.launch')}</span>
         </Button>
 
+        {/* Settings */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -566,30 +519,15 @@ export default function Toolbar({
         </TooltipProvider>
       </div>
 
-      {/* Addon Manager Dialog */}
-      <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
-
       {/* SimBrief Dialog */}
       <SimbriefDialog open={simbriefOpen} onClose={() => setSimbriefOpen(false)} />
     </div>
   );
 }
 
-/* ---------- Weather radar inline button with expandable playback controls ---------- */
+/* ---------- Weather radar playback controls (no toggle, controls only) ---------- */
 
-function WeatherRadarButton({
-  enabled,
-  controls,
-  onToggle,
-  label,
-  tooltip,
-}: {
-  enabled: boolean;
-  controls: WeatherRadarControls;
-  onToggle: () => void;
-  label: string;
-  tooltip: string;
-}) {
+function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) {
   const {
     isPlaying,
     currentTimestamp,
@@ -607,73 +545,38 @@ function WeatherRadarButton({
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, [currentTimestamp]);
 
-  const showControls = enabled && frameCount > 0;
+  if (frameCount === 0) return null;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={cn(
-              'flex h-9 items-center overflow-hidden rounded-md border transition-all duration-300',
-              enabled
-                ? 'border-cyan-500/50 bg-cyan-500/10'
-                : 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
-            )}
-          >
-            {/* Toggle button */}
-            <button
-              onClick={onToggle}
-              className={cn(
-                'flex h-full items-center gap-2 px-3 transition-colors',
-                enabled ? 'text-cyan-400' : 'text-foreground'
-              )}
-            >
-              <CloudRain className={cn('h-4 w-4', enabled && 'animate-pulse')} />
-              <span className="text-sm font-medium">{label}</span>
-            </button>
+    <div className="flex h-9 items-center gap-0.5 rounded-md border border-cyan-500/50 bg-cyan-500/10 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
+      <button
+        onClick={stepBack}
+        className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+        aria-label="Previous frame"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" />
+      </button>
 
-            {/* Playback controls — slide in from right */}
-            {showControls && (
-              <div className="flex items-center gap-0.5 border-l border-cyan-500/30 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
-                <button
-                  onClick={stepBack}
-                  className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                  aria-label="Previous frame"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </button>
+      <button
+        onClick={isPlaying ? pause : play}
+        className="rounded p-1 text-cyan-400 transition-colors hover:bg-white/10 hover:text-cyan-300"
+        aria-label={isPlaying ? 'Pause' : 'Play'}
+      >
+        {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+      </button>
 
-                <button
-                  onClick={isPlaying ? pause : play}
-                  className="rounded p-1 text-cyan-400 transition-colors hover:bg-white/10 hover:text-cyan-300"
-                  aria-label={isPlaying ? 'Pause' : 'Play'}
-                >
-                  {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                </button>
+      <button
+        onClick={stepForward}
+        className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+        aria-label="Next frame"
+      >
+        <ChevronRight className="h-3.5 w-3.5" />
+      </button>
 
-                <button
-                  onClick={stepForward}
-                  className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                  aria-label="Next frame"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-
-                <span className="ml-1 font-mono text-xs tabular-nums text-cyan-400">
-                  {timeDisplay}
-                </span>
-                <span className="ml-0.5 mr-1 text-[10px] text-white/40">
-                  {frameIndex + 1}/{frameCount}
-                </span>
-              </div>
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+      <span className="ml-1 font-mono text-xs tabular-nums text-cyan-400">{timeDisplay}</span>
+      <span className="ml-0.5 mr-1 text-[10px] text-white/40">
+        {frameIndex + 1}/{frameCount}
+      </span>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CloudDownload, Database, Info, Palette, Plane, Radar } from 'lucide-react';
+import { CloudDownload, Database, Info, Package, Palette, Plane, Radar } from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
   Dialog,
@@ -15,6 +15,7 @@ import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
 import {
   AboutSection,
+  AddonsSection,
   AppearanceSection,
   NavigationDataSection,
   SimbriefSection,
@@ -30,7 +31,7 @@ interface SettingsDialogProps {
   vatsimPilotCount?: number;
 }
 
-type TabId = 'xplane' | 'data' | 'appearance' | 'simbrief' | 'vatsim' | 'about';
+type TabId = 'xplane' | 'addons' | 'data' | 'appearance' | 'simbrief' | 'vatsim' | 'about';
 
 interface TabConfig {
   id: TabId;
@@ -40,6 +41,7 @@ interface TabConfig {
 
 const TABS: TabConfig[] = [
   { id: 'xplane', icon: Plane, labelKey: 'settings.tabs.xplane' },
+  { id: 'addons', icon: Package, labelKey: 'settings.tabs.addons' },
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
@@ -120,6 +122,17 @@ export default function SettingsDialog({
               <div className="p-6">
                 <SectionErrorBoundary name="X-Plane Settings">
                   <XPlaneSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="addons"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Addons">
+                  <AddonsSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>
