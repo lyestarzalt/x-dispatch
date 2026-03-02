@@ -144,8 +144,14 @@ export function getBrowserErrorMessage(error: BrowserError): string {
     case 'SCAN_FAILED':
       return `Scan failed: ${error.reason}`;
     case 'TOGGLE_FAILED':
+      if (error.reason?.includes('EPERM')) {
+        return `Permission denied. Your X-Plane folder is in a protected location that requires administrator access to modify. Try running X-Dispatch as administrator.`;
+      }
       return `Toggle failed: ${error.reason}`;
     case 'DELETE_FAILED':
+      if (error.reason?.includes('EPERM')) {
+        return `Permission denied. Your X-Plane folder is in a protected location that requires administrator access to modify. Try running X-Dispatch as administrator.`;
+      }
       return `Delete failed: ${error.reason}`;
     case 'PATH_TRAVERSAL':
       return `Invalid path: ${error.path}`;
