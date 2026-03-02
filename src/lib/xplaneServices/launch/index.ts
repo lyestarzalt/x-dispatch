@@ -98,6 +98,13 @@ class XPlaneLauncher {
         return { success: false, error: 'Failed to write Freeflight.prf' };
       }
 
+      // TODO: --no_save_prefs prevents ALL user preference saves (graphics, throttle, etc.)
+      // which causes user settings to reset every dispatch launch.
+      // Option A: Drop all flags, launch XP normally, user clicks "Resume Last Flight"
+      //   to load our Freeflight.prf. One extra click but zero settings issues.
+      // Option B: Set _show_qfl_on_start=0 directly in X-Plane.prf before launch,
+      //   drop --pref and --no_save_prefs, then poll for XP exit with
+      //   isXPlaneProcessRunning() and restore _show_qfl_on_start=1 after.
       const xplaneArgs = ['--pref:_show_qfl_on_start=0', '--no_save_prefs'];
       const startRunning = config.startEngineRunning ?? true;
       xplaneArgs.push(`--start_running=${startRunning}`);
