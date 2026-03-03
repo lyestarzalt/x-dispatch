@@ -1,6 +1,26 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.4.0 - 2026-03-03
+
+### Bug Fixes
+
+- add null guards for external API data ([3e5c076](https://github.com/lyestarzalt/x-dispatch/commit/3e5c076e5a9edb86005aab9189de204d298f4ced))
+
+### Documentation
+
+- update CHANGELOG.md for v1.3.2 ([8c8fceb](https://github.com/lyestarzalt/x-dispatch/commit/8c8fcebafeda27db84361f09b0230119a0476c4f))
+
+### Features
+
+- add IVAO online network support with mutual exclusivity ([19d3fb6](https://github.com/lyestarzalt/x-dispatch/commit/19d3fb6876825dc7dcf351fd5d13c79bbb4f021f))
+- add Weight, Balance & Fuel dialog with per-tank fuel and payload stations ([c76112e](https://github.com/lyestarzalt/x-dispatch/commit/c76112ebf8c7db9657605f7351cfd3774e9d1cd8))
+- add weather customization with presets and custom mode ([4ecd3cd](https://github.com/lyestarzalt/x-dispatch/commit/4ecd3cdfd7fbb5431f62578328e33e688fe95c71))
+- replace SunArc with visual celestial arc component ([2180918](https://github.com/lyestarzalt/x-dispatch/commit/21809180e045ef2fab2771da864c882c7b1ac08b))
+
+### Refactor
+
+- clean up FlightConfig sidebar layout ([ae2f66f](https://github.com/lyestarzalt/x-dispatch/commit/ae2f66f4307911eb7e095bd100d42b53a306890c))
 ## v1.3.2 - 2026-03-03
 
 ### Bug Fixes
