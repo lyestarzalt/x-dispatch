@@ -31,9 +31,10 @@ export function getPilotsInBounds(
   data: IvaoData | undefined,
   bounds: { north: number; south: number; east: number; west: number }
 ): IvaoPilot[] {
-  if (!data) return [];
+  if (!data?.clients?.pilots) return [];
   return data.clients.pilots.filter(
     (p) =>
+      p.lastTrack &&
       p.lastTrack.latitude >= bounds.south &&
       p.lastTrack.latitude <= bounds.north &&
       p.lastTrack.longitude >= bounds.west &&
@@ -45,7 +46,7 @@ export function getTrafficCountsForAirport(
   data: IvaoData | undefined,
   icao: string
 ): { departures: number; arrivals: number } {
-  if (!data) return { departures: 0, arrivals: 0 };
+  if (!data?.clients?.pilots) return { departures: 0, arrivals: 0 };
   const upperIcao = icao.toUpperCase();
 
   let departures = 0;

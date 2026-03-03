@@ -39,32 +39,34 @@ function calculateTrail(
 function createPilotGeoJSON(pilots: IvaoPilot[]): GeoJSON.FeatureCollection {
   return {
     type: 'FeatureCollection',
-    features: pilots.map((p) => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Point' as const,
-        coordinates: [p.lastTrack.longitude, p.lastTrack.latitude],
-      },
-      properties: {
-        id: p.id,
-        callsign: p.callsign,
-        altitude: p.lastTrack.altitude,
-        groundspeed: p.lastTrack.groundSpeed,
-        heading: p.lastTrack.heading,
-        transponder: p.lastTrack.transponder,
-        departure: p.flightPlan?.departureId || '',
-        arrival: p.flightPlan?.arrivalId || '',
-        alternate: p.flightPlan?.alternateId || '',
-        aircraft: p.flightPlan?.aircraftId || '',
-        flightRules: p.flightPlan?.flightRules || '',
-        filedAlt: p.flightPlan?.cruiseLevel || '',
-        cruiseSpeed: p.flightPlan?.cruiseSpeed || '',
-        route: p.flightPlan?.route || '',
-        userId: p.userId,
-        rating: p.rating,
-        flightLevel: Math.round(p.lastTrack.altitude / 100),
-      },
-    })),
+    features: pilots
+      .filter((p) => p.lastTrack)
+      .map((p) => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [p.lastTrack!.longitude, p.lastTrack!.latitude],
+        },
+        properties: {
+          id: p.id,
+          callsign: p.callsign,
+          altitude: p.lastTrack!.altitude,
+          groundspeed: p.lastTrack!.groundSpeed,
+          heading: p.lastTrack!.heading,
+          transponder: p.lastTrack!.transponder,
+          departure: p.flightPlan?.departureId || '',
+          arrival: p.flightPlan?.arrivalId || '',
+          alternate: p.flightPlan?.alternateId || '',
+          aircraft: p.flightPlan?.aircraftId || '',
+          flightRules: p.flightPlan?.flightRules || '',
+          filedAlt: p.flightPlan?.cruiseLevel || '',
+          cruiseSpeed: p.flightPlan?.cruiseSpeed || '',
+          route: p.flightPlan?.route || '',
+          userId: p.userId,
+          rating: p.rating,
+          flightLevel: Math.round(p.lastTrack!.altitude / 100),
+        },
+      })),
   };
 }
 
@@ -72,19 +74,20 @@ function createTrailGeoJSON(pilots: IvaoPilot[]): GeoJSON.FeatureCollection {
   return {
     type: 'FeatureCollection',
     features: pilots
-      .filter((p) => p.lastTrack.groundSpeed > 30)
+      .filter((p) => p.lastTrack && p.lastTrack.groundSpeed > 30)
       .map((p) => {
+        const track = p.lastTrack!;
         const trail = calculateTrail(
-          p.lastTrack.latitude,
-          p.lastTrack.longitude,
-          p.lastTrack.heading,
-          p.lastTrack.groundSpeed
+          track.latitude,
+          track.longitude,
+          track.heading,
+          track.groundSpeed
         );
         if (trail.length < 2) return null;
         return {
           type: 'Feature' as const,
           geometry: { type: 'LineString' as const, coordinates: trail },
-          properties: { callsign: p.callsign, groundspeed: p.lastTrack.groundSpeed },
+          properties: { callsign: p.callsign, groundspeed: track.groundSpeed },
         };
       })
       .filter((f): f is NonNullable<typeof f> => f !== null),

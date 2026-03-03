@@ -44,7 +44,7 @@ export interface IvaoPilot {
   rating: number;
   createdAt: string;
   updatedAt: string;
-  lastTrack: IvaoPilotLastTrack;
+  lastTrack: IvaoPilotLastTrack | null;
   flightPlan: IvaoPilotFlightPlan | null;
 }
 
