@@ -176,40 +176,26 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
       </div>
 
       <div className="flex-1 space-y-4 overflow-auto px-4 pb-4">
-        {/* Time */}
-        <div className="space-y-2.5">
-          <Label className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground" />
+        {/* ── Time of Day ────────────────────────────────── */}
+        <section className="space-y-2">
+          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
             {t('launcher.config.timeOfDay')}
           </Label>
 
           <div className="grid grid-cols-2 gap-1.5">
-            <button
-              type="button"
+            <ToggleButton
+              active={useRealWorldTime}
               onClick={() => setUseRealWorldTime(true)}
-              className={cn(
-                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                useRealWorldTime
-                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
-                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
-              )}
-            >
-              <Radio className="h-5 w-5" />
-              <span className="text-sm">{t('launcher.time.live')}</span>
-            </button>
-            <button
-              type="button"
+              icon={Radio}
+              label={t('launcher.time.live')}
+            />
+            <ToggleButton
+              active={!useRealWorldTime}
               onClick={() => setUseRealWorldTime(false)}
-              className={cn(
-                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                !useRealWorldTime
-                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
-                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
-              )}
-            >
-              <Clock className="h-5 w-5" />
-              <span className="text-sm">{t('launcher.time.set')}</span>
-            </button>
+              icon={Clock}
+              label={t('launcher.time.set')}
+            />
           </div>
 
           {useRealWorldTime && airportTimeInfo && (
@@ -227,15 +213,16 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               onTimeChange={setTimeOfDay}
             />
           )}
-        </div>
+        </section>
 
-        {/* Weather Presets */}
-        <div className="space-y-2.5">
-          <Label className="flex items-center gap-2 text-sm">
-            <Cloud className="h-4 w-4 text-muted-foreground" />
+        {/* ── Weather ────────────────────────────────────── */}
+        <section className="space-y-2">
+          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Cloud className="h-4 w-4" />
             {t('launcher.config.weather')}
           </Label>
-          <div className="grid grid-cols-3 gap-1.5">
+
+          <div className="grid grid-cols-4 gap-1">
             {WEATHER_OPTIONS.map((weather) => {
               const Icon = WEATHER_ICONS[weather] || Cloud;
               const isActive =
@@ -250,47 +237,52 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
                   type="button"
                   onClick={() => setWeatherPreset(weather)}
                   className={cn(
-                    'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    'flex flex-col items-center gap-1 rounded-md px-1.5 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                     isActive
-                      ? 'bg-primary/10 text-primary ring-2 ring-primary'
-                      : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
+                      ? 'bg-primary/10 text-primary ring-1 ring-primary'
+                      : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-sm">{t(`launcher.weather.${weather}`)}</span>
+                  <Icon className="h-4 w-4" />
+                  <span>{t(`launcher.weather.${weather}`)}</span>
                 </button>
               );
             })}
           </div>
-          {/* Customize button */}
-          <Button
-            variant="outline"
-            onClick={() => setWeatherDialogOpen(true)}
-            className="group h-auto w-full justify-between px-3 py-2"
-          >
-            <div className="min-w-0 text-left">
-              <div className="text-sm font-medium text-foreground">
-                {weatherConfig.mode === 'custom' ? (
-                  <span className="text-primary">Customized</span>
-                ) : weatherConfig.mode === 'real' ? (
-                  'Real Weather'
-                ) : (
-                  t(`launcher.weather.${weatherConfig.preset}`)
-                )}
-              </div>
-              <div className="mt-0.5 text-xs text-muted-foreground">
-                {getWeatherSummary(weatherConfig)}
-              </div>
-            </div>
-            <Settings2 className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:rotate-45" />
-          </Button>
-          <WeatherDialog open={weatherDialogOpen} onClose={() => setWeatherDialogOpen(false)} />
-        </div>
 
-        {/* Weight & Fuel */}
-        <div className="space-y-2.5">
-          <Label className="flex items-center gap-2 text-sm">
-            <Weight className="h-4 w-4 text-muted-foreground" />
+          {/* Customize / summary card */}
+          <button
+            type="button"
+            onClick={() => setWeatherDialogOpen(true)}
+            className="group flex w-full items-center justify-between rounded-md border border-border/50 px-2.5 py-1.5 text-left transition-colors hover:bg-secondary/60"
+          >
+            <div className="min-w-0">
+              <span
+                className={cn(
+                  'text-sm font-medium',
+                  weatherConfig.mode === 'custom' ? 'text-primary' : 'text-foreground'
+                )}
+              >
+                {weatherConfig.mode === 'custom'
+                  ? 'Customized'
+                  : weatherConfig.mode === 'real'
+                    ? t('launcher.weather.real')
+                    : t(`launcher.weather.${weatherConfig.preset}`)}
+              </span>
+              {weatherConfig.mode !== 'real' && (
+                <span className="ml-1.5 font-mono text-xs text-muted-foreground">
+                  {getWeatherSummary(weatherConfig)}
+                </span>
+              )}
+            </div>
+            <Settings2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:rotate-45" />
+          </button>
+        </section>
+
+        {/* ── Weight & Fuel ──────────────────────────────── */}
+        <section className="space-y-2">
+          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Weight className="h-4 w-4" />
             Weight &amp; Fuel
           </Label>
           {selectedAircraft && (
@@ -298,7 +290,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               variant="outline"
               onClick={() => setWeightDialogOpen(true)}
               className={cn(
-                'group h-auto w-full justify-between px-3 py-2.5',
+                'group h-auto w-full justify-between px-2.5 py-2',
                 isOverweight && 'border-destructive/40 hover:border-destructive/60'
               )}
             >
@@ -332,47 +324,32 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
             </Button>
           )}
-          <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
-        </div>
+        </section>
 
-        {/* Aircraft Start State */}
-        <div className="space-y-2.5">
-          <Label className="flex items-center gap-2 text-sm">
-            <Power className="h-4 w-4 text-muted-foreground" />
+        {/* ── Start State ────────────────────────────────── */}
+        <section className="space-y-2">
+          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Power className="h-4 w-4" />
             {t('launcher.config.startState')}
           </Label>
           <div className="grid grid-cols-2 gap-1.5">
-            <button
-              type="button"
+            <ToggleButton
+              active={!coldAndDark}
               onClick={() => setColdAndDark(false)}
-              className={cn(
-                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                !coldAndDark
-                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
-                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
-              )}
-            >
-              <Power className="h-5 w-5" />
-              <span className="text-sm">{t('launcher.startState.ready')}</span>
-            </button>
-            <button
-              type="button"
+              icon={Power}
+              label={t('launcher.startState.ready')}
+            />
+            <ToggleButton
+              active={coldAndDark}
               onClick={() => setColdAndDark(true)}
-              className={cn(
-                'flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                coldAndDark
-                  ? 'bg-primary/10 text-primary ring-2 ring-primary'
-                  : 'bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground'
-              )}
-            >
-              <PowerOff className="h-5 w-5" />
-              <span className="text-sm">{t('launcher.startState.cold')}</span>
-            </button>
+              icon={PowerOff}
+              label={t('launcher.startState.cold')}
+            />
           </div>
-        </div>
+        </section>
 
-        {/* Flight Summary */}
-        <div className="space-y-1.5 rounded-lg bg-secondary p-3">
+        {/* ── Flight Summary ─────────────────────────────── */}
+        <div className="space-y-1.5 rounded-lg bg-secondary/50 p-3">
           <div className="flex items-start justify-between gap-2">
             <span className="xp-label shrink-0">{t('launcher.aircraft.title')}</span>
             <span className="text-right font-mono text-sm text-foreground">
@@ -398,7 +375,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
         )}
       </div>
 
-      {/* Launch button */}
+      {/* Launch button — pinned to bottom */}
       <div className="flex-shrink-0 p-3">
         <Button
           onClick={onLaunch}
@@ -428,6 +405,39 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
           </p>
         )}
       </div>
+
+      <WeatherDialog open={weatherDialogOpen} onClose={() => setWeatherDialogOpen(false)} />
+      <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
     </div>
+  );
+}
+
+// ─── Shared toggle button for Time & Start State ─────────────────────────────
+
+function ToggleButton({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: typeof Sun;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        active
+          ? 'bg-primary/10 text-primary ring-1 ring-primary'
+          : 'bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground'
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{label}</span>
+    </button>
   );
 }

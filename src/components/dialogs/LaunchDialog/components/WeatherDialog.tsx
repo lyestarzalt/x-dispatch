@@ -461,7 +461,7 @@ function CloudLayerCard({
             <SelectTrigger className="h-7 w-36 text-xs">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[70]">
               {(Object.entries(CLOUD_TYPE_LABELS) as [CloudLayer['type'], string][]).map(
                 ([value, label]) => (
                   <SelectItem key={value} value={value} className="text-xs">
