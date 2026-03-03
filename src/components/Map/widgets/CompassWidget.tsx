@@ -57,11 +57,11 @@ const LABEL_POSITIONS = Object.entries({
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
 export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
-  // Format heading for display
-  const headingDisplay = useMemo(
-    () => Math.round(mapBearing).toString().padStart(3, '0'),
-    [mapBearing]
-  );
+  // Normalize bearing from MapLibre's -180..180 to aviation 0..359
+  const headingDisplay = useMemo(() => {
+    const normalized = ((Math.round(mapBearing) % 360) + 360) % 360;
+    return normalized.toString().padStart(3, '0');
+  }, [mapBearing]);
 
   return (
     <div className="absolute bottom-10 left-12 z-10" role="region" aria-label="Compass heading">
