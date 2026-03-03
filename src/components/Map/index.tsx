@@ -12,6 +12,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useXPlaneStatus } from '@/queries';
+import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
@@ -27,10 +28,12 @@ import {
   applyNavVisibilityChange,
   setupAirportPopup,
   setupAirportsLayer,
+  toggleIvaoLayer,
   toggleVatsimLayer,
   useAirportFilters,
   useAirportInteractions,
   useAirportRenderer,
+  useIvaoSync,
   useMapSetup,
   useNavLayerSync,
   useProcedureRouteSync,
@@ -40,11 +43,13 @@ import {
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   addFlightPlanLayer,
+  bringIvaoLayersToTop,
   bringPlaneLayerToTop,
   bringVatsimLayersToTop,
   firLayer,
   fitMapToFlightPlan,
   removeFlightPlanLayer,
+  removeIvaoPilotLayer,
   removePlaneLayer,
   removeVatsimPilotLayer,
   updatePlaneLayer,
@@ -84,6 +89,7 @@ export default function Map({ airports }: MapProps) {
   const mapBearing = useMapStore((s) => s.mapBearing);
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
@@ -94,6 +100,7 @@ export default function Map({ airports }: MapProps) {
   const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
+  const setIvaoEnabled = useMapStore((s) => s.setIvaoEnabled);
   const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
   const styleVersion = useMapStore((s) => s.styleVersion);
   const incrementStyleVersion = useMapStore((s) => s.incrementStyleVersion);
@@ -109,7 +116,7 @@ export default function Map({ airports }: MapProps) {
   const stopAnimationsRef = useRef<(() => void) | null>(null);
   const applyLayerVisibilityRef = useRef<((visibility: LayerVisibility) => void) | null>(null);
   const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
-  const bringVatsimToTopRef = useRef<(() => void) | null>(null);
+  const bringNetworkLayersToTopRef = useRef<(() => void) | null>(null);
   const selectedICAORef = useRef<string | null>(null);
 
   // Stable callback for airport click - uses refs to access renderer functions
@@ -122,8 +129,8 @@ export default function Map({ airports }: MapProps) {
         setTimeout(() => {
           startAnimationsRef.current?.();
           applyLayerVisibilityRef.current?.(layerVisibilityRef.current);
-          // Bring VATSIM layers to top after airport rendering
-          bringVatsimToTopRef.current?.();
+          // Bring network layers to top after airport rendering
+          bringNetworkLayersToTopRef.current?.();
         }, 100);
       } else {
         useAppStore.getState().clearAirport();
@@ -134,12 +141,26 @@ export default function Map({ airports }: MapProps) {
     }
   }, []);
 
+  const ivaoPopupRef = useRef<maplibregl.Popup | null>(null);
+
   // Map initialization
   const { mapRef, mapContainerRef, airportPopupRef, vatsimPopupRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
   });
+
+  // Initialize IVAO popup
+  useEffect(() => {
+    if (!ivaoPopupRef.current) {
+      ivaoPopupRef.current = new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        className: 'ivao-popup',
+        maxWidth: '300px',
+      });
+    }
+  }, []);
 
   // Airport renderer
   const {
@@ -155,8 +176,11 @@ export default function Map({ airports }: MapProps) {
     startAnimationsRef.current = startAnimations;
     stopAnimationsRef.current = stopAnimations;
     applyLayerVisibilityRef.current = applyLayerVisibility;
-    bringVatsimToTopRef.current = () => {
-      if (mapRef.current) bringVatsimLayersToTop(mapRef.current);
+    bringNetworkLayersToTopRef.current = () => {
+      if (mapRef.current) {
+        bringVatsimLayersToTop(mapRef.current);
+        bringIvaoLayersToTop(mapRef.current);
+      }
     };
   }, [renderAirport, startAnimations, stopAnimations, applyLayerVisibility, mapRef]);
 
@@ -209,6 +233,7 @@ export default function Map({ airports }: MapProps) {
   );
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+  const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
 
   // Plane tracker - check X-Plane status and get position when enabled
   const { data: isXPlaneRunning = false } = useXPlaneStatus({
@@ -289,6 +314,15 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
+    styleVersion,
+  });
+
+  // IVAO sync
+  useIvaoSync({
+    mapRef,
+    ivaoPopupRef,
+    ivaoData,
+    ivaoEnabled,
     styleVersion,
   });
 
@@ -506,8 +540,11 @@ export default function Map({ airports }: MapProps) {
         setTimeout(() => {
           startAnimations();
           applyLayerVisibility(layerVisibility);
-          // Bring VATSIM layers to top after airport rendering
-          if (mapRef.current) bringVatsimLayersToTop(mapRef.current);
+          // Bring network layers to top after airport rendering
+          if (mapRef.current) {
+            bringVatsimLayersToTop(mapRef.current);
+            bringIvaoLayersToTop(mapRef.current);
+          }
         }, 100);
       }
     },
@@ -558,10 +595,30 @@ export default function Map({ airports }: MapProps) {
       setVatsimEnabled(false);
       if (mapRef.current) removeVatsimPilotLayer(mapRef.current);
     } else {
+      // Disable IVAO when enabling VATSIM
+      if (ivaoEnabled) {
+        setIvaoEnabled(false);
+        if (mapRef.current) removeIvaoPilotLayer(mapRef.current);
+      }
       setVatsimEnabled(true);
       toggleVatsimLayer(mapRef, vatsimPopupRef, true);
     }
-  }, [mapRef, vatsimPopupRef, vatsimEnabled, setVatsimEnabled]);
+  }, [mapRef, vatsimPopupRef, vatsimEnabled, ivaoEnabled, setVatsimEnabled, setIvaoEnabled]);
+
+  const handleToggleIvao = useCallback(() => {
+    if (ivaoEnabled) {
+      setIvaoEnabled(false);
+      if (mapRef.current) removeIvaoPilotLayer(mapRef.current);
+    } else {
+      // Disable VATSIM when enabling IVAO
+      if (vatsimEnabled) {
+        setVatsimEnabled(false);
+        if (mapRef.current) removeVatsimPilotLayer(mapRef.current);
+      }
+      setIvaoEnabled(true);
+      toggleIvaoLayer(mapRef, ivaoPopupRef, true);
+    }
+  }, [mapRef, ivaoPopupRef, vatsimEnabled, ivaoEnabled, setVatsimEnabled, setIvaoEnabled]);
 
   const handleTogglePlaneTracker = useCallback(() => {
     if (showPlaneTracker) {
@@ -647,6 +704,7 @@ export default function Map({ airports }: MapProps) {
           airports={airports}
           onSelectAirport={selectAirport}
           onToggleVatsim={handleToggleVatsim}
+          onToggleIvao={handleToggleIvao}
           onTogglePlaneTracker={handleTogglePlaneTracker}
           onToggleWeatherRadar={handleToggleWeatherRadar}
           weatherRadarControls={weatherRadarControls}
@@ -690,6 +748,9 @@ export default function Map({ airports }: MapProps) {
         isVatsimEnabled={vatsimEnabled}
         onToggleVatsim={handleToggleVatsim}
         vatsimPilotCount={vatsimData?.pilots?.length}
+        isIvaoEnabled={ivaoEnabled}
+        onToggleIvao={handleToggleIvao}
+        ivaoPilotCount={ivaoData?.clients.pilots.length}
       />
 
       <LaunchDialog

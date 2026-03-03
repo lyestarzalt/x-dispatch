@@ -8,6 +8,10 @@ import { formatFrequency } from '@/lib/utils/format';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures, useNavDataQuery } from '@/queries';
+import {
+  getTrafficCountsForAirport as getIvaoTrafficCounts,
+  useIvaoQuery,
+} from '@/queries/useIvaoQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import {
   getATISForAirport,
@@ -56,9 +60,11 @@ export default function InfoTab() {
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+  const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
   const { data: navData } = useNavDataQuery(
     airport?.runways[0]?.ends[0]?.latitude ?? null,
     airport?.runways[0]?.ends[0]?.longitude ?? null,
@@ -83,6 +89,10 @@ export default function InfoTab() {
   const atisRunways = primaryAtis ? parseATISRunways(primaryAtis) : [];
   const hasVatsimActivity =
     controllers.length > 0 || atis.length > 0 || traffic.departures > 0 || traffic.arrivals > 0;
+
+  // IVAO data
+  const ivaoTraffic = useMemo(() => getIvaoTrafficCounts(ivaoData, icao ?? ''), [ivaoData, icao]);
+  const hasIvaoActivity = ivaoTraffic.departures > 0 || ivaoTraffic.arrivals > 0;
 
   // Runways sorted by length
   const sortedRunways = useMemo(() => {
@@ -180,6 +190,28 @@ export default function InfoTab() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* IVAO Live Section */}
+      {ivaoEnabled && hasIvaoActivity && (
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-400" />
+              <span className="text-xs font-medium text-blue-400">IVAO LIVE</span>
+            </div>
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <span className="flex items-center gap-1 text-blue-400">
+                <Plane className="h-3 w-3 rotate-45" />
+                {ivaoTraffic.departures}
+              </span>
+              <span className="flex items-center gap-1 text-amber-400">
+                <Plane className="h-3 w-3 -rotate-45" />
+                {ivaoTraffic.arrivals}
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

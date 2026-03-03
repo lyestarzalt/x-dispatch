@@ -59,6 +59,7 @@ interface MapState {
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
   vatsimEnabled: boolean;
+  ivaoEnabled: boolean;
   showPlaneTracker: boolean;
   /** When true, map follows plane position and heading */
   followPlane: boolean;
@@ -80,6 +81,7 @@ interface MapState {
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
+  setIvaoEnabled: (enabled: boolean) => void;
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   setWeatherRadarEnabled: (enabled: boolean) => void;
@@ -106,6 +108,7 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
+      ivaoEnabled: false,
       showPlaneTracker: false,
       followPlane: false,
       weatherRadarEnabled: false,
@@ -164,7 +167,16 @@ export const useMapStore = create<MapState>()(
       setMapBearing: (bearing) => set({ mapBearing: bearing }),
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
-      setVatsimEnabled: (enabled) => set({ vatsimEnabled: enabled }),
+      setVatsimEnabled: (enabled) =>
+        set((state) => ({
+          vatsimEnabled: enabled,
+          ...(enabled && state.ivaoEnabled ? { ivaoEnabled: false } : {}),
+        })),
+      setIvaoEnabled: (enabled) =>
+        set((state) => ({
+          ivaoEnabled: enabled,
+          ...(enabled && state.vatsimEnabled ? { vatsimEnabled: false } : {}),
+        })),
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
       setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),

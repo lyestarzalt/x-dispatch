@@ -47,6 +47,12 @@ export {
   setupVatsimClickHandler,
   updateVatsimPilotLayer,
 } from './dynamic/VatsimLayer';
+export {
+  bringIvaoLayersToTop,
+  removeIvaoPilotLayer,
+  setupIvaoClickHandler,
+  updateIvaoPilotLayer,
+} from './dynamic/IvaoLayer';
 
 export function createLayerRenderers(): LayerRenderer[] {
   return [

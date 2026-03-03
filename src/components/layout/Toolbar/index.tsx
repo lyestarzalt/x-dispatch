@@ -40,6 +40,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useNavDataCounts, usePlaneState } from '@/queries';
+import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -50,6 +51,7 @@ interface ToolbarProps {
   airports: Airport[];
   onSelectAirport: (airport: Airport) => void;
   onToggleVatsim: () => void;
+  onToggleIvao: () => void;
   onTogglePlaneTracker: () => void;
   onToggleWeatherRadar: () => void;
   weatherRadarControls: WeatherRadarControls;
@@ -60,6 +62,7 @@ export default function Toolbar({
   airports,
   onSelectAirport,
   onToggleVatsim,
+  onToggleIvao,
   onTogglePlaneTracker,
   onToggleWeatherRadar,
   weatherRadarControls,
@@ -83,6 +86,7 @@ export default function Toolbar({
 
   // Map store
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
+  const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
@@ -101,6 +105,8 @@ export default function Toolbar({
   // Queries
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
   const vatsimPilotCount = vatsimData?.pilots?.length;
+  const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
+  const ivaoPilotCount = ivaoData?.clients.pilots.length;
   const { connected: isXPlaneConnected } = usePlaneState();
 
   // Nav data counts - derived from airport location
@@ -213,7 +219,8 @@ export default function Toolbar({
     { key: 'airspaces', labelKey: 'layers.navigation.airspaces', count: navDataCounts.airspaces },
   ];
 
-  const layersActive = filtersActive || totalNavItems > 0 || weatherRadarEnabled || vatsimEnabled;
+  const layersActive =
+    filtersActive || totalNavItems > 0 || weatherRadarEnabled || vatsimEnabled || ivaoEnabled;
 
   return (
     <div className="relative flex items-center gap-3">
@@ -485,6 +492,15 @@ export default function Toolbar({
                   {vatsimEnabled && vatsimPilotCount !== undefined && (
                     <Badge className="ml-auto bg-success/20 px-1.5 py-0.5 text-success">
                       {vatsimPilotCount}
+                    </Badge>
+                  )}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem checked={ivaoEnabled} onCheckedChange={onToggleIvao}>
+                  <Radar className="mr-2 h-4 w-4" />
+                  IVAO
+                  {ivaoEnabled && ivaoPilotCount !== undefined && (
+                    <Badge className="ml-auto bg-blue-500/20 px-1.5 py-0.5 text-blue-500">
+                      {ivaoPilotCount}
                     </Badge>
                   )}
                 </DropdownMenuCheckboxItem>

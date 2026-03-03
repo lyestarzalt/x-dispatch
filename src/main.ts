@@ -477,6 +477,18 @@ function registerIpcHandlers() {
     return result;
   });
 
+  ipcMain.handle('fetch-ivao-data', async () => {
+    const result = await proxyFetch('https://api.ivao.aero/v2/tracker/whazzup');
+    if (result.data) {
+      try {
+        return { data: JSON.parse(result.data), error: null };
+      } catch {
+        return { data: null, error: 'Failed to parse IVAO data' };
+      }
+    }
+    return result;
+  });
+
   ipcMain.handle('fetch-vatsim-metar', async (_, icao: string) => {
     if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
     const result = await proxyFetch(

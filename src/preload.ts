@@ -22,6 +22,7 @@ import type {
   PathSetResult,
   PathValidation,
 } from './types/ipc';
+import type { IvaoData } from './types/ivao';
 import type {
   ATCController,
   ATCRole,
@@ -54,6 +55,7 @@ contextBridge.exposeInMainWorld('airportAPI', {
   fetchVatsimData: () => ipcRenderer.invoke('fetch-vatsim-data'),
   fetchVatsimMetar: (icao: string) => ipcRenderer.invoke('fetch-vatsim-metar', icao),
   fetchVatsimEvents: () => ipcRenderer.invoke('fetch-vatsim-events'),
+  fetchIvaoData: () => ipcRenderer.invoke('fetch-ivao-data'),
 });
 
 contextBridge.exposeInMainWorld('versions', {
@@ -330,6 +332,7 @@ declare global {
       fetchVatsimData: () => Promise<{ data: VatsimData | null; error: string | null }>;
       fetchVatsimMetar: (icao: string) => Promise<ApiResponse>;
       fetchVatsimEvents: () => Promise<{ data: VatsimEventsResponse | null; error: string | null }>;
+      fetchIvaoData: () => Promise<{ data: IvaoData | null; error: string | null }>;
     };
     xplaneAPI: {
       getPath: () => Promise<string | null>;

@@ -8,6 +8,7 @@ export {
 } from './useMapSetup';
 export { useNavLayerSync, applyNavVisibilityChange } from './useNavLayerSync';
 export { useVatsimSync, toggleVatsimLayer } from './useVatsimSync';
+export { useIvaoSync, toggleIvaoLayer } from './useIvaoSync';
 export { useAirportInteractions } from './useAirportInteractions';
 export { useRouteLineSync } from './useRouteLineSync';
 export { useProcedureRouteSync } from './useProcedureRouteSync';
