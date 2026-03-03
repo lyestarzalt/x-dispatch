@@ -44,6 +44,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { NavLayerVisibility } from '@/types/layers';
 
 interface ToolbarProps {
@@ -71,6 +72,7 @@ export default function Toolbar({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [simbriefOpen, setSimbriefOpen] = useState(false);
   const [addonManagerOpen, setAddonManagerOpen] = useState(false);
+  const addonManagerEnabled = useSettingsStore((s) => s.addonManagerEnabled);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -270,24 +272,26 @@ export default function Toolbar({
         )}
       </div>
 
-      {/* Addon Manager */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={() => setAddonManagerOpen(true)}
-              className="h-9 gap-2 px-3"
-            >
-              <Package className="h-4 w-4" />
-              <span className="text-sm font-medium">Addons</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Manage aircraft, scenery & plugins</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {/* Addon Manager (opt-in via settings) */}
+      {addonManagerEnabled && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={() => setAddonManagerOpen(true)}
+                className="h-9 gap-2 px-3"
+              >
+                <Package className="h-4 w-4" />
+                <span className="text-sm font-medium">Addons</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Manage aircraft, scenery & plugins</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
 
       {/* Flight Plan dropdown */}
       <TooltipProvider>

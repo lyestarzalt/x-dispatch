@@ -48,7 +48,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       return analyzeResult;
     }
 
-    return manager.save(analyzeResult.value);
+    return manager.save(analyzeResult.value, false); // Explicit sort requested by user
   });
 
   ipcMain.handle('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {

@@ -93,7 +93,7 @@ export class SceneryManager {
    */
   async save(
     entries: SceneryEntry[],
-    preserveOrder = false
+    preserveOrder = true
   ): Promise<Result<{ backupPath: string }, SceneryError>> {
     // Create backup first
     const backupResult = backupSceneryPacksIni(this.iniPath, this.backupDir);
