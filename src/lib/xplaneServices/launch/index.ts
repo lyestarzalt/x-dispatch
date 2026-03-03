@@ -97,7 +97,7 @@ class XPlaneLauncher {
       logger.launcher.info(`Flight JSON written to: ${jsonPath}`);
       logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
 
-      const xplaneArgs = [`--new_flight_json=${jsonPath}`];
+      const xplaneArgs = [`=${jsonPath}`];
 
       // macOS + Steam installation: launch via Steam URL protocol
       if (process.platform === 'darwin' && isSteamInstallation(this.xplanePath)) {

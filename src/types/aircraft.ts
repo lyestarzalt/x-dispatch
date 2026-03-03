@@ -21,6 +21,8 @@ export interface Aircraft {
   maxWeight: number;
   maxFuel: number;
   tankNames: string[];
+  tankRatios: number[];
+  payloadStations: { name: string; maxWeight: number }[];
   isHelicopter: boolean;
   engineCount: number;
   propCount: number;

@@ -40,7 +40,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   // Zustand store state
   const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
   const selectedLivery = useLaunchStore((s) => s.selectedLivery);
-  const fuelPercentage = useLaunchStore((s) => s.fuelPercentage);
+  const tankPercentages = useLaunchStore((s) => s.tankPercentages);
+  const payloadWeights = useLaunchStore((s) => s.payloadWeights);
   const timeOfDay = useLaunchStore((s) => s.timeOfDay);
   const useRealWorldTime = useLaunchStore((s) => s.useRealWorldTime);
   const coldAndDark = useLaunchStore((s) => s.coldAndDark);
@@ -65,15 +66,18 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     setLaunchError(null);
 
     try {
-      // Calculate fuel tank weights (auto distribution) - in kilograms for API
-      const tankCount = selectedAircraft.tankNames.length || 2;
-      const totalFuelKg = selectedAircraft.maxFuel * (fuelPercentage / 100) * 0.453592;
+      // Calculate per-tank fuel weights in kilograms for API
+      const LBS_TO_KG = 0.453592;
       const tankWeightsKg = new Array(9).fill(0);
-      if (tankCount >= 2) {
-        tankWeightsKg[0] = totalFuelKg / 2;
-        tankWeightsKg[2] = totalFuelKg / 2;
-      } else {
-        tankWeightsKg[0] = totalFuelKg;
+      for (let i = 0; i < (selectedAircraft.tankRatios ?? []).length; i++) {
+        const tankCapLbs = (selectedAircraft.tankRatios ?? [])[i] * selectedAircraft.maxFuel;
+        tankWeightsKg[i] = tankCapLbs * ((tankPercentages[i] ?? 0) / 100) * LBS_TO_KG;
+      }
+
+      // Calculate per-station payload weights in kilograms for API
+      const payloadWeightsKg = new Array(9).fill(0);
+      for (let i = 0; i < payloadWeights.length; i++) {
+        payloadWeightsKg[i] = (payloadWeights[i] ?? 0) * LBS_TO_KG;
       }
 
       // Calculate time - for real world time, we need airport's current time (not system time)
@@ -127,6 +131,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         dayOfYear,
         timeOfDay: timeInHours,
         fuelTanksKg: tankWeightsKg,
+        payloadKg: payloadWeightsKg,
         enginesRunning: !coldAndDark,
       });
 
@@ -168,6 +173,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     dayOfYear: number;
     timeOfDay: number;
     fuelTanksKg: number[];
+    payloadKg: number[];
     enginesRunning: boolean;
   }): FlightInit {
     const payload: FlightInit = {
@@ -176,9 +182,10 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         path: params.aircraft.path,
         ...(params.livery !== 'Default' && { livery: params.livery }),
       },
-      // Weight (fuel)
+      // Weight (fuel + payload)
       weight: {
         fueltank_weight_in_kilograms: params.fuelTanksKg,
+        payload_weight_in_kilograms: params.payloadKg,
       },
       // Engine status
       engine_status: {

@@ -30,12 +30,24 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     // Find liveries
     const liveries = scanLiveries(acfDir);
 
-    // Parse fuel tank names
+    // Parse fuel tank names and ratios
     const tankNames: string[] = [];
+    const tankRatios: number[] = [];
     for (let i = 0; i < 9; i++) {
       const tankName = props[`acf/_tank_name/${i}`];
       if (tankName) {
         tankNames.push(tankName);
+        tankRatios.push(parseFloat(props[`acf/_tank_rat/${i}`]) || 0);
+      }
+    }
+
+    // Parse payload stations (up to 9)
+    const payloadStations: { name: string; maxWeight: number }[] = [];
+    for (let i = 0; i < 9; i++) {
+      const name = props[`acf/_fixed_name/${i}`];
+      const maxWeight = parseFloat(props[`acf/_fixed_max/${i}`]) || 0;
+      if (name && maxWeight > 0) {
+        payloadStations.push({ name, maxWeight });
       }
     }
 
@@ -53,6 +65,8 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       maxWeight: parseFloat(props['acf/_m_max']) || 0,
       maxFuel: parseFloat(props['acf/_m_fuel_max_tot']) || 0,
       tankNames,
+      tankRatios,
+      payloadStations,
       // Aircraft type
       isHelicopter: props['acf/_is_helicopter'] === '1',
       engineCount: parseInt(props['acf/_num_engn'], 10) || 0,

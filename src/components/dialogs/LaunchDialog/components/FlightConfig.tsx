@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ChevronRight,
   Clock,
   Cloud,
   CloudFog,
@@ -8,19 +9,18 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
-  Fuel,
   Globe,
   Loader2,
   Power,
   PowerOff,
   Radio,
   Sun,
+  Weight,
 } from 'lucide-react';
 import tzLookup from 'tz-lookup';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
@@ -29,6 +29,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import type { StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
 import { SunArc } from './SunArc';
+import { WeightBalanceDialog } from './WeightBalanceDialog';
 
 interface FlightConfigProps {
   startPosition: StartPosition | null;
@@ -82,7 +83,8 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   // Zustand store state
   const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
   const selectedLivery = useLaunchStore((s) => s.selectedLivery);
-  const fuelPercentage = useLaunchStore((s) => s.fuelPercentage);
+  const tankPercentages = useLaunchStore((s) => s.tankPercentages);
+  const payloadWeights = useLaunchStore((s) => s.payloadWeights);
   const timeOfDay = useLaunchStore((s) => s.timeOfDay);
   const useRealWorldTime = useLaunchStore((s) => s.useRealWorldTime);
   const coldAndDark = useLaunchStore((s) => s.coldAndDark);
@@ -91,11 +93,12 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
   const launchError = useLaunchStore((s) => s.launchError);
 
   // Zustand store actions
-  const setFuelPercentage = useLaunchStore((s) => s.setFuelPercentage);
   const setTimeOfDay = useLaunchStore((s) => s.setTimeOfDay);
   const setUseRealWorldTime = useLaunchStore((s) => s.setUseRealWorldTime);
   const setColdAndDark = useLaunchStore((s) => s.setColdAndDark);
   const setSelectedWeather = useLaunchStore((s) => s.setSelectedWeather);
+
+  const [weightDialogOpen, setWeightDialogOpen] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
@@ -143,12 +146,24 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
     }
   }, [airportCoords, currentTime]);
 
-  const totalFuel = useMemo(() => {
-    if (selectedAircraft) {
-      return (selectedAircraft.maxFuel * fuelPercentage) / 100;
-    }
-    return 0;
-  }, [selectedAircraft, fuelPercentage]);
+  const { totalWeight, totalFuelLbs, totalPayloadLbs } = useMemo(() => {
+    if (!selectedAircraft) return { totalWeight: 0, totalFuelLbs: 0, totalPayloadLbs: 0 };
+    const fuel = (selectedAircraft.tankRatios ?? []).reduce(
+      (sum, r, i) => sum + r * selectedAircraft.maxFuel * ((tankPercentages[i] ?? 0) / 100),
+      0
+    );
+    const payload = (payloadWeights ?? []).reduce((sum, w) => sum + w, 0);
+    return {
+      totalWeight: selectedAircraft.emptyWeight + fuel + payload,
+      totalFuelLbs: fuel,
+      totalPayloadLbs: payload,
+    };
+  }, [selectedAircraft, tankPercentages, payloadWeights]);
+
+  const weightPct = selectedAircraft?.maxWeight
+    ? Math.min(100, (totalWeight / selectedAircraft.maxWeight) * 100)
+    : 0;
+  const isOverweight = selectedAircraft ? totalWeight > selectedAircraft.maxWeight : false;
 
   return (
     <div className="flex w-64 min-w-[240px] flex-col border-l border-border/50 bg-card lg:w-72">
@@ -240,33 +255,52 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
           </div>
         </div>
 
-        {/* Fuel */}
+        {/* Weight & Fuel */}
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2 text-sm">
-              <Fuel className="h-4 w-4 text-muted-foreground" />
-              {t('launcher.config.fuel')}
-            </Label>
-            <span className="font-mono text-sm">
-              {fuelPercentage}%
-              {selectedAircraft && selectedAircraft.maxFuel > 0 && (
-                <span className="ml-1.5 text-sm text-muted-foreground">
-                  ({formatWeight(totalFuel, weightUnit)})
-                </span>
+          <Label className="flex items-center gap-2 text-sm">
+            <Weight className="h-4 w-4 text-muted-foreground" />
+            Weight &amp; Fuel
+          </Label>
+          {selectedAircraft && (
+            <Button
+              variant="outline"
+              onClick={() => setWeightDialogOpen(true)}
+              className={cn(
+                'group h-auto w-full justify-between px-3 py-2.5',
+                isOverweight && 'border-destructive/40 hover:border-destructive/60'
               )}
-            </span>
-          </div>
-          <Slider
-            value={[fuelPercentage]}
-            onValueChange={(v) => setFuelPercentage(v[0])}
-            min={0}
-            max={100}
-            step={5}
-          />
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{t('launcher.fuelModal.empty')}</span>
-            <span>{t('launcher.fuelModal.full')}</span>
-          </div>
+            >
+              <div className="min-w-0 text-left">
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className={cn(
+                      'font-mono text-sm font-medium',
+                      isOverweight ? 'text-destructive' : 'text-foreground'
+                    )}
+                  >
+                    {formatWeight(totalWeight, weightUnit)}
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    / {formatWeight(selectedAircraft.maxWeight, weightUnit)}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                    {formatWeight(totalFuelLbs, weightUnit)}
+                  </span>
+                  {totalPayloadLbs > 0 && (
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
+                      {formatWeight(totalPayloadLbs, weightUnit)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </Button>
+          )}
+          <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
         </div>
 
         {/* Aircraft Start State */}
