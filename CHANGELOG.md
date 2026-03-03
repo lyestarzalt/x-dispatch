@@ -1,6 +1,34 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.3.2 - 2026-03-03
+
+### Bug Fixes
+
+- improve MapLibre error logging and SVG icon loading ([e45f39e](https://github.com/lyestarzalt/x-dispatch/commit/e45f39e0d566eeaec9d8284e215bf313c22d6cd7))
+- user-friendly error for EPERM in protected X-Plane folders ([36f3d94](https://github.com/lyestarzalt/x-dispatch/commit/36f3d94a5363792892dc1a69a9c49ad7fbd3d8dd))
+- guard against non-string NOTAM and SIGMET fields ([f799cc4](https://github.com/lyestarzalt/x-dispatch/commit/f799cc4ca1410e01e1d0289acf2ad6cd2a4d90df))
+- guard against NaN coordinates in fitMapToFlightPlan ([be26180](https://github.com/lyestarzalt/x-dispatch/commit/be261805470f3795dc18da7f7621f32a84e9e88b))
+- preserve unrecognized lines in Freeflight.prf ([cf5cc34](https://github.com/lyestarzalt/x-dispatch/commit/cf5cc3438ff2d3e183dfb16f570256c92d61ac3b))
+- preserve scenery_packs.ini order and disable by default ([abe9377](https://github.com/lyestarzalt/x-dispatch/commit/abe93770b540421da081ecf192bf0491187bd8e6))
+- normalize bearing to 0-360 instead of -180 to 180 ([beea761](https://github.com/lyestarzalt/x-dispatch/commit/beea76156d368a312064d5ff8d7be9f13f0aebc3))
+
+### Documentation
+
+- update CHANGELOG.md for v1.3.1 ([219c29c](https://github.com/lyestarzalt/x-dispatch/commit/219c29ca7e03e00febd7cdf4a6bf8418fba504d4))
+
+### Miscellaneous
+
+- upgrade maplibre-gl to ^5.19.0 ([31dec6d](https://github.com/lyestarzalt/x-dispatch/commit/31dec6d332fa2a382763ec442274d02ee49b1288))
+- add TODO for --no_save_prefs user settings issue ([061580a](https://github.com/lyestarzalt/x-dispatch/commit/061580adf476c4edb432c793a194ff530090548b))
+- add TODO for pgrep false positive on macOS ([f9cc84e](https://github.com/lyestarzalt/x-dispatch/commit/f9cc84e71eb5c1bb1013fc1f552b729769192914))
+
+### Refactor
+
+- consolidate 12 items into 7 for narrow-screen support ([56583b2](https://github.com/lyestarzalt/x-dispatch/commit/56583b2edc2c2bcfe34478e22f0e880a7b369b16))
+- use FlightInit JSON for cold start instead of Freeflight.prf ([03b81ff](https://github.com/lyestarzalt/x-dispatch/commit/03b81ff5eda41c74a42762f7ade7079ceaa0b112))
+- move addon manager from settings to toolbar ([2dafc48](https://github.com/lyestarzalt/x-dispatch/commit/2dafc484c3dcaf7f201a09909cb03f19bf40472a))
+- always show in toolbar and indicate order is preserved ([9e4c9e5](https://github.com/lyestarzalt/x-dispatch/commit/9e4c9e59c0f294db0a3ad2f898f04cd703ad2cc8))
 ## v1.3.1 - 2026-03-01
 
 ### Bug Fixes
