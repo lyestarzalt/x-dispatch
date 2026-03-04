@@ -30,13 +30,14 @@ interface SelectedProcedure {
 interface AppState {
   selectedICAO: string | null;
   selectedAirportData: ParsedAirport | null;
+  selectedAirportIsCustom: boolean;
   showSidebar: boolean;
   showSettings: boolean;
   showLaunchDialog: boolean;
   selectedProcedure: SelectedProcedure | null;
   startPosition: StartPosition | null;
 
-  selectAirport: (icao: string, data: ParsedAirport) => void;
+  selectAirport: (icao: string, data: ParsedAirport, isCustom?: boolean) => void;
   clearAirport: () => void;
   setShowSidebar: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
@@ -49,16 +50,18 @@ export const useAppStore = create<AppState>()(
   subscribeWithSelector((set) => ({
     selectedICAO: null as string | null,
     selectedAirportData: null as ParsedAirport | null,
+    selectedAirportIsCustom: false,
     showSidebar: true,
     showSettings: false,
     showLaunchDialog: false,
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
 
-    selectAirport: (icao, data) =>
+    selectAirport: (icao, data, isCustom) =>
       set({
         selectedICAO: icao,
         selectedAirportData: data,
+        selectedAirportIsCustom: isCustom ?? false,
         showSidebar: true,
         // Clear procedure and start position when airport changes
         selectedProcedure: null,
@@ -69,6 +72,7 @@ export const useAppStore = create<AppState>()(
       set({
         selectedICAO: null,
         selectedAirportData: null,
+        selectedAirportIsCustom: false,
         selectedProcedure: null,
         startPosition: null,
       }),

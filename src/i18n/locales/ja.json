@@ -406,7 +406,12 @@
     },
     "noStartPositions": "利用可能な開始位置がありません",
     "searchPlaceholder": "検索...",
-    "noMatchingGates": "「{{query}}」に一致するゲートが見つかりません"
+    "noMatchingGates": "「{{query}}」に一致するゲートが見つかりません",
+    "gateway": {
+      "updateAvailable": "Gatewayに新しいリリースがあります",
+      "credit": "{{artist}} · {{date}}",
+      "viewOnGateway": "Gatewayで表示"
+    }
   },
 
   "navigation": {

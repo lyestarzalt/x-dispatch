@@ -406,7 +406,12 @@
     },
     "noStartPositions": "Нет доступных стартовых позиций",
     "searchPlaceholder": "Поиск...",
-    "noMatchingGates": "Выходы для \"{{query}}\" не найдены"
+    "noMatchingGates": "Выходы для \"{{query}}\" не найдены",
+    "gateway": {
+      "updateAvailable": "На Gateway есть более новый релиз",
+      "credit": "от {{artist}} · {{date}}",
+      "viewOnGateway": "Смотреть на Gateway"
+    }
   },
 
   "navigation": {

@@ -338,7 +338,12 @@
     },
     "noStartPositions": "Keine Startpositionen verfügbar",
     "searchPlaceholder": "Suchen...",
-    "noMatchingGates": "Keine Gates für \"{{query}}\" gefunden"
+    "noMatchingGates": "Keine Gates für \"{{query}}\" gefunden",
+    "gateway": {
+      "updateAvailable": "Gateway hat eine neuere Version",
+      "credit": "von {{artist}} · {{date}}",
+      "viewOnGateway": "Auf Gateway ansehen"
+    }
   },
 
   "navigation": {

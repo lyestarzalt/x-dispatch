@@ -50,6 +50,9 @@ contextBridge.exposeInMainWorld('airportAPI', {
   getAirportData: (icao: string) => ipcRenderer.invoke('get-airport-data', icao),
   fetchMetar: (icao: string) => ipcRenderer.invoke('fetch-metar', icao),
   fetchTaf: (icao: string) => ipcRenderer.invoke('fetch-taf', icao),
+  fetchGatewayReleases: () => ipcRenderer.invoke('fetch-gateway-releases'),
+  fetchGatewayReleasePacks: (version: string) =>
+    ipcRenderer.invoke('fetch-gateway-release-packs', version),
   fetchGatewayAirport: (icao: string) => ipcRenderer.invoke('fetch-gateway-airport', icao),
   fetchGatewayScenery: (sceneryId: number) =>
     ipcRenderer.invoke('fetch-gateway-scenery', sceneryId),
@@ -340,6 +343,8 @@ declare global {
       getAirportData: (icao: string) => Promise<string>;
       fetchMetar: (icao: string) => Promise<ApiResponse>;
       fetchTaf: (icao: string) => Promise<ApiResponse>;
+      fetchGatewayReleases: () => Promise<ApiResponse>;
+      fetchGatewayReleasePacks: (version: string) => Promise<ApiResponse>;
       fetchGatewayAirport: (icao: string) => Promise<ApiResponse>;
       fetchGatewayScenery: (sceneryId: number) => Promise<ApiResponse>;
       fetchVatsimData: () => Promise<{ data: VatsimData | null; error: string | null }>;

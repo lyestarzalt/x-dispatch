@@ -406,7 +406,12 @@
     },
     "noStartPositions": "Brak dostępnych pozycji startowych",
     "searchPlaceholder": "Szukaj...",
-    "noMatchingGates": "Nie znaleziono bramek dla \"{{query}}\""
+    "noMatchingGates": "Nie znaleziono bramek dla \"{{query}}\"",
+    "gateway": {
+      "updateAvailable": "Gateway ma nowszą wersję",
+      "credit": "od {{artist}} · {{date}}",
+      "viewOnGateway": "Zobacz na Gateway"
+    }
   },
 
   "navigation": {

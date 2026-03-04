@@ -406,7 +406,12 @@
     },
     "noStartPositions": "Nessuna posizione di partenza disponibile",
     "searchPlaceholder": "Cerca...",
-    "noMatchingGates": "Nessun gate trovato per \"{{query}}\""
+    "noMatchingGates": "Nessun gate trovato per \"{{query}}\"",
+    "gateway": {
+      "updateAvailable": "Gateway ha una versione più recente",
+      "credit": "di {{artist}} · {{date}}",
+      "viewOnGateway": "Visualizza su Gateway"
+    }
   },
 
   "navigation": {

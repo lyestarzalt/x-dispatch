@@ -406,7 +406,12 @@
     },
     "noStartPositions": "没有可用的出发位置",
     "searchPlaceholder": "搜索...",
-    "noMatchingGates": "未找到与\"{{query}}\"匹配的登机口"
+    "noMatchingGates": "未找到与\"{{query}}\"匹配的登机口",
+    "gateway": {
+      "updateAvailable": "Gateway 有更新的版本",
+      "credit": "{{artist}} · {{date}}",
+      "viewOnGateway": "在 Gateway 上查看"
+    }
   },
 
   "navigation": {

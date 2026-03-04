@@ -84,6 +84,7 @@ async function proxyFetch(
 ): Promise<{ data: string | null; error: string | null; statusCode?: number }> {
   return new Promise((resolve) => {
     const request = net.request(url);
+    request.setHeader('User-Agent', `X-Dispatch/${app.getVersion()}`);
     let data = '';
 
     request.on('response', (response) => {
@@ -460,6 +461,15 @@ function registerIpcHandlers() {
     return proxyFetch(
       `https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(icao.toUpperCase())}&format=raw`
     );
+  });
+
+  ipcMain.handle('fetch-gateway-releases', async () => {
+    return proxyFetch('https://gateway.x-plane.com/apiv1/releases');
+  });
+
+  ipcMain.handle('fetch-gateway-release-packs', async (_, version: string) => {
+    if (!/^\d+\.\d+(\.\d+)?$/.test(version)) return { data: null, error: 'Invalid version format' };
+    return proxyFetch(`https://gateway.x-plane.com/apiv1/release/${encodeURIComponent(version)}`);
   });
 
   ipcMain.handle('fetch-gateway-airport', async (_, icao: string) => {

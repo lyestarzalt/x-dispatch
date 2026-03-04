@@ -421,7 +421,12 @@
     },
     "noStartPositions": "No starting positions available",
     "searchPlaceholder": "Search...",
-    "noMatchingGates": "No gates matching \"{{query}}\""
+    "noMatchingGates": "No gates matching \"{{query}}\"",
+    "gateway": {
+      "updateAvailable": "Gateway has a newer release",
+      "credit": "by {{artist}} · {{date}}",
+      "viewOnGateway": "View on Gateway"
+    }
   },
 
   "navigation": {

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Copy, Plane, Radio } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Copy, ExternalLink, Plane, Radio } from 'lucide-react';
 import { CloudQuantity, Descriptive, DistanceUnit, Intensity, Phenomenon } from 'metar-taf-parser';
 // Formatters for metar-taf-parser types
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
@@ -8,6 +9,7 @@ import { formatFrequency } from '@/lib/utils/format';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures, useNavDataQuery } from '@/queries';
+import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
 import {
   getTrafficCountsForAirport as getIvaoTrafficCounts,
   useIvaoQuery,
@@ -24,6 +26,9 @@ import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import type { Frequency } from '@/types/apt';
 import { FrequencyType, SurfaceType } from '@/types/apt';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - Vite handles this import
+import gatewayLogo from '../../../../../assets/gateway-logo.svg';
 
 const SURFACE_NAMES: Partial<Record<SurfaceType, string>> = {
   [SurfaceType.ASPHALT]: 'Asphalt',
@@ -57,8 +62,10 @@ const FREQ_LABELS: Partial<Record<FrequencyType, string>> = {
 };
 
 export default function InfoTab() {
+  const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
+  const isCustom = useAppStore((s) => s.selectedAirportIsCustom);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
 
@@ -71,6 +78,7 @@ export default function InfoTab() {
     50
   );
   const { data: procedures } = useAirportProcedures(icao);
+  const { data: gatewayUpdate } = useGatewayUpdateCheck(icao, isCustom);
 
   const metar = vatsimMetarData?.parsed ?? null;
   const rawMetar = vatsimMetarData?.raw ?? null;
@@ -135,6 +143,38 @@ export default function InfoTab() {
 
   return (
     <div className="space-y-4">
+      {/* Gateway Update */}
+      {gatewayUpdate && (
+        <button
+          onClick={() => window.appAPI.openExternal(gatewayUpdate.gatewayUrl)}
+          className="group flex w-full items-center gap-3 rounded-lg border border-primary/15 bg-primary/5 p-3 text-left transition-colors hover:bg-primary/10"
+        >
+          <img
+            src={gatewayLogo}
+            alt=""
+            className="h-5 w-auto shrink-0 opacity-50 transition-opacity group-hover:opacity-70"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-primary">{t('airportInfo.gateway.updateAvailable')}</p>
+            {(gatewayUpdate.artistName || gatewayUpdate.dateApproved) && (
+              <p className="mt-0.5 text-[10px] text-muted-foreground">
+                {t('airportInfo.gateway.credit', {
+                  artist: gatewayUpdate.artistName,
+                  date: gatewayUpdate.dateApproved
+                    ? new Date(gatewayUpdate.dateApproved).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : '',
+                })}
+              </p>
+            )}
+          </div>
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/30 transition-colors group-hover:text-primary/60" />
+        </button>
+      )}
+
       {/* VATSIM Live Section */}
       {vatsimEnabled && hasVatsimActivity && (
         <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">

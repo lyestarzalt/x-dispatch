@@ -118,6 +118,8 @@ export default function Map({ airports }: MapProps) {
   const layerVisibilityRef = useRef<LayerVisibility>(layerVisibility);
   const bringNetworkLayersToTopRef = useRef<(() => void) | null>(null);
   const selectedICAORef = useRef<string | null>(null);
+  const airportsRef = useRef<Airport[]>(airports);
+  airportsRef.current = airports;
 
   // Stable callback for airport click - uses refs to access renderer functions
   const handleAirportClick = useCallback(async (icao: string, coords: [number, number]) => {
@@ -125,7 +127,8 @@ export default function Map({ airports }: MapProps) {
       useMapStore.getState().setSelectedFeature(null);
       const parsedAirport = await renderAirportRef.current?.(icao, coords);
       if (parsedAirport) {
-        useAppStore.getState().selectAirport(icao, parsedAirport);
+        const airportEntry = airportsRef.current.find((a) => a.icao === icao);
+        useAppStore.getState().selectAirport(icao, parsedAirport, airportEntry?.isCustom);
         setTimeout(() => {
           startAnimationsRef.current?.();
           applyLayerVisibilityRef.current?.(layerVisibilityRef.current);

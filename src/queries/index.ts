@@ -39,5 +39,8 @@ export {
 // Launch dialog hooks
 export { useAircraftList, useWeatherPresets, useAircraftImage, launchKeys } from './useLaunchQuery';
 
+// Gateway hooks
+export { useGatewayReleasePacks, useGatewayUpdateCheck } from './useGatewayQuery';
+
 // Data hooks
 export { useDistinctCountries } from './useDistinctCountries';
