@@ -99,6 +99,22 @@ function getDisplayName(archivePath: string, internalRoot: string | null): strin
 }
 
 /**
+ * Get the actual plugin directory (not the top-level archive root).
+ * For conflict detection, we need where the plugin really lives,
+ * not the computed addon root which may be the entire archive.
+ */
+function getPluginDir(xplPath: string): string | null {
+  const parent = path.dirname(xplPath);
+  const parentName = path.basename(parent);
+  // If inside a platform subfolder (32, 64, win_x64, etc.), go up one more level
+  if (PLATFORM_FOLDERS.includes(parentName.toLowerCase())) {
+    const grandparent = path.dirname(parent);
+    return grandparent === '.' ? null : grandparent + '/';
+  }
+  return parent === '.' ? null : parent + '/';
+}
+
+/**
  * Check if path is inside any of the given directories
  */
 function isInsideAny(filePath: string, dirs: Set<string>): boolean {
@@ -134,10 +150,11 @@ export function detectAddons(
         encrypted: entry.encrypted,
       });
 
-      // Track plugin and aircraft directories for exclusion
+      // Track actual plugin directories for exclusion (not the addon root,
+      // which can be the whole archive and falsely overlap with aircraft roots)
       if (markerType === 'Plugin') {
-        const root = getAddonRoot(entry.path, 'Plugin');
-        if (root) pluginDirs.add(root);
+        const dir = getPluginDir(entry.path);
+        if (dir) pluginDirs.add(dir);
       }
       if (markerType === 'Aircraft') {
         const root = getAddonRoot(entry.path, 'Aircraft');
@@ -162,8 +179,8 @@ export function detectAddons(
     // Skip if already inside a detected addon
     if (skipPrefixes.some((prefix) => marker.path.startsWith(prefix))) continue;
 
-    // Skip .acf/.dsf inside plugin directories
-    if (['Aircraft', 'Scenery'].includes(marker.type)) {
+    // Skip .dsf inside plugin directories (but never skip .acf — it's always an aircraft)
+    if (marker.type === 'Scenery') {
       if (isInsideAny(marker.path, pluginDirs)) continue;
     }
 
