@@ -46,6 +46,7 @@ import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplan
 
 contextBridge.exposeInMainWorld('airportAPI', {
   getAirports: () => ipcRenderer.invoke('get-airports'),
+  getDistinctCountries: () => ipcRenderer.invoke('data:getDistinctCountries'),
   getAirportData: (icao: string) => ipcRenderer.invoke('get-airport-data', icao),
   fetchMetar: (icao: string) => ipcRenderer.invoke('fetch-metar', icao),
   fetchTaf: (icao: string) => ipcRenderer.invoke('fetch-taf', icao),
@@ -324,6 +325,7 @@ declare global {
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;
+      getDistinctCountries: () => Promise<string[]>;
       getAirportData: (icao: string) => Promise<string>;
       fetchMetar: (icao: string) => Promise<ApiResponse>;
       fetchTaf: (icao: string) => Promise<ApiResponse>;

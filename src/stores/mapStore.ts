@@ -17,18 +17,26 @@ export interface FeatureDebugInfo {
   rawData?: string;
 }
 
+export type SurfaceTypeFilter = 'paved' | 'unpaved' | 'water' | 'other';
+
 export interface AirportFilterState {
   showLand: boolean;
   showSeaplane: boolean;
   showHeliport: boolean;
   onlyCustom: boolean;
+  surfaceTypes: SurfaceTypeFilter[];
+  country: string; // 'all' = no filter
 }
+
+export const ALL_SURFACE_TYPES: SurfaceTypeFilter[] = ['paved', 'unpaved', 'water', 'other'];
 
 export const DEFAULT_AIRPORT_FILTERS: AirportFilterState = {
   showLand: true,
   showSeaplane: true,
   showHeliport: true,
   onlyCustom: false,
+  surfaceTypes: [...ALL_SURFACE_TYPES],
+  country: 'all',
 };
 
 export interface ExploreFilters {
@@ -207,11 +215,12 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 5,
+      version: 6,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
+        airportFilters: state.airportFilters,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -240,6 +249,15 @@ export const useMapStore = create<MapState>()(
             delete old.showPaved;
             delete old.showUnpaved;
             delete old.minRunways;
+          }
+          state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
+        }
+        // Migration to v6: add surfaceTypes and country to airport filters
+        if (version < 6) {
+          const old = state.airportFilters as Record<string, unknown> | undefined;
+          if (old) {
+            if (!old.surfaceTypes) old.surfaceTypes = [...ALL_SURFACE_TYPES];
+            if (!old.country) old.country = 'all';
           }
           state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
         }

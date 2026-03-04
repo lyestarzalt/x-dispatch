@@ -433,6 +433,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('get-airports', () => dataManager.getAllAirports());
+  ipcMain.handle('data:getDistinctCountries', () => dataManager.getDistinctCountries());
   ipcMain.handle('get-airport-data', (_, icao: string) => {
     if (!isValidICAO(icao)) throw new Error('Invalid ICAO code');
     logger.main.info(`[User] Airport selected: ${icao.toUpperCase()}`);

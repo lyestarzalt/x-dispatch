@@ -27,6 +27,7 @@ import {
   computeBreakdownFromDb,
   getAllAirports as getAllAirportsFromDb,
   getCustomSceneryAptFiles,
+  getDistinctCountries as getDistinctCountriesFromDb,
   loadAirports,
 } from './airports';
 import { getXPlanePath, setXPlanePath } from './config';
@@ -385,6 +386,13 @@ export class XPlaneDataManager {
    */
   getAllAirports(): Airport[] {
     return getAllAirportsFromDb();
+  }
+
+  /**
+   * Get distinct country names from loaded airports
+   */
+  getDistinctCountries(): string[] {
+    return getDistinctCountriesFromDb();
   }
 
   /**

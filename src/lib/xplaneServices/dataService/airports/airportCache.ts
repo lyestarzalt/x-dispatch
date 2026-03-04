@@ -188,6 +188,7 @@ export function getAllAirportsFromDb(): Airport[] {
       sourceFile: airports.sourceFile,
       runwayCount: airports.runwayCount,
       primarySurfaceType: airports.primarySurfaceType,
+      country: airports.country,
     })
     .from(airports)
     .all();
@@ -202,7 +203,21 @@ export function getAllAirportsFromDb(): Airport[] {
     runwayCount: r.runwayCount ?? 0,
     surfaceType: deriveSurfaceType(r.primarySurfaceType ?? null),
     elevation: r.elevation ?? 0,
+    country: r.country ?? '',
   }));
+}
+
+/**
+ * Get distinct country names from the airports table
+ */
+export function getDistinctCountries(): string[] {
+  const db = getDb();
+  const results = db.selectDistinct({ country: airports.country }).from(airports).all();
+
+  return results
+    .map((r) => r.country ?? 'N/A')
+    .filter((c) => c.length > 0)
+    .sort();
 }
 
 /**

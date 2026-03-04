@@ -38,3 +38,6 @@ export {
 
 // Launch dialog hooks
 export { useAircraftList, useWeatherPresets, useAircraftImage, launchKeys } from './useLaunchQuery';
+
+// Data hooks
+export { useDistinctCountries } from './useDistinctCountries';

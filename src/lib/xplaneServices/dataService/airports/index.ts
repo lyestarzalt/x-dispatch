@@ -20,6 +20,7 @@ import {
   computeBreakdownFromDb,
   getAirportCount,
   getAllAirportsFromDb,
+  getDistinctCountries,
   insertAirports,
   persistDatabase,
   updateStoredFileMeta,
@@ -182,4 +183,4 @@ function logCacheChanges(cacheCheck: ReturnType<typeof checkCacheValidity>): voi
 // Re-exports for convenience
 // ============================================================================
 
-export { computeBreakdownFromDb } from './airportCache';
+export { computeBreakdownFromDb, getDistinctCountries } from './airportCache';

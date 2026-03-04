@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
   CloudDownload,
   CloudRain,
   Compass,
@@ -27,6 +29,14 @@ import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -36,15 +46,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { useNavDataCounts, usePlaneState } from '@/queries';
+import { useDistinctCountries, useNavDataCounts, usePlaneState } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
-import { useMapStore } from '@/stores/mapStore';
+import { ALL_SURFACE_TYPES, type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
 import type { NavLayerVisibility } from '@/types/layers';
 
 interface ToolbarProps {
@@ -96,6 +107,10 @@ export default function Toolbar({
   const setAirportFilters = useMapStore((s) => s.setAirportFilters);
   const resetAirportFilters = useMapStore((s) => s.resetAirportFilters);
   const filtersActive = isAirportFiltersActive(airportFilters);
+  const [countryOpen, setCountryOpen] = useState(false);
+
+  // Country list query
+  const { data: countries = [] } = useDistinctCountries();
 
   // Flight plan store
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
@@ -125,6 +140,15 @@ export default function Toolbar({
       ? parseFloat(selectedAirportData.metadata.datum_lon)
       : null);
   const navDataCounts = useNavDataCounts(airportLat, airportLon);
+
+  const toggleSurfaceType = useCallback(
+    (type: SurfaceTypeFilter) => {
+      const current = airportFilters.surfaceTypes;
+      const next = current.includes(type) ? current.filter((t) => t !== type) : [...current, type];
+      setAirportFilters({ surfaceTypes: next });
+    },
+    [airportFilters.surfaceTypes, setAirportFilters]
+  );
 
   const filteredAirports = useMemo(() => {
     if (searchQuery.length < 2) return [];
@@ -445,6 +469,98 @@ export default function Toolbar({
                 >
                   {t('airportFilters.customOnly')}
                 </DropdownMenuCheckboxItem>
+
+                <DropdownMenuSeparator />
+
+                {/* Surface Type section */}
+                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                  {t('airportFilters.surfaceType')}
+                </DropdownMenuLabel>
+                {(
+                  [
+                    { type: 'paved', labelKey: 'airportFilters.paved' },
+                    { type: 'unpaved', labelKey: 'airportFilters.unpaved' },
+                    { type: 'water', labelKey: 'airportFilters.water' },
+                    { type: 'other', labelKey: 'airportFilters.surfaceOther' },
+                  ] as const
+                ).map(({ type, labelKey }) => (
+                  <DropdownMenuCheckboxItem
+                    key={type}
+                    checked={airportFilters.surfaceTypes.includes(type)}
+                    onCheckedChange={() => toggleSurfaceType(type)}
+                  >
+                    {t(labelKey)}
+                  </DropdownMenuCheckboxItem>
+                ))}
+
+                <DropdownMenuSeparator />
+
+                {/* Country section */}
+                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                  {t('airportFilters.country')}
+                </DropdownMenuLabel>
+                <div className="px-1 pb-1">
+                  <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        role="combobox"
+                        aria-expanded={countryOpen}
+                        className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2 text-sm hover:bg-accent"
+                      >
+                        <span className="truncate">
+                          {airportFilters.country === 'all'
+                            ? t('airportFilters.allCountries')
+                            : airportFilters.country}
+                        </span>
+                        <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
+                      <Command>
+                        <CommandInput placeholder={t('common.search')} className="h-8" />
+                        <CommandList>
+                          <CommandEmpty>{t('common.noResults')}</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value="all"
+                              onSelect={() => {
+                                setAirportFilters({ country: 'all' });
+                                setCountryOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  airportFilters.country === 'all' ? 'opacity-100' : 'opacity-0'
+                                )}
+                              />
+                              {t('airportFilters.allCountries')}
+                            </CommandItem>
+                            {countries.map((country) => (
+                              <CommandItem
+                                key={country}
+                                value={country}
+                                onSelect={() => {
+                                  setAirportFilters({ country });
+                                  setCountryOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    airportFilters.country === country ? 'opacity-100' : 'opacity-0'
+                                  )}
+                                />
+                                {country}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
                 {filtersActive && (
                   <button
                     onClick={resetAirportFilters}

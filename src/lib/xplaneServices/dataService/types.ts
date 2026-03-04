@@ -17,6 +17,7 @@ export interface Airport {
   runwayCount: number;
   surfaceType: 'paved' | 'unpaved' | 'water' | 'other';
   elevation: number;
+  country: string;
 }
 
 export interface AirportSourceBreakdown {

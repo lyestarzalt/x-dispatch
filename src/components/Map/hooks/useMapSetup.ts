@@ -209,6 +209,7 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
       surfaceType: airport.surfaceType,
       runwayCount: airport.runwayCount,
       elevation: airport.elevation,
+      country: airport.country ?? '',
     },
   }));
 

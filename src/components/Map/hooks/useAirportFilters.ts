@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type maplibregl from 'maplibre-gl';
 import type { ExpressionSpecification } from 'maplibre-gl';
-import { type AirportFilterState, useMapStore } from '@/stores/mapStore';
+import { ALL_SURFACE_TYPES, type AirportFilterState, useMapStore } from '@/stores/mapStore';
 import type { MapRef } from './useMapSetup';
 
 /** All airport layer IDs that need filter application */
@@ -39,6 +39,19 @@ function buildConditions(filters: AirportFilterState): FilterExpr[] | undefined 
   // Custom-only filter
   if (filters.onlyCustom) {
     conditions.push(['==', ['get', 'isCustom'], 1]);
+  }
+
+  // Surface type filter
+  if (filters.surfaceTypes.length === 0) {
+    return []; // hide everything
+  }
+  if (filters.surfaceTypes.length < ALL_SURFACE_TYPES.length) {
+    conditions.push(['in', ['get', 'surfaceType'], ['literal', filters.surfaceTypes]]);
+  }
+
+  // Country filter
+  if (filters.country !== 'all') {
+    conditions.push(['==', ['get', 'country'], filters.country]);
   }
 
   if (conditions.length === 0) return undefined;
@@ -140,5 +153,12 @@ export function useAirportFilters(mapRef: MapRef) {
 
 /** Check if filters differ from defaults */
 export function isAirportFiltersActive(filters: AirportFilterState): boolean {
-  return !filters.showLand || !filters.showSeaplane || !filters.showHeliport || filters.onlyCustom;
+  return (
+    !filters.showLand ||
+    !filters.showSeaplane ||
+    !filters.showHeliport ||
+    filters.onlyCustom ||
+    filters.surfaceTypes.length < ALL_SURFACE_TYPES.length ||
+    filters.country !== 'all'
+  );
 }
