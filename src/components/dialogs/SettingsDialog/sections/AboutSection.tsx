@@ -69,6 +69,12 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               <span className="text-muted-foreground">{t('settings.about.license')}</span>
               <span>GPL-3.0</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Special Thanks</span>
+              <span>
+                Gilles <span className="text-muted-foreground">(enjxp / simtwk3)</span>
+              </span>
+            </div>
           </div>
         </div>
 
