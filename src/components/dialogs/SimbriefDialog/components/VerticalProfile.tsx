@@ -244,7 +244,12 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
           />
 
           <ChartTooltip
-            content={<CustomTooltip />}
+            content={({ active, payload }) => (
+              <CustomTooltip
+                active={active}
+                payload={payload as Array<{ payload: ProfileDataPoint }> | undefined}
+              />
+            )}
             cursor={{
               stroke: 'oklch(var(--muted-foreground))',
               strokeDasharray: '4 4',
