@@ -38,9 +38,9 @@ Click any airport to see detailed diagrams with runways, taxiways, gates, and ma
 
 The app has grown to include SimBrief integration, live flight tracking, SID/STAR visualization, and an addon manager to keep your aircraft and scenery organized.
 
-If you find this useful, consider giving it a star, it helps others discover the project.
+If you find this useful, consider giving it a ⭐, it helps others discover the project.
 
-> **macOS Users (Sequoia/Tahoe):** The app is unsigned. To install:
+> **🍎 macOS Users (Sequoia/Tahoe):** The app is unsigned. To install:
 >
 > 1. Download the `.dmg` from [Releases](https://github.com/lyestarzalt/x-dispatch/releases/latest)
 > 2. Drag to Applications and try to open - it will be blocked

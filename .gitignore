@@ -75,5 +75,8 @@ CLAUDE.md
 yarn.lock
 docs/
 
+# Design System (Figma reference files)
+design-system/
+
 # Sentry Config File
 .env.sentry-build-plugin
