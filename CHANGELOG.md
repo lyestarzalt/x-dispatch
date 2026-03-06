@@ -1,6 +1,33 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.4.1 - 2026-03-06
+
+### Bug Fixes
+
+- prevent empty object rendering in VerticalProfile tooltip ([06bcda7](https://github.com/lyestarzalt/x-dispatch/commit/06bcda779b3026c7087fb05a8f65c96cb985e85f))
+- handle CRLF line endings and missing tank names in ACF parser ([51d8d16](https://github.com/lyestarzalt/x-dispatch/commit/51d8d16f65c116336afe4010f512df7e1d4d6742))
+- always detect .acf as aircraft regardless of nesting ([0f78da9](https://github.com/lyestarzalt/x-dispatch/commit/0f78da9ccd3f84886598ac7770ec78be445d3354))
+- resolve 7zip binary path and add alpha badge ([42f20e6](https://github.com/lyestarzalt/x-dispatch/commit/42f20e6a34552a74be00826cdb3b4a917ae0785f))
+- switch ramp spawn from lle_ground_start to ramp_start ([9a9f22e](https://github.com/lyestarzalt/x-dispatch/commit/9a9f22ed11b924551ae0d1dfa2fe8fc1376c2ac0))
+- update existing sources when switching airports ([e64ae55](https://github.com/lyestarzalt/x-dispatch/commit/e64ae552d40e7d51e2204fa360d40cb6a240c04d))
+- handle Windows file lock when deleting stale database ([d7b97f6](https://github.com/lyestarzalt/x-dispatch/commit/d7b97f648f5667ac472da934195506df54e5ca56))
+- skip renderer error reporting in development ([39ee519](https://github.com/lyestarzalt/x-dispatch/commit/39ee5190f53a33d814d13d4f82c9158b262fcd75))
+
+### Documentation
+
+- update CHANGELOG.md for v1.4.0 ([eefdff9](https://github.com/lyestarzalt/x-dispatch/commit/eefdff95be6e11f78416d8ddc8e748364c8ef2a1))
+
+### Features
+
+- add country and surface type airport filters ([044d1d3](https://github.com/lyestarzalt/x-dispatch/commit/044d1d3d0c20f8bd2b3865ffff9a57fe5424b0f2))
+- detect and store exact X-Plane version ([c7aa4bc](https://github.com/lyestarzalt/x-dispatch/commit/c7aa4bc4ea8a9a62c5eb7ed94c69a9a00cda86f4))
+- detect and display newer Gateway scenery releases ([94c688d](https://github.com/lyestarzalt/x-dispatch/commit/94c688de994fd5c7d656c71e1635b883bc844ad4))
+
+### Miscellaneous
+
+- add Gilles to credits as special thanks for testing ([13a317f](https://github.com/lyestarzalt/x-dispatch/commit/13a317f7c2a52ad05fe26f7ed5b1d947ca28f3bc))
+- add emojis to README and gitignore design system files ([5200700](https://github.com/lyestarzalt/x-dispatch/commit/5200700ed3e1a3eeedf39eaa2ac2edcd2e1a443e))
 ## v1.4.0 - 2026-03-03
 
 ### Bug Fixes
