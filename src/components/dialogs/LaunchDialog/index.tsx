@@ -196,14 +196,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     };
 
     // Start location
+    // TODO: ramp_start doesn't handle duplicate gate names (e.g. multiple "B3" at same airport).
+    // Previously used lle_ground_start with exact lat/lon/heading (commit f0a6863) but X-Plane
+    // started placing the aircraft offset forward by several meters. Switched to ramp_start as workaround.
+    // TODO: switching to another airport mid-flight does not render the ground.
     if (params.startPosition.type === 'ramp') {
-      // Use lle_ground_start for precise positioning (handles duplicate gate names)
-      // Convert heading to 0-360 range (apt.dat can have negative values)
-      const headingTrue = ((params.startPosition.heading % 360) + 360) % 360;
-      payload.lle_ground_start = {
-        latitude: params.startPosition.latitude,
-        longitude: params.startPosition.longitude,
-        heading_true: headingTrue,
+      payload.ramp_start = {
+        airport_id: params.startPosition.airport,
+        ramp: params.startPosition.name,
       };
     } else {
       payload.runway_start = {
