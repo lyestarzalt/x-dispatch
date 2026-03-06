@@ -39,6 +39,27 @@ function getSchemaFingerprint(): string {
 }
 
 /**
+ * Clean up leftover .old-* database files from previous failed deletions (Windows file lock workaround).
+ */
+function cleanupOldDbFiles(): void {
+  try {
+    const dir = path.dirname(dbPath);
+    const base = path.basename(dbPath);
+    for (const file of fs.readdirSync(dir)) {
+      if (file.startsWith(base + '.old-')) {
+        try {
+          fs.unlinkSync(path.join(dir, file));
+        } catch {
+          /* still locked, will retry next launch */
+        }
+      }
+    }
+  } catch {
+    /* non-critical */
+  }
+}
+
+/**
  * Delete the database if its schema doesn't match the current Drizzle snapshot.
  * The DB is purely a cache of X-Plane files — all data is rescanned automatically.
  */
@@ -56,7 +77,12 @@ function deleteStaleDb(fingerprint: string): void {
 
   if (stored !== fingerprint) {
     logger.data.info(`Schema changed — deleting stale database`);
-    fs.unlinkSync(dbPath);
+    try {
+      fs.unlinkSync(dbPath);
+    } catch {
+      // Windows: file may be locked by antivirus/indexer — rename as fallback
+      fs.renameSync(dbPath, `${dbPath}.old-${Date.now()}`);
+    }
     try {
       fs.unlinkSync(versionPath);
     } catch {
@@ -72,6 +98,8 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
   migrationsFolder = path.join(app.getAppPath(), 'drizzle');
 
   logger.data.info(`Database initializing: ${dbPath}`);
+
+  cleanupOldDbFiles();
 
   const fingerprint = getSchemaFingerprint();
   deleteStaleDb(fingerprint);

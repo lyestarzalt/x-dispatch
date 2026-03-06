@@ -1084,8 +1084,20 @@ app.whenReady().then(async () => {
   } catch (err) {
     logger.main.error('Database init failed, deleting and retrying:', err);
     const dbFile = getDbPath();
-    if (fs.existsSync(dbFile)) fs.unlinkSync(dbFile);
-    if (fs.existsSync(dbFile + '.version')) fs.unlinkSync(dbFile + '.version');
+    try {
+      if (fs.existsSync(dbFile)) fs.unlinkSync(dbFile);
+    } catch {
+      try {
+        fs.renameSync(dbFile, `${dbFile}.old-${Date.now()}`);
+      } catch {
+        /* will retry next launch */
+      }
+    }
+    try {
+      if (fs.existsSync(dbFile + '.version')) fs.unlinkSync(dbFile + '.version');
+    } catch {
+      /* non-critical */
+    }
     try {
       await initDb();
     } catch (retryErr) {
