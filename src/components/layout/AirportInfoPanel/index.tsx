@@ -121,11 +121,11 @@ export default function AirportInfoPanel({
                 className={cn(
                   'px-2 py-0.5 font-mono text-xs font-bold',
                   flightCategory === 'VFR' &&
-                    'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-                  flightCategory === 'MVFR' && 'border-sky-500/30 bg-sky-500/10 text-sky-400',
-                  flightCategory === 'IFR' && 'border-red-500/30 bg-red-500/10 text-red-400',
+                    'border-cat-emerald/30 bg-cat-emerald/10 text-cat-emerald',
+                  flightCategory === 'MVFR' && 'border-cat-sky/30 bg-cat-sky/10 text-cat-sky',
+                  flightCategory === 'IFR' && 'border-cat-red/30 bg-cat-red/10 text-cat-red',
                   flightCategory === 'LIFR' &&
-                    'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-400'
+                    'border-cat-fuchsia/30 bg-cat-fuchsia/10 text-cat-fuchsia'
                 )}
               >
                 {flightCategory}

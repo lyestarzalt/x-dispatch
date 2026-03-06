@@ -69,12 +69,12 @@ export default function NetworksSection({
       </Card>
 
       {/* IVAO Card */}
-      <Card className={cn(isIvaoEnabled && 'border-blue-500/30')}>
+      <Card className={cn(isIvaoEnabled && 'border-cat-blue/30')}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+                <span className="inline-block h-2 w-2 rounded-full bg-cat-blue" />
                 IVAO
               </CardTitle>
               <CardDescription>Show live pilot positions from the IVAO network</CardDescription>
@@ -85,9 +85,9 @@ export default function NetworksSection({
         {isIvaoEnabled && (
           <CardContent className="pt-0">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
+              <Users className="h-4 w-4 text-cat-blue" />
               <span className="text-sm">Currently Online:</span>
-              <Badge className="bg-blue-500/20 text-blue-500">
+              <Badge className="bg-cat-blue/20 text-cat-blue">
                 {ivaoPilotCount !== undefined
                   ? `${ivaoPilotCount.toLocaleString()} pilots`
                   : 'Loading...'}

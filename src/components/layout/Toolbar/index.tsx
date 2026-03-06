@@ -618,7 +618,7 @@ export default function Toolbar({
                   <Radar className="mr-2 h-4 w-4" />
                   IVAO
                   {ivaoEnabled && ivaoPilotCount !== undefined && (
-                    <Badge className="ml-auto bg-blue-500/20 px-1.5 py-0.5 text-blue-500">
+                    <Badge className="ml-auto bg-cat-blue/20 px-1.5 py-0.5 text-cat-blue">
                       {ivaoPilotCount}
                     </Badge>
                   )}
@@ -706,7 +706,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
   if (frameCount === 0) return null;
 
   return (
-    <div className="flex h-9 items-center gap-0.5 rounded-md border border-cyan-500/50 bg-cyan-500/10 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
+    <div className="flex h-9 items-center gap-0.5 rounded-md border border-primary/50 bg-primary/10 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
       <button
         onClick={stepBack}
         className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
@@ -717,7 +717,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
 
       <button
         onClick={isPlaying ? pause : play}
-        className="rounded p-1 text-cyan-400 transition-colors hover:bg-white/10 hover:text-cyan-300"
+        className="rounded p-1 text-primary transition-colors hover:bg-white/10 hover:text-xp-cyan-light"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -731,7 +731,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         <ChevronRight className="h-3.5 w-3.5" />
       </button>
 
-      <span className="ml-1 font-mono text-xs tabular-nums text-cyan-400">{timeDisplay}</span>
+      <span className="ml-1 font-mono text-xs tabular-nums text-primary">{timeDisplay}</span>
       <span className="ml-0.5 mr-1 text-[10px] text-white/40">
         {frameIndex + 1}/{frameCount}
       </span>

@@ -177,19 +177,19 @@ export default function InfoTab() {
 
       {/* VATSIM Live Section */}
       {vatsimEnabled && hasVatsimActivity && (
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+        <div className="rounded-lg border border-cat-emerald/20 bg-cat-emerald/5 p-3">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              <span className="text-xs font-medium text-emerald-400">VATSIM LIVE</span>
+              <div className="h-2 w-2 animate-pulse rounded-full bg-cat-emerald" />
+              <span className="text-xs font-medium text-cat-emerald">VATSIM LIVE</span>
             </div>
             {(traffic.departures > 0 || traffic.arrivals > 0) && (
               <div className="flex items-center gap-3 font-mono text-xs">
-                <span className="flex items-center gap-1 text-emerald-400">
+                <span className="flex items-center gap-1 text-cat-emerald">
                   <Plane className="h-3 w-3 rotate-45" />
                   {traffic.departures}
                 </span>
-                <span className="flex items-center gap-1 text-amber-400">
+                <span className="flex items-center gap-1 text-cat-amber">
                   <Plane className="h-3 w-3 -rotate-45" />
                   {traffic.arrivals}
                 </span>
@@ -204,7 +204,7 @@ export default function InfoTab() {
                 <Badge
                   key={atc.callsign}
                   variant="secondary"
-                  className="gap-1 bg-emerald-500/20 text-[10px] text-emerald-300"
+                  className="gap-1 bg-cat-emerald/20 text-[10px] text-cat-emerald"
                 >
                   <Radio className="h-2.5 w-2.5" />
                   {atc.callsign.split('_')[1] || atc.callsign}
@@ -235,18 +235,18 @@ export default function InfoTab() {
 
       {/* IVAO Live Section */}
       {ivaoEnabled && hasIvaoActivity && (
-        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+        <div className="rounded-lg border border-cat-blue/20 bg-cat-blue/5 p-3">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-400" />
-              <span className="text-xs font-medium text-blue-400">IVAO LIVE</span>
+              <div className="h-2 w-2 animate-pulse rounded-full bg-cat-blue" />
+              <span className="text-xs font-medium text-cat-blue">IVAO LIVE</span>
             </div>
             <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="flex items-center gap-1 text-blue-400">
+              <span className="flex items-center gap-1 text-cat-blue">
                 <Plane className="h-3 w-3 rotate-45" />
                 {ivaoTraffic.departures}
               </span>
-              <span className="flex items-center gap-1 text-amber-400">
+              <span className="flex items-center gap-1 text-cat-amber">
                 <Plane className="h-3 w-3 -rotate-45" />
                 {ivaoTraffic.arrivals}
               </span>

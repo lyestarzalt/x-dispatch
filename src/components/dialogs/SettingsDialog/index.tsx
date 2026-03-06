@@ -94,14 +94,14 @@ export default function SettingsDialog({
                       'data-[state=active]:bg-background data-[state=active]:shadow-sm',
                       'transition-colors hover:bg-background/50',
                       id === 'networks' && isVatsimEnabled && 'text-success',
-                      id === 'networks' && isIvaoEnabled && 'text-blue-500'
+                      id === 'networks' && isIvaoEnabled && 'text-cat-blue'
                     )}
                   >
                     <Icon
                       className={cn(
                         'h-4 w-4',
                         id === 'networks' && isVatsimEnabled && 'text-success',
-                        id === 'networks' && isIvaoEnabled && 'text-blue-500'
+                        id === 'networks' && isIvaoEnabled && 'text-cat-blue'
                       )}
                     />
                     {labelKey.startsWith('settings.') ? t(labelKey) : labelKey}
@@ -110,7 +110,7 @@ export default function SettingsDialog({
                         className={cn(
                           'ml-auto h-2 w-2 rounded-full',
                           isVatsimEnabled && 'bg-success',
-                          isIvaoEnabled && 'bg-blue-500'
+                          isIvaoEnabled && 'bg-cat-blue'
                         )}
                       />
                     )}

@@ -68,7 +68,7 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
       <div
         className={cn(
           'flex flex-col items-center rounded-xl border p-3',
-          'border-white/[0.08] bg-[#0d1117]/90 shadow-2xl shadow-black/50',
+          'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
           'backdrop-blur-xl'
         )}
       >
@@ -85,7 +85,7 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
               cy={CENTER}
               r={RADIUS + 4}
               fill="none"
-              stroke="rgba(34, 211, 238, 0.1)"
+              stroke="oklch(var(--primary) / 0.1)"
               strokeWidth="1"
             />
             {/* Bezel - outer ring */}
@@ -94,11 +94,11 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
               cy={CENTER}
               r={RADIUS + 2}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.15)"
+              stroke="oklch(var(--foreground) / 0.15)"
               strokeWidth="1.5"
             />
             {/* Inner background */}
-            <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="rgba(13, 17, 23, 0.8)" />
+            <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="oklch(var(--background) / 0.8)" />
 
             {/* Rotating compass rose with smooth transition */}
             <g
@@ -116,7 +116,7 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
                   y1={CENTER - RADIUS + 2}
                   x2={CENTER}
                   y2={CENTER - RADIUS + 2 + tick.tickLength}
-                  stroke={tick.isNorth ? '#f87171' : 'rgba(255, 255, 255, 0.5)'}
+                  stroke={tick.isNorth ? 'oklch(var(--cat-red))' : 'oklch(var(--foreground) / 0.5)'}
                   strokeOpacity={tick.opacity}
                   strokeWidth={tick.tickWidth}
                   transform={`rotate(${tick.deg}, ${CENTER}, ${CENTER})`}
@@ -134,7 +134,7 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
                   fontSize={pos.fontSize}
                   fontFamily="ui-monospace, monospace"
                   fontWeight={pos.fontWeight}
-                  fill={pos.isNorth ? '#f87171' : 'rgba(255, 255, 255, 0.6)'}
+                  fill={pos.isNorth ? 'oklch(var(--cat-red))' : 'oklch(var(--foreground) / 0.6)'}
                 >
                   {pos.label}
                 </text>
@@ -142,18 +142,18 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
             </g>
 
             {/* Fixed lubber line (top reference) */}
-            <polygon points={LUBBER_POINTS} fill="#22d3ee" />
+            <polygon points={LUBBER_POINTS} fill="oklch(var(--primary))" />
 
             {/* Center aircraft symbol */}
             <g transform={`translate(${CENTER}, ${CENTER})`}>
-              <line x1="0" y1="-8" x2="0" y2="8" stroke="#22d3ee" strokeWidth="2" />
-              <line x1="-10" y1="2" x2="10" y2="2" stroke="#22d3ee" strokeWidth="2" />
-              <line x1="-4" y1="7" x2="4" y2="7" stroke="#22d3ee" strokeWidth="1.5" />
+              <line x1="0" y1="-8" x2="0" y2="8" stroke="oklch(var(--primary))" strokeWidth="2" />
+              <line x1="-10" y1="2" x2="10" y2="2" stroke="oklch(var(--primary))" strokeWidth="2" />
+              <line x1="-4" y1="7" x2="4" y2="7" stroke="oklch(var(--primary))" strokeWidth="1.5" />
             </g>
           </svg>
         </div>
         {/* Digital readout */}
-        <div className="mt-2 rounded-md border border-white/[0.08] bg-black/30 px-3 py-1 font-mono text-sm font-bold tabular-nums tracking-wider text-cyan-400">
+        <div className="mt-2 rounded-md border border-border/50 bg-black/30 px-3 py-1 font-mono text-sm font-bold tabular-nums tracking-wider text-primary">
           {headingDisplay}°
         </div>
       </div>

@@ -9,7 +9,7 @@
 
 @layer base {
   /*
-   * X-Plane 11 Design System
+   * X-Dispatch Design System
    * Single dark theme - navy-tinted backgrounds with cyan accent
    * Reference: X-Plane 11 UI Component Library
    *
@@ -78,6 +78,17 @@
     --xp-gray-100: 0.55 0.02 250; /* #717880 - muted text */
     --xp-gray-200: 0.4 0.02 250; /* #474F59 - disabled text */
     --xp-gray-300: 0.25 0.02 250; /* #263240 - borders */
+
+    /* Category colors — classification badges & indicators */
+    --cat-emerald: 0.76 0.17 163; /* #34d399 - VFR, departures, ATC, Scenery */
+    --cat-sky: 0.75 0.14 237; /* #38bdf8 - MVFR, Aircraft, narrow/wide */
+    --cat-amber: 0.82 0.16 78; /* #fbbf24 - arrivals, heavy, cargo */
+    --cat-red: 0.7 0.19 22; /* #f87171 - IFR, super, military, north */
+    --cat-fuchsia: 0.73 0.2 323; /* #e879f9 - LIFR */
+    --cat-blue: 0.7 0.14 261; /* #60a5fa - IVAO */
+    --cat-orange: 0.75 0.16 52; /* #fb923c - LuaScript */
+    --cat-pink: 0.73 0.18 350; /* #f472b6 - Livery */
+    --cat-teal: 0.76 0.11 186; /* #2dd4bf - SceneryLibrary */
 
     /* Legacy aliases (keep for backward compatibility) */
     --xp-accent-hover: var(--xp-cyan-hover);
@@ -184,17 +195,17 @@
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
-  background: oklch(0.16 0.02 250);
+  background: oklch(var(--card));
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0.02 250);
+  background: oklch(var(--xp-gray-200));
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.45 0.02 250);
+  background: oklch(var(--xp-gray-100));
 }
 
 /* Glowing effects for runway lights */
@@ -204,18 +215,18 @@
 
 /* MapLibre navigation controls - X-Plane style */
 .maplibregl-ctrl-group {
-  background: oklch(0.16 0.02 250 / 0.95) !important;
-  border: 1px solid oklch(0.28 0.02 250) !important;
+  background: oklch(var(--card) / 0.95) !important;
+  border: 1px solid oklch(var(--border)) !important;
   border-radius: 6px !important;
   backdrop-filter: blur(8px);
 }
 
 .maplibregl-ctrl-group button {
-  border-color: oklch(0.28 0.02 250) !important;
+  border-color: oklch(var(--border)) !important;
 }
 
 .maplibregl-ctrl-group button:hover {
-  background-color: oklch(0.28 0.02 250) !important;
+  background-color: oklch(var(--accent)) !important;
 }
 
 .maplibregl-ctrl-icon {

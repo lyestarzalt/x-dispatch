@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // No darkMode - X-Plane uses single dark theme
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
@@ -92,6 +91,18 @@ module.exports = {
           'accent-glow': 'oklch(var(--xp-accent-glow) / <alpha-value>)',
           'text-secondary': 'oklch(var(--xp-text-secondary) / <alpha-value>)',
           'text-disabled': 'oklch(var(--xp-text-disabled) / <alpha-value>)',
+        },
+        // Category colors for classification badges & indicators
+        cat: {
+          emerald: 'oklch(var(--cat-emerald) / <alpha-value>)',
+          sky: 'oklch(var(--cat-sky) / <alpha-value>)',
+          amber: 'oklch(var(--cat-amber) / <alpha-value>)',
+          red: 'oklch(var(--cat-red) / <alpha-value>)',
+          fuchsia: 'oklch(var(--cat-fuchsia) / <alpha-value>)',
+          blue: 'oklch(var(--cat-blue) / <alpha-value>)',
+          orange: 'oklch(var(--cat-orange) / <alpha-value>)',
+          pink: 'oklch(var(--cat-pink) / <alpha-value>)',
+          teal: 'oklch(var(--cat-teal) / <alpha-value>)',
         },
         // Chart colors for map layers
         chart: {

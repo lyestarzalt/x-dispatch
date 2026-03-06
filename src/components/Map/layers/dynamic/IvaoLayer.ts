@@ -269,11 +269,11 @@ export function setupIvaoClickHandler(map: maplibregl.Map, popup: maplibregl.Pop
         : props.route
       : '';
     const html = `
-      <div class="bg-card text-foreground p-4 rounded-lg border border-blue-500/30 min-w-[260px] shadow-xl">
+      <div class="bg-card text-foreground p-4 rounded-lg border border-cat-blue/30 min-w-[260px] shadow-xl">
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-border">
           <div class="flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-            <span class="text-blue-500 font-bold font-mono text-sm">${props.callsign}</span>
+            <div class="w-2 h-2 rounded-full bg-cat-blue animate-pulse"></div>
+            <span class="text-cat-blue font-bold font-mono text-sm">${props.callsign}</span>
           </div>
           <span class="text-sm px-1.5 py-0.5 rounded bg-muted font-mono">${props.flightRules || 'N/A'}</span>
         </div>

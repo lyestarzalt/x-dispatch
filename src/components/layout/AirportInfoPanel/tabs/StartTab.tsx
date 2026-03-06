@@ -154,21 +154,21 @@ interface GateListProps {
 const SIZE_LABELS: Record<string, { labelKey: string; class: string }> = {
   A: { labelKey: 'airportInfo.sizes.small', class: 'bg-muted/50 text-muted-foreground' },
   B: { labelKey: 'airportInfo.sizes.small', class: 'bg-muted/50 text-muted-foreground' },
-  C: { labelKey: 'airportInfo.sizes.narrow', class: 'bg-sky-500/15 text-sky-400' },
-  D: { labelKey: 'airportInfo.sizes.wide', class: 'bg-sky-500/15 text-sky-400' },
-  E: { labelKey: 'airportInfo.sizes.heavy', class: 'bg-amber-500/15 text-amber-400' },
-  F: { labelKey: 'airportInfo.sizes.super', class: 'bg-red-500/15 text-red-400' },
+  C: { labelKey: 'airportInfo.sizes.narrow', class: 'bg-cat-sky/15 text-cat-sky' },
+  D: { labelKey: 'airportInfo.sizes.wide', class: 'bg-cat-sky/15 text-cat-sky' },
+  E: { labelKey: 'airportInfo.sizes.heavy', class: 'bg-cat-amber/15 text-cat-amber' },
+  F: { labelKey: 'airportInfo.sizes.super', class: 'bg-cat-red/15 text-cat-red' },
 };
 
 // Operation type badges
 const OP_TYPE_LABELS: Record<string, { labelKey: string; class: string }> = {
   airline: { labelKey: 'airportInfo.opTypes.airline', class: 'bg-primary/15 text-primary' },
-  cargo: { labelKey: 'airportInfo.opTypes.cargo', class: 'bg-amber-500/15 text-amber-400' },
+  cargo: { labelKey: 'airportInfo.opTypes.cargo', class: 'bg-cat-amber/15 text-cat-amber' },
   general_aviation: {
     labelKey: 'airportInfo.opTypes.ga',
-    class: 'bg-emerald-500/15 text-emerald-400',
+    class: 'bg-cat-emerald/15 text-cat-emerald',
   },
-  military: { labelKey: 'airportInfo.opTypes.military', class: 'bg-red-500/15 text-red-400' },
+  military: { labelKey: 'airportInfo.opTypes.military', class: 'bg-cat-red/15 text-cat-red' },
 };
 
 function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps) {
