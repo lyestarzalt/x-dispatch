@@ -105,14 +105,14 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-4xl gap-0 overflow-hidden p-0">
         {/* Header with SimBrief branding */}
-        <div className="flex items-center justify-between border-b bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-4">
+        <div className="flex items-center justify-between border-b bg-gradient-to-r from-background via-card to-background px-6 py-4">
           <div className="flex items-center gap-4">
             <SimbriefLogo size="md" className="opacity-90" />
             <div>
               <DialogTitle className="text-lg font-semibold text-white">
                 {t('simbrief.title', 'Operational Flight Plan')}
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-400">
+              <DialogDescription className="text-sm text-muted-foreground">
                 {t('simbrief.description', 'Import your latest dispatch from SimBrief')}
               </DialogDescription>
             </div>
@@ -123,7 +123,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               size="sm"
               onClick={handleFetch}
               disabled={fetchMutation.isPending}
-              className="text-slate-400 hover:bg-slate-700 hover:text-white"
+              className="text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               {fetchMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -320,7 +320,7 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
     : data.atc.callsign;
 
   return (
-    <div className="bg-gradient-to-b from-slate-900 to-slate-800 px-6 py-5">
+    <div className="bg-gradient-to-b from-background to-card px-6 py-5">
       <div className="flex items-start justify-between">
         {/* Route Display */}
         <div className="flex items-center gap-6">
@@ -329,8 +329,8 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
             <p className="font-mono text-3xl font-bold tracking-tight text-white">
               {data.origin.icao_code}
             </p>
-            <p className="mt-0.5 text-sm text-slate-400">{data.origin.name}</p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-slate-500">
+            <p className="mt-0.5 text-sm text-muted-foreground">{data.origin.name}</p>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <PlaneTakeoff className="h-3 w-3" />
               <span>RWY {data.origin.plan_rwy}</span>
             </div>
@@ -339,11 +339,11 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
           {/* Flight Line */}
           <div className="flex flex-col items-center gap-1">
             <div className="flex items-center gap-2">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent via-slate-600 to-slate-600" />
+              <div className="h-px w-12 bg-gradient-to-r from-transparent via-border to-border" />
               <Plane className="h-5 w-5 rotate-90 text-primary" />
-              <div className="h-px w-12 bg-gradient-to-r from-slate-600 via-slate-600 to-transparent" />
+              <div className="h-px w-12 bg-gradient-to-r from-border via-border to-transparent" />
             </div>
-            <span className="font-mono text-[10px] text-slate-500">
+            <span className="font-mono text-[10px] text-muted-foreground">
               {formatDistance(data.general.air_distance)}
             </span>
           </div>
@@ -353,8 +353,8 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
             <p className="font-mono text-3xl font-bold tracking-tight text-white">
               {data.destination.icao_code}
             </p>
-            <p className="mt-0.5 text-sm text-slate-400">{data.destination.name}</p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-slate-500">
+            <p className="mt-0.5 text-sm text-muted-foreground">{data.destination.name}</p>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <PlaneLanding className="h-3 w-3" />
               <span>RWY {data.destination.plan_rwy}</span>
             </div>
@@ -369,30 +369,30 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
             </Badge>
           </div>
           <div className="mt-3 space-y-1 text-sm">
-            <div className="flex items-center justify-end gap-2 text-slate-400">
+            <div className="flex items-center justify-end gap-2 text-muted-foreground">
               <span>{data.aircraft.icao_code}</span>
-              <span className="text-slate-600">|</span>
+              <span className="text-border">|</span>
               <span className="font-mono">{data.aircraft.reg || 'N/A'}</span>
             </div>
-            <p className="text-slate-500">{data.aircraft.name}</p>
+            <p className="text-muted-foreground">{data.aircraft.name}</p>
           </div>
         </div>
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="mt-5 flex items-center justify-between rounded-lg bg-slate-800/50 px-4 py-3">
+      <div className="mt-5 flex items-center justify-between rounded-lg bg-card/50 px-4 py-3">
         <StatItem icon={Timer} label="ETE" value={formatFlightTime(data.times.est_time_enroute)} />
-        <Separator orientation="vertical" className="h-8 bg-slate-700" />
+        <Separator orientation="vertical" className="h-8 bg-border" />
         <StatItem icon={Gauge} label="FL" value={data.general.initial_altitude} />
-        <Separator orientation="vertical" className="h-8 bg-slate-700" />
+        <Separator orientation="vertical" className="h-8 bg-border" />
         <StatItem
           icon={Wind}
           label="AVG WIND"
           value={`${data.general.avg_wind_dir}°/${data.general.avg_wind_spd}kt`}
         />
-        <Separator orientation="vertical" className="h-8 bg-slate-700" />
+        <Separator orientation="vertical" className="h-8 bg-border" />
         <StatItem icon={Navigation} label="CI" value={data.general.costindex} />
-        <Separator orientation="vertical" className="h-8 bg-slate-700" />
+        <Separator orientation="vertical" className="h-8 bg-border" />
         <StatItem icon={Route} label="AIRAC" value={data.general.airac} />
       </div>
     </div>
@@ -410,9 +410,9 @@ function StatItem({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="h-4 w-4 text-slate-500" />
+      <Icon className="h-4 w-4 text-muted-foreground" />
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
         <p className="font-mono text-sm font-medium text-white">{value}</p>
       </div>
     </div>

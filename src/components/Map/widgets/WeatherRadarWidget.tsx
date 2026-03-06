@@ -36,7 +36,7 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
       <div
         className={cn(
           'flex items-center gap-2 rounded-xl border px-3 py-2',
-          'border-white/[0.08] bg-[#0d1117]/90 shadow-2xl shadow-black/50',
+          'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
           'backdrop-blur-xl'
         )}
       >
@@ -50,7 +50,7 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
 
         <button
           onClick={isPlaying ? pause : play}
-          className="rounded p-1 text-cyan-400 transition-colors hover:bg-white/10 hover:text-cyan-300"
+          className="rounded p-1 text-primary transition-colors hover:bg-white/10 hover:text-xp-cyan-light"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -64,8 +64,8 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
           <ChevronRight className="h-4 w-4" />
         </button>
 
-        <div className="flex items-center gap-1.5 border-l border-white/10 pl-2">
-          <span className="font-mono text-xs font-medium tabular-nums text-cyan-400">
+        <div className="flex items-center gap-1.5 border-l border-border/50 pl-2">
+          <span className="font-mono text-xs font-medium tabular-nums text-primary">
             {timeDisplay}
           </span>
           <span className="text-[10px] text-white/40">

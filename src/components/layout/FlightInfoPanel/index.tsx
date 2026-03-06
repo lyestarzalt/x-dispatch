@@ -233,7 +233,7 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
         </div>
         <div className="mt-1 flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Landing</span>
-          <span className="font-mono font-medium text-green-500">
+          <span className="font-mono font-medium text-success">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </span>
         </div>
@@ -257,9 +257,9 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 
       {/* Alternate */}
       {data.alternate && (
-        <div className="flex items-center justify-between rounded-lg bg-amber-500/10 px-3 py-2">
-          <span className="text-sm text-amber-500/70">Alternate</span>
-          <span className="font-mono text-sm font-medium text-amber-500">
+        <div className="flex items-center justify-between rounded-lg bg-warning/10 px-3 py-2">
+          <span className="text-sm text-warning/70">Alternate</span>
+          <span className="font-mono text-sm font-medium text-warning">
             {data.alternate.icao_code}
           </span>
         </div>
@@ -291,12 +291,12 @@ function StatBox({ label, value }: { label: string; value: string }) {
 function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   const totalFuel = parseInt(data.fuel.plan_ramp, 10);
   const fuelItems = [
-    { label: 'Taxi', value: data.fuel.taxi, color: 'bg-slate-500' },
+    { label: 'Taxi', value: data.fuel.taxi, color: 'bg-muted-foreground' },
     { label: 'Trip', value: data.fuel.enroute_burn, color: 'bg-primary' },
-    { label: 'Contingency', value: data.fuel.contingency, color: 'bg-amber-500' },
-    { label: 'Alternate', value: data.fuel.alternate_burn, color: 'bg-orange-500' },
-    { label: 'Reserve', value: data.fuel.reserve, color: 'bg-red-500' },
-    { label: 'Extra', value: data.fuel.extra, color: 'bg-green-500' },
+    { label: 'Contingency', value: data.fuel.contingency, color: 'bg-warning' },
+    { label: 'Alternate', value: data.fuel.alternate_burn, color: 'bg-warning' },
+    { label: 'Reserve', value: data.fuel.reserve, color: 'bg-destructive' },
+    { label: 'Extra', value: data.fuel.extra, color: 'bg-success' },
   ];
 
   return (
@@ -335,9 +335,9 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
             {formatFuel(data.fuel.plan_ramp, apiUnit)}
           </p>
         </div>
-        <div className="rounded-lg bg-green-500/10 p-3 text-center">
+        <div className="rounded-lg bg-success/10 p-3 text-center">
           <p className="text-[10px] text-muted-foreground">Landing</p>
-          <p className="font-mono text-sm font-bold text-green-500">
+          <p className="font-mono text-sm font-bold text-success">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
         </div>
@@ -382,7 +382,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                   className={cn(
                     'font-mono font-medium',
                     isCritical && 'text-destructive',
-                    isWarning && !isCritical && 'text-amber-500'
+                    isWarning && !isCritical && 'text-warning'
                   )}
                 >
                   {formatWeight(w.est.toString(), apiUnit)}
@@ -398,7 +398,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               className={cn(
                 'h-2',
                 isCritical && '[&>div]:bg-destructive',
-                isWarning && !isCritical && '[&>div]:bg-amber-500'
+                isWarning && !isCritical && '[&>div]:bg-warning'
               )}
             />
             <p className="text-right text-[9px] text-muted-foreground">{percentage.toFixed(1)}%</p>
@@ -473,11 +473,11 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
 
       {/* Alternate */}
       {data.alternate && (
-        <div className="rounded-lg bg-amber-500/10 p-2">
-          <div className="flex items-center gap-2 text-sm text-amber-500">
+        <div className="rounded-lg bg-warning/10 p-2">
+          <div className="flex items-center gap-2 text-sm text-warning">
             <Route className="h-3 w-3" />
             <span className="font-mono font-medium">{data.alternate.icao_code}</span>
-            <span className="text-amber-500/70">Alternate</span>
+            <span className="text-warning/70">Alternate</span>
           </div>
         </div>
       )}

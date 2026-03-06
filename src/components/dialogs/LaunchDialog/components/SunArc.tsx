@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import SunCalc from 'suncalc';
 import tzlookup from 'tz-lookup';
 import { Slider } from '@/components/ui/slider';
@@ -30,20 +30,39 @@ function getHoursInTimezone(date: Date, timezone: string): number {
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
-/* SVG palette — hex values needed for SVG gradient stops */
-const C = {
-  bg: '#06090D',
-  card: '#0D131A',
-  border: '#263240',
-  muted: '#717880',
-  cyan: '#1DA0F2',
-  cyanGlow: '#A5D9FA',
-  cyanLt: '#77C6E7',
-  cyanDk: '#0F5079',
-  cyanDeep: '#07283D',
-  white: '#FFFFFF',
-  amber: '#D4A54A',
-};
+/* Read CSS custom properties as hex — SVG gradient stops require hex values */
+function readPalette(el: HTMLElement) {
+  const s = getComputedStyle(el);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  const ctx = canvas.getContext('2d')!;
+
+  function toHex(varName: string): string {
+    const raw = s.getPropertyValue(varName).trim();
+    if (!raw) return '#000000';
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = `oklch(${raw})`;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1).toUpperCase()}`;
+  }
+
+  return {
+    bg: toHex('--background'),
+    card: toHex('--card'),
+    border: toHex('--border'),
+    muted: toHex('--muted-foreground'),
+    cyan: toHex('--primary'),
+    cyanGlow: toHex('--xp-cyan-glow'),
+    cyanLt: toHex('--xp-cyan-light'),
+    cyanDk: toHex('--xp-cyan-dark'),
+    cyanDeep: toHex('--xp-cyan-deepest'),
+    white: '#FFFFFF',
+    amber: toHex('--warning'),
+  };
+}
+
+type Palette = ReturnType<typeof readPalette>;
 
 const W = 420;
 const H = 200;
@@ -82,7 +101,7 @@ function buildTraversed(hour: number, rise: number, set: number): string {
 }
 
 /* Twinkling stars — only rendered at night */
-function Stars({ opacity }: { opacity: number }) {
+function Stars({ opacity, C }: { opacity: number; C: Palette }) {
   const stars = useMemo(
     () =>
       Array.from({ length: 15 }, () => ({
@@ -128,6 +147,13 @@ function Stars({ opacity }: { opacity: number }) {
 }
 
 export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const C = useMemo(() => {
+    const el = rootRef.current ?? document.documentElement;
+    return readPalette(el);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rootRef.current]);
+
   const { timezone, sunriseHours, sunsetHours, localTime, zuluTime, dateStr } = useMemo(() => {
     const tz = tzlookup(latitude, longitude) || 'UTC';
     const today = new Date();
@@ -191,7 +217,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
   );
 
   return (
-    <div className="space-y-2">
+    <div ref={rootRef} className="space-y-2">
       {/* SVG arc visualization — bleeds to section edges */}
       <div className="-mx-4 overflow-hidden">
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
@@ -247,7 +273,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
           <rect width={W} height={H} fill="url(#sun-skyGrad)" />
 
           {/* Stars at night */}
-          <Stars opacity={nightOp} />
+          <Stars opacity={nightOp} C={C} />
 
           {/* Horizon line */}
           <line

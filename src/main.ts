@@ -130,7 +130,7 @@ function createWindow(): BrowserWindow {
     minWidth: 800,
     minHeight: 600,
     show: false,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#06090D',
     icon: iconPath,
     webPreferences: {
       contextIsolation: true,

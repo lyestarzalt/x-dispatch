@@ -77,15 +77,15 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
               disabled={!localPilotId || fetchMutation.isPending}
             >
               {fetchMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {fetchMutation.isSuccess && <Check className="mr-2 h-4 w-4 text-green-500" />}
-              {fetchMutation.isError && <X className="mr-2 h-4 w-4 text-red-500" />}
+              {fetchMutation.isSuccess && <Check className="mr-2 h-4 w-4 text-success" />}
+              {fetchMutation.isError && <X className="mr-2 h-4 w-4 text-destructive" />}
               {t('common.test', 'Test')}
             </Button>
           </div>
 
           {/* Test Result */}
           {fetchMutation.isSuccess && (
-            <div className="rounded-md bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400">
+            <div className="rounded-md bg-success/10 p-3 text-sm text-success">
               {t('settings.simbrief.testSuccess', 'Found flight plan')}:{' '}
               {fetchMutation.data.origin.icao_code} → {fetchMutation.data.destination.icao_code}
               <span className="ml-2 text-sm opacity-80">
@@ -95,7 +95,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
           )}
 
           {fetchMutation.isError && (
-            <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
               {fetchMutation.error.message}
             </div>
           )}
