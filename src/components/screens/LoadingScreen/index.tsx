@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAppVersion } from '@/hooks/useAppVersion';
+import { cn } from '@/lib/utils/helpers';
 import type { LoadingProgress } from '@/types/xplane';
 
 interface LoadingStep {
@@ -17,15 +18,10 @@ interface LoadingStep {
 
 interface LoadingScreenProps {
   onComplete: () => void;
-  onError?: (error: string) => void;
   onConfigurePath?: () => void;
 }
 
-export default function LoadingScreen({
-  onComplete,
-  onError,
-  onConfigurePath,
-}: LoadingScreenProps) {
+export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingScreenProps) {
   const { t } = useTranslation();
   const { data: version } = useAppVersion();
   const [steps, setSteps] = useState<LoadingStep[]>([
@@ -40,16 +36,14 @@ export default function LoadingScreen({
 
   // Use refs to avoid stale closure issues
   const onCompleteRef = useRef(onComplete);
-  const onErrorRef = useRef(onError);
   const hasStartedRef = useRef(false);
   const tRef = useRef(t);
 
   // Keep refs updated
   useEffect(() => {
     onCompleteRef.current = onComplete;
-    onErrorRef.current = onError;
     tRef.current = t;
-  }, [onComplete, onError, t]);
+  }, [onComplete, t]);
 
   useEffect(() => {
     // Handle progress events
@@ -58,7 +52,6 @@ export default function LoadingScreen({
 
       if (progress.status === 'error') {
         setError(progress.error || progress.message);
-        onErrorRef.current?.(progress.error || progress.message);
         return;
       }
 
@@ -131,21 +124,29 @@ export default function LoadingScreen({
 
   const completedSteps = steps.filter((s) => s.status === 'complete').length;
   const progress = (completedSteps / steps.length) * 100;
+  const hasError = !!error;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
       <div className="w-full max-w-md px-8">
         {/* Title */}
-        <div className="mb-10 text-center">
+        <div className="mb-8 text-center">
           <h1 className="xp-page-heading mb-2">{t('loading.title')}</h1>
-          <Badge variant="info" className="gap-1.5">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            {t('loading.badge')}
-          </Badge>
+          {hasError ? (
+            <Badge variant="danger" className="gap-1.5">
+              <AlertCircle className="h-3 w-3" />
+              {t('loading.failed')}
+            </Badge>
+          ) : (
+            <Badge variant="info" className="gap-1.5">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {t('loading.badge')}
+            </Badge>
+          )}
         </div>
 
         {/* Progress bar */}
-        <Progress value={progress} className="mb-8 h-1.5" />
+        <Progress value={progress} className="mb-6 h-1.5" />
 
         {/* Steps list */}
         <div className="mb-6 space-y-3">
@@ -163,22 +164,20 @@ export default function LoadingScreen({
                   )}
                 </div>
                 <span
-                  className={`text-sm ${
-                    step.status === 'loading'
-                      ? 'font-medium text-foreground'
-                      : step.status === 'complete'
-                        ? 'text-muted-foreground'
-                        : step.status === 'error'
-                          ? 'text-destructive'
-                          : 'text-muted-foreground/50'
-                  }`}
+                  className={cn(
+                    'xp-label',
+                    step.status === 'loading' && 'font-medium text-foreground',
+                    step.status === 'complete' && 'text-muted-foreground',
+                    step.status === 'error' && 'text-destructive',
+                    step.status === 'pending' && 'text-muted-foreground/50'
+                  )}
                 >
                   {t(step.labelKey)}
                 </span>
               </div>
 
               {step.count !== undefined && step.status === 'complete' && (
-                <span className="font-mono text-sm text-muted-foreground">
+                <span className="xp-value text-muted-foreground">
                   {step.count.toLocaleString()}
                 </span>
               )}
@@ -187,10 +186,10 @@ export default function LoadingScreen({
         </div>
 
         {/* Current message */}
-        <p className="text-center text-sm text-muted-foreground">{currentMessage}</p>
+        <p className="xp-label text-center">{currentMessage}</p>
 
         {/* Error */}
-        {error && (
+        {hasError && (
           <Alert variant="destructive" className="mt-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
@@ -198,7 +197,7 @@ export default function LoadingScreen({
         )}
 
         {/* Action buttons when there's an error */}
-        {error && (
+        {hasError && (
           <div className="mt-4 flex gap-2">
             {onConfigurePath && (
               <Button variant="outline" className="flex-1" onClick={onConfigurePath}>
@@ -212,7 +211,7 @@ export default function LoadingScreen({
         )}
 
         {/* Version */}
-        <p className="mt-8 text-center font-mono text-sm text-muted-foreground/50">
+        <p className="mt-8 text-center font-mono text-xs text-muted-foreground/50">
           {version && `v${version}`}
         </p>
       </div>

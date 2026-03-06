@@ -55,10 +55,6 @@ function AppContent() {
     }
   }, []);
 
-  const handleLoadingError = useCallback((error: string) => {
-    setLoadError(error);
-  }, []);
-
   const handleConfigurePath = useCallback(() => {
     setAppState('setup');
   }, []);
@@ -73,11 +69,7 @@ function AppContent() {
 
   if (appState === 'loading') {
     return (
-      <LoadingScreen
-        onComplete={handleLoadingComplete}
-        onError={handleLoadingError}
-        onConfigurePath={handleConfigurePath}
-      />
+      <LoadingScreen onComplete={handleLoadingComplete} onConfigurePath={handleConfigurePath} />
     );
   }
 

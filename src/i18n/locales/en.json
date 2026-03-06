@@ -67,6 +67,7 @@
   "loading": {
     "title": "X-Dispatch",
     "badge": "Loading data",
+    "failed": "Loading failed",
     "initializing": "Initializing...",
     "steps": {
       "airports": "Airports",
