@@ -60,7 +60,7 @@ function LiveryCard({
     <Button
       variant="ghost"
       onClick={onClick}
-      title={livery.displayName}
+      tooltip={livery.displayName}
       className={cn(
         'group h-20 flex-col overflow-hidden border p-0',
         isSelected

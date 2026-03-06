@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Check, FolderOpen, Loader2, Plane } from 'lucide-react';
+import { AlertCircle, Check, FolderOpen, Plane } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils/helpers';
 import { useXPlanePath } from '@/queries';
 import type { SettingsSectionProps } from '../types';
@@ -102,11 +103,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
 
       {/* Browse Button */}
       <Button variant="outline" onClick={handleBrowse} disabled={loading} className="gap-2">
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <FolderOpen className="h-4 w-4" />
-        )}
+        {loading ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
         {t('setup.changeFolder')}
       </Button>
     </div>

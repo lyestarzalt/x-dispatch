@@ -69,19 +69,6 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
     }
   };
 
-  const getStageBadge = (stage: string) => {
-    switch (stage) {
-      case 'CLB':
-        return 'bg-success/20 text-success';
-      case 'CRZ':
-        return 'bg-primary/20 text-primary';
-      case 'DSC':
-        return 'bg-warning/20 text-warning';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
   return (
     <div className="flex flex-col rounded-lg border bg-card">
       {/* Header */}
@@ -106,7 +93,6 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
               formatTime={formatTime}
               formatFuel={formatFuel}
               getStageColor={getStageColor}
-              getStageBadge={getStageBadge}
               isExpanded={expandedFix === `${fix.ident}-${fix.index}`}
               onToggle={() =>
                 setExpandedFix(
@@ -140,7 +126,6 @@ interface NavlogRowProps {
   formatTime: (s: string) => string;
   formatFuel: (s: string) => string;
   getStageColor: (s: string) => string;
-  getStageBadge: (s: string) => string;
   isExpanded: boolean;
   onToggle: () => void;
 }
@@ -177,10 +162,14 @@ function NavlogRow({
                 {fix.ident}
               </span>
               {fix.isTopOfClimb && (
-                <Badge className="bg-success/20 text-[9px] text-success">T/C</Badge>
+                <Badge variant="success" className="text-[9px]">
+                  T/C
+                </Badge>
               )}
               {fix.isTopOfDescent && (
-                <Badge className="bg-warning/20 text-[9px] text-warning">T/D</Badge>
+                <Badge variant="warning" className="text-[9px]">
+                  T/D
+                </Badge>
               )}
             </div>
             {fix.via_airway && (

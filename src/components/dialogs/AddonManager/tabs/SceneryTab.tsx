@@ -16,15 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {
-  AlertCircle,
-  History,
-  Loader2,
-  Save,
-  ShieldCheck,
-  ShieldOff,
-  Sparkles,
-} from 'lucide-react';
+import { AlertCircle, History, Save, ShieldCheck, ShieldOff, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
 import { cn } from '@/lib/utils/helpers';
@@ -126,7 +119,7 @@ export function SceneryTab() {
       <div className="flex h-full flex-col items-center justify-center gap-4">
         <div className="relative">
           <div className="h-16 w-16 rounded-full border-2 border-primary/20" />
-          <Loader2 className="absolute inset-0 m-auto h-8 w-8 animate-spin text-primary" />
+          <Spinner className="absolute inset-0 m-auto size-8 text-primary" />
         </div>
         <div className="text-center">
           <p className="text-sm font-medium">{t('addonManager.scenery.loading')}</p>
@@ -225,11 +218,7 @@ export function SceneryTab() {
             disabled={isPending}
             className="gap-2"
           >
-            {sortMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4" />
-            )}
+            {sortMutation.isPending ? <Spinner /> : <Sparkles className="h-4 w-4" />}
             {t('addonManager.scenery.autoSort')}
           </Button>
 
@@ -253,11 +242,7 @@ export function SceneryTab() {
               disabled={isPending}
               className="gap-2"
             >
-              {saveOrderMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
+              {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-4 w-4" />}
               {t('addonManager.scenery.saveOrder')}
             </Button>
           )}
@@ -333,11 +318,7 @@ export function SceneryTab() {
                       onClick={() => handleRestore(backup.path)}
                       disabled={restoreMutation.isPending}
                     >
-                      {restoreMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        t('addonManager.scenery.restore')
-                      )}
+                      {restoreMutation.isPending ? <Spinner /> : t('addonManager.scenery.restore')}
                     </Button>
                   </div>
                 ))}

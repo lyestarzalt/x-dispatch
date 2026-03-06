@@ -1,6 +1,6 @@
 // src/components/dialogs/AddonManager/components/LiveryDialog.tsx
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Loader2, Plane, Trash2 } from 'lucide-react';
+import { AlertCircle, Plane, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import type { LiveryInfo } from '@/lib/addonManager/core/types';
 import { useAircraftIcon, useLiveryDelete, useLiveryList } from '@/queries/useAddonManager';
 
@@ -78,7 +79,7 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <Spinner className="size-6 text-primary" />
           </div>
         ) : error ? (
           <Alert variant="destructive">

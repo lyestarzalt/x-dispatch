@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plane, Search, Star } from 'lucide-react';
+import { Plane, Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -291,7 +292,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         <div className="space-y-1 p-2">
           {isScanning ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <Spinner className="size-6 text-primary" />
             </div>
           ) : filteredAircraft.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">

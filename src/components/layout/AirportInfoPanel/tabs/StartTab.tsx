@@ -149,24 +149,29 @@ interface GateListProps {
 }
 
 // Human-readable aircraft size from ICAO width code
-const SIZE_LABELS: Record<string, { labelKey: string; class: string }> = {
-  A: { labelKey: 'airportInfo.sizes.small', class: 'bg-muted/50 text-muted-foreground' },
-  B: { labelKey: 'airportInfo.sizes.small', class: 'bg-muted/50 text-muted-foreground' },
-  C: { labelKey: 'airportInfo.sizes.narrow', class: 'bg-cat-sky/15 text-cat-sky' },
-  D: { labelKey: 'airportInfo.sizes.wide', class: 'bg-cat-sky/15 text-cat-sky' },
-  E: { labelKey: 'airportInfo.sizes.heavy', class: 'bg-cat-amber/15 text-cat-amber' },
-  F: { labelKey: 'airportInfo.sizes.super', class: 'bg-cat-red/15 text-cat-red' },
+type CatBadgeVariant =
+  | 'secondary'
+  | 'cat-sky'
+  | 'cat-amber'
+  | 'cat-red'
+  | 'cat-emerald'
+  | 'default';
+
+const SIZE_LABELS: Record<string, { labelKey: string; variant: CatBadgeVariant }> = {
+  A: { labelKey: 'airportInfo.sizes.small', variant: 'secondary' },
+  B: { labelKey: 'airportInfo.sizes.small', variant: 'secondary' },
+  C: { labelKey: 'airportInfo.sizes.narrow', variant: 'cat-sky' },
+  D: { labelKey: 'airportInfo.sizes.wide', variant: 'cat-sky' },
+  E: { labelKey: 'airportInfo.sizes.heavy', variant: 'cat-amber' },
+  F: { labelKey: 'airportInfo.sizes.super', variant: 'cat-red' },
 };
 
 // Operation type badges
-const OP_TYPE_LABELS: Record<string, { labelKey: string; class: string }> = {
-  airline: { labelKey: 'airportInfo.opTypes.airline', class: 'bg-primary/15 text-primary' },
-  cargo: { labelKey: 'airportInfo.opTypes.cargo', class: 'bg-cat-amber/15 text-cat-amber' },
-  general_aviation: {
-    labelKey: 'airportInfo.opTypes.ga',
-    class: 'bg-cat-emerald/15 text-cat-emerald',
-  },
-  military: { labelKey: 'airportInfo.opTypes.military', class: 'bg-cat-red/15 text-cat-red' },
+const OP_TYPE_LABELS: Record<string, { labelKey: string; variant: CatBadgeVariant }> = {
+  airline: { labelKey: 'airportInfo.opTypes.airline', variant: 'default' },
+  cargo: { labelKey: 'airportInfo.opTypes.cargo', variant: 'cat-amber' },
+  general_aviation: { labelKey: 'airportInfo.opTypes.ga', variant: 'cat-emerald' },
+  military: { labelKey: 'airportInfo.opTypes.military', variant: 'cat-red' },
 };
 
 function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps) {
@@ -269,18 +274,12 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
             {hasBadges && (
               <div className="mt-1 flex gap-1.5">
                 {sizeConfig && (
-                  <Badge
-                    variant="secondary"
-                    className={cn('h-4 px-1.5 text-[9px]', sizeConfig.class)}
-                  >
+                  <Badge variant={sizeConfig.variant} className="h-4 px-1.5 text-[9px]">
                     {t(sizeConfig.labelKey)}
                   </Badge>
                 )}
                 {opConfig && (
-                  <Badge
-                    variant="secondary"
-                    className={cn('h-4 px-1.5 text-[9px]', opConfig.class)}
-                  >
+                  <Badge variant={opConfig.variant} className="h-4 px-1.5 text-[9px]">
                     {t(opConfig.labelKey)}
                   </Badge>
                 )}

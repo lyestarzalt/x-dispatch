@@ -1,6 +1,6 @@
 // src/components/dialogs/AddonManager/components/ScriptsDialog.tsx
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
+import { AlertCircle, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
 import {
@@ -47,7 +48,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <Spinner className="size-6 text-primary" />
           </div>
         ) : error ? (
           <Alert variant="destructive">

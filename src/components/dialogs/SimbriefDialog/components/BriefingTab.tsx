@@ -330,7 +330,11 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
-          {isRunway && <Badge className="mb-1 bg-warning/20 text-[9px] text-warning">RUNWAY</Badge>}
+          {isRunway && (
+            <Badge variant="warning" className="mb-1 text-[9px]">
+              RUNWAY
+            </Badge>
+          )}
           <p className="font-mono leading-relaxed text-foreground/80">
             {isExpanded ? notam.notam_text : previewText}
             {hasMore && !isExpanded && '...'}

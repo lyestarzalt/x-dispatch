@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, ChevronRight, FolderOpen, Loader2 } from 'lucide-react';
+import { Check, ChevronRight, FolderOpen } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { useAppVersion } from '@/hooks/useAppVersion';
 
 interface SetupScreenProps {
@@ -95,18 +96,14 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
             disabled={loading}
             className="w-full gap-2"
           >
-            {loading && !selectedPath ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <FolderOpen className="h-4 w-4" />
-            )}
+            {loading && !selectedPath ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
             {selectedPath ? t('setup.changeFolder') : t('setup.selectFolder')}
           </Button>
 
           {selectedPath && (
             <Button onClick={handleContinue} disabled={loading} className="w-full gap-2">
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Spinner />
               ) : (
                 <>
                   {t('common.continue')}

@@ -387,7 +387,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               size="icon"
               onClick={onClose}
               className="h-8 w-8"
-              title={t('common.close')}
+              tooltip={t('common.close')}
             >
               <X className="h-4 w-4" />
             </Button>

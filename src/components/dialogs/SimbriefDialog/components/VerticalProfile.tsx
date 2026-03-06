@@ -53,10 +53,14 @@ function CustomTooltip({
       <div className="mb-1 flex items-center gap-2">
         <span className="font-mono font-semibold">{point.ident}</span>
         {point.isTopOfClimb && (
-          <Badge className="bg-success/20 text-[10px] text-success">T/C</Badge>
+          <Badge variant="success" className="text-[10px]">
+            T/C
+          </Badge>
         )}
         {point.isTopOfDescent && (
-          <Badge className="bg-warning/20 text-[10px] text-warning">T/D</Badge>
+          <Badge variant="warning" className="text-[10px]">
+            T/D
+          </Badge>
         )}
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">

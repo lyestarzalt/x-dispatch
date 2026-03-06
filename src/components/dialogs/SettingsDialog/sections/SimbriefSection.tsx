@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, CloudDownload, ExternalLink, Loader2, X } from 'lucide-react';
+import { Check, CloudDownload, ExternalLink, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils/helpers';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -76,7 +77,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
               onClick={handleTest}
               disabled={!localPilotId || fetchMutation.isPending}
             >
-              {fetchMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {fetchMutation.isPending && <Spinner className="mr-2" />}
               {fetchMutation.isSuccess && <Check className="mr-2 h-4 w-4 text-success" />}
               {fetchMutation.isError && <X className="mr-2 h-4 w-4 text-destructive" />}
               {t('common.test', 'Test')}

@@ -6,7 +6,6 @@ import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { FolderOpen, Layers, Package, PackagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import { BrowserTab } from './tabs/BrowserTab';
 import { InstallerTab } from './tabs/InstallerTab';
@@ -161,13 +160,11 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
             </div>
 
             {/* Tab Content */}
-            <TooltipProvider>
-              <div className="flex-1 overflow-hidden">
-                {activeTab === 'scenery' && <SceneryTab />}
-                {activeTab === 'installed' && <BrowserTab />}
-                {activeTab === 'installer' && <InstallerTab />}
-              </div>
-            </TooltipProvider>
+            <div className="flex-1 overflow-hidden">
+              {activeTab === 'scenery' && <SceneryTab />}
+              {activeTab === 'installed' && <BrowserTab />}
+              {activeTab === 'installer' && <InstallerTab />}
+            </div>
           </div>
         </DialogPrimitive.Content>
       </DialogPortal>
