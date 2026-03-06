@@ -2,11 +2,13 @@
 // Shows installed addons - Aircraft and Plugins with tabs (Plugins first)
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Loader2, Plane, Plug, RefreshCw, Search } from 'lucide-react';
+import { AlertCircle, Plane, Plug, RefreshCw, Search } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useAircraftCheckUpdates,
@@ -196,11 +198,7 @@ export function BrowserTab() {
             disabled={isLoading || checkingUpdates}
             className="gap-2"
           >
-            {checkingUpdates ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
+            {checkingUpdates ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
             {t('addonManager.installed.checkUpdates')}
           </Button>
         </div>
@@ -212,38 +210,50 @@ export function BrowserTab() {
         onValueChange={(v) => setSubTab(v as SubTab)}
         className="flex flex-1 flex-col"
       >
-        <div className="border-b border-border px-4">
-          <TabsList className="h-12 w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
+        <div className="px-4">
+          <TabsList variant="line">
             {/* Plugins tab first */}
             <TabsTrigger
               value="plugins"
-              className="relative h-12 gap-2 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground data-[state=active]:border-violet-500 data-[state=active]:text-violet-400 data-[state=active]:shadow-none"
+              className="gap-2 px-4 py-3 data-[state=active]:border-violet data-[state=active]:text-violet"
             >
               <Plug className="h-4 w-4" />
               <span>{t('addonManager.installed.plugins')}</span>
-              <span className="ml-1 rounded-full bg-violet-500/20 px-2 py-0.5 text-xs tabular-nums text-violet-400">
+              <Badge
+                variant="violet"
+                className="ml-1 rounded-full px-2 py-0.5 text-xs tabular-nums"
+              >
                 {plugins.length}
-              </span>
+              </Badge>
               {pluginStats.updates > 0 && (
-                <span className="rounded-full bg-warning/20 px-1.5 py-0.5 text-xs tabular-nums text-warning">
+                <Badge
+                  variant="warning"
+                  className="rounded-full px-1.5 py-0.5 text-xs tabular-nums"
+                >
                   {pluginStats.updates}
-                </span>
+                </Badge>
               )}
             </TabsTrigger>
             {/* Aircraft tab second */}
             <TabsTrigger
               value="aircraft"
-              className="relative h-12 gap-2 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground data-[state=active]:border-sky-500 data-[state=active]:text-sky-400 data-[state=active]:shadow-none"
+              className="gap-2 px-4 py-3 data-[state=active]:border-cat-sky data-[state=active]:text-cat-sky"
             >
               <Plane className="h-4 w-4" />
               <span>{t('addonManager.installed.aircraft')}</span>
-              <span className="ml-1 rounded-full bg-sky-500/20 px-2 py-0.5 text-xs tabular-nums text-sky-400">
+              <Badge
+                variant="cat-sky"
+                className="ml-1 rounded-full px-2 py-0.5 text-xs tabular-nums"
+              >
                 {aircraft.length}
-              </span>
+              </Badge>
               {aircraftStats.updates > 0 && (
-                <span className="rounded-full bg-warning/20 px-1.5 py-0.5 text-xs tabular-nums text-warning">
+                <Badge
+                  variant="warning"
+                  className="rounded-full px-1.5 py-0.5 text-xs tabular-nums"
+                >
                   {aircraftStats.updates}
-                </span>
+                </Badge>
               )}
             </TabsTrigger>
           </TabsList>
@@ -253,7 +263,7 @@ export function BrowserTab() {
         <TabsContent value="plugins" className="mt-0 flex-1 data-[state=inactive]:hidden">
           {pluginsLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
+              <Spinner className="size-8 text-violet-400" />
               <span className="text-sm text-muted-foreground">
                 {t('addonManager.installed.scanningPlugins')}
               </span>
@@ -301,7 +311,7 @@ export function BrowserTab() {
         <TabsContent value="aircraft" className="mt-0 flex-1 data-[state=inactive]:hidden">
           {aircraftLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-sky-400" />
+              <Spinner className="size-8 text-sky-400" />
               <span className="text-sm text-muted-foreground">
                 {t('addonManager.installed.scanningAircraft')}
               </span>

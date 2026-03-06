@@ -10,7 +10,6 @@ import {
   Fuel,
   Gauge,
   List,
-  Loader2,
   Navigation,
   Plane,
   PlaneLanding,
@@ -46,6 +45,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
 import {
@@ -126,7 +126,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               className="text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               {fetchMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Spinner className="mr-2" />
               ) : (
                 <RefreshCw className="mr-2 h-4 w-4" />
               )}
@@ -163,7 +163,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                 <div className="relative">
                   <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
                   <div className="relative rounded-full bg-primary/10 p-4">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    <Spinner className="size-12 text-primary" />
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -218,32 +218,32 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               {/* Main Content Tabs */}
               <div className="p-4">
                 <Tabs defaultValue="flight" className="w-full">
-                  <TabsList className="mb-4 grid w-full grid-cols-7">
-                    <TabsTrigger value="flight" className="gap-1.5 text-sm">
+                  <TabsList variant="line" className="mb-4">
+                    <TabsTrigger value="flight" className="flex-1 gap-1.5 text-xs">
                       <Route className="h-3.5 w-3.5" />
                       Flight
                     </TabsTrigger>
-                    <TabsTrigger value="performance" className="gap-1.5 text-sm">
+                    <TabsTrigger value="performance" className="flex-1 gap-1.5 text-xs">
                       <Zap className="h-3.5 w-3.5" />
                       Perf
                     </TabsTrigger>
-                    <TabsTrigger value="navlog" className="gap-1.5 text-sm">
+                    <TabsTrigger value="navlog" className="flex-1 gap-1.5 text-xs">
                       <List className="h-3.5 w-3.5" />
                       Navlog
                     </TabsTrigger>
-                    <TabsTrigger value="fuel" className="gap-1.5 text-sm">
+                    <TabsTrigger value="fuel" className="flex-1 gap-1.5 text-xs">
                       <Fuel className="h-3.5 w-3.5" />
                       Fuel
                     </TabsTrigger>
-                    <TabsTrigger value="weights" className="gap-1.5 text-sm">
+                    <TabsTrigger value="weights" className="flex-1 gap-1.5 text-xs">
                       <Scale className="h-3.5 w-3.5" />
                       Weights
                     </TabsTrigger>
-                    <TabsTrigger value="weather" className="gap-1.5 text-sm">
+                    <TabsTrigger value="weather" className="flex-1 gap-1.5 text-xs">
                       <Cloud className="h-3.5 w-3.5" />
                       Weather
                     </TabsTrigger>
-                    <TabsTrigger value="briefing" className="gap-1.5 text-sm">
+                    <TabsTrigger value="briefing" className="flex-1 gap-1.5 text-xs">
                       <FileText className="h-3.5 w-3.5" />
                       Briefing
                     </TabsTrigger>

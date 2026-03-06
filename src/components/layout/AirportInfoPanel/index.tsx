@@ -117,16 +117,16 @@ export default function AirportInfoPanel({
             </div>
             {flightCategory && (
               <Badge
-                variant="outline"
-                className={cn(
-                  'px-2 py-0.5 font-mono text-xs font-bold',
-                  flightCategory === 'VFR' &&
-                    'border-cat-emerald/30 bg-cat-emerald/10 text-cat-emerald',
-                  flightCategory === 'MVFR' && 'border-cat-sky/30 bg-cat-sky/10 text-cat-sky',
-                  flightCategory === 'IFR' && 'border-cat-red/30 bg-cat-red/10 text-cat-red',
-                  flightCategory === 'LIFR' &&
-                    'border-cat-fuchsia/30 bg-cat-fuchsia/10 text-cat-fuchsia'
-                )}
+                variant={
+                  flightCategory === 'VFR'
+                    ? 'cat-emerald'
+                    : flightCategory === 'MVFR'
+                      ? 'cat-sky'
+                      : flightCategory === 'IFR'
+                        ? 'cat-red'
+                        : 'cat-fuchsia'
+                }
+                className="px-2 py-0.5 font-mono text-xs font-bold"
               >
                 {flightCategory}
               </Badge>

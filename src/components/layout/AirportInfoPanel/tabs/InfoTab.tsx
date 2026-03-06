@@ -203,11 +203,7 @@ export default function InfoTab() {
           {controllers.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
               {controllers.map((atc) => (
-                <Badge
-                  key={atc.callsign}
-                  variant="secondary"
-                  className="gap-1 bg-cat-emerald/20 text-[10px] text-cat-emerald"
-                >
+                <Badge key={atc.callsign} variant="cat-emerald" className="gap-1 text-[10px]">
                   <Radio className="h-2.5 w-2.5" />
                   {atc.callsign.split('_')[1] || atc.callsign}
                 </Badge>

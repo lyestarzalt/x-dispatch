@@ -53,7 +53,7 @@ export default function FlightStrip({
               size="sm"
               onClick={onReconnect}
               className="ml-2 h-7 gap-1.5 text-sm"
-              title={t('flightStrip.reconnectTooltip')}
+              tooltip={t('flightStrip.reconnectTooltip')}
             >
               <RefreshCw className="h-3 w-3" />
               {t('flightStrip.reconnect')}
@@ -122,7 +122,7 @@ export default function FlightStrip({
             'h-full rounded-l-none rounded-r-lg',
             followPlane && 'bg-info/20 text-info'
           )}
-          title={followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')}
+          tooltip={followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')}
         >
           <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
           {followPlane ? t('flightStrip.following') : t('flightStrip.center')}

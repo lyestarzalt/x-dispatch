@@ -87,7 +87,7 @@ export default function NetworksSection({
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-cat-blue" />
               <span className="text-sm">Currently Online:</span>
-              <Badge className="bg-cat-blue/20 text-cat-blue">
+              <Badge variant="cat-blue">
                 {ivaoPilotCount !== undefined
                   ? `${ivaoPilotCount.toLocaleString()} pilots`
                   : 'Loading...'}

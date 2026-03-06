@@ -6,7 +6,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Download,
-  Loader2,
   Package,
   Sparkles,
   Trash2,
@@ -15,6 +14,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Spinner } from '@/components/ui/spinner';
 import type {
   DetectedItem,
   InstallProgress,
@@ -111,7 +111,7 @@ export function InstallerTab() {
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-12">
             <div className="relative">
               <div className="h-16 w-16 rounded-full border-2 border-primary/20" />
-              <Loader2 className="absolute inset-0 m-auto h-8 w-8 animate-spin text-primary" />
+              <Spinner className="absolute inset-0 m-auto size-8 text-primary" />
             </div>
             <div className="text-center">
               <p className="text-sm font-medium">{t('addonManager.installer.analyzing')}</p>

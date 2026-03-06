@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Check, Loader2 } from 'lucide-react';
+import { AlertCircle, Check } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Spinner } from '@/components/ui/spinner';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
 import type { LoadingProgress } from '@/types/xplane';
@@ -139,7 +140,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
             </Badge>
           ) : (
             <Badge variant="info" className="gap-1.5">
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Spinner className="size-3" />
               {t('loading.badge')}
             </Badge>
           )}
@@ -154,9 +155,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
             <div key={step.id} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-5 w-5 items-center justify-center">
-                  {step.status === 'loading' && (
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  )}
+                  {step.status === 'loading' && <Spinner className="text-primary" />}
                   {step.status === 'complete' && <Check className="h-4 w-4 text-success" />}
                   {step.status === 'error' && <AlertCircle className="h-4 w-4 text-destructive" />}
                   {step.status === 'pending' && (

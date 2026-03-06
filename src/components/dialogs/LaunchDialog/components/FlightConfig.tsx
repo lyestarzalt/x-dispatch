@@ -10,7 +10,6 @@ import {
   CloudSnow,
   CloudSun,
   Globe,
-  Loader2,
   Power,
   PowerOff,
   Radio,
@@ -22,6 +21,7 @@ import tzLookup from 'tz-lookup';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
@@ -398,7 +398,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
         >
           {isLaunching ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Spinner className="mr-2" />
               {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
             </>
           ) : isXPlaneRunning ? (

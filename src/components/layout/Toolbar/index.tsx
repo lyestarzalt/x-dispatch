@@ -47,7 +47,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useDistinctCountries, useNavDataCounts, usePlaneState } from '@/queries';
@@ -302,332 +302,301 @@ export default function Toolbar({
       </div>
 
       {/* Addon Manager */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={() => setAddonManagerOpen(true)}
-              className="h-9 gap-2 px-3"
-            >
-              <Package className="h-4 w-4" />
-              <span className="text-sm font-medium">Addons</span>
-              <span className="rounded-sm bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none text-warning">
-                alpha
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Manage aircraft, scenery & plugins</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button
+        variant="outline"
+        onClick={() => setAddonManagerOpen(true)}
+        className="h-9 gap-2 px-3"
+        tooltip="Manage aircraft, scenery & plugins"
+      >
+        <Package className="h-4 w-4" />
+        <span className="text-sm font-medium">Addons</span>
+        <Badge variant="warning" className="px-1.5 py-0.5 text-[10px] uppercase leading-none">
+          alpha
+        </Badge>
+      </Button>
 
       {/* Flight Plan dropdown */}
-      <TooltipProvider>
+      <Tooltip>
+        <DropdownMenu>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  'h-9 gap-2 px-3',
+                  (fmsData || simbriefData) && 'border-info/50 text-info'
+                )}
+              >
+                <FileUp className="h-4 w-4" />
+                <span className="text-sm font-medium">{t('toolbar.flightPlan')}</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('toolbar.tooltips.flightPlan')}</p>
+          </TooltipContent>
+          <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuItem
+              onClick={handleLoadFlightPlan}
+              className={cn(fmsData && !simbriefData && 'text-info')}
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              {t('toolbar.loadPlan')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setSimbriefOpen(true)}
+              className={cn(simbriefData && 'text-info')}
+            >
+              <CloudDownload className="mr-2 h-4 w-4" />
+              SimBrief
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Tooltip>
+
+      {/* Explore button */}
+      <Button
+        variant="outline"
+        onClick={() => setExploreOpen(!exploreOpen)}
+        className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
+        tooltip={t('toolbar.tooltips.explore')}
+      >
+        <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
+        <span className="text-sm font-medium">{t('explore.title')}</span>
+      </Button>
+
+      {/* Track button */}
+      <Button
+        variant="outline"
+        onClick={onTogglePlaneTracker}
+        className={cn(
+          'h-9 gap-2 px-3',
+          showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
+        )}
+        tooltip={t('toolbar.tooltips.track')}
+      >
+        <Locate
+          className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
+        />
+        <span className="text-sm font-medium">{t('toolbar.track')}</span>
+        {showPlaneTracker && isXPlaneConnected && (
+          <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
+        )}
+      </Button>
+
+      <div className="flex-1" />
+
+      <div className="flex items-center gap-2">
+        {/* Layers dropdown */}
         <Tooltip>
           <DropdownMenu>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className={cn(
-                    'h-9 gap-2 px-3',
-                    (fmsData || simbriefData) && 'border-info/50 text-info'
-                  )}
+                  className={cn('h-9 gap-2 px-3', layersActive && 'border-primary/50 text-primary')}
                 >
-                  <FileUp className="h-4 w-4" />
-                  <span className="text-sm font-medium">{t('toolbar.flightPlan')}</span>
+                  <Layers className="h-4 w-4" />
+                  <span className="text-sm font-medium">{t('toolbar.layers')}</span>
+                  {layersActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                   <ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{t('toolbar.tooltips.flightPlan')}</p>
+              <p>{t('toolbar.tooltips.layers')}</p>
             </TooltipContent>
-            <DropdownMenuContent align="start" className="w-52">
-              <DropdownMenuItem
-                onClick={handleLoadFlightPlan}
-                className={cn(fmsData && !simbriefData && 'text-info')}
+            <DropdownMenuContent align="end" className="w-56">
+              {/* Airports section */}
+              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                {t('airportFilters.title')}
+              </DropdownMenuLabel>
+              <DropdownMenuCheckboxItem
+                checked={airportFilters.showLand}
+                onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
               >
-                <FileUp className="mr-2 h-4 w-4" />
-                {t('toolbar.loadPlan')}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSimbriefOpen(true)}
-                className={cn(simbriefData && 'text-info')}
+                {t('airportFilters.land')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={airportFilters.showSeaplane}
+                onCheckedChange={() =>
+                  setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
+                }
               >
-                <CloudDownload className="mr-2 h-4 w-4" />
-                SimBrief
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </Tooltip>
-      </TooltipProvider>
+                {t('airportFilters.seaplane')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={airportFilters.showHeliport}
+                onCheckedChange={() =>
+                  setAirportFilters({ showHeliport: !airportFilters.showHeliport })
+                }
+              >
+                {t('airportFilters.heliport')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={airportFilters.onlyCustom}
+                onCheckedChange={() =>
+                  setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })
+                }
+              >
+                {t('airportFilters.customOnly')}
+              </DropdownMenuCheckboxItem>
 
-      {/* Explore button */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={() => setExploreOpen(!exploreOpen)}
-              className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
-            >
-              <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
-              <span className="text-sm font-medium">{t('explore.title')}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('toolbar.tooltips.explore')}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+              <DropdownMenuSeparator />
 
-      {/* Track button */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              onClick={onTogglePlaneTracker}
-              className={cn(
-                'h-9 gap-2 px-3',
-                showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
-              )}
-            >
-              <Locate
-                className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
-              />
-              <span className="text-sm font-medium">{t('toolbar.track')}</span>
-              {showPlaneTracker && isXPlaneConnected && (
-                <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('toolbar.tooltips.track')}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <div className="flex-1" />
-
-      <div className="flex items-center gap-2">
-        {/* Layers dropdown */}
-        <TooltipProvider>
-          <Tooltip>
-            <DropdownMenu>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'h-9 gap-2 px-3',
-                      layersActive && 'border-primary/50 text-primary'
-                    )}
-                  >
-                    <Layers className="h-4 w-4" />
-                    <span className="text-sm font-medium">{t('toolbar.layers')}</span>
-                    {layersActive && <span className="h-2 w-2 rounded-full bg-primary" />}
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{t('toolbar.tooltips.layers')}</p>
-              </TooltipContent>
-              <DropdownMenuContent align="end" className="w-56">
-                {/* Airports section */}
-                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-                  {t('airportFilters.title')}
-                </DropdownMenuLabel>
+              {/* Surface Type section */}
+              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                {t('airportFilters.surfaceType')}
+              </DropdownMenuLabel>
+              {(
+                [
+                  { type: 'paved', labelKey: 'airportFilters.paved' },
+                  { type: 'unpaved', labelKey: 'airportFilters.unpaved' },
+                  { type: 'water', labelKey: 'airportFilters.water' },
+                  { type: 'other', labelKey: 'airportFilters.surfaceOther' },
+                ] as const
+              ).map(({ type, labelKey }) => (
                 <DropdownMenuCheckboxItem
-                  checked={airportFilters.showLand}
-                  onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
+                  key={type}
+                  checked={airportFilters.surfaceTypes.includes(type)}
+                  onCheckedChange={() => toggleSurfaceType(type)}
                 >
-                  {t('airportFilters.land')}
+                  {t(labelKey)}
                 </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={airportFilters.showSeaplane}
-                  onCheckedChange={() =>
-                    setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
-                  }
-                >
-                  {t('airportFilters.seaplane')}
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={airportFilters.showHeliport}
-                  onCheckedChange={() =>
-                    setAirportFilters({ showHeliport: !airportFilters.showHeliport })
-                  }
-                >
-                  {t('airportFilters.heliport')}
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={airportFilters.onlyCustom}
-                  onCheckedChange={() =>
-                    setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })
-                  }
-                >
-                  {t('airportFilters.customOnly')}
-                </DropdownMenuCheckboxItem>
+              ))}
 
-                <DropdownMenuSeparator />
+              <DropdownMenuSeparator />
 
-                {/* Surface Type section */}
-                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-                  {t('airportFilters.surfaceType')}
-                </DropdownMenuLabel>
-                {(
-                  [
-                    { type: 'paved', labelKey: 'airportFilters.paved' },
-                    { type: 'unpaved', labelKey: 'airportFilters.unpaved' },
-                    { type: 'water', labelKey: 'airportFilters.water' },
-                    { type: 'other', labelKey: 'airportFilters.surfaceOther' },
-                  ] as const
-                ).map(({ type, labelKey }) => (
-                  <DropdownMenuCheckboxItem
-                    key={type}
-                    checked={airportFilters.surfaceTypes.includes(type)}
-                    onCheckedChange={() => toggleSurfaceType(type)}
-                  >
-                    {t(labelKey)}
-                  </DropdownMenuCheckboxItem>
-                ))}
-
-                <DropdownMenuSeparator />
-
-                {/* Country section */}
-                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-                  {t('airportFilters.country')}
-                </DropdownMenuLabel>
-                <div className="px-1 pb-1">
-                  <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                    <PopoverTrigger asChild>
-                      <button
-                        role="combobox"
-                        aria-expanded={countryOpen}
-                        className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2 text-sm hover:bg-accent"
-                      >
-                        <span className="truncate">
-                          {airportFilters.country === 'all'
-                            ? t('airportFilters.allCountries')
-                            : airportFilters.country}
-                        </span>
-                        <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
-                      <Command>
-                        <CommandInput placeholder={t('common.search')} className="h-8" />
-                        <CommandList>
-                          <CommandEmpty>{t('common.noResults')}</CommandEmpty>
-                          <CommandGroup>
+              {/* Country section */}
+              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                {t('airportFilters.country')}
+              </DropdownMenuLabel>
+              <div className="px-1 pb-1">
+                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      role="combobox"
+                      aria-expanded={countryOpen}
+                      className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2 text-sm hover:bg-accent"
+                    >
+                      <span className="truncate">
+                        {airportFilters.country === 'all'
+                          ? t('airportFilters.allCountries')
+                          : airportFilters.country}
+                      </span>
+                      <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
+                    <Command>
+                      <CommandInput placeholder={t('common.search')} className="h-8" />
+                      <CommandList>
+                        <CommandEmpty>{t('common.noResults')}</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="all"
+                            onSelect={() => {
+                              setAirportFilters({ country: 'all' });
+                              setCountryOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                airportFilters.country === 'all' ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                            {t('airportFilters.allCountries')}
+                          </CommandItem>
+                          {countries.map((country) => (
                             <CommandItem
-                              value="all"
+                              key={country}
+                              value={country}
                               onSelect={() => {
-                                setAirportFilters({ country: 'all' });
+                                setAirportFilters({ country });
                                 setCountryOpen(false);
                               }}
                             >
                               <Check
                                 className={cn(
                                   'mr-2 h-4 w-4',
-                                  airportFilters.country === 'all' ? 'opacity-100' : 'opacity-0'
+                                  airportFilters.country === country ? 'opacity-100' : 'opacity-0'
                                 )}
                               />
-                              {t('airportFilters.allCountries')}
+                              {country}
                             </CommandItem>
-                            {countries.map((country) => (
-                              <CommandItem
-                                key={country}
-                                value={country}
-                                onSelect={() => {
-                                  setAirportFilters({ country });
-                                  setCountryOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    'mr-2 h-4 w-4',
-                                    airportFilters.country === country ? 'opacity-100' : 'opacity-0'
-                                  )}
-                                />
-                                {country}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-                {filtersActive && (
-                  <Button
-                    variant="ghost"
-                    onClick={resetAirportFilters}
-                    className="h-auto w-full rounded-none px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    {t('airportFilters.reset')}
-                  </Button>
-                )}
-
-                <DropdownMenuSeparator />
-
-                {/* Navigation section */}
-                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-                  Around Airport (50nm)
-                </DropdownMenuLabel>
-                {localNavLayers.map((layer) => (
-                  <DropdownMenuCheckboxItem
-                    key={layer.key}
-                    checked={navVisibility[layer.key] as boolean}
-                    onCheckedChange={() => onNavToggle(layer.key)}
-                  >
-                    <span className="flex-1">{t(layer.labelKey)}</span>
-                    <span className="ml-2 font-mono text-xs text-muted-foreground">
-                      {layer.count}
-                    </span>
-                  </DropdownMenuCheckboxItem>
-                ))}
-
-                <DropdownMenuSeparator />
-
-                {/* Overlays section */}
-                <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
-                  {t('toolbar.overlays')}
-                </DropdownMenuLabel>
-                <DropdownMenuCheckboxItem
-                  checked={weatherRadarEnabled}
-                  onCheckedChange={onToggleWeatherRadar}
+              {filtersActive && (
+                <Button
+                  variant="ghost"
+                  onClick={resetAirportFilters}
+                  className="h-auto w-full rounded-none px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
-                  <CloudRain className="mr-2 h-4 w-4" />
-                  {t('toolbar.weather')}
+                  {t('airportFilters.reset')}
+                </Button>
+              )}
+
+              <DropdownMenuSeparator />
+
+              {/* Navigation section */}
+              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                Around Airport (50nm)
+              </DropdownMenuLabel>
+              {localNavLayers.map((layer) => (
+                <DropdownMenuCheckboxItem
+                  key={layer.key}
+                  checked={navVisibility[layer.key] as boolean}
+                  onCheckedChange={() => onNavToggle(layer.key)}
+                >
+                  <span className="flex-1">{t(layer.labelKey)}</span>
+                  <span className="ml-2 font-mono text-xs text-muted-foreground">
+                    {layer.count}
+                  </span>
                 </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
-                  <Radar className="mr-2 h-4 w-4" />
-                  {t('toolbar.vatsim')}
-                  {vatsimEnabled && vatsimPilotCount !== undefined && (
-                    <Badge className="ml-auto bg-success/20 px-1.5 py-0.5 text-success">
-                      {vatsimPilotCount}
-                    </Badge>
-                  )}
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem checked={ivaoEnabled} onCheckedChange={onToggleIvao}>
-                  <Radar className="mr-2 h-4 w-4" />
-                  IVAO
-                  {ivaoEnabled && ivaoPilotCount !== undefined && (
-                    <Badge className="ml-auto bg-cat-blue/20 px-1.5 py-0.5 text-cat-blue">
-                      {ivaoPilotCount}
-                    </Badge>
-                  )}
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </Tooltip>
-        </TooltipProvider>
+              ))}
+
+              <DropdownMenuSeparator />
+
+              {/* Overlays section */}
+              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+                {t('toolbar.overlays')}
+              </DropdownMenuLabel>
+              <DropdownMenuCheckboxItem
+                checked={weatherRadarEnabled}
+                onCheckedChange={onToggleWeatherRadar}
+              >
+                <CloudRain className="mr-2 h-4 w-4" />
+                {t('toolbar.weather')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
+                <Radar className="mr-2 h-4 w-4" />
+                {t('toolbar.vatsim')}
+                {vatsimEnabled && vatsimPilotCount !== undefined && (
+                  <Badge variant="success" className="ml-auto px-1.5 py-0.5">
+                    {vatsimPilotCount}
+                  </Badge>
+                )}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem checked={ivaoEnabled} onCheckedChange={onToggleIvao}>
+                <Radar className="mr-2 h-4 w-4" />
+                IVAO
+                {ivaoEnabled && ivaoPilotCount !== undefined && (
+                  <Badge variant="cat-blue" className="ml-auto px-1.5 py-0.5">
+                    {ivaoPilotCount}
+                  </Badge>
+                )}
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </Tooltip>
 
         {/* Weather playback controls (inline, no toggle) */}
         {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
@@ -657,24 +626,15 @@ export default function Toolbar({
         </Button>
 
         {/* Settings */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setShowSettings(true)}
-                className="h-9 w-10"
-                aria-label={t('settings.title')}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('toolbar.tooltips.settings')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setShowSettings(true)}
+          className="h-9 w-10"
+          tooltip={t('toolbar.tooltips.settings')}
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Dialogs */}

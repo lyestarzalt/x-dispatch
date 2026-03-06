@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils/helpers';
 
@@ -35,13 +36,37 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  /** Renders a shadcn Tooltip around the button. Also sets aria-label when not provided. */
+  tooltip?: string;
+  /** Which side the tooltip appears on. @default 'top' */
+  tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, tooltip, tooltipSide = 'top', ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
+    const button = (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        aria-label={props['aria-label'] ?? tooltip}
+        {...props}
+      />
+    );
+
+    if (!tooltip) return button;
+
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>{button}</TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Content
+          side={tooltipSide}
+          sideOffset={4}
+          className="z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+        >
+          <p>{tooltip}</p>
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Root>
     );
   }
 );

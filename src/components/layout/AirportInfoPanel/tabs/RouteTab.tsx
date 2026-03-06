@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
@@ -70,7 +71,7 @@ export default function RouteTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <Spinner className="size-5 text-primary" />
       </div>
     );
   }

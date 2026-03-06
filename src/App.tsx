@@ -7,6 +7,7 @@ import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
 import { FullScreenSpinner } from './components/ui/spinner';
+import { TooltipProvider } from './components/ui/tooltip';
 import './i18n';
 import type { Airport } from './lib/xplaneServices/dataService';
 import { QueryProvider } from './queries';
@@ -98,8 +99,10 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryProvider>
-        <AppContent />
-        <Toaster position="bottom-center" theme="dark" />
+        <TooltipProvider>
+          <AppContent />
+          <Toaster position="bottom-center" theme="dark" />
+        </TooltipProvider>
       </QueryProvider>
     </ErrorBoundary>
   );

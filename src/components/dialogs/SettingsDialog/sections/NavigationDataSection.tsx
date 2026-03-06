@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Database,
   Layers,
-  Loader2,
   MapPin,
   Navigation,
   Plane,
@@ -19,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDate } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useLoadingStatus } from '@/queries';
@@ -81,23 +81,21 @@ function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
         {count > 0 ? count.toLocaleString() : '-'}
       </TableCell>
       <TableCell>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge
-                variant={isHighlighted ? 'default' : 'secondary'}
-                className={cn('cursor-help font-normal', sourceStyles)}
-              >
-                {displaySource}
-              </Badge>
-            </TooltipTrigger>
-            {source && (
-              <TooltipContent side="left" className="max-w-xs">
-                <p className="break-all font-mono text-xs">{source}</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant={isHighlighted ? 'default' : 'secondary'}
+              className={cn('cursor-help font-normal', sourceStyles)}
+            >
+              {displaySource}
+            </Badge>
+          </TooltipTrigger>
+          {source && (
+            <TooltipContent side="left" className="max-w-xs">
+              <p className="break-all font-mono text-xs">{source}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </TableCell>
     </TableRow>
   );
@@ -351,11 +349,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
             disabled={isClearing}
             className="gap-2"
           >
-            {isClearing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
+            {isClearing ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
             {isClearing
               ? t('settings.navigation.clearingCache', 'Clearing...')
               : t('settings.navigation.clearCache', 'Clear Cache & Reload')}

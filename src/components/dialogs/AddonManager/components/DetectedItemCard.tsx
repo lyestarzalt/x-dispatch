@@ -12,6 +12,7 @@ import {
   Plane,
   Plug,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { DetectedItem } from '@/lib/addonManager/installer/types';
 import { cn } from '@/lib/utils/helpers';
@@ -26,48 +27,61 @@ const TYPE_ICONS = {
   Navdata: Database,
 };
 
-const TYPE_STYLES = {
+type BadgeVariant =
+  | 'cat-sky'
+  | 'cat-emerald'
+  | 'cat-teal'
+  | 'violet'
+  | 'cat-orange'
+  | 'cat-pink'
+  | 'default'
+  | 'secondary';
+
+const TYPE_STYLES: Record<
+  string,
+  { bg: string; text: string; border: string; badgeVariant: BadgeVariant }
+> = {
   Aircraft: {
     bg: 'bg-cat-sky/10',
     text: 'text-cat-sky',
     border: 'border-cat-sky/20',
-    badge: 'bg-cat-sky/20 text-cat-sky',
+    badgeVariant: 'cat-sky',
   },
   Scenery: {
     bg: 'bg-cat-emerald/10',
     text: 'text-cat-emerald',
     border: 'border-cat-emerald/20',
-    badge: 'bg-cat-emerald/20 text-cat-emerald',
+    badgeVariant: 'cat-emerald',
   },
   SceneryLibrary: {
     bg: 'bg-cat-teal/10',
     text: 'text-cat-teal',
     border: 'border-cat-teal/20',
-    badge: 'bg-cat-teal/20 text-cat-teal',
+    badgeVariant: 'cat-teal',
   },
   Plugin: {
     bg: 'bg-violet/10',
     text: 'text-violet',
     border: 'border-violet/20',
-    badge: 'bg-violet/20 text-violet',
+    badgeVariant: 'violet',
   },
   LuaScript: {
     bg: 'bg-cat-orange/10',
     text: 'text-cat-orange',
     border: 'border-cat-orange/20',
-    badge: 'bg-cat-orange/20 text-cat-orange',
+    badgeVariant: 'cat-orange',
   },
   Livery: {
     bg: 'bg-cat-pink/10',
     text: 'text-cat-pink',
     border: 'border-cat-pink/20',
-    badge: 'bg-cat-pink/20 text-cat-pink',
+    badgeVariant: 'cat-pink',
   },
   Navdata: {
     bg: 'bg-primary/10',
     text: 'text-primary',
     border: 'border-primary/20',
-    badge: 'bg-primary/20 text-primary',
+    badgeVariant: 'default',
   },
 };
 
@@ -75,7 +89,7 @@ const DEFAULT_STYLE = {
   bg: 'bg-muted-foreground/10',
   text: 'text-muted-foreground',
   border: 'border-muted-foreground/20',
-  badge: 'bg-muted-foreground/20 text-muted-foreground',
+  badgeVariant: 'secondary' as BadgeVariant,
 };
 
 interface DetectedItemCardProps {
@@ -124,9 +138,9 @@ export function DetectedItemCard({ item }: DetectedItemCardProps) {
             {item.displayName}
           </p>
           <div className="mt-1.5 flex items-center gap-2">
-            <span className={cn('rounded-md px-2 py-0.5 text-xs font-medium', style.badge)}>
+            <Badge variant={style.badgeVariant} className="text-xs">
               {t(`addonManager.addonTypes.${item.addonType}`)}
-            </span>
+            </Badge>
             <span className="text-xs tabular-nums text-muted-foreground">
               {formatSize(item.estimatedSize)}
             </span>
