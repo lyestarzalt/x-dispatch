@@ -194,15 +194,13 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
       <div className="flex-shrink-0 space-y-2 p-2">
         {/* Search Row */}
         <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              placeholder={t('launcher.aircraft.search')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 rounded-lg bg-secondary pr-8 text-sm"
-            />
-            <Search className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          </div>
+          <Input
+            placeholder={t('launcher.aircraft.search')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-8 flex-1 text-sm"
+            endIcon={<Search />}
+          />
           <Button
             variant={showFavoritesOnly ? 'default' : 'outline'}
             size="sm"

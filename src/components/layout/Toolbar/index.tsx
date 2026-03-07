@@ -250,34 +250,34 @@ export default function Toolbar({
     <div className="relative flex items-center gap-3">
       {/* Search */}
       <div ref={containerRef} className="relative">
-        <div className="flex h-9 w-[300px] items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:ring-1 focus-within:ring-ring">
-          <Input
-            ref={inputRef}
-            type="text"
-            placeholder={t('toolbar.searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            onFocus={() => filteredAirports.length > 0 && setShowResults(true)}
-            onKeyDown={handleKeyDown}
-            className="h-8 border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-          />
-          {searchQuery ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={() => {
-                setSearchQuery('');
-                setShowResults(false);
-              }}
-              aria-label={t('toolbar.clearSearch')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-          )}
-        </div>
+        <Input
+          ref={inputRef}
+          type="text"
+          placeholder={t('toolbar.searchPlaceholder')}
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+          onFocus={() => filteredAirports.length > 0 && setShowResults(true)}
+          onKeyDown={handleKeyDown}
+          className="h-9 w-[300px]"
+          endIcon={
+            searchQuery ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowResults(false);
+                }}
+                aria-label={t('toolbar.clearSearch')}
+              >
+                <X />
+              </Button>
+            ) : (
+              <Search />
+            )
+          }
+        />
 
         {showResults && filteredAirports.length > 0 && (
           <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-border bg-popover">
@@ -475,10 +475,11 @@ export default function Toolbar({
               <div className="px-1 pb-1">
                 <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                   <PopoverTrigger asChild>
-                    <button
+                    <Button
+                      variant="outline"
                       role="combobox"
                       aria-expanded={countryOpen}
-                      className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2 text-sm hover:bg-accent"
+                      className="h-8 w-full justify-between px-2 text-sm"
                     >
                       <span className="truncate">
                         {airportFilters.country === 'all'
@@ -486,7 +487,7 @@ export default function Toolbar({
                           : airportFilters.country}
                       </span>
                       <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
-                    </button>
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
                     <Command>
@@ -672,7 +673,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         variant="ghost"
         size="icon"
         onClick={stepBack}
-        className="h-6 w-6 text-white/60 hover:bg-white/10 hover:text-white"
+        className="h-6 w-6 text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
         aria-label="Previous frame"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
@@ -682,7 +683,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         variant="ghost"
         size="icon"
         onClick={isPlaying ? pause : play}
-        className="h-6 w-6 text-primary hover:bg-white/10 hover:text-xp-cyan-light"
+        className="h-6 w-6 text-primary hover:bg-foreground/10 hover:text-xp-cyan-light"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -692,14 +693,14 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         variant="ghost"
         size="icon"
         onClick={stepForward}
-        className="h-6 w-6 text-white/60 hover:bg-white/10 hover:text-white"
+        className="h-6 w-6 text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
         aria-label="Next frame"
       >
         <ChevronRight className="h-3.5 w-3.5" />
       </Button>
 
       <span className="ml-1 font-mono text-xs tabular-nums text-primary">{timeDisplay}</span>
-      <span className="ml-0.5 mr-1 text-[10px] text-white/40">
+      <span className="ml-0.5 mr-1 text-[10px] text-foreground/40">
         {frameIndex + 1}/{frameCount}
       </span>
     </div>

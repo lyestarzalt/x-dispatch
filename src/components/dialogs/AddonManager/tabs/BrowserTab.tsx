@@ -180,15 +180,13 @@ export function BrowserTab() {
         {/* Actions */}
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t('addonManager.installed.searchPlaceholder')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-8 w-48 bg-background pl-9 text-sm"
-            />
-          </div>
+          <Input
+            placeholder={t('addonManager.installed.searchPlaceholder')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8 w-48 text-sm"
+            startIcon={<Search />}
+          />
 
           {/* Check Updates */}
           <Button
@@ -263,7 +261,7 @@ export function BrowserTab() {
         <TabsContent value="plugins" className="mt-0 flex-1 data-[state=inactive]:hidden">
           {pluginsLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Spinner className="size-8 text-violet-400" />
+              <Spinner className="size-8 text-violet" />
               <span className="text-sm text-muted-foreground">
                 {t('addonManager.installed.scanningPlugins')}
               </span>
@@ -311,7 +309,7 @@ export function BrowserTab() {
         <TabsContent value="aircraft" className="mt-0 flex-1 data-[state=inactive]:hidden">
           {aircraftLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Spinner className="size-8 text-sky-400" />
+              <Spinner className="size-8 text-cat-sky" />
               <span className="text-sm text-muted-foreground">
                 {t('addonManager.installed.scanningAircraft')}
               </span>

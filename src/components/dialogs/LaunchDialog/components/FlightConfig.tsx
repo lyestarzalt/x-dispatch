@@ -176,7 +176,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
       ? 'real'
       : weatherConfig.mode === 'preset'
         ? weatherConfig.preset
-        : '';
+        : 'custom';
 
   return (
     <div className="flex w-64 min-w-[240px] flex-col border-l border-border/50 bg-card lg:w-72">
@@ -240,7 +240,12 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
             variant="subtle"
             value={weatherValue}
             onValueChange={(v) => {
-              if (v) setWeatherPreset(v);
+              if (!v) return;
+              if (v === 'custom') {
+                setWeatherDialogOpen(true);
+              } else {
+                setWeatherPreset(v);
+              }
             }}
             className="grid grid-cols-4 gap-1"
           >
@@ -257,81 +262,82 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
                 </ToggleGroupItem>
               );
             })}
+            <ToggleGroupItem
+              value="custom"
+              onClick={() => setWeatherDialogOpen(true)}
+              className="h-auto flex-col gap-1 px-1.5 py-2 text-sm"
+            >
+              <Settings2 className="h-4 w-4" />
+              <span>{t('launcher.weatherModal.custom')}</span>
+            </ToggleGroupItem>
           </ToggleGroup>
 
-          {/* Customize / summary card */}
-          <Button
-            variant="outline"
-            onClick={() => setWeatherDialogOpen(true)}
-            className="group h-auto w-full justify-between border-border/50 px-2.5 py-1.5 text-left hover:bg-secondary/60"
-          >
-            <div className="min-w-0">
-              <span
-                className={cn(
-                  'text-sm font-medium',
-                  weatherConfig.mode === 'custom' ? 'text-primary' : 'text-foreground'
-                )}
-              >
-                {weatherConfig.mode === 'custom'
-                  ? 'Customized'
-                  : weatherConfig.mode === 'real'
-                    ? t('launcher.weather.real')
-                    : t(`launcher.weather.${weatherConfig.preset}`)}
-              </span>
-              {weatherConfig.mode !== 'real' && (
-                <span className="ml-1.5 font-mono text-xs text-muted-foreground">
-                  {getWeatherSummary(weatherConfig)}
-                </span>
-              )}
-            </div>
-            <Settings2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:rotate-45" />
-          </Button>
+          {/* Summary line when customized */}
+          {weatherConfig.mode === 'custom' && (
+            <span className="block font-mono text-xs text-muted-foreground">
+              {getWeatherSummary(weatherConfig)}
+            </span>
+          )}
         </section>
 
         {/* ── Weight & Fuel ──────────────────────────────── */}
         <section className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Weight className="h-4 w-4" />
-            Weight &amp; Fuel
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Weight className="h-4 w-4" />
+              Weight &amp; Fuel
+            </Label>
+            {selectedAircraft && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setWeightDialogOpen(true)}
+                className="h-6 w-6"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
           {selectedAircraft && (
-            <Button
-              variant="outline"
-              onClick={() => setWeightDialogOpen(true)}
-              className={cn(
-                'group h-auto w-full justify-between px-2.5 py-2',
-                isOverweight && 'border-destructive/40 hover:border-destructive/60'
-              )}
-            >
-              <div className="min-w-0 text-left">
-                <div className="flex items-baseline gap-1">
-                  <span
-                    className={cn(
-                      'font-mono text-sm font-medium',
-                      isOverweight ? 'text-destructive' : 'text-foreground'
-                    )}
-                  >
-                    {formatWeight(totalWeight, weightUnit)}
-                  </span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    / {formatWeight(selectedAircraft.maxWeight, weightUnit)}
-                  </span>
-                </div>
-                <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
-                    {formatWeight(totalFuelLbs, weightUnit)}
-                  </span>
-                  {totalPayloadLbs > 0 && (
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
-                      {formatWeight(totalPayloadLbs, weightUnit)}
-                    </span>
+            <>
+              {/* Weight bar */}
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all',
+                    isOverweight ? 'bg-destructive' : 'bg-primary'
                   )}
-                </div>
+                  style={{ width: `${weightPct}%` }}
+                />
               </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-            </Button>
+              {/* Numbers */}
+              <div className="flex items-baseline justify-between">
+                <span
+                  className={cn(
+                    'font-mono text-sm font-medium',
+                    isOverweight ? 'text-destructive' : 'text-foreground'
+                  )}
+                >
+                  {formatWeight(totalWeight, weightUnit)}
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  / {formatWeight(selectedAircraft.maxWeight, weightUnit)}
+                </span>
+              </div>
+              {/* Fuel + Payload breakdown */}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                  {formatWeight(totalFuelLbs, weightUnit)}
+                </span>
+                {totalPayloadLbs > 0 && (
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
+                    {formatWeight(totalPayloadLbs, weightUnit)}
+                  </span>
+                )}
+              </div>
+            </>
           )}
         </section>
 

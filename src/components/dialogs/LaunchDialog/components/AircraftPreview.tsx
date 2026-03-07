@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Fuel, Plane, Scale, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatWeight } from '@/lib/utils/format';
@@ -144,9 +145,9 @@ export function AircraftPreview() {
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-semibold text-foreground">{selectedAircraft.name}</h2>
                 {selectedAircraft.icao && (
-                  <span className="rounded bg-secondary/80 px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+                  <Badge variant="secondary" className="font-mono">
                     {selectedAircraft.icao}
-                  </span>
+                  </Badge>
                 )}
               </div>
               <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
