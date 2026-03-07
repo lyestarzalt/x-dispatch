@@ -12,6 +12,8 @@ export interface StartPosition extends Coordinates {
   heading: number;
   /** Index in airport's startupLocations/runways/helipads array - used for map selection state */
   index: number;
+  /** Airport elevation in feet MSL (from apt.dat) */
+  elevationFt?: number;
   /** X-Plane index - for ramps: position in alphabetically sorted list; for runways/helipads: "row_end" format */
   xplaneIndex?: number | string;
   /** True if this is a helipad (uses type 'runway' but needs separate UI tracking) */

@@ -4,7 +4,9 @@ import {
   type CloudLayer,
   type CustomWeatherState,
   DEFAULT_CLOUD_LAYER,
+  DEFAULT_WIND_LAYER,
   type WeatherConfig,
+  type WindLayer,
   createDefaultWeatherConfig,
   getPresetDefaults,
 } from '@/components/dialogs/LaunchDialog/weatherTypes';
@@ -45,6 +47,9 @@ interface LaunchState {
   addCloudLayer: () => void;
   removeCloudLayer: (index: number) => void;
   updateCloudLayer: (index: number, data: Partial<CloudLayer>) => void;
+  addWindLayer: () => void;
+  removeWindLayer: (index: number) => void;
+  updateWindLayer: (index: number, data: Partial<WindLayer>) => void;
   toggleFavorite: (path: string) => void;
   setIsLaunching: (value: boolean) => void;
   setLaunchError: (error: string | null) => void;
@@ -119,7 +124,11 @@ export const useLaunchStore = create<LaunchState>()(
           weatherConfig: {
             mode: preset === 'real' ? 'real' : 'preset',
             preset,
-            custom: { ...defaults, clouds: defaults.clouds.map((c) => ({ ...c })) },
+            custom: {
+              ...defaults,
+              clouds: defaults.clouds.map((c) => ({ ...c })),
+              wind: defaults.wind.map((w) => ({ ...w })),
+            },
           },
         });
       },
@@ -135,14 +144,19 @@ export const useLaunchStore = create<LaunchState>()(
 
       addCloudLayer: () =>
         set((state) => {
-          if (state.weatherConfig.custom.clouds.length >= 3) return state;
+          const clouds = state.weatherConfig.custom.clouds;
+          if (clouds.length >= 3) return state;
+          // Place new cloud above existing ones at predictable altitudes
+          const highestTops = clouds.reduce((m, c) => Math.max(m, c.tops_ft), 0);
+          const newBase = highestTops > 0 ? highestTops + 2000 : DEFAULT_CLOUD_LAYER.base_ft;
+          const newTops = newBase + 5000;
           return {
             weatherConfig: {
               ...state.weatherConfig,
               mode: 'custom',
               custom: {
                 ...state.weatherConfig.custom,
-                clouds: [...state.weatherConfig.custom.clouds, { ...DEFAULT_CLOUD_LAYER }],
+                clouds: [...clouds, { ...DEFAULT_CLOUD_LAYER, base_ft: newBase, tops_ft: newTops }],
               },
             },
           };
@@ -170,6 +184,51 @@ export const useLaunchStore = create<LaunchState>()(
               ...state.weatherConfig,
               mode: 'custom',
               custom: { ...state.weatherConfig.custom, clouds },
+            },
+          };
+        }),
+
+      addWindLayer: () =>
+        set((state) => {
+          const wind = state.weatherConfig.custom.wind;
+          if (wind.length >= 13) return state;
+          // Place next layer at 5000 ft increments above highest existing
+          const maxAlt = wind.reduce((m, w) => Math.max(m, w.altitude_ft), 0);
+          const newAlt = Math.min(maxAlt + 5000, 50000);
+          return {
+            weatherConfig: {
+              ...state.weatherConfig,
+              mode: 'custom',
+              custom: {
+                ...state.weatherConfig.custom,
+                wind: [...wind, { ...DEFAULT_WIND_LAYER, altitude_ft: newAlt }],
+              },
+            },
+          };
+        }),
+
+      removeWindLayer: (index) =>
+        set((state) => ({
+          weatherConfig: {
+            ...state.weatherConfig,
+            mode: 'custom',
+            custom: {
+              ...state.weatherConfig.custom,
+              wind: state.weatherConfig.custom.wind.filter((_, i) => i !== index),
+            },
+          },
+        })),
+
+      updateWindLayer: (index, data) =>
+        set((state) => {
+          const wind = state.weatherConfig.custom.wind.map((w, i) =>
+            i === index ? { ...w, ...data } : w
+          );
+          return {
+            weatherConfig: {
+              ...state.weatherConfig,
+              mode: 'custom',
+              custom: { ...state.weatherConfig.custom, wind },
             },
           };
         }),
@@ -223,15 +282,59 @@ export const useLaunchStore = create<LaunchState>()(
             state.weatherConfig = {
               mode: weather === 'real' ? 'real' : 'preset',
               preset: weather,
-              custom: { ...defaults, clouds: defaults.clouds.map((c) => ({ ...c })) },
+              custom: {
+                ...defaults,
+                clouds: defaults.clouds.map((c) => ({ ...c })),
+                wind: defaults.wind.map((w) => ({ ...w })),
+              },
             } satisfies WeatherConfig;
             delete state.selectedWeather;
           }
         }
 
+        // v2 → v3: flat wind fields → wind[] array, temperature_offset_c → temperature_c, add altimeter_hpa
+        if (version < 3) {
+          const wc = state.weatherConfig as Record<string, unknown> | undefined;
+          if (wc) {
+            const custom = wc.custom as Record<string, unknown> | undefined;
+            if (custom) {
+              // Migrate flat wind → wind array
+              if (!('wind' in custom) || !Array.isArray(custom.wind)) {
+                const speed = (custom.wind_speed_kts as number) ?? 10;
+                const dir = (custom.wind_direction_deg as number) ?? 270;
+                const gust = (custom.wind_gust_kts as number) ?? 0;
+                custom.wind = [
+                  {
+                    altitude_ft: 0,
+                    speed_kts: speed,
+                    direction_deg: dir,
+                    gust_kts: gust,
+                    shear_deg: 0,
+                    turbulence: 0,
+                  },
+                ];
+                delete custom.wind_speed_kts;
+                delete custom.wind_direction_deg;
+                delete custom.wind_gust_kts;
+              }
+
+              // Migrate temperature_offset_c → temperature_c
+              if ('temperature_offset_c' in custom && !('temperature_c' in custom)) {
+                custom.temperature_c = 15 + ((custom.temperature_offset_c as number) ?? 0);
+                delete custom.temperature_offset_c;
+              }
+
+              // Add altimeter_hpa if missing
+              if (!('altimeter_hpa' in custom)) {
+                custom.altimeter_hpa = 1013.25;
+              }
+            }
+          }
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 2,
+      version: 3,
     }
   )
 );

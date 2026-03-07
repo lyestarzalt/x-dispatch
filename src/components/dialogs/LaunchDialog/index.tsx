@@ -319,42 +319,36 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       tops_in_feet_msl: layer.tops_ft,
     }));
 
-    // Build wind layers — surface + auto-generated upper layers
-    const wind = [
-      {
-        altitude_in_feet_msl: 0,
-        speed_in_knots: c.wind_speed_kts,
-        direction_in_degrees_true: c.wind_direction_deg,
-        ...(c.wind_gust_kts > 0 && { gust_increase_in_knots: c.wind_gust_kts }),
-      },
-      {
-        altitude_in_feet_msl: 10000,
-        speed_in_knots: Math.round(c.wind_speed_kts * 1.5),
-        direction_in_degrees_true: (c.wind_direction_deg + 10) % 360,
-      },
-      {
-        altitude_in_feet_msl: 25000,
-        speed_in_knots: Math.round(c.wind_speed_kts * 2),
-        direction_in_degrees_true: (c.wind_direction_deg + 20) % 360,
-      },
-    ];
+    // Build wind layers — map directly from wind array
+    const wind = c.wind.map((w) => ({
+      altitude_in_feet_msl: w.altitude_ft,
+      speed_in_knots: w.speed_kts,
+      direction_in_degrees_true: w.direction_deg,
+      ...(w.gust_kts > 0 && { gust_increase_in_knots: w.gust_kts }),
+      ...(w.shear_deg > 0 && { shear_in_degrees: w.shear_deg }),
+      ...(w.turbulence > 0 && { turbulence_ratio: w.turbulence }),
+    }));
+
+    // Derive wave from surface wind (first layer)
+    const surfaceWind = c.wind[0];
+    const surfaceSpeed = surfaceWind?.speed_kts ?? 0;
+    const surfaceDir = surfaceWind?.direction_deg ?? 270;
 
     return {
       definition: {
         latitude_in_degrees: pos.latitude,
         longitude_in_degrees: pos.longitude,
-        elevation_in_meters: 0,
+        elevation_in_meters: (pos.elevationFt ?? 0) * 0.3048,
         visibility_in_kilometers: c.visibility_km,
         precipitation_ratio: c.precipitation,
-        ...(c.temperature_offset_c !== 0 && {
-          temperature_in_degrees_celsius: 15 + c.temperature_offset_c,
-        }),
+        temperature_in_degrees_celsius: c.temperature_c,
+        altimeter_setting_in_hpa: c.altimeter_hpa,
         ...(clouds.length > 0 && { clouds }),
-        wind,
+        ...(wind.length > 0 && { wind }),
       },
       vertical_speed_in_thermal_in_feet_per_minute: hasCb ? 500 : 0,
-      wave_height_in_meters: Math.max(0.5, c.wind_speed_kts * 0.15),
-      wave_direction_in_degrees: c.wind_direction_deg,
+      wave_height_in_meters: Math.max(0.5, surfaceSpeed * 0.15),
+      wave_direction_in_degrees: surfaceDir,
       terrain_state: TERRAIN_STATE_MAP[c.terrain_state],
       variation_across_region_percentage: c.precipitation * 100,
       evolution_over_time_enum: 'static',

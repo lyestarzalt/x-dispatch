@@ -425,7 +425,11 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
         )}
       </div>
 
-      <WeatherDialog open={weatherDialogOpen} onClose={() => setWeatherDialogOpen(false)} />
+      <WeatherDialog
+        open={weatherDialogOpen}
+        onClose={() => setWeatherDialogOpen(false)}
+        airportElevationFt={selectedAirportData?.elevation}
+      />
       <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
     </div>
   );

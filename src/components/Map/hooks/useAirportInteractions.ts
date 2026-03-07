@@ -138,6 +138,7 @@ export function useAirportInteractions({
             latitude: props.latitude,
             longitude: props.longitude,
             heading: props.heading ?? 0,
+            elevationFt: currentAirport.elevation,
             index: helipadIndex,
             xplaneIndex: `${row}_0`,
           });
@@ -161,6 +162,7 @@ export function useAirportInteractions({
             latitude: props.latitude,
             longitude: props.longitude,
             heading: props.heading ?? 0,
+            elevationFt: currentAirport.elevation,
             index: featureId,
             xplaneIndex: xplaneIndex >= 0 ? xplaneIndex : featureId,
           });
@@ -240,6 +242,7 @@ export function useAirportInteractions({
           latitude: props.latitude,
           longitude: props.longitude,
           heading: props.heading ?? 0,
+          elevationFt: currentAirport.elevation,
           index: featureId,
           xplaneIndex,
         });
@@ -337,6 +340,7 @@ export function useAirportInteractions({
         latitude: gate.latitude,
         longitude: gate.longitude,
         heading: gate.heading ?? 0,
+        elevationFt: selectedAirportData.elevation,
         index: gateIndex ?? 0,
         xplaneIndex: gate.xplaneIndex,
       });
@@ -394,6 +398,7 @@ export function useAirportInteractions({
         latitude: runwayEnd.latitude,
         longitude: runwayEnd.longitude,
         heading: runwayEnd.heading ?? 0,
+        elevationFt: selectedAirportData.elevation,
         index: endIndex ?? 0,
         xplaneIndex,
       });
@@ -443,6 +448,7 @@ export function useAirportInteractions({
         latitude: helipad.latitude,
         longitude: helipad.longitude,
         heading: helipad.heading ?? 0,
+        elevationFt: selectedAirportData.elevation,
         index: helipad.index ?? 0,
         xplaneIndex: helipad.xplaneIndex,
         isHelipad: true,
