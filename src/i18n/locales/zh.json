@@ -647,6 +647,86 @@
       "unlimited": "无限制"
     },
 
+    "weatherDialog": {
+      "title": "天气设置",
+      "done": "完成",
+      "addCloud": "云层",
+      "addWind": "风层",
+
+      "layerProperties": "图层属性",
+      "emptyHint": "点击图表中的云层或风层进行编辑",
+
+      "cloudType": "云类型",
+      "cloudCoverage": "云覆盖量",
+      "tops": "云顶",
+      "bases": "云底",
+      "deleteCloud": "删除云层 {{n}}",
+
+      "cloudTypes": {
+        "cirrus": "卷云",
+        "stratus": "层云",
+        "cumulus": "积云",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "高度",
+      "direction": "方向",
+      "speed": "速度",
+      "gusts": "阵风",
+      "shear": "风切变",
+      "turbulence": "湍流",
+      "deleteWind": "删除风层 {{n}}",
+
+      "atmosphere": "大气",
+      "visibility": "能见度",
+      "precipitation": "降水",
+      "precipNone": "无",
+      "precipSevere": "强烈",
+      "temperature": "温度",
+      "altimeter": "高度表",
+
+      "environment": "环境",
+      "terrain": "地形",
+      "terrainCondition": "状况",
+      "terrainIntensity": "强度",
+      "terrainConditions": {
+        "dry": "干燥",
+        "wet": "湿润",
+        "puddles": "积水",
+        "snow": "雪",
+        "ice": "冰",
+        "mix": "雪+冰"
+      },
+      "terrainIntensities": {
+        "light": "轻微",
+        "medium": "中等",
+        "heavy": "严重"
+      },
+
+      "waves": "海浪",
+      "waveHeight": "浪高",
+      "waveDirection": "方向",
+      "thermals": "热气流",
+      "thermalsNone": "无",
+      "variation": "变化",
+      "evolution": "趋势",
+      "evolutionOptions": {
+        "rapidly_improving": "快速好转",
+        "improving": "好转",
+        "gradually_improving": "逐渐好转",
+        "static": "稳定",
+        "gradually_deteriorating": "逐渐恶化",
+        "deteriorating": "恶化",
+        "rapidly_deteriorating": "快速恶化"
+      }
+    },
+
     "fuelConfig": {
       "auto": "自动",
       "manual": "手动",

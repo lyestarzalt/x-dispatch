@@ -647,6 +647,86 @@
       "unlimited": "Nieograniczona"
     },
 
+    "weatherDialog": {
+      "title": "Ustawienia pogody",
+      "done": "Gotowe",
+      "addCloud": "Warstwa chmur",
+      "addWind": "Warstwa wiatru",
+
+      "layerProperties": "Właściwości warstwy",
+      "emptyHint": "Kliknij warstwę chmur lub wiatru na diagramie, aby edytować",
+
+      "cloudType": "Typ chmury",
+      "cloudCoverage": "Pokrycie chmurami",
+      "tops": "Szczyty",
+      "bases": "Podstawy",
+      "deleteCloud": "Usuń warstwę chmur {{n}}",
+
+      "cloudTypes": {
+        "cirrus": "Pierzaste",
+        "stratus": "Warstwowe",
+        "cumulus": "Kłębiaste",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "Wysokość",
+      "direction": "Kierunek",
+      "speed": "Prędkość",
+      "gusts": "Porywy",
+      "shear": "Uskoki wiatru",
+      "turbulence": "Turbulencje",
+      "deleteWind": "Usuń warstwę wiatru {{n}}",
+
+      "atmosphere": "Atmosfera",
+      "visibility": "Widoczność",
+      "precipitation": "Opady",
+      "precipNone": "Brak",
+      "precipSevere": "Silne",
+      "temperature": "Temperatura",
+      "altimeter": "Wysokościomierz",
+
+      "environment": "Środowisko",
+      "terrain": "Teren",
+      "terrainCondition": "Stan",
+      "terrainIntensity": "Intensywność",
+      "terrainConditions": {
+        "dry": "Sucho",
+        "wet": "Mokro",
+        "puddles": "Kałuże",
+        "snow": "Śnieg",
+        "ice": "Lód",
+        "mix": "Śnieg+Lód"
+      },
+      "terrainIntensities": {
+        "light": "Lekka",
+        "medium": "Średnia",
+        "heavy": "Silna"
+      },
+
+      "waves": "Fale",
+      "waveHeight": "Wysokość",
+      "waveDirection": "Kierunek",
+      "thermals": "Termiki",
+      "thermalsNone": "Brak",
+      "variation": "Zmienność",
+      "evolution": "Rozwój",
+      "evolutionOptions": {
+        "rapidly_improving": "Szybka poprawa",
+        "improving": "Poprawa",
+        "gradually_improving": "Stopniowa poprawa",
+        "static": "Stabilna",
+        "gradually_deteriorating": "Stopniowe pogorszenie",
+        "deteriorating": "Pogorszenie",
+        "rapidly_deteriorating": "Szybkie pogorszenie"
+      }
+    },
+
     "fuelConfig": {
       "auto": "Auto",
       "manual": "Ręczny",

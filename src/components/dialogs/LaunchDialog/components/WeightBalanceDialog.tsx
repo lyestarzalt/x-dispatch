@@ -209,7 +209,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed left-[50%] top-[50%] z-[60] flex w-[720px] max-w-[95vw] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+          className="fixed left-[50%] top-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>

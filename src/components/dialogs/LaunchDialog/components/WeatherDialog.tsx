@@ -1,7 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
+  ArrowUpDown,
   Cloud,
   Droplets,
   Eye,
@@ -9,22 +11,33 @@ import {
   Plus,
   Thermometer,
   Trash2,
-  Trees,
   Waves,
-  Wind,
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
 import { useLaunchStore } from '@/stores/launchStore';
-import type { CloudLayer, CoverageCategory, WindLayer } from '../weatherTypes';
+import type {
+  CloudLayer,
+  CoverageCategory,
+  EvolutionEnum,
+  TerrainState,
+  WindLayer,
+} from '../weatherTypes';
 import {
-  CLOUD_TYPE_LABELS,
   COVERAGE_CATEGORIES,
+  EVOLUTION_OPTIONS,
   ISA_SEA_LEVEL_TEMP_C,
   STD_ALTIMETER_HPA,
   VISIBILITY_STOPS,
@@ -46,18 +59,58 @@ interface WeatherDialogProps {
   airportElevationFt?: number;
 }
 
-// ─── Terrain options ────────────────────────────────────────────────────────
+// ─── Terrain two-step picker types ──────────────────────────────────────────
 
-const TERRAIN_OPTIONS = [
-  { value: 'dry', label: 'Dry' },
-  { value: 'wet', label: 'Wet' },
-  { value: 'snowy', label: 'Snow' },
-  { value: 'icy', label: 'Icy' },
-] as const;
+type TerrainCondition = 'dry' | 'wet' | 'puddles' | 'snow' | 'ice' | 'mix';
+type TerrainIntensity = 'light' | 'medium' | 'heavy';
+
+const TERRAIN_CONDITION_MAP: Record<
+  TerrainCondition,
+  TerrainState | Record<TerrainIntensity, TerrainState>
+> = {
+  dry: 'dry',
+  wet: { light: 'lightly_wet', medium: 'medium_wet', heavy: 'very_wet' },
+  puddles: { light: 'lightly_puddly', medium: 'medium_puddly', heavy: 'very_puddly' },
+  snow: { light: 'lightly_snowy', medium: 'medium_snowy', heavy: 'very_snowy' },
+  ice: { light: 'lightly_icy', medium: 'medium_icy', heavy: 'very_icy' },
+  mix: {
+    light: 'lightly_snowy_and_icy',
+    medium: 'medium_snowy_and_icy',
+    heavy: 'very_snowy_and_icy',
+  },
+};
+
+function parseTerrainState(ts: TerrainState): {
+  condition: TerrainCondition;
+  intensity: TerrainIntensity;
+} {
+  if (ts === 'dry') return { condition: 'dry', intensity: 'medium' };
+  for (const [cond, mapping] of Object.entries(TERRAIN_CONDITION_MAP)) {
+    if (typeof mapping === 'object') {
+      for (const [int, val] of Object.entries(mapping)) {
+        if (val === ts)
+          return { condition: cond as TerrainCondition, intensity: int as TerrainIntensity };
+      }
+    }
+  }
+  return { condition: 'dry', intensity: 'medium' };
+}
+
+function buildTerrainState(condition: TerrainCondition, intensity: TerrainIntensity): TerrainState {
+  const mapping = TERRAIN_CONDITION_MAP[condition];
+  if (typeof mapping === 'string') return mapping;
+  return mapping[intensity];
+}
+
+// Cloud type keys for i18n
+const CLOUD_TYPES: CloudLayer['type'][] = ['cirrus', 'stratus', 'cumulus', 'cumulonimbus'];
+const TERRAIN_CONDITIONS: TerrainCondition[] = ['dry', 'wet', 'puddles', 'snow', 'ice', 'mix'];
+const TERRAIN_INTENSITIES: TerrainIntensity[] = ['light', 'medium', 'heavy'];
 
 // ─── Main Dialog ────────────────────────────────────────────────────────────
 
 export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: WeatherDialogProps) {
+  const { t } = useTranslation();
   const weatherConfig = useLaunchStore((s) => s.weatherConfig);
   const updateCustomWeather = useLaunchStore((s) => s.updateCustomWeather);
   const addCloudLayer = useLaunchStore((s) => s.addCloudLayer);
@@ -72,7 +125,6 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
 
   const [selectedLayer, setSelectedLayer] = useState<SelectedLayer | null>(null);
 
-  // Bounds check for selection
   const validSelection = (() => {
     if (!selectedLayer) return null;
     if (selectedLayer.kind === 'cloud' && selectedLayer.index < custom.clouds.length)
@@ -82,7 +134,6 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
     return null;
   })();
 
-  // Add + auto-select the new layer
   const handleAddCloud = useCallback(() => {
     const nextIndex = custom.clouds.length;
     addCloudLayer();
@@ -116,16 +167,16 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed left-[50%] top-[50%] z-[60] flex w-[1100px] max-w-[95vw] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+          className="fixed inset-8 z-50 flex flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
-            <DialogTitle>Weather Settings</DialogTitle>
+            <DialogTitle>{t('launcher.weatherDialog.title')}</DialogTitle>
           </VisuallyHidden.Root>
 
-          {/* Header — title + add layer buttons */}
-          <div className="flex h-11 items-center justify-between border-b border-border bg-card px-4">
-            <span className="text-sm font-medium">Weather Settings</span>
+          {/* Header */}
+          <div className="flex h-11 flex-shrink-0 items-center justify-between border-b border-border bg-card px-4">
+            <span className="text-sm font-medium">{t('launcher.weatherDialog.title')}</span>
             <div className="flex items-center gap-2">
               {!isReal && (
                 <>
@@ -134,20 +185,20 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
                     size="sm"
                     onClick={handleAddCloud}
                     disabled={custom.clouds.length >= 3}
-                    className="h-7 gap-1 text-xs"
+                    className="h-7 gap-1.5 text-xs"
                   >
-                    <Plus className="h-3 w-3" />
-                    Cloud Layer
+                    <Plus className="h-3.5 w-3.5" />
+                    {t('launcher.weatherDialog.addCloud')}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleAddWind}
                     disabled={custom.wind.length >= 13}
-                    className="h-7 gap-1 text-xs"
+                    className="h-7 gap-1.5 text-xs"
                   >
-                    <Plus className="h-3 w-3" />
-                    Wind Layer
+                    <Plus className="h-3.5 w-3.5" />
+                    {t('launcher.weatherDialog.addWind')}
                   </Button>
                 </>
               )}
@@ -158,15 +209,15 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
           </div>
 
           {/* Body — 3 panel layout */}
-          <div className="flex" style={{ height: 640 }}>
+          <div className="flex min-h-0 flex-1">
             {/* LEFT — Layer Properties */}
             <div
               className={cn(
-                'w-[260px] shrink-0 overflow-y-auto border-r border-border p-4',
+                'w-[280px] shrink-0 overflow-y-auto border-r border-border p-4',
                 isReal && 'pointer-events-none opacity-40'
               )}
             >
-              <SectionHeader text="Layer Properties" />
+              <SectionHeader text={t('launcher.weatherDialog.layerProperties')} />
               {validSelection?.kind === 'cloud' ? (
                 <CloudLayerProperties
                   index={validSelection.index}
@@ -182,8 +233,8 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
                   onRemove={() => handleRemoveWind(validSelection.index)}
                 />
               ) : (
-                <p className="mt-8 text-center text-xs text-muted-foreground">
-                  Click a cloud or wind layer in the diagram to edit
+                <p className="mt-8 text-center text-sm text-muted-foreground">
+                  {t('launcher.weatherDialog.emptyHint')}
                 </p>
               )}
             </div>
@@ -207,16 +258,16 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
               />
             </div>
 
-            {/* RIGHT — Atmospheric + Runway Conditions */}
-            <div className="w-[270px] shrink-0 overflow-y-auto border-l border-border p-4">
+            {/* RIGHT — Atmospheric + Environment */}
+            <div className="w-[320px] shrink-0 overflow-y-auto border-l border-border p-4">
               <AtmosphericPanel custom={custom} isReal={isReal} onUpdate={updateCustomWeather} />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end border-t border-border bg-card px-4 py-2.5">
+          <div className="flex flex-shrink-0 justify-end border-t border-border bg-card px-4 py-2.5">
             <Button onClick={onClose} size="sm">
-              Done
+              {t('launcher.weatherDialog.done')}
             </Button>
           </div>
         </DialogPrimitive.Content>
@@ -231,7 +282,7 @@ function SectionHeader({ text }: { text: string }) {
   return (
     <div className="mb-4 flex items-center gap-2">
       <div className="h-px flex-1 bg-border" />
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {text}
       </span>
       <div className="h-px flex-1 bg-border" />
@@ -258,10 +309,10 @@ function UnitToggle({
       onValueChange={(v) => {
         if (v) onChange(v);
       }}
-      className="gap-0.5"
+      className="gap-1"
     >
       {options.map((opt) => (
-        <ToggleGroupItem key={opt} value={opt} className="h-5 px-1.5 text-[10px]">
+        <ToggleGroupItem key={opt} value={opt} className="h-6 px-2 text-xs">
           {opt}
         </ToggleGroupItem>
       ))}
@@ -282,6 +333,7 @@ function CloudLayerProperties({
   onUpdate: (data: Partial<CloudLayer>) => void;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation();
   const category = getCoverageCategory(layer.cover);
 
   return (
@@ -289,7 +341,9 @@ function CloudLayerProperties({
       <div className="flex-1 space-y-5">
         {/* Cloud Type */}
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Cloud Type</Label>
+          <Label className="text-sm text-muted-foreground">
+            {t('launcher.weatherDialog.cloudType')}
+          </Label>
           <ToggleGroup
             type="single"
             variant="subtle"
@@ -297,21 +351,21 @@ function CloudLayerProperties({
             onValueChange={(v) => {
               if (v) onUpdate({ type: v as CloudLayer['type'] });
             }}
-            className="grid grid-cols-1 gap-1"
+            className="grid grid-cols-1 gap-1.5"
           >
-            {(Object.entries(CLOUD_TYPE_LABELS) as [CloudLayer['type'], string][]).map(
-              ([value, label]) => (
-                <ToggleGroupItem key={value} value={value} className="h-8 text-xs">
-                  {label}
-                </ToggleGroupItem>
-              )
-            )}
+            {CLOUD_TYPES.map((type) => (
+              <ToggleGroupItem key={type} value={type} className="h-9 text-sm">
+                {t(`launcher.weatherDialog.cloudTypes.${type}`)}
+              </ToggleGroupItem>
+            ))}
           </ToggleGroup>
         </div>
 
         {/* Cloud Coverage */}
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Cloud Coverage</Label>
+          <Label className="text-sm text-muted-foreground">
+            {t('launcher.weatherDialog.cloudCoverage')}
+          </Label>
           <ToggleGroup
             type="single"
             variant="subtle"
@@ -319,11 +373,11 @@ function CloudLayerProperties({
             onValueChange={(v) => {
               if (v) onUpdate({ cover: getCategoryMidpoint(v as CoverageCategory) });
             }}
-            className="grid grid-cols-1 gap-1"
+            className="grid grid-cols-1 gap-1.5"
           >
             {COVERAGE_CATEGORIES.map((cat) => (
-              <ToggleGroupItem key={cat.key} value={cat.key} className="h-8 text-xs">
-                {cat.label}
+              <ToggleGroupItem key={cat.key} value={cat.key} className="h-9 text-sm">
+                {t(`launcher.weatherDialog.coverageCategories.${cat.key}`)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -331,8 +385,8 @@ function CloudLayerProperties({
 
         {/* Tops */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Tops</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.tops')}</span>
             <span className="font-mono text-foreground">
               {layer.tops_ft.toLocaleString()} ft MSL
             </span>
@@ -348,8 +402,8 @@ function CloudLayerProperties({
 
         {/* Bases */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Bases</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.bases')}</span>
             <span className="font-mono text-foreground">
               {layer.base_ft.toLocaleString()} ft MSL
             </span>
@@ -371,10 +425,10 @@ function CloudLayerProperties({
         variant="outline"
         size="sm"
         onClick={onRemove}
-        className="mt-4 w-full gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+        className="mt-4 w-full gap-2 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
       >
-        <Trash2 className="h-3 w-3" />
-        Delete Cloud Layer {index + 1}
+        <Trash2 className="h-3.5 w-3.5" />
+        {t('launcher.weatherDialog.deleteCloud', { n: index + 1 })}
       </Button>
     </div>
   );
@@ -393,12 +447,14 @@ function WindLayerProperties({
   onUpdate: (data: Partial<WindLayer>) => void;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 space-y-5">
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Altitude</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.altitude')}</span>
             <span className="font-mono text-foreground">
               {layer.altitude_ft.toLocaleString()} ft MSL
             </span>
@@ -413,8 +469,8 @@ function WindLayerProperties({
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Direction</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.direction')}</span>
             <span className="font-mono text-foreground">
               {String(Math.round(layer.direction_deg)).padStart(3, '0')}&deg;
             </span>
@@ -429,8 +485,8 @@ function WindLayerProperties({
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Speed</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.speed')}</span>
             <span className="font-mono text-foreground">{layer.speed_kts} kts</span>
           </div>
           <Slider
@@ -443,10 +499,12 @@ function WindLayerProperties({
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Gusts</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.gusts')}</span>
             <span className="font-mono text-foreground">
-              {layer.gust_kts > 0 ? `+${layer.gust_kts} kts` : 'None'}
+              {layer.gust_kts > 0
+                ? `+${layer.gust_kts} kts`
+                : t('launcher.weatherDialog.precipNone')}
             </span>
           </div>
           <Slider
@@ -459,8 +517,8 @@ function WindLayerProperties({
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Shear</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.shear')}</span>
             <span className="font-mono text-foreground">{layer.shear_deg}&deg;</span>
           </div>
           <Slider
@@ -473,8 +531,8 @@ function WindLayerProperties({
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Turbulence</span>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.turbulence')}</span>
             <span className="font-mono text-foreground">{Math.round(layer.turbulence * 100)}%</span>
           </div>
           <Slider
@@ -491,10 +549,10 @@ function WindLayerProperties({
         variant="outline"
         size="sm"
         onClick={onRemove}
-        className="mt-4 w-full gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+        className="mt-4 w-full gap-2 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
       >
-        <Trash2 className="h-3 w-3" />
-        Delete Wind Layer {index + 1}
+        <Trash2 className="h-3.5 w-3.5" />
+        {t('launcher.weatherDialog.deleteWind', { n: index + 1 })}
       </Button>
     </div>
   );
@@ -511,9 +569,9 @@ function AtmosphericPanel({
   isReal: boolean;
   onUpdate: (partial: Partial<import('../weatherTypes').CustomWeatherState>) => void;
 }) {
+  const { t } = useTranslation();
   const visibilityIndex = findClosestVisibilityIndex(custom.visibility_km);
 
-  // Unit toggles (visual only — values are always stored in metric)
   const [visUnit, setVisUnit] = useState<'km' | 'SM'>('km');
   const [tempUnit, setTempUnit] = useState<'°C' | '°F'>('°C');
   const [altUnit, setAltUnit] = useState<'hPa' | 'inHg'>('inHg');
@@ -538,16 +596,39 @@ function AtmosphericPanel({
       ? `SLP ${custom.altimeter_hpa} hPa${custom.altimeter_hpa === STD_ALTIMETER_HPA ? ' (STD)' : ''}`
       : `${hpaToInHg(custom.altimeter_hpa).toFixed(2)} inHg${custom.altimeter_hpa === STD_ALTIMETER_HPA ? ' (STD)' : ''}`;
 
+  // Parse terrain state into condition + intensity for two-step picker
+  const { condition: terrainCondition, intensity: terrainIntensity } = useMemo(
+    () => parseTerrainState(custom.terrain_state),
+    [custom.terrain_state]
+  );
+
+  const handleTerrainCondition = useCallback(
+    (cond: TerrainCondition) => {
+      // When switching condition, keep current intensity (or default to medium for dry→non-dry)
+      const newState = buildTerrainState(cond, cond === 'dry' ? 'medium' : terrainIntensity);
+      onUpdate({ terrain_state: newState });
+    },
+    [terrainIntensity, onUpdate]
+  );
+
+  const handleTerrainIntensity = useCallback(
+    (int: TerrainIntensity) => {
+      const newState = buildTerrainState(terrainCondition, int);
+      onUpdate({ terrain_state: newState });
+    },
+    [terrainCondition, onUpdate]
+  );
+
   return (
     <div className={cn(isReal && 'pointer-events-none opacity-40', 'space-y-5')}>
-      <SectionHeader text="Atmospheric Conditions" />
+      <SectionHeader text={t('launcher.weatherDialog.atmosphere')} />
 
       {/* Visibility */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Eye className="h-3 w-3" />
-            Visibility
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Eye className="h-4 w-4" />
+            {t('launcher.weatherDialog.visibility')}
           </span>
           <div className="flex items-center gap-1.5">
             <UnitToggle
@@ -555,7 +636,7 @@ function AtmosphericPanel({
               options={['km', 'SM']}
               onChange={(v) => setVisUnit(v as 'km' | 'SM')}
             />
-            <span className="w-16 text-right font-mono text-foreground">{visDisplay}</span>
+            <span className="w-20 text-right font-mono text-foreground">{visDisplay}</span>
           </div>
         </div>
         <Slider
@@ -569,16 +650,16 @@ function AtmosphericPanel({
 
       {/* Precipitation */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Droplets className="h-3 w-3" />
-            Precipitation
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Droplets className="h-4 w-4" />
+            {t('launcher.weatherDialog.precipitation')}
           </span>
           <span className="font-mono text-foreground">
             {custom.precipitation === 0
-              ? 'None'
+              ? t('launcher.weatherDialog.precipNone')
               : custom.precipitation >= 0.8
-                ? 'Severe'
+                ? t('launcher.weatherDialog.precipSevere')
                 : `${Math.round(custom.precipitation * 100)}%`}
           </span>
         </div>
@@ -593,10 +674,10 @@ function AtmosphericPanel({
 
       {/* Temperature */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Thermometer className="h-3 w-3" />
-            Airport Temperature
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Thermometer className="h-4 w-4" />
+            {t('launcher.weatherDialog.temperature')}
           </span>
           <div className="flex items-center gap-1.5">
             <UnitToggle
@@ -604,7 +685,7 @@ function AtmosphericPanel({
               options={['°C', '°F']}
               onChange={(v) => setTempUnit(v as '°C' | '°F')}
             />
-            <span className="w-12 text-right font-mono text-foreground">{tempDisplay}</span>
+            <span className="w-14 text-right font-mono text-foreground">{tempDisplay}</span>
           </div>
         </div>
         <Slider
@@ -614,7 +695,7 @@ function AtmosphericPanel({
           max={58}
           step={1}
         />
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           ISA {custom.temperature_c >= ISA_SEA_LEVEL_TEMP_C ? '+' : ''}
           {custom.temperature_c - ISA_SEA_LEVEL_TEMP_C}&deg;C
         </span>
@@ -622,10 +703,10 @@ function AtmosphericPanel({
 
       {/* Altimeter Setting */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Gauge className="h-3 w-3" />
-            Altimeter Setting
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Gauge className="h-4 w-4" />
+            {t('launcher.weatherDialog.altimeter')}
           </span>
           <div className="flex items-center gap-1.5">
             <UnitToggle
@@ -633,7 +714,7 @@ function AtmosphericPanel({
               options={['hPa', 'inHg']}
               onChange={(v) => setAltUnit(v as 'hPa' | 'inHg')}
             />
-            <span className="w-16 text-right font-mono text-foreground">{altDisplay}</span>
+            <span className="w-20 text-right font-mono text-foreground">{altDisplay}</span>
           </div>
         </div>
         <Slider
@@ -643,48 +724,152 @@ function AtmosphericPanel({
           max={1075}
           step={0.25}
         />
-        <span className="text-[10px] text-muted-foreground">{altSubtext}</span>
+        <span className="text-xs text-muted-foreground">{altSubtext}</span>
       </div>
 
-      {/* ── RUNWAY AND WATER CONDITIONS ── */}
-      <SectionHeader text="Runway & Water" />
+      {/* ── ENVIRONMENT ── */}
+      <SectionHeader text={t('launcher.weatherDialog.environment')} />
 
-      {/* Terrain / Runway Wetness */}
-      <div className="space-y-1.5">
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Trees className="h-3 w-3" />
-          Runway Wetness
-        </span>
+      {/* Terrain — two-step cascading picker */}
+      <div className="space-y-2.5">
+        <span className="text-sm text-muted-foreground">{t('launcher.weatherDialog.terrain')}</span>
+
+        {/* Step 1: Condition type */}
         <ToggleGroup
           type="single"
           variant="subtle"
-          value={custom.terrain_state}
+          value={terrainCondition}
           onValueChange={(v) => {
-            if (v) onUpdate({ terrain_state: v as 'dry' | 'wet' | 'snowy' | 'icy' });
+            if (v) handleTerrainCondition(v as TerrainCondition);
           }}
-          className="grid grid-cols-4 gap-1"
+          className="grid grid-cols-3 gap-1.5"
         >
-          {TERRAIN_OPTIONS.map((opt) => (
-            <ToggleGroupItem key={opt.value} value={opt.value} className="h-7 px-1 text-xs">
-              {opt.label}
+          {TERRAIN_CONDITIONS.map((cond) => (
+            <ToggleGroupItem key={cond} value={cond} className="h-8 text-sm">
+              {t(`launcher.weatherDialog.terrainConditions.${cond}`)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
+
+        {/* Step 2: Intensity (hidden when Dry) */}
+        {terrainCondition !== 'dry' && (
+          <ToggleGroup
+            type="single"
+            variant="subtle"
+            value={terrainIntensity}
+            onValueChange={(v) => {
+              if (v) handleTerrainIntensity(v as TerrainIntensity);
+            }}
+            className="grid grid-cols-3 gap-1.5"
+          >
+            {TERRAIN_INTENSITIES.map((int) => (
+              <ToggleGroupItem key={int} value={int} className="h-8 text-sm">
+                {t(`launcher.weatherDialog.terrainIntensities.${int}`)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
       </div>
 
-      {/* Wave info */}
-      {custom.wind.length > 0 && (
-        <div className="space-y-1.5">
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Waves className="h-3 w-3" />
-            Wave Conditions
-          </span>
-          <div className="rounded-md bg-secondary/40 px-2.5 py-2 text-xs text-muted-foreground">
-            {Math.max(0.5, custom.wind[0].speed_kts * 0.15).toFixed(1)} m height ·{' '}
-            {Math.round(custom.wind[0].direction_deg)}&deg; direction
+      {/* Waves */}
+      <div className="space-y-2">
+        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Waves className="h-4 w-4" />
+          {t('launcher.weatherDialog.waves')}
+        </span>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('launcher.weatherDialog.waveHeight')}</span>
+            <span className="font-mono text-foreground">{custom.wave_height_m.toFixed(1)} m</span>
           </div>
+          <Slider
+            value={[custom.wave_height_m]}
+            onValueChange={(v) => onUpdate({ wave_height_m: Math.round(v[0] * 10) / 10 })}
+            min={0}
+            max={12}
+            step={0.1}
+          />
         </div>
-      )}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {t('launcher.weatherDialog.waveDirection')}
+            </span>
+            <span className="font-mono text-foreground">
+              {String(Math.round(custom.wave_direction_deg)).padStart(3, '0')}&deg;
+            </span>
+          </div>
+          <Slider
+            value={[custom.wave_direction_deg]}
+            onValueChange={(v) => onUpdate({ wave_direction_deg: v[0] })}
+            min={0}
+            max={360}
+            step={5}
+          />
+        </div>
+      </div>
+
+      {/* Thermals */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <ArrowUpDown className="h-4 w-4" />
+            {t('launcher.weatherDialog.thermals')}
+          </span>
+          <span className="font-mono text-foreground">
+            {custom.thermal_fpm === 0
+              ? t('launcher.weatherDialog.thermalsNone')
+              : `${custom.thermal_fpm} fpm`}
+          </span>
+        </div>
+        <Slider
+          value={[custom.thermal_fpm]}
+          onValueChange={(v) => onUpdate({ thermal_fpm: v[0] })}
+          min={0}
+          max={2000}
+          step={50}
+        />
+      </div>
+
+      {/* Regional Variation */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <Cloud className="h-4 w-4" />
+            {t('launcher.weatherDialog.variation')}
+          </span>
+          <span className="font-mono text-foreground">{Math.round(custom.variation_pct)}%</span>
+        </div>
+        <Slider
+          value={[custom.variation_pct]}
+          onValueChange={(v) => onUpdate({ variation_pct: v[0] })}
+          min={0}
+          max={100}
+          step={5}
+        />
+      </div>
+
+      {/* Evolution — Select dropdown */}
+      <div className="space-y-1.5">
+        <span className="text-sm text-muted-foreground">
+          {t('launcher.weatherDialog.evolution')}
+        </span>
+        <Select
+          value={custom.evolution}
+          onValueChange={(v) => onUpdate({ evolution: v as EvolutionEnum })}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EVOLUTION_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value} className="text-sm">
+                {t(`launcher.weatherDialog.evolutionOptions.${opt.value}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }

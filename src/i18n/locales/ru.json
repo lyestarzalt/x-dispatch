@@ -647,6 +647,86 @@
       "unlimited": "Неограниченная"
     },
 
+    "weatherDialog": {
+      "title": "Настройки погоды",
+      "done": "Готово",
+      "addCloud": "Слой облаков",
+      "addWind": "Слой ветра",
+
+      "layerProperties": "Свойства слоя",
+      "emptyHint": "Нажмите на слой облаков или ветра на диаграмме для редактирования",
+
+      "cloudType": "Тип облаков",
+      "cloudCoverage": "Облачность",
+      "tops": "Верхняя граница",
+      "bases": "Нижняя граница",
+      "deleteCloud": "Удалить слой облаков {{n}}",
+
+      "cloudTypes": {
+        "cirrus": "Перистые",
+        "stratus": "Слоистые",
+        "cumulus": "Кучевые",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "Высота",
+      "direction": "Направление",
+      "speed": "Скорость",
+      "gusts": "Порывы",
+      "shear": "Сдвиг ветра",
+      "turbulence": "Турбулентность",
+      "deleteWind": "Удалить слой ветра {{n}}",
+
+      "atmosphere": "Атмосфера",
+      "visibility": "Видимость",
+      "precipitation": "Осадки",
+      "precipNone": "Нет",
+      "precipSevere": "Сильные",
+      "temperature": "Температура",
+      "altimeter": "Альтиметр",
+
+      "environment": "Окружение",
+      "terrain": "Рельеф",
+      "terrainCondition": "Состояние",
+      "terrainIntensity": "Интенсивность",
+      "terrainConditions": {
+        "dry": "Сухо",
+        "wet": "Мокро",
+        "puddles": "Лужи",
+        "snow": "Снег",
+        "ice": "Лёд",
+        "mix": "Снег+Лёд"
+      },
+      "terrainIntensities": {
+        "light": "Слабая",
+        "medium": "Средняя",
+        "heavy": "Сильная"
+      },
+
+      "waves": "Волны",
+      "waveHeight": "Высота",
+      "waveDirection": "Направление",
+      "thermals": "Термики",
+      "thermalsNone": "Нет",
+      "variation": "Вариация",
+      "evolution": "Развитие",
+      "evolutionOptions": {
+        "rapidly_improving": "Быстрое улучшение",
+        "improving": "Улучшение",
+        "gradually_improving": "Постепенное улучшение",
+        "static": "Без изменений",
+        "gradually_deteriorating": "Постепенное ухудшение",
+        "deteriorating": "Ухудшение",
+        "rapidly_deteriorating": "Быстрое ухудшение"
+      }
+    },
+
     "fuelConfig": {
       "auto": "Авто",
       "manual": "Ручной",

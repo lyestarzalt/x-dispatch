@@ -647,6 +647,86 @@
       "unlimited": "無制限"
     },
 
+    "weatherDialog": {
+      "title": "天候設定",
+      "done": "完了",
+      "addCloud": "雲レイヤー",
+      "addWind": "風レイヤー",
+
+      "layerProperties": "レイヤーのプロパティ",
+      "emptyHint": "ダイアグラム内の雲または風レイヤーをクリックして編集",
+
+      "cloudType": "雲の種類",
+      "cloudCoverage": "雲量",
+      "tops": "雲頂",
+      "bases": "雲底",
+      "deleteCloud": "雲レイヤー {{n}} を削除",
+
+      "cloudTypes": {
+        "cirrus": "巻雲",
+        "stratus": "層雲",
+        "cumulus": "積雲",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "高度",
+      "direction": "方向",
+      "speed": "速度",
+      "gusts": "突風",
+      "shear": "ウインドシアー",
+      "turbulence": "乱気流",
+      "deleteWind": "風レイヤー {{n}} を削除",
+
+      "atmosphere": "大気",
+      "visibility": "視程",
+      "precipitation": "降水",
+      "precipNone": "なし",
+      "precipSevere": "激しい",
+      "temperature": "気温",
+      "altimeter": "高度計",
+
+      "environment": "環境",
+      "terrain": "地形",
+      "terrainCondition": "状態",
+      "terrainIntensity": "強度",
+      "terrainConditions": {
+        "dry": "乾燥",
+        "wet": "湿潤",
+        "puddles": "水たまり",
+        "snow": "雪",
+        "ice": "氷",
+        "mix": "雪+氷"
+      },
+      "terrainIntensities": {
+        "light": "弱い",
+        "medium": "中程度",
+        "heavy": "強い"
+      },
+
+      "waves": "波",
+      "waveHeight": "波高",
+      "waveDirection": "方向",
+      "thermals": "サーマル",
+      "thermalsNone": "なし",
+      "variation": "変動",
+      "evolution": "推移",
+      "evolutionOptions": {
+        "rapidly_improving": "急速に回復",
+        "improving": "回復",
+        "gradually_improving": "徐々に回復",
+        "static": "安定",
+        "gradually_deteriorating": "徐々に悪化",
+        "deteriorating": "悪化",
+        "rapidly_deteriorating": "急速に悪化"
+      }
+    },
+
     "fuelConfig": {
       "auto": "自動",
       "manual": "手動",

@@ -18,7 +18,6 @@ import { useLaunchStore } from '@/stores/launchStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import type { StartPosition } from './types';
 import type { WeatherConfig } from './weatherTypes';
-import { TERRAIN_STATE_MAP } from './weatherTypes';
 
 interface LaunchPanelProps {
   open: boolean;
@@ -305,7 +304,6 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     // Custom mode — build full definition object
     type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
     const c = config.custom;
-    const hasCb = c.clouds.some((l) => l.type === 'cumulonimbus');
 
     // Build cloud layers (max 3) — X-Plane spells cumulonimbus as 'cumulunimbus'
     const clouds = c.clouds.map((layer) => ({
@@ -329,11 +327,6 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       ...(w.turbulence > 0 && { turbulence_ratio: w.turbulence }),
     }));
 
-    // Derive wave from surface wind (first layer)
-    const surfaceWind = c.wind[0];
-    const surfaceSpeed = surfaceWind?.speed_kts ?? 0;
-    const surfaceDir = surfaceWind?.direction_deg ?? 270;
-
     return {
       definition: {
         latitude_in_degrees: pos.latitude,
@@ -346,12 +339,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         ...(clouds.length > 0 && { clouds }),
         ...(wind.length > 0 && { wind }),
       },
-      vertical_speed_in_thermal_in_feet_per_minute: hasCb ? 500 : 0,
-      wave_height_in_meters: Math.max(0.5, surfaceSpeed * 0.15),
-      wave_direction_in_degrees: surfaceDir,
-      terrain_state: TERRAIN_STATE_MAP[c.terrain_state],
-      variation_across_region_percentage: c.precipitation * 100,
-      evolution_over_time_enum: 'static',
+      vertical_speed_in_thermal_in_feet_per_minute: c.thermal_fpm,
+      wave_height_in_meters: c.wave_height_m,
+      wave_direction_in_degrees: c.wave_direction_deg,
+      terrain_state: c.terrain_state,
+      variation_across_region_percentage: c.variation_pct,
+      evolution_over_time_enum: c.evolution,
     } satisfies WeatherDefinition;
   }
 
@@ -360,7 +353,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed left-[50%] top-[50%] z-50 flex h-[90vh] w-[95vw] min-w-[900px] max-w-7xl translate-x-[-50%] translate-y-[-50%] flex-col rounded-lg border border-border bg-background"
+          className="fixed inset-8 z-50 flex flex-col rounded-lg border border-border bg-background"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>

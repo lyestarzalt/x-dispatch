@@ -179,7 +179,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
         : 'custom';
 
   return (
-    <div className="flex w-64 min-w-[240px] flex-col border-l border-border/50 bg-card lg:w-72">
+    <div className="flex w-72 min-w-[260px] flex-col border-l border-border/50 bg-card lg:w-80">
       <div className="flex-shrink-0 px-4 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
       </div>
@@ -247,7 +247,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
                 setWeatherPreset(v);
               }
             }}
-            className="grid grid-cols-4 gap-1"
+            className="grid grid-cols-4 gap-1.5"
           >
             {WEATHER_OPTIONS.map((weather) => {
               const Icon = WEATHER_ICONS[weather] || Cloud;
@@ -255,20 +255,24 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
                 <ToggleGroupItem
                   key={weather}
                   value={weather}
-                  className="h-auto flex-col gap-1 px-1.5 py-2 text-sm"
+                  className="h-auto min-w-0 flex-col gap-1 px-1 py-2 text-xs"
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{t(`launcher.weather.${weather}`)}</span>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="w-full truncate text-center">
+                    {t(`launcher.weather.${weather}`)}
+                  </span>
                 </ToggleGroupItem>
               );
             })}
             <ToggleGroupItem
               value="custom"
               onClick={() => setWeatherDialogOpen(true)}
-              className="h-auto flex-col gap-1 px-1.5 py-2 text-sm"
+              className="h-auto min-w-0 flex-col gap-1 px-1 py-2 text-xs"
             >
-              <Settings2 className="h-4 w-4" />
-              <span>{t('launcher.weatherModal.custom')}</span>
+              <Settings2 className="h-4 w-4 shrink-0" />
+              <span className="w-full truncate text-center">
+                {t('launcher.weatherModal.custom')}
+              </span>
             </ToggleGroupItem>
           </ToggleGroup>
 

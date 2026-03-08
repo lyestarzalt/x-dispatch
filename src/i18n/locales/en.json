@@ -666,6 +666,86 @@
       "unlimited": "Unlimited"
     },
 
+    "weatherDialog": {
+      "title": "Weather Settings",
+      "done": "Done",
+      "addCloud": "Cloud Layer",
+      "addWind": "Wind Layer",
+
+      "layerProperties": "Layer Properties",
+      "emptyHint": "Click a cloud or wind layer in the diagram to edit",
+
+      "cloudType": "Cloud Type",
+      "cloudCoverage": "Cloud Coverage",
+      "tops": "Tops",
+      "bases": "Bases",
+      "deleteCloud": "Delete Cloud Layer {{n}}",
+
+      "cloudTypes": {
+        "cirrus": "Cirrus",
+        "stratus": "Stratus",
+        "cumulus": "Cumulus",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "Altitude",
+      "direction": "Direction",
+      "speed": "Speed",
+      "gusts": "Gusts",
+      "shear": "Shear",
+      "turbulence": "Turbulence",
+      "deleteWind": "Delete Wind Layer {{n}}",
+
+      "atmosphere": "Atmosphere",
+      "visibility": "Visibility",
+      "precipitation": "Precipitation",
+      "precipNone": "None",
+      "precipSevere": "Severe",
+      "temperature": "Temperature",
+      "altimeter": "Altimeter",
+
+      "environment": "Environment",
+      "terrain": "Terrain",
+      "terrainCondition": "Condition",
+      "terrainIntensity": "Intensity",
+      "terrainConditions": {
+        "dry": "Dry",
+        "wet": "Wet",
+        "puddles": "Puddles",
+        "snow": "Snow",
+        "ice": "Ice",
+        "mix": "Snow+Ice"
+      },
+      "terrainIntensities": {
+        "light": "Light",
+        "medium": "Medium",
+        "heavy": "Heavy"
+      },
+
+      "waves": "Waves",
+      "waveHeight": "Height",
+      "waveDirection": "Direction",
+      "thermals": "Thermals",
+      "thermalsNone": "None",
+      "variation": "Variation",
+      "evolution": "Evolution",
+      "evolutionOptions": {
+        "rapidly_improving": "Rapidly Improving",
+        "improving": "Improving",
+        "gradually_improving": "Gradually Improving",
+        "static": "Static",
+        "gradually_deteriorating": "Gradually Deteriorating",
+        "deteriorating": "Deteriorating",
+        "rapidly_deteriorating": "Rapidly Deteriorating"
+      }
+    },
+
     "fuelConfig": {
       "auto": "Auto",
       "manual": "Manual",

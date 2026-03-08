@@ -254,6 +254,8 @@ export function AltitudeDiagram({
       {/* Altitude grid lines + labels on right edge */}
       {ticks.map((alt) => {
         const y = altToY(alt);
+        // Hide 0 ft label when airport elevation marker is present (they overlap)
+        const hideLabel = alt === 0 && airportElevationFt > 0;
         return (
           <g key={alt}>
             <line
@@ -264,16 +266,18 @@ export function AltitudeDiagram({
               stroke="oklch(var(--border))"
               strokeWidth="0.5"
             />
-            <text
-              x={CHART_X + CHART_W + 6}
-              y={y + 3}
-              textAnchor="start"
-              fill="oklch(var(--muted-foreground))"
-              fontSize="9"
-              fontFamily="monospace"
-            >
-              {formatAlt(alt)}
-            </text>
+            {!hideLabel && (
+              <text
+                x={CHART_X + CHART_W + 6}
+                y={y + 3}
+                textAnchor="start"
+                fill="oklch(var(--muted-foreground))"
+                fontSize="9"
+                fontFamily="monospace"
+              >
+                {formatAlt(alt)}
+              </text>
+            )}
           </g>
         );
       })}
@@ -486,11 +490,11 @@ export function AltitudeDiagram({
 
         return (
           <g key={`wind-${i}`}>
-            {/* Dashed line */}
+            {/* Dashed line — stop before the icon tab */}
             <line
               x1={CHART_X}
               y1={y}
-              x2={CHART_X + CHART_W}
+              x2={tabX - 4}
               y2={y}
               stroke={isSelected ? 'oklch(var(--primary))' : 'oklch(var(--primary) / 0.4)'}
               strokeWidth={isSelected ? 1.5 : 1}

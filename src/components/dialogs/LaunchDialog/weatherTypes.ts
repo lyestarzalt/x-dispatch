@@ -15,14 +15,50 @@ export interface WindLayer {
   turbulence: number; // 0–1
 }
 
+// Terrain states (exact X-Plane API values)
+export type TerrainState =
+  | 'dry'
+  | 'lightly_wet'
+  | 'medium_wet'
+  | 'very_wet'
+  | 'lightly_puddly'
+  | 'medium_puddly'
+  | 'very_puddly'
+  | 'lightly_snowy'
+  | 'medium_snowy'
+  | 'very_snowy'
+  | 'lightly_icy'
+  | 'medium_icy'
+  | 'very_icy'
+  | 'lightly_snowy_and_icy'
+  | 'medium_snowy_and_icy'
+  | 'very_snowy_and_icy';
+
+// Evolution over time options (exact X-Plane API values)
+export type EvolutionEnum =
+  | 'rapidly_improving'
+  | 'improving'
+  | 'gradually_improving'
+  | 'static'
+  | 'gradually_deteriorating'
+  | 'deteriorating'
+  | 'rapidly_deteriorating';
+
 export interface CustomWeatherState {
+  // Definition fields (inside the definition object)
   visibility_km: number;
   precipitation: number;
   temperature_c: number; // absolute (was temperature_offset_c)
   altimeter_hpa: number; // default 1013.25
-  terrain_state: 'dry' | 'wet' | 'snowy' | 'icy';
   wind: WindLayer[]; // max 13
   clouds: CloudLayer[];
+  // Outer wrapper fields (alongside definition)
+  thermal_fpm: number; // vertical_speed_in_thermal_in_feet_per_minute
+  wave_height_m: number; // wave_height_in_meters
+  wave_direction_deg: number; // wave_direction_in_degrees
+  terrain_state: TerrainState;
+  variation_pct: number; // variation_across_region_percentage (0–100)
+  evolution: EvolutionEnum;
 }
 
 export interface CloudLayer {
@@ -114,14 +150,38 @@ export const VISIBILITY_STOPS = [
   0.1, 0.25, 0.5, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 80, 120, 160,
 ] as const;
 
-// ─── Terrain State Mapping ──────────────────────────────────────────────────
+// ─── Terrain State Options ──────────────────────────────────────────────────
 
-export const TERRAIN_STATE_MAP = {
-  dry: 'dry',
-  wet: 'medium_wet',
-  snowy: 'medium_snowy',
-  icy: 'medium_icy',
-} as const;
+export const TERRAIN_STATE_OPTIONS: { value: TerrainState; label: string; group: string }[] = [
+  { value: 'dry', label: 'Dry', group: 'Dry' },
+  { value: 'lightly_wet', label: 'Light', group: 'Wet' },
+  { value: 'medium_wet', label: 'Medium', group: 'Wet' },
+  { value: 'very_wet', label: 'Heavy', group: 'Wet' },
+  { value: 'lightly_puddly', label: 'Light', group: 'Puddles' },
+  { value: 'medium_puddly', label: 'Medium', group: 'Puddles' },
+  { value: 'very_puddly', label: 'Heavy', group: 'Puddles' },
+  { value: 'lightly_snowy', label: 'Light', group: 'Snow' },
+  { value: 'medium_snowy', label: 'Medium', group: 'Snow' },
+  { value: 'very_snowy', label: 'Heavy', group: 'Snow' },
+  { value: 'lightly_icy', label: 'Light', group: 'Ice' },
+  { value: 'medium_icy', label: 'Medium', group: 'Ice' },
+  { value: 'very_icy', label: 'Heavy', group: 'Ice' },
+  { value: 'lightly_snowy_and_icy', label: 'Light', group: 'Snow+Ice' },
+  { value: 'medium_snowy_and_icy', label: 'Medium', group: 'Snow+Ice' },
+  { value: 'very_snowy_and_icy', label: 'Heavy', group: 'Snow+Ice' },
+];
+
+// ─── Evolution Options ─────────────────────────────────────────────────────
+
+export const EVOLUTION_OPTIONS: { value: EvolutionEnum; label: string }[] = [
+  { value: 'rapidly_improving', label: 'Rapidly Improving' },
+  { value: 'improving', label: 'Improving' },
+  { value: 'gradually_improving', label: 'Gradually Improving' },
+  { value: 'static', label: 'Static' },
+  { value: 'gradually_deteriorating', label: 'Gradually Deteriorating' },
+  { value: 'deteriorating', label: 'Deteriorating' },
+  { value: 'rapidly_deteriorating', label: 'Rapidly Deteriorating' },
+];
 
 // ─── Cloud Type Labels ──────────────────────────────────────────────────────
 
@@ -140,25 +200,34 @@ export const PRESET_DEFAULTS: Record<string, CustomWeatherState> = {
     precipitation: 0,
     temperature_c: 15,
     altimeter_hpa: 1013.25,
-    terrain_state: 'dry',
     wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 5 }],
     clouds: [],
+    thermal_fpm: 0,
+    wave_height_m: 1,
+    wave_direction_deg: 270,
+    terrain_state: 'dry',
+    variation_pct: 0,
+    evolution: 'static',
   },
   cloudy: {
     visibility_km: 15,
     precipitation: 0,
     temperature_c: 15,
     altimeter_hpa: 1013.25,
-    terrain_state: 'dry',
     wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 12, direction_deg: 250 }],
     clouds: [{ type: 'stratus', cover: 0.85, base_ft: 4000, tops_ft: 10000 }],
+    thermal_fpm: 0,
+    wave_height_m: 2,
+    wave_direction_deg: 250,
+    terrain_state: 'dry',
+    variation_pct: 50,
+    evolution: 'static',
   },
   rainy: {
     visibility_km: 6,
     precipitation: 0.5,
     temperature_c: 15,
     altimeter_hpa: 1005,
-    terrain_state: 'wet',
     wind: [
       { ...DEFAULT_WIND_LAYER, speed_kts: 18, direction_deg: 200, gust_kts: 8 },
       { ...DEFAULT_WIND_LAYER, altitude_ft: 10000, speed_kts: 28, direction_deg: 210 },
@@ -167,13 +236,18 @@ export const PRESET_DEFAULTS: Record<string, CustomWeatherState> = {
       { type: 'cumulus', cover: 0.9, base_ft: 2000, tops_ft: 15000 },
       { type: 'stratus', cover: 0.4, base_ft: 18000, tops_ft: 25000 },
     ],
+    thermal_fpm: 0,
+    wave_height_m: 4,
+    wave_direction_deg: 200,
+    terrain_state: 'medium_wet',
+    variation_pct: 50,
+    evolution: 'gradually_deteriorating',
   },
   stormy: {
     visibility_km: 3,
     precipitation: 0.8,
     temperature_c: 15,
     altimeter_hpa: 998,
-    terrain_state: 'wet',
     wind: [
       { ...DEFAULT_WIND_LAYER, speed_kts: 28, direction_deg: 180, gust_kts: 18, turbulence: 0.6 },
       {
@@ -189,24 +263,40 @@ export const PRESET_DEFAULTS: Record<string, CustomWeatherState> = {
       { type: 'cumulonimbus', cover: 0.95, base_ft: 1500, tops_ft: 40000 },
       { type: 'cumulus', cover: 0.6, base_ft: 20000, tops_ft: 30000 },
     ],
+    thermal_fpm: 500,
+    wave_height_m: 8,
+    wave_direction_deg: 180,
+    terrain_state: 'very_wet',
+    variation_pct: 100,
+    evolution: 'rapidly_deteriorating',
   },
   snowy: {
     visibility_km: 4,
     precipitation: 0.4,
     temperature_c: 0,
     altimeter_hpa: 1008,
-    terrain_state: 'snowy',
     wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 15, direction_deg: 320, gust_kts: 5 }],
     clouds: [{ type: 'stratus', cover: 0.95, base_ft: 2500, tops_ft: 12000 }],
+    thermal_fpm: 0,
+    wave_height_m: 2,
+    wave_direction_deg: 320,
+    terrain_state: 'medium_snowy',
+    variation_pct: 30,
+    evolution: 'static',
   },
   foggy: {
     visibility_km: 0.4,
     precipitation: 0,
     temperature_c: 15,
     altimeter_hpa: 1013.25,
-    terrain_state: 'dry',
     wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 3 }],
     clouds: [{ type: 'stratus', cover: 1, base_ft: 0, tops_ft: 800 }],
+    thermal_fpm: 0,
+    wave_height_m: 1,
+    wave_direction_deg: 270,
+    terrain_state: 'lightly_wet',
+    variation_pct: 0,
+    evolution: 'static',
   },
 };
 

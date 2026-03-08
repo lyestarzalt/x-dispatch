@@ -332,9 +332,29 @@ export const useLaunchStore = create<LaunchState>()(
           }
         }
 
+        // v3 → v4: add outer wrapper fields (thermal, wave, terrain, variation, evolution)
+        if (version < 4) {
+          const wc = state.weatherConfig as Record<string, unknown> | undefined;
+          if (wc) {
+            const custom = wc.custom as Record<string, unknown> | undefined;
+            if (custom) {
+              if (!('thermal_fpm' in custom)) custom.thermal_fpm = 0;
+              if (!('wave_height_m' in custom)) custom.wave_height_m = 1;
+              if (!('wave_direction_deg' in custom)) custom.wave_direction_deg = 270;
+              if (!('variation_pct' in custom)) custom.variation_pct = 0;
+              if (!('evolution' in custom)) custom.evolution = 'static';
+              // Migrate old simplified terrain_state to full API values
+              const ts = custom.terrain_state as string;
+              if (ts === 'wet') custom.terrain_state = 'medium_wet';
+              else if (ts === 'snowy') custom.terrain_state = 'medium_snowy';
+              else if (ts === 'icy') custom.terrain_state = 'medium_icy';
+            }
+          }
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 3,
+      version: 4,
     }
   )
 );

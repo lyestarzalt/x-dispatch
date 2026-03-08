@@ -566,6 +566,86 @@
       "unlimited": "Illimitée"
     },
 
+    "weatherDialog": {
+      "title": "Paramètres météo",
+      "done": "Terminé",
+      "addCloud": "Couche nuageuse",
+      "addWind": "Couche de vent",
+
+      "layerProperties": "Propriétés de la couche",
+      "emptyHint": "Cliquez sur une couche nuageuse ou de vent dans le diagramme pour la modifier",
+
+      "cloudType": "Type de nuage",
+      "cloudCoverage": "Couverture nuageuse",
+      "tops": "Sommets",
+      "bases": "Bases",
+      "deleteCloud": "Supprimer la couche nuageuse {{n}}",
+
+      "cloudTypes": {
+        "cirrus": "Cirrus",
+        "stratus": "Stratus",
+        "cumulus": "Cumulus",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "Altitude",
+      "direction": "Direction",
+      "speed": "Vitesse",
+      "gusts": "Rafales",
+      "shear": "Cisaillement",
+      "turbulence": "Turbulence",
+      "deleteWind": "Supprimer la couche de vent {{n}}",
+
+      "atmosphere": "Atmosphère",
+      "visibility": "Visibilité",
+      "precipitation": "Précipitations",
+      "precipNone": "Aucune",
+      "precipSevere": "Sévères",
+      "temperature": "Température",
+      "altimeter": "Altimètre",
+
+      "environment": "Environnement",
+      "terrain": "Terrain",
+      "terrainCondition": "État",
+      "terrainIntensity": "Intensité",
+      "terrainConditions": {
+        "dry": "Sec",
+        "wet": "Mouillé",
+        "puddles": "Flaques",
+        "snow": "Neige",
+        "ice": "Verglas",
+        "mix": "Neige+Verglas"
+      },
+      "terrainIntensities": {
+        "light": "Légère",
+        "medium": "Moyenne",
+        "heavy": "Forte"
+      },
+
+      "waves": "Vagues",
+      "waveHeight": "Hauteur",
+      "waveDirection": "Direction",
+      "thermals": "Thermiques",
+      "thermalsNone": "Aucun",
+      "variation": "Variation",
+      "evolution": "Évolution",
+      "evolutionOptions": {
+        "rapidly_improving": "Amélioration rapide",
+        "improving": "En amélioration",
+        "gradually_improving": "Amélioration progressive",
+        "static": "Stable",
+        "gradually_deteriorating": "Dégradation progressive",
+        "deteriorating": "En dégradation",
+        "rapidly_deteriorating": "Dégradation rapide"
+      }
+    },
+
     "fuelConfig": {
       "auto": "Auto",
       "manual": "Manuel",

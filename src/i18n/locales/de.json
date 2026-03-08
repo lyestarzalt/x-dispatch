@@ -566,6 +566,86 @@
       "unlimited": "Unbegrenzt"
     },
 
+    "weatherDialog": {
+      "title": "Wettereinstellungen",
+      "done": "Fertig",
+      "addCloud": "Wolkenschicht",
+      "addWind": "Windschicht",
+
+      "layerProperties": "Schicht-Eigenschaften",
+      "emptyHint": "Klicken Sie auf eine Wolken- oder Windschicht im Diagramm zum Bearbeiten",
+
+      "cloudType": "Wolkentyp",
+      "cloudCoverage": "Wolkenbedeckung",
+      "tops": "Obergrenze",
+      "bases": "Untergrenze",
+      "deleteCloud": "Wolkenschicht {{n}} löschen",
+
+      "cloudTypes": {
+        "cirrus": "Cirrus",
+        "stratus": "Stratus",
+        "cumulus": "Cumulus",
+        "cumulonimbus": "Cb"
+      },
+      "coverageCategories": {
+        "few": "Few",
+        "scattered": "Sct",
+        "broken": "Bkn",
+        "overcast": "Ovc"
+      },
+
+      "altitude": "Höhe",
+      "direction": "Richtung",
+      "speed": "Geschwindigkeit",
+      "gusts": "Böen",
+      "shear": "Windscherung",
+      "turbulence": "Turbulenz",
+      "deleteWind": "Windschicht {{n}} löschen",
+
+      "atmosphere": "Atmosphäre",
+      "visibility": "Sicht",
+      "precipitation": "Niederschlag",
+      "precipNone": "Keiner",
+      "precipSevere": "Stark",
+      "temperature": "Temperatur",
+      "altimeter": "Höhenmesser",
+
+      "environment": "Umgebung",
+      "terrain": "Gelände",
+      "terrainCondition": "Zustand",
+      "terrainIntensity": "Intensität",
+      "terrainConditions": {
+        "dry": "Trocken",
+        "wet": "Nass",
+        "puddles": "Pfützen",
+        "snow": "Schnee",
+        "ice": "Eis",
+        "mix": "Schnee+Eis"
+      },
+      "terrainIntensities": {
+        "light": "Leicht",
+        "medium": "Mittel",
+        "heavy": "Stark"
+      },
+
+      "waves": "Wellen",
+      "waveHeight": "Höhe",
+      "waveDirection": "Richtung",
+      "thermals": "Thermik",
+      "thermalsNone": "Keine",
+      "variation": "Variation",
+      "evolution": "Entwicklung",
+      "evolutionOptions": {
+        "rapidly_improving": "Schnell bessernd",
+        "improving": "Bessernd",
+        "gradually_improving": "Allmählich bessernd",
+        "static": "Stabil",
+        "gradually_deteriorating": "Allmählich verschlechternd",
+        "deteriorating": "Verschlechternd",
+        "rapidly_deteriorating": "Schnell verschlechternd"
+      }
+    },
+
     "fuelConfig": {
       "auto": "Auto",
       "manual": "Manuell",
