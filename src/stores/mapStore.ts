@@ -72,6 +72,7 @@ interface MapState {
   /** When true, map follows plane position and heading */
   followPlane: boolean;
   weatherRadarEnabled: boolean;
+  dayNightEnabled: boolean;
   explore: ExploreState;
   /** Incremented when map style changes to trigger layer re-adds */
   styleVersion: number;
@@ -93,6 +94,7 @@ interface MapState {
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   setWeatherRadarEnabled: (enabled: boolean) => void;
+  setDayNightEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
   setAirportFilters: (filters: Partial<AirportFilterState>) => void;
   resetAirportFilters: () => void;
@@ -120,6 +122,7 @@ export const useMapStore = create<MapState>()(
       showPlaneTracker: false,
       followPlane: false,
       weatherRadarEnabled: false,
+      dayNightEnabled: false,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -188,6 +191,7 @@ export const useMapStore = create<MapState>()(
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
       setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),
+      setDayNightEnabled: (enabled) => set({ dayNightEnabled: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
@@ -221,6 +225,7 @@ export const useMapStore = create<MapState>()(
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
         airportFilters: state.airportFilters,
+        dayNightEnabled: state.dayNightEnabled,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;

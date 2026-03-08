@@ -40,6 +40,7 @@ import {
   useRouteLineSync,
   useVatsimSync,
 } from './hooks';
+import { useDayNightLayer } from './hooks/useDayNightLayer';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   addFlightPlanLayer,
@@ -92,6 +93,7 @@ export default function Map({ airports }: MapProps) {
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
+  const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const followPlane = useMapStore((s) => s.followPlane);
   const setFollowPlane = useMapStore((s) => s.setFollowPlane);
@@ -341,6 +343,9 @@ export default function Map({ airports }: MapProps) {
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
+
+  // Day/night terminator overlay
+  useDayNightLayer(mapRef, dayNightEnabled);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);

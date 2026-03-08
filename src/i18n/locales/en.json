@@ -89,6 +89,7 @@
     "vatsim": "VATSIM",
     "track": "Track",
     "weather": "Weather",
+    "dayNight": "Day / Night",
     "launch": "Launch",
     "flightPlan": "Flight Plan",
     "layers": "Layers",
