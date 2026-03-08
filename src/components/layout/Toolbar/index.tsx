@@ -8,6 +8,7 @@ import {
   ChevronsUpDown,
   CloudDownload,
   CloudRain,
+  CloudSun,
   Compass,
   FileUp,
   Layers,
@@ -101,6 +102,8 @@ export default function Toolbar({
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
+  const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
+  const setDayNightEnabled = useMapStore((s) => s.setDayNightEnabled);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
@@ -576,6 +579,13 @@ export default function Toolbar({
               >
                 <CloudRain className="mr-2 h-4 w-4" />
                 {t('toolbar.weather')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={dayNightEnabled}
+                onCheckedChange={() => setDayNightEnabled(!dayNightEnabled)}
+              >
+                <CloudSun className="mr-2 h-4 w-4" />
+                {t('toolbar.dayNight')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />
