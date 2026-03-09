@@ -33,9 +33,22 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     const liveries = scanLiveries(acfDir);
 
     // Parse fuel tank names and ratios
-    // Primary: acf/_tank_name properties. Fallback: _cgpt entries (indices 1-9 are fuel tanks)
+    //
+    // Laminar aircraft (R22, S-76, Cessna, etc.) use the standard properties:
+    //   acf/_tank_name/0..8  — human-readable tank names ("Main", "Aux")
+    //   acf/_tank_rat/0..8   — fraction of _m_fuel_max_tot per tank (sum ≈ 1.0)
+    //
+    // Third-party aircraft (XFER H145, Mirage-V, etc.) often omit _tank_name
+    // entirely and may set _tank_rat to a single 1.0 entry even when the
+    // aircraft has multiple physical tanks. In those cases we fall back to
+    // _cgpt (center-of-gravity point) entries where _cgpt/1..9 are fuel tanks
+    // and _w_max gives the per-tank capacity in lbs. We derive ratios from
+    // _w_max / _m_fuel_max_tot so the UI shows correct per-tank sliders.
     const tankNames: string[] = [];
     const tankRatios: number[] = [];
+    const maxFuelTotal = parseFloat(props['acf/_m_fuel_max_tot']) || 0;
+
+    // Primary path: acf/_tank_name properties (works for all Laminar aircraft)
     for (let i = 0; i < 9; i++) {
       const tankName = props[`acf/_tank_name/${i}`];
       if (tankName) {
@@ -43,16 +56,20 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
         tankRatios.push(parseFloat(props[`acf/_tank_rat/${i}`]) || 0);
       }
     }
-    // Fallback: use _cgpt fuel tank entries when acf/_tank_name is missing
-    if (tankNames.length === 0) {
+
+    // Fallback: _cgpt fuel tank entries when acf/_tank_name is missing
+    // _cgpt/0 is "empty craft", indices 1-9 are fuel tanks
+    if (tankNames.length === 0 && maxFuelTotal > 0) {
       for (let i = 0; i < 9; i++) {
-        const cgptIdx = i + 1; // _cgpt/0 is empty craft, 1-9 are fuel tanks
+        const cgptIdx = i + 1;
         const cgptName = props[`_cgpt/${cgptIdx}/_name`];
         const maxWeight = parseFloat(props[`_cgpt/${cgptIdx}/_w_max`]) || 0;
-        const ratio = parseFloat(props[`acf/_tank_rat/${i}`]) || 0;
-        if (cgptName && maxWeight > 0 && ratio > 0) {
+        if (cgptName && maxWeight > 0) {
           tankNames.push(cgptName);
-          tankRatios.push(ratio);
+          // Derive ratio from per-tank capacity rather than trusting _tank_rat
+          // which may be zero for all but the first tank (e.g. XFER H145 has
+          // _tank_rat/0=1.0, _tank_rat/1=0.0 but two equal 804lb tanks)
+          tankRatios.push(maxWeight / maxFuelTotal);
         }
       }
     }
