@@ -93,12 +93,25 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     }
 
     // Parse payload stations (up to 9)
+    // Laminar aircraft define named stations (Pilot, Copilot, Baggage, etc.)
+    // Third-party aircraft (XFER H145) often omit these entirely.
     const payloadStations: { name: string; maxWeight: number }[] = [];
     for (let i = 0; i < 9; i++) {
       const name = props[`acf/_fixed_name/${i}`];
       const maxWeight = parseFloat(props[`acf/_fixed_max/${i}`]) || 0;
       if (name && maxWeight > 0) {
         payloadStations.push({ name, maxWeight });
+      }
+    }
+    // Fallback: synthesize a single "Payload" station from available weight
+    // budget, same as X-Plane's own UI which shows a generic payload slider
+    // when no named stations exist.
+    if (payloadStations.length === 0) {
+      const emptyLbs = parseFloat(props['acf/_m_empty']) || 0;
+      const maxLbs = parseFloat(props['acf/_m_max']) || 0;
+      const availablePayload = maxLbs - emptyLbs - maxFuelTotal;
+      if (availablePayload > 0) {
+        payloadStations.push({ name: 'Payload', maxWeight: availablePayload });
       }
     }
 
