@@ -65,3 +65,31 @@ export const DEFAULT_NAV_VISIBILITY: NavLayerVisibility = {
   airspaces: false,
   airwaysMode: 'off',
 };
+
+// Range Rings - aircraft category reach visualization
+export type RangeRingCategory = 'jet' | 'turboprop' | 'prop';
+
+export const ALL_RANGE_RING_CATEGORIES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
+
+export const DEFAULT_RANGE_RINGS_DURATION = 2;
+
+/** Cruise speeds in knots per category */
+export const RANGE_RING_SPEEDS: Record<RangeRingCategory, number> = {
+  jet: 450,
+  turboprop: 280,
+  prop: 130,
+};
+
+/** MapLibre line colors per category */
+export const RANGE_RING_COLORS: Record<RangeRingCategory, string> = {
+  jet: '#38bdf8',
+  turboprop: '#fbbf24',
+  prop: '#34d399',
+};
+
+/** Short display labels per category */
+export const RANGE_RING_LABELS: Record<RangeRingCategory, string> = {
+  jet: 'JET',
+  turboprop: 'TBP',
+  prop: 'GA',
+};

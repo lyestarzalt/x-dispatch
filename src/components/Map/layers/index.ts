@@ -53,6 +53,13 @@ export {
   setupIvaoClickHandler,
   updateIvaoPilotLayer,
 } from './dynamic/IvaoLayer';
+export {
+  addRangeRingsLayer,
+  removeRangeRingsLayer,
+  updateRangeRings,
+  RANGE_RINGS_LAYER_IDS,
+} from './dynamic/RangeRingsLayer';
+export type { RangeRingsConfig } from './dynamic/RangeRingsLayer';
 
 export function createLayerRenderers(): LayerRenderer[] {
   return [
