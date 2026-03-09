@@ -5,9 +5,11 @@ import {
   AirwaysMode,
   DEFAULT_LAYER_VISIBILITY,
   DEFAULT_NAV_VISIBILITY,
+  DEFAULT_RANGE_RINGS_DURATION,
   LayerVisibility,
   NavLayerVisibility,
 } from '@/types/layers';
+import type { RangeRingCategory } from '@/types/layers';
 
 export interface FeatureDebugInfo {
   type: 'line' | 'sign' | 'gate' | 'runway' | 'taxiway' | 'unknown';
@@ -77,6 +79,9 @@ interface MapState {
   /** Incremented when map style changes to trigger layer re-adds */
   styleVersion: number;
   airportFilters: AirportFilterState;
+  rangeRingsEnabled: boolean;
+  rangeRingsDuration: number;
+  rangeRingsCategories: RangeRingCategory[];
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -98,6 +103,10 @@ interface MapState {
   resetLayerVisibility: () => void;
   setAirportFilters: (filters: Partial<AirportFilterState>) => void;
   resetAirportFilters: () => void;
+
+  setRangeRingsEnabled: (enabled: boolean) => void;
+  setRangeRingsDuration: (hours: number) => void;
+  toggleRangeRingsCategory: (category: RangeRingCategory) => void;
 
   setExploreOpen: (isOpen: boolean) => void;
   setExploreTab: (tab: ExploreTab) => void;
@@ -137,6 +146,9 @@ export const useMapStore = create<MapState>()(
       },
       styleVersion: 0,
       airportFilters: DEFAULT_AIRPORT_FILTERS,
+      rangeRingsEnabled: false,
+      rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
+      rangeRingsCategories: ['jet', 'turboprop', 'prop'] as RangeRingCategory[],
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -205,6 +217,17 @@ export const useMapStore = create<MapState>()(
 
       resetAirportFilters: () => set({ airportFilters: DEFAULT_AIRPORT_FILTERS }),
 
+      setRangeRingsEnabled: (enabled) => set({ rangeRingsEnabled: enabled }),
+      setRangeRingsDuration: (hours) => set({ rangeRingsDuration: hours }),
+      toggleRangeRingsCategory: (category) =>
+        set((state) => {
+          const cats = state.rangeRingsCategories;
+          const next = cats.includes(category)
+            ? cats.filter((c) => c !== category)
+            : [...cats, category];
+          return { rangeRingsCategories: next };
+        }),
+
       setExploreOpen: (isOpen) => set((state) => ({ explore: { ...state.explore, isOpen } })),
       setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
       setSelectedRoute: (route) =>
@@ -219,13 +242,16 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 6,
+      version: 7,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
         airportFilters: state.airportFilters,
         dayNightEnabled: state.dayNightEnabled,
+        rangeRingsEnabled: state.rangeRingsEnabled,
+        rangeRingsDuration: state.rangeRingsDuration,
+        rangeRingsCategories: state.rangeRingsCategories,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -265,6 +291,13 @@ export const useMapStore = create<MapState>()(
             if (!old.country) old.country = 'all';
           }
           state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
+        }
+        // Migration to v7: add range rings state
+        if (version < 7) {
+          if (!state.rangeRingsEnabled) state.rangeRingsEnabled = false;
+          if (!state.rangeRingsDuration) state.rangeRingsDuration = DEFAULT_RANGE_RINGS_DURATION;
+          if (!state.rangeRingsCategories)
+            state.rangeRingsCategories = ['jet', 'turboprop', 'prop'];
         }
         return state;
       },

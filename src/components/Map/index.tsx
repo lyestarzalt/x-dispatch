@@ -37,6 +37,7 @@ import {
   useMapSetup,
   useNavLayerSync,
   useProcedureRouteSync,
+  useRangeRingsSync,
   useRouteLineSync,
   useVatsimSync,
 } from './hooks';
@@ -340,6 +341,9 @@ export default function Map({ airports }: MapProps) {
 
   // Procedure route sync - renders selected procedure on map
   useProcedureRouteSync({ mapRef, styleVersion });
+
+  // Range rings sync - renders reach circles from selected airport
+  useRangeRingsSync({ mapRef, navDataLocation, styleVersion });
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);

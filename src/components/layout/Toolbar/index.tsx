@@ -58,6 +58,12 @@ import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { ALL_SURFACE_TYPES, type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
 import type { NavLayerVisibility } from '@/types/layers';
+import {
+  ALL_RANGE_RING_CATEGORIES,
+  RANGE_RING_COLORS,
+  RANGE_RING_LABELS,
+  RANGE_RING_SPEEDS,
+} from '@/types/layers';
 
 interface ToolbarProps {
   airports: Airport[];
@@ -109,6 +115,12 @@ export default function Toolbar({
   const airportFilters = useMapStore((s) => s.airportFilters);
   const setAirportFilters = useMapStore((s) => s.setAirportFilters);
   const resetAirportFilters = useMapStore((s) => s.resetAirportFilters);
+  const rangeRingsEnabled = useMapStore((s) => s.rangeRingsEnabled);
+  const setRangeRingsEnabled = useMapStore((s) => s.setRangeRingsEnabled);
+  const rangeRingsDuration = useMapStore((s) => s.rangeRingsDuration);
+  const setRangeRingsDuration = useMapStore((s) => s.setRangeRingsDuration);
+  const rangeRingsCategories = useMapStore((s) => s.rangeRingsCategories);
+  const toggleRangeRingsCategory = useMapStore((s) => s.toggleRangeRingsCategory);
   const filtersActive = isAirportFiltersActive(airportFilters);
   const [countryOpen, setCountryOpen] = useState(false);
 
@@ -247,7 +259,12 @@ export default function Toolbar({
   ];
 
   const layersActive =
-    filtersActive || totalNavItems > 0 || weatherRadarEnabled || vatsimEnabled || ivaoEnabled;
+    filtersActive ||
+    totalNavItems > 0 ||
+    weatherRadarEnabled ||
+    vatsimEnabled ||
+    ivaoEnabled ||
+    rangeRingsEnabled;
 
   return (
     <div className="relative flex items-center gap-3">
@@ -410,9 +427,9 @@ export default function Toolbar({
             <TooltipContent>
               <p>{t('toolbar.tooltips.layers')}</p>
             </TooltipContent>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="max-h-[70vh] w-56 overflow-y-auto">
               {/* Airports section */}
-              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              <DropdownMenuLabel className="xp-section-heading">
                 {t('airportFilters.title')}
               </DropdownMenuLabel>
               <DropdownMenuCheckboxItem
@@ -449,7 +466,7 @@ export default function Toolbar({
               <DropdownMenuSeparator />
 
               {/* Surface Type section */}
-              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              <DropdownMenuLabel className="xp-section-heading">
                 {t('airportFilters.surfaceType')}
               </DropdownMenuLabel>
               {(
@@ -472,7 +489,7 @@ export default function Toolbar({
               <DropdownMenuSeparator />
 
               {/* Country section */}
-              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              <DropdownMenuLabel className="xp-section-heading">
                 {t('airportFilters.country')}
               </DropdownMenuLabel>
               <div className="px-1 pb-1">
@@ -551,7 +568,7 @@ export default function Toolbar({
               <DropdownMenuSeparator />
 
               {/* Navigation section */}
-              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              <DropdownMenuLabel className="xp-section-heading">
                 Around Airport (50nm)
               </DropdownMenuLabel>
               {localNavLayers.map((layer) => (
@@ -570,7 +587,7 @@ export default function Toolbar({
               <DropdownMenuSeparator />
 
               {/* Overlays section */}
-              <DropdownMenuLabel className="text-xs font-normal uppercase tracking-wider text-muted-foreground">
+              <DropdownMenuLabel className="xp-section-heading">
                 {t('toolbar.overlays')}
               </DropdownMenuLabel>
               <DropdownMenuCheckboxItem
@@ -605,6 +622,57 @@ export default function Toolbar({
                   </Badge>
                 )}
               </DropdownMenuCheckboxItem>
+
+              <DropdownMenuSeparator />
+
+              {/* Range Rings section */}
+              <DropdownMenuLabel className="xp-section-heading">Range Rings</DropdownMenuLabel>
+              <DropdownMenuCheckboxItem
+                checked={rangeRingsEnabled}
+                onCheckedChange={() => setRangeRingsEnabled(!rangeRingsEnabled)}
+              >
+                Enabled
+              </DropdownMenuCheckboxItem>
+              {rangeRingsEnabled && (
+                <>
+                  <div className="flex gap-1 px-2 py-1.5">
+                    {([1, 2, 3, 5, 8] as const).map((h) => (
+                      <Button
+                        key={h}
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setRangeRingsDuration(h);
+                        }}
+                        className={cn(
+                          'h-6 flex-1 px-0 text-xs',
+                          rangeRingsDuration === h && 'bg-primary/20 text-primary'
+                        )}
+                      >
+                        {h}h
+                      </Button>
+                    ))}
+                  </div>
+                  {ALL_RANGE_RING_CATEGORIES.map((cat) => (
+                    <DropdownMenuCheckboxItem
+                      key={cat}
+                      checked={rangeRingsCategories.includes(cat)}
+                      onCheckedChange={() => toggleRangeRingsCategory(cat)}
+                    >
+                      <span
+                        className="mr-2 inline-block h-2 w-2 rounded-full"
+                        style={{ backgroundColor: RANGE_RING_COLORS[cat] }}
+                      />
+                      <span className="flex-1">{RANGE_RING_LABELS[cat]}</span>
+                      <span className="ml-2 font-mono text-xs text-muted-foreground">
+                        {RANGE_RING_SPEEDS[cat]}kts
+                      </span>
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </Tooltip>
