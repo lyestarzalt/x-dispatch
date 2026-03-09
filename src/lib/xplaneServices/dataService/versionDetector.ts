@@ -161,14 +161,17 @@ export async function detectXPlaneVersion(xplanePath: string): Promise<XPlaneVer
   const isSteam = isSteamInstallation(xplanePath);
 
   // Strategy 1: --version flag
-  let versionStr = await runVersionCommand(xplanePath);
-  if (versionStr) {
-    // Strip "X-Plane " prefix if present
-    versionStr = versionStr.replace(/^X-Plane\s+/i, '');
-    const parsed = parseVersionString(versionStr);
-    if (parsed) {
-      logger.data.info(`X-Plane version detected via --version: ${parsed.raw}`);
-      return { ...parsed, isSteam };
+  // Skip on Windows Steam installs — running the exe triggers Steam's launch dialog
+  if (!(process.platform === 'win32' && isSteam)) {
+    let versionStr = await runVersionCommand(xplanePath);
+    if (versionStr) {
+      // Strip "X-Plane " prefix if present
+      versionStr = versionStr.replace(/^X-Plane\s+/i, '');
+      const parsed = parseVersionString(versionStr);
+      if (parsed) {
+        logger.data.info(`X-Plane version detected via --version: ${parsed.raw}`);
+        return { ...parsed, isSteam };
+      }
     }
   }
 
