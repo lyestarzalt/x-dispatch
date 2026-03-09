@@ -38,12 +38,19 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     //   acf/_tank_name/0..8  — human-readable tank names ("Main", "Aux")
     //   acf/_tank_rat/0..8   — fraction of _m_fuel_max_tot per tank (sum ≈ 1.0)
     //
-    // Third-party aircraft (XFER H145, Mirage-V, etc.) often omit _tank_name
-    // entirely and may set _tank_rat to a single 1.0 entry even when the
-    // aircraft has multiple physical tanks. In those cases we fall back to
-    // _cgpt (center-of-gravity point) entries where _cgpt/1..9 are fuel tanks
-    // and _w_max gives the per-tank capacity in lbs. We derive ratios from
-    // _w_max / _m_fuel_max_tot so the UI shows correct per-tank sliders.
+    // Third-party aircraft (XFER H145, Mirage-V, etc.) often omit _tank_name.
+    // In that case we use two fallback strategies:
+    //
+    // Fallback A — _tank_rat as source of truth for tank count:
+    //   _tank_rat tells X-Plane how many real pilot-visible tanks exist.
+    //   e.g. H145 has _tank_rat/0=1.0 (one tank, 100% of fuel) even though
+    //   _cgpt has two 804lb entries for internal CG distribution. X-Plane's
+    //   own UI shows 1 tank at 723kg — _tank_rat is correct, _cgpt is not.
+    //   We pair non-zero _tank_rat entries with _cgpt names for display.
+    //
+    // Fallback B — _cgpt w_max (last resort):
+    //   If _tank_rat is entirely zero (unlikely but defensive), derive tank
+    //   structure from _cgpt entries with non-zero _w_max.
     const tankNames: string[] = [];
     const tankRatios: number[] = [];
     const maxFuelTotal = parseFloat(props['acf/_m_fuel_max_tot']) || 0;
@@ -57,19 +64,30 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       }
     }
 
-    // Fallback: _cgpt fuel tank entries when acf/_tank_name is missing
-    // _cgpt/0 is "empty craft", indices 1-9 are fuel tanks
+    // Fallback when acf/_tank_name is missing (third-party aircraft)
     if (tankNames.length === 0 && maxFuelTotal > 0) {
+      // Fallback A: use non-zero _tank_rat entries — these are the real tanks
+      // that X-Plane exposes to the pilot (e.g. H145: 1 tank at ratio 1.0)
       for (let i = 0; i < 9; i++) {
-        const cgptIdx = i + 1;
-        const cgptName = props[`_cgpt/${cgptIdx}/_name`];
-        const maxWeight = parseFloat(props[`_cgpt/${cgptIdx}/_w_max`]) || 0;
-        if (cgptName && maxWeight > 0) {
+        const ratio = parseFloat(props[`acf/_tank_rat/${i}`]) || 0;
+        if (ratio > 0) {
+          const cgptIdx = i + 1;
+          const cgptName = props[`_cgpt/${cgptIdx}/_name`] || `Tank ${i + 1}`;
           tankNames.push(cgptName);
-          // Derive ratio from per-tank capacity rather than trusting _tank_rat
-          // which may be zero for all but the first tank (e.g. XFER H145 has
-          // _tank_rat/0=1.0, _tank_rat/1=0.0 but two equal 804lb tanks)
-          tankRatios.push(maxWeight / maxFuelTotal);
+          tankRatios.push(ratio);
+        }
+      }
+
+      // Fallback B: if _tank_rat is all zeros, derive from _cgpt capacity
+      if (tankNames.length === 0) {
+        for (let i = 0; i < 9; i++) {
+          const cgptIdx = i + 1;
+          const cgptName = props[`_cgpt/${cgptIdx}/_name`];
+          const maxWeight = parseFloat(props[`_cgpt/${cgptIdx}/_w_max`]) || 0;
+          if (cgptName && maxWeight > 0) {
+            tankNames.push(cgptName);
+            tankRatios.push(maxWeight / maxFuelTotal);
+          }
         }
       }
     }
