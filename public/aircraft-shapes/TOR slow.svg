@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-33 -32 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="TOR slow mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title6724">Panavia Tornado (slow)</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.919596"
+     inkscape:cx="153.48005"
+     inkscape:cy="158.15201"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer6"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Panavia Tornado (slow)</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 7.1815475,0.09449405 7.1579228,0.68508183 6.7917583,1.5827753 6.6263937,2.2206101 6.508276,3.2364211 6.4137822,4.1931732 6.3783468,6.3547246 6.3074764,6.3429136 6.2956654,5.598773 5.6460188,5.610584 5.5987716,5.8586308 5.6223963,6.39016 5.5515258,6.6027715 5.5869609,6.8153832 V 7.110677 l 0.047247,0.295294 -0.6968937,1.1457403 -4.35853837,1.9961867 -0.29529388,0.921317 -0.0826823,0.602399 5.70507815,-1.476469 0.011811,1.228423 -2.1851747,3.224609 0.011811,0.992187 2.4568452,-0.815011 -0.047247,-0.2008 0.1653645,0.09449 0.4134115,0.03544 0.2480469,-0.09449 0.1299292,2.067057 H 7.2642282 L 7.370534,15.095428 7.7839455,15.154488 8.1619216,15.03637 8.2091686,15.06 v 0.141741 L 10.642391,16.028564 10.666011,15.06 8.4572126,11.811767 8.4808376,10.606968 14.162292,12.048002 13.961492,11.008568 13.748885,10.512464 9.4375937,8.516277 8.7407,7.3823485 8.752511,6.8153843 8.8470051,6.6618315 8.8351941,6.4492197 8.793853,6.4078786 8.770231,5.8527261 8.7229838,5.5987732 8.0379019,5.5928677 8.0615265,6.3251966 7.990656,6.3133856 V 4.7187963 L 7.9611235,4.0455265 7.8075707,2.6930802 7.7485117,2.2560454 7.6540179,1.7953869 7.2169829,0.68508183 Z"
+       id="path2670" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Accent">
+    <path
+       id="path856"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 7.1912207,10.206355 -0.2171565,1.628674 0.2088044,4.276312 0.2505651,-4.259608 z m 1.2729897,1.574753 -0.1287422,2.334064 -0.1837476,0.902034 m -2.2383824,-3.170119 0.1336347,2.351606 0.1503392,0.868626 M 8.7539165,7.4155421 8.5025118,8.8198943 V 10.674077 M 5.6538274,7.4627892 5.9133382,8.8198943 5.9300412,10.674077 M 6.7318511,5.5541949 7.692351,5.545842 M 6.6917794,4.2286086 7.2162772,4.0173949 7.689453,4.1931732 M 6.909877,2.6694569 6.7917596,3.141927 6.6917795,4.2286086 6.6830076,6.2539472 6.7327009,6.7090773 7.2169829,6.8390065 7.6776412,6.673642 7.7248884,6.2366072 7.689453,4.1931732 7.5831472,3.0828683 7.4866266,2.6763759 Z"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccc" />
+  </g>
+</svg>

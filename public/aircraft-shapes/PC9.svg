@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-35 -35 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="PC9 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title2690">Pilatus PC-9</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="15.839192"
+     inkscape:cx="153.19595"
+     inkscape:cy="153.00654"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer3"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Pilatus PC-9</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 5.0456377,0.03388688 4.9006698,0.19947682 4.7597357,0.53043915 4.6798765,0.95255022 4.4745249,1.0780427 4.3718497,1.2948024 l 0.034225,0.136901 0.1597178,0.1825343 -0.034225,1.6428116 -1.3347836,0.01141 -3.13731267,0.2395768 v 0.3650693 l -0.12549245,0.022815 0.09126725,0.079859 0.03422524,0.6730961 3.68491633,0.4335199 0.7643638,0.011411 0.06845,1.3461926 L 4.736919,7.7747823 4.5657932,8.6418214 3.4477687,8.8585809 3.4363584,9.1551997 3.2994579,9.1323848 3.3222729,9.6001291 4.9993097,9.8739313 6.6535292,9.6571706 V 9.1437928 H 6.5394449 L 6.5052196,8.8928084 5.524096,8.6646397 5.2959284,7.7861926 5.4100121,6.805069 5.5126874,5.7440871 l -0.011405,-0.673096 0.8784473,0.011411 3.6278743,-0.4563364 0.01141,-0.6616881 0.09127,-0.045635 -0.03422,-0.079859 -0.079857,-0.034226 V 3.4966295 L 8.946623,3.393952 8.9123977,3.2456429 H 8.7869053 L 8.7983156,3.393952 6.8702939,3.2570515 H 5.501285 L 5.4898747,1.61424 5.6886723,1.4549843 5.7088407,1.2533098 5.6120366,1.0879375 5.3942284,0.9265982 5.3175928,0.53938347 5.1896832,0.19386644 Z"
+       id="path2011"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Accent">
+    <path
+       id="path3424"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.266999"
+       d="M 5.0319641,9.2665142 5.0069071,6.2680859 m 0.5261875,-2.9650213 -0.00836,1.8207725 m -1.0523667,-1.8124223 -9.3e-6,1.8124223 m 0.6551297,-0.5692193 0.00886,0.8504449 m -0.2155657,-0.8533976 0.00886,0.868164 m -0.2380305,-1.0080768 0.1534399,0.075172 0.3471834,-4e-6 0.1316964,-0.068398 0.00245,0.8827968 -0.1837459,0.1419871 -0.244303,0.00418 L 4.7020566,5.3201154 Z M 5.1363651,2.7768771 5.1321847,4.100696 M 4.9275612,2.7601713 4.9233812,4.1174018 M 4.6999666,3.3034372 4.6993079,2.8803001 4.9119191,2.6913135 h 0.2008002 l 0.2126112,0.1889866 -0.00209,1.1567737 -0.1514629,0.107085 H 4.8646724 L 4.6874995,4.0260412 Z" />
+  </g>
+</svg>

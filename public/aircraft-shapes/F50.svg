@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-26 -27 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="F50 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title6052">Fokker F50</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="149.62884"
+     inkscape:cy="145.3357"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer3"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     viewbox-y="-27"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Fokker F50</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 14.433966,0.02362351 13.961495,0.61421131 13.512649,2.0552455 13.205543,3.3309152 13.181921,9.6856398 11.49284,9.815569 11.469215,8.2918526 11.398345,7.7485117 11.209357,7.1933593 10.96131,6.8626301 l -0.248047,0.3189174 -0.177176,0.5551527 -0.08268,0.6142112 -0.01181,1.5473399 -10.23960497,0.7922277 -0.24720742,0.252939 0.03340869,0.809279 0.14174107,0.342541 4.26404393,0.248047 0.059059,0.236235 h 0.070871 l 0.082682,-0.236235 5.7835187,0.452243 0.134172,0.894297 0.236235,0.803199 0.165364,0.437035 0.129929,0.02362 0.153553,-0.47247 0.224424,-0.815011 0.05906,-0.519717 -0.01181,-0.271671 1.641834,0.118118 0.05906,4.015997 0.259859,2.433222 0.259859,1.535528 -4.09868,0.897694 0.094494,1.157552 4.393974,0.377976 0.248047,0.87407 0.106305,0.661458 0.12993,0.01181 0.04725,-0.637835 0.188989,-0.909505 4.618396,-0.507905 -0.02362,-1.086682 -4.122303,-0.838634 0.330729,-1.87807 0.212611,-1.771763 0.02362,-4.323103 1.653646,-0.09449 0.118118,0.696894 0.224423,0.897693 0.12993,0.472471 0.165364,-0.01181 0.118118,-0.496094 0.27167,-0.850447 0.03543,-0.437034 0.07087,-0.389789 5.693266,-0.448846 0.07087,0.259858 h 0.07087 l 0.04725,-0.259858 4.334914,-0.366165 0.236236,-0.767764 -0.05906,-0.413411 L 28.702566,10.559709 18.56808,9.8982502 V 8.3509114 L 18.461774,7.6185825 18.284598,7.1579242 18.036551,6.7799478 17.776692,7.2406065 17.682198,7.6303943 17.587704,7.9847471 17.528646,9.8391926 15.839565,9.7328867 15.735493,3.3241647 15.401407,2.0379301 14.91698,0.60135642 Z"
+       id="path1997"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+</svg>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-32 -36 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="AS21 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title7632">Schleicher ASK21</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="141.20536"
+     inkscape:cy="155.49107"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Schleicher ASK21</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 8.5860336,0.11693042 8.4297886,0.44118121 8.2853553,1.0607259 8.22689,1.9209997 8.2352429,2.7144562 0.16704425,2.7478648 0.04176166,2.8814995 0.05846599,3.2489952 3.4410959,3.725069 l 4.693921,0.4510174 0.1479778,0.076146 0.0502,0.1092586 0.1063059,2.27081 0.032482,1.0541992 -1.4174105,0.2303293 0.00295,0.431129 1.4321756,0.094494 0.049335,-0.078864 0.033347,0.2235582 0.051781,-8.62e-4 0.025353,-0.2077192 0.035077,0.057985 1.4410333,-0.088588 -0.003,-0.428176 L 8.7170767,7.6865 8.7500656,6.6364411 8.8470059,4.3142439 8.9090176,4.2404204 9.1393469,4.1695499 13.660296,3.7384206 17.127047,3.2600447 17.132952,2.8584448 17.038458,2.7462331 8.9414994,2.7226085 8.9533104,1.8957855 8.8706282,1.0335273 8.7584165,0.44884541 Z"
+       id="path1416"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Accent"
+     style="display:inline">
+    <path
+       id="path1421"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 8.2352429,2.7144562 8.3814054,3.0234866 8.5985619,3.0777756 8.807366,3.0193106 8.9414994,2.7226085 M 8.3563488,0.8895064 8.5776812,0.78510423 8.8240704,0.89785857 8.9410008,1.9961693 8.560977,1.9084714 8.2561225,2.0128736 Z" />
+  </g>
+</svg>

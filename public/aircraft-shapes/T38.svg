@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-36 -33 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="T38 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title6022">Northrop T-38 Talon</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="159.6875"
+     inkscape:cy="152.45536"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Northrop T-38 Talon</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       id="path1415"
+       style="opacity:1;fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 4.3640085,6.2181894 C 4.4036252,5.1893203 4.4251416,4.1664113 4.3514803,3.1404138 L 4.293015,2.3678379 4.1635565,1.6746076 4.0382739,1.2027099 3.8921107,0.8310382 3.8670544,0.15451221 m -0.00461,-0.0245859 -0.035435,0.70870536 -0.051827,0.0884565 -0.187924,0.73499123 -0.1169305,0.726639 -0.083522,0.7475194 -0.025056,3.1487692 -0.054289,-0.00835 -0.025056,-0.1085781 -0.041761,0.07517 -0.1211067,0.016703 -0.083522,0.083522 -0.07517,0.1670436 0.020881,0.5387149 0.066818,0.4551937 -3.00260607,1.8124212 0.004176,0.6723502 3.07777567,0.2672695 -0.00835,0.872802 0.045937,0.655646 -1.4073411,0.918739 0.02088,0.505306 1.5159196,0.06264 0.050113,0.396729 0.09605,0.496954 h 0.8811522 l 0.100226,-0.496954 0.033409,-0.396729 1.5367998,-0.07935 -0.00418,-0.505307 -1.403165,-0.910386 0.058465,-0.7684 L 4.6312803,10.260639 7.7048798,9.9724894 7.7007047,9.3168437 4.7064508,7.4835418 4.7857964,6.9239462 4.7816213,6.4687528 4.7231563,6.3351181 4.5978737,6.2474203 4.5143519,6.2432452 4.4767671,6.1680758 4.472592,6.2766539 H 4.393246"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Accent">
+    <path
+       id="path1449"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 3.8837602,10.999811 -0.1085781,0.141987 0.033409,1.060726 -0.066817,0.09187 0.025056,0.693231 0.058466,0.07517 0.050113,0.760047 0.066817,-0.7684 0.041761,-0.06682 0.016704,-0.709934 -0.050113,-0.07517 0.016704,-1.060726 z m -0.7099345,0.776753 0.1336347,1.520095 M 4.593695,11.743154 4.4433558,13.296659 M 4.693921,7.5169553 4.5101732,8.8867116 4.6271037,10.281525 M 3.0819518,7.5420119 3.2573473,8.9034161 3.1404168,10.248116 m 0.3173828,-5.0280081 0.8686257,0.00835 M 3.532969,3.8085908 3.8837602,3.725069 4.2763125,3.825295 M 3.7167169,2.9316127 3.4745038,3.5496735 3.4410951,6.3476512 3.8921123,6.431173 4.301369,6.3476512 4.3264251,3.4828559 4.025747,2.9149082 Z" />
+  </g>
+</svg>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-35 -34 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="R44 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title4080">Robinson R44</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="15.839192"
+     inkscape:cx="141.07412"
+     inkscape:cy="152.43833"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Robinson R44</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 1.7186105,2.8584448 1.4174107,2.9529389 1.1752697,3.2600447 1.0512463,3.7207031 0.99218749,4.1104909 1.0039993,4.5179966 0.70870534,4.5002791 V 3.5317149 l -0.0531529,-0.023623 -0.0767764,0.064964 0.047247,2.6340217 -0.0531529,0.1535528 0.15355282,0.029529 -0.0177176,-0.3071056 0.46065844,0.059059 0.059059,0.3307292 -0.00591,0.053153 -0.047247,-0.017716 -0.059059,0.2126118 0.047247,0.023625 -0.75595233,2.504092 -0.0413411,-0.011811 -0.0649647,0.1771764 0.0413411,0.017719 -0.27757627,1.0453408 0.19489397,0.08859 1.04534043,-3.4667553 0.1063058,0.070871 0.076776,0.02953 0.147647,4.1341143 -0.023624,0.05315 -0.070871,0.02953 -0.064965,-0.02362 -0.029529,-0.106306 -0.011812,-0.502 -0.047247,-0.02362 -0.023624,0.08268 0.00591,0.442941 -0.053153,0.07678 v 0.2008 l 0.035435,0.05906 0.017718,0.531529 0.041341,0.04134 0.023624,-0.02953 -0.00591,-0.555152 0.053153,-0.02363 v -0.08268 h 0.064965 l 0.076777,0.07678 0.141741,0.01181 v 0.218517 l 0.059059,0.02953 -0.2126116,0.614212 0.059059,0.02953 0.1771764,-0.543341 0.035435,0.04134 0.059059,-0.188988 0.9803757,-0.08268 0.011812,-0.354353 -1.0512463,-0.05315 -0.088588,-0.301199 0.1476469,-3.7856677 0.1004,-0.047247 0.053153,-0.094494 0.1653646,-0.921317 0.4547525,-0.059059 -0.023625,0.3011998 0.1653645,-0.00591 L 2.8230086,6.0889604 2.8289141,3.549433 2.787573,3.5258084 2.7167025,3.5789613 2.7521379,4.5179958 2.3977864,4.494373 2.4036923,4.1223027 2.4568452,4.0455265 2.4509393,3.96875 2.3800688,3.915597 2.3387276,3.5730561 2.9647507,1.3937872 3.0060918,1.4115048 3.0769623,1.2284226 3.0297154,1.2047991 3.3250092,0.1594587 3.1360213,0.09449405 2.1969866,3.189174 2.1024925,3.047433 1.9430338,2.9115977 Z"
+       id="path1414" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Accent">
+    <path
+       id="path1425"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 1.1398344,3.8565383 c 0.076777,0.047247 0.1299294,0.1594586 0.1299294,0.1594586 L 1.7067987,4.0514322 1.8603515,4.0455265 2.3387276,3.9569382 2.1969866,3.3545385 1.9902809,2.9824682 1.4941871,2.9765625 1.2343285,3.2600447 Z M 1.2638579,6.3547246 1.4233166,5.758231 1.5355283,5.6342076 v -0.2008 L 1.5059989,5.179455 1.5709635,5.0731491 1.7067987,5.0259022 1.6890811,4.8723494 2.2442336,3.2364211 M 2.2501395,3.915597 1.9784691,4.836914 1.8721633,4.9668432 1.8308222,5.1203963 1.8780692,5.3743489 1.836728,5.7050781 1.7067987,5.9295013 1.700893,5.7050781 1.305195,7.0988676 M 2.3977864,4.494373 2.3387274,5.468843 2.2619474,6.1539373 M 1.0039993,4.5179966 1.1693638,6.1421128" />
+  </g>
+</svg>

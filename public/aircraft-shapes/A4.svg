@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-36 -34 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="A4 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title239">Douglas A4 Skyhawk (ICAO A4)</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.919596"
+     inkscape:cx="124.81697"
+     inkscape:cy="135.80238"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Douglas A4 Skyhawk (ICAO A4)</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 4.2817615,0.17717633 4.1400203,0.34254092 3.9923735,0.92131696 3.8801619,2.0257162 3.7856678,3.4490328 3.6203032,3.4667493 3.6262087,4.0396196 3.5199029,4.0691489 3.4431266,4.299478 3.4667512,4.7660424 3.0179044,5.2503246 0.49018867,7.4236875 0.2126124,7.7780402 0.08858896,8.1619223 0.06496545,8.7347923 0.15355362,8.8351924 3.7088921,8.8115674 3.8388215,10.64239 l -1.2343286,1.17527 -0.064965,0.224423 0.059059,0.183083 1.6359281,0.0059 0.035435,0.236235 h 0.053153 l 0.011811,-0.248047 1.6595516,0.01181 0.023625,-0.05906 -0.00591,-0.206706 L 5.935409,11.78813 4.7187979,10.624672 4.8369156,8.805661 8.4513128,8.8115665 8.539901,8.693449 8.5044665,8.256414 8.386349,7.8548143 8.1205846,7.4827439 5.6578335,5.3330045 5.1026808,4.7601342 5.1381162,4.2404169 5.0495279,4.0514287 4.9550341,4.0278041 4.9609374,3.4549386 H 4.7778553 L 4.6833612,1.9902809 4.5534317,0.92131696 4.4175968,0.33663504 Z"
+       id="path1414"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Accent">
+    <path
+       id="path1436"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 4.4530319,10.382534 0.3071056,0.295294 M 4.1104911,10.370722 3.8329147,10.642393 M 4.2758555,6.9807477 4.2108915,8.0378999 4.09868,8.9769345 l 0.023625,1.4410345 0.1417413,1.653646 0.094494,2e-6 0.082682,-1.665458 V 8.9769345 L 4.3349145,8.0438057 Z M 4.2522322,2.0434338 4.193173,2.2973866 4.051432,2.5395275 4.0337155,3.0356214 4.0278096,3.921503 4.0514343,4.4057851 4.1400224,4.7424201 4.2994813,4.9077845 4.4648457,4.7601376 4.5770575,4.4294084 4.5652457,3.9333146 V 2.9293155 L 4.5298084,2.5572452 4.3821614,2.2796689 4.3290085,2.0434338 Z M 5.0967727,4.7837613 4.836914,8.8233817 M 3.4726563,4.8073846 3.7029855,8.8292875" />
+  </g>
+</svg>

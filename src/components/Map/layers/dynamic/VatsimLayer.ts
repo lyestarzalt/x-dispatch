@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import type { VatsimPilot } from '@/types/vatsim';
+import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
 
 const PILOT_LAYER_ID = 'vatsim-pilots';
 const PILOT_SOURCE_ID = 'vatsim-pilots-source';
@@ -9,12 +10,6 @@ const LABEL_LAYER_ID = 'vatsim-labels';
 
 const COLOR = '#22c55e';
 const COLOR_GLOW = '#16a34a';
-
-const ICON_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L4 16h4v2h4v-2h4L10 2z" fill="${COLOR}" stroke="#000" stroke-width="0.5"/></svg>`;
-
-function createIcon(): string {
-  return `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
-}
 
 function calculateTrail(
   lat: number,
@@ -53,6 +48,7 @@ function createPilotGeoJSON(pilots: VatsimPilot[]): GeoJSON.FeatureCollection {
         arrival: p.flight_plan?.arrival || '',
         alternate: p.flight_plan?.alternate || '',
         aircraft: p.flight_plan?.aircraft_short || p.flight_plan?.aircraft_faa || '',
+        acIcon: p.flight_plan?.aircraft_short ? normalizeIcao(p.flight_plan.aircraft_short) : '',
         flightRules: p.flight_plan?.flight_rules || '',
         filedAlt: p.flight_plan?.altitude || '',
         cruiseTas: p.flight_plan?.cruise_tas || '',
@@ -83,10 +79,10 @@ function createTrailGeoJSON(pilots: VatsimPilot[]): GeoJSON.FeatureCollection {
   };
 }
 
-const iconLoaded = new WeakSet<maplibregl.Map>();
-
-export function addVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]): void {
-  // Wait for style to load before adding layers
+export async function addVatsimPilotLayer(
+  map: maplibregl.Map,
+  pilots: VatsimPilot[]
+): Promise<void> {
   if (!map.isStyleLoaded()) {
     map.once('style.load', () => addVatsimPilotLayer(map, pilots));
     return;
@@ -98,26 +94,22 @@ export function addVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]):
   const pilotGeoJSON = createPilotGeoJSON(pilots);
   const trailGeoJSON = createTrailGeoJSON(pilots);
 
-  if (!iconLoaded.has(map) && !map.hasImage('aircraft-icon')) {
-    const img = new Image();
-    img.onload = () => {
-      if (!map.isStyleLoaded()) {
-        map.once('style.load', () => addVatsimPilotLayer(map, pilots));
-        return;
-      }
-      if (!map.hasImage('aircraft-icon')) map.addImage('aircraft-icon', img, { sdf: false });
-      iconLoaded.add(map);
-      addVatsimPilotLayer(map, pilots);
-    };
-    img.onerror = () => {
-      if (!map.isStyleLoaded()) {
-        map.once('style.load', () => addVatsimPilotLayer(map, pilots));
-        return;
-      }
-      iconLoaded.add(map);
-      addVatsimPilotLayer(map, pilots);
-    };
-    img.src = createIcon();
+  // Load aircraft silhouette icons
+  const uniqueIcaos = [
+    ...new Set(
+      pilots
+        .map((p) =>
+          p.flight_plan?.aircraft_short ? normalizeIcao(p.flight_plan.aircraft_short) : ''
+        )
+        .filter(Boolean)
+    ),
+  ];
+  await ensureFallbackIcon(map);
+  await ensureAircraftIcons(map, uniqueIcaos);
+
+  // Re-check style after async icon loading
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addVatsimPilotLayer(map, pilots));
     return;
   }
 
@@ -147,33 +139,26 @@ export function addVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]):
     },
   });
 
-  if (map.hasImage('aircraft-icon')) {
-    map.addLayer({
-      id: PILOT_LAYER_ID,
-      type: 'symbol',
-      source: PILOT_SOURCE_ID,
-      layout: {
-        'icon-image': 'aircraft-icon',
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 6, 0.8, 10, 1, 14, 1.2],
-        'icon-rotate': ['get', 'heading'],
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-      },
-    });
-  } else {
-    map.addLayer({
-      id: PILOT_LAYER_ID,
-      type: 'circle',
-      source: PILOT_SOURCE_ID,
-      paint: {
-        'circle-color': COLOR,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 4, 6, 5, 10, 6, 14, 8],
-        'circle-stroke-width': 1,
-        'circle-stroke-color': '#000',
-      },
-    });
-  }
+  map.addLayer({
+    id: PILOT_LAYER_ID,
+    type: 'symbol',
+    source: PILOT_SOURCE_ID,
+    layout: {
+      'icon-image': [
+        'coalesce',
+        ['image', ['concat', 'ac-', ['get', 'acIcon']]],
+        ['image', 'ac-fallback'],
+      ],
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 6, 0.8, 10, 1, 14, 1.2],
+      'icon-rotate': ['get', 'heading'],
+      'icon-rotation-alignment': 'map',
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+    },
+    paint: {
+      'icon-color': COLOR,
+    },
+  });
 
   map.addLayer({
     id: LABEL_LAYER_ID,
@@ -223,10 +208,25 @@ export function removeVatsimPilotLayer(map: maplibregl.Map): void {
   }
 }
 
-export function updateVatsimPilotLayer(map: maplibregl.Map, pilots: VatsimPilot[]): void {
+export async function updateVatsimPilotLayer(
+  map: maplibregl.Map,
+  pilots: VatsimPilot[]
+): Promise<void> {
   const pilotSource = map.getSource(PILOT_SOURCE_ID) as maplibregl.GeoJSONSource;
   const trailSource = map.getSource(TRAIL_SOURCE_ID) as maplibregl.GeoJSONSource;
   if (pilotSource && trailSource) {
+    // Load any new aircraft icons from updated pilot list
+    const uniqueIcaos = [
+      ...new Set(
+        pilots
+          .map((p) =>
+            p.flight_plan?.aircraft_short ? normalizeIcao(p.flight_plan.aircraft_short) : ''
+          )
+          .filter(Boolean)
+      ),
+    ];
+    await ensureAircraftIcons(map, uniqueIcaos);
+
     pilotSource.setData(createPilotGeoJSON(pilots));
     trailSource.setData(createTrailGeoJSON(pilots));
   } else {

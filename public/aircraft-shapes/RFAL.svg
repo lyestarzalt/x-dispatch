@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-35 -32 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="RFAL mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title4378">Dassault Rafale</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="168.97321"
+     inkscape:cy="143.52679"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Dassault Rafale</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 5.5869604,0.02362351 5.1866992,1.5785606 5.1031774,2.1214518 5.0196559,2.7478648 4.9528383,3.0819518 4.8609644,3.4076864 4.6438081,4.0090428 4.4767645,4.5018211 4.3431298,4.9528383 4.3180738,5.2034035 4.142678,5.2785732 4.176087,5.4456165 2.9316132,6.5230469 2.8898522,6.6566816 V 7.1411075 L 3.9171694,6.8070208 3.7000129,7.8593944 3.6666043,7.9679728 0.29232656,11.342251 l -0.008352,-0.659822 -0.0668174,-0.06682 -0.0250565,-0.09187 -0.15869127,-0.05847 0.02505651,2.823035 0.15033911,-0.06682 0.0167043,-0.06682 0.0918739,0.0084 0.0167045,-0.225509 3.71671699,0.26727 -0.00835,0.776752 0.3090304,-0.0084 0.083522,0.334087 0.041761,0.1921 0.6848781,-0.0167 0.1002261,-0.417609 v 0.409257 l 0.1449625,0.0099 0.00295,0.177176 0.035435,0.109259 0.035435,-0.0059 0.014764,0.82387 0.197847,-0.0059 -0.00591,-0.82387 h 0.044294 l 0.041341,-0.268718 0.1328822,-0.0059 0.00591,-0.437035 0.082682,0.445894 0.7116582,-0.01476 0.1004001,-0.502 0.3071056,-0.003 0.00295,-0.753 3.7207031,-0.280529 0.003,0.209659 0.03544,0.0502 0.07382,-0.03544 0.0089,0.07678 0.165365,0.05315 0.0059,-2.805292 -0.177176,0.0502 v 0.09745 l -0.07678,0.02953 0.0089,0.77367 -0.05906,-0.06496 0.02953,-0.03839 L 7.4945567,7.9611269 7.503415,7.8902564 7.2406035,6.8035749 8.2800379,7.1224922 8.2859434,6.5998221 8.220979,6.4787515 7.007321,5.433411 7.0338976,5.2650937 6.8596739,5.197176 6.812427,4.9520821 6.6884036,4.4973295 6.6175363,4.2994791 6.4639835,3.8742559 6.3015716,3.4224563 6.192313,3.0297154 6.1362071,2.6724096 6.6884068,2.3977864 6.7976654,2.1881278 6.7799478,1.7953869 l -0.026576,-0.038388 -0.053153,-0.00295 -0.026577,0.0502 V 2.1940336 L 6.6470656,2.2678571 6.1184895,2.5336216 6.0535248,2.1172572 5.9737955,1.5739165 5.7995721,0.76776412 Z"
+       id="path1446" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Accent">
+    <path
+       id="path1467"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 6.7563244,13.914249 6.874442,12.603143 C 6.8477941,12.020321 6.8533765,11.43798 6.8626301,10.855004 L 6.9925594,6.6500185 M 4.4412201,13.890625 4.2758555,12.685826 4.3231027,10.973121 4.1341135,6.6854539 m 1.4451377,3.3204491 -0.091874,1.302939 -0.016706,0.626413 0.1169303,2.630934 0.1085784,-2.622582 2e-7,-0.634765 z m -1.2444735,3.942225 2.5307083,-0.0084 M 7.0241773,5.4289123 6.923951,5.8799295 6.9155981,6.5564556 7.3081503,6.865486 M 4.176087,5.4456165 4.2763125,6.0052121 4.2429038,6.5481032 3.9171694,6.8070208 M 5.1950514,4.9611905 5.5708991,5.1699948 6.0219166,4.9695427 M 5.1449374,3.7167169 5.6210123,3.5747298 6.0386208,3.7501255 M 5.3203339,2.4722431 5.5792514,2.3553127 5.8381688,2.4805953 6.0386209,3.7501255 6.0386197,4.9695427 V 6.2140165 L 5.8799285,6.4729337 5.5458415,6.623273 5.3119808,6.4979904 5.0864722,6.1304947 5.1449374,3.7167169 Z" />
+  </g>
+</svg>

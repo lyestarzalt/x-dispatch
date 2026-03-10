@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-35 -36 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="P28A mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1096">Piper PA-28</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.4"
+     inkscape:cx="152.47768"
+     inkscape:cy="151.89732"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer5"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Piper PA-28</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 4.6183965,0.02362351 4.4530319,0.29529389 4.1459263,0.49609374 4.0159969,1.7245164 3.2954798,2.0079985 0.35435267,1.9961867 0.14174107,2.1969866 0.1063058,2.5513393 0,2.468657 -0.01181176,2.6340216 0.1063058,2.7993861 V 3.2246093 L 0.29529389,3.5435267 4.0514322,3.5553387 4.4294083,6.2956661 3.2364211,6.3192911 3.1183035,6.4137851 V 6.9098789 L 3.2600447,7.087055 4.5947729,7.06343 l 0.023625,0.141741 0.035435,-0.1299292 1.3937872,-0.011811 0.094494,-0.1771764 -0.011811,-0.4015996 -0.1063059,-0.2008 -1.204799,0.011811 0.3661643,-2.763951 3.7325148,0.011811 0.248047,-0.3543529 -0.023622,-0.4724702 0.1063056,-0.1653645 8e-7,-0.035435 L 9.1423031,2.5040912 9.1304921,2.2324208 8.8824452,1.9725622 H 5.9058828 L 5.2089843,1.6890811 5.0672433,0.49609374 4.8073846,0.29529389 Z"
+       id="path2621"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="Accent"
+     style="display:inline;stroke-width:0.267;stroke-dasharray:none">
+    <path
+       id="path2634"
+       style="fill:none;stroke:#000000;stroke-width:0.267;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 4.6271036,1.357228 2.2e-6,0.7892804 M 4.1176212,1.5535041 4.4433558,1.3279955 4.8108514,1.3321714 5.1699948,1.5702083 5.1950513,1.9711126 4.6271037,2.1548604 4.0925646,1.9794648 Z M 4.6243025,5.468843 4.5888665,6.0476189 4.6302075,7.0368535 4.6656425,6.0476189 Z M 4.4353143,6.3665364 4.6243025,7.116583 4.7955729,6.3724424 M 5.2423932,1.6643214 5.1912667,3.5258092 M 4.0159969,1.7127046 c 0,0.029529 0.023623,1.7835752 0.023623,1.7835752" />
+  </g>
+</svg>

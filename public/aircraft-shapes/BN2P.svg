@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="80mm"
+   height="80mm"
+   viewBox="-33 -35 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="BN2P.svg">
+  <title
+     id="title1449">Britten-Norman BN-2 Islander</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="15.839192"
+     inkscape:cx="155.1829"
+     inkscape:cy="153.88754"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer4"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Britten-Norman BN-2 Islander</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Path"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 7.4501379,0.04176086 7.1995728,0.1837478 7.0492336,0.46772168 6.9072468,1.0607259 6.9573599,3.0067821 H 6.2724818 L 6.2390731,2.7061041 6.1639034,2.6476388 6.0052121,2.6392866 5.9300427,2.3553127 5.8047601,2.2383823 5.6878296,2.3970736 5.6210123,2.6392866 5.4873776,2.6893996 5.4122079,2.7562169 5.3955047,3.0401908 1.1191922,3.1237126 0.8101618,3.2740518 0.02505758,4.9945993 6.8905434,4.9361341 7.1076999,6.7276752 7.2914477,8.5442726 5.5667243,8.5693286 5.3913285,8.6695546 5.3328633,8.8407742 5.3704481,9.9098522 9.6467606,9.8847962 9.6133517,8.665379 9.5047735,8.5400964 7.784226,8.5526244 7.926213,6.6984419 8.1016085,4.9528377 14.916981,4.8734921 14.177814,3.1988815 13.881312,3.0026057 9.534006,3.0234866 V 2.7311604 L 9.4379562,2.610054 9.2792649,2.5975257 9.2375039,2.3803692 9.0955171,2.2467344 8.9618824,2.3678409 8.9326497,2.6058778 8.7614301,2.6184061 8.6820845,2.71028 8.6737316,2.9942538 8.0473187,2.998429 8.0180856,1.0481977 7.8301619,0.43848906 7.6714706,0.16286737 Z"
+       id="path1415" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Accent">
+    <path
+       id="path1446"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 7.5127794,6.6817382 7.529484,7.5378359 7.450138,7.7174076 7.462666,8.9869377 7.558716,9.7678659 7.65059,8.9785856 c 0,0 -0.020881,-1.2444738 -0.033409,-1.261178 C 7.604653,7.7007046 7.525307,7.5420119 7.525307,7.5420119 M 6.9448317,4.8860209 7.1912207,4.6312798 7.7549924,4.6270998 8.0431422,4.8985454 M 9.241679,3.2030582 9.341905,3.0944798 9.4797159,3.0777767 M 8.7154921,2.99843 8.9785856,3.1947061 8.9827656,3.0735995 M 6.965712,3.0026062 8.0264379,3.0067762 M 5.9509231,3.2531714 6.0386208,3.1404168 6.2724818,3.0067821 m -0.8769771,0.033409 0.2756206,0.1419871 -8e-7,-0.1002261 M 7.9031509,1.3406859 7.7736923,1.2529881 7.6317054,1.2362838 v 0.2589173 l 0.3299108,0.062641 z M 7.0408816,1.3405237 7.1703402,1.2528259 7.3123271,1.2361216 V 1.4950389 L 6.9824163,1.55768 Z" />
+  </g>
+</svg>
