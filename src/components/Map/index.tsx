@@ -260,6 +260,7 @@ export default function Map({ airports }: MapProps) {
             altitude: planeState.altitudeMSL,
             heading: planeState.heading,
             groundspeed: planeState.groundspeed,
+            aircraftCategory: planeState.aircraftCategory,
           }
         : null,
     [planeState]

@@ -9,6 +9,17 @@ export type WeatherPresetName =
   | 'snowy'
   | 'foggy';
 
+export type AircraftCategory =
+  | 'airliner'
+  | 'cargo'
+  | 'ga'
+  | 'helicopter'
+  | 'glider'
+  | 'military'
+  | 'ultralight'
+  | 'seaplane'
+  | 'vtol';
+
 export interface PlaneState extends Coordinates {
   altitudeMSL: number;
   altitudeAGL: number;
@@ -32,6 +43,7 @@ export interface PlaneState extends Coordinates {
   apHeading: number;
   apAirspeed: number;
   apVerticalSpeed: number;
+  aircraftCategory: AircraftCategory | null;
 }
 
 export interface PlanePosition {
@@ -40,6 +52,7 @@ export interface PlanePosition {
   altitude: number;
   heading: number;
   groundspeed: number;
+  aircraftCategory: AircraftCategory | null;
 }
 
 export interface XPlaneAPIResult {
