@@ -36,9 +36,11 @@ import {
   useIvaoSync,
   useMapSetup,
   useNavLayerSync,
+  usePinDrop,
   useProcedureRouteSync,
   useRangeRingsSync,
   useRouteLineSync,
+  useTrackControl,
   useVatsimSync,
 } from './hooks';
 import { useDayNightLayer } from './hooks/useDayNightLayer';
@@ -345,6 +347,9 @@ export default function Map({ airports }: MapProps) {
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation, styleVersion });
 
+  // Pin-drop custom start location
+  const { placeAtCenter: handlePinDrop } = usePinDrop({ mapRef, styleVersion });
+
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
 
@@ -641,6 +646,9 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
 
+  // Track button (bottom-left map control)
+  useTrackControl({ mapRef, onToggle: handleTogglePlaneTracker, isConnected: isXPlaneConnected });
+
   // Track programmatic map movements to avoid disabling follow mode
   const isProgrammaticMoveRef = useRef(false);
 
@@ -717,10 +725,10 @@ export default function Map({ airports }: MapProps) {
           onSelectAirport={selectAirport}
           onToggleVatsim={handleToggleVatsim}
           onToggleIvao={handleToggleIvao}
-          onTogglePlaneTracker={handleTogglePlaneTracker}
           onToggleWeatherRadar={handleToggleWeatherRadar}
           weatherRadarControls={weatherRadarControls}
           onNavToggle={handleNavLayerToggle}
+          onPinDrop={handlePinDrop}
         />
         <FlightPlanBar onWaypointClick={handleWaypointClick} />
       </div>

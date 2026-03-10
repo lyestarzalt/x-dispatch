@@ -86,6 +86,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Rastrear",
+    "pin": "Soltar pin",
     "weather": "Clima",
     "launch": "Iniciar",
     "flightPlan": "Plano de voo",
@@ -105,8 +106,9 @@
       "vatsim": "Mostrar tráfego VATSIM ao vivo",
       "weather": "Ativar radar meteorológico ao vivo",
       "launch": "Iniciar X-Plane com a posição selecionada",
+      "pin": "Posicionar aeronave em qualquer lugar do mapa",
       "launchDisabled": "Selecione primeiro um aeroporto",
-      "launchSelectPosition": "Selecione primeiro um portão, pista ou heliporto",
+      "launchSelectPosition": "Escolha um portão, pista, ou solte um pin no mapa",
       "settings": "Abrir configurações"
     }
   },

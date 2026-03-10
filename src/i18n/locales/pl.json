@@ -86,6 +86,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Śledź",
+    "pin": "Upuść pin",
     "weather": "Pogoda",
     "launch": "Uruchom",
     "flightPlan": "Plan lotu",
@@ -105,8 +106,9 @@
       "vatsim": "Pokaż ruch VATSIM na żywo",
       "weather": "Przełącz radar pogodowy na żywo",
       "launch": "Uruchom X-Plane z wybraną pozycją",
+      "pin": "Umieść samolot w dowolnym miejscu na mapie",
       "launchDisabled": "Najpierw wybierz lotnisko",
-      "launchSelectPosition": "Najpierw wybierz bramkę, pas startowy lub lądowisko",
+      "launchSelectPosition": "Wybierz bramkę, pas startowy lub upuść pin na mapie",
       "settings": "Otwórz ustawienia"
     }
   },

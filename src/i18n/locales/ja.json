@@ -86,6 +86,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "追跡",
+    "pin": "ピンを置く",
     "weather": "天気",
     "launch": "起動",
     "flightPlan": "フライトプラン",
@@ -105,8 +106,9 @@
       "vatsim": "VATSIMライブトラフィックを表示",
       "weather": "ライブ気象レーダーの切り替え",
       "launch": "選択した位置でX-Planeを起動",
+      "pin": "マップ上の任意の場所に航空機を配置",
       "launchDisabled": "最初に空港を選択してください",
-      "launchSelectPosition": "最初にゲート、滑走路、またはヘリポートを選択してください",
+      "launchSelectPosition": "ゲート、滑走路を選択するか、マップにピンをドロップしてください",
       "settings": "設定を開く"
     }
   },

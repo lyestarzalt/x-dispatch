@@ -14,6 +14,7 @@ import {
   useWeatherPresets,
   useXPlaneStatus,
 } from '@/queries';
+import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import type { StartPosition } from './types';
@@ -140,6 +141,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         // X-Plane running → send via REST API
         try {
           await startFlightMutation.mutateAsync(flightConfig);
+          useAppStore.getState().setStartPosition(null);
           onClose();
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to change flight';
@@ -150,6 +152,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         // X-Plane not running → write JSON file and launch with --new_flight_json
         const result = await window.launcherAPI.launch(flightConfig);
         if (result.success) {
+          useAppStore.getState().setStartPosition(null);
           onClose();
         } else {
           window.appAPI.log.error('X-Plane launch failed', result.error);
@@ -199,7 +202,13 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     // Previously used lle_ground_start with exact lat/lon/heading (commit f0a6863) but X-Plane
     // started placing the aircraft offset forward by several meters. Switched to ramp_start as workaround.
     // TODO: switching to another airport mid-flight does not render the ground.
-    if (params.startPosition.type === 'ramp') {
+    if (params.startPosition.type === 'custom') {
+      payload.lle_ground_start = {
+        latitude: params.startPosition.latitude,
+        longitude: params.startPosition.longitude,
+        heading_true: params.startPosition.heading,
+      };
+    } else if (params.startPosition.type === 'ramp') {
       payload.ramp_start = {
         airport_id: params.startPosition.airport,
         ramp: params.startPosition.name,

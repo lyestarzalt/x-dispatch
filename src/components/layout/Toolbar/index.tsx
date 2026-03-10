@@ -12,7 +12,7 @@ import {
   Compass,
   FileUp,
   Layers,
-  Locate,
+  MapPin,
   Package,
   Pause,
   Plane,
@@ -51,7 +51,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { useDistinctCountries, useNavDataCounts, usePlaneState } from '@/queries';
+import { useDistinctCountries, useNavDataCounts } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -70,10 +70,10 @@ interface ToolbarProps {
   onSelectAirport: (airport: Airport) => void;
   onToggleVatsim: () => void;
   onToggleIvao: () => void;
-  onTogglePlaneTracker: () => void;
   onToggleWeatherRadar: () => void;
   weatherRadarControls: WeatherRadarControls;
   onNavToggle: (layer: keyof NavLayerVisibility) => void;
+  onPinDrop: () => void;
 }
 
 export default function Toolbar({
@@ -81,10 +81,10 @@ export default function Toolbar({
   onSelectAirport,
   onToggleVatsim,
   onToggleIvao,
-  onTogglePlaneTracker,
   onToggleWeatherRadar,
   weatherRadarControls,
   onNavToggle,
+  onPinDrop,
 }: ToolbarProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,13 +99,13 @@ export default function Toolbar({
   const selectedICAO = useAppStore((s) => s.selectedICAO);
   const selectedAirportData = useAppStore((s) => s.selectedAirportData);
   const hasStartPosition = useAppStore((s) => !!s.startPosition);
+  const isCustomPin = useAppStore((s) => s.startPosition?.type === 'custom');
   const setShowSettings = useAppStore((s) => s.setShowSettings);
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
 
   // Map store
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
-  const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
@@ -137,7 +137,6 @@ export default function Toolbar({
   const vatsimPilotCount = vatsimData?.pilots?.length;
   const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
   const ivaoPilotCount = ivaoData?.clients.pilots.length;
-  const { connected: isXPlaneConnected } = usePlaneState();
 
   // Nav data counts - derived from airport location
   const selectedAirport = useMemo(
@@ -384,25 +383,6 @@ export default function Toolbar({
       >
         <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
         <span className="text-sm font-medium">{t('explore.title')}</span>
-      </Button>
-
-      {/* Track button */}
-      <Button
-        variant="outline"
-        onClick={onTogglePlaneTracker}
-        className={cn(
-          'h-9 gap-2 px-3',
-          showPlaneTracker && isXPlaneConnected && 'border-info/50 text-info'
-        )}
-        tooltip={t('toolbar.tooltips.track')}
-      >
-        <Locate
-          className={cn('h-4 w-4', showPlaneTracker && isXPlaneConnected && 'animate-pulse')}
-        />
-        <span className="text-sm font-medium">{t('toolbar.track')}</span>
-        {showPlaneTracker && isXPlaneConnected && (
-          <span className="h-2 w-2 animate-pulse rounded-full bg-info" />
-        )}
       </Button>
 
       <div className="flex-1" />
@@ -680,6 +660,17 @@ export default function Toolbar({
         {/* Weather playback controls (inline, no toggle) */}
         {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
 
+        {/* Pin Drop — place aircraft on map */}
+        <Button
+          variant="outline"
+          onClick={onPinDrop}
+          className={cn('h-9 gap-2 px-3', isCustomPin && 'border-success/50 text-success')}
+          tooltip={t('toolbar.tooltips.pin')}
+        >
+          <MapPin className="h-4 w-4" />
+          <span className="min-w-0 truncate text-sm font-medium">{t('toolbar.pin')}</span>
+        </Button>
+
         {/* Launch */}
         <Button
           variant="outline"
@@ -687,11 +678,7 @@ export default function Toolbar({
             if (hasStartPosition) {
               setShowLaunchDialog(true);
             } else {
-              toast.info(
-                selectedICAO
-                  ? t('toolbar.tooltips.launchSelectPosition')
-                  : t('toolbar.tooltips.launchDisabled')
-              );
+              toast.info(t('toolbar.tooltips.launchSelectPosition'));
             }
           }}
           className={cn(

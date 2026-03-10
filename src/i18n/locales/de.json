@@ -86,6 +86,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Verfolgen",
+    "pin": "Pin setzen",
     "weather": "Wetter",
     "launch": "Starten",
     "flightPlan": "Flugplan",
@@ -105,8 +106,9 @@
       "weather": "Live-Wetterradar umschalten",
       "simbrief": "Flugplan von SimBrief importieren",
       "launch": "X-Plane mit ausgewählter Position starten",
+      "pin": "Flugzeug auf der Karte platzieren",
       "launchDisabled": "Wählen Sie zuerst einen Flughafen",
-      "launchSelectPosition": "Wählen Sie zuerst ein Gate, eine Landebahn oder einen Hubschrauberlandeplatz",
+      "launchSelectPosition": "Wählen Sie ein Gate, eine Landebahn, oder setzen Sie einen Pin auf der Karte",
       "settings": "Einstellungen öffnen"
     }
   },

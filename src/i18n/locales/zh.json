@@ -86,6 +86,7 @@
     "nav": "导航",
     "vatsim": "VATSIM",
     "track": "跟踪",
+    "pin": "放置标记",
     "weather": "天气",
     "launch": "启动",
     "flightPlan": "飞行计划",
@@ -105,8 +106,9 @@
       "vatsim": "显示VATSIM实时交通",
       "weather": "切换实时气象雷达",
       "launch": "使用所选位置启动X-Plane",
+      "pin": "在地图上任意位置放置飞机",
       "launchDisabled": "请先选择一个机场",
-      "launchSelectPosition": "请先选择登机口、跑道或直升机坪",
+      "launchSelectPosition": "选择登机口、跑道，或在地图上放置标记",
       "settings": "打开设置"
     }
   },

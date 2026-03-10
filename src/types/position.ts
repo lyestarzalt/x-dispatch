@@ -5,7 +5,7 @@ import type { Coordinates } from './geo';
  * Note: Helipads use type 'runway' since X-Plane treats them identically
  */
 export interface StartPosition extends Coordinates {
-  type: 'runway' | 'ramp';
+  type: 'runway' | 'ramp' | 'custom';
   name: string;
   airport: string;
   /** Heading in degrees (0-360) */
