@@ -59,6 +59,7 @@ export function usePlanePosition(): { connected: boolean; position: PlanePositio
         altitude: state.altitudeMSL,
         heading: state.heading,
         groundspeed: state.groundspeed,
+        aircraftCategory: state.aircraftCategory,
       }
     : null;
 

@@ -60,9 +60,14 @@ interface IconImageData {
 }
 
 /**
- * Convert an SVG string to a white-filled silhouette as ImageData for MapLibre.
+ * Convert an SVG string to a filled silhouette as ImageData for MapLibre.
+ * @param color Fill/stroke color for the silhouette (default: white for SDF icons)
  */
-function svgToImageData(svgText: string): Promise<IconImageData | null> {
+function svgToImageData(
+  svgText: string,
+  size = ICON_SIZE,
+  color = 'white'
+): Promise<IconImageData | null> {
   return new Promise((resolve) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(svgText, 'image/svg+xml');
@@ -80,15 +85,15 @@ function svgToImageData(svgText: string): Promise<IconImageData | null> {
       if (g.getAttribute('style')?.includes('display:none')) g.remove();
     });
 
-    // Set all shape elements to white fill silhouette.
+    // Set all shape elements to colored fill silhouette.
     // Must remove inline `style` first — CSS style overrides SVG presentation attributes.
     const shapes = doc.querySelectorAll(
       'path, polygon, polyline, circle, ellipse, rect, line, text, tspan'
     );
     shapes.forEach((el) => {
       el.removeAttribute('style');
-      el.setAttribute('fill', 'white');
-      el.setAttribute('stroke', 'white');
+      el.setAttribute('fill', color);
+      el.setAttribute('stroke', color);
       el.setAttribute('stroke-width', '0.5');
     });
 
@@ -96,24 +101,24 @@ function svgToImageData(svgText: string): Promise<IconImageData | null> {
     doc.querySelectorAll('g').forEach((g) => g.removeAttribute('style'));
 
     const svgEl = doc.documentElement;
-    svgEl.setAttribute('width', String(ICON_SIZE));
-    svgEl.setAttribute('height', String(ICON_SIZE));
+    svgEl.setAttribute('width', String(size));
+    svgEl.setAttribute('height', String(size));
 
     const serializer = new XMLSerializer();
     const svgData = serializer.serializeToString(svgEl);
     const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
-    const img = new Image(ICON_SIZE, ICON_SIZE);
+    const img = new Image(size, size);
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width = ICON_SIZE;
-      canvas.height = ICON_SIZE;
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, ICON_SIZE, ICON_SIZE);
+      ctx.drawImage(img, 0, 0, size, size);
       URL.revokeObjectURL(url);
-      const imageData = ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE);
-      resolve({ width: ICON_SIZE, height: ICON_SIZE, data: new Uint8Array(imageData.data.buffer) });
+      const imageData = ctx.getImageData(0, 0, size, size);
+      resolve({ width: size, height: size, data: new Uint8Array(imageData.data.buffer) });
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -126,11 +131,15 @@ function svgToImageData(svgText: string): Promise<IconImageData | null> {
 /**
  * Fetch and render an SVG file, returning image data or null.
  */
-async function fetchSvgIcon(filename: string): Promise<IconImageData | null> {
+export async function fetchSvgIcon(
+  filename: string,
+  size = ICON_SIZE,
+  color = 'white'
+): Promise<IconImageData | null> {
   try {
     const resp = await fetch(`./aircraft-shapes/${filename}.svg`);
     if (!resp.ok) return null;
-    return await svgToImageData(await resp.text());
+    return await svgToImageData(await resp.text(), size, color);
   } catch {
     return null;
   }

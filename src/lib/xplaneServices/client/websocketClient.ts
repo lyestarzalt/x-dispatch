@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import logger from '@/lib/utils/logger';
-import type { PlaneState } from '@/types/xplane';
+import type { AircraftCategory, PlaneState } from '@/types/xplane';
 
 const DEFAULT_PORT = 8086;
 const RECONNECT_DELAY = 3000;
@@ -18,6 +18,28 @@ const DATAREF_NAMES = [
   'sim/flightmodel/position/indicated_airspeed',
   'sim/flightmodel/position/y_agl',
   'sim/cockpit2/gauges/indicators/vvi_fpm_pilot',
+  'sim/aircraft2/metadata/is_helicopter',
+  'sim/aircraft2/metadata/is_airliner',
+  'sim/aircraft2/metadata/is_cargo',
+  'sim/aircraft2/metadata/is_general_aviation',
+  'sim/aircraft2/metadata/is_glider',
+  'sim/aircraft2/metadata/is_military',
+  'sim/aircraft2/metadata/is_ultralight',
+  'sim/aircraft2/metadata/is_seaplane',
+  'sim/aircraft2/metadata/is_vtol',
+];
+
+// Maps metadata dataref names to aircraft categories (checked in priority order)
+const METADATA_CATEGORY_MAP: [string, AircraftCategory][] = [
+  ['sim/aircraft2/metadata/is_helicopter', 'helicopter'],
+  ['sim/aircraft2/metadata/is_military', 'military'],
+  ['sim/aircraft2/metadata/is_cargo', 'cargo'],
+  ['sim/aircraft2/metadata/is_airliner', 'airliner'],
+  ['sim/aircraft2/metadata/is_glider', 'glider'],
+  ['sim/aircraft2/metadata/is_vtol', 'vtol'],
+  ['sim/aircraft2/metadata/is_ultralight', 'ultralight'],
+  ['sim/aircraft2/metadata/is_seaplane', 'seaplane'],
+  ['sim/aircraft2/metadata/is_general_aviation', 'ga'],
 ];
 
 interface DatarefInfo {
@@ -50,6 +72,7 @@ export class XPlaneWebSocketClient {
   private shouldReconnect = true;
   private datarefIdToName: Map<number, string> = new Map();
   private resolvedDatarefs: DatarefInfo[] = [];
+  private metadataFlags: Map<string, number> = new Map();
 
   constructor(port: number = DEFAULT_PORT) {
     this.port = port;
@@ -124,6 +147,7 @@ export class XPlaneWebSocketClient {
       this.ws = null;
     }
     this.currentState = {};
+    this.metadataFlags.clear();
     this.resolvedDatarefs = [];
     this.datarefIdToName.clear();
   }
@@ -243,6 +267,12 @@ export class XPlaneWebSocketClient {
       const datarefName = this.datarefIdToName.get(id);
       if (!datarefName) continue;
 
+      // Handle metadata flags (is_helicopter, is_airliner, etc.)
+      if (datarefName.startsWith('sim/aircraft2/metadata/is_') && typeof value === 'number') {
+        this.metadataFlags.set(datarefName, value);
+        continue;
+      }
+
       const stateKey = DATAREF_MAPPING[datarefName];
       if (stateKey && typeof value === 'number') {
         let convertedValue = value;
@@ -258,6 +288,9 @@ export class XPlaneWebSocketClient {
       }
     }
 
+    // Derive aircraft category from metadata flags
+    this.currentState.aircraftCategory = this.deriveAircraftCategory();
+
     if (
       this.currentState.latitude !== undefined &&
       this.currentState.longitude !== undefined &&
@@ -265,6 +298,13 @@ export class XPlaneWebSocketClient {
     ) {
       this.onStateUpdate(this.currentState as PlaneState);
     }
+  }
+
+  private deriveAircraftCategory(): AircraftCategory | null {
+    for (const [datarefName, category] of METADATA_CATEGORY_MAP) {
+      if (this.metadataFlags.get(datarefName) === 1) return category;
+    }
+    return null;
   }
 }
 
