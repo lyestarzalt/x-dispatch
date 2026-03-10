@@ -177,7 +177,9 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
   }, [latitude, longitude, timeOfDay]);
 
   const isDay = timeOfDay >= sunriseHours && timeOfDay <= sunsetHours;
-  const horizY = 0.5 * H;
+  // Horizon crosses the curve at sunrise/sunset — shifts with day length
+  const dayLength = sunsetHours - sunriseHours;
+  const horizY = (0.5 + Math.cos((Math.PI * dayLength) / 24) * -0.26) * H;
   const bodyCx = hourToX(timeOfDay) * W;
   const bodyCy = curveY(timeOfDay, sunriseHours, sunsetHours) * H;
 
