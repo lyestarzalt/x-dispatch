@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-27 -28 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="FA7X mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title6734">Dassault Falcon 7X</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="158.66071"
+     inkscape:cy="160"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1430" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Dassault Falcon 7X</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 13.14632,0.05011304 -0.785105,1.28623456 -0.50113,2.0546344 -0.06682,0.5846521 v 4.9611907 l -3.4745041,2.9399652 -7.58377271,4.777442 -0.13363477,0.133635 -0.63476511,1.302939 0.01670435,0.300678 0.90203464,-0.584652 7.6839988,-3.173826 3.1571209,-0.651469 0.100226,1.403165 -1.085782,0.01384 -0.150339,0.754562 -0.01671,0.835217 0.200453,0.7684 0.300678,0.88533 0.601356,-0.03341 0.601357,0.651469 -3.7083652,2.655991 -0.016703,1.419869 4.0591552,-1.720547 0.283974,0.785104 0.534539,-0.0167 0.183748,-0.751696 4.025747,1.670435 -0.0167,-1.403165 -3.608139,-2.622583 0.567948,-0.634765 0.65147,-0.0167 0.350791,-1.236121 0.06682,-0.785105 -0.03341,-0.751695 -0.150339,-0.484426 -0.968852,-0.03341 -0.05011,-1.369756 3.240644,0.668174 7.583772,3.207234 c 0,0 0.818513,0.701582 0.818513,0.601356 V 18.023993 L 25.52424,16.72105 25.390605,16.620824 17.923762,11.893494 14.465963,8.9368248 V 3.9589299 l -0.06682,-0.534539 -0.517835,-2.121452 z"
+       id="path1432"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccsccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Accent">
+    <path
+       id="path6784"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.263"
+       d="m 14.009167,19.256594 -0.65147,-0.384202 m -1.11919,0.451017 0.65147,-0.451017 m 0.250563,3.357573 -0.183748,-0.818512 -0.08352,-3.073599 -0.200451,-1.052374 -0.05012,-2.639285 1.002262,0.0167 -0.0167,2.672696 -0.217157,1.018963 -0.107113,3.089453 z m 0.902036,-2.956668 -0.06682,-2.906557 0.467723,-1.469982 m -2.221675,4.276312 0.03341,-2.92326 -0.417608,-1.202713 m 2.722805,3.624844 -0.11693,-0.952148 0.06682,-2.355313 m -2.823037,3.223937 0.133636,-1.069078 -0.06682,-2.138156 m 2.705184,-6.4694457 5e-6,5.0908657 m -2.669463,-5.0672437 -0.07087,5.0908667 m 2.181441,-11.4492587 -0.09572,0.062727 -0.304155,-0.3248232 -0.200799,-0.023624 0.0012,-0.2148494 0.28483,0.1015303 z m 0.286881,0.7545801 -0.03415,0.00799 -0.05569,-0.2591432 -0.09846,-0.184157 0.0516,-0.028096 0.09709,0.1894952 z m -1.775604,-0.7545801 0.09572,0.062727 0.304155,-0.3248232 0.200799,-0.023624 -0.0012,-0.2148494 -0.28483,0.1015303 z m -0.286881,0.7545801 0.03415,0.00799 0.05569,-0.2591432 0.09846,-0.184157 -0.0516,-0.028096 -0.09709,0.1894952 z" />
+  </g>
+</svg>

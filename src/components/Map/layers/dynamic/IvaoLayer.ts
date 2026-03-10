@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import type { IvaoPilot } from '@/types/ivao';
+import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
 
 const PILOT_LAYER_ID = 'ivao-pilots';
 const PILOT_SOURCE_ID = 'ivao-pilots-source';
@@ -9,12 +10,6 @@ const LABEL_LAYER_ID = 'ivao-labels';
 
 const COLOR = '#3b82f6';
 const COLOR_GLOW = '#2563eb';
-
-const ICON_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L4 16h4v2h4v-2h4L10 2z" fill="${COLOR}" stroke="#000" stroke-width="0.5"/></svg>`;
-
-function createIcon(): string {
-  return `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
-}
 
 function calculateTrail(
   lat: number,
@@ -58,6 +53,7 @@ function createPilotGeoJSON(pilots: IvaoPilot[]): GeoJSON.FeatureCollection {
           arrival: p.flightPlan?.arrivalId || '',
           alternate: p.flightPlan?.alternateId || '',
           aircraft: p.flightPlan?.aircraftId || '',
+          acIcon: p.flightPlan?.aircraftId ? normalizeIcao(p.flightPlan.aircraftId) : '',
           flightRules: p.flightPlan?.flightRules || '',
           filedAlt: p.flightPlan?.cruiseLevel || '',
           cruiseSpeed: p.flightPlan?.cruiseSpeed || '',
@@ -94,9 +90,7 @@ function createTrailGeoJSON(pilots: IvaoPilot[]): GeoJSON.FeatureCollection {
   };
 }
 
-const iconLoaded = new WeakSet<maplibregl.Map>();
-
-export function addIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]): void {
+export async function addIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]): Promise<void> {
   if (!map.isStyleLoaded()) {
     map.once('style.load', () => addIvaoPilotLayer(map, pilots));
     return;
@@ -108,27 +102,20 @@ export function addIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]): voi
   const pilotGeoJSON = createPilotGeoJSON(pilots);
   const trailGeoJSON = createTrailGeoJSON(pilots);
 
-  if (!iconLoaded.has(map) && !map.hasImage('ivao-aircraft-icon')) {
-    const img = new Image();
-    img.onload = () => {
-      if (!map.isStyleLoaded()) {
-        map.once('style.load', () => addIvaoPilotLayer(map, pilots));
-        return;
-      }
-      if (!map.hasImage('ivao-aircraft-icon'))
-        map.addImage('ivao-aircraft-icon', img, { sdf: false });
-      iconLoaded.add(map);
-      addIvaoPilotLayer(map, pilots);
-    };
-    img.onerror = () => {
-      if (!map.isStyleLoaded()) {
-        map.once('style.load', () => addIvaoPilotLayer(map, pilots));
-        return;
-      }
-      iconLoaded.add(map);
-      addIvaoPilotLayer(map, pilots);
-    };
-    img.src = createIcon();
+  // Load aircraft silhouette icons
+  const uniqueIcaos = [
+    ...new Set(
+      pilots
+        .filter((p) => p.flightPlan?.aircraftId)
+        .map((p) => normalizeIcao(p.flightPlan!.aircraftId))
+    ),
+  ];
+  await ensureFallbackIcon(map);
+  await ensureAircraftIcons(map, uniqueIcaos);
+
+  // Re-check style after async icon loading
+  if (!map.isStyleLoaded()) {
+    map.once('style.load', () => addIvaoPilotLayer(map, pilots));
     return;
   }
 
@@ -158,33 +145,26 @@ export function addIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]): voi
     },
   });
 
-  if (map.hasImage('ivao-aircraft-icon')) {
-    map.addLayer({
-      id: PILOT_LAYER_ID,
-      type: 'symbol',
-      source: PILOT_SOURCE_ID,
-      layout: {
-        'icon-image': 'ivao-aircraft-icon',
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 6, 0.8, 10, 1, 14, 1.2],
-        'icon-rotate': ['get', 'heading'],
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-      },
-    });
-  } else {
-    map.addLayer({
-      id: PILOT_LAYER_ID,
-      type: 'circle',
-      source: PILOT_SOURCE_ID,
-      paint: {
-        'circle-color': COLOR,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 4, 6, 5, 10, 6, 14, 8],
-        'circle-stroke-width': 1,
-        'circle-stroke-color': '#000',
-      },
-    });
-  }
+  map.addLayer({
+    id: PILOT_LAYER_ID,
+    type: 'symbol',
+    source: PILOT_SOURCE_ID,
+    layout: {
+      'icon-image': [
+        'coalesce',
+        ['image', ['concat', 'ac-', ['get', 'acIcon']]],
+        ['image', 'ac-fallback'],
+      ],
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 3, 0.6, 6, 0.8, 10, 1, 14, 1.2],
+      'icon-rotate': ['get', 'heading'],
+      'icon-rotation-alignment': 'map',
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+    },
+    paint: {
+      'icon-color': COLOR,
+    },
+  });
 
   map.addLayer({
     id: LABEL_LAYER_ID,
@@ -233,10 +213,23 @@ export function removeIvaoPilotLayer(map: maplibregl.Map): void {
   }
 }
 
-export function updateIvaoPilotLayer(map: maplibregl.Map, pilots: IvaoPilot[]): void {
+export async function updateIvaoPilotLayer(
+  map: maplibregl.Map,
+  pilots: IvaoPilot[]
+): Promise<void> {
   const pilotSource = map.getSource(PILOT_SOURCE_ID) as maplibregl.GeoJSONSource;
   const trailSource = map.getSource(TRAIL_SOURCE_ID) as maplibregl.GeoJSONSource;
   if (pilotSource && trailSource) {
+    // Load any new aircraft icons from updated pilot list
+    const uniqueIcaos = [
+      ...new Set(
+        pilots
+          .filter((p) => p.flightPlan?.aircraftId)
+          .map((p) => normalizeIcao(p.flightPlan!.aircraftId))
+      ),
+    ];
+    await ensureAircraftIcons(map, uniqueIcaos);
+
     pilotSource.setData(createPilotGeoJSON(pilots));
     trailSource.setData(createTrailGeoJSON(pilots));
   } else {

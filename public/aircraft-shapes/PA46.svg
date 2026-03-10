@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-33 -35 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="PA46 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1981">Piper PA-46</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="44.8"
+     inkscape:cx="147.26562"
+     inkscape:cy="150.21205"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer7"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Piper PA-46</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer7"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 6.6650337,0.05011304 6.4979904,0.58465209 6.2307207,0.63476512 6.0135642,1.1525998 V 1.8708867 L 5.9634512,3.0568953 0.13363466,3.1905299 0.01670424,3.5413211 V 3.9088168 L 0.1837477,4.3097211 5.9133381,4.8275557 5.9300411,5.6126599 6.0135621,6.3643557 6.3810586,7.8176336 4.3598327,8.1350161 4.3765358,8.7864856 6.5648051,8.9869377 8.9368221,8.753077 8.9535253,8.1183119 6.9322997,7.8510423 7.2663864,6.5815119 7.3833169,5.9634513 7.4501342,4.794147 13.196429,4.4266516 13.363472,3.9756343 13.330064,3.4745038 13.04609,3.2072344 7.4000214,3.0401908 V 1.8207736 L 7.2663901,0.8853303 7.1995728,0.65146946 6.8821902,0.56794775 Z"
+       id="path3218"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer8"
+     inkscape:label="Accent"
+     style="stroke-width:0.267;stroke-dasharray:none">
+    <path
+       id="path3229"
+       style="fill:none;stroke:#000000;stroke-width:0.267;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 6.679548,5.4038782 6.5437131,6.8153832 6.626395,8.8174757 6.66183,8.8115657 6.8094768,6.8212847 Z M 6.4315011,7.9138763 6.6382068,8.9296874 6.8980655,7.890253 M 7.3882532,3.1655507 7.4473122,4.7660435 M 5.9767485,3.1596447 5.9295014,4.795573 M 6.0803812,2.6225822 6.7230789,2.5115577 7.366616,2.6598702 7.383319,3.2072344 6.0636758,3.1905284 Z" />
+  </g>
+</svg>

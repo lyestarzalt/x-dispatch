@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-33 -36 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="DA42 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1537">Diamond Da42</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.919596"
+     inkscape:cx="162.44516"
+     inkscape:cy="174.56699"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer3"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Diamond Da42</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 6.9225182,0.15844541 6.671953,0.40901058 6.5717267,0.86002793 6.4380921,1.5616104 6.337866,2.2297843 6.2877529,2.797732 5.5861705,2.9313667 5.6195792,2.3968277 5.5360574,2.2631929 5.3523095,1.9959234 5.3034783,1.7658575 5.1853609,1.5709635 5.079055,1.7304223 5.0081845,2.0198103 4.8723493,2.1733631 4.7719494,2.3682571 4.7778552,2.7698568 4.8959729,3.0356213 0.18898809,3.1064918 0.20079986,3.679362 0.04724703,3.9982794 0.07087054,4.2581381 0.24804688,4.0514323 4.8664433,4.3762555 5.0081845,4.8369141 5.5042783,4.8310041 5.5456193,4.447122 6.2720424,4.5475221 6.3960658,5.1912626 6.5850537,5.7759447 6.6972654,6.5318971 6.7445124,8.0260841 5.1440196,8.3745311 4.925502,8.7347896 4.931412,8.9178717 h 0.3838824 l 0.035435,-0.059059 0.9626581,0.07087 0.011811,0.1063059 1.0925876,0.00591 0.017716,-0.088588 0.9567521,-0.088588 -0.00591,0.047247 h 0.389789 L 8.7525112,8.7229818 8.5753348,8.4099702 6.9807477,8.0083705 7.0752418,6.6795481 7.1933592,5.7523251 7.3764416,5.1322079 7.500465,4.5357143 8.2268878,4.453032 8.3213819,4.8487259 8.7702287,4.8546314 8.9178758,4.3762552 13.518555,4.1577377 13.689826,4.3290083 13.68392,4.0691496 13.559897,3.7856674 13.571708,3.1714562 8.9592169,3.0769624 9.0714286,2.7875744 9.0655225,2.3977865 8.9592169,2.2147043 8.7938523,2.031622 8.7525112,1.7540458 8.6343935,1.5827753 8.5162758,1.7245164 8.4690289,2.0375279 8.2977586,2.2147043 8.2209821,2.4450335 8.1973585,2.805292 8.2505114,2.9411272 7.500465,2.7639509 7.4650297,2.2973866 7.405971,1.5650577 7.2583239,0.85635231 7.0988654,0.31891741 Z"
+       id="path1997" />
+  </g>
+</svg>

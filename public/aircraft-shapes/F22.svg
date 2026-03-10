@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-33 -31 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="F22 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title5756">Lockheed Martin F-22 Raptor</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="145.08316"
+     inkscape:cy="183.46895"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Lockheed Martin F-22 Raptor</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 6.8153832,0.09449405 6.4374069,0.73232887 6.2247954,1.5827753 6.0830544,2.7757625 5.9885603,4.8191964 4.8900669,5.7227956 4.689267,8.3981585 0.05905878,12.697638 l -0.0059059,1.157552 0.7972935,0.679176 3.02380952,0.956752 0.1240234,0.224423 -1.6359281,1.393787 v 1.299293 l 1.689081,0.478377 1.5945871,-1.517811 -0.011811,-1.116211 0.4783762,0.525623 0.484282,-0.555152 -0.029529,1.122116 0.194894,0.165365 0.1299292,0.0059 0.1771763,-0.212612 -0.041341,-1.027623 0.4783762,0.472471 0.4134114,-0.419318 0.035435,1.068964 1.6654576,1.517811 1.6359278,-0.555153 -0.01181,-1.305199 L 9.6265811,15.697823 9.7801339,15.461588 12.721261,14.575707 13.565802,13.819754 13.55399,12.685826 9.2500311,8.807366 8.953529,8.5150401 8.7363725,5.7421187 7.6631185,4.8150277 7.6046533,3.4912083 7.5587163,2.6518147 7.4083772,1.5660324 7.1661641,0.66399772 Z"
+       id="path1414"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Accent">
+    <path
+       id="path1421"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 8.3272878,12.957496 -0.2126115,0.696894 -0.023625,2.799386 0.1417413,0.661458 1.4646576,-1.511905 -0.082682,-1.464657 z m -3.1183035,0.01181 0.2598587,0.838635 0.023625,2.740327 -0.047247,0.566964 -1.4646576,-1.511905 0.023625,-1.523716 z M 6.8070208,2.6309344 6.4645817,2.898204 6.4061165,3.6833082 6.3476512,4.4600603 6.397765,5.3119817 6.8237258,5.7128862 7.2663909,5.2869253 7.3081519,4.4851166 7.2580388,3.6582516 7.1661649,2.8647952 Z" />
+  </g>
+</svg>

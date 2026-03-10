@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-25 -27 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="Unidentified.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title7174">Unidentified aircraft</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="162.23214"
+     inkscape:cy="158.125"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1439" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Unidentified aircraft</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Pfade"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.170023px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 14.618226,0.45432962 13.76811,2.15456 12.917995,6.4051363 12.870748,10.466063 0.16626549,16.60652 v 1.70023 l 12.79897651,-2.078538 0.244683,5.393125 -4.5425066,2.636221 v 0.850115 l 5.1006916,-0.850115 0.850116,1.70023 0.850115,-1.70023 5.100691,0.850115 v -0.850115 l -4.499569,-2.550346 0.201746,-5.431753 12.798977,2.031291 V 16.60652 L 16.223962,10.51331 16.318456,6.4051363 15.468341,2.15456 Z"
+       id="path1459"
+       sodipodi:nodetypes="ccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Schrift"
+     style="display:none">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:6.8009px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.170023"
+       x="12.910232"
+       y="18.085165"
+       id="text1463"><tspan
+         sodipodi:role="line"
+         id="tspan1461"
+         x="12.910232"
+         y="18.085165"
+         style="stroke-width:0.170023">?</tspan></text>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Accent">
+    <path
+       id="path1494"
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 14.190341,17.255589 0.676526,-0.0084 0.0084,0.818513 -0.659822,0.02506 z m -0.807622,-3.235035 -0.02362,-0.614211 0.779576,-0.307106 0.803199,-0.05906 0.767765,0.318918 0.265764,0.437035 0.06496,0.537435 -0.147647,0.425223 -0.519717,0.584682 -0.354353,0.360258 -0.135835,0.265765 -0.01181,0.77367 -0.637835,0.01772 -0.02362,-0.661458 0.09449,-0.419318 0.259859,-0.366164 0.608305,-0.6024 0.2008,-0.324823 -0.01772,-0.318917 -0.224424,-0.348447 -0.507905,-0.177177 -0.631929,0.159459 z" />
+  </g>
+</svg>

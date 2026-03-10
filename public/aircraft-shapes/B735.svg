@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-26 -24 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="B735 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1073">Boeing 737-500</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4.9"
+     inkscape:cx="142.95918"
+     inkscape:cy="144.18367"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer5"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     showguides="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Boeing 737-500</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 14.733233,0.10022607 -0.400905,0.39566397 -0.400904,0.77364016 -0.827111,3.0583705 -0.288558,2.7827763 0.05906,3.779762 -2.279669,1.783575 0.2008,-0.850446 0.05906,-0.472471 -0.07087,-1.110305 -0.141741,-0.3543522 -1.7835751,-0.011812 -0.2008,0.6496462 -0.059059,0.8032 0.035435,0.815011 0.2598587,0.897693 h 0.1653646 l 0.1063056,0.543341 -8.69345226,4.831008 -0.30710566,0.460659 -0.1063058,0.425223 v 0.767764 l 5.17354912,-1.582775 0.1299292,0.413411 0.141741,-0.02362 0.094494,-0.507906 2.4450336,-0.732329 0.082682,0.4016 0.1535528,-0.01181 0.094494,-0.47247 1.0984934,-0.271671 0.059059,1.086682 h 0.4606584 l 0.035436,-1.169364 2.62137,-0.02362 0.154392,1.606399 0.09449,3.212797 0.271671,2.019811 0.590588,3.011998 -5.291669,3.661643 0.011811,1.098494 6.165738,-1.500092 0.02363,0.236233 0.177176,0.566965 0.12993,-0.519718 0.04725,-0.236233 6.236607,1.500092 -0.02363,-1.063059 -5.397972,-3.708889 0.590587,-3.000187 0.261885,-2.132544 0.07373,-3.299186 0.172284,-1.478147 h 2.527716 l 0.01181,1.228422 0.531529,-0.01181 0.01181,-1.228422 1.122117,0.307105 0.165364,0.543341 0.177176,0.02362 0.08268,-0.484282 2.362351,0.708705 0.07087,0.519717 0.2008,-0.01181 0.07087,-0.413411 5.185363,1.476469 -0.01183,-1.003999 -0.224419,-0.47247 -8.870631,-4.819197 0.141741,-0.578776 0.177177,-0.01181 0.259858,-1.122117 -0.04725,-1.240234 -0.106306,-0.47247 -0.118118,-0.3189177 -1.854446,0.059059 -0.09449,0.2362347 -0.08268,0.330729 0.03543,1.027623 0.177177,1.039435 -2.078858,-1.594591 -0.06497,-3.66755 L 16.38289,4.4294144 15.497009,1.2874875 15.138744,0.54030396 Z"
+       id="path3163"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+</svg>

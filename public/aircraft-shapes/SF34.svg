@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-29 -30 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="SF34 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title5323">Saab 340</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="137.57015"
+     inkscape:cy="156.63678"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer4"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Saab 340</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 10.907938,0.01670434 10.490329,0.36749561 10.005903,1.3363476 9.7720421,2.372017 V 7.7341118 L 9.6384072,7.9011554 9.4546593,8.0013814 7.9679728,8.1350161 7.8510423,6.5815119 7.8176336,6.1806079 7.7174076,5.8465209 7.4835466,5.5340307 7.3165032,5.8131122 7.1661641,6.2140165 7.1049558,6.4944078 7.0437476,6.6212463 7.0325294,7.8343381 7.0241765,8.2310662 0.22550787,8.9451769 0.05846441,9.1038681 l -0.0083522,0.9270909 7.12440319,0.517835 0.058465,0.334087 0.5345391,0.01671 0.050113,-0.300679 1.8458302,0.15034 v 4.627103 l 0.1085783,0.927091 0.1419868,0.5763 -3.4577996,0.626413 -0.016703,0.918739 3.8837608,0.400904 0.334087,0.860274 0.141986,0.367496 0.225509,0.0084 0.125283,-0.3842 0.300678,-0.851922 3.917169,-0.342439 -0.02506,-0.952148 -3.416039,-0.609708 0.125283,-0.801809 0.05846,-0.801808 0.04176,-4.526878 1.862534,-0.175396 0.07517,0.300678 0.517835,-0.0167 0.06682,-0.350791 7.132755,-0.509483 V 8.9785856 L 21.56531,8.8115422 14.808402,8.2018335 14.741585,6.6483295 14.699824,6.5648077 14.649711,6.18896 14.541133,5.8381688 14.332328,5.5708991 14.115172,5.8465209 14.014946,6.1973121 13.91472,6.6316251 13.872959,8.126664 12.353457,8.0215453 12.158737,7.9380238 12.098838,7.7551152 12.058511,2.3913415 11.851733,1.2695302 11.308842,0.38419995 Z"
+       id="path2580"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+</svg>

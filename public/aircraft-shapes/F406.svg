@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-32 -34 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="F406 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title6195">Cessna Caravan 2</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="126.83036"
+     inkscape:cy="158.21429"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer6"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Cessna Caravan 2</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.263;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+       d="M 7.5108844,0.26829157 7.0613333,0.6803792 6.8365586,1.4670928 6.7710031,1.8510839 6.7054387,4.3517088 H 5.6190253 L 5.4879062,3.2652945 5.7314131,3.2465606 5.693954,3.0779789 5.3567907,2.8719347 V 2.7970077 H 6.0123851 L 6.1247729,2.6096948 5.9749225,2.5160392 5.3193281,2.5534982 5.2256725,2.291261 5.0758212,2.1226793 4.9259717,2.3474549 4.8697787,2.5347669 4.0643339,2.516033 4.2003994,2.829346 4.8758948,2.809476 4.8692848,2.908813 4.657365,2.961791 4.4586892,3.1273534 l 0.00661,0.1655624 0.2384098,-0.00661 -0.039731,1.1456935 -4.57615064,0.026493 0.03973145,1.337745 4.53641559,0.4503306 0.079472,0.5430455 0.2582773,0.1324508 0.3509922,0.00661 0.2450324,-0.1854308 0.01987,-0.5298005 h 1.0198661 l 0.086095,0.1920533 0.1192058,1.9867513 0.3311248,1.3509908 -2.5761543,0.2980127 0.026493,0.721853 0.2119207,0.198675 2.5695309,0.119205 0.1258274,1.331123 H 7.7699386 L 7.8295402,11.061119 10.524899,10.88231 10.465298,10.001517 8.0282159,9.7299951 8.2997382,8.359136 8.3858333,6.3988747 8.5116607,6.2333123 9.5513934,6.2200655 9.6181644,6.7305658 9.8523052,6.8897822 10.22693,6.8710483 10.423609,6.6462727 10.442343,6.224819 15.087698,5.662881 15.050239,4.407886 10.442347,4.2486695 10.339324,3.21845 10.64839,3.255909 10.62029,3.0498647 10.489171,2.9281117 H 10.292492 L 10.245662,2.7314336 10.929354,2.7126996 10.994904,2.5066562 10.170729,2.4691882 10.114539,2.3006074 9.9365922,2.0851979 9.7680115,2.2537787 9.7211815,2.459823 8.934468,2.469183 9.009395,2.6845925 9.693086,2.7033265 9.646255,2.9000047 9.5057699,2.9374727 9.3559204,2.9936657 9.2716304,3.1997091 9.5900624,3.1903491 9.5432324,3.6118028 9.5245044,4.3329564 8.3350685,4.3142224 8.2414023,1.8885421 8.1477467,1.4296258 7.8948738,0.69910609 Z"
+       id="path3760"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Accent">
+    <path
+       id="path6585"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.263;stroke-dasharray:none"
+       d="M 7.4055516,11.118437 7.4222468,8.36222 7.4890646,6.8087163 7.6728125,8.47915 7.8398545,11.085029 M 10.445741,4.2863588 V 6.2407671 M 9.518649,4.3615296 9.560411,6.2407671 M 8.3409948,4.3114148 8.3827558,6.4579238 M 6.7039692,4.3531767 6.6956092,6.2825289 M 5.6098324,4.3949385 5.6265277,6.24912 M 4.6743901,4.4450506 4.6576949,6.2407671 M 7.0631119,3.6682974 7.3470846,3.7184107 7.5308318,3.6181853 M 8.1823021,3.5931293 7.9317364,3.7184121 7.6895235,3.7267648 7.5391847,3.6098324 7.5475455,2.9750679 M 6.8208991,3.2590426 7.230154,2.9333061 7.8565682,2.9416669 8.2073581,3.1755295 M 6.7874902,3.9773281 H 7.029703 V 3.6682974 L 6.8125462,3.5931293" />
+  </g>
+</svg>

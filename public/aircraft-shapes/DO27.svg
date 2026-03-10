@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-34 -35 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="DO27.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title2709">Dornier Do-27</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.6491406"
+     inkscape:cx="151.55858"
+     inkscape:cy="151.1811"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer5"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:snap-global="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     viewbox-x="-34"
+     viewbox-y="-35"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2657" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Dornier Do-27</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Path"
+     style="display:inline">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+       d="m 6.3527023,1.6899832 -0.129056,0.151832 -0.03796,0.174605 -0.212563,0.06073 -0.159423,1.153917 -0.0911,0.409943 -0.0076,0.14424 -0.425127,0.113873 v 0.129056 h -0.06832 l -0.0076,-0.303662 -0.07591,-0.07591 -0.136648,0.07591 -0.01518,0.432718 -4.28163407,-0.01518 -0.24293,0.227747 -0.106282,0.265704 0.02277,0.584549 0.151832,0.371987 0.28088704,0.242929 1.95862003,0.03796 0.04555,-0.06832 2.862014,0.0076 0.387169,3.006254 0.07591,0.751564 -1.480353,-0.03037 -0.151831,0.159422 v 0.6149158 l 0.09869,0.280888 0.121464,0.08351 1.449987,0.01518 0.106282,-0.129057 0.03796,0.668056 0.07781,0.01328 0.0023,1.18e-4 0.06238,-0.0082 0.03796,-0.668058 0.106282,0.129057 1.449987,-0.01518 0.121463,-0.08351 0.09869,-0.280887 V 9.7042782 l -0.151831,-0.159422 -1.480353,0.03036 0.07591,-0.751562 0.387168,-3.006256 2.8620152,-0.0076 0.045549,0.06832 1.95862,-0.03796 0.280887,-0.24293 0.151832,-0.371986 0.02277,-0.58455 -0.106281,-0.265703 -0.24293,-0.227747 -4.2816357,0.01518 -0.01518,-0.432719 -0.136648,-0.07591 -0.07592,0.07591 -0.0076,0.303662 h -0.06833 v -0.129056 l -0.425127,-0.113873 -0.0076,-0.14424 -0.0911,-0.409944 -0.159423,-1.153915 -0.212563,-0.06073 -0.03796,-0.174606 -0.137123,-0.156576 z"
+       id="path2659"
+       sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Accent">
+    <path
+       id="path2706"
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+       d="m 7.6573693,4.1553732 -0.03757,-0.450915 0.08589,-0.01611 0.0161,0.467019 m -2.641074,-0.0161 c 0,-0.02684 0.0054,-0.44018 0.0054,-0.44018 l 0.04831,0.0054 0.01073,0.434811 m 2.447826,0.03221 -0.0054,-0.144937 m -2.372675,0.134201 0.01073,-0.134201 m 0.912566,5.550549 0.123464,0.9769828 m 0.381132,-0.9608788 -0.118097,0.9984538 m -0.10736,0.638797 -0.150306,-2.0022778 0.112729,-0.252298 0.09126,0.24693 -0.05905,1.9969098 m 0.708581,-5.3841418 -0.214721,-0.263034 m -1.218545,0.263034 c 0.05368,-0.06978 0.16641,-0.257666 0.16641,-0.257666 m 0.240881,1.095934 -0.129056,-0.379577 -0.110077,-0.728789 0.307458,-0.09869 0.41374,-0.01518 0.334027,0.110078 -0.102485,0.694627 -0.14424,0.406148 z m -0.102486,-1.560063 0.0076,0.334028 0.747767,-0.0076 -0.0076,-0.330232 z m 0.476245,-0.977188 -0.01073,-0.456284 0.5878,0.0027 m -1.304433,-0.0054 0.50728,1e-6 0.0081,0.448231 m -0.520701,0.01611 1.299065,0.02147 m 0.772998,0.0027 h -0.767629 l 0.02684,-0.386499 m -2.093534,0.386499 0.756893,-0.01611 -0.01073,-0.391866" />
+  </g>
+</svg>

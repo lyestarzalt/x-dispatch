@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80mm"
+   height="80mm"
+   viewBox="-32 -32 80 80"
+   version="1.1"
+   id="svg1542"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="D228 mit Bitmap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title1248">Dornier 228</title>
+  <defs
+     id="defs1536" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="158.83929"
+     inkscape:cy="174.55357"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer6"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1121"
+     inkscape:window-x="2391"
+     inkscape:window-y="140"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1539">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>RexKramer1</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>GNU General Public License v3.0</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:title>Dornier 228</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="Pfade">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.276;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+       d="M 8.1080319,-0.12893862 7.7914839,0.07681751 7.6490375,0.48832976 7.4274543,2.1185514 7.3957992,5.679715 7.348317,5.7905068 6.0188159,5.7430247 5.9238516,5.0782741 5.6706133,4.6034523 h -0.06331 l -0.1899286,0.4589943 -0.079137,0.7280602 -3.814402,0.474822 -1.44029292,1.3928108 0.0316548,0.1424465 5.57124272,0.2690658 1.123745,-0.031656 0.5539592,0.7597153 0.031656,2.3424548 0.2215837,1.440292 -0.158274,0.553959 0.2532383,1.51943 -2.2633176,0.01583 -0.4273398,0.886334 v 0.332376 l 0.4431674,0.01583 5.3813135,-0.02374 0.474822,-0.02374 -0.0079,-0.308635 L 10.933237,14.70925 10.814531,14.63803 8.6303513,14.6222 8.8519345,13.086942 8.6778334,12.58838 8.8835895,11.061036 8.8598495,8.8610282 9.3979812,8.0300902 10.553381,8.0696622 16.306635,7.8876395 16.290805,7.7135385 14.826771,6.3444687 10.906211,5.785312 10.822441,5.0466222 10.612728,4.5876278 l -0.05935,1e-7 -0.213682,0.4669047 -0.06139,0.340289 L 10.19069,5.7602095 8.9073135,5.7905059 8.8341706,5.6472645 8.8677454,2.2056036 8.5591123,0.45667638 8.3850108,0.02142306 Z"
+       id="path2728"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
+  </g>
+</svg>
