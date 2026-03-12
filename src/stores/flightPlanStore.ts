@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { parseFMSFile } from '@/lib/parsers/fms';
 import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
 import type { SimBriefOFP } from '@/types/simbrief';
+import { useAppStore } from './appStore';
 
 export interface FlightPlanWaypoint {
   id: string; // Fix ID (e.g., "LOGEN", "BOS", "J42")
@@ -102,7 +103,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
 
   clearRoute: () => set({ route: [] }),
 
-  clearAll: () =>
+  clearAll: () => {
+    useAppStore.getState().selectProcedure(null);
     set({
       departure: null,
       arrival: null,
@@ -114,7 +116,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       simbriefData: null,
       selectedWaypointIndex: null,
       showFlightPlanBar: false,
-    }),
+    });
+  },
 
   loadFMSFile: async (content, fileName) => {
     const result = parseFMSFile(content);
@@ -178,7 +181,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
 
   setSelectedWaypoint: (index) => set({ selectedWaypointIndex: index }),
 
-  clearFlightPlan: () =>
+  clearFlightPlan: () => {
+    useAppStore.getState().selectProcedure(null);
     set({
       fmsData: null,
       fileName: null,
@@ -189,7 +193,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       departure: null,
       arrival: null,
       route: [],
-    }),
+    });
+  },
 
   loadFromSimbrief: (data) => {
     // Map SimBrief fix type to FMS waypoint type
