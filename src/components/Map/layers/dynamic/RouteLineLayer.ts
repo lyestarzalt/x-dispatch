@@ -134,10 +134,6 @@ export function removeRouteLineLayer(map: Map): void {
     if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
   };
 
-  // Defer removal if map is mid-render to prevent crash
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
-  }
+  if (!map.getStyle()) return;
+  doRemove();
 }

@@ -206,11 +206,8 @@ export function removeIvaoPilotLayer(map: maplibregl.Map): void {
     if (map.getSource(TRAIL_SOURCE_ID)) map.removeSource(TRAIL_SOURCE_ID);
   };
 
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
-  }
+  if (!map.getStyle()) return;
+  doRemove();
 }
 
 export async function updateIvaoPilotLayer(

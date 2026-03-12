@@ -491,6 +491,8 @@ export function addProcedureRouteLayer(
 }
 
 export function removeProcedureRouteLayer(map: maplibregl.Map): void {
+  if (!map.getStyle()) return;
+
   const layers = [
     CONSTRAINT_LAYER_ID,
     LABEL_LAYER_ID,
@@ -500,20 +502,11 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
   ];
   const sources = [WAYPOINT_SOURCE_ID, ROUTE_SOURCE_ID];
 
-  const doRemove = () => {
-    for (const layerId of layers) {
-      if (map.getLayer(layerId)) map.removeLayer(layerId);
-    }
-    for (const sourceId of sources) {
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-    }
-  };
-
-  // Defer removal if map is mid-render to prevent crash
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
+  for (const layerId of layers) {
+    if (map.getLayer(layerId)) map.removeLayer(layerId);
+  }
+  for (const sourceId of sources) {
+    if (map.getSource(sourceId)) map.removeSource(sourceId);
   }
 }
 

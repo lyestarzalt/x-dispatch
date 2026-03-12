@@ -415,6 +415,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
 }
 
 export function removeFlightPlanLayer(map: maplibregl.Map): void {
+  if (!map.getStyle()) return;
+
   const layers = [
     ALTERNATE_LABEL_ID,
     ALTERNATE_LINE_ID,
@@ -425,20 +427,11 @@ export function removeFlightPlanLayer(map: maplibregl.Map): void {
   ];
   const sources = [ALTERNATE_SOURCE_ID, WAYPOINT_SOURCE_ID, SOURCE_ID];
 
-  const doRemove = () => {
-    for (const id of layers) {
-      if (map.getLayer(id)) map.removeLayer(id);
-    }
-    for (const id of sources) {
-      if (map.getSource(id)) map.removeSource(id);
-    }
-  };
-
-  // Defer removal if map is mid-render to prevent crash
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
+  for (const id of layers) {
+    if (map.getLayer(id)) map.removeLayer(id);
+  }
+  for (const id of sources) {
+    if (map.getSource(id)) map.removeSource(id);
   }
 }
 

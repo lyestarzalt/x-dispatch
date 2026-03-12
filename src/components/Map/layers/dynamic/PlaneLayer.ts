@@ -247,11 +247,8 @@ export function removePlaneLayer(map: maplibregl.Map | null | undefined): void {
     }
   };
 
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
-  }
+  if (!map.getStyle()) return;
+  doRemove();
 }
 
 export function updatePlaneLayer(

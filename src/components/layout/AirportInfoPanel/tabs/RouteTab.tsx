@@ -60,7 +60,11 @@ export default function RouteTab() {
   }, [procedures, activeType]);
 
   const handleSelect = (proc: Procedure) => {
-    selectProcedure(proc as Parameters<typeof selectProcedure>[0]);
+    const isAlreadySelected =
+      selectedProcedure?.name === proc.name &&
+      selectedProcedure?.transition === proc.transition &&
+      selectedProcedure?.runway === proc.runway;
+    selectProcedure(isAlreadySelected ? null : (proc as Parameters<typeof selectProcedure>[0]));
   };
 
   const handleTypeChange = (value: string) => {
@@ -172,7 +176,10 @@ export default function RouteTab() {
               <div key={group.name}>
                 <Button
                   variant="ghost"
-                  onClick={() => setExpandedProcedure(isExpanded ? null : group.name)}
+                  onClick={() => {
+                    if (isExpanded && isAnyVariantSelected) selectProcedure(null);
+                    setExpandedProcedure(isExpanded ? null : group.name);
+                  }}
                   className={cn(
                     'h-auto w-full justify-between px-3 py-2.5 text-left',
                     isAnyVariantSelected

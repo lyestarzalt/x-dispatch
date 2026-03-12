@@ -200,12 +200,8 @@ export function removeVatsimPilotLayer(map: maplibregl.Map): void {
     if (map.getSource(TRAIL_SOURCE_ID)) map.removeSource(TRAIL_SOURCE_ID);
   };
 
-  // Defer removal if map is mid-render to prevent crash
-  if (!map.isStyleLoaded()) {
-    map.once('idle', doRemove);
-  } else {
-    doRemove();
-  }
+  if (!map.getStyle()) return;
+  doRemove();
 }
 
 export async function updateVatsimPilotLayer(
