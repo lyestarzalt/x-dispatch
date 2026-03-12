@@ -430,6 +430,9 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "mach": "MACH",
+    "wind": "WIND",
+    "oat": "OAT",
     "center": "Wyśrodkuj",
     "centerTooltip": "Wyśrodkuj mapę na samolocie"
   },

@@ -362,6 +362,9 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "mach": "MACH",
+    "wind": "WIND",
+    "oat": "OAT",
     "center": "Centrer",
     "centerTooltip": "Centrer la carte sur l'avion"
   },

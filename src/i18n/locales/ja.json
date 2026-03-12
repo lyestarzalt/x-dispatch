@@ -430,6 +430,9 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "mach": "MACH",
+    "wind": "WIND",
+    "oat": "OAT",
     "center": "中央",
     "centerTooltip": "機体を中心にマップを表示"
   },

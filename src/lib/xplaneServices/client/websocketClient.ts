@@ -29,6 +29,10 @@ const DATAREF_NAMES = [
   'sim/flightmodel/position/indicated_airspeed',
   'sim/flightmodel/position/y_agl',
   'sim/cockpit2/gauges/indicators/vvi_fpm_pilot',
+  'sim/flightmodel/misc/machno',
+  'sim/weather/aircraft/wind_now_direction_degt',
+  'sim/weather/aircraft/wind_now_speed_msc',
+  'sim/weather/aircraft/temperature_ambient_deg_c',
   'sim/aircraft2/metadata/is_helicopter',
   'sim/aircraft2/metadata/is_airliner',
   'sim/aircraft2/metadata/is_cargo',
@@ -67,6 +71,10 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/flightmodel/position/indicated_airspeed': 'indicatedAirspeed',
   'sim/flightmodel/position/y_agl': 'altitudeAGL',
   'sim/cockpit2/gauges/indicators/vvi_fpm_pilot': 'verticalSpeed',
+  'sim/flightmodel/misc/machno': 'mach',
+  'sim/weather/aircraft/wind_now_direction_degt': 'windDirection',
+  'sim/weather/aircraft/wind_now_speed_msc': 'windSpeed',
+  'sim/weather/aircraft/temperature_ambient_deg_c': 'oat',
 };
 
 type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';
@@ -371,7 +379,10 @@ export class XPlaneWebSocketClient {
           datarefName === 'sim/flightmodel/position/y_agl'
         ) {
           convertedValue = value * METERS_TO_FEET;
-        } else if (datarefName === 'sim/flightmodel/position/groundspeed') {
+        } else if (
+          datarefName === 'sim/flightmodel/position/groundspeed' ||
+          datarefName === 'sim/weather/aircraft/wind_now_speed_msc'
+        ) {
           convertedValue = value * MPS_TO_KNOTS;
         }
         (this.currentState as Record<string, unknown>)[stateKey] = convertedValue;

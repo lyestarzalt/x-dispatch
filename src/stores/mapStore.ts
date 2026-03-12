@@ -82,6 +82,7 @@ interface MapState {
   rangeRingsEnabled: boolean;
   rangeRingsDuration: number;
   rangeRingsCategories: RangeRingCategory[];
+  flightStripPosition: { x: number; y: number } | null;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -114,6 +115,7 @@ interface MapState {
   setExploreFilters: (filters: Partial<ExploreFilters>) => void;
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
   incrementStyleVersion: () => void;
+  setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -149,6 +151,7 @@ export const useMapStore = create<MapState>()(
       rangeRingsEnabled: false,
       rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
       rangeRingsCategories: ['jet', 'turboprop', 'prop'] as RangeRingCategory[],
+      flightStripPosition: null as { x: number; y: number } | null,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -239,10 +242,11 @@ export const useMapStore = create<MapState>()(
       setFeaturedCategory: (category) =>
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
       incrementStyleVersion: () => set((state) => ({ styleVersion: state.styleVersion + 1 })),
+      setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 7,
+      version: 8,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -252,6 +256,7 @@ export const useMapStore = create<MapState>()(
         rangeRingsEnabled: state.rangeRingsEnabled,
         rangeRingsDuration: state.rangeRingsDuration,
         rangeRingsCategories: state.rangeRingsCategories,
+        flightStripPosition: state.flightStripPosition,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -298,6 +303,10 @@ export const useMapStore = create<MapState>()(
           if (!state.rangeRingsDuration) state.rangeRingsDuration = DEFAULT_RANGE_RINGS_DURATION;
           if (!state.rangeRingsCategories)
             state.rangeRingsCategories = ['jet', 'turboprop', 'prop'];
+        }
+        // Migration to v8: add flight strip position
+        if (version < 8) {
+          if (state.flightStripPosition === undefined) state.flightStripPosition = null;
         }
         return state;
       },
