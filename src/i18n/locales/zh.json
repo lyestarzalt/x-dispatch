@@ -430,6 +430,9 @@
     "agl": "离地高度",
     "vs": "垂直速度",
     "hdg": "航向",
+    "mach": "MACH",
+    "wind": "WIND",
+    "oat": "OAT",
     "center": "居中",
     "centerTooltip": "将地图居中到飞机位置"
   },

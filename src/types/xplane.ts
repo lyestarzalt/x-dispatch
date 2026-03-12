@@ -31,6 +31,9 @@ export interface PlaneState extends Coordinates {
   trueAirspeed: number;
   verticalSpeed: number;
   mach: number;
+  windDirection: number;
+  windSpeed: number;
+  oat: number;
   throttle: number;
   flaps: number;
   gearDown: boolean;
