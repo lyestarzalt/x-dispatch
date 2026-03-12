@@ -11,7 +11,7 @@ import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { Airport } from '@/lib/xplaneServices/dataService';
-import { usePlaneState, useXPlaneStatus } from '@/queries';
+import { usePlaneState } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -243,11 +243,7 @@ export default function Map({ airports }: MapProps) {
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
   const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
 
-  // Plane tracker - check X-Plane status and get position when enabled
-  const { data: isXPlaneRunning = false } = useXPlaneStatus({
-    enabled: true,
-    refetchInterval: 3000,
-  });
+  // Plane tracker - live position via WebSocket
   const { state: planeState, connected: isXPlaneConnected } = usePlaneState();
 
   // Derive position from state for the map layer
@@ -266,25 +262,14 @@ export default function Map({ airports }: MapProps) {
     [planeState]
   );
 
-  // Auto-enable plane tracker ONCE when X-Plane is first detected
+  // Auto-enable plane tracker ONCE when X-Plane WebSocket first connects
   const hasAutoEnabledRef = useRef(false);
   useEffect(() => {
-    if (isXPlaneRunning && !showPlaneTracker && !hasAutoEnabledRef.current) {
+    if (isXPlaneConnected && !showPlaneTracker && !hasAutoEnabledRef.current) {
       hasAutoEnabledRef.current = true;
       setShowPlaneTracker(true);
     }
-  }, [isXPlaneRunning, showPlaneTracker, setShowPlaneTracker]);
-
-  // Force disconnect WebSocket when X-Plane process stops
-  // This ensures the plane marker is removed immediately rather than waiting for TCP timeout
-  const wasRunningRef = useRef(false);
-  useEffect(() => {
-    if (wasRunningRef.current && !isXPlaneRunning) {
-      // X-Plane just stopped - force disconnect to clear stale connection state
-      window.xplaneServiceAPI.forceReconnect();
-    }
-    wasRunningRef.current = isXPlaneRunning;
-  }, [isXPlaneRunning]);
+  }, [isXPlaneConnected, showPlaneTracker, setShowPlaneTracker]);
 
   // Plane layer sync - update plane position on map
   useEffect(() => {
@@ -675,11 +660,6 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, planePosition, followPlane, setFollowPlane]);
 
-  // Force reconnect to X-Plane - clears stale data and re-establishes connection
-  const handleReconnect = useCallback(() => {
-    window.xplaneServiceAPI.forceReconnect();
-  }, []);
-
   // Follow plane position and heading when follow mode is active
   useEffect(() => {
     const map = mapRef.current;
@@ -743,7 +723,6 @@ export default function Map({ airports }: MapProps) {
           planeState={planeState}
           connected={isXPlaneConnected}
           onCenterPlane={handleCenterPlane}
-          onReconnect={handleReconnect}
         />
       )}
 

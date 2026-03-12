@@ -53,9 +53,10 @@ export class XPlaneService {
 
   startStateStream(
     onUpdate: (state: PlaneState) => void,
-    onConnectionChange?: (connected: boolean) => void
+    onConnectionChange?: (connected: boolean) => void,
+    onStateClear?: () => void
   ): void {
-    this.wsClient.connect(onUpdate, onConnectionChange);
+    this.wsClient.connect(onUpdate, onConnectionChange, onStateClear);
   }
 
   stopStateStream(): void {

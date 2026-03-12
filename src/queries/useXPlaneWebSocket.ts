@@ -15,9 +15,14 @@ import type { PlanePosition, PlaneState } from '@/types/xplane';
 export function usePlaneState() {
   const [state, setState] = useState<PlaneState | null>(null);
   const [connected, setConnected] = useState(false);
-  const unsubscribeRef = useRef<{ state: (() => void) | null; connection: (() => void) | null }>({
+  const unsubscribeRef = useRef<{
+    state: (() => void) | null;
+    connection: (() => void) | null;
+    stateClear: (() => void) | null;
+  }>({
     state: null,
     connection: null,
+    stateClear: null,
   });
 
   useEffect(() => {
@@ -26,20 +31,23 @@ export function usePlaneState() {
 
     // Subscribe to updates
     const unsubState = window.xplaneServiceAPI.onStateUpdate(setState);
-    const unsubConnection = window.xplaneServiceAPI.onConnectionChange((isConnected) => {
-      setConnected(isConnected);
-      // Clear stale state on disconnect to prevent showing old position
-      if (!isConnected) {
-        setState(null);
-      }
+    const unsubConnection = window.xplaneServiceAPI.onConnectionChange(setConnected);
+    // Clear state only after grace period expires (fired by main process)
+    const unsubStateClear = window.xplaneServiceAPI.onStateClear(() => {
+      setState(null);
     });
-    unsubscribeRef.current = { state: unsubState, connection: unsubConnection };
+    unsubscribeRef.current = {
+      state: unsubState,
+      connection: unsubConnection,
+      stateClear: unsubStateClear,
+    };
 
     return () => {
       // Stop streaming and unsubscribe
       window.xplaneServiceAPI.stopStateStream();
       unsubState();
       unsubConnection();
+      unsubStateClear();
     };
   }, []);
 

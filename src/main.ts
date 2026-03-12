@@ -981,6 +981,11 @@ function registerIpcHandlers() {
           if (!event.sender.isDestroyed()) {
             event.sender.send('xplaneService:connectionChange', connected);
           }
+        },
+        () => {
+          if (!event.sender.isDestroyed()) {
+            event.sender.send('xplaneService:stateClear');
+          }
         }
       );
       return { success: true };

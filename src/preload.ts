@@ -230,6 +230,11 @@ contextBridge.exposeInMainWorld('xplaneServiceAPI', {
     ipcRenderer.on('xplaneService:connectionChange', listener);
     return () => ipcRenderer.removeListener('xplaneService:connectionChange', listener);
   },
+  onStateClear: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on('xplaneService:stateClear', listener);
+    return () => ipcRenderer.removeListener('xplaneService:stateClear', listener);
+  },
 });
 
 // Addon Manager API
@@ -460,6 +465,7 @@ declare global {
       isStreamConnected: () => Promise<boolean>;
       onStateUpdate: (callback: (state: PlaneState) => void) => () => void;
       onConnectionChange: (callback: (connected: boolean) => void) => () => void;
+      onStateClear: (callback: () => void) => () => void;
     };
     addonManagerAPI: {
       scenery: {

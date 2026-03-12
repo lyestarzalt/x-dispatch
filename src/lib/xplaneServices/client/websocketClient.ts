@@ -3,8 +3,19 @@ import logger from '@/lib/utils/logger';
 import type { AircraftCategory, PlaneState } from '@/types/xplane';
 
 const DEFAULT_PORT = 8086;
-const RECONNECT_DELAY = 3000;
 const RESOLVE_TIMEOUT = 5000;
+
+// Backoff constants
+const BACKOFF_INITIAL_MS = 1000;
+const BACKOFF_MAX_MS = 30_000;
+const BACKOFF_MULTIPLIER = 2;
+
+// Keepalive constants
+const PING_INTERVAL_MS = 10_000;
+const PONG_TIMEOUT_MS = 5_000;
+
+// Grace period before clearing state after disconnect
+const GRACE_PERIOD_MS = 5_000;
 
 const METERS_TO_FEET = 3.28084;
 const MPS_TO_KNOTS = 1.94384;
@@ -58,30 +69,44 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/cockpit2/gauges/indicators/vvi_fpm_pilot': 'verticalSpeed',
 };
 
+type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';
 type StateUpdateCallback = (state: PlaneState) => void;
 type ConnectionCallback = (connected: boolean) => void;
+type StateClearCallback = () => void;
 
 export class XPlaneWebSocketClient {
   private ws: WebSocket | null = null;
   private port: number;
   private onStateUpdate: StateUpdateCallback | null = null;
   private onConnectionChange: ConnectionCallback | null = null;
-  private reconnectTimeout: NodeJS.Timeout | null = null;
+  private onStateClear: StateClearCallback | null = null;
   private currentState: Partial<PlaneState> = {};
-  private isConnecting = false;
-  private shouldReconnect = true;
   private datarefIdToName: Map<number, string> = new Map();
   private resolvedDatarefs: DatarefInfo[] = [];
   private metadataFlags: Map<string, number> = new Map();
+
+  // State machine
+  private state: WsState = 'IDLE';
+  private backoffMs = BACKOFF_INITIAL_MS;
+  private reconnectTimer: NodeJS.Timeout | null = null;
+  private pingInterval: NodeJS.Timeout | null = null;
+  private pongTimeout: NodeJS.Timeout | null = null;
+  private graceTimer: NodeJS.Timeout | null = null;
 
   constructor(port: number = DEFAULT_PORT) {
     this.port = port;
   }
 
-  connect(onStateUpdate: StateUpdateCallback, onConnectionChange?: ConnectionCallback): void {
+  connect(
+    onStateUpdate: StateUpdateCallback,
+    onConnectionChange?: ConnectionCallback,
+    onStateClear?: StateClearCallback
+  ): void {
     this.onStateUpdate = onStateUpdate;
     this.onConnectionChange = onConnectionChange ?? null;
-    this.shouldReconnect = true;
+    this.onStateClear = onStateClear ?? null;
+    this.state = 'CONNECTING';
+    this.backoffMs = BACKOFF_INITIAL_MS;
     this.resolveDatarefsAndConnect();
   }
 
@@ -95,6 +120,9 @@ export class XPlaneWebSocketClient {
           this.datarefIdToName.set(dr.id, dr.name);
         }
       } catch {
+        if (this.state === 'CONNECTING') {
+          this.state = 'RECONNECTING';
+        }
         this.scheduleReconnect();
         return;
       }
@@ -137,15 +165,14 @@ export class XPlaneWebSocketClient {
   }
 
   disconnect(): void {
-    this.shouldReconnect = false;
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = null;
-    }
+    this.state = 'IDLE';
+    this.clearAllTimers();
     if (this.ws) {
+      this.ws.removeAllListeners();
       this.ws.close();
       this.ws = null;
     }
+    // Intentional disconnect — clear state immediately, no grace period
     this.currentState = {};
     this.metadataFlags.clear();
     this.resolvedDatarefs = [];
@@ -161,45 +188,46 @@ export class XPlaneWebSocketClient {
   }
 
   /**
-   * Force reconnect - closes existing connection and reconnects fresh.
-   * Clears all cached state to ensure fresh data from simulator.
+   * Force reconnect — resets backoff and reconnects immediately.
+   * Keeps dataref cache to avoid re-resolving.
    */
   forceReconnect(): void {
     logger.tracker.info('Force reconnect requested');
+    this.clearAllTimers();
 
-    // Clear any pending reconnect
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = null;
-    }
-
-    // Close existing connection
     if (this.ws) {
+      this.ws.removeAllListeners();
       this.ws.close();
       this.ws = null;
     }
 
-    // Clear all cached state
-    this.currentState = {};
-    this.isConnecting = false;
+    this.backoffMs = BACKOFF_INITIAL_MS;
 
-    // Reconnect immediately if we should be connected
-    if (this.shouldReconnect && this.onStateUpdate) {
+    if (this.onStateUpdate) {
+      this.state = 'CONNECTING';
       this.resolveDatarefsAndConnect();
     }
   }
 
   private createConnection(): void {
-    if (this.isConnecting) return;
-    this.isConnecting = true;
+    if (this.state !== 'CONNECTING') return;
 
     try {
       this.ws = new WebSocket(`ws://localhost:${this.port}/api/v3`);
 
       this.ws.on('open', () => {
-        this.isConnecting = false;
+        this.state = 'CONNECTED';
+        this.backoffMs = BACKOFF_INITIAL_MS;
         logger.tracker.info('WebSocket connected');
+
+        // Clear grace timer — connection re-established before state was cleared
+        if (this.graceTimer) {
+          clearTimeout(this.graceTimer);
+          this.graceTimer = null;
+        }
+
         this.onConnectionChange?.(true);
+        this.startPingInterval();
         this.subscribeToDatarefs();
       });
 
@@ -214,35 +242,97 @@ export class XPlaneWebSocketClient {
         }
       });
 
+      this.ws.on('pong', () => {
+        if (this.pongTimeout) {
+          clearTimeout(this.pongTimeout);
+          this.pongTimeout = null;
+        }
+      });
+
       this.ws.on('error', () => {
-        this.isConnecting = false;
+        // close event follows — no action needed here
       });
 
       this.ws.on('close', () => {
-        this.isConnecting = false;
         this.ws = null;
-        // Clear stale state on disconnect to prevent showing old position on reconnect
-        this.currentState = {};
-        logger.tracker.debug('WebSocket disconnected');
-        this.onConnectionChange?.(false);
+        this.stopPingInterval();
+
+        if (this.state === 'IDLE') return; // intentional disconnect, already handled
+
+        this.state = 'RECONNECTING';
+        logger.tracker.debug(`WebSocket disconnected, reconnecting in ${this.backoffMs}ms`);
+        this.startGraceTimer();
         this.scheduleReconnect();
       });
     } catch {
-      this.isConnecting = false;
+      this.state = 'RECONNECTING';
       this.scheduleReconnect();
     }
   }
 
   private scheduleReconnect(): void {
-    if (!this.shouldReconnect) return;
+    if (this.state !== 'RECONNECTING') return;
+    if (this.reconnectTimer) return; // already scheduled
 
-    if (!this.reconnectTimeout) {
-      this.reconnectTimeout = setTimeout(() => {
-        this.reconnectTimeout = null;
-        if (this.shouldReconnect) {
-          this.resolveDatarefsAndConnect();
-        }
-      }, RECONNECT_DELAY);
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (this.state !== 'RECONNECTING') return;
+      this.state = 'CONNECTING';
+      this.resolveDatarefsAndConnect();
+    }, this.backoffMs);
+
+    // Increase backoff for next attempt
+    this.backoffMs = Math.min(this.backoffMs * BACKOFF_MULTIPLIER, BACKOFF_MAX_MS);
+  }
+
+  private startPingInterval(): void {
+    this.stopPingInterval();
+    this.pingInterval = setInterval(() => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+      this.ws.ping();
+
+      // Start pong timeout — if no pong within 5s, connection is dead
+      this.pongTimeout = setTimeout(() => {
+        logger.tracker.debug('Pong timeout — terminating dead connection');
+        this.ws?.terminate();
+      }, PONG_TIMEOUT_MS);
+    }, PING_INTERVAL_MS);
+  }
+
+  private stopPingInterval(): void {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+    if (this.pongTimeout) {
+      clearTimeout(this.pongTimeout);
+      this.pongTimeout = null;
+    }
+  }
+
+  private startGraceTimer(): void {
+    // Don't start a new grace timer if one is already running
+    if (this.graceTimer) return;
+
+    this.graceTimer = setTimeout(() => {
+      this.graceTimer = null;
+      this.currentState = {};
+      this.metadataFlags.clear();
+      this.onConnectionChange?.(false);
+      this.onStateClear?.();
+    }, GRACE_PERIOD_MS);
+  }
+
+  private clearAllTimers(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.stopPingInterval();
+    if (this.graceTimer) {
+      clearTimeout(this.graceTimer);
+      this.graceTimer = null;
     }
   }
 
