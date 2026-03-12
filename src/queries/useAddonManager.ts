@@ -10,6 +10,7 @@ import type {
 } from '@/lib/addonManager/core/types';
 import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
 import { getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
+import { launchKeys } from './useLaunchQuery';
 
 // Query keys
 export const addonKeys = {
@@ -205,7 +206,10 @@ export function useAircraftToggle() {
       if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
       return result.value;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.aircraft }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      queryClient.invalidateQueries({ queryKey: launchKeys.aircraftList });
+    },
   });
 }
 
@@ -217,7 +221,10 @@ export function useAircraftDelete() {
       if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
       return result.value;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.aircraft }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      queryClient.invalidateQueries({ queryKey: launchKeys.aircraftList });
+    },
   });
 }
 
@@ -336,6 +343,7 @@ export function useLiveryDelete() {
     onSuccess: (_, { aircraftFolder }) => {
       queryClient.invalidateQueries({ queryKey: addonKeys.liveries(aircraftFolder) });
       queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      queryClient.invalidateQueries({ queryKey: launchKeys.aircraftList });
     },
   });
 }

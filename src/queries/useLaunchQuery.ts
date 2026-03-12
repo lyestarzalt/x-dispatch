@@ -12,8 +12,6 @@ export function useAircraftList(enabled: boolean = true) {
   return useQuery({
     queryKey: launchKeys.aircraftList,
     queryFn: async (): Promise<Aircraft[]> => {
-      const cached = await window.launcherAPI.getAircraft();
-      if (cached.length > 0) return cached;
       const result = await window.launcherAPI.scanAircraft();
       return result.success ? result.aircraft : [];
     },
