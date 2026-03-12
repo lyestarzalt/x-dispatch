@@ -146,10 +146,42 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         enginesRunning: !coldAndDark,
       });
 
+      // Resolve the preview image path: livery image → aircraft preview → aircraft thumbnail
+      const selectedLiveryObj = selectedAircraft.liveries.find((l) => l.name === selectedLivery);
+      const previewImagePath =
+        selectedLiveryObj?.previewImage ??
+        selectedAircraft.previewImage ??
+        selectedAircraft.thumbnailImage;
+
+      const logbookEntry = {
+        id: crypto.randomUUID(),
+        launchedAt: new Date().toISOString(),
+        airportICAO: startPosition.airport,
+        airportName: useAppStore.getState().selectedAirportData?.name ?? '',
+        aircraftName: selectedAircraft.name,
+        aircraftICAO: selectedAircraft.icao,
+        livery: selectedLivery,
+        previewImagePath,
+        positionName: startPosition.name,
+        positionType: startPosition.type,
+        weatherMode: weatherConfig.mode,
+        weatherPreset: weatherConfig.preset,
+        coldAndDark,
+        aircraftPath: selectedAircraft.path,
+        startPosition,
+        weatherConfig,
+        tankPercentages,
+        payloadWeights,
+        timeOfDay,
+        useRealWorldTime,
+        flightInit: flightConfig,
+      };
+
       if (isXPlaneRunning) {
         // X-Plane running → send via REST API
         try {
           await startFlightMutation.mutateAsync(flightConfig);
+          useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);
           onClose();
         } catch (err) {
@@ -161,6 +193,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         // X-Plane not running → write JSON file and launch with --new_flight_json
         const result = await window.launcherAPI.launch(flightConfig);
         if (result.success) {
+          useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);
           onClose();
         } else {
@@ -413,6 +446,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
                 startPosition={startPosition}
                 isXPlaneRunning={isXPlaneRunning}
                 onLaunch={handleLaunch}
+                aircraftList={aircraftList}
               />
             </SectionErrorBoundary>
           </div>

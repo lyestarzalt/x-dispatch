@@ -742,6 +742,13 @@
       "empty": "Pusty",
       "full": "Pełny",
       "of": "z"
+    },
+
+    "logbook": {
+      "title": "Dziennik lotów",
+      "clearAll": "Wyczyść wszystko",
+      "empty": "Brak ostatnich lotów",
+      "emptyHint": "Twoje ostatnie 10 lotów pojawi się tutaj po uruchomieniu"
     }
   },
 

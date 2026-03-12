@@ -10,6 +10,7 @@ import {
   CloudSnow,
   CloudSun,
   Globe,
+  History,
   Power,
   PowerOff,
   Radio,
@@ -28,9 +29,11 @@ import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
 import { getWeatherSummary } from '../weatherTypes';
+import { LogbookDialog } from './LogbookDialog';
 import { SunArc } from './SunArc';
 import { WeatherDialog } from './WeatherDialog';
 import { WeightBalanceDialog } from './WeightBalanceDialog';
@@ -39,6 +42,7 @@ interface FlightConfigProps {
   startPosition: StartPosition | null;
   isXPlaneRunning: boolean;
   onLaunch: () => void;
+  aircraftList: Aircraft[];
 }
 
 const WEATHER_ICONS: Record<string, typeof Sun> = {
@@ -66,7 +70,12 @@ function getTimezoneOffset(timezone: string): string {
   }
 }
 
-export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: FlightConfigProps) {
+export function FlightConfig({
+  startPosition,
+  isXPlaneRunning,
+  onLaunch,
+  aircraftList,
+}: FlightConfigProps) {
   const { t } = useTranslation();
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
@@ -104,6 +113,7 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
 
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
   const [weatherDialogOpen, setWeatherDialogOpen] = useState(false);
+  const [logbookOpen, setLogbookOpen] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
@@ -400,23 +410,33 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
 
       {/* Launch button — pinned to bottom */}
       <div className="flex-shrink-0 p-3">
-        <Button
-          onClick={onLaunch}
-          disabled={!selectedAircraft || !startPosition || isLaunching}
-          className="w-full"
-          size="lg"
-        >
-          {isLaunching ? (
-            <>
-              <Spinner className="mr-2" />
-              {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
-            </>
-          ) : isXPlaneRunning ? (
-            t('launcher.changeFlight')
-          ) : (
-            t('launcher.launch')
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={onLaunch}
+            disabled={!selectedAircraft || !startPosition || isLaunching}
+            className="flex-1"
+            size="lg"
+          >
+            {isLaunching ? (
+              <>
+                <Spinner className="mr-2" />
+                {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
+              </>
+            ) : isXPlaneRunning ? (
+              t('launcher.changeFlight')
+            ) : (
+              t('launcher.launch')
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setLogbookOpen(true)}
+            tooltip={t('launcher.logbook.title')}
+          >
+            <History className="h-4 w-4" />
+          </Button>
+        </div>
         {!startPosition && (
           <p className="mt-1.5 text-center text-sm text-muted-foreground">
             {t('launcher.selectDeparture')}
@@ -435,6 +455,11 @@ export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: Fligh
         airportElevationFt={selectedAirportData?.elevation}
       />
       <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
+      <LogbookDialog
+        open={logbookOpen}
+        onClose={() => setLogbookOpen(false)}
+        aircraftList={aircraftList}
+      />
     </div>
   );
 }

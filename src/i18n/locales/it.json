@@ -742,6 +742,13 @@
       "empty": "Vuoto",
       "full": "Pieno",
       "of": "di"
+    },
+
+    "logbook": {
+      "title": "Registro voli",
+      "clearAll": "Cancella tutto",
+      "empty": "Nessun volo recente",
+      "emptyHint": "I tuoi ultimi 10 voli appariranno qui dopo il lancio"
     }
   },
 

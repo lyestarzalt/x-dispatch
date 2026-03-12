@@ -661,6 +661,13 @@
       "empty": "Leer",
       "full": "Voll",
       "of": "von"
+    },
+
+    "logbook": {
+      "title": "Flugbuch",
+      "clearAll": "Alle löschen",
+      "empty": "Keine letzten Flüge",
+      "emptyHint": "Ihre letzten 10 Flüge erscheinen hier nach dem Start"
     }
   },
 

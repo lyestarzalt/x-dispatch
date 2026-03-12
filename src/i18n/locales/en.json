@@ -762,6 +762,13 @@
       "empty": "Empty",
       "full": "Full",
       "of": "of"
+    },
+
+    "logbook": {
+      "title": "Flight Logbook",
+      "clearAll": "Clear All",
+      "empty": "No recent flights",
+      "emptyHint": "Your last 10 flights will appear here after launching"
     }
   },
 
