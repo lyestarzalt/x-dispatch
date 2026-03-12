@@ -40,6 +40,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const { data: weatherPresets = [] } = useWeatherPresets(open);
 
   // Zustand store state
+  const selectedAircraftPath = useLaunchStore((s) => s.selectedAircraftPath);
   const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
   const selectedLivery = useLaunchStore((s) => s.selectedLivery);
   const tankPercentages = useLaunchStore((s) => s.tankPercentages);
@@ -50,6 +51,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const weatherConfig = useLaunchStore((s) => s.weatherConfig);
 
   // Zustand store actions
+  const hydrateAircraft = useLaunchStore((s) => s.hydrateAircraft);
   const setIsLaunching = useLaunchStore((s) => s.setIsLaunching);
   const setLaunchError = useLaunchStore((s) => s.setLaunchError);
 
@@ -60,6 +62,13 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       setLaunchError(null);
     }
   }, [open, setIsLaunching, setLaunchError]);
+
+  // Reconcile persisted aircraft path against fresh scanned list
+  useEffect(() => {
+    if (!selectedAircraftPath || selectedAircraft || aircraftList.length === 0) return;
+    const freshAircraft = aircraftList.find((a) => a.path === selectedAircraftPath);
+    hydrateAircraft(freshAircraft ?? null);
+  }, [selectedAircraftPath, selectedAircraft, aircraftList, hydrateAircraft]);
 
   // Launch - same FlightInit payload for both: REST API (running) or --new_flight_json (cold start)
   const handleLaunch = async () => {

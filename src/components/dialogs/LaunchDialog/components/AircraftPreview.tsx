@@ -105,7 +105,8 @@ export function AircraftPreview() {
   const { data: aircraftImage } = useAircraftImage(selectedAircraft?.previewImage ?? null);
 
   // Find current livery index
-  const currentIndex = selectedAircraft?.liveries.findIndex((l) => l.name === selectedLivery) ?? 0;
+  const rawIndex = selectedAircraft?.liveries.findIndex((l) => l.name === selectedLivery) ?? -1;
+  const currentIndex = rawIndex >= 0 ? rawIndex : 0;
   const currentLivery = selectedAircraft?.liveries[currentIndex];
 
   // Navigation handlers

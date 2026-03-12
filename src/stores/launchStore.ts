@@ -15,6 +15,7 @@ import type { Aircraft } from '@/types/aircraft';
 
 interface LaunchState {
   // Selection
+  selectedAircraftPath: string | null;
   selectedAircraft: Aircraft | null;
   selectedLivery: string;
 
@@ -43,6 +44,7 @@ interface LaunchState {
 
   // Actions
   selectAircraft: (aircraft: Aircraft | null) => void;
+  hydrateAircraft: (aircraft: Aircraft | null) => void;
   setSelectedLivery: (livery: string) => void;
   setTankPercentage: (index: number, value: number) => void;
   setAllTanksPercentage: (value: number) => void;
@@ -72,7 +74,8 @@ interface LaunchState {
 }
 
 const DEFAULT_CONFIG = {
-  selectedAircraft: null,
+  selectedAircraftPath: null as string | null,
+  selectedAircraft: null as Aircraft | null,
   selectedLivery: 'Default',
   tankPercentages: [] as number[],
   payloadWeights: [] as number[],
@@ -98,6 +101,7 @@ export const useLaunchStore = create<LaunchState>()(
 
       selectAircraft: (aircraft) =>
         set({
+          selectedAircraftPath: aircraft?.path ?? null,
           selectedAircraft: aircraft,
           selectedLivery: 'Default',
           tankPercentages: aircraft ? new Array((aircraft.tankNames ?? []).length).fill(50) : [],
@@ -105,6 +109,43 @@ export const useLaunchStore = create<LaunchState>()(
             ? new Array((aircraft.payloadStations ?? []).length).fill(0)
             : [],
           launchError: null,
+        }),
+
+      hydrateAircraft: (aircraft) =>
+        set((state) => {
+          if (!aircraft) {
+            return {
+              selectedAircraftPath: null,
+              selectedAircraft: null,
+              selectedLivery: 'Default',
+              tankPercentages: [],
+              payloadWeights: [],
+            };
+          }
+
+          // Validate livery exists in fresh data
+          const liveryExists = aircraft.liveries.some((l) => l.name === state.selectedLivery);
+          const selectedLivery = liveryExists ? state.selectedLivery : 'Default';
+
+          // Validate tank/payload array lengths match fresh data
+          const expectedTanks = (aircraft.tankNames ?? []).length;
+          const tankPercentages =
+            state.tankPercentages.length === expectedTanks
+              ? state.tankPercentages
+              : new Array(expectedTanks).fill(50);
+
+          const expectedPayload = (aircraft.payloadStations ?? []).length;
+          const payloadWeights =
+            state.payloadWeights.length === expectedPayload
+              ? state.payloadWeights
+              : new Array(expectedPayload).fill(0);
+
+          return {
+            selectedAircraft: aircraft,
+            selectedLivery,
+            tankPercentages,
+            payloadWeights,
+          };
         }),
 
       setSelectedLivery: (livery) => set({ selectedLivery: livery }),
@@ -278,7 +319,7 @@ export const useLaunchStore = create<LaunchState>()(
       name: 'launch-store',
       partialize: (state) => ({
         favorites: state.favorites,
-        selectedAircraft: state.selectedAircraft,
+        selectedAircraftPath: state.selectedAircraftPath,
         selectedLivery: state.selectedLivery,
         tankPercentages: state.tankPercentages,
         payloadWeights: state.payloadWeights,
@@ -396,9 +437,16 @@ export const useLaunchStore = create<LaunchState>()(
           if (!('showFavoritesOnly' in state)) state.showFavoritesOnly = false;
         }
 
+        // v5 → v6: persist aircraft path instead of full object
+        if (version < 6) {
+          const aircraft = state.selectedAircraft as Aircraft | null;
+          state.selectedAircraftPath = aircraft?.path ?? null;
+          delete state.selectedAircraft;
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 5,
+      version: 6,
     }
   )
 );
