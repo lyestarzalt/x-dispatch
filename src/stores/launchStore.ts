@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AircraftType, EngineType } from '@/components/dialogs/LaunchDialog/types';
+import type {
+  AircraftType,
+  EngineType,
+  LogbookEntry,
+} from '@/components/dialogs/LaunchDialog/types';
 import {
   type CloudLayer,
   type CustomWeatherState,
@@ -35,6 +39,9 @@ interface LaunchState {
   filterEngineType: EngineType;
   showFavoritesOnly: boolean;
 
+  // Logbook (persisted, FIFO max 10)
+  logbook: LogbookEntry[];
+
   // Favorites (persisted to localStorage)
   favorites: string[];
 
@@ -43,6 +50,10 @@ interface LaunchState {
   launchError: string | null;
 
   // Actions
+  addLogbookEntry: (entry: LogbookEntry) => void;
+  removeLogbookEntry: (id: string) => void;
+  clearLogbook: () => void;
+  setWeatherConfig: (config: WeatherConfig) => void;
   selectAircraft: (aircraft: Aircraft | null) => void;
   hydrateAircraft: (aircraft: Aircraft | null) => void;
   setSelectedLivery: (livery: string) => void;
@@ -97,7 +108,22 @@ export const useLaunchStore = create<LaunchState>()(
   persist(
     (set) => ({
       ...DEFAULT_CONFIG,
+      logbook: [],
       favorites: [],
+
+      addLogbookEntry: (entry) =>
+        set((state) => ({
+          logbook: [entry, ...state.logbook].slice(0, 10),
+        })),
+
+      removeLogbookEntry: (id) =>
+        set((state) => ({
+          logbook: state.logbook.filter((e) => e.id !== id),
+        })),
+
+      clearLogbook: () => set({ logbook: [] }),
+
+      setWeatherConfig: (config) => set({ weatherConfig: config }),
 
       selectAircraft: (aircraft) =>
         set({
@@ -318,6 +344,7 @@ export const useLaunchStore = create<LaunchState>()(
     {
       name: 'launch-store',
       partialize: (state) => ({
+        logbook: state.logbook,
         favorites: state.favorites,
         selectedAircraftPath: state.selectedAircraftPath,
         selectedLivery: state.selectedLivery,
@@ -444,9 +471,14 @@ export const useLaunchStore = create<LaunchState>()(
           delete state.selectedAircraft;
         }
 
+        // v6 → v7: add logbook
+        if (version < 7) {
+          state.logbook = (state.logbook as LogbookEntry[] | undefined) ?? [];
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 6,
+      version: 7,
     }
   )
 );

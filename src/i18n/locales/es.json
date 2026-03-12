@@ -742,6 +742,13 @@
       "empty": "Vacío",
       "full": "Lleno",
       "of": "de"
+    },
+
+    "logbook": {
+      "title": "Libro de vuelo",
+      "clearAll": "Borrar todo",
+      "empty": "Sin vuelos recientes",
+      "emptyHint": "Tus últimos 10 vuelos aparecerán aquí después del lanzamiento"
     }
   },
 

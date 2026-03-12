@@ -742,6 +742,13 @@
       "empty": "Vazio",
       "full": "Cheio",
       "of": "de"
+    },
+
+    "logbook": {
+      "title": "Diário de voo",
+      "clearAll": "Limpar tudo",
+      "empty": "Nenhum voo recente",
+      "emptyHint": "Seus últimos 10 voos aparecerão aqui após o lançamento"
     }
   },
 

@@ -661,6 +661,13 @@
       "empty": "Vide",
       "full": "Plein",
       "of": "sur"
+    },
+
+    "logbook": {
+      "title": "Carnet de vol",
+      "clearAll": "Tout effacer",
+      "empty": "Aucun vol récent",
+      "emptyHint": "Vos 10 derniers vols apparaîtront ici après le lancement"
     }
   },
 
