@@ -11,9 +11,9 @@ import { cp, mkdir, rename } from 'node:fs/promises';
 import path from 'node:path';
 
 function getPlatformLabel(platform: string, arch: string): string {
-  if (platform === 'win32') return 'windows';
+  if (platform === 'win32') return `windows-${arch}`;
   if (platform === 'darwin') return arch === 'arm64' ? 'mac-apple-silicon' : 'mac-intel';
-  return 'linux';
+  return `linux-${arch}`;
 }
 
 const RENAME_EXTENSIONS = new Set(['.exe', '.dmg', '.deb', '.rpm']);
