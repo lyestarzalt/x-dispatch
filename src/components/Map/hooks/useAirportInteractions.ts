@@ -50,14 +50,19 @@ export function useAirportInteractions({
   const selectedGateId = useRef<number | null>(null);
   const selectedRunwayEndId = useRef<number | null>(null);
 
-  const selectedAirportDataRef = useRef<ParsedAirport | null>(null);
+  const { setStartPosition, startPosition } = useAppStore();
 
-  // Update ref in effect to avoid updating during render
+  const selectedAirportDataRef = useRef<ParsedAirport | null>(null);
+  const startPositionRef = useRef(startPosition);
+
+  // Update refs in effect to avoid updating during render
   useEffect(() => {
     selectedAirportDataRef.current = selectedAirportData;
   }, [selectedAirportData]);
 
-  const { setStartPosition } = useAppStore();
+  useEffect(() => {
+    startPositionRef.current = startPosition;
+  }, [startPosition]);
 
   // Setup hover and click handlers for gates and runway ends
   useEffect(() => {
@@ -102,6 +107,14 @@ export function useAirportInteractions({
 
       const props = feature.properties;
       const featureId = feature.id as number;
+
+      // Toggle: deselect if clicking the already-selected gate
+      if (selectedGateId.current === featureId) {
+        map.setFeatureState({ source: 'airport-gates', id: featureId }, { selected: false });
+        selectedGateId.current = null;
+        setStartPosition(null);
+        return;
+      }
 
       // Clear previous selections
       if (selectedGateId.current !== null) {
@@ -209,6 +222,14 @@ export function useAirportInteractions({
       const props = feature.properties;
       const featureId = feature.id as number;
 
+      // Toggle: deselect if clicking the already-selected runway end
+      if (selectedRunwayEndId.current === featureId) {
+        map.setFeatureState({ source: 'airport-runway-ends', id: featureId }, { selected: false });
+        selectedRunwayEndId.current = null;
+        setStartPosition(null);
+        return;
+      }
+
       // Clear previous selections
       if (selectedRunwayEndId.current !== null) {
         map.setFeatureState(
@@ -295,6 +316,27 @@ export function useAirportInteractions({
     [mapRef]
   );
 
+  const clearStartSelection = useCallback(
+    (map: maplibregl.Map) => {
+      if (selectedGateId.current !== null) {
+        map.setFeatureState(
+          { source: 'airport-gates', id: selectedGateId.current },
+          { selected: false }
+        );
+        selectedGateId.current = null;
+      }
+      if (selectedRunwayEndId.current !== null) {
+        map.setFeatureState(
+          { source: 'airport-runway-ends', id: selectedRunwayEndId.current },
+          { selected: false }
+        );
+        selectedRunwayEndId.current = null;
+      }
+      setStartPosition(null);
+    },
+    [setStartPosition]
+  );
+
   const selectGateAsStart = useCallback(
     (gate: {
       latitude: number;
@@ -307,8 +349,12 @@ export function useAirportInteractions({
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
 
-      // Use index from gate object (passed from sidebar or map click)
-      const gateIndex = gate.index;
+      // Toggle: deselect if clicking the already-selected gate
+      const current = startPositionRef.current;
+      if (current?.type === 'ramp' && current.index === gate.index) {
+        clearStartSelection(map);
+        return;
+      }
 
       // Clear previous selections
       if (selectedGateId.current !== null) {
@@ -325,6 +371,7 @@ export function useAirportInteractions({
         selectedRunwayEndId.current = null;
       }
 
+      const gateIndex = gate.index;
       if (gateIndex !== undefined) {
         selectedGateId.current = gateIndex;
         map.setFeatureState({ source: 'airport-gates', id: gateIndex }, { selected: true });
@@ -347,7 +394,7 @@ export function useAirportInteractions({
 
       navigateToGate({ ...gate, heading: gate.heading ?? 0 });
     },
-    [mapRef, selectedAirportData, setStartPosition, navigateToGate]
+    [mapRef, selectedAirportData, setStartPosition, navigateToGate, clearStartSelection]
   );
 
   const selectRunwayEndAsStart = useCallback(
@@ -362,8 +409,14 @@ export function useAirportInteractions({
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
 
-      // Use index from runwayEnd object (passed from sidebar or map click)
       const endIndex = runwayEnd.index;
+
+      // Toggle: deselect if clicking the already-selected runway end
+      const current = startPositionRef.current;
+      if (current?.type === 'runway' && !current.isHelipad && current.index === endIndex) {
+        clearStartSelection(map);
+        return;
+      }
 
       // Clear previous selections
       if (selectedRunwayEndId.current !== null) {
@@ -409,7 +462,7 @@ export function useAirportInteractions({
         duration: 1500,
       });
     },
-    [mapRef, selectedAirportData, setStartPosition]
+    [mapRef, selectedAirportData, setStartPosition, clearStartSelection]
   );
 
   const selectHelipadAsStart = useCallback(
@@ -423,6 +476,13 @@ export function useAirportInteractions({
     }) => {
       const map = mapRef.current;
       if (!selectedAirportData || !map) return;
+
+      // Toggle: deselect if clicking the already-selected helipad
+      const current = startPositionRef.current;
+      if (current?.isHelipad && current.index === helipad.index) {
+        clearStartSelection(map);
+        return;
+      }
 
       // Clear previous selections
       if (selectedGateId.current !== null) {
@@ -460,7 +520,7 @@ export function useAirportInteractions({
         duration: 1500,
       });
     },
-    [mapRef, selectedAirportData, setStartPosition]
+    [mapRef, selectedAirportData, setStartPosition, clearStartSelection]
   );
 
   const navigateToRunway = useCallback(
