@@ -121,6 +121,21 @@ export function useMapSetup({
       fadeDuration: 0,
       trackResize: true,
       refreshExpiredTiles: false,
+      transformRequest: (url, resourceType) => {
+        // Skip style JSON — always fetch fresh
+        if (resourceType === 'Style') return { url };
+        // Rewrite cacheable tile/glyph/sprite HTTPS URLs to tile-cache:// scheme
+        if (
+          url.startsWith('https://') &&
+          (url.includes('tiles.openfreemap.org') ||
+            url.includes('basemaps.cartocdn.com') ||
+            url.includes('s3.amazonaws.com') ||
+            url.includes('rainviewer.com'))
+        ) {
+          return { url: url.replace('https://', 'tile-cache://') };
+        }
+        return { url };
+      },
     });
 
     // Wrap with proxy for safe access after destruction

@@ -101,6 +101,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   getSendCrashReports: () => ipcRenderer.invoke('app:getSendCrashReports'),
   setSendCrashReports: (enabled: boolean) => ipcRenderer.invoke('app:setSendCrashReports', enabled),
   getXPlaneVersion: () => ipcRenderer.invoke('app:getXPlaneVersion'),
+  getTileCacheStats: () => ipcRenderer.invoke('app:getTileCacheStats'),
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -341,6 +342,11 @@ declare global {
         commit: string;
         isSteam: boolean;
       } | null>;
+      getTileCacheStats: () => Promise<{
+        totalSize: number;
+        entryCount: number;
+        hitRate: number;
+      }>;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;

@@ -8,6 +8,13 @@ import { updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { getDbPath, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
+import {
+  closeTileCache,
+  getTileCache,
+  initTileCache,
+  registerTileCacheHandler,
+  registerTileCacheScheme,
+} from './lib/tileCache';
 import logger, { getLogPath } from './lib/utils/logger';
 import {
   isInvalidCoords,
@@ -238,8 +245,11 @@ function registerIpcHandlers() {
   ipcMain.handle('app:clearCache', () => {
     logger.main.info('Clearing cache via IPC');
     dataManager.clearCache();
+    getTileCache().clear();
     return { success: true };
   });
+
+  ipcMain.handle('app:getTileCacheStats', () => getTileCache().getStats());
 
   ipcMain.handle('app:startLoading', async () => {
     if (isLoading) {
@@ -1027,6 +1037,9 @@ function registerIpcHandlers() {
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
 }
 
+// Must register custom scheme before app is ready
+registerTileCacheScheme();
+
 app.whenReady().then(async () => {
   // Environment snapshot for production support
   const displays = screen.getAllDisplays();
@@ -1158,6 +1171,9 @@ app.whenReady().then(async () => {
     });
   });
 
+  initTileCache();
+  registerTileCacheHandler();
+
   registerIpcHandlers();
   mainWindow = createWindow();
 
@@ -1184,7 +1200,8 @@ app.on('before-quit', () => {
   logger.main.info(`Session ended - Duration: ${sessionDuration} minutes`);
   logger.main.info('════════════════════════════════════════════════════════════════');
 
-  // Close DB when app is actually quitting (handles macOS Cmd+Q)
+  // Close DB and tile cache when app is actually quitting (handles macOS Cmd+Q)
+  closeTileCache();
   dataManager?.close();
 });
 
