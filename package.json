@@ -143,6 +143,7 @@
     "electron-window-state": "^5.0.3",
     "i18next": "^25.8.0",
     "lucide-react": "^0.474.0",
+    "maplibre-contour": "^0.1.0",
     "maplibre-gl": "^5.19.0",
     "maplibre-gl-nightlayer": "^1.0.0-alpha.14",
     "metar-taf-parser": "^9.1.2",

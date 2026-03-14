@@ -122,14 +122,13 @@ export function useMapSetup({
       trackResize: true,
       refreshExpiredTiles: false,
       transformRequest: (url, resourceType) => {
-        // Skip style JSON — always fetch fresh
-        if (resourceType === 'Style') return { url };
-        // Rewrite cacheable tile/glyph/sprite HTTPS URLs to tile-cache:// scheme
+        // Only cache tile data — skip style JSON, glyphs, and sprites
+        if (resourceType !== 'Tile') return { url };
         if (
           url.startsWith('https://') &&
           (url.includes('tiles.openfreemap.org') ||
             url.includes('basemaps.cartocdn.com') ||
-            url.includes('s3.amazonaws.com') ||
+            url.includes('tiles.mapterhorn.com') ||
             url.includes('rainviewer.com'))
         ) {
           return { url: url.replace('https://', 'tile-cache://') };
