@@ -16,3 +16,4 @@ export { useAirportFilters } from './useAirportFilters';
 export { useRangeRingsSync } from './useRangeRingsSync';
 export { usePinDrop } from './usePinDrop';
 export { useTrackControl } from './useTrackControl';
+export { useIdleOrbit } from './useIdleOrbit';

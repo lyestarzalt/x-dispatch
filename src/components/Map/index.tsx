@@ -33,6 +33,7 @@ import {
   useAirportFilters,
   useAirportInteractions,
   useAirportRenderer,
+  useIdleOrbit,
   useIvaoSync,
   useMapSetup,
   useNavLayerSync,
@@ -344,6 +345,9 @@ export default function Map({ airports }: MapProps) {
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
+
+  // Idle orbit camera - slowly orbit around selected airport after inactivity
+  useIdleOrbit({ mapRef, airportCenter: navDataLocation });
 
   // Flight plan state
   const fmsData = useFlightPlanStore((s) => s.fmsData);
