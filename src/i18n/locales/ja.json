@@ -238,7 +238,9 @@
       "holdingPatterns": "ホールディングパターン",
       "airportMetadata": "空港メタデータ",
       "moraGrid": "MORAグリッド",
-      "msaSectors": "MSAセクター"
+      "msaSectors": "MSAセクター",
+      "closeOnLaunch": "起動後に閉じる",
+      "closeOnLaunchDescription": "X-Plane 起動時に X-Dispatch を自動的に閉じる"
     },
     "appearance": {
       "title": "外観",

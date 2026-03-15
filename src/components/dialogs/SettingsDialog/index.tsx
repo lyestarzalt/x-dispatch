@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CloudDownload, Database, Globe, Info, Palette, Plane } from 'lucide-react';
+import { CloudDownload, Database, Info, Palette, Plane } from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
   Dialog,
@@ -17,7 +17,6 @@ import {
   AboutSection,
   AppearanceSection,
   NavigationDataSection,
-  NetworksSection,
   SimbriefSection,
   XPlaneSection,
 } from './sections';
@@ -25,15 +24,9 @@ import {
 interface SettingsDialogProps {
   open: boolean;
   onClose: () => void;
-  isVatsimEnabled?: boolean;
-  onToggleVatsim?: () => void;
-  vatsimPilotCount?: number;
-  isIvaoEnabled?: boolean;
-  onToggleIvao?: () => void;
-  ivaoPilotCount?: number;
 }
 
-type TabId = 'xplane' | 'data' | 'appearance' | 'simbrief' | 'networks' | 'about';
+type TabId = 'xplane' | 'data' | 'appearance' | 'simbrief' | 'about';
 
 interface TabConfig {
   id: TabId;
@@ -46,20 +39,10 @@ const TABS: TabConfig[] = [
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
-  { id: 'networks', icon: Globe, labelKey: 'Online Networks' },
   { id: 'about', icon: Info, labelKey: 'settings.tabs.about' },
 ];
 
-export default function SettingsDialog({
-  open,
-  onClose,
-  isVatsimEnabled = false,
-  onToggleVatsim,
-  vatsimPilotCount,
-  isIvaoEnabled = false,
-  onToggleIvao,
-  ivaoPilotCount,
-}: SettingsDialogProps) {
+export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { t } = useTranslation();
   const { data: version } = useAppVersion();
   const [activeTab, setActiveTab] = useState<TabId>('xplane');
@@ -92,28 +75,11 @@ export default function SettingsDialog({
                     className={cn(
                       'w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium',
                       'data-[state=active]:bg-background data-[state=active]:shadow-sm',
-                      'transition-colors hover:bg-background/50',
-                      id === 'networks' && isVatsimEnabled && 'text-success',
-                      id === 'networks' && isIvaoEnabled && 'text-cat-blue'
+                      'transition-colors hover:bg-background/50'
                     )}
                   >
-                    <Icon
-                      className={cn(
-                        'h-4 w-4',
-                        id === 'networks' && isVatsimEnabled && 'text-success',
-                        id === 'networks' && isIvaoEnabled && 'text-cat-blue'
-                      )}
-                    />
+                    <Icon className="h-4 w-4" />
                     {labelKey.startsWith('settings.') ? t(labelKey) : labelKey}
-                    {id === 'networks' && (isVatsimEnabled || isIvaoEnabled) && (
-                      <span
-                        className={cn(
-                          'ml-auto h-2 w-2 rounded-full',
-                          isVatsimEnabled && 'bg-success',
-                          isIvaoEnabled && 'bg-cat-blue'
-                        )}
-                      />
-                    )}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -167,24 +133,6 @@ export default function SettingsDialog({
               <div className="p-6">
                 <SectionErrorBoundary name="SimBrief">
                   <SimbriefSection />
-                </SectionErrorBoundary>
-              </div>
-            </TabsContent>
-
-            <TabsContent
-              value="networks"
-              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
-            >
-              <div className="p-6">
-                <SectionErrorBoundary name="Online Networks">
-                  <NetworksSection
-                    isVatsimEnabled={isVatsimEnabled}
-                    onToggleVatsim={onToggleVatsim || (() => {})}
-                    vatsimPilotCount={vatsimPilotCount}
-                    isIvaoEnabled={isIvaoEnabled}
-                    onToggleIvao={onToggleIvao || (() => {})}
-                    ivaoPilotCount={ivaoPilotCount}
-                  />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

@@ -16,6 +16,7 @@ import {
 } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import type { StartPosition } from './types';
 import type { WeatherConfig } from './weatherTypes';
@@ -184,6 +185,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);
           onClose();
+          if (useSettingsStore.getState().launcher.closeOnLaunch) {
+            window.close();
+          }
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to change flight';
           window.appAPI.log.error('X-Plane flight change failed', err);
@@ -196,6 +200,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);
           onClose();
+          if (useSettingsStore.getState().launcher.closeOnLaunch) {
+            window.close();
+          }
         } else {
           window.appAPI.log.error('X-Plane launch failed', result.error);
           setLaunchError(result.error || 'Failed to launch');

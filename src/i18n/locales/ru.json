@@ -238,7 +238,9 @@
       "holdingPatterns": "Схемы ожидания",
       "airportMetadata": "Метаданные аэропорта",
       "moraGrid": "Сетка MORA",
-      "msaSectors": "Секторы MSA"
+      "msaSectors": "Секторы MSA",
+      "closeOnLaunch": "Закрыть после запуска",
+      "closeOnLaunchDescription": "Автоматически закрывать X-Dispatch при запуске X-Plane"
     },
     "appearance": {
       "title": "Внешний вид",

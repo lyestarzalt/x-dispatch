@@ -751,16 +751,7 @@ export default function Map({ airports }: MapProps) {
       )}
 
       {/* Dialogs - render as modals, positioning handled by dialog component */}
-      <SettingsDialog
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        isVatsimEnabled={vatsimEnabled}
-        onToggleVatsim={handleToggleVatsim}
-        vatsimPilotCount={vatsimData?.pilots?.length}
-        isIvaoEnabled={ivaoEnabled}
-        onToggleIvao={handleToggleIvao}
-        ivaoPilotCount={ivaoData?.clients.pilots.length}
-      />
+      <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
 
       <LaunchDialog
         open={showLaunchDialog}

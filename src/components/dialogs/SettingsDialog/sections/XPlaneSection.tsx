@@ -6,13 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
 import { useXPlanePath } from '@/queries';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
 
 export default function XPlaneSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const { data: xplanePath } = useXPlanePath();
+  const closeOnLaunch = useSettingsStore((s) => s.launcher.closeOnLaunch);
+  const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [versionInfo, setVersionInfo] = useState<{
@@ -106,6 +110,22 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
         {loading ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
         {t('setup.changeFolder')}
       </Button>
+
+      <Separator />
+
+      {/* Launch Behavior */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium">{t('settings.xplane.closeOnLaunch')}</p>
+          <p className="text-xs text-muted-foreground">
+            {t('settings.xplane.closeOnLaunchDescription')}
+          </p>
+        </div>
+        <Switch
+          checked={closeOnLaunch}
+          onCheckedChange={(checked) => updateLauncherSettings({ closeOnLaunch: checked })}
+        />
+      </div>
     </div>
   );
 }

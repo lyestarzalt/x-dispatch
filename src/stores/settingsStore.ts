@@ -80,12 +80,18 @@ export interface AppearanceSettings {
   fontSize: FontSize;
 }
 
+export interface LauncherSettings {
+  closeOnLaunch: boolean;
+}
+
 interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
   appearance: AppearanceSettings;
+  launcher: LauncherSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
+  updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
   setFontSize: (size: FontSize) => void;
   resetToDefaults: () => void;
 }
@@ -107,12 +113,17 @@ const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   fontSize: 'medium',
 };
 
+const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
+  closeOnLaunch: false,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       map: DEFAULT_MAP_SETTINGS,
       simbrief: DEFAULT_SIMBRIEF_SETTINGS,
       appearance: DEFAULT_APPEARANCE_SETTINGS,
+      launcher: DEFAULT_LAUNCHER_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -122,6 +133,11 @@ export const useSettingsStore = create<SettingsState>()(
       updateSimbriefSettings: (settings) =>
         set((state) => ({
           simbrief: { ...state.simbrief, ...settings },
+        })),
+
+      updateLauncherSettings: (settings) =>
+        set((state) => ({
+          launcher: { ...state.launcher, ...settings },
         })),
 
       setFontSize: (size: FontSize) => {
@@ -135,12 +151,13 @@ export const useSettingsStore = create<SettingsState>()(
           map: DEFAULT_MAP_SETTINGS,
           simbrief: DEFAULT_SIMBRIEF_SETTINGS,
           appearance: DEFAULT_APPEARANCE_SETTINGS,
+          launcher: DEFAULT_LAUNCHER_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 10,
+      version: 11,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -174,6 +191,14 @@ export const useSettingsStore = create<SettingsState>()(
           return {
             ...state,
             appearance: DEFAULT_APPEARANCE_SETTINGS,
+          };
+        }
+        if (version < 11) {
+          // Add launcher settings
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            launcher: DEFAULT_LAUNCHER_SETTINGS,
           };
         }
         return persistedState as SettingsState;

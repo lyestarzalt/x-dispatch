@@ -251,7 +251,9 @@
       "versionUnknown": "Unknown version",
       "airportMetadata": "Airport Metadata",
       "moraGrid": "MORA Grid",
-      "msaSectors": "MSA Sectors"
+      "msaSectors": "MSA Sectors",
+      "closeOnLaunch": "Close after launch",
+      "closeOnLaunchDescription": "Automatically close X-Dispatch when X-Plane starts"
     },
     "appearance": {
       "title": "Appearance",

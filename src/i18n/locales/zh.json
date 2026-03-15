@@ -238,7 +238,9 @@
       "holdingPatterns": "等待航线",
       "airportMetadata": "机场元数据",
       "moraGrid": "MORA 网格",
-      "msaSectors": "MSA 扇区"
+      "msaSectors": "MSA 扇区",
+      "closeOnLaunch": "启动后关闭",
+      "closeOnLaunchDescription": "X-Plane 启动时自动关闭 X-Dispatch"
     },
     "appearance": {
       "title": "外观",
