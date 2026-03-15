@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Check } from 'lucide-react';
+import { AppLogo } from '@/components/ui/AppLogo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -179,8 +180,9 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
       <div className="w-full max-w-md px-8">
-        {/* Title */}
+        {/* Logo + Title */}
         <div className="mb-8 text-center">
+          <AppLogo size="xl" className="mx-auto mb-4" />
           <h1 className="xp-page-heading mb-2">{t('loading.title')}</h1>
           {hasError ? (
             <Badge variant="danger" className="gap-1.5">
