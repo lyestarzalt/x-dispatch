@@ -8,14 +8,23 @@ import { Progress } from '@/components/ui/progress';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
-import type { LoadingProgress } from '@/types/xplane';
+import type { LoadingDetail, LoadingProgress } from '@/types/xplane';
 
 interface LoadingStep {
   id: string;
   labelKey: string;
   status: 'pending' | 'loading' | 'complete' | 'error';
   count?: number;
+  detail?: LoadingDetail;
 }
+
+const STEP_WEIGHTS: Record<string, number> = {
+  airports: 0.6,
+  navaids: 0.1,
+  waypoints: 0.1,
+  airspaces: 0.1,
+  airways: 0.1,
+};
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -34,6 +43,8 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
   ]);
   const [currentMessage, setCurrentMessage] = useState(() => t('loading.initializing'));
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'verifying' | 'loading'>('verifying');
+  const [verifyComplete, setVerifyComplete] = useState(false);
 
   // Use refs to avoid stale closure issues
   const onCompleteRef = useRef(onComplete);
@@ -51,6 +62,10 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
     function handleProgress(progress: LoadingProgress) {
       setCurrentMessage(progress.message);
 
+      if (progress.phase) {
+        setPhase(progress.phase);
+      }
+
       if (progress.status === 'error') {
         setError(progress.error || progress.message);
         return;
@@ -64,11 +79,25 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
       setSteps((prev) =>
         prev.map((step) => {
           if (step.id === progress.step) {
-            return { ...step, status: progress.status, count: progress.count };
+            return {
+              ...step,
+              status: progress.status,
+              count: progress.count ?? step.count,
+              detail: progress.detail,
+            };
           }
           return step;
         })
       );
+
+      // If all steps complete with cache valid (verifying phase), auto-complete after delay
+      if (
+        progress.phase === 'verifying' &&
+        progress.step === 'airports' &&
+        progress.status === 'complete'
+      ) {
+        setVerifyComplete(true);
+      }
     }
 
     // Register listener
@@ -123,9 +152,29 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
     return cleanup;
   }, []); // Empty deps - only run once
 
-  const completedSteps = steps.filter((s) => s.status === 'complete').length;
-  const progress = (completedSteps / steps.length) * 100;
+  // Auto-complete after cache-valid verification
+  useEffect(() => {
+    if (!verifyComplete) return;
+    const timer = setTimeout(() => {
+      // Don't auto-complete — the main process will continue loading other steps
+      // and will send a 'complete' event when all done
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [verifyComplete]);
+
+  // Weighted progress calculation
+  const weightedProgress = steps.reduce((acc, step) => {
+    const weight = STEP_WEIGHTS[step.id] ?? 0;
+    if (step.status === 'complete') return acc + weight * 100;
+    if (step.status === 'loading' && step.detail?.total) {
+      const subProgress = Math.min(step.detail.current / step.detail.total, 1);
+      return acc + weight * subProgress * 100;
+    }
+    return acc;
+  }, 0);
+
   const hasError = !!error;
+  const isVerifying = phase === 'verifying' && !hasError;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -138,54 +187,82 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
               <AlertCircle className="h-3 w-3" />
               {t('loading.failed')}
             </Badge>
+          ) : verifyComplete && isVerifying ? (
+            <Badge variant="success" className="gap-1.5">
+              <Check className="h-3 w-3" />
+              {t('loading.upToDate')}
+            </Badge>
           ) : (
             <Badge variant="info" className="gap-1.5">
               <Spinner className="size-3" />
-              {t('loading.badge')}
+              {isVerifying ? t('loading.verifying') : t('loading.badge')}
             </Badge>
           )}
         </div>
 
-        {/* Progress bar */}
-        <Progress value={progress} className="mb-6 h-1.5" />
+        {/* Progress bar — only shown in loading phase */}
+        {!isVerifying && <Progress value={weightedProgress} className="mb-6 h-1.5" />}
 
-        {/* Steps list */}
-        <div className="mb-6 space-y-3">
-          {steps.map((step) => (
-            <div key={step.id} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-5 w-5 items-center justify-center">
-                  {step.status === 'loading' && <Spinner className="text-primary" />}
-                  {step.status === 'complete' && <Check className="h-4 w-4 text-success" />}
-                  {step.status === 'error' && <AlertCircle className="h-4 w-4 text-destructive" />}
-                  {step.status === 'pending' && (
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
+        {/* Steps list — only shown in loading phase */}
+        {!isVerifying && (
+          <div className="mb-6 space-y-3">
+            {steps.map((step) => (
+              <div key={step.id}>
+                <div className="flex items-center justify-between">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+                      {step.status === 'loading' && <Spinner className="text-primary" />}
+                      {step.status === 'complete' && <Check className="h-4 w-4 text-success" />}
+                      {step.status === 'error' && (
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      )}
+                      {step.status === 'pending' && (
+                        <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        'xp-label truncate',
+                        step.status === 'loading' && 'font-medium text-foreground',
+                        step.status === 'complete' && 'text-muted-foreground',
+                        step.status === 'error' && 'text-destructive',
+                        step.status === 'pending' && 'text-muted-foreground/50'
+                      )}
+                    >
+                      {t(step.labelKey)}
+                    </span>
+                  </div>
+
+                  {step.count !== undefined && step.status === 'complete' && (
+                    <span className="xp-value shrink-0 text-muted-foreground">
+                      {step.count.toLocaleString()}
+                    </span>
                   )}
                 </div>
-                <span
-                  className={cn(
-                    'xp-label',
-                    step.status === 'loading' && 'font-medium text-foreground',
-                    step.status === 'complete' && 'text-muted-foreground',
-                    step.status === 'error' && 'text-destructive',
-                    step.status === 'pending' && 'text-muted-foreground/50'
-                  )}
-                >
-                  {t(step.labelKey)}
-                </span>
+
+                {/* Detail sub-line for active step */}
+                {step.status === 'loading' && step.detail && (
+                  <div className="ml-8 mt-0.5 font-mono text-xs text-muted-foreground">
+                    {step.detail.label}
+                    {step.detail.total != null && (
+                      <>
+                        {'... '}
+                        {step.detail.current.toLocaleString()}
+                        {' / '}
+                        {step.detail.total === step.detail.current
+                          ? step.detail.total.toLocaleString()
+                          : `~${step.detail.total.toLocaleString()}`}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
+            ))}
+          </div>
+        )}
 
-              {step.count !== undefined && step.status === 'complete' && (
-                <span className="xp-value text-muted-foreground">
-                  {step.count.toLocaleString()}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Current message */}
-        <p className="xp-label text-center">{currentMessage}</p>
+        {/* Current message — only shown in verifying phase (loading phase has step list) */}
+        {isVerifying && <p className="xp-label text-center">{currentMessage}</p>}
 
         {/* Error */}
         {hasError && (

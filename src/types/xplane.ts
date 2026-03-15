@@ -63,6 +63,13 @@ export interface XPlaneAPIResult {
   error?: string;
 }
 
+/** Granular sub-step info for loading progress */
+export interface LoadingDetail {
+  current: number;
+  total?: number;
+  label?: string;
+}
+
 /** Progress event for X-Plane data loading */
 export interface LoadingProgress {
   step: string;
@@ -70,4 +77,6 @@ export interface LoadingProgress {
   message: string;
   count?: number;
   error?: string;
+  phase?: 'verifying' | 'loading';
+  detail?: LoadingDetail;
 }

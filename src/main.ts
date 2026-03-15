@@ -280,13 +280,79 @@ function registerIpcHandlers() {
       // Detect X-Plane version concurrently with first data load
       const versionPromise = dataManager.detectAndStoreVersion(xplanePath).catch(() => {});
 
-      sendLoadingProgress({ step: 'airports', status: 'loading', message: 'Loading airports...' });
-      await dataManager.rebuildAirportCache(xplanePath);
-      sendLoadingProgress({
-        step: 'airports',
-        status: 'complete',
-        message: 'Airports loaded',
-        count: dataManager.getStatus().airports.count,
+      await dataManager.rebuildAirportCache(xplanePath, (event) => {
+        switch (event.phase) {
+          case 'cache-check':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'loading',
+              message: 'Checking for changes...',
+              phase: 'verifying',
+            });
+            break;
+          case 'cache-valid':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'loading',
+              message: 'All up to date',
+              phase: 'verifying',
+            });
+            break;
+          case 'cache-stale':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'loading',
+              message:
+                event.reason === 'first-launch'
+                  ? 'First launch — setting up database...'
+                  : 'Scenery changes detected — rebuilding...',
+              phase: 'loading',
+            });
+            break;
+          case 'global':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'loading',
+              message: 'Parsing Global Airports...',
+              phase: 'loading',
+              detail: {
+                current: event.parsed,
+                total: event.estimated,
+                label: 'Global Airports',
+              },
+            });
+            break;
+          case 'custom':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'loading',
+              message: `Scanning Custom Scenery ${event.packIndex + 1}/${event.packCount}`,
+              phase: 'loading',
+              detail: {
+                current: event.packIndex + 1,
+                total: event.packCount,
+                label: event.packName,
+              },
+            });
+            break;
+          case 'inserting':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'loading',
+              message: 'Saving to database...',
+              phase: 'loading',
+            });
+            break;
+          case 'done':
+            sendLoadingProgress({
+              step: 'airports',
+              status: 'complete',
+              message: 'Airports loaded',
+              count: event.count,
+              phase: event.fromCache ? 'verifying' : 'loading',
+            });
+            break;
+        }
       });
 
       // Ensure version is stored before loading completes
@@ -296,6 +362,7 @@ function registerIpcHandlers() {
         step: 'navaids',
         status: 'loading',
         message: 'Loading navigation aids...',
+        phase: 'loading',
       });
       await dataManager.loadNavaidsOnly(xplanePath);
       sendLoadingProgress({
@@ -303,12 +370,14 @@ function registerIpcHandlers() {
         status: 'complete',
         message: 'Navaids loaded',
         count: dataManager.getStatus().navaids.count,
+        phase: 'loading',
       });
 
       sendLoadingProgress({
         step: 'waypoints',
         status: 'loading',
         message: 'Loading waypoints...',
+        phase: 'loading',
       });
       await dataManager.loadWaypointsOnly(xplanePath);
       sendLoadingProgress({
@@ -316,12 +385,14 @@ function registerIpcHandlers() {
         status: 'complete',
         message: 'Waypoints loaded',
         count: dataManager.getStatus().waypoints.count,
+        phase: 'loading',
       });
 
       sendLoadingProgress({
         step: 'airspaces',
         status: 'loading',
         message: 'Loading airspaces...',
+        phase: 'loading',
       });
       await dataManager.loadAirspacesOnly(xplanePath);
       sendLoadingProgress({
@@ -329,15 +400,22 @@ function registerIpcHandlers() {
         status: 'complete',
         message: 'Airspaces loaded',
         count: dataManager.getStatus().airspaces.count,
+        phase: 'loading',
       });
 
-      sendLoadingProgress({ step: 'airways', status: 'loading', message: 'Loading airways...' });
+      sendLoadingProgress({
+        step: 'airways',
+        status: 'loading',
+        message: 'Loading airways...',
+        phase: 'loading',
+      });
       await dataManager.loadAirwaysOnly(xplanePath);
       sendLoadingProgress({
         step: 'airways',
         status: 'complete',
         message: 'Airways loaded',
         count: dataManager.getStatus().airways.count,
+        phase: 'loading',
       });
 
       // Load optional data types (non-blocking)

@@ -76,7 +76,14 @@
     },
     "pathNotConfigured": "Путь к X-Plane не настроен",
     "configurationRequired": "Требуется настройка",
-    "configureXPlanePath": "Настроить путь к X-Plane"
+    "configureXPlanePath": "Настроить путь к X-Plane",
+    "verifying": "Проверка изменений...",
+    "upToDate": "Всё актуально",
+    "firstLaunch": "Первый запуск — настройка базы данных...",
+    "sceneryChanged": "Обнаружены изменения сценариев — перестроение...",
+    "parsingGlobal": "Анализ глобальных аэропортов...",
+    "scanningCustom": "Сканирование Custom Scenery {{current}}/{{total}}: {{name}}",
+    "savingToDb": "Сохранение в базу данных..."
   },
 
   "toolbar": {

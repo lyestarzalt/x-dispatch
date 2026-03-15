@@ -8,7 +8,7 @@
 import * as fs from 'fs';
 import logger from '@/lib/utils/logger';
 import { getAptDataPath } from '../paths';
-import type { AptFileInfo, ParsedAirportEntry } from '../types';
+import type { AirportProgressCallback, AptFileInfo, ParsedAirportEntry } from '../types';
 import { getFileMtime } from './airportCache';
 import { scanAptFile } from './airportScanner';
 
@@ -39,7 +39,11 @@ export function getGlobalAptFileInfo(xplanePath: string): AptFileInfo | null {
 /**
  * Load airports from Global Airports apt.dat
  */
-export async function loadGlobalAirports(xplanePath: string): Promise<GlobalAptLoadResult> {
+export async function loadGlobalAirports(
+  xplanePath: string,
+  onProgress?: AirportProgressCallback,
+  estimated?: number
+): Promise<GlobalAptLoadResult> {
   const globalPath = getAptDataPath(xplanePath);
 
   if (!fs.existsSync(globalPath)) {
@@ -56,9 +60,24 @@ export async function loadGlobalAirports(xplanePath: string): Promise<GlobalAptL
   const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
   logger.data.info(`Loading Global Airports: ${globalPath} (${fileSizeMB}MB)`);
 
+  // Create throttled progress callback (every 500 airports)
+  const estimatedTotal = estimated || 35_000;
+  let parsedCount = 0;
+  const onAirportParsed = onProgress
+    ? () => {
+        parsedCount++;
+        if (parsedCount % 500 === 0) {
+          onProgress({ phase: 'global', parsed: parsedCount, estimated: estimatedTotal });
+        }
+      }
+    : undefined;
+
   const startTime = Date.now();
-  const result = await scanAptFile(globalPath);
+  const result = await scanAptFile(globalPath, onAirportParsed);
   const elapsed = Date.now() - startTime;
+
+  // Final progress event with actual count
+  onProgress?.({ phase: 'global', parsed: result.stats.valid, estimated: estimatedTotal });
 
   logger.data.info(
     `Loaded ${result.stats.valid} airports from Global Airports in ${elapsed}ms ` +

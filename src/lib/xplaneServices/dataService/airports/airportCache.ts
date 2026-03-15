@@ -103,6 +103,19 @@ export function updateStoredFileMeta(
   }
 }
 
+/**
+ * Get the total stored airport count from previous load (for progress estimation)
+ */
+export function getStoredAirportCountEstimate(): number {
+  const db = getDb();
+  const rows = db.select({ airportCount: aptFileMeta.airportCount }).from(aptFileMeta).all();
+  let total = 0;
+  for (const row of rows) {
+    total += row.airportCount ?? 0;
+  }
+  return total;
+}
+
 // ============================================================================
 // Airport Database Operations
 // ============================================================================

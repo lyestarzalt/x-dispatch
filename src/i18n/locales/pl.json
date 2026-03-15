@@ -76,7 +76,14 @@
     },
     "pathNotConfigured": "Ścieżka X-Plane nie skonfigurowana",
     "configurationRequired": "Wymagana konfiguracja",
-    "configureXPlanePath": "Skonfiguruj ścieżkę X-Plane"
+    "configureXPlanePath": "Skonfiguruj ścieżkę X-Plane",
+    "verifying": "Sprawdzanie zmian...",
+    "upToDate": "Wszystko aktualne",
+    "firstLaunch": "Pierwszy start — konfiguracja bazy danych...",
+    "sceneryChanged": "Wykryto zmiany scenerii — odbudowa...",
+    "parsingGlobal": "Analiza globalnych lotnisk...",
+    "scanningCustom": "Skanowanie Custom Scenery {{current}}/{{total}}: {{name}}",
+    "savingToDb": "Zapisywanie do bazy danych..."
   },
 
   "toolbar": {

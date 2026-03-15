@@ -13,7 +13,12 @@
  *    e. Update file metadata cache
  */
 import logger from '@/lib/utils/logger';
-import type { Airport, AirportSourceBreakdown, AptFileInfo } from '../types';
+import type {
+  Airport,
+  AirportProgressCallback,
+  AirportSourceBreakdown,
+  AptFileInfo,
+} from '../types';
 import {
   clearAirports,
   detectAptFileChanges,
@@ -21,6 +26,8 @@ import {
   getAirportCount,
   getAllAirportsFromDb,
   getDistinctCountries,
+  getStoredAirportCountEstimate,
+  getStoredFileMeta,
   insertAirports,
   persistDatabase,
   updateStoredFileMeta,
@@ -52,29 +59,44 @@ export interface AirportLoadResult {
  * changed (new/modified/deleted scenery), rebuilds the entire airport DB
  * from Global Airports + Custom Scenery. Otherwise returns cached data.
  */
-export async function syncAirportCache(xplanePath: string): Promise<AirportLoadResult> {
+export async function syncAirportCache(
+  xplanePath: string,
+  onProgress?: AirportProgressCallback
+): Promise<AirportLoadResult> {
+  onProgress?.({ phase: 'cache-check' });
+
   const currentFiles = getCurrentAptFiles(xplanePath);
   const changes = detectAptFileChanges(currentFiles);
 
   if (!changes.needsReload) {
     logger.data.info('Airport cache is valid, skipping reload');
+    onProgress?.({ phase: 'cache-valid' });
     const breakdown = getAirportBreakdown();
     const count = getAirportCount();
+    onProgress?.({ phase: 'done', count, fromCache: true });
     return { count, breakdown, fromCache: true };
   }
 
+  // Determine if this is first launch or scenery change
+  const storedMeta = getStoredFileMeta();
+  const reason = storedMeta.size === 0 ? 'first-launch' : 'scenery-changed';
+  onProgress?.({ phase: 'cache-stale', reason });
+
   logCacheChanges(changes);
+
+  // Get previous count estimate for progress bar
+  const estimated = getStoredAirportCountEstimate() || undefined;
 
   // Load from files
   const startTime = Date.now();
 
   // 1. Load Global Airports (base layer)
-  const globalResult = await loadGlobalAirports(xplanePath);
+  const globalResult = await loadGlobalAirports(xplanePath, onProgress, estimated);
   const allAirports = globalResult.airports;
   const globalIcaos = new Set(globalResult.airports.keys());
 
   // 2. Load Custom Scenery (overrides)
-  const customResult = await loadCustomSceneryAirports(xplanePath);
+  const customResult = await loadCustomSceneryAirports(xplanePath, onProgress);
   const customIcaos = new Set<string>();
 
   for (const [icao, airport] of customResult.airports) {
@@ -96,6 +118,7 @@ export async function syncAirportCache(xplanePath: string): Promise<AirportLoadR
   );
 
   // 4. Store in database
+  onProgress?.({ phase: 'inserting' });
   const insertStart = Date.now();
   clearAirports();
   insertAirports(Array.from(allAirports.values()));
@@ -117,6 +140,8 @@ export async function syncAirportCache(xplanePath: string): Promise<AirportLoadR
 
   const elapsed = Date.now() - startTime;
   logger.data.info(`Stored ${allAirports.size} total airports in ${elapsed}ms`);
+
+  onProgress?.({ phase: 'done', count: allAirports.size, fromCache: false });
 
   return {
     count: allAirports.size,
