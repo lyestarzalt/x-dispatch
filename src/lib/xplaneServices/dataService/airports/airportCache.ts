@@ -45,9 +45,10 @@ export function getStoredFileMeta(): Map<string, number> {
 }
 
 /**
- * Check if cache needs to be reloaded based on file changes
+ * Compare apt.dat files on disk against stored metadata (path + mtime).
+ * Returns which files are new, changed, or deleted since last load.
  */
-export function checkCacheValidity(currentFiles: AptFileInfo[]): CacheCheckResult {
+export function detectAptFileChanges(currentFiles: AptFileInfo[]): CacheCheckResult {
   const stored = getStoredFileMeta();
 
   const changedFiles: string[] = [];
@@ -236,7 +237,7 @@ export function getAirportCount(): number {
 /**
  * Compute airport breakdown from database (used when cache is valid)
  */
-export function computeBreakdownFromDb(): AirportSourceBreakdown {
+export function getAirportBreakdown(): AirportSourceBreakdown {
   const db = getDb();
 
   // Count total airports

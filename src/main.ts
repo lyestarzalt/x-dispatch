@@ -279,7 +279,7 @@ function registerIpcHandlers() {
       const versionPromise = dataManager.detectAndStoreVersion(xplanePath).catch(() => {});
 
       sendLoadingProgress({ step: 'airports', status: 'loading', message: 'Loading airports...' });
-      await dataManager.loadAirportsOnly(xplanePath);
+      await dataManager.rebuildAirportCache(xplanePath);
       sendLoadingProgress({
         step: 'airports',
         status: 'complete',

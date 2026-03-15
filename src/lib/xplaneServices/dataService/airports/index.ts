@@ -15,9 +15,9 @@
 import logger from '@/lib/utils/logger';
 import type { Airport, AirportSourceBreakdown, AptFileInfo } from '../types';
 import {
-  checkCacheValidity,
   clearAirports,
-  computeBreakdownFromDb,
+  detectAptFileChanges,
+  getAirportBreakdown,
   getAirportCount,
   getAllAirportsFromDb,
   getDistinctCountries,
@@ -47,25 +47,23 @@ export interface AirportLoadResult {
 // ============================================================================
 
 /**
- * Load all airports from X-Plane installation
- * Handles caching and merging of Global + Custom Scenery
+ * Sync airport cache with disk.
+ * Compares apt.dat file mtimes against stored metadata — if anything
+ * changed (new/modified/deleted scenery), rebuilds the entire airport DB
+ * from Global Airports + Custom Scenery. Otherwise returns cached data.
  */
-export async function loadAirports(xplanePath: string): Promise<AirportLoadResult> {
-  // Gather current file infos
+export async function syncAirportCache(xplanePath: string): Promise<AirportLoadResult> {
   const currentFiles = getCurrentAptFiles(xplanePath);
+  const changes = detectAptFileChanges(currentFiles);
 
-  // Check cache validity (file modification times)
-  const cacheCheck = checkCacheValidity(currentFiles);
-
-  if (!cacheCheck.needsReload) {
+  if (!changes.needsReload) {
     logger.data.info('Airport cache is valid, skipping reload');
-    const breakdown = computeBreakdownFromDb();
+    const breakdown = getAirportBreakdown();
     const count = getAirportCount();
     return { count, breakdown, fromCache: true };
   }
 
-  // Log what changed
-  logCacheChanges(cacheCheck);
+  logCacheChanges(changes);
 
   // Load from files
   const startTime = Date.now();
@@ -167,7 +165,7 @@ function getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
 /**
  * Log cache change details
  */
-function logCacheChanges(cacheCheck: ReturnType<typeof checkCacheValidity>): void {
+function logCacheChanges(cacheCheck: ReturnType<typeof detectAptFileChanges>): void {
   if (cacheCheck.changedFiles.length > 0) {
     logger.data.info(`Changed apt.dat files: ${cacheCheck.changedFiles.length}`);
   }
@@ -179,8 +177,17 @@ function logCacheChanges(cacheCheck: ReturnType<typeof checkCacheValidity>): voi
   }
 }
 
+/**
+ * Quick check: have any apt.dat files changed since last sync?
+ * Synchronous — compares file mtimes on disk vs stored in apt_file_meta.
+ */
+export function hasAptFileChanges(xplanePath: string): boolean {
+  const currentFiles = getCurrentAptFiles(xplanePath);
+  return detectAptFileChanges(currentFiles).needsReload;
+}
+
 // ============================================================================
 // Re-exports for convenience
 // ============================================================================
 
-export { computeBreakdownFromDb, getDistinctCountries } from './airportCache';
+export { getAirportBreakdown, getDistinctCountries } from './airportCache';

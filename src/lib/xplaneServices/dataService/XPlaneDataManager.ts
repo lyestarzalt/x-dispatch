@@ -24,11 +24,12 @@ import type {
   Waypoint,
 } from '@/types/navigation';
 import {
-  computeBreakdownFromDb,
+  getAirportBreakdown,
   getAllAirports as getAllAirportsFromDb,
   getCustomSceneryAptFiles,
   getDistinctCountries as getDistinctCountriesFromDb,
-  loadAirports,
+  hasAptFileChanges,
+  syncAirportCache,
 } from './airports';
 import {
   getStoredXPlaneVersion,
@@ -140,13 +141,19 @@ export class XPlaneDataManager {
       this.detectAndStoreVersion(xplanePath).catch(() => {});
     }
 
-    // Check cache status for load flags (all data queried from SQLite on-demand)
-    // Compute airport breakdown from cached database
-    const breakdown = computeBreakdownFromDb();
-    const airportCount = breakdown.globalAirports + breakdown.customScenery;
-    if (airportCount > 0) {
-      this.airportSourceCounts = breakdown;
-      this.loadStatus.airports = true;
+    // Only trust cached airport data if no apt.dat files changed on disk.
+    // If stale, leave airports unloaded so LoadingScreen triggers a full rebuild.
+    const aptFilesChanged = xplanePath ? hasAptFileChanges(xplanePath) : false;
+    let airportCount = 0;
+    if (!aptFilesChanged) {
+      const breakdown = getAirportBreakdown();
+      airportCount = breakdown.globalAirports + breakdown.customScenery;
+      if (airportCount > 0) {
+        this.airportSourceCounts = breakdown;
+        this.loadStatus.airports = true;
+      }
+    } else {
+      logger.data.info('Airport cache stale — will rebuild via loading screen');
     }
 
     const navaidCount = getNavaidCount();
@@ -170,7 +177,7 @@ export class XPlaneDataManager {
     }
 
     logger.data.info(
-      `Cache status: ${airportCount} airports (${breakdown.globalAirports} global, ${breakdown.customScenery} custom), ` +
+      `Cache init: ${aptFilesChanged ? 'STALE' : 'valid'}, ${airportCount} airports, ` +
         `${navaidCount} navaids, ${waypointCount} waypoints, ${airspaceCount} airspaces, ${airwayCount} airways`
     );
   }
@@ -274,7 +281,7 @@ export class XPlaneDataManager {
 
     // Load all data in parallel (core data)
     const results = await Promise.allSettled([
-      this.loadAirportsInternal(pathToUse),
+      this.syncAirportCacheInternal(pathToUse),
       this.loadNavaidsInternal(pathToUse),
       this.loadWaypointsInternal(pathToUse),
       this.loadAirspacesInternal(pathToUse),
@@ -307,8 +314,8 @@ export class XPlaneDataManager {
 
   // ==================== Internal Load Methods ====================
 
-  private async loadAirportsInternal(xplanePath: string): Promise<void> {
-    const result = await loadAirports(xplanePath);
+  private async syncAirportCacheInternal(xplanePath: string): Promise<void> {
+    const result = await syncAirportCache(xplanePath);
     this.airportSourceCounts = result.breakdown;
     this.loadStatus.airports = true;
   }
@@ -359,11 +366,11 @@ export class XPlaneDataManager {
 
   // ==================== Public Individual Load Methods ====================
 
-  async loadAirportsOnly(xplanePath?: string): Promise<void> {
+  async rebuildAirportCache(xplanePath?: string): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.loadAirportsInternal(pathToUse);
+    await this.syncAirportCacheInternal(pathToUse);
   }
 
   async loadNavaidsOnly(xplanePath?: string): Promise<void> {
@@ -1001,12 +1008,16 @@ export class XPlaneDataManager {
    */
   getStatus(): DataLoadStatus {
     let airportCount = 0;
-    try {
-      const db = getDb();
-      const countResult = db.select({ count: airports.icao }).from(airports).all();
-      airportCount = countResult.length;
-    } catch {
-      // Database not initialized yet
+    // Only report count when airports are verified loaded — prevents
+    // LoadingScreen from skipping rebuild when cache is stale
+    if (this.loadStatus.airports) {
+      try {
+        const db = getDb();
+        const countResult = db.select({ count: airports.icao }).from(airports).all();
+        airportCount = countResult.length;
+      } catch {
+        // Database not initialized yet
+      }
     }
 
     const xp = this.xplanePath;
