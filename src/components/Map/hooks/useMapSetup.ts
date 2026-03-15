@@ -145,7 +145,13 @@ export function useMapSetup({
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
 
     map.on('error', (e) => {
+      // TODO: DEM tiles served as .webp via tile-cache:// trigger spurious "Could not
+      // load image" errors in MapLibre's raster-dem decoder. The tiles decode correctly
+      // for terrain/hillshade — this is log noise. Revisit when upgrading MapLibre or
+      // switching DEM tile providers.
       const ev = e as unknown as Record<string, unknown>;
+      if (ev.sourceId === 'terrain-dem' || ev.sourceId === 'terrain-hillshade-dem') return;
+
       const parts: string[] = [];
       if (ev.sourceId) parts.push(`source: ${ev.sourceId}`);
       if (ev.tileId) parts.push(`tile: ${JSON.stringify(ev.tileId)}`);

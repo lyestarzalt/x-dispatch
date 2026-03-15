@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl';
 import { useMapStore } from '@/stores/mapStore';
 
 const TERRAIN_SOURCE_ID = 'terrain-dem';
+const HILLSHADE_SOURCE_ID = 'terrain-hillshade-dem';
 const TERRAIN_TILES_URL = 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
 // Use tile-cache:// scheme for contour worker fetches — bypasses Electron CSP
 // (blob workers don't inherit CSP from onHeadersReceived)
@@ -38,8 +39,14 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
   });
 
-  // Switch projection based on zoom level to avoid layer displacement
+  // Switch projection based on zoom level to avoid layer displacement.
+  // 3D terrain is only enabled in mercator mode — globe projection doesn't
+  // implement getRayDirectionFromPixel, which crashes the render loop.
   let currentProjection: 'globe' | 'mercator' = 'globe';
+  // Track whether the user wants terrain on (default: on).
+  // When switching to globe we must disable terrain, but we remember the preference
+  // so we can restore it when switching back to mercator.
+  let terrainUserEnabled = true;
 
   map.on('zoom', () => {
     const zoom = map.getZoom();
@@ -47,7 +54,14 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     if (zoom > GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'globe') {
       map.setProjection({ type: 'mercator' });
       currentProjection = 'mercator';
+      // Restore terrain if the user had it enabled
+      if (terrainUserEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
+        map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
+      }
     } else if (zoom <= GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'mercator') {
+      // Remember user preference before forcing terrain off for globe
+      terrainUserEnabled = map.getTerrain() != null;
+      map.setTerrain(null);
       map.setProjection({ type: 'globe' });
       currentProjection = 'globe';
     }
@@ -63,6 +77,7 @@ export const TERRAIN_SHADING_LAYER_IDS = [
 export function setup3DTerrain(map: maplibregl.Map): void {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
 
+  // Terrain DEM source — used for 3D terrain extrusion (enabled only in mercator mode)
   map.addSource(TERRAIN_SOURCE_ID, {
     type: 'raster-dem',
     encoding: 'terrarium',
@@ -71,24 +86,31 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     maxzoom: 10,
   });
 
-  // TODO: Replace TerrainControl with custom SafeTerrainControl
-  // Issue: MapLibre's built-in TerrainControl calls map.setTerrain() internally
-  // when user clicks the button. If map is mid-render, this crashes with:
-  // "TypeError: Cannot read properties of undefined (reading 'key')"
-  // in _updateRetainedTiles during DEM tile loading.
-  // Fix: Create custom control that checks map.isStyleLoaded() before toggling terrain.
+  // Separate DEM source for hillshade — avoids competing with terrain extrusion
+  // for tile decoding resources (MapLibre recommends separate sources)
+  map.addSource(HILLSHADE_SOURCE_ID, {
+    type: 'raster-dem',
+    encoding: 'terrarium',
+    tiles: [TERRAIN_TILES_URL],
+    tileSize: 256,
+    maxzoom: 10,
+  });
+
+  // Terrain is not enabled here — we start in globe mode where it would crash.
+  // setupGlobeProjection() enables/disables terrain on projection switches.
+  // The TerrainControl button lets the user toggle 3D extrusion when in mercator.
   map.addControl(
     new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1 }),
     'bottom-left'
   );
 
-  // Hillshade — shadow/light shading from DEM
+  // Hillshade — shadow/light shading from DEM (uses its own source)
   const beforeLayer = getFirstSymbolLayerId(map);
   map.addLayer(
     {
       id: HILLSHADE_LAYER_ID,
       type: 'hillshade',
-      source: TERRAIN_SOURCE_ID,
+      source: HILLSHADE_SOURCE_ID,
       paint: {
         'hillshade-exaggeration': 0.5,
         'hillshade-shadow-color': '#000000',
