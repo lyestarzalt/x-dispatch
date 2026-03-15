@@ -81,9 +81,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       // Calculate per-tank fuel weights in kilograms for API
       const LBS_TO_KG = 0.453592;
       const tankWeightsKg = new Array(9).fill(0);
-      for (let i = 0; i < (selectedAircraft.tankRatios ?? []).length; i++) {
-        const tankCapLbs = (selectedAircraft.tankRatios ?? [])[i] * selectedAircraft.maxFuel;
-        tankWeightsKg[i] = tankCapLbs * ((tankPercentages[i] ?? 0) / 100) * LBS_TO_KG;
+      const ratios = selectedAircraft.tankRatios ?? [];
+      const indices = selectedAircraft.tankIndices ?? ratios.map((_, i) => i);
+      for (let i = 0; i < ratios.length; i++) {
+        const tankCapLbs = ratios[i] * selectedAircraft.maxFuel;
+        const slot = indices[i] ?? i;
+        tankWeightsKg[slot] = tankCapLbs * ((tankPercentages[i] ?? 0) / 100) * LBS_TO_KG;
       }
 
       // Calculate per-station payload weights in kilograms for API

@@ -22,6 +22,8 @@ export interface Aircraft {
   maxFuel: number;
   tankNames: string[];
   tankRatios: number[];
+  /** X-Plane tank slot indices — maps each logical tank to its real slot (0-8) */
+  tankIndices: number[];
   payloadStations: { name: string; maxWeight: number }[];
   isHelicopter: boolean;
   engineCount: number;

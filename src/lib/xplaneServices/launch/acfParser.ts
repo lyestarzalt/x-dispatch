@@ -53,6 +53,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     //   structure from _cgpt entries with non-zero _w_max.
     const tankNames: string[] = [];
     const tankRatios: number[] = [];
+    const tankIndices: number[] = [];
     const maxFuelTotal = parseFloat(props['acf/_m_fuel_max_tot']) || 0;
 
     // Primary path: acf/_tank_name properties (works for all Laminar aircraft)
@@ -61,6 +62,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       if (tankName) {
         tankNames.push(tankName);
         tankRatios.push(parseFloat(props[`acf/_tank_rat/${i}`]) || 0);
+        tankIndices.push(i);
       }
     }
 
@@ -68,6 +70,8 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     if (tankNames.length === 0 && maxFuelTotal > 0) {
       // Fallback A: use non-zero _tank_rat entries — these are the real tanks
       // that X-Plane exposes to the pilot (e.g. H145: 1 tank at ratio 1.0)
+      // Preserve the original X-Plane slot index so fuel is placed correctly
+      // (e.g. Sea King uses slot 1, not 0).
       for (let i = 0; i < 9; i++) {
         const ratio = parseFloat(props[`acf/_tank_rat/${i}`]) || 0;
         if (ratio > 0) {
@@ -75,6 +79,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
           const cgptName = props[`_cgpt/${cgptIdx}/_name`] || `Tank ${i + 1}`;
           tankNames.push(cgptName);
           tankRatios.push(ratio);
+          tankIndices.push(i);
         }
       }
 
@@ -87,6 +92,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
           if (cgptName && maxWeight > 0) {
             tankNames.push(cgptName);
             tankRatios.push(maxWeight / maxFuelTotal);
+            tankIndices.push(i);
           }
         }
       }
@@ -130,6 +136,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       maxFuel: parseFloat(props['acf/_m_fuel_max_tot']) || 0,
       tankNames,
       tankRatios,
+      tankIndices,
       payloadStations,
       // Aircraft type
       isHelicopter: props['acf/_is_helicopter'] === '1',
