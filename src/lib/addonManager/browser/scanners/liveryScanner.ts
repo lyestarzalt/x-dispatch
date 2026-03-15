@@ -14,7 +14,7 @@ export function scanLiveries(
   if (!aircraftFolder || aircraftFolder.length > 500) {
     return err({ code: 'INVALID_INPUT', field: 'aircraftFolder' });
   }
-  if (aircraftFolder.includes('..') || aircraftFolder.includes('\\')) {
+  if (aircraftFolder.includes('..')) {
     return err({ code: 'PATH_TRAVERSAL', path: aircraftFolder });
   }
 
