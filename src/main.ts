@@ -134,6 +134,7 @@ function createWindow(): BrowserWindow {
   });
 
   const window = new BrowserWindow({
+    title: `${app.getName()} v${app.getVersion()}`,
     x: windowState.x,
     y: windowState.y,
     width: windowState.width,
@@ -154,6 +155,7 @@ function createWindow(): BrowserWindow {
     },
   });
 
+  window.on('page-title-updated', (e) => e.preventDefault());
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
