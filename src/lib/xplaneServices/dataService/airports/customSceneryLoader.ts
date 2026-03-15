@@ -8,7 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
-import type { AptFileInfo, ParsedAirportEntry } from '../types';
+import type { AirportProgressCallback, AptFileInfo, ParsedAirportEntry } from '../types';
 import { getFileMtime } from './airportCache';
 import { scanAptFile } from './airportScanner';
 
@@ -74,7 +74,8 @@ export function getCustomSceneryFileInfos(xplanePath: string): AptFileInfo[] {
  * Returns airports that will override Global Airports
  */
 export async function loadCustomSceneryAirports(
-  xplanePath: string
+  xplanePath: string,
+  onProgress?: AirportProgressCallback
 ): Promise<CustomSceneryLoadResult> {
   const aptFiles = findCustomSceneryAptFiles(xplanePath);
 
@@ -101,7 +102,11 @@ export async function loadCustomSceneryAirports(
   let validAirports = 0;
   let totalErrors = 0;
 
-  for (const aptFile of aptFiles) {
+  for (let i = 0; i < aptFiles.length; i++) {
+    const aptFile = aptFiles[i];
+    const packName = path.basename(path.dirname(path.dirname(aptFile)));
+    onProgress?.({ phase: 'custom', packIndex: i, packCount: aptFiles.length, packName });
+
     const result = await scanAptFile(aptFile);
 
     // Track file info

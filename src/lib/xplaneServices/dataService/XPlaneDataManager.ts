@@ -82,7 +82,13 @@ import {
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
-import type { Airport, AirportSourceBreakdown, DataLoadStatus, LoadStatusFlags } from './types';
+import type {
+  Airport,
+  AirportProgressCallback,
+  AirportSourceBreakdown,
+  DataLoadStatus,
+  LoadStatusFlags,
+} from './types';
 import { type XPlaneVersionInfo, detectXPlaneVersion, parseVersionString } from './versionDetector';
 
 export type { Airport, AirportSourceBreakdown, DataLoadStatus } from './types';
@@ -314,8 +320,11 @@ export class XPlaneDataManager {
 
   // ==================== Internal Load Methods ====================
 
-  private async syncAirportCacheInternal(xplanePath: string): Promise<void> {
-    const result = await syncAirportCache(xplanePath);
+  private async syncAirportCacheInternal(
+    xplanePath: string,
+    onProgress?: AirportProgressCallback
+  ): Promise<void> {
+    const result = await syncAirportCache(xplanePath, onProgress);
     this.airportSourceCounts = result.breakdown;
     this.loadStatus.airports = true;
   }
@@ -366,11 +375,14 @@ export class XPlaneDataManager {
 
   // ==================== Public Individual Load Methods ====================
 
-  async rebuildAirportCache(xplanePath?: string): Promise<void> {
+  async rebuildAirportCache(
+    xplanePath?: string,
+    onProgress?: AirportProgressCallback
+  ): Promise<void> {
     const pathToUse = xplanePath || this.xplanePath;
     if (!pathToUse) throw new Error('X-Plane path not set');
     this.xplanePath = pathToUse;
-    await this.syncAirportCacheInternal(pathToUse);
+    await this.syncAirportCacheInternal(pathToUse, onProgress);
   }
 
   async loadNavaidsOnly(xplanePath?: string): Promise<void> {

@@ -76,7 +76,14 @@
     },
     "pathNotConfigured": "X-Plane 路径未配置",
     "configurationRequired": "需要配置",
-    "configureXPlanePath": "配置 X-Plane 路径"
+    "configureXPlanePath": "配置 X-Plane 路径",
+    "verifying": "正在检查更改...",
+    "upToDate": "一切都是最新的",
+    "firstLaunch": "首次启动 — 正在配置数据库...",
+    "sceneryChanged": "检测到地景更改 — 正在重建...",
+    "parsingGlobal": "正在解析全球机场...",
+    "scanningCustom": "正在扫描自定义地景 {{current}}/{{total}}: {{name}}",
+    "savingToDb": "正在保存到数据库..."
   },
 
   "toolbar": {

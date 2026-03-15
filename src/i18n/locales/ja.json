@@ -76,7 +76,14 @@
     },
     "pathNotConfigured": "X-Planeのパスが設定されていません",
     "configurationRequired": "設定が必要です",
-    "configureXPlanePath": "X-Planeのパスを設定"
+    "configureXPlanePath": "X-Planeのパスを設定",
+    "verifying": "変更を確認中...",
+    "upToDate": "すべて最新です",
+    "firstLaunch": "初回起動 — データベースを設定中...",
+    "sceneryChanged": "シーナリーの変更を検出 — 再構築中...",
+    "parsingGlobal": "グローバル空港を解析中...",
+    "scanningCustom": "カスタムシーナリーをスキャン中 {{current}}/{{total}}: {{name}}",
+    "savingToDb": "データベースに保存中..."
   },
 
   "toolbar": {

@@ -76,7 +76,14 @@
     },
     "pathNotConfigured": "Caminho do X-Plane não configurado",
     "configurationRequired": "Configuração necessária",
-    "configureXPlanePath": "Configurar caminho do X-Plane"
+    "configureXPlanePath": "Configurar caminho do X-Plane",
+    "verifying": "Verificando alterações...",
+    "upToDate": "Tudo atualizado",
+    "firstLaunch": "Primeiro início — configurando o banco de dados...",
+    "sceneryChanged": "Alterações de cenário detectadas — reconstruindo...",
+    "parsingGlobal": "Analisando aeroportos globais...",
+    "scanningCustom": "Analisando Custom Scenery {{current}}/{{total}}: {{name}}",
+    "savingToDb": "Salvando no banco de dados..."
   },
 
   "toolbar": {

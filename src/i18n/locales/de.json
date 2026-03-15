@@ -76,7 +76,14 @@
     },
     "pathNotConfigured": "X-Plane Pfad nicht konfiguriert",
     "configurationRequired": "Konfiguration erforderlich",
-    "configureXPlanePath": "X-Plane Pfad konfigurieren"
+    "configureXPlanePath": "X-Plane Pfad konfigurieren",
+    "verifying": "Änderungen werden überprüft...",
+    "upToDate": "Alles aktuell",
+    "firstLaunch": "Erststart — Datenbank wird eingerichtet...",
+    "sceneryChanged": "Szenerie-Änderungen erkannt — Neuaufbau...",
+    "parsingGlobal": "Globale Flughäfen werden analysiert...",
+    "scanningCustom": "Custom Scenery {{current}}/{{total}}: {{name}}",
+    "savingToDb": "Speichern in der Datenbank..."
   },
 
   "toolbar": {

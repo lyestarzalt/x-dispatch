@@ -289,7 +289,10 @@ function finalizeAirport(
  * Scan an apt.dat file and extract airport entries
  * Uses streaming to handle large files efficiently
  */
-export async function scanAptFile(aptPath: string): Promise<ScanResult> {
+export async function scanAptFile(
+  aptPath: string,
+  onAirportParsed?: () => void
+): Promise<ScanResult> {
   const airports = new Map<string, ParsedAirportEntry>();
   const errors: Array<{ icao?: string; message: string }> = [];
   let total = 0;
@@ -306,6 +309,7 @@ export async function scanAptFile(aptPath: string): Promise<ScanResult> {
     if (entry) {
       airports.set(entry.icao, entry);
       valid++;
+      onAirportParsed?.();
     }
   };
 

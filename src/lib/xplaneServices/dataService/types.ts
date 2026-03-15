@@ -94,6 +94,21 @@ export interface DataLoadStatus {
   sources: NavDataSources | null;
 }
 
+// ============================================================================
+// Airport Progress Callback Types
+// ============================================================================
+
+export type AirportProgressEvent =
+  | { phase: 'cache-check' }
+  | { phase: 'cache-valid' }
+  | { phase: 'cache-stale'; reason: 'first-launch' | 'scenery-changed' }
+  | { phase: 'global'; parsed: number; estimated: number }
+  | { phase: 'custom'; packIndex: number; packCount: number; packName: string }
+  | { phase: 'inserting' }
+  | { phase: 'done'; count: number; fromCache: boolean };
+
+export type AirportProgressCallback = (event: AirportProgressEvent) => void;
+
 export interface LoadStatusFlags {
   airports: boolean;
   navaids: boolean;
