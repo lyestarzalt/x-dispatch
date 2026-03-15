@@ -229,7 +229,7 @@ function findAcfFiles(dir: string): string[] {
         if (!entry.name.startsWith('.') && entry.name !== 'liveries') {
           results.push(...findAcfFiles(fullPath));
         }
-      } else if (entry.isFile() && entry.name.endsWith('.acf')) {
+      } else if (entry.isFile() && entry.name.endsWith('.acf') && !entry.name.endsWith('_AI.acf')) {
         results.push(fullPath);
       }
     }
