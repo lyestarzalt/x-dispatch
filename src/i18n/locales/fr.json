@@ -182,7 +182,9 @@
       "detectedInstallations": "Installations détectées",
       "selectInstallation": "Sélectionnez une installation à utiliser",
       "active": "Actif",
-      "custom": "Personnalisé"
+      "custom": "Personnalisé",
+      "closeOnLaunch": "Fermer après le lancement",
+      "closeOnLaunchDescription": "Fermer automatiquement X-Dispatch lorsque X-Plane démarre"
     },
     "appearance": {
       "title": "Apparence",

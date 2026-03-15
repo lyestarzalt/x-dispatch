@@ -238,7 +238,9 @@
       "holdingPatterns": "Padrões de espera",
       "airportMetadata": "Metadados do aeroporto",
       "moraGrid": "Grade MORA",
-      "msaSectors": "Setores MSA"
+      "msaSectors": "Setores MSA",
+      "closeOnLaunch": "Fechar após o lançamento",
+      "closeOnLaunchDescription": "Fechar o X-Dispatch automaticamente quando o X-Plane iniciar"
     },
     "appearance": {
       "title": "Aparência",

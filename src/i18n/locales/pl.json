@@ -238,7 +238,9 @@
       "holdingPatterns": "Wzorce oczekiwania",
       "airportMetadata": "Metadane lotniska",
       "moraGrid": "Siatka MORA",
-      "msaSectors": "Sektory MSA"
+      "msaSectors": "Sektory MSA",
+      "closeOnLaunch": "Zamknij po uruchomieniu",
+      "closeOnLaunchDescription": "Automatycznie zamknij X-Dispatch po uruchomieniu X-Plane"
     },
     "appearance": {
       "title": "Wygląd",

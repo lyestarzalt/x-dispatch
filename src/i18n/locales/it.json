@@ -238,7 +238,9 @@
       "holdingPatterns": "Pattern di attesa",
       "airportMetadata": "Metadati aeroporto",
       "moraGrid": "Griglia MORA",
-      "msaSectors": "Settori MSA"
+      "msaSectors": "Settori MSA",
+      "closeOnLaunch": "Chiudi dopo l'avvio",
+      "closeOnLaunchDescription": "Chiudi automaticamente X-Dispatch quando X-Plane si avvia"
     },
     "appearance": {
       "title": "Aspetto",
