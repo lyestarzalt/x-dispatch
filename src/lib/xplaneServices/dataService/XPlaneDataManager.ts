@@ -606,6 +606,8 @@ export class XPlaneDataManager {
    * Get ILS/LOC within radius
    */
   getILSInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+    // TODO: 3D glide slope visualization disabled — needs proper planning before re-enabling.
+    // Add 'GS' to the array below to feed GS navaids into ILSLayer's fill-extrusion ramp.
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['ILS', 'LOC']);
   }
 

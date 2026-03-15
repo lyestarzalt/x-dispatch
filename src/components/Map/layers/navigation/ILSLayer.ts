@@ -85,6 +85,54 @@ function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
   return { type: 'FeatureCollection', features };
 }
 
+// ── Glide-slope 3D ramp (fill-extrusion) ────────────────────────────────
+
+function createGSSlopeGeoJSON(gsList: Navaid[]): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
+  const SEGMENTS = 200;
+  const MAX_DISTANCE_NM = 10;
+  const BEAM_HALF_WIDTH = 0.7; // degrees, standard GS beam
+
+  for (const gs of gsList) {
+    if (gs.glidepathAngle === undefined || gs.bearing === undefined) continue;
+
+    // Workaround: old parser stored glidepathAngle ÷100 (e.g. 0.03 instead of 3.0)
+    const angle = gs.glidepathAngle < 0.5 ? gs.glidepathAngle * 100 : gs.glidepathAngle;
+    const course = (gs.bearing + 180) % 360;
+    const tanAngle = Math.tan((angle * Math.PI) / 180);
+    const leftBearing = (course - BEAM_HALF_WIDTH + 360) % 360;
+    const rightBearing = (course + BEAM_HALF_WIDTH) % 360;
+
+    for (let i = 0; i < SEGMENTS; i++) {
+      const dNear = (i * MAX_DISTANCE_NM) / SEGMENTS;
+      const dFar = ((i + 1) * MAX_DISTANCE_NM) / SEGMENTS;
+
+      const nearLeft = destinationPointNm(gs.latitude, gs.longitude, leftBearing, dNear);
+      const nearRight = destinationPointNm(gs.latitude, gs.longitude, rightBearing, dNear);
+      const farLeft = destinationPointNm(gs.latitude, gs.longitude, leftBearing, dFar);
+      const farRight = destinationPointNm(gs.latitude, gs.longitude, rightBearing, dFar);
+
+      // Each column rises from ground (base=0) to the slope height at its far edge.
+      // With 200 segments, each step is ~2.4m — invisible at any zoom level.
+      const heightMeters = nauticalMilesToMeters(dFar) * tanAngle;
+
+      features.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[nearLeft, farLeft, farRight, nearRight, nearLeft]],
+        },
+        properties: {
+          id: gs.id,
+          height: heightMeters,
+        },
+      });
+    }
+  }
+
+  return { type: 'FeatureCollection', features };
+}
+
 /**
  * ILS Layer - renders Instrument Landing System navaids with localizer cone
  *
@@ -96,11 +144,17 @@ function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
 export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   readonly layerId = 'nav-ils';
   readonly sourceId = 'nav-ils-source';
-  readonly additionalLayerIds = ['nav-ils-labels', 'nav-ils-cone', 'nav-ils-course'];
+  readonly additionalLayerIds = [
+    'nav-ils-labels',
+    'nav-ils-cone',
+    'nav-ils-course',
+    'nav-ils-gs-slope',
+  ];
 
-  // Additional sources for cone and course
+  // Additional sources for cone, course, and glide slope
   private readonly coneSourceId = 'nav-ils-cone-source';
   private readonly courseSourceId = 'nav-ils-course-source';
+  private readonly gsSlopeSourceId = 'nav-ils-gs-source';
 
   private imagesLoaded = false;
 
@@ -158,7 +212,8 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     const labelsLayerId = this.additionalLayerIds[0]; // nav-ils-labels
     const coneLayerId = this.additionalLayerIds[1]; // nav-ils-cone
     const courseLayerId = this.additionalLayerIds[2]; // nav-ils-course
-    if (!labelsLayerId || !coneLayerId || !courseLayerId) return;
+    const gsSlopeLayerId = this.additionalLayerIds[3]; // nav-ils-gs-slope
+    if (!labelsLayerId || !coneLayerId || !courseLayerId || !gsSlopeLayerId) return;
 
     // Cone fill layer
     map.addLayer({
@@ -181,6 +236,19 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
         'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 12, 2, 16, 3],
         'line-dasharray': [4, 2],
         'line-opacity': 0.8,
+      },
+    });
+
+    // Glide slope 3D ramp (solid columns from ground to slope height)
+    map.addLayer({
+      id: gsSlopeLayerId,
+      type: 'fill-extrusion',
+      source: this.gsSlopeSourceId,
+      paint: {
+        'fill-extrusion-color': NAV_COLORS.ils,
+        'fill-extrusion-height': ['get', 'height'],
+        'fill-extrusion-base': 0,
+        'fill-extrusion-opacity': 0.12,
       },
     });
 
@@ -248,22 +316,31 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
 
     await this.loadImages(map);
 
+    const locData = data.filter((n) => n.type !== 'GS');
+    const gsData = data.filter((n) => n.type === 'GS');
+
     // Add cone source
     map.addSource(this.coneSourceId, {
       type: 'geojson',
-      data: createILSConeGeoJSON(data),
+      data: createILSConeGeoJSON(locData),
     });
 
     // Add course source
     map.addSource(this.courseSourceId, {
       type: 'geojson',
-      data: createILSCourseGeoJSON(data),
+      data: createILSCourseGeoJSON(locData),
     });
 
-    // Add main source
+    // Add glide slope 3D source
+    map.addSource(this.gsSlopeSourceId, {
+      type: 'geojson',
+      data: createGSSlopeGeoJSON(gsData),
+    });
+
+    // Add main source (localizer symbols only)
     map.addSource(this.sourceId, {
       type: 'geojson',
-      data: this.createGeoJSON(data),
+      data: this.createGeoJSON(locData),
     });
 
     this.addLayers(map);
@@ -273,11 +350,16 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   async update(map: maplibregl.Map, data: Navaid[]): Promise<void> {
     const source = map.getSource(this.sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData(this.createGeoJSON(data));
+      const locData = data.filter((n) => n.type !== 'GS');
+      const gsData = data.filter((n) => n.type === 'GS');
+
+      source.setData(this.createGeoJSON(locData));
       const coneSource = map.getSource(this.coneSourceId) as maplibregl.GeoJSONSource;
-      if (coneSource) coneSource.setData(createILSConeGeoJSON(data));
+      if (coneSource) coneSource.setData(createILSConeGeoJSON(locData));
       const courseSource = map.getSource(this.courseSourceId) as maplibregl.GeoJSONSource;
-      if (courseSource) courseSource.setData(createILSCourseGeoJSON(data));
+      if (courseSource) courseSource.setData(createILSCourseGeoJSON(locData));
+      const gsSource = map.getSource(this.gsSlopeSourceId) as maplibregl.GeoJSONSource;
+      if (gsSource) gsSource.setData(createGSSlopeGeoJSON(gsData));
     } else {
       await this.add(map, data);
     }
@@ -287,6 +369,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     super.performRemove(map);
     if (map.getSource(this.coneSourceId)) map.removeSource(this.coneSourceId);
     if (map.getSource(this.courseSourceId)) map.removeSource(this.courseSourceId);
+    if (map.getSource(this.gsSlopeSourceId)) map.removeSource(this.gsSlopeSourceId);
   }
 
   // Override setVisibility to include all layers

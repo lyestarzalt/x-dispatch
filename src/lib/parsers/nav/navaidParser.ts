@@ -59,11 +59,11 @@ function extractMagneticCourse(encoded: number): number {
 }
 
 function extractGlidepathAngle(encoded: number): number {
-  return Math.floor(encoded / 100000) / 100;
+  return Math.floor(encoded / 1000) / 100;
 }
 
 function extractCourseFromGlidepath(encoded: number): number {
-  return encoded % 100000;
+  return encoded % 1000;
 }
 
 function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'> | null {
