@@ -1,6 +1,43 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.5.1 - 2026-03-15
+
+### Bug Fixes
+
+- include arch in Windows and Linux binary names ([6c79f77](https://github.com/lyestarzalt/x-dispatch/commit/6c79f77b91c83fe6108c8b2f4b186f996ae1f4ad))
+- validate airport cache on startup before marking as loaded ([6ae5679](https://github.com/lyestarzalt/x-dispatch/commit/6ae5679f24136a5e98e60ffd9f324116178f1bda))
+- place fuel in correct X-Plane tank slot for third-party aircraft ([c228bfd](https://github.com/lyestarzalt/x-dispatch/commit/c228bfdc260ed8e8c3e1c58a089204c8c859439d))
+- harden scenery detection and improve addon manager UI ([6dabc3a](https://github.com/lyestarzalt/x-dispatch/commit/6dabc3abdc2734a40e22e0ee003eb551c9592c9c))
+- exclude AI traffic .acf files from aircraft scanner ([a21a6a2](https://github.com/lyestarzalt/x-dispatch/commit/a21a6a2cea0391bd182cf92ef4b4b54ee83c2179))
+- allow backslash in aircraft folder paths for livery scanning ([e984d7d](https://github.com/lyestarzalt/x-dispatch/commit/e984d7d8ba3e913f83a1230005469d69fd90976f))
+- prevent terrain crashes on globe projection and silence DEM errors ([39b7470](https://github.com/lyestarzalt/x-dispatch/commit/39b74705b00d17697ee3096e6a0c3d08ee5ead16))
+
+### Documentation
+
+- update CHANGELOG.md for v1.5.0 ([9e6d22b](https://github.com/lyestarzalt/x-dispatch/commit/9e6d22b02548f229e7b261d2d50f0d8a99a4643d))
+- update Discord invite link ([dbdffbd](https://github.com/lyestarzalt/x-dispatch/commit/dbdffbd1e9fa30e2382e29da803c2eae82526188))
+
+### Features
+
+- toggle deselect for gates, runway ends & helipads ([8136be8](https://github.com/lyestarzalt/x-dispatch/commit/8136be850c6a9a1ba0b2803cc95850cb8c520c20))
+- add disk tile cache for MapLibre ([d8b821d](https://github.com/lyestarzalt/x-dispatch/commit/d8b821d71bdc888720fd5e91004d5987f2dba2cd))
+- add hillshade and contour lines to terrain visualization ([3bf967f](https://github.com/lyestarzalt/x-dispatch/commit/3bf967fb3833a38e909415fae661d8594bbb36e4))
+- add idle orbit camera around selected airport ([e0d5e4c](https://github.com/lyestarzalt/x-dispatch/commit/e0d5e4cd8346bb798ec0d83e3e40b8ea96566327))
+- add terrain shading toggle to toolbar overlays ([d9149ee](https://github.com/lyestarzalt/x-dispatch/commit/d9149ee02631d8705f6a5630875587e506ac537e))
+- add close-on-launch option, remove networks tab ([e4579d6](https://github.com/lyestarzalt/x-dispatch/commit/e4579d64f130f70c77a7dde3360873bf3ef1ffdf))
+- display app version in title bar ([bddfc49](https://github.com/lyestarzalt/x-dispatch/commit/bddfc49cd686c9ff1361bd9ba46cb031529d21f8))
+- add two-phase loading screen with granular airport progress ([7f8650a](https://github.com/lyestarzalt/x-dispatch/commit/7f8650aef3fea2b9882e0223c95a8d1c0fc77687))
+- detect symlinked scenery packs in Custom Scenery folder ([05dd57d](https://github.com/lyestarzalt/x-dispatch/commit/05dd57dcfbbc519bce3c13e3d4644fc2507e0a50))
+- redesign app icon and inline SVG logo component ([f436dc2](https://github.com/lyestarzalt/x-dispatch/commit/f436dc274ac815c0a8a0d61b03ffb0f69b3c07d6))
+
+### Miscellaneous
+
+- add dbCredentials to drizzle config for Drizzle Studio ([82c1814](https://github.com/lyestarzalt/x-dispatch/commit/82c18140a32e7f37894665c9a7944ba21c584e13))
+
+### Wip
+
+- scaffold 3D glide slope visualization (disabled) ([2153dff](https://github.com/lyestarzalt/x-dispatch/commit/2153dffc80ff424fd4136425d092089da5fa7180))
 ## v1.5.0 - 2026-03-12
 
 ### Bug Fixes
