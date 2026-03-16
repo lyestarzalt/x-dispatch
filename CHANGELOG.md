@@ -1,6 +1,22 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.5.2 - 2026-03-16
+
+### Bug Fixes
+
+- wrap installation name in brackets in window title ([a1eaf09](https://github.com/lyestarzalt/x-dispatch/commit/a1eaf09b0e9459873986fa8e27668aeeb7b24323))
+- prevent terrain disappearing after zoom out, add dev debug overlay ([8928eb7](https://github.com/lyestarzalt/x-dispatch/commit/8928eb79006de99406c453fc18665aaec18c5372))
+- always rescan addon and aircraft lists on dialog open ([8487f1c](https://github.com/lyestarzalt/x-dispatch/commit/8487f1cae91ff673b753d442ba9a93aa3efe032e))
+
+### Documentation
+
+- update CHANGELOG.md for v1.5.1 ([cf0419f](https://github.com/lyestarzalt/x-dispatch/commit/cf0419ffd29e39795de1d93a5c723398815a4943))
+
+### Features
+
+- add setting to toggle idle orbit camera, default off ([6275e00](https://github.com/lyestarzalt/x-dispatch/commit/6275e006ad50bfcc66dd9a0de775106814240e52))
+- add multi X-Plane installation support ([2abf427](https://github.com/lyestarzalt/x-dispatch/commit/2abf4278622ba1d1b16da1413dd90f897ddd1ee1))
 ## v1.5.1 - 2026-03-15
 
 ### Bug Fixes
