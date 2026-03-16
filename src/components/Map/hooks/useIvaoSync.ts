@@ -8,7 +8,6 @@ interface UseIvaoSyncOptions {
   ivaoPopupRef: PopupRef;
   ivaoData: IvaoData | undefined;
   ivaoEnabled: boolean;
-  styleVersion: number;
 }
 
 export function useIvaoSync({
@@ -16,7 +15,6 @@ export function useIvaoSync({
   ivaoPopupRef,
   ivaoData,
   ivaoEnabled,
-  styleVersion,
 }: UseIvaoSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
@@ -52,7 +50,7 @@ export function useIvaoSync({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [mapRef, ivaoPopupRef, ivaoData, ivaoEnabled, styleVersion]);
+  }, [mapRef, ivaoPopupRef, ivaoData, ivaoEnabled]);
 }
 
 export function toggleIvaoLayer(mapRef: MapRef, ivaoPopupRef: PopupRef, enable: boolean): void {

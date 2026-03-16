@@ -10,7 +10,6 @@ interface DebugStats {
   fps: number;
   layerCount: number;
   sourceCount: number;
-  styleVersion: number;
 
   // Terrain
   terrainActive: boolean;
@@ -103,7 +102,7 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
 
       // Store state
       const { useMapStore } = await import('@/stores/mapStore');
-      const { styleVersion, vatsimEnabled, ivaoEnabled } = useMapStore.getState();
+      const { vatsimEnabled, ivaoEnabled } = useMapStore.getState();
 
       setStats({
         zoom: map.getZoom(),
@@ -113,7 +112,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         fps: fpsRef.current.fps,
         layerCount: style?.layers?.length ?? 0,
         sourceCount: style?.sources ? Object.keys(style.sources).length : 0,
-        styleVersion,
         terrainActive: map.getTerrain() != null,
         terrainSourceLoaded: !!map.getSource('terrain-dem'),
         hillshadeSourceLoaded: !!map.getSource('terrain-hillshade-dem'),
@@ -175,7 +173,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
       />
       <Row label="Layers" value={String(stats.layerCount)} />
       <Row label="Sources" value={String(stats.sourceCount)} />
-      <Row label="Style v" value={String(stats.styleVersion)} />
 
       {/* Terrain */}
       <Section label="Terrain" />

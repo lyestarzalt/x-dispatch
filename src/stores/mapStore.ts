@@ -76,8 +76,6 @@ interface MapState {
   weatherRadarEnabled: boolean;
   dayNightEnabled: boolean;
   explore: ExploreState;
-  /** Incremented when map style changes to trigger layer re-adds */
-  styleVersion: number;
   airportFilters: AirportFilterState;
   rangeRingsEnabled: boolean;
   rangeRingsDuration: number;
@@ -115,7 +113,6 @@ interface MapState {
   setSelectedRoute: (route: { from: string; to: string } | null) => void;
   setExploreFilters: (filters: Partial<ExploreFilters>) => void;
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
-  incrementStyleVersion: () => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
 }
@@ -148,7 +145,6 @@ export const useMapStore = create<MapState>()(
         },
         featuredCategory: 'all' as FeaturedCategoryFilter,
       },
-      styleVersion: 0,
       airportFilters: DEFAULT_AIRPORT_FILTERS,
       rangeRingsEnabled: false,
       rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
@@ -244,7 +240,6 @@ export const useMapStore = create<MapState>()(
         })),
       setFeaturedCategory: (category) =>
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
-      incrementStyleVersion: () => set((state) => ({ styleVersion: state.styleVersion + 1 })),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
     }),

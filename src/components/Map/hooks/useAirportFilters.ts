@@ -124,8 +124,6 @@ function applyCurrentFilters(mapRef: MapRef): void {
  * instead of React effect deps to avoid batching / reference-equality issues.
  */
 export function useAirportFilters(mapRef: MapRef) {
-  const styleVersion = useMapStore((s) => s.styleVersion);
-
   useEffect(() => {
     // 1. Apply for current state (layers may already exist after style change)
     applyCurrentFilters(mapRef);
@@ -148,7 +146,7 @@ export function useAirportFilters(mapRef: MapRef) {
       unsub();
       map?.off('load', onLoad);
     };
-  }, [mapRef, styleVersion]);
+  }, [mapRef]);
 }
 
 /** Check if filters differ from defaults */

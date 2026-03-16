@@ -279,10 +279,9 @@ function clearPin(
 
 interface UsePinDropOptions {
   mapRef: MapRef;
-  styleVersion: number;
 }
 
-export function usePinDrop({ mapRef, styleVersion }: UsePinDropOptions) {
+export function usePinDrop({ mapRef }: UsePinDropOptions) {
   const pinRef = useRef<{ lng: number; lat: number; heading: number } | null>(null);
   const handleMarkerRef = useRef<maplibregl.Marker | null>(null);
   const isDraggingRef = useRef(false);
@@ -335,7 +334,7 @@ export function usePinDrop({ mapRef, styleVersion }: UsePinDropOptions) {
     } else {
       map.once('style.load', reAdd);
     }
-  }, [mapRef, styleVersion]);
+  }, [mapRef]);
 
   // Main interactions (drag to reposition)
   useEffect(() => {

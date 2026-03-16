@@ -9,15 +9,9 @@ interface UseNavLayerSyncOptions {
   mapRef: MapRef;
   navData: NavigationData | undefined;
   navVisibility: NavLayerVisibility;
-  styleVersion: number;
 }
 
-export function useNavLayerSync({
-  mapRef,
-  navData,
-  navVisibility,
-  styleVersion,
-}: UseNavLayerSyncOptions): void {
+export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerSyncOptions): void {
   // Sync local nav layers (navaids, ILS, airspaces)
   useEffect(() => {
     const map = mapRef.current;
@@ -54,7 +48,7 @@ export function useNavLayerSync({
     };
 
     updateNavLayers();
-  }, [mapRef, navData, navVisibility, styleVersion]);
+  }, [mapRef, navData, navVisibility]);
 }
 
 // Helper to apply visibility changes for individual nav layers
