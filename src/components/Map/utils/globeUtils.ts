@@ -13,6 +13,9 @@ const CONTOUR_SOURCE_ID = 'terrain-contours';
 const CONTOUR_LINE_LAYER_ID = 'terrain-contour-lines';
 const CONTOUR_LABEL_LAYER_ID = 'terrain-contour-labels';
 
+// Track which map instances already have the TerrainControl (survives style changes)
+const terrainControlAdded = new WeakSet<maplibregl.Map>();
+
 // Singleton — register contour protocol only once
 let contourDemSource: InstanceType<typeof mlcontour.DemSource> | null = null;
 
@@ -78,11 +81,14 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
 
   // Terrain DEM source — used for 3D terrain extrusion (enabled only in mercator mode)
+  // minzoom matches GLOBE_TO_MERCATOR_ZOOM — no point fetching DEM tiles in globe mode
+  // where terrain is disabled and many low-zoom tiles 404
   map.addSource(TERRAIN_SOURCE_ID, {
     type: 'raster-dem',
     encoding: 'terrarium',
     tiles: [TERRAIN_TILES_URL],
     tileSize: 256,
+    minzoom: GLOBE_TO_MERCATOR_ZOOM,
     maxzoom: 10,
   });
 
@@ -93,16 +99,21 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     encoding: 'terrarium',
     tiles: [TERRAIN_TILES_URL],
     tileSize: 256,
+    minzoom: GLOBE_TO_MERCATOR_ZOOM,
     maxzoom: 10,
   });
 
   // Terrain is not enabled here — we start in globe mode where it would crash.
   // setupGlobeProjection() enables/disables terrain on projection switches.
   // The TerrainControl button lets the user toggle 3D extrusion when in mercator.
-  map.addControl(
-    new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1 }),
-    'bottom-left'
-  );
+  // Only add the control once (it survives style changes since it's a DOM element).
+  if (!terrainControlAdded.has(map)) {
+    map.addControl(
+      new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1 }),
+      'bottom-left'
+    );
+    terrainControlAdded.add(map);
+  }
 
   // Hillshade — shadow/light shading from DEM (uses its own source)
   const beforeLayer = getFirstSymbolLayerId(map);
@@ -111,6 +122,7 @@ export function setup3DTerrain(map: maplibregl.Map): void {
       id: HILLSHADE_LAYER_ID,
       type: 'hillshade',
       source: HILLSHADE_SOURCE_ID,
+      minzoom: GLOBE_TO_MERCATOR_ZOOM,
       paint: {
         'hillshade-exaggeration': 0.5,
         'hillshade-shadow-color': '#000000',

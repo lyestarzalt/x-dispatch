@@ -61,6 +61,7 @@ import {
   updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
+import { setup3DTerrain } from './utils/globeUtils';
 import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
@@ -449,6 +450,9 @@ export default function Map({ airports }: MapProps) {
     previousStyleUrlRef.current = mapStyleUrl;
 
     const handleStyleLoad = () => {
+      // Re-add terrain sources/layers (wiped by setStyle)
+      setup3DTerrain(map);
+
       // Re-add base airports layer (the clickable dots)
       setupAirportsLayer(map, airports);
       setupAirportPopup(map, airportPopupRef, handleAirportClick);
