@@ -870,8 +870,12 @@ function registerIpcHandlers() {
 
   // Flight plan file handling
   ipcMain.handle('flightplan:openFile', async () => {
+    const xplanePath = dataManager.getXPlanePath();
+    const defaultPath = xplanePath ? path.join(xplanePath, 'Output', 'FMS plans') : undefined;
+
     const dialogOptions: Electron.OpenDialogOptions = {
       title: 'Open Flight Plan',
+      defaultPath,
       filters: [
         { name: 'X-Plane Flight Plans', extensions: ['fms'] },
         { name: 'All Files', extensions: ['*'] },
