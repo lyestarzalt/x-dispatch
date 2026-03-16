@@ -216,7 +216,9 @@
       "fontSizeDescription": "Textgröße der Benutzeroberfläche anpassen",
       "fontSizeSmall": "Klein",
       "fontSizeMedium": "Mittel",
-      "fontSizeLarge": "Groß"
+      "fontSizeLarge": "Groß",
+      "idleOrbit": "Orbit-Kamera",
+      "idleOrbitDescription": "Langsame Drehung um den ausgewählten Flughafen nach Inaktivität"
     },
     "navigation": {
       "title": "Navigationsdaten",

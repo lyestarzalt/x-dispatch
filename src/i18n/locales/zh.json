@@ -272,7 +272,9 @@
       "fontSizeDescription": "调整界面文字大小",
       "fontSizeSmall": "小",
       "fontSizeMedium": "中",
-      "fontSizeLarge": "大"
+      "fontSizeLarge": "大",
+      "idleOrbit": "空闲环绕相机",
+      "idleOrbitDescription": "闲置时缓慢环绕选定机场旋转"
     },
     "navigation": {
       "title": "导航",

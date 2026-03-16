@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { Coordinates } from '@/types/geo';
 import type { MapRef } from './useMapSetup';
 
@@ -24,6 +25,7 @@ const USER_EVENTS = [
 ] as const;
 
 export function useIdleOrbit({ mapRef, airportCenter }: UseIdleOrbitOptions) {
+  const enabled = useSettingsStore((s) => s.map.idleOrbitEnabled);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
   const isProgrammaticRef = useRef(false);
@@ -88,7 +90,7 @@ export function useIdleOrbit({ mapRef, airportCenter }: UseIdleOrbitOptions) {
       idleTimerRef.current = null;
     }
 
-    if (!airportCenter) return;
+    if (!airportCenter || !enabled) return;
 
     idleTimerRef.current = setTimeout(() => {
       const map = mapRef.current;
@@ -96,7 +98,7 @@ export function useIdleOrbit({ mapRef, airportCenter }: UseIdleOrbitOptions) {
         startOrbit();
       }
     }, IDLE_TIMEOUT_MS);
-  }, [mapRef, airportCenter, startOrbit]);
+  }, [mapRef, airportCenter, startOrbit, enabled]);
 
   // Handle user interactions — stop orbit and restart idle timer
   useEffect(() => {
@@ -128,14 +130,14 @@ export function useIdleOrbit({ mapRef, airportCenter }: UseIdleOrbitOptions) {
     };
   }, [mapRef, airportCenter, stopOrbit, resetIdleTimer]);
 
-  // Stop orbit when airport is cleared or zoom drops below threshold
+  // Stop orbit when airport is cleared, zoom drops below threshold, or setting disabled
   useEffect(() => {
-    if (!airportCenter) {
+    if (!airportCenter || !enabled) {
       stopOrbit();
       if (idleTimerRef.current !== null) {
         clearTimeout(idleTimerRef.current);
         idleTimerRef.current = null;
       }
     }
-  }, [airportCenter, stopOrbit]);
+  }, [airportCenter, enabled, stopOrbit]);
 }

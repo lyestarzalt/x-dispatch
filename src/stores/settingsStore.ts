@@ -67,6 +67,7 @@ export interface MapSettings {
   navDataRadiusNm: number;
   vatsimRefreshInterval: number;
   mapStyleUrl: string;
+  idleOrbitEnabled: boolean;
   units: {
     weight: WeightUnit;
   };
@@ -100,6 +101,7 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   navDataRadiusNm: 100,
   vatsimRefreshInterval: 15,
   mapStyleUrl: DEFAULT_MAP_STYLE_URL,
+  idleOrbitEnabled: false,
   units: {
     weight: 'lbs',
   },
@@ -157,7 +159,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 11,
+      version: 12,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -199,6 +201,17 @@ export const useSettingsStore = create<SettingsState>()(
           return {
             ...state,
             launcher: DEFAULT_LAUNCHER_SETTINGS,
+          };
+        }
+        if (version < 12) {
+          // Add idle orbit setting (default off)
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            map: {
+              ...state.map,
+              idleOrbitEnabled: false,
+            },
           };
         }
         return persistedState as SettingsState;

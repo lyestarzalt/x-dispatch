@@ -285,7 +285,9 @@
       "fontSizeDescription": "Adjust the interface text size",
       "fontSizeSmall": "Small",
       "fontSizeMedium": "Medium",
-      "fontSizeLarge": "Large"
+      "fontSizeLarge": "Large",
+      "idleOrbit": "Idle orbit camera",
+      "idleOrbitDescription": "Slowly rotate around selected airport after inactivity"
     },
     "navigation": {
       "title": "Navigation",

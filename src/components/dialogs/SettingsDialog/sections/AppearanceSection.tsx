@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Map, Palette, Scale, Type } from 'lucide-react';
+import { Globe, Map, Orbit, Palette, Scale, Type } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { changeLanguage, languages } from '@/i18n';
 import type { WeightUnit } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
@@ -127,6 +128,25 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
               {t('settings.appearance.customStyleHint')}
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Idle Orbit */}
+      <Card>
+        <CardContent className="flex items-center justify-between pt-6">
+          <div className="flex items-center gap-3">
+            <Orbit className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium">{t('settings.appearance.idleOrbit')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('settings.appearance.idleOrbitDescription')}
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={mapSettings.idleOrbitEnabled}
+            onCheckedChange={(checked) => handleChange('idleOrbitEnabled', checked)}
+          />
         </CardContent>
       </Card>
 

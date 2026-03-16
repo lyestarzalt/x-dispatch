@@ -272,7 +272,9 @@
       "fontSizeDescription": "Ajustar el tamaño del texto de la interfaz",
       "fontSizeSmall": "Pequeño",
       "fontSizeMedium": "Mediano",
-      "fontSizeLarge": "Grande"
+      "fontSizeLarge": "Grande",
+      "idleOrbit": "Cámara orbital",
+      "idleOrbitDescription": "Rotar lentamente alrededor del aeropuerto seleccionado tras inactividad"
     },
     "navigation": {
       "title": "Navegación",
