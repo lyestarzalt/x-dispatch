@@ -200,6 +200,57 @@ export function setTerrainShadingVisibility(map: maplibregl.Map, visible: boolea
   }
 }
 
+/**
+ * TransformStyle callback for map.setStyle() — carries over all custom sources,
+ * layers, terrain, and sky from the previous style into the new basemap style.
+ * This prevents the "nuke and re-add" cascade that previously required
+ * incrementStyleVersion() to trigger every hook to re-add its layers.
+ */
+export function preserveCustomStyle(
+  previous: maplibregl.StyleSpecification | undefined,
+  next: maplibregl.StyleSpecification
+): maplibregl.StyleSpecification {
+  if (!previous) return next;
+
+  const nextSourceIds = new Set(Object.keys(next.sources ?? {}));
+  const nextLayerIds = new Set((next.layers ?? []).map((l) => l.id));
+
+  // Carry over all sources that don't exist in the new basemap
+  const customSources: Record<string, maplibregl.SourceSpecification> = {};
+  for (const [id, source] of Object.entries(previous.sources ?? {})) {
+    if (!nextSourceIds.has(id)) {
+      customSources[id] = source as maplibregl.SourceSpecification;
+    }
+  }
+
+  // Carry over all layers that don't exist in the new basemap.
+  // Insert terrain shading layers (hillshade, contours) before the first symbol
+  // layer so they render below labels; all other custom layers go on top.
+  const customLayers = (previous.layers ?? []).filter((l) => !nextLayerIds.has(l.id));
+  const terrainIds = new Set(TERRAIN_SHADING_LAYER_IDS);
+  const terrainLayers = customLayers.filter((l) => terrainIds.has(l.id));
+  const otherLayers = customLayers.filter((l) => !terrainIds.has(l.id));
+
+  const layers = [...next.layers];
+  if (terrainLayers.length > 0) {
+    const symbolIdx = layers.findIndex((l) => l.type === 'symbol');
+    if (symbolIdx >= 0) {
+      layers.splice(symbolIdx, 0, ...terrainLayers);
+    } else {
+      layers.push(...terrainLayers);
+    }
+  }
+  layers.push(...otherLayers);
+
+  return {
+    ...next,
+    sources: { ...next.sources, ...customSources },
+    layers,
+    terrain: previous.terrain ?? next.terrain,
+    sky: previous.sky ?? next.sky,
+  };
+}
+
 /** Find the first symbol layer to insert raster/line layers below labels. */
 function getFirstSymbolLayerId(map: maplibregl.Map): string | undefined {
   const layers = map.getStyle()?.layers;

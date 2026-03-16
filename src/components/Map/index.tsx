@@ -26,8 +26,6 @@ import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import type { PlanePosition, PlaneState } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
-  setupAirportPopup,
-  setupAirportsLayer,
   toggleIvaoLayer,
   toggleVatsimLayer,
   useAirportFilters,
@@ -61,7 +59,7 @@ import {
   updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
-import { setup3DTerrain } from './utils/globeUtils';
+import { preserveCustomStyle } from './utils/globeUtils';
 import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
@@ -112,8 +110,6 @@ export default function Map({ airports }: MapProps) {
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
   const setIvaoEnabled = useMapStore((s) => s.setIvaoEnabled);
   const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
-  const styleVersion = useMapStore((s) => s.styleVersion);
-  const incrementStyleVersion = useMapStore((s) => s.incrementStyleVersion);
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
@@ -304,7 +300,6 @@ export default function Map({ airports }: MapProps) {
     mapRef,
     navData,
     navVisibility,
-    styleVersion,
   });
 
   // Vatsim sync
@@ -313,7 +308,6 @@ export default function Map({ airports }: MapProps) {
     vatsimPopupRef,
     vatsimData,
     vatsimEnabled,
-    styleVersion,
   });
 
   // IVAO sync
@@ -322,24 +316,22 @@ export default function Map({ airports }: MapProps) {
     ivaoPopupRef,
     ivaoData,
     ivaoEnabled,
-    styleVersion,
   });
 
   // Route line sync for Explore panel routes
   useRouteLineSync({
     mapRef,
     airports,
-    styleVersion,
   });
 
   // Procedure route sync - renders selected procedure on map
-  useProcedureRouteSync({ mapRef, styleVersion });
+  useProcedureRouteSync({ mapRef });
 
   // Range rings sync - renders reach circles from selected airport
-  useRangeRingsSync({ mapRef, navDataLocation, styleVersion });
+  useRangeRingsSync({ mapRef, navDataLocation });
 
   // Pin-drop custom start location
-  const { placeAtCenter: handlePinDrop } = usePinDrop({ mapRef, styleVersion });
+  const { placeAtCenter: handlePinDrop } = usePinDrop({ mapRef });
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
@@ -348,7 +340,7 @@ export default function Map({ airports }: MapProps) {
   useDayNightLayer(mapRef, dayNightEnabled);
 
   // Terrain shading (hillshade + contour lines)
-  useTerrainShading(mapRef, terrainShadingEnabled, styleVersion);
+  useTerrainShading(mapRef, terrainShadingEnabled);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -362,20 +354,23 @@ export default function Map({ airports }: MapProps) {
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
 
   // Flight plan layer sync
+  const hasFittedFlightPlanRef = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     if (fmsData) {
       addFlightPlanLayer(map, fmsData);
-      // Only fit on initial load, not on style change
-      if (styleVersion === 0) {
+      // Only fit on initial load
+      if (!hasFittedFlightPlanRef.current) {
+        hasFittedFlightPlanRef.current = true;
         fitMapToFlightPlan(map, fmsData);
       }
     } else {
+      hasFittedFlightPlanRef.current = false;
       removeFlightPlanLayer(map);
     }
-  }, [mapRef, fmsData, styleVersion]);
+  }, [mapRef, fmsData]);
 
   // Fly to selected waypoint
   useEffect(() => {
@@ -406,7 +401,7 @@ export default function Map({ airports }: MapProps) {
     [mapRef]
   );
 
-  // Load FIR boundaries on map load and style change
+  // Load FIR boundaries on map load
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !NAV_GLOBAL_LOADING.firBoundaries) return;
@@ -429,9 +424,10 @@ export default function Map({ airports }: MapProps) {
     };
 
     loadFIR();
-  }, [mapRef, styleVersion]);
+  }, [mapRef]);
 
-  // Style change handler - only triggers when mapStyleUrl actually changes
+  // Style change handler — uses transformStyle to carry over all custom
+  // sources/layers into the new basemap, avoiding the nuke-and-re-add cascade.
   const previousStyleUrlRef = useRef<string | null>(null);
   useEffect(() => {
     const map = mapRef.current;
@@ -449,32 +445,8 @@ export default function Map({ airports }: MapProps) {
 
     previousStyleUrlRef.current = mapStyleUrl;
 
-    const handleStyleLoad = () => {
-      // Re-add terrain sources/layers (wiped by setStyle)
-      setup3DTerrain(map);
-
-      // Re-add base airports layer (the clickable dots)
-      setupAirportsLayer(map, airports);
-      setupAirportPopup(map, airportPopupRef, handleAirportClick);
-
-      // Trigger sync hooks to re-add nav layers, VATSIM, etc.
-      incrementStyleVersion();
-
-      // Re-render the selected airport if one exists (store state persists)
-      const { selectedICAO } = useAppStore.getState();
-      const airport = airports.find((a) => a.icao === selectedICAO);
-      if (selectedICAO && airport) {
-        handleAirportClick(selectedICAO, [airport.lon, airport.lat]);
-      }
-    };
-
-    map.once('style.load', handleStyleLoad);
-    map.setStyle(mapStyleUrl);
-
-    return () => {
-      map.off('style.load', handleStyleLoad);
-    };
-  }, [mapStyleUrl, mapRef, airports, airportPopupRef, handleAirportClick, incrementStyleVersion]);
+    map.setStyle(mapStyleUrl, { transformStyle: preserveCustomStyle });
+  }, [mapStyleUrl, mapRef]);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(

@@ -7,14 +7,9 @@ import type { MapRef } from './useMapSetup';
 interface UseRouteLineSyncOptions {
   mapRef: MapRef;
   airports: Airport[];
-  styleVersion: number;
 }
 
-export function useRouteLineSync({
-  mapRef,
-  airports,
-  styleVersion,
-}: UseRouteLineSyncOptions): void {
+export function useRouteLineSync({ mapRef, airports }: UseRouteLineSyncOptions): void {
   const selectedRoute = useMapStore((s) => s.explore.selectedRoute);
 
   // Initialize route line layer on map load and style change
@@ -37,7 +32,7 @@ export function useRouteLineSync({
         removeRouteLineLayer(map);
       }
     };
-  }, [mapRef, styleVersion]);
+  }, [mapRef]);
 
   // Update route line when selection changes
   useEffect(() => {
@@ -72,5 +67,5 @@ export function useRouteLineSync({
     } else {
       updateRouteLine(map, null);
     }
-  }, [mapRef, selectedRoute, airports, styleVersion]);
+  }, [mapRef, selectedRoute, airports]);
 }

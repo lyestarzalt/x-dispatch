@@ -8,7 +8,6 @@ interface UseVatsimSyncOptions {
   vatsimPopupRef: PopupRef;
   vatsimData: VatsimData | undefined;
   vatsimEnabled: boolean;
-  styleVersion: number;
 }
 
 export function useVatsimSync({
@@ -16,7 +15,6 @@ export function useVatsimSync({
   vatsimPopupRef,
   vatsimData,
   vatsimEnabled,
-  styleVersion,
 }: UseVatsimSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
@@ -52,7 +50,7 @@ export function useVatsimSync({
     return () => {
       map.off('moveend', handleMoveEnd);
     };
-  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled, styleVersion]);
+  }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled]);
 }
 
 export function toggleVatsimLayer(mapRef: MapRef, vatsimPopupRef: PopupRef, enable: boolean): void {

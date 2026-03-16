@@ -227,6 +227,8 @@ export async function updateIvaoPilotLayer(
     ];
     await ensureAircraftIcons(map, uniqueIcaos);
 
+    // TODO(improvement): use source.updateData() with promoteId for incremental diffs
+    // instead of replacing the entire FeatureCollection on each refresh
     pilotSource.setData(createPilotGeoJSON(pilots));
     trailSource.setData(createTrailGeoJSON(pilots));
   } else {

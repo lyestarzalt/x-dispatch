@@ -9,14 +9,9 @@ import type { MapRef } from './useMapSetup';
 interface UseRangeRingsSyncOptions {
   mapRef: MapRef;
   navDataLocation: Coordinates | null;
-  styleVersion: number;
 }
 
-export function useRangeRingsSync({
-  mapRef,
-  navDataLocation,
-  styleVersion,
-}: UseRangeRingsSyncOptions): void {
+export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSyncOptions): void {
   const rangeRingsEnabled = useMapStore((s) => s.rangeRingsEnabled);
   const rangeRingsDuration = useMapStore((s) => s.rangeRingsDuration);
   const rangeRingsCategories = useMapStore((s) => s.rangeRingsCategories);
@@ -78,5 +73,5 @@ export function useRangeRingsSync({
     return () => {
       removeRangeRingsLayer(map);
     };
-  }, [mapRef, config, styleVersion]);
+  }, [mapRef, config]);
 }
