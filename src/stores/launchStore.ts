@@ -42,6 +42,9 @@ interface LaunchState {
   // Logbook (persisted, FIFO max 10)
   logbook: LogbookEntry[];
 
+  // Last selected livery per aircraft path (persisted)
+  lastLiveryByAircraft: Record<string, string>;
+
   // Favorites (persisted to localStorage)
   favorites: string[];
 
@@ -109,6 +112,7 @@ export const useLaunchStore = create<LaunchState>()(
     (set) => ({
       ...DEFAULT_CONFIG,
       logbook: [],
+      lastLiveryByAircraft: {},
       favorites: [],
 
       addLogbookEntry: (entry) =>
@@ -126,16 +130,16 @@ export const useLaunchStore = create<LaunchState>()(
       setWeatherConfig: (config) => set({ weatherConfig: config }),
 
       selectAircraft: (aircraft) =>
-        set({
+        set((state) => ({
           selectedAircraftPath: aircraft?.path ?? null,
           selectedAircraft: aircraft,
-          selectedLivery: 'Default',
+          selectedLivery: (aircraft && state.lastLiveryByAircraft[aircraft.path]) || 'Default',
           tankPercentages: aircraft ? new Array((aircraft.tankNames ?? []).length).fill(50) : [],
           payloadWeights: aircraft
             ? new Array((aircraft.payloadStations ?? []).length).fill(0)
             : [],
           launchError: null,
-        }),
+        })),
 
       hydrateAircraft: (aircraft) =>
         set((state) => {
@@ -174,7 +178,14 @@ export const useLaunchStore = create<LaunchState>()(
           };
         }),
 
-      setSelectedLivery: (livery) => set({ selectedLivery: livery }),
+      setSelectedLivery: (livery) =>
+        set((state) => {
+          const lastLiveryByAircraft = { ...state.lastLiveryByAircraft };
+          if (state.selectedAircraft) {
+            lastLiveryByAircraft[state.selectedAircraft.path] = livery;
+          }
+          return { selectedLivery: livery, lastLiveryByAircraft };
+        }),
 
       setTankPercentage: (index, value) =>
         set((state) => {
@@ -345,6 +356,7 @@ export const useLaunchStore = create<LaunchState>()(
       name: 'launch-store',
       partialize: (state) => ({
         logbook: state.logbook,
+        lastLiveryByAircraft: state.lastLiveryByAircraft,
         favorites: state.favorites,
         selectedAircraftPath: state.selectedAircraftPath,
         selectedLivery: state.selectedLivery,
@@ -476,9 +488,14 @@ export const useLaunchStore = create<LaunchState>()(
           state.logbook = (state.logbook as LogbookEntry[] | undefined) ?? [];
         }
 
+        // v7 → v8: add lastLiveryByAircraft
+        if (version < 8) {
+          if (!('lastLiveryByAircraft' in state)) state.lastLiveryByAircraft = {};
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 7,
+      version: 8,
     }
   )
 );
