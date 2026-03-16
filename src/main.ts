@@ -144,7 +144,7 @@ function createWindow(): BrowserWindow {
   });
 
   const window = new BrowserWindow({
-    title: `${app.getName()} v${app.getVersion()} — ${getActiveInstallationName()}`,
+    title: `${app.getName()} v${app.getVersion()} — [${getActiveInstallationName()}]`,
     x: windowState.x,
     y: windowState.y,
     width: windowState.width,
