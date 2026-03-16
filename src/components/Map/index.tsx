@@ -62,6 +62,7 @@ import {
 } from './layers';
 import './map-animations.css';
 import CompassWidget from './widgets/CompassWidget';
+import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
 
 interface MapProps {
@@ -725,6 +726,7 @@ export default function Map({ airports }: MapProps) {
 
       {/* Map widgets - left side */}
       <CompassWidget mapBearing={mapBearing} />
+      <DevDebugOverlay mapRef={mapRef} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && (
