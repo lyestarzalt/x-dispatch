@@ -32,28 +32,15 @@
 
 ![Map Overview](screenshots/map-overview.png)
 
-X-Plane has detailed airport diagrams but no global map to explore them. You need to already know the ICAO code to load an airport. I always wanted a world map to browse, search, and discover airports visually — so I built this.
+X-Plane has detailed airport data but no global map to explore it. X-Dispatch gives you a 3D globe to browse, search, and discover airports visually. Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief, select a starting position, configure your flight, and launch X-Plane directly.
 
-Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief. Select a starting position, configure your flight, and launch X-Plane directly.
+If you find this useful, consider giving it a star — it helps others discover the project.
 
-The app has grown to include SimBrief integration, live flight tracking, SID/STAR visualization, and an addon manager to keep your aircraft and scenery organized.
-
-If you find this useful, consider giving it a ⭐, it helps others discover the project.
-
-> **🍎 macOS Users (Sequoia/Tahoe):** The app is unsigned. To install:
->
-> 1. Download the `.dmg` from [Releases](https://github.com/lyestarzalt/x-dispatch/releases/latest)
-> 2. Drag to Applications and try to open - it will be blocked
-> 3. Go to **System Settings → Privacy & Security** → scroll down
-> 4. Click **"Open Anyway"** → enter your password
->
-> **Or via Terminal:**
+> **macOS Users (Sequoia/Tahoe):** The app is unsigned. After installing, go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
 >
 > ```bash
 > xattr -rd com.apple.quarantine /Applications/X-Dispatch.app
 > ```
->
-> If you get "Permission denied", grant Terminal **Full Disk Access** in System Settings → Privacy & Security.
 
 ## Screenshots
 
@@ -124,124 +111,94 @@ If you find this useful, consider giving it a ⭐, it helps others discover the 
 
 ## Features
 
-### SimBrief Integration
+### Map & Visualization
 
-- Import your latest OFP with one click
-- Full route visualization on the map
-- Fuel breakdown: block, taxi, enroute, reserves, contingency
-- Weight summary: ZFW, TOW, landing weight
-- Flight times and distance
-- Aircraft and callsign info
+- 3D globe with terrain elevation, hillshade, and contour lines
+- 6 basemap styles (OpenFreeMap, CARTO dark/light variants)
+- Airport dots for 35,000+ airports with custom scenery support
+- Airport filters by type, surface, and country
+- Day/night terminator overlay
+- Weather radar overlay (RainViewer) with playback controls
+- Idle orbit camera for selected airports
 
-### Addon Manager
+### Airport Details
 
-- Browse aircraft and scenery from trusted sources
-- One-click install and update
-- Track installed addons and available updates
-- Automatic extraction to correct X-Plane folders
-- Support for ZIP, RAR, and 7z archives
-
-### Airport Visualization
-
-- Runways with surface types, dimensions, and lighting
-- Taxiways, aprons, and pavement areas
-- Runway and taxiway markings
-- Signs, windsocks, and airport boundaries
-- Runway, taxiway, and approach lighting systems
+- Runways with surface types, dimensions, lighting, and markings
+- Taxiways, aprons, and pavement areas with signs
 - Gates and parking positions with heading indicators
+- Helipads, windsocks, and beacons
 
 ### Navigation Data
 
-- VORs, NDBs, DMEs, and ILS/LOC with course lines
-- Waypoints and fixes
+- VOR, NDB, DME, TACAN, and ILS/LOC with course visualization
 - High and low altitude airways
-- Controlled airspace boundaries
-- SID, STAR, and approach procedures with route visualization
+- Controlled airspace boundaries and FIR regions
+- SID, STAR, and approach procedures with route overlay
+- Range rings showing aircraft reach by category (jet, turboprop, GA)
+- X-Plane native data or Navigraph with AIRAC cycle detection
 
-### Weather
+### SimBrief Integration
 
-- Live METAR with decoded wind, visibility, ceiling, clouds, temperature
-- TAF forecasts
-- Flight category display (VFR/MVFR/IFR/LIFR)
+- One-click OFP import with route visualization on the map
+- Fuel breakdown, weight summary, flight times, and nav log
+- Waypoint-by-waypoint navigation with map highlighting
 
 ### Live Traffic
 
-- Real-time VATSIM network overlay
-- Pilot callsigns, aircraft types, and flight info
+- VATSIM and IVAO network overlays with pilot callsigns and aircraft types
+- Controller and ATIS positions
+- Live METAR with decoded weather and flight category display (VFR/MVFR/IFR/LIFR)
 
 ### Flight Launcher
 
-- Aircraft browser with search and filtering
-- Filter by manufacturer or category
-- Favorites system
-- Livery selection with previews
-- Fuel load configuration
-- Time of day with sun position arc
-- Weather presets
-- Start from any gate or runway
-- Direct X-Plane launch
+- Aircraft browser with search, filters, and favorites
+- Livery selection with per-aircraft memory
+- Fuel and payload configuration with weight & balance
+- Time of day, weather presets, and cold & dark start
+- Start from any gate, runway, helipad, or custom pin drop with heading
+- Direct X-Plane launch or mid-flight relocation via REST API
+- Logbook of last 10 flights
 
 ### Live Flight Tracking
 
 - Real-time aircraft position via X-Plane WebSocket API
-- Flight info strip: IAS, GS, ALT, AGL, VS, HDG
-- Auto-center map on aircraft
-- Connection status indicator
+- Flight strip with IAS, GS, altitude, VS, heading, wind, and temperature
+- Follow mode to keep the aircraft centered on the map
 
 ### Multiple Installations
 
-- Automatic detection of X-Plane installations
-- Easy switching between installations (Demo, Steam, etc.)
+- Named X-Plane installations with quick switching
 - Full data reload on installation change
-- Navigraph data detection per installation
+- Version and Steam detection per installation
 
-### Data Sources
+### Addon Manager (Alpha)
 
-- X-Plane native files (apt.dat, earth_nav.dat, earth_fix.dat, earth_awy.dat, CIFP)
-- Navigraph nav data with AIRAC cycle detection
-- ATC frequencies (Navigraph)
-- Airport metadata with transition altitudes
-- Custom scenery airport support
+- Browse aircraft and scenery from trusted sources
+- One-click install with automatic extraction (ZIP, RAR, 7z)
+- Track installed addons and available updates
 
-## How It Works
+### General
 
-1. Point the app to your X-Plane installation
-2. The app parses X-Plane's data files (apt.dat, nav data, CIFP procedures) and caches them
-3. Browse the world map and click any airport
-4. Import your flight plan from SimBrief or load an FMS file
-5. Select a gate or runway, pick your aircraft, configure the flight
-6. Launch X-Plane — or if it's already running, relocate mid-flight
-
-Once flying, connect to X-Plane's WebSocket API to track your aircraft live on the map with speed, altitude, heading, and vertical speed indicators.
-
-For addons, browse the catalog, click install, and the app handles downloading and extracting to the correct folder.
+- Available in 10 languages: English, French, German, Spanish, Italian, Portuguese, Russian, Polish, Japanese, Chinese
+- Light, dark, and system theme
+- Configurable font size
 
 ## Development
 
-### Requirements
-
-- Node.js 20+
-- X-Plane 12.4+
-
-### Setup
-
 ```bash
 npm install
-npm start
+npm start        # dev mode
+npm run make     # build distributables
 ```
 
-### Build
-
-```bash
-npm run make
-```
+Requires Node.js 20+ and X-Plane 12.1+.
 
 ## Support
 
 - **Discord**: [Join the server](https://discord.gg/7QBCNv8B) for help, feedback, and discussion
 - **Issues**: [Open an issue](https://github.com/lyestarzalt/x-dispatch/issues) for bug reports and feature requests
-- **Donate**: If you enjoy X-Dispatch, consider [buying me a coffee on Ko-fi](https://ko-fi.com/lyestarzalt)
+- **Donate**: If you enjoy X-Dispatch, consider [supporting on Ko-fi](https://ko-fi.com/lyestarzalt)
 
 ## License
 
-GPL-3.0 - See [LICENSE](LICENSE) for details.
+GPL-3.0 — See [LICENSE](LICENSE) for details.
