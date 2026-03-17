@@ -141,7 +141,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
           </nav>
 
           {/* Main Content Area */}
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             {/* Content Header with close button */}
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
               <div>
