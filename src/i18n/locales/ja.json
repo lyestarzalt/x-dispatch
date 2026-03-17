@@ -284,7 +284,10 @@
       "fontSizeMedium": "中",
       "fontSizeLarge": "大",
       "idleOrbit": "アイドルオービットカメラ",
-      "idleOrbitDescription": "操作がない時に選択した空港の周りをゆっくり回転"
+      "idleOrbitDescription": "操作がない時に選択した空港の周りをゆっくり回転",
+      "zoomLevel": "インターフェースのズーム",
+      "zoomLevelDescription": "インターフェース全体を拡大・縮小します",
+      "zoomReset": "リセット"
     },
     "navigation": {
       "title": "ナビゲーション",

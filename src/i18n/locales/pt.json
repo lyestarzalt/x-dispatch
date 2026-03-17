@@ -284,7 +284,10 @@
       "fontSizeMedium": "Médio",
       "fontSizeLarge": "Grande",
       "idleOrbit": "Câmera orbital",
-      "idleOrbitDescription": "Rotação lenta ao redor do aeroporto selecionado após inatividade"
+      "idleOrbitDescription": "Rotação lenta ao redor do aeroporto selecionado após inatividade",
+      "zoomLevel": "Zoom da interface",
+      "zoomLevelDescription": "Aumentar ou diminuir toda a interface",
+      "zoomReset": "Redefinir"
     },
     "navigation": {
       "title": "Navegação",

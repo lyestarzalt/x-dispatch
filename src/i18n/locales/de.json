@@ -228,7 +228,10 @@
       "fontSizeMedium": "Mittel",
       "fontSizeLarge": "Groß",
       "idleOrbit": "Orbit-Kamera",
-      "idleOrbitDescription": "Langsame Drehung um den ausgewählten Flughafen nach Inaktivität"
+      "idleOrbitDescription": "Langsame Drehung um den ausgewählten Flughafen nach Inaktivität",
+      "zoomLevel": "Oberflächenzoom",
+      "zoomLevelDescription": "Gesamte Oberfläche vergrößern oder verkleinern",
+      "zoomReset": "Zurücksetzen"
     },
     "navigation": {
       "title": "Navigationsdaten",

@@ -284,7 +284,10 @@
       "fontSizeMedium": "中",
       "fontSizeLarge": "大",
       "idleOrbit": "空闲环绕相机",
-      "idleOrbitDescription": "闲置时缓慢环绕选定机场旋转"
+      "idleOrbitDescription": "闲置时缓慢环绕选定机场旋转",
+      "zoomLevel": "界面缩放",
+      "zoomLevelDescription": "放大或缩小整个界面",
+      "zoomReset": "重置"
     },
     "navigation": {
       "title": "导航",

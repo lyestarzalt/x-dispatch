@@ -189,7 +189,7 @@ export function FlightConfig({
         : 'custom';
 
   return (
-    <div className="flex w-72 min-w-[260px] flex-col border-l border-border/50 bg-card lg:w-80">
+    <div className="flex w-72 min-w-[260px] shrink-0 flex-col border-l border-border/50 bg-card lg:w-80">
       <div className="flex-shrink-0 px-4 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
       </div>

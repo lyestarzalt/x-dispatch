@@ -297,7 +297,10 @@
       "fontSizeMedium": "Medium",
       "fontSizeLarge": "Large",
       "idleOrbit": "Idle orbit camera",
-      "idleOrbitDescription": "Slowly rotate around selected airport after inactivity"
+      "idleOrbitDescription": "Slowly rotate around selected airport after inactivity",
+      "zoomLevel": "Interface Zoom",
+      "zoomLevelDescription": "Scale the entire interface up or down",
+      "zoomReset": "Reset"
     },
     "navigation": {
       "title": "Navigation",

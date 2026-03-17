@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Map, Orbit, Palette, Scale, Type } from 'lucide-react';
+import { Globe, Map, Orbit, Palette, RotateCcw, Scale, Type, ZoomIn } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { changeLanguage, languages } from '@/i18n';
 import type { WeightUnit } from '@/lib/utils/format';
@@ -22,9 +23,62 @@ import type { FontSize } from '@/stores/settingsStore';
 import { MAP_STYLE_PRESETS, MapSettings, useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
 
+function ZoomSlider({
+  zoomLevel,
+  onCommit,
+  resetLabel,
+}: {
+  zoomLevel: number;
+  onCommit: (level: number) => void;
+  resetLabel: string;
+}) {
+  const persisted = Math.round((zoomLevel || 1) * 100);
+  const [preview, setPreview] = useState<number | null>(null);
+  const display = preview ?? persisted;
+
+  return (
+    <CardContent>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-muted-foreground">70%</span>
+        <Slider
+          value={[display]}
+          onValueChange={([v]) => setPreview(v)}
+          onValueCommit={([v]) => {
+            setPreview(null);
+            onCommit(v / 100);
+          }}
+          min={70}
+          max={130}
+          step={10}
+          className="flex-1"
+        />
+        <span className="text-xs text-muted-foreground">130%</span>
+        <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
+        {persisted !== 100 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs text-muted-foreground"
+            onClick={() => onCommit(1.0)}
+          >
+            <RotateCcw className="mr-1 h-3 w-3" />
+            {resetLabel}
+          </Button>
+        )}
+      </div>
+    </CardContent>
+  );
+}
+
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
-  const { map: mapSettings, updateMapSettings, appearance, setFontSize } = useSettingsStore();
+  const {
+    map: mapSettings,
+    updateMapSettings,
+    appearance,
+    setFontSize,
+    setZoomLevel,
+  } = useSettingsStore();
 
   const handleChange = useCallback(
     <K extends keyof MapSettings>(key: K, value: MapSettings[K]) => {
@@ -201,6 +255,22 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
             ))}
           </div>
         </CardContent>
+      </Card>
+
+      {/* Zoom Level */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <ZoomIn className="h-4 w-4" />
+            {t('settings.appearance.zoomLevel')}
+          </CardTitle>
+          <CardDescription>{t('settings.appearance.zoomLevelDescription')}</CardDescription>
+        </CardHeader>
+        <ZoomSlider
+          zoomLevel={appearance.zoomLevel}
+          onCommit={setZoomLevel}
+          resetLabel={t('settings.appearance.zoomReset')}
+        />
       </Card>
 
       {/* Units */}

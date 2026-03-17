@@ -79,6 +79,8 @@ export interface SimBriefSettings {
 
 export interface AppearanceSettings {
   fontSize: FontSize;
+  /** Zoom factor for the entire UI (0.7–1.3, default 1.0) */
+  zoomLevel: number;
 }
 
 export interface LauncherSettings {
@@ -94,6 +96,7 @@ interface SettingsState {
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
   setFontSize: (size: FontSize) => void;
+  setZoomLevel: (level: number) => void;
   resetToDefaults: () => void;
 }
 
@@ -113,7 +116,12 @@ const DEFAULT_SIMBRIEF_SETTINGS: SimBriefSettings = {
 
 const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   fontSize: 'medium',
+  zoomLevel: 1.0,
 };
+
+function applyZoomLevel(level: number) {
+  window.appAPI?.setZoomFactor(level);
+}
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   closeOnLaunch: false,
@@ -144,11 +152,19 @@ export const useSettingsStore = create<SettingsState>()(
 
       setFontSize: (size: FontSize) => {
         applyFontSize(size);
-        set({ appearance: { fontSize: size } });
+        set((state) => ({ appearance: { ...state.appearance, fontSize: size } }));
+      },
+
+      setZoomLevel: (level: number) => {
+        const safe = Number.isFinite(level) ? level : 1.0;
+        const clamped = Math.round(Math.max(70, Math.min(130, safe * 100))) / 100;
+        applyZoomLevel(clamped);
+        set((state) => ({ appearance: { ...state.appearance, zoomLevel: clamped } }));
       },
 
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
+        applyZoomLevel(DEFAULT_APPEARANCE_SETTINGS.zoomLevel);
         set({
           map: DEFAULT_MAP_SETTINGS,
           simbrief: DEFAULT_SIMBRIEF_SETTINGS,
@@ -159,7 +175,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 12,
+      version: 13,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -214,11 +230,24 @@ export const useSettingsStore = create<SettingsState>()(
             },
           };
         }
+        if (version < 13) {
+          // Add zoom level to appearance
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            appearance: {
+              ...state.appearance,
+              zoomLevel: 1.0,
+            },
+          };
+        }
         return persistedState as SettingsState;
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
           applyFontSize(state.appearance.fontSize);
+          const zoom = state.appearance.zoomLevel;
+          applyZoomLevel(Number.isFinite(zoom) ? zoom : 1.0);
         }
       },
     }

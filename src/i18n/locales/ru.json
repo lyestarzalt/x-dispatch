@@ -284,7 +284,10 @@
       "fontSizeMedium": "Средний",
       "fontSizeLarge": "Большой",
       "idleOrbit": "Орбитальная камера",
-      "idleOrbitDescription": "Медленное вращение вокруг выбранного аэропорта после бездействия"
+      "idleOrbitDescription": "Медленное вращение вокруг выбранного аэропорта после бездействия",
+      "zoomLevel": "Масштаб интерфейса",
+      "zoomLevelDescription": "Увеличить или уменьшить весь интерфейс",
+      "zoomReset": "Сбросить"
     },
     "navigation": {
       "title": "Навигация",

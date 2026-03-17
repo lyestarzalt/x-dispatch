@@ -188,7 +188,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   ]);
 
   return (
-    <div className="flex w-[320px] min-w-[280px] flex-col border-r border-border/50 bg-card lg:w-[360px]">
+    <div className="flex w-[320px] min-w-[280px] shrink-0 flex-col border-r border-border/50 bg-card lg:w-[360px]">
       {/* Section Header */}
       <div className="flex-shrink-0 px-3 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.aircraft.title')}</h3>

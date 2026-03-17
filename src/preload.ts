@@ -1,4 +1,4 @@
-import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import { IpcRendererEvent, contextBridge, ipcRenderer, webFrame } from 'electron';
 import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type {
@@ -102,6 +102,8 @@ contextBridge.exposeInMainWorld('appAPI', {
   setSendCrashReports: (enabled: boolean) => ipcRenderer.invoke('app:setSendCrashReports', enabled),
   getXPlaneVersion: () => ipcRenderer.invoke('app:getXPlaneVersion'),
   getTileCacheStats: () => ipcRenderer.invoke('app:getTileCacheStats'),
+  setZoomFactor: (factor: number) => webFrame.setZoomFactor(factor),
+  getZoomFactor: () => webFrame.getZoomFactor(),
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -362,6 +364,8 @@ declare global {
         entryCount: number;
         hitRate: number;
       }>;
+      setZoomFactor: (factor: number) => void;
+      getZoomFactor: () => number;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;
