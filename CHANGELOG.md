@@ -1,6 +1,32 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.5.3 - 2026-03-18
+
+### Bug Fixes
+
+- remove fake DEM tile fallback that warped terrain ([df8fe4e](https://github.com/lyestarzalt/x-dispatch/commit/df8fe4e8e74c73482912fc6e6060192474fbff4b))
+- open dialog defaults to current install FMS plans folder ([deb5a9f](https://github.com/lyestarzalt/x-dispatch/commit/deb5a9fe647cac4bd85b7b0781eeee68de82df21))
+- prevent terrain errors on style change and low zoom ([0c63d73](https://github.com/lyestarzalt/x-dispatch/commit/0c63d7393d13a8d3db2566e72b49208597d155d2))
+- remove minzoom from DEM sources that broke terrain mesh ([68b2f78](https://github.com/lyestarzalt/x-dispatch/commit/68b2f78e8fb5cf0a0c100aaa9994e546c6ee8be9))
+- add min-w-0 to addon manager content area ([4f97176](https://github.com/lyestarzalt/x-dispatch/commit/4f9717668713f713001d7129ed55217c52964e89))
+- replace style.load race condition with getStyle guard ([0627392](https://github.com/lyestarzalt/x-dispatch/commit/06273920c3436f2f9df3937135d05ac45132153a))
+
+### Documentation
+
+- update CHANGELOG.md for v1.5.2 ([26828ca](https://github.com/lyestarzalt/x-dispatch/commit/26828ca2d5afce2c4af73e40ffa4869993467127))
+- rewrite README with complete feature inventory ([91e0a27](https://github.com/lyestarzalt/x-dispatch/commit/91e0a27d600c2175b64150918be4bc431504f772))
+
+### Features
+
+- remember last livery per aircraft ([341e9b5](https://github.com/lyestarzalt/x-dispatch/commit/341e9b527012caf2ef64febf3cd8b1bd80e1745e))
+- add version bump and Discord notification to RC workflow ([eb726e8](https://github.com/lyestarzalt/x-dispatch/commit/eb726e84f29ed1438c1dbd6736c6c337b8acdc3d))
+- add interface zoom control and fix launch dialog layout ([c5764e4](https://github.com/lyestarzalt/x-dispatch/commit/c5764e4deae5af3ab925deddeec91c3b6059c0d7))
+- remember last aircraft per type filter and improve star visibility ([f6ebc5e](https://github.com/lyestarzalt/x-dispatch/commit/f6ebc5e9bd7645bbfeaeaf82811eeb5a9559d5b1))
+
+### Refactor
+
+- use transformStyle to preserve layers across basemap switches ([af2f6c3](https://github.com/lyestarzalt/x-dispatch/commit/af2f6c36ee999ae06a124ef35e36e0d66d8d9dff))
 ## v1.5.2 - 2026-03-16
 
 ### Bug Fixes
