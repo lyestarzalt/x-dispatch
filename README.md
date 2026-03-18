@@ -89,6 +89,27 @@ If you find this useful, consider giving it a star — it helps others discover 
 </details>
 
 <details>
+<summary>Fuel & Payload</summary>
+
+![Fuel Setup](screenshots/fuel-setup.png)
+
+</details>
+
+<details>
+<summary>Weather Setup</summary>
+
+![Weather Setup](screenshots/weather-setup.png)
+
+</details>
+
+<details>
+<summary>3D Terrain</summary>
+
+![3D Terrain](screenshots/3D-terrain.png)
+
+</details>
+
+<details>
 <summary>Live Flight Tracking</summary>
 
 ![Flight Tracking](screenshots/track-plane.png)
