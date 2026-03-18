@@ -92,7 +92,7 @@ function AircraftListItem({
         size="icon"
         className={cn(
           'h-7 w-7 shrink-0',
-          isFavorite ? 'text-warning' : 'text-muted-foreground/30 hover:text-muted-foreground'
+          isFavorite ? 'text-warning' : 'text-muted-foreground/50 hover:text-muted-foreground'
         )}
         onClick={(e) => {
           e.stopPropagation();

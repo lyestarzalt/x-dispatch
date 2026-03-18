@@ -45,6 +45,9 @@ interface LaunchState {
   // Last selected livery per aircraft path (persisted)
   lastLiveryByAircraft: Record<string, string>;
 
+  // Last selected aircraft per type filter (persisted)
+  lastAircraftByType: Record<string, string>;
+
   // Favorites (persisted to localStorage)
   favorites: string[];
 
@@ -113,6 +116,7 @@ export const useLaunchStore = create<LaunchState>()(
       ...DEFAULT_CONFIG,
       logbook: [],
       lastLiveryByAircraft: {},
+      lastAircraftByType: {},
       favorites: [],
 
       addLogbookEntry: (entry) =>
@@ -130,16 +134,23 @@ export const useLaunchStore = create<LaunchState>()(
       setWeatherConfig: (config) => set({ weatherConfig: config }),
 
       selectAircraft: (aircraft) =>
-        set((state) => ({
-          selectedAircraftPath: aircraft?.path ?? null,
-          selectedAircraft: aircraft,
-          selectedLivery: (aircraft && state.lastLiveryByAircraft[aircraft.path]) || 'Default',
-          tankPercentages: aircraft ? new Array((aircraft.tankNames ?? []).length).fill(50) : [],
-          payloadWeights: aircraft
-            ? new Array((aircraft.payloadStations ?? []).length).fill(0)
-            : [],
-          launchError: null,
-        })),
+        set((state) => {
+          const lastAircraftByType = { ...state.lastAircraftByType };
+          if (aircraft && state.filterAircraftType) {
+            lastAircraftByType[state.filterAircraftType] = aircraft.path;
+          }
+          return {
+            selectedAircraftPath: aircraft?.path ?? null,
+            selectedAircraft: aircraft,
+            selectedLivery: (aircraft && state.lastLiveryByAircraft[aircraft.path]) || 'Default',
+            tankPercentages: aircraft ? new Array((aircraft.tankNames ?? []).length).fill(50) : [],
+            payloadWeights: aircraft
+              ? new Array((aircraft.payloadStations ?? []).length).fill(0)
+              : [],
+            lastAircraftByType,
+            launchError: null,
+          };
+        }),
 
       hydrateAircraft: (aircraft) =>
         set((state) => {
@@ -335,7 +346,16 @@ export const useLaunchStore = create<LaunchState>()(
       setSearchQuery: (value) => set({ searchQuery: value }),
       setFilterCategory: (value) => set({ filterCategory: value }),
       setFilterManufacturer: (value) => set({ filterManufacturer: value }),
-      setFilterAircraftType: (value) => set({ filterAircraftType: value }),
+      setFilterAircraftType: (value) =>
+        set((state) => {
+          const lastPath = state.lastAircraftByType[value];
+          return {
+            filterAircraftType: value,
+            // Restore last selected aircraft for this filter; clear selectedAircraft
+            // so the hydration effect in LaunchDialog re-runs with the new path
+            ...(lastPath ? { selectedAircraftPath: lastPath, selectedAircraft: null } : {}),
+          };
+        }),
       setFilterEngineType: (value) => set({ filterEngineType: value }),
       setShowFavoritesOnly: (value) => set({ showFavoritesOnly: value }),
 
@@ -357,6 +377,7 @@ export const useLaunchStore = create<LaunchState>()(
       partialize: (state) => ({
         logbook: state.logbook,
         lastLiveryByAircraft: state.lastLiveryByAircraft,
+        lastAircraftByType: state.lastAircraftByType,
         favorites: state.favorites,
         selectedAircraftPath: state.selectedAircraftPath,
         selectedLivery: state.selectedLivery,
@@ -493,9 +514,14 @@ export const useLaunchStore = create<LaunchState>()(
           if (!('lastLiveryByAircraft' in state)) state.lastLiveryByAircraft = {};
         }
 
+        // v8 → v9: add lastAircraftByType
+        if (version < 9) {
+          if (!('lastAircraftByType' in state)) state.lastAircraftByType = {};
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 8,
+      version: 9,
     }
   )
 );
