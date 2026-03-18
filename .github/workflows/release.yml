@@ -123,28 +123,26 @@ jobs:
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for ${{ needs.version.outputs.tag }}"
           git push
 
-      - name: Compose release body
-        id: body
+      - name: Write release body
+        env:
+          CHANGELOG: ${{ steps.changelog.outputs.content }}
         run: |
-          EOF_MARKER=$(openssl rand -hex 16)
           {
-            echo "body<<$EOF_MARKER"
-            echo '${{ steps.changelog.outputs.content }}'
+            printf '%s\n' "$CHANGELOG"
             echo ""
             echo "---"
             echo ""
             echo "If you find this useful, consider giving it a :star:, it helps others discover the project."
             echo ""
             echo "> :apple: **macOS Users:** Please read the [installation instructions](https://github.com/${{ github.repository }}#readme) before opening the app."
-            echo "$EOF_MARKER"
-          } >> "$GITHUB_OUTPUT"
+          } > release-body.md
 
       - name: Update release with changelog
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.version.outputs.tag }}
           draft: false
-          body: ${{ steps.body.outputs.body }}
+          body_path: release-body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
