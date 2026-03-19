@@ -784,6 +784,7 @@
   "addonManager": {
     "title": "Menedżer dodatków",
     "openXPlaneFolder": "Otwórz folder X-Plane",
+    "rescan": "Przeskanuj ponownie",
     "tabs": {
       "scenery": "Kolejność scenerii",
       "installed": "Dodatki",

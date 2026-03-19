@@ -46,6 +46,8 @@ export function BrowserTab() {
     data: aircraft = [],
     isLoading: aircraftLoading,
     error: aircraftError,
+    refetch: refetchAircraft,
+    isFetching: aircraftFetching,
   } = useAircraftList();
   const aircraftToggle = useAircraftToggle();
   const aircraftDelete = useAircraftDelete();
@@ -53,7 +55,13 @@ export function BrowserTab() {
   const aircraftCheckUpdates = useAircraftCheckUpdates();
 
   // Plugin queries
-  const { data: plugins = [], isLoading: pluginsLoading, error: pluginsError } = usePluginList();
+  const {
+    data: plugins = [],
+    isLoading: pluginsLoading,
+    error: pluginsError,
+    refetch: refetchPlugins,
+    isFetching: pluginsFetching,
+  } = usePluginList();
   const pluginToggle = usePluginToggle();
   const pluginDelete = usePluginDelete();
   const pluginLock = usePluginLock();
@@ -198,6 +206,22 @@ export function BrowserTab() {
           >
             {checkingUpdates ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
             {t('addonManager.installed.checkUpdates')}
+          </Button>
+
+          {/* Rescan */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              refetchAircraft();
+              refetchPlugins();
+            }}
+            disabled={aircraftFetching || pluginsFetching}
+            tooltip={t('addonManager.rescan')}
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${aircraftFetching || pluginsFetching ? 'animate-spin' : ''}`}
+            />
           </Button>
         </div>
       </div>

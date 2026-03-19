@@ -703,6 +703,7 @@
   "addonManager": {
     "title": "Gestionnaire d'addons",
     "openXPlaneFolder": "Ouvrir le dossier X-Plane",
+    "rescan": "Rescanner les fichiers",
     "tabs": {
       "scenery": "Ordre des scènes",
       "installed": "Extensions",

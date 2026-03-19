@@ -784,6 +784,7 @@
   "addonManager": {
     "title": "アドオンマネージャー",
     "openXPlaneFolder": "X-Planeフォルダを開く",
+    "rescan": "再スキャン",
     "tabs": {
       "scenery": "シーナリー順序",
       "installed": "アドオン",

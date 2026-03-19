@@ -784,6 +784,7 @@
   "addonManager": {
     "title": "Gerenciador de Addons",
     "openXPlaneFolder": "Abrir pasta X-Plane",
+    "rescan": "Reescanear arquivos",
     "tabs": {
       "scenery": "Ordem de Cenários",
       "installed": "Complementos",

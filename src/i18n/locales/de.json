@@ -703,6 +703,7 @@
   "addonManager": {
     "title": "Addon-Manager",
     "openXPlaneFolder": "X-Plane Ordner öffnen",
+    "rescan": "Dateien neu scannen",
     "tabs": {
       "scenery": "Szenerie-Reihenfolge",
       "installed": "Addons",

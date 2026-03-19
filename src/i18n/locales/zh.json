@@ -784,6 +784,7 @@
   "addonManager": {
     "title": "插件管理器",
     "openXPlaneFolder": "打开 X-Plane 文件夹",
+    "rescan": "重新扫描",
     "tabs": {
       "scenery": "场景顺序",
       "installed": "附加组件",

@@ -784,6 +784,7 @@
   "addonManager": {
     "title": "Gestore addon",
     "openXPlaneFolder": "Apri cartella X-Plane",
+    "rescan": "Scansiona di nuovo",
     "tabs": {
       "scenery": "Ordine scenari",
       "installed": "Componenti",

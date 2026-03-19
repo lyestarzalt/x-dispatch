@@ -16,7 +16,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { AlertCircle, History, Save, ShieldCheck, ShieldOff, Sparkles } from 'lucide-react';
+import {
+  AlertCircle,
+  History,
+  RefreshCw,
+  Save,
+  ShieldCheck,
+  ShieldOff,
+  Sparkles,
+} from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,7 +51,13 @@ import { SortableSceneryEntry } from '../components/SceneryEntry';
 
 export function SceneryTab() {
   const { t } = useTranslation();
-  const { data: entries = [], isLoading, error } = useSceneryList();
+  const {
+    data: entries = [],
+    isLoading,
+    error,
+    refetch: refetchScenery,
+    isFetching,
+  } = useSceneryList();
   const sortMutation = useScenerySort();
   const saveOrderMutation = useScenarySaveOrder();
   const toggleMutation = useSceneryToggle();
@@ -220,6 +234,18 @@ export function SceneryTab() {
           >
             {sortMutation.isPending ? <Spinner /> : <Sparkles className="h-4 w-4" />}
             {t('addonManager.scenery.autoSort')}
+          </Button>
+
+          {/* Rescan */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetchScenery()}
+            disabled={isFetching}
+            className="gap-2 text-muted-foreground"
+            tooltip={t('addonManager.rescan')}
+          >
+            <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           </Button>
 
           {/* Backups */}
