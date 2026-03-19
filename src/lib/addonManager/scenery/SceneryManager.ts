@@ -40,13 +40,11 @@ export class SceneryManager {
     // Filter out *GLOBAL_AIRPORTS* for processing
     const iniEntries = parseResult.value.filter((e) => !e.isGlobalAirports);
 
-    // Scan and classify each folder, skip entries whose folder no longer exists.
-    // X-Plane rebuilds scenery_packs.ini on next launch, so stale entries are harmless.
+    // Scan and classify each folder
     const entries: SceneryEntry[] = [];
 
     for (let i = 0; i < iniEntries.length; i++) {
       const iniEntry = iniEntries[i];
-      if (!fs.existsSync(iniEntry.fullPath)) continue;
       const entry = this.processEntry(iniEntry, i);
       entries.push(entry);
     }
