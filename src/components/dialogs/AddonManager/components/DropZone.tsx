@@ -4,11 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { FolderOpen, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 
-// Electron extends File with a path property for local files
-interface ElectronFile extends File {
-  path: string;
-}
-
 interface DropZoneProps {
   onFilesDropped: (paths: string[]) => void;
   disabled?: boolean;
@@ -41,11 +36,16 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
 
       if (disabled) return;
 
-      const files = Array.from(e.dataTransfer.files) as ElectronFile[];
-      // Only take the first file for single-item installation
-      const path = files[0]?.path;
-      if (path) {
-        onFilesDropped([path]);
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      // Use Electron's webUtils API to get file path (works with sandbox: true)
+      try {
+        const filePath = window.appAPI.getFilePathForDrop(file);
+        if (filePath) {
+          onFilesDropped([filePath]);
+        }
+      } catch {
+        // Non-local file dropped (e.g., from browser) — ignore
       }
     },
     [disabled, onFilesDropped]
