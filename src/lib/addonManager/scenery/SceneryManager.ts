@@ -40,13 +40,40 @@ export class SceneryManager {
     // Filter out *GLOBAL_AIRPORTS* for processing
     const iniEntries = parseResult.value.filter((e) => !e.isGlobalAirports);
 
-    // Scan and classify each folder
+    // Scan and classify each folder, track stale entries
     const entries: SceneryEntry[] = [];
+    const staleNames = new Set<string>();
 
     for (let i = 0; i < iniEntries.length; i++) {
       const iniEntry = iniEntries[i];
+      if (!fs.existsSync(iniEntry.fullPath)) {
+        staleNames.add(iniEntry.folderName);
+        continue;
+      }
       const entry = this.processEntry(iniEntry, i);
       entries.push(entry);
+    }
+
+    // Remove stale entries from scenery_packs.ini (backup first)
+    if (staleNames.size > 0) {
+      try {
+        const backupResult = backupSceneryPacksIni(this.iniPath, this.backupDir);
+        if (backupResult.ok) {
+          const cleanedLines = fs
+            .readFileSync(this.iniPath, 'utf-8')
+            .split('\n')
+            .filter((line) => {
+              const trimmed = line.trim();
+              for (const name of staleNames) {
+                if (trimmed.includes(`/${name}/`)) return false;
+              }
+              return true;
+            });
+          fs.writeFileSync(this.iniPath, cleanedLines.join('\n'), 'utf-8');
+        }
+      } catch {
+        // Non-critical — stale entries will be cleaned up on next X-Plane launch
+      }
     }
 
     // Return in INI file order - don't auto-sort
