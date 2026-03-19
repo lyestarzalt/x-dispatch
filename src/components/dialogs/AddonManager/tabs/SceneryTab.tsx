@@ -16,15 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {
-  AlertCircle,
-  History,
-  RefreshCw,
-  Save,
-  ShieldCheck,
-  ShieldOff,
-  Sparkles,
-} from 'lucide-react';
+import { AlertCircle, History, RefreshCw, Save, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +28,6 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
 import { cn } from '@/lib/utils/helpers';
 import {
@@ -67,7 +58,6 @@ export function SceneryTab() {
   const [localEntries, setLocalEntries] = useState<SceneryEntry[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showBackups, setShowBackups] = useState(false);
-  const [safeMode, setSafeMode] = useState(true);
 
   // Sync local state when remote data changes
   useEffect(() => {
@@ -101,9 +91,9 @@ export function SceneryTab() {
       const oldIndex = localEntries.findIndex((e) => e.folderName === active.id);
       const newIndex = localEntries.findIndex((e) => e.folderName === over.id);
 
-      // In safe mode, only allow reorder within same priority tier
-      if (safeMode && localEntries[oldIndex].priority !== localEntries[newIndex].priority) {
-        return; // Block cross-category drag in safe mode
+      // Only allow reorder within the same priority tier
+      if (localEntries[oldIndex].priority !== localEntries[newIndex].priority) {
+        return;
       }
 
       setLocalEntries(arrayMove(localEntries, oldIndex, newIndex));
@@ -166,63 +156,40 @@ export function SceneryTab() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Stats Bar */}
-      <div className="flex items-center justify-between border-b border-border bg-card/30 px-4 py-3">
-        <div className="flex items-center gap-6">
-          {/* Total count */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold tabular-nums text-foreground">{stats.total}</span>
-            <span className="text-sm text-muted-foreground">{t('addonManager.scenery.total')}</span>
-          </div>
-
-          {/* Enabled/Disabled */}
-          <div className="flex items-center gap-4 border-l border-border pl-6">
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-success" />
-              <span className="text-sm tabular-nums text-muted-foreground">{stats.enabled}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-              <span className="text-sm tabular-nums text-muted-foreground">{stats.disabled}</span>
-            </div>
-          </div>
-
-          {/* Unsaved indicator */}
+      {/* Toolbar */}
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        {/* Left: stats + status */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            <span className="font-mono tabular-nums text-foreground">{stats.total}</span>
+            {' · '}
+            <span className="text-success">{stats.enabled}</span>
+            {' / '}
+            <span>{stats.disabled}</span>
+          </span>
           {hasUnsavedChanges && (
-            <div className="flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1">
-              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
-              <span className="text-xs font-medium text-warning">
-                {t('addonManager.scenery.unsavedChanges')}
-              </span>
-            </div>
+            <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
+              {t('addonManager.scenery.unsavedChanges')}
+            </span>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Safe mode toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={safeMode ? 'outline' : 'destructive'}
-                size="sm"
-                onClick={() => setSafeMode(!safeMode)}
-                className={cn('gap-2', safeMode && 'border-success/50 text-success')}
-              >
-                {safeMode ? <ShieldCheck className="h-4 w-4" /> : <ShieldOff className="h-4 w-4" />}
-                {safeMode
-                  ? t('addonManager.scenery.safeMode')
-                  : t('addonManager.scenery.unsafeMode')}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-[280px]">
-              <p className="text-sm">
-                {safeMode
-                  ? t('addonManager.scenery.safeModeOn')
-                  : t('addonManager.scenery.safeModeOff')}
-              </p>
-            </TooltipContent>
-          </Tooltip>
+        {/* Right: actions */}
+        <div className="flex items-center gap-1.5">
+          {/* Save — primary when dirty */}
+          {hasUnsavedChanges && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSaveOrder}
+              disabled={isPending}
+              className="mr-1 gap-1.5"
+            >
+              {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-3.5 w-3.5" />}
+              {t('addonManager.scenery.saveOrder')}
+            </Button>
+          )}
 
           {/* Auto-sort */}
           <Button
@@ -230,54 +197,34 @@ export function SceneryTab() {
             size="sm"
             onClick={handleAutoSort}
             disabled={isPending}
-            className="gap-2"
+            className="gap-1.5"
           >
-            {sortMutation.isPending ? <Spinner /> : <Sparkles className="h-4 w-4" />}
+            {sortMutation.isPending ? <Spinner /> : <Sparkles className="h-3.5 w-3.5" />}
             {t('addonManager.scenery.autoSort')}
           </Button>
 
-          {/* Rescan */}
+          {/* Rescan & Backups */}
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => refetchScenery()}
             disabled={isFetching}
-            className="gap-2 text-muted-foreground"
+            className="h-8 w-8 text-muted-foreground"
             tooltip={t('addonManager.rescan')}
           >
             <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
           </Button>
 
-          {/* Backups */}
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => setShowBackups(true)}
-            className="gap-2 text-muted-foreground"
+            className="h-8 w-8 text-muted-foreground"
+            tooltip={t('addonManager.scenery.backupsTitle')}
           >
             <History className="h-4 w-4" />
-            {backups.length}
           </Button>
-
-          {/* Save */}
-          {hasUnsavedChanges && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSaveOrder}
-              disabled={isPending}
-              className="gap-2"
-            >
-              {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-4 w-4" />}
-              {t('addonManager.scenery.saveOrder')}
-            </Button>
-          )}
         </div>
-      </div>
-
-      {/* Order info */}
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <p className="text-sm text-muted-foreground">{t('addonManager.scenery.priorityHint')}</p>
       </div>
 
       {/* Scenery list - flat, no groups */}
