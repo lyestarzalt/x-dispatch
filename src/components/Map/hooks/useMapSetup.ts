@@ -192,22 +192,13 @@ export function useMapSetup({
 
 export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
   const COLOR_DEFAULT = '#4a90d9';
+  const COLOR_CUSTOM = '#e8c36a';
 
-  // Create pin beacon SVG for custom airports
-  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
-    <defs>
-      <linearGradient id="pinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style="stop-color:#ffb347"/>
-        <stop offset="100%" style="stop-color:#e67e22"/>
-      </linearGradient>
-      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="1.5" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <path d="M12 0C6.5 0 2 4.5 2 10c0 7.4 10 20 10 20s10-12.6 10-20c0-5.5-4.5-10-10-10z"
-          fill="url(#pinGrad)" stroke="#c0392b" stroke-width="1" filter="url(#glow)"/>
-    <circle cx="12" cy="10" r="4" fill="#fff" opacity="0.9"/>
+  // Clean pin marker for custom airports — uses --warning amber token (#d4a017)
+  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 20 28">
+    <path d="M10 0C4.5 0 0 4.5 0 10c0 7 10 18 10 18s10-11 10-18C20 4.5 15.5 0 10 0z"
+          fill="#d4a017" stroke="rgba(255,255,255,0.8)" stroke-width="1.2"/>
+    <circle cx="10" cy="10" r="2.5" fill="#fff" opacity="0.95"/>
   </svg>`;
 
   const pinImage = new Image();
@@ -241,7 +232,7 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
   const filterCustom: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 1];
   const filterDefault: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 0];
 
-  // === CUSTOM AIRPORTS: Pin beacon icon ===
+  // === CUSTOM AIRPORTS: Clean gold pin marker ===
   map.addLayer({
     id: 'airports-custom',
     type: 'symbol',
@@ -249,7 +240,7 @@ export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
     filter: filterCustom,
     layout: {
       'icon-image': 'custom-pin',
-      'icon-size': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 4, 0.6, 8, 0.8, 12, 1],
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 0, 0.35, 4, 0.5, 8, 0.7, 12, 0.85],
       'icon-anchor': 'bottom',
       'icon-allow-overlap': true,
     },
