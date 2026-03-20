@@ -785,6 +785,9 @@
     "title": "Gestor de addons",
     "openXPlaneFolder": "Abrir carpeta X-Plane",
     "rescan": "Reescanear archivos",
+    "rescanFound": "Se encontraron {{count}} elemento(s) nuevo(s)",
+    "rescanRemoved": "Se eliminaron {{count}} elemento(s)",
+    "rescanNoChanges": "No se detectaron cambios",
     "tabs": {
       "scenery": "Orden de escenarios",
       "installed": "Complementos",

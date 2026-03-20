@@ -1,5 +1,5 @@
 // src/components/dialogs/AddonManager/tabs/SceneryTab.tsx
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -16,7 +16,8 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { AlertCircle, History, RefreshCw, Save, Sparkles } from 'lucide-react';
+import { AlertCircle, Check, History, RefreshCw, Save, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -203,11 +204,23 @@ export function SceneryTab() {
             {t('addonManager.scenery.autoSort')}
           </Button>
 
-          {/* Rescan & Backups */}
+          {/* Rescan */}
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => refetchScenery()}
+            onClick={async () => {
+              const before = entries.length;
+              const { data } = await refetchScenery();
+              const after = data?.length ?? before;
+              const diff = after - before;
+              if (diff > 0) {
+                toast.success(t('addonManager.rescanFound', { count: diff }));
+              } else if (diff < 0) {
+                toast.success(t('addonManager.rescanRemoved', { count: Math.abs(diff) }));
+              } else {
+                toast(t('addonManager.rescanNoChanges'), { icon: <Check className="h-4 w-4" /> });
+              }
+            }}
             disabled={isFetching}
             className="h-8 w-8 text-muted-foreground"
             tooltip={t('addonManager.rescan')}

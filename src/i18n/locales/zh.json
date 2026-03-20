@@ -785,6 +785,9 @@
     "title": "插件管理器",
     "openXPlaneFolder": "打开 X-Plane 文件夹",
     "rescan": "重新扫描",
+    "rescanFound": "发现{{count}}个新项目",
+    "rescanRemoved": "移除了{{count}}个项目",
+    "rescanNoChanges": "未检测到变更",
     "tabs": {
       "scenery": "场景顺序",
       "installed": "附加组件",
