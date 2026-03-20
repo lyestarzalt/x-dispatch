@@ -2,7 +2,8 @@
 // Shows installed addons - Aircraft and Plugins with tabs (Plugins first)
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Plane, Plug, RefreshCw, Search } from 'lucide-react';
+import { AlertCircle, Check, Plane, Plug, RefreshCw, Search } from 'lucide-react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -212,9 +213,20 @@ export function BrowserTab() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              refetchAircraft();
-              refetchPlugins();
+            onClick={async () => {
+              const beforeAc = aircraft.length;
+              const beforePl = plugins.length;
+              const [acResult, plResult] = await Promise.all([refetchAircraft(), refetchPlugins()]);
+              const afterAc = acResult.data?.length ?? beforeAc;
+              const afterPl = plResult.data?.length ?? beforePl;
+              const diff = afterAc + afterPl - beforeAc - beforePl;
+              if (diff > 0) {
+                toast.success(t('addonManager.rescanFound', { count: diff }));
+              } else if (diff < 0) {
+                toast.success(t('addonManager.rescanRemoved', { count: Math.abs(diff) }));
+              } else {
+                toast(t('addonManager.rescanNoChanges'), { icon: <Check className="h-4 w-4" /> });
+              }
             }}
             disabled={aircraftFetching || pluginsFetching}
             tooltip={t('addonManager.rescan')}

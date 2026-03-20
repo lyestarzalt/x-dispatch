@@ -785,6 +785,9 @@
     "title": "アドオンマネージャー",
     "openXPlaneFolder": "X-Planeフォルダを開く",
     "rescan": "再スキャン",
+    "rescanFound": "{{count}}件の新しい項目を検出",
+    "rescanRemoved": "{{count}}件の項目を削除",
+    "rescanNoChanges": "変更は検出されませんでした",
     "tabs": {
       "scenery": "シーナリー順序",
       "installed": "アドオン",

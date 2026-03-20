@@ -785,6 +785,9 @@
     "title": "Менеджер дополнений",
     "openXPlaneFolder": "Открыть папку X-Plane",
     "rescan": "Пересканировать файлы",
+    "rescanFound": "Найдено элементов: {{count}}",
+    "rescanRemoved": "Удалено элементов: {{count}}",
+    "rescanNoChanges": "Изменений не обнаружено",
     "tabs": {
       "scenery": "Порядок сценариев",
       "installed": "Дополнения",

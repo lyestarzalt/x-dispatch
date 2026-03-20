@@ -785,6 +785,9 @@
     "title": "Gestore addon",
     "openXPlaneFolder": "Apri cartella X-Plane",
     "rescan": "Scansiona di nuovo",
+    "rescanFound": "Trovati {{count}} nuovo/i elemento/i",
+    "rescanRemoved": "Rimossi {{count}} elemento/i",
+    "rescanNoChanges": "Nessun cambiamento rilevato",
     "tabs": {
       "scenery": "Ordine scenari",
       "installed": "Componenti",

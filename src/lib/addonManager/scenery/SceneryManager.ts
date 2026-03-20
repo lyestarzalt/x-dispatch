@@ -76,6 +76,52 @@ export class SceneryManager {
       }
     }
 
+    // Detect folders in Custom Scenery/ that aren't in the INI yet
+    // (manually added by the user outside XD — mirrors X-Plane's behavior on launch)
+    const knownFolders = new Set(iniEntries.map((e) => e.folderName));
+    staleNames.forEach((name) => knownFolders.add(name)); // don't re-add removed ones
+    let addedNew = false;
+
+    try {
+      if (fs.existsSync(this.customSceneryPath)) {
+        const dirEntries = fs.readdirSync(this.customSceneryPath, { withFileTypes: true });
+        for (const dirEntry of dirEntries) {
+          if (!dirEntry.isDirectory() && !dirEntry.isSymbolicLink()) continue;
+          if (knownFolders.has(dirEntry.name)) continue;
+          // Skip hidden folders and common non-scenery dirs
+          if (dirEntry.name.startsWith('.') || dirEntry.name === '__MACOSX') continue;
+
+          const fullPath = path.join(this.customSceneryPath, dirEntry.name);
+          const iniEntry = {
+            folderName: dirEntry.name,
+            fullPath,
+            enabled: true,
+            isGlobalAirports: false,
+            originalLine: '',
+          };
+          const entry = this.processEntry(iniEntry, entries.length);
+          entries.push(entry);
+          addedNew = true;
+        }
+      }
+    } catch {
+      // Non-critical — new folders will be picked up by X-Plane on next launch
+    }
+
+    // Write newly discovered folders to the INI so they persist
+    if (addedNew) {
+      try {
+        if (staleNames.size === 0) {
+          // Only backup if we haven't already (stale cleanup does its own backup)
+          backupSceneryPacksIni(this.iniPath, this.backupDir);
+        }
+        const hasGlobalAirports = parseResult.value.some((e) => e.isGlobalAirports);
+        writeSceneryPacksIni(this.iniPath, entries, hasGlobalAirports);
+      } catch {
+        // Non-critical
+      }
+    }
+
     // Return in INI file order - don't auto-sort
     return ok(entries);
   }
