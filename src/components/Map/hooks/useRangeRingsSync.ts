@@ -15,6 +15,7 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
   const rangeRingsEnabled = useMapStore((s) => s.rangeRingsEnabled);
   const rangeRingsDuration = useMapStore((s) => s.rangeRingsDuration);
   const rangeRingsCategories = useMapStore((s) => s.rangeRingsCategories);
+  const setRangeRingsDuration = useMapStore((s) => s.setRangeRingsDuration);
 
   // Use primitive values so airport switches always trigger recalculation
   const centerLat = navDataLocation?.latitude ?? null;
@@ -54,7 +55,7 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
     const addLayer = () => {
       if (!mapRef.current) return;
       try {
-        addRangeRingsLayer(map, config);
+        addRangeRingsLayer(map, config, setRangeRingsDuration);
       } catch (err) {
         window.appAPI?.log?.error?.('Failed to add range rings layer', err);
       }
@@ -73,5 +74,5 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
     return () => {
       removeRangeRingsLayer(map);
     };
-  }, [mapRef, config]);
+  }, [mapRef, config, setRangeRingsDuration]);
 }
