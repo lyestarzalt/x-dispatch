@@ -1,7 +1,8 @@
 /**
  * Range Rings Layer
  *
- * Renders aircraft-category reach circles as clean dashed lines
+ * Renders aircraft-category reach circles with labels embedded along the ring line.
+ * Uses MapLibre symbol-placement: 'line' (same technique as contour elevation labels).
  */
 import maplibregl from 'maplibre-gl';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
@@ -22,16 +23,11 @@ export interface RangeRingsConfig {
 // Constants
 // ============================================================================
 
-const RING_LAYER_ID = 'range-rings-line';
+const RING_LINE_LAYER_ID = 'range-rings-line';
+const RING_LABEL_LAYER_ID = 'range-rings-labels';
 const RING_SOURCE_ID = 'range-rings-source';
 
-export const RANGE_RINGS_LAYER_IDS = [RING_LAYER_ID];
-
-// ============================================================================
-// Module State
-// ============================================================================
-
-let markers: maplibregl.Marker[] = [];
+export const RANGE_RINGS_LAYER_IDS = [RING_LINE_LAYER_ID, RING_LABEL_LAYER_ID];
 
 // ============================================================================
 // Geometry
@@ -62,72 +58,13 @@ function createRingsGeoJSON(config: RangeRingsConfig): GeoJSON.FeatureCollection
         type: 'LineString',
         coordinates: generateCircleCoords(config.centerLat, config.centerLon, radiusNm),
       },
-      properties: { color: cat.color },
+      properties: {
+        color: cat.color,
+        label: `${cat.label} · ${Math.round(radiusNm)}nm · ${config.durationHours}h`,
+      },
     });
   }
   return { type: 'FeatureCollection', features };
-}
-
-// ============================================================================
-// Labels
-// ============================================================================
-
-let cssInjected = false;
-function injectCSS(): void {
-  if (cssInjected) return;
-  cssInjected = true;
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes range-label-in {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-function createLabelElement(color: string, label: string, radiusNm: number): HTMLDivElement {
-  const el = document.createElement('div');
-  el.style.cssText = `
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 1px 6px;
-    border-radius: 2px;
-    background: oklch(var(--popover) / 0.85);
-    backdrop-filter: blur(4px);
-    border: 1px solid ${color}33;
-    font-size: 10px;
-    font-family: ui-monospace, SFMono-Regular, monospace;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    opacity: 0;
-    animation: range-label-in 0.3s ease-out 0.1s forwards;
-  `;
-  el.innerHTML =
-    `<span style="color:${color}; font-weight: 600;">${label}</span>` +
-    `<span style="color: oklch(var(--muted-foreground)); font-weight: 400;">${Math.round(radiusNm)}nm</span>`;
-  return el;
-}
-
-function addMarkers(map: maplibregl.Map, config: RangeRingsConfig): void {
-  removeMarkers();
-  for (const cat of config.categories) {
-    const radiusNm = cat.speed * config.durationHours;
-    const radiusMeters = nauticalMilesToMeters(radiusNm) as number;
-    const [lon, lat] = destinationPoint(config.centerLat, config.centerLon, radiusMeters, 45);
-    const el = createLabelElement(cat.color, cat.label, radiusNm);
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom-left' })
-      .setLngLat([lon, lat])
-      .addTo(map);
-    markers.push(marker);
-  }
-}
-
-function removeMarkers(): void {
-  for (const m of markers) m.remove();
-  markers = [];
 }
 
 // ============================================================================
@@ -140,29 +77,48 @@ export function addRangeRingsLayer(map: maplibregl.Map, config: RangeRingsConfig
   removeRangeRingsLayer(map);
   if (config.categories.length === 0) return;
 
-  injectCSS();
-
   map.addSource(RING_SOURCE_ID, { type: 'geojson', data: createRingsGeoJSON(config) });
 
+  // Ring lines — dashed, colored per category
   map.addLayer({
-    id: RING_LAYER_ID,
+    id: RING_LINE_LAYER_ID,
     type: 'line',
     source: RING_SOURCE_ID,
     paint: {
       'line-color': ['get', 'color'],
-      'line-width': 1,
-      'line-opacity': 0.6,
+      'line-width': 1.2,
+      'line-opacity': 0.5,
       'line-dasharray': [6, 4],
     },
   });
 
-  addMarkers(map, config);
+  // Labels along the ring line — category, distance, duration
+  map.addLayer({
+    id: RING_LABEL_LAYER_ID,
+    type: 'symbol',
+    source: RING_SOURCE_ID,
+    layout: {
+      'symbol-placement': 'line',
+      'symbol-spacing': 400,
+      'text-field': ['get', 'label'],
+      'text-font': ['Open Sans Regular'],
+      'text-size': 11,
+      'text-letter-spacing': 0.05,
+      'text-allow-overlap': false,
+    },
+    paint: {
+      'text-color': ['get', 'color'],
+      'text-halo-color': 'rgba(0, 0, 0, 0.8)',
+      'text-halo-width': 1.5,
+      'text-opacity': 0.8,
+    },
+  });
 }
 
 export function removeRangeRingsLayer(map: maplibregl.Map): void {
-  removeMarkers();
   try {
-    if (map.getLayer(RING_LAYER_ID)) map.removeLayer(RING_LAYER_ID);
+    if (map.getLayer(RING_LABEL_LAYER_ID)) map.removeLayer(RING_LABEL_LAYER_ID);
+    if (map.getLayer(RING_LINE_LAYER_ID)) map.removeLayer(RING_LINE_LAYER_ID);
     if (map.getSource(RING_SOURCE_ID)) map.removeSource(RING_SOURCE_ID);
   } catch {
     // Silently ignore if map is in a bad state
