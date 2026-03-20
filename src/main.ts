@@ -1192,6 +1192,18 @@ function registerIpcHandlers() {
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
 
+// Prevent multiple instances — focus existing window if second instance launches
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
+
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
+
 app.whenReady().then(async () => {
   // Environment snapshot for production support
   const displays = screen.getAllDisplays();
