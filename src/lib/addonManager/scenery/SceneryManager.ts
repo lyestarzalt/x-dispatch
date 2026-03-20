@@ -108,21 +108,23 @@ export class SceneryManager {
       // Non-critical — new folders will be picked up by X-Plane on next launch
     }
 
-    // Write newly discovered folders to the INI so they persist
+    // Write newly discovered folders to the INI, sorted into correct priority position
     if (addedNew) {
       try {
         if (staleNames.size === 0) {
-          // Only backup if we haven't already (stale cleanup does its own backup)
           backupSceneryPacksIni(this.iniPath, this.backupDir);
         }
+        // Sort so new entries land in the correct tier (airports before GLOBAL_AIRPORTS, etc.)
+        const sorted = this.sort(entries);
         const hasGlobalAirports = parseResult.value.some((e) => e.isGlobalAirports);
-        writeSceneryPacksIni(this.iniPath, entries, hasGlobalAirports);
+        writeSceneryPacksIni(this.iniPath, sorted, hasGlobalAirports);
+        return ok(sorted);
       } catch {
-        // Non-critical
+        // Non-critical — fall through to unsorted return
       }
     }
 
-    // Return in INI file order - don't auto-sort
+    // Return in INI file order
     return ok(entries);
   }
 
