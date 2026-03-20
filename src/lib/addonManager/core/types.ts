@@ -65,6 +65,7 @@ export interface SceneryEntry {
   priority: SceneryPriority;
   classification: SceneryClassification;
   originalIndex: number;
+  isGlobalAirports?: boolean;
 }
 
 /**

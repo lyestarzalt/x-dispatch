@@ -892,6 +892,7 @@
       "loadingHint": "This may take a moment for large installations",
       "loadFailed": "Failed to load scenery",
       "total": "packages",
+      "globalAirports": "Default Airports (Global)",
       "packages": "{{count}} scenery packages",
       "unsavedChanges": "Unsaved",
       "safeMode": "Safe",

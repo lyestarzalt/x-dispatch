@@ -783,6 +783,7 @@
       "loadingHint": "Cela peut prendre un moment pour les grandes installations",
       "loadFailed": "Échec du chargement des scènes",
       "total": "packs",
+      "globalAirports": "Aéroports par défaut (Global)",
       "packages": "{{count}} packs de scènes",
       "unsavedChanges": "Non enregistré",
       "safeMode": "Sécurisé",

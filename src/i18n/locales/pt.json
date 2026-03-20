@@ -864,6 +864,7 @@
       "loadingHint": "Isso pode levar um momento para instalações grandes",
       "loadFailed": "Falha ao carregar cenários",
       "total": "pacotes",
+      "globalAirports": "Aeroportos padrão (Global)",
       "packages": "{{count}} pacotes de cenário",
       "unsavedChanges": "Não salvo",
       "safeMode": "Seguro",

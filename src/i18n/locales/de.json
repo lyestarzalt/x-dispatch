@@ -783,6 +783,7 @@
       "loadingHint": "Dies kann bei großen Installationen einen Moment dauern",
       "loadFailed": "Laden der Szenerie fehlgeschlagen",
       "total": "Pakete",
+      "globalAirports": "Standard-Flughäfen (Global)",
       "packages": "{{count}} Szenerie-Pakete",
       "unsavedChanges": "Ungespeichert",
       "safeMode": "Sicher",

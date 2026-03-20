@@ -864,6 +864,7 @@
       "loadingHint": "Potrebbe richiedere un momento per installazioni di grandi dimensioni",
       "loadFailed": "Caricamento scenari fallito",
       "total": "pacchetti",
+      "globalAirports": "Aeroporti predefiniti (Global)",
       "packages": "{{count}} pacchetti scenari",
       "unsavedChanges": "Non salvato",
       "safeMode": "Sicuro",

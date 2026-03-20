@@ -14,9 +14,21 @@ import {
   SortableContext,
   arrayMove,
   sortableKeyboardCoordinates,
+  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { AlertCircle, Check, History, RefreshCw, Save, Sparkles } from 'lucide-react';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  AlertCircle,
+  Check,
+  Globe,
+  GripVertical,
+  History,
+  RefreshCw,
+  Save,
+  Search,
+  Sparkles,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -27,8 +39,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
 import { cn } from '@/lib/utils/helpers';
 import {
@@ -40,6 +54,81 @@ import {
   useSceneryToggle,
 } from '@/queries/useAddonManager';
 import { SortableSceneryEntry } from '../components/SceneryEntry';
+
+function GlobalAirportsRow({
+  entry,
+  position,
+  totalCount,
+  onToggle,
+  disabled,
+}: {
+  entry: SceneryEntry;
+  position: number;
+  totalCount: number;
+  onToggle: () => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation();
+  const positionWidth = Math.max(2, String(totalCount).length);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: entry.folderName,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'group flex items-center gap-2 rounded-lg border border-dashed px-2 py-1.5',
+        'transition-all duration-150',
+        entry.enabled
+          ? 'border-primary/30 bg-primary/5'
+          : 'border-muted-foreground/20 bg-muted/10 opacity-50',
+        isDragging && 'z-50 border-primary bg-card shadow-xl shadow-primary/10'
+      )}
+    >
+      <div
+        className={cn(
+          'flex h-7 items-center justify-center rounded-md bg-muted/50 font-mono text-sm font-semibold tabular-nums text-muted-foreground',
+          isDragging && 'bg-primary/20 text-primary'
+        )}
+        style={{ minWidth: `${positionWidth + 0.5}rem` }}
+      >
+        {position}
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        {...attributes}
+        {...listeners}
+        className={cn(
+          'h-7 w-7 cursor-grab text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
+          isDragging && 'cursor-grabbing text-primary'
+        )}
+        disabled={disabled}
+      >
+        <GripVertical className="h-4 w-4" />
+      </Button>
+
+      <Switch
+        checked={entry.enabled}
+        onCheckedChange={onToggle}
+        disabled={disabled}
+        className="scale-90"
+      />
+
+      <Globe className="h-4 w-4 text-primary" />
+
+      <div className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-primary">
+          {t('addonManager.scenery.globalAirports')}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export function SceneryTab() {
   const { t } = useTranslation();
@@ -59,6 +148,7 @@ export function SceneryTab() {
   const [localEntries, setLocalEntries] = useState<SceneryEntry[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showBackups, setShowBackups] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Sync local state when remote data changes
   useEffect(() => {
@@ -73,6 +163,15 @@ export function SceneryTab() {
     const disabled = localEntries.length - enabled;
     return { total: localEntries.length, enabled, disabled };
   }, [localEntries]);
+
+  // Filter by search query (show all if empty)
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery.trim()) return localEntries;
+    const q = searchQuery.toLowerCase();
+    return localEntries.filter((e) => e.folderName.toLowerCase().includes(q) || e.isGlobalAirports);
+  }, [localEntries, searchQuery]);
+
+  const isSearching = searchQuery.trim().length > 0;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -240,25 +339,47 @@ export function SceneryTab() {
         </div>
       </div>
 
-      {/* Scenery list - flat, no groups */}
+      {/* Search bar */}
+      <div className="border-b border-border px-4 py-2">
+        <Input
+          placeholder={t('common.search')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="h-8 text-sm"
+          startIcon={<Search />}
+        />
+      </div>
+
+      {/* Scenery list */}
       <ScrollArea className="flex-1">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext
-            items={localEntries.map((e) => e.folderName)}
+            items={filteredEntries.map((e) => e.folderName)}
             strategy={verticalListSortingStrategy}
           >
             <div className="flex flex-col gap-1 p-4">
-              {localEntries.map((entry, index) => (
-                <SortableSceneryEntry
-                  key={entry.folderName}
-                  entry={entry}
-                  position={index + 1}
-                  totalCount={stats.total}
-                  onToggle={(name) => toggleMutation.mutate(name)}
-                  onOpenFolder={handleOpenFolder}
-                  disabled={isPending}
-                />
-              ))}
+              {filteredEntries.map((entry, index) =>
+                entry.isGlobalAirports ? (
+                  <GlobalAirportsRow
+                    key="*GLOBAL_AIRPORTS*"
+                    entry={entry}
+                    position={index + 1}
+                    totalCount={stats.total}
+                    onToggle={() => toggleMutation.mutate(entry.folderName)}
+                    disabled={isPending}
+                  />
+                ) : (
+                  <SortableSceneryEntry
+                    key={entry.folderName}
+                    entry={entry}
+                    position={index + 1}
+                    totalCount={stats.total}
+                    onToggle={(name) => toggleMutation.mutate(name)}
+                    onOpenFolder={handleOpenFolder}
+                    disabled={isPending}
+                  />
+                )
+              )}
             </div>
           </SortableContext>
         </DndContext>

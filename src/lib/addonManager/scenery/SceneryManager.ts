@@ -7,6 +7,7 @@ import {
   type SceneryEntry,
   type SceneryError,
   SceneryPriority,
+  createDefaultClassification,
   err,
   ok,
 } from '../core/types';
@@ -37,15 +38,27 @@ export class SceneryManager {
       return parseResult;
     }
 
-    // Filter out *GLOBAL_AIRPORTS* for processing
-    const iniEntries = parseResult.value.filter((e) => !e.isGlobalAirports);
-
-    // Scan and classify each folder, track stale entries
+    // Process all INI entries including *GLOBAL_AIRPORTS*
     const entries: SceneryEntry[] = [];
     const staleNames = new Set<string>();
 
-    for (let i = 0; i < iniEntries.length; i++) {
-      const iniEntry = iniEntries[i];
+    for (let i = 0; i < parseResult.value.length; i++) {
+      const iniEntry = parseResult.value[i];
+
+      // Include *GLOBAL_AIRPORTS* as a special entry
+      if (iniEntry.isGlobalAirports) {
+        entries.push({
+          folderName: '*GLOBAL_AIRPORTS*',
+          fullPath: '',
+          enabled: iniEntry.enabled,
+          priority: SceneryPriority.DefaultAirport,
+          classification: createDefaultClassification(),
+          originalIndex: i,
+          isGlobalAirports: true,
+        });
+        continue;
+      }
+
       if (!fs.existsSync(iniEntry.fullPath)) {
         staleNames.add(iniEntry.folderName);
         continue;
@@ -78,7 +91,7 @@ export class SceneryManager {
 
     // Detect folders in Custom Scenery/ that aren't in the INI yet
     // (manually added by the user outside XD — mirrors X-Plane's behavior on launch)
-    const knownFolders = new Set(iniEntries.map((e) => e.folderName));
+    const knownFolders = new Set(parseResult.value.map((e) => e.folderName));
     staleNames.forEach((name) => knownFolders.add(name)); // don't re-add removed ones
     let addedNew = false;
 
@@ -116,8 +129,7 @@ export class SceneryManager {
         }
         // Sort so new entries land in the correct tier (airports before GLOBAL_AIRPORTS, etc.)
         const sorted = this.sort(entries);
-        const hasGlobalAirports = parseResult.value.some((e) => e.isGlobalAirports);
-        writeSceneryPacksIni(this.iniPath, sorted, hasGlobalAirports);
+        writeSceneryPacksIni(this.iniPath, sorted);
         return ok(sorted);
       } catch {
         // Non-critical — fall through to unsorted return
@@ -179,9 +191,7 @@ export class SceneryManager {
     // Sort entries unless preserveOrder is true
     const toWrite = preserveOrder ? entries : this.sort(entries);
 
-    // Write INI (insert *GLOBAL_AIRPORTS* before first DefaultAirport)
-    const hasDefaultAirports = toWrite.some((e) => e.priority >= SceneryPriority.DefaultAirport);
-    const writeResult = writeSceneryPacksIni(this.iniPath, toWrite, hasDefaultAirports);
+    const writeResult = writeSceneryPacksIni(this.iniPath, toWrite);
     if (!writeResult.ok) {
       return writeResult;
     }

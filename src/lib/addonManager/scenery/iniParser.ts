@@ -109,8 +109,7 @@ export function parseSceneryPacksIni(
  */
 export function writeSceneryPacksIni(
   iniPath: string,
-  entries: SceneryEntry[],
-  globalAirportsInserted: boolean
+  entries: SceneryEntry[]
 ): Result<void, SceneryError> {
   const lines: string[] = [];
 
@@ -119,27 +118,15 @@ export function writeSceneryPacksIni(
   lines.push('1000 Version');
   lines.push('');
 
-  let globalAirportsWritten = false;
-
   for (const entry of entries) {
-    // Insert *GLOBAL_AIRPORTS* before first DefaultAirport if not already written
-    if (
-      !globalAirportsWritten &&
-      globalAirportsInserted &&
-      entry.priority >= 2 // DefaultAirport or lower
-    ) {
-      lines.push(`${SCENERY_PACK_PREFIX}${GLOBAL_AIRPORTS_MARKER}`);
-      globalAirportsWritten = true;
+    if (entry.isGlobalAirports) {
+      // Write *GLOBAL_AIRPORTS* marker as-is
+      const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
+      lines.push(`${prefix}${GLOBAL_AIRPORTS_MARKER}`);
+    } else {
+      const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
+      lines.push(`${prefix}Custom Scenery/${entry.folderName}/`);
     }
-
-    const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
-    // Use relative path format: Custom Scenery/FolderName/
-    lines.push(`${prefix}Custom Scenery/${entry.folderName}/`);
-  }
-
-  // If no DefaultAirport entries, append *GLOBAL_AIRPORTS* at end
-  if (!globalAirportsWritten && globalAirportsInserted) {
-    lines.push(`${SCENERY_PACK_PREFIX}${GLOBAL_AIRPORTS_MARKER}`);
   }
 
   try {

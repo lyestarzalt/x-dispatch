@@ -864,6 +864,7 @@
       "loadingHint": "Esto puede tardar un momento para instalaciones grandes",
       "loadFailed": "Error al cargar escenarios",
       "total": "paquetes",
+      "globalAirports": "Aeropuertos predeterminados (Global)",
       "packages": "{{count}} paquetes de escenario",
       "unsavedChanges": "Sin guardar",
       "safeMode": "Seguro",

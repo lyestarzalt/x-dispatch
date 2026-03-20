@@ -864,6 +864,7 @@
       "loadingHint": "大規模なインストールでは時間がかかる場合があります",
       "loadFailed": "シーナリーの読み込みに失敗しました",
       "total": "パッケージ",
+      "globalAirports": "デフォルト空港 (Global)",
       "packages": "{{count}}個のシーナリーパッケージ",
       "unsavedChanges": "未保存",
       "safeMode": "安全",

@@ -864,6 +864,7 @@
       "loadingHint": "Może to chwilę potrwać przy dużych instalacjach",
       "loadFailed": "Nie udało się załadować scenerii",
       "total": "pakietów",
+      "globalAirports": "Domyślne lotniska (Global)",
       "packages": "{{count}} pakietów scenerii",
       "unsavedChanges": "Niezapisane",
       "safeMode": "Bezpieczny",

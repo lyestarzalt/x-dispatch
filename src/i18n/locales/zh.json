@@ -864,6 +864,7 @@
       "loadingHint": "大型安装可能需要一些时间",
       "loadFailed": "加载场景失败",
       "total": "个场景包",
+      "globalAirports": "默认机场 (Global)",
       "packages": "{{count}} 个场景包",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
