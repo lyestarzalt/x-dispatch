@@ -10,8 +10,8 @@ const SAM_PREFIXES = ['open', 'my', 'custom', 'new'];
  *
  * Priority order:
  * 1. Has apt.dat → Airport
- * 2. WorldEditor agent → Airport
- * 3. DSF sim/overlay → Overlay
+ * 2. DSF sim/overlay → Overlay (even WorldEditor-made, e.g. Landmarks)
+ * 3. WorldEditor agent (non-overlay) → Airport
  * 4. Has library.txt → check SAM → FixedHighPriority or Library
  * 5. Has Earth nav data → Mesh
  * 6. DSF has terrain refs → Mesh
@@ -24,14 +24,14 @@ export function classifyScenery(folderName: string, scan: SceneryClassification)
     return SceneryPriority.Airport;
   }
 
-  // 2. No apt.dat, but worldeditor → Airport (WorldEditor packages are airport scenery)
-  if (scan.dsfInfo.parsed && scan.dsfInfo.creationAgent.toLowerCase().includes('worldeditor')) {
-    return SceneryPriority.Airport;
-  }
-
-  // 3. DSF sim/overlay → Overlay
+  // 2. DSF sim/overlay → Overlay (even if made with WorldEditor, e.g. Landmarks)
   if (scan.dsfInfo.parsed && scan.dsfInfo.isOverlay) {
     return SceneryPriority.Overlay;
+  }
+
+  // 3. No apt.dat, no overlay, but WorldEditor → Airport (rare WED airport without apt.dat)
+  if (scan.dsfInfo.parsed && scan.dsfInfo.creationAgent.toLowerCase().includes('worldeditor')) {
+    return SceneryPriority.Airport;
   }
 
   // 4. Has library.txt → Library (or SAM)
