@@ -125,8 +125,10 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       return false;
     }
 
-    // Set initial state with parsed data
+    // Clear previous flight plan and set initial state
     set({
+      fmsData: null,
+      simbriefData: null,
       isEnriching: true,
       showFlightPlanBar: true,
       selectedWaypointIndex: null,

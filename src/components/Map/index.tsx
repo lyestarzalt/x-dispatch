@@ -354,23 +354,22 @@ export default function Map({ airports }: MapProps) {
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
 
-  // Flight plan layer sync
-  const hasFittedFlightPlanRef = useRef(false);
+  // Flight plan layer sync — always fit bounds when fmsData changes
+  const prevFmsDataRef = useRef<typeof fmsData>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     if (fmsData) {
       addFlightPlanLayer(map, fmsData);
-      // Only fit on initial load
-      if (!hasFittedFlightPlanRef.current) {
-        hasFittedFlightPlanRef.current = true;
+      // Fit bounds when plan changes (new plan loaded or replaced)
+      if (fmsData !== prevFmsDataRef.current) {
         fitMapToFlightPlan(map, fmsData);
       }
     } else {
-      hasFittedFlightPlanRef.current = false;
       removeFlightPlanLayer(map);
     }
+    prevFmsDataRef.current = fmsData;
   }, [mapRef, fmsData]);
 
   // Fly to selected waypoint
