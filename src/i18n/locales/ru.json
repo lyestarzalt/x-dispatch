@@ -789,12 +789,12 @@
     "rescanRemoved": "Удалено элементов: {{count}}",
     "rescanNoChanges": "Изменений не обнаружено",
     "tabs": {
-      "scenery": "Порядок сценариев",
+      "scenery": "Сценарии",
       "installed": "Дополнения",
       "installer": "Установщик"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "Порядок и управление",
       "installedDesc": "Самолёты и плагины",
       "installerDesc": "Установка новых дополнений"
     },

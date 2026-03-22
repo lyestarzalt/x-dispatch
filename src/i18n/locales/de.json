@@ -708,12 +708,12 @@
     "rescanRemoved": "{{count}} Element(e) entfernt",
     "rescanNoChanges": "Keine Änderungen erkannt",
     "tabs": {
-      "scenery": "Szenerie-Reihenfolge",
+      "scenery": "Szenerien",
       "installed": "Addons",
       "installer": "Installer"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "Ordnung & Verwaltung",
       "installedDesc": "Flugzeuge & Plugins",
       "installerDesc": "Neue Addons installieren"
     },

@@ -789,12 +789,12 @@
     "rescanRemoved": "Usunięto {{count}} elementów",
     "rescanNoChanges": "Nie wykryto zmian",
     "tabs": {
-      "scenery": "Kolejność scenerii",
+      "scenery": "Scenerie",
       "installed": "Dodatki",
       "installer": "Instalator"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "Kolejność i zarządzanie",
       "installedDesc": "Samoloty i wtyczki",
       "installerDesc": "Zainstaluj nowe dodatki"
     },

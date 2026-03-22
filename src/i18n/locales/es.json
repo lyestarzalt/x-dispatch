@@ -789,12 +789,12 @@
     "rescanRemoved": "Se eliminaron {{count}} elemento(s)",
     "rescanNoChanges": "No se detectaron cambios",
     "tabs": {
-      "scenery": "Orden de escenarios",
+      "scenery": "Escenarios",
       "installed": "Complementos",
       "installer": "Instalador"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "Orden y gestión",
       "installedDesc": "Aeronaves y plugins",
       "installerDesc": "Instalar nuevos addons"
     },
