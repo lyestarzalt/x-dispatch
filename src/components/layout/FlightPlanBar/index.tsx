@@ -97,6 +97,17 @@ export default function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
 
   return (
     <div className="flex h-10 items-center overflow-hidden rounded-lg border border-border bg-card/95 backdrop-blur-sm">
+      {/* Close button — left side for easy access */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={clearFlightPlan}
+        className="h-10 w-8 shrink-0 rounded-none border-r border-border text-muted-foreground hover:text-destructive"
+        aria-label="Clear flight plan"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+
       {/* Left scroll button */}
       <Button
         variant="ghost"
@@ -134,17 +145,6 @@ export default function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
         className="h-10 w-8 shrink-0 rounded-none border-l border-border text-muted-foreground hover:text-foreground"
       >
         <ChevronRight className="h-4 w-4" />
-      </Button>
-
-      {/* Close button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={clearFlightPlan}
-        className="h-10 w-8 shrink-0 rounded-none border-l border-border text-muted-foreground hover:text-destructive"
-        aria-label="Clear flight plan"
-      >
-        <X className="h-4 w-4" />
       </Button>
     </div>
   );
