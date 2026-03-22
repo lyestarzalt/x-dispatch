@@ -110,6 +110,17 @@ contextBridge.exposeInMainWorld('appAPI', {
     ipcRenderer.on('focus-search', handler);
     return () => ipcRenderer.removeListener('focus-search', handler);
   },
+  resyncCustomAirports: () =>
+    ipcRenderer.invoke('airport:resync-custom') as Promise<{
+      synced: boolean;
+      count: number;
+      diff: number;
+    }>,
+  onAirportsUpdated: (callback: () => void) => {
+    const handler = () => callback();
+    ipcRenderer.on('airports-updated', handler);
+    return () => ipcRenderer.removeListener('airports-updated', handler);
+  },
   onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => {
     const handler = (_event: IpcRendererEvent, data: { type: string; icao?: string }) =>
       callback(data);
@@ -380,6 +391,8 @@ declare global {
       setZoomFactor: (factor: number) => void;
       getZoomFactor: () => number;
       getFilePathForDrop: (file: File) => string;
+      resyncCustomAirports: () => Promise<{ synced: boolean; count: number; diff: number }>;
+      onAirportsUpdated: (callback: () => void) => () => void;
       onFocusSearch: (callback: () => void) => () => void;
       onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => () => void;
     };

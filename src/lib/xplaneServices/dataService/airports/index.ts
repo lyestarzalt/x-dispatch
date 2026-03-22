@@ -21,6 +21,7 @@ import type {
 } from '../types';
 import {
   clearAirports,
+  clearCustomAirports,
   detectAptFileChanges,
   getAirportBreakdown,
   getAirportCount,
@@ -29,6 +30,7 @@ import {
   getStoredAirportCountEstimate,
   getStoredFileMeta,
   insertAirports,
+  insertCustomAirports,
   persistDatabase,
   updateStoredFileMeta,
 } from './airportCache';
@@ -117,11 +119,12 @@ export async function syncAirportCache(
       `(${customResult.stats.totalPacks} packs)`
   );
 
-  // 4. Store in database
+  // 4. Store in database — global and custom in separate tables
   onProgress?.({ phase: 'inserting' });
   const insertStart = Date.now();
   clearAirports();
-  insertAirports(Array.from(allAirports.values()));
+  insertAirports(Array.from(globalResult.airports.values()));
+  insertCustomAirports(Array.from(customResult.airports.values()));
   const insertTime = Date.now() - insertStart;
   logger.data.info(`Batch inserted ${allAirports.size} airports in ${insertTime}ms`);
 
@@ -209,6 +212,50 @@ function logCacheChanges(cacheCheck: ReturnType<typeof detectAptFileChanges>): v
 export function hasAptFileChanges(xplanePath: string): boolean {
   const currentFiles = getCurrentAptFiles(xplanePath);
   return detectAptFileChanges(currentFiles).needsReload;
+}
+
+// ============================================================================
+// Incremental Custom Scenery Resync
+// ============================================================================
+
+/**
+ * Fast resync of custom scenery airports only.
+ * Skips re-parsing the Global Airports file — only re-parses custom scenery
+ * apt.dat files and updates the airports_custom table.
+ * Returns the count difference (positive = added, negative = removed).
+ */
+export async function resyncCustomScenery(
+  xplanePath: string
+): Promise<{ count: number; diff: number }> {
+  const startTime = Date.now();
+
+  // Get current custom airport count
+  const beforeCount = getAllAirportsFromDb().filter((a) => a.isCustom).length;
+
+  // Re-parse all custom scenery apt.dat files
+  const customResult = await loadCustomSceneryAirports(xplanePath);
+
+  // Replace custom airports in DB
+  clearCustomAirports();
+  insertCustomAirports(Array.from(customResult.airports.values()));
+
+  // Update file metadata for custom scenery files only
+  const customFiles = getCustomSceneryFileInfos(xplanePath);
+  const airportCounts = new Map<string, number>();
+  for (const [filePath, fileCount] of customResult.airportCounts) {
+    airportCounts.set(filePath, fileCount);
+  }
+  updateStoredFileMeta(customFiles, airportCounts);
+
+  persistDatabase();
+
+  const afterCount = customResult.airports.size;
+  const elapsed = Date.now() - startTime;
+  logger.data.info(
+    `Custom scenery resync: ${afterCount} airports from ${customResult.stats.totalPacks} packs in ${elapsed}ms`
+  );
+
+  return { count: afterCount, diff: afterCount - beforeCount };
 }
 
 // ============================================================================

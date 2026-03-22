@@ -326,11 +326,26 @@ export function SceneryTab() {
               const before = entries.length;
               const { data } = await refetchScenery();
               const after = data?.length ?? before;
-              const diff = after - before;
-              if (diff > 0) {
-                toast.success(t('addonManager.rescanFound', { count: diff }));
-              } else if (diff < 0) {
-                toast.success(t('addonManager.rescanRemoved', { count: Math.abs(diff) }));
+              const sceneryDiff = after - before;
+
+              // Also resync custom scenery airports (fast — no global re-parse)
+              const airportResult = await window.appAPI.resyncCustomAirports();
+
+              const parts: string[] = [];
+              if (sceneryDiff > 0)
+                parts.push(t('addonManager.rescanFound', { count: sceneryDiff }));
+              else if (sceneryDiff < 0)
+                parts.push(t('addonManager.rescanRemoved', { count: Math.abs(sceneryDiff) }));
+
+              if (airportResult.diff > 0)
+                parts.push(t('addonManager.rescanAirportsAdded', { count: airportResult.diff }));
+              else if (airportResult.diff < 0)
+                parts.push(
+                  t('addonManager.rescanAirportsRemoved', { count: Math.abs(airportResult.diff) })
+                );
+
+              if (parts.length > 0) {
+                toast.success(parts.join(' · '));
               } else {
                 toast(t('addonManager.rescanNoChanges'), { icon: <Check className="h-4 w-4" /> });
               }

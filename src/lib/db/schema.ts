@@ -42,6 +42,42 @@ export const airports = sqliteTable(
 );
 
 /**
+ * Custom Scenery airports — same schema as airports, separate table for
+ * fast incremental resync without re-parsing the Global Airports file.
+ * On query, custom airports override global ones with the same ICAO.
+ */
+export const airportsCustom = sqliteTable(
+  'airports_custom',
+  {
+    icao: text('icao').primaryKey(),
+    name: text('name').notNull(),
+    lat: real('lat').notNull(),
+    lon: real('lon').notNull(),
+    type: text('type', { enum: ['land', 'seaplane', 'heliport'] }).notNull(),
+    elevation: integer('elevation'),
+    data: text('data'),
+    sourceFile: text('source_file'),
+    city: text('city'),
+    country: text('country'),
+    iataCode: text('iata_code'),
+    faaCode: text('faa_code'),
+    regionCode: text('region_code'),
+    state: text('state'),
+    transitionAlt: integer('transition_alt'),
+    transitionLevel: text('transition_level'),
+    towerServiceType: text('tower_service_type'),
+    driveOnLeft: integer('drive_on_left', { mode: 'boolean' }),
+    guiLabel: text('gui_label'),
+    runwayCount: integer('runway_count'),
+    primarySurfaceType: integer('primary_surface_type'),
+  },
+  (table) => [
+    index('idx_airports_custom_coords').on(table.lat, table.lon),
+    index('idx_airports_custom_country').on(table.country),
+  ]
+);
+
+/**
  * Track apt.dat file metadata for cache invalidation
  */
 export const aptFileMeta = sqliteTable('apt_file_meta', {
@@ -188,6 +224,8 @@ export const airspaces = sqliteTable(
 // Type exports
 export type Airport = typeof airports.$inferSelect;
 export type NewAirport = typeof airports.$inferInsert;
+export type AirportCustom = typeof airportsCustom.$inferSelect;
+export type NewAirportCustom = typeof airportsCustom.$inferInsert;
 export type AptFileMeta = typeof aptFileMeta.$inferSelect;
 export type NewAptFileMeta = typeof aptFileMeta.$inferInsert;
 export type Metadata = typeof metadata.$inferSelect;

@@ -5,7 +5,7 @@
  */
 import { count, like } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airports, aptFileMeta, getDb, saveDb } from '@/lib/db';
+import { airports, airportsCustom, aptFileMeta, getDb, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
 import type {
   Airport,
@@ -121,11 +121,20 @@ export function getStoredAirportCountEstimate(): number {
 // ============================================================================
 
 /**
- * Clear all airports from database
+ * Clear all airports from database (both global and custom)
  */
 export function clearAirports(): void {
   const db = getDb();
   db.delete(airports).run();
+  db.delete(airportsCustom).run();
+}
+
+/**
+ * Clear only custom scenery airports
+ */
+export function clearCustomAirports(): void {
+  const db = getDb();
+  db.delete(airportsCustom).run();
 }
 
 /**
@@ -167,6 +176,43 @@ export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
 }
 
 /**
+ * Batch insert custom scenery airports into the custom table
+ */
+export function insertCustomAirports(airportEntries: ParsedAirportEntry[]): void {
+  const db = getDb();
+
+  const airportArray = airportEntries.map((a) => ({
+    icao: a.icao,
+    name: a.name,
+    lat: a.lat,
+    lon: a.lon,
+    type: a.type,
+    elevation: a.elevation,
+    runwayCount: a.runwayCount,
+    primarySurfaceType: a.primarySurfaceType,
+    data: a.data,
+    sourceFile: a.sourceFile,
+    city: a.city,
+    country: a.country,
+    iataCode: a.iataCode,
+    faaCode: a.faaCode,
+    regionCode: a.regionCode,
+    state: a.state,
+    transitionAlt: a.transitionAlt,
+    transitionLevel: a.transitionLevel,
+    towerServiceType: a.towerServiceType,
+    driveOnLeft: a.driveOnLeft,
+    guiLabel: a.guiLabel,
+  }));
+
+  const CHUNK_SIZE = 500;
+  for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+    const chunk = airportArray.slice(i, i + CHUNK_SIZE);
+    db.insert(airportsCustom).values(chunk).run();
+  }
+}
+
+/**
  * Save database to disk
  */
 export function persistDatabase(): void {
@@ -191,29 +237,56 @@ function deriveSurfaceType(code: number | null): Airport['surfaceType'] {
 
 export function getAllAirportsFromDb(): Airport[] {
   const db = getDb();
-  const results = db
+
+  const selectFields = {
+    icao: airports.icao,
+    name: airports.name,
+    lat: airports.lat,
+    lon: airports.lon,
+    type: airports.type,
+    elevation: airports.elevation,
+    sourceFile: airports.sourceFile,
+    runwayCount: airports.runwayCount,
+    primarySurfaceType: airports.primarySurfaceType,
+    country: airports.country,
+  };
+
+  // Load global airports into a map
+  const globalResults = db.select(selectFields).from(airports).all();
+  const merged = new Map<string, (typeof globalResults)[0] & { isCustom: boolean }>();
+
+  for (const r of globalResults) {
+    merged.set(r.icao, { ...r, isCustom: false });
+  }
+
+  // Load custom airports — override global on same ICAO
+  const customResults = db
     .select({
-      icao: airports.icao,
-      name: airports.name,
-      lat: airports.lat,
-      lon: airports.lon,
-      type: airports.type,
-      elevation: airports.elevation,
-      sourceFile: airports.sourceFile,
-      runwayCount: airports.runwayCount,
-      primarySurfaceType: airports.primarySurfaceType,
-      country: airports.country,
+      icao: airportsCustom.icao,
+      name: airportsCustom.name,
+      lat: airportsCustom.lat,
+      lon: airportsCustom.lon,
+      type: airportsCustom.type,
+      elevation: airportsCustom.elevation,
+      sourceFile: airportsCustom.sourceFile,
+      runwayCount: airportsCustom.runwayCount,
+      primarySurfaceType: airportsCustom.primarySurfaceType,
+      country: airportsCustom.country,
     })
-    .from(airports)
+    .from(airportsCustom)
     .all();
 
-  return results.map((r) => ({
+  for (const r of customResults) {
+    merged.set(r.icao, { ...r, isCustom: true });
+  }
+
+  return Array.from(merged.values()).map((r) => ({
     icao: r.icao,
     name: r.name,
     lat: r.lat,
     lon: r.lon,
     type: r.type as Airport['type'],
-    isCustom: r.sourceFile?.includes('Custom Scenery') ?? false,
+    isCustom: r.isCustom,
     runwayCount: r.runwayCount ?? 0,
     surfaceType: deriveSurfaceType(r.primarySurfaceType ?? null),
     elevation: r.elevation ?? 0,
