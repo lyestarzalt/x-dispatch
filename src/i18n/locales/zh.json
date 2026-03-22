@@ -438,6 +438,16 @@
     "noStartPositions": "没有可用的出发位置",
     "searchPlaceholder": "搜索...",
     "noMatchingGates": "未找到与\"{{query}}\"匹配的登机口",
+    "runway": {
+      "threshold": "跑道入口",
+      "approach": "进近",
+      "tow": "拖曳",
+      "distance": "距离",
+      "approachNm": "{{distance}} nm 五边",
+      "winch": "绞车",
+      "tug": "拖机",
+      "tugAircraft": "拖曳飞机: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway 有更新的版本",
       "credit": "{{artist}} · {{date}}",

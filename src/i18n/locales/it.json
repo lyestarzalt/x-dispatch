@@ -438,6 +438,16 @@
     "noStartPositions": "Nessuna posizione di partenza disponibile",
     "searchPlaceholder": "Cerca...",
     "noMatchingGates": "Nessun gate trovato per \"{{query}}\"",
+    "runway": {
+      "threshold": "Soglia",
+      "approach": "Avvicinamento",
+      "tow": "Traino",
+      "distance": "Distanza",
+      "approachNm": "{{distance}} nm finale",
+      "winch": "Verricello",
+      "tug": "Rimorchiatore",
+      "tugAircraft": "Aereo trainatore: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway ha una versione più recente",
       "credit": "di {{artist}} · {{date}}",

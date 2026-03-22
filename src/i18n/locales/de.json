@@ -370,6 +370,16 @@
     "noStartPositions": "Keine Startpositionen verfügbar",
     "searchPlaceholder": "Suchen...",
     "noMatchingGates": "Keine Gates für \"{{query}}\" gefunden",
+    "runway": {
+      "threshold": "Schwelle",
+      "approach": "Anflug",
+      "tow": "Schlepp",
+      "distance": "Entfernung",
+      "approachNm": "{{distance}} nm Endanflug",
+      "winch": "Winde",
+      "tug": "Schleppflugzeug",
+      "tugAircraft": "Schleppflugzeug: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway hat eine neuere Version",
       "credit": "von {{artist}} · {{date}}",
