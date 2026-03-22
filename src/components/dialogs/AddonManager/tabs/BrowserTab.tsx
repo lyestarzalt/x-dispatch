@@ -150,45 +150,28 @@ export function BrowserTab() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Stats Bar */}
-      <div className="flex items-center justify-between border-b border-border bg-card/30 px-4 py-3">
-        <div className="flex items-center gap-6">
-          {/* Total count */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold tabular-nums text-foreground">{totalAddons}</span>
-            <span className="text-sm text-muted-foreground">
-              {t('addonManager.installed.total')}
-            </span>
-          </div>
-
-          {/* Enabled/Disabled */}
-          <div className="flex items-center gap-4 border-l border-border pl-6">
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-success" />
-              <span className="text-sm tabular-nums text-muted-foreground">{totalEnabled}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-              <span className="text-sm tabular-nums text-muted-foreground">
-                {totalAddons - totalEnabled}
-              </span>
-            </div>
-          </div>
-
-          {/* Updates badge */}
+      {/* Toolbar — matches SceneryTab layout */}
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        {/* Left: stats + updates badge */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            <span className="font-mono tabular-nums text-foreground">{totalAddons}</span>
+            {' addons · '}
+            <span className="text-success">{totalEnabled}</span>
+            {' on · '}
+            <span>{totalAddons - totalEnabled}</span>
+            {' off'}
+          </span>
           {totalUpdates > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1">
-              <RefreshCw className="h-3 w-3 text-warning" />
-              <span className="text-xs font-medium text-warning">
-                {t('addonManager.installed.updatesAvailable', { count: totalUpdates })}
-              </span>
-            </div>
+            <Badge variant="warning" className="gap-1">
+              <RefreshCw className="h-3 w-3" />
+              {t('addonManager.installed.updatesAvailable', { count: totalUpdates })}
+            </Badge>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-3">
-          {/* Search */}
+        {/* Right: actions */}
+        <div className="flex items-center gap-1.5">
           <Input
             placeholder={t('addonManager.installed.searchPlaceholder')}
             value={search}
@@ -197,19 +180,17 @@ export function BrowserTab() {
             startIcon={<Search />}
           />
 
-          {/* Check Updates */}
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleCheckUpdates}
             disabled={isLoading || checkingUpdates}
-            className="gap-2"
+            className="gap-1.5"
           >
-            {checkingUpdates ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
+            {checkingUpdates ? <Spinner /> : <RefreshCw className="h-3.5 w-3.5" />}
             {t('addonManager.installed.checkUpdates')}
           </Button>
 
-          {/* Rescan */}
           <Button
             variant="ghost"
             size="sm"
@@ -229,11 +210,12 @@ export function BrowserTab() {
               }
             }}
             disabled={aircraftFetching || pluginsFetching}
-            tooltip={t('addonManager.rescan')}
+            className="gap-1.5 text-muted-foreground"
           >
             <RefreshCw
-              className={`h-4 w-4 ${aircraftFetching || pluginsFetching ? 'animate-spin' : ''}`}
+              className={`h-3.5 w-3.5 ${aircraftFetching || pluginsFetching ? 'animate-spin' : ''}`}
             />
+            {t('addonManager.rescan')}
           </Button>
         </div>
       </div>
