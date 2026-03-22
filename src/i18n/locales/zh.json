@@ -789,12 +789,12 @@
     "rescanRemoved": "移除了{{count}}个项目",
     "rescanNoChanges": "未检测到变更",
     "tabs": {
-      "scenery": "场景顺序",
+      "scenery": "场景",
       "installed": "附加组件",
       "installer": "安装器"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "排序与管理",
       "installedDesc": "飞机和插件",
       "installerDesc": "安装新插件"
     },

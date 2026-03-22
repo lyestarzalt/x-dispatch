@@ -277,10 +277,11 @@ export function SceneryTab() {
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">
             <span className="font-mono tabular-nums text-foreground">{stats.total}</span>
-            {' · '}
+            {' packs · '}
             <span className="text-success">{stats.enabled}</span>
-            {' / '}
+            {' on · '}
             <span>{stats.disabled}</span>
+            {' off'}
           </span>
           {hasUnsavedChanges && (
             <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
@@ -321,7 +322,7 @@ export function SceneryTab() {
           {/* Rescan */}
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={async () => {
               const before = entries.length;
               const { data } = await refetchScenery();
@@ -351,10 +352,10 @@ export function SceneryTab() {
               }
             }}
             disabled={isFetching}
-            className="h-8 w-8 text-muted-foreground"
-            tooltip={t('addonManager.rescan')}
+            className="gap-1.5 text-muted-foreground"
           >
-            <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+            <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
+            {t('addonManager.rescan')}
           </Button>
 
           <Button

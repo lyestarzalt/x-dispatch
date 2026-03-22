@@ -809,12 +809,12 @@
     "rescanRemoved": "Removed {{count}} item(s)",
     "rescanNoChanges": "No changes detected",
     "tabs": {
-      "scenery": "Scenery Order",
+      "scenery": "Scenery",
       "installed": "Addons",
       "installer": "Installer"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "Order & manage",
       "installedDesc": "Aircraft & plugins",
       "installerDesc": "Install new addons"
     },

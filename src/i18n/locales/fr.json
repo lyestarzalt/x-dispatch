@@ -708,12 +708,12 @@
     "rescanRemoved": "{{count}} élément(s) supprimé(s)",
     "rescanNoChanges": "Aucun changement détecté",
     "tabs": {
-      "scenery": "Ordre des scènes",
+      "scenery": "Paysages",
       "installed": "Extensions",
       "installer": "Installateur"
     },
     "nav": {
-      "sceneryDesc": "scenery_packs.ini",
+      "sceneryDesc": "Ordre et gestion",
       "installedDesc": "Avions et plugins",
       "installerDesc": "Installer de nouveaux addons"
     },
