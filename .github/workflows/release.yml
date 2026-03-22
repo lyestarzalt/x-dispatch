@@ -77,13 +77,27 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install python-setuptools
 
-      - name: Publish
-        run: npm run publish ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
+      - name: Build
+        run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --max-old-space-size=4096
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.name }}
+          path: |
+            out/make/**/*.exe
+            out/make/**/*.nupkg
+            out/make/**/RELEASES
+            out/make/**/*.dmg
+            out/make/**/*.zip
+            out/make/**/*.deb
+            out/make/**/*.rpm
+          retention-days: 1
 
   finalize:
     name: Finalize Release
@@ -97,14 +111,30 @@ jobs:
       - name: Pull latest (includes version bump)
         run: git pull origin main
 
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: build-*
+          merge-multiple: true
+
+      - name: Collect release assets
+        id: assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.zip' -o -name '*.deb' -o -name '*.rpm' \) -exec cp {} release-assets/ \;
+          echo "Collected assets:"
+          ls -la release-assets/
+
       - name: Generate release notes
         id: changelog
         uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
-          args: --tag ${{ needs.version.outputs.tag }} --strip header
+          args: --tag ${{ needs.version.outputs.tag }} --strip header --latest
         env:
           GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OUTPUT: release-notes.md
 
       - name: Update CHANGELOG.md
@@ -114,6 +144,7 @@ jobs:
           args: --tag ${{ needs.version.outputs.tag }}
         env:
           GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OUTPUT: CHANGELOG.md
 
       - name: Commit CHANGELOG.md
@@ -135,12 +166,11 @@ jobs:
           > :apple: **macOS Users:** Please read the [installation instructions](https://github.com/${{ github.repository }}#readme) before opening the app.
           EOF
 
-      - name: Update release with changelog
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.version.outputs.tag }}
-          draft: false
-          body_path: release-notes.md
+      - name: Create release with assets
+        run: |
+          # Delete any leftover draft/release from a failed previous run
+          gh release delete ${{ needs.version.outputs.tag }} --yes 2>/dev/null || true
+          gh release create ${{ needs.version.outputs.tag }} release-assets/* --title "${{ needs.version.outputs.tag }}" --notes-file release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
