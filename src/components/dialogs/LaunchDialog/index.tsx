@@ -269,6 +269,21 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       payload.runway_start = {
         airport_id: params.startPosition.airport,
         runway: params.startPosition.name,
+        // Approach distance and tow type are mutually exclusive
+        ...(params.startPosition.approachDistanceNm != null && {
+          // X-Plane requires float values with decimal point — ensure whole numbers get .0
+          final_distance_in_nautical_miles: Number.isInteger(
+            params.startPosition.approachDistanceNm
+          )
+            ? params.startPosition.approachDistanceNm + 0.001
+            : params.startPosition.approachDistanceNm,
+        }),
+        ...(params.startPosition.towType && {
+          tow_type: params.startPosition.towType,
+          ...(params.startPosition.towType === 'tug' && {
+            tow_aircraft: { path: 'Aircraft/Laminar Research/Cessna 172 SP/Cessna_172SP.acf' },
+          }),
+        }),
       };
     }
 

@@ -455,6 +455,16 @@
     "noStartPositions": "No starting positions available",
     "searchPlaceholder": "Search...",
     "noMatchingGates": "No gates matching \"{{query}}\"",
+    "runway": {
+      "threshold": "Threshold",
+      "approach": "Approach",
+      "tow": "Tow",
+      "distance": "Distance",
+      "approachNm": "{{distance}} nm final",
+      "winch": "Winch",
+      "tug": "Tug",
+      "tugAircraft": "Tow plane: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway has a newer release",
       "credit": "by {{artist}} · {{date}}",

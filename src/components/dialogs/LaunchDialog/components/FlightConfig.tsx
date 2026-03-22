@@ -395,9 +395,23 @@ export function FlightConfig({
           </div>
           <div className="flex items-start justify-between gap-2">
             <span className="xp-label shrink-0">{t('launcher.config.departure')}</span>
-            <span className="text-right font-mono text-sm text-primary">
-              {startPosition ? `${startPosition.airport} ${startPosition.name}` : '—'}
-            </span>
+            <div className="text-right">
+              <span className="font-mono text-sm text-primary">
+                {startPosition ? `${startPosition.airport} ${startPosition.name}` : '—'}
+              </span>
+              {startPosition?.approachDistanceNm != null && (
+                <div className="text-xs text-muted-foreground">
+                  {t('airportInfo.runway.approachNm', {
+                    distance: startPosition.approachDistanceNm,
+                  })}
+                </div>
+              )}
+              {startPosition?.towType && (
+                <div className="text-xs text-muted-foreground">
+                  {t(`airportInfo.runway.${startPosition.towType}`)} tow
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

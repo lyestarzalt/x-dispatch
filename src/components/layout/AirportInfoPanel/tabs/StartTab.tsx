@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Search, X } from 'lucide-react';
+import { Check, Plane, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -325,6 +326,18 @@ interface RunwayListProps {
   selectedIndex?: number;
 }
 
+type RunwayStartMode = 'threshold' | 'approach' | 'tow';
+const APPROACH_DISTANCES = [1, 2, 3, 5, 8, 10, 15, 20] as const;
+const DEFAULT_APPROACH_DISTANCE = 3.5;
+
+function getRunwayStartMode(
+  startPosition: ReturnType<typeof useAppStore.getState>['startPosition']
+): RunwayStartMode {
+  if (startPosition?.approachDistanceNm != null) return 'approach';
+  if (startPosition?.towType) return 'tow';
+  return 'threshold';
+}
+
 function RunwayList({
   runways,
   searchQuery,
@@ -333,6 +346,30 @@ function RunwayList({
   selectedIndex,
 }: RunwayListProps) {
   const { t } = useTranslation();
+  const startPosition = useAppStore((s) => s.startPosition);
+  const setStartPosition = useAppStore((s) => s.setStartPosition);
+
+  const mode = getRunwayStartMode(startPosition);
+  const approachDistance = startPosition?.approachDistanceNm ?? DEFAULT_APPROACH_DISTANCE;
+
+  const setMode = (newMode: RunwayStartMode) => {
+    if (!startPosition || startPosition.type !== 'runway' || startPosition.isHelipad) return;
+    setStartPosition({
+      ...startPosition,
+      approachDistanceNm: newMode === 'approach' ? DEFAULT_APPROACH_DISTANCE : undefined,
+      towType: newMode === 'tow' ? 'winch' : undefined,
+    });
+  };
+
+  const setApproachDistance = (nm: number) => {
+    if (!startPosition || startPosition.type !== 'runway') return;
+    setStartPosition({ ...startPosition, approachDistanceNm: nm });
+  };
+
+  const setTowType = (towType: 'tug' | 'winch') => {
+    if (!startPosition || startPosition.type !== 'runway') return;
+    setStartPosition({ ...startPosition, towType });
+  };
 
   // Filter runways by search (match either end name)
   const filteredRunways = useMemo(() => {
@@ -370,6 +407,14 @@ function RunwayList({
         const e2 = runway.ends[1];
         const lengthFt = Math.round(runwayLengthFeet(e1, e2));
         const widthFt = Math.round(metersToFeet(runway.width));
+
+        // Check if either end of THIS runway is selected
+        const end0Selected = selectedIndex === originalIndex * 2;
+        const end1Selected = selectedIndex === originalIndex * 2 + 1;
+        const thisRunwaySelected =
+          (end0Selected || end1Selected) &&
+          startPosition?.type === 'runway' &&
+          !startPosition.isHelipad;
 
         return (
           <div key={originalIndex}>
@@ -419,9 +464,142 @@ function RunwayList({
                 );
               })}
             </div>
+
+            {/* Start options — inline under the selected runway */}
+            {thisRunwaySelected && (
+              <RunwayStartOptions
+                mode={mode}
+                approachDistance={approachDistance}
+                towType={startPosition?.towType}
+                onSetMode={setMode}
+                onSetApproachDistance={setApproachDistance}
+                onSetTowType={setTowType}
+              />
+            )}
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** Inline start options panel shown under the selected runway */
+function RunwayStartOptions({
+  mode,
+  approachDistance,
+  towType,
+  onSetMode,
+  onSetApproachDistance,
+  onSetTowType,
+}: {
+  mode: RunwayStartMode;
+  approachDistance: number;
+  towType?: 'tug' | 'winch';
+  onSetMode: (mode: RunwayStartMode) => void;
+  onSetApproachDistance: (nm: number) => void;
+  onSetTowType: (type: 'tug' | 'winch') => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="mt-2 space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-3">
+      {/* Mode toggle: Threshold / Approach / Tow */}
+      <div className="flex items-center gap-1">
+        {(['threshold', 'approach', 'tow'] as const).map((m) => (
+          <Button
+            key={m}
+            variant="ghost"
+            size="sm"
+            onClick={() => onSetMode(m)}
+            className={cn(
+              'h-7 flex-1 gap-1 text-xs',
+              mode === m
+                ? 'bg-cat-emerald/10 text-cat-emerald'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {m === 'approach' && <Plane className="h-3 w-3 rotate-[-90deg]" />}
+            {t(`airportInfo.runway.${m}`)}
+          </Button>
+        ))}
+      </div>
+
+      {/* Approach distance controls */}
+      {mode === 'approach' && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              {t('airportInfo.runway.distance')}
+            </span>
+            <span className="font-mono text-sm text-foreground">
+              {approachDistance}
+              <span className="ml-0.5 text-xs text-muted-foreground">nm</span>
+            </span>
+          </div>
+          <Slider
+            min={1}
+            max={20}
+            step={0.5}
+            value={[approachDistance]}
+            onValueChange={([v]) => onSetApproachDistance(v)}
+          />
+          <div className="flex flex-wrap gap-1">
+            {APPROACH_DISTANCES.map((d) => (
+              <button
+                key={d}
+                onClick={() => onSetApproachDistance(d)}
+                className={cn(
+                  'rounded px-1.5 py-0.5 font-mono text-[10px] transition-colors',
+                  approachDistance === d
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'
+                )}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tow controls */}
+      {mode === 'tow' && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSetTowType('winch')}
+              className={cn(
+                'h-7 flex-1 text-xs',
+                towType === 'winch'
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t('airportInfo.runway.winch')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSetTowType('tug')}
+              className={cn(
+                'h-7 flex-1 text-xs',
+                towType === 'tug'
+                  ? 'bg-primary/15 text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t('airportInfo.runway.tug')}
+            </Button>
+          </div>
+          {towType === 'tug' && (
+            <span className="text-xs text-muted-foreground">
+              {t('airportInfo.runway.tugAircraft', 'Tow plane: Cessna 172 SP')}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -18,4 +18,8 @@ export interface StartPosition extends Coordinates {
   xplaneIndex?: number | string;
   /** True if this is a helipad (uses type 'runway' but needs separate UI tracking) */
   isHelipad?: boolean;
+  /** Final approach distance in nautical miles (runway start only, mutually exclusive with towType) */
+  approachDistanceNm?: number;
+  /** Tow type for glider launch (runway start only, mutually exclusive with approachDistanceNm) */
+  towType?: 'tug' | 'winch';
 }
