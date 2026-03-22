@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { MapPin } from 'lucide-react';
 import { getFeaturedAirportsByCategory } from '@/components/layout/Toolbar/ExplorePanel/featured';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Badge } from '@/components/ui/badge';
 import type { FeaturedCategory } from '@/types/featured';
 import type { FeaturedTabProps } from './types';
 
@@ -13,42 +12,51 @@ const CATEGORIES: Array<FeaturedCategory | 'all'> = [
   'historic',
 ];
 
+const CATEGORY_VARIANTS: Record<
+  string,
+  NonNullable<React.ComponentProps<typeof Badge>['variant']>
+> = {
+  all: 'default',
+  challenging: 'danger',
+  scenic: 'cat-emerald',
+  unique: 'cat-amber',
+  historic: 'cat-sky',
+};
+
 export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: FeaturedTabProps) {
   const { t } = useTranslation();
   const airports = getFeaturedAirportsByCategory(category);
 
   return (
-    <div className="space-y-4">
-      <ToggleGroup
-        type="single"
-        value={category}
-        onValueChange={(v) => {
-          if (v) onCategoryChange(v as FeaturedCategory | 'all');
-        }}
-        className="flex flex-wrap gap-2"
-      >
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1.5">
         {CATEGORIES.map((cat) => (
-          <ToggleGroupItem key={cat} value={cat} className="h-auto rounded-full px-3 py-1 text-sm">
+          <Badge
+            key={cat}
+            variant={category === cat ? CATEGORY_VARIANTS[cat] : 'secondary'}
+            className="cursor-pointer text-xs"
+            onClick={() => onCategoryChange(cat as FeaturedCategory | 'all')}
+          >
             {cat === 'all' ? t('explore.featured.all') : t(`explore.featured.${cat}`)}
-          </ToggleGroupItem>
+          </Badge>
         ))}
-      </ToggleGroup>
+      </div>
 
-      <div className="grid gap-1">
+      <div className="space-y-0.5">
         {airports.map((airport) => (
           <button
             key={airport.icao}
             onClick={() => onSelectAirport(airport.icao)}
-            className="flex min-w-0 items-center gap-2 overflow-hidden rounded bg-muted/30 px-2.5 py-2 text-left transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="group flex w-full min-w-0 items-baseline gap-2.5 overflow-hidden rounded px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
           >
-            <span className="xp-value shrink-0 text-info">{airport.icao}</span>
+            <span className="shrink-0 font-mono text-sm font-semibold text-info">
+              {airport.icao}
+            </span>
             <div className="min-w-0 flex-1">
-              <span className="block truncate text-sm text-foreground">{airport.tagline}</span>
-              <span className="block truncate text-xs text-muted-foreground">
-                {airport.description}
+              <span className="xp-label truncate text-foreground group-hover:text-foreground">
+                {airport.tagline}
               </span>
             </div>
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30" />
           </button>
         ))}
       </div>

@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, Plane } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import {
   getEventStatus,
@@ -14,16 +12,10 @@ interface VatsimEventsTabProps {
   onSelectAirport: (icao: string) => void;
 }
 
-const STATUS_STYLES = {
-  live: 'bg-success/20 text-success border-success/30',
-  soon: 'bg-warning/20 text-warning border-warning/30',
-  upcoming: 'bg-muted text-muted-foreground border-border',
-};
-
-const STATUS_LABELS = {
-  live: 'LIVE',
-  soon: 'SOON',
-  upcoming: 'UPCOMING',
+const STATUS_VARIANT: Record<string, NonNullable<React.ComponentProps<typeof Badge>['variant']>> = {
+  live: 'success',
+  soon: 'warning',
+  upcoming: 'secondary',
 };
 
 export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
@@ -33,18 +25,17 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
 
   const busiestAirports = getBusiestAirports(vatsimData, 5);
 
-  // Sort events: live first, then soon, then upcoming
   const sortedEvents = [...(events || [])]
     .sort((a, b) => {
       const statusOrder = { live: 0, soon: 1, upcoming: 2 };
       return statusOrder[getEventStatus(a)] - statusOrder[getEventStatus(b)];
     })
-    .slice(0, 10); // Limit to 10 events
+    .slice(0, 10);
 
   if (isLoadingVatsim && isLoadingEvents) {
     return (
       <div className="flex items-center justify-center py-8">
-        <span className="text-sm text-muted-foreground">{t('common.loading')}</span>
+        <span className="xp-label">{t('common.loading')}</span>
       </div>
     );
   }
@@ -54,28 +45,24 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
       {/* Busiest Airports */}
       {busiestAirports.length > 0 && (
         <div>
-          <h4 className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            <Plane className="h-3 w-3" />
+          <h4 className="xp-section-heading mb-2">
             {t('explore.vatsim.busiestNow', 'Busiest Now')}
           </h4>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {busiestAirports.map((airport, index) => (
-              <Button
+              <button
                 key={airport.icao}
-                variant="ghost"
                 onClick={() => onSelectAirport(airport.icao)}
-                className="h-auto w-full justify-between border border-border bg-background p-2 text-left hover:bg-muted"
+                className="group flex w-full min-w-0 items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
               >
-                <div className="flex items-center gap-2">
-                  <span className="w-4 text-sm text-muted-foreground">{index + 1}.</span>
-                  <span className="font-mono text-sm font-medium">{airport.icao}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="text-success">↗ {airport.departures}</span>
-                  <span className="text-warning">↘ {airport.arrivals}</span>
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                </div>
-              </Button>
+                <span className="w-4 font-mono text-xs text-muted-foreground">{index + 1}</span>
+                <span className="shrink-0 font-mono text-sm font-semibold text-info">
+                  {airport.icao}
+                </span>
+                <span className="flex-1" />
+                <span className="font-mono text-xs text-success">↗{airport.departures}</span>
+                <span className="font-mono text-xs text-warning">↘{airport.arrivals}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -83,79 +70,69 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
 
       {/* Events */}
       <div>
-        <h4 className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          {t('explore.vatsim.events', 'Events')}
-        </h4>
+        <h4 className="xp-section-heading mb-2">{t('explore.vatsim.events', 'Events')}</h4>
 
         {sortedEvents.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
+          <p className="py-4 text-center text-xs text-muted-foreground">
             {t('explore.vatsim.noEvents', 'No upcoming events')}
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {sortedEvents.map((event) => {
               const status = getEventStatus(event);
               const timeInfo = getEventTimeInfo(event);
               const primaryRoute = event.routes[0];
 
               return (
-                <div key={event.id} className={cn('rounded-lg border p-3', STATUS_STYLES[status])}>
-                  {/* Header */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={cn('px-1.5 py-0 text-xs', STATUS_STYLES[status])}
-                        >
-                          {STATUS_LABELS[status]}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{timeInfo}</span>
-                      </div>
-                      <h5 className="mt-1 truncate text-sm font-medium">{event.name}</h5>
-                    </div>
+                <button
+                  key={event.id}
+                  onClick={() => primaryRoute && onSelectAirport(primaryRoute.departure)}
+                  disabled={!primaryRoute}
+                  className={cn(
+                    'block w-full overflow-hidden rounded px-2.5 py-2 text-left transition-colors',
+                    primaryRoute ? 'hover:bg-muted/50' : 'opacity-60',
+                    status === 'live' && 'bg-success/5'
+                  )}
+                >
+                  <div className="flex items-start gap-2">
+                    <Badge
+                      variant={STATUS_VARIANT[status]}
+                      className="mt-0.5 shrink-0 px-1.5 py-0 text-xs"
+                    >
+                      {status.toUpperCase()}
+                    </Badge>
+                    <span className="text-sm leading-snug text-foreground">{event.name}</span>
                   </div>
-
-                  {/* Route */}
-                  {primaryRoute && (
-                    <div className="mt-2 flex items-center gap-2 text-sm">
-                      <span className="font-mono font-medium">{primaryRoute.departure}</span>
-                      <span className="text-muted-foreground">→</span>
-                      <span className="font-mono font-medium">{primaryRoute.arrival}</span>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  {primaryRoute && (
-                    <div className="mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 gap-1.5 text-sm"
-                        onClick={() => onSelectAirport(primaryRoute.departure)}
-                      >
-                        <MapPin className="h-3 w-3" />
-                        {t('explore.vatsim.goToDeparture', 'Go to Departure')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    {primaryRoute && (
+                      <>
+                        <span className="shrink-0 font-mono text-xs font-semibold text-info">
+                          {primaryRoute.departure}
+                        </span>
+                        <span className="text-xs text-muted-foreground/40">→</span>
+                        <span className="shrink-0 font-mono text-xs font-semibold text-info">
+                          {primaryRoute.arrival}
+                        </span>
+                      </>
+                    )}
+                    <span className="truncate text-xs text-muted-foreground">{timeInfo}</span>
+                  </div>
+                </button>
               );
             })}
           </div>
         )}
       </div>
 
-      {/* VATSIM attribution */}
-      <div className="pt-2 text-center">
-        <span className="text-xs text-muted-foreground">
+      {/* Attribution */}
+      <div className="pt-1 text-center">
+        <span className="text-xs text-muted-foreground/50">
           Data from{' '}
           <a
             href="https://vatsim.net"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="text-primary/70 hover:text-primary"
           >
             VATSIM
           </a>

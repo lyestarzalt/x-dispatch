@@ -108,9 +108,7 @@ export default function AirportInfoPanel({
           {/* Row 1: ICAO + Flight Category */}
           <div className="flex items-center justify-between pr-8">
             <div className="flex items-baseline gap-2">
-              <h1 className="font-mono text-xl font-bold tracking-tight text-foreground">
-                {airport.id}
-              </h1>
+              <h1 className="font-mono text-xl font-bold tracking-tight text-info">{airport.id}</h1>
               <span className="font-mono text-xs text-muted-foreground">
                 {elevation}' {transitionAlt && `TA${transitionAlt}'`}
               </span>
@@ -135,7 +133,7 @@ export default function AirportInfoPanel({
 
           {/* Row 2: Airport Name + IATA */}
           <div className="mt-1 flex items-baseline gap-2">
-            <p className="text-sm text-foreground">{airport.name}</p>
+            <p className="text-sm text-muted-foreground">{airport.name}</p>
             {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
               <span className="font-mono text-xs text-muted-foreground">
                 ({airport.metadata.iata_code})

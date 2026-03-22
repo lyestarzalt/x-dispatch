@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Compass, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
@@ -122,7 +121,7 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
             ))}
           </TabsList>
 
-          <ScrollArea className="flex-1">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <div className="p-4">
               <TabsContent value="featured" className="mt-0">
                 <FeaturedTab
@@ -138,7 +137,7 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
                 <VatsimEventsTab onSelectAirport={handleSelectAirport} />
               </TabsContent>
             </div>
-          </ScrollArea>
+          </div>
         </Tabs>
       </div>
     </div>
