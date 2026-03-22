@@ -110,6 +110,12 @@ contextBridge.exposeInMainWorld('appAPI', {
     ipcRenderer.on('focus-search', handler);
     return () => ipcRenderer.removeListener('focus-search', handler);
   },
+  onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => {
+    const handler = (_event: IpcRendererEvent, data: { type: string; icao?: string }) =>
+      callback(data);
+    ipcRenderer.on('deep-link', handler);
+    return () => ipcRenderer.removeListener('deep-link', handler);
+  },
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -375,6 +381,7 @@ declare global {
       getZoomFactor: () => number;
       getFilePathForDrop: (file: File) => string;
       onFocusSearch: (callback: () => void) => () => void;
+      onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => () => void;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;

@@ -26,6 +26,12 @@ const config: ForgeConfig = {
     icon: './assets/icon',
     executableName: 'x-dispatch',
     extraResource: ['./assets'],
+    protocols: [
+      {
+        name: 'X-Dispatch',
+        schemes: ['xdispatch'],
+      },
+    ],
   },
   rebuildConfig: {},
   makers: [
@@ -43,6 +49,7 @@ const config: ForgeConfig = {
         icon: './assets/icon.png',
         categories: ['Utility', 'Game'],
         section: 'utils',
+        mimeType: ['x-scheme-handler/xdispatch'],
       },
     }),
     new MakerRpm({

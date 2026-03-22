@@ -1192,16 +1192,46 @@ function registerIpcHandlers() {
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
 
+// Deep link protocol: xdispatch://airport/ICAO
+const PROTOCOL = 'xdispatch';
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient(PROTOCOL);
+}
+
+function handleDeepLink(url: string): void {
+  if (!url.startsWith(`${PROTOCOL}://`)) return;
+  const parsed = new URL(url);
+  // xdispatch://airport/LFMN → host="airport", pathname="/LFMN"
+  if (parsed.host === 'airport' && parsed.pathname.length > 1) {
+    const icao = parsed.pathname.slice(1).toUpperCase();
+    mainWindow?.webContents.send('deep-link', { type: 'airport', icao });
+  }
+}
+
 // Prevent multiple instances — focus existing window if second instance launches
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
 
-app.on('second-instance', () => {
+app.on('second-instance', (_event, commandLine) => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
   }
+  // Windows/Linux: deep link URL is the last arg
+  const url = commandLine.find((arg) => arg.startsWith(`${PROTOCOL}://`));
+  if (url) handleDeepLink(url);
+});
+
+// macOS: deep link via open-url event
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  handleDeepLink(url);
 });
 
 app.whenReady().then(async () => {

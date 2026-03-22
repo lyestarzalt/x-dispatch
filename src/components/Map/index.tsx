@@ -548,6 +548,18 @@ export default function Map({ airports }: MapProps) {
     ]
   );
 
+  // Deep link handler — navigate to airport from xdispatch:// URL
+  useEffect(() => {
+    return window.appAPI.onDeepLink((data) => {
+      if (data.type === 'airport' && data.icao) {
+        const airport = airports.find((a) => a.icao === data.icao);
+        if (airport) {
+          selectAirport(airport);
+        }
+      }
+    });
+  }, [airports, selectAirport]);
+
   const handleLayerToggle = useCallback(
     (layer: keyof LayerVisibility) => {
       toggleLayer(layer);
