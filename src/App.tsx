@@ -60,6 +60,18 @@ function AppContent() {
     setAppState('setup');
   }, []);
 
+  // Refresh airports when custom scenery changes (via addon manager rescan)
+  useEffect(() => {
+    return window.appAPI.onAirportsUpdated(async () => {
+      try {
+        const data = await window.airportAPI.getAirports();
+        setAirports(data);
+      } catch (err) {
+        window.appAPI.log.error('Failed to refresh airports after resync', err);
+      }
+    });
+  }, []);
+
   if (appState === 'checking') {
     return <FullScreenSpinner />;
   }

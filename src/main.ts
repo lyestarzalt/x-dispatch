@@ -36,6 +36,7 @@ import {
   validateCoordinates,
 } from './lib/utils/validation';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
+import { resyncCustomScenery } from './lib/xplaneServices/dataService/airports';
 import {
   addInstallation,
   getActiveInstallation,
@@ -605,6 +606,21 @@ function registerIpcHandlers() {
 
   ipcMain.handle('get-airports', () => dataManager.getAllAirports());
   ipcMain.handle('data:getDistinctCountries', () => dataManager.getDistinctCountries());
+
+  ipcMain.handle('airport:resync-custom', async () => {
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) return { synced: false, count: 0, diff: 0 };
+    try {
+      const result = await resyncCustomScenery(xplanePath);
+      if (result.diff !== 0) {
+        mainWindow?.webContents.send('airports-updated');
+      }
+      return { synced: true, ...result };
+    } catch (err) {
+      logger.main.error('Custom scenery resync failed', err);
+      return { synced: false, count: 0, diff: 0 };
+    }
+  });
   ipcMain.handle('get-airport-data', (_, icao: string) => {
     if (!isValidICAO(icao)) throw new Error('Invalid ICAO code');
     logger.main.info(`[User] Airport selected: ${icao.toUpperCase()}`);
