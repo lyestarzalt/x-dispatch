@@ -438,6 +438,16 @@
     "noStartPositions": "Brak dostępnych pozycji startowych",
     "searchPlaceholder": "Szukaj...",
     "noMatchingGates": "Nie znaleziono bramek dla \"{{query}}\"",
+    "runway": {
+      "threshold": "Próg",
+      "approach": "Podejście",
+      "tow": "Holowanie",
+      "distance": "Odległość",
+      "approachNm": "{{distance}} nm finał",
+      "winch": "Wyciągarka",
+      "tug": "Holownik",
+      "tugAircraft": "Samolot holujący: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway ma nowszą wersję",
       "credit": "od {{artist}} · {{date}}",

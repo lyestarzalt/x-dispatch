@@ -438,6 +438,16 @@
     "noStartPositions": "Nenhuma posição de partida disponível",
     "searchPlaceholder": "Pesquisar...",
     "noMatchingGates": "Nenhum portão encontrado para \"{{query}}\"",
+    "runway": {
+      "threshold": "Cabeceira",
+      "approach": "Aproximação",
+      "tow": "Reboque",
+      "distance": "Distância",
+      "approachNm": "{{distance}} nm final",
+      "winch": "Guincho",
+      "tug": "Rebocador",
+      "tugAircraft": "Avião rebocador: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway tem uma versão mais recente",
       "credit": "por {{artist}} · {{date}}",

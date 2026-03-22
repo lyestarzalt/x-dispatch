@@ -370,6 +370,16 @@
     "noStartPositions": "Aucune position de départ disponible",
     "searchPlaceholder": "Rechercher...",
     "noMatchingGates": "Aucune porte correspondant à \"{{query}}\"",
+    "runway": {
+      "threshold": "Seuil",
+      "approach": "Approche",
+      "tow": "Remorquage",
+      "distance": "Distance",
+      "approachNm": "{{distance}} nm finale",
+      "winch": "Treuil",
+      "tug": "Remorqueur",
+      "tugAircraft": "Avion remorqueur : Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway a une version plus récente",
       "credit": "par {{artist}} · {{date}}",

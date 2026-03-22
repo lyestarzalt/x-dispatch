@@ -438,6 +438,16 @@
     "noStartPositions": "No hay posiciones de inicio disponibles",
     "searchPlaceholder": "Buscar...",
     "noMatchingGates": "No se encontraron puertas para \"{{query}}\"",
+    "runway": {
+      "threshold": "Umbral",
+      "approach": "Aproximación",
+      "tow": "Remolque",
+      "distance": "Distancia",
+      "approachNm": "{{distance}} nm final",
+      "winch": "Torno",
+      "tug": "Remolcador",
+      "tugAircraft": "Avión remolcador: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gateway tiene una versión más reciente",
       "credit": "por {{artist}} · {{date}}",

@@ -438,6 +438,16 @@
     "noStartPositions": "Нет доступных стартовых позиций",
     "searchPlaceholder": "Поиск...",
     "noMatchingGates": "Выходы для \"{{query}}\" не найдены",
+    "runway": {
+      "threshold": "Порог",
+      "approach": "Заход",
+      "tow": "Буксировка",
+      "distance": "Расстояние",
+      "approachNm": "{{distance}} nm финал",
+      "winch": "Лебёдка",
+      "tug": "Буксировщик",
+      "tugAircraft": "Самолёт-буксировщик: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "На Gateway есть более новый релиз",
       "credit": "от {{artist}} · {{date}}",

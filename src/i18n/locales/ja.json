@@ -438,6 +438,16 @@
     "noStartPositions": "利用可能な開始位置がありません",
     "searchPlaceholder": "検索...",
     "noMatchingGates": "「{{query}}」に一致するゲートが見つかりません",
+    "runway": {
+      "threshold": "滑走路末端",
+      "approach": "進入",
+      "tow": "曳航",
+      "distance": "距離",
+      "approachNm": "{{distance}} nm ファイナル",
+      "winch": "ウインチ",
+      "tug": "曳航機",
+      "tugAircraft": "曳航機: Cessna 172 SP"
+    },
     "gateway": {
       "updateAvailable": "Gatewayに新しいリリースがあります",
       "credit": "{{artist}} · {{date}}",
