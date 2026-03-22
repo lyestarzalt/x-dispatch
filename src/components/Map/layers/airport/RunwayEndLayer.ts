@@ -4,9 +4,16 @@ import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
+// Same colors as GateLayer for visual consistency
+const COLORS = {
+  default: '#64748b',
+  hover: '#94a3b8',
+  selected: '#1DA0F2',
+} as const;
+
 /**
- * Runway End Layer - Shows clickable markers at each runway end
- * For selecting start position in X-Plane launcher
+ * Runway End Layer — circle markers at each runway threshold.
+ * Same visual style as gates for consistent clickable feel.
  */
 export class RunwayEndLayer extends BaseLayerRenderer {
   layerId = 'airport-runway-ends';
@@ -23,53 +30,47 @@ export class RunwayEndLayer extends BaseLayerRenderer {
     const geoJSON = this.createGeoJSON(airport.runways);
     this.addSource(map, geoJSON);
 
-    // Runway end markers - small circles
+    const minZoom = ZOOM_BEHAVIORS.runwayEnds.minZoom;
+
+    // Circle markers — same style as gates
     this.addLayer(map, {
       id: this.layerId,
       type: 'circle',
       source: this.sourceId,
-      minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
+      minzoom: minZoom,
       paint: {
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          ZOOM_BEHAVIORS.runwayEnds.minZoom,
-          4,
-          15,
-          6,
-          17,
-          10,
-          19,
-          14,
-        ],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], minZoom, 8, minZoom + 2, 12, 19, 18],
         'circle-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#22c55e',
-          '#3b82f6',
+          COLORS.selected,
+          ['boolean', ['feature-state', 'hover'], false],
+          COLORS.hover,
+          COLORS.default,
         ],
         'circle-opacity': [
           'case',
-          ['boolean', ['feature-state', 'hover'], false],
-          1,
           ['boolean', ['feature-state', 'selected'], false],
-          1,
-          0.8,
+          0.95,
+          ['boolean', ['feature-state', 'hover'], false],
+          0.85,
+          0.7,
         ],
         'circle-stroke-width': [
           'case',
-          ['boolean', ['feature-state', 'hover'], false],
-          3,
           ['boolean', ['feature-state', 'selected'], false],
-          3,
-          2,
+          2.5,
+          ['boolean', ['feature-state', 'hover'], false],
+          1.5,
+          1,
         ],
         'circle-stroke-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#22c55e',
+          COLORS.selected,
+          ['boolean', ['feature-state', 'hover'], false],
           '#ffffff',
+          COLORS.hover,
         ],
       },
     });
@@ -92,7 +93,6 @@ export class RunwayEndLayer extends BaseLayerRenderer {
           17,
           14,
         ],
-        'text-offset': [0, 0],
         'text-anchor': 'center',
         'text-allow-overlap': true,
       },
@@ -106,8 +106,8 @@ export class RunwayEndLayer extends BaseLayerRenderer {
         'text-halo-color': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
-          '#22c55e',
-          '#3b82f6',
+          COLORS.selected,
+          COLORS.default,
         ],
         'text-halo-width': 0,
       },
@@ -119,7 +119,6 @@ export class RunwayEndLayer extends BaseLayerRenderer {
     let id = 0;
 
     for (const runway of runways) {
-      // Add both ends of each runway
       for (const end of runway.ends) {
         features.push({
           type: 'Feature',
