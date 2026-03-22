@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import { getFeaturedAirportsByCategory } from '@/components/layout/Toolbar/ExplorePanel/featured';
-import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { FeaturedCategory } from '@/types/featured';
 import type { FeaturedTabProps } from './types';
@@ -13,13 +12,6 @@ const CATEGORIES: Array<FeaturedCategory | 'all'> = [
   'unique',
   'historic',
 ];
-
-const CATEGORY_ICONS: Record<FeaturedCategory, string> = {
-  challenging: 'mountain',
-  scenic: 'sunrise',
-  unique: 'sparkles',
-  historic: 'landmark',
-};
 
 export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: FeaturedTabProps) {
   const { t } = useTranslation();
@@ -42,28 +34,22 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
         ))}
       </ToggleGroup>
 
-      <div className="grid gap-2">
+      <div className="grid gap-1">
         {airports.map((airport) => (
-          <Button
+          <button
             key={airport.icao}
-            variant="ghost"
             onClick={() => onSelectAirport(airport.icao)}
-            className="h-auto w-full items-start gap-3 border border-border bg-background p-3 text-left hover:bg-muted"
+            className="flex min-w-0 items-center gap-2 overflow-hidden rounded bg-muted/30 px-2.5 py-2 text-left transition-colors hover:bg-muted/50 hover:text-foreground"
           >
-            <span className="text-lg">
-              {t(`explore.featured.icons.${CATEGORY_ICONS[airport.category]}`)}
-            </span>
+            <span className="xp-value shrink-0 text-info">{airport.icao}</span>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-medium">{airport.icao}</span>
-                <span className="truncate text-sm text-muted-foreground">{airport.tagline}</span>
-              </div>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+              <span className="block truncate text-sm text-foreground">{airport.tagline}</span>
+              <span className="block truncate text-xs text-muted-foreground">
                 {airport.description}
-              </p>
+              </span>
             </div>
-            <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          </Button>
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30" />
+          </button>
         ))}
       </div>
     </div>
