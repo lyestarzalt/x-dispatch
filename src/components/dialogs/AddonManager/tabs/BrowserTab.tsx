@@ -12,12 +12,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  useAircraftCheckUpdates,
   useAircraftDelete,
   useAircraftList,
   useAircraftLock,
   useAircraftToggle,
-  usePluginCheckUpdates,
   usePluginDelete,
   usePluginList,
   usePluginLock,
@@ -53,7 +51,6 @@ export function BrowserTab() {
   const aircraftToggle = useAircraftToggle();
   const aircraftDelete = useAircraftDelete();
   const aircraftLock = useAircraftLock();
-  const aircraftCheckUpdates = useAircraftCheckUpdates();
 
   // Plugin queries
   const {
@@ -66,7 +63,6 @@ export function BrowserTab() {
   const pluginToggle = usePluginToggle();
   const pluginDelete = usePluginDelete();
   const pluginLock = usePluginLock();
-  const pluginCheckUpdates = usePluginCheckUpdates();
 
   // Filter by search
   const filteredAircraft = useMemo(() => {
@@ -127,26 +123,14 @@ export function BrowserTab() {
     await pluginDelete.mutateAsync(folderName);
   };
 
-  const handleCheckUpdates = () => {
-    if (subTab === 'aircraft') {
-      aircraftCheckUpdates.mutate(aircraft);
-    } else {
-      pluginCheckUpdates.mutate(plugins);
-    }
-  };
-
   const isAircraftPending =
     aircraftToggle.isPending || aircraftDelete.isPending || aircraftLock.isPending;
   const isPluginPending = pluginToggle.isPending || pluginDelete.isPending || pluginLock.isPending;
-  const checkingUpdates =
-    subTab === 'aircraft' ? aircraftCheckUpdates.isPending : pluginCheckUpdates.isPending;
 
   const currentStats = subTab === 'aircraft' ? aircraftStats : pluginStats;
-  const isLoading = subTab === 'aircraft' ? aircraftLoading : pluginsLoading;
 
   const totalAddons = aircraft.length + plugins.length;
   const totalEnabled = aircraftStats.enabled + pluginStats.enabled;
-  const totalUpdates = aircraftStats.updates + pluginStats.updates;
 
   return (
     <div className="flex h-full flex-col">
@@ -162,12 +146,6 @@ export function BrowserTab() {
             <span>{totalAddons - totalEnabled}</span>
             {' off'}
           </span>
-          {totalUpdates > 0 && (
-            <Badge variant="warning" className="gap-1">
-              <RefreshCw className="h-3 w-3" />
-              {t('addonManager.installed.updatesAvailable', { count: totalUpdates })}
-            </Badge>
-          )}
         </div>
 
         {/* Right: actions */}
@@ -179,17 +157,6 @@ export function BrowserTab() {
             className="h-8 w-48 text-sm"
             startIcon={<Search />}
           />
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleCheckUpdates}
-            disabled={isLoading || checkingUpdates}
-            className="gap-1.5"
-          >
-            {checkingUpdates ? <Spinner /> : <RefreshCw className="h-3.5 w-3.5" />}
-            {t('addonManager.installed.checkUpdates')}
-          </Button>
 
           <Button
             variant="ghost"
