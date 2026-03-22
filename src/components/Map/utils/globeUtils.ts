@@ -1,3 +1,4 @@
+import { MaplibreStarfieldLayer } from '@geoql/maplibre-gl-starfield';
 import mlcontour from 'maplibre-contour';
 import maplibregl from 'maplibre-gl';
 import { useMapStore } from '@/stores/mapStore';
@@ -35,12 +36,23 @@ function getContourDemSource(): InstanceType<typeof mlcontour.DemSource> {
 // Globe projection causes layer displacement issues when rotated at higher zooms
 const GLOBE_TO_MERCATOR_ZOOM = 7;
 
+const STARFIELD_LAYER_ID = 'starfield';
+
 export function setupGlobeProjection(map: maplibregl.Map): void {
   // Start with globe projection
   map.setProjection({ type: 'globe' });
   map.setSky({
     'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
   });
+
+  // Starfield behind the globe — add below all other layers
+  const starfield = new MaplibreStarfieldLayer({
+    id: STARFIELD_LAYER_ID,
+    starCount: 3000,
+    starSize: 1.5,
+  });
+  const firstLayer = map.getStyle().layers?.[0]?.id;
+  map.addLayer(starfield as unknown as maplibregl.CustomLayerInterface, firstLayer);
 
   // Switch projection based on zoom level to avoid layer displacement.
   // 3D terrain is only enabled in mercator mode — globe projection doesn't
@@ -57,6 +69,10 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     if (zoom > GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'globe') {
       map.setProjection({ type: 'mercator' });
       currentProjection = 'mercator';
+      // Hide starfield in mercator — no sky to render into
+      if (map.getLayer(STARFIELD_LAYER_ID)) {
+        map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'none');
+      }
       // Restore terrain if the user had it enabled
       if (terrainUserEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
         map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
@@ -67,6 +83,10 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
       map.setTerrain(null);
       map.setProjection({ type: 'globe' });
       currentProjection = 'globe';
+      // Show starfield again in globe mode
+      if (map.getLayer(STARFIELD_LAYER_ID)) {
+        map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'visible');
+      }
     }
   });
 }
@@ -228,10 +248,14 @@ export function preserveCustomStyle(
   // layer so they render below labels; all other custom layers go on top.
   const customLayers = (previous.layers ?? []).filter((l) => !nextLayerIds.has(l.id));
   const terrainIds = new Set(TERRAIN_SHADING_LAYER_IDS);
+  const starfieldLayer = customLayers.filter((l) => l.id === STARFIELD_LAYER_ID);
   const terrainLayers = customLayers.filter((l) => terrainIds.has(l.id));
-  const otherLayers = customLayers.filter((l) => !terrainIds.has(l.id));
+  const otherLayers = customLayers.filter(
+    (l) => !terrainIds.has(l.id) && l.id !== STARFIELD_LAYER_ID
+  );
 
-  const layers = [...next.layers];
+  // Starfield goes first (behind everything)
+  const layers = [...starfieldLayer, ...next.layers];
   if (terrainLayers.length > 0) {
     const symbolIdx = layers.findIndex((l) => l.type === 'symbol');
     if (symbolIdx >= 0) {
