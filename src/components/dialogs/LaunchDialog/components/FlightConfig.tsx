@@ -411,6 +411,24 @@ export function FlightConfig({
                   {t(`airportInfo.runway.${startPosition.towType}`)} tow
                 </div>
               )}
+              {startPosition?.customStartMode === 'air' && (
+                <div className="text-xs text-muted-foreground">
+                  {t('toolbar.pinModes.air')}{' '}
+                  {Math.round((startPosition.airAltitudeM ?? 914.4) / 0.3048).toLocaleString()} ft
+                  {startPosition.airSpeedMs != null && ` · ${startPosition.airSpeedMs} m/s`}
+                </div>
+              )}
+              {(startPosition?.customStartMode === 'carrier' ||
+                startPosition?.customStartMode === 'frigate') && (
+                <div className="text-xs text-muted-foreground">
+                  {t(`toolbar.pinModes.${startPosition.customStartMode}`)}
+                  {startPosition.boatPosition
+                    ? ` · ${t(`toolbar.pinModes.cat_${startPosition.boatPosition}`)}`
+                    : startPosition.boatApproachNm
+                      ? ` · ${startPosition.boatApproachNm} nm`
+                      : ''}
+                </div>
+              )}
             </div>
           </div>
         </div>

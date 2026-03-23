@@ -251,8 +251,22 @@ function createRotationHandle(
 // ──── Store helper ────
 
 function setStartPositionFromPin(lng: number, lat: number, heading: number) {
-  const icao = useAppStore.getState().selectedICAO ?? 'ZZZZ';
-  useAppStore.getState().setStartPosition({
+  const state = useAppStore.getState();
+  const icao = state.selectedICAO ?? 'ZZZZ';
+  // Preserve custom start mode and its options from existing position
+  const prev = state.startPosition;
+  const customFields =
+    prev?.type === 'custom'
+      ? {
+          customStartMode: prev.customStartMode,
+          airAltitudeM: prev.airAltitudeM,
+          airSpeedEnum: prev.airSpeedEnum,
+          airSpeedMs: prev.airSpeedMs,
+          boatPosition: prev.boatPosition,
+          boatApproachNm: prev.boatApproachNm,
+        }
+      : {};
+  state.setStartPosition({
     type: 'custom',
     name: 'Custom',
     airport: icao,
@@ -260,6 +274,7 @@ function setStartPositionFromPin(lng: number, lat: number, heading: number) {
     longitude: lng,
     heading: Math.round(heading),
     index: -1,
+    ...customFields,
   });
 }
 
