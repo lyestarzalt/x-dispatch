@@ -1,43 +1,11 @@
-import { ScatterplotLayer } from '@deck.gl/layers';
-import { MapboxOverlay } from '@deck.gl/mapbox';
 import maplibregl from 'maplibre-gl';
-import {
-  AirportLight,
-  LIGHT_COLORS,
-  LightColor,
-  generateAirportLights,
-} from '@/lib/parsers/apt/lighting';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { LIGHT_COLORS, generateAirportLights } from '@/lib/parsers/apt/lighting';
 import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
-// Type for deck.gl color arrays
-type RGBAColor = [number, number, number, number];
-
 /**
- * Convert hex color to RGBA array for deck.gl
- */
-function hexToRgba(hex: string, alpha = 255): RGBAColor {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result || !result[1] || !result[2] || !result[3]) return [255, 255, 255, alpha];
-  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16), alpha];
-}
-
-/**
- * Get color for a light
- */
-function getLightColor(color: LightColor): RGBAColor {
-  return hexToRgba(LIGHT_COLORS[color].hex, 255);
-}
-
-/**
- * Get glow color for a light (more transparent)
- */
-function getGlowColor(color: LightColor): RGBAColor {
-  return hexToRgba(LIGHT_COLORS[color].hex, 80);
-}
-
-/**
- * Taxiway Lights Layer - Uses deck.gl for realistic light rendering
+ * Taxiway Lights Layer — pure MapLibre circle layers (no deck.gl)
  *
  * Renders taxiway lighting according to FAA standards:
  * - Green centerline lights (101)
@@ -51,10 +19,8 @@ function getGlowColor(color: LightColor): RGBAColor {
 export class TaxiwayLightsLayer extends BaseLayerRenderer {
   layerId = 'airport-taxiway-lights';
   sourceId = 'airport-taxiway-lights';
-  additionalLayerIds: string[] = [];
+  additionalLayerIds = ['airport-taxiway-lights-glow'];
 
-  private overlay: MapboxOverlay | null = null;
-  private lights: AirportLight[] = [];
   private animationFrame: number | null = null;
   private pulsatePhase = 0;
   private map: maplibregl.Map | null = null;
@@ -68,146 +34,118 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
 
     this.map = map;
 
-    // Generate lights using proper FAA spacing
-    this.lights = generateAirportLights(airport.linearFeatures);
+    const lights = generateAirportLights(airport.linearFeatures);
+    if (lights.length === 0) return;
 
-    if (this.lights.length === 0) return;
+    // Build GeoJSON from lights
+    const geoJSON: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features: lights.map((light, index) => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: light.coordinates,
+        },
+        properties: {
+          id: index,
+          color: light.color,
+          colorHex: LIGHT_COLORS[light.color].hex,
+          isPulsating: light.isPulsating,
+          intensity: light.intensity,
+        },
+      })),
+    };
 
-    // Create deck.gl overlay
-    this.overlay = new MapboxOverlay({
-      interleaved: true,
-      layers: this.createLayers(),
+    this.addSource(map, geoJSON);
+
+    // Match linearFeatures minZoom so lights appear/disappear with taxiway lines
+    const minzoom = ZOOM_BEHAVIORS.linearFeatures?.minZoom ?? 14;
+
+    // Glow layer — soft halo behind each light
+    this.addLayer(map, {
+      id: 'airport-taxiway-lights-glow',
+      type: 'circle',
+      source: this.sourceId,
+      minzoom,
+      paint: {
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          14,
+          ['*', 4, ['get', 'intensity']],
+          16,
+          ['*', 6, ['get', 'intensity']],
+          18,
+          ['*', 10, ['get', 'intensity']],
+        ],
+        'circle-color': ['get', 'colorHex'],
+        'circle-opacity': 0.15,
+        'circle-blur': 1,
+      },
     });
 
-    // MapboxOverlay works with MapLibre (compatible API)
-    (map as unknown as { addControl: (ctrl: unknown) => void }).addControl(this.overlay);
+    // Main light layer — visible colored dot
+    this.addLayer(map, {
+      id: this.layerId,
+      type: 'circle',
+      source: this.sourceId,
+      minzoom,
+      paint: {
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          14,
+          ['*', 1.5, ['get', 'intensity']],
+          16,
+          ['*', 3, ['get', 'intensity']],
+          18,
+          ['*', 5, ['get', 'intensity']],
+        ],
+        'circle-color': ['get', 'colorHex'],
+        'circle-opacity': 0.95,
+        'circle-blur': 0.3,
+      },
+    });
 
-    // Start pulsating animation
+    // Start pulsating animation for stop bars
     this.startAnimation();
   }
 
   /**
-   * Create deck.gl layers for the lights
-   */
-  private createLayers() {
-    // Separate static and pulsating lights
-    const staticLights = this.lights.filter((l) => !l.isPulsating);
-    const pulsatingLights = this.lights.filter((l) => l.isPulsating);
-
-    // Calculate pulsating opacity using sine wave
-    const pulseOpacity = 0.3 + 0.7 * Math.sin(this.pulsatePhase * Math.PI * 2);
-
-    return [
-      // Outer glow layer for static lights - soft halo effect
-      new ScatterplotLayer<AirportLight>({
-        id: 'taxiway-lights-glow',
-        data: staticLights,
-        pickable: false,
-        opacity: 0.2,
-        stroked: false,
-        filled: true,
-        radiusMinPixels: 3,
-        radiusMaxPixels: 8,
-        radiusScale: 1,
-        getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: (d) => 3 * d.intensity,
-        getFillColor: (d) => getGlowColor(d.color),
-      }),
-
-      // Main layer for static lights - visible colored circle
-      new ScatterplotLayer<AirportLight>({
-        id: 'taxiway-lights-main',
-        data: staticLights,
-        pickable: false,
-        opacity: 0.95,
-        stroked: false,
-        filled: true,
-        radiusMinPixels: 1.5,
-        radiusMaxPixels: 4,
-        radiusScale: 1,
-        getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: (d) => 1.5 * d.intensity,
-        getFillColor: (d) => getLightColor(d.color),
-      }),
-
-      // Bright white core for static lights
-      new ScatterplotLayer<AirportLight>({
-        id: 'taxiway-lights-core',
-        data: staticLights,
-        pickable: false,
-        opacity: 1,
-        stroked: false,
-        filled: true,
-        radiusMinPixels: 0.5,
-        radiusMaxPixels: 2,
-        radiusScale: 1,
-        getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: (d) => 0.6 * d.intensity,
-        getFillColor: () => [255, 255, 255, 255] as RGBAColor,
-      }),
-
-      // Pulsating lights glow - animated halo
-      new ScatterplotLayer<AirportLight>({
-        id: 'taxiway-lights-pulsating-glow',
-        data: pulsatingLights,
-        pickable: false,
-        opacity: pulseOpacity * 0.3,
-        stroked: false,
-        filled: true,
-        radiusMinPixels: 4,
-        radiusMaxPixels: 10,
-        radiusScale: 1,
-        getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: (d) => 4 * d.intensity,
-        getFillColor: (d) => getGlowColor(d.color),
-      }),
-
-      // Pulsating lights main - visible pulsing circle
-      new ScatterplotLayer<AirportLight>({
-        id: 'taxiway-lights-pulsating-main',
-        data: pulsatingLights,
-        pickable: false,
-        opacity: pulseOpacity,
-        stroked: false,
-        filled: true,
-        radiusMinPixels: 2,
-        radiusMaxPixels: 5,
-        radiusScale: 1,
-        getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: (d) => 2 * d.intensity,
-        getFillColor: (d) => getLightColor(d.color),
-      }),
-
-      // Pulsating lights core - bright center
-      new ScatterplotLayer<AirportLight>({
-        id: 'taxiway-lights-pulsating-core',
-        data: pulsatingLights,
-        pickable: false,
-        opacity: pulseOpacity,
-        stroked: false,
-        filled: true,
-        radiusMinPixels: 0.8,
-        radiusMaxPixels: 2.5,
-        radiusScale: 1,
-        getPosition: (d) => [...d.coordinates, 0] as [number, number, number],
-        getRadius: (d) => 0.8 * d.intensity,
-        getFillColor: () => [255, 255, 255, 255] as RGBAColor,
-      }),
-    ];
-  }
-
-  /**
-   * Start the pulsating animation
+   * Animate pulsating stop bar lights by modulating opacity
    */
   private startAnimation(): void {
     if (this.animationFrame) return;
+    const map = this.map;
+    if (!map) return;
 
     const animate = () => {
-      // Pulsate at ~1.5 Hz (FAA standard is 30-60 cycles/minute)
-      this.pulsatePhase = (this.pulsatePhase + 0.025) % 1;
+      if (!map.getStyle() || !map.getLayer(this.layerId)) {
+        this.animationFrame = null;
+        return;
+      }
 
-      if (this.overlay) {
-        this.overlay.setProps({ layers: this.createLayers() });
+      this.pulsatePhase = (this.pulsatePhase + 0.025) % 1;
+      const pulse = 0.3 + 0.7 * Math.sin(this.pulsatePhase * Math.PI * 2);
+
+      try {
+        // Modulate opacity: pulsating lights fade in/out, static lights stay bright
+        map.setPaintProperty(this.layerId, 'circle-opacity', [
+          'case',
+          ['get', 'isPulsating'],
+          pulse,
+          0.95,
+        ]);
+        map.setPaintProperty('airport-taxiway-lights-glow', 'circle-opacity', [
+          'case',
+          ['get', 'isPulsating'],
+          pulse * 0.15,
+          0.15,
+        ]);
+      } catch {
+        // Layer may have been removed
       }
 
       this.animationFrame = requestAnimationFrame(animate);
@@ -216,9 +154,6 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
     this.animationFrame = requestAnimationFrame(animate);
   }
 
-  /**
-   * Stop the animation
-   */
   private stopAnimation(): void {
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
@@ -228,20 +163,7 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
 
   protected performRemove(map: maplibregl.Map): void {
     this.stopAnimation();
-
-    if (this.overlay && this.map) {
-      try {
-        (this.map as unknown as { removeControl: (ctrl: unknown) => void }).removeControl(
-          this.overlay
-        );
-      } catch {
-        // Overlay may have already been removed
-      }
-    }
-
-    this.overlay = null;
-    this.lights = [];
-
+    this.map = null;
     super.performRemove(map);
   }
 }

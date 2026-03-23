@@ -159,6 +159,26 @@ export function useMapSetup({
       window.appAPI.log.error(`MapLibre error${detail}`, e.error?.message ?? e.error);
     });
 
+    // TODO: Remove this patch when upgrading to MapLibre >= 5.22 (5.21 has a projection regression).
+    // Monkey-patch: guard against partial layout in _updatePlacement.
+    // MapLibre 5.19.0 crashes when a layer's source cache isn't ready during placement.
+    // Fixed upstream in 5.21.0 (PR #7079) but that version has a projection regression.
+    // This wraps _updatePlacement in a try/catch to suppress the crash.
+
+    const origRender = (map as any)._render;
+
+    (map as any)._render = function (paintStartTimeStamp?: number) {
+      try {
+        return origRender.call(this, paintStartTimeStamp);
+      } catch (e) {
+        if (e instanceof TypeError && (e as Error).message?.includes("reading 'get'")) {
+          // Suppress known MapLibre placement crash — harmless, layers still render
+          return;
+        }
+        throw e;
+      }
+    };
+
     map.on('load', () => {
       setupGlobeProjection(map);
       setup3DTerrain(map);

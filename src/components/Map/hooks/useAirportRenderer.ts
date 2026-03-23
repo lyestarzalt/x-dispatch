@@ -74,11 +74,13 @@ export function useAirportRenderer(
     async (icao: string, center: [number, number]): Promise<ParsedAirport | null> => {
       if (!map.current) return null;
 
+      // Toggle off: clicking the same airport deselects it
       if (selectedAirport.current === icao) {
         clearAirport();
         return null;
       }
 
+      // Clear previous airport layers before adding new ones
       clearAirport();
 
       const data = await window.airportAPI.getAirportData(icao);
@@ -97,9 +99,19 @@ export function useAirportRenderer(
         );
       }
 
+      // Render all layers synchronously in one batch
       for (const renderer of layerRenderers.current) {
         if (renderer.hasData(parsedAirport)) {
-          renderer.render(map.current, parsedAirport);
+          try {
+            const result = renderer.render(map.current, parsedAirport);
+            if (result instanceof Promise) {
+              result.catch((err) =>
+                window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
+              );
+            }
+          } catch (err) {
+            window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
+          }
         }
       }
 

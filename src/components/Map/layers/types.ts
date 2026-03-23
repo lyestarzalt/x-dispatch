@@ -11,15 +11,22 @@ import maplibregl from 'maplibre-gl';
 /**
  * Run a map mutation (layer/source removal etc.) safely.
  * Bails out if the map style has been destroyed; otherwise runs synchronously.
+ * If the style isn't fully loaded, defers to the next idle event.
  */
 export function safeRemove(map: maplibregl.Map, fn: () => void): void {
   if (!map.getStyle()) return;
-  fn();
+  if (map.isStyleLoaded()) {
+    fn();
+  } else {
+    map.once('idle', () => {
+      if (map.getStyle()) fn();
+    });
+  }
 }
 
 /**
  * Helper to safely remove layers and source.
- * Bails out if the map style has been destroyed; otherwise runs synchronously.
+ * Defers removal if the map is mid-render to prevent MapLibre crash.
  */
 export function removeLayersAndSource(
   map: maplibregl.Map,
@@ -27,26 +34,23 @@ export function removeLayersAndSource(
   sourceId: string,
   additionalLayerIds?: string[]
 ): void {
-  if (!map.getStyle()) return;
-
-  // Remove additional layers first
-  if (additionalLayerIds) {
-    for (const id of additionalLayerIds) {
-      if (map.getLayer(id)) {
-        map.removeLayer(id);
+  safeRemove(map, () => {
+    if (additionalLayerIds) {
+      for (const id of additionalLayerIds) {
+        if (map.getLayer(id)) {
+          map.removeLayer(id);
+        }
       }
     }
-  }
 
-  // Remove main layer
-  if (map.getLayer(layerId)) {
-    map.removeLayer(layerId);
-  }
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
 
-  // Remove source
-  if (map.getSource(sourceId)) {
-    map.removeSource(sourceId);
-  }
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId);
+    }
+  });
 }
 
 /**
