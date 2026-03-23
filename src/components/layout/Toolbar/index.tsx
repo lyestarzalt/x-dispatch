@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Anchor,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -16,11 +17,13 @@ import {
   Mountain,
   Package,
   Pause,
+  Pencil,
   Plane,
   Play,
   Radar,
   Search,
   Settings,
+  Ship,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -49,6 +52,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
@@ -66,7 +70,26 @@ import {
   RANGE_RING_SPEEDS,
 } from '@/types/layers';
 
-function PinCoordinatePopover({
+type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
+
+const PIN_MODE_CONFIG: { mode: CustomStartMode; icon: typeof MapPin; labelKey: string }[] = [
+  { mode: 'ground', icon: MapPin, labelKey: 'toolbar.pinModes.ground' },
+  { mode: 'air', icon: Plane, labelKey: 'toolbar.pinModes.air' },
+  { mode: 'carrier', icon: Anchor, labelKey: 'toolbar.pinModes.carrier' },
+  { mode: 'frigate', icon: Ship, labelKey: 'toolbar.pinModes.frigate' },
+];
+
+const CATAPULT_POSITIONS = [
+  'catapult_1',
+  'catapult_2',
+  'catapult_3',
+  'catapult_4',
+  'deck',
+] as const;
+
+const SPEED_PRESETS = ['short_field_approach', 'normal_approach', 'cruise'] as const;
+
+function PinOptionsPopover({
   isCustomPin,
   onSubmit,
 }: {
@@ -77,10 +100,17 @@ function PinCoordinatePopover({
   const [open, setOpen] = useState(false);
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
+  const [speedInput, setSpeedInput] = useState('');
+  const [editingCoords, setEditingCoords] = useState(false);
+
+  const startPosition = useAppStore((s) => s.startPosition);
+  const setStartPosition = useAppStore((s) => s.setStartPosition);
+  const currentMode: CustomStartMode =
+    (startPosition?.type === 'custom' && startPosition.customStartMode) || 'ground';
 
   const parsedLat = parseFloat(lat);
   const parsedLon = parseFloat(lon);
-  const isValid =
+  const isCoordValid =
     Number.isFinite(parsedLat) &&
     Number.isFinite(parsedLon) &&
     parsedLat >= -90 &&
@@ -88,25 +118,72 @@ function PinCoordinatePopover({
     parsedLon >= -180 &&
     parsedLon <= 180;
 
-  const handleSubmit = () => {
-    if (!isValid) return;
+  const handleCoordSubmit = () => {
+    if (!isCoordValid) return;
     onSubmit(parsedLat, parsedLon);
+    setEditingCoords(false);
     setOpen(false);
     setLat('');
     setLon('');
   };
 
-  // Pre-fill with current pin coordinates when opening
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
+      setEditingCoords(false);
       const pos = useAppStore.getState().startPosition;
-      if (pos?.type === 'custom' && pos.latitude && pos.longitude) {
+      if (pos?.type === 'custom' && pos.latitude != null && pos.longitude != null) {
         setLat(pos.latitude.toFixed(4));
         setLon(pos.longitude.toFixed(4));
+      }
+      if (pos?.airSpeedMs != null) {
+        setSpeedInput(String(pos.airSpeedMs));
       }
     }
     setOpen(nextOpen);
   };
+
+  const updatePos = (fields: Partial<typeof startPosition>) => {
+    if (!startPosition || startPosition.type !== 'custom') return;
+    setStartPosition({ ...startPosition, ...fields });
+  };
+
+  const setMode = (mode: CustomStartMode) => {
+    if (!startPosition || startPosition.type !== 'custom') return;
+    setStartPosition({
+      ...startPosition,
+      customStartMode: mode,
+      airAltitudeM: mode === 'air' ? (startPosition.airAltitudeM ?? 914.4) : undefined,
+      airSpeedEnum: mode === 'air' ? (startPosition.airSpeedEnum ?? 'normal_approach') : undefined,
+      airSpeedMs: undefined,
+      boatPosition: mode === 'carrier' ? 'catapult_1' : undefined,
+      boatApproachNm: mode === 'carrier' || mode === 'frigate' ? 1.5 : undefined,
+    });
+    setSpeedInput('');
+  };
+
+  const setAirSpeedPreset = (preset: string) => {
+    updatePos({
+      airSpeedEnum: preset as (typeof SPEED_PRESETS)[number],
+      airSpeedMs: undefined,
+    });
+    setSpeedInput('');
+  };
+
+  const applySpeedMs = () => {
+    const ms = parseFloat(speedInput);
+    if (!Number.isFinite(ms) || ms <= 0) return;
+    updatePos({ airSpeedMs: ms, airSpeedEnum: undefined });
+  };
+
+  const setBoatPosition = (pos: string | null) => {
+    updatePos({
+      boatPosition: pos as NonNullable<typeof startPosition>['boatPosition'],
+      boatApproachNm: pos ? undefined : startPosition?.boatApproachNm,
+    });
+  };
+
+  const airAltFt = Math.round((startPosition?.airAltitudeM ?? 914.4) / 0.3048);
+  const isBoatMode = currentMode === 'carrier' || currentMode === 'frigate';
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -122,37 +199,200 @@ function PinCoordinatePopover({
           <ChevronDown className="h-3 w-3" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 space-y-3 p-3" align="end">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <label className="w-8 text-xs text-muted-foreground">{t('toolbar.pinLat')}</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              placeholder="43.6585"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              className="h-8 font-mono text-sm"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="w-8 text-xs text-muted-foreground">{t('toolbar.pinLon')}</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              placeholder="7.2156"
-              value={lon}
-              onChange={(e) => setLon(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              className="h-8 font-mono text-sm"
-            />
+      <PopoverContent className="w-72 space-y-3 p-3" align="end">
+        {/* Start mode selector */}
+        <div>
+          <span className="xp-section-heading mb-1.5 block">{t('toolbar.pinModes.title')}</span>
+          <div className="grid grid-cols-2 gap-1">
+            {PIN_MODE_CONFIG.map(({ mode, icon: Icon, labelKey }) => (
+              <Button
+                key={mode}
+                variant="ghost"
+                size="sm"
+                disabled={!isCustomPin}
+                onClick={() => setMode(mode)}
+                className={cn(
+                  'h-7 justify-start gap-1.5 text-sm',
+                  currentMode === mode && isCustomPin
+                    ? 'bg-success/10 text-success'
+                    : 'text-muted-foreground'
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {t(labelKey)}
+              </Button>
+            ))}
           </div>
         </div>
-        <Button size="sm" className="w-full" disabled={!isValid} onClick={handleSubmit}>
-          <MapPin className="mr-1 h-3.5 w-3.5" />
-          {t('toolbar.pinDropAndFly')}
-        </Button>
+
+        {/* ── Air start options ── */}
+        {isCustomPin && currentMode === 'air' && (
+          <div className="space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-2.5">
+            {/* Altitude */}
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="xp-label">{t('toolbar.pinModes.altitude')}</span>
+                <span className="xp-value">
+                  {airAltFt.toLocaleString()}
+                  <span className="ml-0.5 text-xs text-muted-foreground">ft</span>
+                </span>
+              </div>
+              <Slider
+                className="mt-1.5"
+                min={500}
+                max={45000}
+                step={500}
+                value={[airAltFt]}
+                onValueChange={([v]) => updatePos({ airAltitudeM: v * 0.3048 })}
+              />
+            </div>
+
+            {/* Speed — presets OR custom m/s */}
+            <div>
+              <span className="xp-label mb-1.5 block">{t('toolbar.pinModes.speed')}</span>
+              <div className="flex flex-wrap gap-1">
+                {SPEED_PRESETS.map((preset) => (
+                  <Button
+                    key={preset}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAirSpeedPreset(preset)}
+                    className={cn(
+                      'h-7 text-sm',
+                      startPosition?.airSpeedEnum === preset && !startPosition?.airSpeedMs
+                        ? 'bg-primary/15 text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {t(`toolbar.pinModes.speed_${preset}`)}
+                  </Button>
+                ))}
+              </div>
+              <div className="mt-1.5 flex items-center gap-2">
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={t('toolbar.pinModes.speedCustom')}
+                  value={speedInput}
+                  onChange={(e) => setSpeedInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && applySpeedMs()}
+                  onBlur={applySpeedMs}
+                  className={cn(
+                    'h-7 font-mono text-sm',
+                    startPosition?.airSpeedMs != null && 'border-primary/50'
+                  )}
+                />
+                <span className="shrink-0 text-xs text-muted-foreground">m/s</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Boat start options ── */}
+        {isCustomPin && isBoatMode && (
+          <div className="space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-2.5">
+            {/* Carrier: deck position OR approach */}
+            {currentMode === 'carrier' && (
+              <div>
+                <span className="xp-label mb-1.5 block">{t('toolbar.pinModes.position')}</span>
+                <div className="flex flex-wrap gap-1">
+                  {CATAPULT_POSITIONS.map((pos) => (
+                    <Button
+                      key={pos}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setBoatPosition(startPosition?.boatPosition === pos ? null : pos)
+                      }
+                      className={cn(
+                        'h-7 px-2.5 text-sm',
+                        startPosition?.boatPosition === pos
+                          ? 'bg-primary/15 text-primary'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {t(`toolbar.pinModes.cat_${pos}`)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Approach — for both carrier (when no deck position) and frigate (always) */}
+            {(currentMode === 'frigate' || !startPosition?.boatPosition) && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="xp-label">{t('toolbar.pinModes.approach')}</span>
+                  <span className="xp-value">
+                    {startPosition?.boatApproachNm ?? 1.5}
+                    <span className="ml-0.5 text-xs text-muted-foreground">nm</span>
+                  </span>
+                </div>
+                <Slider
+                  className="mt-1.5"
+                  min={0.5}
+                  max={10}
+                  step={0.5}
+                  value={[startPosition?.boatApproachNm ?? 1.5]}
+                  onValueChange={([v]) => updatePos({ boatApproachNm: v, boatPosition: undefined })}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Coordinates ── */}
+        <div className="border-t border-border/30 pt-2.5">
+          {isCustomPin && !editingCoords ? (
+            /* Compact read-only display when pin is placed */
+            <button
+              onClick={() => setEditingCoords(true)}
+              className="flex w-full items-center justify-between rounded px-1 py-1 text-left transition-colors hover:bg-muted/50"
+            >
+              <span className="font-mono text-sm text-muted-foreground">
+                {startPosition?.latitude.toFixed(4)}°, {startPosition?.longitude.toFixed(4)}°
+              </span>
+              <Pencil className="h-3 w-3 text-muted-foreground/50" />
+            </button>
+          ) : (
+            /* Editable form — shown when no pin or user clicks edit */
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <label className="xp-label w-8 shrink-0">{t('toolbar.pinLat')}</label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="43.6585"
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCoordSubmit()}
+                  className="h-7 font-mono text-sm"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="xp-label w-8 shrink-0">{t('toolbar.pinLon')}</label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="7.2156"
+                  value={lon}
+                  onChange={(e) => setLon(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCoordSubmit()}
+                  className="h-7 font-mono text-sm"
+                />
+              </div>
+              <Button
+                size="sm"
+                className="w-full"
+                disabled={!isCoordValid}
+                onClick={handleCoordSubmit}
+              >
+                <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                {t('toolbar.pinDropAndFly')}
+              </Button>
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
@@ -786,7 +1026,7 @@ export default function Toolbar({
             <MapPin className="h-4 w-4" />
             <span className="min-w-0 truncate text-sm font-medium">{t('toolbar.pin')}</span>
           </Button>
-          <PinCoordinatePopover isCustomPin={isCustomPin} onSubmit={onPinDropAtCoordinates} />
+          <PinOptionsPopover isCustomPin={isCustomPin} onSubmit={onPinDropAtCoordinates} />
         </div>
 
         {/* Launch */}

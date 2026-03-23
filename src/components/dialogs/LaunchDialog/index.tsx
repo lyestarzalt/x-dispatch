@@ -219,6 +219,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     }
   };
 
+  // X-Plane's JSON parser requires float fields to have a decimal point (e.g. 3.5, not 4).
+  // JSON.stringify(4) produces "4" which X-Plane rejects. Adding 0.001 forces a decimal.
+  function ensureFloat(n: number): number {
+    return Number.isInteger(n) ? n + 0.001 : n;
+  }
+
   // Build Flight Initialization API payload for REST API
   function buildFlightAPIPayload(params: {
     aircraft: NonNullable<typeof selectedAircraft>;
@@ -255,11 +261,43 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     // started placing the aircraft offset forward by several meters. Switched to ramp_start as workaround.
     // TODO: switching to another airport mid-flight does not render the ground.
     if (params.startPosition.type === 'custom') {
-      payload.lle_ground_start = {
-        latitude: params.startPosition.latitude,
-        longitude: params.startPosition.longitude,
-        heading_true: params.startPosition.heading,
-      };
+      const mode = params.startPosition.customStartMode ?? 'ground';
+      if (mode === 'air') {
+        payload.lle_air_start = {
+          latitude: ensureFloat(params.startPosition.latitude),
+          longitude: ensureFloat(params.startPosition.longitude),
+          elevation_in_meters: ensureFloat(params.startPosition.airAltitudeM ?? 1000),
+          heading_true: ensureFloat(params.startPosition.heading),
+          // Speed: either m/s value or preset enum (mutually exclusive)
+          ...(params.startPosition.airSpeedMs != null
+            ? { speed_in_meters_per_second: ensureFloat(params.startPosition.airSpeedMs) }
+            : params.startPosition.airSpeedEnum
+              ? { speed_enum: params.startPosition.airSpeedEnum }
+              : { speed_enum: 'normal_approach' }),
+        };
+      } else if (mode === 'carrier' || mode === 'frigate') {
+        payload.boat_start = {
+          boat_name: mode,
+          boat_location: {
+            latitude: ensureFloat(params.startPosition.latitude),
+            longitude: ensureFloat(params.startPosition.longitude),
+          },
+          // Deck position and approach distance are mutually exclusive
+          ...(params.startPosition.boatPosition && {
+            start_position: params.startPosition.boatPosition,
+          }),
+          ...(params.startPosition.boatApproachNm != null &&
+            !params.startPosition.boatPosition && {
+              final_distance_in_nautical_miles: ensureFloat(params.startPosition.boatApproachNm),
+            }),
+        };
+      } else {
+        payload.lle_ground_start = {
+          latitude: ensureFloat(params.startPosition.latitude),
+          longitude: ensureFloat(params.startPosition.longitude),
+          heading_true: ensureFloat(params.startPosition.heading),
+        };
+      }
     } else if (params.startPosition.type === 'ramp') {
       payload.ramp_start = {
         airport_id: params.startPosition.airport,
@@ -271,12 +309,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         runway: params.startPosition.name,
         // Approach distance and tow type are mutually exclusive
         ...(params.startPosition.approachDistanceNm != null && {
-          // X-Plane requires float values with decimal point — ensure whole numbers get .0
-          final_distance_in_nautical_miles: Number.isInteger(
-            params.startPosition.approachDistanceNm
-          )
-            ? params.startPosition.approachDistanceNm + 0.001
-            : params.startPosition.approachDistanceNm,
+          final_distance_in_nautical_miles: ensureFloat(params.startPosition.approachDistanceNm),
         }),
         ...(params.startPosition.towType && {
           tow_type: params.startPosition.towType,

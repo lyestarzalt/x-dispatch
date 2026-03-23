@@ -22,4 +22,18 @@ export interface StartPosition extends Coordinates {
   approachDistanceNm?: number;
   /** Tow type for glider launch (runway start only, mutually exclusive with approachDistanceNm) */
   towType?: 'tug' | 'winch';
+
+  // ── Custom pin start mode (type === 'custom') ──
+  /** Custom start sub-mode: ground (default), air, carrier, or frigate */
+  customStartMode?: 'ground' | 'air' | 'carrier' | 'frigate';
+  /** Air start: altitude MSL in meters */
+  airAltitudeM?: number;
+  /** Air start: speed preset (mutually exclusive with airSpeedMs) */
+  airSpeedEnum?: 'short_field_approach' | 'normal_approach' | 'cruise';
+  /** Air start: speed in m/s (mutually exclusive with airSpeedEnum) */
+  airSpeedMs?: number;
+  /** Boat start: deck position (mutually exclusive with boatApproachNm) */
+  boatPosition?: 'catapult_1' | 'catapult_2' | 'catapult_3' | 'catapult_4' | 'deck';
+  /** Boat start: final approach distance in nm (mutually exclusive with boatPosition) */
+  boatApproachNm?: number;
 }
