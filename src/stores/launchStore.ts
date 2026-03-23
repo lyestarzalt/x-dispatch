@@ -5,6 +5,7 @@ import type {
   EngineType,
   LogbookEntry,
 } from '@/components/dialogs/LaunchDialog/types';
+import { getAircraftType } from '@/components/dialogs/LaunchDialog/types';
 import {
   type CloudLayer,
   type CustomWeatherState,
@@ -136,8 +137,14 @@ export const useLaunchStore = create<LaunchState>()(
       selectAircraft: (aircraft) =>
         set((state) => {
           const lastAircraftByType = { ...state.lastAircraftByType };
-          if (aircraft && state.filterAircraftType) {
-            lastAircraftByType[state.filterAircraftType] = aircraft.path;
+          if (aircraft) {
+            // Save under current filter AND the aircraft's actual type
+            // so switching to "helicopter" restores even if selected while on "all"
+            if (state.filterAircraftType) {
+              lastAircraftByType[state.filterAircraftType] = aircraft.path;
+            }
+            const actualType = getAircraftType(aircraft);
+            lastAircraftByType[actualType] = aircraft.path;
           }
           return {
             selectedAircraftPath: aircraft?.path ?? null,
