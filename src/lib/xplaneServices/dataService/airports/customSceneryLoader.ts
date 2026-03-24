@@ -38,16 +38,23 @@ export function findCustomSceneryAptFiles(xplanePath: string): string[] {
   try {
     const entries = fs.readdirSync(customSceneryPath, { withFileTypes: true });
     for (const entry of entries) {
-      // Follow symlinks — some users symlink scenery packs from other drives
-      const isDir =
-        entry.isDirectory() ||
-        (entry.isSymbolicLink() &&
-          fs.statSync(path.join(customSceneryPath, entry.name)).isDirectory());
-      if (isDir) {
-        const aptPath = path.join(customSceneryPath, entry.name, 'Earth nav data', 'apt.dat');
-        if (fs.existsSync(aptPath)) {
-          aptFiles.push(aptPath);
+      try {
+        // Follow symlinks — some users symlink scenery packs from other drives
+        const isDir =
+          entry.isDirectory() ||
+          (entry.isSymbolicLink() &&
+            fs.statSync(path.join(customSceneryPath, entry.name)).isDirectory());
+        if (isDir) {
+          const aptPath = path.join(customSceneryPath, entry.name, 'Earth nav data', 'apt.dat');
+          if (fs.existsSync(aptPath)) {
+            aptFiles.push(aptPath);
+          }
         }
+      } catch {
+        // Skip this entry (broken symlink, unmounted drive, etc.) but continue scanning
+        logger.data.warn(
+          `Skipping Custom Scenery entry "${entry.name}" (unreadable or broken symlink)`
+        );
       }
     }
   } catch (err) {
