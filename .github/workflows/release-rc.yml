@@ -21,12 +21,13 @@ permissions:
 
 jobs:
   resolve:
-    name: Resolve RC Version
+    name: Version Resolution
     runs-on: ubuntu-latest
     outputs:
       rc_version: ${{ steps.rc.outputs.rc_version }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Compute RC version
         id: rc
@@ -36,7 +37,7 @@ jobs:
           echo "rc_version=${NEXT}-rc.${{ inputs.rc_number }}" >> $GITHUB_OUTPUT
 
   build:
-    name: Build RC ${{ matrix.name }}
+    name: Build (${{ matrix.name }})
     needs: resolve
     runs-on: ${{ matrix.os }}
     strategy:
@@ -54,28 +55,31 @@ jobs:
             name: linux
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Set RC version
+      - name: Set RC version in package.json
         run: npm version ${{ needs.resolve.outputs.rc_version }} --no-git-tag-version
         shell: bash
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Linux deps
+      - name: Install platform dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
 
-      - name: macOS deps
+      - name: Install platform dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: brew install python-setuptools
 
-      - name: Build
+      - name: Package app
         run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
@@ -85,6 +89,7 @@ jobs:
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
+
         with:
           name: rc-${{ needs.resolve.outputs.rc_version }}-${{ matrix.name }}
           path: |
@@ -95,11 +100,12 @@ jobs:
           retention-days: 7
 
   notify:
-    name: Notify Discord
+    name: Notification
     needs: [resolve, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -113,7 +119,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build download links
+      - name: Compose download links
         id: links
         run: |
           BASE="https://nightly.link/lyestarzalt/x-dispatch/actions/runs/${{ github.run_id }}"
@@ -129,7 +135,7 @@ jobs:
             echo "$EOF_MARKER"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Notify Discord
+      - name: Send Discord notification
         uses: tsickert/discord-webhook@v7.0.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}

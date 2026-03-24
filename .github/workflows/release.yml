@@ -17,19 +17,21 @@ permissions:
 
 jobs:
   version:
-    name: Bump Version
+    name: Version Bump
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.bump.outputs.version }}
       tag: ${{ steps.bump.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Bump version
+      - name: Bump version and push tag
         id: bump
         run: |
           git config user.name "github-actions[bot]"
@@ -40,7 +42,7 @@ jobs:
           git push --follow-tags
 
   build:
-    name: Build ${{ matrix.name }}
+    name: Build (${{ matrix.name }})
     needs: version
     runs-on: ${{ matrix.os }}
     strategy:
@@ -58,26 +60,29 @@ jobs:
             name: linux
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.version.outputs.tag }}
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Linux deps
+      - name: Install platform dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
 
-      - name: macOS deps
+      - name: Install platform dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: brew install python-setuptools
 
-      - name: Build
+      - name: Package app
         run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
@@ -86,7 +91,7 @@ jobs:
           SENTRY_ORG: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_ORG || '' }}
           SENTRY_PROJECT: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_PROJECT || '' }}
 
-      - name: Upload build artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.name }}
@@ -101,25 +106,26 @@ jobs:
           retention-days: 1
 
   finalize:
-    name: Finalize Release
+    name: Finalize
     needs: [version, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Pull latest (includes version bump)
+      - name: Pull latest changes
         run: git pull origin main
 
-      - name: Download all build artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           pattern: build-*
           merge-multiple: true
 
-      - name: Collect release assets
+      - name: Flatten artifacts into release folder
         id: assets
         run: |
           mkdir -p release-assets
@@ -156,7 +162,7 @@ jobs:
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for ${{ needs.version.outputs.tag }}"
           git push
 
-      - name: Append footer to release notes
+      - name: Add footer to release notes
         run: |
           cat >> release-notes.md << 'EOF'
 
@@ -167,7 +173,7 @@ jobs:
           > :apple: **macOS Users:** Please read the [installation instructions](https://github.com/${{ github.repository }}#readme) before opening the app.
           EOF
 
-      - name: Create release with assets
+      - name: Create GitHub release
         run: |
           # Delete any leftover draft/release from a failed previous run
           gh release delete ${{ needs.version.outputs.tag }} --yes 2>/dev/null || true
@@ -175,7 +181,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Notify Discord
+      - name: Send Discord notification
         continue-on-error: true
         env:
           NOTES: ${{ steps.changelog.outputs.content }}
