@@ -61,7 +61,7 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
     // Match linearFeatures minZoom so lights appear/disappear with taxiway lines
     const minzoom = ZOOM_BEHAVIORS.linearFeatures?.minZoom ?? 14;
 
-    // Glow layer — soft halo behind each light
+    // Glow layer — soft radiated light halo
     this.addLayer(map, {
       id: 'airport-taxiway-lights-glow',
       type: 'circle',
@@ -73,19 +73,19 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           ['linear'],
           ['zoom'],
           14,
-          ['*', 4, ['get', 'intensity']],
+          ['*', 3, ['get', 'intensity']],
           16,
           ['*', 6, ['get', 'intensity']],
           18,
-          ['*', 10, ['get', 'intensity']],
+          ['*', 12, ['get', 'intensity']],
         ],
         'circle-color': ['get', 'colorHex'],
-        'circle-opacity': 0.15,
+        'circle-opacity': 0.08,
         'circle-blur': 1,
       },
     });
 
-    // Main light layer — visible colored dot
+    // Main light layer — small bright point
     this.addLayer(map, {
       id: this.layerId,
       type: 'circle',
@@ -97,15 +97,15 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           ['linear'],
           ['zoom'],
           14,
-          ['*', 1.5, ['get', 'intensity']],
+          ['*', 0.6, ['get', 'intensity']],
           16,
-          ['*', 3, ['get', 'intensity']],
+          ['*', 1.2, ['get', 'intensity']],
           18,
-          ['*', 5, ['get', 'intensity']],
+          ['*', 2, ['get', 'intensity']],
         ],
         'circle-color': ['get', 'colorHex'],
-        'circle-opacity': 0.95,
-        'circle-blur': 0.3,
+        'circle-opacity': 1,
+        'circle-blur': 0.15,
       },
     });
 
