@@ -99,6 +99,20 @@ jobs:
     needs: [resolve, build]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --unreleased --strip header
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build download links
         id: links
         run: |
@@ -124,6 +138,8 @@ jobs:
             A new release candidate is available for testing.
 
             ${{ steps.links.outputs.downloads }}
+
+            ${{ steps.changelog.outputs.content }}
 
             > :warning: This is a pre-release build for testing. Please report any issues.
           embed-color: 15105570

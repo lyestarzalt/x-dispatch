@@ -179,10 +179,19 @@ jobs:
         continue-on-error: true
         env:
           NOTES: ${{ steps.changelog.outputs.content }}
+          TAG: ${{ needs.version.outputs.tag }}
+          REPO: ${{ github.repository }}
         uses: tsickert/discord-webhook@v7.0.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: "X-Dispatch ${{ needs.version.outputs.tag }} Released"
           embed-url: "https://github.com/${{ github.repository }}/releases/tag/${{ needs.version.outputs.tag }}"
-          embed-description: ${{ env.NOTES }}
+          embed-description: |
+            ${{ env.NOTES }}
+
+            **Downloads:**
+            - [:apple: macOS (Apple Silicon)](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-mac-apple-silicon.dmg)
+            - [:apple: macOS (Intel)](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-mac-intel.dmg)
+            - [:window: Windows](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-windows-x64.exe)
+            - [:penguin: Linux (.deb)](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-linux-x64.deb)
           embed-color: 3447003
