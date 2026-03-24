@@ -3,6 +3,30 @@ import * as path from 'path';
 import type { PluginInfo } from '../../core/types';
 import { detectVersion, findUpdaterCfg, findVersionFiles } from '../version/detector';
 
+function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
+  if (entry.isDirectory()) return true;
+  if (entry.isSymbolicLink()) {
+    try {
+      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+  if (entry.isFile()) return true;
+  if (entry.isSymbolicLink()) {
+    try {
+      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 const MAX_XPL_SEARCH_DEPTH = 3;
 
 /**
@@ -22,7 +46,7 @@ export function scanPlugins(xplanePath: string): PluginInfo[] {
   }
 
   for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+    if (!isDirEntry(entry, pluginsDir) || entry.name.startsWith('.')) continue;
 
     const pluginPath = path.join(pluginsDir, entry.name);
     const info = scanSinglePluginFolder(pluginPath, entry.name);
@@ -62,7 +86,9 @@ function scanSinglePluginFolder(pluginPath: string, folderName: string): PluginI
         const scripts = fs
           .readdirSync(scriptsDir, { withFileTypes: true })
           .filter(
-            (e) => e.isFile() && ['.lua', '.xfml'].includes(path.extname(e.name).toLowerCase())
+            (e) =>
+              isFileEntry(e, scriptsDir) &&
+              ['.lua', '.xfml'].includes(path.extname(e.name).toLowerCase())
           );
         hasScripts = scripts.length > 0;
         scriptCount = scripts.length;
@@ -110,12 +136,12 @@ function findXplFiles(dir: string, maxDepth: number): { xplFiles: string[]; xfmp
       const fullPath = path.join(currentDir, entry.name);
       const relativePath = path.relative(dir, fullPath);
 
-      if (entry.isFile()) {
+      if (isFileEntry(entry, currentDir)) {
         const ext = path.extname(entry.name).toLowerCase();
         if (ext === '.xpl') xplFiles.push(relativePath);
         if (ext === '.xfmp') xfmpFiles.push(relativePath);
       }
-      if (entry.isDirectory()) {
+      if (isDirEntry(entry, currentDir)) {
         walk(fullPath, depth + 1);
       }
     }

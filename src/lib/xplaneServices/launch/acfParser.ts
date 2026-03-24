@@ -3,6 +3,30 @@ import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import type { Aircraft, Livery } from '@/types/aircraft';
 
+function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
+  if (entry.isDirectory()) return true;
+  if (entry.isSymbolicLink()) {
+    try {
+      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+  if (entry.isFile()) return true;
+  if (entry.isSymbolicLink()) {
+    try {
+      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
   try {
     const content = fs.readFileSync(acfPath, 'utf-8');
@@ -224,12 +248,16 @@ function findAcfFiles(dir: string): string[] {
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
 
-      if (entry.isDirectory()) {
+      if (isDirEntry(entry, dir)) {
         // Skip hidden directories and common non-aircraft folders
         if (!entry.name.startsWith('.') && entry.name !== 'liveries') {
           results.push(...findAcfFiles(fullPath));
         }
-      } else if (entry.isFile() && entry.name.endsWith('.acf') && !entry.name.endsWith('_AI.acf')) {
+      } else if (
+        isFileEntry(entry, dir) &&
+        entry.name.endsWith('.acf') &&
+        !entry.name.endsWith('_AI.acf')
+      ) {
         results.push(fullPath);
       }
     }
@@ -296,7 +324,7 @@ function scanLiveries(acfDir: string): Livery[] {
     const entries = fs.readdirSync(liveriesDir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+      if (isDirEntry(entry, liveriesDir) && !entry.name.startsWith('.')) {
         const liveryPath = path.join(liveriesDir, entry.name);
         const previewImage = findLiveryPreview(liveryPath);
 

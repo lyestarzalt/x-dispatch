@@ -4,6 +4,30 @@ import * as path from 'path';
 import type { AircraftInfo } from '../../core/types';
 import { detectVersion, findUpdaterCfg, findVersionFiles } from '../version/detector';
 
+function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
+  if (entry.isDirectory()) return true;
+  if (entry.isSymbolicLink()) {
+    try {
+      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+  if (entry.isFile()) return true;
+  if (entry.isSymbolicLink()) {
+    try {
+      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 const MAX_SCAN_DEPTH = 3;
 
 /**
@@ -28,7 +52,7 @@ export function scanAircraft(xplanePath: string): AircraftInfo[] {
 
     const subdirs: string[] = [];
     for (const entry of entries) {
-      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+      if (isDirEntry(entry, dir) && !entry.name.startsWith('.')) {
         subdirs.push(path.join(dir, entry.name));
       }
     }
@@ -73,7 +97,7 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
   for (const entry of entries) {
     const lower = entry.name.toLowerCase();
 
-    if (entry.isFile()) {
+    if (isFileEntry(entry, folderPath)) {
       const ext = path.extname(lower);
       if (ext === '.acf' && !acfFile) {
         acfFile = entry.name;
@@ -88,12 +112,13 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
       }
     }
 
-    if (entry.isDirectory() && lower === 'liveries') {
+    if (isDirEntry(entry, folderPath) && lower === 'liveries') {
       hasLiveries = true;
+      const liveriesPath = path.join(folderPath, entry.name);
       try {
         liveryCount = fs
-          .readdirSync(path.join(folderPath, entry.name), { withFileTypes: true })
-          .filter((e) => e.isDirectory()).length;
+          .readdirSync(liveriesPath, { withFileTypes: true })
+          .filter((e) => isDirEntry(e, liveriesPath)).length;
       } catch {
         liveryCount = 0;
       }
