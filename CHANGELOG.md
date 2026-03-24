@@ -1,6 +1,44 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.6.0 - 2026-03-24
+
+### Features
+
+- **ui:** Auto-navigate to start tab and scroll to selected item by @lyestarzalt([d440e63](https://github.com/lyestarzalt/x-dispatch/commit/d440e6355e4403dc992a75a6c7144d9135bd98a6))
+- **launch:** Add runway start options — approach distance and glider tow by @lyestarzalt([c0ad28a](https://github.com/lyestarzalt/x-dispatch/commit/c0ad28a174381cc90bcdd7d7735cca609b7497bc))
+- **launch:** Add air start, carrier, and frigate start modes to pin drop by @lyestarzalt([ace7f08](https://github.com/lyestarzalt/x-dispatch/commit/ace7f0845c980f23b9c7a4fdf936e1498e16db26))
+
+### Bug Fixes
+
+- **launch:** Persist aircraft selection under actual type, not just active filter by @lyestarzalt([9d60fe9](https://github.com/lyestarzalt/x-dispatch/commit/9d60fe9b5adb1d1cb6e1c266fda180b9ff66556b))
+- **map:** Rewrite taxiway lights as MapLibre circles and fix layer crash by @lyestarzalt([eaa6989](https://github.com/lyestarzalt/x-dispatch/commit/eaa69896893d92d57005c0cc3f4e8f0d52f02c6c))
+- **addons:** Follow symlinks and junctions when scanning aircraft, plugins, and liveries by @lyestarzalt([c2706a5](https://github.com/lyestarzalt/x-dispatch/commit/c2706a5a4770d97c4f37fd86e69bc2e5c94628fd))
+- **data:** Don't abort scenery scan when one symlink fails by @lyestarzalt([7936d84](https://github.com/lyestarzalt/x-dispatch/commit/7936d84222beef24f4abf1b232ea7c1394eda0c8))
+- **ci:** Add download links to release and changelog to RC Discord notifications by @lyestarzalt([4f20987](https://github.com/lyestarzalt/x-dispatch/commit/4f2098720b8e71d082dc04329bf64876358458cc))
+- **map:** Smaller taxiway lights with radiated glow effect by @lyestarzalt([ed05188](https://github.com/lyestarzalt/x-dispatch/commit/ed0518842b397031d07a9f9364c2eca828a2dd0c))
+
+### Refactor
+
+- **explore:** Rework panel as collapsible side panel by @lyestarzalt([41701b0](https://github.com/lyestarzalt/x-dispatch/commit/41701b0d687d4b02fee1a948288edb959bb98887))
+- **explore:** Fix event list clipping and unify ICAO colors by @lyestarzalt([b012c68](https://github.com/lyestarzalt/x-dispatch/commit/b012c685dfe4d5603d6dcc696ac7da0cc74fe8e4))
+- **map:** Redesign runway end markers to match gate visual style by @lyestarzalt([827bd2e](https://github.com/lyestarzalt/x-dispatch/commit/827bd2eea151995ea752ff4c74cd1ca51ef266bc))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.5.5 by @github-actions[bot]([450eaf5](https://github.com/lyestarzalt/x-dispatch/commit/450eaf54cb032e0da47afa9e90213c846e22a881))
+
+### Miscellaneous
+
+- Fix dependency vulnerabilities via npm audit fix by @lyestarzalt([351516b](https://github.com/lyestarzalt/x-dispatch/commit/351516b3052dd6a7559d3f7d744282cfc95bee46))
+- **i18n:** Add runway start option translations for all locales by @lyestarzalt([f077ac6](https://github.com/lyestarzalt/x-dispatch/commit/f077ac6ec09fbad13816e19102c6af0f19735f56))
+- **ci:** Standardize job and step naming across release workflows by @lyestarzalt([f470717](https://github.com/lyestarzalt/x-dispatch/commit/f470717869658678fee8943de052cb4cf1f032d8))
+
+### Release
+
+- 1.6.0 by @github-actions[bot]([1549c15](https://github.com/lyestarzalt/x-dispatch/commit/1549c153119378bf27e1f706453d59c797d0bc1c))
+
+
 ## v1.5.5 - 2026-03-22
 
 ### Documentation
