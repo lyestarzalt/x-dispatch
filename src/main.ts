@@ -215,6 +215,14 @@ function createWindow(): BrowserWindow {
 function registerIpcHandlers() {
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:getProcessMemory', () => {
+    const mem = process.memoryUsage();
+    return {
+      rss: mem.rss,
+      heapUsed: mem.heapUsed,
+      heapTotal: mem.heapTotal,
+    };
+  });
   ipcMain.handle('app:getLogPath', () => getLogPath());
   ipcMain.handle('app:openLogFile', () => {
     const logPath = getLogPath();

@@ -78,6 +78,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 contextBridge.exposeInMainWorld('appAPI', {
   isSetupComplete: () => ipcRenderer.invoke('app:isSetupComplete'),
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  getProcessMemory: () =>
+    ipcRenderer.invoke('app:getProcessMemory') as Promise<{
+      rss: number;
+      heapUsed: number;
+      heapTotal: number;
+    }>,
   startLoading: () => ipcRenderer.invoke('app:startLoading'),
   getLoadingStatus: () => ipcRenderer.invoke('app:getLoadingStatus'),
   clearCache: () => ipcRenderer.invoke('app:clearCache'),
@@ -355,6 +361,7 @@ declare global {
     appAPI: {
       isSetupComplete: () => Promise<boolean>;
       getVersion: () => Promise<string>;
+      getProcessMemory: () => Promise<{ rss: number; heapUsed: number; heapTotal: number }>;
       startLoading: () => Promise<{ success: boolean; status?: DataLoadStatus; error?: string }>;
       getLoadingStatus: () => Promise<{ xplanePath: string | null; status: DataLoadStatus }>;
       clearCache: () => Promise<{ success: boolean }>;
