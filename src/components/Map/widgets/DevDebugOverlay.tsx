@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type maplibregl from 'maplibre-gl';
 import { collectLayerInspectorData } from './layerInspector';
 import type {
@@ -43,27 +43,93 @@ interface DebugStats {
 type MapRef = React.RefObject<maplibregl.Map | null>;
 type TabId = 'map' | 'layers' | 'network' | 'perf';
 
+interface DetachedPanel {
+  id: TabId;
+  x: number;
+  y: number;
+}
+
 const TABS: { id: TabId; label: string; tip: string }[] = [
   { id: 'map', label: 'Map', tip: 'Map state, airport, terrain' },
-  { id: 'layers', label: 'Layers', tip: 'Layer inspector — status, features, draw order' },
+  { id: 'layers', label: 'Layers', tip: 'Layer inspector — click layers to toggle visibility' },
   { id: 'network', label: 'Net', tip: 'X-Plane WebSocket, VATSIM, IVAO' },
   { id: 'perf', label: 'Perf', tip: 'Memory, IPC latency, FPS, cache' },
 ];
+
+// --- Drag hook ---
+
+function useDrag(initialPos: { x: number; y: number }) {
+  const [pos, setPos] = useState(initialPos);
+  const dragging = useRef(false);
+  const offset = useRef({ x: 0, y: 0 });
+
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if ((e.target as HTMLElement).closest('button')) return;
+      dragging.current = true;
+      offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+      e.preventDefault();
+    },
+    [pos]
+  );
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      setPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y });
+    };
+    const onMouseUp = () => {
+      dragging.current = false;
+    };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
+  return { pos, setPos, onMouseDown };
+}
+
+// --- Toggle layer visibility on map ---
+
+function toggleLayerVisibility(map: maplibregl.Map, layerId: string) {
+  const current = map.getLayoutProperty(layerId, 'visibility');
+  map.setLayoutProperty(layerId, 'visibility', current === 'none' ? 'visible' : 'none');
+}
+
+function toggleRendererVisibility(map: maplibregl.Map, renderer: RendererInfo) {
+  // Toggle all layers in this renderer group (primary + sublayers)
+  const allIds = [renderer.primaryLayerId, ...renderer.sublayers.map((s) => s.layerId)];
+  // If any are visible, hide all. If all hidden, show all.
+  const anyVisible = allIds.some(
+    (id) => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none'
+  );
+  for (const id of allIds) {
+    if (map.getLayer(id)) {
+      map.setLayoutProperty(id, 'visibility', anyVisible ? 'none' : 'visible');
+    }
+  }
+}
 
 // --- Main component ---
 
 export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   const [stats, setStats] = useState<DebugStats | null>(null);
   const [visible, setVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId | null>(null);
+  const [inlineTab, setInlineTab] = useState<TabId | null>(null);
+  const [detached, setDetached] = useState<DetachedPanel[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fpsRef = useRef({ frames: 0, lastTime: performance.now(), fps: 0 });
 
-  // FPS counter via map render events
+  const isTabOpen = (id: TabId) => inlineTab === id || detached.some((d) => d.id === id);
+  const hasLayersOpen = isTabOpen('layers');
+
+  // FPS counter
   useEffect(() => {
     const map = mapRef.current;
     if (!visible || !map) return;
-
     const onRender = () => {
       const now = performance.now();
       fpsRef.current.frames++;
@@ -74,13 +140,13 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         fpsRef.current.lastTime = now;
       }
     };
-
     map.on('render', onRender);
     return () => {
       map.off('render', onRender);
     };
   }, [mapRef, visible]);
 
+  // Data collection
   useEffect(() => {
     if (!visible) {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -150,7 +216,7 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
       const { useAppStore } = await import('@/stores/appStore');
       const { selectedICAO, selectedAirportIsCustom } = useAppStore.getState();
 
-      const inspectorData = activeTab === 'layers' ? collectLayerInspectorData(map) : [];
+      const inspectorData = hasLayersOpen ? collectLayerInspectorData(map) : [];
 
       setStats({
         appVersion,
@@ -188,9 +254,9 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [mapRef, visible, activeTab]);
+  }, [mapRef, visible, hasLayersOpen]);
 
-  // Toggle with Ctrl+Shift+D / Cmd+Shift+D
+  // Keyboard toggle
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyD') {
@@ -204,71 +270,160 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
 
   if (!visible) return null;
 
-  const toggleTab = (id: TabId) => setActiveTab((prev) => (prev === id ? null : id));
+  const handleTabClick = (id: TabId) => {
+    // If detached, focus it (bring to front) — don't open inline
+    if (detached.some((d) => d.id === id)) return;
+    setInlineTab((prev) => (prev === id ? null : id));
+  };
+
+  const detachTab = (id: TabId) => {
+    if (inlineTab === id) setInlineTab(null);
+    if (!detached.some((d) => d.id === id)) {
+      setDetached((prev) => [...prev, { id, x: 100 + prev.length * 30, y: 60 + prev.length * 30 }]);
+    }
+  };
+
+  const closeDetached = (id: TabId) => {
+    setDetached((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  const renderPanel = (tabId: TabId) => {
+    if (!stats) return null;
+    switch (tabId) {
+      case 'map':
+        return <MapPanel stats={stats} />;
+      case 'layers':
+        return <LayersPanel stats={stats} mapRef={mapRef} />;
+      case 'network':
+        return <NetworkPanel stats={stats} />;
+      case 'perf':
+        return <PerfPanel stats={stats} />;
+    }
+  };
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 flex select-none flex-col font-mono text-[11px] text-muted-foreground">
+    <>
       {/* Toolbar */}
-      <div className="flex items-center gap-px border-b border-white/[0.06] bg-background/70 px-2 py-0.5 backdrop-blur-xl">
-        <span className="mr-2 text-[10px] font-semibold tracking-wider text-foreground/60">
-          DEBUG
-        </span>
+      <div className="fixed inset-x-0 top-0 z-50 flex select-none flex-col font-mono text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-px border-b border-white/[0.06] bg-background/70 px-2 py-0.5 backdrop-blur-xl">
+          <span className="mr-2 text-[10px] font-semibold tracking-wider text-foreground/60">
+            DEBUG
+          </span>
 
-        {TABS.map((tab) => (
+          {TABS.map((tab) => {
+            const isDetached = detached.some((d) => d.id === tab.id);
+            return (
+              <div key={tab.id} className="group relative flex items-center">
+                <button
+                  onClick={() => handleTabClick(tab.id)}
+                  title={tab.tip}
+                  className={`rounded-l px-2 py-0.5 text-[10px] transition-colors ${
+                    inlineTab === tab.id
+                      ? 'bg-primary/20 text-primary'
+                      : isDetached
+                        ? 'bg-muted/30 text-primary/60'
+                        : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+                {/* Detach button */}
+                {!isDetached && (
+                  <button
+                    onClick={() => detachTab(tab.id)}
+                    title="Detach panel"
+                    className="rounded-r px-1 py-0.5 text-[9px] text-muted-foreground/30 opacity-0 transition-opacity hover:bg-muted/40 hover:text-foreground group-hover:opacity-100"
+                  >
+                    ⇱
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Quick stats */}
+          {stats && (
+            <div className="ml-auto flex items-center gap-3 text-[10px] text-muted-foreground/50">
+              <span title="Frames per second">
+                <span
+                  className={
+                    stats.fps >= 30
+                      ? 'text-success'
+                      : stats.fps >= 15
+                        ? 'text-warning'
+                        : 'text-destructive'
+                  }
+                >
+                  {stats.fps}
+                </span>{' '}
+                fps
+              </span>
+              <span title="Current zoom level">z{stats.zoom.toFixed(1)}</span>
+              {stats.airportICAO && <span title="Selected airport">{stats.airportICAO}</span>}
+            </div>
+          )}
+
           <button
-            key={tab.id}
-            onClick={() => toggleTab(tab.id)}
-            title={tab.tip}
-            className={`rounded px-2 py-0.5 text-[10px] transition-colors ${
-              activeTab === tab.id
-                ? 'bg-primary/20 text-primary'
-                : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
-            }`}
+            onClick={() => setVisible(false)}
+            title="Close debug toolbar (Ctrl+Shift+D)"
+            className="ml-2 flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 hover:bg-muted hover:text-foreground"
           >
-            {tab.label}
+            ×
           </button>
-        ))}
+        </div>
 
-        {/* Quick stats always visible in toolbar */}
-        {stats && (
-          <div className="ml-auto flex items-center gap-3 text-[10px] text-muted-foreground/50">
-            <span title="Frames per second">
-              <span
-                className={
-                  stats.fps >= 30
-                    ? 'text-success'
-                    : stats.fps >= 15
-                      ? 'text-warning'
-                      : 'text-destructive'
-                }
-              >
-                {stats.fps}
-              </span>{' '}
-              fps
-            </span>
-            <span title="Current zoom level">z{stats.zoom.toFixed(1)}</span>
-            {stats.airportICAO && <span title="Selected airport">{stats.airportICAO}</span>}
+        {/* Inline panel */}
+        {inlineTab && stats && (
+          <div className="max-h-[60vh] overflow-y-auto border-b border-white/[0.06] bg-background/70 px-3 py-2 shadow-lg backdrop-blur-xl">
+            {renderPanel(inlineTab)}
           </div>
         )}
+      </div>
 
+      {/* Detached floating panels */}
+      {detached.map((panel) => (
+        <FloatingPanel key={panel.id} panel={panel} onClose={() => closeDetached(panel.id)}>
+          {renderPanel(panel.id)}
+        </FloatingPanel>
+      ))}
+    </>
+  );
+}
+
+// --- Floating detached panel ---
+
+function FloatingPanel({
+  panel,
+  onClose,
+  children,
+}: {
+  panel: DetachedPanel;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const { pos, onMouseDown } = useDrag({ x: panel.x, y: panel.y });
+  const label = TABS.find((t) => t.id === panel.id)?.label ?? panel.id;
+
+  return (
+    <div
+      className="fixed z-[60] max-h-[70vh] w-80 select-none overflow-y-auto rounded-lg border border-white/[0.08] bg-background/75 font-mono text-[11px] text-muted-foreground shadow-2xl backdrop-blur-xl"
+      style={{ left: pos.x, top: pos.y }}
+    >
+      <div
+        onMouseDown={onMouseDown}
+        className="sticky top-0 z-10 flex cursor-grab items-center justify-between border-b border-white/[0.06] bg-background/60 px-3 py-1 backdrop-blur-xl active:cursor-grabbing"
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60">
+          {label}
+        </span>
         <button
-          onClick={() => setVisible(false)}
-          title="Close debug toolbar (Ctrl+Shift+D)"
-          className="ml-2 flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 hover:bg-muted hover:text-foreground"
+          onClick={onClose}
+          className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 hover:bg-muted hover:text-foreground"
         >
           ×
         </button>
       </div>
-
-      {/* Panel — drops down below toolbar when a tab is active */}
-      {activeTab && stats && (
-        <div className="max-h-[60vh] overflow-y-auto border-b border-white/[0.06] bg-background/70 px-3 py-2 shadow-lg backdrop-blur-xl">
-          {activeTab === 'map' && <MapPanel stats={stats} />}
-          {activeTab === 'layers' && <LayersPanel stats={stats} />}
-          {activeTab === 'network' && <NetworkPanel stats={stats} />}
-          {activeTab === 'perf' && <PerfPanel stats={stats} />}
-        </div>
-      )}
+      <div className="px-3 py-2">{children}</div>
     </div>
   );
 }
@@ -327,14 +482,15 @@ function MapPanel({ stats }: { stats: DebugStats }) {
   );
 }
 
-function LayersPanel({ stats }: { stats: DebugStats }) {
+function LayersPanel({ stats, mapRef }: { stats: DebugStats; mapRef: MapRef }) {
   if (stats.inspectorData.length === 0) {
     return <span className="text-muted-foreground/40">No app layers on map</span>;
   }
   return (
     <div className="space-y-1">
+      <div className="text-[9px] text-muted-foreground/40">Click a layer to toggle visibility</div>
       {stats.inspectorData.map((group) => (
-        <InspectorGroup key={group.category} group={group} />
+        <InspectorGroup key={group.category} group={group} mapRef={mapRef} />
       ))}
       <Legend />
     </div>
@@ -470,7 +626,18 @@ function StatusDot({ status }: { status: LayerStatus }) {
   return <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${color} ${pulse}`} />;
 }
 
-function InspectorGroup({ group }: { group: LayerInspectorGroup }) {
+function OrderBadge({ order }: { order: number }) {
+  return (
+    <span
+      className="inline-flex h-4 w-6 shrink-0 items-center justify-center rounded bg-muted/50 text-[9px] tabular-nums text-foreground/50"
+      title={`Draw order ${order} — lower = behind, higher = on top`}
+    >
+      {order}
+    </span>
+  );
+}
+
+function InspectorGroup({ group, mapRef }: { group: LayerInspectorGroup; mapRef: MapRef }) {
   const [expanded, setExpanded] = useState(true);
   const label = group.category.charAt(0).toUpperCase() + group.category.slice(1);
 
@@ -489,7 +656,7 @@ function InspectorGroup({ group }: { group: LayerInspectorGroup }) {
       {expanded && (
         <div className="mt-0.5 space-y-px">
           {group.renderers.map((r) => (
-            <RendererRow key={r.primaryLayerId} renderer={r} />
+            <RendererRow key={r.primaryLayerId} renderer={r} mapRef={mapRef} />
           ))}
         </div>
       )}
@@ -497,7 +664,7 @@ function InspectorGroup({ group }: { group: LayerInspectorGroup }) {
   );
 }
 
-function RendererRow({ renderer }: { renderer: RendererInfo }) {
+function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: MapRef }) {
   const [expanded, setExpanded] = useState(false);
   const hasSublayers = renderer.sublayers.length > 0;
 
@@ -517,35 +684,46 @@ function RendererRow({ renderer }: { renderer: RendererInfo }) {
   const countStr =
     renderer.featureCount > 0 ? `${renderer.approximate ? '~' : ''}${renderer.featureCount}` : '0';
 
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const map = mapRef.current;
+    if (!map) return;
+    toggleRendererVisibility(map, renderer);
+  };
+
+  const handleExpand = () => {
+    if (hasSublayers) setExpanded((v) => !v);
+  };
+
   return (
     <div className="pl-1">
-      <div
-        className="flex items-center gap-1 rounded px-1 py-px hover:bg-muted/40"
-        role={hasSublayers ? 'button' : undefined}
-        onClick={hasSublayers ? () => setExpanded((v) => !v) : undefined}
-      >
-        <span className="w-2 text-center text-[8px] text-muted-foreground/50">
+      <div className="flex items-center gap-1 rounded px-1 py-px hover:bg-muted/40">
+        <span
+          className="w-2 cursor-pointer text-center text-[8px] text-muted-foreground/50"
+          onClick={handleExpand}
+        >
           {hasSublayers ? (expanded ? '▾' : '▸') : ''}
         </span>
+        <OrderBadge order={renderer.drawOrder} />
         <StatusDot status={renderer.status} />
-        <span className="min-w-0 flex-1 truncate">{renderer.name}</span>
+        <span
+          className="min-w-0 flex-1 cursor-pointer truncate hover:text-foreground"
+          onClick={handleToggle}
+          title="Click to toggle visibility"
+        >
+          {renderer.name}
+        </span>
         {stateTag && (
           <span className="shrink-0 rounded bg-muted/60 px-1 text-[9px] leading-tight text-warning">
             {stateTag}
           </span>
         )}
         <span className="shrink-0 tabular-nums text-foreground/40">{countStr}</span>
-        <span
-          className="shrink-0 tabular-nums text-foreground/20"
-          title="Draw order (lower = behind, higher = on top)"
-        >
-          #{renderer.drawOrder}
-        </span>
       </div>
       {expanded && (
         <div className="ml-3 border-l border-border/20 pl-1.5">
           {renderer.sublayers.map((s) => (
-            <SublayerRow key={s.layerId} sublayer={s} />
+            <SublayerRow key={s.layerId} sublayer={s} mapRef={mapRef} />
           ))}
         </div>
       )}
@@ -553,16 +731,23 @@ function RendererRow({ renderer }: { renderer: RendererInfo }) {
   );
 }
 
-function SublayerRow({ sublayer }: { sublayer: SublayerInfo }) {
+function SublayerRow({ sublayer, mapRef }: { sublayer: SublayerInfo; mapRef: MapRef }) {
+  const handleToggle = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    toggleLayerVisibility(map, sublayer.layerId);
+  };
+
   return (
     <div className="flex items-center gap-1 py-px pl-1">
+      <OrderBadge order={sublayer.drawOrder} />
       <StatusDot status={sublayer.status} />
-      <span className="min-w-0 flex-1 truncate text-foreground/40">{sublayer.name}</span>
       <span
-        className="shrink-0 tabular-nums text-foreground/20"
-        title="Draw order (lower = behind, higher = on top)"
+        className="min-w-0 flex-1 cursor-pointer truncate text-foreground/40 hover:text-foreground"
+        onClick={handleToggle}
+        title="Click to toggle visibility"
       >
-        #{sublayer.drawOrder}
+        {sublayer.name}
       </span>
     </div>
   );
