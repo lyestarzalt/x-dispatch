@@ -127,6 +127,9 @@
     "flightPlan": "Flight Plan",
     "layers": "Layers",
     "overlays": "Overlays",
+    "aroundAirport": "Around Airport (50nm)",
+    "rangeRings": "Range Rings",
+    "enabled": "Enabled",
     "loadPlan": "Load .fms File",
     "navigationLayers": "Navigation Layers",
     "tooltips": {
@@ -161,6 +164,7 @@
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Custom Scenery",
     "surfaceType": "Surface Type",
+    "runwaySurface": "Runway Surface",
     "paved": "Paved",
     "unpaved": "Unpaved",
     "water": "Water",

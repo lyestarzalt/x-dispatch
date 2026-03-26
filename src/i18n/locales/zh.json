@@ -104,6 +104,9 @@
     "flightPlan": "飞行计划",
     "layers": "图层",
     "overlays": "叠加层",
+    "aroundAirport": "机场周围 (50nm)",
+    "rangeRings": "距离环",
+    "enabled": "已启用",
     "loadPlan": "加载 .fms 文件",
     "navigationLayers": "导航图层",
     "tooltips": {
@@ -137,6 +140,7 @@
     "showOnly": "仅显示",
     "iataOnly": "商用航空 (IATA)",
     "customOnly": "自定义场景",
+    "runwaySurface": "跑道表面",
     "runways": "跑道",
     "anyRunways": "全部",
     "minRunways": "{{count}}条以上",
