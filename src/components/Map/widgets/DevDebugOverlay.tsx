@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type maplibregl from 'maplibre-gl';
 import { collectLayerInspectorData } from './layerInspector';
 import type {
@@ -8,14 +8,13 @@ import type {
   SublayerInfo,
 } from './layerInspector';
 
+// --- Types ---
+
 interface DebugStats {
-  // App
   appVersion: string;
   env: string;
   electronVersion: string;
   chromeVersion: string;
-
-  // Map
   zoom: number;
   pitch: number;
   projection: string;
@@ -23,30 +22,18 @@ interface DebugStats {
   fps: number;
   layerCount: number;
   sourceCount: number;
-
-  // Airport
   airportICAO: string | null;
   airportSource: string;
-
-  // Layer Inspector
   inspectorData: LayerInspectorGroup[];
-
-  // Terrain
   terrainActive: boolean;
   terrainSourceLoaded: boolean;
   hillshadeSourceLoaded: boolean;
-
-  // Cache
   tileCacheEntries: number;
   tileCacheSize: string;
   tileCacheHitRate: string;
-
-  // Network
   xplaneWs: string;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;
-
-  // Performance
   rendererHeapMB: string;
   mainRssMB: string;
   mainHeapMB: string;
@@ -54,51 +41,23 @@ interface DebugStats {
 }
 
 type MapRef = React.RefObject<maplibregl.Map | null>;
+type TabId = 'map' | 'layers' | 'network' | 'perf';
 
-// --- Drag hook ---
+const TABS: { id: TabId; label: string; tip: string }[] = [
+  { id: 'map', label: 'Map', tip: 'Map state, airport, terrain' },
+  { id: 'layers', label: 'Layers', tip: 'Layer inspector — status, features, draw order' },
+  { id: 'network', label: 'Net', tip: 'X-Plane WebSocket, VATSIM, IVAO' },
+  { id: 'perf', label: 'Perf', tip: 'Memory, IPC latency, FPS, cache' },
+];
 
-function useDrag(initialPos: { x: number; y: number }) {
-  const [pos, setPos] = useState(initialPos);
-  const dragging = useRef(false);
-  const offset = useRef({ x: 0, y: 0 });
-
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      // Only drag from the title bar area
-      if ((e.target as HTMLElement).closest('button')) return;
-      dragging.current = true;
-      offset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
-      e.preventDefault();
-    },
-    [pos]
-  );
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!dragging.current) return;
-      setPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y });
-    };
-    const onMouseUp = () => {
-      dragging.current = false;
-    };
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, []);
-
-  return { pos, onMouseDown };
-}
+// --- Main component ---
 
 export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   const [stats, setStats] = useState<DebugStats | null>(null);
   const [visible, setVisible] = useState(false);
-  const [inspectorExpanded, setInspectorExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fpsRef = useRef({ frames: 0, lastTime: performance.now(), fps: 0 });
-  const { pos, onMouseDown } = useDrag({ x: 12, y: window.innerHeight - 400 });
 
   // FPS counter via map render events
   useEffect(() => {
@@ -135,25 +94,22 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
       const style = map.getStyle();
       const proj = map.getProjection?.();
 
-      // App info
       let appVersion = '—';
       try {
         appVersion = await window.appAPI.getVersion();
       } catch {
-        // ignore
+        /* ignore */
       }
 
-      // IPC latency
       let ipcLatencyMs = 0;
       try {
         const start = performance.now();
         await window.appAPI.getVersion();
         ipcLatencyMs = Math.round(performance.now() - start);
       } catch {
-        // ignore
+        /* ignore */
       }
 
-      // Main process memory
       let mainRssMB = '—';
       let mainHeapMB = '—';
       try {
@@ -161,10 +117,9 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         mainRssMB = `${(mainMem.rss / 1024 / 1024).toFixed(0)}MB`;
         mainHeapMB = `${(mainMem.heapUsed / 1024 / 1024).toFixed(0)}MB`;
       } catch {
-        // ignore
+        /* ignore */
       }
 
-      // Tile cache
       let tileCacheEntries = 0;
       let tileCacheSize = '—';
       let tileCacheHitRate = '—';
@@ -175,31 +130,27 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         tileCacheHitRate =
           cacheStats.hitRate > 0 ? `${(cacheStats.hitRate * 100).toFixed(0)}%` : '—';
       } catch {
-        // ignore
+        /* ignore */
       }
 
-      // X-Plane WebSocket
       let xplaneWs = 'off';
       try {
         const connected = await window.xplaneServiceAPI.isStreamConnected();
         xplaneWs = connected ? 'connected' : 'disconnected';
       } catch {
-        // ignore
+        /* ignore */
       }
 
-      // Renderer heap
       const mem = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
       const rendererHeapMB = mem ? `${(mem.usedJSHeapSize / 1024 / 1024).toFixed(0)}MB` : '—';
 
-      // Store state
       const { useMapStore } = await import('@/stores/mapStore');
       const { vatsimEnabled, ivaoEnabled } = useMapStore.getState();
 
       const { useAppStore } = await import('@/stores/appStore');
       const { selectedICAO, selectedAirportIsCustom } = useAppStore.getState();
 
-      // Layer inspector (only compute when expanded)
-      const inspectorData = inspectorExpanded ? collectLayerInspectorData(map) : [];
+      const inspectorData = activeTab === 'layers' ? collectLayerInspectorData(map) : [];
 
       setStats({
         appVersion,
@@ -237,7 +188,7 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [mapRef, visible, inspectorExpanded]);
+  }, [mapRef, visible, activeTab]);
 
   // Toggle with Ctrl+Shift+D / Cmd+Shift+D
   useEffect(() => {
@@ -251,190 +202,210 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  if (!visible || !stats) return null;
+  if (!visible) return null;
+
+  const toggleTab = (id: TabId) => setActiveTab((prev) => (prev === id ? null : id));
 
   return (
-    <div
-      className="fixed z-50 max-h-[70vh] w-72 select-none overflow-y-auto rounded-lg border border-white/[0.08] bg-background/70 font-mono text-[11px] text-muted-foreground shadow-2xl backdrop-blur-xl"
-      style={{ left: pos.x, top: pos.y }}
-    >
-      {/* Title bar — draggable */}
-      <div
-        onMouseDown={onMouseDown}
-        className="sticky top-0 z-10 flex cursor-grab items-center justify-between border-b border-white/[0.06] bg-background/60 px-3 py-1.5 backdrop-blur-xl active:cursor-grabbing"
-      >
-        <span className="text-xs font-semibold tracking-wide text-foreground">Debug</span>
+    <div className="fixed inset-x-0 top-0 z-50 flex select-none flex-col font-mono text-[11px] text-muted-foreground">
+      {/* Toolbar */}
+      <div className="flex items-center gap-px border-b border-white/[0.06] bg-background/70 px-2 py-0.5 backdrop-blur-xl">
+        <span className="mr-2 text-[10px] font-semibold tracking-wider text-foreground/60">
+          DEBUG
+        </span>
+
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => toggleTab(tab.id)}
+            title={tab.tip}
+            className={`rounded px-2 py-0.5 text-[10px] transition-colors ${
+              activeTab === tab.id
+                ? 'bg-primary/20 text-primary'
+                : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+
+        {/* Quick stats always visible in toolbar */}
+        {stats && (
+          <div className="ml-auto flex items-center gap-3 text-[10px] text-muted-foreground/50">
+            <span title="Frames per second">
+              <span
+                className={
+                  stats.fps >= 30
+                    ? 'text-success'
+                    : stats.fps >= 15
+                      ? 'text-warning'
+                      : 'text-destructive'
+                }
+              >
+                {stats.fps}
+              </span>{' '}
+              fps
+            </span>
+            <span title="Current zoom level">z{stats.zoom.toFixed(1)}</span>
+            {stats.airportICAO && <span title="Selected airport">{stats.airportICAO}</span>}
+          </div>
+        )}
+
         <button
           onClick={() => setVisible(false)}
-          className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/60 hover:bg-muted hover:text-foreground"
+          title="Close debug toolbar (Ctrl+Shift+D)"
+          className="ml-2 flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 hover:bg-muted hover:text-foreground"
         >
           ×
         </button>
       </div>
 
-      <div className="px-3 py-1.5">
-        {/* App */}
+      {/* Panel — drops down below toolbar when a tab is active */}
+      {activeTab && stats && (
+        <div className="max-h-[60vh] overflow-y-auto border-b border-white/[0.06] bg-background/70 px-3 py-2 shadow-lg backdrop-blur-xl">
+          {activeTab === 'map' && <MapPanel stats={stats} />}
+          {activeTab === 'layers' && <LayersPanel stats={stats} />}
+          {activeTab === 'network' && <NetworkPanel stats={stats} />}
+          {activeTab === 'perf' && <PerfPanel stats={stats} />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Tab panels ---
+
+function MapPanel({ stats }: { stats: DebugStats }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-6">
+      <div>
+        <SectionLabel>App</SectionLabel>
         <Row
           label="Version"
           value={`v${stats.appVersion} ${stats.env === 'production' ? '' : '(dev)'}`}
-          tip="App version and environment (production or development)"
+          tip="App version and environment"
         />
         <Row
           label="Electron"
           value={`${stats.electronVersion} / Cr ${stats.chromeVersion}`}
-          tip="Electron framework version / Chromium engine version"
+          tip="Electron / Chromium version"
         />
-
-        {/* Map */}
-        <Section label="Map" />
-        <Row
-          label="Zoom"
-          value={stats.zoom.toFixed(2)}
-          tip="Current map zoom level (0 = world, 20 = building)"
-        />
+      </div>
+      <div>
+        <SectionLabel>Map</SectionLabel>
+        <Row label="Zoom" value={stats.zoom.toFixed(2)} tip="Current map zoom level" />
         <Row
           label="Center"
           value={`${stats.center[1].toFixed(3)}, ${stats.center[0].toFixed(3)}`}
-          tip="Map center coordinates (lat, lng)"
-        />
-        <Row
-          label="FPS"
-          value={String(stats.fps)}
-          status={stats.fps >= 30 ? 'ok' : stats.fps >= 15 ? 'off' : 'error'}
-          tip="Map render frames per second. Green ≥30, yellow ≥15, red <15"
+          tip="Map center (lat, lng)"
         />
         <Row
           label="Layers / Src"
           value={`${stats.layerCount} / ${stats.sourceCount}`}
-          tip="Total MapLibre layers / data sources (includes base map)"
+          tip="Total MapLibre layers / sources"
         />
-
-        {/* Airport */}
+      </div>
+      <div>
+        <SectionLabel>Airport</SectionLabel>
         <Row
-          label="Airport"
+          label="ICAO"
           value={stats.airportICAO ? `${stats.airportICAO} (${stats.airportSource})` : 'none'}
           status={stats.airportSource === 'custom' ? 'ok' : undefined}
-          tip="Selected airport ICAO code and scenery source (default or custom)"
+          tip="Selected airport and scenery source"
         />
-
-        {/* Layer Inspector */}
-        <button
-          onClick={() => setInspectorExpanded((v) => !v)}
-          title="Expand to inspect all app layer renderers, their status, and feature counts"
-          className="mt-2 flex w-full items-center gap-1.5 rounded border border-border/40 px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground hover:border-primary/50 hover:text-foreground"
-        >
-          <span className="text-[8px]">{inspectorExpanded ? '▾' : '▸'}</span>
-          <span>Layer Inspector</span>
-          <span className="ml-auto text-foreground/40">
-            {stats.inspectorData.reduce((n, g) => n + g.drawnCount, 0)}/
-            {stats.inspectorData.reduce((n, g) => n + g.totalCount, 0)}
-          </span>
-        </button>
-        {inspectorExpanded &&
-          stats.inspectorData.map((group) => <InspectorGroup key={group.category} group={group} />)}
-
-        {/* Terrain */}
-        <Section label="Terrain" />
+      </div>
+      <div>
+        <SectionLabel>Terrain</SectionLabel>
         <Row
           label="3D / DEM / Hill"
           value={`${stats.terrainActive ? 'ON' : 'OFF'} / ${stats.terrainSourceLoaded ? 'ok' : '!'} / ${stats.hillshadeSourceLoaded ? 'ok' : '!'}`}
           status={stats.terrainActive && stats.terrainSourceLoaded ? 'ok' : 'error'}
-          tip="3D terrain extrusion / DEM elevation source / Hillshade source"
+          tip="3D terrain / DEM source / Hillshade source"
         />
-
-        {/* Cache */}
-        <Row
-          label="Tile Cache"
-          value={`${stats.tileCacheEntries} / ${stats.tileCacheSize} (${stats.tileCacheHitRate})`}
-          tip="Cached map tiles: count / disk size (hit rate)"
-        />
-
-        {/* Network */}
-        <Section label="Network" />
-        <Row
-          label="X-Plane WS"
-          value={stats.xplaneWs}
-          status={
-            stats.xplaneWs === 'connected' ? 'ok' : stats.xplaneWs === 'off' ? 'off' : 'error'
-          }
-          tip="WebSocket connection to X-Plane for live flight data"
-        />
-        <Row
-          label="VATSIM / IVAO"
-          value={`${stats.vatsimEnabled ? 'ON' : 'OFF'} / ${stats.ivaoEnabled ? 'ON' : 'OFF'}`}
-          status={stats.vatsimEnabled || stats.ivaoEnabled ? 'ok' : 'off'}
-          tip="Online network overlays — shows live pilot traffic"
-        />
-
-        {/* Performance */}
-        <Section label="Perf" />
-        <Row
-          label="Heap"
-          value={`${stats.rendererHeapMB} render / ${stats.mainHeapMB} main`}
-          tip="JS heap usage: renderer process / main (Electron) process"
-        />
-        <Row
-          label="Main RSS"
-          value={stats.mainRssMB}
-          tip="Main process resident set size — total memory footprint"
-        />
-        <Row
-          label="IPC"
-          value={`${stats.ipcLatencyMs}ms`}
-          status={stats.ipcLatencyMs <= 5 ? 'ok' : stats.ipcLatencyMs <= 20 ? 'off' : 'error'}
-          tip="Round-trip time for an IPC call to main process. Green ≤5ms, yellow ≤20ms, red >20ms"
-        />
-
-        {/* Legend */}
-        <div className="mt-2 flex items-center gap-3 border-t border-white/[0.04] pt-1.5 text-[9px] text-muted-foreground/50">
-          <span className="flex items-center gap-1" title="Value is normal">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
-            ok
-          </span>
-          <span
-            className="flex items-center gap-1"
-            title="Value needs attention — degraded or disabled"
-          >
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-warning" />
-            warn
-          </span>
-          <span className="flex items-center gap-1" title="Value indicates a problem">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
-            error
-          </span>
-        </div>
       </div>
     </div>
   );
 }
 
-// --- Shared UI components ---
-
-function Section({
-  label,
-  collapsible,
-  expanded,
-  onToggle,
-}: {
-  label: string;
-  collapsible?: boolean;
-  expanded?: boolean;
-  onToggle?: () => void;
-}) {
-  if (collapsible) {
-    return (
-      <button
-        onClick={onToggle}
-        className="mt-2 flex w-full items-center gap-1.5 border-t border-border/30 pt-1 text-[10px] uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground"
-      >
-        <span className="text-[8px]">{expanded ? '▾' : '▸'}</span>
-        {label}
-      </button>
-    );
+function LayersPanel({ stats }: { stats: DebugStats }) {
+  if (stats.inspectorData.length === 0) {
+    return <span className="text-muted-foreground/40">No app layers on map</span>;
   }
   return (
-    <div className="mt-2 border-t border-border/30 pt-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
-      {label}
+    <div className="space-y-1">
+      {stats.inspectorData.map((group) => (
+        <InspectorGroup key={group.category} group={group} />
+      ))}
+      <Legend />
+    </div>
+  );
+}
+
+function NetworkPanel({ stats }: { stats: DebugStats }) {
+  return (
+    <div className="max-w-xs">
+      <Row
+        label="X-Plane WS"
+        value={stats.xplaneWs}
+        status={stats.xplaneWs === 'connected' ? 'ok' : stats.xplaneWs === 'off' ? 'off' : 'error'}
+        tip="WebSocket connection to X-Plane"
+      />
+      <Row
+        label="VATSIM"
+        value={stats.vatsimEnabled ? 'ON' : 'OFF'}
+        status={stats.vatsimEnabled ? 'ok' : 'off'}
+        tip="VATSIM live traffic overlay"
+      />
+      <Row
+        label="IVAO"
+        value={stats.ivaoEnabled ? 'ON' : 'OFF'}
+        status={stats.ivaoEnabled ? 'ok' : 'off'}
+        tip="IVAO live traffic overlay"
+      />
+    </div>
+  );
+}
+
+function PerfPanel({ stats }: { stats: DebugStats }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-6">
+      <div>
+        <SectionLabel>Rendering</SectionLabel>
+        <Row
+          label="FPS"
+          value={String(stats.fps)}
+          status={stats.fps >= 30 ? 'ok' : stats.fps >= 15 ? 'off' : 'error'}
+          tip="Map render frames per second"
+        />
+        <Row
+          label="Tile Cache"
+          value={`${stats.tileCacheEntries} / ${stats.tileCacheSize}`}
+          tip="Cached tiles: count / size"
+        />
+        <Row label="Hit Rate" value={stats.tileCacheHitRate} tip="Tile cache hit rate" />
+      </div>
+      <div>
+        <SectionLabel>Memory</SectionLabel>
+        <Row label="Renderer Heap" value={stats.rendererHeapMB} tip="Renderer process JS heap" />
+        <Row label="Main Heap" value={stats.mainHeapMB} tip="Main process JS heap" />
+        <Row label="Main RSS" value={stats.mainRssMB} tip="Main process total memory" />
+        <Row
+          label="IPC Latency"
+          value={`${stats.ipcLatencyMs}ms`}
+          status={stats.ipcLatencyMs <= 5 ? 'ok' : stats.ipcLatencyMs <= 20 ? 'off' : 'error'}
+          tip="Round-trip IPC to main process"
+        />
+      </div>
+    </div>
+  );
+}
+
+// --- Shared UI ---
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-0.5 mt-1 text-[9px] uppercase tracking-wider text-muted-foreground/40 first:mt-0">
+      {children}
     </div>
   );
 }
@@ -461,13 +432,32 @@ function Row({
 
   return (
     <div className="flex justify-between gap-4 py-px" title={tip}>
-      <span className="text-muted-foreground/80">{label}</span>
+      <span className="text-muted-foreground/70">{label}</span>
       <span className={`text-right ${color}`}>{value}</span>
     </div>
   );
 }
 
-// --- Layer Inspector UI ---
+function Legend() {
+  return (
+    <div className="mt-1.5 flex items-center gap-3 border-t border-white/[0.04] pt-1.5 text-[9px] text-muted-foreground/40">
+      <span className="flex items-center gap-1" title="Layer is rendering normally">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
+        drawn
+      </span>
+      <span className="flex items-center gap-1" title="Hidden, out of zoom range, or loading">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-warning" />
+        warn
+      </span>
+      <span className="flex items-center gap-1" title="Empty source or missing source">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
+        error
+      </span>
+    </div>
+  );
+}
+
+// --- Layer Inspector ---
 
 function StatusDot({ status }: { status: LayerStatus }) {
   const color =
@@ -485,7 +475,7 @@ function InspectorGroup({ group }: { group: LayerInspectorGroup }) {
   const label = group.category.charAt(0).toUpperCase() + group.category.slice(1);
 
   return (
-    <div className="mt-1.5">
+    <div>
       <button
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center gap-1.5 text-[10px] text-muted-foreground/70 hover:text-foreground"
