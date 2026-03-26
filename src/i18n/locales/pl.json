@@ -104,6 +104,9 @@
     "flightPlan": "Plan lotu",
     "layers": "Warstwy",
     "overlays": "Nakładki",
+    "aroundAirport": "Wokół lotniska (50nm)",
+    "rangeRings": "Pierścienie zasięgu",
+    "enabled": "Włączone",
     "loadPlan": "Wczytaj .fms",
     "navigationLayers": "Warstwy nawigacyjne",
     "tooltips": {
@@ -137,6 +140,7 @@
     "showOnly": "Pokaż tylko",
     "iataOnly": "Komercyjne (IATA)",
     "customOnly": "Scenerie użytkownika",
+    "runwaySurface": "Nawierzchnia pasa",
     "runways": "Pasy startowe",
     "anyRunways": "Wszystkie",
     "minRunways": "{{count}}+ Pasów",

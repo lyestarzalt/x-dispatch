@@ -104,6 +104,9 @@
     "flightPlan": "Plan de vol",
     "layers": "Couches",
     "overlays": "Superpositions",
+    "aroundAirport": "Autour de l'aéroport (50nm)",
+    "rangeRings": "Anneaux de distance",
+    "enabled": "Activé",
     "loadPlan": "Charger .fms",
     "navigationLayers": "Couches de navigation",
     "tooltips": {
@@ -137,6 +140,7 @@
     "showOnly": "Afficher uniquement",
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Scènes personnalisées",
+    "runwaySurface": "Surface de piste",
     "runways": "Pistes",
     "anyRunways": "Toutes",
     "minRunways": "{{count}}+ Pistes",

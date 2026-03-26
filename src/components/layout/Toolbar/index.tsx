@@ -788,11 +788,9 @@ export default function Toolbar({
                 {t('airportFilters.customOnly')}
               </DropdownMenuCheckboxItem>
 
-              <DropdownMenuSeparator />
-
-              {/* Surface Type section */}
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('airportFilters.surfaceType')}
+              {/* Runway surface sub-filter */}
+              <DropdownMenuLabel className="pl-6 text-xs uppercase tracking-wider text-muted-foreground/50">
+                {t('airportFilters.runwaySurface')}
               </DropdownMenuLabel>
               {(
                 [
@@ -811,10 +809,8 @@ export default function Toolbar({
                 </DropdownMenuCheckboxItem>
               ))}
 
-              <DropdownMenuSeparator />
-
-              {/* Country section */}
-              <DropdownMenuLabel className="xp-section-heading">
+              {/* Country sub-filter */}
+              <DropdownMenuLabel className="pl-6 text-xs uppercase tracking-wider text-muted-foreground/50">
                 {t('airportFilters.country')}
               </DropdownMenuLabel>
               <div className="px-1 pb-1">
@@ -894,7 +890,7 @@ export default function Toolbar({
 
               {/* Navigation section */}
               <DropdownMenuLabel className="xp-section-heading">
-                Around Airport (50nm)
+                {t('toolbar.aroundAirport')}
               </DropdownMenuLabel>
               {localNavLayers.map((layer) => (
                 <DropdownMenuCheckboxItem
@@ -958,12 +954,14 @@ export default function Toolbar({
               <DropdownMenuSeparator />
 
               {/* Range Rings section */}
-              <DropdownMenuLabel className="xp-section-heading">Range Rings</DropdownMenuLabel>
+              <DropdownMenuLabel className="xp-section-heading">
+                {t('toolbar.rangeRings')}
+              </DropdownMenuLabel>
               <DropdownMenuCheckboxItem
                 checked={rangeRingsEnabled}
                 onCheckedChange={() => setRangeRingsEnabled(!rangeRingsEnabled)}
               >
-                Enabled
+                {t('toolbar.enabled')}
               </DropdownMenuCheckboxItem>
               {rangeRingsEnabled && (
                 <>

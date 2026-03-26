@@ -104,6 +104,9 @@
     "flightPlan": "フライトプラン",
     "layers": "レイヤー",
     "overlays": "オーバーレイ",
+    "aroundAirport": "空港周辺 (50nm)",
+    "rangeRings": "距離環",
+    "enabled": "有効",
     "loadPlan": ".fmsファイルを読込",
     "navigationLayers": "ナビゲーションレイヤー",
     "tooltips": {
@@ -137,6 +140,7 @@
     "showOnly": "表示のみ",
     "iataOnly": "商用空港 (IATA)",
     "customOnly": "カスタムシーナリー",
+    "runwaySurface": "滑走路面",
     "runways": "滑走路",
     "anyRunways": "すべて",
     "minRunways": "{{count}}本以上",

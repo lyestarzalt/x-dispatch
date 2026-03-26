@@ -104,6 +104,9 @@
     "flightPlan": "План полёта",
     "layers": "Слои",
     "overlays": "Наложения",
+    "aroundAirport": "Вокруг аэропорта (50 нм)",
+    "rangeRings": "Кольца дальности",
+    "enabled": "Включено",
     "loadPlan": "Загрузить .fms",
     "navigationLayers": "Навигационные слои",
     "tooltips": {
@@ -137,6 +140,7 @@
     "showOnly": "Показать только",
     "iataOnly": "Коммерческие (IATA)",
     "customOnly": "Пользовательские сцены",
+    "runwaySurface": "Покрытие ВПП",
     "runways": "Полосы",
     "anyRunways": "Любые",
     "minRunways": "{{count}}+ Полос",
