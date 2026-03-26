@@ -545,6 +545,12 @@ function RendererRow({ renderer }: { renderer: RendererInfo }) {
           </span>
         )}
         <span className="shrink-0 tabular-nums text-foreground/40">{countStr}</span>
+        <span
+          className="shrink-0 tabular-nums text-foreground/20"
+          title="Draw order (lower = behind, higher = on top)"
+        >
+          #{renderer.drawOrder}
+        </span>
       </div>
       {expanded && (
         <div className="ml-3 border-l border-border/20 pl-1.5">
@@ -562,6 +568,12 @@ function SublayerRow({ sublayer }: { sublayer: SublayerInfo }) {
     <div className="flex items-center gap-1 py-px pl-1">
       <StatusDot status={sublayer.status} />
       <span className="min-w-0 flex-1 truncate text-foreground/40">{sublayer.name}</span>
+      <span
+        className="shrink-0 tabular-nums text-foreground/20"
+        title="Draw order (lower = behind, higher = on top)"
+      >
+        #{sublayer.drawOrder}
+      </span>
     </div>
   );
 }
