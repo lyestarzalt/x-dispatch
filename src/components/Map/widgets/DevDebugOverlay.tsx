@@ -41,7 +41,7 @@ interface DebugStats {
 }
 
 type MapRef = React.RefObject<maplibregl.Map | null>;
-type TabId = 'map' | 'layers' | 'network' | 'perf';
+type TabId = 'map' | 'layers' | 'network' | 'perf' | 'state';
 
 interface DetachedPanel {
   id: TabId;
@@ -54,6 +54,7 @@ const TABS: { id: TabId; label: string; tip: string }[] = [
   { id: 'layers', label: 'Layers', tip: 'Layer inspector — click layers to toggle visibility' },
   { id: 'network', label: 'Net', tip: 'X-Plane WebSocket, VATSIM, IVAO' },
   { id: 'perf', label: 'Perf', tip: 'Memory, IPC latency, FPS, cache' },
+  { id: 'state', label: 'State', tip: 'App state — stores, settings, selections' },
 ];
 
 // --- Drag hook ---
@@ -118,13 +119,11 @@ function toggleRendererVisibility(map: maplibregl.Map, renderer: RendererInfo) {
 export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   const [stats, setStats] = useState<DebugStats | null>(null);
   const [visible, setVisible] = useState(false);
-  const [inlineTab, setInlineTab] = useState<TabId | null>(null);
   const [detached, setDetached] = useState<DetachedPanel[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fpsRef = useRef({ frames: 0, lastTime: performance.now(), fps: 0 });
 
-  const isTabOpen = (id: TabId) => inlineTab === id || detached.some((d) => d.id === id);
-  const hasLayersOpen = isTabOpen('layers');
+  const hasLayersOpen = detached.some((d) => d.id === 'layers');
 
   // FPS counter
   useEffect(() => {
@@ -271,19 +270,15 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   if (!visible) return null;
 
   const handleTabClick = (id: TabId) => {
-    // If detached, focus it (bring to front) — don't open inline
-    if (detached.some((d) => d.id === id)) return;
-    setInlineTab((prev) => (prev === id ? null : id));
-  };
-
-  const detachTab = (id: TabId) => {
-    if (inlineTab === id) setInlineTab(null);
-    if (!detached.some((d) => d.id === id)) {
-      // Center on screen
-      const x = Math.round(window.innerWidth / 2 - 160);
-      const y = Math.round(window.innerHeight / 2 - 200);
-      setDetached((prev) => [...prev, { id, x, y }]);
+    // Already open — close it
+    if (detached.some((d) => d.id === id)) {
+      setDetached((prev) => prev.filter((d) => d.id !== id));
+      return;
     }
+    // Open as floating window, center on screen
+    const x = Math.round(window.innerWidth / 2 - 160);
+    const y = Math.round(window.innerHeight / 3 + detached.length * 30);
+    setDetached((prev) => [...prev, { id, x, y }]);
   };
 
   const closeDetached = (id: TabId) => {
@@ -301,6 +296,8 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         return <NetworkPanel stats={stats} />;
       case 'perf':
         return <PerfPanel stats={stats} />;
+      case 'state':
+        return <StatePanel />;
     }
   };
 
@@ -308,39 +305,26 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
     <>
       {/* Toolbar */}
       <div className="fixed inset-x-0 top-0 z-50 flex select-none flex-col font-mono text-[11px] text-muted-foreground">
-        <div className="flex items-center gap-px border-b border-white/[0.06] bg-background/70 px-2 py-0.5 backdrop-blur-xl">
+        <div className="flex items-center gap-px border-b border-border/40 bg-background px-2 py-0.5">
           <span className="mr-2 text-[10px] font-semibold tracking-wider text-foreground/60">
             DEBUG
           </span>
 
           {TABS.map((tab) => {
-            const isDetached = detached.some((d) => d.id === tab.id);
+            const isOpen = detached.some((d) => d.id === tab.id);
             return (
-              <div key={tab.id} className="group relative flex items-center">
-                <button
-                  onClick={() => handleTabClick(tab.id)}
-                  title={tab.tip}
-                  className={`rounded-l px-2 py-0.5 text-[10px] transition-colors ${
-                    inlineTab === tab.id
-                      ? 'bg-primary/20 text-primary'
-                      : isDetached
-                        ? 'bg-muted/30 text-primary/60'
-                        : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-                {/* Detach button */}
-                {!isDetached && (
-                  <button
-                    onClick={() => detachTab(tab.id)}
-                    title="Detach panel"
-                    className="rounded-r px-1 py-0.5 text-[9px] text-muted-foreground/30 opacity-0 transition-opacity hover:bg-muted/40 hover:text-foreground group-hover:opacity-100"
-                  >
-                    ⇱
-                  </button>
-                )}
-              </div>
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                title={tab.tip}
+                className={`rounded px-2 py-0.5 text-[10px] transition-colors ${
+                  isOpen
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
             );
           })}
 
@@ -374,13 +358,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
             ×
           </button>
         </div>
-
-        {/* Inline panel */}
-        {inlineTab && stats && (
-          <div className="max-h-[60vh] overflow-y-auto border-b border-white/[0.06] bg-background/70 px-3 py-2 shadow-lg backdrop-blur-xl">
-            {renderPanel(inlineTab)}
-          </div>
-        )}
       </div>
 
       {/* Detached floating panels */}
@@ -409,12 +386,12 @@ function FloatingPanel({
 
   return (
     <div
-      className="fixed z-[60] max-h-[70vh] w-80 select-none overflow-y-auto rounded-lg border border-white/[0.08] bg-background/75 font-mono text-[11px] text-muted-foreground shadow-2xl backdrop-blur-xl"
-      style={{ left: pos.x, top: pos.y }}
+      className="fixed z-[60] min-h-[120px] min-w-[280px] select-none resize overflow-auto rounded-lg border border-border/40 bg-background font-mono text-[11px] text-muted-foreground shadow-2xl"
+      style={{ left: pos.x, top: pos.y, width: 320, height: 'auto', maxHeight: '70vh' }}
     >
       <div
         onMouseDown={onMouseDown}
-        className="sticky top-0 z-10 flex cursor-grab items-center justify-between border-b border-white/[0.06] bg-background/60 px-3 py-1 backdrop-blur-xl active:cursor-grabbing"
+        className="sticky top-0 z-10 flex cursor-grab items-center justify-between border-b border-border/40 bg-background px-3 py-1 active:cursor-grabbing"
       >
         <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60">
           {label}
@@ -558,6 +535,85 @@ function PerfPanel({ stats }: { stats: DebugStats }) {
   );
 }
 
+function StatePanel() {
+  const [storeData, setStoreData] = useState<Record<string, unknown> | null>(null);
+  const [expandedStores, setExpandedStores] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const load = async () => {
+      const { useAppStore } = await import('@/stores/appStore');
+      const { useMapStore } = await import('@/stores/mapStore');
+      const { useSettingsStore } = await import('@/stores/settingsStore');
+      const { useThemeStore } = await import('@/stores/themeStore');
+      const { useLaunchStore } = await import('@/stores/launchStore');
+      const { useFlightPlanStore } = await import('@/stores/flightPlanStore');
+
+      setStoreData({
+        app: stripFunctions(useAppStore.getState()),
+        map: stripFunctions(useMapStore.getState()),
+        settings: stripFunctions(useSettingsStore.getState()),
+        theme: stripFunctions(useThemeStore.getState()),
+        launch: stripFunctions(useLaunchStore.getState()),
+        flightPlan: stripFunctions(useFlightPlanStore.getState()),
+      });
+    };
+
+    load();
+    const id = setInterval(load, 2000);
+    return () => clearInterval(id);
+  }, []);
+
+  const toggleStore = (name: string) => {
+    setExpandedStores((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
+
+  if (!storeData) return <span className="text-muted-foreground/40">Loading...</span>;
+
+  return (
+    <div className="space-y-1">
+      {Object.entries(storeData).map(([name, state]) => {
+        const isExpanded = expandedStores.has(name);
+        const keys = Object.keys(state as Record<string, unknown>);
+        return (
+          <div key={name}>
+            <button
+              onClick={() => toggleStore(name)}
+              className="flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-[10px] hover:bg-muted/40"
+            >
+              <span className="text-[8px]">{isExpanded ? '▾' : '▸'}</span>
+              <span className="font-semibold uppercase tracking-wider text-foreground/70">
+                {name}
+              </span>
+              <span className="ml-auto text-muted-foreground/40">{keys.length} keys</span>
+            </button>
+            {isExpanded && (
+              <pre className="ml-3 overflow-x-auto border-l-2 border-border/30 pl-2 text-[10px] leading-relaxed text-foreground/60">
+                {JSON.stringify(state, null, 2)}
+              </pre>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Strip functions from a store state object for display */
+function stripFunctions(obj: object): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value !== 'function') {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 // --- Shared UI ---
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -598,7 +654,7 @@ function Row({
 
 function Legend() {
   return (
-    <div className="mt-1.5 flex items-center gap-3 border-t border-white/[0.04] pt-1.5 text-[9px] text-muted-foreground/40">
+    <div className="mt-1.5 flex items-center gap-3 border-t border-border/30 pt-1.5 text-[9px] text-muted-foreground/40">
       <span className="flex items-center gap-1" title="Layer is rendering normally">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
         drawn
@@ -700,14 +756,8 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
   const isVisible = renderer.status !== 'hidden';
 
   return (
-    <div className="pl-1">
+    <div>
       <div className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-muted/40">
-        <span
-          className="w-2 cursor-pointer text-center text-[8px] text-muted-foreground/50"
-          onClick={handleExpand}
-        >
-          {hasSublayers ? (expanded ? '▾' : '▸') : ''}
-        </span>
         <OrderBadge order={renderer.drawOrder} />
         <StatusDot status={renderer.status} />
         <span className="min-w-0 flex-1 truncate">{renderer.name}</span>
@@ -717,6 +767,19 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
             {stateTag}
           </span>
         )}
+        {hasSublayers && (
+          <button
+            onClick={handleExpand}
+            className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
+              expanded
+                ? 'bg-primary/20 text-primary'
+                : 'bg-muted text-foreground/60 hover:bg-muted/80'
+            }`}
+            title={expanded ? 'Collapse sublayers' : `Show ${renderer.sublayers.length} sublayers`}
+          >
+            {renderer.sublayers.length} {expanded ? '▴' : '▾'}
+          </button>
+        )}
         <button
           onClick={handleToggle}
           className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
@@ -724,13 +787,13 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
               ? 'bg-success/20 text-success hover:bg-success/30'
               : 'bg-destructive/20 text-destructive hover:bg-destructive/30'
           }`}
-          title={isVisible ? 'Click to hide this layer' : 'Click to show this layer'}
+          title={isVisible ? 'Hide this layer' : 'Show this layer'}
         >
           {isVisible ? 'ON' : 'OFF'}
         </button>
       </div>
       {expanded && (
-        <div className="ml-3 border-l border-border/20 pl-1.5">
+        <div className="ml-6 border-l-2 border-primary/30 pl-2">
           {renderer.sublayers.map((s) => (
             <SublayerRow key={s.layerId} sublayer={s} mapRef={mapRef} />
           ))}
