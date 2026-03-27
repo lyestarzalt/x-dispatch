@@ -31,9 +31,8 @@ function getSchemaFingerprint(): string {
     .filter((f) => f.endsWith('_snapshot.json'))
     .sort();
   if (files.length === 0) throw new Error('No migration snapshots found in ' + snapshotDir);
-  const snapshot = JSON.parse(
-    fs.readFileSync(path.join(snapshotDir, files[files.length - 1]), 'utf-8')
-  );
+  const latestFile = files[files.length - 1]!;
+  const snapshot = JSON.parse(fs.readFileSync(path.join(snapshotDir, latestFile), 'utf-8'));
   if (!snapshot.id) throw new Error('Migration snapshot missing id field');
   return snapshot.id;
 }

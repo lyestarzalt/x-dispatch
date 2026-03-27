@@ -63,7 +63,7 @@ export function parseSignText(rawText: string): ParsedSign {
 function parseSignSide(text: string): SignSegment[] {
   // Check for comma-delimited syntax: {@Y,^l,C}
   const commaMatch = text.match(/^\{@([YRLB]),(.+)\}$/);
-  if (commaMatch) {
+  if (commaMatch?.[1] && commaMatch[2]) {
     return parseCommaDelimited(commaMatch[1] as SignColorMode, commaMatch[2]);
   }
 
@@ -86,7 +86,7 @@ function parseSignSide(text: string): SignSegment[] {
 
       // Color directive: @Y, @R, @L, @B
       if (content.startsWith('@') && content.length === 2) {
-        const mode = content[1];
+        const mode = content[1]!;
         if (isColorDirective(mode)) {
           // Save current segment if there's text
           if (currentText) {
@@ -109,7 +109,7 @@ function parseSignSide(text: string): SignSegment[] {
     }
     // Standalone @ directive (without braces): @Y, @R, @L, @B
     else if (text[i] === '@' && i + 1 < text.length) {
-      const mode = text[i + 1];
+      const mode = text[i + 1]!;
       if (isColorDirective(mode)) {
         if (currentText) {
           segments.push({ type: currentMode, text: currentText });
@@ -213,7 +213,7 @@ export function generateSignCacheKey(segments: SignSegment[], size: number): str
  */
 export function decodeSignCacheKey(key: string): { segments: SignSegment[]; size: number } | null {
   const match = key.match(/^sign-(\d+)-(.+)$/);
-  if (!match) return null;
+  if (!match?.[1] || !match[2]) return null;
 
   const size = parseInt(match[1], 10);
   const encoded = match[2];

@@ -61,7 +61,7 @@ export const MAP_STYLE_PRESETS: MapStylePreset[] = [
 ];
 
 const DEFAULT_MAP_STYLE_URL =
-  MAP_STYLE_PRESETS.find((s) => s.id === 'carto-dark')?.url ?? MAP_STYLE_PRESETS[0].url;
+  MAP_STYLE_PRESETS.find((s) => s.id === 'carto-dark')?.url ?? MAP_STYLE_PRESETS[0]?.url ?? '';
 
 export interface MapSettings {
   navDataRadiusNm: number;

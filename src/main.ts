@@ -554,7 +554,7 @@ function registerIpcHandlers() {
         `browseForPath: dialog result - canceled: ${result.canceled}, paths: ${result.filePaths.length}`
       );
       if (result.canceled || result.filePaths.length === 0) return null;
-      const selectedPath = result.filePaths[0];
+      const selectedPath = result.filePaths[0]!;
       logger.main.info(`browseForPath: selected path: ${selectedPath}`);
       const validation = dataManager.validatePath(selectedPath);
       return { path: selectedPath, valid: validation.valid, errors: validation.errors };
@@ -930,7 +930,7 @@ function registerIpcHandlers() {
         return null;
       }
 
-      const filePath = result.filePaths[0];
+      const filePath = result.filePaths[0]!;
       const content = fs.readFileSync(filePath, 'utf-8');
       const fileName = path.basename(filePath);
 
@@ -1221,7 +1221,7 @@ const PROTOCOL = 'xdispatch';
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(process.argv[1])]);
+    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(process.argv[1]!)]);
   }
 } else {
   app.setAsDefaultProtocolClient(PROTOCOL);

@@ -120,6 +120,7 @@ export default function RouteTab() {
             // Single variant - direct selection
             if (!hasMultipleVariants) {
               const proc = group.variants[0];
+              if (!proc) return null;
               const isSelected =
                 selectedProcedure?.name === proc.name &&
                 selectedProcedure?.transition === proc.transition &&

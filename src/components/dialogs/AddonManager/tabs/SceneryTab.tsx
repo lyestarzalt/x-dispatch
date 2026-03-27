@@ -196,7 +196,9 @@ export function SceneryTab() {
       const newIndex = localEntries.findIndex((e) => e.folderName === over.id);
 
       // Only allow reorder within the same priority tier
-      if (localEntries[oldIndex].priority !== localEntries[newIndex].priority) {
+      const oldEntry = localEntries[oldIndex];
+      const newEntry = localEntries[newIndex];
+      if (!oldEntry || !newEntry || oldEntry.priority !== newEntry.priority) {
         return;
       }
 

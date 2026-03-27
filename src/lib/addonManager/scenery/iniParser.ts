@@ -37,7 +37,9 @@ export function parseSceneryPacksIni(
   const entries: ParsedIniEntry[] = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    if (rawLine === undefined) continue;
+    const line = rawLine.trim();
 
     // Skip empty lines and header
     if (line === '' || line === 'I' || line === 'A' || line.startsWith('1000')) {
@@ -192,7 +194,8 @@ function cleanupOldBackups(backupDir: string): void {
 
     // Delete all but the newest MAX_BACKUPS
     for (let i = MAX_BACKUPS; i < files.length; i++) {
-      fs.unlinkSync(files[i].path);
+      const file = files[i];
+      if (file) fs.unlinkSync(file.path);
     }
   } catch {
     // Ignore cleanup errors - not critical

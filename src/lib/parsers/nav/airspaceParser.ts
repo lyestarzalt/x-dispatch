@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import type { Airspace, AirspaceClass } from '@/types/navigation';
 import { lonLat } from '../schemas';
+import { hasMinLength } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 // Valid airspace classes
@@ -28,10 +29,10 @@ const VALID_AIRSPACE_CLASSES: AirspaceClass[] = [
 
 function parseDMS(dms: string): number {
   const parts = dms.trim().split(/\s+/);
-  if (parts.length !== 2) return NaN;
+  if (!hasMinLength(parts, 2)) return NaN;
 
   const coordParts = parts[0].split(':');
-  if (coordParts.length !== 3) return NaN;
+  if (!hasMinLength(coordParts, 3)) return NaN;
 
   const degrees = parseInt(coordParts[0], 10);
   const minutes = parseInt(coordParts[1], 10);
@@ -49,7 +50,7 @@ function parseDMS(dms: string): number {
 function parsePoint(line: string): [number, number] | null {
   const content = line.replace(/^DP\s+/i, '').trim();
   const match = content.match(/(\d+:\d+:\d+\s+[NS])\s+(\d+:\d+:\d+\s+[EW])/i);
-  if (!match) return null;
+  if (!match || !hasMinLength(match, 3)) return null;
 
   const lat = parseDMS(match[1]);
   const lon = parseDMS(match[2]);
@@ -83,8 +84,8 @@ export function parseAirspaces(content: string): ParseResult<Airspace[]> {
 
     const first = coords[0];
     const last = coords[coords.length - 1];
-    if (first[0] !== last[0] || first[1] !== last[1]) {
-      coords.push([...first]);
+    if (first && last && (first[0] !== last[0] || first[1] !== last[1])) {
+      coords.push([first[0], first[1]]);
     }
 
     airspaces.push({

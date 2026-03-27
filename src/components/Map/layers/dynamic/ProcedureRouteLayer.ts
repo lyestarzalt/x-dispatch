@@ -173,6 +173,7 @@ function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollecti
 
   for (let i = 0; i < validWaypoints.length; i++) {
     const wp = validWaypoints[i];
+    if (!wp) continue;
     const currentPos: LonLat = [wp.longitude!, wp.latitude!];
 
     if (i === 0) {
@@ -181,6 +182,7 @@ function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollecti
     }
 
     const prevWp = validWaypoints[i - 1];
+    if (!prevWp) continue;
     const prevPos: LonLat = [prevWp.longitude!, prevWp.latitude!];
 
     switch (wp.pathTerminator) {

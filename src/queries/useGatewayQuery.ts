@@ -57,8 +57,10 @@ function parseVersion(v: string): [number, number, number] {
 
 function versionLte(a: [number, number, number], b: [number, number, number]): boolean {
   for (let i = 0; i < 3; i++) {
-    if (a[i] < b[i]) return true;
-    if (a[i] > b[i]) return false;
+    const ai = a[i] as number;
+    const bi = b[i] as number;
+    if (ai < bi) return true;
+    if (ai > bi) return false;
   }
   return true;
 }

@@ -97,11 +97,14 @@ const CLOUD_COVER: Record<string, string> = {
 
 function parseObservationTime(dayTime: string): Date | null {
   const match = dayTime.match(/^(\d{2})(\d{2})(\d{2})Z$/);
-  if (!match) return null;
+  if (!match || match.length < 4) return null;
 
-  const day = parseInt(match[1], 10);
-  const hour = parseInt(match[2], 10);
-  const minute = parseInt(match[3], 10);
+  const [, dayStr, hourStr, minuteStr] = match;
+  if (!dayStr || !hourStr || !minuteStr) return null;
+
+  const day = parseInt(dayStr, 10);
+  const hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
 
   const now = new Date();
   const obsTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), day, hour, minute));
@@ -119,11 +122,14 @@ function parseWind(windStr: string): WindInfo | null {
   const match = windStr.match(/^(VRB|\d{3})(\d{2,3})(G(\d{2,3}))?(KT|MPS)$/);
   if (!match) return null;
 
+  const [, dirStr, speedStr, , gustStr, unitStr] = match;
+  if (!dirStr || !speedStr || !unitStr) return null;
+
   return {
-    direction: match[1] === 'VRB' ? 'VRB' : parseInt(match[1], 10),
-    speed: parseInt(match[2], 10),
-    gust: match[4] ? parseInt(match[4], 10) : undefined,
-    unit: match[5] as 'KT' | 'MPS',
+    direction: dirStr === 'VRB' ? 'VRB' : parseInt(dirStr, 10),
+    speed: parseInt(speedStr, 10),
+    gust: gustStr ? parseInt(gustStr, 10) : undefined,
+    unit: unitStr as 'KT' | 'MPS',
   };
 }
 
@@ -132,11 +138,14 @@ function parseVariableWind(str: string, wind: WindInfo | null): WindInfo | null 
   const match = str.match(/^(\d{3})V(\d{3})$/);
   if (!match || !wind) return wind;
 
+  const [, fromStr, toStr] = match;
+  if (!fromStr || !toStr) return wind;
+
   return {
     ...wind,
     variable: {
-      from: parseInt(match[1], 10),
-      to: parseInt(match[2], 10),
+      from: parseInt(fromStr, 10),
+      to: parseInt(toStr, 10),
     },
   };
 }
@@ -163,16 +172,22 @@ function parseVisibility(visStr: string): VisibilityInfo | null {
   // Mixed fraction like "2 1/2SM"
   match = visStr.match(/^(\d+)\s+(\d+)\/(\d+)SM$/);
   if (match) {
-    const whole = parseInt(match[1], 10);
-    const frac = parseInt(match[2], 10) / parseInt(match[3], 10);
-    return { value: whole + frac, unit: 'SM' };
+    const [, wholeStr, numStr, denStr] = match;
+    if (wholeStr && numStr && denStr) {
+      const whole = parseInt(wholeStr, 10);
+      const frac = parseInt(numStr, 10) / parseInt(denStr, 10);
+      return { value: whole + frac, unit: 'SM' };
+    }
   }
 
   // Metric format: "9999" or "4000"
   match = visStr.match(/^(\d{4})$/);
   if (match) {
-    const meters = parseInt(match[1], 10);
-    return { value: meters, unit: 'M' };
+    const [, metersStr] = match;
+    if (metersStr) {
+      const meters = parseInt(metersStr, 10);
+      return { value: meters, unit: 'M' };
+    }
   }
 
   return null;
@@ -184,7 +199,8 @@ function parseWeather(wxStr: string): string {
 
   // Check for intensity prefix
   if (remaining.startsWith('+') || remaining.startsWith('-')) {
-    result += WEATHER_CODES[remaining[0]] + ' ';
+    const prefix = remaining.charAt(0);
+    result += WEATHER_CODES[prefix] + ' ';
     remaining = remaining.slice(1);
   }
 
@@ -213,16 +229,19 @@ function parseClouds(cloudStr: string): CloudLayer | null {
   const match = cloudStr.match(/^(FEW|SCT|BKN|OVC|VV|CLR|SKC|NSC|NCD)(\d{3})?(CB|TCU)?$/);
   if (!match) return null;
 
+  const [, coverStr, altStr, typeStr] = match;
+  if (!coverStr) return null;
+
   const layer: CloudLayer = {
-    cover: match[1] as CloudLayer['cover'],
+    cover: coverStr as CloudLayer['cover'],
   };
 
-  if (match[2]) {
-    layer.altitude = parseInt(match[2], 10);
+  if (altStr) {
+    layer.altitude = parseInt(altStr, 10);
   }
 
-  if (match[3]) {
-    layer.type = match[3] as 'CB' | 'TCU';
+  if (typeStr) {
+    layer.type = typeStr as 'CB' | 'TCU';
   }
 
   return layer;
@@ -233,11 +252,14 @@ function parseTemperature(tempStr: string): { temp: number; dew: number } | null
   const match = tempStr.match(/^(M)?(\d{2})\/(M)?(\d{2})$/);
   if (!match) return null;
 
-  let temp = parseInt(match[2], 10);
-  if (match[1] === 'M') temp = -temp;
+  const [, tempSign, tempStr2, dewSign, dewStr] = match;
+  if (!tempStr2 || !dewStr) return null;
 
-  let dew = parseInt(match[4], 10);
-  if (match[3] === 'M') dew = -dew;
+  let temp = parseInt(tempStr2, 10);
+  if (tempSign === 'M') temp = -temp;
+
+  let dew = parseInt(dewStr, 10);
+  if (dewSign === 'M') dew = -dew;
 
   return { temp, dew };
 }
@@ -246,12 +268,14 @@ function parseAltimeter(altStr: string): { value: number; unit: 'inHg' | 'hPa' }
   // US: "A3042" (30.42 inHg), International: "Q1013" (1013 hPa)
   const matchA = altStr.match(/^A(\d{4})$/);
   if (matchA) {
-    return { value: parseInt(matchA[1], 10) / 100, unit: 'inHg' };
+    const [, aVal] = matchA;
+    if (aVal) return { value: parseInt(aVal, 10) / 100, unit: 'inHg' as const };
   }
 
   const matchQ = altStr.match(/^Q(\d{4})$/);
   if (matchQ) {
-    return { value: parseInt(matchQ[1], 10), unit: 'hPa' };
+    const [, qVal] = matchQ;
+    if (qVal) return { value: parseInt(qVal, 10), unit: 'hPa' as const };
   }
 
   return null;
@@ -415,19 +439,22 @@ export function decodeMetar(raw: string): DecodedMETAR {
   };
 
   // Skip METAR/SPECI prefix if present
-  if (parts[idx] === 'METAR' || parts[idx] === 'SPECI') {
+  let token = parts[idx];
+  if (token === 'METAR' || token === 'SPECI') {
     idx++;
   }
 
   // Station identifier (4 letters)
-  if (parts[idx] && /^[A-Z]{4}$/.test(parts[idx])) {
-    metar.station = parts[idx];
+  token = parts[idx];
+  if (token && /^[A-Z]{4}$/.test(token)) {
+    metar.station = token;
     idx++;
   }
 
   // Observation time (DDHHMM Z)
-  if (parts[idx] && /^\d{6}Z$/.test(parts[idx])) {
-    metar.observationTime = parseObservationTime(parts[idx]);
+  token = parts[idx];
+  if (token && /^\d{6}Z$/.test(token)) {
+    metar.observationTime = parseObservationTime(token);
     idx++;
   }
 
@@ -438,59 +465,68 @@ export function decodeMetar(raw: string): DecodedMETAR {
   }
 
   // Wind
-  if (parts[idx] && /^(VRB|\d{3})\d{2,3}(G\d{2,3})?(KT|MPS)$/.test(parts[idx])) {
-    metar.wind = parseWind(parts[idx]);
+  token = parts[idx];
+  if (token && /^(VRB|\d{3})\d{2,3}(G\d{2,3})?(KT|MPS)$/.test(token)) {
+    metar.wind = parseWind(token);
     idx++;
 
     // Variable wind direction
-    if (parts[idx] && /^\d{3}V\d{3}$/.test(parts[idx])) {
-      metar.wind = parseVariableWind(parts[idx], metar.wind);
+    token = parts[idx];
+    if (token && /^\d{3}V\d{3}$/.test(token)) {
+      metar.wind = parseVariableWind(token, metar.wind);
       idx++;
     }
   }
 
   // Visibility
-  if (parts[idx]) {
+  token = parts[idx];
+  if (token) {
+    const nextToken = parts[idx + 1];
     // Check for "1 1/2SM" style (two parts)
-    if (/^\d+$/.test(parts[idx]) && parts[idx + 1] && /^\d+\/\d+SM$/.test(parts[idx + 1])) {
-      const vis = parseVisibility(`${parts[idx]} ${parts[idx + 1]}`);
+    if (/^\d+$/.test(token) && nextToken && /^\d+\/\d+SM$/.test(nextToken)) {
+      const vis = parseVisibility(`${token} ${nextToken}`);
       if (vis) {
         metar.visibility = vis;
         idx += 2;
       }
     } else {
-      const vis = parseVisibility(parts[idx]);
+      const vis = parseVisibility(token);
       if (vis) {
         metar.visibility = vis;
         idx++;
-      } else if (/^\d{4}$/.test(parts[idx])) {
+      } else if (/^\d{4}$/.test(token)) {
         // Metric visibility (4 digits)
-        metar.visibility = { value: parseInt(parts[idx], 10), unit: 'M' };
+        metar.visibility = { value: parseInt(token, 10), unit: 'M' };
         idx++;
       }
     }
   }
 
   // Weather phenomena (can be multiple)
-  while (parts[idx] && /^[-+]?VC?[A-Z]{2,}$/.test(parts[idx])) {
-    metar.weather.push(parseWeather(parts[idx]));
+  token = parts[idx];
+  while (token && /^[-+]?VC?[A-Z]{2,}$/.test(token)) {
+    metar.weather.push(parseWeather(token));
     idx++;
+    token = parts[idx];
   }
 
   // Clouds (can be multiple)
-  while (parts[idx]) {
-    const cloud = parseClouds(parts[idx]);
+  token = parts[idx];
+  while (token) {
+    const cloud = parseClouds(token);
     if (cloud) {
       metar.clouds.push(cloud);
       idx++;
+      token = parts[idx];
     } else {
       break;
     }
   }
 
   // Temperature/Dewpoint
-  if (parts[idx] && /^M?\d{2}\/M?\d{2}$/.test(parts[idx])) {
-    const temps = parseTemperature(parts[idx]);
+  token = parts[idx];
+  if (token && /^M?\d{2}\/M?\d{2}$/.test(token)) {
+    const temps = parseTemperature(token);
     if (temps) {
       metar.temperature = temps.temp;
       metar.dewpoint = temps.dew;
@@ -499,8 +535,9 @@ export function decodeMetar(raw: string): DecodedMETAR {
   }
 
   // Altimeter
-  if (parts[idx] && /^[AQ]\d{4}$/.test(parts[idx])) {
-    const alt = parseAltimeter(parts[idx]);
+  token = parts[idx];
+  if (token && /^[AQ]\d{4}$/.test(token)) {
+    const alt = parseAltimeter(token);
     if (alt) {
       metar.altimeter = alt.value;
       metar.altimeterUnit = alt.unit;

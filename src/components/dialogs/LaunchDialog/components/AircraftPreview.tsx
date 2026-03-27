@@ -113,18 +113,24 @@ export function AircraftPreview() {
   const goToPrevious = () => {
     if (!selectedAircraft) return;
     const newIndex = currentIndex <= 0 ? selectedAircraft.liveries.length - 1 : currentIndex - 1;
-    setSelectedLivery(selectedAircraft.liveries[newIndex].name);
+    const livery = selectedAircraft.liveries[newIndex];
+    if (!livery) return;
+    setSelectedLivery(livery.name);
   };
 
   const goToNext = () => {
     if (!selectedAircraft) return;
     const newIndex = currentIndex >= selectedAircraft.liveries.length - 1 ? 0 : currentIndex + 1;
-    setSelectedLivery(selectedAircraft.liveries[newIndex].name);
+    const livery = selectedAircraft.liveries[newIndex];
+    if (!livery) return;
+    setSelectedLivery(livery.name);
   };
 
   const selectLivery = (index: number) => {
     if (!selectedAircraft) return;
-    setSelectedLivery(selectedAircraft.liveries[index].name);
+    const livery = selectedAircraft.liveries[index];
+    if (!livery) return;
+    setSelectedLivery(livery.name);
   };
 
   if (!selectedAircraft) {

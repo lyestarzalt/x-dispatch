@@ -116,6 +116,7 @@ export async function loadCustomSceneryAirports(
 
   for (let i = 0; i < aptFiles.length; i++) {
     const aptFile = aptFiles[i];
+    if (!aptFile) continue;
     const packName = path.basename(path.dirname(path.dirname(aptFile)));
     onProgress?.({ phase: 'custom', packIndex: i, packCount: aptFiles.length, packName });
 
@@ -141,7 +142,6 @@ export async function loadCustomSceneryAirports(
 
     // Log pack-specific errors if any
     if (result.errors.length > 0) {
-      const packName = path.basename(path.dirname(path.dirname(aptFile)));
       logger.data.warn(`Custom Scenery "${packName}": ${result.errors.length} validation errors`);
     }
   }

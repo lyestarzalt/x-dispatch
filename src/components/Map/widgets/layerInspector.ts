@@ -192,9 +192,12 @@ export function collectLayerInspectorData(map: maplibregl.Map): LayerInspectorGr
   const categoryRenderers = new Map<string, RendererInfo[]>();
 
   for (const [, entries] of rendererGroups) {
-    const category = entries[0].category;
+    const first = entries[0];
+    if (!first) continue;
+    const category = first.category;
     const sorted = entries.sort((a, b) => a.drawOrder - b.drawOrder);
     const primary = sorted[0];
+    if (!primary) continue;
     const sublayerEntries = sorted.slice(1);
 
     const sourceIds = [...new Set(sorted.map((e) => e.sourceId).filter(Boolean))];

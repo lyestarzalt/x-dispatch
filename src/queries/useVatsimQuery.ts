@@ -172,7 +172,8 @@ export function parseATISRunways(atis: VatsimATIS): string[] {
 
   let match;
   while ((match = runwayPattern.exec(text)) !== null) {
-    runways.add(match[1].toUpperCase());
+    const rwy = match[1];
+    if (rwy) runways.add(rwy.toUpperCase());
   }
 
   return Array.from(runways);

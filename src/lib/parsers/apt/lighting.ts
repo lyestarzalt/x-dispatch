@@ -205,8 +205,11 @@ function generateLightsAlongPath(
 
   // Walk along the path and place lights at proper intervals
   for (let i = 0; i < coordinates.length - 1; i++) {
-    const [lon1, lat1] = coordinates[i];
-    const [lon2, lat2] = coordinates[i + 1];
+    const c1 = coordinates[i];
+    const c2 = coordinates[i + 1];
+    if (!c1 || !c2) continue;
+    const [lon1, lat1] = c1;
+    const [lon2, lat2] = c2;
 
     const segmentLength = haversineDistance(lat1, lon1, lat2, lon2);
     const heading = calculateBearing(lat1, lon1, lat2, lon2);

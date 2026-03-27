@@ -243,7 +243,9 @@ function PinOptionsPopover({
                 max={45000}
                 step={500}
                 value={[airAltFt]}
-                onValueChange={([v]) => updatePos({ airAltitudeM: v * 0.3048 })}
+                onValueChange={([v]) => {
+                  if (v !== undefined) updatePos({ airAltitudeM: v * 0.3048 });
+                }}
               />
             </div>
 
@@ -560,7 +562,8 @@ export default function Toolbar({
         setSelectedIndex((i) => (i - 1 + filteredAirports.length) % filteredAirports.length);
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        handleSelect(filteredAirports[selectedIndex]);
+        const selected = filteredAirports[selectedIndex];
+        if (selected) handleSelect(selected);
       } else if (e.key === 'Escape') {
         setShowResults(false);
         inputRef.current?.blur();

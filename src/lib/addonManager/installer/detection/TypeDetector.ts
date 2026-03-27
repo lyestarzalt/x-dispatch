@@ -48,7 +48,7 @@ function getAddonRoot(markerPath: string, markerType: AddonType): string | null 
     case 'Scenery': {
       // Find "Earth nav data" in path, scenery root is its parent
       for (let i = parts.length - 1; i >= 0; i--) {
-        if (parts[i].toLowerCase() === 'earth nav data') {
+        if (parts[i]?.toLowerCase() === 'earth nav data') {
           if (i === 0) return null;
           return parts.slice(0, i).join('/') + '/';
         }

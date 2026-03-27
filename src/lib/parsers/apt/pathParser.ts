@@ -12,8 +12,11 @@ function coordsEqual(a: LonLat, b: LonLat): boolean {
 function getSignedArea(coords: LonLat[]): number {
   let area = 0;
   for (let i = 0; i < coords.length - 1; i++) {
-    const [x1, y1] = coords[i];
-    const [x2, y2] = coords[i + 1];
+    const c1 = coords[i];
+    const c2 = coords[i + 1];
+    if (!c1 || !c2) continue;
+    const [x1, y1] = c1;
+    const [x2, y2] = c2;
     area += (x2 - x1) * (y2 + y1);
   }
   return area / 2;
@@ -79,17 +82,24 @@ export class PathParser {
 
       const lastCoord = coordinates[coordinates.length - 1];
       const firstPoint = points[0];
+      if (!firstPoint) return;
       const startIndex = lastCoord && coordsEqual(lastCoord, firstPoint) ? 1 : 0;
 
       for (let i = startIndex; i < points.length - 1; i++) {
-        addCoord(points[i], segmentType, segmentLight);
+        const pt = points[i];
+        if (!pt) continue;
+        addCoord(pt, segmentType, segmentLight);
       }
-      addCoord(points[points.length - 1], endNodeType, endNodeLight);
+      const lastPoint = points[points.length - 1];
+      if (!lastPoint) return;
+      addCoord(lastPoint, endNodeType, endNodeLight);
     };
 
+    const tk = (arr: string[], idx: number): string => arr[idx] ?? '';
+
     const processRow = (isBezier: boolean, tokens: string[]) => {
-      const lat = parseFloat(tokens[1]);
-      const lon = parseFloat(tokens[2]);
+      const lat = parseFloat(tk(tokens, 1));
+      const lon = parseFloat(tk(tokens, 2));
       const coord: LonLat = [lon, lat];
 
       if (!isBezier) {
@@ -100,11 +110,11 @@ export class PathParser {
         let nodeLightType = 0;
         if (tokens.length > 4) {
           // Both values present: tokens[3] = line, tokens[4] = light
-          nodeLineType = parseInt(tokens[3]);
-          nodeLightType = parseInt(tokens[4]);
+          nodeLineType = parseInt(tk(tokens, 3));
+          nodeLightType = parseInt(tk(tokens, 4));
         } else if (tokens.length > 3) {
           // Only one value: if >= 100, it's a light type
-          const singleValue = parseInt(tokens[3]);
+          const singleValue = parseInt(tk(tokens, 3));
           if (singleValue >= 100) {
             nodeLightType = singleValue;
           } else {
@@ -114,7 +124,7 @@ export class PathParser {
 
         if (inBezier && tempBezierNodes.length >= 2) {
           // End of bezier sequence - complete the curve (112 → 111 case)
-          const p0 = tempBezierNodes[0];
+          const p0 = tempBezierNodes[0]!;
 
           // Check for split bezier (same vertex) - skip curve if same position
           if (coordsEqual(p0, coord)) {
@@ -122,7 +132,7 @@ export class PathParser {
             // But still add the coordinate with its type for the next segment
             addCoord(coord, nodeLineType, nodeLightType);
           } else {
-            const bezierPoints = calculateBezier(p0, tempBezierNodes[1], coord);
+            const bezierPoints = calculateBezier(p0, tempBezierNodes[1]!, coord);
             // Segment uses previous node's type, last point uses THIS node's type
             addBezierSegment(
               bezierPoints,
@@ -152,8 +162,8 @@ export class PathParser {
         }
       } else {
         // Bezier node (112, 114, 116)
-        const bzpLat = parseFloat(tokens[3]);
-        const bzpLon = parseFloat(tokens[4]);
+        const bzpLat = parseFloat(tk(tokens, 3));
+        const bzpLon = parseFloat(tk(tokens, 4));
         const controlPoint: LonLat = [bzpLon, bzpLat];
         // Handle case where only one value is present: if >= 100, it's a light type, not line type
         // (Line types are 0-92, light types are 101-108)
@@ -161,11 +171,11 @@ export class PathParser {
         let nodeLightType = 0;
         if (tokens.length > 6) {
           // Both values present: tokens[5] = line, tokens[6] = light
-          nodeLineType = parseInt(tokens[5]);
-          nodeLightType = parseInt(tokens[6]);
+          nodeLineType = parseInt(tk(tokens, 5));
+          nodeLightType = parseInt(tk(tokens, 6));
         } else if (tokens.length > 5) {
           // Only one value: if >= 100, it's a light type
-          const singleValue = parseInt(tokens[5]);
+          const singleValue = parseInt(tk(tokens, 5));
           if (singleValue >= 100) {
             nodeLightType = singleValue;
           } else {
@@ -175,7 +185,7 @@ export class PathParser {
 
         if (inBezier && tempBezierNodes.length >= 2) {
           // 112 → 112 case: CUBIC bezier
-          const p0 = tempBezierNodes[0];
+          const p0 = tempBezierNodes[0]!;
           const p3 = coord;
 
           // Check for split bezier (same vertex with different controls) - skip curve if same position
@@ -184,7 +194,7 @@ export class PathParser {
             // But still add the coordinate with its type for the next segment
             addCoord(coord, nodeLineType, nodeLightType);
           } else {
-            const p1 = tempBezierNodes[1];
+            const p1 = tempBezierNodes[1]!;
             const p2 = mirrorControlPoint(p3, controlPoint);
 
             const bezierPoints = calculateCubicBezier(p0, p1, p2, p3);
@@ -198,7 +208,7 @@ export class PathParser {
           }
         } else if (coordinates.length > 0) {
           // 111 → 112 case: Quadratic bezier with mirrored control point
-          const lastPoint = coordinates[coordinates.length - 1];
+          const lastPoint = coordinates[coordinates.length - 1]!;
 
           // Check for split bezier (same vertex) - skip curve if same position
           if (coordsEqual(lastPoint, coord)) {
@@ -238,8 +248,9 @@ export class PathParser {
 
     while (this.currentIndex < this.lines.length) {
       const line = this.lines[this.currentIndex];
+      if (!line) break;
       const tokens = line.split(/\s+/);
-      const rowCode = parseInt(tokens[0]);
+      const rowCode = parseInt(tk(tokens, 0));
 
       if (!firstRow) {
         firstRow = tokens;

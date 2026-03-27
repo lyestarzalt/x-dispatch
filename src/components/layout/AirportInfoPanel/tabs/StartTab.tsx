@@ -541,7 +541,9 @@ function RunwayStartOptions({
             max={20}
             step={0.5}
             value={[approachDistance]}
-            onValueChange={([v]) => onSetApproachDistance(v)}
+            onValueChange={([v]) => {
+              if (v !== undefined) onSetApproachDistance(v);
+            }}
           />
           <div className="flex flex-wrap gap-1">
             {APPROACH_DISTANCES.map((d) => (

@@ -345,6 +345,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
     if (waypoints.length >= 2) {
       const first = waypoints[0];
       const last = waypoints[waypoints.length - 1];
+      if (!first || !last) return;
 
       set({
         departure: first.type === 'airport' ? { icao: first.id } : null,

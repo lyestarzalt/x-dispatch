@@ -152,7 +152,7 @@ export function FlightConfig({
         timeZone: 'UTC',
       });
 
-      const airportHours = parseInt(airportTimeStr.split(':')[0], 10);
+      const airportHours = parseInt(airportTimeStr.split(':')[0] ?? '0', 10);
       const isDay = airportHours >= 6 && airportHours < 18;
 
       return { airportTimeStr, airportDateStr, utcTimeStr, offset, isDay };

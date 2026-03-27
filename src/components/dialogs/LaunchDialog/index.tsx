@@ -84,7 +84,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       const ratios = selectedAircraft.tankRatios ?? [];
       const indices = selectedAircraft.tankIndices ?? ratios.map((_, i) => i);
       for (let i = 0; i < ratios.length; i++) {
-        const tankCapLbs = ratios[i] * selectedAircraft.maxFuel;
+        const ratio = ratios[i];
+        if (ratio === undefined) continue;
+        const tankCapLbs = ratio * selectedAircraft.maxFuel;
         const slot = indices[i] ?? i;
         tankWeightsKg[slot] = tankCapLbs * ((tankPercentages[i] ?? 0) / 100) * LBS_TO_KG;
       }
@@ -118,8 +120,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
         // Parse the airport time (format: "M/D/YYYY, HH:MM")
         const [datePart, timePart] = airportTimeStr.split(', ');
-        const [month, day, year] = datePart.split('/').map(Number);
-        const [hours, minutes] = timePart.split(':').map(Number);
+        if (!datePart || !timePart) throw new Error('Failed to parse airport time');
+        const dateParts = datePart.split('/').map(Number);
+        const timeParts = timePart.split(':').map(Number);
+        const month = dateParts[0] ?? 1;
+        const day = dateParts[1] ?? 1;
+        const year = dateParts[2] ?? new Date().getFullYear();
+        const hours = timeParts[0] ?? 0;
+        const minutes = timeParts[1] ?? 0;
 
         // Calculate day of year for the airport's date
         const airportDate = new Date(year, month - 1, day);
@@ -398,7 +406,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         evolution_over_time_enum: 'static',
       },
     };
-    return definitions[preset] || definitions.clear;
+
+    return definitions[preset] ?? definitions['clear']!;
   }
 
   function buildWeatherPayload(config: WeatherConfig, pos: StartPosition): FlightInit['weather'] {

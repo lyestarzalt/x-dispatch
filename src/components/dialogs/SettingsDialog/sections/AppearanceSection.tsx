@@ -42,10 +42,16 @@ function ZoomSlider({
         <span className="text-xs text-muted-foreground">70%</span>
         <Slider
           value={[display]}
-          onValueChange={([v]) => setPreview(v)}
-          onValueCommit={([v]) => {
+          onValueChange={(v) => {
+            const val = v[0];
+            if (val === undefined) return;
+            setPreview(val);
+          }}
+          onValueCommit={(v) => {
+            const val = v[0];
+            if (val === undefined) return;
             setPreview(null);
-            onCommit(v / 100);
+            onCommit(val / 100);
           }}
           min={70}
           max={130}

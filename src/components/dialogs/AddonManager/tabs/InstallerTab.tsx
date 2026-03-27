@@ -57,7 +57,9 @@ export function InstallerTab() {
     try {
       setResult(null);
       // Only take the first file
-      const items = await analyzeMutation.mutateAsync([paths[0]]);
+      const firstPath = paths[0];
+      if (!firstPath) return;
+      const items = await analyzeMutation.mutateAsync([firstPath]);
       // Only use the first detected item
       setDetectedItem(items[0] || null);
     } catch {

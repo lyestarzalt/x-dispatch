@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { Navaid, NavaidType } from '@/types/navigation';
 import { NavaidRowCode } from '@/types/navigation';
 import { latitude, longitude } from '../schemas';
+import { hasMinLength } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 const NavaidLineSchema = z.object({
@@ -67,6 +68,8 @@ function extractCourseFromGlidepath(encoded: number): number {
 }
 
 function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'> | null {
+  if (!hasMinLength(parts, 11)) return null;
+
   const base = NavaidLineSchema.safeParse({
     latitude: parseFloat(parts[1]),
     longitude: parseFloat(parts[2]),
@@ -106,6 +109,7 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
 
     case 4:
     case 5: {
+      if (!hasMinLength(parts, 12)) return null;
       const encodedLocBearing = parseFloat(parts[6]);
       bearing = extractBearing(encodedLocBearing);
       magneticVariation = extractMagneticCourse(encodedLocBearing);
@@ -119,6 +123,7 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
     }
 
     case 6: {
+      if (!hasMinLength(parts, 12)) return null;
       const encodedGs = parseFloat(parts[6]);
       glidepathAngle = extractGlidepathAngle(encodedGs);
       bearing = extractCourseFromGlidepath(encodedGs);
@@ -134,6 +139,7 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
     case 7:
     case 8:
     case 9:
+      if (!hasMinLength(parts, 12)) return null;
       bearing = parseFloat(parts[6]);
       id = parts[7];
       associatedAirport = parts[8];
@@ -144,6 +150,7 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
       break;
 
     case 14:
+      if (!hasMinLength(parts, 12)) return null;
       lengthOffset = parseFloat(parts[5]);
       course = parseFloat(parts[6]);
       id = parts[7];
@@ -159,6 +166,7 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
       break;
 
     case 15: {
+      if (!hasMinLength(parts, 12)) return null;
       const encodedGls = parseFloat(parts[6]);
       glidepathAngle = extractGlidepathAngle(encodedGls);
       course = extractCourseFromGlidepath(encodedGls);
@@ -172,6 +180,7 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
     }
 
     case 16: {
+      if (!hasMinLength(parts, 12)) return null;
       thresholdCrossingHeight = parseFloat(parts[5]);
       const encodedLtp = parseFloat(parts[6]);
       glidepathAngle = extractGlidepathAngle(encodedLtp);
@@ -217,11 +226,13 @@ export function parseNavaids(content: string): ParseResult<Navaid[]> {
   let skipped = 0;
 
   for (let i = 2; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    if (!rawLine) continue;
+    const line = rawLine.trim();
     if (!line || line === '99') continue;
 
     const parts = line.split(/\s+/);
-    if (parts.length < 10) {
+    if (!hasMinLength(parts, 10)) {
       skipped++;
       continue;
     }

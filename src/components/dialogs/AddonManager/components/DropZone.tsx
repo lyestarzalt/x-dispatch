@@ -57,7 +57,8 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
     const result = await window.addonManagerAPI.installer.browse();
     if (result.ok && result.value.length > 0) {
       // Only take the first file
-      onFilesDropped([result.value[0]]);
+      const firstFile = result.value[0];
+      if (firstFile) onFilesDropped([firstFile]);
     }
   }, [disabled, onFilesDropped]);
 

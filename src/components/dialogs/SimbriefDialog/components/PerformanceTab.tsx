@@ -294,8 +294,9 @@ function parseStepClimbs(stepString: string): { altitude: string; waypoint?: str
 
   for (const part of parts) {
     const match = part.match(/^(FL\d+)/);
-    if (match) {
-      steps.push({ altitude: match[1] });
+    const altitude = match?.[1];
+    if (altitude) {
+      steps.push({ altitude });
     }
   }
 

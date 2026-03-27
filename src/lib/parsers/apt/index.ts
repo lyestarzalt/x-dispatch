@@ -209,8 +209,8 @@ export class AirportParser {
     }
 
     const result = coordinate.safeParse({
-      latitude: parseFloat(tokens[1]),
-      longitude: parseFloat(tokens[2]),
+      latitude: parseFloat(token(tokens, 1)),
+      longitude: parseFloat(token(tokens, 2)),
     });
 
     if (!result.success) {
@@ -221,7 +221,7 @@ export class AirportParser {
     return {
       latitude: result.data.latitude,
       longitude: result.data.longitude,
-      illuminated: Boolean(parseInt(tokens[3])),
+      illuminated: Boolean(parseInt(token(tokens, 3))),
       name: tokens.slice(4).join(' '),
     };
   }
@@ -232,10 +232,10 @@ export class AirportParser {
       return null;
     }
 
-    const rawHeading = parseFloat(tokens[3]);
+    const rawHeading = parseFloat(token(tokens, 3));
     const coordResult = coordinate.safeParse({
-      latitude: parseFloat(tokens[1]),
-      longitude: parseFloat(tokens[2]),
+      latitude: parseFloat(token(tokens, 1)),
+      longitude: parseFloat(token(tokens, 2)),
     });
     const headingResult = bearing.safeParse(rawHeading);
 
@@ -248,8 +248,8 @@ export class AirportParser {
       latitude: coordResult.data.latitude,
       longitude: coordResult.data.longitude,
       heading: headingResult.success ? headingResult.data : 0,
-      size: parseInt(tokens[5]),
-      text: tokens[6],
+      size: parseInt(token(tokens, 5)),
+      text: token(tokens, 6),
     };
   }
 
@@ -260,9 +260,9 @@ export class AirportParser {
     const holes = paths.filter((p) => p.isHole);
 
     return {
-      surface_type: parseInt(tokens[1]),
-      smoothness: parseFloat(tokens[2]),
-      texture_orientation: parseFloat(tokens[3]),
+      surface_type: parseInt(token(tokens, 1)),
+      smoothness: parseFloat(token(tokens, 2)),
+      texture_orientation: parseFloat(token(tokens, 3)),
       name: tokens.slice(4).join(' '),
       coordinates: outer?.coordinates || paths[0]?.coordinates || [],
       holes: holes.length > 0 ? holes.map((h) => h.coordinates) : undefined,
@@ -318,12 +318,16 @@ export class AirportParser {
 
       // Split into segments whenever type changes
       let segStart = 0;
-      let segType = lineTypes[0].lineType;
-      let segLight = lineTypes[0].lightType;
+      const firstLineType = lineTypes[0];
+      if (!firstLineType) continue;
+      let segType = firstLineType.lineType;
+      let segLight = firstLineType.lightType;
 
       for (let i = 1; i < coordinates.length; i++) {
-        const thisType = lineTypes[i].lineType;
-        const thisLight = lineTypes[i].lightType;
+        const lt = lineTypes[i];
+        if (!lt) continue;
+        const thisType = lt.lineType;
+        const thisLight = lt.lightType;
 
         // Split when type or light changes
         if (thisType !== segType || thisLight !== segLight) {
@@ -385,24 +389,27 @@ export class AirportParser {
     for (let i = 0; i < this.lines.length; i++) {
       const lineNum = i + 1; // 1-indexed for human readability
       const line = this.lines[i];
+      if (!line) continue;
       const tokens = line.split(/\s+/);
-      const code = parseInt(tokens[0]);
+      const rawCode = tokens[0];
+      if (!rawCode) continue;
+      const code = parseInt(rawCode);
 
       switch (code) {
         case RowCode.AIRPORT_HEADER:
         case RowCode.SEAPLANE_HEADER:
         case RowCode.HELIPORT_HEADER: {
-          const elevation = parseFloat(tokens[1]);
+          const elevation = parseFloat(token(tokens, 1));
           airport.elevation = Number.isFinite(elevation) ? elevation : 0;
-          airport.id = tokens[4] || '';
+          airport.id = token(tokens, 4);
           airport.name = tokens.slice(5).join(' ');
           break;
         }
 
         case RowCode.TOWER_LOCATION: {
-          const lat = parseFloat(tokens[1]);
-          const lon = parseFloat(tokens[2]);
-          const height = parseFloat(tokens[3]);
+          const lat = parseFloat(token(tokens, 1));
+          const lon = parseFloat(token(tokens, 2));
+          const height = parseFloat(token(tokens, 3));
 
           if (this.validateCoordinate(lat, lon, 'tower location', lineNum)) {
             airport.towerLocation = {
@@ -416,14 +423,14 @@ export class AirportParser {
         }
 
         case RowCode.BEACON: {
-          const lat = parseFloat(tokens[1]);
-          const lon = parseFloat(tokens[2]);
+          const lat = parseFloat(token(tokens, 1));
+          const lon = parseFloat(token(tokens, 2));
 
           if (this.validateCoordinate(lat, lon, 'beacon', lineNum)) {
             airport.beacon = {
               latitude: lat,
               longitude: lon,
-              type: parseInt(tokens[3]),
+              type: parseInt(token(tokens, 3)),
               name: tokens.slice(4).join(' '),
             };
           }
@@ -431,11 +438,11 @@ export class AirportParser {
         }
 
         case RowCode.HELIPAD: {
-          const lat = parseFloat(tokens[2]);
-          const lon = parseFloat(tokens[3]);
-          const rawHeading = parseFloat(tokens[4]);
-          const rawLength = parseFloat(tokens[5]);
-          const rawWidth = parseFloat(tokens[6]);
+          const lat = parseFloat(token(tokens, 2));
+          const lon = parseFloat(token(tokens, 3));
+          const rawHeading = parseFloat(token(tokens, 4));
+          const rawLength = parseFloat(token(tokens, 5));
+          const rawWidth = parseFloat(token(tokens, 6));
 
           const coordResult = coordinate.safeParse({ latitude: lat, longitude: lon });
           if (!coordResult.success) {
@@ -450,13 +457,13 @@ export class AirportParser {
           const widthResult = positiveNumber.safeParse(rawWidth);
 
           airport.helipads.push({
-            name: tokens[1],
+            name: token(tokens, 1),
             latitude: lat,
             longitude: lon,
             heading: normalizedHeading,
             length: lengthResult.success ? lengthResult.data : 1,
             width: widthResult.success ? widthResult.data : 1,
-            surface_type: parseInt(tokens[7]),
+            surface_type: parseInt(token(tokens, 7)),
           });
           break;
         }
@@ -470,7 +477,7 @@ export class AirportParser {
         case RowCode.FREQUENCY_CENTER:
         case RowCode.FREQUENCY_UNICOM: {
           const freqType = this.getFrequencyType(code);
-          const freq = parseFloat(tokens[1]) / 100;
+          const freq = parseFloat(token(tokens, 1)) / 100;
           airport.frequencies.push({
             type: freqType,
             frequency: freq,
@@ -480,7 +487,11 @@ export class AirportParser {
         }
 
         case RowCode.METADATA:
-          airport.metadata[tokens[1]] = tokens[2];
+          {
+            const metaKey = tokens[1];
+            if (metaKey) airport.metadata[metaKey] = token(tokens, 2);
+            break;
+          }
           break;
 
         case RowCode.LAND_RUNWAY: {
@@ -489,10 +500,10 @@ export class AirportParser {
             break;
           }
 
-          const rawWidth = parseFloat(tokens[1]);
+          const rawWidth = parseFloat(token(tokens, 1));
           const widthResult = positiveNumber.safeParse(rawWidth);
 
-          const shoulderToken = parseInt(tokens[3]);
+          const shoulderToken = parseInt(token(tokens, 3));
           let shoulder_surface_type = shoulderToken;
           let shoulder_width = 0;
           if (shoulderToken >= 100) {
@@ -509,13 +520,13 @@ export class AirportParser {
 
           airport.runways.push({
             width: widthResult.success ? widthResult.data : 30,
-            surface_type: parseInt(tokens[2]),
+            surface_type: parseInt(token(tokens, 2)),
             shoulder_surface_type,
             shoulder_width,
-            smoothness: parseFloat(tokens[4]),
-            centerline_lights: Boolean(parseInt(tokens[5])),
-            edge_lights: Boolean(parseInt(tokens[6])),
-            auto_distance_remaining_signs: Boolean(parseInt(tokens[7])),
+            smoothness: parseFloat(token(tokens, 4)),
+            centerline_lights: Boolean(parseInt(token(tokens, 5))),
+            edge_lights: Boolean(parseInt(token(tokens, 6))),
+            auto_distance_remaining_signs: Boolean(parseInt(token(tokens, 7))),
             ends: [end1, end2],
           });
           break;
@@ -529,9 +540,9 @@ export class AirportParser {
 
             // Add to taxiways
             airport.taxiways.push({
-              surface: parseInt(tokens[1]),
-              smoothness: parseFloat(tokens[2]),
-              orientation: parseFloat(tokens[3]),
+              surface: parseInt(token(tokens, 1)),
+              smoothness: parseFloat(token(tokens, 2)),
+              orientation: parseFloat(token(tokens, 3)),
               paths: paths,
             });
 

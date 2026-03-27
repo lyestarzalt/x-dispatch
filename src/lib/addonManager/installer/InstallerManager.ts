@@ -144,6 +144,7 @@ export class InstallerManager {
 
     for (let i = 0; i < tasks.length; i++) {
       const task = tasks[i];
+      if (!task) continue;
       const taskStartBytes = processedBytes;
 
       // Report progress
@@ -406,8 +407,10 @@ export class InstallerManager {
     if (sceneryIndex >= 0) {
       // Insert after SCENERY line (and any blank line after it)
       let insertIndex = sceneryIndex + 1;
-      while (insertIndex < lines.length && lines[insertIndex].trim() === '') {
+      let nextLine = lines[insertIndex];
+      while (insertIndex < lines.length && nextLine !== undefined && nextLine.trim() === '') {
         insertIndex++;
+        nextLine = lines[insertIndex];
       }
       lines.splice(insertIndex, 0, entry);
     } else {

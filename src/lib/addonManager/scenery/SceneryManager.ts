@@ -44,6 +44,7 @@ export class SceneryManager {
 
     for (let i = 0; i < parseResult.value.length; i++) {
       const iniEntry = parseResult.value[i];
+      if (!iniEntry) continue;
 
       // Include *GLOBAL_AIRPORTS* as a special entry
       if (iniEntry.isGlobalAirports) {
@@ -285,6 +286,10 @@ export class SceneryManager {
     }
 
     const entry = entries[index];
+    if (!entry) {
+      return err({ code: 'FOLDER_NOT_FOUND', folderName });
+    }
+
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
     // Check bounds and same priority tier
@@ -293,7 +298,7 @@ export class SceneryManager {
     }
 
     const targetEntry = entries[targetIndex];
-    if (targetEntry.priority !== entry.priority) {
+    if (!targetEntry || targetEntry.priority !== entry.priority) {
       return ok(entries); // Can't move across tiers
     }
 
@@ -302,8 +307,8 @@ export class SceneryManager {
     entries[targetIndex] = entry;
 
     // Update original indices to reflect new order
-    entries[index].originalIndex = index;
-    entries[targetIndex].originalIndex = targetIndex;
+    targetEntry.originalIndex = index;
+    entry.originalIndex = targetIndex;
 
     // Save
     const saveResult = await this.save(entries);

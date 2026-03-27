@@ -45,7 +45,7 @@ export function setCfgDisabled(
     let found = false;
 
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim().startsWith('disabled|')) {
+      if (lines[i]?.trim().startsWith('disabled|')) {
         lines[i] = `disabled|${disabled}`;
         found = true;
         break;

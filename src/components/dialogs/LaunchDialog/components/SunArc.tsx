@@ -24,7 +24,10 @@ function getHoursInTimezone(date: Date, timezone: string): number {
     timeZone: timezone,
     hour12: false,
   });
-  const [h, m] = str.split(':').map(Number);
+  const parts = str.split(':').map(Number);
+  const h = parts[0];
+  const m = parts[1];
+  if (h === undefined || m === undefined) return 0;
   return h + m / 60;
 }
 
@@ -43,7 +46,11 @@ function readPalette(el: HTMLElement) {
     ctx.clearRect(0, 0, 1, 1);
     ctx.fillStyle = `oklch(${raw})`;
     ctx.fillRect(0, 0, 1, 1);
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    const px = ctx.getImageData(0, 0, 1, 1).data;
+    const r = px[0];
+    const g = px[1];
+    const b = px[2];
+    if (r === undefined || g === undefined || b === undefined) return '#000000';
     return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1).toUpperCase()}`;
   }
 
@@ -393,7 +400,11 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       {/* Radix Slider */}
       <Slider
         value={[timeOfDay]}
-        onValueChange={(v) => onTimeChange(v[0])}
+        onValueChange={(v) => {
+          const val = v[0];
+          if (val === undefined) return;
+          onTimeChange(val);
+        }}
         min={0}
         max={24}
         step={0.25}

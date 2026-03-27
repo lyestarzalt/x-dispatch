@@ -102,12 +102,16 @@ function parseAirportHeader(line: string): ScanningAirport | null {
   if (parts.length < 5) return null;
 
   const rowCode = parts[0];
+  const elevStr = parts[1];
+  const icao = parts[4];
+  if (!rowCode || !elevStr || !icao) return null;
+
   const type = rowCode === '1' ? 'land' : rowCode === '16' ? 'seaplane' : 'heliport';
 
   const result = AirportHeaderSchema.safeParse({
-    icao: parts[4],
+    icao,
     name: parts.slice(5).join(' '),
-    elevation: parseInt(parts[1], 10),
+    elevation: parseInt(elevStr, 10),
     type,
   });
 
@@ -132,9 +136,13 @@ function parseRunwayCoords(line: string): { lat: number; lon: number } | null {
   const parts = line.split(/\s+/);
   if (parts.length < 11) return null;
 
+  const latStr = parts[9];
+  const lonStr = parts[10];
+  if (!latStr || !lonStr) return null;
+
   const result = AirportCoordsSchema.safeParse({
-    lat: parseFloat(parts[9]),
-    lon: parseFloat(parts[10]),
+    lat: parseFloat(latStr),
+    lon: parseFloat(lonStr),
   });
 
   return result.success ? result.data : null;
@@ -147,9 +155,13 @@ function parseHelipadCoords(line: string): { lat: number; lon: number } | null {
   const parts = line.split(/\s+/);
   if (parts.length < 4) return null;
 
+  const latStr = parts[2];
+  const lonStr = parts[3];
+  if (!latStr || !lonStr) return null;
+
   const result = AirportCoordsSchema.safeParse({
-    lat: parseFloat(parts[2]),
-    lon: parseFloat(parts[3]),
+    lat: parseFloat(latStr),
+    lon: parseFloat(lonStr),
   });
 
   return result.success ? result.data : null;
@@ -163,9 +175,13 @@ function parseWaterRunwayCoords(line: string): { lat: number; lon: number } | nu
   const parts = line.split(/\s+/);
   if (parts.length < 6) return null;
 
+  const latStr = parts[4];
+  const lonStr = parts[5];
+  if (!latStr || !lonStr) return null;
+
   const result = AirportCoordsSchema.safeParse({
-    lat: parseFloat(parts[4]),
-    lon: parseFloat(parts[5]),
+    lat: parseFloat(latStr),
+    lon: parseFloat(lonStr),
   });
 
   return result.success ? result.data : null;
@@ -179,6 +195,7 @@ function parseMetadata(line: string, airport: ScanningAirport): void {
   if (parts.length < 3) return;
 
   const key = parts[1];
+  if (!key) return;
   const value = parts.slice(2).join(' ').trim();
   if (!value) return;
 
@@ -340,8 +357,9 @@ export async function scanAptFile(
     if (line.startsWith('100 ')) {
       currentAirport.runwayCount++;
       const parts = line.split(/\s+/);
-      if (parts.length >= 3) {
-        const surfaceCode = parseInt(parts[2], 10);
+      const surfaceStr = parts[2];
+      if (parts.length >= 3 && surfaceStr) {
+        const surfaceCode = parseInt(surfaceStr, 10);
         if (!isNaN(surfaceCode)) {
           // Lower surface code = better surface (1=asphalt, 2=concrete, etc.)
           if (

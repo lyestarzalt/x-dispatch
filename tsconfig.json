@@ -7,6 +7,10 @@
     "esModuleInterop": true,
     "strict": true,
     "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
@@ -17,5 +21,7 @@
       "@/*": ["./src/*"],
       "@assets/*": ["./assets/*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "out", "dist", ".vite"]
 }

@@ -19,7 +19,11 @@ export function parseFMSFile(content: string): FMSParseResult {
     if (!versionMatch) {
       return { success: false, data: null, error: 'Invalid FMS file: missing version' };
     }
-    const version = parseInt(versionMatch[1], 10);
+    const versionStr = versionMatch[1];
+    if (!versionStr) {
+      return { success: false, data: null, error: 'Invalid FMS file: missing version number' };
+    }
+    const version = parseInt(versionStr, 10);
 
     const plan: FMSFlightPlan = {
       version,
@@ -100,14 +104,15 @@ function parseWaypointLine(line: string): FMSWaypoint | null {
   const parts = line.split(/\s+/);
   if (parts.length < 6) return null;
 
-  const type = parseInt(parts[0], 10) as FMSWaypointType;
+  const [typeStr, id, via, altStr, latStr, lonStr] = parts;
+  if (!typeStr || !id || !via || !altStr || !latStr || !lonStr) return null;
+
+  const type = parseInt(typeStr, 10) as FMSWaypointType;
   if (!VALID_WAYPOINT_TYPES.includes(type)) return null;
 
-  const id = parts[1];
-  const via = parts[2];
-  const altitude = parseFloat(parts[3]);
-  const latitude = parseFloat(parts[4]);
-  const longitude = parseFloat(parts[5]);
+  const altitude = parseFloat(altStr);
+  const latitude = parseFloat(latStr);
+  const longitude = parseFloat(lonStr);
 
   if (isNaN(latitude) || isNaN(longitude)) return null;
 

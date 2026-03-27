@@ -69,12 +69,12 @@ function parseVersionFile(filePath: string): VersionData | undefined {
 
     // Try semver-like pattern: 1.2.3, 1.2.3-beta, etc.
     const semverMatch = content.match(/(\d+\.\d+[.\d]*\S*)/);
-    if (semverMatch) {
+    if (semverMatch?.[1]) {
       return { version: semverMatch[1] };
     }
 
     // Try digit-only format: "020310" -> "2.3.10"
-    const digitVersion = parseDigitVersion(content.split('\n')[0].trim());
+    const digitVersion = parseDigitVersion((content.split('\n')[0] ?? '').trim());
     if (digitVersion) {
       return { version: digitVersion };
     }

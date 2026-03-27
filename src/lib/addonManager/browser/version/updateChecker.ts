@@ -151,7 +151,8 @@ function evictCache(): void {
     const sorted = [...updateCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
     const toRemove = Math.max(10, Math.floor(updateCache.size * 0.1));
     for (let i = 0; i < toRemove; i++) {
-      updateCache.delete(sorted[i][0]);
+      const entry = sorted[i];
+      if (entry) updateCache.delete(entry[0]);
     }
   }
 }

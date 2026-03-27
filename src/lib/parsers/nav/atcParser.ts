@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { LonLatPath } from '@/types/geo';
 import type { ATCController, ATCRole } from '@/types/navigation';
 import { lonLat, vhfFrequency } from '../schemas';
+import { hasMinLength } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 const ATCRoleSchema = z.enum(['ctr', 'app', 'twr', 'gnd', 'del']);
@@ -75,6 +76,7 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
       }
     } else if (line.startsWith('AIRSPACE_POLYGON_BEGIN')) {
       const parts = line.split(/\s+/);
+      if (!hasMinLength(parts, 3)) continue;
       airspace = {
         minAlt: parseInt(parts[1], 10) || 0,
         maxAlt: parseInt(parts[2], 10) || 99999,
@@ -85,12 +87,11 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
       inPolygon = false;
     } else if (inPolygon && line.startsWith('POINT ') && airspace) {
       const parts = line.split(/\s+/);
-      if (parts.length >= 3) {
-        const lat = parseFloat(parts[1]);
-        const lon = parseFloat(parts[2]);
-        const result = lonLat.safeParse([lon, lat]);
-        if (result.success) airspace.polygon.push([result.data[0], result.data[1]]);
-      }
+      if (!hasMinLength(parts, 3)) continue;
+      const lat = parseFloat(parts[1]);
+      const lon = parseFloat(parts[2]);
+      const result = lonLat.safeParse([lon, lat]);
+      if (result.success) airspace.polygon.push([result.data[0], result.data[1]]);
     }
   }
 

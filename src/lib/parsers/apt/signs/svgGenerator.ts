@@ -50,7 +50,9 @@ export function generateSignSVG(segments: SignSegment[], signSize: SignSize | nu
   const totalWidth = segmentWidths.reduce((sum, w) => sum + w, 0) + borderWidth * 2;
 
   // Determine outer border color (use first segment's border color)
-  const firstSegmentColors = SIGN_CONFIG.colors[segments[0].type];
+  const firstSegment = segments[0];
+  if (!firstSegment) return '';
+  const firstSegmentColors = SIGN_CONFIG.colors[firstSegment.type];
 
   // Start SVG
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${height}">`;
@@ -59,7 +61,7 @@ export function generateSignSVG(segments: SignSegment[], signSize: SignSize | nu
   let x = borderWidth;
   segments.forEach((seg, i) => {
     const colors = SIGN_CONFIG.colors[seg.type];
-    const w = segmentWidths[i];
+    const w = segmentWidths[i] ?? 0;
 
     // Background rectangle
     svg += `<rect x="${x}" y="${borderWidth}" width="${w}" height="${height - borderWidth * 2}" fill="${colors.bg}"/>`;

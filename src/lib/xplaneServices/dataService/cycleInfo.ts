@@ -109,10 +109,13 @@ function parseCycleInfoTxt(xplanePath: string): Partial<DataSourceInfo> | null {
         /Valid.*?:\s*(\d{1,2}[A-Z]{3}\d{2})\s*-\s*(\d{1,2}[A-Z]{3}\d{2})/i
       );
       if (dateMatch) {
-        result.effectiveDate = parseAiracDate(dateMatch[1]);
-        result.expirationDate = parseAiracDate(dateMatch[2]);
-        if (result.expirationDate) {
-          result.isExpired = new Date() > result.expirationDate;
+        const [, fromStr, toStr] = dateMatch;
+        if (fromStr && toStr) {
+          result.effectiveDate = parseAiracDate(fromStr);
+          result.expirationDate = parseAiracDate(toStr);
+          if (result.expirationDate) {
+            result.isExpired = new Date() > result.expirationDate;
+          }
         }
       }
     }
@@ -145,9 +148,12 @@ function parseAiracDate(dateStr: string): Date | null {
   const match = dateStr.match(/(\d{1,2})([A-Z]{3})(\d{2})/i);
   if (!match) return null;
 
-  const day = parseInt(match[1], 10);
-  const month = months[match[2].toUpperCase()];
-  const year = 2000 + parseInt(match[3], 10);
+  const [, dayStr, monthStr, yearStr] = match;
+  if (!dayStr || !monthStr || !yearStr) return null;
+
+  const day = parseInt(dayStr, 10);
+  const month = months[monthStr.toUpperCase()];
+  const year = 2000 + parseInt(yearStr, 10);
 
   if (month === undefined || isNaN(day) || isNaN(year)) return null;
 

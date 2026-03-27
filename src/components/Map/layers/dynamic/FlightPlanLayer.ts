@@ -173,16 +173,19 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
 
   if (hasStages) {
     for (let i = 0; i < waypoints.length - 1; i++) {
+      const from = waypoints[i];
+      const to = waypoints[i + 1];
+      if (!from || !to) continue;
       routeFeatures.push({
         type: 'Feature',
         geometry: {
           type: 'LineString',
           coordinates: [
-            [waypoints[i].longitude, waypoints[i].latitude],
-            [waypoints[i + 1].longitude, waypoints[i + 1].latitude],
+            [from.longitude, from.latitude],
+            [to.longitude, to.latitude],
           ],
         },
-        properties: { stage: waypoints[i].stage || '' },
+        properties: { stage: from.stage || '' },
       });
     }
   } else {
@@ -220,12 +223,15 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   // Detect T/C and T/D transitions
   if (hasStages) {
     for (let i = 0; i < waypoints.length - 1; i++) {
-      const from = waypoints[i].stage;
-      const to = waypoints[i + 1].stage;
+      const wpFrom = waypoints[i];
+      const wpTo = waypoints[i + 1];
+      if (!wpFrom || !wpTo) continue;
+      const from = wpFrom.stage;
+      const to = wpTo.stage;
       if (!from || !to || from === to) continue;
 
-      const midLon = (waypoints[i].longitude + waypoints[i + 1].longitude) / 2;
-      const midLat = (waypoints[i].latitude + waypoints[i + 1].latitude) / 2;
+      const midLon = (wpFrom.longitude + wpTo.longitude) / 2;
+      const midLat = (wpFrom.latitude + wpTo.latitude) / 2;
 
       let badge: string | null = null;
       let badgeLabel: string | null = null;
@@ -345,6 +351,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   // Alternate airport — dashed line from destination
   if (fmsData.alternate) {
     const dest = waypoints[waypoints.length - 1];
+    if (!dest) return;
     const alt = fmsData.alternate;
 
     const alternateGeoJSON: GeoJSON.FeatureCollection = {

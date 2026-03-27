@@ -34,13 +34,21 @@ export function parseVersionString(raw: string): Omit<XPlaneVersionInfo, 'isStea
   const match = raw.trim().match(VERSION_REGEX);
   if (!match) return null;
 
+  const majorStr = match[1];
+  const minorStr = match[2];
+  const patchStr = match[3];
+  if (!majorStr || !minorStr || !patchStr) return null;
+
+  const channelKey = match[4];
+  const channelBuildStr = match[5];
+
   return {
     raw: raw.trim(),
-    major: parseInt(match[1], 10),
-    minor: parseInt(match[2], 10),
-    patch: parseInt(match[3], 10),
-    channel: match[4] ? (CHANNEL_MAP[match[4]] ?? 'unknown') : 'unknown',
-    channelBuild: match[5] ? parseInt(match[5], 10) : 0,
+    major: parseInt(majorStr, 10),
+    minor: parseInt(minorStr, 10),
+    patch: parseInt(patchStr, 10),
+    channel: channelKey ? (CHANNEL_MAP[channelKey] ?? 'unknown') : 'unknown',
+    channelBuild: channelBuildStr ? parseInt(channelBuildStr, 10) : 0,
     commit: match[6] ?? '',
   };
 }
@@ -115,6 +123,7 @@ function parseLogTxt(xplanePath: string): string | null {
     fs.closeSync(fd);
 
     const firstLine = buf.toString('utf-8').split('\n')[0];
+    if (!firstLine) return null;
     // "Log.txt for X-Plane 12.4.0-r2-9b69b91a (build ...)"
     const match = firstLine.match(/X-Plane\s+(\d+\.\d+\.\d+(?:-[^\s(]+)?)/);
     return match?.[1] ?? null;

@@ -52,7 +52,7 @@ function isValidAptDat(filePath: string): boolean {
       const bytesRead = fs.readSync(fd, buf, 0, 16, 0);
       if (bytesRead === 0) return false;
 
-      const firstLine = buf.toString('utf8', 0, bytesRead).split(/\r?\n/)[0].trim();
+      const firstLine = (buf.toString('utf8', 0, bytesRead).split(/\r?\n/)[0] ?? '').trim();
       return firstLine === 'I' || firstLine === 'A';
     } finally {
       fs.closeSync(fd);
@@ -85,7 +85,7 @@ function parseLibraryExports(filePath: string): string[] {
         const match = trimmed.match(/^EXPORT(?:_EXTEND)?\s+(\S+)/);
         if (!match) continue;
 
-        const virtualPath = match[1];
+        const virtualPath = match[1]!;
         // First path component (before first /)
         const firstComponent = virtualPath.split('/')[0];
         if (firstComponent) {

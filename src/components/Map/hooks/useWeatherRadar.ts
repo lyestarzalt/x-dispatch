@@ -248,8 +248,9 @@ export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarC
     setFrameIndex((prev) => (prev - 1 + framesRef.current.length) % framesRef.current.length);
   }, []);
 
-  const currentTimestamp =
-    frames.length > 0 && frameIndex < frames.length ? frames[frameIndex].time : null;
+  const currentFrame =
+    frames.length > 0 && frameIndex < frames.length ? frames[frameIndex] : undefined;
+  const currentTimestamp = currentFrame?.time ?? null;
 
   return {
     isPlaying,

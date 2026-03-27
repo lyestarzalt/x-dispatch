@@ -62,6 +62,7 @@ export const WEATHER_OPTIONS = [
 
 export function getCategory(path: string): string {
   const parts = path.split('/');
-  if (parts.length >= 2) return parts[1];
+  const category = parts[1];
+  if (category) return category;
   return 'Other';
 }

@@ -43,8 +43,11 @@ function isRenderable(airspace: Airspace): boolean {
 function signedArea(coords: [number, number][]): number {
   let sum = 0;
   for (let i = 0; i < coords.length; i++) {
-    const [x1, y1] = coords[i];
-    const [x2, y2] = coords[(i + 1) % coords.length];
+    const c1 = coords[i];
+    const c2 = coords[(i + 1) % coords.length];
+    if (!c1 || !c2) continue;
+    const [x1, y1] = c1;
+    const [x2, y2] = c2;
     sum += x1 * y2 - x2 * y1;
   }
   return sum / 2;

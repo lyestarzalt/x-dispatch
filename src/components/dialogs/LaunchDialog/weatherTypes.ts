@@ -194,21 +194,24 @@ export const CLOUD_TYPE_LABELS: Record<CloudLayer['type'], string> = {
 
 // ─── Preset Defaults ────────────────────────────────────────────────────────
 
+/** Standalone clear defaults — used as fallback so we can access it without indexing */
+export const CLEAR_DEFAULTS: CustomWeatherState = {
+  visibility_km: 50,
+  precipitation: 0,
+  temperature_c: 15,
+  altimeter_hpa: 1013.25,
+  wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 5 }],
+  clouds: [],
+  thermal_fpm: 0,
+  wave_height_m: 1,
+  wave_direction_deg: 270,
+  terrain_state: 'dry',
+  variation_pct: 0,
+  evolution: 'static',
+};
+
 export const PRESET_DEFAULTS: Record<string, CustomWeatherState> = {
-  clear: {
-    visibility_km: 50,
-    precipitation: 0,
-    temperature_c: 15,
-    altimeter_hpa: 1013.25,
-    wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 5 }],
-    clouds: [],
-    thermal_fpm: 0,
-    wave_height_m: 1,
-    wave_direction_deg: 270,
-    terrain_state: 'dry',
-    variation_pct: 0,
-    evolution: 'static',
-  },
+  clear: CLEAR_DEFAULTS,
   cloudy: {
     visibility_km: 15,
     precipitation: 0,
@@ -314,7 +317,9 @@ export const PRESET_DEFINITION_STRINGS = {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 export function getPresetDefaults(preset: string): CustomWeatherState {
-  return PRESET_DEFAULTS[preset] ?? PRESET_DEFAULTS.clear;
+  const defaults = PRESET_DEFAULTS[preset];
+  if (!defaults) return CLEAR_DEFAULTS;
+  return defaults;
 }
 
 export function createDefaultWeatherConfig(): WeatherConfig {
@@ -322,7 +327,7 @@ export function createDefaultWeatherConfig(): WeatherConfig {
     mode: 'preset',
     preset: 'clear',
     custom: {
-      ...PRESET_DEFAULTS.clear,
+      ...CLEAR_DEFAULTS,
       clouds: [],
       wind: [{ ...DEFAULT_WIND_LAYER, speed_kts: 5 }],
     },
@@ -334,7 +339,9 @@ export function findClosestVisibilityIndex(km: number): number {
   let closest = 0;
   let minDiff = Math.abs(VISIBILITY_STOPS[0] - km);
   for (let i = 1; i < VISIBILITY_STOPS.length; i++) {
-    const diff = Math.abs(VISIBILITY_STOPS[i] - km);
+    const stop = VISIBILITY_STOPS[i];
+    if (stop === undefined) continue;
+    const diff = Math.abs(stop - km);
     if (diff < minDiff) {
       minDiff = diff;
       closest = i;
@@ -353,6 +360,7 @@ export function formatVisibility(km: number): string {
 export function formatWind(wind: WindLayer[]): string {
   if (wind.length === 0) return 'Calm';
   const w = wind[0];
+  if (!w) return 'Calm';
   if (w.speed_kts === 0) return 'Calm';
   const dir = String(Math.round(w.direction_deg)).padStart(3, '0');
   if (w.gust_kts > 0) return `${dir}° @ ${w.speed_kts} G${w.speed_kts + w.gust_kts} kts`;
@@ -364,7 +372,10 @@ export function getWeatherSummary(config: WeatherConfig): string {
   if (config.mode === 'real') return 'Real Weather';
   const c = config.custom;
   const vis = formatVisibility(c.visibility_km);
+  const firstWind = c.wind[0];
   const wind =
-    c.wind.length === 0 || c.wind[0].speed_kts === 0 ? 'Calm' : `${c.wind[0].speed_kts} kts`;
+    c.wind.length === 0 || !firstWind || firstWind.speed_kts === 0
+      ? 'Calm'
+      : `${firstWind.speed_kts} kts`;
   return `${vis} · ${wind}`;
 }

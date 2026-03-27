@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { HoldingPattern, TurnDirection } from '@/types/navigation';
 import { FixTypeNumber } from '@/types/navigation';
 import { altitude, bearing, nonNegative } from '../schemas';
+import { hasMinLength } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 // Valid fix type numbers in holdings
@@ -39,7 +40,9 @@ export function parseHoldingPatterns(content: string): ParseResult<HoldingPatter
   let headerSkipped = false;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    if (!rawLine) continue;
+    const line = rawLine.trim();
     if (!line || line.startsWith('#')) continue;
 
     if (!headerSkipped) {
@@ -57,7 +60,7 @@ export function parseHoldingPatterns(content: string): ParseResult<HoldingPatter
     if (line === '99') break;
 
     const parts = line.split(/\s+/);
-    if (parts.length < 10) {
+    if (!hasMinLength(parts, 10)) {
       skipped++;
       continue;
     }
@@ -73,7 +76,7 @@ export function parseHoldingPatterns(content: string): ParseResult<HoldingPatter
       turnDirection: parts[7],
       minAlt: parseInt(parts[8], 10) || 0,
       maxAlt: parseInt(parts[9], 10) || 99999,
-      speedKts: parts.length > 10 ? parseInt(parts[10], 10) || 0 : 0,
+      speedKts: hasMinLength(parts, 11) ? parseInt(parts[10], 10) || 0 : 0,
     });
 
     if (!result.success) {

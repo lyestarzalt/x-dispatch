@@ -27,6 +27,27 @@ function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
   return false;
 }
 
+/** Safely read a numeric property, returning 0 if missing or NaN */
+function numProp(props: Record<string, string>, key: string): number {
+  const v = props[key];
+  if (v === undefined) return 0;
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
+
+/** Safely read an integer property, returning 0 if missing or NaN */
+function intProp(props: Record<string, string>, key: string): number {
+  const v = props[key];
+  if (v === undefined) return 0;
+  const n = parseInt(v, 10);
+  return isNaN(n) ? 0 : n;
+}
+
+/** Safely read a string property, returning fallback if missing */
+function strProp(props: Record<string, string>, key: string, fallback: string): string {
+  return props[key] ?? fallback;
+}
+
 function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
   try {
     const content = fs.readFileSync(acfPath, 'utf-8');
@@ -40,7 +61,11 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       if (line.startsWith('P acf/') || line.startsWith('P _cgpt/')) {
         const match = line.match(/^P ([^\s]+)\s+(.*)$/);
         if (match) {
-          props[match[1]] = match[2];
+          const key = match[1];
+          const value = match[2];
+          if (key && value !== undefined) {
+            props[key] = value;
+          }
         }
       }
     }
@@ -78,14 +103,14 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     const tankNames: string[] = [];
     const tankRatios: number[] = [];
     const tankIndices: number[] = [];
-    const maxFuelTotal = parseFloat(props['acf/_m_fuel_max_tot']) || 0;
+    const maxFuelTotal = numProp(props, 'acf/_m_fuel_max_tot');
 
     // Primary path: acf/_tank_name properties (works for all Laminar aircraft)
     for (let i = 0; i < 9; i++) {
       const tankName = props[`acf/_tank_name/${i}`];
       if (tankName) {
         tankNames.push(tankName);
-        tankRatios.push(parseFloat(props[`acf/_tank_rat/${i}`]) || 0);
+        tankRatios.push(numProp(props, `acf/_tank_rat/${i}`));
         tankIndices.push(i);
       }
     }
@@ -97,10 +122,10 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
       // Preserve the original X-Plane slot index so fuel is placed correctly
       // (e.g. Sea King uses slot 1, not 0).
       for (let i = 0; i < 9; i++) {
-        const ratio = parseFloat(props[`acf/_tank_rat/${i}`]) || 0;
+        const ratio = numProp(props, `acf/_tank_rat/${i}`);
         if (ratio > 0) {
           const cgptIdx = i + 1;
-          const cgptName = props[`_cgpt/${cgptIdx}/_name`] || `Tank ${i + 1}`;
+          const cgptName = strProp(props, `_cgpt/${cgptIdx}/_name`, `Tank ${i + 1}`);
           tankNames.push(cgptName);
           tankRatios.push(ratio);
           tankIndices.push(i);
@@ -112,7 +137,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
         for (let i = 0; i < 9; i++) {
           const cgptIdx = i + 1;
           const cgptName = props[`_cgpt/${cgptIdx}/_name`];
-          const maxWeight = parseFloat(props[`_cgpt/${cgptIdx}/_w_max`]) || 0;
+          const maxWeight = numProp(props, `_cgpt/${cgptIdx}/_w_max`);
           if (cgptName && maxWeight > 0) {
             tankNames.push(cgptName);
             tankRatios.push(maxWeight / maxFuelTotal);
@@ -128,7 +153,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     const payloadStations: { name: string; maxWeight: number }[] = [];
     for (let i = 0; i < 9; i++) {
       const name = props[`acf/_fixed_name/${i}`];
-      const maxWeight = parseFloat(props[`acf/_fixed_max/${i}`]) || 0;
+      const maxWeight = numProp(props, `acf/_fixed_max/${i}`);
       if (name && maxWeight > 0) {
         payloadStations.push({ name, maxWeight });
       }
@@ -137,8 +162,8 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
     // budget, same as X-Plane's own UI which shows a generic payload slider
     // when no named stations exist.
     if (payloadStations.length === 0) {
-      const emptyLbs = parseFloat(props['acf/_m_empty']) || 0;
-      const maxLbs = parseFloat(props['acf/_m_max']) || 0;
+      const emptyLbs = numProp(props, 'acf/_m_empty');
+      const maxLbs = numProp(props, 'acf/_m_max');
       const availablePayload = maxLbs - emptyLbs - maxFuelTotal;
       if (availablePayload > 0) {
         payloadStations.push({ name: 'Payload', maxWeight: availablePayload });
@@ -147,28 +172,28 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
 
     return {
       path: relativePath,
-      name: props['acf/_name'] || path.basename(acfPath, '.acf'),
-      icao: props['acf/_ICAO'] || '',
-      description: props['acf/_descrip'] || '',
-      manufacturer: props['acf/_manufacturer'] || 'Unknown',
-      studio: props['acf/_studio'] || '',
-      author: props['acf/_author'] || '',
-      tailNumber: props['acf/_tailnum'] || '',
+      name: strProp(props, 'acf/_name', path.basename(acfPath, '.acf')),
+      icao: strProp(props, 'acf/_ICAO', ''),
+      description: strProp(props, 'acf/_descrip', ''),
+      manufacturer: strProp(props, 'acf/_manufacturer', 'Unknown'),
+      studio: strProp(props, 'acf/_studio', ''),
+      author: strProp(props, 'acf/_author', ''),
+      tailNumber: strProp(props, 'acf/_tailnum', ''),
       // Weights (lbs)
-      emptyWeight: parseFloat(props['acf/_m_empty']) || 0,
-      maxWeight: parseFloat(props['acf/_m_max']) || 0,
-      maxFuel: parseFloat(props['acf/_m_fuel_max_tot']) || 0,
+      emptyWeight: numProp(props, 'acf/_m_empty'),
+      maxWeight: numProp(props, 'acf/_m_max'),
+      maxFuel: numProp(props, 'acf/_m_fuel_max_tot'),
       tankNames,
       tankRatios,
       tankIndices,
       payloadStations,
       // Aircraft type
       isHelicopter: props['acf/_is_helicopter'] === '1',
-      engineCount: parseInt(props['acf/_num_engn'], 10) || 0,
-      propCount: parseInt(props['acf/_num_prop'], 10) || 0,
+      engineCount: intProp(props, 'acf/_num_engn'),
+      propCount: intProp(props, 'acf/_num_prop'),
       // Speeds (knots)
-      vneKts: parseFloat(props['acf/_Vne_kts']) || 0,
-      vnoKts: parseFloat(props['acf/_Vno_kts']) || 0,
+      vneKts: numProp(props, 'acf/_Vne_kts'),
+      vnoKts: numProp(props, 'acf/_Vno_kts'),
       previewImage,
       thumbnailImage,
       liveries,

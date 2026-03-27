@@ -35,7 +35,9 @@ export function parseAirportMetadata(content: string): ParseResult<Map<string, A
   let headerSkipped = false;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    if (!rawLine) continue;
+    const line = rawLine.trim();
     if (!line || line.startsWith('#')) continue;
 
     if (!headerSkipped) {
@@ -58,18 +60,36 @@ export function parseAirportMetadata(content: string): ParseResult<Map<string, A
       continue;
     }
 
-    const rawClass = parts[5].toUpperCase();
+    const [icao, region, latStr, lonStr, elevStr, classStr, rwyStr, ifrStr, transAltStr, transLvl] =
+      parts;
+    if (
+      !icao ||
+      !region ||
+      !latStr ||
+      !lonStr ||
+      !elevStr ||
+      !classStr ||
+      !rwyStr ||
+      !ifrStr ||
+      !transAltStr ||
+      !transLvl
+    ) {
+      skipped++;
+      continue;
+    }
+
+    const rawClass = classStr.toUpperCase();
     const result = AirportMetaSchema.safeParse({
-      icao: parts[0].toUpperCase(),
-      region: parts[1],
-      latitude: parseFloat(parts[2]),
-      longitude: parseFloat(parts[3]),
-      elevation: parseInt(parts[4], 10) || 0,
+      icao: icao.toUpperCase(),
+      region,
+      latitude: parseFloat(latStr),
+      longitude: parseFloat(lonStr),
+      elevation: parseInt(elevStr, 10) || 0,
       airportClass: rawClass === 'C' || rawClass === 'P' ? rawClass : 'C',
-      longestRunway: parseInt(parts[6], 10) || 0,
-      ifrCapable: parts[7] === 'I',
-      transitionAlt: parseInt(parts[8], 10) || 18000,
-      transitionLevel: parts[9] || 'FL180',
+      longestRunway: parseInt(rwyStr, 10) || 0,
+      ifrCapable: ifrStr === 'I',
+      transitionAlt: parseInt(transAltStr, 10) || 18000,
+      transitionLevel: transLvl,
     });
 
     if (!result.success) {

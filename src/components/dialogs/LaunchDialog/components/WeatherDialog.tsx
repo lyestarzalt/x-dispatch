@@ -218,21 +218,35 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
               )}
             >
               <SectionHeader text={t('launcher.weatherDialog.layerProperties')} />
-              {validSelection?.kind === 'cloud' ? (
-                <CloudLayerProperties
-                  index={validSelection.index}
-                  layer={custom.clouds[validSelection.index]}
-                  onUpdate={(data) => updateCloudLayer(validSelection.index, data)}
-                  onRemove={() => handleRemoveCloud(validSelection.index)}
-                />
-              ) : validSelection?.kind === 'wind' ? (
-                <WindLayerProperties
-                  index={validSelection.index}
-                  layer={custom.wind[validSelection.index]}
-                  onUpdate={(data) => updateWindLayer(validSelection.index, data)}
-                  onRemove={() => handleRemoveWind(validSelection.index)}
-                />
-              ) : (
+              {(() => {
+                if (validSelection?.kind === 'cloud') {
+                  const cloudLayer = custom.clouds[validSelection.index];
+                  if (cloudLayer) {
+                    return (
+                      <CloudLayerProperties
+                        index={validSelection.index}
+                        layer={cloudLayer}
+                        onUpdate={(data) => updateCloudLayer(validSelection.index, data)}
+                        onRemove={() => handleRemoveCloud(validSelection.index)}
+                      />
+                    );
+                  }
+                }
+                if (validSelection?.kind === 'wind') {
+                  const windLayer = custom.wind[validSelection.index];
+                  if (windLayer) {
+                    return (
+                      <WindLayerProperties
+                        index={validSelection.index}
+                        layer={windLayer}
+                        onUpdate={(data) => updateWindLayer(validSelection.index, data)}
+                        onRemove={() => handleRemoveWind(validSelection.index)}
+                      />
+                    );
+                  }
+                }
+                return null;
+              })() ?? (
                 <p className="mt-8 text-center text-sm text-muted-foreground">
                   {t('launcher.weatherDialog.emptyHint')}
                 </p>
@@ -393,7 +407,11 @@ function CloudLayerProperties({
           </div>
           <Slider
             value={[layer.tops_ft]}
-            onValueChange={(v) => onUpdate({ tops_ft: Math.max(v[0], layer.base_ft + 500) })}
+            onValueChange={(v) => {
+              const val = v[0];
+              if (val === undefined) return;
+              onUpdate({ tops_ft: Math.max(val, layer.base_ft + 500) });
+            }}
             min={500}
             max={50000}
             step={500}
@@ -412,6 +430,7 @@ function CloudLayerProperties({
             value={[layer.base_ft]}
             onValueChange={(v) => {
               const base = v[0];
+              if (base === undefined) return;
               onUpdate({ base_ft: base, tops_ft: Math.max(layer.tops_ft, base + 500) });
             }}
             min={0}
@@ -537,7 +556,11 @@ function WindLayerProperties({
           </div>
           <Slider
             value={[layer.turbulence * 100]}
-            onValueChange={(v) => onUpdate({ turbulence: v[0] / 100 })}
+            onValueChange={(v) => {
+              const val = v[0];
+              if (val === undefined) return;
+              onUpdate({ turbulence: val / 100 });
+            }}
             min={0}
             max={100}
             step={5}
@@ -641,7 +664,13 @@ function AtmosphericPanel({
         </div>
         <Slider
           value={[visibilityIndex]}
-          onValueChange={(v) => onUpdate({ visibility_km: VISIBILITY_STOPS[v[0]] })}
+          onValueChange={(v) => {
+            const idx = v[0];
+            if (idx === undefined) return;
+            const km = VISIBILITY_STOPS[idx];
+            if (km === undefined) return;
+            onUpdate({ visibility_km: km });
+          }}
           min={0}
           max={VISIBILITY_STOPS.length - 1}
           step={1}
@@ -665,7 +694,11 @@ function AtmosphericPanel({
         </div>
         <Slider
           value={[custom.precipitation * 100]}
-          onValueChange={(v) => onUpdate({ precipitation: v[0] / 100 })}
+          onValueChange={(v) => {
+            const val = v[0];
+            if (val === undefined) return;
+            onUpdate({ precipitation: val / 100 });
+          }}
           min={0}
           max={100}
           step={5}
@@ -719,7 +752,11 @@ function AtmosphericPanel({
         </div>
         <Slider
           value={[custom.altimeter_hpa]}
-          onValueChange={(v) => onUpdate({ altimeter_hpa: Math.round(v[0] * 4) / 4 })}
+          onValueChange={(v) => {
+            const val = v[0];
+            if (val === undefined) return;
+            onUpdate({ altimeter_hpa: Math.round(val * 4) / 4 });
+          }}
           min={940}
           max={1075}
           step={0.25}
@@ -784,7 +821,11 @@ function AtmosphericPanel({
           </div>
           <Slider
             value={[custom.wave_height_m]}
-            onValueChange={(v) => onUpdate({ wave_height_m: Math.round(v[0] * 10) / 10 })}
+            onValueChange={(v) => {
+              const val = v[0];
+              if (val === undefined) return;
+              onUpdate({ wave_height_m: Math.round(val * 10) / 10 });
+            }}
             min={0}
             max={12}
             step={0.1}

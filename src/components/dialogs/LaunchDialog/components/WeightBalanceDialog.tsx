@@ -300,7 +300,11 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                   </div>
                   <Slider
                     value={[overallFuelPct]}
-                    onValueChange={(v) => setAllTanksPercentage(v[0])}
+                    onValueChange={(v) => {
+                      const val = v[0];
+                      if (val === undefined) return;
+                      setAllTanksPercentage(val);
+                    }}
                     min={0}
                     max={100}
                     step={1}
@@ -384,7 +388,17 @@ function SliderRow({
           {formatMax && <span className="ml-1 text-muted-foreground/50">/ {formatMax(max)}</span>}
         </span>
       </div>
-      <Slider value={[value]} onValueChange={(v) => onChange(v[0])} min={0} max={max} step={step} />
+      <Slider
+        value={[value]}
+        onValueChange={(v) => {
+          const val = v[0];
+          if (val === undefined) return;
+          onChange(val);
+        }}
+        min={0}
+        max={max}
+        step={step}
+      />
     </div>
   );
 }

@@ -1145,7 +1145,7 @@ export function createSqlCoordResolver(options?: SqlResolverOptions): CoordResol
 
     // Parse runway waypoint: RW + 2 digits + optional L/C/R
     const match = fixId.match(/^RW(\d{2})([LCR])?$/i);
-    if (!match) return null;
+    if (!match?.[1]) return null;
 
     const runwayNumber = match[1];
     const suffix = match[2]?.toUpperCase() || '';

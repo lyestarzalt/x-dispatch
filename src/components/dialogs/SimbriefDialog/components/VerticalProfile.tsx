@@ -45,7 +45,9 @@ function CustomTooltip({
   payload?: Array<{ payload: ProfileDataPoint }>;
 }) {
   if (!active || !payload?.length) return null;
-  const point = payload[0].payload;
+  const entry = payload[0];
+  if (!entry) return null;
+  const point = entry.payload;
   if (!point?.ident) return null;
 
   return (
@@ -96,6 +98,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
 
     for (let i = 0; i < fixes.length; i++) {
       const fix = fixes[i];
+      if (!fix) continue;
       const legDistance = parseFloat(fix.distance) || 0;
       cumulativeDistance += legDistance;
 

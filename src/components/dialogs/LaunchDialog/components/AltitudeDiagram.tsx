@@ -193,10 +193,12 @@ export function AltitudeDiagram({
         onUpdateCloud(drag.index, { base_ft: newBase, tops_ft: newTops });
       } else if (drag.kind === 'cloud-base') {
         const cloud = clouds[drag.index];
+        if (!cloud) return;
         const maxBase = Math.max(0, cloud.tops_ft - SNAP);
         onUpdateCloud(drag.index, { base_ft: Math.min(newAlt, maxBase) });
       } else if (drag.kind === 'cloud-tops') {
         const cloud = clouds[drag.index];
+        if (!cloud) return;
         const minTops = cloud.base_ft + SNAP;
         onUpdateCloud(drag.index, { tops_ft: Math.max(newAlt, minTops) });
       } else if (drag.kind === 'wind') {

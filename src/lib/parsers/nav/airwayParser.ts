@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { AirwayDirection, AirwaySegment } from '@/types/navigation';
 import { FixTypeNumber } from '@/types/navigation';
 import { flightLevel } from '../schemas';
+import { hasMinLength } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 // Valid fix type numbers in airways
@@ -45,11 +46,13 @@ export function parseAirways(content: string): ParseResult<AirwaySegment[]> {
   let skipped = 0;
 
   for (let i = 2; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    if (!rawLine) continue;
+    const line = rawLine.trim();
     if (!line || line === '99') continue;
 
     const parts = line.split(/\s+/);
-    if (parts.length < 11) {
+    if (!hasMinLength(parts, 11)) {
       skipped++;
       continue;
     }
