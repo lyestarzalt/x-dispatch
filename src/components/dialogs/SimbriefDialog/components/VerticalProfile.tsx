@@ -1,12 +1,7 @@
 import { useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 import { Badge } from '@/components/ui/badge';
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
+import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import type { SimBriefFix } from '@/types/simbrief';
 
 interface VerticalProfileProps {

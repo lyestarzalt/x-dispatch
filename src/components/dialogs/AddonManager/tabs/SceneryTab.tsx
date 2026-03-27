@@ -1,5 +1,5 @@
 // src/components/dialogs/AddonManager/tabs/SceneryTab.tsx
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -133,13 +133,7 @@ function GlobalAirportsRow({
 
 export function SceneryTab() {
   const { t } = useTranslation();
-  const {
-    data: entries = [],
-    isLoading,
-    error,
-    refetch: refetchScenery,
-    isFetching,
-  } = useSceneryList();
+  const { data: entries = [], isLoading, error, refetch: refetchScenery } = useSceneryList();
   const sortMutation = useScenerySort();
   const saveOrderMutation = useScenarySaveOrder();
   const toggleMutation = useSceneryToggle();
@@ -174,8 +168,6 @@ export function SceneryTab() {
     const q = searchQuery.toLowerCase();
     return localEntries.filter((e) => e.folderName.toLowerCase().includes(q) || e.isGlobalAirports);
   }, [localEntries, searchQuery]);
-
-  const isSearching = searchQuery.trim().length > 0;
 
   const sensors = useSensors(
     useSensor(PointerSensor),

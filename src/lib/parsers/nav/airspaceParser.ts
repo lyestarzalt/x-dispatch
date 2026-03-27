@@ -2,7 +2,6 @@
  * Parser for OpenAir format airspace files (airspace.txt)
  * Parses airspace boundaries with class, name, limits, and polygon coordinates
  */
-import { z } from 'zod';
 import type { Airspace, AirspaceClass } from '@/types/navigation';
 import { lonLat } from '../schemas';
 import { hasMinLength } from '../types';

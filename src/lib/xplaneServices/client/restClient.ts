@@ -18,7 +18,6 @@ interface ApiCapabilities {
 
 export class XPlaneRestClient {
   private port: number;
-  private cachedVersion: string | null = null;
 
   constructor(port: number = DEFAULT_PORT) {
     this.port = port;
@@ -185,7 +184,7 @@ export class XPlaneRestClient {
   }
 
   clearCache(): void {
-    this.cachedVersion = null;
+    // No-op: reserved for future cache invalidation
   }
 }
 

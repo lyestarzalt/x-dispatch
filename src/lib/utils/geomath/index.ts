@@ -15,11 +15,8 @@ export type Meters = Brand<number, 'meters'>;
 export type Feet = Brand<number, 'feet'>;
 type NauticalMiles = Brand<number, 'nauticalMiles'>;
 type LatLon = Brand<[number, number], 'latlon'>;
-// Internal branded LonLat for geo calculations - external code uses @/types/geo LonLat
-type BrandedLonLat = Brand<[number, number], 'lonlat'>;
 
 const EARTH_RADIUS_M = 6371000;
-const METERS_PER_FOOT = 0.3048;
 const FEET_PER_METER = 3.28084;
 const METERS_PER_NM = 1852;
 

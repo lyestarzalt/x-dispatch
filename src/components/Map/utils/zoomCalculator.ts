@@ -1,4 +1,4 @@
-import { haversineDistance, runwayLength } from '@/lib/utils/geomath';
+import { runwayLength } from '@/lib/utils/geomath';
 import type { Runway } from '@/types/apt';
 
 // Re-export haversineDistance for backward compatibility
@@ -70,33 +70,4 @@ export function calculateAirportCenter(
 
   // Ultimate fallback
   return [0, 0];
-}
-
-/**
- * Calculate bounding box for an airport
- */
-function calculateAirportBounds(
-  runways: Runway[],
-  padding = 0.002 // ~200m padding
-): [[number, number], [number, number]] | null {
-  if (runways.length === 0) return null;
-
-  let minLat = Infinity;
-  let maxLat = -Infinity;
-  let minLon = Infinity;
-  let maxLon = -Infinity;
-
-  for (const runway of runways) {
-    for (const end of runway.ends) {
-      minLat = Math.min(minLat, end.latitude);
-      maxLat = Math.max(maxLat, end.latitude);
-      minLon = Math.min(minLon, end.longitude);
-      maxLon = Math.max(maxLon, end.longitude);
-    }
-  }
-
-  return [
-    [minLon - padding, minLat - padding], // Southwest
-    [maxLon + padding, maxLat + padding], // Northeast
-  ];
 }

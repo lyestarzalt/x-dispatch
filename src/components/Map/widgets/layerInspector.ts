@@ -136,14 +136,6 @@ function worstStatus(statuses: LayerStatus[]): LayerStatus {
   );
 }
 
-/** Convert layer suffix to human-readable name: "taxiway-lights" → "Taxiway Lights" */
-function humanName(suffix: string): string {
-  return suffix
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
 // --- Main collection function ---
 
 interface LayerEntry {

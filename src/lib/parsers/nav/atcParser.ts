@@ -4,7 +4,7 @@
  */
 import { z } from 'zod';
 import { LonLatPath } from '@/types/geo';
-import type { ATCController, ATCRole } from '@/types/navigation';
+import type { ATCController } from '@/types/navigation';
 import { lonLat, vhfFrequency } from '../schemas';
 import { hasMinLength } from '../types';
 import type { ParseError, ParseResult } from '../types';

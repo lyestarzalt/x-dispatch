@@ -212,7 +212,6 @@ export function useMapSetup({
 
 export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
   const COLOR_DEFAULT = '#4a90d9';
-  const COLOR_CUSTOM = '#e8c36a';
 
   // Clean pin marker for custom airports — uses --warning amber token (#d4a017)
   const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 20 28">

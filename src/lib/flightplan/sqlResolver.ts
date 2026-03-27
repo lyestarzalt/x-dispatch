@@ -9,9 +9,7 @@ import { airports, airways, getDb } from '@/lib/db';
 // ============================================================================
 
 import {
-  getNavaidByIdRegion,
   getNavaidNearestById,
-  getWaypointByIdRegion,
   getWaypointNearestById,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Coordinates } from '@/types/geo';

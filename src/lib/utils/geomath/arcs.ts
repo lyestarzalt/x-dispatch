@@ -196,7 +196,6 @@ export function createHoldingPattern(
 
   // Point 2: Start of outbound leg (after first turn)
   const turnOffset = destinationPoint(fixLat, fixLon, turnRadiusMeters * 2, offsetAngle);
-  const point2: LonLat = turnOffset;
 
   // Point 3: End of outbound leg
   const point3 = destinationPoint(turnOffset[1], turnOffset[0], legDistanceMeters, outboundCourse);

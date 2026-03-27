@@ -1,22 +1,12 @@
 import { z } from 'zod';
 import type {
-  Beacon,
-  BoundaryFeature,
-  Frequency,
-  Helipad,
   LinearFeature,
   ParsedAirport,
   ParsedPath,
   Pavement,
-  Runway,
   RunwayEnd,
   Sign,
   StartupLocation,
-  TaxiEdge,
-  TaxiNetwork,
-  TaxiNode,
-  TaxiwayFeature,
-  TowerLocation,
   Windsock,
 } from '@/types/apt';
 import { FrequencyType, RowCode } from '@/types/apt';
@@ -56,7 +46,6 @@ export class AirportParser {
   private lines: string[];
   private errors: ParseError[] = [];
   private skipped = 0;
-  private currentLine = 0;
 
   constructor(data: string) {
     this.lines = data

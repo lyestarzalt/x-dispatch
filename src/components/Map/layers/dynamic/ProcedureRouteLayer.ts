@@ -12,11 +12,7 @@
 import maplibregl from 'maplibre-gl';
 import { createHoldingPattern, createProcedureTurn, interpolateRFArc } from '@/lib/utils/geomath';
 import type { LonLat } from '@/types/geo';
-import type {
-  AltitudeConstraint,
-  ResolvedProcedureWaypoint,
-  TurnDirection,
-} from '@/types/navigation';
+import type { AltitudeConstraint, TurnDirection } from '@/types/navigation';
 
 // ============================================================================
 // Types

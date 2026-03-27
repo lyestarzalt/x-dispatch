@@ -1,16 +1,8 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer, webFrame, webUtils } from 'electron';
-import type { AirportProcedures, Procedure, ProcedureWaypoint } from './lib/parsers/nav/cifpParser';
+import type { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
-import type {
-  Airport,
-  AirportSourceBreakdown,
-  DataLoadStatus,
-} from './lib/xplaneServices/dataService/XPlaneDataManager';
-import type {
-  DataSourceInfo,
-  DataSourceType,
-  NavDataSources,
-} from './lib/xplaneServices/dataService/cycleInfo';
+import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/XPlaneDataManager';
+import type { NavDataSources } from './lib/xplaneServices/dataService/cycleInfo';
 // Import types from canonical sources
 import type { Aircraft, WeatherPreset } from './types/aircraft';
 import type {
@@ -25,7 +17,6 @@ import type {
 import type { IvaoData } from './types/ivao';
 import type {
   ATCController,
-  ATCRole,
   AirportMetadata,
   Airspace,
   HoldingPattern,
@@ -33,15 +24,7 @@ import type {
   Waypoint,
 } from './types/navigation';
 import type { AirwaySegmentWithCoords } from './types/navigation';
-import type {
-  VatsimATIS,
-  VatsimController,
-  VatsimData,
-  VatsimEvent,
-  VatsimEventsResponse,
-  VatsimPilot,
-  VatsimPrefile,
-} from './types/vatsim';
+import type { VatsimData, VatsimEventsResponse } from './types/vatsim';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
 
 contextBridge.exposeInMainWorld('airportAPI', {

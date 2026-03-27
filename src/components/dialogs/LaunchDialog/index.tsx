@@ -38,7 +38,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
   // TanStack Query for data fetching
   const { data: aircraftList = [], isLoading: isScanning } = useAircraftList(open);
-  const { data: weatherPresets = [] } = useWeatherPresets(open);
+  useWeatherPresets(open);
 
   // Zustand store state
   const selectedAircraftPath = useLaunchStore((s) => s.selectedAircraftPath);

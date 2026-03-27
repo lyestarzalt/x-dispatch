@@ -291,22 +291,3 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
     aptMeta,
   };
 }
-
-/**
- * Format cycle info for display
- */
-function formatCycleDisplay(info: DataSourceInfo): string {
-  if (info.source === 'navigraph' && info.cycle) {
-    let display = `AIRAC ${info.cycle}`;
-    if (info.revision) {
-      display += ` (rev ${info.revision})`;
-    }
-    return display;
-  }
-
-  if (info.source === 'xplane-default') {
-    return 'X-Plane Default';
-  }
-
-  return 'Unknown';
-}

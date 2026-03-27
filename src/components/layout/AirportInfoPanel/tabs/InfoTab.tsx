@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Copy, ExternalLink, Plane, Radio } from 'lucide-react';
-import { CloudQuantity, Descriptive, DistanceUnit, Intensity, Phenomenon } from 'metar-taf-parser';
+import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
 // Formatters for metar-taf-parser types
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatFrequency } from '@/lib/utils/format';
-import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
+import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures, useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
@@ -305,7 +305,6 @@ export default function InfoTab() {
           <div className="space-y-1">
             {sortedRunways.map((rwy, i) => {
               const length = Math.round(runwayLengthFeet(rwy.ends[0], rwy.ends[1]));
-              const width = Math.round(metersToFeet(rwy.width));
               const surface = SURFACE_NAMES[rwy.surface_type] || 'Unknown';
 
               return (

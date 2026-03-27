@@ -23,7 +23,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
-import type { PlanePosition, PlaneState } from '@/types/xplane';
+import type { PlanePosition } from '@/types/xplane';
 import {
   applyNavVisibilityChange,
   toggleIvaoLayer,
@@ -103,9 +103,7 @@ export default function Map({ airports }: MapProps) {
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const followPlane = useMapStore((s) => s.followPlane);
   const setFollowPlane = useMapStore((s) => s.setFollowPlane);
-  const toggleLayer = useMapStore((s) => s.toggleLayer);
   const toggleNavLayer = useMapStore((s) => s.toggleNavLayer);
-  const setDebugEnabled = useMapStore((s) => s.setDebugEnabled);
   const setSelectedFeature = useMapStore((s) => s.setSelectedFeature);
   const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
   const setIvaoEnabled = useMapStore((s) => s.setIvaoEnabled);
@@ -153,7 +151,7 @@ export default function Map({ airports }: MapProps) {
   const ivaoPopupRef = useRef<maplibregl.Popup | null>(null);
 
   // Map initialization
-  const { mapRef, mapContainerRef, airportPopupRef, vatsimPopupRef } = useMapSetup({
+  const { mapRef, mapContainerRef, vatsimPopupRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
@@ -202,19 +200,14 @@ export default function Map({ airports }: MapProps) {
   }, [selectedICAO]);
 
   // Airport interactions (gates, runway ends, helipads)
-  const {
-    selectGateAsStart,
-    selectRunwayEndAsStart,
-    selectHelipadAsStart,
-    navigateToGate,
-    navigateToRunway,
-  } = useAirportInteractions({
-    mapRef,
-    selectedAirportData,
-  });
+  const { selectGateAsStart, selectRunwayEndAsStart, selectHelipadAsStart, navigateToRunway } =
+    useAirportInteractions({
+      mapRef,
+      selectedAirportData,
+    });
 
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
-  const { data: vatsimMetar } = useVatsimMetarQuery(selectedICAO);
+  useVatsimMetarQuery(selectedICAO);
 
   // Get airport coordinates - prefer airports array, fallback to metadata
   const selectedAirport = useMemo(
@@ -352,8 +345,6 @@ export default function Map({ airports }: MapProps) {
   // Flight plan state
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
-  const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
-
   // Flight plan layer sync — always fit bounds when fmsData changes
   const prevFmsDataRef = useRef<typeof fmsData>(null);
   useEffect(() => {
@@ -560,15 +551,6 @@ export default function Map({ airports }: MapProps) {
     });
   }, [airports, selectAirport]);
 
-  const handleLayerToggle = useCallback(
-    (layer: keyof LayerVisibility) => {
-      toggleLayer(layer);
-      const newVisibility = { ...layerVisibility, [layer]: !layerVisibility[layer] };
-      applyLayerVisibility(newVisibility);
-    },
-    [toggleLayer, layerVisibility, applyLayerVisibility]
-  );
-
   const handleNavLayerToggle = useCallback(
     (layer: keyof NavLayerVisibility) => {
       toggleNavLayer(layer);
@@ -584,8 +566,6 @@ export default function Map({ airports }: MapProps) {
     },
     [mapRef, toggleNavLayer, navVisibility]
   );
-
-  const handleLoadViewportNavaids = useCallback(async () => {}, []);
 
   const handleToggleWeatherRadar = useCallback(() => {
     setWeatherRadarEnabled(!weatherRadarEnabled);

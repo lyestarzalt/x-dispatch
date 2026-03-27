@@ -127,8 +127,6 @@ export function BrowserTab() {
     aircraftToggle.isPending || aircraftDelete.isPending || aircraftLock.isPending;
   const isPluginPending = pluginToggle.isPending || pluginDelete.isPending || pluginLock.isPending;
 
-  const currentStats = subTab === 'aircraft' ? aircraftStats : pluginStats;
-
   const totalAddons = aircraft.length + plugins.length;
   const totalEnabled = aircraftStats.enabled + pluginStats.enabled;
 

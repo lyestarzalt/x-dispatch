@@ -3,7 +3,6 @@
  * Renders the flight plan with proper aviation symbols.
  */
 import maplibregl from 'maplibre-gl';
-import { NAV_COLORS } from '@/config/navLayerConfig';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
 

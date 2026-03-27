@@ -26,7 +26,6 @@ import {
   getAirportBreakdown,
   getAirportCount,
   getAllAirportsFromDb,
-  getDistinctCountries,
   getStoredAirportCountEstimate,
   getStoredFileMeta,
   insertAirports,

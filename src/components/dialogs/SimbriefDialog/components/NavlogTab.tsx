@@ -24,7 +24,6 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
       cumulativeDistance += parseFloat(fix.distance) || 0;
 
       // Detect phase transitions
-      const prevFix = fixes[index - 1];
       const nextFix = fixes[index + 1];
       const isTopOfClimb = fix.stage === 'CLB' && nextFix?.stage === 'CRZ';
       const isTopOfDescent = fix.stage === 'CRZ' && nextFix?.stage === 'DSC';

@@ -55,7 +55,3 @@ export const changeLanguage = (lang: string) => {
   i18n.changeLanguage(lang);
   localStorage.setItem('app-language', lang);
 };
-
-const availableLanguages = Object.keys(resources);
-
-type TranslationKeys = typeof en;

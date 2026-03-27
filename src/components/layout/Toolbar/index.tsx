@@ -61,7 +61,7 @@ import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
-import { ALL_SURFACE_TYPES, type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
+import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
 import type { NavLayerVisibility } from '@/types/layers';
 import {
   ALL_RANGE_RING_CATEGORIES,
