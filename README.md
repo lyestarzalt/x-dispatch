@@ -44,6 +44,9 @@ If you find this useful, consider giving it a star — it helps others discover 
 
 ## Screenshots
 
+![Airport Detail](screenshots/airport-detail.png)
+![Flight Setup](screenshots/flight-setup.png)
+
 <details>
 <summary>SimBrief Integration</summary>
 
@@ -134,12 +137,13 @@ If you find this useful, consider giving it a star — it helps others discover 
 
 ### Map & Visualization
 
-- 3D globe with terrain elevation, hillshade, and contour lines
+- 3D globe with starfield background, terrain elevation, hillshade, and contour lines
 - 6 basemap styles (OpenFreeMap, CARTO dark/light variants)
 - Airport dots for 35,000+ airports with custom scenery support
-- Airport filters by type, surface, and country
+- Airport filters by type, runway surface, and country
 - Day/night terminator overlay
 - Weather radar overlay (RainViewer) with playback controls
+- Interactive drag-to-resize range rings with category presets
 - Idle orbit camera for selected airports
 
 ### Airport Details
@@ -176,7 +180,9 @@ If you find this useful, consider giving it a star — it helps others discover 
 - Livery selection with per-aircraft memory
 - Fuel and payload configuration with weight & balance
 - Time of day, weather presets, and cold & dark start
-- Start from any gate, runway, helipad, or custom pin drop with heading
+- Start from any gate, runway, helipad, or custom pin drop with coordinates
+- Air start, carrier catapult, and frigate deck launch modes
+- Runway approach start with configurable distance and glider tow
 - Direct X-Plane launch or mid-flight relocation via REST API
 - Logbook of last 10 flights
 
@@ -190,26 +196,68 @@ If you find this useful, consider giving it a star — it helps others discover 
 
 - Named X-Plane installations with quick switching
 - Full data reload on installation change
+- Symlink and junction support for addons on external drives
 - Version and Steam detection per installation
 
-### Addon Manager (Alpha)
+### Addon Manager
 
-- Browse aircraft and scenery from trusted sources
+- Browse installed aircraft, plugins, liveries, and Lua scripts
+- Scenery priority manager with drag-to-reorder and auto-sort
 - One-click install with automatic extraction (ZIP, RAR, 7z)
-- Track installed addons and available updates
+- Delete scenery from disk with confirmation
+- Detects manually added scenery and new addons on rescan
 
 ### General
 
+- `xdispatch://` deep link protocol for airport navigation
 - Available in 10 languages: English, French, German, Spanish, Italian, Portuguese, Russian, Polish, Japanese, Chinese
 - Light, dark, and system theme
-- Configurable font size
+- Configurable interface zoom and font size
+- Keyboard shortcuts (Ctrl+F for search)
 
 ## Development
 
 ```bash
-npm install
-npm start        # dev mode
+npm install      # install dependencies
+npm start        # dev mode with hot reload
 npm run make     # build distributables
+```
+
+```bash
+npm run typecheck   # TypeScript strict checks
+npm run lint        # ESLint
+npm run lint:fix    # auto-fix lint issues
+npm run format      # Prettier
+```
+
+### Tech Stack
+
+| Layer         | Technology                       |
+| ------------- | -------------------------------- |
+| Framework     | Electron + React 18 + TypeScript |
+| Build         | Vite + Electron Forge            |
+| UI            | Tailwind CSS + shadcn/ui         |
+| State         | Zustand (persisted stores)       |
+| Data Fetching | TanStack Query                   |
+| Map           | MapLibre GL JS                   |
+| Database      | SQLite (sql.js)                  |
+
+### Project Structure
+
+```
+src/
+├── components/       # React components (Map, dialogs, panels, layout)
+├── config/           # Map styles, zoom behaviors, surface colors
+├── hooks/            # Global React hooks
+├── lib/
+│   ├── parsers/      # X-Plane apt.dat, nav data, METAR, FMS parsers
+│   ├── addonManager/ # Aircraft, scenery, plugin management
+│   ├── xplaneServices/ # X-Plane REST/WebSocket integration
+│   └── geo/          # Geographic calculations
+├── queries/          # TanStack Query hooks
+├── stores/           # Zustand state stores
+├── types/            # TypeScript type definitions
+└── db/               # SQLite schema and migrations
 ```
 
 Requires Node.js 20+ and X-Plane 12.1+.
