@@ -38,6 +38,9 @@ interface DebugStats {
   mainRssMB: string;
   mainHeapMB: string;
   ipcLatencyMs: number;
+  xplanePath: string;
+  configPath: string;
+  logPath: string;
 }
 
 type MapRef = React.RefObject<maplibregl.Map | null>;
@@ -166,6 +169,27 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         /* ignore */
       }
 
+      let xplanePath = '—';
+      try {
+        xplanePath = (await window.xplaneAPI.getPath()) ?? '—';
+      } catch {
+        /* ignore */
+      }
+
+      let configPath = '—';
+      try {
+        configPath = await window.appAPI.getConfigPath();
+      } catch {
+        /* ignore */
+      }
+
+      let logPath = '—';
+      try {
+        logPath = await window.appAPI.getLogPath();
+      } catch {
+        /* ignore */
+      }
+
       let ipcLatencyMs = 0;
       try {
         const start = performance.now();
@@ -245,6 +269,9 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
         mainRssMB,
         mainHeapMB,
         ipcLatencyMs,
+        xplanePath,
+        configPath,
+        logPath,
       });
     };
 
@@ -458,6 +485,22 @@ function MapPanel({ stats }: { stats: DebugStats }) {
           tip="3D terrain / DEM source / Hillshade source"
         />
       </div>
+      <div className="col-span-2">
+        <SectionLabel>Paths</SectionLabel>
+        <PathRow label="X-Plane" value={stats.xplanePath} />
+        <PathRow
+          label="Custom Scenery"
+          value={stats.xplanePath !== '—' ? `${stats.xplanePath}/Custom Scenery` : '—'}
+        />
+        <PathRow
+          label="scenery_packs.ini"
+          value={
+            stats.xplanePath !== '—' ? `${stats.xplanePath}/Custom Scenery/scenery_packs.ini` : '—'
+          }
+        />
+        <PathRow label="Config" value={stats.configPath} />
+        <PathRow label="Log" value={stats.logPath} />
+      </div>
     </div>
   );
 }
@@ -648,6 +691,15 @@ function Row({
     <div className="flex justify-between gap-4 py-px" title={tip}>
       <span className="text-muted-foreground/70">{label}</span>
       <span className={`text-right ${color}`}>{value}</span>
+    </div>
+  );
+}
+
+function PathRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-4 py-px" title={value}>
+      <span className="shrink-0 text-muted-foreground/70">{label}</span>
+      <span className="min-w-0 truncate text-foreground">{value}</span>
     </div>
   );
 }
