@@ -80,17 +80,21 @@ export function parseSceneryPacksIni(
     // Extract folder name from path (last component)
     const folderName = path.basename(sceneryPath);
 
-    // Build full path - scenery paths are relative to X-Plane root
-    // They look like: "Custom Scenery/FolderName/"
     const xplaneRoot = path.dirname(customSceneryPath);
-    const fullPath = path.join(xplaneRoot, sceneryPath);
 
-    // Defense-in-depth: validate resolved path is within X-Plane directory
-    // Skip entries with path traversal attempts
+    // Absolute paths (e.g. /Volumes/ExternalDrive/scenery/) are used as-is
+    // Relative paths (e.g. Custom Scenery/FolderName/) are resolved from X-Plane root
+    const isAbsolute = path.isAbsolute(sceneryPath);
+    const fullPath = isAbsolute ? sceneryPath : path.join(xplaneRoot, sceneryPath);
     const resolvedFull = path.resolve(fullPath);
-    const resolvedRoot = path.resolve(xplaneRoot);
-    if (!resolvedFull.startsWith(resolvedRoot + path.sep)) {
-      continue; // Skip this entry - potential path traversal
+
+    if (!isAbsolute) {
+      // Defense-in-depth: validate resolved relative path is within X-Plane directory
+      // Skip entries with path traversal attempts
+      const resolvedRoot = path.resolve(xplaneRoot);
+      if (!resolvedFull.startsWith(resolvedRoot + path.sep)) {
+        continue; // Skip this entry - potential path traversal
+      }
     }
 
     entries.push({
@@ -99,6 +103,7 @@ export function parseSceneryPacksIni(
       enabled,
       isGlobalAirports: false,
       originalLine: line,
+      sceneryPath: isAbsolute ? sceneryPath : undefined,
     });
   }
 
@@ -121,12 +126,14 @@ export function writeSceneryPacksIni(
   lines.push('');
 
   for (const entry of entries) {
+    const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
     if (entry.isGlobalAirports) {
-      // Write *GLOBAL_AIRPORTS* marker as-is
-      const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
       lines.push(`${prefix}${GLOBAL_AIRPORTS_MARKER}`);
+    } else if (entry.sceneryPath) {
+      // Absolute/external path — preserve as-is
+      const trailingSlash = entry.sceneryPath.endsWith('/') ? '' : '/';
+      lines.push(`${prefix}${entry.sceneryPath}${trailingSlash}`);
     } else {
-      const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
       lines.push(`${prefix}Custom Scenery/${entry.folderName}/`);
     }
   }

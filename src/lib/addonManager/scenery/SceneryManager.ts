@@ -61,40 +61,21 @@ export class SceneryManager {
       }
 
       if (!fs.existsSync(iniEntry.fullPath)) {
-        staleNames.add(iniEntry.folderName);
+        // Only mark relative (Custom Scenery/) entries as stale.
+        // Absolute paths (external drives) may just be unmounted — never auto-remove them.
+        if (!iniEntry.sceneryPath) {
+          staleNames.add(iniEntry.folderName);
+        }
         continue;
       }
       const entry = this.processEntry(iniEntry, i);
       entries.push(entry);
     }
 
-    // Remove stale entries from scenery_packs.ini (backup first)
-    if (staleNames.size > 0) {
-      try {
-        const backupResult = backupSceneryPacksIni(this.iniPath, this.backupDir);
-        if (backupResult.ok) {
-          const cleanedLines = fs
-            .readFileSync(this.iniPath, 'utf-8')
-            .split('\n')
-            .filter((line) => {
-              const trimmed = line.trim();
-              for (const name of staleNames) {
-                if (trimmed.includes(`/${name}/`)) return false;
-              }
-              return true;
-            });
-          fs.writeFileSync(this.iniPath, cleanedLines.join('\n'), 'utf-8');
-        }
-      } catch {
-        // Non-critical — stale entries will be cleaned up on next X-Plane launch
-      }
-    }
-
     // Detect folders in Custom Scenery/ that aren't in the INI yet
-    // (manually added by the user outside XD — mirrors X-Plane's behavior on launch)
+    // (shown in UI but NOT written to INI — only explicit user saves modify the file)
     const knownFolders = new Set(parseResult.value.map((e) => e.folderName));
     staleNames.forEach((name) => knownFolders.add(name)); // don't re-add removed ones
-    let addedNew = false;
 
     try {
       if (fs.existsSync(this.customSceneryPath)) {
@@ -106,7 +87,7 @@ export class SceneryManager {
           if (dirEntry.name.startsWith('.') || dirEntry.name === '__MACOSX') continue;
 
           const fullPath = path.join(this.customSceneryPath, dirEntry.name);
-          const iniEntry = {
+          const iniEntry: ParsedIniEntry = {
             folderName: dirEntry.name,
             fullPath,
             enabled: true,
@@ -115,29 +96,13 @@ export class SceneryManager {
           };
           const entry = this.processEntry(iniEntry, entries.length);
           entries.push(entry);
-          addedNew = true;
         }
       }
     } catch {
       // Non-critical — new folders will be picked up by X-Plane on next launch
     }
 
-    // Write newly discovered folders to the INI, sorted into correct priority position
-    if (addedNew) {
-      try {
-        if (staleNames.size === 0) {
-          backupSceneryPacksIni(this.iniPath, this.backupDir);
-        }
-        // Sort so new entries land in the correct tier (airports before GLOBAL_AIRPORTS, etc.)
-        const sorted = this.sort(entries);
-        writeSceneryPacksIni(this.iniPath, sorted);
-        return ok(sorted);
-      } catch {
-        // Non-critical — fall through to unsorted return
-      }
-    }
-
-    // Return in INI file order
+    // Return in INI file order (analyze is read-only — never writes to the INI)
     return ok(entries);
   }
 
@@ -156,6 +121,7 @@ export class SceneryManager {
       priority,
       classification,
       originalIndex: index,
+      sceneryPath: iniEntry.sceneryPath,
     };
   }
 
@@ -256,8 +222,9 @@ export class SceneryManager {
         fs.rmSync(entry.fullPath, { recursive: true, force: true });
       }
 
-      // Re-analyze to clean stale entry from INI
-      await this.analyze();
+      // Remove deleted entry from INI
+      const remaining = entries.filter((e) => e.folderName !== folderName);
+      await this.save(remaining);
 
       return ok({ wasSymlink });
     } catch (e) {

@@ -66,6 +66,8 @@ export interface SceneryEntry {
   classification: SceneryClassification;
   originalIndex: number;
   isGlobalAirports?: boolean;
+  /** Original path as written in scenery_packs.ini (for absolute/external paths) */
+  sceneryPath?: string;
 }
 
 /**
@@ -77,6 +79,8 @@ export interface ParsedIniEntry {
   enabled: boolean;
   isGlobalAirports: boolean;
   originalLine: string;
+  /** Original path as written in the INI (preserved for absolute/external paths) */
+  sceneryPath?: string;
 }
 
 /**
