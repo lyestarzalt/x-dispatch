@@ -15,6 +15,7 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/actions"><img src="https://img.shields.io/github/actions/workflow/status/lyestarzalt/x-dispatch/check.yml?style=flat-square&label=checks&v=1" alt="CI"></a>
   <a href="https://discord.gg/7QBCNv8B"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://ko-fi.com/lyestarzalt"><img src="https://img.shields.io/badge/Ko--fi-Donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
+  <a href="https://hits.sh/github.com/lyestarzalt/x-dispatch/"><img src="https://hits.sh/github.com/lyestarzalt/x-dispatch.svg" alt="Hits"></a>
 </p>
 
 <p align="center">
