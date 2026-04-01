@@ -5,7 +5,7 @@
 <h1 align="center">X-Dispatch</h1>
 
 <p align="center">
-  Flight dispatch, airport visualization, and addon management for X-Plane 12
+  Flight dispatch and airport visualization for X-Plane 12
 </p>
 
 <p align="center">
@@ -33,9 +33,9 @@
 
 ![Map Overview](screenshots/map-overview.png)
 
-X-Plane has detailed airport data but no global map to explore it. X-Dispatch gives you a 3D globe to browse, search, and discover airports visually. Click any airport to see detailed diagrams with runways, taxiways, gates, and markings. Import your flight plan from SimBrief, select a starting position, configure your flight, and launch X-Plane directly.
+X-Plane ships with detailed airport data but no way to see it on a map. X-Dispatch puts all 35,000+ airports on a 3D globe. Click one to get runway diagrams, taxiways, gates, and markings. You can pull your flight plan from SimBrief, pick a starting gate, and launch X-Plane from the app.
 
-If you find this useful, please give it a ⭐ — it helps others discover the project!
+If you find this useful, please give it a ⭐, it helps others discover the project!
 
 > **macOS Users (Sequoia/Tahoe):** The app is unsigned. After installing, go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
 >
@@ -242,10 +242,10 @@ Requires Node.js 20+ and X-Plane 12.4+.
 
 ## Support
 
-- **Discord**: [Join the server](https://discord.gg/76UYpxXWW7) for help, feedback, and discussion
-- **Issues**: [Open an issue](https://github.com/lyestarzalt/x-dispatch/issues) for bug reports and feature requests
-- **Donate**: If you enjoy X-Dispatch, consider [supporting on Ko-fi](https://ko-fi.com/lyestarzalt)
+- [Discord](https://discord.gg/76UYpxXWW7) - help, feedback, discussion
+- [Issues](https://github.com/lyestarzalt/x-dispatch/issues) - bugs and feature requests
+- [Ko-fi](https://ko-fi.com/lyestarzalt) - if you want to support the project
 
 ## License
 
-GPL-3.0 — See [LICENSE](LICENSE) for details.
+GPL-3.0 - see [LICENSE](LICENSE) for details.
