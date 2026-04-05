@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils/helpers';
 import { appKeys, useActiveInstallation, useInstallations } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
+import LaunchArgsCard from './LaunchArgsCard';
 
 export default function XPlaneSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -306,6 +307,11 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
           onCheckedChange={(checked) => updateLauncherSettings({ closeOnLaunch: checked })}
         />
       </div>
+
+      <Separator />
+
+      {/* Launch Arguments */}
+      <LaunchArgsCard />
     </div>
   );
 }
