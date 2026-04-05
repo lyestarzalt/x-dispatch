@@ -212,7 +212,8 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   scanAircraft: () => ipcRenderer.invoke('launcher:scanAircraft'),
   getAircraft: () => ipcRenderer.invoke('launcher:getAircraft'),
   getWeatherPresets: () => ipcRenderer.invoke('launcher:getWeatherPresets'),
-  launch: (payload: FlightInit) => ipcRenderer.invoke('launcher:launch', payload),
+  launch: (payload: FlightInit, extraArgs?: string[]) =>
+    ipcRenderer.invoke('launcher:launch', payload, extraArgs),
   getAircraftImage: (imagePath: string) =>
     ipcRenderer.invoke('launcher:getAircraftImage', imagePath),
 });
