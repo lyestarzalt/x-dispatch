@@ -209,7 +209,14 @@
       "remove": "Entfernen",
       "name": "Name",
       "namePlaceholder": "z.B. Beta, Saubere Installation, Modded",
-      "nameRequired": "Erforderlich"
+      "nameRequired": "Erforderlich",
+      "launchArgs": "Launch arguments",
+      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
+      "launchArgsBrowse": "Browse args",
+      "launchArgsSearch": "Search arguments...",
+      "launchArgsNoResults": "No matching arguments",
+      "launchArgsPlaceholder": "--flag or --flag=value",
+      "launchArgsActive": "Active ({{count}})"
     },
     "appearance": {
       "title": "Aussehen",

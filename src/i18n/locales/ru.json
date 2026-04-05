@@ -265,7 +265,14 @@
       "remove": "Удалить",
       "name": "Название",
       "namePlaceholder": "напр. Бета, Чистая установка, С модами",
-      "nameRequired": "Обязательно"
+      "nameRequired": "Обязательно",
+      "launchArgs": "Launch arguments",
+      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
+      "launchArgsBrowse": "Browse args",
+      "launchArgsSearch": "Search arguments...",
+      "launchArgsNoResults": "No matching arguments",
+      "launchArgsPlaceholder": "--flag or --flag=value",
+      "launchArgsActive": "Active ({{count}})"
     },
     "appearance": {
       "title": "Внешний вид",

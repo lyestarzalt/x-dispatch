@@ -265,7 +265,14 @@
       "remove": "削除",
       "name": "名前",
       "namePlaceholder": "例: ベータ、クリーンインストール、MOD入り",
-      "nameRequired": "必須"
+      "nameRequired": "必須",
+      "launchArgs": "Launch arguments",
+      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
+      "launchArgsBrowse": "Browse args",
+      "launchArgsSearch": "Search arguments...",
+      "launchArgsNoResults": "No matching arguments",
+      "launchArgsPlaceholder": "--flag or --flag=value",
+      "launchArgsActive": "Active ({{count}})"
     },
     "appearance": {
       "title": "外観",

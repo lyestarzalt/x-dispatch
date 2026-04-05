@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,12 +13,12 @@ import {
 } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { XPLANE_ARG_CATALOG } from '@/config/xplaneArgs';
 import { cn } from '@/lib/utils/helpers';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 export default function LaunchArgsCard() {
+  const { t } = useTranslation();
   const customLaunchArgs = useSettingsStore((s) => s.launcher.customLaunchArgs);
   const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
   const [open, setOpen] = useState(false);
@@ -35,7 +36,6 @@ export default function LaunchArgsCard() {
 
   const handleCatalogSelect = (catalogArg: string) => {
     if (catalogArg.endsWith('=') || catalogArg.endsWith(':')) {
-      // Arg takes a value - put it in the text input for the user to complete
       setCustomInput(catalogArg);
       setOpen(false);
       return;
@@ -51,10 +51,8 @@ export default function LaunchArgsCard() {
     }
   };
 
-  // Group catalog args by category
   const categories = [...new Set(XPLANE_ARG_CATALOG.map((a) => a.category))];
 
-  // Check if a catalog arg (without value) is already added
   const isArgAdded = (catalogArg: string) => {
     if (catalogArg.endsWith('=') || catalogArg.endsWith(':')) {
       return customLaunchArgs.some((a) => a.startsWith(catalogArg));
@@ -65,26 +63,29 @@ export default function LaunchArgsCard() {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-medium">Launch arguments</p>
+        <p className="text-sm font-medium">{t('settings.xplane.launchArgs')}</p>
         <p className="text-xs text-muted-foreground">
-          Extra command line arguments passed to X-Plane on every cold start
+          {t('settings.xplane.launchArgsDescription')}
         </p>
       </div>
 
-      {/* Combobox + free-text input row */}
       <div className="flex items-center gap-2">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1 text-xs">
-              Browse args
+              {t('settings.xplane.launchArgsBrowse')}
               <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-0" align="start">
+          <PopoverContent
+            className="w-80 p-0"
+            align="start"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
             <Command>
-              <CommandInput placeholder="Search arguments..." className="h-8" />
+              <CommandInput placeholder={t('settings.xplane.launchArgsSearch')} className="h-8" />
               <CommandList>
-                <CommandEmpty>No matching arguments</CommandEmpty>
+                <CommandEmpty>{t('settings.xplane.launchArgsNoResults')}</CommandEmpty>
                 {categories.map((category) => (
                   <CommandGroup key={category} heading={category}>
                     {XPLANE_ARG_CATALOG.filter((a) => a.category === category).map((item) => (
@@ -125,7 +126,7 @@ export default function LaunchArgsCard() {
                 handleCustomSubmit();
               }
             }}
-            placeholder="--flag or --flag=value"
+            placeholder={t('settings.xplane.launchArgsPlaceholder')}
             className="h-8 min-w-0 flex-1 font-mono text-xs"
           />
           <Button
@@ -140,25 +141,26 @@ export default function LaunchArgsCard() {
         </div>
       </div>
 
-      {/* Chips */}
       {customLaunchArgs.length > 0 && (
-        <>
-          <Separator />
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-success">
+            {t('settings.xplane.launchArgsActive', { count: customLaunchArgs.length })}
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {customLaunchArgs.map((arg) => (
-              <Badge key={arg} variant="secondary" className="gap-1 font-mono text-xs">
+              <Badge key={arg} variant="default" className="gap-1 font-mono text-xs">
                 {arg}
                 <button
                   type="button"
                   onClick={() => removeArg(arg)}
-                  className="ml-0.5 rounded-sm opacity-60 hover:opacity-100"
+                  className="ml-0.5 rounded-sm opacity-70 hover:opacity-100"
                 >
                   <X className="h-3 w-3" />
                 </button>
               </Badge>
             ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

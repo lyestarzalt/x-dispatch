@@ -265,7 +265,14 @@
       "remove": "Rimuovi",
       "name": "Nome",
       "namePlaceholder": "es. Beta, Installazione pulita, Moddata",
-      "nameRequired": "Obbligatorio"
+      "nameRequired": "Obbligatorio",
+      "launchArgs": "Launch arguments",
+      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
+      "launchArgsBrowse": "Browse args",
+      "launchArgsSearch": "Search arguments...",
+      "launchArgsNoResults": "No matching arguments",
+      "launchArgsPlaceholder": "--flag or --flag=value",
+      "launchArgsActive": "Active ({{count}})"
     },
     "appearance": {
       "title": "Aspetto",
