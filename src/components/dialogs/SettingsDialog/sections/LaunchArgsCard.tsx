@@ -81,10 +81,11 @@ export default function LaunchArgsCard() {
             className="w-80 p-0"
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
+            onWheel={(e) => e.stopPropagation()}
           >
             <Command>
               <CommandInput placeholder={t('settings.xplane.launchArgsSearch')} className="h-8" />
-              <CommandList>
+              <CommandList className="max-h-64 overflow-y-auto">
                 <CommandEmpty>{t('settings.xplane.launchArgsNoResults')}</CommandEmpty>
                 {categories.map((category) => (
                   <CommandGroup key={category} heading={category}>
