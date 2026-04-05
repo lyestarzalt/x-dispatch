@@ -206,7 +206,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         }
       } else {
         // X-Plane not running → write JSON file and launch with --new_flight_json
-        const result = await window.launcherAPI.launch(flightConfig);
+        const customLaunchArgs = useSettingsStore.getState().launcher.customLaunchArgs;
+        const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
         if (result.success) {
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);

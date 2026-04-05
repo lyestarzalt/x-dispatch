@@ -484,7 +484,10 @@ declare global {
       scanAircraft: () => Promise<{ success: boolean; aircraft: Aircraft[]; error?: string }>;
       getAircraft: () => Promise<Aircraft[]>;
       getWeatherPresets: () => Promise<WeatherPreset[]>;
-      launch: (payload: FlightInit) => Promise<{ success: boolean; error?: string }>;
+      launch: (
+        payload: FlightInit,
+        extraArgs?: string[]
+      ) => Promise<{ success: boolean; error?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
     flightPlanAPI: {
