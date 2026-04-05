@@ -79,7 +79,10 @@ class XPlaneLauncher {
    * Launch X-Plane with FlightInit payload (same schema as REST API, no { data } wrapper).
    * Writes raw payload to a temp JSON file and passes --new_flight_json flag.
    */
-  async launch(payload: FlightInit): Promise<{ success: boolean; error?: string }> {
+  async launch(
+    payload: FlightInit,
+    extraArgs?: string[]
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
@@ -98,6 +101,10 @@ class XPlaneLauncher {
       logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
 
       const xplaneArgs = [`--new_flight_json=${jsonPath}`];
+
+      if (extraArgs?.length) {
+        xplaneArgs.push(...extraArgs);
+      }
 
       // macOS + Steam installation: launch via Steam URL protocol
       if (process.platform === 'darwin' && isSteamInstallation(this.xplanePath)) {

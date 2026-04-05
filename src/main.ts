@@ -1020,7 +1020,7 @@ function registerIpcHandlers() {
     return WEATHER_PRESETS;
   });
 
-  ipcMain.handle('launcher:launch', async (_, payload: unknown) => {
+  ipcMain.handle('launcher:launch', async (_, payload: unknown, extraArgs?: string[]) => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return { success: false, error: 'X-Plane path not configured' };
 
@@ -1038,7 +1038,7 @@ function registerIpcHandlers() {
 
     try {
       const { getLauncher } = await getLauncherModule();
-      const result = await getLauncher(xplanePath).launch(flightPayload);
+      const result = await getLauncher(xplanePath).launch(flightPayload, extraArgs);
       if (result.success) {
         logger.launcher.info('[User] Launch successful');
       } else {
