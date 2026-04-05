@@ -85,6 +85,7 @@ export interface AppearanceSettings {
 
 export interface LauncherSettings {
   closeOnLaunch: boolean;
+  customLaunchArgs: string[];
 }
 
 interface SettingsState {
@@ -125,6 +126,7 @@ function applyZoomLevel(level: number) {
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   closeOnLaunch: false,
+  customLaunchArgs: [],
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -175,7 +177,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 13,
+      version: 14,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -238,6 +240,16 @@ export const useSettingsStore = create<SettingsState>()(
             appearance: {
               ...state.appearance,
               zoomLevel: 1.0,
+            },
+          };
+        }
+        if (version < 14) {
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            launcher: {
+              ...state.launcher,
+              customLaunchArgs: [],
             },
           };
         }
