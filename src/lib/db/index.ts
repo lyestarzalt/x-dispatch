@@ -105,6 +105,8 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
 
   const SQL = await initSqlJs();
 
+  // Try opening existing DB, fall back to fresh DB on any error.
+  // The DB is a cache — safe to delete and rebuild from X-Plane files.
   let data: Buffer | undefined;
   if (fs.existsSync(dbPath)) {
     data = fs.readFileSync(dbPath);
@@ -115,9 +117,30 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
     db = drizzle(sqlite, { schema });
     migrate(db, { migrationsFolder });
   } catch (err) {
+    logger.data.warn(`Database open/migrate failed, deleting and restarting: ${err}`);
     sqlite = null;
     db = null;
-    throw err;
+
+    // Delete the corrupt/stale DB so the next launch starts fresh
+    try {
+      if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+    } catch {
+      try {
+        fs.renameSync(dbPath, `${dbPath}.old-${Date.now()}`);
+      } catch {
+        /* give up on cleanup */
+      }
+    }
+    try {
+      if (fs.existsSync(dbPath + '.version')) fs.unlinkSync(dbPath + '.version');
+    } catch {
+      /* non-critical */
+    }
+
+    // Relaunch the app — it will boot clean with no DB file
+    app.relaunch();
+    app.exit(0);
+    throw err; // unreachable, but satisfies return type
   }
 
   fs.writeFileSync(dbPath + '.version', fingerprint);
