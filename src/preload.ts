@@ -334,6 +334,13 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
   },
 });
 
+contextBridge.exposeInMainWorld('debugAPI', {
+  dbTables: () => ipcRenderer.invoke('debug:dbTables'),
+  dbQuery: (table: string, limit: number, offset: number) =>
+    ipcRenderer.invoke('debug:dbQuery', table, limit, offset),
+  dbExec: (sql: string) => ipcRenderer.invoke('debug:dbExec', sql),
+});
+
 declare global {
   interface XPlaneInstallation {
     id: string;
@@ -685,6 +692,21 @@ declare global {
           callback: (progress: import('./lib/addonManager/installer/types').InstallProgress) => void
         ) => () => void;
       };
+    };
+    debugAPI: {
+      dbTables: () => Promise<
+        Array<{
+          name: string;
+          rowCount: number;
+          columns: Array<{ name: string; type: string }>;
+        }>
+      >;
+      dbQuery: (
+        table: string,
+        limit: number,
+        offset: number
+      ) => Promise<{ columns: string[]; rows: unknown[][] }>;
+      dbExec: (sql: string) => Promise<{ columns: string[]; rows: unknown[][]; error?: string }>;
     };
   }
 }

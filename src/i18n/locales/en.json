@@ -261,7 +261,12 @@
       "privacy": "Privacy",
       "crashReports": "Send crash reports",
       "crashReportsDescription": "Help improve X-Dispatch by automatically sending crash reports",
-      "crashReportsNote": "Restart required for changes to take effect. No personal data is collected."
+      "crashReportsNote": "Restart required for changes to take effect. No personal data is collected.",
+      "developer": "Developer",
+      "debugOverlay": "Debug Overlay",
+      "debugOverlayDescription": "Show the developer debug toolbar",
+      "toggleDebug": "Toggle",
+      "debugShortcut": "You can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)"
     },
     "xplane": {
       "title": "X-Plane Installation",
