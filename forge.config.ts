@@ -1,12 +1,11 @@
-import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerDMG } from '@electron-forge/maker-dmg';
-import { MakerRpm } from '@electron-forge/maker-rpm';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { PublisherGithub } from '@electron-forge/publisher-github';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import { MakerAppImage } from '@reforged/maker-appimage';
 import { cp, mkdir, rename } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -16,7 +15,7 @@ function getPlatformLabel(platform: string, arch: string): string {
   return `linux-${arch}`;
 }
 
-const RENAME_EXTENSIONS = new Set(['.exe', '.dmg', '.deb', '.rpm']);
+const RENAME_EXTENSIONS = new Set(['.exe', '.dmg', '.AppImage']);
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -44,18 +43,11 @@ const config: ForgeConfig = {
       icon: './assets/icon.icns',
       format: 'ULFO',
     }),
-    new MakerDeb({
+    new MakerAppImage({
       options: {
         icon: './assets/icon.png',
         categories: ['Utility', 'Game'],
-        section: 'utils',
         mimeType: ['x-scheme-handler/xdispatch'],
-      },
-    }),
-    new MakerRpm({
-      options: {
-        icon: './assets/icon.png',
-        categories: ['Utility', 'Game'],
       },
     }),
   ],

@@ -46,13 +46,17 @@ jobs:
           - os: macos-latest
             name: mac-apple-silicon
             arch: arm64
-          - os: macos-latest
+          - os: macos-15-intel
             name: mac-intel
             arch: x64
           - os: windows-latest
             name: windows
           - os: ubuntu-latest
-            name: linux
+            name: linux-x64
+            sentry: true
+          - os: ubuntu-24.04-arm
+            name: linux-arm64
+            arch: arm64
 
     steps:
       - name: Check out repository
@@ -72,8 +76,8 @@ jobs:
         run: npm ci
 
       - name: Install platform dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools
 
       - name: Install platform dependencies (macOS)
         if: matrix.os == 'macos-latest'
@@ -83,9 +87,10 @@ jobs:
         run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          # Only upload source maps once — same maps for all platforms
+          SENTRY_AUTH_TOKEN: ${{ matrix.sentry && secrets.SENTRY_AUTH_TOKEN || '' }}
+          SENTRY_ORG: ${{ matrix.sentry && secrets.SENTRY_ORG || '' }}
+          SENTRY_PROJECT: ${{ matrix.sentry && secrets.SENTRY_PROJECT || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -95,8 +100,7 @@ jobs:
           path: |
             out/make/**/*.exe
             out/make/**/*.dmg
-            out/make/**/*.deb
-            out/make/**/*.rpm
+            out/make/**/*.AppImage
           retention-days: 7
 
   notify:
@@ -131,7 +135,8 @@ jobs:
             echo "- [:apple: macOS (Apple Silicon)](${BASE}/${VERSION}-mac-apple-silicon.zip)"
             echo "- [:apple: macOS (Intel)](${BASE}/${VERSION}-mac-intel.zip)"
             echo "- [:window: Windows](${BASE}/${VERSION}-windows.zip)"
-            echo "- [:penguin: Linux](${BASE}/${VERSION}-linux.zip)"
+            echo "- [:penguin: Linux x64](${BASE}/${VERSION}-linux-x64.zip)"
+            echo "- [:penguin: Linux ARM64](${BASE}/${VERSION}-linux-arm64.zip)"
             echo "$EOF_MARKER"
           } >> "$GITHUB_OUTPUT"
 

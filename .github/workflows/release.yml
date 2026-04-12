@@ -51,13 +51,17 @@ jobs:
           - os: macos-latest
             name: mac-apple-silicon
             arch: arm64
-          - os: macos-latest
+          - os: macos-15-intel
             name: mac-intel
             arch: x64
           - os: windows-latest
             name: windows
           - os: ubuntu-latest
-            name: linux
+            name: linux-x64
+            sentry: true
+          - os: ubuntu-24.04-arm
+            name: linux-arm64
+            arch: arm64
 
     steps:
       - name: Check out repository
@@ -75,8 +79,8 @@ jobs:
         run: npm ci
 
       - name: Install platform dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools
 
       - name: Install platform dependencies (macOS)
         if: matrix.os == 'macos-latest'
@@ -86,10 +90,10 @@ jobs:
         run: npm run make ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-          # Only upload source maps once (Linux) — same maps for all platforms
-          SENTRY_AUTH_TOKEN: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_AUTH_TOKEN || '' }}
-          SENTRY_ORG: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_ORG || '' }}
-          SENTRY_PROJECT: ${{ matrix.os == 'ubuntu-latest' && secrets.SENTRY_PROJECT || '' }}
+          # Only upload source maps once — same maps for all platforms
+          SENTRY_AUTH_TOKEN: ${{ matrix.sentry && secrets.SENTRY_AUTH_TOKEN || '' }}
+          SENTRY_ORG: ${{ matrix.sentry && secrets.SENTRY_ORG || '' }}
+          SENTRY_PROJECT: ${{ matrix.sentry && secrets.SENTRY_PROJECT || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -101,8 +105,7 @@ jobs:
             out/make/**/RELEASES
             out/make/**/*.dmg
             out/make/**/*.zip
-            out/make/**/*.deb
-            out/make/**/*.rpm
+            out/make/**/*.AppImage
           retention-days: 1
 
   finalize:
@@ -129,7 +132,7 @@ jobs:
         id: assets
         run: |
           mkdir -p release-assets
-          find artifacts -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.zip' -o -name '*.deb' -o -name '*.rpm' \) -exec cp {} release-assets/ \;
+          find artifacts -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
           echo "Collected assets:"
           ls -la release-assets/
 
@@ -199,5 +202,6 @@ jobs:
             - [:apple: macOS (Apple Silicon)](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-mac-apple-silicon.dmg)
             - [:apple: macOS (Intel)](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-mac-intel.dmg)
             - [:window: Windows](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-windows-x64.exe)
-            - [:penguin: Linux (.deb)](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-linux-x64.deb)
+            - [:penguin: Linux x64](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-linux-x64.AppImage)
+            - [:penguin: Linux ARM64](https://github.com/${{ github.repository }}/releases/download/${{ needs.version.outputs.tag }}/X-Dispatch-${{ needs.version.outputs.version }}-linux-arm64.AppImage)
           embed-color: 3447003
