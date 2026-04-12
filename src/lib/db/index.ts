@@ -156,6 +156,11 @@ export function getDb(): DrizzleDatabase<typeof schema> {
   return db;
 }
 
+/** Raw sql.js handle for debug queries — only use in dev tools */
+export function getSqlite(): SqlJsDatabase | null {
+  return sqlite;
+}
+
 export function saveDb(): void {
   if (!sqlite || !dbPath) return;
 

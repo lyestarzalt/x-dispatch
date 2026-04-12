@@ -81,6 +81,7 @@ export interface AppearanceSettings {
   fontSize: FontSize;
   /** Zoom factor for the entire UI (0.7–1.3, default 1.0) */
   zoomLevel: number;
+  debugOverlay: boolean;
 }
 
 export interface LauncherSettings {
@@ -98,6 +99,7 @@ interface SettingsState {
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
   setFontSize: (size: FontSize) => void;
   setZoomLevel: (level: number) => void;
+  setDebugOverlay: (enabled: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -118,6 +120,7 @@ const DEFAULT_SIMBRIEF_SETTINGS: SimBriefSettings = {
 const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   fontSize: 'medium',
   zoomLevel: 1.0,
+  debugOverlay: false,
 };
 
 function applyZoomLevel(level: number) {
@@ -164,6 +167,9 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({ appearance: { ...state.appearance, zoomLevel: clamped } }));
       },
 
+      setDebugOverlay: (enabled: boolean) =>
+        set((state) => ({ appearance: { ...state.appearance, debugOverlay: enabled } })),
+
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
         applyZoomLevel(DEFAULT_APPEARANCE_SETTINGS.zoomLevel);
@@ -177,7 +183,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 14,
+      version: 15,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -250,6 +256,16 @@ export const useSettingsStore = create<SettingsState>()(
             launcher: {
               ...state.launcher,
               customLaunchArgs: [],
+            },
+          };
+        }
+        if (version < 15) {
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            appearance: {
+              ...state.appearance,
+              debugOverlay: false,
             },
           };
         }

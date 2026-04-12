@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
 import { useAppVersion, useConfigPath, useLogPath } from '@/queries';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
@@ -187,6 +188,30 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           />
         </div>
         <p className="text-sm text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
+      </div>
+
+      <Separator />
+
+      {/* Developer */}
+      <div className="space-y-3">
+        <h3 className="xp-section-heading">{t('settings.about.developer', 'Developer')}</h3>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">
+              {t('settings.about.debugOverlay', 'Debug Overlay')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('settings.about.debugOverlayDescription', 'Show the developer debug toolbar')}
+            </p>
+          </div>
+          <Switch
+            checked={useSettingsStore((s) => s.appearance.debugOverlay)}
+            onCheckedChange={(checked) => useSettingsStore.getState().setDebugOverlay(checked)}
+          />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {t('settings.about.debugShortcut', 'You can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)')}
+        </p>
       </div>
     </div>
   );

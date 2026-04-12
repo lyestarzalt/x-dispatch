@@ -15,7 +15,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
-import { getDbPath, initDb } from './lib/db';
+import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import {
   closeTileCache,
@@ -281,6 +281,57 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('app:getTileCacheStats', () => getTileCache().getStats());
+
+  // Debug: DB inspection (table list + paginated rows)
+  ipcMain.handle('debug:dbTables', () => {
+    const db = getSqlite();
+    if (!db) return [];
+    const result = db.exec(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%' ORDER BY name"
+    );
+    if (!result[0]) return [];
+    return result[0].values.map(([name]) => {
+      const countResult = db.exec(`SELECT COUNT(*) FROM "${name}"`);
+      const count = countResult[0]?.values[0]?.[0] ?? 0;
+      const colResult = db.exec(`PRAGMA table_info("${name}")`);
+      const columns =
+        colResult[0]?.values.map((r) => ({
+          name: r[1] as string,
+          type: r[2] as string,
+        })) ?? [];
+      return { name: name as string, rowCount: count as number, columns };
+    });
+  });
+
+  ipcMain.handle('debug:dbQuery', (_, table: string, limit: number, offset: number) => {
+    const db = getSqlite();
+    if (!db) return { columns: [], rows: [] };
+    // Validate table name to prevent SQL injection
+    const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name = ?", [
+      table,
+    ]);
+    if (!tables[0]?.values.length) return { columns: [], rows: [] };
+    const result = db.exec(
+      `SELECT * FROM "${table}" LIMIT ${Number(limit)} OFFSET ${Number(offset)}`
+    );
+    if (!result[0]) return { columns: [], rows: [] };
+    return {
+      columns: result[0].columns,
+      rows: result[0].values,
+    };
+  });
+
+  ipcMain.handle('debug:dbExec', (_, sql: string) => {
+    const db = getSqlite();
+    if (!db) return { columns: [], rows: [], error: 'No database' };
+    try {
+      const result = db.exec(sql);
+      if (!result[0]) return { columns: [], rows: [] };
+      return { columns: result[0].columns, rows: result[0].values };
+    } catch (err) {
+      return { columns: [], rows: [], error: String(err) };
+    }
+  });
 
   ipcMain.handle('app:startLoading', async () => {
     if (isLoading) {
