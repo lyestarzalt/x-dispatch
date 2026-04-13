@@ -26,7 +26,6 @@
     "approved": "Genehmigt",
     "recommended": "Empfohlen"
   },
-
   "units": {
     "ft": "ft",
     "m": "m",
@@ -36,7 +35,6 @@
     "kg": "kg",
     "fpm": "fpm"
   },
-
   "directions": {
     "n": "N",
     "e": "O",
@@ -47,11 +45,9 @@
     "se": "SO",
     "sw": "SW"
   },
-
   "app": {
     "title": "X-Dispatch"
   },
-
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "Wählen Sie Ihre X-Plane Installation aus, um zu beginnen",
@@ -62,7 +58,6 @@
     "failedToBrowse": "Ordnerauswahl konnte nicht geöffnet werden",
     "failedToSave": "Speichern fehlgeschlagen"
   },
-
   "loading": {
     "title": "X-Dispatch",
     "badge": "Daten werden geladen",
@@ -85,7 +80,6 @@
     "scanningCustom": "Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Speichern in der Datenbank..."
   },
-
   "toolbar": {
     "searchPlaceholder": "Flughäfen suchen...",
     "clearSearch": "Suche löschen",
@@ -127,7 +121,6 @@
       "settings": "Einstellungen öffnen"
     }
   },
-
   "airportFilters": {
     "title": "Flughäfen",
     "type": "Typ",
@@ -146,7 +139,6 @@
     "minRunways": "{{count}}+ Bahnen",
     "reset": "Filter zurücksetzen"
   },
-
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Konfigurieren Sie Ihre Präferenzen",
@@ -271,7 +263,6 @@
       }
     }
   },
-
   "sidebar": {
     "weather": "Wetter",
     "weatherDetails": "Wetterdetails",
@@ -302,7 +293,6 @@
     "noRunwaysFound": "Keine Bahnen gefunden",
     "copyFrequency": "Frequenz kopieren"
   },
-
   "airportInfo": {
     "tabs": {
       "info": "Info",
@@ -395,15 +385,19 @@
       "updateAvailable": "Gateway hat eine neuere Version",
       "credit": "von {{artist}} · {{date}}",
       "viewOnGateway": "Auf Gateway ansehen"
+    },
+    "taxiRoute": {
+      "label": "Taxi-Route",
+      "placeholder": "z.B. A B1 C",
+      "matchCount": "{{count}} Seg",
+      "noMatch": "kein Treffer"
     }
   },
-
   "navigation": {
     "heading": "KURS",
     "wind": "WIND",
     "calm": "Windstille"
   },
-
   "flightStrip": {
     "notDetected": "X-Plane läuft nicht",
     "ias": "IAS",
@@ -418,7 +412,6 @@
     "center": "Zentrieren",
     "centerTooltip": "Karte auf Flugzeug zentrieren"
   },
-
   "weather": {
     "fetching": "Wetter wird abgerufen...",
     "noData": "Keine Wetterdaten verfügbar",
@@ -438,7 +431,6 @@
     "tailwind": "RW",
     "crosswind": "SW"
   },
-
   "procedures": {
     "noData": "Keine Verfahren verfügbar",
     "noTypeData": "Keine {{type}}s verfügbar",
@@ -449,7 +441,6 @@
     },
     "allRunways": "ALLE"
   },
-
   "layers": {
     "airport": {
       "title": "Flughafen-Ebenen",
@@ -493,7 +484,6 @@
     "showAll": "Alle anzeigen",
     "hideAll": "Alle ausblenden"
   },
-
   "debug": {
     "title": "Debug-Modus aktiv",
     "instruction": "Klicken Sie auf ein Element auf der Karte, um seine Eigenschaften zu inspizieren.",
@@ -510,7 +500,6 @@
     "copyToClipboard": "Kopieren",
     "clearSelection": "Auswahl löschen"
   },
-
   "launcher": {
     "title": "Flug-Konfiguration",
     "launch": "X-Plane starten",
@@ -520,7 +509,6 @@
     "xplaneRunning": "X-Plane läuft - Flug wird über API geändert",
     "selectDeparture": "Wählen Sie einen Abflugort auf der Karte",
     "selectAircraft": "Wählen Sie ein Flugzeug",
-
     "aircraft": {
       "title": "Flugzeug",
       "search": "Flugzeug suchen...",
@@ -533,13 +521,11 @@
       "showAll": "Alle anzeigen",
       "showFavoritesOnly": "Nur Favoriten anzeigen"
     },
-
     "liveries": {
       "title": "Bemalungen",
       "count": "Bemalungen ({{count}})",
       "default": "Standard"
     },
-
     "config": {
       "timeOfDay": "Tageszeit",
       "realWorldTime": "Echtzeit",
@@ -551,12 +537,10 @@
       "departure": "Abflug",
       "livery": "Bemalung"
     },
-
     "startState": {
       "ready": "Bereit",
       "cold": "Kalt & Dunkel"
     },
-
     "time": {
       "live": "Live",
       "set": "Einstellen",
@@ -565,7 +549,6 @@
       "dusk": "Dämmerung",
       "night": "Nacht"
     },
-
     "timePresets": {
       "dawn": "Morgengrauen",
       "sunrise": "Sonnenaufgang",
@@ -574,7 +557,6 @@
       "dusk": "Dämmerung",
       "night": "Nacht"
     },
-
     "weather": {
       "real": "Live",
       "clear": "Klar",
@@ -584,7 +566,6 @@
       "snowy": "Schnee",
       "foggy": "Neblig"
     },
-
     "weatherBuilder": {
       "custom": "Benutzerdefiniertes Wetter",
       "customize": "Wetter anpassen",
@@ -613,29 +594,24 @@
         "cumulonimbus": "Cumulonimbus"
       }
     },
-
     "weatherModal": {
       "presets": "Voreinstellungen",
       "custom": "Benutzerdefiniert",
       "poor": "Schlecht",
       "unlimited": "Unbegrenzt"
     },
-
     "weatherDialog": {
       "title": "Wettereinstellungen",
       "done": "Fertig",
       "addCloud": "Wolkenschicht",
       "addWind": "Windschicht",
-
       "layerProperties": "Schicht-Eigenschaften",
       "emptyHint": "Klicken Sie auf eine Wolken- oder Windschicht im Diagramm zum Bearbeiten",
-
       "cloudType": "Wolkentyp",
       "cloudCoverage": "Wolkenbedeckung",
       "tops": "Obergrenze",
       "bases": "Untergrenze",
       "deleteCloud": "Wolkenschicht {{n}} löschen",
-
       "cloudTypes": {
         "cirrus": "Cirrus",
         "stratus": "Stratus",
@@ -648,7 +624,6 @@
         "broken": "Bkn",
         "overcast": "Ovc"
       },
-
       "altitude": "Höhe",
       "direction": "Richtung",
       "speed": "Geschwindigkeit",
@@ -656,7 +631,6 @@
       "shear": "Windscherung",
       "turbulence": "Turbulenz",
       "deleteWind": "Windschicht {{n}} löschen",
-
       "atmosphere": "Atmosphäre",
       "visibility": "Sicht",
       "precipitation": "Niederschlag",
@@ -664,7 +638,6 @@
       "precipSevere": "Stark",
       "temperature": "Temperatur",
       "altimeter": "Höhenmesser",
-
       "environment": "Umgebung",
       "terrain": "Gelände",
       "terrainCondition": "Zustand",
@@ -682,7 +655,6 @@
         "medium": "Mittel",
         "heavy": "Stark"
       },
-
       "waves": "Wellen",
       "waveHeight": "Höhe",
       "waveDirection": "Richtung",
@@ -700,19 +672,16 @@
         "rapidly_deteriorating": "Schnell verschlechternd"
       }
     },
-
     "fuelConfig": {
       "auto": "Auto",
       "manual": "Manuell",
       "total": "Gesamt"
     },
-
     "fuelModal": {
       "empty": "Leer",
       "full": "Voll",
       "of": "von"
     },
-
     "logbook": {
       "title": "Flugbuch",
       "clearAll": "Alle löschen",
@@ -720,7 +689,6 @@
       "emptyHint": "Ihre letzten 10 Flüge erscheinen hier nach dem Start"
     }
   },
-
   "addonManager": {
     "title": "Addon-Manager",
     "openXPlaneFolder": "X-Plane Ordner öffnen",
@@ -884,7 +852,6 @@
       "Navdata": "Navigationsdaten"
     }
   },
-
   "simbrief": {
     "title": "Von SimBrief importieren",
     "description": "Ihren letzten Flugplan von SimBrief abrufen",
