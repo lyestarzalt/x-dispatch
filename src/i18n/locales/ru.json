@@ -26,7 +26,6 @@
     "approved": "Одобрено",
     "recommended": "Рекомендуется"
   },
-
   "units": {
     "ft": "фут",
     "m": "м",
@@ -36,7 +35,6 @@
     "kg": "кг",
     "fpm": "фут/мин"
   },
-
   "directions": {
     "n": "С",
     "e": "В",
@@ -47,11 +45,9 @@
     "se": "ЮВ",
     "sw": "ЮЗ"
   },
-
   "app": {
     "title": "X-Dispatch"
   },
-
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "Выберите установку X-Plane для начала работы",
@@ -62,7 +58,6 @@
     "failedToBrowse": "Не удалось открыть выбор папки",
     "failedToSave": "Не удалось сохранить"
   },
-
   "loading": {
     "title": "X-Dispatch",
     "badge": "Загрузка данных",
@@ -85,7 +80,6 @@
     "scanningCustom": "Сканирование Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Сохранение в базу данных..."
   },
-
   "toolbar": {
     "searchPlaceholder": "Поиск аэропортов...",
     "clearSearch": "Очистить поиск",
@@ -127,7 +121,6 @@
       "settings": "Открыть настройки"
     }
   },
-
   "airportFilters": {
     "title": "Аэропорты",
     "type": "Тип",
@@ -146,7 +139,6 @@
     "minRunways": "{{count}}+ Полос",
     "reset": "Сбросить фильтры"
   },
-
   "explore": {
     "title": "Исследовать",
     "close": "Закрыть исследование",
@@ -189,7 +181,6 @@
       }
     }
   },
-
   "settings": {
     "title": "Настройки",
     "subtitle": "Настройте ваши предпочтения",
@@ -335,7 +326,6 @@
       }
     }
   },
-
   "sidebar": {
     "weather": "Погода",
     "weatherDetails": "Детали погоды",
@@ -370,7 +360,6 @@
       "noActivity": "Нет активности VATSIM"
     }
   },
-
   "airportInfo": {
     "tabs": {
       "info": "Инфо",
@@ -463,15 +452,19 @@
       "updateAvailable": "На Gateway есть более новый релиз",
       "credit": "от {{artist}} · {{date}}",
       "viewOnGateway": "Смотреть на Gateway"
+    },
+    "taxiRoute": {
+      "label": "Маршрут руления",
+      "placeholder": "напр. A B1 C",
+      "matchCount": "{{count}} сег",
+      "noMatch": "нет совпадений"
     }
   },
-
   "navigation": {
     "heading": "КУРС",
     "wind": "ВЕТЕР",
     "calm": "Штиль"
   },
-
   "flightStrip": {
     "notDetected": "X-Plane не запущен",
     "ias": "IAS",
@@ -486,7 +479,6 @@
     "center": "Центр",
     "centerTooltip": "Центрировать карту на самолёте"
   },
-
   "weather": {
     "fetching": "Получение погоды...",
     "noData": "Нет данных о погоде",
@@ -506,7 +498,6 @@
     "tailwind": "ПС",
     "crosswind": "БС"
   },
-
   "procedures": {
     "noData": "Нет доступных процедур",
     "noTypeData": "Нет доступных {{type}}",
@@ -517,7 +508,6 @@
     },
     "allRunways": "ВСЕ"
   },
-
   "layers": {
     "airport": {
       "title": "Слои аэропорта",
@@ -561,7 +551,6 @@
     "showAll": "Показать все",
     "hideAll": "Скрыть все"
   },
-
   "debug": {
     "title": "Режим отладки активен",
     "instruction": "Нажмите на любой элемент на карте, чтобы просмотреть его свойства.",
@@ -578,7 +567,6 @@
     "copyToClipboard": "Копировать в буфер",
     "clearSelection": "Очистить выбор"
   },
-
   "launcher": {
     "title": "Настройка полёта",
     "launch": "Запустить X-Plane",
@@ -588,7 +576,6 @@
     "xplaneRunning": "X-Plane запущен - полёт будет изменён через API",
     "selectDeparture": "Выберите точку вылета на карте",
     "selectAircraft": "Выберите самолёт",
-
     "aircraft": {
       "title": "Самолёт",
       "search": "Поиск самолётов...",
@@ -607,20 +594,17 @@
       "showAll": "Показать все",
       "showFavoritesOnly": "Только избранные"
     },
-
     "liveries": {
       "title": "Ливреи",
       "count": "Ливреи ({{count}})",
       "default": "По умолчанию"
     },
-
     "specs": {
       "emptyWeight": "Пустой",
       "maxWeight": "MTOW",
       "maxFuel": "Ёмкость топлива",
       "tailNumber": "Борт. номер"
     },
-
     "config": {
       "timeOfDay": "Время суток",
       "realWorldTime": "Реальное время",
@@ -632,12 +616,10 @@
       "departure": "Вылет",
       "livery": "Ливрея"
     },
-
     "startState": {
       "ready": "Готов",
       "cold": "Холодный и Тёмный"
     },
-
     "time": {
       "live": "В реальном времени",
       "set": "Установить",
@@ -646,7 +628,6 @@
       "dusk": "Сумерки",
       "night": "Ночь"
     },
-
     "timePresets": {
       "dawn": "Рассвет",
       "sunrise": "Восход",
@@ -655,7 +636,6 @@
       "dusk": "Сумерки",
       "night": "Ночь"
     },
-
     "weather": {
       "real": "Реальная",
       "clear": "Ясно",
@@ -665,7 +645,6 @@
       "snowy": "Снег",
       "foggy": "Туман"
     },
-
     "weatherBuilder": {
       "custom": "Пользовательская погода",
       "customize": "Настроить погоду",
@@ -694,29 +673,24 @@
         "cumulonimbus": "Кучево-дождевые"
       }
     },
-
     "weatherModal": {
       "presets": "Пресеты",
       "custom": "Пользовательская",
       "poor": "Плохая",
       "unlimited": "Неограниченная"
     },
-
     "weatherDialog": {
       "title": "Настройки погоды",
       "done": "Готово",
       "addCloud": "Слой облаков",
       "addWind": "Слой ветра",
-
       "layerProperties": "Свойства слоя",
       "emptyHint": "Нажмите на слой облаков или ветра на диаграмме для редактирования",
-
       "cloudType": "Тип облаков",
       "cloudCoverage": "Облачность",
       "tops": "Верхняя граница",
       "bases": "Нижняя граница",
       "deleteCloud": "Удалить слой облаков {{n}}",
-
       "cloudTypes": {
         "cirrus": "Перистые",
         "stratus": "Слоистые",
@@ -729,7 +703,6 @@
         "broken": "Bkn",
         "overcast": "Ovc"
       },
-
       "altitude": "Высота",
       "direction": "Направление",
       "speed": "Скорость",
@@ -737,7 +710,6 @@
       "shear": "Сдвиг ветра",
       "turbulence": "Турбулентность",
       "deleteWind": "Удалить слой ветра {{n}}",
-
       "atmosphere": "Атмосфера",
       "visibility": "Видимость",
       "precipitation": "Осадки",
@@ -745,7 +717,6 @@
       "precipSevere": "Сильные",
       "temperature": "Температура",
       "altimeter": "Альтиметр",
-
       "environment": "Окружение",
       "terrain": "Рельеф",
       "terrainCondition": "Состояние",
@@ -763,7 +734,6 @@
         "medium": "Средняя",
         "heavy": "Сильная"
       },
-
       "waves": "Волны",
       "waveHeight": "Высота",
       "waveDirection": "Направление",
@@ -781,19 +751,16 @@
         "rapidly_deteriorating": "Быстрое ухудшение"
       }
     },
-
     "fuelConfig": {
       "auto": "Авто",
       "manual": "Ручной",
       "total": "Всего"
     },
-
     "fuelModal": {
       "empty": "Пусто",
       "full": "Полный",
       "of": "из"
     },
-
     "logbook": {
       "title": "Журнал полётов",
       "clearAll": "Очистить всё",
@@ -801,7 +768,6 @@
       "emptyHint": "Ваши последние 10 полётов появятся здесь после запуска"
     }
   },
-
   "addonManager": {
     "title": "Менеджер дополнений",
     "openXPlaneFolder": "Открыть папку X-Plane",
@@ -965,7 +931,6 @@
       "Navdata": "Навигационные данные"
     }
   },
-
   "simbrief": {
     "title": "Импорт из SimBrief",
     "description": "Получить последний план полёта из SimBrief",

@@ -39,6 +39,7 @@ import {
   useProcedureRouteSync,
   useRangeRingsSync,
   useRouteLineSync,
+  useTaxiRouteSync,
   useTerrainShading,
   useTrackControl,
   useVatsimSync,
@@ -322,6 +323,9 @@ export default function Map({ airports }: MapProps) {
 
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation });
+
+  // Taxi route sync - highlights matched taxi edges on the map
+  useTaxiRouteSync(mapRef);
 
   // Pin-drop custom start location
   const { placeAtCenter: handlePinDrop, placeAtCoordinates: handlePinDropAtCoordinates } =

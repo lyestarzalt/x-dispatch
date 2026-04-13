@@ -26,7 +26,6 @@
     "approved": "承認済み",
     "recommended": "推奨"
   },
-
   "units": {
     "ft": "ft",
     "m": "m",
@@ -36,7 +35,6 @@
     "kg": "kg",
     "fpm": "fpm"
   },
-
   "directions": {
     "n": "北",
     "e": "東",
@@ -47,11 +45,9 @@
     "se": "南東",
     "sw": "南西"
   },
-
   "app": {
     "title": "X-Dispatch"
   },
-
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "開始するにはX-Planeのインストール先を選択してください",
@@ -62,7 +58,6 @@
     "failedToBrowse": "フォルダ選択を開けませんでした",
     "failedToSave": "保存に失敗しました"
   },
-
   "loading": {
     "title": "X-Dispatch",
     "badge": "データ読み込み中",
@@ -85,7 +80,6 @@
     "scanningCustom": "カスタムシーナリーをスキャン中 {{current}}/{{total}}: {{name}}",
     "savingToDb": "データベースに保存中..."
   },
-
   "toolbar": {
     "searchPlaceholder": "空港を検索...",
     "clearSearch": "検索をクリア",
@@ -127,7 +121,6 @@
       "settings": "設定を開く"
     }
   },
-
   "airportFilters": {
     "title": "空港",
     "type": "種類",
@@ -146,7 +139,6 @@
     "minRunways": "{{count}}本以上",
     "reset": "フィルターをリセット"
   },
-
   "explore": {
     "title": "探索",
     "close": "探索を閉じる",
@@ -189,7 +181,6 @@
       }
     }
   },
-
   "settings": {
     "title": "設定",
     "subtitle": "設定をカスタマイズ",
@@ -335,7 +326,6 @@
       }
     }
   },
-
   "sidebar": {
     "weather": "天気",
     "weatherDetails": "天気の詳細",
@@ -370,7 +360,6 @@
       "noActivity": "VATSIMアクティビティなし"
     }
   },
-
   "airportInfo": {
     "tabs": {
       "info": "情報",
@@ -463,15 +452,19 @@
       "updateAvailable": "Gatewayに新しいリリースがあります",
       "credit": "{{artist}} · {{date}}",
       "viewOnGateway": "Gatewayで表示"
+    },
+    "taxiRoute": {
+      "label": "タクシールート",
+      "placeholder": "例: A B1 C",
+      "matchCount": "{{count}}セグ",
+      "noMatch": "該当なし"
     }
   },
-
   "navigation": {
     "heading": "方位",
     "wind": "風",
     "calm": "穏やか"
   },
-
   "flightStrip": {
     "notDetected": "X-Planeが実行されていません",
     "ias": "IAS",
@@ -486,7 +479,6 @@
     "center": "中央",
     "centerTooltip": "機体を中心にマップを表示"
   },
-
   "weather": {
     "fetching": "天気を取得中...",
     "noData": "気象データがありません",
@@ -506,7 +498,6 @@
     "tailwind": "追風",
     "crosswind": "横風"
   },
-
   "procedures": {
     "noData": "手順がありません",
     "noTypeData": "{{type}}がありません",
@@ -517,7 +508,6 @@
     },
     "allRunways": "すべて"
   },
-
   "layers": {
     "airport": {
       "title": "空港レイヤー",
@@ -561,7 +551,6 @@
     "showAll": "すべて表示",
     "hideAll": "すべて非表示"
   },
-
   "debug": {
     "title": "デバッグモード有効",
     "instruction": "マップ上の任意の要素をクリックしてプロパティを確認してください。",
@@ -578,7 +567,6 @@
     "copyToClipboard": "クリップボードにコピー",
     "clearSelection": "選択をクリア"
   },
-
   "launcher": {
     "title": "フライト設定",
     "launch": "X-Planeを起動",
@@ -588,7 +576,6 @@
     "xplaneRunning": "X-Planeが実行中 - フライトはAPIで変更されます",
     "selectDeparture": "マップ上で出発地を選択",
     "selectAircraft": "機体を選択",
-
     "aircraft": {
       "title": "機体",
       "search": "機体を検索...",
@@ -607,20 +594,17 @@
       "showAll": "すべて表示",
       "showFavoritesOnly": "お気に入りのみ表示"
     },
-
     "liveries": {
       "title": "塗装",
       "count": "塗装（{{count}}）",
       "default": "デフォルト"
     },
-
     "specs": {
       "emptyWeight": "空虚重量",
       "maxWeight": "MTOW",
       "maxFuel": "燃料容量",
       "tailNumber": "機体番号"
     },
-
     "config": {
       "timeOfDay": "時刻",
       "realWorldTime": "実時間",
@@ -632,12 +616,10 @@
       "departure": "出発",
       "livery": "塗装"
     },
-
     "startState": {
       "ready": "準備完了",
       "cold": "コールド＆ダーク"
     },
-
     "time": {
       "live": "ライブ",
       "set": "設定",
@@ -646,7 +628,6 @@
       "dusk": "夕暮れ",
       "night": "夜"
     },
-
     "timePresets": {
       "dawn": "夜明け",
       "sunrise": "日の出",
@@ -655,7 +636,6 @@
       "dusk": "夕暮れ",
       "night": "夜"
     },
-
     "weather": {
       "real": "実際",
       "clear": "快晴",
@@ -665,7 +645,6 @@
       "snowy": "雪",
       "foggy": "霧"
     },
-
     "weatherBuilder": {
       "custom": "カスタム天候",
       "customize": "天候をカスタマイズ",
@@ -694,29 +673,24 @@
         "cumulonimbus": "積乱雲"
       }
     },
-
     "weatherModal": {
       "presets": "プリセット",
       "custom": "カスタム",
       "poor": "悪い",
       "unlimited": "無制限"
     },
-
     "weatherDialog": {
       "title": "天候設定",
       "done": "完了",
       "addCloud": "雲レイヤー",
       "addWind": "風レイヤー",
-
       "layerProperties": "レイヤーのプロパティ",
       "emptyHint": "ダイアグラム内の雲または風レイヤーをクリックして編集",
-
       "cloudType": "雲の種類",
       "cloudCoverage": "雲量",
       "tops": "雲頂",
       "bases": "雲底",
       "deleteCloud": "雲レイヤー {{n}} を削除",
-
       "cloudTypes": {
         "cirrus": "巻雲",
         "stratus": "層雲",
@@ -729,7 +703,6 @@
         "broken": "Bkn",
         "overcast": "Ovc"
       },
-
       "altitude": "高度",
       "direction": "方向",
       "speed": "速度",
@@ -737,7 +710,6 @@
       "shear": "ウインドシアー",
       "turbulence": "乱気流",
       "deleteWind": "風レイヤー {{n}} を削除",
-
       "atmosphere": "大気",
       "visibility": "視程",
       "precipitation": "降水",
@@ -745,7 +717,6 @@
       "precipSevere": "激しい",
       "temperature": "気温",
       "altimeter": "高度計",
-
       "environment": "環境",
       "terrain": "地形",
       "terrainCondition": "状態",
@@ -763,7 +734,6 @@
         "medium": "中程度",
         "heavy": "強い"
       },
-
       "waves": "波",
       "waveHeight": "波高",
       "waveDirection": "方向",
@@ -781,19 +751,16 @@
         "rapidly_deteriorating": "急速に悪化"
       }
     },
-
     "fuelConfig": {
       "auto": "自動",
       "manual": "手動",
       "total": "合計"
     },
-
     "fuelModal": {
       "empty": "空",
       "full": "満タン",
       "of": "の"
     },
-
     "logbook": {
       "title": "フライトログ",
       "clearAll": "すべてクリア",
@@ -801,7 +768,6 @@
       "emptyHint": "起動後、最新10件のフライトがここに表示されます"
     }
   },
-
   "addonManager": {
     "title": "アドオンマネージャー",
     "openXPlaneFolder": "X-Planeフォルダを開く",
@@ -965,7 +931,6 @@
       "Navdata": "航法データ"
     }
   },
-
   "simbrief": {
     "title": "SimBriefからインポート",
     "description": "SimBriefから最新のフライトプランを取得",
