@@ -455,9 +455,13 @@
     },
     "taxiRoute": {
       "label": "滑行路线",
-      "placeholder": "如 A B1 C",
-      "matchCount": "{{count}}段",
-      "noMatch": "无匹配"
+      "undo": "撤销上一个点",
+      "clearAll": "全部清除",
+      "enableClick": "启用点击添加",
+      "disableClick": "禁用点击添加",
+      "clickInstruction": "点击地图添加滑行路线点",
+      "pointsPlaced": "已放置 {{count}} 个点 — 点击继续添加",
+      "enableHint": "启用点击添加以放置路线点"
     }
   },
   "navigation": {

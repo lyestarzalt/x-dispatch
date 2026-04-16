@@ -388,9 +388,13 @@
     },
     "taxiRoute": {
       "label": "Taxi-Route",
-      "placeholder": "z.B. A B1 C",
-      "matchCount": "{{count}} Seg",
-      "noMatch": "kein Treffer"
+      "undo": "Letzten Punkt rückgängig",
+      "clearAll": "Alle löschen",
+      "enableClick": "Klick-Hinzufügen aktivieren",
+      "disableClick": "Klick-Hinzufügen deaktivieren",
+      "clickInstruction": "Auf die Karte klicken, um Routenpunkte hinzuzufügen",
+      "pointsPlaced": "{{count}} Punkt(e) gesetzt — klicken für weitere",
+      "enableHint": "Klick-Hinzufügen aktivieren, um Routenpunkte zu setzen"
     }
   },
   "navigation": {

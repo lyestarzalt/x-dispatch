@@ -494,9 +494,13 @@
     },
     "taxiRoute": {
       "label": "Taxi Route",
-      "placeholder": "e.g. A B1 C",
-      "matchCount": "{{count}} seg",
-      "noMatch": "no match"
+      "undo": "Undo last point",
+      "clearAll": "Clear all",
+      "enableClick": "Enable click-to-add",
+      "disableClick": "Disable click-to-add",
+      "clickInstruction": "Click on the map to add taxi route points",
+      "pointsPlaced": "{{count}} point(s) placed — click to add more",
+      "enableHint": "Enable click-to-add to place route points"
     }
   },
   "navigation": {

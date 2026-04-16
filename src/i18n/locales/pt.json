@@ -455,9 +455,13 @@
     },
     "taxiRoute": {
       "label": "Rota de táxi",
-      "placeholder": "ex. A B1 C",
-      "matchCount": "{{count}} seg",
-      "noMatch": "sem resultado"
+      "undo": "Desfazer último ponto",
+      "clearAll": "Limpar tudo",
+      "enableClick": "Ativar clique para adicionar",
+      "disableClick": "Desativar clique para adicionar",
+      "clickInstruction": "Clique no mapa para adicionar pontos de rota de táxi",
+      "pointsPlaced": "{{count}} ponto(s) colocado(s) — clique para adicionar mais",
+      "enableHint": "Ative clique para adicionar e coloque pontos de rota"
     }
   },
   "navigation": {

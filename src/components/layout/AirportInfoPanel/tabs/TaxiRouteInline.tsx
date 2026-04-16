@@ -36,9 +36,9 @@ export default function TaxiRouteInline() {
     <div className="mt-1.5 space-y-1.5 rounded-md border border-cat-emerald/20 bg-cat-emerald/5 px-2 py-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-cat-emerald/80">
-          <CircleDot className="h-3 w-3" />
-          <span className="text-[11px] font-medium">
+        <div className="flex min-w-0 items-center gap-1.5 text-cat-emerald/80">
+          <CircleDot className="h-4 w-4 shrink-0" />
+          <span className="truncate text-xs font-medium">
             {t('airportInfo.taxiRoute.label', 'Taxi Route')}
           </span>
         </div>
@@ -49,9 +49,9 @@ export default function TaxiRouteInline() {
             onClick={removeLastWaypoint}
             disabled={waypoints.length === 0}
             className="h-6 w-6 text-muted-foreground/60 hover:text-foreground"
-            title="Undo last point"
+            title={t('airportInfo.taxiRoute.undo', 'Undo last point')}
           >
-            <RotateCcw className="h-3 w-3" />
+            <RotateCcw className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
@@ -59,27 +59,31 @@ export default function TaxiRouteInline() {
             onClick={clearRoute}
             disabled={waypoints.length === 0}
             className="h-6 w-6 text-muted-foreground/60 hover:text-foreground"
-            title="Clear all"
+            title={t('airportInfo.taxiRoute.clearAll', 'Clear all')}
           >
-            <Eraser className="h-3 w-3" />
+            <Eraser className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setClickModeEnabled(!clickModeEnabled)}
             className={`h-6 w-6 ${clickModeEnabled ? 'text-cat-emerald' : 'text-muted-foreground/60 hover:text-foreground'}`}
-            title={clickModeEnabled ? 'Disable click-to-add' : 'Enable click-to-add'}
+            title={
+              clickModeEnabled
+                ? t('airportInfo.taxiRoute.disableClick', 'Disable click-to-add')
+                : t('airportInfo.taxiRoute.enableClick', 'Enable click-to-add')
+            }
           >
-            <MousePointerClick className="h-3 w-3" />
+            <MousePointerClick className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={deactivate}
             className="h-6 w-6 text-muted-foreground/60 hover:text-foreground"
-            title="Close"
+            title={t('common.close', 'Close')}
           >
-            <X className="h-3 w-3" />
+            <X className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -87,16 +91,18 @@ export default function TaxiRouteInline() {
       {/* Instructions or waypoint count */}
       {clickModeEnabled && waypoints.length === 0 ? (
         <p className="text-[10px] text-muted-foreground/50">
-          Click on the map to add taxi route points
+          {t('airportInfo.taxiRoute.clickInstruction', 'Click on the map to add taxi route points')}
         </p>
       ) : clickModeEnabled && waypoints.length > 0 ? (
         <p className="text-[10px] text-cat-emerald/60">
-          {waypoints.length} point{waypoints.length !== 1 ? 's' : ''} placed — click to add more
+          {t('airportInfo.taxiRoute.pointsPlaced', {
+            count: waypoints.length,
+            defaultValue: '{{count}} point(s) placed — click to add more',
+          })}
         </p>
       ) : (
         <p className="text-[10px] text-muted-foreground/50">
-          Click the <MousePointerClick className="inline h-2.5 w-2.5" /> button to enable
-          click-to-add
+          {t('airportInfo.taxiRoute.enableHint', 'Enable click-to-add to place route points')}
         </p>
       )}
     </div>

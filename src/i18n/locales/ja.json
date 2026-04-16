@@ -455,9 +455,13 @@
     },
     "taxiRoute": {
       "label": "タクシールート",
-      "placeholder": "例: A B1 C",
-      "matchCount": "{{count}}セグ",
-      "noMatch": "該当なし"
+      "undo": "最後のポイントを元に戻す",
+      "clearAll": "すべてクリア",
+      "enableClick": "クリック追加を有効にする",
+      "disableClick": "クリック追加を無効にする",
+      "clickInstruction": "マップをクリックしてタクシールートのポイントを追加",
+      "pointsPlaced": "{{count}}ポイント配置済み — クリックで追加",
+      "enableHint": "クリック追加を有効にしてルートポイントを配置"
     }
   },
   "navigation": {

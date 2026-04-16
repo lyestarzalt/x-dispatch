@@ -3,8 +3,7 @@
  * Manages taxi route state for airport ground navigation.
  *
  * Users click on the map to add waypoints, creating a connected
- * taxi route path. Simple, reliable, no pathfinding confusion.
- * Text input is still available for reference but clicking is primary.
+ * taxi route path displayed as a canvas overlay.
  */
 import { create } from 'zustand';
 

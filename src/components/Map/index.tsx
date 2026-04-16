@@ -324,7 +324,7 @@ export default function Map({ airports }: MapProps) {
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation });
 
-  // Taxi route sync - highlights matched taxi edges on the map
+  // Taxi route sync - renders user-placed waypoints as a canvas overlay
   useTaxiRouteSync(mapRef);
 
   // Pin-drop custom start location

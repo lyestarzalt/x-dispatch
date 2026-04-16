@@ -1,25 +1,21 @@
 /**
  * Canvas overlay for taxi route rendering.
  *
- * Users click on the map to add waypoints. Lines are drawn between them
- * on a transparent canvas over the map. Simple, reliable, no pathfinding.
- *
- * Visual: green glow lines with animated pulse, direction arrows,
- * numbered waypoint markers.
+ * Users click on the map to add waypoints. Lines are drawn between
+ * them on a transparent canvas over the map with animated directional
+ * dashes (follow-the-greens style).
  */
 import { useEffect, useRef } from 'react';
 import { useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
-// Green glow colours
-const LINE_COLOR = '#22c55e';
-const GLOW_COLOR = 'rgba(34, 197, 94, 0.3)';
-const CASING_COLOR = '#ffffff';
-const ARROW_COLOR = '#ffffff';
-const LABEL_COLOR = '#ffffff';
+// cat-emerald from design system: oklch(0.76 0.17 163) ≈ #34d399
+const ROUTE_COLOR = '#34d399';
+const ROUTE_COLOR_ALPHA = 'rgba(52, 211, 153, 0.6)';
+const DOT_BORDER = 'rgba(0, 0, 0, 0.4)';
 
 // Animation
-const PULSE_SPEED = 0.03;
+const PULSE_SPEED = 0.025;
 
 function drawRoute(
   ctx: CanvasRenderingContext2D,
@@ -33,13 +29,12 @@ function drawRoute(
   if (waypoints.length === 0) return;
 
   const zoom = map.getZoom();
-  const scale = Math.max(0.5, Math.min(3.5, (zoom - 13) / 4));
+  const scale = Math.max(0.5, Math.min(3, (zoom - 13) / 4));
 
-  // Project all waypoints
   const pts = waypoints.map((wp) => map.project([wp.longitude, wp.latitude]));
 
   if (pts.length >= 2) {
-    // --- Glow ---
+    // --- Core route line ---
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -48,41 +43,12 @@ function drawRoute(
     for (let i = 1; i < pts.length; i++) {
       ctx.lineTo(pts[i]!.x, pts[i]!.y);
     }
-    ctx.strokeStyle = GLOW_COLOR;
-    ctx.lineWidth = 20 * scale;
+    ctx.strokeStyle = ROUTE_COLOR_ALPHA;
+    ctx.lineWidth = 8 * scale;
     ctx.stroke();
     ctx.restore();
 
-    // --- Casing ---
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.globalAlpha = 0.85;
-    ctx.beginPath();
-    ctx.moveTo(pts[0]!.x, pts[0]!.y);
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i]!.x, pts[i]!.y);
-    }
-    ctx.strokeStyle = CASING_COLOR;
-    ctx.lineWidth = 9 * scale;
-    ctx.stroke();
-    ctx.restore();
-
-    // --- Core green line ---
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(pts[0]!.x, pts[0]!.y);
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i]!.x, pts[i]!.y);
-    }
-    ctx.strokeStyle = LINE_COLOR;
-    ctx.lineWidth = 5 * scale;
-    ctx.stroke();
-    ctx.restore();
-
-    // --- Animated pulse dashes ---
+    // --- Animated directional dashes ---
     const totalLen = pts.reduce((sum, p, i) => {
       if (i === 0) return 0;
       const prev = pts[i - 1]!;
@@ -94,82 +60,38 @@ function drawRoute(
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       const dashOffset = (phase % 1) * totalLen;
-      ctx.setLineDash([14 * scale, 22 * scale]);
+      ctx.setLineDash([10 * scale, 16 * scale]);
       ctx.lineDashOffset = -dashOffset;
       ctx.beginPath();
       ctx.moveTo(pts[0]!.x, pts[0]!.y);
       for (let i = 1; i < pts.length; i++) {
         ctx.lineTo(pts[i]!.x, pts[i]!.y);
       }
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.strokeStyle = ROUTE_COLOR;
       ctx.lineWidth = 3 * scale;
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
     }
-
-    // --- Direction arrows along segments ---
-    ctx.save();
-    ctx.globalAlpha = 0.7;
-    const arrowSize = 7 * scale;
-    for (let i = 1; i < pts.length; i++) {
-      const p1 = pts[i - 1]!;
-      const p2 = pts[i]!;
-      const segLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      if (segLen < 40 * scale) continue;
-
-      const spacing = 80 * scale;
-      const count = Math.floor(segLen / spacing);
-      for (let j = 1; j <= count; j++) {
-        const t = j / (count + 1);
-        const mx = p1.x + (p2.x - p1.x) * t;
-        const my = p1.y + (p2.y - p1.y) * t;
-        const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-        ctx.beginPath();
-        ctx.moveTo(mx + arrowSize * Math.cos(angle), my + arrowSize * Math.sin(angle));
-        ctx.lineTo(
-          mx + arrowSize * Math.cos(angle + (2.5 * Math.PI) / 3),
-          my + arrowSize * Math.sin(angle + (2.5 * Math.PI) / 3)
-        );
-        ctx.lineTo(
-          mx + arrowSize * Math.cos(angle - (2.5 * Math.PI) / 3),
-          my + arrowSize * Math.sin(angle - (2.5 * Math.PI) / 3)
-        );
-        ctx.closePath();
-        ctx.fillStyle = ARROW_COLOR;
-        ctx.fill();
-      }
-    }
-    ctx.restore();
   }
 
-  // --- Waypoint markers ---
+  // --- Waypoint dots ---
   ctx.save();
+  const r = 4 * scale;
   for (let i = 0; i < pts.length; i++) {
     const p = pts[i]!;
-    const r = 11 * scale;
 
-    ctx.globalAlpha = 0.9;
+    // Border
     ctx.beginPath();
-    ctx.arc(p.x, p.y, r + 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = CASING_COLOR;
+    ctx.arc(p.x, p.y, r + 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = DOT_BORDER;
     ctx.fill();
 
-    ctx.globalAlpha = 1;
+    // Fill
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = LINE_COLOR;
+    ctx.fillStyle = ROUTE_COLOR;
     ctx.fill();
-
-    if (pts.length > 1) {
-      const fontSize = Math.max(13, 16 * scale);
-      ctx.font = `bold ${fontSize}px sans-serif`;
-      ctx.fillStyle = LABEL_COLOR;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`${i + 1}`, p.x, p.y + 0.5);
-    }
   }
   ctx.restore();
 }
@@ -221,13 +143,12 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef]);
 
-  // Click-to-add waypoint — listen on the map container directly
+  // Click-to-add waypoint via MapLibre click event
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || !taxiModeActive || !clickModeEnabled) return;
 
     const handleMapClick = (e: maplibregl.MapMouseEvent) => {
-      if (!taxiModeActive || !clickModeEnabled) return;
       addWaypoint(e.lngLat.lng, e.lngLat.lat);
     };
 
@@ -237,24 +158,32 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef, taxiModeActive, clickModeEnabled, addWaypoint]);
 
-  // Animated render loop
+  // Animated render loop — only active when taxi mode is on
   useEffect(() => {
     const map = mapRef.current;
     const canvas = canvasRef.current;
-    if (!map || !canvas) return;
+    if (!map || !canvas || !taxiModeActive) {
+      // Clear canvas when inactive
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const theWaypoints = taxiModeActive ? waypoints : [];
-    const needsAnimation = theWaypoints.length >= 2;
+    const needsAnimation = waypoints.length >= 2;
+    let cancelled = false;
 
     const render = () => {
+      if (cancelled) return;
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.width / dpr;
       const h = canvas.height / dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawRoute(ctx, map, theWaypoints, w, h, phaseRef.current);
+      drawRoute(ctx, map, waypoints, w, h, phaseRef.current);
 
       if (needsAnimation) {
         phaseRef.current += PULSE_SPEED;
@@ -271,13 +200,14 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
         const w = canvas.width / dpr;
         const h = canvas.height / dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        drawRoute(ctx, map, theWaypoints, w, h, phaseRef.current);
+        drawRoute(ctx, map, waypoints, w, h, phaseRef.current);
       }
     };
     map.on('move', onMove);
     map.on('zoom', onMove);
 
     return () => {
+      cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       map.off('move', onMove);
       map.off('zoom', onMove);

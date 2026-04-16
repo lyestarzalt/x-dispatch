@@ -268,7 +268,6 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
         return (
           <div key={originalIndex}>
             <Button
-              key={originalIndex}
               data-selected={isSelected || undefined}
               variant="ghost"
               onClick={() =>

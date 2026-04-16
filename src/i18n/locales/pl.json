@@ -455,9 +455,13 @@
     },
     "taxiRoute": {
       "label": "Trasa kołowania",
-      "placeholder": "np. A B1 C",
-      "matchCount": "{{count}} odc.",
-      "noMatch": "brak dopasowania"
+      "undo": "Cofnij ostatni punkt",
+      "clearAll": "Wyczyść wszystko",
+      "enableClick": "Włącz dodawanie kliknięciem",
+      "disableClick": "Wyłącz dodawanie kliknięciem",
+      "clickInstruction": "Kliknij na mapę, aby dodać punkty trasy kołowania",
+      "pointsPlaced": "{{count}} punkt(ów) ustawionych — kliknij, aby dodać więcej",
+      "enableHint": "Włącz dodawanie kliknięciem, aby ustawić punkty trasy"
     }
   },
   "navigation": {
