@@ -37,11 +37,15 @@ X-Plane ships with detailed airport data but no way to see it on a map. X-Dispat
 
 If you find this useful, please give it a ⭐, it helps others discover the project!
 
-> **macOS Users (Sequoia/Tahoe):** The app is unsigned. After installing, go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
+> **Download the right file:** grab the installer for your OS from the [Releases page](https://github.com/lyestarzalt/x-dispatch/releases/latest) (`.dmg` for macOS, `.exe` for Windows, `.deb`/`.rpm` for Linux). Don't download the source code ZIP — that's the raw code, not the app.
+
+> **macOS (Sequoia/Tahoe):** The app is unsigned. After installing, go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
 >
 > ```bash
 > xattr -rd com.apple.quarantine /Applications/X-Dispatch.app
 > ```
+
+> **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator.
 
 ## Screenshots
 

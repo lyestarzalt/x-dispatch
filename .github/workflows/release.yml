@@ -173,7 +173,9 @@ jobs:
 
           If you find this useful, consider giving it a :star:, it helps others discover the project.
 
-          > :apple: **macOS Users:** Please read the [installation instructions](https://github.com/${{ github.repository }}#readme) before opening the app.
+          > :apple: **macOS (Sequoia/Tahoe):** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run: `xattr -rd com.apple.quarantine /Applications/X-Dispatch.app`
+
+          > :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator.
           EOF
 
       - name: Create GitHub release
