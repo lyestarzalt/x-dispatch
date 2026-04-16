@@ -1,6 +1,69 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.6.1 - 2026-04-16
+
+### Features
+
+- **debug:** Add layer inspector, draggable overlay, glassmorphism UI by @lyestarzalt([8803b74](https://github.com/lyestarzalt/x-dispatch/commit/8803b7443685777634768c7a99aff78110d8453d))
+- **debug:** Show layer draw order in inspector by @lyestarzalt([7fd7f22](https://github.com/lyestarzalt/x-dispatch/commit/7fd7f22681ff2f1266fa922f4b46e8a670e8df30))
+- **debug:** Detachable panels, layer toggle, prominent draw order by @lyestarzalt([921c057](https://github.com/lyestarzalt/x-dispatch/commit/921c0576a8b3799f6e7a63655434be07be0847ad))
+- **debug:** Tabbed toolbar with detachable panels, state inspector by @lyestarzalt([5ba5fae](https://github.com/lyestarzalt/x-dispatch/commit/5ba5faeeefd647a6c948e924e73ee900c2677ed6))
+- **debug:** Add file paths section to debug overlay Map tab by @lyestarzalt([2585866](https://github.com/lyestarzalt/x-dispatch/commit/2585866932dfc2883ec23ba6d7601d6199843a40))
+- **settings:** Add customLaunchArgs to launcher settings by @lyestarzalt([fbc3194](https://github.com/lyestarzalt/x-dispatch/commit/fbc319496ef3e5fd08f67fcc471894ee5b36f4e3))
+- **config:** Add X-Plane CLI arg catalog by @lyestarzalt([3814616](https://github.com/lyestarzalt/x-dispatch/commit/38146162cc3e4135ea8a50a088e1cb464e037a43))
+- **settings:** Add LaunchArgsCard component by @lyestarzalt([cbe92c7](https://github.com/lyestarzalt/x-dispatch/commit/cbe92c75fa0cbe777c3220ad03ecb1a4da69b546))
+- **settings:** Add launch args card to X-Plane section by @lyestarzalt([0bffe3a](https://github.com/lyestarzalt/x-dispatch/commit/0bffe3a54c90e2141f6644768d98fb8fbe7a6989))
+- **launch:** Send custom launch args on cold start by @lyestarzalt([5697ae6](https://github.com/lyestarzalt/x-dispatch/commit/5697ae6f118f7e4dda6d3dc566988453ffc314b7))
+- **ci:** Replace deb/rpm with AppImage and add arm64 Linux builds by @lyestarzalt([7cc17f2](https://github.com/lyestarzalt/x-dispatch/commit/7cc17f2e459431e7201d715ae187d580e021cfdd))
+- **ci:** Auto-increment RC number from existing artifacts by @lyestarzalt([422dc30](https://github.com/lyestarzalt/x-dispatch/commit/422dc3064c74be3d5ced2404eeb6916d1a1024ed))
+- **debug:** Refactor DevDebugOverlay into folder, add DB panel and settings toggle by @lyestarzalt([a21f4f8](https://github.com/lyestarzalt/x-dispatch/commit/a21f4f812842dbf0e776e8f558f4440c3acb66b8))
+- **taxi-route:** Click-to-add taxi route with canvas overlay by @Pwoodlock([1cb67bd](https://github.com/lyestarzalt/x-dispatch/commit/1cb67bd233579c6ca83ba8fbb91ff187e5f90923))
+
+### Bug Fixes
+
+- **debug:** Center detached panels, bold ON/OFF toggle buttons by @lyestarzalt([58708c0](https://github.com/lyestarzalt/x-dispatch/commit/58708c0a9a9d666445c95c36bbed0dc35737a414))
+- **ui:** Group airport filters under one section and fix hardcoded strings by @lyestarzalt([725869e](https://github.com/lyestarzalt/x-dispatch/commit/725869e76dc3df84fdf7da4d27a2d9c853c591d4))
+- **map:** Improve taxiway lights with 3-layer glow and add @types/three by @lyestarzalt([dd937c5](https://github.com/lyestarzalt/x-dispatch/commit/dd937c58312e985e974b68fd2eb6a6c4eab80633))
+- **scenery:** Preserve absolute paths and make analyze() read-only (#49) by @lyestarzalt([d641cc8](https://github.com/lyestarzalt/x-dispatch/commit/d641cc84988c6fb059a8bdb7f2c07e2f2f256eda))
+- **settings:** Add i18n and improve launch args chip styling by @lyestarzalt([f290ccc](https://github.com/lyestarzalt/x-dispatch/commit/f290ccc53ce9c1ce2680f39a917a5a237ac42102))
+- **settings:** Fix scroll in launch args dropdown and add i18n by @lyestarzalt([8432bd4](https://github.com/lyestarzalt/x-dispatch/commit/8432bd419234d0425b70a8369b70354d9b512782))
+- **ui:** Override Radix ScrollArea table display to prevent content clipping by @lyestarzalt([04e9250](https://github.com/lyestarzalt/x-dispatch/commit/04e92504bfdfdcc32f014cf6321a19c33a5fb865))
+- **db:** Auto-delete corrupt database and relaunch on migration failure by @lyestarzalt([f1c47e2](https://github.com/lyestarzalt/x-dispatch/commit/f1c47e2aae0096776cbdb3d4046ad0a37fa096f3))
+- **taxi-route:** Clean up PR #58 to match project conventions by @lyestarzalt([e339626](https://github.com/lyestarzalt/x-dispatch/commit/e339626ee20c1097bbd0ed0a78ac2f4892b83d8a))
+
+### Refactor
+
+- **debug:** Replace floating overlay with tabbed toolbar by @lyestarzalt([16cfe71](https://github.com/lyestarzalt/x-dispatch/commit/16cfe71a55df0a38a7bdc45cbfd7ee820321b658))
+- Enable noUncheckedIndexedAccess and fix all 388 errors by @lyestarzalt([23ffa09](https://github.com/lyestarzalt/x-dispatch/commit/23ffa099a4b19885e7983bf3889a8fa796c18fcd))
+- Enable noUnusedLocals and remove dead code across 28 files by @lyestarzalt([b1cc6fe](https://github.com/lyestarzalt/x-dispatch/commit/b1cc6fe73a9f91b30df47a083b25db39d05d9d29))
+- **logging:** Extract startup logs to startupLog.ts and add GPU/display diagnostics by @lyestarzalt([e4c5a7a](https://github.com/lyestarzalt/x-dispatch/commit/e4c5a7abe996a432d7b29068e7e4db7feae56721))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.6.0 by @github-actions[bot]([705ee5d](https://github.com/lyestarzalt/x-dispatch/commit/705ee5d9ef50153ca3714b192f3d655da2e7aea6))
+- Update README with recent features and expanded dev section by @lyestarzalt([1af95e0](https://github.com/lyestarzalt/x-dispatch/commit/1af95e0bc8074193d5801faaeb62d445b3441d3e))
+- Fix X-Plane version, show 3D terrain screenshot, trim dev section by @lyestarzalt([0d13e52](https://github.com/lyestarzalt/x-dispatch/commit/0d13e52422b09a417a2c2ca4c18f5aba2c7522db))
+- Add hits badge to README by @lyestarzalt([e2f8387](https://github.com/lyestarzalt/x-dispatch/commit/e2f8387fc392bb8b15c782c2ccabc3125275b7d0))
+- Update README hero and Discord invite link by @lyestarzalt([e818bbd](https://github.com/lyestarzalt/x-dispatch/commit/e818bbd6bbbeaecfb54fe51ca7eb08d3437bccf1))
+- Clean up and reword README by @lyestarzalt([adfbcef](https://github.com/lyestarzalt/x-dispatch/commit/adfbcef6da165e8b98d9538922b4326398325d7e))
+- Add install troubleshooting for Windows and macOS by @lyestarzalt([50c3ef7](https://github.com/lyestarzalt/x-dispatch/commit/50c3ef7421d8df6ae137bebb71632d4d9824b2f7))
+
+### Miscellaneous
+
+- Remove CLAUDE.md from tracking by @lyestarzalt([ffb939f](https://github.com/lyestarzalt/x-dispatch/commit/ffb939f9aa68f6f13c0fe7ab1d86dec40366fab4))
+- Address high vulnerabilities by @necromeo([afbfec0](https://github.com/lyestarzalt/x-dispatch/commit/afbfec0b331bddf1a6ab239918da0c13c70d8234))
+
+### Release
+
+- 1.6.1 by @github-actions[bot]([c116146](https://github.com/lyestarzalt/x-dispatch/commit/c116146d4d42cbf73cf7ea59a9da1892d83826d9))
+
+
+
+### New Contributors
+
+- @Pwoodlock made their first contribution
+- @necromeo made their first contribution
 ## v1.6.0 - 2026-03-24
 
 ### Features
