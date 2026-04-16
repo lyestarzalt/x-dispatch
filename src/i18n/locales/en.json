@@ -27,7 +27,6 @@
     "approved": "Approved",
     "recommended": "Recommended"
   },
-
   "units": {
     "ft": "ft",
     "m": "m",
@@ -37,7 +36,6 @@
     "kg": "kg",
     "fpm": "fpm"
   },
-
   "directions": {
     "n": "N",
     "e": "E",
@@ -48,11 +46,9 @@
     "se": "SE",
     "sw": "SW"
   },
-
   "app": {
     "title": "X-Dispatch"
   },
-
   "setup": {
     "title": "X-Dispatch",
     "subtitle": "Select your X-Plane installation to get started",
@@ -63,7 +59,6 @@
     "failedToBrowse": "Failed to open folder picker",
     "failedToSave": "Failed to save"
   },
-
   "loading": {
     "title": "X-Dispatch",
     "badge": "Loading data",
@@ -87,7 +82,6 @@
     "scanningCustom": "Scanning Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Saving to database..."
   },
-
   "toolbar": {
     "searchPlaceholder": "Search airports...",
     "clearSearch": "Clear search",
@@ -150,7 +144,6 @@
       "settings": "Open settings"
     }
   },
-
   "airportFilters": {
     "title": "Airports",
     "type": "Type",
@@ -158,15 +151,13 @@
     "seaplane": "Seaplane Bases",
     "heliport": "Heliports",
     "surface": "Surface",
-    "paved": "Paved (Asphalt/Concrete)",
-    "unpaved": "Unpaved (Grass/Dirt/Gravel)",
+    "paved": "Paved",
+    "unpaved": "Unpaved",
     "showOnly": "Show Only",
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Custom Scenery",
     "surfaceType": "Surface Type",
     "runwaySurface": "Runway Surface",
-    "paved": "Paved",
-    "unpaved": "Unpaved",
     "water": "Water",
     "surfaceOther": "Other",
     "country": "Country",
@@ -176,7 +167,6 @@
     "minRunways": "{{count}}+ Runways",
     "reset": "Reset Filters"
   },
-
   "explore": {
     "title": "Explore",
     "close": "Close explore",
@@ -219,7 +209,6 @@
       }
     }
   },
-
   "settings": {
     "title": "Settings",
     "subtitle": "Configure your preferences",
@@ -262,7 +251,6 @@
       "crashReports": "Send crash reports",
       "crashReportsDescription": "Help improve X-Dispatch by automatically sending crash reports",
       "crashReportsNote": "Restart required for changes to take effect. No personal data is collected.",
-      "developer": "Developer",
       "debugOverlay": "Debug Overlay",
       "debugOverlayDescription": "Show the developer debug toolbar",
       "toggleDebug": "Toggle",
@@ -377,7 +365,6 @@
       }
     }
   },
-
   "sidebar": {
     "weather": "Weather",
     "weatherDetails": "Weather Details",
@@ -412,7 +399,6 @@
       "noActivity": "No VATSIM activity"
     }
   },
-
   "airportInfo": {
     "tabs": {
       "info": "Info",
@@ -505,15 +491,19 @@
       "updateAvailable": "Gateway has a newer release",
       "credit": "by {{artist}} · {{date}}",
       "viewOnGateway": "View on Gateway"
+    },
+    "taxiRoute": {
+      "label": "Taxi Route",
+      "placeholder": "e.g. A B1 C",
+      "matchCount": "{{count}} seg",
+      "noMatch": "no match"
     }
   },
-
   "navigation": {
     "heading": "HEADING",
     "wind": "WIND",
     "calm": "Calm"
   },
-
   "flightStrip": {
     "notDetected": "X-Plane not running",
     "ias": "IAS",
@@ -532,7 +522,6 @@
     "reconnect": "Reconnect",
     "reconnectTooltip": "Force reconnect to X-Plane simulator"
   },
-
   "weather": {
     "fetching": "Fetching weather...",
     "noData": "No weather data available",
@@ -552,7 +541,6 @@
     "tailwind": "TW",
     "crosswind": "XW"
   },
-
   "procedures": {
     "noData": "No procedures available",
     "noTypeData": "No {{type}}s available",
@@ -563,7 +551,6 @@
     },
     "allRunways": "ALL"
   },
-
   "layers": {
     "airport": {
       "title": "Airport Layers",
@@ -604,7 +591,6 @@
     "showAll": "Show All",
     "hideAll": "Hide All"
   },
-
   "debug": {
     "title": "Debug Mode Active",
     "instruction": "Click on any feature on the map to inspect its properties.",
@@ -621,7 +607,6 @@
     "copyToClipboard": "Copy to clipboard",
     "clearSelection": "Clear selection"
   },
-
   "launcher": {
     "title": "Flight Setup",
     "launch": "Launch X-Plane",
@@ -631,7 +616,6 @@
     "xplaneRunning": "X-Plane is running - flight will be changed via API",
     "selectDeparture": "Select a departure on the map",
     "selectAircraft": "Select an aircraft",
-
     "aircraft": {
       "title": "Aircraft",
       "search": "Search aircraft...",
@@ -650,20 +634,17 @@
       "showAll": "Show all",
       "showFavoritesOnly": "Show favorites only"
     },
-
     "liveries": {
       "title": "Liveries",
       "count": "Liveries ({{count}})",
       "default": "Default"
     },
-
     "specs": {
       "emptyWeight": "Empty",
       "maxWeight": "MTOW",
       "maxFuel": "Fuel Cap",
       "tailNumber": "Tail"
     },
-
     "config": {
       "timeOfDay": "Time of Day",
       "realWorldTime": "Real World",
@@ -675,12 +656,10 @@
       "departure": "Departure",
       "livery": "Livery"
     },
-
     "startState": {
       "ready": "Ready",
       "cold": "Cold & Dark"
     },
-
     "time": {
       "live": "Live",
       "set": "Set",
@@ -691,7 +670,6 @@
       "dusk": "Dusk",
       "night": "Night"
     },
-
     "timePresets": {
       "dawn": "Dawn",
       "sunrise": "Sunrise",
@@ -700,7 +678,6 @@
       "dusk": "Dusk",
       "night": "Night"
     },
-
     "weather": {
       "real": "Real",
       "clear": "Clear",
@@ -710,7 +687,6 @@
       "snowy": "Snowy",
       "foggy": "Foggy"
     },
-
     "weatherBuilder": {
       "custom": "Custom Weather",
       "customize": "Customize weather",
@@ -739,29 +715,24 @@
         "cumulonimbus": "Cumulonimbus"
       }
     },
-
     "weatherModal": {
       "presets": "Presets",
       "custom": "Custom",
       "poor": "Poor",
       "unlimited": "Unlimited"
     },
-
     "weatherDialog": {
       "title": "Weather Settings",
       "done": "Done",
       "addCloud": "Cloud Layer",
       "addWind": "Wind Layer",
-
       "layerProperties": "Layer Properties",
       "emptyHint": "Click a cloud or wind layer in the diagram to edit",
-
       "cloudType": "Cloud Type",
       "cloudCoverage": "Cloud Coverage",
       "tops": "Tops",
       "bases": "Bases",
       "deleteCloud": "Delete Cloud Layer {{n}}",
-
       "cloudTypes": {
         "cirrus": "Cirrus",
         "stratus": "Stratus",
@@ -774,7 +745,6 @@
         "broken": "Bkn",
         "overcast": "Ovc"
       },
-
       "altitude": "Altitude",
       "direction": "Direction",
       "speed": "Speed",
@@ -782,7 +752,6 @@
       "shear": "Shear",
       "turbulence": "Turbulence",
       "deleteWind": "Delete Wind Layer {{n}}",
-
       "atmosphere": "Atmosphere",
       "visibility": "Visibility",
       "precipitation": "Precipitation",
@@ -790,7 +759,6 @@
       "precipSevere": "Severe",
       "temperature": "Temperature",
       "altimeter": "Altimeter",
-
       "environment": "Environment",
       "terrain": "Terrain",
       "terrainCondition": "Condition",
@@ -808,7 +776,6 @@
         "medium": "Medium",
         "heavy": "Heavy"
       },
-
       "waves": "Waves",
       "waveHeight": "Height",
       "waveDirection": "Direction",
@@ -826,19 +793,16 @@
         "rapidly_deteriorating": "Rapidly Deteriorating"
       }
     },
-
     "fuelConfig": {
       "auto": "Auto",
       "manual": "Manual",
       "total": "Total"
     },
-
     "fuelModal": {
       "empty": "Empty",
       "full": "Full",
       "of": "of"
     },
-
     "logbook": {
       "title": "Flight Logbook",
       "clearAll": "Clear All",
@@ -846,7 +810,6 @@
       "emptyHint": "Your last 10 flights will appear here after launching"
     }
   },
-
   "addonManager": {
     "title": "Addon Manager",
     "openXPlaneFolder": "Open X-Plane Folder",
@@ -1018,7 +981,6 @@
       "Navdata": "Navigation Data"
     }
   },
-
   "simbrief": {
     "title": "Import from SimBrief",
     "description": "Fetch your latest flight plan from SimBrief",
