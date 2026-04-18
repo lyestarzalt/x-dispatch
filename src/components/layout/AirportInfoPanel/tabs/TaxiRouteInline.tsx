@@ -125,8 +125,10 @@ export default function TaxiRouteInline() {
           </span>
         ) : (
           <Select
-            value={selectedRunway ?? undefined}
-            onValueChange={handleRunwaySelect}
+            value={selectedRunway ?? ''}
+            onValueChange={(v) => {
+              if (v) handleRunwaySelect(v);
+            }}
             disabled={!hasGraph || runwayEnds.length === 0}
           >
             <SelectTrigger className="h-8 min-w-0 flex-1 font-mono text-sm">
