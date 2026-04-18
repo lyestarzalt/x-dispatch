@@ -21,7 +21,7 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
   sourceId = 'airport-taxiway-lights';
   additionalLayerIds = ['airport-taxiway-lights-radiation', 'airport-taxiway-lights-glow'];
 
-  private animationFrame: number | null = null;
+  private animationTimer: number | null = null;
   private pulsatePhase = 0;
   private map: maplibregl.Map | null = null;
 
@@ -155,24 +155,31 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
   }
 
   /**
-   * Animate pulsating stop bar lights by modulating opacity
+   * Animate pulsating stop bar lights by modulating opacity.
+   * Throttled to ~10fps to reduce GPU/power usage (issue #59).
+   * Pauses when zoomed out past light visibility threshold.
    */
   private startAnimation(): void {
-    if (this.animationFrame) return;
+    if (this.animationTimer) return;
     const map = this.map;
     if (!map) return;
 
-    const animate = () => {
+    const INTERVAL_MS = 100; // ~10fps — enough for a smooth pulse
+    const MIN_ZOOM = ZOOM_BEHAVIORS.linearFeatures?.minZoom ?? 14;
+
+    this.animationTimer = window.setInterval(() => {
       if (!map.getStyle() || !map.getLayer(this.layerId)) {
-        this.animationFrame = null;
+        this.stopAnimation();
         return;
       }
 
-      this.pulsatePhase = (this.pulsatePhase + 0.025) % 1;
+      // Skip updates when zoomed out — lights aren't visible anyway
+      if (map.getZoom() < MIN_ZOOM) return;
+
+      this.pulsatePhase = (this.pulsatePhase + 0.05) % 1;
       const pulse = 0.3 + 0.7 * Math.sin(this.pulsatePhase * Math.PI * 2);
 
       try {
-        // Modulate opacity: pulsating lights fade in/out, static lights stay bright
         map.setPaintProperty(this.layerId, 'circle-opacity', [
           'case',
           ['get', 'isPulsating'],
@@ -192,21 +199,16 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
           0.03,
         ]);
       } catch {
-        // Layer removed — stop animation to prevent style._changed staying true
-        this.animationFrame = null;
-        return;
+        // Layer removed — stop animation
+        this.stopAnimation();
       }
-
-      this.animationFrame = requestAnimationFrame(animate);
-    };
-
-    this.animationFrame = requestAnimationFrame(animate);
+    }, INTERVAL_MS);
   }
 
   private stopAnimation(): void {
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
+    if (this.animationTimer) {
+      clearInterval(this.animationTimer);
+      this.animationTimer = null;
     }
   }
 
