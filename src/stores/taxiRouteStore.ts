@@ -7,8 +7,8 @@
  * - freehand: arbitrary clicks on the map (legacy behavior)
  */
 import { create } from 'zustand';
-import type { TaxiGraph } from '@/lib/taxiGraph';
-import { findPath } from '@/lib/taxiGraph';
+import type { PathResult, TaxiGraph } from '@/lib/taxiGraph';
+import { findNearestNode, findPath } from '@/lib/taxiGraph';
 
 // ============================================================================
 // Types
@@ -34,6 +34,10 @@ interface TaxiRouteState {
   networkNodeIds: number[];
   /** Prebuilt graph for the active airport */
   graph: TaxiGraph | null;
+  /** Last A* result for route summary (taxiway names, distance) */
+  autoRouteResult: PathResult | null;
+  /** Currently selected runway end name (e.g. "25R") */
+  selectedRunway: string | null;
 
   // --- Shared state ---
   activeTaxiIcao: string | null;
@@ -45,6 +49,14 @@ interface TaxiRouteState {
   setActiveAirport: (icao: string) => void;
   addWaypoint: (lon: number, lat: number) => void;
   addNetworkNode: (nodeId: number) => void;
+  /** Auto-route from a gate position to a runway end position */
+  computeAutoRoute: (
+    gateLon: number,
+    gateLat: number,
+    runwayLon: number,
+    runwayLat: number,
+    runwayName: string
+  ) => void;
   removeLastWaypoint: () => void;
   removeLastNetworkNode: () => void;
   clearRoute: () => void;
@@ -90,10 +102,13 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
   clickedNodeIds: [],
   networkNodeIds: [],
   graph: null,
+  autoRouteResult: null,
+  selectedRunway: null,
   activeTaxiIcao: null,
   clickModeEnabled: false,
 
-  setMode: (mode) => set({ mode, waypoints: [], clickedNodeIds: [], networkNodeIds: [] }),
+  setMode: (mode) =>
+    set({ mode, waypoints: [], clickedNodeIds: [], networkNodeIds: [], autoRouteResult: null }),
 
   setGraph: (graph) => set({ graph }),
 
@@ -120,6 +135,26 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     });
   },
 
+  computeAutoRoute: (gateLon, gateLat, runwayLon, runwayLat, runwayName) => {
+    const { graph } = get();
+    if (!graph) return;
+
+    const gateNode = findNearestNode(graph, gateLon, gateLat);
+    const runwayNode = findNearestNode(graph, runwayLon, runwayLat);
+    if (!gateNode || !runwayNode) return;
+
+    const result = findPath(graph, gateNode.id, runwayNode.id);
+    if (result) {
+      set({
+        mode: 'network',
+        clickedNodeIds: [gateNode.id, runwayNode.id],
+        networkNodeIds: result.nodeIds,
+        autoRouteResult: result,
+        selectedRunway: runwayName,
+      });
+    }
+  },
+
   removeLastWaypoint: () =>
     set((state) => ({
       waypoints: state.waypoints.length > 0 ? state.waypoints.slice(0, -1) : state.waypoints,
@@ -135,7 +170,14 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     });
   },
 
-  clearRoute: () => set({ waypoints: [], clickedNodeIds: [], networkNodeIds: [] }),
+  clearRoute: () =>
+    set({
+      waypoints: [],
+      clickedNodeIds: [],
+      networkNodeIds: [],
+      autoRouteResult: null,
+      selectedRunway: null,
+    }),
 
   deactivate: () =>
     set({
@@ -143,9 +185,9 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       waypoints: [],
       clickedNodeIds: [],
       networkNodeIds: [],
+      autoRouteResult: null,
+      selectedRunway: null,
       clickModeEnabled: false,
-      // Keep graph — it belongs to the airport, not the taxi session.
-      // It gets rebuilt by useTaxiRouteSync when the airport changes.
     }),
 
   setClickModeEnabled: (enabled) => set({ clickModeEnabled: enabled }),
