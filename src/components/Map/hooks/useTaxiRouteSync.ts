@@ -615,7 +615,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef, taxiModeActive]);
 
-  // Animated render loop — always runs when taxi mode active
+  // Render loop — only animates when there's a route with 2+ points
   useEffect(() => {
     const map = mapRef.current;
     const canvas = canvasRef.current;
@@ -631,8 +631,9 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     if (!ctx) return;
 
     let cancelled = false;
+    const needsAnimation = drawPoints.length >= 2;
 
-    const render = () => {
+    const renderOnce = () => {
       if (cancelled) return;
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.width / dpr;
@@ -645,23 +646,35 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
         isDragging: inter.isDragging,
         previewPoints: inter.previewPoints,
       });
+    };
 
+    const animationLoop = () => {
+      if (cancelled) return;
       phaseRef.current += PULSE_SPEED;
-      rafRef.current = requestAnimationFrame(render);
+      renderOnce();
+      rafRef.current = requestAnimationFrame(animationLoop);
     };
 
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    render();
 
-    const onMove = () => {
-      // render loop handles it continuously now
+    if (needsAnimation) {
+      // Animate chevrons
+      animationLoop();
+    } else {
+      // Static render — no animation needed
+      renderOnce();
+    }
+
+    // Re-render on map movement (panning/zooming)
+    const onMapChange = () => {
+      if (!needsAnimation) renderOnce();
     };
-    map.on('move', onMove);
+    map.on('move', onMapChange);
 
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      map.off('move', onMove);
+      map.off('move', onMapChange);
     };
   }, [mapRef, drawPoints, taxiModeActive]);
 }
