@@ -13,9 +13,16 @@ import { useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
 const ROUTE_COLOR = '#34d399';
-const ROUTE_COLOR_ALPHA = 'rgba(52, 211, 153, 0.6)';
-const DOT_BORDER = 'rgba(0, 0, 0, 0.4)';
-const PULSE_SPEED = 0.025;
+const ROUTE_OUTLINE = 'rgba(0, 0, 0, 0.5)';
+const PULSE_SPEED = 0.02;
+
+function tracePath(ctx: CanvasRenderingContext2D, pts: { x: number; y: number }[]): void {
+  ctx.beginPath();
+  ctx.moveTo(pts[0]!.x, pts[0]!.y);
+  for (let i = 1; i < pts.length; i++) {
+    ctx.lineTo(pts[i]!.x, pts[i]!.y);
+  }
+}
 
 function drawRoute(
   ctx: CanvasRenderingContext2D,
@@ -33,19 +40,30 @@ function drawRoute(
   const pts = points.map((wp) => map.project([wp.longitude, wp.latitude]));
 
   if (pts.length >= 2) {
+    const lineW = 12 * scale;
+    const outlineW = lineW + 4 * scale;
+
+    // Dark outline
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(pts[0]!.x, pts[0]!.y);
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i]!.x, pts[i]!.y);
-    }
-    ctx.strokeStyle = ROUTE_COLOR_ALPHA;
-    ctx.lineWidth = 8 * scale;
+    tracePath(ctx, pts);
+    ctx.strokeStyle = ROUTE_OUTLINE;
+    ctx.lineWidth = outlineW;
     ctx.stroke();
     ctx.restore();
 
+    // Bright center fill
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    tracePath(ctx, pts);
+    ctx.strokeStyle = ROUTE_COLOR;
+    ctx.lineWidth = lineW;
+    ctx.stroke();
+    ctx.restore();
+
+    // Animated direction dashes (white, semi-transparent)
     const totalLen = pts.reduce((sum, p, i) => {
       if (i === 0) return 0;
       const prev = pts[i - 1]!;
@@ -56,36 +74,41 @@ function drawRoute(
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      const dashOffset = (phase % 1) * totalLen;
-      ctx.setLineDash([10 * scale, 16 * scale]);
-      ctx.lineDashOffset = -dashOffset;
-      ctx.beginPath();
-      ctx.moveTo(pts[0]!.x, pts[0]!.y);
-      for (let i = 1; i < pts.length; i++) {
-        ctx.lineTo(pts[i]!.x, pts[i]!.y);
-      }
-      ctx.strokeStyle = ROUTE_COLOR;
-      ctx.lineWidth = 3 * scale;
+      ctx.setLineDash([14 * scale, 20 * scale]);
+      ctx.lineDashOffset = -(phase % 1) * totalLen;
+      tracePath(ctx, pts);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 4 * scale;
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
     }
   }
 
-  ctx.save();
-  const r = 4 * scale;
-  for (let i = 0; i < pts.length; i++) {
-    const p = pts[i]!;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, r + 1.5, 0, Math.PI * 2);
-    ctx.fillStyle = DOT_BORDER;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = ROUTE_COLOR;
-    ctx.fill();
+  // Endpoint dots only (first and last)
+  if (pts.length >= 1) {
+    ctx.save();
+    const r = 6 * scale;
+    for (const idx of [0, pts.length - 1]) {
+      const p = pts[idx]!;
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r + 2, 0, Math.PI * 2);
+      ctx.fillStyle = ROUTE_OUTLINE;
+      ctx.fill();
+      // Inner fill
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = ROUTE_COLOR;
+      ctx.fill();
+      // White center
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'white';
+      ctx.fill();
+    }
+    ctx.restore();
   }
-  ctx.restore();
 }
 
 function resolveNetworkPoints(
