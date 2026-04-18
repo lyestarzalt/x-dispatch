@@ -1,40 +1,38 @@
 /**
  * Canvas overlay for taxi route rendering.
  *
- * Users click on the map to add waypoints. Lines are drawn between
- * them on a transparent canvas over the map with animated directional
- * dashes (follow-the-greens style).
+ * Supports two modes:
+ * - network: snaps clicks to taxi network nodes, draws path through node coords
+ * - freehand: arbitrary clicks, draws direct lines between points
  */
 import { useEffect, useRef } from 'react';
+import { buildTaxiGraph, findNearestNode } from '@/lib/taxiGraph';
+import type { TaxiGraph } from '@/lib/taxiGraph';
+import { useAppStore } from '@/stores/appStore';
 import { useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
-// cat-emerald from design system: oklch(0.76 0.17 163) ≈ #34d399
 const ROUTE_COLOR = '#34d399';
 const ROUTE_COLOR_ALPHA = 'rgba(52, 211, 153, 0.6)';
 const DOT_BORDER = 'rgba(0, 0, 0, 0.4)';
-
-// Animation
 const PULSE_SPEED = 0.025;
 
 function drawRoute(
   ctx: CanvasRenderingContext2D,
   map: maplibregl.Map,
-  waypoints: { longitude: number; latitude: number }[],
+  points: { longitude: number; latitude: number }[],
   width: number,
   height: number,
   phase: number
 ): void {
   ctx.clearRect(0, 0, width, height);
-  if (waypoints.length === 0) return;
+  if (points.length === 0) return;
 
   const zoom = map.getZoom();
   const scale = Math.max(0.5, Math.min(3, (zoom - 13) / 4));
-
-  const pts = waypoints.map((wp) => map.project([wp.longitude, wp.latitude]));
+  const pts = points.map((wp) => map.project([wp.longitude, wp.latitude]));
 
   if (pts.length >= 2) {
-    // --- Core route line ---
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -48,7 +46,6 @@ function drawRoute(
     ctx.stroke();
     ctx.restore();
 
-    // --- Animated directional dashes ---
     const totalLen = pts.reduce((sum, p, i) => {
       if (i === 0) return 0;
       const prev = pts[i - 1]!;
@@ -75,19 +72,14 @@ function drawRoute(
     }
   }
 
-  // --- Waypoint dots ---
   ctx.save();
   const r = 4 * scale;
   for (let i = 0; i < pts.length; i++) {
     const p = pts[i]!;
-
-    // Border
     ctx.beginPath();
     ctx.arc(p.x, p.y, r + 1.5, 0, Math.PI * 2);
     ctx.fillStyle = DOT_BORDER;
     ctx.fill();
-
-    // Fill
     ctx.beginPath();
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fillStyle = ROUTE_COLOR;
@@ -96,14 +88,46 @@ function drawRoute(
   ctx.restore();
 }
 
+function resolveNetworkPoints(
+  nodeIds: number[],
+  graph: TaxiGraph | null
+): { longitude: number; latitude: number }[] {
+  if (!graph) return [];
+  const points: { longitude: number; latitude: number }[] = [];
+  for (const id of nodeIds) {
+    const node = graph.nodes.get(id);
+    if (node) {
+      points.push({ longitude: node.lon, latitude: node.lat });
+    }
+  }
+  return points;
+}
+
 export function useTaxiRouteSync(mapRef: MapRef): void {
+  const mode = useTaxiRouteStore((s) => s.mode);
   const waypoints = useTaxiRouteStore((s) => s.waypoints);
+  const networkNodeIds = useTaxiRouteStore((s) => s.networkNodeIds);
+  const graph = useTaxiRouteStore((s) => s.graph);
   const taxiModeActive = useTaxiModeActive();
   const clickModeEnabled = useTaxiRouteStore((s) => s.clickModeEnabled);
   const addWaypoint = useTaxiRouteStore((s) => s.addWaypoint);
+  const addNetworkNode = useTaxiRouteStore((s) => s.addNetworkNode);
+  const setGraph = useTaxiRouteStore((s) => s.setGraph);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const phaseRef = useRef(0);
   const rafRef = useRef<number>(0);
+
+  // Build graph when airport data changes
+  const taxiNetwork = useAppStore((s) => s.selectedAirportData?.taxiNetwork);
+  useEffect(() => {
+    if (taxiNetwork && taxiNetwork.nodes.length > 0 && taxiNetwork.edges.length > 0) {
+      setGraph(buildTaxiGraph(taxiNetwork));
+    } else {
+      setGraph(null);
+    }
+  }, [taxiNetwork, setGraph]);
+
+  const drawPoints = mode === 'network' ? resolveNetworkPoints(networkNodeIds, graph) : waypoints;
 
   // Create canvas overlay once
   useEffect(() => {
@@ -143,27 +167,33 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef]);
 
-  // Click-to-add waypoint via MapLibre click event
+  // Click handler
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !taxiModeActive || !clickModeEnabled) return;
 
     const handleMapClick = (e: maplibregl.MapMouseEvent) => {
-      addWaypoint(e.lngLat.lng, e.lngLat.lat);
+      if (mode === 'network' && graph) {
+        const nearest = findNearestNode(graph, e.lngLat.lng, e.lngLat.lat);
+        if (nearest) {
+          addNetworkNode(nearest.id);
+        }
+      } else {
+        addWaypoint(e.lngLat.lng, e.lngLat.lat);
+      }
     };
 
     map.on('click', handleMapClick);
     return () => {
       map.off('click', handleMapClick);
     };
-  }, [mapRef, taxiModeActive, clickModeEnabled, addWaypoint]);
+  }, [mapRef, taxiModeActive, clickModeEnabled, mode, graph, addWaypoint, addNetworkNode]);
 
-  // Animated render loop — only active when taxi mode is on
+  // Animated render loop
   useEffect(() => {
     const map = mapRef.current;
     const canvas = canvasRef.current;
     if (!map || !canvas || !taxiModeActive) {
-      // Clear canvas when inactive
       if (canvas) {
         const ctx = canvas.getContext('2d');
         if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -174,7 +204,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const needsAnimation = waypoints.length >= 2;
+    const needsAnimation = drawPoints.length >= 2;
     let cancelled = false;
 
     const render = () => {
@@ -183,7 +213,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       const w = canvas.width / dpr;
       const h = canvas.height / dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawRoute(ctx, map, waypoints, w, h, phaseRef.current);
+      drawRoute(ctx, map, drawPoints, w, h, phaseRef.current);
 
       if (needsAnimation) {
         phaseRef.current += PULSE_SPEED;
@@ -200,7 +230,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
         const w = canvas.width / dpr;
         const h = canvas.height / dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        drawRoute(ctx, map, waypoints, w, h, phaseRef.current);
+        drawRoute(ctx, map, drawPoints, w, h, phaseRef.current);
       }
     };
     map.on('move', onMove);
@@ -212,5 +242,5 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       map.off('move', onMove);
       map.off('zoom', onMove);
     };
-  }, [mapRef, waypoints, taxiModeActive]);
+  }, [mapRef, drawPoints, taxiModeActive]);
 }

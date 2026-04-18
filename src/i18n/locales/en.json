@@ -506,7 +506,13 @@
       "disableClick": "Disable click-to-add",
       "clickInstruction": "Click on the map to add taxi route points",
       "pointsPlaced": "{{count}} point(s) placed — click to add more",
-      "enableHint": "Enable click-to-add to place route points"
+      "enableHint": "Enable click-to-add to place route points",
+      "switchFreehand": "Switch to freehand",
+      "switchNetwork": "Switch to network snap",
+      "clickInstructionNetwork": "Click on the map — snaps to nearest taxiway node",
+      "nodesPlaced": "{{count}} node(s) — click to extend route",
+      "export": "Export for Follow the Greens",
+      "exportSuccess": "Route exported for Follow the Greens"
     }
   },
   "navigation": {
