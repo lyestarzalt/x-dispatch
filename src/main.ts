@@ -1282,6 +1282,28 @@ function registerIpcHandlers() {
 
   // Addon Manager IPC handlers (extracted to separate module)
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
+
+  ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
+    try {
+      const xplanePath = dataManager.getXPlanePath();
+      if (!xplanePath) {
+        return { success: false, error: 'X-Plane path not configured' };
+      }
+
+      const outputDir = path.join(xplanePath, 'Output', 'x-dispatch');
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
+      const filePath = path.join(outputDir, 'dispatched-flight.json');
+      fs.writeFileSync(filePath, json, 'utf-8');
+      logger.data.info(`Taxi route written to ${filePath}`);
+      return { success: true, path: filePath };
+    } catch (error) {
+      logger.data.error('Failed to write taxi route', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
 }
 
 // Must register custom scheme before app is ready

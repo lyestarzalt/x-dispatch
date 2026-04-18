@@ -134,6 +134,7 @@ contextBridge.exposeInMainWorld('xplaneAPI', {
   renameInstallation: (id: string, name: string) =>
     ipcRenderer.invoke('xplane:renameInstallation', id, name),
   switchInstallation: (id: string) => ipcRenderer.invoke('xplane:switchInstallation', id),
+  writeTaxiRoute: (json: string) => ipcRenderer.invoke('taxi:writeRoute', json),
 });
 
 contextBridge.exposeInMainWorld('navAPI', {
@@ -425,6 +426,9 @@ declare global {
       removeInstallation: (id: string) => Promise<boolean>;
       renameInstallation: (id: string, name: string) => Promise<boolean>;
       switchInstallation: (id: string) => Promise<boolean>;
+      writeTaxiRoute: (
+        json: string
+      ) => Promise<{ success: boolean; path?: string; error?: string }>;
     };
     navAPI: {
       loadDatabase: (xplanePath?: string) => Promise<NavLoadResult>;
