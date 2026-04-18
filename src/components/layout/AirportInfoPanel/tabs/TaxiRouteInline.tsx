@@ -71,14 +71,17 @@ export default function TaxiRouteInline() {
 
   const handleExport = async () => {
     if (!icao || networkNodeIds.length < 2) return;
-    const payload = buildFtgPayload(
+    const payload = buildFtgPayload({
       icao,
-      'departure',
-      startPosition?.name ?? String(networkNodeIds[0]),
-      selectedRunway ?? String(networkNodeIds[networkNodeIds.length - 1]),
-      networkNodeIds,
-      airport?.sourceFile ?? ''
-    );
+      mode: 'departure',
+      startName: startPosition?.name ?? String(networkNodeIds[0]),
+      destName: selectedRunway ?? String(networkNodeIds[networkNodeIds.length - 1]),
+      nodeIds: networkNodeIds,
+      taxiwayNames: autoRouteResult?.taxiwayNames ?? [],
+      distanceM: autoRouteResult?.totalDistance ?? 0,
+      gateHeading: startPosition?.heading ?? 0,
+      aptDatPath: airport?.sourceFile ?? '',
+    });
     const result = await window.xplaneAPI.writeTaxiRoute(JSON.stringify(payload, null, 2));
     if (result.success) {
       toast.success(
