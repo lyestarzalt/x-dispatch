@@ -21,9 +21,9 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
   sourceId = 'airport-taxiway-lights';
   additionalLayerIds = ['airport-taxiway-lights-radiation', 'airport-taxiway-lights-glow'];
 
-  private animationTimer: number | null = null;
-  private pulsatePhase = 0;
-  private map: maplibregl.Map | null = null;
+  // Animation removed — setPaintProperty on every frame caused 50-80% GPU (#59)
+  // and blocked isStyleLoaded(), causing airport switching black screen.
+  // Lights render at static opacity now.
 
   hasData(airport: ParsedAirport): boolean {
     return airport.linearFeatures && airport.linearFeatures.length > 0;
@@ -31,8 +31,6 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
 
   render(map: maplibregl.Map, airport: ParsedAirport): void {
     if (!this.hasData(airport)) return;
-
-    this.map = map;
 
     const lights = generateAirportLights(airport.linearFeatures);
     if (lights.length === 0) return;
@@ -133,25 +131,10 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
       },
     });
 
-    // IMPORTANT: Defer animation to after MapLibre finishes processing this source.
-    //
-    // Why: startAnimation() calls setPaintProperty() every frame, which sets
-    // style._changed = true. If this runs before MapLibre's tile workers finish
-    // processing the GeoJSON, the tile manager stays in _paused state with
-    // _didEmitContent = false. This keeps isStyleLoaded() permanently false.
-    //
-    // Consequence: safeRemove() (used by BaseLayerRenderer.remove()) checks
-    // isStyleLoaded() and defers removal when false. With isStyleLoaded stuck
-    // on false, old airport layers/sources are NEVER cleaned up on airport
-    // switch. They accumulate, eventually blocking all basemap tile loading
-    // and causing a black screen.
-    //
-    // Fix: wait for 'idle' (all sources processed) before starting the RAF loop.
-    // See also: useAirportRenderer.ts clearAirport() which bypasses safeRemove
-    // entirely for the same reason.
-    map.once('idle', () => {
-      if (this.map) this.startAnimation();
-    });
+    // Animation disabled — setPaintProperty() on every frame/interval causes
+    // MapLibre to repaint continuously, using 50-80% GPU even when idle (#59).
+    // Stop bar lights are rendered at static opacity instead.
+    // See useAirportRenderer.ts clearAirport() for related safeRemove bypass.
   }
 
   /**
@@ -159,62 +142,7 @@ export class TaxiwayLightsLayer extends BaseLayerRenderer {
    * Throttled to ~10fps to reduce GPU/power usage (issue #59).
    * Pauses when zoomed out past light visibility threshold.
    */
-  private startAnimation(): void {
-    if (this.animationTimer) return;
-    const map = this.map;
-    if (!map) return;
-
-    const INTERVAL_MS = 100; // ~10fps — enough for a smooth pulse
-    const MIN_ZOOM = ZOOM_BEHAVIORS.linearFeatures?.minZoom ?? 14;
-
-    this.animationTimer = window.setInterval(() => {
-      if (!map.getStyle() || !map.getLayer(this.layerId)) {
-        this.stopAnimation();
-        return;
-      }
-
-      // Skip updates when zoomed out — lights aren't visible anyway
-      if (map.getZoom() < MIN_ZOOM) return;
-
-      this.pulsatePhase = (this.pulsatePhase + 0.05) % 1;
-      const pulse = 0.3 + 0.7 * Math.sin(this.pulsatePhase * Math.PI * 2);
-
-      try {
-        map.setPaintProperty(this.layerId, 'circle-opacity', [
-          'case',
-          ['get', 'isPulsating'],
-          pulse,
-          1,
-        ]);
-        map.setPaintProperty('airport-taxiway-lights-glow', 'circle-opacity', [
-          'case',
-          ['get', 'isPulsating'],
-          pulse * 0.1,
-          0.1,
-        ]);
-        map.setPaintProperty('airport-taxiway-lights-radiation', 'circle-opacity', [
-          'case',
-          ['get', 'isPulsating'],
-          pulse * 0.03,
-          0.03,
-        ]);
-      } catch {
-        // Layer removed — stop animation
-        this.stopAnimation();
-      }
-    }, INTERVAL_MS);
-  }
-
-  private stopAnimation(): void {
-    if (this.animationTimer) {
-      clearInterval(this.animationTimer);
-      this.animationTimer = null;
-    }
-  }
-
   protected performRemove(map: maplibregl.Map): void {
-    this.stopAnimation();
-    this.map = null;
     super.performRemove(map);
   }
 }
