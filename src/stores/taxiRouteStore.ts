@@ -57,6 +57,12 @@ interface TaxiRouteState {
     runwayLat: number,
     runwayName: string
   ) => void;
+  /** Replace a clicked anchor node at the given index with a new node, re-route */
+  replaceNetworkNode: (anchorIndex: number, newNodeId: number) => void;
+  /** Find which anchor segment a network node index falls in */
+  findAnchorSegment: (networkIndex: number) => number;
+  /** Insert a via-point by splitting a segment */
+  insertViaNode: (afterAnchorIndex: number, nodeId: number) => void;
   removeLastWaypoint: () => void;
   removeLastNetworkNode: () => void;
   clearRoute: () => void;
@@ -153,6 +159,48 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
         selectedRunway: runwayName,
       });
     }
+  },
+
+  replaceNetworkNode: (anchorIndex, newNodeId) => {
+    const { clickedNodeIds, graph } = get();
+    if (anchorIndex < 0 || anchorIndex >= clickedNodeIds.length) return;
+    const newClicked = [...clickedNodeIds];
+    newClicked[anchorIndex] = newNodeId;
+    set({
+      clickedNodeIds: newClicked,
+      networkNodeIds: resolveFullPath(newClicked, graph),
+      autoRouteResult: null, // summary invalidated
+    });
+  },
+
+  findAnchorSegment: (networkIndex) => {
+    const { clickedNodeIds, networkNodeIds } = get();
+    if (clickedNodeIds.length < 2) return 0;
+    // Walk through networkNodeIds and find which segment this index is in
+    // by matching against clickedNodeIds boundaries
+    let anchorIdx = 0;
+    for (let i = 0; i < networkNodeIds.length && anchorIdx < clickedNodeIds.length - 1; i++) {
+      if (networkNodeIds[i] === clickedNodeIds[anchorIdx + 1]) {
+        if (i >= networkIndex) return anchorIdx;
+        anchorIdx++;
+      }
+    }
+    return Math.max(0, clickedNodeIds.length - 2);
+  },
+
+  insertViaNode: (afterAnchorIndex, nodeId) => {
+    const { clickedNodeIds, graph } = get();
+    if (afterAnchorIndex < 0 || afterAnchorIndex >= clickedNodeIds.length) return;
+    const newClicked = [
+      ...clickedNodeIds.slice(0, afterAnchorIndex + 1),
+      nodeId,
+      ...clickedNodeIds.slice(afterAnchorIndex + 1),
+    ];
+    set({
+      clickedNodeIds: newClicked,
+      networkNodeIds: resolveFullPath(newClicked, graph),
+      autoRouteResult: null,
+    });
   },
 
   removeLastWaypoint: () =>

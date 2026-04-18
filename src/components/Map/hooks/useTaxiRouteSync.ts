@@ -213,6 +213,89 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     };
   }, [mapRef, taxiModeActive, clickModeEnabled, addWaypoint, addNetworkNode]);
 
+  // Drag-to-reroute — grab a point on the route and drag to a new node
+  const dragRef = useRef<{
+    networkIndex: number;
+    previewNodeId: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !taxiModeActive) return;
+
+    const HIT_RADIUS = 15; // pixels
+
+    const handleMouseDown = (e: maplibregl.MapMouseEvent) => {
+      const { mode: m, graph: g, networkNodeIds: ids } = useTaxiRouteStore.getState();
+      if (m !== 'network' || !g || ids.length < 2) return;
+
+      const click = map.project(e.lngLat.toArray() as [number, number]);
+
+      // Find nearest route point to click
+      let bestIdx = -1;
+      let bestDist = Infinity;
+      for (let i = 0; i < ids.length; i++) {
+        const node = g.nodes.get(ids[i]!);
+        if (!node) continue;
+        const pt = map.project([node.lon, node.lat]);
+        const d = Math.hypot(pt.x - click.x, pt.y - click.y);
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = i;
+        }
+      }
+
+      if (bestDist > HIT_RADIUS || bestIdx < 0) return;
+
+      // Start drag
+      e.preventDefault();
+      map.dragPan.disable();
+      dragRef.current = { networkIndex: bestIdx, previewNodeId: null };
+      map.getCanvas().style.cursor = 'grabbing';
+    };
+
+    const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
+      if (!dragRef.current) return;
+      const { graph: g } = useTaxiRouteStore.getState();
+      if (!g) return;
+
+      const nearest = findNearestNode(g, e.lngLat.lng, e.lngLat.lat, true);
+      if (nearest) {
+        dragRef.current.previewNodeId = nearest.id;
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (!dragRef.current) return;
+      const { previewNodeId, networkIndex } = dragRef.current;
+      dragRef.current = null;
+      map.dragPan.enable();
+      map.getCanvas().style.cursor = '';
+
+      if (previewNodeId == null) return;
+
+      const store = useTaxiRouteStore.getState();
+      // Find which anchor segment this point belongs to and insert a via-point
+      const segIdx = store.findAnchorSegment(networkIndex);
+      store.insertViaNode(segIdx, previewNodeId);
+    };
+
+    map.on('mousedown', handleMouseDown);
+    map.on('mousemove', handleMouseMove);
+    map.on('mouseup', handleMouseUp);
+
+    return () => {
+      map.off('mousedown', handleMouseDown);
+      map.off('mousemove', handleMouseMove);
+      map.off('mouseup', handleMouseUp);
+      if (dragRef.current) {
+        map.dragPan.enable();
+        map.getCanvas().style.cursor = '';
+        dragRef.current = null;
+      }
+    };
+  }, [mapRef, taxiModeActive]);
+
   // Animated render loop
   useEffect(() => {
     const map = mapRef.current;
