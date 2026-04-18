@@ -78,7 +78,13 @@
     "sceneryChanged": "Modifications de scènes détectées — reconstruction...",
     "parsingGlobal": "Analyse des aéroports globaux...",
     "scanningCustom": "Analyse des scènes personnalisées {{current}}/{{total}} : {{name}}",
-    "savingToDb": "Enregistrement dans la base de données..."
+    "savingToDb": "Enregistrement dans la base de données...",
+    "hints": {
+      "permissionMac": "macOS bloque l'accès aux fichiers. Allez dans Réglages du système > Confidentialité et sécurité > Fichiers et dossiers et autorisez X-Dispatch, puis redémarrez l'app.",
+      "permissionWindows": "Windows bloque l'accès aux fichiers. Faites un clic droit sur X-Dispatch et sélectionnez « Exécuter en tant qu'administrateur », ou vérifiez les permissions du dossier dans Propriétés > Sécurité.",
+      "permissionLinux": "Permission refusée. Vérifiez que votre utilisateur a un accès en lecture au dossier X-Plane, ou exécutez chmod +r sur le fichier.",
+      "fileBusy": "Le fichier est verrouillé par un autre programme. Fermez X-Plane et tout outil de scènes ou d'addons, puis réessayez."
+    }
   },
   "toolbar": {
     "searchPlaceholder": "Rechercher des aéroports...",

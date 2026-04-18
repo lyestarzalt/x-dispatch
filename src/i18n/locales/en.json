@@ -80,7 +80,13 @@
     "sceneryChanged": "Scenery changes detected — rebuilding...",
     "parsingGlobal": "Parsing Global Airports...",
     "scanningCustom": "Scanning Custom Scenery {{current}}/{{total}}: {{name}}",
-    "savingToDb": "Saving to database..."
+    "savingToDb": "Saving to database...",
+    "hints": {
+      "permissionMac": "macOS is blocking file access. Go to System Settings > Privacy & Security > Files and Folders and allow X-Dispatch, then restart the app.",
+      "permissionWindows": "Windows is blocking file access. Right-click X-Dispatch and select \"Run as administrator\", or check the folder permissions in Properties > Security.",
+      "permissionLinux": "Permission denied. Check that your user has read access to the X-Plane folder, or run chmod +r on the file.",
+      "fileBusy": "The file is locked by another program. Close X-Plane and any scenery or addon tools, then retry."
+    }
   },
   "toolbar": {
     "searchPlaceholder": "Search airports...",

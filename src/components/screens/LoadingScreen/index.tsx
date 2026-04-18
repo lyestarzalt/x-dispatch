@@ -44,6 +44,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
   ]);
   const [currentMessage, setCurrentMessage] = useState(() => t('loading.initializing'));
   const [error, setError] = useState<string | null>(null);
+  const [errorHint, setErrorHint] = useState<string | null>(null);
   const [phase, setPhase] = useState<'verifying' | 'loading'>('verifying');
   const [verifyComplete, setVerifyComplete] = useState(false);
 
@@ -69,6 +70,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
       if (progress.status === 'error') {
         setError(progress.error || progress.message);
+        setErrorHint(progress.hint ?? null);
         return;
       }
 
@@ -270,7 +272,10 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
         {hasError && (
           <Alert variant="destructive" className="mt-6">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              {error}
+              {errorHint && <p className="mt-2 text-xs text-destructive/80">{t(errorHint)}</p>}
+            </AlertDescription>
           </Alert>
         )}
 

@@ -78,7 +78,13 @@
     "sceneryChanged": "Szenerie-Änderungen erkannt — Neuaufbau...",
     "parsingGlobal": "Globale Flughäfen werden analysiert...",
     "scanningCustom": "Custom Scenery {{current}}/{{total}}: {{name}}",
-    "savingToDb": "Speichern in der Datenbank..."
+    "savingToDb": "Speichern in der Datenbank...",
+    "hints": {
+      "permissionMac": "macOS blockiert den Dateizugriff. Gehe zu Systemeinstellungen > Datenschutz & Sicherheit > Dateien und Ordner und erlaube X-Dispatch, dann starte die App neu.",
+      "permissionWindows": "Windows blockiert den Dateizugriff. Rechtsklick auf X-Dispatch und 'Als Administrator ausführen' wählen, oder die Ordnerberechtigungen unter Eigenschaften > Sicherheit prüfen.",
+      "permissionLinux": "Zugriff verweigert. Prüfe, ob dein Benutzer Leserechte für den X-Plane-Ordner hat, oder führe chmod +r auf die Datei aus.",
+      "fileBusy": "Die Datei wird von einem anderen Programm verwendet. Schließe X-Plane und alle Szenen- oder Addon-Tools und versuche es erneut."
+    }
   },
   "toolbar": {
     "searchPlaceholder": "Flughäfen suchen...",

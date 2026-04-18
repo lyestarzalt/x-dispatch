@@ -78,7 +78,13 @@
     "sceneryChanged": "检测到地景更改 — 正在重建...",
     "parsingGlobal": "正在解析全球机场...",
     "scanningCustom": "正在扫描自定义地景 {{current}}/{{total}}: {{name}}",
-    "savingToDb": "正在保存到数据库..."
+    "savingToDb": "正在保存到数据库...",
+    "hints": {
+      "permissionMac": "macOS 正在阻止文件访问。前往系统设置 > 隐私与安全性 > 文件和文件夹，允许 X-Dispatch 访问，然后重启应用。",
+      "permissionWindows": "Windows 正在阻止文件访问。右键点击 X-Dispatch 并选择「以管理员身份运行」，或在属性 > 安全中检查文件夹权限。",
+      "permissionLinux": "权限被拒绝。请检查您的用户是否对 X-Plane 文件夹有读取权限，或对文件执行 chmod +r。",
+      "fileBusy": "文件被另一个程序锁定。请关闭 X-Plane 和所有地景或插件工具，然后重试。"
+    }
   },
   "toolbar": {
     "searchPlaceholder": "搜索机场...",

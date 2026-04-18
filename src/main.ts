@@ -333,6 +333,25 @@ function registerIpcHandlers() {
     }
   });
 
+  /**
+   * Build an i18n hint key for file access errors.
+   * Returns undefined for unrecognized error codes.
+   */
+  function getFileErrorHintKey(error: unknown): string | undefined {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (!code) return undefined;
+
+    if (code === 'EPERM' || code === 'EACCES') {
+      if (process.platform === 'darwin') return 'loading.hints.permissionMac';
+      if (process.platform === 'win32') return 'loading.hints.permissionWindows';
+      return 'loading.hints.permissionLinux';
+    }
+
+    if (code === 'EBUSY') return 'loading.hints.fileBusy';
+
+    return undefined;
+  }
+
   ipcMain.handle('app:startLoading', async () => {
     if (isLoading) {
       return { success: false, error: 'Loading already in progress' };
@@ -512,11 +531,13 @@ function registerIpcHandlers() {
       return { success: true, status: dataManager.getStatus() };
     } catch (error) {
       logger.data.error('Data loading failed', error);
+      const hint = getFileErrorHintKey(error);
       sendLoadingProgress({
         step: 'error',
         status: 'error',
         message: 'Loading failed',
         error: (error as Error).message,
+        hint,
       });
       isLoading = false;
       return { success: false, error: (error as Error).message };

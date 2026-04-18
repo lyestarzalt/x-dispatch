@@ -78,7 +78,13 @@
     "sceneryChanged": "Wykryto zmiany scenerii — odbudowa...",
     "parsingGlobal": "Analiza globalnych lotnisk...",
     "scanningCustom": "Skanowanie Custom Scenery {{current}}/{{total}}: {{name}}",
-    "savingToDb": "Zapisywanie do bazy danych..."
+    "savingToDb": "Zapisywanie do bazy danych...",
+    "hints": {
+      "permissionMac": "macOS blokuje dostęp do plików. Przejdź do Ustawienia systemowe > Prywatność i bezpieczeństwo > Pliki i foldery i zezwól na X-Dispatch, a następnie uruchom ponownie aplikację.",
+      "permissionWindows": "Windows blokuje dostęp do plików. Kliknij prawym przyciskiem myszy na X-Dispatch i wybierz \"Uruchom jako administrator\" lub sprawdź uprawnienia folderu we Właściwości > Bezpieczeństwo.",
+      "permissionLinux": "Odmowa dostępu. Sprawdź, czy Twój użytkownik ma uprawnienia do odczytu folderu X-Plane, lub uruchom chmod +r na pliku.",
+      "fileBusy": "Plik jest zablokowany przez inny program. Zamknij X-Plane i wszystkie narzędzia scenerii lub dodatków, a następnie spróbuj ponownie."
+    }
   },
   "toolbar": {
     "searchPlaceholder": "Szukaj lotnisk...",

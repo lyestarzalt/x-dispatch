@@ -77,6 +77,8 @@ export interface LoadingProgress {
   message: string;
   count?: number;
   error?: string;
+  /** OS-specific hint for resolving the error */
+  hint?: string;
   phase?: 'verifying' | 'loading';
   detail?: LoadingDetail;
 }

@@ -78,7 +78,13 @@
     "sceneryChanged": "Alterações de cenário detectadas — reconstruindo...",
     "parsingGlobal": "Analisando aeroportos globais...",
     "scanningCustom": "Analisando Custom Scenery {{current}}/{{total}}: {{name}}",
-    "savingToDb": "Salvando no banco de dados..."
+    "savingToDb": "Salvando no banco de dados...",
+    "hints": {
+      "permissionMac": "O macOS está bloqueando o acesso aos arquivos. Vá em Ajustes do Sistema > Privacidade e Segurança > Arquivos e Pastas e permita o X-Dispatch, depois reinicie o app.",
+      "permissionWindows": "O Windows está bloqueando o acesso aos arquivos. Clique com o botão direito no X-Dispatch e selecione \"Executar como administrador\", ou verifique as permissões da pasta em Propriedades > Segurança.",
+      "permissionLinux": "Permissão negada. Verifique se o seu usuário tem acesso de leitura à pasta do X-Plane, ou execute chmod +r no arquivo.",
+      "fileBusy": "O arquivo está bloqueado por outro programa. Feche o X-Plane e quaisquer ferramentas de cenários ou addons, depois tente novamente."
+    }
   },
   "toolbar": {
     "searchPlaceholder": "Pesquisar aeroportos...",

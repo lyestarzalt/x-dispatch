@@ -78,7 +78,13 @@
     "sceneryChanged": "シーナリーの変更を検出 — 再構築中...",
     "parsingGlobal": "グローバル空港を解析中...",
     "scanningCustom": "カスタムシーナリーをスキャン中 {{current}}/{{total}}: {{name}}",
-    "savingToDb": "データベースに保存中..."
+    "savingToDb": "データベースに保存中...",
+    "hints": {
+      "permissionMac": "macOSがファイルアクセスをブロックしています。システム設定 > プライバシーとセキュリティ > ファイルとフォルダでX-Dispatchを許可し、アプリを再起動してください。",
+      "permissionWindows": "Windowsがファイルアクセスをブロックしています。X-Dispatchを右クリックして「管理者として実行」を選択するか、プロパティ > セキュリティでフォルダのアクセス権を確認してください。",
+      "permissionLinux": "アクセスが拒否されました。X-Planeフォルダへの読み取り権限があるか確認するか、ファイルに対してchmod +rを実行してください。",
+      "fileBusy": "ファイルが他のプログラムによってロックされています。X-Planeとシーナリーやアドオンツールをすべて閉じてから再試行してください。"
+    }
   },
   "toolbar": {
     "searchPlaceholder": "空港を検索...",
