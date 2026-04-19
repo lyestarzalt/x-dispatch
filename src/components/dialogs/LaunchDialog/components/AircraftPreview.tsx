@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Fuel, Plane, Scale, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ const LIVERY_CARD_HEIGHT = 80;
 const LIVERY_GAP = 12;
 const LIVERY_PADDING = 12;
 const LIVERY_VISIBLE_ROWS = 2;
+const LIVERY_COLUMNS = 4;
 
 // Main preview image for selected livery
 function LiveryPreview({
@@ -133,6 +135,21 @@ export function AircraftPreview() {
     setSelectedLivery(livery.name);
   };
 
+  // Group liveries into rows for scroll-snap
+  const liveryRows = useMemo(() => {
+    if (!selectedAircraft) return [];
+    const rows: { livery: Livery; index: number }[][] = [];
+    for (let i = 0; i < selectedAircraft.liveries.length; i += LIVERY_COLUMNS) {
+      rows.push(
+        selectedAircraft.liveries.slice(i, i + LIVERY_COLUMNS).map((livery, j) => ({
+          livery,
+          index: i + j,
+        }))
+      );
+    }
+    return rows;
+  }, [selectedAircraft]);
+
   if (!selectedAircraft) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
@@ -240,6 +257,7 @@ export function AircraftPreview() {
           <span className="text-sm text-muted-foreground">{selectedAircraft.liveries.length}</span>
         </div>
         <ScrollArea
+          viewportClassName="snap-y snap-mandatory scroll-p-3"
           style={{
             maxHeight:
               LIVERY_CARD_HEIGHT * LIVERY_VISIBLE_ROWS +
@@ -247,15 +265,23 @@ export function AircraftPreview() {
               LIVERY_PADDING * 2,
           }}
         >
-          <div className="grid grid-cols-4 gap-3 p-3">
-            {selectedAircraft.liveries.map((livery, index) => (
-              <LiveryCard
-                key={livery.name}
-                livery={livery}
-                isSelected={selectedLivery === livery.name}
-                fallbackImage={aircraftImage ?? undefined}
-                onClick={() => selectLivery(index)}
-              />
+          <div className="flex flex-col p-3" style={{ gap: LIVERY_GAP }}>
+            {liveryRows.map((row, rowIndex) => (
+              <div
+                key={rowIndex}
+                className="grid snap-start grid-cols-4"
+                style={{ gap: LIVERY_GAP }}
+              >
+                {row.map(({ livery, index }) => (
+                  <LiveryCard
+                    key={livery.name}
+                    livery={livery}
+                    isSelected={selectedLivery === livery.name}
+                    fallbackImage={aircraftImage ?? undefined}
+                    onClick={() => selectLivery(index)}
+                  />
+                ))}
+              </div>
             ))}
           </div>
         </ScrollArea>
