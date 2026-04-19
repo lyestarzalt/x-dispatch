@@ -26,230 +26,80 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">⬇️ Download</a>
+  <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download</a> · <a href="https://tarzalt.dev/projects/x-dispatch/">Website</a> · <a href="https://discord.gg/76UYpxXWW7">Discord</a>
 </p>
 
 ---
 
 ![Map Overview](screenshots/map-overview.png)
 
-X-Plane ships with detailed airport data but no way to see it on a map. X-Dispatch puts all 35,000+ airports on a 3D globe. Click one to get runway diagrams, taxiways, gates, and markings. You can pull your flight plan from SimBrief, pick a starting gate, and launch X-Plane from the app.
+All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, gates, and markings rendered from X-Plane's apt.dat. Set up your flight, import from SimBrief, and launch X-Plane directly.
 
-If you find this useful, please give it a ⭐, it helps others discover the project!
+> **Download:** grab the installer for your OS from the [Releases page](https://github.com/lyestarzalt/x-dispatch/releases/latest) (`.dmg` for macOS, `.exe` for Windows, `.AppImage` for Linux).
 
-> **Download the right file:** grab the installer for your OS from the [Releases page](https://github.com/lyestarzalt/x-dispatch/releases/latest) (`.dmg` for macOS, `.exe` for Windows, `.deb`/`.rpm` for Linux). Don't download the source code ZIP — that's the raw code, not the app.
-
-> **macOS (Sequoia/Tahoe):** The app is unsigned. After installing, go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
+> **macOS:** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
 >
 > ```bash
 > xattr -rd com.apple.quarantine /Applications/X-Dispatch.app
 > ```
 
-> **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator.
+> **Windows:** If X-Plane doesn't launch, try running X-Dispatch as administrator.
 
 ## Screenshots
 
 ![Airport Detail](screenshots/airport-detail.png)
 ![Flight Setup](screenshots/flight-setup.png)
 
+![3D Terrain](screenshots/3D-terrain.png)
+
 <details>
-<summary>SimBrief Integration</summary>
+<summary>More screenshots</summary>
 
 ![SimBrief Import](screenshots/simbrief-1.png)
-![SimBrief Flight Info](screenshots/simbrief-2.png)
-
-</details>
-
-<details>
-<summary>Addon Manager</summary>
-
 ![Addon Browser](screenshots/addon-manager-1.png)
-![Addon Details](screenshots/addon-manager-2.png)
-
-</details>
-
-<details>
-<summary>Airport Detail View</summary>
-
-![Airport Detail](screenshots/airport-detail.png)
-
-</details>
-
-<details>
-<summary>SID/STAR Procedures</summary>
-
+![Flight Tracking](screenshots/track-plane.png)
 ![Procedures](screenshots/procedures.png)
 
 </details>
 
-<details>
-<summary>Starting Position</summary>
+## What it does
 
-![Starting Point](screenshots/starting-point-select.png)
+- **Airport map** — 35,000+ airports on a 3D globe with terrain and contour lines. Runways, taxiways, gates, helipads, markings, lights. Custom scenery detection.
+- **Flight setup** — Pick your aircraft, livery, starting position, fuel, payload, weather. Launch X-Plane directly or relocate mid-flight.
+- **Taxi routing** — Select a gate and runway, get a shortest-path taxi route. Drag to reroute through different taxiways.
+- **SimBrief** — Import your OFP. Route goes on the map with fuel breakdown and nav log.
+- **Nav data** — VORs, NDBs, ILS, airways, airspace, SID/STAR/approach procedures. Works with Navigraph.
+- **Live traffic** — VATSIM and IVAO overlays. Live METAR per airport.
+- **Flight tracking** — See your aircraft in real time with a flight strip.
+- **Addon manager** — Browse installed aircraft, scenery, plugins. Drag-and-drop install. Scenery priority reordering.
 
-</details>
-
-<details>
-<summary>Flight Setup</summary>
-
-![Flight Setup](screenshots/flight-setup.png)
-
-</details>
-
-<details>
-<summary>Fuel & Payload</summary>
-
-![Fuel Setup](screenshots/fuel-setup.png)
-
-</details>
-
-<details>
-<summary>Weather Setup</summary>
-
-![Weather Setup](screenshots/weather-setup.png)
-
-</details>
-
-![3D Terrain](screenshots/3D-terrain.png)
-
-<details>
-<summary>Live Flight Tracking</summary>
-
-![Flight Tracking](screenshots/track-plane.png)
-
-</details>
-
-<details>
-<summary>Flight Plan</summary>
-
-![Flight Plan](screenshots/flight-plan.png)
-
-</details>
-
-<details>
-<summary>Settings</summary>
-
-![Settings](screenshots/settings.png)
-
-</details>
-
-## Features
-
-### Map & Visualization
-
-- 3D globe with starfield background, terrain elevation, hillshade, and contour lines
-- 6 basemap styles (OpenFreeMap, CARTO dark/light variants)
-- Airport dots for 35,000+ airports with custom scenery support
-- Airport filters by type, runway surface, and country
-- Day/night terminator overlay
-- Weather radar overlay (RainViewer) with playback controls
-- Interactive drag-to-resize range rings with category presets
-- Idle orbit camera for selected airports
-
-### Airport Details
-
-- Runways with surface types, dimensions, lighting, and markings
-- Taxiways, aprons, and pavement areas with signs
-- Gates and parking positions with heading indicators
-- Helipads, windsocks, and beacons
-
-### Navigation Data
-
-- VOR, NDB, DME, TACAN, and ILS/LOC with course visualization
-- High and low altitude airways
-- Controlled airspace boundaries and FIR regions
-- SID, STAR, and approach procedures with route overlay
-- Range rings showing aircraft reach by category (jet, turboprop, GA)
-- X-Plane native data or Navigraph with AIRAC cycle detection
-
-### SimBrief Integration
-
-- One-click OFP import with route visualization on the map
-- Fuel breakdown, weight summary, flight times, and nav log
-- Waypoint-by-waypoint navigation with map highlighting
-
-### Live Traffic
-
-- VATSIM and IVAO network overlays with pilot callsigns and aircraft types
-- Controller and ATIS positions
-- Live METAR with decoded weather and flight category display (VFR/MVFR/IFR/LIFR)
-
-### Flight Launcher
-
-- Aircraft browser with search, filters, and favorites
-- Livery selection with per-aircraft memory
-- Fuel and payload configuration with weight & balance
-- Time of day, weather presets, and cold & dark start
-- Start from any gate, runway, helipad, or custom pin drop with coordinates
-- Air start, carrier catapult, and frigate deck launch modes
-- Runway approach start with configurable distance and glider tow
-- Direct X-Plane launch or mid-flight relocation via REST API
-- Logbook of last 10 flights
-
-### Live Flight Tracking
-
-- Real-time aircraft position via X-Plane WebSocket API
-- Flight strip with IAS, GS, altitude, VS, heading, wind, and temperature
-- Follow mode to keep the aircraft centered on the map
-
-### Multiple Installations
-
-- Named X-Plane installations with quick switching
-- Full data reload on installation change
-- Symlink and junction support for addons on external drives
-- Version and Steam detection per installation
-
-### Addon Manager
-
-- Browse installed aircraft, plugins, liveries, and Lua scripts
-- Scenery priority manager with drag-to-reorder and auto-sort
-- One-click install with automatic extraction (ZIP, RAR, 7z)
-- Delete scenery from disk with confirmation
-- Detects manually added scenery and new addons on rescan
-
-### General
-
-- `xdispatch://` deep link protocol for airport navigation
-- Available in 10 languages: English, French, German, Spanish, Italian, Portuguese, Russian, Polish, Japanese, Chinese
-- Light, dark, and system theme
-- Configurable interface zoom and font size
-- Keyboard shortcuts (Ctrl+F for search)
+10 languages. Requires X-Plane 12.4+. More details on the [project page](https://tarzalt.dev/projects/x-dispatch/).
 
 ## Development
 
 ```bash
-npm install      # install dependencies
-npm start        # dev mode with hot reload
-npm run make     # build distributables
+npm install           # install dependencies
+npm start             # dev mode with hot reload
+npm run start:clean   # fresh start (clears .vite cache)
+npm run make          # build distributables
 ```
 
 ```bash
-npm run typecheck   # TypeScript strict checks
-npm run lint        # ESLint
-npm run lint:fix    # auto-fix lint issues
-npm run format      # Prettier
+npm run typecheck     # TypeScript strict mode
+npm run lint          # ESLint
+npm run lint:fix      # auto-fix lint issues
+npm run format        # Prettier
+npm run check         # all three at once
 ```
 
-### Tech Stack
-
-| Layer         | Technology                       |
-| ------------- | -------------------------------- |
-| Framework     | Electron + React 18 + TypeScript |
-| Build         | Vite + Electron Forge            |
-| UI            | Tailwind CSS + shadcn/ui         |
-| State         | Zustand (persisted stores)       |
-| Data Fetching | TanStack Query                   |
-| Map           | MapLibre GL JS                   |
-| Database      | SQLite (sql.js)                  |
-
-Requires Node.js 20+ and X-Plane 12.4+.
+Electron + React 18 + TypeScript, MapLibre GL JS, Zustand, SQLite. Node.js 20+.
 
 ## Support
 
-- [Discord](https://discord.gg/76UYpxXWW7) - help, feedback, discussion
-- [Issues](https://github.com/lyestarzalt/x-dispatch/issues) - bugs and feature requests
+- [Discord](https://discord.gg/76UYpxXWW7)
+- [Issues](https://github.com/lyestarzalt/x-dispatch/issues)
 
-## Donation
+## Donate
 
 X-Dispatch is a passion project built for the X-Plane community. Donations are entirely optional but appreciated.
 
@@ -257,4 +107,4 @@ X-Dispatch is a passion project built for the X-Plane community. Donations are e
 
 ## License
 
-GPL-3.0 - see [LICENSE](LICENSE) for details.
+GPL-3.0 — see [LICENSE](LICENSE).
