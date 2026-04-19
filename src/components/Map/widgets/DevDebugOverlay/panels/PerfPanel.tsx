@@ -5,13 +5,7 @@ export function PerfPanel({ stats }: { stats: DebugStats }) {
   return (
     <div className="grid grid-cols-2 gap-x-6">
       <div>
-        <SectionLabel>Rendering</SectionLabel>
-        <Row
-          label="FPS"
-          value={String(stats.fps)}
-          status={stats.fps >= 30 ? 'ok' : stats.fps >= 15 ? 'off' : 'error'}
-          tip="Map render frames per second"
-        />
+        <SectionLabel>Tile Cache</SectionLabel>
         <Row
           label="Tile Cache"
           value={`${stats.tileCacheEntries} / ${stats.tileCacheSize}`}

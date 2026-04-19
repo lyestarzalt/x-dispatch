@@ -253,20 +253,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
           {/* Quick stats */}
           {stats && (
             <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground/50">
-              <span title="Frames per second">
-                <span
-                  className={
-                    stats.fps >= 30
-                      ? 'text-success'
-                      : stats.fps >= 15
-                        ? 'text-warning'
-                        : 'text-destructive'
-                  }
-                >
-                  {stats.fps}
-                </span>{' '}
-                fps
-              </span>
               <span title="Current zoom level">z{stats.zoom.toFixed(1)}</span>
               {stats.airportICAO && <span title="Selected airport">{stats.airportICAO}</span>}
             </div>
