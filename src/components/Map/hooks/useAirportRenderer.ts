@@ -195,82 +195,19 @@ export function useAirportRenderer(
   );
 
   /**
-   * Start light animations
+   * Start light animations — DISABLED
    *
-   * IMPORTANT: Most airport lights are STEADY in real life!
-   * Taxiway lights are now handled by TaxiwayLightsLayer using deck.gl
-   * Only approach lights "rabbit" effect is animated here.
+   * The approach lights "rabbit" animation used setPaintProperty() at 30fps,
+   * which caused MapLibre to repaint every frame → 50-80% GPU usage even
+   * when the map was idle (#59). Same root cause as the TaxiwayLightsLayer
+   * issue (see TaxiwayLightsLayer.ts and clearAirport above).
+   *
+   * All airport lights now render at static opacity. The rabbit effect
+   * looked nice but isn't worth the battery drain on laptops.
    */
   const startAnimations = useCallback(() => {
-    if (!map.current) return;
-
-    let phase = 0;
-    let lastFrameTime = 0;
-
-    const animate = () => {
-      if (!map.current || !animationsEnabled.current) {
-        animationFrameRef.current = null;
-        return;
-      }
-
-      // Throttle to ~30fps to avoid overwhelming MapLibre's render loop
-      const now = performance.now();
-      if (now - lastFrameTime < 33) {
-        animationFrameRef.current = requestAnimationFrame(animate);
-        return;
-      }
-      lastFrameTime = now;
-
-      // phase increments at ~30fps, so 0.033 per frame
-      phase += 0.033;
-
-      try {
-        // Approach lights "rabbit" effect
-        // 30 bars (dist 30-900m, every 30m), barIndex 0=near threshold, 29=far
-        // Cycle through all 30 in ~1.5 seconds (20 bars/sec)
-        // Light runs from far (29) toward near (0)
-        const currentBar = Math.floor((phase * 20) % 30);
-
-        if (map.current.getLayer('airport-approach-lights')) {
-          map.current.setPaintProperty('airport-approach-lights', 'circle-opacity', [
-            'case',
-            // Light up the bar where the "rabbit" currently is (running from far to near)
-            ['==', ['get', 'barIndex'], 29 - currentBar],
-            1.0,
-            // Bars the rabbit has passed (closer to threshold) - bright trail
-            ['<', ['get', 'barIndex'], 29 - currentBar],
-            0.7,
-            // Bars ahead of rabbit (further from threshold) - dim
-            0.3,
-          ]);
-
-          // Strobe effect - use zoom level to calculate radius dynamically
-          const zoom = map.current.getZoom();
-          const baseRadius = 1.5 + (zoom - 13) * 0.5;
-          const largeRadius = baseRadius * 1.8;
-
-          map.current.setPaintProperty('airport-approach-lights', 'circle-radius', [
-            'case',
-            ['==', ['get', 'barIndex'], 29 - currentBar],
-            largeRadius,
-            baseRadius,
-          ]);
-
-          // Keep blur steady
-          map.current.setPaintProperty('airport-approach-lights', 'circle-blur', 0.4);
-        }
-
-        // NOTE: Taxiway lights are handled by TaxiwayLightsLayer (deck.gl)
-        // Runway lights remain steady (no animation)
-      } catch {
-        // Layer might not exist yet
-      }
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-  }, [map]);
+    // No-op — animations removed for GPU performance (#59)
+  }, []);
 
   /**
    * Stop animations
