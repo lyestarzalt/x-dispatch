@@ -95,7 +95,26 @@ export function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): 
       full.push(...segment);
     }
   }
-  return full;
+
+  // Remove backtracking loops — if any node appears twice, the path
+  // doubled back on itself. Cut everything between the two occurrences.
+  // Example: [A, B, C, D, C, B, E] → [A, B, E]
+  // Walk backward from the end to find the LAST occurrence of each node,
+  // which gives us the shortest non-looping path.
+  const cleaned: number[] = [];
+  let i = 0;
+  while (i < full.length) {
+    const nodeId = full[i]!;
+    // Look ahead: does this node appear again later?
+    let lastIdx = i;
+    for (let j = i + 1; j < full.length; j++) {
+      if (full[j] === nodeId) lastIdx = j;
+    }
+    cleaned.push(nodeId);
+    i = lastIdx + 1; // skip to after the last occurrence
+  }
+
+  return cleaned;
 }
 
 // ============================================================================
