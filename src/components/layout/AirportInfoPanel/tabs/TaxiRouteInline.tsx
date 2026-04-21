@@ -82,7 +82,8 @@ export default function TaxiRouteInline() {
 
   const isNetwork = mode === 'network';
   const hasRoute = isNetwork ? networkNodeIds.length > 0 : waypoints.length > 0;
-  const canExport = isNetwork && networkNodeIds.length >= 2;
+  const canExport =
+    (isNetwork && networkNodeIds.length >= 2) || (!isNetwork && waypoints.length >= 2);
   const hasGraph = !!graph;
   const isFreehand = mode === 'freehand';
 

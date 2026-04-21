@@ -525,8 +525,8 @@
       "drawManually": "Draw manually",
       "autoRoute": "Auto route",
       "pointsPlaced": "{{count}} point(s)",
-      "export": "Export for Follow the Greens",
-      "exportSuccess": "Route exported for Follow the Greens"
+      "export": "Save taxi route",
+      "exportSuccess": "Taxi route saved"
     }
   },
   "navigation": {
