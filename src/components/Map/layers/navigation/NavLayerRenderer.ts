@@ -66,19 +66,38 @@ export abstract class NavLayerRenderer<T> {
   }
 
   /**
-   * Remove the layer and source from the map
+   * Remove the layer and source from the map.
+   * Tries direct removal first — safeRemove defers when isStyleLoaded()
+   * is false, which causes add() to fail because the old source still exists.
    */
   remove(map: maplibregl.Map): void {
-    safeRemove(map, () => this.performRemove(map));
+    if (!map.getStyle()) return;
+    try {
+      this.performRemove(map);
+    } catch {
+      safeRemove(map, () => this.performRemove(map));
+    }
   }
 
   /** Raw removal logic — override in subclasses for extra cleanup. */
   protected performRemove(map: maplibregl.Map): void {
     for (const id of this.additionalLayerIds) {
-      if (map.getLayer(id)) map.removeLayer(id);
+      try {
+        if (map.getLayer(id)) map.removeLayer(id);
+      } catch {
+        /* ignore */
+      }
     }
-    if (map.getLayer(this.layerId)) map.removeLayer(this.layerId);
-    if (map.getSource(this.sourceId)) map.removeSource(this.sourceId);
+    try {
+      if (map.getLayer(this.layerId)) map.removeLayer(this.layerId);
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (map.getSource(this.sourceId)) map.removeSource(this.sourceId);
+    } catch {
+      /* ignore */
+    }
   }
 
   /**
