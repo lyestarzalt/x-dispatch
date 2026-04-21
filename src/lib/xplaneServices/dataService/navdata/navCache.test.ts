@@ -248,7 +248,7 @@ describe('navCache pipeline', () => {
       const { data: parsed } = parseAirways(content);
       insertAirways(parsed);
 
-      const first = parsed[0];
+      const first = parsed[0]!;
       const all = getAllAirwaysFromDb();
       const found = all.find(
         (a) => a.name === first.name && a.fromFix === first.fromFix && a.toFix === first.toFix

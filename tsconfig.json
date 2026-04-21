@@ -24,5 +24,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "out", "dist", ".vite"]
+  "exclude": ["node_modules", "out", "dist", ".vite", "src/**/*.test.ts", "tests"]
 }
