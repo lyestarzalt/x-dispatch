@@ -16,6 +16,7 @@ export default tseslint.config(
       '*.config.ts',
       'vite.*.ts',
       'forge.config.ts',
+      'design-system/**',
     ],
   },
 
