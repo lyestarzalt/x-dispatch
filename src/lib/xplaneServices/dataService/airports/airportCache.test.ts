@@ -53,9 +53,11 @@ vi.mock('@/lib/db', async () => {
 // Import the module under test AFTER vi.mock() has been registered.
 const {
   insertAirports,
+  insertCustomAirports,
   getAllAirportsFromDb,
   getAirportCount,
   clearAirports,
+  clearCustomAirports,
   persistDatabase,
   detectAptFileChanges,
   updateStoredFileMeta,
@@ -292,6 +294,131 @@ describe('airportCache pipeline', () => {
 
   it('persistDatabase does not throw', () => {
     expect(() => persistDatabase()).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Custom scenery airport tests
+// ---------------------------------------------------------------------------
+
+describe('custom scenery airports', () => {
+  beforeEach(async () => {
+    await createTestDb();
+  });
+
+  afterEach(() => {
+    closeTestDb();
+  });
+
+  // ---- insertCustomAirports ----
+
+  it('insertCustomAirports inserts into the custom table and airports are queryable', () => {
+    const customKJFK = makeEntry({
+      icao: 'KJFK',
+      name: 'KJFK Custom Scenery',
+      lat: 40.639925,
+      lon: -73.778694,
+    });
+
+    insertCustomAirports([customKJFK]);
+
+    const all = getAllAirportsFromDb();
+    expect(all).toHaveLength(1);
+    expect(all[0]?.icao).toBe('KJFK');
+    expect(all[0]?.name).toBe('KJFK Custom Scenery');
+  });
+
+  // ---- clearCustomAirports ----
+
+  it('clearCustomAirports removes custom airports but leaves global airports intact', () => {
+    const globalEntry = makeEntry({
+      icao: 'EGLL',
+      name: 'London Heathrow',
+      lat: 51.4775,
+      lon: -0.4614,
+    });
+    const customEntry = makeEntry({
+      icao: 'KJFK',
+      name: 'KJFK Custom',
+      lat: 40.639925,
+      lon: -73.778694,
+    });
+
+    insertAirports([globalEntry]);
+    insertCustomAirports([customEntry]);
+
+    expect(getAllAirportsFromDb()).toHaveLength(2);
+
+    clearCustomAirports();
+
+    const remaining = getAllAirportsFromDb();
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]?.icao).toBe('EGLL');
+  });
+
+  // ---- Override behavior ----
+
+  it('custom airport overrides global airport with the same ICAO', () => {
+    const globalKJFK = makeEntry({
+      icao: 'KJFK',
+      name: 'John F Kennedy Intl',
+      lat: 40.639925,
+      lon: -73.778694,
+    });
+    const customKJFK = makeEntry({
+      icao: 'KJFK',
+      name: 'KJFK Custom Scenery Enhanced',
+      lat: 40.641,
+      lon: -73.781,
+    });
+
+    insertAirports([globalKJFK]);
+    insertCustomAirports([customKJFK]);
+
+    const all = getAllAirportsFromDb();
+    // Only one KJFK should appear
+    const kjfkEntries = all.filter((a) => a.icao === 'KJFK');
+    expect(kjfkEntries).toHaveLength(1);
+    // Custom version wins
+    expect(kjfkEntries[0]?.name).toBe('KJFK Custom Scenery Enhanced');
+    expect(kjfkEntries[0]?.isCustom).toBe(true);
+  });
+
+  // ---- Custom-only airport ----
+
+  it('custom-only airport (no global counterpart) appears in getAllAirportsFromDb', () => {
+    const customOnly = makeEntry({
+      icao: 'ZZZZ',
+      name: 'Custom Only Airport',
+      lat: 10,
+      lon: 20,
+    });
+
+    insertCustomAirports([customOnly]);
+
+    const all = getAllAirportsFromDb();
+    expect(all).toHaveLength(1);
+    expect(all[0]?.icao).toBe('ZZZZ');
+    expect(all[0]?.isCustom).toBe(true);
+  });
+
+  // ---- Count behavior ----
+
+  it('getAirportCount reflects only global airports (custom table is separate)', () => {
+    const globalEntries = [
+      makeEntry({ icao: 'EGLL', lat: 51.4775, lon: -0.4614 }),
+      makeEntry({ icao: 'LFPG', lat: 49.0097, lon: 2.5478 }),
+    ];
+    const customEntry = makeEntry({ icao: 'KJFK', lat: 40.639925, lon: -73.778694 });
+
+    insertAirports(globalEntries);
+    insertCustomAirports([customEntry]);
+
+    // getAirportCount counts only the global airports table
+    expect(getAirportCount()).toBe(2);
+
+    // But getAllAirportsFromDb merges both tables
+    expect(getAllAirportsFromDb()).toHaveLength(3);
   });
 });
 
