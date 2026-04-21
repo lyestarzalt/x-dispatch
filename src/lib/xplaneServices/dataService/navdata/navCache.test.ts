@@ -63,6 +63,8 @@ const {
   getAirwayCount,
   clearAirways,
   persistNavDatabase,
+  checkNavCacheValidity,
+  updateNavFileMeta,
 } = await import('./navCache');
 
 const { parseNavaids } = await import('@/lib/parsers/nav/navaidParser');
@@ -279,5 +281,130 @@ describe('navCache pipeline', () => {
 
   it('persistNavDatabase does not throw', () => {
     expect(() => persistNavDatabase()).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Nav cache invalidation tests
+// ---------------------------------------------------------------------------
+
+// Import the schema table for direct DB seeding
+const { navFileMeta: navFileMetaTable } = await import('@/lib/db/schema');
+
+/**
+ * Seed a nav_file_meta row directly via Drizzle, bypassing fs.statSync.
+ * Using a helper outside describe so it can reference getTestDb at call time.
+ */
+function seedNavMeta(opts: {
+  filePath: string;
+  mtime: number;
+  dataType: 'navaids' | 'waypoints' | 'airways' | 'airspaces';
+  sourceType: 'xplane-default' | 'navigraph' | 'unknown';
+}) {
+  const db = getTestDb();
+  db.insert(navFileMetaTable)
+    .values({
+      path: opts.filePath,
+      mtime: opts.mtime,
+      recordCount: 0,
+      dataType: opts.dataType,
+      sourceType: opts.sourceType,
+    })
+    .run();
+}
+
+describe('checkNavCacheValidity cache invalidation', () => {
+  // Use a real fixture file so getFileMtime can stat it successfully.
+  // The fixture path contains neither 'Custom Data' nor 'Resources/default data',
+  // so detectSourceType returns 'unknown' — both cached and current will be 'unknown'.
+  const FIXTURE_NAV = path.resolve(FIXTURES_DIR, 'earth_nav-sample.dat');
+
+  beforeEach(async () => {
+    await createTestDb();
+  });
+
+  afterEach(() => {
+    closeTestDb();
+  });
+
+  it('indicates reload needed when no cached entry exists', () => {
+    // Empty database — no nav_file_meta rows
+    const result = checkNavCacheValidity(FIXTURE_NAV, 'navaids');
+
+    expect(result.needsReload).toBe(true);
+    expect(result.reason).toMatch(/no cached/i);
+  });
+
+  it('indicates no reload needed when mtime matches and source type matches', () => {
+    // Read the real mtime of the fixture file
+    const actualMtime = Math.floor(fs.statSync(FIXTURE_NAV).mtimeMs);
+
+    // Seed with the exact real mtime
+    seedNavMeta({
+      filePath: FIXTURE_NAV,
+      mtime: actualMtime,
+      dataType: 'navaids',
+      sourceType: 'unknown',
+    });
+
+    const result = checkNavCacheValidity(FIXTURE_NAV, 'navaids');
+
+    expect(result.needsReload).toBe(false);
+  });
+
+  it('indicates reload needed when mtime changes', () => {
+    // Seed with an outdated mtime (1 ms before the real mtime)
+    const actualMtime = Math.floor(fs.statSync(FIXTURE_NAV).mtimeMs);
+    const staleMtime = actualMtime - 1;
+
+    seedNavMeta({
+      filePath: FIXTURE_NAV,
+      mtime: staleMtime,
+      dataType: 'navaids',
+      sourceType: 'unknown',
+    });
+
+    const result = checkNavCacheValidity(FIXTURE_NAV, 'navaids');
+
+    expect(result.needsReload).toBe(true);
+    expect(result.reason).toMatch(/modified/i);
+  });
+
+  it('indicates reload needed when source type changes from xplane-default to navigraph', () => {
+    const xplanePath = '/xplane/Resources/default data/earth_nav.dat';
+    const navigraphPath = '/xplane/Custom Data/earth_nav.dat';
+
+    // Seed cache with the X-Plane default source type
+    seedNavMeta({
+      filePath: xplanePath,
+      mtime: 999999,
+      dataType: 'navaids',
+      sourceType: 'xplane-default',
+    });
+
+    // Check with the Navigraph path (source type check fires before file I/O)
+    const result = checkNavCacheValidity(navigraphPath, 'navaids');
+
+    expect(result.needsReload).toBe(true);
+    expect(result.reason).toMatch(/source changed/i);
+  });
+
+  it('indicates reload needed when source type changes from navigraph to xplane-default', () => {
+    const navigraphPath = '/xplane/Custom Data/earth_nav.dat';
+    const xplanePath = '/xplane/Resources/default data/earth_nav.dat';
+
+    // Seed cache with the Navigraph source type
+    seedNavMeta({
+      filePath: navigraphPath,
+      mtime: 888888,
+      dataType: 'navaids',
+      sourceType: 'navigraph',
+    });
+
+    // Check with the X-Plane default path
+    const result = checkNavCacheValidity(xplanePath, 'navaids');
+
+    expect(result.needsReload).toBe(true);
+    expect(result.reason).toMatch(/source changed/i);
   });
 });

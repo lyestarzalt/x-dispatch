@@ -51,8 +51,15 @@ vi.mock('@/lib/db', async () => {
 });
 
 // Import the module under test AFTER vi.mock() has been registered.
-const { insertAirports, getAllAirportsFromDb, getAirportCount, clearAirports, persistDatabase } =
-  await import('./airportCache');
+const {
+  insertAirports,
+  getAllAirportsFromDb,
+  getAirportCount,
+  clearAirports,
+  persistDatabase,
+  detectAptFileChanges,
+  updateStoredFileMeta,
+} = await import('./airportCache');
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -285,5 +292,104 @@ describe('airportCache pipeline', () => {
 
   it('persistDatabase does not throw', () => {
     expect(() => persistDatabase()).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cache invalidation tests
+// ---------------------------------------------------------------------------
+
+describe('detectAptFileChanges cache invalidation', () => {
+  beforeEach(async () => {
+    await createTestDb();
+  });
+
+  afterEach(() => {
+    closeTestDb();
+  });
+
+  it('indicates rescan needed when no cached meta exists', () => {
+    const currentFiles = [{ path: '/xplane/apt.dat', mtime: 1000 }];
+    const result = detectAptFileChanges(currentFiles);
+
+    expect(result.needsReload).toBe(true);
+    expect(result.newFiles).toContain('/xplane/apt.dat');
+    expect(result.changedFiles).toHaveLength(0);
+    expect(result.deletedFiles).toHaveLength(0);
+  });
+
+  it('indicates no rescan needed when cached mtime matches current mtime', () => {
+    // Seed the database with matching metadata
+    updateStoredFileMeta(
+      [{ path: '/xplane/apt.dat', mtime: 1000 }],
+      new Map([['/xplane/apt.dat', 42]])
+    );
+
+    const currentFiles = [{ path: '/xplane/apt.dat', mtime: 1000 }];
+    const result = detectAptFileChanges(currentFiles);
+
+    expect(result.needsReload).toBe(false);
+    expect(result.newFiles).toHaveLength(0);
+    expect(result.changedFiles).toHaveLength(0);
+    expect(result.deletedFiles).toHaveLength(0);
+  });
+
+  it('indicates rescan needed when cached mtime differs from current mtime', () => {
+    // Seed with an older mtime
+    updateStoredFileMeta(
+      [{ path: '/xplane/apt.dat', mtime: 999 }],
+      new Map([['/xplane/apt.dat', 42]])
+    );
+
+    const currentFiles = [{ path: '/xplane/apt.dat', mtime: 1000 }];
+    const result = detectAptFileChanges(currentFiles);
+
+    expect(result.needsReload).toBe(true);
+    expect(result.changedFiles).toContain('/xplane/apt.dat');
+    expect(result.newFiles).toHaveLength(0);
+    expect(result.deletedFiles).toHaveLength(0);
+  });
+
+  it('indicates rescan needed when a new file appears that is not in cache', () => {
+    // Seed with only one file
+    updateStoredFileMeta(
+      [{ path: '/xplane/global/apt.dat', mtime: 500 }],
+      new Map([['/xplane/global/apt.dat', 10]])
+    );
+
+    // Now two files are present — the second one is new
+    const currentFiles = [
+      { path: '/xplane/global/apt.dat', mtime: 500 },
+      { path: '/xplane/custom/apt.dat', mtime: 800 },
+    ];
+    const result = detectAptFileChanges(currentFiles);
+
+    expect(result.needsReload).toBe(true);
+    expect(result.newFiles).toContain('/xplane/custom/apt.dat');
+    expect(result.changedFiles).toHaveLength(0);
+    expect(result.deletedFiles).toHaveLength(0);
+  });
+
+  it('indicates rescan needed when a cached file has been deleted', () => {
+    // Seed with two files
+    updateStoredFileMeta(
+      [
+        { path: '/xplane/global/apt.dat', mtime: 500 },
+        { path: '/xplane/custom/apt.dat', mtime: 800 },
+      ],
+      new Map([
+        ['/xplane/global/apt.dat', 10],
+        ['/xplane/custom/apt.dat', 5],
+      ])
+    );
+
+    // Only one file remains on disk
+    const currentFiles = [{ path: '/xplane/global/apt.dat', mtime: 500 }];
+    const result = detectAptFileChanges(currentFiles);
+
+    expect(result.needsReload).toBe(true);
+    expect(result.deletedFiles).toContain('/xplane/custom/apt.dat');
+    expect(result.changedFiles).toHaveLength(0);
+    expect(result.newFiles).toHaveLength(0);
   });
 });
