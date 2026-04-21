@@ -74,9 +74,10 @@ CLAUDE.md
 .vscode/
 yarn.lock
 docs/
-
+.agents/
 # Design System (Figma reference files)
 design-system/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
