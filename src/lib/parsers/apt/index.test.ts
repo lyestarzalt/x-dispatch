@@ -83,11 +83,11 @@ function parseChunk(icao: string): ReturnType<AirportParser['parse']> {
 // ---------------------------------------------------------------------------
 
 describe('apt-sample.dat fixture', () => {
-  it('splits into 5 airport chunks', () => {
-    expect(chunks).toHaveLength(5);
+  it('splits into 15 airport chunks', () => {
+    expect(chunks).toHaveLength(15);
   });
 
-  it('all 5 airports are present', () => {
+  it('all 15 airports are present', () => {
     const icaos = chunks.map((c) => {
       const match = c.match(/^(1|16|17)\s+\S+\s+\S+\s+\S+\s+(\S+)/m);
       return match?.[2];
