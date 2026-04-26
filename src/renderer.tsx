@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import * as Sentry from '@sentry/electron/renderer';
 import { init as reactInit } from '@sentry/react';
+import { initSentryContext } from '@/lib/sentry/sentryContext';
 import App from './App';
 import './index.css';
 
@@ -22,6 +23,7 @@ import './index.css';
         },
         reactInit
       );
+      initSentryContext();
     }
   } catch {
     // Config not available yet (first run), skip Sentry
