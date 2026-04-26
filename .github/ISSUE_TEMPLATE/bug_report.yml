@@ -1,0 +1,122 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in what you can below so we can reproduce the issue.
+        You can also report problems from inside the app (Settings > Support) which automatically includes your app state.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong?
+      placeholder: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Open X-Dispatch
+        2. Search for airport ...
+        3. Click on ...
+        4. See error
+    validations:
+      required: true
+
+  - type: input
+    id: airport
+    attributes:
+      label: Airport ICAO
+      description: Which airport were you at?
+      placeholder: e.g. KLAX, EGLL, LFPG
+    validations:
+      required: false
+
+  - type: input
+    id: aircraft
+    attributes:
+      label: Aircraft
+      description: Which aircraft were you using?
+      placeholder: e.g. Cessna 172, Toliss A321, Zibo 737
+    validations:
+      required: false
+
+  - type: input
+    id: start-position
+    attributes:
+      label: Starting Position
+      description: Gate, runway, or ramp if relevant.
+      placeholder: e.g. Gate A1, Runway 27L, Ramp 3
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What happened instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS Sequoia
+        - macOS Sonoma
+        - macOS (older)
+        - Ubuntu / Debian
+        - Other Linux
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: X-Dispatch Version
+      description: Found in Settings > About
+      placeholder: e.g. 1.6.1
+    validations:
+      required: true
+
+  - type: input
+    id: xplane-version
+    attributes:
+      label: X-Plane Version
+      placeholder: e.g. 12.4.2
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Log File
+      description: Drag and drop screenshots here. Log file is at Settings > About > Open log file.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Custom scenery, plugins, display scaling, anything else that might help.
+    validations:
+      required: false
