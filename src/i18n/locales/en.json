@@ -227,7 +227,20 @@
       "simbrief": "SimBrief",
       "navigation": "Navigation",
       "vatsim": "VATSIM",
+      "support": "Support",
       "about": "About"
+    },
+    "support": {
+      "reportProblem": "Report a Problem",
+      "reportDescription": "Describe what went wrong. Your app state and recent actions are automatically included to help diagnose the issue.",
+      "messagePlaceholder": "What happened?",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com (for follow-up)",
+      "sendReport": "Send Report",
+      "sendSuccess": "Thanks! Your report has been sent.",
+      "sendError": "Failed to send report. Please try again.",
+      "community": "Community",
+      "privacy": "Privacy"
     },
     "simbrief": {
       "description": "Import flight plans from SimBrief",
