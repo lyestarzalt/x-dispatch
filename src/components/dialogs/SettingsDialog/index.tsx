@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CloudDownload, Database, Info, Monitor, Palette, Plane } from 'lucide-react';
+import { CloudDownload, Database, Info, LifeBuoy, Monitor, Palette, Plane } from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
   GraphicsSection,
   NavigationDataSection,
   SimbriefSection,
+  SupportSection,
   XPlaneSection,
 } from './sections';
 
@@ -27,7 +28,7 @@ interface SettingsDialogProps {
   onClose: () => void;
 }
 
-type TabId = 'xplane' | 'data' | 'appearance' | 'graphics' | 'simbrief' | 'about';
+type TabId = 'xplane' | 'data' | 'appearance' | 'graphics' | 'simbrief' | 'support' | 'about';
 
 interface TabConfig {
   id: TabId;
@@ -41,6 +42,7 @@ const TABS: TabConfig[] = [
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'graphics', icon: Monitor, labelKey: 'settings.tabs.graphics' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
+  { id: 'support', icon: LifeBuoy, labelKey: 'settings.tabs.support' },
   { id: 'about', icon: Info, labelKey: 'settings.tabs.about' },
 ];
 
@@ -146,6 +148,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="SimBrief">
                   <SimbriefSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="support"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Support">
+                  <SupportSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>
