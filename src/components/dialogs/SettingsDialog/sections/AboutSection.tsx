@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, FolderOpen, Heart } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
@@ -11,7 +10,6 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
-const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
 
 export default function AboutSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -20,22 +18,6 @@ export default function AboutSection({ className }: SettingsSectionProps) {
   const { data: version } = useAppVersion();
   const { data: logPath } = useLogPath();
   const { data: configPath } = useConfigPath();
-
-  // Crash reports setting (persisted in main process config)
-  const [sendCrashReports, setSendCrashReports] = useState(false);
-  const [isLoadingCrashReports, setIsLoadingCrashReports] = useState(true);
-
-  useEffect(() => {
-    window.appAPI.getSendCrashReports().then((enabled) => {
-      setSendCrashReports(enabled);
-      setIsLoadingCrashReports(false);
-    });
-  }, []);
-
-  const handleCrashReportsChange = async (enabled: boolean) => {
-    setSendCrashReports(enabled);
-    await window.appAPI.setSendCrashReports(enabled);
-  };
 
   const handleOpenExternal = (url: string) => {
     window.open(url, '_blank');
@@ -88,14 +70,6 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
             >
               <span>{t('settings.about.sourceCode')}</span>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenExternal(GITHUB_ISSUES)}
-              className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
-            >
-              <span>{t('settings.about.reportIssue')}</span>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
             <Button
@@ -178,27 +152,6 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             </p>
           )}
         </div>
-      </div>
-
-      <Separator />
-
-      {/* Privacy */}
-      <div className="space-y-3">
-        <h3 className="xp-section-heading">{t('settings.about.privacy')}</h3>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">{t('settings.about.crashReports')}</p>
-            <p className="text-sm text-muted-foreground">
-              {t('settings.about.crashReportsDescription')}
-            </p>
-          </div>
-          <Switch
-            checked={sendCrashReports}
-            onCheckedChange={handleCrashReportsChange}
-            disabled={isLoadingCrashReports}
-          />
-        </div>
-        <p className="text-sm text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
       </div>
 
       <Separator />
