@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
-import { ExternalLink, Heart, Loader2, Send } from 'lucide-react';
+import { ExternalLink, Heart, LifeBuoy, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils/helpers';
 import type { SettingsSectionProps } from '../types';
 
 const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
+const DISCORD_INVITE = 'https://discord.gg/76UYpxXWW7';
 
 export default function SupportSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -61,10 +62,20 @@ export default function SupportSection({ className }: SettingsSectionProps) {
 
   return (
     <div className={cn('space-y-6', className)}>
+      {/* Header */}
+      <div>
+        <h3 className="flex items-center gap-2 text-lg font-semibold">
+          <LifeBuoy className="h-5 w-5" />
+          {t('settings.tabs.support')}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t('settings.support.reportDescription')}</p>
+      </div>
+
+      <Separator />
+
       {/* Report a Problem */}
       <div className="space-y-3">
         <h3 className="xp-section-heading">{t('settings.support.reportProblem')}</h3>
-        <p className="text-sm text-muted-foreground">{t('settings.support.reportDescription')}</p>
         <div className="space-y-3 rounded-lg border p-4">
           <Textarea
             value={message}
@@ -114,12 +125,20 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           </Button>
           <Button
             variant="ghost"
+            onClick={() => handleOpenExternal(DISCORD_INVITE)}
+            className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
+          >
+            <span>Discord</span>
+            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => handleOpenExternal('https://ko-fi.com/A0A21V3IZZ')}
             className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
           >
             <span className="flex items-center gap-1.5">
               <Heart className="h-3.5 w-3.5 text-red-400" />
-              Support on Ko-fi
+              Support this project
             </span>
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
