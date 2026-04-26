@@ -19,6 +19,7 @@ import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
+import { showSupportToastIfEligible } from './components/SupportPrompt';
 import type { StartPosition } from './types';
 import type { WeatherConfig } from './weatherTypes';
 
@@ -200,6 +201,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);
           onClose();
+          showSupportToastIfEligible();
           if (useSettingsStore.getState().launcher.closeOnLaunch) {
             window.close();
           }
@@ -216,6 +218,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           useAppStore.getState().setStartPosition(null);
           onClose();
+          showSupportToastIfEligible();
           if (useSettingsStore.getState().launcher.closeOnLaunch) {
             window.close();
           }

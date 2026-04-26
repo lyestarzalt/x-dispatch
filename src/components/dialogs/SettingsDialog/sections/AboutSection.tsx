@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, FileText, FolderOpen } from 'lucide-react';
+import { ExternalLink, FileText, FolderOpen, Heart } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -96,6 +96,17 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
             >
               <span>{t('settings.about.reportIssue')}</span>
+              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => handleOpenExternal('https://ko-fi.com/A0A21V3IZZ')}
+              className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
+            >
+              <span className="flex items-center gap-1.5">
+                <Heart className="h-3.5 w-3.5 text-red-400" />
+                Support this project
+              </span>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
           </div>

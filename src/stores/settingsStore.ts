@@ -100,16 +100,23 @@ export interface LauncherSettings {
   customLaunchArgs: string[];
 }
 
+export interface SupportSettings {
+  /** User permanently dismissed the support prompt */
+  promptDismissed: boolean;
+}
+
 interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
   appearance: AppearanceSettings;
   graphics: GraphicsSettings;
   launcher: LauncherSettings;
+  support: SupportSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
   updateGraphicsSettings: (settings: Partial<GraphicsSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
+  updateSupportSettings: (settings: Partial<SupportSettings>) => void;
   setFontSize: (size: FontSize) => void;
   setZoomLevel: (level: number) => void;
   setDebugOverlay: (enabled: boolean) => void;
@@ -151,6 +158,10 @@ const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   customLaunchArgs: [],
 };
 
+const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
+  promptDismissed: false,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -159,6 +170,7 @@ export const useSettingsStore = create<SettingsState>()(
       appearance: DEFAULT_APPEARANCE_SETTINGS,
       graphics: DEFAULT_GRAPHICS_SETTINGS,
       launcher: DEFAULT_LAUNCHER_SETTINGS,
+      support: DEFAULT_SUPPORT_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -178,6 +190,11 @@ export const useSettingsStore = create<SettingsState>()(
       updateLauncherSettings: (settings) =>
         set((state) => ({
           launcher: { ...state.launcher, ...settings },
+        })),
+
+      updateSupportSettings: (settings) =>
+        set((state) => ({
+          support: { ...state.support, ...settings },
         })),
 
       setFontSize: (size: FontSize) => {
@@ -204,12 +221,13 @@ export const useSettingsStore = create<SettingsState>()(
           appearance: DEFAULT_APPEARANCE_SETTINGS,
           graphics: DEFAULT_GRAPHICS_SETTINGS,
           launcher: DEFAULT_LAUNCHER_SETTINGS,
+          support: DEFAULT_SUPPORT_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 17,
+      version: 18,
       migrate: (persistedState, version) => {
         if (version < 6) {
           return {
@@ -312,6 +330,14 @@ export const useSettingsStore = create<SettingsState>()(
               ...DEFAULT_GRAPHICS_SETTINGS,
               ...state.graphics,
             },
+          };
+        }
+        if (version < 18) {
+          // Add support settings
+          const state = persistedState as SettingsState;
+          return {
+            ...state,
+            support: DEFAULT_SUPPORT_SETTINGS,
           };
         }
         return persistedState as SettingsState;
