@@ -75,6 +75,8 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 10 languages. Requires X-Plane 12.4+. More details on the [project page](https://tarzalt.dev/projects/x-dispatch/).
 
+> **Don't own X-Plane?** X-Plane has a [free demo](https://www.x-plane.com/desktop/try-it/) that works with X-Dispatch, so you can try both.
+
 ## Development
 
 ```bash
