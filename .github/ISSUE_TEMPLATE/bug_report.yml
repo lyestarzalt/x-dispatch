@@ -105,11 +105,32 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: xplane-install
+    attributes:
+      label: X-Plane Install Type
+      options:
+        - Steam
+        - Standalone (direct from Laminar)
+        - Demo
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: xplane-log
+    attributes:
+      label: X-Plane Log.txt
+      description: |
+        Especially important for launch issues. Located at the root of your X-Plane folder (e.g. `C:\X-Plane 12\Log.txt` or `/Applications/X-Plane 12/Log.txt`). Drag and drop the file here or paste the contents.
+    validations:
+      required: false
+
   - type: textarea
     id: screenshots
     attributes:
-      label: Screenshots / Log File
-      description: Drag and drop screenshots here. Log file is at Settings > About > Open log file.
+      label: Screenshots / X-Dispatch Log
+      description: Drag and drop screenshots here. X-Dispatch's own log is at Settings > About > Open log file.
     validations:
       required: false
 
