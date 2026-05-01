@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
+import { TitleBar } from './components/TitleBar';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
@@ -72,22 +73,17 @@ function AppContent() {
     });
   }, []);
 
+  let content: ReactNode;
   if (appState === 'checking') {
-    return <FullScreenSpinner />;
-  }
-
-  if (appState === 'setup') {
-    return <SetupScreen onComplete={handleSetupComplete} />;
-  }
-
-  if (appState === 'loading') {
-    return (
+    content = <FullScreenSpinner />;
+  } else if (appState === 'setup') {
+    content = <SetupScreen onComplete={handleSetupComplete} />;
+  } else if (appState === 'loading') {
+    content = (
       <LoadingScreen onComplete={handleLoadingComplete} onConfigurePath={handleConfigurePath} />
     );
-  }
-
-  if (appState === 'error') {
-    return (
+  } else if (appState === 'error') {
+    content = (
       <ErrorScreen
         title="Loading Failed"
         message={loadError || 'An unknown error occurred'}
@@ -96,13 +92,20 @@ function AppContent() {
         onRetry={() => window.location.reload()}
       />
     );
-  }
-
-  return (
-    <div className="h-screen w-screen bg-background">
+  } else {
+    content = (
       <SectionErrorBoundary name="Map">
         <Map airports={airports} />
       </SectionErrorBoundary>
+    );
+  }
+
+  const showTitleBar = window.appAPI.platform !== 'darwin';
+
+  return (
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+      {showTitleBar && <TitleBar />}
+      <div className="min-h-0 flex-1">{content}</div>
     </div>
   );
 }

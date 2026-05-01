@@ -59,6 +59,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 });
 
 contextBridge.exposeInMainWorld('appAPI', {
+  platform: process.platform,
   isSetupComplete: () => ipcRenderer.invoke('app:isSetupComplete'),
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
   getProcessMemory: () =>
@@ -351,6 +352,7 @@ declare global {
 
   interface Window {
     appAPI: {
+      platform: NodeJS.Platform;
       isSetupComplete: () => Promise<boolean>;
       getVersion: () => Promise<string>;
       getProcessMemory: () => Promise<{ rss: number; heapUsed: number; heapTotal: number }>;

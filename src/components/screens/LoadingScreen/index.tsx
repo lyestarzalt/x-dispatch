@@ -180,7 +180,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
   const isVerifying = phase === 'verifying' && !hasError;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-background">
+    <div className="flex h-full w-full items-center justify-center bg-background">
       <div className="w-full max-w-md px-8">
         {/* Logo + Title */}
         <div className="mb-8 text-center">

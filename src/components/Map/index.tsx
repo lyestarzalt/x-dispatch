@@ -681,7 +681,7 @@ export default function Map({ airports }: MapProps) {
   }, [mapRef, followPlane, setFollowPlane]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden">
       {/* MapLibre container - fills entire viewport */}
       <div ref={mapContainerRef} className="absolute inset-0" />
 

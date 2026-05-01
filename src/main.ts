@@ -154,6 +154,7 @@ function createWindow(): BrowserWindow {
     defaultHeight: 800,
   });
 
+  const isMac = process.platform === 'darwin';
   const window = new BrowserWindow({
     title: `${app.getName()} v${app.getVersion()} — [${getActiveInstallationName()}]`,
     x: windowState.x,
@@ -165,6 +166,16 @@ function createWindow(): BrowserWindow {
     show: false,
     backgroundColor: '#06090D',
     icon: iconPath,
+    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    ...(isMac
+      ? {}
+      : {
+          titleBarOverlay: {
+            color: '#06090D',
+            symbolColor: '#FFFFFF',
+            height: 36,
+          },
+        }),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

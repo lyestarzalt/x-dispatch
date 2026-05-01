@@ -14,9 +14,7 @@ function Spinner({ className, ...props }: React.ComponentProps<'svg'>) {
 
 function FullScreenSpinner({ className }: { className?: string }) {
   return (
-    <div
-      className={cn('flex h-screen w-screen items-center justify-center bg-background', className)}
-    >
+    <div className={cn('flex h-full w-full items-center justify-center bg-background', className)}>
       <Spinner className="size-6 text-primary" />
     </div>
   );
