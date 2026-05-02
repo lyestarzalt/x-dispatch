@@ -651,6 +651,7 @@ export default function Toolbar({
             {filteredAirports.map((airport, index) => (
               <Button
                 key={airport.icao}
+                data-testid="search-result"
                 variant="ghost"
                 onClick={() => handleSelect(airport)}
                 className={cn(
@@ -1032,6 +1033,7 @@ export default function Toolbar({
 
         {/* Launch */}
         <Button
+          data-testid="open-launch-dialog"
           variant="outline"
           onClick={() => {
             if (hasStartPosition) {

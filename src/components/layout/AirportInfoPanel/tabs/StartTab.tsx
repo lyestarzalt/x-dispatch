@@ -268,6 +268,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
         return (
           <div
             key={originalIndex}
+            data-testid="gate-row"
             data-selected={isSelected || undefined}
             className={cn(
               'rounded px-2.5 py-2',

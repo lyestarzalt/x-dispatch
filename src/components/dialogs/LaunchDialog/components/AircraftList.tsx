@@ -47,6 +47,7 @@ function AircraftListItem({
 
   return (
     <div
+      data-testid="aircraft-card"
       role="button"
       tabIndex={0}
       onClick={onSelect}

@@ -444,6 +444,7 @@ export function FlightConfig({
       <div className="flex-shrink-0 p-3">
         <div className="flex gap-2">
           <Button
+            data-testid="confirm-launch"
             onClick={onLaunch}
             disabled={!selectedAircraft || !startPosition || isLaunching}
             className="flex-1"
