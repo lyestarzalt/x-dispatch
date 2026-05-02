@@ -18,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
-import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
@@ -134,20 +134,35 @@ export default function TaxiRouteInline() {
     <div className="space-y-2 border-t border-border/30 pt-2">
       {/* Direction toggle — only meaningful in network mode. */}
       {isNetwork && (
-        <div className="flex items-center gap-1">
-          <DirectionButton
-            active={!isArrival}
-            onClick={() => setDirection('departure')}
-            icon={<PlaneTakeoff className="h-3.5 w-3.5" />}
-            label={t('airportInfo.taxiRoute.departure', 'Departure')}
-          />
-          <DirectionButton
-            active={isArrival}
-            onClick={() => setDirection('arrival')}
-            icon={<PlaneLanding className="h-3.5 w-3.5" />}
-            label={t('airportInfo.taxiRoute.arrival', 'Arrival')}
-          />
-        </div>
+        <ToggleGroup
+          type="single"
+          variant="subtle"
+          size="sm"
+          value={direction}
+          onValueChange={(v) => {
+            // ToggleGroup yields '' when the user clicks the active item;
+            // ignore that to keep one direction always selected.
+            if (v === 'departure' || v === 'arrival') setDirection(v);
+          }}
+          className="grid grid-cols-2 gap-1"
+        >
+          <ToggleGroupItem
+            value="departure"
+            aria-label={t('airportInfo.taxiRoute.departure', 'Departure')}
+            className="w-full text-xs"
+          >
+            <PlaneTakeoff className="h-3.5 w-3.5" />
+            {t('airportInfo.taxiRoute.departure', 'Departure')}
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="arrival"
+            aria-label={t('airportInfo.taxiRoute.arrival', 'Arrival')}
+            className="w-full text-xs"
+          >
+            <PlaneLanding className="h-3.5 w-3.5" />
+            {t('airportInfo.taxiRoute.arrival', 'Arrival')}
+          </ToggleGroupItem>
+        </ToggleGroup>
       )}
 
       {/* Runway picker — destination on departure, source on arrival */}
@@ -260,33 +275,5 @@ export default function TaxiRouteInline() {
         </Button>
       </div>
     </div>
-  );
-}
-
-function DirectionButton({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <Button
-      type="button"
-      variant={active ? 'default' : 'outline'}
-      size="sm"
-      onClick={onClick}
-      className={cn(
-        'h-7 flex-1 gap-1 px-2 text-xs',
-        active && 'ring-1 ring-primary ring-offset-1 ring-offset-background'
-      )}
-    >
-      {icon}
-      {label}
-    </Button>
   );
 }
