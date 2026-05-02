@@ -8,20 +8,14 @@ import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
-import {
-  type FlightInit,
-  useAircraftList,
-  useStartFlight,
-  useWeatherPresets,
-  useXPlaneStatus,
-} from '@/queries';
+import { buildFlightInit } from '@/lib/xplaneServices/launch/buildFlightInit';
+import { useAircraftList, useStartFlight, useWeatherPresets, useXPlaneStatus } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
 import { showSupportToastIfEligible } from './components/SupportPrompt';
 import type { StartPosition } from './types';
-import type { WeatherConfig } from './weatherTypes';
 
 interface LaunchPanelProps {
   open: boolean;
@@ -150,7 +144,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       }
 
       // Same FlightInit payload for both paths (REST API and --new_flight_json)
-      const flightConfig = buildFlightAPIPayload({
+      const flightConfig = buildFlightInit({
         aircraft: selectedAircraft,
         livery: selectedLivery,
         startPosition,
@@ -234,245 +228,6 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       setIsLaunching(false);
     }
   };
-
-  // X-Plane's JSON parser requires float fields to have a decimal point (e.g. 3.5, not 4).
-  // JSON.stringify(4) produces "4" which X-Plane rejects. Adding 0.001 forces a decimal.
-  function ensureFloat(n: number): number {
-    return Number.isInteger(n) ? n + 0.001 : n;
-  }
-
-  // Build Flight Initialization API payload for REST API
-  function buildFlightAPIPayload(params: {
-    aircraft: NonNullable<typeof selectedAircraft>;
-    livery: string;
-    startPosition: StartPosition;
-    weatherConfig: WeatherConfig;
-    useRealWorldTime: boolean;
-    dayOfYear: number;
-    timeOfDay: number;
-    fuelTanksKg: number[];
-    payloadKg: number[];
-    enginesRunning: boolean;
-  }): FlightInit {
-    const payload: FlightInit = {
-      // Aircraft
-      aircraft: {
-        path: params.aircraft.path,
-        ...(params.livery !== 'Default' && { livery: params.livery }),
-      },
-      // Weight (fuel + payload)
-      weight: {
-        fueltank_weight_in_kilograms: params.fuelTanksKg,
-        payload_weight_in_kilograms: params.payloadKg,
-      },
-      // Engine status
-      engine_status: {
-        all_engines: { running: params.enginesRunning },
-      },
-    };
-
-    // Start location
-    // TODO: ramp_start doesn't handle duplicate gate names (e.g. multiple "B3" at same airport).
-    // Previously used lle_ground_start with exact lat/lon/heading (commit f0a6863) but X-Plane
-    // started placing the aircraft offset forward by several meters. Switched to ramp_start as workaround.
-    // TODO: switching to another airport mid-flight does not render the ground.
-    if (params.startPosition.type === 'custom') {
-      const mode = params.startPosition.customStartMode ?? 'ground';
-      if (mode === 'air') {
-        payload.lle_air_start = {
-          latitude: ensureFloat(params.startPosition.latitude),
-          longitude: ensureFloat(params.startPosition.longitude),
-          elevation_in_meters: ensureFloat(params.startPosition.airAltitudeM ?? 1000),
-          heading_true: ensureFloat(params.startPosition.heading),
-          // Speed: either m/s value or preset enum (mutually exclusive)
-          ...(params.startPosition.airSpeedMs != null
-            ? { speed_in_meters_per_second: ensureFloat(params.startPosition.airSpeedMs) }
-            : params.startPosition.airSpeedEnum
-              ? { speed_enum: params.startPosition.airSpeedEnum }
-              : { speed_enum: 'normal_approach' }),
-        };
-      } else if (mode === 'carrier' || mode === 'frigate') {
-        payload.boat_start = {
-          boat_name: mode,
-          boat_location: {
-            latitude: ensureFloat(params.startPosition.latitude),
-            longitude: ensureFloat(params.startPosition.longitude),
-          },
-          // Deck position and approach distance are mutually exclusive
-          ...(params.startPosition.boatPosition && {
-            start_position: params.startPosition.boatPosition,
-          }),
-          ...(params.startPosition.boatApproachNm != null &&
-            !params.startPosition.boatPosition && {
-              final_distance_in_nautical_miles: ensureFloat(params.startPosition.boatApproachNm),
-            }),
-        };
-      } else {
-        payload.lle_ground_start = {
-          latitude: ensureFloat(params.startPosition.latitude),
-          longitude: ensureFloat(params.startPosition.longitude),
-          heading_true: ensureFloat(params.startPosition.heading),
-        };
-      }
-    } else if (params.startPosition.type === 'ramp') {
-      payload.ramp_start = {
-        airport_id: params.startPosition.airport,
-        ramp: params.startPosition.name,
-      };
-    } else {
-      payload.runway_start = {
-        airport_id: params.startPosition.airport,
-        runway: params.startPosition.name,
-        // Approach distance and tow type are mutually exclusive
-        ...(params.startPosition.approachDistanceNm != null && {
-          final_distance_in_nautical_miles: ensureFloat(params.startPosition.approachDistanceNm),
-        }),
-        ...(params.startPosition.towType && {
-          tow_type: params.startPosition.towType,
-          ...(params.startPosition.towType === 'tug' && {
-            tow_aircraft: { path: 'Aircraft/Laminar Research/Cessna 172 SP/Cessna_172SP.acf' },
-          }),
-        }),
-      };
-    }
-
-    // Time
-    if (params.useRealWorldTime) {
-      payload.use_system_time = true;
-    } else {
-      payload.local_time = {
-        day_of_year: params.dayOfYear,
-        time_in_24_hours: params.timeOfDay,
-      };
-    }
-
-    // Weather
-    payload.weather = buildWeatherPayload(params.weatherConfig, params.startPosition);
-
-    return payload;
-  }
-
-  // Hardcoded preset weather definitions — identical to the working values from commit 03b81ff.
-  // These use X-Plane preset definition strings which are guaranteed to work with --new_flight_json.
-  function getPresetWeatherDefinition(
-    preset: string
-  ): NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>> {
-    type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
-    const definitions: Record<string, WeatherDefinition> = {
-      clear: {
-        definition: 'vfr_few_clouds',
-        vertical_speed_in_thermal_in_feet_per_minute: 0,
-        wave_height_in_meters: 1,
-        wave_direction_in_degrees: 270,
-        terrain_state: 'dry',
-        variation_across_region_percentage: 0,
-        evolution_over_time_enum: 'static',
-      },
-      cloudy: {
-        definition: 'vfr_broken',
-        vertical_speed_in_thermal_in_feet_per_minute: 0,
-        wave_height_in_meters: 2,
-        wave_direction_in_degrees: 270,
-        terrain_state: 'dry',
-        variation_across_region_percentage: 50,
-        evolution_over_time_enum: 'static',
-      },
-      rainy: {
-        definition: 'ifr_non_precision',
-        vertical_speed_in_thermal_in_feet_per_minute: 0,
-        wave_height_in_meters: 4,
-        wave_direction_in_degrees: 200,
-        terrain_state: 'medium_wet',
-        variation_across_region_percentage: 50,
-        evolution_over_time_enum: 'gradually_deteriorating',
-      },
-      stormy: {
-        definition: 'large_cell_thunderstorm',
-        vertical_speed_in_thermal_in_feet_per_minute: 500,
-        wave_height_in_meters: 8,
-        wave_direction_in_degrees: 180,
-        terrain_state: 'very_wet',
-        variation_across_region_percentage: 100,
-        evolution_over_time_enum: 'rapidly_deteriorating',
-      },
-      snowy: {
-        definition: 'ifr_precision',
-        vertical_speed_in_thermal_in_feet_per_minute: 0,
-        wave_height_in_meters: 2,
-        wave_direction_in_degrees: 320,
-        terrain_state: 'medium_snowy',
-        variation_across_region_percentage: 30,
-        evolution_over_time_enum: 'static',
-      },
-      foggy: {
-        definition: 'ifr_precision',
-        vertical_speed_in_thermal_in_feet_per_minute: 0,
-        wave_height_in_meters: 1,
-        wave_direction_in_degrees: 270,
-        terrain_state: 'lightly_wet',
-        variation_across_region_percentage: 0,
-        evolution_over_time_enum: 'static',
-      },
-    };
-
-    return definitions[preset] ?? definitions['clear']!;
-  }
-
-  function buildWeatherPayload(config: WeatherConfig, pos: StartPosition): FlightInit['weather'] {
-    // Real weather — let X-Plane fetch live data
-    if (config.mode === 'real') return 'use_real_weather';
-
-    // Preset mode — use exact hardcoded definitions (proven working with --new_flight_json)
-    if (config.mode === 'preset') {
-      return getPresetWeatherDefinition(config.preset);
-    }
-
-    // Custom mode — build full definition object
-    type WeatherDefinition = NonNullable<Exclude<FlightInit['weather'], 'use_real_weather'>>;
-    const c = config.custom;
-
-    // Build cloud layers (max 3) — X-Plane spells cumulonimbus as 'cumulunimbus'
-    const clouds = c.clouds.map((layer) => ({
-      type: (layer.type === 'cumulonimbus' ? 'cumulunimbus' : layer.type) as
-        | 'cirrus'
-        | 'stratus'
-        | 'cumulus'
-        | 'cumulunimbus',
-      cover_ratio: layer.cover,
-      bases_in_feet_msl: layer.base_ft,
-      tops_in_feet_msl: layer.tops_ft,
-    }));
-
-    // Build wind layers — map directly from wind array
-    const wind = c.wind.map((w) => ({
-      altitude_in_feet_msl: w.altitude_ft,
-      speed_in_knots: w.speed_kts,
-      direction_in_degrees_true: w.direction_deg,
-      ...(w.gust_kts > 0 && { gust_increase_in_knots: w.gust_kts }),
-      ...(w.shear_deg > 0 && { shear_in_degrees: w.shear_deg }),
-      ...(w.turbulence > 0 && { turbulence_ratio: w.turbulence }),
-    }));
-
-    return {
-      definition: {
-        latitude_in_degrees: pos.latitude,
-        longitude_in_degrees: pos.longitude,
-        elevation_in_meters: (pos.elevationFt ?? 0) * 0.3048,
-        visibility_in_kilometers: c.visibility_km,
-        precipitation_ratio: c.precipitation,
-        temperature_in_degrees_celsius: c.temperature_c,
-        altimeter_setting_in_hpa: c.altimeter_hpa,
-        ...(clouds.length > 0 && { clouds }),
-        ...(wind.length > 0 && { wind }),
-      },
-      vertical_speed_in_thermal_in_feet_per_minute: c.thermal_fpm,
-      wave_height_in_meters: c.wave_height_m,
-      wave_direction_in_degrees: c.wave_direction_deg,
-      terrain_state: c.terrain_state,
-      variation_across_region_percentage: c.variation_pct,
-      evolution_over_time_enum: c.evolution,
-    } satisfies WeatherDefinition;
-  }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
