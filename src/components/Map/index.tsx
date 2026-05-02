@@ -10,6 +10,7 @@ import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
+import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
@@ -61,7 +62,7 @@ import {
   updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
-import { preserveCustomStyle } from './utils/globeUtils';
+import { makePreserveCustomStyle } from './utils/globeUtils';
 import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
@@ -444,7 +445,9 @@ export default function Map({ airports }: MapProps) {
 
     previousStyleUrlRef.current = mapStyleUrl;
 
-    map.setStyle(mapStyleUrl, { transformStyle: preserveCustomStyle });
+    map.setStyle(resolveMapStyleArg(mapStyleUrl), {
+      transformStyle: makePreserveCustomStyle(map),
+    });
   }, [mapStyleUrl, mapRef]);
 
   // Debug mode click handler

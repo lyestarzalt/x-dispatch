@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import type { WeightUnit } from '@/lib/utils/format';
 
 export type FontSize = 'small' | 'medium' | 'large';
@@ -14,49 +15,32 @@ function applyFontSize(size: FontSize) {
   document.documentElement.style.fontSize = FONT_SIZE_MAP[size];
 }
 
-interface MapStylePreset {
+export interface MapStyle {
   id: string;
   name: string;
   url: string;
-  provider: 'openfreemap' | 'carto';
 }
 
-export const MAP_STYLE_PRESETS: MapStylePreset[] = [
-  {
-    id: 'ofm-liberty',
-    name: 'Liberty',
-    url: 'https://tiles.openfreemap.org/styles/liberty',
-    provider: 'openfreemap',
-  },
-  {
-    id: 'ofm-bright',
-    name: 'Bright',
-    url: 'https://tiles.openfreemap.org/styles/bright',
-    provider: 'openfreemap',
-  },
-  {
-    id: 'ofm-positron',
-    name: 'Positron',
-    url: 'https://tiles.openfreemap.org/styles/positron',
-    provider: 'openfreemap',
-  },
+export const MAP_STYLE_PRESETS: ReadonlyArray<MapStyle> = [
   {
     id: 'carto-dark',
-    name: 'Dark Matter',
+    name: 'Dark',
     url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    provider: 'carto',
+  },
+  {
+    id: 'ofm-liberty',
+    name: 'Light + 3D',
+    url: 'https://tiles.openfreemap.org/styles/liberty',
   },
   {
     id: 'carto-positron',
-    name: 'Positron',
+    name: 'Light',
     url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    provider: 'carto',
   },
   {
-    id: 'carto-voyager',
-    name: 'Voyager',
-    url: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-    provider: 'carto',
+    id: 'esri-satellite',
+    name: 'Satellite',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   },
 ];
 
@@ -67,6 +51,8 @@ export interface MapSettings {
   navDataRadiusNm: number;
   vatsimRefreshInterval: number;
   mapStyleUrl: string;
+  /** User-added custom map styles, rendered alongside MAP_STYLE_PRESETS in the picker. */
+  userMapStyles: MapStyle[];
   idleOrbitEnabled: boolean;
   units: {
     weight: WeightUnit;
@@ -113,6 +99,8 @@ interface SettingsState {
   launcher: LauncherSettings;
   support: SupportSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
+  addUserMapStyle: (style: MapStyle) => void;
+  removeUserMapStyle: (id: string) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
   updateGraphicsSettings: (settings: Partial<GraphicsSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
@@ -127,6 +115,7 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   navDataRadiusNm: 100,
   vatsimRefreshInterval: 15,
   mapStyleUrl: DEFAULT_MAP_STYLE_URL,
+  userMapStyles: [],
   idleOrbitEnabled: false,
   units: {
     weight: 'lbs',
@@ -176,6 +165,40 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           map: { ...state.map, ...settings },
         })),
+
+      addUserMapStyle: (style) =>
+        set((state) => {
+          // Validate at the boundary — reject malformed URLs no matter who calls.
+          if (validateMapStyleUrl(style.url) !== null) return state;
+          // Defensive fallback: persisted users from before v20 may not have the field.
+          const current = state.map.userMapStyles ?? [];
+          // Skip duplicates by URL — the picker doesn't need two entries for the same target.
+          if (current.some((s) => s.url === style.url)) {
+            return current === state.map.userMapStyles
+              ? state
+              : { map: { ...state.map, userMapStyles: current } };
+          }
+          return {
+            map: { ...state.map, userMapStyles: [...current, style] },
+          };
+        }),
+
+      removeUserMapStyle: (id) =>
+        set((state) => {
+          const current = state.map.userMapStyles ?? [];
+          const next = current.filter((s) => s.id !== id);
+          if (next.length === current.length) return state;
+          // If the user is currently using the style they're deleting, fall back to the
+          // default preset so the map doesn't render a phantom URL.
+          const removed = current.find((s) => s.id === id);
+          const mapStyleUrl =
+            removed && state.map.mapStyleUrl === removed.url
+              ? DEFAULT_MAP_STYLE_URL
+              : state.map.mapStyleUrl;
+          return {
+            map: { ...state.map, userMapStyles: next, mapStyleUrl },
+          };
+        }),
 
       updateSimbriefSettings: (settings) =>
         set((state) => ({
@@ -227,121 +250,8 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 18,
-      migrate: (persistedState, version) => {
-        if (version < 6) {
-          return {
-            map: DEFAULT_MAP_SETTINGS,
-            simbrief: DEFAULT_SIMBRIEF_SETTINGS,
-            appearance: DEFAULT_APPEARANCE_SETTINGS,
-          };
-        }
-        if (version < 7) {
-          // Add units preference
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            map: {
-              ...state.map,
-              units: DEFAULT_MAP_SETTINGS.units,
-            },
-          };
-        }
-        if (version < 8) {
-          // Add SimBrief settings
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            simbrief: DEFAULT_SIMBRIEF_SETTINGS,
-          };
-        }
-        if (version < 9) {
-          // Add appearance settings
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            appearance: DEFAULT_APPEARANCE_SETTINGS,
-          };
-        }
-        if (version < 11) {
-          // Add launcher settings
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            launcher: DEFAULT_LAUNCHER_SETTINGS,
-          };
-        }
-        if (version < 12) {
-          // Add idle orbit setting (default off)
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            map: {
-              ...state.map,
-              idleOrbitEnabled: false,
-            },
-          };
-        }
-        if (version < 13) {
-          // Add zoom level to appearance
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            appearance: {
-              ...state.appearance,
-              zoomLevel: 1.0,
-            },
-          };
-        }
-        if (version < 14) {
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            launcher: {
-              ...state.launcher,
-              customLaunchArgs: [],
-            },
-          };
-        }
-        if (version < 15) {
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            appearance: {
-              ...state.appearance,
-              debugOverlay: false,
-            },
-          };
-        }
-        if (version < 16) {
-          // Add graphics settings
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            graphics: DEFAULT_GRAPHICS_SETTINGS,
-          };
-        }
-        if (version < 17) {
-          // Add taxiwayLightGlow and surfaceDetail to graphics
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            graphics: {
-              ...DEFAULT_GRAPHICS_SETTINGS,
-              ...state.graphics,
-            },
-          };
-        }
-        if (version < 18) {
-          // Add support settings
-          const state = persistedState as SettingsState;
-          return {
-            ...state,
-            support: DEFAULT_SUPPORT_SETTINGS,
-          };
-        }
-        return persistedState as SettingsState;
-      },
+      version: 20,
+      migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
           applyFontSize(state.appearance.fontSize);
@@ -352,6 +262,111 @@ export const useSettingsStore = create<SettingsState>()(
     }
   )
 );
+
+/**
+ * Cascade-style migrations: each step takes the running state and returns
+ * the updated state. Zustand's persist calls this ONCE with the source
+ * version, so we must apply every step from (version+1) up to current in a
+ * single pass. The earlier early-return pattern silently skipped later
+ * steps for anyone on an old version, leaving them with missing fields.
+ *
+ * Exported for direct unit testing.
+ */
+export function migrateSettings(persistedState: unknown, version: number): SettingsState {
+  let state = persistedState as Partial<SettingsState>;
+
+  if (version < 6) {
+    state = {
+      map: DEFAULT_MAP_SETTINGS,
+      simbrief: DEFAULT_SIMBRIEF_SETTINGS,
+      appearance: DEFAULT_APPEARANCE_SETTINGS,
+    };
+  }
+  if (version < 7) {
+    // Add units preference
+    state = {
+      ...state,
+      map: { ...state.map!, units: DEFAULT_MAP_SETTINGS.units },
+    };
+  }
+  if (version < 8) {
+    // Add SimBrief settings
+    state = { ...state, simbrief: DEFAULT_SIMBRIEF_SETTINGS };
+  }
+  if (version < 9) {
+    // Add appearance settings
+    state = { ...state, appearance: DEFAULT_APPEARANCE_SETTINGS };
+  }
+  if (version < 11) {
+    // Add launcher settings
+    state = { ...state, launcher: DEFAULT_LAUNCHER_SETTINGS };
+  }
+  if (version < 12) {
+    // Add idle orbit setting (default off)
+    state = {
+      ...state,
+      map: { ...state.map!, idleOrbitEnabled: false },
+    };
+  }
+  if (version < 13) {
+    // Add zoom level to appearance
+    state = {
+      ...state,
+      appearance: { ...state.appearance!, zoomLevel: 1.0 },
+    };
+  }
+  if (version < 14) {
+    state = {
+      ...state,
+      launcher: { ...state.launcher!, customLaunchArgs: [] },
+    };
+  }
+  if (version < 15) {
+    state = {
+      ...state,
+      appearance: { ...state.appearance!, debugOverlay: false },
+    };
+  }
+  if (version < 16) {
+    // Add graphics settings
+    state = { ...state, graphics: DEFAULT_GRAPHICS_SETTINGS };
+  }
+  if (version < 17) {
+    // Add taxiwayLightGlow and surfaceDetail to graphics
+    state = {
+      ...state,
+      graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics },
+    };
+  }
+  if (version < 18) {
+    // Add support settings
+    state = { ...state, support: DEFAULT_SUPPORT_SETTINGS };
+  }
+  if (version < 19) {
+    // Map style picker redesign — roll dropped styles forward to CARTO Positron.
+    const droppedUrls = new Set([
+      'https://tiles.openfreemap.org/styles/bright',
+      'https://tiles.openfreemap.org/styles/positron',
+      'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+    ]);
+    const positronUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+    if (state.map?.mapStyleUrl && droppedUrls.has(state.map.mapStyleUrl)) {
+      state = {
+        ...state,
+        map: { ...state.map, mapStyleUrl: positronUrl },
+      };
+    }
+  }
+  if (version < 20) {
+    // Add userMapStyles array to MapSettings (custom-URL chip flow).
+    state = {
+      ...state,
+      map: { ...state.map!, userMapStyles: state.map?.userMapStyles ?? [] },
+    };
+  }
+
+  return state as SettingsState;
+}
 
 export function initializeFontSize() {
   const { fontSize } = useSettingsStore.getState().appearance;

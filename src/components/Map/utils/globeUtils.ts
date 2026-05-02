@@ -2,6 +2,7 @@ import { MaplibreStarfieldLayer } from '@geoql/maplibre-gl-starfield';
 import mlcontour from 'maplibre-contour';
 import maplibregl from 'maplibre-gl';
 import { useMapStore } from '@/stores/mapStore';
+import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './preserveCustomStyle';
 
 const TERRAIN_SOURCE_ID = 'terrain-dem';
 const HILLSHADE_SOURCE_ID = 'terrain-hillshade-dem';
@@ -38,14 +39,18 @@ const GLOBE_TO_MERCATOR_ZOOM = 7;
 
 const STARFIELD_LAYER_ID = 'starfield';
 
-export function setupGlobeProjection(map: maplibregl.Map): void {
-  // Start with globe projection
-  map.setProjection({ type: 'globe' });
-  map.setSky({
-    'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
-  });
+// Re-export from the dedicated style-transition module so external callers
+// keep the single import surface (`from './utils/globeUtils'`).
+export { captureBasemapSnapshot } from './preserveCustomStyle';
 
-  // Starfield behind the globe — add below all other layers
+/**
+ * MapLibre's `getStyle()` does not serialize CustomLayerInterface objects,
+ * so the starfield layer cannot be carried across `setStyle()` via
+ * `transformStyle`. Re-add it on every `style.load` if the new style
+ * doesn't already have it.
+ */
+function addStarfieldIfMissing(map: maplibregl.Map): void {
+  if (map.getLayer(STARFIELD_LAYER_ID)) return;
   const starfield = new MaplibreStarfieldLayer({
     id: STARFIELD_LAYER_ID,
     starCount: 3000,
@@ -53,6 +58,16 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
   });
   const firstLayer = map.getStyle().layers?.[0]?.id;
   map.addLayer(starfield as unknown as maplibregl.CustomLayerInterface, firstLayer);
+}
+
+export function setupGlobeProjection(map: maplibregl.Map): void {
+  // Start with globe projection
+  map.setProjection({ type: 'globe' });
+  map.setSky({
+    'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
+  });
+
+  addStarfieldIfMissing(map);
 
   // Switch projection based on zoom level to avoid layer displacement.
   // 3D terrain is only enabled in mercator mode — globe projection doesn't
@@ -87,6 +102,33 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
       if (map.getLayer(STARFIELD_LAYER_ID)) {
         map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'visible');
       }
+    }
+  });
+
+  // map.setStyle() rebuilds the map's transform from the new style spec, which
+  // resets the projection to whatever the spec defines (mercator by default
+  // for raster styles like Esri Satellite, since `tileUrlToStyle` doesn't
+  // emit a `projection` field). Re-assert the projection we want every time
+  // a new style finishes loading. `style.load` fires once per setStyle call,
+  // after the style is committed.
+  map.on('style.load', () => {
+    map.setProjection({ type: currentProjection });
+    // Sky is also style-scoped — re-apply for globe so the atmosphere
+    // gradient comes back when the user toggles styles at low zoom.
+    if (currentProjection === 'globe') {
+      map.setSky({
+        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
+      });
+    }
+    // Re-add the starfield since CustomLayerInterface doesn't survive setStyle.
+    addStarfieldIfMissing(map);
+    // Match starfield visibility to current projection (hidden in mercator).
+    if (map.getLayer(STARFIELD_LAYER_ID)) {
+      map.setLayoutProperty(
+        STARFIELD_LAYER_ID,
+        'visibility',
+        currentProjection === 'globe' ? 'visible' : 'none'
+      );
     }
   });
 }
@@ -221,58 +263,13 @@ export function setTerrainShadingVisibility(map: maplibregl.Map, visible: boolea
 }
 
 /**
- * TransformStyle callback for map.setStyle() — carries over all custom sources,
- * layers, terrain, and sky from the previous style into the new basemap style.
- * This prevents the "nuke and re-add" cascade that previously required
- * incrementStyleVersion() to trigger every hook to re-add its layers.
+ * Build a transformStyle callback bound to a specific map instance, wired
+ * with this app's known custom-layer IDs (starfield, terrain shading).
+ * Implementation lives in `./preserveCustomStyle` so it can be tested
+ * without dragging in `maplibre-contour` and the starfield runtime.
  */
-export function preserveCustomStyle(
-  previous: maplibregl.StyleSpecification | undefined,
-  next: maplibregl.StyleSpecification
-): maplibregl.StyleSpecification {
-  if (!previous) return next;
-
-  const nextSourceIds = new Set(Object.keys(next.sources ?? {}));
-  const nextLayerIds = new Set((next.layers ?? []).map((l) => l.id));
-
-  // Carry over all sources that don't exist in the new basemap
-  const customSources: Record<string, maplibregl.SourceSpecification> = {};
-  for (const [id, source] of Object.entries(previous.sources ?? {})) {
-    if (!nextSourceIds.has(id)) {
-      customSources[id] = source as maplibregl.SourceSpecification;
-    }
-  }
-
-  // Carry over all layers that don't exist in the new basemap.
-  // Insert terrain shading layers (hillshade, contours) before the first symbol
-  // layer so they render below labels; all other custom layers go on top.
-  const customLayers = (previous.layers ?? []).filter((l) => !nextLayerIds.has(l.id));
-  const terrainIds = new Set(TERRAIN_SHADING_LAYER_IDS);
-  const starfieldLayer = customLayers.filter((l) => l.id === STARFIELD_LAYER_ID);
-  const terrainLayers = customLayers.filter((l) => terrainIds.has(l.id));
-  const otherLayers = customLayers.filter(
-    (l) => !terrainIds.has(l.id) && l.id !== STARFIELD_LAYER_ID
-  );
-
-  // Starfield goes first (behind everything)
-  const layers = [...starfieldLayer, ...next.layers];
-  if (terrainLayers.length > 0) {
-    const symbolIdx = layers.findIndex((l) => l.type === 'symbol');
-    if (symbolIdx >= 0) {
-      layers.splice(symbolIdx, 0, ...terrainLayers);
-    } else {
-      layers.push(...terrainLayers);
-    }
-  }
-  layers.push(...otherLayers);
-
-  return {
-    ...next,
-    sources: { ...next.sources, ...customSources },
-    layers,
-    terrain: previous.terrain ?? next.terrain,
-    sky: previous.sky ?? next.sky,
-  };
+export function makePreserveCustomStyle(map: maplibregl.Map) {
+  return makePreserveCustomStyleInternal(map, TERRAIN_SHADING_LAYER_IDS, STARFIELD_LAYER_ID);
 }
 
 /** Find the first symbol layer to insert raster/line layers below labels. */

@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
+import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
-import { setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
+import { captureBasemapSnapshot, setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 
 // ============================================================================
 // Safe Map Proxy
@@ -112,7 +113,7 @@ export function useMapSetup({
 
     const rawMap = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: mapStyleUrl,
+      style: resolveMapStyleArg(mapStyleUrl),
       center: [0, 30],
       zoom: 2,
       pitch: 0,
@@ -129,6 +130,7 @@ export function useMapSetup({
           (url.includes('tiles.openfreemap.org') ||
             url.includes('basemaps.cartocdn.com') ||
             url.includes('tiles.mapterhorn.com') ||
+            url.includes('arcgisonline.com') ||
             url.includes('rainviewer.com'))
         ) {
           return { url: url.replace('https://', 'tile-cache://') };
@@ -184,6 +186,10 @@ export function useMapSetup({
     };
 
     map.on('load', () => {
+      // Snapshot the basemap's source/layer IDs BEFORE any app-added custom
+      // sources/layers. preserveCustomStyle relies on this to decide what to
+      // drop on style changes.
+      captureBasemapSnapshot(map);
       setupGlobeProjection(map);
       setup3DTerrain(map);
       setupAirportsLayer(map, airports);
