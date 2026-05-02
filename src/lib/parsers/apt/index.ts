@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type {
+  Frequency,
   LinearFeature,
   ParsedAirport,
   ParsedPath,
@@ -55,26 +56,32 @@ export class AirportParser {
   }
 
   /**
-   * Map row code to frequency type
+   * Map an apt.dat frequency row code (legacy 50-56 or modern 1050-1056)
+   * to the canonical FrequencyType for the role it represents.
    */
   private getFrequencyType(code: number): FrequencyType {
     switch (code) {
       case RowCode.FREQUENCY_AWOS:
+      case RowCode.FREQUENCY_AWOS_833:
         return FrequencyType.AWOS;
       case RowCode.FREQUENCY_CTAF:
+      case RowCode.FREQUENCY_CTAF_833:
         return FrequencyType.CTAF;
       case RowCode.FREQUENCY_DELIVERY:
+      case RowCode.FREQUENCY_DELIVERY_833:
         return FrequencyType.DELIVERY;
       case RowCode.FREQUENCY_GROUND:
+      case RowCode.FREQUENCY_GROUND_833:
         return FrequencyType.GROUND;
       case RowCode.FREQUENCY_TOWER:
+      case RowCode.FREQUENCY_TOWER_833:
         return FrequencyType.TOWER;
       case RowCode.FREQUENCY_APPROACH:
+      case RowCode.FREQUENCY_APPROACH_833:
         return FrequencyType.APPROACH;
-      case RowCode.FREQUENCY_CENTER:
-        return FrequencyType.CENTER;
-      case RowCode.FREQUENCY_UNICOM:
-        return FrequencyType.UNICOM;
+      case RowCode.FREQUENCY_DEPARTURE:
+      case RowCode.FREQUENCY_DEPARTURE_833:
+        return FrequencyType.DEPARTURE;
       default:
         return FrequencyType.CTAF;
     }
@@ -354,6 +361,13 @@ export class AirportParser {
 
   parse(): ParseResult<ParsedAirport> {
     const startTime = Date.now();
+    // Per the apt.dat 1200 spec, modern (1050-1056) and legacy (50-56)
+    // frequency rows can both be present in a file, but the modern set
+    // supersedes — "Ignored if row codes 1050-1056 exist". We collect
+    // them into separate buckets and pick the right one after the parse
+    // loop finishes.
+    const legacyFrequencies: Frequency[] = [];
+    const modernFrequencies: Frequency[] = [];
     const airport: ParsedAirport = {
       id: '',
       name: '',
@@ -469,13 +483,27 @@ export class AirportParser {
         case RowCode.FREQUENCY_GROUND:
         case RowCode.FREQUENCY_TOWER:
         case RowCode.FREQUENCY_APPROACH:
-        case RowCode.FREQUENCY_CENTER:
-        case RowCode.FREQUENCY_UNICOM: {
-          const freqType = this.getFrequencyType(code);
-          const freq = parseFloat(token(tokens, 1)) / 100;
-          airport.frequencies.push({
-            type: freqType,
-            frequency: freq,
+        case RowCode.FREQUENCY_DEPARTURE: {
+          // Legacy 25 kHz: stored as MHz × 100 (e.g. 12230 = 122.30 MHz).
+          legacyFrequencies.push({
+            type: this.getFrequencyType(code),
+            frequency: parseFloat(token(tokens, 1)) / 100,
+            name: tokens.slice(2).join(' '),
+          });
+          break;
+        }
+
+        case RowCode.FREQUENCY_AWOS_833:
+        case RowCode.FREQUENCY_CTAF_833:
+        case RowCode.FREQUENCY_DELIVERY_833:
+        case RowCode.FREQUENCY_GROUND_833:
+        case RowCode.FREQUENCY_TOWER_833:
+        case RowCode.FREQUENCY_APPROACH_833:
+        case RowCode.FREQUENCY_DEPARTURE_833: {
+          // Modern 8.33 kHz: stored in kHz (e.g. 122305 = 122.305 MHz).
+          modernFrequencies.push({
+            type: this.getFrequencyType(code),
+            frequency: parseFloat(token(tokens, 1)) / 1000,
             name: tokens.slice(2).join(' '),
           });
           break;
@@ -749,6 +777,11 @@ export class AirportParser {
         }
       }
     }
+
+    // Per the apt.dat 1200 spec: modern (1050-1056) frequency rows supersede
+    // legacy (50-56) when both are present. We always prefer modern if any
+    // were seen, otherwise fall back to whatever legacy rows existed.
+    airport.frequencies = modernFrequencies.length > 0 ? modernFrequencies : legacyFrequencies;
 
     // Calculate stats
     const parsedCount =

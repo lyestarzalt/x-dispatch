@@ -16,14 +16,25 @@ export enum RowCode {
   START_LOCATION_LEGACY = 15,
   BEACON = 18,
   WINDSOCK = 19,
-  FREQUENCY_AWOS = 50,
-  FREQUENCY_CTAF = 51,
-  FREQUENCY_DELIVERY = 52,
-  FREQUENCY_GROUND = 53,
-  FREQUENCY_TOWER = 54,
-  FREQUENCY_APPROACH = 55,
-  FREQUENCY_CENTER = 56,
-  FREQUENCY_UNICOM = 57,
+  // Legacy 25 kHz frequency rows (apt.dat 1000 spec). Per the 1200 spec,
+  // these are ignored when the matching 1050-1056 rows exist for the
+  // same airport.
+  FREQUENCY_AWOS = 50, // ATIS / AWOS / ASOS (recorded)
+  FREQUENCY_CTAF = 51, // Unicom (US), CTAF (US), Radio (UK)
+  FREQUENCY_DELIVERY = 52, // Clearance Delivery
+  FREQUENCY_GROUND = 53, // Ground
+  FREQUENCY_TOWER = 54, // Tower
+  FREQUENCY_APPROACH = 55, // Approach
+  FREQUENCY_DEPARTURE = 56, // Departure (NOT Center — apt.dat has no Center row)
+  // Modern 8.33 kHz frequency rows (apt.dat 1130+ spec). Same seven roles,
+  // 3-decimal precision instead of 2.
+  FREQUENCY_AWOS_833 = 1050,
+  FREQUENCY_CTAF_833 = 1051,
+  FREQUENCY_DELIVERY_833 = 1052,
+  FREQUENCY_GROUND_833 = 1053,
+  FREQUENCY_TOWER_833 = 1054,
+  FREQUENCY_APPROACH_833 = 1055,
+  FREQUENCY_DEPARTURE_833 = 1056,
   TAXI_SIGN = 20,
   LAND_RUNWAY = 100,
   HELIPAD = 102,
@@ -187,15 +198,25 @@ export enum SignSize {
   SMALL_DISTANCE_REMAINING = 5,
 }
 
+/**
+ * ATC communication role in apt.dat. Maps 1:1 to the seven row codes
+ * (50-56 legacy / 1050-1056 modern) defined by the apt.dat 1200 spec.
+ *
+ * Note: apt.dat has no "Center" (ARTCC) row code — that label was a bug
+ * in earlier versions of this codebase. CENTER frequencies come from
+ * VATSIM, not apt.dat.
+ *
+ * Note: "Unicom" and "CTAF" are the same row code (51 / 1051) — different
+ * regional names for the same role. We keep the single CTAF identifier.
+ */
 export enum FrequencyType {
-  AWOS = 'AWOS',
-  CTAF = 'CTAF',
-  DELIVERY = 'DELIVERY',
+  AWOS = 'AWOS', // ATIS / AWOS / ASOS — recorded
+  CTAF = 'CTAF', // Unicom / CTAF / Radio
+  DELIVERY = 'DELIVERY', // Clearance Delivery
   GROUND = 'GROUND',
   TOWER = 'TOWER',
   APPROACH = 'APPROACH',
-  CENTER = 'CENTER',
-  UNICOM = 'UNICOM',
+  DEPARTURE = 'DEPARTURE',
 }
 
 // ============================================================================

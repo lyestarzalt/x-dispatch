@@ -45,21 +45,20 @@ const FREQ_PRIORITY: FrequencyType[] = [
   FrequencyType.TOWER,
   FrequencyType.GROUND,
   FrequencyType.APPROACH,
+  FrequencyType.DEPARTURE,
   FrequencyType.DELIVERY,
   FrequencyType.CTAF,
   FrequencyType.AWOS,
-  FrequencyType.UNICOM,
 ];
 
 const FREQ_LABELS: Partial<Record<FrequencyType, string>> = {
   [FrequencyType.TOWER]: 'TWR',
   [FrequencyType.GROUND]: 'GND',
   [FrequencyType.APPROACH]: 'APP',
+  [FrequencyType.DEPARTURE]: 'DEP',
   [FrequencyType.DELIVERY]: 'DEL',
   [FrequencyType.CTAF]: 'CTAF',
   [FrequencyType.AWOS]: 'ATIS',
-  [FrequencyType.UNICOM]: 'UNIC',
-  [FrequencyType.CENTER]: 'CTR',
 };
 
 export default function InfoTab() {
