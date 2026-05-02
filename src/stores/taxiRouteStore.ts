@@ -21,8 +21,20 @@ export interface TaxiRoutePoint {
 
 export type TaxiRouteMode = 'network' | 'freehand';
 
+/**
+ * Direction of the auto-routed taxi path.
+ *   - departure: gate → runway end (taxi out for takeoff)
+ *   - arrival:   runway end → gate (taxi in after landing)
+ *
+ * The pathfinder is direction-agnostic (A* on the undirected taxi graph
+ * is symmetric), so this only changes which endpoint the UI presents as
+ * source vs destination.
+ */
+export type TaxiRouteDirection = 'departure' | 'arrival';
+
 interface TaxiRouteState {
   mode: TaxiRouteMode;
+  direction: TaxiRouteDirection;
 
   // --- Freehand mode state ---
   waypoints: TaxiRoutePoint[];
@@ -38,6 +50,8 @@ interface TaxiRouteState {
   autoRouteResult: PathResult | null;
   /** Currently selected runway end name (e.g. "25R") */
   selectedRunway: string | null;
+  /** Currently selected gate/ramp name — used in arrival mode */
+  selectedGateName: string | null;
 
   // --- Shared state ---
   activeTaxiIcao: string | null;
@@ -45,17 +59,28 @@ interface TaxiRouteState {
 
   // Actions
   setMode: (mode: TaxiRouteMode) => void;
+  setDirection: (direction: TaxiRouteDirection) => void;
+  /** Record the user's runway pick without computing a route yet. */
+  setSelectedRunway: (runway: string | null) => void;
+  /** Record the user's gate pick without computing a route yet. */
+  setSelectedGateName: (gateName: string | null) => void;
   setGraph: (graph: TaxiGraph | null) => void;
   setActiveAirport: (icao: string) => void;
   addWaypoint: (lon: number, lat: number) => void;
   addNetworkNode: (nodeId: number) => void;
-  /** Auto-route from a gate position to a runway end position */
+  /**
+   * Auto-route between two positions on the taxi graph. Endpoints are
+   * positional ("from"/"to") rather than gate/runway because the same
+   * call serves both departure and arrival flows — the UI decides which
+   * is which.
+   */
   computeAutoRoute: (
-    gateLon: number,
-    gateLat: number,
-    runwayLon: number,
-    runwayLat: number,
-    runwayName: string
+    fromLon: number,
+    fromLat: number,
+    toLon: number,
+    toLat: number,
+    runwayName: string,
+    gateName?: string
   ) => void;
   /** Replace a clicked anchor node at the given index with a new node, re-route */
   replaceNetworkNode: (anchorIndex: number, newNodeId: number) => void;
@@ -123,17 +148,34 @@ export function resolveFullPath(clickedIds: number[], graph: TaxiGraph | null): 
 
 export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
   mode: 'network',
+  direction: 'departure',
   waypoints: [],
   clickedNodeIds: [],
   networkNodeIds: [],
   graph: null,
   autoRouteResult: null,
   selectedRunway: null,
+  selectedGateName: null,
   activeTaxiIcao: null,
   clickModeEnabled: false,
 
   setMode: (mode) =>
     set({ mode, waypoints: [], clickedNodeIds: [], networkNodeIds: [], autoRouteResult: null }),
+
+  setDirection: (direction) =>
+    set({
+      direction,
+      // Different flow has different endpoints — wipe the existing route
+      // so the user gets a clean slate.
+      clickedNodeIds: [],
+      networkNodeIds: [],
+      autoRouteResult: null,
+      selectedRunway: null,
+      selectedGateName: null,
+    }),
+
+  setSelectedRunway: (runway) => set({ selectedRunway: runway }),
+  setSelectedGateName: (gateName) => set({ selectedGateName: gateName }),
 
   setGraph: (graph) => set({ graph }),
 
@@ -160,22 +202,23 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     });
   },
 
-  computeAutoRoute: (gateLon, gateLat, runwayLon, runwayLat, runwayName) => {
+  computeAutoRoute: (fromLon, fromLat, toLon, toLat, runwayName, gateName) => {
     const { graph } = get();
     if (!graph) return;
 
-    const gateNode = findNearestNode(graph, gateLon, gateLat, true);
-    const runwayNode = findNearestNode(graph, runwayLon, runwayLat, true);
-    if (!gateNode || !runwayNode) return;
+    const fromNode = findNearestNode(graph, fromLon, fromLat, true);
+    const toNode = findNearestNode(graph, toLon, toLat, true);
+    if (!fromNode || !toNode) return;
 
-    const result = findPath(graph, gateNode.id, runwayNode.id);
+    const result = findPath(graph, fromNode.id, toNode.id);
     if (result) {
       set({
         mode: 'network',
-        clickedNodeIds: [gateNode.id, runwayNode.id],
+        clickedNodeIds: [fromNode.id, toNode.id],
         networkNodeIds: result.nodeIds,
         autoRouteResult: result,
         selectedRunway: runwayName,
+        selectedGateName: gateName ?? null,
       });
     }
   },
@@ -244,6 +287,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
+      selectedGateName: null,
     }),
 
   deactivate: () =>
@@ -254,6 +298,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
+      selectedGateName: null,
       clickModeEnabled: false,
     }),
 
