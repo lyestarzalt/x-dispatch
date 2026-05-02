@@ -30,6 +30,7 @@
   "scripts": {
     "start": "electron-forge start",
     "start:clean": "rm -rf .vite && electron-forge start",
+    "start:fresh": "electron-forge start -- --reset-cache",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

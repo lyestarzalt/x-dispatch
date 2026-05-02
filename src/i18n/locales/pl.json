@@ -282,7 +282,10 @@
       "launchArgsSearch": "Search arguments...",
       "launchArgsNoResults": "No matching arguments",
       "launchArgsPlaceholder": "--flag or --flag=value",
-      "launchArgsActive": "Active ({{count}})"
+      "launchArgsActive": "Active ({{count}})",
+      "launchArgsSavedTitle": "Saved args",
+      "launchArgsSessionSubtext": "Set via --xp-arg, applied this session only",
+      "launchArgsSessionTitle": "Session args (from CLI)"
     },
     "appearance": {
       "title": "Wygląd",

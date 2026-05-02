@@ -5,6 +5,7 @@ import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/X
 import type { NavDataSources } from './lib/xplaneServices/dataService/cycleInfo';
 // Import types from canonical sources
 import type { Aircraft, WeatherPreset } from './types/aircraft';
+import type { CliFlags } from './types/cli';
 import type {
   ApiResponse,
   BrowseResult,
@@ -62,6 +63,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   platform: process.platform,
   isSetupComplete: () => ipcRenderer.invoke('app:isSetupComplete'),
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  getCliFlags: () => ipcRenderer.invoke('app:getCliFlags'),
   getProcessMemory: () =>
     ipcRenderer.invoke('app:getProcessMemory') as Promise<{
       rss: number;
@@ -355,6 +357,7 @@ declare global {
       platform: NodeJS.Platform;
       isSetupComplete: () => Promise<boolean>;
       getVersion: () => Promise<string>;
+      getCliFlags: () => Promise<CliFlags>;
       getProcessMemory: () => Promise<{ rss: number; heapUsed: number; heapTotal: number }>;
       startLoading: () => Promise<{ success: boolean; status?: DataLoadStatus; error?: string }>;
       getLoadingStatus: () => Promise<{ xplanePath: string | null; status: DataLoadStatus }>;

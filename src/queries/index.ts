@@ -35,6 +35,7 @@ export {
   useActiveInstallation,
   useLogPath,
   useConfigPath,
+  useCliFlags,
   appKeys,
 } from './useAppQuery';
 

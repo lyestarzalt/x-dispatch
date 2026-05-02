@@ -11,6 +11,7 @@ export const appKeys = {
   configPath: ['app', 'configPath'] as const,
   installations: ['app', 'installations'] as const,
   activeInstallation: ['app', 'activeInstallation'] as const,
+  cliFlags: ['app', 'cliFlags'] as const,
   airportMetadata: (icao: string) => ['app', 'airportMetadata', icao] as const,
   atcControllers: (icao: string) => ['app', 'atcControllers', icao] as const,
   procedures: (icao: string) => ['app', 'procedures', icao] as const,
@@ -123,6 +124,14 @@ export function useConfigPath() {
   return useQuery({
     queryKey: appKeys.configPath,
     queryFn: () => window.appAPI.getConfigPath(),
+    staleTime: Infinity,
+  });
+}
+
+export function useCliFlags() {
+  return useQuery({
+    queryKey: appKeys.cliFlags,
+    queryFn: () => window.appAPI.getCliFlags(),
     staleTime: Infinity,
   });
 }

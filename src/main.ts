@@ -15,6 +15,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
+import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import {
@@ -52,6 +53,21 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- must run synchronously before any other code
 if (require('electron-squirrel-startup')) app.quit();
+
+// CLI parsing — must run before Electron init so --help/--version can exit
+// before any window opens. Unknown flags are logged but don't block boot.
+const cliResult = parseAndApply(process.argv);
+if (cliResult.flags.help) {
+  printHelpAndExit(app.getVersion());
+}
+if (cliResult.flags.version) {
+  printVersionAndExit(app.getVersion());
+}
+for (const u of cliResult.unknownWithSuggestions) {
+  console.warn(
+    `[X-Dispatch v${app.getVersion()}] Unknown flag: ${u.flag}${u.suggestion ? `. Did you mean ${u.suggestion}?` : ''}`
+  );
+}
 
 // E2E test isolation: Playwright sets this env var to redirect userData (config.json,
 // xplane-data.db, settings.json, logs) into a per-test temp dir. Must run BEFORE any
@@ -233,6 +249,7 @@ function createWindow(): BrowserWindow {
 function registerIpcHandlers() {
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:getCliFlags', () => getCliFlags());
   ipcMain.handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();
     return {
@@ -1453,6 +1470,15 @@ app.whenReady().then(async () => {
   }
 
   dataManager = getXPlaneDataManager();
+
+  if (getCliFlags().resetCache) {
+    try {
+      logger.main.info('CLI --reset-cache: clearing cached data before init');
+      dataManager.clearCache();
+    } catch (err) {
+      logger.main.error('Failed to clear cache from --reset-cache; continuing boot', err);
+    }
+  }
 
   if (isSetupComplete()) {
     const xplanePath = dataManager.getXPlanePath();

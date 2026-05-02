@@ -15,12 +15,16 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { XPLANE_ARG_CATALOG } from '@/config/xplaneArgs';
 import { cn } from '@/lib/utils/helpers';
+import { useCliFlags } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 export default function LaunchArgsCard() {
   const { t } = useTranslation();
   const customLaunchArgs = useSettingsStore((s) => s.launcher.customLaunchArgs);
   const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
+  const { data: cliFlags } = useCliFlags();
+  const sessionArgs = cliFlags?.xpArgs ?? [];
+
   const [open, setOpen] = useState(false);
   const [customInput, setCustomInput] = useState('');
 
@@ -68,6 +72,24 @@ export default function LaunchArgsCard() {
           {t('settings.xplane.launchArgsDescription')}
         </p>
       </div>
+
+      {sessionArgs.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground">
+            {t('settings.xplane.launchArgsSessionTitle')}
+          </p>
+          <p className="text-xs text-muted-foreground/80">
+            {t('settings.xplane.launchArgsSessionSubtext')}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {sessionArgs.map((arg, i) => (
+              <Badge key={`${i}-${arg}`} variant="secondary" className="font-mono text-xs">
+                {arg}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <Popover open={open} onOpenChange={setOpen}>
@@ -145,7 +167,9 @@ export default function LaunchArgsCard() {
       {customLaunchArgs.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-success">
-            {t('settings.xplane.launchArgsActive', { count: customLaunchArgs.length })}
+            {sessionArgs.length > 0
+              ? t('settings.xplane.launchArgsSavedTitle')
+              : t('settings.xplane.launchArgsActive', { count: customLaunchArgs.length })}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {customLaunchArgs.map((arg) => (

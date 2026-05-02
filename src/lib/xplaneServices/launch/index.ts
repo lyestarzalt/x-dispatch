@@ -2,11 +2,13 @@ import { exec, spawn } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { getCliFlags } from '@/lib/cli';
 import logger from '@/lib/utils/logger';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft, WeatherPreset } from '@/types/aircraft';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { scanAircraftDirectory } from './acfParser';
+import { filterReservedXpArgs } from './cliArgs';
 import { getXPlaneExecutable } from './freeflightGenerator';
 import { WEATHER_PRESETS } from './types';
 
@@ -104,6 +106,12 @@ class XPlaneLauncher {
 
       if (extraArgs?.length) {
         xplaneArgs.push(...extraArgs);
+      }
+
+      const cliXpArgs = filterReservedXpArgs(getCliFlags().xpArgs);
+      if (cliXpArgs.length) {
+        xplaneArgs.push(...cliXpArgs);
+        logger.launcher.info(`Appending ${cliXpArgs.length} CLI session args`);
       }
 
       // macOS + Steam installation: launch via Steam URL protocol
