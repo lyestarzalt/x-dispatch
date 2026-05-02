@@ -77,6 +77,10 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 > **Don't own X-Plane?** X-Plane has a [free demo](https://www.x-plane.com/desktop/try-it/) that works with X-Dispatch, so you can try both.
 
+## Manual
+
+- [Command-line flags](manual/cli.md) — `--reset-cache`, `--xp-arg=`, `--help`, `--version`
+
 ## Development
 
 ```bash
