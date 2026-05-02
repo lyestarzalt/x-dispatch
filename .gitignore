@@ -67,6 +67,10 @@ out/
 # tsc outDir (typecheck-only, never committed)
 dist/
 
+# Playwright test artefacts (traces, screenshots, videos)
+test-results/
+playwright-report/
+
 # Claude/AI
 .claude/
 .mcp.json
