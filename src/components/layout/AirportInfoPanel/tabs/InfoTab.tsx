@@ -1,6 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, ExternalLink, Plane, Radio } from 'lucide-react';
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  Radio,
+} from 'lucide-react';
 import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
 // Formatters for metar-taf-parser types
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
@@ -9,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
-import { useAirportProcedures, useNavDataQuery } from '@/queries';
+import { useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
 import {
   getTrafficCountsForAirport as getIvaoTrafficCounts,
@@ -25,11 +33,17 @@ import {
 } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
-import type { Frequency } from '@/types/apt';
+import type { Frequency, Runway, RunwayEnd } from '@/types/apt';
 import { FrequencyType, SurfaceType } from '@/types/apt';
+import type { Navaid } from '@/types/navigation';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this import
 import gatewayLogo from '../../../../../assets/gateway-logo.svg';
+
+// ---------------------------------------------------------------------------
+// Constants — design system tokens only (cat-* category colors, xp-* utility
+// classes from index.css, standard shadcn surface tokens).
+// ---------------------------------------------------------------------------
 
 const SURFACE_NAMES: Partial<Record<SurfaceType, string>> = {
   [SurfaceType.ASPHALT]: 'Asphalt',
@@ -41,25 +55,33 @@ const SURFACE_NAMES: Partial<Record<SurfaceType, string>> = {
   [SurfaceType.SNOW_OR_ICE]: 'Snow',
 };
 
-const FREQ_PRIORITY: FrequencyType[] = [
-  FrequencyType.TOWER,
-  FrequencyType.GROUND,
-  FrequencyType.APPROACH,
-  FrequencyType.DEPARTURE,
-  FrequencyType.DELIVERY,
-  FrequencyType.CTAF,
-  FrequencyType.AWOS,
+// Frequencies in flight-flow order: preflight (recorded info) → taxi out
+// → departure clearance → tower → en-route control → unicom for non-ATC.
+const FREQ_FLIGHT_ORDER: FrequencyType[] = [
+  FrequencyType.AWOS, // ATIS / weather (read first)
+  FrequencyType.DELIVERY, // clearance
+  FrequencyType.GROUND, // taxi
+  FrequencyType.TOWER, // takeoff
+  FrequencyType.DEPARTURE, // climb-out
+  FrequencyType.APPROACH, // arrival
+  FrequencyType.CTAF, // non-ATC fallback
 ];
 
-const FREQ_LABELS: Partial<Record<FrequencyType, string>> = {
-  [FrequencyType.TOWER]: 'TWR',
-  [FrequencyType.GROUND]: 'GND',
-  [FrequencyType.APPROACH]: 'APP',
-  [FrequencyType.DEPARTURE]: 'DEP',
-  [FrequencyType.DELIVERY]: 'DEL',
-  [FrequencyType.CTAF]: 'CTAF',
+const FREQ_LABELS: Record<FrequencyType, string> = {
   [FrequencyType.AWOS]: 'ATIS',
+  [FrequencyType.DELIVERY]: 'DEL',
+  [FrequencyType.GROUND]: 'GND',
+  [FrequencyType.TOWER]: 'TWR',
+  [FrequencyType.DEPARTURE]: 'DEP',
+  [FrequencyType.APPROACH]: 'APP',
+  [FrequencyType.CTAF]: 'CTAF',
 };
+
+const FREQ_VISIBLE_DEFAULT = 5;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function InfoTab() {
   const { t } = useTranslation();
@@ -69,6 +91,9 @@ export default function InfoTab() {
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
 
+  const [showAllFreqs, setShowAllFreqs] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
   const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
@@ -77,7 +102,6 @@ export default function InfoTab() {
     airport?.runways[0]?.ends[0]?.longitude ?? null,
     50
   );
-  const { data: procedures } = useAirportProcedures(icao);
   const { data: gatewayUpdate } = useGatewayUpdateCheck(icao, isCustom);
 
   const metar = vatsimMetarData?.parsed ?? null;
@@ -95,55 +119,96 @@ export default function InfoTab() {
   );
   const primaryAtis = atis[0];
   const atisRunways = primaryAtis ? parseATISRunways(primaryAtis) : [];
-  const hasVatsimActivity =
-    controllers.length > 0 || atis.length > 0 || traffic.departures > 0 || traffic.arrivals > 0;
 
   // IVAO data
   const ivaoTraffic = useMemo(() => getIvaoTrafficCounts(ivaoData, icao ?? ''), [ivaoData, icao]);
-  const hasIvaoActivity = ivaoTraffic.departures > 0 || ivaoTraffic.arrivals > 0;
 
-  // Runways sorted by length
+  // Runways sorted by length, descending
   const sortedRunways = useMemo(() => {
     if (!airport?.runways) return [];
-    return [...airport.runways].sort((a, b) => {
-      const lenA = runwayLengthFeet(a.ends[0], a.ends[1]);
-      const lenB = runwayLengthFeet(b.ends[0], b.ends[1]);
-      return lenB - lenA;
-    });
+    return [...airport.runways].sort(
+      (a, b) => runwayLengthFeet(b.ends[0], b.ends[1]) - runwayLengthFeet(a.ends[0], a.ends[1])
+    );
   }, [airport?.runways]);
 
-  // Get frequencies sorted by priority
+  // Map of runway end name → ILS navaid (so we can show an ILS chip per end)
+  const ilsByEnd = useMemo(() => {
+    const map = new Map<string, Navaid>();
+    if (!navData?.ils) return map;
+    for (const ils of navData.ils) {
+      if (ils.associatedRunway) map.set(ils.associatedRunway.toUpperCase(), ils);
+    }
+    return map;
+  }, [navData?.ils]);
+
+  // Active runway resolution: ATIS is authoritative when available, wind
+  // alignment is a heuristic fallback used only when no ATIS is published.
+  const activeRunway = useMemo<ActiveRunway | null>(() => {
+    if (vatsimEnabled && atisRunways.length > 0) {
+      return { source: 'atis', ends: atisRunways.map((r) => r.toUpperCase()) };
+    }
+    const wind = metar?.wind;
+    if (wind && wind.degrees !== undefined && wind.speed > 0) {
+      const best = findPreferredRunwayEnd(sortedRunways, wind.degrees);
+      if (best) {
+        return {
+          source: 'wind',
+          ends: [best.endName.toUpperCase()],
+          windDeg: wind.degrees,
+          windSpeed: wind.speed,
+          deltaDeg: best.deltaDeg,
+        };
+      }
+    }
+    return null;
+  }, [vatsimEnabled, atisRunways, metar?.wind, sortedRunways]);
+
+  // Map VATSIM controllers to the frequency type they cover, so each row in
+  // the Frequencies list can show a green pulse dot when the matching
+  // controller is logged in.
+  const liveControllers = useMemo(() => {
+    const set = new Set<FrequencyType>();
+    if (!vatsimEnabled) return set;
+    for (const c of controllers) {
+      const ft = controllerCallsignToFreqType(c.callsign);
+      if (ft !== null) set.add(ft);
+    }
+    if (atis.length > 0) set.add(FrequencyType.AWOS);
+    return set;
+  }, [vatsimEnabled, controllers, atis]);
+
+  // Combined live traffic chip. Sums VATSIM and IVAO when both are on.
+  const liveTraffic = useMemo(() => {
+    let dep = 0;
+    let arr = 0;
+    if (vatsimEnabled) {
+      dep += traffic.departures;
+      arr += traffic.arrivals;
+    }
+    if (ivaoEnabled) {
+      dep += ivaoTraffic.departures;
+      arr += ivaoTraffic.arrivals;
+    }
+    return dep + arr > 0 ? { departures: dep, arrivals: arr } : null;
+  }, [vatsimEnabled, ivaoEnabled, traffic, ivaoTraffic]);
+
+  const atisLetter = vatsimEnabled && primaryAtis?.atis_code ? primaryAtis.atis_code : null;
+
+  // Frequencies sorted into flight-flow order.
   const frequencies = useMemo(() => {
     if (!airport?.frequencies) return [];
-    const freqMap = new Map<FrequencyType, Frequency[]>();
-    for (const freq of airport.frequencies) {
-      const existing = freqMap.get(freq.type) ?? [];
-      freqMap.set(freq.type, [...existing, freq]);
-    }
-    const result: Frequency[] = [];
-    for (const type of FREQ_PRIORITY) {
-      const freqs = freqMap.get(type);
-      if (freqs) result.push(...freqs);
-    }
-    return result.slice(0, 6); // Max 6 frequencies
+    return [...airport.frequencies].sort((a, b) => freqOrderRank(a.type) - freqOrderRank(b.type));
   }, [airport?.frequencies]);
 
-  // Counts
-  const ilsCount = navData?.ils.length ?? 0;
-  const sidCount = procedures?.sids.length ?? 0;
-  const starCount = procedures?.stars.length ?? 0;
-  const approachCount = procedures?.approaches.length ?? 0;
-  const procCount = sidCount + starCount + approachCount;
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
+  const visibleFrequencies = showAllFreqs
+    ? frequencies
+    : frequencies.slice(0, FREQ_VISIBLE_DEFAULT);
 
   if (!airport) return null;
 
   return (
     <div className="space-y-4">
-      {/* Gateway Update */}
+      {/* Gateway update banner (kept) */}
       {gatewayUpdate && (
         <Button
           variant="ghost"
@@ -176,220 +241,344 @@ export default function InfoTab() {
         </Button>
       )}
 
-      {/* VATSIM Live Section */}
-      {vatsimEnabled && hasVatsimActivity && (
-        <div className="rounded-lg border border-cat-emerald/20 bg-cat-emerald/5 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-cat-emerald" />
-              <span className="text-xs font-medium text-cat-emerald">VATSIM LIVE</span>
-            </div>
-            {(traffic.departures > 0 || traffic.arrivals > 0) && (
-              <div className="flex items-center gap-3 font-mono text-xs">
-                <span className="flex items-center gap-1 text-cat-emerald">
-                  <Plane className="h-3 w-3 rotate-45" />
-                  {traffic.departures}
-                </span>
-                <span className="flex items-center gap-1 text-cat-amber">
-                  <Plane className="h-3 w-3 -rotate-45" />
-                  {traffic.arrivals}
-                </span>
-              </div>
-            )}
-          </div>
+      <ConditionsCard
+        metar={metar}
+        activeRunway={activeRunway}
+        atisLetter={atisLetter}
+        liveTraffic={liveTraffic}
+      />
 
-          {/* ATC Online */}
-          {controllers.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {controllers.map((atc) => (
-                <Badge key={atc.callsign} variant="cat-emerald" className="gap-1 text-[10px]">
-                  <Radio className="h-2.5 w-2.5" />
-                  {atc.callsign.split('_')[1] || atc.callsign}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* ATIS */}
-          {primaryAtis && (
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-mono text-sm font-bold">
-                {primaryAtis.atis_code || '?'}
-              </Badge>
-              <span className="text-sm text-muted-foreground">ATIS</span>
-              {atisRunways.length > 0 && (
-                <>
-                  <span className="text-muted-foreground/30">•</span>
-                  <span className="font-mono text-sm text-foreground">
-                    RWY {atisRunways.join(', ')}
-                  </span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* IVAO Live Section */}
-      {ivaoEnabled && hasIvaoActivity && (
-        <div className="rounded-lg border border-cat-blue/20 bg-cat-blue/5 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-cat-blue" />
-              <span className="text-xs font-medium text-cat-blue">IVAO LIVE</span>
-            </div>
-            <div className="flex items-center gap-3 font-mono text-xs">
-              <span className="flex items-center gap-1 text-cat-blue">
-                <Plane className="h-3 w-3 rotate-45" />
-                {ivaoTraffic.departures}
-              </span>
-              <span className="flex items-center gap-1 text-cat-amber">
-                <Plane className="h-3 w-3 -rotate-45" />
-                {ivaoTraffic.arrivals}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Weather */}
-      {metar ? (
-        <div>
-          <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Weather
-          </div>
-          <div className="space-y-2">
-            {/* Raw METAR */}
-            <div className="rounded bg-muted/30 p-2">
-              <p className="break-all font-mono text-[10px] leading-relaxed text-muted-foreground">
-                {rawMetar}
-              </p>
-            </div>
-            {/* Decoded weather */}
-            <div className="rounded-lg bg-muted/20 p-2.5">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-foreground">
-                <span>{formatWind(metar.wind)}</span>
-                <span className="text-muted-foreground/40">|</span>
-                <span>{formatVisibility(metar.visibility, metar.cavok)}</span>
-                <span className="text-muted-foreground/40">|</span>
-                <span>{formatCeiling(metar.clouds, metar.verticalVisibility)}</span>
-                <span className="text-muted-foreground/40">|</span>
-                <span>QNH {formatAltimeter(metar.altimeter)}</span>
-              </div>
-              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>
-                  {metar.temperature ?? '—'}°C / {metar.dewPoint ?? '—'}°C
-                </span>
-                {metar.weatherConditions.length > 0 && (
-                  <span className="font-mono">
-                    {formatWeatherConditions(metar.weatherConditions)}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-lg bg-muted/10 p-3 text-center text-sm text-muted-foreground">
-          No weather data available
-        </div>
-      )}
-
-      {/* Runways */}
       {sortedRunways.length > 0 && (
-        <div>
-          <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Runways
-          </div>
-          <div className="space-y-1">
-            {sortedRunways.map((rwy, i) => {
-              const length = Math.round(runwayLengthFeet(rwy.ends[0], rwy.ends[1]));
-              const surface = SURFACE_NAMES[rwy.surface_type] || 'Unknown';
-
-              return (
-                <div
-                  key={i}
-                  className="flex items-center justify-between rounded bg-muted/20 px-2.5 py-1.5"
-                >
-                  <span className="font-mono text-sm font-medium text-foreground">
-                    {rwy.ends[0].name}/{rwy.ends[1].name}
-                  </span>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="font-mono">{length.toLocaleString()}'</span>
-                    <span>{surface}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <RunwaysSection
+          runways={sortedRunways}
+          ilsByEnd={ilsByEnd}
+          activeEndNames={new Set(activeRunway?.ends ?? [])}
+        />
       )}
 
-      {/* Frequencies */}
       {frequencies.length > 0 && (
-        <div>
-          <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Frequencies
-          </div>
-          <div className="grid grid-cols-2 gap-1">
-            {frequencies.map((freq, i) => (
-              <Button
-                key={i}
-                variant="ghost"
-                onClick={() => handleCopy(formatFrequency(freq.frequency))}
-                className="group h-auto justify-between rounded bg-muted/20 px-2.5 py-1.5 hover:bg-muted/40"
-              >
-                <span className="text-[10px] text-muted-foreground">
-                  {FREQ_LABELS[freq.type] || freq.type}
-                </span>
-                <div className="flex items-center gap-1">
-                  <span className="font-mono text-sm text-foreground">
-                    {formatFrequency(freq.frequency)}
-                  </span>
-                  <Copy className="h-2.5 w-2.5 text-muted-foreground opacity-0 group-hover:opacity-100" />
-                </div>
-              </Button>
-            ))}
-          </div>
-        </div>
+        <FrequenciesSection
+          visible={visibleFrequencies}
+          totalCount={frequencies.length}
+          showAll={showAllFreqs}
+          onToggle={() => setShowAllFreqs((v) => !v)}
+          liveControllers={liveControllers}
+        />
       )}
 
-      {/* Stats Row */}
-      <div className="flex items-center justify-between rounded-lg bg-muted/10 px-3 py-2">
-        <StatItem label="RWY" value={airport.runways.length} />
-        <div className="h-4 w-px bg-border/50" />
-        <StatItem label="ILS" value={ilsCount} highlight={ilsCount > 0} />
-        <div className="h-4 w-px bg-border/50" />
-        <StatItem label="PROC" value={procCount} />
-        <div className="h-4 w-px bg-border/50" />
-        <StatItem label="Gates" value={airport.startupLocations?.length ?? 0} />
-      </div>
+      {rawMetar && (
+        <DetailsSection
+          rawMetar={rawMetar}
+          expanded={showDetails}
+          onToggle={() => setShowDetails((v) => !v)}
+        />
+      )}
     </div>
   );
 }
 
-function StatItem({
-  label,
-  value,
-  highlight,
+// ---------------------------------------------------------------------------
+// Sections
+// ---------------------------------------------------------------------------
+
+function ConditionsCard({
+  metar,
+  activeRunway,
+  atisLetter,
+  liveTraffic,
 }: {
-  label: string;
-  value: number;
-  highlight?: boolean;
+  metar: ParsedMetar | null;
+  activeRunway: ActiveRunway | null;
+  atisLetter: string | null;
+  liveTraffic: { departures: number; arrivals: number } | null;
 }) {
+  if (!metar && !activeRunway && !liveTraffic) {
+    return (
+      <div className="rounded-lg bg-muted/10 p-3 text-center text-sm text-muted-foreground">
+        No weather data available
+      </div>
+    );
+  }
   return (
-    <div className="text-center">
-      <p
-        className={cn(
-          'font-mono text-sm font-semibold',
-          highlight ? 'text-primary' : 'text-foreground'
+    <section>
+      <div className="mb-1.5 flex items-baseline justify-between">
+        <h4 className="xp-section-heading mb-0 border-b-0">Conditions</h4>
+        {liveTraffic && (
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cat-emerald" />
+            <span
+              className="flex items-center gap-1 text-cat-emerald"
+              aria-label={`${liveTraffic.departures} departures`}
+            >
+              <ArrowUpRight className="h-3 w-3" />
+              <span className="font-mono tabular-nums">{liveTraffic.departures}</span>
+            </span>
+            <span
+              className="flex items-center gap-1 text-cat-amber"
+              aria-label={`${liveTraffic.arrivals} arrivals`}
+            >
+              <ArrowDownLeft className="h-3 w-3" />
+              <span className="font-mono tabular-nums">{liveTraffic.arrivals}</span>
+            </span>
+          </span>
         )}
+      </div>
+      {metar && (
+        <div className="rounded-lg bg-card/40 px-3 py-2.5 text-sm">
+          <KvRow label="Wind" value={formatWind(metar.wind)} />
+          <KvRow label="Visibility" value={formatVisibility(metar.visibility, metar.cavok)} />
+          <KvRow label="Ceiling" value={formatCeiling(metar.clouds, metar.verticalVisibility)} />
+          <KvRow label="QNH" value={formatAltimeter(metar.altimeter)} />
+          <KvRow
+            label="Temp / Dew"
+            value={`${metar.temperature ?? '—'}°C / ${metar.dewPoint ?? '—'}°C`}
+          />
+          {metar.weatherConditions.length > 0 && (
+            <KvRow label="Phenomena" value={formatWeatherConditions(metar.weatherConditions)} />
+          )}
+        </div>
+      )}
+      <ActiveRunwayLine activeRunway={activeRunway} atisLetter={atisLetter} />
+    </section>
+  );
+}
+
+function ActiveRunwayLine({
+  activeRunway,
+  atisLetter,
+}: {
+  activeRunway: ActiveRunway | null;
+  atisLetter: string | null;
+}) {
+  if (!activeRunway) return null;
+  const isAtis = activeRunway.source === 'atis';
+  // ATIS path shows the letter chip — its presence signals "ATC online".
+  // Wind path stays muted; the missing chip is the implicit "no ATC" cue.
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1 text-xs">
+      <span className="text-muted-foreground">Active runway</span>
+      <span
+        className={cn('font-mono font-medium', isAtis ? 'text-cat-emerald' : 'text-foreground')}
       >
-        {value}
-      </p>
-      <p className="text-[9px] text-muted-foreground">{label}</p>
+        {activeRunway.ends.join(', ')}
+      </span>
+      {isAtis && atisLetter && (
+        <Badge variant="cat-emerald" className="h-4 px-1.5 font-mono text-[10px]">
+          ATIS {atisLetter}
+        </Badge>
+      )}
+      {!isAtis && (
+        <span className="text-muted-foreground/60">
+          · wind-aligned, {activeRunway.deltaDeg}° off
+        </span>
+      )}
     </div>
   );
+}
+
+function RunwaysSection({
+  runways,
+  ilsByEnd,
+  activeEndNames,
+}: {
+  runways: Runway[];
+  ilsByEnd: Map<string, Navaid>;
+  activeEndNames: Set<string>;
+}) {
+  return (
+    <section>
+      <div className="mb-1.5 flex items-baseline justify-between">
+        <h4 className="xp-section-heading mb-0 border-b-0">Runways</h4>
+        <span className="text-xs text-muted-foreground">{runways.length} total</span>
+      </div>
+      <ul className="space-y-1">
+        {runways.map((rwy, i) => (
+          <RunwayRow key={i} runway={rwy} ilsByEnd={ilsByEnd} activeEndNames={activeEndNames} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function RunwayRow({
+  runway,
+  ilsByEnd,
+  activeEndNames,
+}: {
+  runway: Runway;
+  ilsByEnd: Map<string, Navaid>;
+  activeEndNames: Set<string>;
+}) {
+  const length = Math.round(runwayLengthFeet(runway.ends[0], runway.ends[1]));
+  // Use an em-dash for missing surface metadata so the row stays scannable
+  // without drawing attention to "Unknown" data.
+  const surface = SURFACE_NAMES[runway.surface_type] ?? '—';
+  const ils0 = ilsByEnd.get(runway.ends[0].name.toUpperCase());
+  const ils1 = ilsByEnd.get(runway.ends[1].name.toUpperCase());
+  const hasIls = Boolean(ils0 || ils1);
+  const isActive =
+    activeEndNames.has(runway.ends[0].name.toUpperCase()) ||
+    activeEndNames.has(runway.ends[1].name.toUpperCase());
+
+  return (
+    <li
+      className={cn(
+        'rounded px-2.5 py-1.5',
+        isActive ? 'bg-cat-emerald/10 ring-1 ring-cat-emerald/30' : 'bg-muted/20'
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span
+          className={cn(
+            'font-mono text-sm font-medium',
+            isActive ? 'text-cat-emerald' : 'text-foreground'
+          )}
+        >
+          {runway.ends[0].name}/{runway.ends[1].name}
+        </span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {hasIls && (
+            <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-primary">
+              ILS
+            </span>
+          )}
+          <span className="font-mono tabular-nums">{length.toLocaleString()}'</span>
+          <span className="text-muted-foreground/70">{surface}</span>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function FrequenciesSection({
+  visible,
+  totalCount,
+  showAll,
+  onToggle,
+  liveControllers,
+}: {
+  visible: Frequency[];
+  totalCount: number;
+  showAll: boolean;
+  onToggle: () => void;
+  liveControllers: Set<FrequencyType>;
+}) {
+  const hidden = totalCount - visible.length;
+  const collapsible = totalCount > FREQ_VISIBLE_DEFAULT;
+
+  return (
+    <section>
+      <h4 className="xp-section-heading mb-1.5">Frequencies</h4>
+      <ul className="space-y-px overflow-hidden rounded-lg">
+        {visible.map((f, i) => (
+          <FrequencyRow key={i} freq={f} live={liveControllers.has(f.type)} />
+        ))}
+      </ul>
+      {collapsible && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggle}
+          className="mt-1 h-7 w-full justify-center text-xs text-muted-foreground hover:text-foreground"
+        >
+          {showAll ? 'Show fewer' : `Show all (${hidden} more)`}
+        </Button>
+      )}
+    </section>
+  );
+}
+
+function FrequencyRow({ freq, live }: { freq: Frequency; live: boolean }) {
+  const value = formatFrequency(freq.frequency);
+  const label = FREQ_LABELS[freq.type];
+  // Hide the per-frequency name when it just repeats the type label
+  // (e.g. "ATIS" + name "ATIS"). Keep it when it adds context like
+  // "KENNEDY GND" or "CLNC DEL" (controller / authority disambiguation).
+  const showName = !!freq.name && freq.name.trim().toUpperCase() !== label.toUpperCase();
+  const handleCopy = () => navigator.clipboard.writeText(value);
+  return (
+    <li>
+      <Button
+        variant="ghost"
+        onClick={handleCopy}
+        className="group h-auto w-full justify-between rounded-none bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
+      >
+        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          {live && (
+            <Radio
+              aria-label="Controller online"
+              className="h-3 w-3 shrink-0 animate-pulse text-cat-emerald"
+            />
+          )}
+          {label}
+        </span>
+        <div className="flex min-w-0 items-center gap-2">
+          {showName && (
+            <span className="truncate text-xs text-muted-foreground/70">{freq.name}</span>
+          )}
+          <span className="font-mono text-sm tabular-nums text-foreground">{value}</span>
+          <Copy className="h-3 w-3 shrink-0 text-muted-foreground/40 opacity-0 group-hover:opacity-100" />
+        </div>
+      </Button>
+    </li>
+  );
+}
+
+function DetailsSection({
+  rawMetar,
+  expanded,
+  onToggle,
+}: {
+  rawMetar: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <section>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onToggle}
+        className="h-7 w-full justify-start gap-1 px-1 text-xs text-muted-foreground hover:text-foreground"
+      >
+        {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+        Raw METAR
+      </Button>
+      {expanded && (
+        <div className="mt-1.5 rounded bg-muted/30 p-2">
+          <p className="break-all font-mono text-[10px] leading-relaxed text-muted-foreground">
+            {rawMetar}
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Atoms
+// ---------------------------------------------------------------------------
+
+function KvRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-0.5">
+      <span className="xp-label">{label}</span>
+      <span className="xp-value tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Helpers — METAR formatting
+// ---------------------------------------------------------------------------
+
+// Re-typed inline because metar-taf-parser doesn't export the parsed shape;
+// we just borrow the field set the hook already returns.
+type ParsedMetar = NonNullable<ReturnType<typeof useVatsimMetarQuery>['data']>['parsed'];
+
+function freqOrderRank(type: FrequencyType): number {
+  const idx = FREQ_FLIGHT_ORDER.indexOf(type);
+  return idx === -1 ? 999 : idx;
 }
 
 function formatWind(wind: IWind | undefined): string {
@@ -397,51 +586,46 @@ function formatWind(wind: IWind | undefined): string {
   if (wind.speed === 0) return 'CALM';
   const dir = wind.degrees !== undefined ? `${String(wind.degrees).padStart(3, '0')}°` : 'VRB';
   const gust = wind.gust ? `G${wind.gust}` : '';
-  return `${dir}/${wind.speed}${gust}kt`;
+  return `${dir} / ${wind.speed}${gust}kt`;
 }
 
 function formatVisibility(vis: Visibility | undefined, cavok?: true): string {
   if (cavok) return 'CAVOK';
   if (!vis) return '—';
   if (vis.unit === DistanceUnit.StatuteMiles) {
-    if (vis.value >= 10) return '>10SM';
-    return `${vis.value}SM`;
+    if (vis.value >= 10) return '>10 SM';
+    return `${vis.value} SM`;
   }
-  // Meters
-  if (vis.value >= 9999) return '>10km';
-  return `${(vis.value / 1000).toFixed(1)}km`;
+  if (vis.value >= 9999) return '>10 km';
+  return `${(vis.value / 1000).toFixed(1)} km`;
 }
 
 function formatCeiling(clouds: ICloud[], verticalVisibility?: number): string {
-  // Check vertical visibility first
   if (verticalVisibility !== undefined) {
-    return `VV${String(verticalVisibility).padStart(3, '0')}`;
+    return `VV ${String(verticalVisibility).padStart(3, '0')}`;
   }
-  // Find ceiling (BKN or OVC)
   for (const cloud of clouds) {
     if (
       (cloud.quantity === CloudQuantity.BKN || cloud.quantity === CloudQuantity.OVC) &&
       cloud.height !== undefined
     ) {
-      return `${cloud.quantity}${String(cloud.height).padStart(3, '0')}`;
+      return `${cloud.quantity} ${cloud.height.toLocaleString()} ft`;
     }
   }
-  // Check for clear conditions
   const hasClear = clouds.some(
     (c) => c.quantity === CloudQuantity.SKC || c.quantity === CloudQuantity.NSC
   );
-  if (hasClear || clouds.length === 0) return 'CLR';
-  // Show lowest cloud layer
+  if (hasClear || clouds.length === 0) return 'Clear';
   if (clouds[0]?.height !== undefined) {
-    return `${clouds[0].quantity}${String(clouds[0].height).padStart(3, '0')}`;
+    return `${clouds[0].quantity} ${clouds[0].height.toLocaleString()} ft`;
   }
   return '—';
 }
 
 function formatAltimeter(alt: IAltimeter | undefined): string {
   if (!alt) return '—';
-  if (alt.unit === 'inHg') return `${alt.value.toFixed(2)}"`;
-  return `${alt.value}hPa`;
+  if (alt.unit === 'inHg') return `${alt.value.toFixed(2)} "Hg`;
+  return `${alt.value} hPa`;
 }
 
 function formatWeatherConditions(conditions: IWeatherCondition[]): string {
@@ -456,4 +640,77 @@ function formatWeatherConditions(conditions: IWeatherCondition[]): string {
       return str;
     })
     .join(' ');
+}
+
+// ---------------------------------------------------------------------------
+// Helpers — runway / wind alignment
+// ---------------------------------------------------------------------------
+
+interface PreferredEnd {
+  endName: string;
+  deltaDeg: number;
+}
+
+/**
+ * Active runway resolved for the panel. `source` records where it came from
+ * so the UI can label "ATIS" (authoritative) vs "wind-aligned" (heuristic).
+ * `ends` is upper-cased so set-membership checks work without re-casing
+ * downstream.
+ */
+type ActiveRunway =
+  | { source: 'atis'; ends: string[] }
+  | {
+      source: 'wind';
+      ends: string[];
+      windDeg: number;
+      windSpeed: number;
+      deltaDeg: number;
+    };
+
+/**
+ * Map a VATSIM controller callsign (e.g. "EHAM_TWR", "EHAM_E_GND",
+ * "KSEA_TWR") to the apt.dat frequency role it covers, so the matching row
+ * in the Frequencies list can show a live indicator. Returns null for
+ * callsigns we don't know how to match (typically center/FSS/etc., which
+ * aren't apt.dat frequency types).
+ */
+function controllerCallsignToFreqType(callsign: string): FrequencyType | null {
+  const upper = callsign.toUpperCase();
+  if (upper.endsWith('_TWR')) return FrequencyType.TOWER;
+  if (upper.endsWith('_GND')) return FrequencyType.GROUND;
+  if (upper.endsWith('_APP')) return FrequencyType.APPROACH;
+  if (upper.endsWith('_DEP')) return FrequencyType.DEPARTURE;
+  if (upper.endsWith('_DEL') || upper.endsWith('_CLR')) return FrequencyType.DELIVERY;
+  if (upper.endsWith('_ATIS')) return FrequencyType.AWOS;
+  return null;
+}
+
+/**
+ * Pick the runway end whose published heading is most closely aligned with
+ * the wind direction (head-wind landing). Reads the heading from the runway
+ * end name (e.g. "13L" → 130°). Returns null if no runways exist.
+ */
+function findPreferredRunwayEnd(runways: Runway[], windDeg: number): PreferredEnd | null {
+  let best: PreferredEnd | null = null;
+  for (const rwy of runways) {
+    for (const end of rwy.ends) {
+      const heading = runwayEndHeading(end);
+      if (heading === null) continue;
+      let delta = Math.abs(heading - windDeg);
+      if (delta > 180) delta = 360 - delta;
+      if (best === null || delta < best.deltaDeg) {
+        best = { endName: end.name, deltaDeg: Math.round(delta) };
+      }
+    }
+  }
+  return best;
+}
+
+function runwayEndHeading(end: RunwayEnd): number | null {
+  // Strip suffix (L/R/C/W/S/T) and parse the leading two digits as 10s of degrees.
+  const m = end.name.match(/^(\d{1,2})/);
+  if (!m || !m[1]) return null;
+  const tens = parseInt(m[1], 10);
+  if (!Number.isFinite(tens)) return null;
+  return tens * 10;
 }
