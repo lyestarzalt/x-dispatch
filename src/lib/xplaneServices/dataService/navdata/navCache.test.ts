@@ -64,7 +64,6 @@ const {
   clearAirways,
   persistNavDatabase,
   checkNavCacheValidity,
-  updateNavFileMeta,
 } = await import('./navCache');
 
 const { parseNavaids } = await import('@/lib/parsers/nav/navaidParser');
@@ -129,12 +128,13 @@ describe('navCache pipeline', () => {
       insertNavaids(parsed);
 
       const first = parsed[0];
+      expect(first).toBeDefined();
       const all = getAllNavaidsFromDb();
-      const found = all.find((n) => n.id === first.id);
+      const found = all.find((n) => n.id === first!.id);
 
       expect(found).toBeDefined();
-      expect(found!.latitude).toBeCloseTo(first.latitude, 4);
-      expect(found!.longitude).toBeCloseTo(first.longitude, 4);
+      expect(found!.latitude).toBeCloseTo(first!.latitude, 4);
+      expect(found!.longitude).toBeCloseTo(first!.longitude, 4);
     });
 
     it('clearNavaids removes all entries', () => {
@@ -189,12 +189,13 @@ describe('navCache pipeline', () => {
       insertWaypoints(parsed);
 
       const first = parsed[0];
+      expect(first).toBeDefined();
       const all = getAllWaypointsFromDb();
-      const found = all.find((w) => w.id === first.id && w.region === first.region);
+      const found = all.find((w) => w.id === first!.id && w.region === first!.region);
 
       expect(found).toBeDefined();
-      expect(found!.latitude).toBeCloseTo(first.latitude, 4);
-      expect(found!.longitude).toBeCloseTo(first.longitude, 4);
+      expect(found!.latitude).toBeCloseTo(first!.latitude, 4);
+      expect(found!.longitude).toBeCloseTo(first!.longitude, 4);
     });
 
     it('clearWaypoints removes all entries', () => {
