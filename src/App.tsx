@@ -100,11 +100,9 @@ function AppContent() {
     );
   }
 
-  const showTitleBar = window.appAPI.platform !== 'darwin';
-
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
-      {showTitleBar && <TitleBar />}
+      <TitleBar />
       <div className="min-h-0 flex-1">{content}</div>
     </div>
   );
