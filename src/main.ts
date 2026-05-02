@@ -53,6 +53,14 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- must run synchronously before any other code
 if (require('electron-squirrel-startup')) app.quit();
 
+// E2E test isolation: Playwright sets this env var to redirect userData (config.json,
+// xplane-data.db, settings.json, logs) into a per-test temp dir. Must run BEFORE any
+// app.getPath('userData') call below. Production users never set this — it's read-only
+// from the parent process.
+if (process.env.E2E_USER_DATA_DIR) {
+  app.setPath('userData', process.env.E2E_USER_DATA_DIR);
+}
+
 // TODO: Memory optimization - consider lazy nav data loading, reduce sql.js footprint, limit MapLibre tile cache
 
 // This reads config.json directly since getSendCrashReports() uses app.getPath which works before ready

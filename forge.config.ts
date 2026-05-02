@@ -86,7 +86,10 @@ const config: ForgeConfig = {
       [FuseV1Options.RunAsNode]: false,
       [FuseV1Options.EnableCookieEncryption]: true,
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
+      // Production builds disable --inspect for security. E2E builds keep it
+      // enabled because Playwright's electron driver needs it to attach for
+      // automation. Set E2E_BUILD=1 when packaging for tests.
+      [FuseV1Options.EnableNodeCliInspectArguments]: process.env.E2E_BUILD === '1',
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
