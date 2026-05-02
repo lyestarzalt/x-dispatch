@@ -50,8 +50,6 @@ interface TaxiRouteState {
   autoRouteResult: PathResult | null;
   /** Currently selected runway end name (e.g. "25R") */
   selectedRunway: string | null;
-  /** Currently selected gate/ramp name — used in arrival mode */
-  selectedGateName: string | null;
 
   // --- Shared state ---
   activeTaxiIcao: string | null;
@@ -60,10 +58,6 @@ interface TaxiRouteState {
   // Actions
   setMode: (mode: TaxiRouteMode) => void;
   setDirection: (direction: TaxiRouteDirection) => void;
-  /** Record the user's runway pick without computing a route yet. */
-  setSelectedRunway: (runway: string | null) => void;
-  /** Record the user's gate pick without computing a route yet. */
-  setSelectedGateName: (gateName: string | null) => void;
   setGraph: (graph: TaxiGraph | null) => void;
   setActiveAirport: (icao: string) => void;
   addWaypoint: (lon: number, lat: number) => void;
@@ -79,8 +73,7 @@ interface TaxiRouteState {
     fromLat: number,
     toLon: number,
     toLat: number,
-    runwayName: string,
-    gateName?: string
+    runwayName: string
   ) => void;
   /** Replace a clicked anchor node at the given index with a new node, re-route */
   replaceNetworkNode: (anchorIndex: number, newNodeId: number) => void;
@@ -155,7 +148,6 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
   graph: null,
   autoRouteResult: null,
   selectedRunway: null,
-  selectedGateName: null,
   activeTaxiIcao: null,
   clickModeEnabled: false,
 
@@ -171,11 +163,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
-      selectedGateName: null,
     }),
-
-  setSelectedRunway: (runway) => set({ selectedRunway: runway }),
-  setSelectedGateName: (gateName) => set({ selectedGateName: gateName }),
 
   setGraph: (graph) => set({ graph }),
 
@@ -202,7 +190,7 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
     });
   },
 
-  computeAutoRoute: (fromLon, fromLat, toLon, toLat, runwayName, gateName) => {
+  computeAutoRoute: (fromLon, fromLat, toLon, toLat, runwayName) => {
     const { graph } = get();
     if (!graph) return;
 
@@ -218,7 +206,6 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
         networkNodeIds: result.nodeIds,
         autoRouteResult: result,
         selectedRunway: runwayName,
-        selectedGateName: gateName ?? null,
       });
     }
   },
@@ -287,7 +274,6 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
-      selectedGateName: null,
     }),
 
   deactivate: () =>
@@ -298,7 +284,6 @@ export const useTaxiRouteStore = create<TaxiRouteState>()((set, get) => ({
       networkNodeIds: [],
       autoRouteResult: null,
       selectedRunway: null,
-      selectedGateName: null,
       clickModeEnabled: false,
     }),
 

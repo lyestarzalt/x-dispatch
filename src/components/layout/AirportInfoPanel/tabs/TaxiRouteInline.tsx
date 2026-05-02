@@ -35,7 +35,6 @@ export default function TaxiRouteInline() {
   const networkNodeIds = useTaxiRouteStore((s) => s.networkNodeIds);
   const autoRouteResult = useTaxiRouteStore((s) => s.autoRouteResult);
   const selectedRunway = useTaxiRouteStore((s) => s.selectedRunway);
-  const selectedGateName = useTaxiRouteStore((s) => s.selectedGateName);
   const graph = useTaxiRouteStore((s) => s.graph);
   const waypoints = useTaxiRouteStore((s) => s.waypoints);
 
@@ -45,8 +44,6 @@ export default function TaxiRouteInline() {
   const deactivate = useTaxiRouteStore((s) => s.deactivate);
   const setMode = useTaxiRouteStore((s) => s.setMode);
   const setDirection = useTaxiRouteStore((s) => s.setDirection);
-  const setSelectedRunway = useTaxiRouteStore((s) => s.setSelectedRunway);
-  const setSelectedGateName = useTaxiRouteStore((s) => s.setSelectedGateName);
   const removeLastWaypoint = useTaxiRouteStore((s) => s.removeLastWaypoint);
   const removeLastNetworkNode = useTaxiRouteStore((s) => s.removeLastNetworkNode);
 
@@ -69,25 +66,15 @@ export default function TaxiRouteInline() {
     return ends.sort((a, b) => a.name.localeCompare(b.name));
   }, [airport?.runways]);
 
-  const gates = useMemo(() => {
-    if (!airport?.startupLocations) return [];
-    return [...airport.startupLocations]
-      .map((s) => ({ name: s.name, lat: s.latitude, lon: s.longitude }))
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-  }, [airport?.startupLocations]);
-
-  // Departure: gate (startPosition) → runway. Source is the user's spawn
-  // gate (set in the launcher); they only pick the destination runway.
-  // Arrival: runway → gate. Both endpoints are dropdown picks; the route
-  // fires once both are set. Selections persist in the store via the
-  // lightweight setters so the user can pick in either order.
+  // Both directions use `startPosition` (the gate selected in the launcher)
+  // as the gate endpoint. Departure routes gate → runway, arrival routes
+  // runway → gate. Only the runway is a user pick.
   const handleRunwaySelect = (runwayName: string) => {
-    if (!graph) return;
+    if (!graph || !startPosition) return;
     const rwyEnd = runwayEnds.find((r) => r.name === runwayName);
     if (!rwyEnd) return;
 
     if (direction === 'departure') {
-      if (!startPosition) return;
       computeAutoRoute(
         startPosition.longitude,
         startPosition.latitude,
@@ -95,26 +82,15 @@ export default function TaxiRouteInline() {
         rwyEnd.lat,
         runwayName
       );
-      return;
+    } else {
+      computeAutoRoute(
+        rwyEnd.lon,
+        rwyEnd.lat,
+        startPosition.longitude,
+        startPosition.latitude,
+        runwayName
+      );
     }
-
-    setSelectedRunway(runwayName);
-    if (!selectedGateName) return;
-    const gate = gates.find((g) => g.name === selectedGateName);
-    if (!gate) return;
-    computeAutoRoute(rwyEnd.lon, rwyEnd.lat, gate.lon, gate.lat, runwayName, gate.name);
-  };
-
-  const handleGateSelect = (gateName: string) => {
-    if (!graph || direction !== 'arrival') return;
-    const gate = gates.find((g) => g.name === gateName);
-    if (!gate) return;
-
-    setSelectedGateName(gateName);
-    if (!selectedRunway) return;
-    const rwyEnd = runwayEnds.find((r) => r.name === selectedRunway);
-    if (!rwyEnd) return;
-    computeAutoRoute(rwyEnd.lon, rwyEnd.lat, gate.lon, gate.lat, selectedRunway, gate.name);
   };
 
   const handleExport = async () => {
@@ -174,14 +150,12 @@ export default function TaxiRouteInline() {
         </div>
       )}
 
-      {/* Endpoint pickers */}
+      {/* Runway picker — destination on departure, source on arrival */}
       <div className="flex items-center gap-2">
         <span className="xp-label shrink-0">
-          {isFreehand
-            ? t('airportInfo.taxiRoute.taxiTo', 'Taxi to')
-            : isArrival
-              ? t('airportInfo.taxiRoute.from', 'From')
-              : t('airportInfo.taxiRoute.taxiTo', 'Taxi to')}
+          {isArrival && !isFreehand
+            ? t('airportInfo.taxiRoute.taxiFrom', 'Taxi from')
+            : t('airportInfo.taxiRoute.taxiTo', 'Taxi to')}
         </span>
 
         {isFreehand ? (
@@ -239,37 +213,6 @@ export default function TaxiRouteInline() {
           </Button>
         )}
       </div>
-
-      {/* Arrival mode: gate destination picker */}
-      {isNetwork && isArrival && (
-        <div className="flex items-center gap-2">
-          <span className="xp-label shrink-0">{t('airportInfo.taxiRoute.to', 'To')}</span>
-          <Select
-            value={selectedGateName ?? ''}
-            onValueChange={(v) => {
-              if (v) handleGateSelect(v);
-            }}
-            disabled={!hasGraph || gates.length === 0}
-          >
-            <SelectTrigger className="h-8 min-w-0 flex-1 font-mono text-sm">
-              <SelectValue
-                placeholder={
-                  gates.length === 0
-                    ? t('airportInfo.taxiRoute.noGates', 'No gate data')
-                    : t('airportInfo.taxiRoute.selectGate', 'Select gate')
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {gates.map((g) => (
-                <SelectItem key={g.name} value={g.name} className="font-mono text-sm">
-                  {g.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
 
       {/* Route summary */}
       {routeSummary && (
