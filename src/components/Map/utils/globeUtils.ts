@@ -15,9 +15,6 @@ const CONTOUR_SOURCE_ID = 'terrain-contours';
 const CONTOUR_LINE_LAYER_ID = 'terrain-contour-lines';
 const CONTOUR_LABEL_LAYER_ID = 'terrain-contour-labels';
 
-// Track which map instances already have the TerrainControl (survives style changes)
-const terrainControlAdded = new WeakSet<maplibregl.Map>();
-
 // Singleton — register contour protocol only once
 let contourDemSource: InstanceType<typeof mlcontour.DemSource> | null = null;
 
@@ -73,13 +70,10 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
   // 3D terrain is only enabled in mercator mode — globe projection doesn't
   // implement getRayDirectionFromPixel, which crashes the render loop.
   let currentProjection: 'globe' | 'mercator' = 'globe';
-  // Track whether the user wants terrain on (default: on).
-  // When switching to globe we must disable terrain, but we remember the preference
-  // so we can restore it when switching back to mercator.
-  let terrainUserEnabled = true;
 
   map.on('zoom', () => {
     const zoom = map.getZoom();
+    const { terrain3dEnabled } = useMapStore.getState();
 
     if (zoom > GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'globe') {
       map.setProjection({ type: 'mercator' });
@@ -88,13 +82,12 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
       if (map.getLayer(STARFIELD_LAYER_ID)) {
         map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'none');
       }
-      // Restore terrain if the user had it enabled
-      if (terrainUserEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
+      // Apply terrain in mercator if the user has 3D terrain enabled
+      if (terrain3dEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
         map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
       }
     } else if (zoom <= GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'mercator') {
-      // Remember user preference before forcing terrain off for globe
-      terrainUserEnabled = map.getTerrain() != null;
+      // Globe is incompatible with terrain — force off, the setting is preserved.
       map.setTerrain(null);
       map.setProjection({ type: 'globe' });
       currentProjection = 'globe';
@@ -102,6 +95,19 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
       if (map.getLayer(STARFIELD_LAYER_ID)) {
         map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'visible');
       }
+    }
+  });
+
+  // React to user toggling 3D terrain in Settings → Graphics. Only takes
+  // effect in mercator (globe forbids terrain), but we always update the
+  // map state so the next projection switch picks it up.
+  useMapStore.subscribe((state, prev) => {
+    if (state.terrain3dEnabled === prev.terrain3dEnabled) return;
+    if (currentProjection !== 'mercator') return;
+    if (state.terrain3dEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
+      map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
+    } else {
+      map.setTerrain(null);
     }
   });
 
@@ -162,16 +168,8 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   });
 
   // Terrain is not enabled here — we start in globe mode where it would crash.
-  // setupGlobeProjection() enables/disables terrain on projection switches.
-  // The TerrainControl button lets the user toggle 3D extrusion when in mercator.
-  // Only add the control once (it survives style changes since it's a DOM element).
-  if (!terrainControlAdded.has(map)) {
-    map.addControl(
-      new maplibregl.TerrainControl({ source: TERRAIN_SOURCE_ID, exaggeration: 1 }),
-      'bottom-left'
-    );
-    terrainControlAdded.add(map);
-  }
+  // setupGlobeProjection() enables/disables terrain on projection switches
+  // based on the `terrain3dEnabled` setting in mapStore (Settings → Graphics).
 
   // Hillshade — shadow/light shading from DEM (uses its own source)
   const beforeLayer = getFirstSymbolLayerId(map);

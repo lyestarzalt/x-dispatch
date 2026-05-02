@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { Monitor } from 'lucide-react';
+import { Map, Monitor, Mountain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
+import { useMapStore } from '@/stores/mapStore';
 import type { SurfaceDetail } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { MapStylePicker } from './MapStylePicker';
 
 const SURFACE_DETAIL_OPTIONS: { value: SurfaceDetail; labelKey: string }[] = [
   { value: 'low', labelKey: 'settings.graphics.low' },
@@ -19,6 +21,20 @@ export function GraphicsSection() {
   const { t } = useTranslation();
   const graphics = useSettingsStore((s) => s.graphics);
   const updateGraphics = useSettingsStore((s) => s.updateGraphicsSettings);
+
+  // Map Style picker — moved here from Appearance so all map-render
+  // settings live in one tab.
+  const mapSettings = useSettingsStore((s) => s.map);
+  const updateMapSettings = useSettingsStore((s) => s.updateMapSettings);
+  const addUserMapStyle = useSettingsStore((s) => s.addUserMapStyle);
+  const removeUserMapStyle = useSettingsStore((s) => s.removeUserMapStyle);
+
+  // Terrain — runtime visibility flags live in mapStore so the map hooks
+  // can subscribe directly. Settings UI just dispatches.
+  const terrain3dEnabled = useMapStore((s) => s.terrain3dEnabled);
+  const setTerrain3dEnabled = useMapStore((s) => s.setTerrain3dEnabled);
+  const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
+  const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
 
   return (
     <div className="space-y-6">
@@ -32,20 +48,91 @@ export function GraphicsSection() {
 
       <Separator />
 
+      {/* Map Style */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Map className="h-4 w-4" />
+            {t('settings.appearance.mapStyle', 'Map Style')}
+          </CardTitle>
+          <CardDescription>
+            {t('settings.appearance.mapStyleDescription', 'Select a map style for the background')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <MapStylePicker
+            currentUrl={mapSettings.mapStyleUrl}
+            userStyles={mapSettings.userMapStyles ?? []}
+            onSelect={(url) => updateMapSettings({ mapStyleUrl: url })}
+            onAdd={addUserMapStyle}
+            onRemove={removeUserMapStyle}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Terrain */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Mountain className="h-4 w-4" />
+            {t('settings.graphics.terrain', 'Terrain')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">
+                {t('settings.graphics.terrain3d', '3D terrain')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'settings.graphics.terrain3dDesc',
+                  'Raise mountains and valleys when zoomed in. No effect on globe view.'
+                )}
+              </p>
+            </div>
+            <Switch
+              checked={terrain3dEnabled}
+              onCheckedChange={(checked) => setTerrain3dEnabled(checked)}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">
+                {t('settings.graphics.terrainShading', 'Hillshade & contours')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'settings.graphics.terrainShadingDesc',
+                  'Shaded relief and elevation contour lines.'
+                )}
+              </p>
+            </div>
+            <Switch
+              checked={terrainShadingEnabled}
+              onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Surface Detail */}
       <Card>
-        <CardContent className="space-y-3 pt-6">
-          <div>
-            <Label className="text-sm font-medium">
-              {t('settings.graphics.surfaceDetail', 'Surface detail')}
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              {t(
-                'settings.graphics.surfaceDetailDesc',
-                'Curve smoothness for taxiway and pavement edges'
-              )}
-            </p>
-          </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">
+            {t('settings.graphics.surfaceDetail', 'Surface detail')}
+          </CardTitle>
+          <CardDescription>
+            {t(
+              'settings.graphics.surfaceDetailDesc',
+              'Curve smoothness for taxiway and pavement edges'
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="flex gap-2">
             {SURFACE_DETAIL_OPTIONS.map(({ value, labelKey }) => (
               <Button
@@ -62,7 +149,7 @@ export function GraphicsSection() {
         </CardContent>
       </Card>
 
-      {/* Toggles */}
+      {/* Lights */}
       <Card>
         <CardContent className="space-y-4 pt-6">
           {/* Approach light animation */}

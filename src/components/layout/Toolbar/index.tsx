@@ -14,7 +14,6 @@ import {
   FileUp,
   Layers,
   MapPin,
-  Mountain,
   Package,
   Pause,
   Pencil,
@@ -447,8 +446,6 @@ export default function Toolbar({
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
   const setDayNightEnabled = useMapStore((s) => s.setDayNightEnabled);
-  const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
-  const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
@@ -928,13 +925,6 @@ export default function Toolbar({
               >
                 <CloudSun className="mr-2 h-4 w-4" />
                 {t('toolbar.dayNight')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={terrainShadingEnabled}
-                onCheckedChange={() => setTerrainShadingEnabled(!terrainShadingEnabled)}
-              >
-                <Mountain className="mr-2 h-4 w-4" />
-                {t('toolbar.terrainShading')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />

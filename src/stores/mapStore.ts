@@ -82,6 +82,7 @@ interface MapState {
   rangeRingsCategories: RangeRingCategory[];
   flightStripPosition: { x: number; y: number } | null;
   terrainShadingEnabled: boolean;
+  terrain3dEnabled: boolean;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -115,6 +116,7 @@ interface MapState {
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
+  setTerrain3dEnabled: (enabled: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -151,6 +153,7 @@ export const useMapStore = create<MapState>()(
       rangeRingsCategories: ['jet', 'turboprop', 'prop'] as RangeRingCategory[],
       flightStripPosition: null as { x: number; y: number } | null,
       terrainShadingEnabled: true,
+      terrain3dEnabled: true,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -242,10 +245,11 @@ export const useMapStore = create<MapState>()(
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
+      setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 9,
+      version: 10,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -257,6 +261,7 @@ export const useMapStore = create<MapState>()(
         rangeRingsCategories: state.rangeRingsCategories,
         flightStripPosition: state.flightStripPosition,
         terrainShadingEnabled: state.terrainShadingEnabled,
+        terrain3dEnabled: state.terrain3dEnabled,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -311,6 +316,11 @@ export const useMapStore = create<MapState>()(
         // Migration to v9: add terrain shading toggle
         if (version < 9) {
           if (state.terrainShadingEnabled === undefined) state.terrainShadingEnabled = true;
+        }
+        // Migration to v10: add 3D terrain toggle (default on, replaces the
+        // MapLibre TerrainControl button that used to live on the map).
+        if (version < 10) {
+          if (state.terrain3dEnabled === undefined) state.terrain3dEnabled = true;
         }
         return state;
       },
