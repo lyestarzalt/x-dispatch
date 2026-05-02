@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "commonjs",
+    "module": "ES2022",
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -23,6 +23,6 @@
       "@assets/*": ["./assets/*"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "out", "dist", ".vite", "src/**/*.test.ts", "tests"]
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "out", "dist", ".vite"]
 }

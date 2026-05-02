@@ -64,6 +64,9 @@ typings/
 # Electron Forge
 out/
 
+# tsc outDir (typecheck-only, never committed)
+dist/
+
 # Claude/AI
 .claude/
 .mcp.json
