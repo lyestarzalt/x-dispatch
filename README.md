@@ -87,6 +87,7 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 npm install           # install dependencies
 npm start             # dev mode with hot reload
 npm run start:clean   # fresh start (clears .vite cache)
+npm run start:fresh   # dev mode with --reset-cache
 npm run make          # build distributables
 ```
 
@@ -95,10 +96,11 @@ npm run typecheck     # TypeScript strict mode
 npm run lint          # ESLint
 npm run lint:fix      # auto-fix lint issues
 npm run format        # Prettier
-npm run check         # all three at once
+npm run check         # typecheck + lint + format (no tests)
+npm run test:run      # run Vitest once
 ```
 
-Electron + React 18 + TypeScript, MapLibre GL JS, Zustand, SQLite. Node.js 20+.
+Electron + React 18 + TypeScript, MapLibre GL JS, Zustand, SQLite. Node.js 24+.
 
 ## Support
 
