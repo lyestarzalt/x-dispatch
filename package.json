@@ -27,6 +27,9 @@
     "maplibre"
   ],
   "main": ".vite/build/main.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "start": "electron-forge start",
     "start:clean": "rm -rf .vite && electron-forge start",
@@ -110,7 +113,8 @@
   },
   "overrides": {
     "tar": ">=7.5.11",
-    "@maplibre/maplibre-gl-style-spec": "24.8.1"
+    "@maplibre/maplibre-gl-style-spec": "24.8.1",
+    "@xmldom/xmldom": ">=0.9.10"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.6",
