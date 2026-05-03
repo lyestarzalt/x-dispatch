@@ -4,6 +4,7 @@ import es from './locales/es.json';
 import fr from './locales/fr.json';
 import it from './locales/it.json';
 import ja from './locales/ja.json';
+import pirate from './locales/pirate.json';
 import pl from './locales/pl.json';
 import pt from './locales/pt.json';
 import ru from './locales/ru.json';
@@ -11,6 +12,7 @@ import zh from './locales/zh.json';
 
 export const localeTranslations = {
   en,
+  pirate,
   es,
   fr,
   de,
@@ -26,6 +28,7 @@ export type LocaleCode = keyof typeof localeTranslations;
 
 export const languages = [
   { code: 'en', name: 'English' },
+  { code: 'pirate', name: 'English (Pirate)' },
   { code: 'es', name: 'Español' },
   { code: 'fr', name: 'Français' },
   { code: 'de', name: 'Deutsch' },
@@ -39,6 +42,7 @@ export const languages = [
 
 export const resources = {
   en: { translation: en },
+  pirate: { translation: pirate },
   es: { translation: es },
   fr: { translation: fr },
   de: { translation: de },
