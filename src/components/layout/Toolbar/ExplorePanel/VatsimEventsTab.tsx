@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils/helpers';
 import {
   getEventStatus,
   getEventTimeInfo,
@@ -60,8 +60,20 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                   {airport.icao}
                 </span>
                 <span className="flex-1" />
-                <span className="font-mono text-xs text-success">↗{airport.departures}</span>
-                <span className="font-mono text-xs text-warning">↘{airport.arrivals}</span>
+                <span
+                  className="flex items-center gap-1 font-mono text-xs text-success"
+                  title={t('explore.vatsim.departures', 'Departures')}
+                >
+                  <PlaneTakeoff className="h-3 w-3" />
+                  {airport.departures}
+                </span>
+                <span
+                  className="flex items-center gap-1 font-mono text-xs text-warning"
+                  title={t('explore.vatsim.arrivals', 'Arrivals')}
+                >
+                  <PlaneLanding className="h-3 w-3" />
+                  {airport.arrivals}
+                </span>
               </button>
             ))}
           </div>
@@ -77,7 +89,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
             {t('explore.vatsim.noEvents', 'No upcoming events')}
           </p>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-0.5">
             {sortedEvents.map((event) => {
               const status = getEventStatus(event);
               const timeInfo = getEventTimeInfo(event);
@@ -88,32 +100,26 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                   key={event.id}
                   onClick={() => primaryRoute && onSelectAirport(primaryRoute.departure)}
                   disabled={!primaryRoute}
-                  className={cn(
-                    'block w-full overflow-hidden rounded px-2.5 py-2 text-left transition-colors',
-                    primaryRoute ? 'hover:bg-muted/50' : 'opacity-60',
-                    status === 'live' && 'bg-success/5'
-                  )}
+                  className="block w-full overflow-hidden rounded px-2 py-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-60 disabled:hover:bg-transparent"
                 >
                   <div className="flex items-start gap-2">
                     <Badge
                       variant={STATUS_VARIANT[status]}
-                      className="mt-0.5 shrink-0 px-1.5 py-0 text-xs"
+                      className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px]"
                     >
                       {status.toUpperCase()}
                     </Badge>
-                    <span className="text-sm leading-snug text-foreground">{event.name}</span>
+                    <span className="line-clamp-2 text-sm leading-snug text-foreground">
+                      {event.name}
+                    </span>
                   </div>
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className="mt-1 flex items-center gap-2 pl-[3.25rem]">
                     {primaryRoute && (
-                      <>
-                        <span className="shrink-0 font-mono text-xs font-semibold text-info">
-                          {primaryRoute.departure}
-                        </span>
-                        <span className="text-xs text-muted-foreground/40">→</span>
-                        <span className="shrink-0 font-mono text-xs font-semibold text-info">
-                          {primaryRoute.arrival}
-                        </span>
-                      </>
+                      <span className="flex shrink-0 items-center gap-1 font-mono text-xs font-semibold text-info">
+                        {primaryRoute.departure}
+                        <span className="text-muted-foreground/40">→</span>
+                        {primaryRoute.arrival}
+                      </span>
                     )}
                     <span className="truncate text-xs text-muted-foreground">{timeInfo}</span>
                   </div>
