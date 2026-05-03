@@ -29,8 +29,19 @@ export function isVectorStyleUrl(url: string): boolean {
 }
 
 /**
+ * Error codes returned by `validateMapStyleUrl`. Mapped to user-facing
+ * translated strings by the consumer (see `MapStylePicker`).
+ */
+export type MapStyleUrlError =
+  | 'required'
+  | 'invalid-url'
+  | 'insecure-protocol'
+  | 'unsupported-format';
+
+/**
  * Validate that `url` is acceptable as a map style URL.
- * Returns `null` on success or a human-readable error message otherwise.
+ * Returns `null` on success or an error code otherwise. The validator is
+ * intentionally i18n-free — UI components translate the code via `t()`.
  *
  * Accepted shapes:
  *   - https + a recognised vector style path (`.../style.json`,
@@ -40,15 +51,15 @@ export function isVectorStyleUrl(url: string): boolean {
  * `http://localhost:*` is allowed for self-hosted dev (matches the dev CSP).
  * Other `http://` and non-http schemes are rejected.
  */
-export function validateMapStyleUrl(url: string): string | null {
+export function validateMapStyleUrl(url: string): MapStyleUrlError | null {
   const trimmed = url.trim();
-  if (!trimmed) return 'URL is required';
+  if (!trimmed) return 'required';
 
   let parsed: URL;
   try {
     parsed = new URL(trimmed);
   } catch {
-    return 'Not a valid URL';
+    return 'invalid-url';
   }
 
   const isHttps = parsed.protocol === 'https:';
@@ -56,11 +67,11 @@ export function validateMapStyleUrl(url: string): string | null {
     parsed.protocol === 'http:' &&
     (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1');
   if (!isHttps && !isLocalhostHttp) {
-    return 'URL must use https:// (or http://localhost for dev)';
+    return 'insecure-protocol';
   }
 
   if (isVectorStyleUrl(trimmed) || isRasterTileUrl(trimmed)) return null;
-  return 'URL must be a MapLibre style.json or a raster tile pattern with {z}/{x}/{y}';
+  return 'unsupported-format';
 }
 
 /**

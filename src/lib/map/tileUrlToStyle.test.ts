@@ -180,25 +180,27 @@ describe('validateMapStyleUrl', () => {
   });
 
   it('rejects empty input', () => {
-    expect(validateMapStyleUrl('')).toMatch(/required/i);
+    expect(validateMapStyleUrl('')).toBe('required');
   });
 
   it('rejects malformed URLs', () => {
-    expect(validateMapStyleUrl('not a url')).toMatch(/valid url/i);
+    expect(validateMapStyleUrl('not a url')).toBe('invalid-url');
   });
 
   it('rejects http:// for non-localhost hosts', () => {
-    expect(validateMapStyleUrl('http://example.com/style.json')).toMatch(/https/i);
+    expect(validateMapStyleUrl('http://example.com/style.json')).toBe('insecure-protocol');
   });
 
   it('rejects URLs that are neither a vector style nor a raster pattern', () => {
-    expect(validateMapStyleUrl('https://example.com/foo/bar')).toMatch(/MapLibre style|raster/i);
-    expect(validateMapStyleUrl('https://example.com/data.json')).toMatch(/MapLibre style|raster/i);
+    expect(validateMapStyleUrl('https://example.com/foo/bar')).toBe('unsupported-format');
+    expect(validateMapStyleUrl('https://example.com/data.json')).toBe('unsupported-format');
   });
 
   it('rejects spurious /style substring matches that the previous loose check accepted', () => {
     // Earlier the picker accepted any url with /style or .json — too loose.
-    expect(validateMapStyleUrl('https://example.com/styled-products/foo')).not.toBeNull();
-    expect(validateMapStyleUrl('https://malicious.test/style-injector')).not.toBeNull();
+    expect(validateMapStyleUrl('https://example.com/styled-products/foo')).toBe(
+      'unsupported-format'
+    );
+    expect(validateMapStyleUrl('https://malicious.test/style-injector')).toBe('unsupported-format');
   });
 });

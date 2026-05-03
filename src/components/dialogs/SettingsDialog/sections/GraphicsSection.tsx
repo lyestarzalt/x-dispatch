@@ -53,11 +53,9 @@ export function GraphicsSection() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <Map className="h-4 w-4" />
-            {t('settings.appearance.mapStyle', 'Map Style')}
+            {t('settings.graphics.mapStyle')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.appearance.mapStyleDescription', 'Select a map style for the background')}
-          </CardDescription>
+          <CardDescription>{t('settings.graphics.mapStyleDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <MapStylePicker
@@ -75,20 +73,15 @@ export function GraphicsSection() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <Mountain className="h-4 w-4" />
-            {t('settings.graphics.terrain', 'Terrain')}
+            {t('settings.graphics.terrain')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-sm font-medium">
-                {t('settings.graphics.terrain3d', '3D terrain')}
-              </Label>
+              <Label className="text-sm font-medium">{t('settings.graphics.terrain3d')}</Label>
               <p className="text-xs text-muted-foreground">
-                {t(
-                  'settings.graphics.terrain3dDesc',
-                  'Raise mountains and valleys when zoomed in. No effect on globe view.'
-                )}
+                {t('settings.graphics.terrain3dDesc')}
               </p>
             </div>
             <Switch
@@ -101,14 +94,9 @@ export function GraphicsSection() {
 
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-sm font-medium">
-                {t('settings.graphics.terrainShading', 'Hillshade & contours')}
-              </Label>
+              <Label className="text-sm font-medium">{t('settings.graphics.terrainShading')}</Label>
               <p className="text-xs text-muted-foreground">
-                {t(
-                  'settings.graphics.terrainShadingDesc',
-                  'Shaded relief and elevation contour lines.'
-                )}
+                {t('settings.graphics.terrainShadingDesc')}
               </p>
             </div>
             <Switch
@@ -123,14 +111,9 @@ export function GraphicsSection() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium">
-            {t('settings.graphics.surfaceDetail', 'Surface detail')}
+            {t('settings.graphics.surfaceDetail')}
           </CardTitle>
-          <CardDescription>
-            {t(
-              'settings.graphics.surfaceDetailDesc',
-              'Curve smoothness for taxiway and pavement edges'
-            )}
-          </CardDescription>
+          <CardDescription>{t('settings.graphics.surfaceDetailDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
@@ -151,7 +134,11 @@ export function GraphicsSection() {
 
       {/* Lights */}
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">{t('settings.graphics.lights')}</CardTitle>
+          <CardDescription>{t('settings.graphics.lightsPerfHint')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {/* Approach light animation */}
           <div className="flex items-center justify-between">
             <div>
@@ -171,14 +158,9 @@ export function GraphicsSection() {
           {/* Taxiway light glow */}
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-sm font-medium">
-                {t('settings.graphics.taxiwayGlow', 'Taxiway light glow')}
-              </Label>
+              <Label className="text-sm font-medium">{t('settings.graphics.taxiwayGlow')}</Label>
               <p className="text-xs text-muted-foreground">
-                {t(
-                  'settings.graphics.taxiwayGlowDesc',
-                  'Multi-layer glow effect on taxiway lights'
-                )}
+                {t('settings.graphics.taxiwayGlowDesc')}
               </p>
             </div>
             <Switch

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import type { MapStyleUrlError } from '@/lib/map/tileUrlToStyle';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import { cn } from '@/lib/utils/helpers';
 import type { MapStyle } from '@/stores/settingsStore';
@@ -13,9 +14,10 @@ import { MAP_STYLE_PRESETS } from '@/stores/settingsStore';
 /**
  * Derive a short, human-readable label for a user-added map style URL.
  * Strips known subdomains so "tiles.maptiler.com" becomes "MapTiler",
- * falls back to the bare hostname otherwise.
+ * falls back to the bare hostname otherwise. Caller passes the localised
+ * fallback so this stays string-free.
  */
-function deriveStyleNameFromUrl(url: string): string {
+function deriveStyleNameFromUrl(url: string, fallback: string): string {
   try {
     const host = new URL(url).hostname;
     const parts = host.split('.').filter(Boolean);
@@ -26,7 +28,7 @@ function deriveStyleNameFromUrl(url: string): string {
     const label = parts[0] ?? host;
     return label.charAt(0).toUpperCase() + label.slice(1);
   } catch {
-    return 'Custom';
+    return fallback;
   }
 }
 
@@ -45,7 +47,7 @@ export function MapStylePicker({
 }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<MapStyleUrlError | 'duplicate' | null>(null);
 
   const allUrls = useMemo(
     () =>
@@ -55,13 +57,13 @@ export function MapStylePicker({
 
   const handleAdd = () => {
     const url = draft.trim();
-    const message = validateMapStyleUrl(url);
-    if (message) {
-      setError(message);
+    const validation = validateMapStyleUrl(url);
+    if (validation) {
+      setErrorCode(validation);
       return;
     }
     if (allUrls.has(url)) {
-      setError('Already in your list');
+      setErrorCode('duplicate');
       return;
     }
     const style: MapStyle = {
@@ -69,14 +71,20 @@ export function MapStylePicker({
         typeof crypto !== 'undefined' && 'randomUUID' in crypto
           ? `user-${crypto.randomUUID()}`
           : `user-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: deriveStyleNameFromUrl(url),
+      name: deriveStyleNameFromUrl(url, t('settings.graphics.customStyleFallbackName')),
       url,
     };
     onAdd(style);
     onSelect(url); // apply right away so the user sees the new style
     setDraft('');
-    setError(null);
+    setErrorCode(null);
   };
+
+  const errorMessage = errorCode
+    ? t(`settings.graphics.mapStyleError.${errorCode}`, {
+        placeholder: '{z}/{x}/{y}',
+      })
+    : null;
 
   return (
     <div className="space-y-3">
@@ -107,7 +115,7 @@ export function MapStylePicker({
 
       {/* Add custom URL — draft input that doesn't apply until "Add" is clicked. */}
       <div className="space-y-2">
-        <Label className="text-sm">{t('settings.appearance.customStyleUrl')}</Label>
+        <Label className="text-sm">{t('settings.graphics.customStyleUrl')}</Label>
         <div className="flex gap-2">
           <Input
             type="url"
@@ -115,7 +123,7 @@ export function MapStylePicker({
             value={draft}
             onChange={(e) => {
               setDraft(e.target.value);
-              if (error) setError(null);
+              if (errorCode) setErrorCode(null);
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -124,7 +132,7 @@ export function MapStylePicker({
               }
             }}
             className="h-9 font-mono text-sm"
-            aria-invalid={!!error}
+            aria-invalid={!!errorCode}
           />
           <Button
             type="button"
@@ -135,15 +143,14 @@ export function MapStylePicker({
             className="h-9 shrink-0"
           >
             <Plus className="mr-1 h-4 w-4" />
-            Add
+            {t('settings.graphics.customStyleAdd')}
           </Button>
         </div>
-        {error ? (
-          <p className="text-xs text-destructive">{error}</p>
+        {errorMessage ? (
+          <p className="text-xs text-destructive">{errorMessage}</p>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Paste a MapLibre style.json URL, or a raster tile pattern with{' '}
-            <code className="rounded bg-muted px-1 py-0.5 font-mono">{'{z}/{x}/{y}'}</code>.
+            {t('settings.graphics.customStyleHint', { placeholder: '{z}/{x}/{y}' })}
           </p>
         )}
       </div>
@@ -164,6 +171,7 @@ function StyleButton({
   onSelect: () => void;
   onRemove?: () => void;
 }) {
+  const { t } = useTranslation();
   // X to remove is a sibling of the Button (not nested) — nested <button>
   // is invalid HTML and confuses screen readers.
   return (
@@ -188,7 +196,7 @@ function StyleButton({
             e.stopPropagation();
             onRemove();
           }}
-          aria-label={`Remove ${label}`}
+          aria-label={t('settings.graphics.customStyleRemove', { name: label })}
           className={cn(
             'absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded p-0.5 transition hover:bg-muted hover:text-foreground',
             active
