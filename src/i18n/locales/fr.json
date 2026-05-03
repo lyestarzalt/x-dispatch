@@ -6,6 +6,7 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "edit": "Modifier",
+    "test": "Tester",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
@@ -61,6 +62,7 @@
   "loading": {
     "title": "X-Dispatch",
     "badge": "Chargement des données",
+    "failed": "Échec du chargement",
     "initializing": "Initialisation...",
     "steps": {
       "airports": "Aéroports",
@@ -98,7 +100,28 @@
     "pinLat": "Lat",
     "pinLon": "Lon",
     "pinDropAndFly": "Aller à la position",
+    "pinModes": {
+      "title": "Mode de départ",
+      "ground": "Au sol",
+      "air": "En vol",
+      "carrier": "Porte-avions",
+      "frigate": "Frégate",
+      "altitude": "Altitude",
+      "speed": "Vitesse",
+      "speed_short_field_approach": "Terrain court",
+      "speed_normal_approach": "Normale",
+      "speed_cruise": "Croisière",
+      "speedCustom": "Vitesse personnalisée",
+      "position": "Position sur le pont",
+      "approach": "Approche finale",
+      "cat_catapult_1": "Cat 1",
+      "cat_catapult_2": "Cat 2",
+      "cat_catapult_3": "Cat 3",
+      "cat_catapult_4": "Cat 4",
+      "cat_deck": "Pont"
+    },
     "weather": "Météo",
+    "dayNight": "Jour / Nuit",
     "terrainShading": "Ombrage du terrain",
     "launch": "Lancer",
     "flightPlan": "Plan de vol",
@@ -114,12 +137,12 @@
       "layers": "Activer les couches et superpositions",
       "addons": "Gérer les avions, plugins et scènes",
       "loadPlan": "Charger un fichier de plan de vol .fms X-Plane",
+      "simbrief": "Importer un plan de vol depuis SimBrief",
       "explore": "Découvrir les aéroports et routes en vedette",
       "nav": "Afficher/masquer les couches de navigation",
       "track": "Suivre votre avion dans X-Plane",
       "vatsim": "Afficher le trafic VATSIM en direct",
       "weather": "Activer le radar météo en direct",
-      "simbrief": "Importer un plan de vol depuis SimBrief",
       "launch": "Lancer X-Plane avec la position sélectionnée",
       "pin": "Placer l'aéronef n'importe où sur la carte",
       "launchDisabled": "Sélectionnez d'abord un aéroport",
@@ -139,11 +162,58 @@
     "showOnly": "Afficher uniquement",
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Scènes personnalisées",
+    "surfaceType": "Type de surface",
     "runwaySurface": "Surface de piste",
+    "water": "Eau",
+    "surfaceOther": "Autre",
+    "country": "Pays",
+    "allCountries": "Tous les pays",
     "runways": "Pistes",
     "anyRunways": "Toutes",
     "minRunways": "{{count}}+ Pistes",
     "reset": "Réinitialiser les filtres"
+  },
+  "explore": {
+    "title": "Explorer",
+    "close": "Fermer l'exploration",
+    "tabs": {
+      "filters": "Filtres",
+      "featured": "En vedette",
+      "routes": "Routes",
+      "vatsim": "VATSIM"
+    },
+    "vatsim": {
+      "busiestNow": "Plus actifs maintenant",
+      "events": "Événements",
+      "noEvents": "Aucun événement à venir",
+      "viewRoute": "Voir la route",
+      "goToDeparture": "Aller au départ"
+    },
+    "filters": {
+      "country": "Pays",
+      "region": "Région",
+      "type": "Type",
+      "allCountries": "Tous les pays",
+      "allRegions": "Toutes les régions",
+      "allTypes": "Tous les types",
+      "land": "Terrestre",
+      "seaplane": "Hydravion",
+      "heliport": "Héliport",
+      "hasIata": "Possède un code IATA"
+    },
+    "featured": {
+      "all": "Tous",
+      "challenging": "Difficiles",
+      "scenic": "Pittoresques",
+      "unique": "Uniques",
+      "historic": "Historiques",
+      "icons": {
+        "mountain": "^",
+        "sunrise": "*",
+        "sparkles": "+",
+        "landmark": "#"
+      }
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -151,25 +221,26 @@
     "tabs": {
       "xplane": "X-Plane",
       "addons": "Extensions",
+      "data": "Données Nav",
       "appearance": "Apparence",
+      "graphics": "Graphismes",
       "simbrief": "SimBrief",
       "navigation": "Navigation",
-      "data": "Données Nav",
       "vatsim": "VATSIM",
       "support": "Support",
       "about": "À propos"
     },
     "support": {
-      "reportProblem": "Report a Problem",
-      "reportDescription": "Describe what went wrong. Your app state and recent actions are automatically included to help diagnose the issue.",
-      "messagePlaceholder": "What happened?",
+      "reportProblem": "Signaler un problème",
+      "reportDescription": "Décrivez ce qui s'est mal passé. L'état de l'app et vos actions récentes sont automatiquement inclus pour aider au diagnostic.",
+      "messagePlaceholder": "Que s'est-il passé ?",
       "emailLabel": "Email",
-      "emailPlaceholder": "your@email.com (for follow-up)",
-      "sendReport": "Send Report",
-      "sendSuccess": "Thanks! Your report has been sent.",
-      "sendError": "Failed to send report. Please try again.",
-      "community": "Community",
-      "privacy": "Privacy"
+      "emailPlaceholder": "votre@email.com (pour le suivi)",
+      "sendReport": "Envoyer le rapport",
+      "sendSuccess": "Merci ! Votre rapport a été envoyé.",
+      "sendError": "Échec de l'envoi du rapport. Veuillez réessayer.",
+      "community": "Communauté",
+      "privacy": "Confidentialité"
     },
     "simbrief": {
       "description": "Importer des plans de vol depuis SimBrief",
@@ -199,7 +270,11 @@
       "privacy": "Confidentialité",
       "crashReports": "Envoyer les rapports de plantage",
       "crashReportsDescription": "Aidez à améliorer X-Dispatch en envoyant automatiquement les rapports de plantage",
-      "crashReportsNote": "Redémarrage requis. Aucune donnée personnelle n'est collectée."
+      "crashReportsNote": "Redémarrage requis. Aucune donnée personnelle n'est collectée.",
+      "debugOverlay": "Superposition de débogage",
+      "debugOverlayDescription": "Afficher la barre d'outils de débogage pour développeurs",
+      "toggleDebug": "Activer/Désactiver",
+      "debugShortcut": "Vous pouvez aussi utiliser Ctrl+Shift+D (Cmd+Shift+D sur Mac)"
     },
     "xplane": {
       "title": "Installation X-Plane",
@@ -209,6 +284,22 @@
       "selectInstallation": "Sélectionnez une installation à utiliser",
       "active": "Actif",
       "custom": "Personnalisé",
+      "dataLoaded": "Données chargées",
+      "dataType": "Type",
+      "count": "Nombre",
+      "source": "Source",
+      "navDataSource": "Source des données de navigation",
+      "validDates": "Valide",
+      "expired": "Expiré",
+      "current": "Actuel",
+      "atcFrequencies": "Fréquences ATC",
+      "holdingPatterns": "Attentes",
+      "version": "Version",
+      "steam": "Steam",
+      "versionUnknown": "Version inconnue",
+      "airportMetadata": "Métadonnées aéroport",
+      "moraGrid": "Grille MORA",
+      "msaSectors": "Secteurs MSA",
       "closeOnLaunch": "Fermer après le lancement",
       "closeOnLaunchDescription": "Fermer automatiquement X-Dispatch lorsque X-Plane démarre",
       "installations": "Installations",
@@ -221,16 +312,16 @@
       "name": "Nom",
       "namePlaceholder": "ex. Bêta, Installation propre, Moddé",
       "nameRequired": "Obligatoire",
-      "launchArgs": "Launch arguments",
-      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
-      "launchArgsBrowse": "Browse args",
-      "launchArgsSearch": "Search arguments...",
-      "launchArgsNoResults": "No matching arguments",
-      "launchArgsPlaceholder": "--flag or --flag=value",
-      "launchArgsActive": "Active ({{count}})",
-      "launchArgsSavedTitle": "Saved args",
-      "launchArgsSessionSubtext": "Set via --xp-arg, applied this session only",
-      "launchArgsSessionTitle": "Session args (from CLI)"
+      "launchArgs": "Arguments de lancement",
+      "launchArgsDescription": "Arguments de ligne de commande supplémentaires passés à X-Plane à chaque démarrage à froid",
+      "launchArgsBrowse": "Parcourir les arguments",
+      "launchArgsSearch": "Rechercher des arguments...",
+      "launchArgsNoResults": "Aucun argument correspondant",
+      "launchArgsPlaceholder": "--flag ou --flag=valeur",
+      "launchArgsActive": "Actifs ({{count}})",
+      "launchArgsSavedTitle": "Arguments enregistrés",
+      "launchArgsSessionSubtext": "Définis via --xp-arg, appliqués uniquement à cette session",
+      "launchArgsSessionTitle": "Arguments de session (depuis CLI)"
     },
     "appearance": {
       "title": "Apparence",
@@ -244,8 +335,8 @@
       "mapStyleDescription": "Sélectionnez un style de carte pour l'arrière-plan",
       "unlimited": "Illimité",
       "customStyleUrl": "URL personnalisée",
-      "customStyleHint": "Paste a MapLibre style URL (e.g. https://tiles.openfreemap.org/styles/liberty) or a raster tile URL pattern (e.g. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
-      "advanced": "Advanced",
+      "customStyleHint": "Collez une URL de style MapLibre (ex. https://tiles.openfreemap.org/styles/liberty) ou un motif d'URL de tuiles raster (ex. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
+      "advanced": "Avancé",
       "language": "Langue",
       "units": "Unités",
       "unitsDescription": "Configurez les unités d'affichage pour les mesures",
@@ -302,10 +393,11 @@
       "contoursDesc": "Courbes de niveau d'altitude sur le terrain"
     },
     "navigation": {
-      "title": "Données de navigation",
-      "description": "Configurez les paramètres de navigation et VATSIM",
+      "title": "Navigation",
+      "description": "Configurez les paramètres de navigation",
       "dataTitle": "Données de navigation",
       "dataDescription": "Voir les sources de données de navigation chargées",
+      "navigraphInfo": "Les données Navigraph fournissent des données de navigation améliorées incluant les routes, procédures et fréquences mises à jour.",
       "searchRadius": "Rayon de recherche",
       "airportLayoutData": "Données de layout aéroport",
       "airportLayoutDescription": "Géométrie des aéroports depuis les fichiers apt.dat (pistes, taxiways, portes, etc.)",
@@ -314,11 +406,22 @@
       "fromSceneryPacks": "depuis {{count}} pack(s) de scènes",
       "totalAirports": "Total des aéroports",
       "navDataSource": "Source des données de navigation",
-      "navDataSourceDescription": "Navaids, waypoints, airways, procédures et fréquences",
+      "navDataSourceDescription": "Aides à la navigation, waypoints, routes, procédures et fréquences",
+      "cacheManagement": "Gestion du cache",
+      "cacheDescription": "Vider le cache pour forcer un rechargement complet depuis les fichiers X-Plane",
+      "clearCache": "Vider le cache et recharger",
+      "clearingCache": "Vidage en cours...",
       "vatsim": {
-        "title": "Trafic en direct VATSIM",
-        "enable": "Activer VATSIM",
+        "title": "VATSIM",
+        "sectionDescription": "Trafic aérien en direct depuis le réseau VATSIM",
+        "enable": "Activer la couche VATSIM",
         "description": "Afficher les avions en direct du réseau VATSIM",
+        "currentlyOnline": "Actuellement en ligne",
+        "refreshRate": "Fréquence d'actualisation",
+        "autoRefresh": "Intervalle d'actualisation automatique",
+        "refreshNote": "Les données VATSIM sont actualisées toutes les 15 secondes conformément aux directives de l'API.",
+        "aboutTitle": "À propos de l'intégration VATSIM",
+        "aboutDescription": "Les pilotes sont affichés sous forme d'icônes sur la carte. Cliquez sur un pilote pour voir les détails de son vol incluant l'indicatif, l'avion, le départ et la destination.",
         "refreshInterval": "Intervalle de rafraîchissement",
         "refreshHelp": "Fréquence de rafraîchissement des données VATSIM (recommandé : 15s)"
       }
@@ -352,7 +455,11 @@
     "startFrom": "Départ de :",
     "noGatesFound": "Aucune porte trouvée",
     "noRunwaysFound": "Aucune piste trouvée",
-    "copyFrequency": "Copier la fréquence"
+    "copyFrequency": "Copier la fréquence",
+    "vatsim": {
+      "notEnabled": "Activez VATSIM dans les paramètres pour voir les données en direct",
+      "noActivity": "Aucune activité VATSIM"
+    }
   },
   "airportInfo": {
     "tabs": {
@@ -449,6 +556,9 @@
     },
     "taxiRoute": {
       "taxiTo": "Rouler vers",
+      "taxiFrom": "Rouler depuis",
+      "departure": "Départ",
+      "arrival": "Arrivée",
       "undo": "Annuler",
       "clearAll": "Effacer",
       "selectRunway": "Sélectionner une piste",
@@ -456,8 +566,8 @@
       "drawManually": "Tracer manuellement",
       "autoRoute": "Route automatique",
       "pointsPlaced": "{{count}} point(s)",
-      "export": "Exporter pour Follow the Greens",
-      "exportSuccess": "Route exportée pour Follow the Greens"
+      "export": "Enregistrer la route de roulage",
+      "exportSuccess": "Route de roulage enregistrée"
     }
   },
   "navigation": {
@@ -477,7 +587,11 @@
     "wind": "WIND",
     "oat": "OAT",
     "center": "Centrer",
-    "centerTooltip": "Centrer la carte sur l'avion"
+    "centerTooltip": "Centrer la carte sur l'avion",
+    "following": "Suivi",
+    "followingTooltip": "Cliquez pour arrêter de suivre l'avion",
+    "reconnect": "Reconnecter",
+    "reconnectTooltip": "Forcer la reconnexion au simulateur X-Plane"
   },
   "weather": {
     "fetching": "Récupération de la météo...",
@@ -538,11 +652,8 @@
       "windsocks": "Manches à air",
       "animations": "Animations",
       "weatherEffects": "Météo",
-      "vors": "VOR",
-      "ndbs": "NDB",
-      "dmes": "DME",
+      "navaids": "Aides à la nav (VOR/NDB/DME)",
       "ils": "ILS",
-      "waypoints": "Waypoints",
       "airwaysOff": "Désactivé",
       "highAirways": "Routes hautes (Jet)",
       "lowAirways": "Routes basses (Victor)"
@@ -581,6 +692,12 @@
       "search": "Rechercher un aéronef...",
       "allCategories": "Toutes les catégories",
       "allManufacturers": "Tous les constructeurs",
+      "allTypes": "Tous les types",
+      "allEngines": "Tous les moteurs",
+      "fixedWing": "Voilure fixe",
+      "helicopter": "Hélicoptère",
+      "jet": "Jet",
+      "prop": "Hélice",
       "count": "{{count}} aéronef(s)",
       "favorites": "{{count}} favori(s)",
       "noFavorites": "Aucun favori",
@@ -592,6 +709,12 @@
       "title": "Livrées",
       "count": "Livrées ({{count}})",
       "default": "Par défaut"
+    },
+    "specs": {
+      "emptyWeight": "Vide",
+      "maxWeight": "MTOW",
+      "maxFuel": "Cap. carburant",
+      "tailNumber": "Immat."
     },
     "config": {
       "timeOfDay": "Heure du jour",
@@ -611,6 +734,8 @@
     "time": {
       "live": "En direct",
       "set": "Définir",
+      "now": "Maintenant",
+      "custom": "Personnalisé",
       "dawn": "Aube",
       "day": "Jour",
       "dusk": "Crépuscule",
@@ -834,7 +959,15 @@
       "loadFailed": "Échec du chargement des {{type}}",
       "noMatch": "Aucun(e) {{type}} ne correspond à votre recherche",
       "notFound": "Aucun(e) {{type}} trouvé(e)",
-      "confirmDelete": "Supprimer \"{{name}}\" ? Cette action est irréversible."
+      "confirmDelete": "Supprimer \"{{name}}\" ? Cette action est irréversible.",
+      "disabled": "Désactivé",
+      "hasUpdate": "Mise à jour disponible",
+      "locked": "Verrouillé",
+      "liveries": "Livrées",
+      "openFolder": "Ouvrir le dossier",
+      "toggle": "Activer/Désactiver",
+      "lock": "Verrouiller",
+      "unlock": "Déverrouiller"
     },
     "scenery": {
       "loading": "Scan des dossiers de scènes...",

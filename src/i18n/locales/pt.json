@@ -24,7 +24,8 @@
     "selected": "Selecionado",
     "online": "online",
     "approved": "Aprovado",
-    "recommended": "Recomendado"
+    "recommended": "Recomendado",
+    "test": "Testar"
   },
   "units": {
     "ft": "ft",
@@ -84,7 +85,8 @@
       "permissionWindows": "O Windows está bloqueando o acesso aos arquivos. Clique com o botão direito no X-Dispatch e selecione \"Executar como administrador\", ou verifique as permissões da pasta em Propriedades > Segurança.",
       "permissionLinux": "Permissão negada. Verifique se o seu usuário tem acesso de leitura à pasta do X-Plane, ou execute chmod +r no arquivo.",
       "fileBusy": "O arquivo está bloqueado por outro programa. Feche o X-Plane e quaisquer ferramentas de cenários ou addons, depois tente novamente."
-    }
+    },
+    "failed": "Falha no carregamento"
   },
   "toolbar": {
     "searchPlaceholder": "Pesquisar aeroportos...",
@@ -98,7 +100,28 @@
     "pinLat": "Lat",
     "pinLon": "Lon",
     "pinDropAndFly": "Ir para a posição",
+    "pinModes": {
+      "title": "Modo de início",
+      "ground": "Solo",
+      "air": "Ar",
+      "carrier": "Porta-aviões",
+      "frigate": "Fragata",
+      "altitude": "Altitude",
+      "speed": "Velocidade",
+      "speed_short_field_approach": "Pista curta",
+      "speed_normal_approach": "Normal",
+      "speed_cruise": "Cruzeiro",
+      "speedCustom": "Velocidade personalizada",
+      "position": "Posição no convés",
+      "approach": "Aproximação final",
+      "cat_catapult_1": "Cat 1",
+      "cat_catapult_2": "Cat 2",
+      "cat_catapult_3": "Cat 3",
+      "cat_catapult_4": "Cat 4",
+      "cat_deck": "Convés"
+    },
     "weather": "Clima",
+    "dayNight": "Dia / Noite",
     "terrainShading": "Sombreamento do terreno",
     "launch": "Iniciar",
     "flightPlan": "Plano de voo",
@@ -139,7 +162,12 @@
     "showOnly": "Mostrar apenas",
     "iataOnly": "Comercial (IATA)",
     "customOnly": "Cenários personalizados",
+    "surfaceType": "Tipo de superfície",
     "runwaySurface": "Superfície de pista",
+    "water": "Água",
+    "surfaceOther": "Outro",
+    "country": "País",
+    "allCountries": "Todos os países",
     "runways": "Pistas",
     "anyRunways": "Todas",
     "minRunways": "{{count}}+ Pistas",
@@ -195,6 +223,7 @@
       "addons": "Extensões",
       "data": "Dados Nav",
       "appearance": "Aparência",
+      "graphics": "Gráficos",
       "simbrief": "SimBrief",
       "navigation": "Navegação",
       "vatsim": "VATSIM",
@@ -241,7 +270,11 @@
       "privacy": "Privacidade",
       "crashReports": "Enviar relatórios de falhas",
       "crashReportsDescription": "Ajude a melhorar o X-Dispatch enviando automaticamente relatórios de falhas",
-      "crashReportsNote": "Requer reinício. Nenhum dado pessoal é coletado."
+      "crashReportsNote": "Requer reinício. Nenhum dado pessoal é coletado.",
+      "debugOverlay": "Sobreposição de depuração",
+      "debugOverlayDescription": "Mostrar a barra de ferramentas de depuração do desenvolvedor",
+      "toggleDebug": "Alternar",
+      "debugShortcut": "Você também pode usar Ctrl+Shift+D (Cmd+Shift+D no Mac)"
     },
     "xplane": {
       "title": "Instalação do X-Plane",
@@ -261,6 +294,9 @@
       "current": "Atual",
       "atcFrequencies": "Frequências ATC",
       "holdingPatterns": "Padrões de espera",
+      "version": "Versão",
+      "steam": "Steam",
+      "versionUnknown": "Versão desconhecida",
       "airportMetadata": "Metadados do aeroporto",
       "moraGrid": "Grade MORA",
       "msaSectors": "Setores MSA",
@@ -371,6 +407,10 @@
       "totalAirports": "Total de aeroportos",
       "navDataSource": "Fonte de dados de navegação",
       "navDataSourceDescription": "Auxílios de navegação, waypoints, aerovias, procedimentos e frequências",
+      "cacheManagement": "Gerenciamento de cache",
+      "cacheDescription": "Limpar dados em cache para forçar uma recarga completa dos arquivos do X-Plane",
+      "clearCache": "Limpar cache e recarregar",
+      "clearingCache": "Limpando...",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Tráfego aéreo ao vivo da rede VATSIM",
@@ -516,6 +556,9 @@
     },
     "taxiRoute": {
       "taxiTo": "Taxiar para",
+      "taxiFrom": "Taxiar de",
+      "departure": "Partida",
+      "arrival": "Chegada",
       "undo": "Desfazer",
       "clearAll": "Limpar",
       "selectRunway": "Selecionar pista",
@@ -544,7 +587,11 @@
     "wind": "WIND",
     "oat": "OAT",
     "center": "Centralizar",
-    "centerTooltip": "Centralizar mapa na aeronave"
+    "centerTooltip": "Centralizar mapa na aeronave",
+    "following": "Seguindo",
+    "followingTooltip": "Clique para parar de seguir a aeronave",
+    "reconnect": "Reconectar",
+    "reconnectTooltip": "Forçar reconexão ao simulador X-Plane"
   },
   "weather": {
     "fetching": "Obtendo clima...",
@@ -605,11 +652,8 @@
       "windsocks": "Birutas",
       "animations": "Animações",
       "weatherEffects": "Clima",
-      "vors": "VORs",
-      "ndbs": "NDBs",
-      "dmes": "DMEs",
+      "navaids": "Radioajudas (VOR/NDB/DME)",
       "ils": "ILS",
-      "waypoints": "Waypoints",
       "airwaysOff": "Desligado",
       "highAirways": "Aerovias altas (Jet)",
       "lowAirways": "Aerovias baixas (Victor)"
@@ -690,6 +734,8 @@
     "time": {
       "live": "Ao vivo",
       "set": "Definir",
+      "now": "Agora",
+      "custom": "Personalizado",
       "dawn": "Amanhecer",
       "day": "Dia",
       "dusk": "Entardecer",
@@ -913,7 +959,15 @@
       "loadFailed": "Falha ao carregar {{type}}",
       "noMatch": "Nenhum(a) {{type}} corresponde à pesquisa",
       "notFound": "Nenhum(a) {{type}} encontrado(a)",
-      "confirmDelete": "Excluir \"{{name}}\"? Esta ação não pode ser desfeita."
+      "confirmDelete": "Excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
+      "disabled": "Desativado",
+      "hasUpdate": "Atualização disponível",
+      "locked": "Bloqueado",
+      "liveries": "Pinturas",
+      "openFolder": "Abrir pasta",
+      "toggle": "Alternar",
+      "lock": "Bloquear",
+      "unlock": "Desbloquear"
     },
     "scenery": {
       "loading": "Escaneando pastas de cenários...",
