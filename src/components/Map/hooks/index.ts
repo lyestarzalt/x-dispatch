@@ -1,11 +1,6 @@
 export { useAirportRenderer } from './useAirportRenderer';
-export {
-  useMapSetup,
-  setupAirportsLayer,
-  setupAirportPopup,
-  type MapRef,
-  type PopupRef,
-} from './useMapSetup';
+export { useMapSetup, setupAirportPopup, type MapRef, type PopupRef } from './useMapSetup';
+export { setupAirportsLayer } from '../layers/world/AirportsLayer';
 export { useNavLayerSync, applyNavVisibilityChange } from './useNavLayerSync';
 export { useVatsimSync, toggleVatsimLayer } from './useVatsimSync';
 export { useIvaoSync, toggleIvaoLayer } from './useIvaoSync';

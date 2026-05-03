@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
+import { setupAirportsLayer } from '../layers/world/AirportsLayer';
 import { captureBasemapSnapshot, setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 
 // ============================================================================
@@ -218,127 +219,6 @@ export function useMapSetup({
     airportPopupRef,
     vatsimPopupRef,
   };
-}
-
-export function setupAirportsLayer(map: maplibregl.Map, airports: Airport[]) {
-  const COLOR_DEFAULT = '#4a90d9';
-
-  // Clean pin marker for custom airports — uses --warning amber token (#d4a017)
-  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 20 28">
-    <path d="M10 0C4.5 0 0 4.5 0 10c0 7 10 18 10 18s10-11 10-18C20 4.5 15.5 0 10 0z"
-          fill="#d4a017" stroke="rgba(255,255,255,0.8)" stroke-width="1.2"/>
-    <circle cx="10" cy="10" r="2.5" fill="#fff" opacity="0.95"/>
-  </svg>`;
-
-  const pinImage = new Image();
-  pinImage.onload = () => {
-    if (!map.hasImage('custom-pin')) {
-      map.addImage('custom-pin', pinImage, { sdf: false });
-    }
-  };
-  pinImage.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(pinSvg);
-
-  const features = airports.map((airport) => ({
-    type: 'Feature' as const,
-    geometry: { type: 'Point' as const, coordinates: [airport.lon, airport.lat] },
-    properties: {
-      icao: airport.icao,
-      name: airport.name,
-      isCustom: airport.isCustom ? 1 : 0,
-      type: airport.type,
-      surfaceType: airport.surfaceType,
-      runwayCount: airport.runwayCount,
-      elevation: airport.elevation,
-      country: airport.country ?? '',
-    },
-  }));
-
-  map.addSource('airports', {
-    type: 'geojson',
-    data: { type: 'FeatureCollection', features },
-  });
-
-  const filterCustom: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 1];
-  const filterDefault: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 0];
-
-  // === CUSTOM AIRPORTS: Clean gold pin marker ===
-  map.addLayer({
-    id: 'airports-custom',
-    type: 'symbol',
-    source: 'airports',
-    filter: filterCustom,
-    layout: {
-      'icon-image': 'custom-pin',
-      'icon-size': ['interpolate', ['linear'], ['zoom'], 0, 0.35, 4, 0.5, 8, 0.7, 12, 0.85],
-      'icon-anchor': 'bottom',
-      'icon-allow-overlap': true,
-    },
-  });
-
-  // === DEFAULT AIRPORTS: Subtle blue ===
-
-  // Default glow
-  map.addLayer({
-    id: 'airports-glow',
-    type: 'circle',
-    source: 'airports',
-    filter: filterDefault,
-    paint: {
-      'circle-color': COLOR_DEFAULT,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 5, 4, 8, 6, 12, 8],
-      'circle-blur': 0.6,
-      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.05, 5, 0.1, 8, 0.2],
-    },
-  });
-
-  // Default airport dots
-  map.addLayer({
-    id: 'airports',
-    type: 'circle',
-    source: 'airports',
-    filter: filterDefault,
-    paint: {
-      'circle-color': COLOR_DEFAULT,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 3, 1, 6, 3, 10, 5, 14, 6],
-      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 0, 0, 4, 0.5, 8, 1],
-      'circle-stroke-color': '#ffffff',
-      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 4, 0.6, 6, 0.9, 8, 1],
-    },
-  });
-
-  // Labels - appear at zoom 6+
-  map.addLayer({
-    id: 'airport-labels',
-    type: 'symbol',
-    source: 'airports',
-    minzoom: 6,
-    layout: {
-      'text-field': ['get', 'icao'],
-      'text-font': ['Open Sans Bold'],
-      'text-offset': [0, 1.2],
-      'text-anchor': 'top',
-      'text-size': ['interpolate', ['linear'], ['zoom'], 6, 8, 10, 10, 14, 12],
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-    },
-    paint: {
-      'text-color': ['case', ['==', ['get', 'isCustom'], 1], '#e8c36a', '#cccccc'],
-      'text-halo-color': '#000000',
-      'text-halo-width': 1,
-    },
-  });
-
-  // Hitbox layer for easier clicking - visible at all zoom levels
-  map.addLayer({
-    id: 'airports-hitbox',
-    type: 'circle',
-    source: 'airports',
-    paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 4, 10, 6, 14, 10, 18, 14, 22],
-      'circle-color': 'transparent',
-      'circle-opacity': 0,
-    },
-  });
 }
 
 export function setupAirportPopup(
