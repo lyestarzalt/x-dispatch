@@ -109,7 +109,8 @@
     ]
   },
   "overrides": {
-    "tar": ">=7.5.11"
+    "tar": ">=7.5.11",
+    "@maplibre/maplibre-gl-style-spec": "24.8.1"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.6",
@@ -158,7 +159,7 @@
     "i18next": "^25.8.0",
     "lucide-react": "^0.474.0",
     "maplibre-contour": "^0.1.0",
-    "maplibre-gl": "^5.19.0",
+    "maplibre-gl": "^5.24.0",
     "maplibre-gl-nightlayer": "^1.0.0-alpha.14",
     "metar-taf-parser": "^9.1.2",
     "node-7z": "^3.0.0",
