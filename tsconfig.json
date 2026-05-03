@@ -13,11 +13,11 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "outDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
+    "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["./src/*"],
       "@assets/*": ["./assets/*"]
