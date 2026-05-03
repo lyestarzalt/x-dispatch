@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
+import logger from '@/lib/utils/loggerRenderer';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
@@ -379,7 +380,7 @@ export function useAirportInteractions({
       }
 
       if (gate.xplaneIndex === undefined) {
-        console.error(`Missing xplaneIndex for gate "${gate.name}"`);
+        logger.map.error(`Missing xplaneIndex for gate "${gate.name}"`);
       }
       setStartPosition({
         type: 'ramp',

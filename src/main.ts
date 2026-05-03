@@ -64,8 +64,8 @@ if (cliResult.flags.version) {
   printVersionAndExit(app.getVersion());
 }
 for (const u of cliResult.unknownWithSuggestions) {
-  console.warn(
-    `[X-Dispatch v${app.getVersion()}] Unknown flag: ${u.flag}${u.suggestion ? `. Did you mean ${u.suggestion}?` : ''}`
+  logger.main.warn(
+    `Unknown flag: ${u.flag}${u.suggestion ? `. Did you mean ${u.suggestion}?` : ''}`
   );
 }
 

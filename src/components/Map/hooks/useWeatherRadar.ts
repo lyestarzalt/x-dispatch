@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type maplibregl from 'maplibre-gl';
+import logger from '@/lib/utils/loggerRenderer';
 import { safeRemove } from '../layers/types';
 import type { MapRef } from './useMapSetup';
 
@@ -84,7 +85,7 @@ export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarC
       const pastCount = data.radar.past.length;
       setFrameIndex(pastCount > 0 ? pastCount - 1 : 0);
     } catch (err) {
-      console.error('Failed to fetch RainViewer data:', err);
+      logger.weather.error('Failed to fetch RainViewer data:', err);
     }
   }, []);
 

@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { parseFMSFile } from '@/lib/parsers/fms';
+import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
 import type { SimBriefOFP } from '@/types/simbrief';
 import { useAppStore } from './appStore';
@@ -157,10 +158,10 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
         });
         return true;
       } else {
-        console.warn('[FlightPlan] Enrichment returned null');
+        logger.flight.warn('Enrichment returned null');
       }
     } catch (err) {
-      console.error('[FlightPlan] Failed to enrich flight plan:', err);
+      logger.flight.error('Failed to enrich flight plan:', err);
     }
 
     // Fallback: use raw FMS data if enrichment fails
