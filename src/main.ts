@@ -135,13 +135,47 @@ function sendLoadingProgress(progress: LoadingProgress) {
   }
 }
 
+/**
+ * Default timeout for outbound HTTP requests proxied through the main
+ * process. Keeps the app from silently hanging forever when an upstream
+ * (e.g. IVAO API, VATSIM, AVWX) goes unreachable. Caller can override.
+ */
+const DEFAULT_PROXY_FETCH_TIMEOUT_MS = 15_000;
+
 async function proxyFetch(
-  url: string
+  url: string,
+  opts: { timeoutMs?: number } = {}
 ): Promise<{ data: string | null; error: string | null; statusCode?: number }> {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_PROXY_FETCH_TIMEOUT_MS;
+  const startedAt = Date.now();
+
   return new Promise((resolve) => {
     const request = net.request(url);
     request.setHeader('User-Agent', `X-Dispatch/${app.getVersion()}`);
     let data = '';
+    let settled = false;
+
+    const settle = (result: { data: string | null; error: string | null; statusCode?: number }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      const elapsed = Date.now() - startedAt;
+      if (result.error) {
+        logger.main.warn(`proxyFetch ${url} failed in ${elapsed}ms: ${result.error}`);
+      }
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      // Aborting net.request fires the 'error' handler with "net::ERR_ABORTED";
+      // we settle first with our own error so the caller sees "Timeout" instead.
+      try {
+        request.abort();
+      } catch {
+        // request may already be settling
+      }
+      settle({ data: null, error: `Timeout after ${timeoutMs}ms` });
+    }, timeoutMs);
 
     request.on('response', (response) => {
       response.on('data', (chunk) => {
@@ -149,9 +183,9 @@ async function proxyFetch(
       });
       response.on('end', () => {
         if (response.statusCode === 200) {
-          resolve({ data, error: null, statusCode: response.statusCode });
+          settle({ data, error: null, statusCode: response.statusCode });
         } else {
-          resolve({
+          settle({
             data: data || null,
             error: `HTTP ${response.statusCode}`,
             statusCode: response.statusCode,
@@ -161,7 +195,7 @@ async function proxyFetch(
     });
 
     request.on('error', (error) => {
-      resolve({ data: null, error: error.message });
+      settle({ data: null, error: error.message });
     });
 
     request.end();
