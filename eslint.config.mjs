@@ -1,8 +1,10 @@
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import security from 'eslint-plugin-security';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+const tsconfigRootDir = import.meta.dirname;
 
 export default tseslint.config(
   // Ignore patterns
@@ -38,6 +40,7 @@ export default tseslint.config(
         ...globals.es2021,
       },
       parserOptions: {
+        tsconfigRootDir,
         ecmaFeatures: {
           jsx: true,
         },
