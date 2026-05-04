@@ -9,6 +9,7 @@ import type { NavDataSources } from './cycleInfo';
 
 export interface Airport {
   icao: string;
+  iataCode?: string;
   name: string;
   lat: number;
   lon: number;

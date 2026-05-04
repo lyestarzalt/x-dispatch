@@ -12,7 +12,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
-import { usePlaneState } from '@/queries';
+import { usePlaneState, useVatsimSectorQuery } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -44,6 +44,8 @@ import {
   useTaxiRouteSync,
   useTerrainShading,
   useTrackControl,
+  useVatsimAirportAtcSync,
+  useVatsimSectorSync,
   useVatsimSync,
 } from './hooks';
 import { useDayNightLayer } from './hooks/useDayNightLayer';
@@ -52,13 +54,17 @@ import {
   addFlightPlanLayer,
   bringIvaoLayersToTop,
   bringPlaneLayerToTop,
+  bringVatsimAirportAtcLayersToTop,
   bringVatsimLayersToTop,
+  bringVatsimSectorLayersToTop,
   firLayer,
   fitMapToFlightPlan,
   removeFlightPlanLayer,
   removeIvaoPilotLayer,
   removePlaneLayer,
+  removeVatsimAirportAtcLayer,
   removeVatsimPilotLayer,
+  removeVatsimSectorLayer,
   updatePlaneLayer,
 } from './layers';
 import './map-animations.css';
@@ -188,6 +194,8 @@ export default function Map({ airports }: MapProps) {
     applyLayerVisibilityRef.current = applyLayerVisibility;
     bringNetworkLayersToTopRef.current = () => {
       if (mapRef.current) {
+        bringVatsimSectorLayersToTop(mapRef.current);
+        bringVatsimAirportAtcLayersToTop(mapRef.current);
         bringVatsimLayersToTop(mapRef.current);
         bringIvaoLayersToTop(mapRef.current);
       }
@@ -238,6 +246,7 @@ export default function Map({ airports }: MapProps) {
   );
 
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
+  const { data: vatsimSectorResult } = useVatsimSectorQuery(vatsimEnabled);
   const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
 
   // Plane tracker - live position via WebSocket
@@ -302,6 +311,21 @@ export default function Map({ airports }: MapProps) {
   useVatsimSync({
     mapRef,
     vatsimPopupRef,
+    vatsimData,
+    vatsimEnabled,
+  });
+
+  useVatsimSectorSync({
+    mapRef,
+    sectorResult: vatsimSectorResult,
+    vatsimData,
+    vatsimEnabled,
+  });
+
+  useVatsimAirportAtcSync({
+    mapRef,
+    vatsimPopupRef,
+    airports,
     vatsimData,
     vatsimEnabled,
   });
@@ -533,6 +557,8 @@ export default function Map({ airports }: MapProps) {
           applyLayerVisibility(layerVisibility);
           // Bring network layers to top after airport rendering
           if (mapRef.current) {
+            bringVatsimSectorLayersToTop(mapRef.current);
+            bringVatsimAirportAtcLayersToTop(mapRef.current);
             bringVatsimLayersToTop(mapRef.current);
             bringIvaoLayersToTop(mapRef.current);
           }
@@ -585,7 +611,11 @@ export default function Map({ airports }: MapProps) {
   const handleToggleVatsim = useCallback(() => {
     if (vatsimEnabled) {
       setVatsimEnabled(false);
-      if (mapRef.current) removeVatsimPilotLayer(mapRef.current);
+      if (mapRef.current) {
+        removeVatsimPilotLayer(mapRef.current);
+        removeVatsimSectorLayer(mapRef.current);
+        removeVatsimAirportAtcLayer(mapRef.current);
+      }
     } else {
       // Disable IVAO when enabling VATSIM
       if (ivaoEnabled) {
@@ -605,7 +635,11 @@ export default function Map({ airports }: MapProps) {
       // Disable VATSIM when enabling IVAO
       if (vatsimEnabled) {
         setVatsimEnabled(false);
-        if (mapRef.current) removeVatsimPilotLayer(mapRef.current);
+        if (mapRef.current) {
+          removeVatsimPilotLayer(mapRef.current);
+          removeVatsimSectorLayer(mapRef.current);
+          removeVatsimAirportAtcLayer(mapRef.current);
+        }
       }
       setIvaoEnabled(true);
       toggleIvaoLayer(mapRef, ivaoPopupRef, true);

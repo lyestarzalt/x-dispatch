@@ -48,6 +48,17 @@ export {
   updateVatsimPilotLayer,
 } from './dynamic/VatsimLayer';
 export {
+  bringVatsimSectorLayersToTop,
+  removeVatsimSectorLayer,
+  updateVatsimSectorLayer,
+} from './dynamic/VatsimSectorLayer';
+export {
+  bringVatsimAirportAtcLayersToTop,
+  removeVatsimAirportAtcLayer,
+  setupVatsimAirportAtcClickHandler,
+  updateVatsimAirportAtcLayer,
+} from './dynamic/VatsimAirportAtcLayer';
+export {
   bringIvaoLayersToTop,
   removeIvaoPilotLayer,
   setupIvaoClickHandler,

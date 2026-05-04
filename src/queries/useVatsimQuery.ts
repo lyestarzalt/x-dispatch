@@ -10,6 +10,11 @@ import type {
 
 export type { VatsimPilot, VatsimData, VatsimController, VatsimATIS, VatsimPrefile };
 
+export type AirportCallsignMatch = {
+  icao: string;
+  iata?: string | null;
+};
+
 const vatsimKeys = {
   all: ['vatsim'] as const,
   data: ['vatsim', 'data'] as const,
@@ -73,19 +78,39 @@ export function getPilotsNearAirport(
   });
 }
 
-export function getControllersForAirport(
-  data: VatsimData | undefined,
-  icao: string
-): VatsimController[] {
-  if (!data) return [];
-  const prefix = icao.toUpperCase();
-  return data.controllers.filter((c) => c.callsign.toUpperCase().startsWith(prefix));
+function getAirportMatchPrefixes(airport: string | AirportCallsignMatch): Set<string> {
+  if (typeof airport === 'string') {
+    return new Set([airport.toUpperCase()]);
+  }
+
+  const prefixes = new Set<string>([airport.icao.toUpperCase()]);
+  if (airport.iata) {
+    prefixes.add(airport.iata.toUpperCase());
+  }
+  return prefixes;
 }
 
-export function getATISForAirport(data: VatsimData | undefined, icao: string): VatsimATIS[] {
+function callsignMatchesAirport(callsign: string, airport: string | AirportCallsignMatch): boolean {
+  const prefix = callsign.toUpperCase().split('_')[0] ?? '';
+  return getAirportMatchPrefixes(airport).has(prefix);
+}
+
+export function getControllersForAirport(
+  data: VatsimData | undefined,
+  airport: string | AirportCallsignMatch
+): VatsimController[] {
   if (!data) return [];
-  const prefix = icao.toUpperCase();
-  return data.atis.filter((a) => a.callsign.toUpperCase().startsWith(prefix));
+  return data.controllers.filter((controller) =>
+    callsignMatchesAirport(controller.callsign, airport)
+  );
+}
+
+export function getATISForAirport(
+  data: VatsimData | undefined,
+  airport: string | AirportCallsignMatch
+): VatsimATIS[] {
+  if (!data) return [];
+  return data.atis.filter((atis) => callsignMatchesAirport(atis.callsign, airport));
 }
 
 export function getPrefilesForAirport(data: VatsimData | undefined, icao: string): VatsimPrefile[] {

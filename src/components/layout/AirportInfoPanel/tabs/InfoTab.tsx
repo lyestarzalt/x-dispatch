@@ -1,28 +1,23 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   ChevronDown,
   ChevronRight,
   Copy,
   ExternalLink,
-  Radio,
+  PlaneLanding,
+  PlaneTakeoff,
 } from 'lucide-react';
 import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
-// Formatters for metar-taf-parser types
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
 import { useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
-import {
-  getTrafficCountsForAirport as getIvaoTrafficCounts,
-  useIvaoQuery,
-} from '@/queries/useIvaoQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import {
   getATISForAirport,
@@ -36,6 +31,7 @@ import { useMapStore } from '@/stores/mapStore';
 import type { Frequency, Runway, RunwayEnd } from '@/types/apt';
 import { FrequencyType, SurfaceType } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
+import type { VatsimAirportAtcRow, VatsimFacilityRole } from '@/types/vatsimSectors';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this import
 import gatewayLogo from '../../../../../assets/gateway-logo.svg';
@@ -89,14 +85,12 @@ export default function InfoTab() {
   const icao = useAppStore((s) => s.selectedICAO);
   const isCustom = useAppStore((s) => s.selectedAirportIsCustom);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
-  const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
 
   const [showAllFreqs, setShowAllFreqs] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
-  const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
   const { data: navData } = useNavDataQuery(
     airport?.runways[0]?.ends[0]?.latitude ?? null,
     airport?.runways[0]?.ends[0]?.longitude ?? null,
@@ -106,12 +100,22 @@ export default function InfoTab() {
 
   const metar = vatsimMetarData?.parsed ?? null;
   const rawMetar = vatsimMetarData?.raw ?? null;
+  const airportCallsignMatch = useMemo(
+    () => ({
+      icao: icao ?? '',
+      iata: airport?.metadata?.iata_code ?? null,
+    }),
+    [airport?.metadata?.iata_code, icao]
+  );
 
   // VATSIM data
-  const atis = useMemo(() => getATISForAirport(vatsimData, icao ?? ''), [vatsimData, icao]);
+  const atis = useMemo(
+    () => getATISForAirport(vatsimData, airportCallsignMatch),
+    [airportCallsignMatch, vatsimData]
+  );
   const controllers = useMemo(
-    () => getControllersForAirport(vatsimData, icao ?? ''),
-    [vatsimData, icao]
+    () => getControllersForAirport(vatsimData, airportCallsignMatch),
+    [airportCallsignMatch, vatsimData]
   );
   const traffic = useMemo(
     () => getTrafficCountsForAirport(vatsimData, icao ?? ''),
@@ -119,9 +123,11 @@ export default function InfoTab() {
   );
   const primaryAtis = atis[0];
   const atisRunways = primaryAtis ? parseATISRunways(primaryAtis) : [];
-
-  // IVAO data
-  const ivaoTraffic = useMemo(() => getIvaoTrafficCounts(ivaoData, icao ?? ''), [ivaoData, icao]);
+  const atisLetter = vatsimEnabled && primaryAtis?.atis_code ? primaryAtis.atis_code : null;
+  const vatsimRows = useMemo(() => buildAirportAtcRows(controllers, atis), [controllers, atis]);
+  const liveTraffic = vatsimEnabled
+    ? { departures: traffic.departures, arrivals: traffic.arrivals }
+    : null;
 
   // Runways sorted by length, descending
   const sortedRunways = useMemo(() => {
@@ -163,46 +169,35 @@ export default function InfoTab() {
     return null;
   }, [vatsimEnabled, atisRunways, metar?.wind, sortedRunways]);
 
-  // Map VATSIM controllers to the frequency type they cover, so each row in
-  // the Frequencies list can show a green pulse dot when the matching
-  // controller is logged in.
-  const liveControllers = useMemo(() => {
-    const set = new Set<FrequencyType>();
-    if (!vatsimEnabled) return set;
-    for (const c of controllers) {
-      const ft = controllerCallsignToFreqType(c.callsign);
-      if (ft !== null) set.add(ft);
-    }
-    if (atis.length > 0) set.add(FrequencyType.AWOS);
-    return set;
-  }, [vatsimEnabled, controllers, atis]);
-
-  // Combined live traffic chip. Sums VATSIM and IVAO when both are on.
-  const liveTraffic = useMemo(() => {
-    let dep = 0;
-    let arr = 0;
-    if (vatsimEnabled) {
-      dep += traffic.departures;
-      arr += traffic.arrivals;
-    }
-    if (ivaoEnabled) {
-      dep += ivaoTraffic.departures;
-      arr += ivaoTraffic.arrivals;
-    }
-    return dep + arr > 0 ? { departures: dep, arrivals: arr } : null;
-  }, [vatsimEnabled, ivaoEnabled, traffic, ivaoTraffic]);
-
-  const atisLetter = vatsimEnabled && primaryAtis?.atis_code ? primaryAtis.atis_code : null;
-
-  // Frequencies sorted into flight-flow order.
+  // Frequencies sorted into flight-flow order. apt.dat sometimes lists the
+  // same physical channel twice (legacy 25 kHz row + 8.33 kHz row), so we
+  // dedupe by (type, frequency) to avoid rendering twin rows where one
+  // attaches a live VATSIM controller and the other appears offline.
   const frequencies = useMemo(() => {
     if (!airport?.frequencies) return [];
-    return [...airport.frequencies].sort((a, b) => freqOrderRank(a.type) - freqOrderRank(b.type));
+    const sorted = [...airport.frequencies].sort(
+      (a, b) => freqOrderRank(a.type) - freqOrderRank(b.type)
+    );
+    const seen = new Set<string>();
+    return sorted.filter((f) => {
+      const key = `${f.type}-${f.frequency}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }, [airport?.frequencies]);
 
-  const visibleFrequencies = showAllFreqs
-    ? frequencies
-    : frequencies.slice(0, FREQ_VISIBLE_DEFAULT);
+  // Merge static apt.dat frequencies with live VATSIM rows. Each static row
+  // attaches the first matching VATSIM controller; unmatched VATSIM rows
+  // (CTR, FSS, extra controllers on the same role) append at the end.
+  const mergedFreqRows = useMemo<MergedFreqRow[]>(
+    () => mergeFreqRows(frequencies, vatsimEnabled ? vatsimRows : []),
+    [frequencies, vatsimEnabled, vatsimRows]
+  );
+
+  const visibleMergedRows = showAllFreqs
+    ? mergedFreqRows
+    : mergedFreqRows.slice(0, FREQ_VISIBLE_DEFAULT);
 
   if (!airport) return null;
 
@@ -256,13 +251,14 @@ export default function InfoTab() {
         />
       )}
 
-      {frequencies.length > 0 && (
+      {mergedFreqRows.length > 0 && (
         <FrequenciesSection
-          visible={visibleFrequencies}
-          totalCount={frequencies.length}
+          visible={visibleMergedRows}
+          totalCount={mergedFreqRows.length}
           showAll={showAllFreqs}
           onToggle={() => setShowAllFreqs((v) => !v)}
-          liveControllers={liveControllers}
+          vatsimEnabled={vatsimEnabled}
+          onlineCount={vatsimRows.length}
         />
       )}
 
@@ -276,10 +272,6 @@ export default function InfoTab() {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Sections
-// ---------------------------------------------------------------------------
 
 function ConditionsCard({
   metar,
@@ -299,25 +291,25 @@ function ConditionsCard({
       </div>
     );
   }
+  const showTraffic = liveTraffic && (liveTraffic.departures > 0 || liveTraffic.arrivals > 0);
   return (
     <section>
       <div className="mb-1.5 flex items-baseline justify-between">
         <h4 className="xp-section-heading mb-0 border-b-0">Conditions</h4>
-        {liveTraffic && (
+        {showTraffic && (
           <span className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cat-emerald" />
             <span
               className="flex items-center gap-1 text-cat-emerald"
               aria-label={`${liveTraffic.departures} departures`}
             >
-              <ArrowUpRight className="h-3 w-3" />
+              <PlaneTakeoff className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.departures}</span>
             </span>
             <span
               className="flex items-center gap-1 text-cat-amber"
               aria-label={`${liveTraffic.arrivals} arrivals`}
             >
-              <ArrowDownLeft className="h-3 w-3" />
+              <PlaneLanding className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.arrivals}</span>
             </span>
           </span>
@@ -352,8 +344,6 @@ function ActiveRunwayLine({
 }) {
   if (!activeRunway) return null;
   const isAtis = activeRunway.source === 'atis';
-  // ATIS path shows the letter chip — its presence signals "ATC online".
-  // Wind path stays muted; the missing chip is the implicit "no ATC" cue.
   return (
     <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1 text-xs">
       <span className="text-muted-foreground">Active runway</span>
@@ -372,6 +362,15 @@ function ActiveRunwayLine({
           · wind-aligned, {activeRunway.deltaDeg}° off
         </span>
       )}
+    </div>
+  );
+}
+
+function KvRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-0.5">
+      <span className="xp-label">{label}</span>
+      <span className="xp-value tabular-nums">{value}</span>
     </div>
   );
 }
@@ -455,70 +454,173 @@ function FrequenciesSection({
   totalCount,
   showAll,
   onToggle,
-  liveControllers,
+  vatsimEnabled,
+  onlineCount,
 }: {
-  visible: Frequency[];
+  visible: MergedFreqRow[];
   totalCount: number;
   showAll: boolean;
   onToggle: () => void;
-  liveControllers: Set<FrequencyType>;
+  vatsimEnabled: boolean;
+  onlineCount: number;
 }) {
+  const { t } = useTranslation();
   const hidden = totalCount - visible.length;
   const collapsible = totalCount > FREQ_VISIBLE_DEFAULT;
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   return (
     <section>
-      <h4 className="xp-section-heading mb-1.5">Frequencies</h4>
-      <ul className="space-y-px overflow-hidden rounded-lg">
-        {visible.map((f, i) => (
-          <FrequencyRow key={i} freq={f} live={liveControllers.has(f.type)} />
+      <div className="mb-1.5 flex items-baseline justify-between gap-3">
+        <h4 className="xp-section-heading mb-0 border-b-0">
+          {t('airportInfo.frequencies', 'Frequencies')}
+        </h4>
+        {vatsimEnabled && onlineCount > 0 && (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cat-emerald" />
+            <span>
+              <span className="font-mono tabular-nums text-foreground">{onlineCount}</span>{' '}
+              {t('common.online')}
+            </span>
+          </span>
+        )}
+      </div>
+      <ul className="space-y-1 overflow-hidden rounded-lg">
+        {visible.map((row) => (
+          <FrequencyRow
+            key={row.id}
+            row={row}
+            expanded={expandedIds.has(row.id)}
+            onToggle={() => toggleExpand(row.id)}
+          />
         ))}
       </ul>
       {collapsible && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={onToggle}
-          className="mt-1 h-7 w-full justify-center text-xs text-muted-foreground hover:text-foreground"
+          className="mt-2 h-8 w-full justify-center gap-1.5 border-border/60 bg-muted/10 text-xs text-muted-foreground hover:bg-muted/30 hover:text-foreground"
         >
-          {showAll ? 'Show fewer' : `Show all (${hidden} more)`}
+          {showAll ? (
+            <>
+              <ChevronDown className="h-3 w-3 rotate-180" />
+              {t('common.showLess', 'Show less')}
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              {t('common.showAll', 'Show all')} · {hidden} {t('sidebar.more')}
+            </>
+          )}
         </Button>
       )}
     </section>
   );
 }
 
-function FrequencyRow({ freq, live }: { freq: Frequency; live: boolean }) {
-  const value = formatFrequency(freq.frequency);
-  const label = FREQ_LABELS[freq.type];
-  // Hide the per-frequency name when it just repeats the type label
-  // (e.g. "ATIS" + name "ATIS"). Keep it when it adds context like
-  // "KENNEDY GND" or "CLNC DEL" (controller / authority disambiguation).
-  const showName = !!freq.name && freq.name.trim().toUpperCase() !== label.toUpperCase();
-  const handleCopy = () => navigator.clipboard.writeText(value);
+function FrequencyRow({
+  row,
+  expanded,
+  onToggle,
+}: {
+  row: MergedFreqRow;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const { t } = useTranslation();
+  const live = row.live;
+  const displayFreq = live?.frequency ?? row.staticFreq ?? '';
+  const showName =
+    !!row.staticName && row.staticName.trim().toUpperCase() !== row.label.toUpperCase();
+  const hasAtisBody = !!live?.atisBody;
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (displayFreq) navigator.clipboard.writeText(displayFreq);
+  };
+
+  const onClick = hasAtisBody ? onToggle : handleCopy;
+
   return (
     <li>
       <Button
         variant="ghost"
-        onClick={handleCopy}
-        className="group h-auto w-full justify-between rounded-none bg-muted/20 px-2.5 py-1.5 text-left hover:bg-muted/40"
+        onClick={onClick}
+        className={cn(
+          'group h-auto w-full flex-col items-stretch gap-0 rounded-md px-2.5 py-1.5 text-left',
+          live
+            ? 'bg-cat-emerald/5 ring-1 ring-cat-emerald/25 hover:bg-cat-emerald/10'
+            : 'bg-muted/20 hover:bg-muted/40'
+        )}
       >
-        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          {live && (
-            <Radio
-              aria-label="Controller online"
-              className="h-3 w-3 shrink-0 animate-pulse text-cat-emerald"
-            />
-          )}
-          {label}
-        </span>
-        <div className="flex min-w-0 items-center gap-2">
-          {showName && (
-            <span className="truncate text-xs text-muted-foreground/70">{freq.name}</span>
-          )}
-          <span className="font-mono text-sm tabular-nums text-foreground">{value}</span>
-          <Copy className="h-3 w-3 shrink-0 text-muted-foreground/40 opacity-0 group-hover:opacity-100" />
+        <div className="flex w-full items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            {live ? (
+              <span className="relative flex h-1.5 w-1.5 shrink-0" aria-label={t('common.online')}>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cat-emerald/60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cat-emerald" />
+              </span>
+            ) : (
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/30" />
+            )}
+            <Badge
+              variant={live ? row.badgeVariant : 'outline'}
+              className="shrink-0 px-1.5 py-0 font-mono text-[10px] font-semibold uppercase"
+            >
+              {live?.badgeLabel ?? row.label}
+            </Badge>
+            {showName && (
+              <span className="truncate text-xs text-muted-foreground/70">{row.staticName}</span>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              className={cn(
+                'font-mono text-sm tabular-nums',
+                live ? 'text-info' : 'text-foreground'
+              )}
+            >
+              {displayFreq}
+            </span>
+            {hasAtisBody ? (
+              <ChevronDown
+                className={cn(
+                  'h-3 w-3 shrink-0 text-muted-foreground/60 transition-transform',
+                  expanded && 'rotate-180'
+                )}
+              />
+            ) : (
+              <Copy
+                className="h-3 w-3 shrink-0 text-muted-foreground/40 opacity-0 group-hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (displayFreq) navigator.clipboard.writeText(displayFreq);
+                }}
+              />
+            )}
+          </div>
         </div>
+        {live && (
+          <div className="mt-0.5 flex items-center gap-1.5 pl-[1.65rem] text-[11px] text-muted-foreground">
+            <span className="font-mono text-foreground/80">{live.callsign}</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="truncate">{live.controllerName}</span>
+          </div>
+        )}
+        {hasAtisBody && expanded && (
+          <pre className="mt-1 whitespace-pre-wrap pl-[1.65rem] font-mono text-[11px] leading-relaxed text-muted-foreground">
+            {live?.atisBody}
+          </pre>
+        )}
       </Button>
     </li>
   );
@@ -555,17 +657,9 @@ function DetailsSection({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Atoms
-// ---------------------------------------------------------------------------
-
-function KvRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 py-0.5">
-      <span className="xp-label">{label}</span>
-      <span className="xp-value tabular-nums">{value}</span>
-    </div>
-  );
+function freqOrderRank(type: FrequencyType): number {
+  const idx = FREQ_FLIGHT_ORDER.indexOf(type);
+  return idx === -1 ? 999 : idx;
 }
 
 // ---------------------------------------------------------------------------
@@ -575,11 +669,6 @@ function KvRow({ label, value }: { label: string; value: string }) {
 // Re-typed inline because metar-taf-parser doesn't export the parsed shape;
 // we just borrow the field set the hook already returns.
 type ParsedMetar = NonNullable<ReturnType<typeof useVatsimMetarQuery>['data']>['parsed'];
-
-function freqOrderRank(type: FrequencyType): number {
-  const idx = FREQ_FLIGHT_ORDER.indexOf(type);
-  return idx === -1 ? 999 : idx;
-}
 
 function formatWind(wind: IWind | undefined): string {
   if (!wind) return '—';
@@ -639,7 +728,7 @@ function formatWeatherConditions(conditions: IWeatherCondition[]): string {
       str += c.phenomenons.join('');
       return str;
     })
-    .join(' ');
+    .join(', ');
 }
 
 // ---------------------------------------------------------------------------
@@ -668,21 +757,102 @@ type ActiveRunway =
     };
 
 /**
- * Map a VATSIM controller callsign (e.g. "EHAM_TWR", "EHAM_E_GND",
- * "KSEA_TWR") to the apt.dat frequency role it covers, so the matching row
- * in the Frequencies list can show a live indicator. Returns null for
- * callsigns we don't know how to match (typically center/FSS/etc., which
- * aren't apt.dat frequency types).
+ * Map a VATSIM facility role to the apt.dat frequency type it usually covers.
+ * Returns null for roles that don't have an apt.dat counterpart (CTR, FSS,
+ * OTHER) — those become "extra" rows appended after the static frequency
+ * list.
  */
-function controllerCallsignToFreqType(callsign: string): FrequencyType | null {
-  const upper = callsign.toUpperCase();
-  if (upper.endsWith('_TWR')) return FrequencyType.TOWER;
-  if (upper.endsWith('_GND')) return FrequencyType.GROUND;
-  if (upper.endsWith('_APP')) return FrequencyType.APPROACH;
-  if (upper.endsWith('_DEP')) return FrequencyType.DEPARTURE;
-  if (upper.endsWith('_DEL') || upper.endsWith('_CLR')) return FrequencyType.DELIVERY;
-  if (upper.endsWith('_ATIS')) return FrequencyType.AWOS;
-  return null;
+function facilityRoleToFreqType(role: VatsimFacilityRole): FrequencyType | null {
+  switch (role) {
+    case 'DEL':
+      return FrequencyType.DELIVERY;
+    case 'GND':
+      return FrequencyType.GROUND;
+    case 'TWR':
+      return FrequencyType.TOWER;
+    case 'APP':
+      return FrequencyType.APPROACH;
+    case 'ATIS':
+      return FrequencyType.AWOS;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Renderer-shape row for the merged Frequencies list. A row is either:
+ *  - a static apt.dat frequency, optionally enriched with a matched live
+ *    VATSIM controller (`live` populated)
+ *  - a VATSIM-only "extra" (CTR, FSS, additional same-role controllers)
+ *    where there's no static counterpart (`staticName` / `staticFreq` undefined,
+ *    `live` always populated).
+ */
+interface MergedFreqRow {
+  id: string;
+  label: string;
+  badgeVariant: VatsimAirportAtcRow['badgeVariant'];
+  staticName?: string;
+  staticFreq?: string;
+  live?: {
+    badgeLabel: string;
+    callsign: string;
+    controllerName: string;
+    frequency: string;
+    atisBody?: string;
+  };
+}
+
+function mergeFreqRows(
+  staticFreqs: Frequency[],
+  vatsimRows: VatsimAirportAtcRow[]
+): MergedFreqRow[] {
+  const usedVatsimIds = new Set<string>();
+  const result: MergedFreqRow[] = [];
+
+  // Pass 1: each static row attaches the first VATSIM row whose role matches.
+  for (let i = 0; i < staticFreqs.length; i++) {
+    const f = staticFreqs[i];
+    if (!f) continue;
+    const match = vatsimRows.find(
+      (r) => !usedVatsimIds.has(r.id) && facilityRoleToFreqType(r.role) === f.type
+    );
+    if (match) usedVatsimIds.add(match.id);
+    result.push({
+      id: match ? match.id : `static-${i}-${f.type}`,
+      label: FREQ_LABELS[f.type],
+      badgeVariant: match ? match.badgeVariant : 'secondary',
+      staticName: f.name,
+      staticFreq: formatFrequency(f.frequency),
+      live: match
+        ? {
+            badgeLabel: match.badgeLabel,
+            callsign: match.callsign,
+            controllerName: match.summary,
+            frequency: match.frequency,
+            atisBody: match.detail,
+          }
+        : undefined,
+    });
+  }
+
+  // Pass 2: VATSIM rows that didn't match any static row (CTR, FSS, extras).
+  for (const r of vatsimRows) {
+    if (usedVatsimIds.has(r.id)) continue;
+    result.push({
+      id: r.id,
+      label: r.badgeLabel,
+      badgeVariant: r.badgeVariant,
+      live: {
+        badgeLabel: r.badgeLabel,
+        callsign: r.callsign,
+        controllerName: r.summary,
+        frequency: r.frequency,
+        atisBody: r.detail,
+      },
+    });
+  }
+
+  return result;
 }
 
 /**

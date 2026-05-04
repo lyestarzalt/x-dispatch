@@ -3,6 +3,8 @@ export { useMapSetup, setupAirportPopup, type MapRef, type PopupRef } from './us
 export { setupAirportsLayer } from '../layers/world/AirportsLayer';
 export { useNavLayerSync, applyNavVisibilityChange } from './useNavLayerSync';
 export { useVatsimSync, toggleVatsimLayer } from './useVatsimSync';
+export { useVatsimSectorSync } from './useVatsimSectorSync';
+export { useVatsimAirportAtcSync } from './useVatsimAirportAtcSync';
 export { useIvaoSync, toggleIvaoLayer } from './useIvaoSync';
 export { useAirportInteractions } from './useAirportInteractions';
 export { useRouteLineSync } from './useRouteLineSync';

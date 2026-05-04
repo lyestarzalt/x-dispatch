@@ -204,6 +204,15 @@ describe('airportCache pipeline', () => {
     expect(icaos).toEqual(['EGLL', 'KJFK', 'KLAX', 'LFPG', 'OTHH']);
   });
 
+  it('getAllAirportsFromDb preserves IATA codes needed for short VATSIM callsigns', () => {
+    insertAirports([SAMPLE_ENTRIES[0]!]);
+
+    const all = getAllAirportsFromDb();
+
+    expect(all[0]?.icao).toBe('KJFK');
+    expect(all[0]?.iataCode).toBe('JFK');
+  });
+
   it('getAllAirportsFromDb returns empty array when table is empty', () => {
     expect(getAllAirportsFromDb()).toEqual([]);
   });

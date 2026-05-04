@@ -26,6 +26,7 @@ import type {
 } from './types/navigation';
 import type { AirwaySegmentWithCoords } from './types/navigation';
 import type { VatsimData, VatsimEventsResponse } from './types/vatsim';
+import type { VatsimSectorCacheState, VatsimSectorQueryResult } from './types/vatsimSectors';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
 
 contextBridge.exposeInMainWorld('airportAPI', {
@@ -44,6 +45,18 @@ contextBridge.exposeInMainWorld('airportAPI', {
   fetchVatsimMetar: (icao: string) => ipcRenderer.invoke('fetch-vatsim-metar', icao),
   fetchVatsimEvents: () => ipcRenderer.invoke('fetch-vatsim-events'),
   fetchIvaoData: () => ipcRenderer.invoke('fetch-ivao-data'),
+});
+
+contextBridge.exposeInMainWorld('vatsimSectorAPI', {
+  getData: () => ipcRenderer.invoke('vatsim-sectors:getData'),
+  getStatus: () => ipcRenderer.invoke('vatsim-sectors:getStatus'),
+  refresh: () => ipcRenderer.invoke('vatsim-sectors:refresh'),
+  clearCache: () => ipcRenderer.invoke('vatsim-sectors:clearCache'),
+  onUpdated: (callback: () => void) => {
+    const handler = () => callback();
+    ipcRenderer.on('vatsim-sectors:updated', handler);
+    return () => ipcRenderer.removeListener('vatsim-sectors:updated', handler);
+  },
 });
 
 contextBridge.exposeInMainWorld('versions', {
@@ -414,6 +427,13 @@ declare global {
       fetchVatsimMetar: (icao: string) => Promise<ApiResponse>;
       fetchVatsimEvents: () => Promise<{ data: VatsimEventsResponse | null; error: string | null }>;
       fetchIvaoData: () => Promise<{ data: IvaoData | null; error: string | null }>;
+    };
+    vatsimSectorAPI: {
+      getData: () => Promise<VatsimSectorQueryResult>;
+      getStatus: () => Promise<VatsimSectorCacheState>;
+      refresh: () => Promise<VatsimSectorQueryResult>;
+      clearCache: () => Promise<{ success: boolean }>;
+      onUpdated: (callback: () => void) => () => void;
     };
     xplaneAPI: {
       getPath: () => Promise<string | null>;

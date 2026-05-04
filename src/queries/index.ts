@@ -20,6 +20,7 @@ export { useNavDataQuery, useNavDataCounts, getNavDataCounts } from './useNavDat
 
 // VATSIM hooks
 export { useVatsimQuery } from './useVatsimQuery';
+export { useVatsimSectorQuery } from './useVatsimSectorQuery';
 export { useVatsimMetarQuery } from './useVatsimMetarQuery';
 export { useVatsimEventsQuery } from './useVatsimEventsQuery';
 

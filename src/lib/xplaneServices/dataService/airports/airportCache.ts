@@ -240,6 +240,7 @@ export function getAllAirportsFromDb(): Airport[] {
 
   const selectFields = {
     icao: airports.icao,
+    iataCode: airports.iataCode,
     name: airports.name,
     lat: airports.lat,
     lon: airports.lon,
@@ -263,6 +264,7 @@ export function getAllAirportsFromDb(): Airport[] {
   const customResults = db
     .select({
       icao: airportsCustom.icao,
+      iataCode: airportsCustom.iataCode,
       name: airportsCustom.name,
       lat: airportsCustom.lat,
       lon: airportsCustom.lon,
@@ -282,6 +284,7 @@ export function getAllAirportsFromDb(): Airport[] {
 
   return Array.from(merged.values()).map((r) => ({
     icao: r.icao,
+    iataCode: r.iataCode ?? undefined,
     name: r.name,
     lat: r.lat,
     lon: r.lon,

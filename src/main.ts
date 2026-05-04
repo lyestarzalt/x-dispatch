@@ -35,6 +35,13 @@ import {
   isValidSearchQuery,
   validateCoordinates,
 } from './lib/utils/validation';
+import {
+  clearVatsimSectorData,
+  getVatsimSectorData,
+  getVatsimSectorStatus,
+  onVatsimSectorDataUpdated,
+  refreshVatsimSectorData,
+} from './lib/vatsimSectors/service';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
 import { resyncCustomScenery } from './lib/xplaneServices/dataService/airports';
 import {
@@ -64,8 +71,8 @@ if (cliResult.flags.version) {
   printVersionAndExit(app.getVersion());
 }
 for (const u of cliResult.unknownWithSuggestions) {
-  logger.main.warn(
-    `Unknown flag: ${u.flag}${u.suggestion ? `. Did you mean ${u.suggestion}?` : ''}`
+  console.warn(
+    `[X-Dispatch v${app.getVersion()}] Unknown flag: ${u.flag}${u.suggestion ? `. Did you mean ${u.suggestion}?` : ''}`
   );
 }
 
@@ -281,6 +288,10 @@ function createWindow(): BrowserWindow {
 }
 
 function registerIpcHandlers() {
+  onVatsimSectorDataUpdated(() => {
+    mainWindow?.webContents.send('vatsim-sectors:updated');
+  });
+
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
   ipcMain.handle('app:getCliFlags', () => getCliFlags());
@@ -853,6 +864,22 @@ function registerIpcHandlers() {
       }
     }
     return result;
+  });
+
+  ipcMain.handle('vatsim-sectors:getData', async () => {
+    return getVatsimSectorData();
+  });
+
+  ipcMain.handle('vatsim-sectors:getStatus', async () => {
+    return getVatsimSectorStatus();
+  });
+
+  ipcMain.handle('vatsim-sectors:refresh', async () => {
+    return refreshVatsimSectorData();
+  });
+
+  ipcMain.handle('vatsim-sectors:clearCache', () => {
+    return clearVatsimSectorData();
   });
 
   ipcMain.handle('nav:loadDatabase', async (_, xplanePath?: string) => {
