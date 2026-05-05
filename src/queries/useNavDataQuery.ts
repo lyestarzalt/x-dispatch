@@ -7,6 +7,10 @@ export interface NavigationData {
   ndbs: Navaid[];
   dmes: Navaid[];
   ils: Navaid[];
+  // Glide-slope navaids are stored as separate Navaid records (type GS) and
+  // carry `glidepathAngle`. Join to an ILS/LOC record by `associatedRunway`
+  // when you need both pieces (e.g. the airport-info ILS detail panel).
+  gs: Navaid[];
   waypoints: Waypoint[];
   airspaces: Airspace[];
 }
@@ -16,6 +20,7 @@ const EMPTY_NAV_DATA: NavigationData = {
   ndbs: [],
   dmes: [],
   ils: [],
+  gs: [],
   waypoints: [],
   airspaces: [],
 };
@@ -28,16 +33,17 @@ const navDataKeys = {
 };
 
 async function fetchNavData(lat: number, lon: number, radiusNm: number): Promise<NavigationData> {
-  const [vors, ndbs, dmes, ils, waypoints, airspaces] = await Promise.all([
+  const [vors, ndbs, dmes, ils, gs, waypoints, airspaces] = await Promise.all([
     window.navAPI.getVORsInRadius(lat, lon, radiusNm),
     window.navAPI.getNDBsInRadius(lat, lon, radiusNm),
     window.navAPI.getDMEsInRadius(lat, lon, radiusNm),
     window.navAPI.getILSInRadius(lat, lon, radiusNm),
+    window.navAPI.getGlideSlopesInRadius(lat, lon, radiusNm),
     window.navAPI.getWaypointsInRadius(lat, lon, radiusNm),
     window.navAPI.getAirspacesNearPoint(lat, lon, radiusNm),
   ]);
 
-  return { vors, ndbs, dmes, ils, waypoints, airspaces };
+  return { vors, ndbs, dmes, ils, gs, waypoints, airspaces };
 }
 
 export function useNavDataQuery(

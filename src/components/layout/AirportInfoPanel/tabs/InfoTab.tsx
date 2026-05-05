@@ -12,6 +12,7 @@ import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -147,6 +148,18 @@ export default function InfoTab() {
     return map;
   }, [navData?.ils]);
 
+  // Map of runway end name → glide-slope navaid. GS records are separate from
+  // ILS/LOC and carry `glidepathAngle`; we join by `associatedRunway` so the
+  // ILS detail card can show the GS angle.
+  const gsByEnd = useMemo(() => {
+    const map = new Map<string, Navaid>();
+    if (!navData?.gs) return map;
+    for (const gs of navData.gs) {
+      if (gs.associatedRunway) map.set(gs.associatedRunway.toUpperCase(), gs);
+    }
+    return map;
+  }, [navData?.gs]);
+
   // Active runway resolution: ATIS is authoritative when available, wind
   // alignment is a heuristic fallback used only when no ATIS is published.
   const activeRunway = useMemo<ActiveRunway | null>(() => {
@@ -247,6 +260,7 @@ export default function InfoTab() {
         <RunwaysSection
           runways={sortedRunways}
           ilsByEnd={ilsByEnd}
+          gsByEnd={gsByEnd}
           activeEndNames={new Set(activeRunway?.ends ?? [])}
         />
       )}
@@ -378,10 +392,12 @@ function KvRow({ label, value }: { label: string; value: string }) {
 function RunwaysSection({
   runways,
   ilsByEnd,
+  gsByEnd,
   activeEndNames,
 }: {
   runways: Runway[];
   ilsByEnd: Map<string, Navaid>;
+  gsByEnd: Map<string, Navaid>;
   activeEndNames: Set<string>;
 }) {
   return (
@@ -392,7 +408,13 @@ function RunwaysSection({
       </div>
       <ul className="space-y-1">
         {runways.map((rwy, i) => (
-          <RunwayRow key={i} runway={rwy} ilsByEnd={ilsByEnd} activeEndNames={activeEndNames} />
+          <RunwayRow
+            key={i}
+            runway={rwy}
+            ilsByEnd={ilsByEnd}
+            gsByEnd={gsByEnd}
+            activeEndNames={activeEndNames}
+          />
         ))}
       </ul>
     </section>
@@ -402,10 +424,12 @@ function RunwaysSection({
 function RunwayRow({
   runway,
   ilsByEnd,
+  gsByEnd,
   activeEndNames,
 }: {
   runway: Runway;
   ilsByEnd: Map<string, Navaid>;
+  gsByEnd: Map<string, Navaid>;
   activeEndNames: Set<string>;
 }) {
   const length = Math.round(runwayLengthFeet(runway.ends[0], runway.ends[1]));
@@ -419,6 +443,26 @@ function RunwayRow({
     activeEndNames.has(runway.ends[0].name.toUpperCase()) ||
     activeEndNames.has(runway.ends[1].name.toUpperCase());
 
+  // Stable per-end list for the expanded detail card. Filters out ends that
+  // don't actually have an ILS (e.g. only 27 has one on a 09/27 pair). GS is
+  // optional — comes from a separate Navaid record, may be absent on a few
+  // older procedures.
+  const ilsEnds: Array<{ endName: string; ils: Navaid; gs?: Navaid }> = [];
+  if (ils0) {
+    ilsEnds.push({
+      endName: runway.ends[0].name,
+      ils: ils0,
+      gs: gsByEnd.get(runway.ends[0].name.toUpperCase()),
+    });
+  }
+  if (ils1) {
+    ilsEnds.push({
+      endName: runway.ends[1].name,
+      ils: ils1,
+      gs: gsByEnd.get(runway.ends[1].name.toUpperCase()),
+    });
+  }
+
   return (
     <li
       className={cn(
@@ -426,26 +470,80 @@ function RunwayRow({
         isActive ? 'bg-cat-emerald/10 ring-1 ring-cat-emerald/30' : 'bg-muted/20'
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className={cn(
-            'font-mono text-sm font-medium',
-            isActive ? 'text-cat-emerald' : 'text-foreground'
-          )}
-        >
-          {runway.ends[0].name}/{runway.ends[1].name}
-        </span>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {hasIls && (
-            <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-primary">
-              ILS
+      <Collapsible>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'font-mono text-sm font-semibold',
+                isActive ? 'text-cat-emerald' : 'text-foreground'
+              )}
+            >
+              {runway.ends[0].name}/{runway.ends[1].name}
             </span>
-          )}
-          <span className="font-mono tabular-nums">{length.toLocaleString()}'</span>
-          <span className="text-muted-foreground/70">{surface}</span>
+            {hasIls && (
+              <CollapsibleTrigger asChild>
+                <Badge
+                  variant="info"
+                  className="group cursor-pointer gap-1 px-1.5 py-0 font-mono uppercase hover:bg-info/30"
+                >
+                  <ChevronDown className="h-3 w-3 transition-transform duration-150 group-data-[state=open]:rotate-180" />
+                  ILS
+                </Badge>
+              </CollapsibleTrigger>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-mono tabular-nums">{length.toLocaleString()}'</span>
+            <span className="text-muted-foreground/70">{surface}</span>
+          </div>
         </div>
-      </div>
+        {hasIls && (
+          <CollapsibleContent>
+            <div className="mt-2 space-y-2 border-t border-border/40 pt-2">
+              {ilsEnds.map(({ endName, ils, gs }) => (
+                <IlsDetail key={endName} endName={endName} ils={ils} gs={gs} />
+              ))}
+            </div>
+          </CollapsibleContent>
+        )}
+      </Collapsible>
     </li>
+  );
+}
+
+function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Navaid }) {
+  // Navaid frequencies are stored as Hz*100 (e.g. 10950 → 109.50 MHz). Same
+  // formatting convention as ILSLayer / NavaidLayer use elsewhere.
+  const freq = `${(ils.frequency / 100).toFixed(2)}`;
+  // Localizer heading lives on `bearing`; some records carry it on `course`
+  // instead, fall back so we don't show an em-dash for those.
+  const heading = ils.bearing ?? ils.course;
+  const headingStr =
+    heading !== undefined ? `${String(Math.round(heading)).padStart(3, '0')}°` : '—';
+  // Glide-slope angle comes from a separate GS Navaid record (joined by
+  // associatedRunway). Old parser builds stored the angle ÷100 (e.g. 0.03
+  // instead of 3.0); same workaround as ILSLayer.ts uses.
+  const rawGs = gs?.glidepathAngle;
+  const gsAngle = rawGs !== undefined && rawGs < 0.5 ? rawGs * 100 : rawGs;
+  const gsStr = gsAngle !== undefined ? `${gsAngle.toFixed(1)}°` : '—';
+  const rangeStr = ils.range > 0 ? `${ils.range} NM` : '—';
+  // Flat block, no inner card — the runway-row container already provides
+  // the surface. CDU-page feel: uppercase header with its natural underline,
+  // KvRows indented under it.
+  return (
+    <div className="text-sm">
+      <h5 className="mb-0.5 text-xs uppercase tracking-wider text-muted-foreground/70">
+        Runway {endName}
+      </h5>
+      <div className="pl-1">
+        <KvRow label="Frequency" value={freq} />
+        <KvRow label="Localizer" value={headingStr} />
+        <KvRow label="Glideslope" value={gsStr} />
+        <KvRow label="Range" value={rangeStr} />
+        <KvRow label="Ident" value={ils.id} />
+      </div>
+    </div>
   );
 }
 
