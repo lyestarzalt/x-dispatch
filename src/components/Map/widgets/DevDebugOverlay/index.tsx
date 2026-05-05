@@ -225,8 +225,11 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
 
   return (
     <>
-      {/* Toolbar */}
-      <div className="fixed inset-x-0 top-0 z-50 flex select-none flex-col font-mono text-sm text-muted-foreground">
+      {/* Toolbar — `top-9` keeps it below the custom title bar (h-9). The
+          title bar's `WebkitAppRegion: 'drag'` is an OS-level window-drag
+          region that intercepts pointer events even through higher
+          z-indexes; overlapping it makes the tabs unclickable. */}
+      <div className="fixed inset-x-0 top-9 z-50 flex select-none flex-col font-mono text-sm text-muted-foreground">
         <div className="flex items-center gap-px border-b border-border/40 bg-background px-2 py-0.5">
           <span className="mr-2 text-sm font-semibold tracking-wider text-foreground/60">
             DEBUG
