@@ -3,12 +3,16 @@ import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
-import tzLookup from 'tz-lookup';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
-import { buildFlightInit } from '@/lib/xplaneServices/launch/buildFlightInit';
+import {
+  buildFlightInit,
+  calculateFuelTankWeightsKg,
+  calculatePayloadWeightsKg,
+  resolveLaunchTime,
+} from '@/lib/xplaneServices/launch/flightInit';
 import { useAircraftList, useStartFlight, useWeatherPresets, useXPlaneStatus } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -77,71 +81,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       // Write taxi route for Follow the Greens plugin (fire and forget)
       writeFtgRoute().catch(() => {});
 
-      // Calculate per-tank fuel weights in kilograms for API
-      const LBS_TO_KG = 0.453592;
-      const tankWeightsKg = new Array(9).fill(0);
-      const ratios = selectedAircraft.tankRatios ?? [];
-      const indices = selectedAircraft.tankIndices ?? ratios.map((_, i) => i);
-      for (let i = 0; i < ratios.length; i++) {
-        const ratio = ratios[i];
-        if (ratio === undefined) continue;
-        const tankCapLbs = ratio * selectedAircraft.maxFuel;
-        const slot = indices[i] ?? i;
-        tankWeightsKg[slot] = tankCapLbs * ((tankPercentages[i] ?? 0) / 100) * LBS_TO_KG;
-      }
+      const tankWeightsKg = calculateFuelTankWeightsKg(selectedAircraft, tankPercentages);
+      const payloadWeightsKg = calculatePayloadWeightsKg(payloadWeights);
 
-      // Calculate per-station payload weights in kilograms for API
-      const payloadWeightsKg = new Array(9).fill(0);
-      for (let i = 0; i < payloadWeights.length; i++) {
-        payloadWeightsKg[i] = (payloadWeights[i] ?? 0) * LBS_TO_KG;
-      }
-
-      // Calculate time - for real world time, we need airport's current time (not system time)
-      // X-Plane's system_time uses computer timezone, so we calculate it ourselves
-      let dayOfYear: number;
-      let timeInHours: number;
-
-      if (useRealWorldTime) {
-        // Get airport timezone and calculate current time there
-        const timezone = tzLookup(startPosition.latitude, startPosition.longitude);
-        const now = new Date();
-
-        // Get airport's current time components
-        const airportTimeStr = now.toLocaleString('en-US', {
-          timeZone: timezone,
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          hour12: false,
-        });
-
-        // Parse the airport time (format: "M/D/YYYY, HH:MM")
-        const [datePart, timePart] = airportTimeStr.split(', ');
-        if (!datePart || !timePart) throw new Error('Failed to parse airport time');
-        const dateParts = datePart.split('/').map(Number);
-        const timeParts = timePart.split(':').map(Number);
-        const month = dateParts[0] ?? 1;
-        const day = dateParts[1] ?? 1;
-        const year = dateParts[2] ?? new Date().getFullYear();
-        const hours = timeParts[0] ?? 0;
-        const minutes = timeParts[1] ?? 0;
-
-        // Calculate day of year for the airport's date
-        const airportDate = new Date(year, month - 1, day);
-        const startOfYear = new Date(year, 0, 0);
-        dayOfYear = Math.floor(
-          (airportDate.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
-        );
-        timeInHours = hours + minutes / 60;
-      } else {
-        // Use today's date with user-selected time
-        const now = new Date();
-        const startOfYear = new Date(now.getFullYear(), 0, 0);
-        dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-        timeInHours = timeOfDay;
-      }
+      const { dayOfYear, timeInHours } = resolveLaunchTime(
+        startPosition,
+        useRealWorldTime,
+        timeOfDay
+      );
 
       // Same FlightInit payload for both paths (REST API and --new_flight_json)
       const flightConfig = buildFlightInit({

@@ -18,12 +18,7 @@ import type {
 } from '@/components/dialogs/LaunchDialog/weatherTypes';
 import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '@/types/position';
-import {
-  buildFlightInit,
-  buildWeatherPayload,
-  ensureFloat,
-  getPresetWeatherDefinition,
-} from './buildFlightInit';
+import { buildFlightInit, buildWeatherPayload, float, getPresetWeatherDefinition } from '.';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -137,28 +132,28 @@ const baseParams = {
 };
 
 // ---------------------------------------------------------------------------
-// ensureFloat
+// float
 // ---------------------------------------------------------------------------
 
-describe('ensureFloat', () => {
+describe('float', () => {
   // X-Plane's JSON parser rejects integer fields where it expects floats. We
   // add 0.001 to force a decimal point. If this regresses, every integer
   // lat/lon/heading silently breaks --new_flight_json.
   it('adds 0.001 to whole numbers so JSON.stringify emits a decimal', () => {
-    expect(ensureFloat(4)).toBe(4.001);
-    expect(ensureFloat(0)).toBe(0.001);
-    expect(ensureFloat(-90)).toBe(-89.999);
+    expect(float(4)).toBe(4.001);
+    expect(float(0)).toBe(0.001);
+    expect(float(-90)).toBe(-89.999);
   });
 
   it('passes through non-integer floats unchanged', () => {
-    expect(ensureFloat(40.6398)).toBe(40.6398);
-    expect(ensureFloat(-73.7789)).toBe(-73.7789);
-    expect(ensureFloat(0.5)).toBe(0.5);
+    expect(float(40.6398)).toBe(40.6398);
+    expect(float(-73.7789)).toBe(-73.7789);
+    expect(float(0.5)).toBe(0.5);
   });
 
   it('produces a value that JSON.stringify renders with a decimal point', () => {
-    expect(JSON.stringify(ensureFloat(4))).toContain('.');
-    expect(JSON.stringify(ensureFloat(0))).toContain('.');
+    expect(JSON.stringify(float(4))).toContain('.');
+    expect(JSON.stringify(float(0))).toContain('.');
   });
 });
 
@@ -282,7 +277,7 @@ describe('buildFlightInit start position: custom (ground default)', () => {
     expect(out.lle_ground_start).toBeDefined();
     expect(out.lle_ground_start?.latitude).toBe(51.5);
     expect(out.lle_ground_start?.longitude).toBe(-0.12);
-    expect(out.lle_ground_start?.heading_true).toBe(90.001); // ensureFloat
+    expect(out.lle_ground_start?.heading_true).toBe(90.001); // float
   });
 
   it('produces lle_ground_start when customStartMode is explicitly "ground"', () => {
@@ -596,4 +591,336 @@ describe('JSON serialisation', () => {
     expect(json).toContain('"cumulunimbus"');
     expect(json).toContain('"local_time"');
   });
+});
+
+// ---------------------------------------------------------------------------
+// Spec-grounded structural tests
+// ---------------------------------------------------------------------------
+
+const ALL_START_KEYS = [
+  'ramp_start',
+  'runway_start',
+  'lle_ground_start',
+  'lle_air_start',
+  'boat_start',
+] as const;
+
+function presentStartKeys(out: ReturnType<typeof buildFlightInit>): string[] {
+  return ALL_START_KEYS.filter((k) => k in out);
+}
+
+describe('start-position mutual exclusivity (spec: exactly one start key)', () => {
+  it('ramp produces only ramp_start', () => {
+    const out = buildFlightInit({ ...baseParams, startPosition: rampStart() });
+    expect(presentStartKeys(out)).toEqual(['ramp_start']);
+  });
+
+  it('runway produces only runway_start', () => {
+    const out = buildFlightInit({ ...baseParams, startPosition: runwayStart() });
+    expect(presentStartKeys(out)).toEqual(['runway_start']);
+  });
+
+  it('custom ground produces only lle_ground_start', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({ customStartMode: 'ground' }),
+    });
+    expect(presentStartKeys(out)).toEqual(['lle_ground_start']);
+  });
+
+  it('custom air produces only lle_air_start', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({ customStartMode: 'air', airAltitudeM: 1500 }),
+    });
+    expect(presentStartKeys(out)).toEqual(['lle_air_start']);
+  });
+
+  it('boat carrier produces only boat_start', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({ customStartMode: 'carrier' }),
+    });
+    expect(presentStartKeys(out)).toEqual(['boat_start']);
+  });
+
+  it('boat frigate produces only boat_start', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({ customStartMode: 'frigate' }),
+    });
+    expect(presentStartKeys(out)).toEqual(['boat_start']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Required fields invariants
+// ---------------------------------------------------------------------------
+
+describe('required fields are always present regardless of start position', () => {
+  const cases = [
+    ['ramp', rampStart()],
+    ['runway', runwayStart()],
+    ['custom ground', customStart({ customStartMode: 'ground' })],
+    ['custom air', customStart({ customStartMode: 'air', airAltitudeM: 1500 })],
+    ['boat carrier', customStart({ customStartMode: 'carrier' })],
+    ['boat frigate', customStart({ customStartMode: 'frigate' })],
+  ] as const;
+
+  it.each(cases)('aircraft.path is present (%s start)', (_label, pos) => {
+    const out = buildFlightInit({ ...baseParams, startPosition: pos });
+    expect(out.aircraft?.path).toBeTruthy();
+  });
+
+  it.each(cases)('weight arrays are present (%s start)', (_label, pos) => {
+    const out = buildFlightInit({ ...baseParams, startPosition: pos });
+    expect(Array.isArray(out.weight?.fueltank_weight_in_kilograms)).toBe(true);
+    expect(Array.isArray(out.weight?.payload_weight_in_kilograms)).toBe(true);
+    // Spec: fueltank length 1-9, payload up to 9.
+    const fuelLen = out.weight!.fueltank_weight_in_kilograms!.length;
+    const payloadLen = out.weight!.payload_weight_in_kilograms!.length;
+    expect(fuelLen).toBeGreaterThanOrEqual(1);
+    expect(fuelLen).toBeLessThanOrEqual(9);
+    expect(payloadLen).toBeLessThanOrEqual(9);
+  });
+
+  it.each(cases)('engine_status.all_engines.running is a boolean (%s start)', (_label, pos) => {
+    const out = buildFlightInit({ ...baseParams, startPosition: pos });
+    expect(typeof out.engine_status?.all_engines?.running).toBe('boolean');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Float-render guards (XP rejects integers in float fields)
+// ---------------------------------------------------------------------------
+
+function jsonHasDecimal(json: string, key: string): boolean {
+  // Match `"key":<digits>.<digits>` (positive or negative).
+  const re = new RegExp(`"${key}":-?\\d+\\.\\d+`);
+  return re.test(json);
+}
+
+function jsonHasIntegerOnly(json: string, key: string): boolean {
+  // Catches a regression: `"key":<digits>` with no decimal point.
+  const re = new RegExp(`"${key}":-?\\d+(?!\\.\\d)(?=[,}])`);
+  return re.test(json);
+}
+
+describe('numeric float fields render with decimal points (XP parser requirement)', () => {
+  it('lle_ground_start lat/lon/heading have decimals even for integer inputs', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({
+        customStartMode: 'ground',
+        latitude: 50,
+        longitude: 0,
+        heading: 270,
+      }),
+    });
+    const json = JSON.stringify(out);
+    expect(jsonHasDecimal(json, 'latitude')).toBe(true);
+    expect(jsonHasDecimal(json, 'longitude')).toBe(true);
+    expect(jsonHasDecimal(json, 'heading_true')).toBe(true);
+    expect(jsonHasIntegerOnly(json, 'latitude')).toBe(false);
+    expect(jsonHasIntegerOnly(json, 'longitude')).toBe(false);
+    expect(jsonHasIntegerOnly(json, 'heading_true')).toBe(false);
+  });
+
+  it('lle_air_start altitude/speed have decimals even for integer inputs', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({
+        customStartMode: 'air',
+        latitude: 40,
+        longitude: -70,
+        heading: 90,
+        airAltitudeM: 3000,
+        airSpeedMs: 100,
+      }),
+    });
+    const json = JSON.stringify(out);
+    expect(jsonHasDecimal(json, 'elevation_in_meters')).toBe(true);
+    expect(jsonHasDecimal(json, 'speed_in_meters_per_second')).toBe(true);
+    expect(jsonHasIntegerOnly(json, 'elevation_in_meters')).toBe(false);
+    expect(jsonHasIntegerOnly(json, 'speed_in_meters_per_second')).toBe(false);
+  });
+
+  it('runway approach final_distance has decimals for integer NM inputs', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: runwayStart({ approachDistanceNm: 5 }),
+    });
+    const json = JSON.stringify(out);
+    expect(jsonHasDecimal(json, 'final_distance_in_nautical_miles')).toBe(true);
+  });
+
+  it('boat_start lat/lon and final_distance have decimals', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      startPosition: customStart({
+        customStartMode: 'carrier',
+        latitude: 30,
+        longitude: -70,
+        boatApproachNm: 2,
+      }),
+    });
+    const json = JSON.stringify(out);
+    expect(jsonHasDecimal(json, 'latitude')).toBe(true);
+    expect(jsonHasDecimal(json, 'longitude')).toBe(true);
+    expect(jsonHasDecimal(json, 'final_distance_in_nautical_miles')).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Custom weather — additional edge cases
+// ---------------------------------------------------------------------------
+
+describe('buildWeatherPayload custom mode — additional edge cases', () => {
+  it('preserves multiple cloud layers (spec allows up to 3)', () => {
+    const out = buildWeatherPayload(
+      customWeather({
+        clouds: [
+          { type: 'cirrus', cover: 0.2, base_ft: 25000, tops_ft: 30000 },
+          { type: 'stratus', cover: 0.5, base_ft: 3000, tops_ft: 5000 },
+          { type: 'cumulus', cover: 0.4, base_ft: 7000, tops_ft: 10000 },
+        ],
+      }),
+      rampStart()
+    );
+    expect(typeof out).not.toBe('string');
+    const definition = (out as { definition: { clouds?: unknown[] } }).definition;
+    expect(definition.clouds).toHaveLength(3);
+  });
+
+  it('preserves multiple wind layers with mixed optional fields', () => {
+    const out = buildWeatherPayload(
+      customWeather({
+        wind: [
+          {
+            altitude_ft: 0,
+            speed_kts: 10,
+            direction_deg: 270,
+            gust_kts: 0,
+            shear_deg: 0,
+            turbulence: 0,
+          },
+          {
+            altitude_ft: 5000,
+            speed_kts: 25,
+            direction_deg: 290,
+            gust_kts: 5,
+            shear_deg: 0,
+            turbulence: 0.3,
+          },
+          {
+            altitude_ft: 20000,
+            speed_kts: 80,
+            direction_deg: 310,
+            gust_kts: 0,
+            shear_deg: 15,
+            turbulence: 0,
+          },
+        ],
+      }),
+      rampStart()
+    );
+    const definition = (out as { definition: { wind: Array<Record<string, unknown>> } }).definition;
+    expect(definition.wind).toHaveLength(3);
+    // Layer 1 has no optionals
+    expect(definition.wind[0]!.gust_increase_in_knots).toBeUndefined();
+    expect(definition.wind[0]!.shear_in_degrees).toBeUndefined();
+    expect(definition.wind[0]!.turbulence_ratio).toBeUndefined();
+    // Layer 2 has gust + turbulence (no shear)
+    expect(definition.wind[1]!.gust_increase_in_knots).toBe(5);
+    expect(definition.wind[1]!.turbulence_ratio).toBe(0.3);
+    expect(definition.wind[1]!.shear_in_degrees).toBeUndefined();
+    // Layer 3 has shear only
+    expect(definition.wind[2]!.shear_in_degrees).toBe(15);
+    expect(definition.wind[2]!.gust_increase_in_knots).toBeUndefined();
+  });
+
+  it('passes negative temperature through unchanged (e.g. winter ops)', () => {
+    const out = buildWeatherPayload(customWeather({ temperature_c: -25 }), rampStart());
+    const definition = (out as { definition: { temperature_in_degrees_celsius: number } })
+      .definition;
+    expect(definition.temperature_in_degrees_celsius).toBe(-25);
+  });
+
+  it('omits the wind field entirely when wind array is empty', () => {
+    const out = buildWeatherPayload(customWeather({ wind: [] }), rampStart());
+    const definition = (out as { definition: Record<string, unknown> }).definition;
+    expect('wind' in definition).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Shape tests against the official X-Plane spec examples
+// ---------------------------------------------------------------------------
+
+describe('payload shape matches X-Plane spec examples', () => {
+  it('minimal new-flight payload (ramp start + system time + real weather)', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      aircraft: makeAircraft({
+        path: 'Aircraft/Laminar Research/Boeing 737-800/b738.acf',
+      }),
+      livery: 'Default',
+      startPosition: rampStart({ airport: 'KPDX', name: 'A1' }),
+      useRealWorldTime: true,
+      weatherConfig: realWeather(),
+      enginesRunning: false,
+    });
+
+    expect(out.aircraft?.path).toBe('Aircraft/Laminar Research/Boeing 737-800/b738.acf');
+    expect((out.aircraft as { livery?: string }).livery).toBeUndefined();
+    expect(out.ramp_start?.airport_id).toBe('KPDX');
+    expect(out.ramp_start?.ramp).toBe('A1');
+    expect(out.use_system_time).toBe(true);
+    expect(out.weather).toBe('use_real_weather');
+    expect(out.engine_status?.all_engines?.running).toBe(false);
+    // Mutually exclusive: no other start key, no local_time, no gmt_time.
+    expect(presentStartKeys(out)).toEqual(['ramp_start']);
+    expect(out.local_time).toBeUndefined();
+    expect(out.gmt_time).toBeUndefined();
+  });
+
+  it('complex payload (runway start + warm engines + local time + preset weather)', () => {
+    const out = buildFlightInit({
+      ...baseParams,
+      aircraft: makeAircraft({
+        path: 'Aircraft/Laminar Research/Cessna 172SP/Cessna_172SP.acf',
+      }),
+      livery: 'Default',
+      startPosition: runwayStart({ airport: 'KBOS', name: '22L' }),
+      payloadKg: [80, 80, 0, 0, 0, 0, 0, 0, 0],
+      fuelTanksKg: [50, 50, 0, 0, 0, 0, 0, 0, 0],
+      enginesRunning: true,
+      useRealWorldTime: false,
+      dayOfYear: 150,
+      timeOfDay: 14.5,
+      weatherConfig: presetWeather('cloudy'),
+    });
+
+    expect(out.runway_start?.airport_id).toBe('KBOS');
+    expect(out.runway_start?.runway).toBe('22L');
+    expect(out.weight?.payload_weight_in_kilograms).toEqual([80, 80, 0, 0, 0, 0, 0, 0, 0]);
+    expect(out.weight?.fueltank_weight_in_kilograms).toEqual([50, 50, 0, 0, 0, 0, 0, 0, 0]);
+    expect(out.engine_status?.all_engines?.running).toBe(true);
+    expect(out.local_time?.day_of_year).toBe(150);
+    expect(out.local_time?.time_in_24_hours).toBe(14.5);
+    expect(out.use_system_time).toBeUndefined();
+    // Preset cloudy resolves to vfr_broken per buildFlightInit.
+    expect(typeof out.weather).not.toBe('string');
+    expect((out.weather as { definition: string }).definition).toBe('vfr_broken');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Known spec violations (todo until prod is fixed)
+// ---------------------------------------------------------------------------
+
+describe('runway_start: spec invariants', () => {
+  it.todo(
+    'should drop tow_type when final_distance is set (or vice versa) — spec says they are mutually exclusive'
+  );
 });
