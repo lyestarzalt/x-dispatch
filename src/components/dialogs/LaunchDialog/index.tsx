@@ -71,7 +71,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     hydrateAircraft(freshAircraft ?? null);
   }, [selectedAircraftPath, selectedAircraft, aircraftList, hydrateAircraft]);
 
-  // Launch - same FlightInit payload for both: REST API (running) or --new_flight_json (cold start)
+  // Launch - same FlightInit payload for both: REST API (running) or cold start
   const handleLaunch = async () => {
     if (!selectedAircraft || !startPosition) return;
     setIsLaunching(true);
@@ -90,7 +90,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         timeOfDay
       );
 
-      // Same FlightInit payload for both paths (REST API and --new_flight_json)
+      // Same FlightInit payload for both paths (REST API and cold start)
       const flightConfig = buildFlightInit({
         aircraft: selectedAircraft,
         livery: selectedLivery,
@@ -152,7 +152,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           setLaunchError(errorMessage);
         }
       } else {
-        // X-Plane not running → write JSON file and launch with --new_flight_json
+        // X-Plane not running → cold launch with the FlightInit payload
         const customLaunchArgs = useSettingsStore.getState().launcher.customLaunchArgs;
         const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
         if (result.success) {

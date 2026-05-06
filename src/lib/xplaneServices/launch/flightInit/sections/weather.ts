@@ -7,7 +7,7 @@ const FT_TO_M = 0.3048;
 
 /**
  * Hardcoded preset weather definitions. These use X-Plane preset definition
- * strings known to work with --new_flight_json.
+ * strings known to work with X-Plane's flight-init API.
  */
 export function getPresetWeatherDefinition(preset: string): WeatherDefinition {
   const definitions: Record<string, WeatherDefinition> = {

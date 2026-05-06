@@ -1,6 +1,6 @@
 /**
  * FlightInit JSON — everything that goes into the payload X-Plane consumes
- * via REST API or `--new_flight_json`.
+ * via REST API or cold launch.
  *
  *   builder.ts    — top-level assembly: spreads each section into the JSON
  *   types.ts      — public params + FlightInit type aliases

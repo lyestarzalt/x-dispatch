@@ -1,8 +1,9 @@
 /**
- * Drop any `--new_flight_json` (with or without =value) from the input.
- * --new_flight_json is reserved by X-Dispatch and always set by the launcher
- * itself; CLI-supplied values must not be allowed to override it.
+ * X-Plane arg reserved by X-Dispatch. The launcher always sets it itself, so
+ * a CLI-supplied value from the user must not be allowed to override it.
  */
+export const RESERVED_XP_ARG = '--new_flight_json';
+
 export function filterReservedXpArgs(args: readonly string[]): string[] {
-  return args.filter((a) => !a.trim().startsWith('--new_flight_json'));
+  return args.filter((a) => !a.trim().startsWith(RESERVED_XP_ARG));
 }

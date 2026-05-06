@@ -54,7 +54,7 @@ describe('parseArgv — --xp-arg', () => {
     expect(result.unknownWithSuggestions).toEqual([]);
   });
 
-  it('captures the dumb security case (--xp-arg=--new_flight_json=foo)', () => {
+  it('captures user-supplied reserved flags as raw xpArgs (filtered downstream)', () => {
     // Parser is intentionally dumb. Filtering happens in the launcher.
     const result = parseArgv([NODE, '--xp-arg=--new_flight_json=foo']);
     expect(result.flags.xpArgs).toEqual(['--new_flight_json=foo']);

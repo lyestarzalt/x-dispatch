@@ -135,7 +135,7 @@ const baseParams = {
 describe('float', () => {
   // X-Plane's JSON parser rejects integer fields where it expects floats. We
   // add 0.001 to force a decimal point. If this regresses, every integer
-  // lat/lon/heading silently breaks --new_flight_json.
+  // lat/lon/heading silently breaks the cold-launch flow.
   it('adds 0.001 to whole numbers so JSON.stringify emits a decimal', () => {
     expect(float(4)).toBe(4.001);
     expect(float(0)).toBe(0.001);

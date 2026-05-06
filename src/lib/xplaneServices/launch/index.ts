@@ -8,7 +8,7 @@ import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi
 import type { Aircraft, WeatherPreset } from '@/types/aircraft';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { scanAircraftDirectory } from './acfParser';
-import { filterReservedXpArgs } from './cliArgs';
+import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
 import { getXPlaneExecutable } from './freeflightGenerator';
 import { WEATHER_PRESETS } from './types';
 
@@ -79,7 +79,7 @@ class XPlaneLauncher {
 
   /**
    * Launch X-Plane with FlightInit payload (same schema as REST API, no { data } wrapper).
-   * Writes raw payload to a temp JSON file and passes --new_flight_json flag.
+   * Writes raw payload to a temp JSON file and hands it to X-Plane on launch.
    */
   async launch(
     payload: FlightInit,
@@ -102,7 +102,7 @@ class XPlaneLauncher {
       logger.launcher.info(`Flight JSON written to: ${jsonPath}`);
       logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
 
-      const xplaneArgs = [`--new_flight_json=${jsonPath}`];
+      const xplaneArgs = [`${RESERVED_XP_ARG}=${jsonPath}`];
 
       if (extraArgs?.length) {
         xplaneArgs.push(...extraArgs);
