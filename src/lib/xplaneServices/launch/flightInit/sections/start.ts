@@ -1,5 +1,29 @@
+import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { StartPosition } from '@/types/position';
 import { type Float, float } from '../float';
+
+type StartFields =
+  | 'ramp_start'
+  | 'runway_start'
+  | 'lle_ground_start'
+  | 'lle_air_start'
+  | 'boat_start';
+
+/**
+ * Dispatch on the StartPosition variant and return exactly one start-block
+ * field. The XP spec requires exactly-one start key; collapsing the dispatch
+ * here keeps the builder a single expression.
+ */
+export function buildStartSection(pos: StartPosition): Pick<FlightInit, StartFields> {
+  if (pos.type === 'custom') {
+    const mode = pos.customStartMode ?? 'ground';
+    if (mode === 'air') return { lle_air_start: buildLleAir(pos) };
+    if (mode === 'carrier' || mode === 'frigate') return { boat_start: buildBoat(pos, mode) };
+    return { lle_ground_start: buildLleGround(pos) };
+  }
+  if (pos.type === 'ramp') return { ramp_start: buildRamp(pos) };
+  return { runway_start: buildRunway(pos) };
+}
 
 // Per-block strict types: every numeric field XP expects as a float is `Float`
 // so a missing `float()` call fails to compile. These are assignable back to

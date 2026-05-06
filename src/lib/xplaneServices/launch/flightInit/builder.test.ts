@@ -1,15 +1,12 @@
 /**
  * Tests for the FlightInit JSON builder.
  *
- * This payload is sent to X-Plane via two paths:
- *   - REST API (X-Plane already running)
- *   - --new_flight_json command-line flag (X-Plane launching cold)
- *
- * If this JSON is wrong, the user gets a silent failure: X-Plane either
- * ignores parts of the payload (loading the wrong aircraft, the wrong gate,
- * the wrong weather) or rejects the file outright. Both bugs are nearly
- * impossible to diagnose from a user report. Hence: heavy coverage on the
- * shape of the output, the field naming, and the mutually-exclusive cases.
+ * Same payload goes out via two paths: REST API when XP is already running,
+ * and cold launch when it isn't. The REST path surfaces XP's error codes
+ * back to us in restClient's response; the cold-launch path doesn't return
+ * anything at all, so getting the shape right here is the only line of
+ * defence. Covers field names, mutex constraints, and the `ensureFloat`
+ * discipline (XP rejects integers in float fields).
  */
 import { describe, expect, it } from 'vitest';
 import type {
@@ -18,7 +15,7 @@ import type {
 } from '@/components/dialogs/LaunchDialog/weatherTypes';
 import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '@/types/position';
-import { buildFlightInit, buildWeatherPayload, float, getPresetWeatherDefinition } from '.';
+import { buildFlightInit, buildWeatherValue, float, getPresetWeatherDefinition } from '.';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -432,10 +429,10 @@ describe('buildFlightInit weather block', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildWeatherPayload — focused tests (called by buildFlightInit)
+// buildWeatherValue — focused tests (called by buildFlightInit)
 // ---------------------------------------------------------------------------
 
-describe('buildWeatherPayload custom mode', () => {
+describe('buildWeatherValue custom mode', () => {
   it('translates the cumulonimbus typo X-Plane uses ("cumulunimbus")', () => {
     // X-Plane's API misspells cumulonimbus as cumulunimbus. Production code
     // does the rewrite. If anyone "fixes" this typo, custom CB layers stop
@@ -443,7 +440,7 @@ describe('buildWeatherPayload custom mode', () => {
     const config = customWeather({
       clouds: [{ type: 'cumulonimbus', cover: 0.8, base_ft: 5000, tops_ft: 30000 }],
     });
-    const result = buildWeatherPayload(config, rampStart());
+    const result = buildWeatherValue(config, rampStart());
     expect(typeof result).toBe('object');
     const def = (result as { definition: { clouds?: Array<{ type: string }> } }).definition;
     expect(def.clouds?.[0]?.type).toBe('cumulunimbus');
@@ -456,7 +453,7 @@ describe('buildWeatherPayload custom mode', () => {
         { type: 'cumulus', cover: 0.3, base_ft: 4000, tops_ft: 8000 },
       ],
     });
-    const result = buildWeatherPayload(config, rampStart());
+    const result = buildWeatherValue(config, rampStart());
     const clouds = (result as { definition: { clouds: Array<{ type: string }> } }).definition
       .clouds;
     expect(clouds[0]?.type).toBe('cirrus');
@@ -465,7 +462,7 @@ describe('buildWeatherPayload custom mode', () => {
 
   it('omits clouds field when no cloud layers are configured', () => {
     const config = customWeather({ clouds: [] });
-    const result = buildWeatherPayload(config, rampStart());
+    const result = buildWeatherValue(config, rampStart());
     const def = (result as { definition: { clouds?: unknown } }).definition;
     expect(def.clouds).toBeUndefined();
   });
@@ -491,7 +488,7 @@ describe('buildWeatherPayload custom mode', () => {
         },
       ],
     });
-    const result = buildWeatherPayload(config, rampStart());
+    const result = buildWeatherValue(config, rampStart());
     const winds = (result as { definition: { wind: Array<Record<string, unknown>> } }).definition
       .wind;
     expect(winds[0]?.gust_increase_in_knots).toBeUndefined();
@@ -503,14 +500,14 @@ describe('buildWeatherPayload custom mode', () => {
   });
 
   it('converts elevation feet to meters for the definition (0.3048 factor)', () => {
-    const result = buildWeatherPayload(customWeather(), rampStart({ elevationFt: 1000 }));
+    const result = buildWeatherValue(customWeather(), rampStart({ elevationFt: 1000 }));
     const elev = (result as { definition: { elevation_in_meters: number } }).definition
       .elevation_in_meters;
     expect(elev).toBeCloseTo(304.8, 4);
   });
 
   it('treats missing elevationFt as 0 metres (not NaN)', () => {
-    const result = buildWeatherPayload(customWeather(), rampStart({ elevationFt: undefined }));
+    const result = buildWeatherValue(customWeather(), rampStart({ elevationFt: undefined }));
     const elev = (result as { definition: { elevation_in_meters: number } }).definition
       .elevation_in_meters;
     expect(elev).toBe(0);
@@ -775,9 +772,9 @@ describe('numeric float fields render with decimal points (XP parser requirement
 // Custom weather — additional edge cases
 // ---------------------------------------------------------------------------
 
-describe('buildWeatherPayload custom mode — additional edge cases', () => {
+describe('buildWeatherValue custom mode — additional edge cases', () => {
   it('preserves multiple cloud layers (spec allows up to 3)', () => {
-    const out = buildWeatherPayload(
+    const out = buildWeatherValue(
       customWeather({
         clouds: [
           { type: 'cirrus', cover: 0.2, base_ft: 25000, tops_ft: 30000 },
@@ -793,7 +790,7 @@ describe('buildWeatherPayload custom mode — additional edge cases', () => {
   });
 
   it('preserves multiple wind layers with mixed optional fields', () => {
-    const out = buildWeatherPayload(
+    const out = buildWeatherValue(
       customWeather({
         wind: [
           {
@@ -840,14 +837,14 @@ describe('buildWeatherPayload custom mode — additional edge cases', () => {
   });
 
   it('passes negative temperature through unchanged (e.g. winter ops)', () => {
-    const out = buildWeatherPayload(customWeather({ temperature_c: -25 }), rampStart());
+    const out = buildWeatherValue(customWeather({ temperature_c: -25 }), rampStart());
     const definition = (out as { definition: { temperature_in_degrees_celsius: number } })
       .definition;
     expect(definition.temperature_in_degrees_celsius).toBe(-25);
   });
 
   it('omits the wind field entirely when wind array is empty', () => {
-    const out = buildWeatherPayload(customWeather({ wind: [] }), rampStart());
+    const out = buildWeatherValue(customWeather({ wind: [] }), rampStart());
     const definition = (out as { definition: Record<string, unknown> }).definition;
     expect('wind' in definition).toBe(false);
   });

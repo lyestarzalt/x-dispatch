@@ -1,5 +1,22 @@
 import tzLookup from 'tz-lookup';
+import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { StartPosition } from '@/types/position';
+
+export function buildTimeSection(
+  useRealWorldTime: boolean,
+  dayOfYear: number,
+  timeOfDay: number
+): Pick<FlightInit, 'use_system_time' | 'local_time'> {
+  if (useRealWorldTime) {
+    return { use_system_time: true };
+  }
+  return {
+    local_time: {
+      day_of_year: dayOfYear,
+      time_in_24_hours: timeOfDay,
+    },
+  };
+}
 
 /**
  * Compute the (dayOfYear, timeInHours) pair to put in `local_time`.

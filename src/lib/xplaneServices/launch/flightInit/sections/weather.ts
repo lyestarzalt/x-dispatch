@@ -70,7 +70,14 @@ export function getPresetWeatherDefinition(preset: string): WeatherDefinition {
   return definitions[preset] ?? definitions['clear']!;
 }
 
-export function buildWeatherPayload(
+export function buildWeatherSection(
+  config: WeatherConfig,
+  pos: StartPosition
+): Pick<FlightInit, 'weather'> {
+  return { weather: buildWeatherValue(config, pos) };
+}
+
+export function buildWeatherValue(
   config: WeatherConfig,
   pos: StartPosition
 ): FlightInit['weather'] {

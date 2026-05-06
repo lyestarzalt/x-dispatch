@@ -1,6 +1,19 @@
+import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft } from '@/types/aircraft';
 
 const LBS_TO_KG = 0.453592;
+
+export function buildWeightSection(
+  fuelTanksKg: number[],
+  payloadKg: number[]
+): Pick<FlightInit, 'weight'> {
+  return {
+    weight: {
+      fueltank_weight_in_kilograms: fuelTanksKg,
+      payload_weight_in_kilograms: payloadKg,
+    },
+  };
+}
 
 /**
  * Convert per-tank fuel percentages (0-100) into the kg array X-Plane expects
