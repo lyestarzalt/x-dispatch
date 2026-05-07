@@ -447,7 +447,10 @@
         "exePath": "Executable path",
         "args": "Arguments",
         "cwd": "Working directory (optional)"
-      }
+      },
+      "delayInline": "delay {{seconds}}s",
+      "add": "Add",
+      "unknownError": "Unknown error"
     }
   },
   "sidebar": {
