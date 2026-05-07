@@ -16,6 +16,7 @@ import path from 'path';
 import { updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
+import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import {
@@ -1379,6 +1380,7 @@ function registerIpcHandlers() {
 
   // Addon Manager IPC handlers (extracted to separate module)
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
+  registerCompanionAppsIPC(() => mainWindow);
 
   ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
     try {

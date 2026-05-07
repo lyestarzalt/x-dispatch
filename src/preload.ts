@@ -358,6 +358,12 @@ contextBridge.exposeInMainWorld('debugAPI', {
   dbExec: (sql: string) => ipcRenderer.invoke('debug:dbExec', sql),
 });
 
+contextBridge.exposeInMainWorld('companionAppsAPI', {
+  launch: (input: { exePath: string; args?: string; cwd?: string }) =>
+    ipcRenderer.invoke('companion-apps:launch', input),
+  browseForExe: (): Promise<string | null> => ipcRenderer.invoke('companion-apps:browseForExe'),
+});
+
 declare global {
   interface XPlaneInstallation {
     id: string;
@@ -736,6 +742,13 @@ declare global {
         offset: number
       ) => Promise<{ columns: string[]; rows: unknown[][] }>;
       dbExec: (sql: string) => Promise<{ columns: string[]; rows: unknown[][]; error?: string }>;
+    };
+    companionAppsAPI: {
+      launch: (input: { exePath: string; args?: string; cwd?: string }) => Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+      browseForExe: () => Promise<string | null>;
     };
   }
 }
