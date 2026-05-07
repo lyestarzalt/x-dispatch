@@ -228,7 +228,8 @@
       "navigation": "Nawigacja",
       "vatsim": "VATSIM",
       "support": "Wsparcie",
-      "about": "O programie"
+      "about": "O programie",
+      "companionApps": "Companion Apps"
     },
     "support": {
       "reportProblem": "Zgłoś problem",
@@ -424,6 +425,28 @@
         "aboutDescription": "Piloci są wyświetlani jako ikony na mapie. Kliknij pilota, aby zobaczyć szczegóły lotu, w tym znak wywoławczy, samolot, odlot i cel.",
         "refreshInterval": "Interwał odświeżania",
         "refreshHelp": "Jak często odświeżać dane VATSIM (zalecane: 15s)"
+      }
+    },
+    "companionApps": {
+      "title": "Companion Apps",
+      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
+      "addButton": "+ Add companion app",
+      "suggested": "Suggested",
+      "launchNow": "Launch now",
+      "autoLaunch": "Auto-launch with X-Plane",
+      "delayLabel": "Wait before X-Plane (seconds)",
+      "empty": "No companion apps configured yet.",
+      "spawnError": "Couldn't launch {{name}}: {{error}}",
+      "statusPill": "Launching {{names}}…",
+      "remove": "Remove",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "fields": {
+        "name": "Name",
+        "exePath": "Executable path",
+        "args": "Arguments",
+        "cwd": "Working directory (optional)"
       }
     }
   },

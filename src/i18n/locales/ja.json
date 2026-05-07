@@ -228,7 +228,8 @@
       "navigation": "ナビゲーション",
       "vatsim": "VATSIM",
       "support": "Support",
-      "about": "情報"
+      "about": "情報",
+      "companionApps": "Companion Apps"
     },
     "support": {
       "reportProblem": "Report a Problem",
@@ -424,6 +425,28 @@
         "aboutDescription": "パイロットはマップ上にアイコンで表示されます。パイロットをクリックすると、コールサイン、機体、出発地、目的地などのフライト詳細が表示されます。",
         "refreshInterval": "更新間隔",
         "refreshHelp": "VATSIMデータの更新頻度（推奨：15秒）"
+      }
+    },
+    "companionApps": {
+      "title": "Companion Apps",
+      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
+      "addButton": "+ Add companion app",
+      "suggested": "Suggested",
+      "launchNow": "Launch now",
+      "autoLaunch": "Auto-launch with X-Plane",
+      "delayLabel": "Wait before X-Plane (seconds)",
+      "empty": "No companion apps configured yet.",
+      "spawnError": "Couldn't launch {{name}}: {{error}}",
+      "statusPill": "Launching {{names}}…",
+      "remove": "Remove",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "fields": {
+        "name": "Name",
+        "exePath": "Executable path",
+        "args": "Arguments",
+        "cwd": "Working directory (optional)"
       }
     }
   },

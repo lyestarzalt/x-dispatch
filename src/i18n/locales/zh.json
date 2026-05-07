@@ -228,7 +228,8 @@
       "navigation": "导航",
       "vatsim": "VATSIM",
       "support": "支持",
-      "about": "关于"
+      "about": "关于",
+      "companionApps": "Companion Apps"
     },
     "support": {
       "reportProblem": "报告问题",
@@ -424,6 +425,28 @@
         "aboutDescription": "飞行员在地图上显示为图标。点击飞行员可查看航班详情，包括呼号、机型、出发地和目的地。",
         "refreshInterval": "刷新间隔",
         "refreshHelp": "VATSIM 数据的刷新频率（推荐：15秒）"
+      }
+    },
+    "companionApps": {
+      "title": "Companion Apps",
+      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
+      "addButton": "+ Add companion app",
+      "suggested": "Suggested",
+      "launchNow": "Launch now",
+      "autoLaunch": "Auto-launch with X-Plane",
+      "delayLabel": "Wait before X-Plane (seconds)",
+      "empty": "No companion apps configured yet.",
+      "spawnError": "Couldn't launch {{name}}: {{error}}",
+      "statusPill": "Launching {{names}}…",
+      "remove": "Remove",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "fields": {
+        "name": "Name",
+        "exePath": "Executable path",
+        "args": "Arguments",
+        "cwd": "Working directory (optional)"
       }
     }
   },
