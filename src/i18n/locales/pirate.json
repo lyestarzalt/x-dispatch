@@ -229,7 +229,7 @@
       "vatsim": "VATSIM",
       "support": "Crew Help",
       "about": "Ship's Log",
-      "companionApps": "Companion Apps"
+      "companionApps": "Companion Mateys"
     },
     "support": {
       "reportProblem": "Report Trouble Aboard",
@@ -428,29 +428,29 @@
       }
     },
     "companionApps": {
-      "title": "Companion Apps",
-      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
-      "addButton": "+ Add companion app",
-      "suggested": "Suggested",
-      "launchNow": "Launch now",
-      "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
-      "empty": "No companion apps configured yet.",
-      "spawnError": "Couldn't launch {{name}}: {{error}}",
-      "statusPill": "Launching {{names}}…",
-      "remove": "Remove",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
+      "title": "Companion Mateys",
+      "description": "Programs to set sail alongside X-Plane (XPME, ATC chatterboxes, helm-riggin' drivers).",
+      "addButton": "+ Recruit a companion matey",
+      "suggested": "Suggested by the crew",
+      "launchNow": "Hoist the colors!",
+      "autoLaunch": "Set sail with X-Plane",
+      "delayLabel": "Lay-by 'fore X-Plane (seconds)",
+      "empty": "No companion mateys signed on yet.",
+      "spawnError": "Couldn't hoist {{name}}: {{error}}",
+      "statusPill": "Hoistin' {{names}}…",
+      "remove": "Throw overboard",
+      "edit": "Mend",
+      "save": "Stow",
+      "cancel": "Belay",
       "fields": {
         "name": "Name",
-        "exePath": "Executable path",
+        "exePath": "Path to ye executable",
         "args": "Arguments",
-        "cwd": "Working directory (optional)"
+        "cwd": "Workin' hold (optional)"
       },
       "delayInline": "delay {{seconds}}s",
-      "add": "Add",
-      "unknownError": "Unknown error"
+      "add": "Recruit",
+      "unknownError": "Unknown squall"
     }
   },
   "sidebar": {

@@ -229,7 +229,7 @@
       "vatsim": "VATSIM",
       "support": "Wsparcie",
       "about": "O programie",
-      "companionApps": "Companion Apps"
+      "companionApps": "Aplikacje towarzyszące"
     },
     "support": {
       "reportProblem": "Zgłoś problem",
@@ -428,29 +428,29 @@
       }
     },
     "companionApps": {
-      "title": "Companion Apps",
-      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
-      "addButton": "+ Add companion app",
-      "suggested": "Suggested",
-      "launchNow": "Launch now",
-      "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
-      "empty": "No companion apps configured yet.",
-      "spawnError": "Couldn't launch {{name}}: {{error}}",
-      "statusPill": "Launching {{names}}…",
-      "remove": "Remove",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
+      "title": "Aplikacje towarzyszące",
+      "description": "Programy uruchamiane razem z X-Plane (XPME, klienty ATC, sterowniki sprzętu).",
+      "addButton": "+ Dodaj aplikację towarzyszącą",
+      "suggested": "Sugerowane",
+      "launchNow": "Uruchom teraz",
+      "autoLaunch": "Uruchamiaj automatycznie z X-Plane",
+      "delayLabel": "Czekaj przed X-Plane (sekundy)",
+      "empty": "Brak skonfigurowanych aplikacji towarzyszących.",
+      "spawnError": "Nie udało się uruchomić {{name}}: {{error}}",
+      "statusPill": "Uruchamianie {{names}}…",
+      "remove": "Usuń",
+      "edit": "Edytuj",
+      "save": "Zapisz",
+      "cancel": "Anuluj",
       "fields": {
-        "name": "Name",
-        "exePath": "Executable path",
-        "args": "Arguments",
-        "cwd": "Working directory (optional)"
+        "name": "Nazwa",
+        "exePath": "Ścieżka do pliku wykonywalnego",
+        "args": "Argumenty",
+        "cwd": "Katalog roboczy (opcjonalny)"
       },
-      "delayInline": "delay {{seconds}}s",
-      "add": "Add",
-      "unknownError": "Unknown error"
+      "delayInline": "opóźnienie {{seconds}}s",
+      "add": "Dodaj",
+      "unknownError": "Nieznany błąd"
     }
   },
   "sidebar": {

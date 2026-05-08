@@ -229,7 +229,7 @@
       "vatsim": "VATSIM",
       "support": "Support",
       "about": "À propos",
-      "companionApps": "Companion Apps"
+      "companionApps": "Applications compagnons"
     },
     "support": {
       "reportProblem": "Signaler un problème",
@@ -428,29 +428,29 @@
       }
     },
     "companionApps": {
-      "title": "Companion Apps",
-      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
-      "addButton": "+ Add companion app",
-      "suggested": "Suggested",
-      "launchNow": "Launch now",
-      "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
-      "empty": "No companion apps configured yet.",
-      "spawnError": "Couldn't launch {{name}}: {{error}}",
-      "statusPill": "Launching {{names}}…",
-      "remove": "Remove",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
+      "title": "Applications compagnons",
+      "description": "Programmes à lancer avec X-Plane (XPME, clients ATC, pilotes matériels).",
+      "addButton": "+ Ajouter une application compagnon",
+      "suggested": "Suggérées",
+      "launchNow": "Lancer maintenant",
+      "autoLaunch": "Lancer automatiquement avec X-Plane",
+      "delayLabel": "Attendre avant X-Plane (secondes)",
+      "empty": "Aucune application compagnon configurée.",
+      "spawnError": "Impossible de lancer {{name}} : {{error}}",
+      "statusPill": "Lancement de {{names}}…",
+      "remove": "Supprimer",
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
       "fields": {
-        "name": "Name",
-        "exePath": "Executable path",
+        "name": "Nom",
+        "exePath": "Chemin de l'exécutable",
         "args": "Arguments",
-        "cwd": "Working directory (optional)"
+        "cwd": "Répertoire de travail (optionnel)"
       },
-      "delayInline": "delay {{seconds}}s",
-      "add": "Add",
-      "unknownError": "Unknown error"
+      "delayInline": "délai {{seconds}}s",
+      "add": "Ajouter",
+      "unknownError": "Erreur inconnue"
     }
   },
   "sidebar": {

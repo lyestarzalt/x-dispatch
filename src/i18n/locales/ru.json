@@ -229,7 +229,7 @@
       "vatsim": "VATSIM",
       "support": "Поддержка",
       "about": "О программе",
-      "companionApps": "Companion Apps"
+      "companionApps": "Сопутствующие приложения"
     },
     "support": {
       "reportProblem": "Сообщить о проблеме",
@@ -428,29 +428,29 @@
       }
     },
     "companionApps": {
-      "title": "Companion Apps",
-      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
-      "addButton": "+ Add companion app",
-      "suggested": "Suggested",
-      "launchNow": "Launch now",
-      "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
-      "empty": "No companion apps configured yet.",
-      "spawnError": "Couldn't launch {{name}}: {{error}}",
-      "statusPill": "Launching {{names}}…",
-      "remove": "Remove",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
+      "title": "Сопутствующие приложения",
+      "description": "Программы, запускаемые вместе с X-Plane (XPME, клиенты ATC, драйверы оборудования).",
+      "addButton": "+ Добавить приложение",
+      "suggested": "Рекомендуемые",
+      "launchNow": "Запустить сейчас",
+      "autoLaunch": "Запускать автоматически с X-Plane",
+      "delayLabel": "Задержка перед запуском X-Plane (секунды)",
+      "empty": "Сопутствующие приложения не настроены.",
+      "spawnError": "Не удалось запустить {{name}}: {{error}}",
+      "statusPill": "Запуск {{names}}…",
+      "remove": "Удалить",
+      "edit": "Изменить",
+      "save": "Сохранить",
+      "cancel": "Отмена",
       "fields": {
-        "name": "Name",
-        "exePath": "Executable path",
-        "args": "Arguments",
-        "cwd": "Working directory (optional)"
+        "name": "Название",
+        "exePath": "Путь к исполняемому файлу",
+        "args": "Аргументы",
+        "cwd": "Рабочий каталог (необязательно)"
       },
-      "delayInline": "delay {{seconds}}s",
-      "add": "Add",
-      "unknownError": "Unknown error"
+      "delayInline": "задержка {{seconds}} с",
+      "add": "Добавить",
+      "unknownError": "Неизвестная ошибка"
     }
   },
   "sidebar": {

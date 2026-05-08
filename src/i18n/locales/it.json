@@ -229,7 +229,7 @@
       "vatsim": "VATSIM",
       "support": "Supporto",
       "about": "Info",
-      "companionApps": "Companion Apps"
+      "companionApps": "App complementari"
     },
     "support": {
       "reportProblem": "Segnala un problema",
@@ -428,29 +428,29 @@
       }
     },
     "companionApps": {
-      "title": "Companion Apps",
-      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
-      "addButton": "+ Add companion app",
-      "suggested": "Suggested",
-      "launchNow": "Launch now",
-      "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
-      "empty": "No companion apps configured yet.",
-      "spawnError": "Couldn't launch {{name}}: {{error}}",
-      "statusPill": "Launching {{names}}…",
-      "remove": "Remove",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
+      "title": "App complementari",
+      "description": "Programmi da avviare insieme a X-Plane (XPME, client ATC, driver hardware).",
+      "addButton": "+ Aggiungi app complementare",
+      "suggested": "Suggerite",
+      "launchNow": "Avvia ora",
+      "autoLaunch": "Avvio automatico con X-Plane",
+      "delayLabel": "Attesa prima di X-Plane (secondi)",
+      "empty": "Nessuna app complementare configurata.",
+      "spawnError": "Impossibile avviare {{name}}: {{error}}",
+      "statusPill": "Avvio di {{names}}…",
+      "remove": "Rimuovi",
+      "edit": "Modifica",
+      "save": "Salva",
+      "cancel": "Annulla",
       "fields": {
-        "name": "Name",
-        "exePath": "Executable path",
-        "args": "Arguments",
-        "cwd": "Working directory (optional)"
+        "name": "Nome",
+        "exePath": "Percorso eseguibile",
+        "args": "Argomenti",
+        "cwd": "Directory di lavoro (opzionale)"
       },
-      "delayInline": "delay {{seconds}}s",
-      "add": "Add",
-      "unknownError": "Unknown error"
+      "delayInline": "ritardo {{seconds}}s",
+      "add": "Aggiungi",
+      "unknownError": "Errore sconosciuto"
     }
   },
   "sidebar": {

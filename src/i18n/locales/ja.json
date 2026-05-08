@@ -229,7 +229,7 @@
       "vatsim": "VATSIM",
       "support": "Support",
       "about": "情報",
-      "companionApps": "Companion Apps"
+      "companionApps": "コンパニオンアプリ"
     },
     "support": {
       "reportProblem": "Report a Problem",
@@ -428,29 +428,29 @@
       }
     },
     "companionApps": {
-      "title": "Companion Apps",
-      "description": "Programs to launch alongside X-Plane (XPME, ATC clients, hardware drivers).",
-      "addButton": "+ Add companion app",
-      "suggested": "Suggested",
-      "launchNow": "Launch now",
-      "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
-      "empty": "No companion apps configured yet.",
-      "spawnError": "Couldn't launch {{name}}: {{error}}",
-      "statusPill": "Launching {{names}}…",
-      "remove": "Remove",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
+      "title": "コンパニオンアプリ",
+      "description": "X-Plane と一緒に起動するプログラム(XPME、ATC クライアント、ハードウェアドライバなど)。",
+      "addButton": "+ コンパニオンアプリを追加",
+      "suggested": "おすすめ",
+      "launchNow": "今すぐ起動",
+      "autoLaunch": "X-Plane と一緒に自動起動",
+      "delayLabel": "X-Plane 起動前の待機時間(秒)",
+      "empty": "コンパニオンアプリは未設定です。",
+      "spawnError": "{{name}} を起動できませんでした:{{error}}",
+      "statusPill": "{{names}} を起動中…",
+      "remove": "削除",
+      "edit": "編集",
+      "save": "保存",
+      "cancel": "キャンセル",
       "fields": {
-        "name": "Name",
-        "exePath": "Executable path",
-        "args": "Arguments",
-        "cwd": "Working directory (optional)"
+        "name": "名前",
+        "exePath": "実行ファイルのパス",
+        "args": "引数",
+        "cwd": "作業ディレクトリ(任意)"
       },
-      "delayInline": "delay {{seconds}}s",
-      "add": "Add",
-      "unknownError": "Unknown error"
+      "delayInline": "遅延 {{seconds}}秒",
+      "add": "追加",
+      "unknownError": "不明なエラー"
     }
   },
   "sidebar": {
