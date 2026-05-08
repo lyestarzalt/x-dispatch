@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
@@ -15,6 +16,7 @@ import {
 } from '@/lib/xplaneServices/launch/flightInit';
 import { useAircraftList, useStartFlight, useWeatherPresets, useXPlaneStatus } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
+import { useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { AircraftList, AircraftPreview, FlightConfig } from './components';
@@ -89,6 +91,52 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         useRealWorldTime,
         timeOfDay
       );
+
+      // Fire autoLaunch companion apps and wait for max configured delay.
+      // Sequential: each call returns near-immediately (detached spawn) and
+      // preserves the user-configured order for tools that need to start before
+      // others (e.g. a hardware driver before XPME).
+      const autoLaunchTools = useCompanionAppsStore
+        .getState()
+        .tools.filter((tool) => tool.autoLaunch);
+      let maxDelaySec = 0;
+      const failures: { id: string; name: string; error: string }[] = [];
+
+      for (const tool of autoLaunchTools) {
+        const result = await window.companionAppsAPI.launch({
+          exePath: tool.exePath,
+          args: tool.args,
+          cwd: tool.cwd,
+        });
+        if (!result.success) {
+          failures.push({
+            id: tool.id,
+            name: tool.name,
+            error: result.error ?? t('settings.companionApps.unknownError'),
+          });
+        } else {
+          maxDelaySec = Math.max(maxDelaySec, tool.delayBeforeXPlaneSec);
+        }
+      }
+
+      for (const f of failures) {
+        toast.error(t('settings.companionApps.spawnError', { name: f.name, error: f.error }));
+      }
+
+      if (autoLaunchTools.length > 0) {
+        const failedIds = new Set(failures.map((f) => f.id));
+        const launchedNames = autoLaunchTools
+          .filter((tool) => !failedIds.has(tool.id))
+          .map((tool) => tool.name)
+          .join(', ');
+        if (launchedNames) {
+          toast(t('settings.companionApps.statusPill', { names: launchedNames }));
+        }
+      }
+
+      if (maxDelaySec > 0) {
+        await new Promise((resolve) => setTimeout(resolve, maxDelaySec * 1000));
+      }
 
       // Same FlightInit payload for both paths (REST API and cold start)
       const flightConfig = buildFlightInit({
