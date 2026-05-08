@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CloudDownload, Database, Info, LifeBuoy, Monitor, Palette, Plane } from 'lucide-react';
+import {
+  Boxes,
+  CloudDownload,
+  Database,
+  Info,
+  LifeBuoy,
+  Monitor,
+  Palette,
+  Plane,
+} from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
   Dialog,
@@ -16,6 +25,7 @@ import { cn } from '@/lib/utils/helpers';
 import {
   AboutSection,
   AppearanceSection,
+  CompanionAppsSection,
   GraphicsSection,
   NavigationDataSection,
   SimbriefSection,
@@ -28,7 +38,15 @@ interface SettingsDialogProps {
   onClose: () => void;
 }
 
-type TabId = 'xplane' | 'data' | 'appearance' | 'graphics' | 'simbrief' | 'support' | 'about';
+type TabId =
+  | 'xplane'
+  | 'data'
+  | 'appearance'
+  | 'graphics'
+  | 'simbrief'
+  | 'companion-apps'
+  | 'support'
+  | 'about';
 
 interface TabConfig {
   id: TabId;
@@ -42,6 +60,7 @@ const TABS: TabConfig[] = [
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'graphics', icon: Monitor, labelKey: 'settings.tabs.graphics' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
+  { id: 'companion-apps', icon: Boxes, labelKey: 'settings.tabs.companionApps' },
   { id: 'support', icon: LifeBuoy, labelKey: 'settings.tabs.support' },
   { id: 'about', icon: Info, labelKey: 'settings.tabs.about' },
 ];
@@ -148,6 +167,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="SimBrief">
                   <SimbriefSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="companion-apps"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Companion Apps">
+                  <CompanionAppsSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>
