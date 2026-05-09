@@ -120,7 +120,12 @@ export function useMapSetup({
       zoom: 2,
       pitch: 0,
       bearing: 0,
-      maxPitch: 85,
+      // Capped to keep airport markers clickable (#79). The default-allowed
+      // 85° puts the horizon in the upper third of the viewport, which is
+      // where the picker dead zone starts. 70° gives a noticeable 3D feel
+      // without (typically) crossing into the broken range; revisit when
+      // the underlying high-pitch hit-testing bug is fixed.
+      maxPitch: 70,
       fadeDuration: 0,
       trackResize: true,
       refreshExpiredTiles: false,
