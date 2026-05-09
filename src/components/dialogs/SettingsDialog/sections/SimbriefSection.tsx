@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils/helpers';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
+import { FmsExportTargetsCard } from './SimbriefSection/FmsExportTargetsCard';
 
 export default function SimbriefSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -129,6 +130,8 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
           </Button>
         </CardContent>
       </Card>
+
+      <FmsExportTargetsCard />
     </div>
   );
 }
