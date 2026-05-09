@@ -19,6 +19,7 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
+import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import {
   closeTileCache,
   getTileCache,
@@ -1220,31 +1221,14 @@ function registerIpcHandlers() {
   ipcMain.handle(
     'simbrief:downloadFmsFile',
     async (_, args: { url: string; targetDir: string; filename: string }) => {
-      const { url, targetDir, filename } = args ?? {};
-
-      if (!url || typeof url !== 'string' || !url.startsWith('https://')) {
-        return { success: false, error: 'Invalid URL' };
+      const validated = validateDownloadArgs(args ?? {});
+      if (!validated.ok) {
+        logger.main.warn(
+          `downloadFmsFile rejected args: ${validated.error} (filename=${JSON.stringify((args ?? {}).filename)})`
+        );
+        return { success: false, error: validated.error };
       }
-      try {
-        const host = new URL(url).hostname;
-        if (!host.endsWith('.simbrief.com') && host !== 'simbrief.com') {
-          return { success: false, error: `Refusing to download from ${host}` };
-        }
-      } catch {
-        return { success: false, error: 'Malformed URL' };
-      }
-      if (!targetDir || typeof targetDir !== 'string' || !path.isAbsolute(targetDir)) {
-        return { success: false, error: 'targetDir must be an absolute path' };
-      }
-      if (
-        !filename ||
-        typeof filename !== 'string' ||
-        filename.includes('/') ||
-        filename.includes('\\') ||
-        filename.includes('..')
-      ) {
-        return { success: false, error: 'Invalid filename' };
-      }
+      const { url, targetDir, filename } = validated;
 
       const startedAt = Date.now();
       try {
