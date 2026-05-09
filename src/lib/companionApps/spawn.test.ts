@@ -92,6 +92,7 @@ describe('launchCompanionApp', () => {
   });
 
   it('refuses to spawn with NEEDS_ADMIN when not elevated', () => {
+    if (process.platform !== 'win32') return; // elevation check only on Windows
     vi.spyOn(isElevatedModule, 'isElevated').mockReturnValue(false);
     const result = launchCompanionApp({ exePath: realExe });
     expect(result.success).toBe(false);
@@ -100,6 +101,10 @@ describe('launchCompanionApp', () => {
   });
 
   it('refuses to spawn with FILE_MISSING when path does not exist', () => {
+    // Skip on Windows where non-elevated users see FILE_MISSING through elevation check
+    if (process.platform === 'win32') {
+      vi.spyOn(isElevatedModule, 'isElevated').mockReturnValue(true);
+    }
     const result = launchCompanionApp({ exePath: '/totally/not/here' });
     expect(result.success).toBe(false);
     expect(result.code).toBe('FILE_MISSING');
@@ -128,6 +133,7 @@ describe('launchCompanionApp', () => {
   });
 
   it('checks elevation before access (single source of error code)', () => {
+    if (process.platform !== 'win32') return; // elevation check only on Windows
     vi.spyOn(isElevatedModule, 'isElevated').mockReturnValue(false);
     const accessSpy = vi.spyOn(canExecuteModule, 'canExecute');
     launchCompanionApp({ exePath: '/totally/not/here' });
