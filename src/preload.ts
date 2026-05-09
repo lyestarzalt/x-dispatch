@@ -372,6 +372,7 @@ contextBridge.exposeInMainWorld('companionAppsAPI', {
   launch: (input: { exePath: string; args?: string; cwd?: string }) =>
     ipcRenderer.invoke('companion-apps:launch', input),
   browseForExe: (): Promise<string | null> => ipcRenderer.invoke('companion-apps:browseForExe'),
+  isElevated: (): Promise<boolean> => ipcRenderer.invoke('companion-apps:isElevated'),
 });
 
 contextBridge.exposeInMainWorld('xpLogAPI', {
@@ -768,8 +769,10 @@ declare global {
       launch: (input: { exePath: string; args?: string; cwd?: string }) => Promise<{
         success: boolean;
         error?: string;
+        code?: 'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'SPAWN_FAILED';
       }>;
       browseForExe: () => Promise<string | null>;
+      isElevated: () => Promise<boolean>;
     };
     xpLogAPI: {
       read: () => Promise<XPLogReadResult>;
