@@ -457,7 +457,6 @@
       "title": "Journaux X-Plane",
       "description": "Lis le Log.txt de X-Plane pour voir ce que le simulateur a signalé pendant ta dernière session.",
       "refresh": "Actualiser",
-      "report": "Signaler ce problème",
       "truncatedNotice": "Affichage des derniers {{shownMb}} Mo d'un journal de {{totalMb}} Mo.",
       "empty": {
         "noPath": "Chemin X-Plane non configuré.",
@@ -465,17 +464,6 @@
         "noLog": "Pas encore de journal — X-Plane a-t-il été lancé au moins une fois sur cette installation ?",
         "allClear": "X-Dispatch ne signale rien dans ce journal.",
         "noMatches": "Aucune entrée ne correspond au filtre actuel."
-      },
-      "reportDialog": {
-        "title": "Signaler un problème X-Plane",
-        "descriptionPlaceholder": "Que faisais-tu quand c'est arrivé ?",
-        "emailPlaceholder": "ton@email.com (pour suivi)",
-        "submit": "Envoyer le rapport",
-        "sending": "Envoi…",
-        "success": "Merci ! Ton rapport a été envoyé.",
-        "error": "Échec de l'envoi du rapport. Réessaie.",
-        "scaffoldHeader": "Diagnostic du journal X-Plane",
-        "scaffoldCounts": "Erreurs : {{errors}}, Avertissements : {{warnings}}"
       },
       "entriesHeader": "Entrées du journal",
       "entryCount": "Affiche {{shown}} sur {{total}} entrées",

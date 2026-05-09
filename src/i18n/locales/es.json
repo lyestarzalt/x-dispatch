@@ -457,7 +457,6 @@
       "title": "Registros de X-Plane",
       "description": "Lee el Log.txt de X-Plane para ver lo que el simulador reportó durante tu última sesión.",
       "refresh": "Actualizar",
-      "report": "Reportar este problema",
       "truncatedNotice": "Mostrando los últimos {{shownMb}} MB de un registro de {{totalMb}} MB.",
       "empty": {
         "noPath": "Ruta de X-Plane no configurada.",
@@ -465,17 +464,6 @@
         "noLog": "Aún no hay registro — ¿se ha iniciado X-Plane al menos una vez en esta instalación?",
         "allClear": "X-Dispatch no detecta nada en este registro.",
         "noMatches": "Ninguna entrada coincide con el filtro actual."
-      },
-      "reportDialog": {
-        "title": "Reportar problema de X-Plane",
-        "descriptionPlaceholder": "¿Qué estabas haciendo cuando ocurrió?",
-        "emailPlaceholder": "tu@email.com (para seguimiento)",
-        "submit": "Enviar informe",
-        "sending": "Enviando…",
-        "success": "¡Gracias! Tu informe ha sido enviado.",
-        "error": "Error al enviar el informe. Inténtalo de nuevo.",
-        "scaffoldHeader": "Diagnóstico del registro de X-Plane",
-        "scaffoldCounts": "Errores: {{errors}}, Avisos: {{warnings}}"
       },
       "entriesHeader": "Entradas del registro",
       "entryCount": "Mostrando {{shown}} de {{total}} entradas",

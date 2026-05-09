@@ -457,7 +457,6 @@
       "title": "X-Plane ログ",
       "description": "前回のセッション中に X-Plane が報告した内容を Log.txt で確認します。",
       "refresh": "更新",
-      "report": "この問題を報告",
       "truncatedNotice": "{{totalMb}} MB のログのうち最後の {{shownMb}} MB を表示しています。",
       "empty": {
         "noPath": "X-Plane のパスが設定されていません。",
@@ -465,17 +464,6 @@
         "noLog": "ログがまだありません — このインストールで X-Plane を一度でも起動しましたか?",
         "allClear": "X-Dispatch はこのログで指摘事項を検出していません。",
         "noMatches": "現在のフィルターに該当するエントリはありません。"
-      },
-      "reportDialog": {
-        "title": "X-Plane の問題を報告",
-        "descriptionPlaceholder": "これが起きたとき、何をしていましたか?",
-        "emailPlaceholder": "your@email.com (フォローアップ用)",
-        "submit": "レポート送信",
-        "sending": "送信中…",
-        "success": "ありがとうございました! レポートを送信しました。",
-        "error": "送信に失敗しました。再度お試しください。",
-        "scaffoldHeader": "X-Plane ログ診断",
-        "scaffoldCounts": "エラー: {{errors}}, 警告: {{warnings}}"
       },
       "entriesHeader": "ログエントリ",
       "entryCount": "{{total}} 件中 {{shown}} 件を表示",

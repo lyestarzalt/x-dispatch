@@ -457,7 +457,6 @@
       "title": "X-Plane 日志",
       "description": "阅读 X-Plane 的 Log.txt 以查看模拟器在上次会话期间报告的内容。",
       "refresh": "刷新",
-      "report": "上报此问题",
       "truncatedNotice": "显示 {{totalMb}} MB 日志的最后 {{shownMb}} MB。",
       "empty": {
         "noPath": "未配置 X-Plane 路径。",
@@ -465,17 +464,6 @@
         "noLog": "尚无日志 — X-Plane 在此安装中是否至少启动过一次?",
         "allClear": "X-Dispatch 在此日志中未标记任何问题。",
         "noMatches": "没有条目匹配当前筛选。"
-      },
-      "reportDialog": {
-        "title": "上报 X-Plane 问题",
-        "descriptionPlaceholder": "问题发生时你在做什么?",
-        "emailPlaceholder": "your@email.com (用于跟进)",
-        "submit": "发送报告",
-        "sending": "发送中…",
-        "success": "谢谢!报告已发送。",
-        "error": "发送报告失败。请重试。",
-        "scaffoldHeader": "X-Plane 日志诊断",
-        "scaffoldCounts": "错误: {{errors}}, 警告: {{warnings}}"
       },
       "entriesHeader": "日志条目",
       "entryCount": "显示 {{total}} 条中的 {{shown}} 条",

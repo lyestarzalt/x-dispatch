@@ -11,7 +11,6 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import { type LogEntry, type LogLevel, parseLog } from '@/lib/xplaneServices/log/parseLog';
 import { useXplaneLogQuery } from '@/queries';
-import { LogsReportDialog } from './LogsReportDialog';
 
 type LevelFilter = 'all' | 'errors-warnings' | 'errors' | 'warnings';
 
@@ -33,7 +32,6 @@ export function LogsSection({ active }: LogsSectionProps) {
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
   const [showHeader, setShowHeader] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
 
   const handleRefresh = () => {
     query.refetch();
@@ -65,7 +63,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     </>
   );
 
-  const Toolbar = ({ canReport }: { canReport: boolean }) => (
+  const Toolbar = () => (
     <div className="flex flex-wrap items-center gap-2">
       <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
         <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
@@ -75,11 +73,6 @@ export function LogsSection({ active }: LogsSectionProps) {
         <ExternalLink className="mr-2 h-3.5 w-3.5" />
         {t('settings.logs.openExternal')}
       </Button>
-      {canReport && (
-        <Button variant="outline" size="sm" onClick={() => setReportOpen(true)}>
-          {t('settings.logs.report')}
-        </Button>
-      )}
     </div>
   );
 
@@ -87,7 +80,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar canReport={false} />
+        <Toolbar />
         <p className="text-sm text-muted-foreground">…</p>
       </div>
     );
@@ -99,7 +92,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar canReport={false} />
+        <Toolbar />
         <Card>
           <CardContent className="py-6 text-center">
             <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
@@ -113,7 +106,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar canReport={false} />
+        <Toolbar />
         <Card>
           <CardContent className="py-6 text-center">
             <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
@@ -127,7 +120,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar canReport={false} />
+        <Toolbar />
         <Card className="border-destructive/30 bg-destructive/5">
           <CardContent className="py-6">
             <p className="font-mono text-xs text-destructive">{result.message}</p>
@@ -155,7 +148,7 @@ export function LogsSection({ active }: LogsSectionProps) {
         ) : (
           <span />
         )}
-        <Toolbar canReport />
+        <Toolbar />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -234,13 +227,6 @@ export function LogsSection({ active }: LogsSectionProps) {
           )}
         </CardContent>
       </Card>
-
-      <LogsReportDialog
-        open={reportOpen}
-        onClose={() => setReportOpen(false)}
-        rawLog={result.data}
-        parsed={parsed}
-      />
     </div>
   );
 }

@@ -457,7 +457,6 @@
       "title": "X-Plane-Protokolle",
       "description": "Lies X-Plane's Log.txt, um zu sehen, was der Simulator während deiner letzten Sitzung gemeldet hat.",
       "refresh": "Aktualisieren",
-      "report": "Problem melden",
       "truncatedNotice": "Zeige die letzten {{shownMb}} MB von {{totalMb}} MB.",
       "empty": {
         "noPath": "X-Plane-Pfad nicht konfiguriert.",
@@ -465,17 +464,6 @@
         "noLog": "Noch kein Protokoll — wurde X-Plane mindestens einmal mit dieser Installation gestartet?",
         "allClear": "X-Dispatch markiert nichts in diesem Protokoll.",
         "noMatches": "Keine Einträge entsprechen dem aktuellen Filter."
-      },
-      "reportDialog": {
-        "title": "X-Plane-Problem melden",
-        "descriptionPlaceholder": "Was hast du gemacht, als das passiert ist?",
-        "emailPlaceholder": "deine@email.com (für Rückfragen)",
-        "submit": "Bericht senden",
-        "sending": "Wird gesendet…",
-        "success": "Danke! Dein Bericht wurde gesendet.",
-        "error": "Bericht konnte nicht gesendet werden. Bitte erneut versuchen.",
-        "scaffoldHeader": "X-Plane-Protokoll-Diagnose",
-        "scaffoldCounts": "Fehler: {{errors}}, Warnungen: {{warnings}}"
       },
       "entriesHeader": "Protokolleinträge",
       "entryCount": "Zeige {{shown}} von {{total}} Einträgen",

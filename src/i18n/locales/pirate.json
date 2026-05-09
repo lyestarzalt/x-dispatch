@@ -457,7 +457,6 @@
       "title": "X-Plane cap'n's logs",
       "description": "Read th' Log.txt scroll t' see what th' sim hollered during yer last voyage.",
       "refresh": "Hoist the colors!",
-      "report": "Send a message in a bottle",
       "truncatedNotice": "Showin' th' last {{shownMb}} MB of a {{totalMb}} MB scroll, savvy?",
       "empty": {
         "noPath": "X-Plane port not charted.",
@@ -465,17 +464,6 @@
         "noLog": "No scroll yet — has th' sim ever set sail on this rig?",
         "allClear": "Th' bilge be clean — nothin' flagged in this scroll.",
         "noMatches": "No entries match yer filter, matey."
-      },
-      "reportDialog": {
-        "title": "Report a foul wind from X-Plane",
-        "descriptionPlaceholder": "What were ye doin' when it struck?",
-        "emailPlaceholder": "yer@email.com (so we can holler back)",
-        "submit": "Send th' bottle",
-        "sending": "Castin' off…",
-        "success": "Hoist th' colors — yer report be sent!",
-        "error": "Th' bottle washed back ashore. Try again, matey.",
-        "scaffoldHeader": "X-Plane scroll diagnosis",
-        "scaffoldCounts": "Foul winds: {{errors}}, Squalls: {{warnings}}"
       },
       "entriesHeader": "Cap'n's log entries",
       "entryCount": "Showin' {{shown}} of {{total}} entries, savvy?",

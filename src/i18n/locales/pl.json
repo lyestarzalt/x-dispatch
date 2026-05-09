@@ -457,7 +457,6 @@
       "title": "Dzienniki X-Plane",
       "description": "Czytaj Log.txt X-Plane, aby zobaczyć, co symulator zgłosił podczas ostatniej sesji.",
       "refresh": "Odśwież",
-      "report": "Zgłoś ten problem",
       "truncatedNotice": "Pokazuję ostatnie {{shownMb}} MB z dziennika o rozmiarze {{totalMb}} MB.",
       "empty": {
         "noPath": "Ścieżka X-Plane nie skonfigurowana.",
@@ -465,17 +464,6 @@
         "noLog": "Brak dziennika — czy X-Plane został uruchomiony przynajmniej raz w tej instalacji?",
         "allClear": "X-Dispatch nic nie zgłasza w tym dzienniku.",
         "noMatches": "Żadne wpisy nie pasują do bieżącego filtra."
-      },
-      "reportDialog": {
-        "title": "Zgłoś problem z X-Plane",
-        "descriptionPlaceholder": "Co robiłeś, kiedy to się stało?",
-        "emailPlaceholder": "twoj@email.com (do kontaktu)",
-        "submit": "Wyślij raport",
-        "sending": "Wysyłanie…",
-        "success": "Dziękujemy! Twój raport został wysłany.",
-        "error": "Nie udało się wysłać raportu. Spróbuj ponownie.",
-        "scaffoldHeader": "Diagnostyka dziennika X-Plane",
-        "scaffoldCounts": "Błędy: {{errors}}, Ostrzeżenia: {{warnings}}"
       },
       "entriesHeader": "Wpisy dziennika",
       "entryCount": "Pokazano {{shown}} z {{total}} wpisów",

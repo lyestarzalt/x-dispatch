@@ -457,7 +457,6 @@
       "title": "Log di X-Plane",
       "description": "Leggi il Log.txt di X-Plane per vedere cosa ha segnalato il simulatore durante la tua ultima sessione.",
       "refresh": "Aggiorna",
-      "report": "Segnala questo problema",
       "truncatedNotice": "Mostro gli ultimi {{shownMb}} MB di un log da {{totalMb}} MB.",
       "empty": {
         "noPath": "Percorso X-Plane non configurato.",
@@ -465,17 +464,6 @@
         "noLog": "Nessun log ancora — X-Plane è stato avviato almeno una volta su questa installazione?",
         "allClear": "X-Dispatch non segnala nulla in questo log.",
         "noMatches": "Nessuna voce corrisponde al filtro corrente."
-      },
-      "reportDialog": {
-        "title": "Segnala problema X-Plane",
-        "descriptionPlaceholder": "Cosa stavi facendo quando è successo?",
-        "emailPlaceholder": "tua@email.com (per follow-up)",
-        "submit": "Invia segnalazione",
-        "sending": "Invio…",
-        "success": "Grazie! La tua segnalazione è stata inviata.",
-        "error": "Invio fallito. Riprova.",
-        "scaffoldHeader": "Diagnostica del log X-Plane",
-        "scaffoldCounts": "Errori: {{errors}}, Avvisi: {{warnings}}"
       },
       "entriesHeader": "Voci del log",
       "entryCount": "Mostro {{shown}} di {{total}} voci",
