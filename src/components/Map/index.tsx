@@ -36,6 +36,7 @@ import {
   useAirportInteractions,
   useAirportRenderer,
   useApproachLightAnimation,
+  useCursorElevation,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
   useMapSetup,
@@ -373,6 +374,12 @@ export default function Map({ airports }: MapProps) {
 
   // Terrain shading (hillshade + contour lines)
   useTerrainShading(mapRef, terrainShadingEnabled);
+
+  // Cursor-following terrain elevation. `supported` flips with terrain
+  // availability so the compass keeps the elevation row mounted in mercator
+  // mode (showing a placeholder while the cursor is off-map) and only drops
+  // it when terrain itself is gone.
+  const cursorElevation = useCursorElevation(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -811,7 +818,7 @@ export default function Map({ airports }: MapProps) {
       </div>
 
       {/* Map widgets - left side */}
-      <CompassWidget mapBearing={mapBearing} />
+      <CompassWidget mapBearing={mapBearing} cursorElevation={cursorElevation} />
       <DevDebugOverlay mapRef={mapRef} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 

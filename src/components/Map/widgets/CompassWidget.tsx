@@ -1,8 +1,36 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils/helpers';
+import type { CursorElevation } from '../hooks/useCursorElevation';
 
 interface CompassWidgetProps {
   mapBearing: number;
+  /**
+   * Cursor terrain elevation. The row is mounted whenever `supported` is
+   * true (terrain is on) and shows a placeholder when the cursor leaves
+   * the map — that way the readout doesn't flicker in/out as the cursor
+   * moves over the canvas.
+   */
+  cursorElevation?: CursorElevation;
+}
+
+const METERS_TO_FEET = 3.28084;
+
+/**
+ * Map MapLibre's signed bearing (-180..180) to a 3-digit aviation heading
+ * string ('000'..'359'). Exported for unit tests.
+ */
+export function formatHeading(mapBearing: number): string {
+  const normalized = ((Math.round(mapBearing) % 360) + 360) % 360;
+  return normalized.toString().padStart(3, '0');
+}
+
+/**
+ * Convert metres to feet, round, and format with the locale's thousands
+ * separator. Exported for unit tests.
+ */
+export function formatElevationFt(meters: number): string {
+  return Math.round(meters * METERS_TO_FEET).toLocaleString();
 }
 
 // Constants
@@ -56,12 +84,16 @@ const LABEL_POSITIONS = Object.entries({
 // Lubber line points (static)
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
-export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
-  // Normalize bearing from MapLibre's -180..180 to aviation 0..359
-  const headingDisplay = useMemo(() => {
-    const normalized = ((Math.round(mapBearing) % 360) + 360) % 360;
-    return normalized.toString().padStart(3, '0');
-  }, [mapBearing]);
+export default function CompassWidget({ mapBearing, cursorElevation }: CompassWidgetProps) {
+  const { t } = useTranslation();
+
+  const headingDisplay = useMemo(() => formatHeading(mapBearing), [mapBearing]);
+
+  const showElevationRow = cursorElevation?.supported ?? false;
+  const elevationFt = useMemo(() => {
+    const m = cursorElevation?.valueM;
+    return m == null ? null : formatElevationFt(m);
+  }, [cursorElevation?.valueM]);
 
   return (
     <div className="absolute bottom-10 left-12 z-10" role="region" aria-label="Compass heading">
@@ -152,9 +184,29 @@ export default function CompassWidget({ mapBearing }: CompassWidgetProps) {
             </g>
           </svg>
         </div>
-        {/* Digital readout */}
-        <div className="mt-2 rounded-md border border-border/50 bg-black/30 px-3 py-1 font-mono text-sm font-bold tabular-nums tracking-wider text-primary">
-          {headingDisplay}°
+        {/* Digital readout — heading on top, cursor elevation stacked below
+            whenever terrain is on. Fixed min-width keeps the pill stable as
+            the elevation value shrinks/grows; the elevation slot keeps
+            rendering (with `—` when the cursor leaves the map) so the pill
+            doesn't pop in/out either. */}
+        <div
+          className={cn(
+            'mt-2 flex flex-col items-center rounded-md',
+            'border border-border/50 bg-black/30 px-2 py-1',
+            'font-mono text-sm font-bold tabular-nums tracking-wider text-primary',
+            // When terrain is on, lock the pill to the rose width so the
+            // elevation value can swing from sea level to Everest without
+            // the panel reflowing. 72px content + 16px padding fits
+            // "29,032 ft" at text-[10px].
+            showElevationRow && 'w-[72px]'
+          )}
+        >
+          <span>{headingDisplay}°</span>
+          {showElevationRow && (
+            <span className="text-[10px] font-normal tracking-tight text-primary/60">
+              {elevationFt ?? '—'} {t('units.ft')}
+            </span>
+          )}
         </div>
       </div>
     </div>
