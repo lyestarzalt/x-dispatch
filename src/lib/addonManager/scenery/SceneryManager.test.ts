@@ -8,7 +8,20 @@ vi.mock('@/lib/utils/logger', () => {
   const noop = () => {};
   const channel = { info: noop, warn: noop, error: noop, debug: noop };
   return {
-    default: { main: channel, renderer: channel },
+    default: {
+      info: noop,
+      warn: noop,
+      error: noop,
+      debug: noop,
+      main: channel,
+      data: channel,
+      ipc: channel,
+      security: channel,
+      launcher: channel,
+      tracker: channel,
+      addon: channel,
+    },
+    getLogPath: () => '/tmp/test.log',
   };
 });
 

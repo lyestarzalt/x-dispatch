@@ -109,20 +109,20 @@ export class SceneryManager {
             const lnkPath = path.join(this.customSceneryPath, dirEntry.name);
             const resolved = resolveLnkSync(lnkPath);
             if (!resolved.ok) {
-              logger.main.warn(
+              logger.addon.warn(
                 `scenery: unresolved shortcut ${dirEntry.name} (${resolved.reason})`
               );
               continue;
             }
             try {
               if (!fs.statSync(resolved.targetPath).isDirectory()) {
-                logger.main.warn(
+                logger.addon.warn(
                   `scenery: shortcut target is not a directory: ${dirEntry.name} → ${resolved.targetPath}`
                 );
                 continue;
               }
             } catch {
-              logger.main.warn(
+              logger.addon.warn(
                 `scenery: shortcut target missing: ${dirEntry.name} → ${resolved.targetPath}`
               );
               continue;
