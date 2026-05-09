@@ -100,6 +100,12 @@ describe('tileUrlToStyle', () => {
     const source = style.sources.raster as { attribution: string };
     expect(source.attribution).toMatch(/Esri/);
   });
+
+  it('caps source maxzoom at 19 so MapLibre overzooms past public-imagery coverage', () => {
+    const style = tileUrlToStyle(url);
+    const source = style.sources.raster as { maxzoom: number };
+    expect(source.maxzoom).toBe(19);
+  });
 });
 
 describe('resolveMapStyleArg', () => {

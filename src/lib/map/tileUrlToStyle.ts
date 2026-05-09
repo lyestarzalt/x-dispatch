@@ -97,6 +97,14 @@ export function attributionForUrl(url: string): string {
   return '&copy; Map data contributors';
 }
 
+// Most public raster providers (Esri World Imagery, OSM, Stadia, OFM raster)
+// publish global imagery only up to ~level 19. Past that you get blank
+// "Map data not yet available" placeholder tiles. Cap the source maxzoom
+// here so MapLibre overzooms (upscales the level-19 tile) instead of
+// requesting tiles that don't exist. The user can keep zooming visually,
+// it just gets blurrier — far better UX than a sea of grey placeholders.
+const RASTER_SOURCE_MAX_ZOOM = 19;
+
 export function tileUrlToStyle(url: string): StyleSpecification {
   return {
     version: 8,
@@ -105,6 +113,7 @@ export function tileUrlToStyle(url: string): StyleSpecification {
         type: 'raster',
         tiles: [url],
         tileSize: 256,
+        maxzoom: RASTER_SOURCE_MAX_ZOOM,
         attribution: attributionForUrl(url),
       },
     },
