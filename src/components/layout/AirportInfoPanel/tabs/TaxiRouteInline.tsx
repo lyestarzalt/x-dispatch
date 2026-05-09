@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
+import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
 import { useAppStore } from '@/stores/appStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
@@ -83,9 +84,15 @@ export default function TaxiRouteInline() {
         runwayName
       );
     } else {
+      // Arrival: the aircraft rolls out to the OPPOSITE end of the landing
+      // runway before exiting onto a taxiway. Starting the route at the
+      // touchdown threshold would force a backtrack down the entire runway.
+      const rollout = getRolloutEnd(airport?.runways, runwayName);
+      const startLon = rollout?.longitude ?? rwyEnd.lon;
+      const startLat = rollout?.latitude ?? rwyEnd.lat;
       computeAutoRoute(
-        rwyEnd.lon,
-        rwyEnd.lat,
+        startLon,
+        startLat,
         startPosition.longitude,
         startPosition.latitude,
         runwayName
