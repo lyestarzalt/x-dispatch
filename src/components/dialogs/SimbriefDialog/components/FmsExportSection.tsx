@@ -21,6 +21,18 @@ interface ResolvedTarget {
   filename: string;
 }
 
+function buildFilename(data: SimBriefOFP, link: string): string {
+  // Filename is derived from the OFP itself, not from SimBrief's per-format
+  // `name` (which is a human label like "X-Plane 11/12") nor from the raw
+  // `link` (which can include CDN path segments). Extension is taken from the
+  // link since that's authoritative for each format (.fms, .flp, .rte, etc).
+  const sanitize = (s: string) => s.replace(/[^A-Za-z0-9]/g, '');
+  const orig = sanitize(data.origin.icao_code);
+  const dest = sanitize(data.destination.icao_code);
+  const ext = link.match(/\.[A-Za-z0-9]+$/)?.[0] ?? '';
+  return `${orig}_${dest}${ext}`;
+}
+
 function resolveTargets(data: SimBriefOFP): ResolvedTarget[] {
   const targets = useSettingsStore.getState().simbrief.fmsExportTargets;
   const downloads = data.fms_downloads as
@@ -31,7 +43,7 @@ function resolveTargets(data: SimBriefOFP): ResolvedTarget[] {
 
   return targets.flatMap((t) => {
     const file = downloads[t.formatKey];
-    if (!file || typeof file !== 'object' || !file.link || !file.name) return [];
+    if (!file || typeof file !== 'object' || !file.link) return [];
     return [
       {
         id: t.id,
@@ -39,7 +51,7 @@ function resolveTargets(data: SimBriefOFP): ResolvedTarget[] {
         folderPath: t.folderPath,
         formatKey: t.formatKey,
         url: directory + file.link,
-        filename: file.name,
+        filename: buildFilename(data, file.link),
       },
     ];
   });
