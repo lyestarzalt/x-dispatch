@@ -229,7 +229,8 @@
       "vatsim": "VATSIM",
       "support": "Wsparcie",
       "about": "O programie",
-      "companionApps": "Aplikacje towarzyszące"
+      "companionApps": "Aplikacje towarzyszące",
+      "logs": "Dzienniki"
     },
     "support": {
       "reportProblem": "Zgłoś problem",
@@ -451,6 +452,36 @@
       "delayInline": "opóźnienie {{seconds}}s",
       "add": "Dodaj",
       "unknownError": "Nieznany błąd"
+    },
+    "logs": {
+      "title": "Dzienniki X-Plane",
+      "description": "Czytaj Log.txt X-Plane, aby zobaczyć, co symulator zgłosił podczas ostatniej sesji.",
+      "refresh": "Odśwież",
+      "report": "Zgłoś ten problem",
+      "showFullLog": "Pokaż pełny dziennik",
+      "hideFullLog": "Ukryj pełny dziennik",
+      "recognizedIssuesHeader": "Rozpoznane problemy ({{count}})",
+      "otherIssuesHeader": "Inne ostrzeżenia/błędy ({{count}})",
+      "lineNumber": "Wiersz {{line}}",
+      "truncatedNotice": "Pokazuję ostatnie {{shownMb}} MB z dziennika o rozmiarze {{totalMb}} MB.",
+      "empty": {
+        "noPath": "Ścieżka X-Plane nie skonfigurowana.",
+        "noPathCta": "Otwórz ustawienia X-Plane",
+        "noLog": "Brak dziennika — czy X-Plane został uruchomiony przynajmniej raz w tej instalacji?",
+        "allClear": "X-Dispatch nic nie zgłasza w tym dzienniku."
+      },
+      "reportDialog": {
+        "title": "Zgłoś problem z X-Plane",
+        "descriptionPlaceholder": "Co robiłeś, kiedy to się stało?",
+        "emailPlaceholder": "twoj@email.com (do kontaktu)",
+        "submit": "Wyślij raport",
+        "sending": "Wysyłanie…",
+        "success": "Dziękujemy! Twój raport został wysłany.",
+        "error": "Nie udało się wysłać raportu. Spróbuj ponownie.",
+        "scaffoldHeader": "Diagnostyka dziennika X-Plane",
+        "scaffoldRecognized": "Rozpoznane problemy:",
+        "scaffoldOther": "Inne wykryte wiersze E/W: {{count}}"
+      }
     }
   },
   "sidebar": {
@@ -1127,6 +1158,11 @@
       "noNotams": "Brak dostępnych NOTAMów",
       "transAltTitle": "Wysokości przejściowe",
       "transAltDesc": "Wysokość, na której przełączasz się między lokalnym ciśnieniem (QNH) a ciśnieniem standardowym (STD) — ustaw odpowiednio wysokościomierz"
+    }
+  },
+  "logs": {
+    "patterns": {
+      "flt-init-ok": "X-Plane odebrał JSON startu i pomyślnie zainicjalizował lot — każda dalsza usterka jest po tym etapie."
     }
   }
 }

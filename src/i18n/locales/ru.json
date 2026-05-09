@@ -229,7 +229,8 @@
       "vatsim": "VATSIM",
       "support": "Поддержка",
       "about": "О программе",
-      "companionApps": "Сопутствующие приложения"
+      "companionApps": "Сопутствующие приложения",
+      "logs": "Журналы"
     },
     "support": {
       "reportProblem": "Сообщить о проблеме",
@@ -451,6 +452,36 @@
       "delayInline": "задержка {{seconds}} с",
       "add": "Добавить",
       "unknownError": "Неизвестная ошибка"
+    },
+    "logs": {
+      "title": "Журналы X-Plane",
+      "description": "Читай Log.txt X-Plane, чтобы увидеть, что симулятор сообщил во время последнего сеанса.",
+      "refresh": "Обновить",
+      "report": "Сообщить о проблеме",
+      "showFullLog": "Показать полный журнал",
+      "hideFullLog": "Скрыть полный журнал",
+      "recognizedIssuesHeader": "Распознанные проблемы ({{count}})",
+      "otherIssuesHeader": "Другие предупреждения/ошибки ({{count}})",
+      "lineNumber": "Строка {{line}}",
+      "truncatedNotice": "Показано последние {{shownMb}} МБ из журнала размером {{totalMb}} МБ.",
+      "empty": {
+        "noPath": "Путь X-Plane не настроен.",
+        "noPathCta": "Открыть настройки X-Plane",
+        "noLog": "Журнал ещё не создан — X-Plane запускался хотя бы раз с этой установкой?",
+        "allClear": "X-Dispatch ничего не отмечает в этом журнале."
+      },
+      "reportDialog": {
+        "title": "Сообщить о проблеме X-Plane",
+        "descriptionPlaceholder": "Что вы делали, когда это произошло?",
+        "emailPlaceholder": "your@email.com (для обратной связи)",
+        "submit": "Отправить отчёт",
+        "sending": "Отправка…",
+        "success": "Спасибо! Ваш отчёт отправлен.",
+        "error": "Не удалось отправить отчёт. Попробуйте снова.",
+        "scaffoldHeader": "Диагностика журнала X-Plane",
+        "scaffoldRecognized": "Распознанные проблемы:",
+        "scaffoldOther": "Другие обнаруженные строки E/W: {{count}}"
+      }
     }
   },
   "sidebar": {
@@ -1127,6 +1158,11 @@
       "noNotams": "NOTAM не найдены",
       "transAltTitle": "Высоты перехода",
       "transAltDesc": "Высота, на которой вы переключаетесь между местным давлением (QNH) и стандартным (STD) — установите высотомер соответственно"
+    }
+  },
+  "logs": {
+    "patterns": {
+      "flt-init-ok": "X-Plane получил JSON запуска и успешно завершил инициализацию полёта — любые последующие ошибки идут после этого шага."
     }
   }
 }

@@ -229,7 +229,8 @@
       "vatsim": "VATSIM",
       "support": "Crew Help",
       "about": "Ship's Log",
-      "companionApps": "Companion Mateys"
+      "companionApps": "Companion Mateys",
+      "logs": "Cap’n’s Logs"
     },
     "support": {
       "reportProblem": "Report Trouble Aboard",
@@ -451,6 +452,36 @@
       "delayInline": "delay {{seconds}}s",
       "add": "Recruit",
       "unknownError": "Unknown squall"
+    },
+    "logs": {
+      "title": "X-Plane cap'n's logs",
+      "description": "Read th' Log.txt scroll t' see what th' sim hollered during yer last voyage.",
+      "refresh": "Hoist the colors!",
+      "report": "Send a message in a bottle",
+      "showFullLog": "Unfurl th' full scroll",
+      "hideFullLog": "Roll up th' scroll",
+      "recognizedIssuesHeader": "Known troubles ({{count}})",
+      "otherIssuesHeader": "Other squalls ({{count}})",
+      "lineNumber": "Line {{line}}",
+      "truncatedNotice": "Showin' th' last {{shownMb}} MB of a {{totalMb}} MB scroll, savvy?",
+      "empty": {
+        "noPath": "X-Plane port not charted.",
+        "noPathCta": "Set yer course in X-Plane settings",
+        "noLog": "No scroll yet — has th' sim ever set sail on this rig?",
+        "allClear": "Th' bilge be clean — nothin' flagged in this scroll."
+      },
+      "reportDialog": {
+        "title": "Report a foul wind from X-Plane",
+        "descriptionPlaceholder": "What were ye doin' when it struck?",
+        "emailPlaceholder": "yer@email.com (so we can holler back)",
+        "submit": "Send th' bottle",
+        "sending": "Castin' off…",
+        "success": "Hoist th' colors — yer report be sent!",
+        "error": "Th' bottle washed back ashore. Try again, matey.",
+        "scaffoldHeader": "X-Plane scroll diagnosis",
+        "scaffoldRecognized": "Known troubles:",
+        "scaffoldOther": "Other E/W lines aboard: {{count}}"
+      }
     }
   },
   "sidebar": {
@@ -1127,6 +1158,11 @@
       "noNotams": "No NOTAMs in sight",
       "transAltTitle": "Transition Altitudes",
       "transAltDesc": "Altitude where ye switch between local altimeter (QNH) an' standard pressure (STD) — set yer altimeter accordingly"
+    }
+  },
+  "logs": {
+    "patterns": {
+      "flt-init-ok": "Th' ship caught yer launch scroll and put 'er to sea — any trouble after this be downstream o' the proper sailing."
     }
   }
 }

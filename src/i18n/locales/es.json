@@ -229,7 +229,8 @@
       "vatsim": "VATSIM",
       "support": "Soporte",
       "about": "Acerca de",
-      "companionApps": "Apps complementarias"
+      "companionApps": "Apps complementarias",
+      "logs": "Registros"
     },
     "support": {
       "reportProblem": "Informar de un problema",
@@ -451,6 +452,36 @@
       "delayInline": "retraso {{seconds}}s",
       "add": "Añadir",
       "unknownError": "Error desconocido"
+    },
+    "logs": {
+      "title": "Registros de X-Plane",
+      "description": "Lee el Log.txt de X-Plane para ver lo que el simulador reportó durante tu última sesión.",
+      "refresh": "Actualizar",
+      "report": "Reportar este problema",
+      "showFullLog": "Mostrar registro completo",
+      "hideFullLog": "Ocultar registro completo",
+      "recognizedIssuesHeader": "Problemas reconocidos ({{count}})",
+      "otherIssuesHeader": "Otras advertencias/errores ({{count}})",
+      "lineNumber": "Línea {{line}}",
+      "truncatedNotice": "Mostrando los últimos {{shownMb}} MB de un registro de {{totalMb}} MB.",
+      "empty": {
+        "noPath": "Ruta de X-Plane no configurada.",
+        "noPathCta": "Abrir configuración de X-Plane",
+        "noLog": "Aún no hay registro — ¿se ha iniciado X-Plane al menos una vez en esta instalación?",
+        "allClear": "X-Dispatch no detecta nada en este registro."
+      },
+      "reportDialog": {
+        "title": "Reportar problema de X-Plane",
+        "descriptionPlaceholder": "¿Qué estabas haciendo cuando ocurrió?",
+        "emailPlaceholder": "tu@email.com (para seguimiento)",
+        "submit": "Enviar informe",
+        "sending": "Enviando…",
+        "success": "¡Gracias! Tu informe ha sido enviado.",
+        "error": "Error al enviar el informe. Inténtalo de nuevo.",
+        "scaffoldHeader": "Diagnóstico del registro de X-Plane",
+        "scaffoldRecognized": "Problemas reconocidos:",
+        "scaffoldOther": "Otras líneas E/W detectadas: {{count}}"
+      }
     }
   },
   "sidebar": {
@@ -1127,6 +1158,11 @@
       "noNotams": "No hay NOTAMs disponibles",
       "transAltTitle": "Altitudes de transición",
       "transAltDesc": "Altitud donde cambias entre altímetro local (QNH) y presión estándar (STD) — ajusta tu altímetro en consecuencia"
+    }
+  },
+  "logs": {
+    "patterns": {
+      "flt-init-ok": "X-Plane recibió tu JSON de inicio y comenzó la inicialización del vuelo con éxito — cualquier fallo posterior está fuera de este paso."
     }
   }
 }

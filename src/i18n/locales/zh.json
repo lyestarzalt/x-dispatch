@@ -229,7 +229,8 @@
       "vatsim": "VATSIM",
       "support": "支持",
       "about": "关于",
-      "companionApps": "配套应用"
+      "companionApps": "配套应用",
+      "logs": "日志"
     },
     "support": {
       "reportProblem": "报告问题",
@@ -451,6 +452,36 @@
       "delayInline": "延迟 {{seconds}}秒",
       "add": "添加",
       "unknownError": "未知错误"
+    },
+    "logs": {
+      "title": "X-Plane 日志",
+      "description": "阅读 X-Plane 的 Log.txt 以查看模拟器在上次会话期间报告的内容。",
+      "refresh": "刷新",
+      "report": "上报此问题",
+      "showFullLog": "显示完整日志",
+      "hideFullLog": "隐藏完整日志",
+      "recognizedIssuesHeader": "已识别的问题 ({{count}})",
+      "otherIssuesHeader": "其他警告/错误 ({{count}})",
+      "lineNumber": "第 {{line}} 行",
+      "truncatedNotice": "显示 {{totalMb}} MB 日志的最后 {{shownMb}} MB。",
+      "empty": {
+        "noPath": "未配置 X-Plane 路径。",
+        "noPathCta": "打开 X-Plane 设置",
+        "noLog": "尚无日志 — X-Plane 在此安装中是否至少启动过一次?",
+        "allClear": "X-Dispatch 在此日志中未标记任何问题。"
+      },
+      "reportDialog": {
+        "title": "上报 X-Plane 问题",
+        "descriptionPlaceholder": "问题发生时你在做什么?",
+        "emailPlaceholder": "your@email.com (用于跟进)",
+        "submit": "发送报告",
+        "sending": "发送中…",
+        "success": "谢谢!报告已发送。",
+        "error": "发送报告失败。请重试。",
+        "scaffoldHeader": "X-Plane 日志诊断",
+        "scaffoldRecognized": "已识别的问题:",
+        "scaffoldOther": "其他检测到的 E/W 行: {{count}}"
+      }
     }
   },
   "sidebar": {
@@ -1127,6 +1158,11 @@
       "noNotams": "暂无 NOTAM",
       "transAltTitle": "过渡高度",
       "transAltDesc": "在本场气压（QNH）和标准气压（STD）之间切换的高度 — 请相应调整高度表"
+    }
+  },
+  "logs": {
+    "patterns": {
+      "flt-init-ok": "X-Plane 已接收启动 JSON 并成功完成飞行初始化 — 后续任何故障都发生在该步骤之后。"
     }
   }
 }
