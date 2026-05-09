@@ -66,6 +66,17 @@ export function useSimbriefFetch() {
 }
 
 /**
+ * Mutation for downloading a SimBrief-generated FMS file to a configured target folder.
+ * Call once per (target, OFP) pair. No caching — each click is a fresh download.
+ */
+export function useDownloadFmsFile() {
+  return useMutation({
+    mutationFn: (args: { url: string; targetDir: string; filename: string }) =>
+      window.simbriefAPI.downloadFmsFile(args),
+  });
+}
+
+/**
  * Get route coordinates from SimBrief data
  */
 export function getRouteCoordinates(data: SimBriefOFP): [number, number][] {

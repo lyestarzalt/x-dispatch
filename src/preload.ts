@@ -138,6 +138,8 @@ contextBridge.exposeInMainWorld('appAPI', {
     ipcRenderer.on('deep-link', handler);
     return () => ipcRenderer.removeListener('deep-link', handler);
   },
+  pickDirectory: (opts?: { title?: string; defaultPath?: string }) =>
+    ipcRenderer.invoke('app:pickDirectory', opts),
 });
 
 contextBridge.exposeInMainWorld('xplaneAPI', {
@@ -249,6 +251,8 @@ contextBridge.exposeInMainWorld('flightPlanAPI', {
 
 contextBridge.exposeInMainWorld('simbriefAPI', {
   fetchLatest: (pilotId: string) => ipcRenderer.invoke('simbrief:fetchLatest', pilotId),
+  downloadFmsFile: (args: { url: string; targetDir: string; filename: string }) =>
+    ipcRenderer.invoke('simbrief:downloadFmsFile', args),
 });
 
 // X-Plane Service API - REST + WebSocket
@@ -429,6 +433,7 @@ declare global {
       onAirportsUpdated: (callback: () => void) => () => void;
       onFocusSearch: (callback: () => void) => () => void;
       onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => () => void;
+      pickDirectory: (opts?: { title?: string; defaultPath?: string }) => Promise<string | null>;
     };
     airportAPI: {
       getAirports: () => Promise<Airport[]>;
@@ -551,6 +556,11 @@ declare global {
     };
     simbriefAPI: {
       fetchLatest: (pilotId: string) => Promise<import('./types/simbrief').SimBriefFetchResult>;
+      downloadFmsFile: (args: {
+        url: string;
+        targetDir: string;
+        filename: string;
+      }) => Promise<{ success: true; path: string } | { success: false; error: string }>;
     };
     // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {

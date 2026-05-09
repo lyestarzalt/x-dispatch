@@ -211,6 +211,57 @@ async function proxyFetch(
   });
 }
 
+async function proxyDownload(
+  url: string,
+  opts: { timeoutMs?: number } = {}
+): Promise<{ data: Buffer | null; error: string | null; statusCode?: number }> {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_PROXY_FETCH_TIMEOUT_MS;
+  const startedAt = Date.now();
+
+  return new Promise((resolve) => {
+    const request = net.request(url);
+    request.setHeader('User-Agent', `X-Dispatch/${app.getVersion()}`);
+    const chunks: Buffer[] = [];
+    let settled = false;
+
+    const settle = (result: { data: Buffer | null; error: string | null; statusCode?: number }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      const elapsed = Date.now() - startedAt;
+      if (result.error) {
+        logger.main.warn(`proxyDownload ${url} failed in ${elapsed}ms: ${result.error}`);
+      }
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      try {
+        request.abort();
+      } catch {
+        // request may already be settling
+      }
+      settle({ data: null, error: `Timeout after ${timeoutMs}ms` });
+    }, timeoutMs);
+
+    request.on('response', (response) => {
+      const statusCode = response.statusCode;
+      response.on('data', (chunk: Buffer) => chunks.push(chunk));
+      response.on('end', () => {
+        if (statusCode >= 200 && statusCode < 300) {
+          settle({ data: Buffer.concat(chunks), error: null, statusCode });
+        } else {
+          settle({ data: null, error: `HTTP ${statusCode}`, statusCode });
+        }
+      });
+      response.on('error', (err: Error) => settle({ data: null, error: err.message, statusCode }));
+    });
+
+    request.on('error', (err: Error) => settle({ data: null, error: err.message }));
+    request.end();
+  });
+}
+
 function createWindow(): BrowserWindow {
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
@@ -1165,6 +1216,90 @@ function registerIpcHandlers() {
       return { success: false, error: 'Failed to fetch flight plan' };
     }
   });
+
+  ipcMain.handle(
+    'simbrief:downloadFmsFile',
+    async (_, args: { url: string; targetDir: string; filename: string }) => {
+      const { url, targetDir, filename } = args ?? {};
+
+      if (!url || typeof url !== 'string' || !url.startsWith('https://')) {
+        return { success: false, error: 'Invalid URL' };
+      }
+      try {
+        const host = new URL(url).hostname;
+        if (!host.endsWith('.simbrief.com') && host !== 'simbrief.com') {
+          return { success: false, error: `Refusing to download from ${host}` };
+        }
+      } catch {
+        return { success: false, error: 'Malformed URL' };
+      }
+      if (!targetDir || typeof targetDir !== 'string' || !path.isAbsolute(targetDir)) {
+        return { success: false, error: 'targetDir must be an absolute path' };
+      }
+      if (
+        !filename ||
+        typeof filename !== 'string' ||
+        filename.includes('/') ||
+        filename.includes('\\') ||
+        filename.includes('..')
+      ) {
+        return { success: false, error: 'Invalid filename' };
+      }
+
+      const startedAt = Date.now();
+      try {
+        await fs.promises.mkdir(targetDir, { recursive: true });
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        logger.main.warn(`downloadFmsFile mkdir failed for ${targetDir}: ${reason}`);
+        return { success: false, error: `Couldn't create folder: ${reason}` };
+      }
+
+      const result = await proxyDownload(url);
+      if (!result.data) {
+        return { success: false, error: result.error ?? 'Download failed' };
+      }
+
+      const targetPath = path.join(targetDir, filename);
+      try {
+        await fs.promises.writeFile(targetPath, result.data);
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        logger.main.warn(`downloadFmsFile write failed for ${targetPath}: ${reason}`);
+        return { success: false, error: `Couldn't write file: ${reason}` };
+      }
+
+      const elapsed = Date.now() - startedAt;
+      logger.main.info(
+        `downloadFmsFile wrote ${filename} to ${targetDir} (${result.data.length} bytes) in ${elapsed}ms`
+      );
+      return { success: true, path: targetPath };
+    }
+  );
+
+  ipcMain.handle(
+    'app:pickDirectory',
+    async (_, opts?: { title?: string; defaultPath?: string }) => {
+      const dialogOptions: Electron.OpenDialogOptions = {
+        properties: ['openDirectory', 'createDirectory'],
+        title: opts?.title ?? 'Select folder',
+        defaultPath: opts?.defaultPath,
+      };
+
+      try {
+        const result =
+          mainWindow && !mainWindow.isDestroyed()
+            ? await dialog.showOpenDialog(mainWindow, dialogOptions)
+            : await dialog.showOpenDialog(dialogOptions);
+
+        if (result.canceled || result.filePaths.length === 0) return null;
+        return result.filePaths[0]!;
+      } catch (err) {
+        logger.main.error('app:pickDirectory failed', err);
+        return null;
+      }
+    }
+  );
 
   ipcMain.handle('launcher:scanAircraft', async () => {
     const xplanePath = dataManager.getXPlanePath();
