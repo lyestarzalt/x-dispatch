@@ -157,7 +157,26 @@ export class SceneryManager {
    * Note: DefaultAirport tier is ONLY for *GLOBAL_AIRPORTS* marker, not real folders.
    */
   private processEntry(iniEntry: ParsedIniEntry, index: number): SceneryEntry {
-    const classification = scanSceneryFolder(iniEntry.fullPath);
+    // If the INI references a .lnk file directly, resolve to its target
+    // before classifying. The displayed folderName stays as the .lnk name
+    // because that's what scenery_packs.ini knows about.
+    let scanPath = iniEntry.fullPath;
+    try {
+      if (
+        iniEntry.fullPath.toLowerCase().endsWith('.lnk') &&
+        fs.statSync(iniEntry.fullPath).isFile()
+      ) {
+        const resolved = resolveLnkSync(iniEntry.fullPath);
+        if (resolved.ok && fs.existsSync(resolved.targetPath)) {
+          scanPath = resolved.targetPath;
+        }
+      }
+    } catch {
+      // Fall through with the original path — classification will likely
+      // come back empty, which is fine.
+    }
+
+    const classification = scanSceneryFolder(scanPath);
     const priority = classifyScenery(iniEntry.folderName, classification);
 
     return {

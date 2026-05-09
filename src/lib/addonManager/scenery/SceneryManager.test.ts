@@ -103,4 +103,39 @@ describe('SceneryManager — .lnk shortcut discovery', () => {
     // The real folder wins (processed first by the loop)
     expect(matches[0]!.fullPath).toBe(realHeathrow);
   });
+
+  it('classifies an INI entry that references a .lnk file using the target', async () => {
+    const heathrowTarget = path.join(externalDrive, 'Heathrow-INI');
+    fs.mkdirSync(heathrowTarget);
+    fs.mkdirSync(path.join(heathrowTarget, 'Earth nav data'));
+    fs.writeFileSync(path.join(heathrowTarget, 'Earth nav data', 'apt.dat'), 'I\n1000 Version\n');
+
+    fs.writeFileSync(
+      path.join(customScenery, 'Heathrow-INI.lnk'),
+      buildMinimalLnk(heathrowTarget, 'ascii')
+    );
+
+    // Reference the .lnk directly from scenery_packs.ini
+    fs.writeFileSync(
+      path.join(customScenery, 'scenery_packs.ini'),
+      'I\n1000 Version\nSCENERY_PACK Custom Scenery/Heathrow-INI.lnk/\n'
+    );
+
+    const mgr = new SceneryManager(xpRoot);
+    const result = await mgr.analyze();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    // Exactly one entry — the INI reference shouldn't be duplicated by the
+    // dir-walk fallback finding the same .lnk file.
+    const matches = result.value.filter(
+      (e) => e.folderName === 'Heathrow-INI.lnk' || e.folderName === 'Heathrow-INI'
+    );
+    expect(matches).toHaveLength(1);
+    const entry = matches[0]!;
+    expect(entry.folderName).toBe('Heathrow-INI.lnk'); // INI form wins
+    // Classification used the resolved target, not the .lnk file
+    expect(entry.classification.hasEarthNavData).toBe(true);
+    expect(entry.classification.hasAptDat).toBe(true);
+  });
 });
