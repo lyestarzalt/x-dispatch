@@ -445,7 +445,7 @@
     "companionApps": {
       "title": "Companion Mateys",
       "description": "Programs to set sail alongside X-Plane (XPME, ATC chatterboxes, helm-riggin' drivers).",
-      "addButton": "+ Recruit a companion matey",
+      "addButton": "Recruit a companion matey",
       "suggested": "Suggested by the crew",
       "launchNow": "Hoist the colors!",
       "autoLaunch": "Set sail with X-Plane",

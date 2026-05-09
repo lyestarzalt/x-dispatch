@@ -445,7 +445,7 @@
     "companionApps": {
       "title": "コンパニオンアプリ",
       "description": "X-Plane と一緒に起動するプログラム(XPME、ATC クライアント、ハードウェアドライバなど)。",
-      "addButton": "+ コンパニオンアプリを追加",
+      "addButton": "コンパニオンアプリを追加",
       "suggested": "おすすめ",
       "launchNow": "今すぐ起動",
       "autoLaunch": "X-Plane と一緒に自動起動",

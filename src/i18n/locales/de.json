@@ -445,7 +445,7 @@
     "companionApps": {
       "title": "Begleit-Apps",
       "description": "Programme, die zusammen mit X-Plane gestartet werden (XPME, ATC-Clients, Hardware-Treiber).",
-      "addButton": "+ Begleit-App hinzufügen",
+      "addButton": "Begleit-App hinzufügen",
       "suggested": "Vorschläge",
       "launchNow": "Jetzt starten",
       "autoLaunch": "Mit X-Plane automatisch starten",

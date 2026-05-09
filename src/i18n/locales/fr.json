@@ -445,7 +445,7 @@
     "companionApps": {
       "title": "Applications compagnons",
       "description": "Programmes à lancer avec X-Plane (XPME, clients ATC, pilotes matériels).",
-      "addButton": "+ Ajouter une application compagnon",
+      "addButton": "Ajouter une application compagnon",
       "suggested": "Suggérées",
       "launchNow": "Lancer maintenant",
       "autoLaunch": "Lancer automatiquement avec X-Plane",

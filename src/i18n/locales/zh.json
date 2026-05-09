@@ -445,7 +445,7 @@
     "companionApps": {
       "title": "配套应用",
       "description": "随 X-Plane 一同启动的程序(XPME、ATC 客户端、硬件驱动等)。",
-      "addButton": "+ 添加配套应用",
+      "addButton": "添加配套应用",
       "suggested": "推荐",
       "launchNow": "立即启动",
       "autoLaunch": "随 X-Plane 自动启动",
