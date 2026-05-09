@@ -308,9 +308,8 @@ function ConditionsCard({
   const showTraffic = liveTraffic && (liveTraffic.departures > 0 || liveTraffic.arrivals > 0);
   return (
     <section>
-      <div className="mb-1.5 flex items-baseline justify-between">
-        <h4 className="xp-section-heading mb-0 border-b-0">Conditions</h4>
-        {showTraffic && (
+      {showTraffic && (
+        <div className="mb-1.5 flex justify-end">
           <span className="flex items-center gap-2 text-xs text-muted-foreground">
             <span
               className="flex items-center gap-1 text-cat-emerald"
@@ -327,8 +326,8 @@ function ConditionsCard({
               <span className="font-mono tabular-nums">{liveTraffic.arrivals}</span>
             </span>
           </span>
-        )}
-      </div>
+        </div>
+      )}
       {metar && (
         <div className="rounded-lg bg-card/40 px-3 py-2.5 text-sm">
           <KvRow label="Wind" value={formatWind(metar.wind)} />
