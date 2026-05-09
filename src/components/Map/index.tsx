@@ -10,6 +10,7 @@ import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
+import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlaneState, useVatsimSectorQuery } from '@/queries';
@@ -26,6 +27,7 @@ import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import type { PlanePosition } from '@/types/xplane';
 import {
+  applyAirportTheme,
   applyNavVisibilityChange,
   toggleIvaoLayer,
   toggleVatsimLayer,
@@ -471,6 +473,14 @@ export default function Map({ airports }: MapProps) {
 
     map.setStyle(resolveMapStyleArg(mapStyleUrl), {
       transformStyle: makePreserveCustomStyle(map),
+    });
+
+    // Re-apply airport overlay colors for the new basemap theme. `style.load`
+    // fires once after setStyle finishes restoring sources/layers via
+    // transformStyle — at that point the airport layers exist again and
+    // setPaintProperty is safe.
+    map.once('style.load', () => {
+      applyAirportTheme(map, getBasemapTheme(mapStyleUrl));
     });
   }, [mapStyleUrl, mapRef]);
 

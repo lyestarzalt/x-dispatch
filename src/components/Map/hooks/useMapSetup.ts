@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
+import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
@@ -193,7 +194,7 @@ export function useMapSetup({
       captureBasemapSnapshot(map);
       setupGlobeProjection(map);
       setup3DTerrain(map);
-      setupAirportsLayer(map, airports);
+      setupAirportsLayer(map, airports, getBasemapTheme(mapStyleUrl));
       setupAirportPopup(map, airportPopupRef, (icao: string, coords: [number, number]) =>
         onAirportClickRef.current(icao, coords)
       );
