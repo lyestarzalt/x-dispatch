@@ -251,7 +251,21 @@
       "pilotIdNote": "您的飞行员ID是一个数字标识符。在simbrief.com → 账户设置 → 飞行员ID中可以找到。",
       "testSuccess": "找到飞行计划",
       "needAccount": "没有SimBrief账户？",
-      "freeService": "SimBrief是一个免费的飞行计划服务"
+      "freeService": "SimBrief是一个免费的飞行计划服务",
+      "fmsExportTargets": {
+        "heading": "FMS 导出目标",
+        "description": "将 SimBrief 飞行计划放入您飞机的飞行计划文件夹。",
+        "add": "添加目标",
+        "addTitle": "添加导出目标",
+        "editTitle": "编辑导出目标",
+        "dialogDescription": "选择您的插件期望的 SimBrief 格式以及它读取的文件夹。",
+        "format": "格式",
+        "label": "标签",
+        "folder": "目标文件夹",
+        "pickFolderTitle": "选择导出文件夹",
+        "empty": "尚无目标。添加一个即可将 SimBrief 计划直接发送到插件文件夹。",
+        "deleteTitle": "删除此导出目标？"
+      }
     },
     "about": {
       "title": "关于",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "发送到 FMS",
+      "send": "发送",
+      "sendAll": "全部发送",
+      "emptyHint": "尚未配置导出目标。在设置 → SimBrief 中添加。",
+      "noMatches": "您配置的格式都不在此 SimBrief 计划中。",
+      "success": "{{filename}} 已写入 {{label}}",
+      "failure": "无法导出 {{label}}：{{reason}}",
+      "bulkSummary": "已发送 {{ok}}/{{total}}"
+    },
     "title": "从SimBrief导入",
     "description": "从SimBrief获取最新的飞行计划",
     "notConfigured": "SimBrief未配置",

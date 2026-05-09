@@ -251,7 +251,21 @@
       "pilotIdNote": "パイロットIDは数値の識別子です。simbrief.com → アカウント設定 → パイロットIDで確認できます。",
       "testSuccess": "フライトプランが見つかりました",
       "needAccount": "SimBriefアカウントをお持ちでないですか？",
-      "freeService": "SimBriefは無料のフライトプランニングサービスです"
+      "freeService": "SimBriefは無料のフライトプランニングサービスです",
+      "fmsExportTargets": {
+        "heading": "FMSエクスポート先",
+        "description": "SimBriefのフライトプランを機体のフライトプランフォルダに保存します。",
+        "add": "エクスポート先を追加",
+        "addTitle": "エクスポート先を追加",
+        "editTitle": "エクスポート先を編集",
+        "dialogDescription": "アドオンが期待するSimBriefフォーマットと、読み込み元のフォルダを選択してください。",
+        "format": "フォーマット",
+        "label": "ラベル",
+        "folder": "保存先フォルダ",
+        "pickFolderTitle": "エクスポートフォルダを選択",
+        "empty": "エクスポート先がまだありません。追加するとSimBriefプランを直接アドオンのフォルダに送れます。",
+        "deleteTitle": "このエクスポート先を削除しますか？"
+      }
     },
     "about": {
       "title": "情報",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "FMSへ送信",
+      "send": "送信",
+      "sendAll": "すべて送信",
+      "emptyHint": "エクスポート先が未設定です。設定 → SimBriefから追加してください。",
+      "noMatches": "設定されたフォーマットはこのSimBriefプランに含まれていません。",
+      "success": "{{filename}} を {{label}} に書き込みました",
+      "failure": "{{label}}のエクスポートに失敗しました: {{reason}}",
+      "bulkSummary": "{{total}}件中{{ok}}件送信"
+    },
     "title": "SimBriefからインポート",
     "description": "SimBriefから最新のフライトプランを取得",
     "notConfigured": "SimBrief未設定",

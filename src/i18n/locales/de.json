@@ -251,7 +251,21 @@
       "pilotIdNote": "Ihre Piloten-ID ist eine numerische Kennung. Finden Sie sie unter simbrief.com → Kontoeinstellungen → Pilot ID.",
       "testSuccess": "Flugplan gefunden",
       "needAccount": "Kein SimBrief-Konto?",
-      "freeService": "SimBrief ist ein kostenloser Flugplanungsdienst"
+      "freeService": "SimBrief ist ein kostenloser Flugplanungsdienst",
+      "fmsExportTargets": {
+        "heading": "FMS-Exportziele",
+        "description": "Legt den SimBrief-Flugplan im Flugplan-Ordner Ihres Flugzeugs ab.",
+        "add": "Ziel hinzufügen",
+        "addTitle": "Exportziel hinzufügen",
+        "editTitle": "Exportziel bearbeiten",
+        "dialogDescription": "Wählen Sie das SimBrief-Format Ihres Flugzeug-Addons und den Ordner, aus dem es liest.",
+        "format": "Format",
+        "label": "Bezeichnung",
+        "folder": "Zielordner",
+        "pickFolderTitle": "Exportordner wählen",
+        "empty": "Noch keine Ziele. Fügen Sie eines hinzu, um SimBrief-Pläne direkt in den Addon-Ordner zu senden.",
+        "deleteTitle": "Dieses Exportziel löschen?"
+      }
     },
     "about": {
       "title": "Über",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "An FMS senden",
+      "send": "Senden",
+      "sendAll": "Alle senden",
+      "emptyHint": "Keine Exportziele konfiguriert. Fügen Sie eines unter Einstellungen → SimBrief hinzu.",
+      "noMatches": "Keines Ihrer konfigurierten Formate ist in diesem SimBrief-Plan enthalten.",
+      "success": "{{filename}} an {{label}} geschrieben",
+      "failure": "Export von {{label}} fehlgeschlagen: {{reason}}",
+      "bulkSummary": "{{ok}} von {{total}} gesendet"
+    },
     "title": "Von SimBrief importieren",
     "description": "Ihren letzten Flugplan von SimBrief abrufen",
     "notConfigured": "SimBrief nicht konfiguriert",

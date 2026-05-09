@@ -251,7 +251,21 @@
       "pilotIdNote": "Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.",
       "testSuccess": "Found flight plan",
       "needAccount": "Don't have a SimBrief account?",
-      "freeService": "SimBrief is a free flight planning service"
+      "freeService": "SimBrief is a free flight planning service",
+      "fmsExportTargets": {
+        "heading": "FMS export targets",
+        "description": "Drop the SimBrief flight plan into your aircraft's flight-plan folder.",
+        "add": "Add target",
+        "addTitle": "Add export target",
+        "editTitle": "Edit export target",
+        "dialogDescription": "Pick the SimBrief format your aircraft addon expects, and the folder it reads from.",
+        "format": "Format",
+        "label": "Label",
+        "folder": "Target folder",
+        "pickFolderTitle": "Pick export folder",
+        "empty": "No targets yet. Add one to send SimBrief plans straight into an addon folder.",
+        "deleteTitle": "Delete this export target?"
+      }
     },
     "about": {
       "title": "About",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "Send to FMS",
+      "send": "Send",
+      "sendAll": "Send all",
+      "emptyHint": "No export targets configured. Add one in Settings → SimBrief.",
+      "noMatches": "None of your configured formats are present in this SimBrief plan.",
+      "success": "Wrote {{filename}} to {{label}}",
+      "failure": "Couldn't export {{label}}: {{reason}}",
+      "bulkSummary": "{{ok}} of {{total}} sent"
+    },
     "title": "Import from SimBrief",
     "description": "Fetch your latest flight plan from SimBrief",
     "notConfigured": "SimBrief not configured",

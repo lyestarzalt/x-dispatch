@@ -251,7 +251,21 @@
       "pilotIdNote": "Ваш Pilot ID — это числовой идентификатор. Найдите его на simbrief.com → Настройки аккаунта → Pilot ID.",
       "testSuccess": "План полёта найден",
       "needAccount": "Нет аккаунта SimBrief?",
-      "freeService": "SimBrief — бесплатный сервис планирования полётов"
+      "freeService": "SimBrief — бесплатный сервис планирования полётов",
+      "fmsExportTargets": {
+        "heading": "Цели экспорта FMS",
+        "description": "Сохранить план полёта SimBrief в папку планов вашего самолёта.",
+        "add": "Добавить цель",
+        "addTitle": "Добавить цель экспорта",
+        "editTitle": "Изменить цель экспорта",
+        "dialogDescription": "Выберите формат SimBrief, который ожидает ваш аддон, и папку, из которой он читает.",
+        "format": "Формат",
+        "label": "Метка",
+        "folder": "Целевая папка",
+        "pickFolderTitle": "Выбрать папку экспорта",
+        "empty": "Целей пока нет. Добавьте, чтобы отправлять планы SimBrief прямо в папку аддона.",
+        "deleteTitle": "Удалить эту цель экспорта?"
+      }
     },
     "about": {
       "title": "О программе",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "Отправить в FMS",
+      "send": "Отправить",
+      "sendAll": "Отправить все",
+      "emptyHint": "Цели экспорта не настроены. Добавьте в Настройках → SimBrief.",
+      "noMatches": "Ни один из настроенных форматов не представлен в этом плане SimBrief.",
+      "success": "{{filename}} записан в {{label}}",
+      "failure": "Не удалось экспортировать {{label}}: {{reason}}",
+      "bulkSummary": "Отправлено {{ok}} из {{total}}"
+    },
     "title": "Импорт из SimBrief",
     "description": "Получить последний план полёта из SimBrief",
     "notConfigured": "SimBrief не настроен",

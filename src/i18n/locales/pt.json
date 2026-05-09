@@ -251,7 +251,21 @@
       "pilotIdNote": "Seu ID de Piloto é um identificador numérico. Encontre-o em simbrief.com → Configurações da Conta → ID do Piloto.",
       "testSuccess": "Plano de voo encontrado",
       "needAccount": "Não tem uma conta SimBrief?",
-      "freeService": "SimBrief é um serviço gratuito de planejamento de voos"
+      "freeService": "SimBrief é um serviço gratuito de planejamento de voos",
+      "fmsExportTargets": {
+        "heading": "Destinos de exportação FMS",
+        "description": "Coloque o plano de voo SimBrief na pasta de planos da sua aeronave.",
+        "add": "Adicionar destino",
+        "addTitle": "Adicionar destino de exportação",
+        "editTitle": "Editar destino de exportação",
+        "dialogDescription": "Escolha o formato SimBrief que seu addon espera e a pasta de onde ele lê.",
+        "format": "Formato",
+        "label": "Rótulo",
+        "folder": "Pasta destino",
+        "pickFolderTitle": "Escolher pasta de exportação",
+        "empty": "Nenhum destino ainda. Adicione um para enviar planos SimBrief direto à pasta de um addon.",
+        "deleteTitle": "Excluir este destino de exportação?"
+      }
     },
     "about": {
       "title": "Sobre",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "Enviar ao FMS",
+      "send": "Enviar",
+      "sendAll": "Enviar todos",
+      "emptyHint": "Nenhum destino de exportação configurado. Adicione um em Configurações → SimBrief.",
+      "noMatches": "Nenhum dos formatos configurados está presente neste plano SimBrief.",
+      "success": "{{filename}} escrito em {{label}}",
+      "failure": "Não foi possível exportar {{label}}: {{reason}}",
+      "bulkSummary": "{{ok}} de {{total}} enviados"
+    },
     "title": "Importar do SimBrief",
     "description": "Buscar seu plano de voo mais recente do SimBrief",
     "notConfigured": "SimBrief não configurado",

@@ -251,7 +251,21 @@
       "pilotIdNote": "Yer Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.",
       "testSuccess": "Voyage plan sighted",
       "needAccount": "Need a SimBrief account, matey?",
-      "freeService": "SimBrief be a free flight-planning service"
+      "freeService": "SimBrief be a free flight-planning service",
+      "fmsExportTargets": {
+        "heading": "FMS treasure marks",
+        "description": "Drop the SimBrief voyage plan straight into yer ship's plan hold.",
+        "add": "Add a mark",
+        "addTitle": "Add export mark",
+        "editTitle": "Edit export mark",
+        "dialogDescription": "Pick the SimBrief format yer addon expects, and the hold it reads from.",
+        "format": "Format",
+        "label": "Label",
+        "folder": "Target hold",
+        "pickFolderTitle": "Pick export hold",
+        "empty": "No marks yet, matey. Add one to send SimBrief plans straight into an addon hold.",
+        "deleteTitle": "Scuttle this export mark?"
+      }
     },
     "about": {
       "title": "Ship's Log",
@@ -1106,6 +1120,16 @@
     }
   },
   "simbrief": {
+    "export": {
+      "heading": "Send to FMS",
+      "send": "Send",
+      "sendAll": "Send all hands",
+      "emptyHint": "No export marks set. Add one at Settings → SimBrief, ye scallywag.",
+      "noMatches": "None o' yer formats be in this SimBrief plan.",
+      "success": "Stowed {{filename}} aboard {{label}}",
+      "failure": "Couldn't export {{label}}: {{reason}}",
+      "bulkSummary": "{{ok}} o' {{total}} sent"
+    },
     "title": "SimBrief Import",
     "description": "Fetch yer latest flight plan from SimBrief",
     "notConfigured": "SimBrief ain't rigged",
