@@ -54,4 +54,13 @@ describe('resolveLnkSync', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe('parse-error');
   });
+
+  it('returns reason "no-target" when the parser yields an empty string', () => {
+    const lnkPath = path.join(TMP_ROOT, 'empty-target.lnk');
+    fs.writeFileSync(lnkPath, buildMinimalLnk('', 'ascii'));
+
+    const r = resolveLnkSync(lnkPath);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe('no-target');
+  });
 });
