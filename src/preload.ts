@@ -3,7 +3,10 @@ import type { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from './lib/xplaneServices/dataService/cycleInfo';
-import type { XPLogReadResult } from './lib/xplaneServices/log/ipc';
+import type {
+  XPLogReadResult,
+  openXPlaneLogExternally as openXPlaneLogExternallyFn,
+} from './lib/xplaneServices/log/ipc';
 // Import types from canonical sources
 import type { Aircraft, WeatherPreset } from './types/aircraft';
 import type { CliFlags } from './types/cli';
@@ -29,6 +32,8 @@ import type { AirwaySegmentWithCoords } from './types/navigation';
 import type { VatsimData, VatsimEventsResponse } from './types/vatsim';
 import type { VatsimSectorCacheState, VatsimSectorQueryResult } from './types/vatsimSectors';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
+
+type XPLogOpenResult = Awaited<ReturnType<typeof openXPlaneLogExternallyFn>>;
 
 contextBridge.exposeInMainWorld('airportAPI', {
   getAirports: () => ipcRenderer.invoke('get-airports'),
@@ -367,6 +372,7 @@ contextBridge.exposeInMainWorld('companionAppsAPI', {
 
 contextBridge.exposeInMainWorld('xpLogAPI', {
   read: (): Promise<XPLogReadResult> => ipcRenderer.invoke('xp-log:read'),
+  openExternal: (): Promise<XPLogOpenResult> => ipcRenderer.invoke('xp-log:openExternal'),
 });
 
 declare global {
@@ -757,6 +763,7 @@ declare global {
     };
     xpLogAPI: {
       read: () => Promise<XPLogReadResult>;
+      openExternal: () => Promise<XPLogOpenResult>;
     };
   }
 }

@@ -486,7 +486,10 @@
         "errorsWarnings": "Errors + Warnings",
         "errors": "Errors",
         "warnings": "Warnings"
-      }
+      },
+      "openExternal": "Open Log.txt",
+      "searchPlaceholder": "Search log…",
+      "openFailed": "Could not open Log.txt."
     }
   },
   "sidebar": {

@@ -486,7 +486,10 @@
         "errorsWarnings": "错误 + 警告",
         "errors": "错误",
         "warnings": "警告"
-      }
+      },
+      "openExternal": "打开 Log.txt",
+      "searchPlaceholder": "搜索日志…",
+      "openFailed": "无法打开 Log.txt。"
     }
   },
   "sidebar": {

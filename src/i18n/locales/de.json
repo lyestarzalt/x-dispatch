@@ -486,7 +486,10 @@
         "errorsWarnings": "Fehler + Warnungen",
         "errors": "Fehler",
         "warnings": "Warnungen"
-      }
+      },
+      "openExternal": "Log.txt öffnen",
+      "searchPlaceholder": "Protokoll durchsuchen…",
+      "openFailed": "Log.txt konnte nicht geöffnet werden."
     }
   },
   "sidebar": {

@@ -486,7 +486,10 @@
         "errorsWarnings": "Foul winds + squalls",
         "errors": "Foul winds",
         "warnings": "Squalls"
-      }
+      },
+      "openExternal": "Pry open Log.txt",
+      "searchPlaceholder": "Search th' scroll…",
+      "openFailed": "Couldn't pry open Log.txt, matey."
     }
   },
   "sidebar": {

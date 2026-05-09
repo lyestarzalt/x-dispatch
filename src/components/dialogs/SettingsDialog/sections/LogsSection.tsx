@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCcw, ScrollText } from 'lucide-react';
+import { ExternalLink, RefreshCcw, ScrollText, Search } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import { type LogEntry, type LogLevel, parseLog } from '@/lib/xplaneServices/log/parseLog';
@@ -28,11 +30,26 @@ export function LogsSection({ active }: LogsSectionProps) {
   const { t } = useTranslation();
   const query = useXplaneLogQuery(active);
   const [filter, setFilter] = useState<LevelFilter>('errors-warnings');
+  const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
   const [showHeader, setShowHeader] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
   const handleRefresh = () => {
     query.refetch();
+  };
+
+  const handleOpenExternal = async () => {
+    const r = await window.xpLogAPI.openExternal();
+    if (!r.ok) {
+      const msg =
+        r.reason === 'no-log'
+          ? t('settings.logs.empty.noLog')
+          : r.reason === 'no-path'
+            ? t('settings.logs.empty.noPath')
+            : (r.message ?? t('settings.logs.openFailed'));
+      toast.error(msg);
+    }
   };
 
   const Header = (
@@ -49,10 +66,14 @@ export function LogsSection({ active }: LogsSectionProps) {
   );
 
   const Toolbar = ({ canReport }: { canReport: boolean }) => (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
         <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
         {t('settings.logs.refresh')}
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleOpenExternal}>
+        <ExternalLink className="mr-2 h-3.5 w-3.5" />
+        {t('settings.logs.openExternal')}
       </Button>
       {canReport && (
         <Button variant="outline" size="sm" onClick={() => setReportOpen(true)}>
@@ -117,7 +138,7 @@ export function LogsSection({ active }: LogsSectionProps) {
   }
 
   const parsed = parseLog(result.data);
-  const filtered = applyFilter(parsed.entries, filter);
+  const filtered = applyFilters(parsed.entries, filter, deferredSearch);
 
   return (
     <div className="space-y-6">
@@ -137,21 +158,35 @@ export function LogsSection({ active }: LogsSectionProps) {
         <Toolbar canReport />
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        {FILTER_OPTIONS.map((opt) => (
-          <Button
-            key={opt.id}
-            variant={filter === opt.id ? 'default' : 'outline'}
-            size="sm"
-            className="h-7 px-2.5 text-xs"
-            onClick={() => setFilter(opt.id)}
-          >
-            {t(opt.labelKey)}
-          </Button>
-        ))}
-        <span className="ml-auto text-xs text-muted-foreground">
-          {t('settings.logs.entryCount', { shown: filtered.length, total: parsed.entries.length })}
-        </span>
+      <div className="flex flex-col gap-2">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('settings.logs.searchPlaceholder')}
+            className="h-8 pl-8 font-mono text-xs"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {FILTER_OPTIONS.map((opt) => (
+            <Button
+              key={opt.id}
+              variant={filter === opt.id ? 'default' : 'outline'}
+              size="sm"
+              className="h-7 px-2.5 text-xs"
+              onClick={() => setFilter(opt.id)}
+            >
+              {t(opt.labelKey)}
+            </Button>
+          ))}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {t('settings.logs.entryCount', {
+              shown: filtered.length,
+              total: parsed.entries.length,
+            })}
+          </span>
+        </div>
       </div>
 
       {parsed.header.length > 0 && (
@@ -227,7 +262,16 @@ function LogRow({ entry }: { entry: LogEntry }) {
   );
 }
 
-function applyFilter(entries: LogEntry[], filter: LevelFilter): LogEntry[] {
+function applyFilters(entries: LogEntry[], filter: LevelFilter, search: string): LogEntry[] {
+  const byLevel = applyLevelFilter(entries, filter);
+  const q = search.trim().toLowerCase();
+  if (!q) return byLevel;
+  return byLevel.filter(
+    (e) => e.message.toLowerCase().includes(q) || e.category.toLowerCase().includes(q)
+  );
+}
+
+function applyLevelFilter(entries: LogEntry[], filter: LevelFilter): LogEntry[] {
   if (filter === 'all') return entries;
   if (filter === 'errors') return entries.filter((e) => e.level === 'error');
   if (filter === 'warnings') return entries.filter((e) => e.level === 'warn');

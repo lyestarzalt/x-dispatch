@@ -486,7 +486,10 @@
         "errorsWarnings": "Errori + Avvisi",
         "errors": "Errori",
         "warnings": "Avvisi"
-      }
+      },
+      "openExternal": "Apri Log.txt",
+      "searchPlaceholder": "Cerca nel log…",
+      "openFailed": "Impossibile aprire Log.txt."
     }
   },
   "sidebar": {

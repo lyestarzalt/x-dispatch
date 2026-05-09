@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { ipcMain, shell } from 'electron';
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -53,6 +53,29 @@ function stripBom(s: string): string {
   return s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
 }
 
+export async function openXPlaneLogExternally(
+  xplanePath: string | null
+): Promise<{ ok: true } | { ok: false; reason: 'no-path' | 'no-log' | 'error'; message?: string }> {
+  if (!xplanePath) return { ok: false, reason: 'no-path' };
+  const logPath = path.join(xplanePath, 'Log.txt');
+  try {
+    await stat(logPath);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      return { ok: false, reason: 'no-log' };
+    }
+    logger.main.warn(`xp-log:openExternal stat failed: ${(err as Error).message}`);
+    return { ok: false, reason: 'error', message: (err as Error).message };
+  }
+  const errMsg = await shell.openPath(logPath);
+  if (errMsg) {
+    logger.main.warn(`xp-log:openExternal openPath failed: ${errMsg}`);
+    return { ok: false, reason: 'error', message: errMsg };
+  }
+  return { ok: true };
+}
+
 export function registerXPlaneLogIPC(getXPlanePath: () => string | null): void {
   ipcMain.handle('xp-log:read', () => readXPlaneLog(getXPlanePath()));
+  ipcMain.handle('xp-log:openExternal', () => openXPlaneLogExternally(getXPlanePath()));
 }

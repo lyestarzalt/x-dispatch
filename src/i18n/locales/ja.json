@@ -486,7 +486,10 @@
         "errorsWarnings": "エラー + 警告",
         "errors": "エラー",
         "warnings": "警告"
-      }
+      },
+      "openExternal": "Log.txt を開く",
+      "searchPlaceholder": "ログを検索…",
+      "openFailed": "Log.txt を開けませんでした。"
     }
   },
   "sidebar": {

@@ -486,7 +486,10 @@
         "errorsWarnings": "Ошибки + предупреждения",
         "errors": "Ошибки",
         "warnings": "Предупреждения"
-      }
+      },
+      "openExternal": "Открыть Log.txt",
+      "searchPlaceholder": "Поиск в журнале…",
+      "openFailed": "Не удалось открыть Log.txt."
     }
   },
   "sidebar": {
