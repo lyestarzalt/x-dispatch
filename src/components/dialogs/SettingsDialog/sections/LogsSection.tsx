@@ -23,18 +23,32 @@ export function LogsSection({ active }: LogsSectionProps) {
     query.refetch();
   };
 
-  const headerTitle = t('settings.logs.title');
-  const headerDescription = t('settings.logs.description');
+  const PageHeader = (
+    <div>
+      <h3 className="xp-section-heading">{t('settings.logs.title')}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{t('settings.logs.description')}</p>
+    </div>
+  );
+
+  const Toolbar = ({ canReport }: { canReport: boolean }) => (
+    <div className="flex items-center justify-end gap-2">
+      <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
+        <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
+        {t('settings.logs.refresh')}
+      </Button>
+      {canReport && (
+        <Button variant="outline" size="sm" onClick={() => setReportOpen(true)}>
+          {t('settings.logs.report')}
+        </Button>
+      )}
+    </div>
+  );
 
   if (query.isLoading || query.data === undefined) {
     return (
       <div className="space-y-6">
-        <SimpleHeader
-          title={headerTitle}
-          description={headerDescription}
-          onRefresh={handleRefresh}
-          refreshing={query.isFetching}
-        />
+        {PageHeader}
+        <Toolbar canReport={false} />
         <p className="text-sm text-muted-foreground">…</p>
       </div>
     );
@@ -45,12 +59,8 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (result.kind === 'no-path') {
     return (
       <div className="space-y-6">
-        <SimpleHeader
-          title={headerTitle}
-          description={headerDescription}
-          onRefresh={handleRefresh}
-          refreshing={query.isFetching}
-        />
+        {PageHeader}
+        <Toolbar canReport={false} />
         <Card className="bg-muted/20 p-6 text-center">
           <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
         </Card>
@@ -61,12 +71,8 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (result.kind === 'no-log') {
     return (
       <div className="space-y-6">
-        <SimpleHeader
-          title={headerTitle}
-          description={headerDescription}
-          onRefresh={handleRefresh}
-          refreshing={query.isFetching}
-        />
+        {PageHeader}
+        <Toolbar canReport={false} />
         <Card className="bg-muted/20 p-6 text-center">
           <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
         </Card>
@@ -77,12 +83,8 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (result.kind === 'error') {
     return (
       <div className="space-y-6">
-        <SimpleHeader
-          title={headerTitle}
-          description={headerDescription}
-          onRefresh={handleRefresh}
-          refreshing={query.isFetching}
-        />
+        {PageHeader}
+        <Toolbar canReport={false} />
         <Card className="bg-destructive/10 p-6">
           <p className="font-mono text-xs text-destructive">{result.message}</p>
         </Card>
@@ -95,36 +97,26 @@ export function LogsSection({ active }: LogsSectionProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="xp-detail-heading">{headerTitle}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{headerDescription}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
-            <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
-            {t('settings.logs.refresh')}
-          </Button>
-          <Button size="sm" onClick={() => setReportOpen(true)}>
-            {t('settings.logs.report')}
-          </Button>
-        </div>
+      {PageHeader}
+      <div className="flex items-center justify-between gap-2">
+        {result.truncated ? (
+          <p className="text-xs text-muted-foreground">
+            {t('settings.logs.truncatedNotice', {
+              shownMb: 5,
+              totalMb: Math.round(result.fullByteSize / 1_000_000),
+            })}
+          </p>
+        ) : (
+          <span />
+        )}
+        <Toolbar canReport />
       </div>
-
-      {result.truncated && (
-        <p className="text-xs text-muted-foreground">
-          {t('settings.logs.truncatedNotice', {
-            shownMb: 5,
-            totalMb: Math.round(result.fullByteSize / 1_000_000),
-          })}
-        </p>
-      )}
 
       {parsed.recognized.length > 0 && (
         <section className="space-y-2">
-          <h3 className="xp-section-heading">
+          <h4 className="xp-section-heading">
             {t('settings.logs.recognizedIssuesHeader', { count: parsed.recognized.length })}
-          </h3>
+          </h4>
           <ul className="space-y-2">
             {parsed.recognized.map((m) => (
               <li key={`${m.lineNumber}-${m.id}`}>
@@ -147,9 +139,9 @@ export function LogsSection({ active }: LogsSectionProps) {
 
       {parsed.otherIssues.length > 0 && (
         <section className="space-y-2">
-          <h3 className="xp-section-heading">
+          <h4 className="xp-section-heading">
             {t('settings.logs.otherIssuesHeader', { count: parsed.otherIssues.length })}
-          </h3>
+          </h4>
           <ul className="space-y-2">
             {parsed.otherIssues.map((m) => (
               <li key={`${m.lineNumber}-${m.category}`}>
@@ -197,32 +189,6 @@ export function LogsSection({ active }: LogsSectionProps) {
         rawLog={result.data}
         parsed={parsed}
       />
-    </div>
-  );
-}
-
-function SimpleHeader({
-  title,
-  description,
-  onRefresh,
-  refreshing,
-}: {
-  title: string;
-  description: string;
-  onRefresh: () => void;
-  refreshing: boolean;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <h2 className="xp-detail-heading">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      </div>
-      <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing}>
-        <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-        {t('settings.logs.refresh')}
-      </Button>
     </div>
   );
 }
