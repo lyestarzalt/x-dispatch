@@ -107,6 +107,73 @@ describe('migrateSettings', () => {
     expect(result.map.userMapStyles).toHaveLength(1);
     expect(result.map.userMapStyles[0]?.id).toBe('user-existing');
   });
+
+  it('seeds an empty fmsExportTargets array when migrating from v20 to v21', () => {
+    const v20Blob = {
+      map: {
+        navDataRadiusNm: 100,
+        vatsimRefreshInterval: 15,
+        mapStyleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        userMapStyles: [],
+        idleOrbitEnabled: false,
+        units: { weight: 'lbs' as const },
+      },
+      simbrief: { pilotId: '1234567' },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: true,
+        taxiwayLightGlow: true,
+        surfaceDetail: 'high' as const,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+    };
+    const result = migrateSettings(v20Blob, 20);
+    expect(result.simbrief.fmsExportTargets).toEqual([]);
+    expect(result.simbrief.pilotId).toBe('1234567');
+  });
+});
+
+describe('FMS export target actions', () => {
+  beforeEach(() => {
+    useSettingsStore.getState().resetToDefaults();
+  });
+
+  it('adds a target with a generated id', () => {
+    const id = useSettingsStore.getState().addFmsExportTarget({
+      formatKey: 'xpn',
+      label: 'Default X-Plane 12 (.fms)',
+      folderPath: '/Users/x/X-Plane 12/Output/FMS plans',
+    });
+    const targets = useSettingsStore.getState().simbrief.fmsExportTargets;
+    expect(targets).toHaveLength(1);
+    expect(targets[0]!.id).toBe(id);
+    expect(targets[0]!.formatKey).toBe('xpn');
+  });
+
+  it('updates a target by id', () => {
+    const { addFmsExportTarget, updateFmsExportTarget } = useSettingsStore.getState();
+    const id = addFmsExportTarget({
+      formatKey: 'tfd',
+      label: 'ToLiss',
+      folderPath: '/old/path',
+    });
+    updateFmsExportTarget(id, { folderPath: '/new/path' });
+    const target = useSettingsStore.getState().simbrief.fmsExportTargets[0]!;
+    expect(target.folderPath).toBe('/new/path');
+    expect(target.label).toBe('ToLiss');
+  });
+
+  it('removes a target by id', () => {
+    const { addFmsExportTarget, removeFmsExportTarget } = useSettingsStore.getState();
+    const id = addFmsExportTarget({
+      formatKey: 'zbo',
+      label: 'Zibo 737',
+      folderPath: '/path/to/zibo',
+    });
+    removeFmsExportTarget(id);
+    expect(useSettingsStore.getState().simbrief.fmsExportTargets).toHaveLength(0);
+  });
 });
 
 describe('userMapStyles actions', () => {

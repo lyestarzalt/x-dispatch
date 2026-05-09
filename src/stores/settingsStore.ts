@@ -59,8 +59,20 @@ export interface MapSettings {
   };
 }
 
+export interface FmsExportTarget {
+  /** Stable react key + edit/delete handle */
+  id: string;
+  /** SimBrief `fms_downloads` key (e.g. 'xpn', 'tfd'). Free-form for forward-compat. */
+  formatKey: string;
+  /** User-editable; pre-fills from FMS_FORMATS label on add */
+  label: string;
+  /** Absolute path picked via OS dialog */
+  folderPath: string;
+}
+
 export interface SimBriefSettings {
   pilotId: string;
+  fmsExportTargets: FmsExportTarget[];
 }
 
 export interface AppearanceSettings {
@@ -102,6 +114,9 @@ interface SettingsState {
   addUserMapStyle: (style: MapStyle) => void;
   removeUserMapStyle: (id: string) => void;
   updateSimbriefSettings: (settings: Partial<SimBriefSettings>) => void;
+  addFmsExportTarget: (target: Omit<FmsExportTarget, 'id'>) => string;
+  updateFmsExportTarget: (id: string, patch: Partial<Omit<FmsExportTarget, 'id'>>) => void;
+  removeFmsExportTarget: (id: string) => void;
   updateGraphicsSettings: (settings: Partial<GraphicsSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
   updateSupportSettings: (settings: Partial<SupportSettings>) => void;
@@ -124,6 +139,7 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
 
 const DEFAULT_SIMBRIEF_SETTINGS: SimBriefSettings = {
   pilotId: '',
+  fmsExportTargets: [],
 };
 
 const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
@@ -205,6 +221,38 @@ export const useSettingsStore = create<SettingsState>()(
           simbrief: { ...state.simbrief, ...settings },
         })),
 
+      addFmsExportTarget: (target) => {
+        const id =
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `fms-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        set((state) => ({
+          simbrief: {
+            ...state.simbrief,
+            fmsExportTargets: [...state.simbrief.fmsExportTargets, { id, ...target }],
+          },
+        }));
+        return id;
+      },
+
+      updateFmsExportTarget: (id, patch) =>
+        set((state) => ({
+          simbrief: {
+            ...state.simbrief,
+            fmsExportTargets: state.simbrief.fmsExportTargets.map((t) =>
+              t.id === id ? { ...t, ...patch } : t
+            ),
+          },
+        })),
+
+      removeFmsExportTarget: (id) =>
+        set((state) => ({
+          simbrief: {
+            ...state.simbrief,
+            fmsExportTargets: state.simbrief.fmsExportTargets.filter((t) => t.id !== id),
+          },
+        })),
+
       updateGraphicsSettings: (settings) =>
         set((state) => ({
           graphics: { ...state.graphics, ...settings },
@@ -250,7 +298,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 20,
+      version: 21,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -362,6 +410,13 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     state = {
       ...state,
       map: { ...state.map!, userMapStyles: state.map?.userMapStyles ?? [] },
+    };
+  }
+  if (version < 21) {
+    // Add fmsExportTargets to SimBriefSettings (drop SimBrief OFP files into addon folders).
+    state = {
+      ...state,
+      simbrief: { ...state.simbrief!, fmsExportTargets: [] },
     };
   }
 
