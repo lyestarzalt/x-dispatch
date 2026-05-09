@@ -92,7 +92,9 @@ export function CompanionAppsSection() {
     }
   };
 
-  const showAdminBanner = elevation.data === false;
+  // Banner is Windows-only: on macOS/Linux normal user apps don't need root
+  // to launch peer apps, so the warning would just confuse non-Windows users.
+  const showAdminBanner = elevation.data === false && window.appAPI.platform === 'win32';
 
   return (
     <div className="space-y-6">

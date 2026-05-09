@@ -26,12 +26,19 @@ export interface SpawnResult {
 }
 
 /**
- * Pre-flight + spawn. Runs the elevation guard and the access guard before
- * touching `child_process.spawn`, since both checks fail synchronously with
- * clear codes — unlike spawn, which fires async errors that we'd drop.
+ * Pre-flight + spawn. Runs the access guard (and on Windows, the elevation
+ * guard) before touching `child_process.spawn`, since both checks fail
+ * synchronously with clear codes — unlike spawn, which fires async errors
+ * that we'd drop.
+ *
+ * Elevation only matters on Windows — that's where companion apps with
+ * `requireAdministrator` manifests (vPilot, hardware drivers, etc.) refuse
+ * to spawn from a non-elevated parent. On macOS/Linux, normal user apps
+ * don't need root to launch peer apps; checking euid would just block users
+ * for no reason.
  */
 export function launchCompanionApp(input: SpawnInput): SpawnResult {
-  if (!isElevated()) {
+  if (process.platform === 'win32' && !isElevated()) {
     logger.main.warn(`companionApps refused launch: not elevated (exe=${input.exePath})`);
     return {
       success: false,
