@@ -1,0 +1,12 @@
+Log.txt for X-Plane 12.4.2-r2-e8339ac0 (build 124201 Apple Silicon, Metal 69c2ae812eae3a0373af02c81f24cf4e00aa146a)
+Compiled on Apr 17 2026 12:33:47
+X-Plane Started on Thu May  7 00:50:34 2026
+
+0:00:00.000 I/GFX/MTL: Discovered Metal device: Apple M4, Metal. Score: 1000
+0:00:00.000 W/APT: Unknown key 'altimeter_setting' for '[H] Uniklinik Frankfurt a.M.' in Global Scenery/Global Airports/Earth nav data/apt.dat on line 432433.
+0:00:00.000 E/APT: The airport ETOU (Wiesbaden Erbenheim AAF) has lost some controllers due to bad frequencies.  Each controller needs at least one frequency in the range of 118.00 to 136.990 mhz.
+0:00:00.000 E/APT: The airport ETHB (Bueckeburg AB) has lost some controllers due to bad frequencies.  Each controller needs at least one frequency in the range of 118.00 to 136.990 mhz.
+0:00:00.000 W/APT: WARNING: airport Hubbard (ID TA49) overrides code 25TX but it has already been overridden by Chennault Airfield (ID XK00BR)
+0:00:06.355 W/TEX: PNG warning loading Aircraft/Laminar Research/Airbus A330-300/objects/A330_glass_thermal_gradient.png: eXIf: invalid
+0:00:06.355 I/FLT: Init dat_p0 type:'ramp_start' apt:DAAG start at:C 9
+0:02:36.052 E/NET: Download failed with error: 28 for URL https://lookup.x-plane.com/_lookup_12_/analytics.html (IP: 18.161.111.109)
