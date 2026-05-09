@@ -138,4 +138,23 @@ describe('SceneryManager — .lnk shortcut discovery', () => {
     expect(entry.classification.hasEarthNavData).toBe(true);
     expect(entry.classification.hasAptDat).toBe(true);
   });
+
+  it('still picks up POSIX-symlinked scenery folders (junction regression)', async () => {
+    if (process.platform === 'win32') return; // Node symlink creation on Windows requires admin; skip.
+    const target = path.join(externalDrive, 'SymlinkTarget');
+    fs.mkdirSync(target);
+    fs.mkdirSync(path.join(target, 'Earth nav data'));
+    fs.writeFileSync(path.join(target, 'Earth nav data', 'apt.dat'), 'I\n1000 Version\n');
+
+    const linkPath = path.join(customScenery, 'SymlinkTarget');
+    fs.symlinkSync(target, linkPath, 'dir');
+
+    const mgr = new SceneryManager(xpRoot);
+    const result = await mgr.analyze();
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const entry = result.value.find((e) => e.folderName === 'SymlinkTarget');
+    expect(entry).toBeDefined();
+    expect(entry!.classification.hasAptDat).toBe(true);
+  });
 });

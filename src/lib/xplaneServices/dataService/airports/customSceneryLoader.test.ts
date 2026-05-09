@@ -83,4 +83,18 @@ describe('findCustomSceneryAptFiles', () => {
     const found = findCustomSceneryAptFiles(xpRoot);
     expect(found.sort()).toEqual([realAptPath, linkedAptPath].sort());
   });
+
+  it('still finds apt.dat through a POSIX symlink (junction regression)', () => {
+    if (process.platform === 'win32') return;
+    const target = path.join(externalDrive, 'SymlinkTarget');
+    fs.mkdirSync(path.join(target, 'Earth nav data'), { recursive: true });
+    fs.writeFileSync(path.join(target, 'Earth nav data', 'apt.dat'), 'I\n1000 Version\n');
+
+    const linkPath = path.join(customScenery, 'SymlinkTarget');
+    fs.symlinkSync(target, linkPath, 'dir');
+
+    // Function returns the path through the symlink, not the resolved target
+    const expectedPath = path.join(linkPath, 'Earth nav data', 'apt.dat');
+    expect(findCustomSceneryAptFiles(xpRoot)).toContain(expectedPath);
+  });
 });
