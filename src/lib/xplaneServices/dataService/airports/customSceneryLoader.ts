@@ -8,6 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
+import { resolveLnkSync } from '@/lib/utils/resolveLnk';
 import type { AirportProgressCallback, AptFileInfo, ParsedAirportEntry } from '../types';
 import { getFileMtime } from './airportCache';
 import { scanAptFile } from './airportScanner';
@@ -39,16 +40,34 @@ export function findCustomSceneryAptFiles(xplanePath: string): string[] {
     const entries = fs.readdirSync(customSceneryPath, { withFileTypes: true });
     for (const entry of entries) {
       try {
-        // Follow symlinks — some users symlink scenery packs from other drives
+        // Real directory or junction/symlink
         const isDir =
           entry.isDirectory() ||
           (entry.isSymbolicLink() &&
             fs.statSync(path.join(customSceneryPath, entry.name)).isDirectory());
+
         if (isDir) {
           const aptPath = path.join(customSceneryPath, entry.name, 'Earth nav data', 'apt.dat');
-          if (fs.existsSync(aptPath)) {
-            aptFiles.push(aptPath);
+          if (fs.existsSync(aptPath)) aptFiles.push(aptPath);
+          continue;
+        }
+
+        // Windows shell shortcut (.lnk): resolve target and look for apt.dat
+        // inside the linked directory.
+        if (entry.isFile() && entry.name.toLowerCase().endsWith('.lnk')) {
+          const lnkPath = path.join(customSceneryPath, entry.name);
+          const resolved = resolveLnkSync(lnkPath);
+          if (!resolved.ok) {
+            logger.data.warn(`Skipping shortcut "${entry.name}" (${resolved.reason})`);
+            continue;
           }
+          try {
+            if (!fs.statSync(resolved.targetPath).isDirectory()) continue;
+          } catch {
+            continue;
+          }
+          const aptPath = path.join(resolved.targetPath, 'Earth nav data', 'apt.dat');
+          if (fs.existsSync(aptPath)) aptFiles.push(aptPath);
         }
       } catch {
         // Skip this entry (broken symlink, unmounted drive, etc.) but continue scanning
