@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCcw } from 'lucide-react';
+import { AlertTriangle, RefreshCcw, ScrollText, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Separator } from '@/components/ui/separator';
 import { type ParseResult, parseLog } from '@/lib/xplaneServices/log/parseLog';
 import { useXplaneLogQuery } from '@/queries';
 import { LogsReportDialog } from './LogsReportDialog';
@@ -23,15 +24,21 @@ export function LogsSection({ active }: LogsSectionProps) {
     query.refetch();
   };
 
-  const PageHeader = (
-    <div>
-      <h3 className="xp-section-heading">{t('settings.logs.title')}</h3>
-      <p className="mt-1 text-sm text-muted-foreground">{t('settings.logs.description')}</p>
-    </div>
+  const Header = (
+    <>
+      <div>
+        <h3 className="flex items-center gap-2 text-lg font-semibold">
+          <ScrollText className="h-5 w-5" />
+          {t('settings.logs.title')}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t('settings.logs.description')}</p>
+      </div>
+      <Separator />
+    </>
   );
 
   const Toolbar = ({ canReport }: { canReport: boolean }) => (
-    <div className="flex items-center justify-end gap-2">
+    <div className="flex items-center gap-2">
       <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
         <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
         {t('settings.logs.refresh')}
@@ -47,7 +54,7 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (query.isLoading || query.data === undefined) {
     return (
       <div className="space-y-6">
-        {PageHeader}
+        {Header}
         <Toolbar canReport={false} />
         <p className="text-sm text-muted-foreground">…</p>
       </div>
@@ -59,10 +66,12 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (result.kind === 'no-path') {
     return (
       <div className="space-y-6">
-        {PageHeader}
+        {Header}
         <Toolbar canReport={false} />
-        <Card className="bg-muted/20 p-6 text-center">
-          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
+        <Card>
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
+          </CardContent>
         </Card>
       </div>
     );
@@ -71,10 +80,12 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (result.kind === 'no-log') {
     return (
       <div className="space-y-6">
-        {PageHeader}
+        {Header}
         <Toolbar canReport={false} />
-        <Card className="bg-muted/20 p-6 text-center">
-          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
+        <Card>
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
+          </CardContent>
         </Card>
       </div>
     );
@@ -83,10 +94,12 @@ export function LogsSection({ active }: LogsSectionProps) {
   if (result.kind === 'error') {
     return (
       <div className="space-y-6">
-        {PageHeader}
+        {Header}
         <Toolbar canReport={false} />
-        <Card className="bg-destructive/10 p-6">
-          <p className="font-mono text-xs text-destructive">{result.message}</p>
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="py-6">
+            <p className="font-mono text-xs text-destructive">{result.message}</p>
+          </CardContent>
         </Card>
       </div>
     );
@@ -97,7 +110,8 @@ export function LogsSection({ active }: LogsSectionProps) {
 
   return (
     <div className="space-y-6">
-      {PageHeader}
+      {Header}
+
       <div className="flex items-center justify-between gap-2">
         {result.truncated ? (
           <p className="text-xs text-muted-foreground">
@@ -113,75 +127,90 @@ export function LogsSection({ active }: LogsSectionProps) {
       </div>
 
       {parsed.recognized.length > 0 && (
-        <section className="space-y-2">
-          <h4 className="xp-section-heading">
-            {t('settings.logs.recognizedIssuesHeader', { count: parsed.recognized.length })}
-          </h4>
-          <ul className="space-y-2">
-            {parsed.recognized.map((m) => (
-              <li key={`${m.lineNumber}-${m.id}`}>
-                <Card className="bg-muted/20 p-3">
-                  <div className="flex items-start gap-3">
-                    <Badge className={levelChipClass(m.level)}>{m.level}</Badge>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-foreground">{t(`logs.patterns.${m.id}`)}</p>
-                      <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
-                        {t('settings.logs.lineNumber', { line: m.lineNumber })} · {m.line}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {parsed.otherIssues.length > 0 && (
-        <section className="space-y-2">
-          <h4 className="xp-section-heading">
-            {t('settings.logs.otherIssuesHeader', { count: parsed.otherIssues.length })}
-          </h4>
-          <ul className="space-y-2">
-            {parsed.otherIssues.map((m) => (
-              <li key={`${m.lineNumber}-${m.category}`}>
-                <Card className="bg-muted/10 p-3">
-                  <div className="flex items-start gap-3">
-                    <Badge className={levelChipClass(m.level)}>{m.level}</Badge>
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {m.category}
-                    </Badge>
-                    <p className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <ShieldAlert className="h-4 w-4" />
+              {t('settings.logs.recognizedIssuesHeader', { count: parsed.recognized.length })}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {parsed.recognized.map((m) => (
+                <li
+                  key={`${m.lineNumber}-${m.id}`}
+                  className="flex items-start gap-3 rounded-md border border-border bg-muted/20 p-3"
+                >
+                  <Badge className={levelChipClass(m.level)}>{m.level}</Badge>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-foreground">{t(`logs.patterns.${m.id}`)}</p>
+                    <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
                       {t('settings.logs.lineNumber', { line: m.lineNumber })} · {m.line}
                     </p>
                   </div>
-                </Card>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {isAllClear && (
-        <Card className="bg-muted/20 p-6 text-center">
-          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.allClear')}</p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
         </Card>
       )}
 
-      <Collapsible open={showRaw} onOpenChange={setShowRaw}>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" size="sm">
-            {showRaw ? t('settings.logs.hideFullLog') : t('settings.logs.showFullLog')}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2">
-          <Card className="bg-muted/10 p-3">
-            <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-all font-mono text-xs text-muted-foreground">
-              {result.data}
-            </pre>
-          </Card>
-        </CollapsibleContent>
-      </Collapsible>
+      {parsed.otherIssues.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <AlertTriangle className="h-4 w-4" />
+              {t('settings.logs.otherIssuesHeader', { count: parsed.otherIssues.length })}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {parsed.otherIssues.map((m) => (
+                <li
+                  key={`${m.lineNumber}-${m.category}`}
+                  className="flex items-start gap-3 rounded-md border border-border bg-muted/10 p-3"
+                >
+                  <Badge className={levelChipClass(m.level)}>{m.level}</Badge>
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {m.category}
+                  </Badge>
+                  <p className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">
+                    {t('settings.logs.lineNumber', { line: m.lineNumber })} · {m.line}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {isAllClear && (
+        <Card>
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.allClear')}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <Collapsible open={showRaw} onOpenChange={setShowRaw}>
+          <CardHeader className="pb-3">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
+                <ScrollText className="mr-2 h-4 w-4" />
+                {showRaw ? t('settings.logs.hideFullLog') : t('settings.logs.showFullLog')}
+              </Button>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent>
+              <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/10 p-3 font-mono text-xs text-muted-foreground">
+                {result.data}
+              </pre>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
 
       <LogsReportDialog
         open={reportOpen}
