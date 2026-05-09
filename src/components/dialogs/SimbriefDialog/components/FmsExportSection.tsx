@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send } from 'lucide-react';
+import { FolderOutput, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { useDownloadFmsFile } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -57,41 +56,37 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
 
   if (targets.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            {t('simbrief.export.heading', 'Send to FMS')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'simbrief.export.emptyHint',
-              'No export targets configured. Add one in Settings → SimBrief.'
-            )}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <FolderOutput className="h-4 w-4" />
+        <span className="font-medium text-foreground">
+          {t('simbrief.export.heading', 'Send to FMS')}
+        </span>
+        <span>·</span>
+        <span>
+          {t(
+            'simbrief.export.emptyHint',
+            'No export targets configured. Add one in Settings → SimBrief.'
+          )}
+        </span>
+      </div>
     );
   }
 
   if (resolved.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            {t('simbrief.export.heading', 'Send to FMS')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'simbrief.export.noMatches',
-              'None of your configured formats are present in this SimBrief plan.'
-            )}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <FolderOutput className="h-4 w-4" />
+        <span className="font-medium text-foreground">
+          {t('simbrief.export.heading', 'Send to FMS')}
+        </span>
+        <span>·</span>
+        <span>
+          {t(
+            'simbrief.export.noMatches',
+            'None of your configured formats are present in this SimBrief plan.'
+          )}
+        </span>
+      </div>
     );
   }
 
@@ -143,48 +138,40 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-sm font-medium">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <FolderOutput className="h-4 w-4 text-muted-foreground" />
           {t('simbrief.export.heading', 'Send to FMS')}
-        </CardTitle>
-        <Button size="sm" variant="outline" onClick={sendAll} disabled={bulkSending}>
-          {bulkSending && <Spinner className="mr-2" />}
-          {t('simbrief.export.sendAll', 'Send all')}
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <ul className="space-y-1">
-          {resolved.map((entry) => (
-            <li
-              key={entry.id}
-              className="flex items-center gap-2 rounded-md border border-border bg-popover/50 px-3 py-2"
+        </div>
+        {resolved.length > 1 && (
+          <Button size="sm" variant="outline" onClick={sendAll} disabled={bulkSending}>
+            {bulkSending && <Spinner className="mr-2" />}
+            {t('simbrief.export.sendAll', 'Send all')}
+          </Button>
+        )}
+      </div>
+      <ul className="flex flex-wrap gap-2">
+        {resolved.map((entry) => (
+          <li key={entry.id}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => sendOne(entry)}
+              disabled={pendingId === entry.id || bulkSending}
+              tooltip={entry.folderPath}
+              className="gap-2"
             >
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground">{entry.label}</div>
-                <div
-                  className="truncate font-mono text-xs text-muted-foreground"
-                  title={entry.folderPath}
-                >
-                  {entry.folderPath}
-                </div>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => sendOne(entry)}
-                disabled={pendingId === entry.id || bulkSending}
-              >
-                {pendingId === entry.id ? (
-                  <Spinner className="mr-2" />
-                ) : (
-                  <Send className="mr-2 h-4 w-4" />
-                )}
-                {t('simbrief.export.send', 'Send')}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+              {pendingId === entry.id ? (
+                <Spinner />
+              ) : (
+                <Send className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+              <span className="font-medium">{entry.label}</span>
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

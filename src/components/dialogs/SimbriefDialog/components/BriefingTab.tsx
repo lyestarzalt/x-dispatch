@@ -20,7 +20,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import type { SimBriefNotam, SimBriefOFP, SimBriefSigmet } from '@/types/simbrief';
-import { FmsExportSection } from './FmsExportSection';
 
 interface BriefingTabProps {
   data: SimBriefOFP;
@@ -183,8 +182,6 @@ export function BriefingTab({ data }: BriefingTabProps) {
             )}
           </div>
         </div>
-
-        <FmsExportSection data={data} />
       </div>
     </ScrollArea>
   );

@@ -58,7 +58,13 @@ import {
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SimBriefOFP } from '@/types/simbrief';
-import { BriefingTab, NavlogTab, PerformanceTab, VerticalProfile } from './components';
+import {
+  BriefingTab,
+  FmsExportSection,
+  NavlogTab,
+  PerformanceTab,
+  VerticalProfile,
+} from './components';
 
 // Helper to get unit from API response
 function getApiUnit(data: SimBriefOFP): string {
@@ -280,6 +286,12 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               </div>
             </div>
           </ScrollArea>
+        )}
+
+        {fetchMutation.data && (
+          <div className="border-t bg-card/50 px-6 py-3">
+            <FmsExportSection data={fetchMutation.data} />
+          </div>
         )}
 
         <DialogFooter className="border-t bg-muted/30 px-6 py-4">
