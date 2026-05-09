@@ -1,6 +1,8 @@
 // src/lib/addonManager/scenery/SceneryManager.ts
 import * as fs from 'fs';
 import * as path from 'path';
+import logger from '@/lib/utils/logger';
+import { resolveLnkSync } from '@/lib/utils/resolveLnk';
 import {
   type ParsedIniEntry,
   type Result,
@@ -81,21 +83,65 @@ export class SceneryManager {
       if (fs.existsSync(this.customSceneryPath)) {
         const dirEntries = fs.readdirSync(this.customSceneryPath, { withFileTypes: true });
         for (const dirEntry of dirEntries) {
-          if (!dirEntry.isDirectory() && !dirEntry.isSymbolicLink()) continue;
-          if (knownFolders.has(dirEntry.name)) continue;
           // Skip hidden folders and common non-scenery dirs
           if (dirEntry.name.startsWith('.') || dirEntry.name === '__MACOSX') continue;
 
-          const fullPath = path.join(this.customSceneryPath, dirEntry.name);
-          const iniEntry: ParsedIniEntry = {
-            folderName: dirEntry.name,
-            fullPath,
-            enabled: true,
-            isGlobalAirports: false,
-            originalLine: '',
-          };
-          const entry = this.processEntry(iniEntry, entries.length);
-          entries.push(entry);
+          if (dirEntry.isDirectory() || dirEntry.isSymbolicLink()) {
+            if (knownFolders.has(dirEntry.name)) continue;
+            const fullPath = path.join(this.customSceneryPath, dirEntry.name);
+            const iniEntry: ParsedIniEntry = {
+              folderName: dirEntry.name,
+              fullPath,
+              enabled: true,
+              isGlobalAirports: false,
+              originalLine: '',
+            };
+            entries.push(this.processEntry(iniEntry, entries.length));
+            // Track so a same-named .lnk later in the walk doesn't re-add.
+            knownFolders.add(dirEntry.name);
+            continue;
+          }
+
+          // Windows shell shortcut (.lnk): resolve target and treat as a virtual
+          // scenery folder. Real folders with the same display name win because
+          // they're encountered first; we de-dup via knownFolders.
+          if (dirEntry.isFile() && dirEntry.name.toLowerCase().endsWith('.lnk')) {
+            const lnkPath = path.join(this.customSceneryPath, dirEntry.name);
+            const resolved = resolveLnkSync(lnkPath);
+            if (!resolved.ok) {
+              logger.main.warn(
+                `scenery: unresolved shortcut ${dirEntry.name} (${resolved.reason})`
+              );
+              continue;
+            }
+            try {
+              if (!fs.statSync(resolved.targetPath).isDirectory()) {
+                logger.main.warn(
+                  `scenery: shortcut target is not a directory: ${dirEntry.name} → ${resolved.targetPath}`
+                );
+                continue;
+              }
+            } catch {
+              logger.main.warn(
+                `scenery: shortcut target missing: ${dirEntry.name} → ${resolved.targetPath}`
+              );
+              continue;
+            }
+            const folderName = dirEntry.name.replace(/\.lnk$/i, '');
+            // Dedup against both forms: a real folder named `Heathrow` already
+            // claimed the slot, OR an INI entry referenced `Heathrow.lnk` directly.
+            if (knownFolders.has(folderName) || knownFolders.has(dirEntry.name)) continue;
+            knownFolders.add(folderName);
+            knownFolders.add(dirEntry.name);
+            const iniEntry: ParsedIniEntry = {
+              folderName,
+              fullPath: resolved.targetPath,
+              enabled: true,
+              isGlobalAirports: false,
+              originalLine: '',
+            };
+            entries.push(this.processEntry(iniEntry, entries.length));
+          }
         }
       }
     } catch {
