@@ -3,6 +3,7 @@ import type { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from './lib/xplaneServices/dataService/cycleInfo';
+import type { XPLogReadResult } from './lib/xplaneServices/log/ipc';
 // Import types from canonical sources
 import type { Aircraft, WeatherPreset } from './types/aircraft';
 import type { CliFlags } from './types/cli';
@@ -362,6 +363,10 @@ contextBridge.exposeInMainWorld('companionAppsAPI', {
   launch: (input: { exePath: string; args?: string; cwd?: string }) =>
     ipcRenderer.invoke('companion-apps:launch', input),
   browseForExe: (): Promise<string | null> => ipcRenderer.invoke('companion-apps:browseForExe'),
+});
+
+contextBridge.exposeInMainWorld('xpLogAPI', {
+  read: (): Promise<XPLogReadResult> => ipcRenderer.invoke('xp-log:read'),
 });
 
 declare global {
@@ -749,6 +754,9 @@ declare global {
         error?: string;
       }>;
       browseForExe: () => Promise<string | null>;
+    };
+    xpLogAPI: {
+      read: () => Promise<XPLogReadResult>;
     };
   }
 }

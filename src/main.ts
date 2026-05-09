@@ -56,6 +56,7 @@ import {
   setActiveInstallation,
   setSendCrashReports,
 } from './lib/xplaneServices/dataService/config';
+import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
@@ -1381,6 +1382,7 @@ function registerIpcHandlers() {
   // Addon Manager IPC handlers (extracted to separate module)
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
+  registerXPlaneLogIPC(() => dataManager.getXPlanePath());
 
   ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
     try {
