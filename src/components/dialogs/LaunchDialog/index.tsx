@@ -102,6 +102,19 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       let maxDelaySec = 0;
       const failures: { id: string; name: string; error: string }[] = [];
 
+      const errorKeyFor = (code: string | undefined): string => {
+        switch (code) {
+          case 'NEEDS_ADMIN':
+            return 'settings.companionApps.error.needsAdmin';
+          case 'FILE_MISSING':
+            return 'settings.companionApps.error.fileMissing';
+          case 'FILE_NOT_EXECUTABLE':
+            return 'settings.companionApps.error.fileNotExecutable';
+          default:
+            return 'settings.companionApps.error.spawnFailed';
+        }
+      };
+
       for (const tool of autoLaunchTools) {
         const result = await window.companionAppsAPI.launch({
           exePath: tool.exePath,
@@ -112,7 +125,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           failures.push({
             id: tool.id,
             name: tool.name,
-            error: result.error ?? t('settings.companionApps.unknownError'),
+            error: t(errorKeyFor(result.code), {
+              defaultValue: result.error ?? t('settings.companionApps.unknownError'),
+            }),
           });
         } else {
           maxDelaySec = Math.max(maxDelaySec, tool.delayBeforeXPlaneSec);

@@ -1,13 +1,30 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Play, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
+import { useElevationQuery } from '@/queries/useElevationQuery';
 import { type CompanionApp, useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { CompanionAppEditDialog } from './CompanionAppEditDialog';
+
+type SpawnErrorCode = 'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'SPAWN_FAILED';
+
+/** Map a spawn error code to a localized i18n key under settings.companionApps.error.* */
+function errorKeyFor(code: SpawnErrorCode | undefined): string {
+  switch (code) {
+    case 'NEEDS_ADMIN':
+      return 'settings.companionApps.error.needsAdmin';
+    case 'FILE_MISSING':
+      return 'settings.companionApps.error.fileMissing';
+    case 'FILE_NOT_EXECUTABLE':
+      return 'settings.companionApps.error.fileNotExecutable';
+    default:
+      return 'settings.companionApps.error.spawnFailed';
+  }
+}
 
 type EditState =
   | { open: false }
@@ -20,6 +37,7 @@ export function CompanionAppsSection() {
   const addTool = useCompanionAppsStore((s) => s.addTool);
   const updateTool = useCompanionAppsStore((s) => s.updateTool);
   const removeTool = useCompanionAppsStore((s) => s.removeTool);
+  const elevation = useElevationQuery();
 
   const [edit, setEdit] = useState<EditState>({ open: false });
 
@@ -62,14 +80,19 @@ export function CompanionAppsSection() {
       cwd: tool.cwd,
     });
     if (!result.success) {
+      const code = result.code as SpawnErrorCode | undefined;
       toast.error(
         t('settings.companionApps.spawnError', {
           name: tool.name,
-          error: result.error ?? t('settings.companionApps.unknownError'),
+          error: t(errorKeyFor(code), {
+            defaultValue: result.error ?? t('settings.companionApps.unknownError'),
+          }),
         })
       );
     }
   };
+
+  const showAdminBanner = elevation.data === false;
 
   return (
     <div className="space-y-6">
@@ -79,6 +102,18 @@ export function CompanionAppsSection() {
           {t('settings.companionApps.description')}
         </p>
       </div>
+
+      {showAdminBanner && (
+        <Card className="flex items-start gap-3 border-warning/40 bg-warning/5 p-3">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+          <div className="space-y-1 text-sm">
+            <p className="font-medium text-foreground">
+              {t('settings.companionApps.notElevatedTitle')}
+            </p>
+            <p className="text-muted-foreground">{t('settings.companionApps.notElevatedHint')}</p>
+          </div>
+        </Card>
+      )}
 
       {tools.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('settings.companionApps.empty')}</p>
