@@ -36,6 +36,16 @@ interface AppState {
   showLaunchDialog: boolean;
   selectedProcedure: SelectedProcedure | null;
   startPosition: StartPosition | null;
+  /**
+   * ICAO of an airport that some component (flight-plan chip, SimBrief
+   * dialog, etc.) has requested be loaded as the active airport. The Map
+   * subscribes, looks the ICAO up in its airports list, runs the full
+   * `selectAirport` flow (parse apt.dat, render layers), and clears.
+   *
+   * This is a request channel, not application state. Producers fire and
+   * forget; the Map is the single consumer.
+   */
+  pendingAirportSelectionIcao: string | null;
 
   selectAirport: (icao: string, data: ParsedAirport, isCustom?: boolean) => void;
   clearAirport: () => void;
@@ -44,6 +54,10 @@ interface AppState {
   setShowLaunchDialog: (show: boolean) => void;
   selectProcedure: (procedure: SelectedProcedure | null) => void;
   setStartPosition: (position: StartPosition | null) => void;
+  /** Producer: fire-and-forget request to navigate to an airport by ICAO. */
+  requestSelectAirport: (icao: string) => void;
+  /** Consumer: clears the pending request once handled (or to drop it). */
+  clearPendingAirportSelection: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -56,6 +70,7 @@ export const useAppStore = create<AppState>()(
     showLaunchDialog: false,
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
+    pendingAirportSelectionIcao: null as string | null,
 
     selectAirport: (icao, data, isCustom) =>
       set({
@@ -84,5 +99,9 @@ export const useAppStore = create<AppState>()(
     selectProcedure: (procedure) => set({ selectedProcedure: procedure }),
 
     setStartPosition: (position) => set({ startPosition: position }),
+
+    requestSelectAirport: (icao) => set({ pendingAirportSelectionIcao: icao.toUpperCase() }),
+
+    clearPendingAirportSelection: () => set({ pendingAirportSelectionIcao: null }),
   }))
 );

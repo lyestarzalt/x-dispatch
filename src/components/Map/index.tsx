@@ -99,6 +99,8 @@ export default function Map({ airports }: MapProps) {
   const storeSelectAirport = useAppStore((s) => s.selectAirport);
   const setShowSettings = useAppStore((s) => s.setShowSettings);
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
+  const pendingAirportSelectionIcao = useAppStore((s) => s.pendingAirportSelectionIcao);
+  const clearPendingAirportSelection = useAppStore((s) => s.clearPendingAirportSelection);
 
   const layerVisibility = useMapStore((s) => s.layerVisibility);
   const navVisibility = useMapStore((s) => s.navVisibility);
@@ -416,6 +418,13 @@ export default function Map({ airports }: MapProps) {
   // Handle waypoint click from FlightPlanBar
   const handleWaypointClick = useCallback(
     (chip: import('@/types/fms').FlightPlanChip) => {
+      // Clicking a departure or arrival chip jumps to that airport's layout
+      // and re-uses the same channel as deep links / SimBrief. The watcher
+      // effect above does the flyTo, so skip the manual flyTo for these.
+      if ((chip.type === 'departure' || chip.type === 'arrival') && chip.id) {
+        useAppStore.getState().requestSelectAirport(chip.id);
+        return;
+      }
       if (chip.latitude !== undefined && chip.longitude !== undefined) {
         mapRef.current?.flyTo({
           center: [chip.longitude, chip.latitude],
@@ -597,6 +606,20 @@ export default function Map({ airports }: MapProps) {
       }
     });
   }, [airports, selectAirport]);
+
+  // In-app jump-to-airport channel — flight-plan chips, SimBrief panel, etc.
+  // dispatch via appStore.requestSelectAirport(icao); we resolve and clear.
+  useEffect(() => {
+    if (!pendingAirportSelectionIcao) return;
+    const airport = airports.find((a) => a.icao === pendingAirportSelectionIcao);
+    if (airport) {
+      mapRef.current?.flyTo({ center: [airport.lon, airport.lat], zoom: 13, duration: 1500 });
+      selectAirport(airport);
+    }
+    // Clear regardless — if the ICAO isn't in our list there's nothing to do
+    // and a stale pending value shouldn't hang around.
+    clearPendingAirportSelection();
+  }, [pendingAirportSelectionIcao, airports, selectAirport, clearPendingAirportSelection, mapRef]);
 
   const handleNavLayerToggle = useCallback(
     (layer: keyof NavLayerVisibility) => {

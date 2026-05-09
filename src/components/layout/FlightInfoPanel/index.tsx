@@ -27,6 +27,7 @@ import {
   formatFuel,
   formatWeight,
 } from '@/queries/useSimbriefQuery';
+import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import type { SimBriefOFP } from '@/types/simbrief';
 
@@ -144,9 +145,16 @@ export default function FlightInfoPanel() {
           {/* Route Display */}
           <div className="mt-3 flex items-center justify-center gap-3">
             <div className="text-center">
-              <p className="font-mono text-lg font-bold tracking-tight text-foreground">
+              <Button
+                variant="link"
+                onClick={() =>
+                  useAppStore.getState().requestSelectAirport(simbriefData.origin.icao_code)
+                }
+                className="h-auto p-0 font-mono text-lg font-bold tracking-tight"
+                aria-label={`Go to ${simbriefData.origin.icao_code} layout`}
+              >
                 {simbriefData.origin.icao_code}
-              </p>
+              </Button>
               <p className="text-[10px] text-muted-foreground">
                 RWY {simbriefData.origin.plan_rwy}
               </p>
@@ -162,9 +170,16 @@ export default function FlightInfoPanel() {
               </span>
             </div>
             <div className="text-center">
-              <p className="font-mono text-lg font-bold tracking-tight text-foreground">
+              <Button
+                variant="link"
+                onClick={() =>
+                  useAppStore.getState().requestSelectAirport(simbriefData.destination.icao_code)
+                }
+                className="h-auto p-0 font-mono text-lg font-bold tracking-tight"
+                aria-label={`Go to ${simbriefData.destination.icao_code} layout`}
+              >
                 {simbriefData.destination.icao_code}
-              </p>
+              </Button>
               <p className="text-[10px] text-muted-foreground">
                 RWY {simbriefData.destination.plan_rwy}
               </p>
@@ -262,9 +277,14 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       {data.alternate && (
         <div className="flex items-center justify-between rounded-lg bg-warning/10 px-3 py-2">
           <span className="text-sm text-warning/70">Alternate</span>
-          <span className="font-mono text-sm font-medium text-warning">
+          <Button
+            variant="link"
+            onClick={() => useAppStore.getState().requestSelectAirport(data.alternate!.icao_code)}
+            className="h-auto p-0 font-mono text-sm font-medium"
+            aria-label={`Go to ${data.alternate.icao_code} layout`}
+          >
             {data.alternate.icao_code}
-          </span>
+          </Button>
         </div>
       )}
 

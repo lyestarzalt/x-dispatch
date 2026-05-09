@@ -55,6 +55,7 @@ import {
   formatWeight,
   useSimbriefFetch,
 } from '@/queries/useSimbriefQuery';
+import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SimBriefOFP } from '@/types/simbrief';
@@ -219,7 +220,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
           <ScrollArea className="max-h-[70vh]">
             <div className="space-y-0">
               {/* Flight Header - OFP Style */}
-              <FlightHeader data={fetchMutation.data} />
+              <FlightHeader data={fetchMutation.data} onAirportClick={onClose} />
 
               {/* Main Content Tabs */}
               <div className="p-4">
@@ -326,10 +327,22 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
 }
 
 // Flight Header Component - Airline dispatch style
-function FlightHeader({ data }: { data: SimBriefOFP }) {
+function FlightHeader({
+  data,
+  onAirportClick,
+}: {
+  data: SimBriefOFP;
+  /** Called after the user clicks an ICAO so the dialog can close itself. */
+  onAirportClick: () => void;
+}) {
   const flightNumber = data.general.icao_airline
     ? `${data.general.icao_airline}${data.general.flight_number}`
     : data.atc.callsign;
+
+  const handleIcaoClick = (icao: string) => {
+    useAppStore.getState().requestSelectAirport(icao);
+    onAirportClick();
+  };
 
   return (
     <div className="bg-gradient-to-b from-background to-card px-6 py-5">
@@ -338,9 +351,14 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
         <div className="flex items-center gap-6">
           {/* Origin */}
           <div className="text-center">
-            <p className="font-mono text-3xl font-bold tracking-tight text-white">
+            <Button
+              variant="link"
+              onClick={() => handleIcaoClick(data.origin.icao_code)}
+              className="h-auto p-0 font-mono text-3xl font-bold tracking-tight"
+              aria-label={`Go to ${data.origin.icao_code} layout`}
+            >
               {data.origin.icao_code}
-            </p>
+            </Button>
             <p className="mt-0.5 text-sm text-muted-foreground">{data.origin.name}</p>
             <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <PlaneTakeoff className="h-3 w-3" />
@@ -362,9 +380,14 @@ function FlightHeader({ data }: { data: SimBriefOFP }) {
 
           {/* Destination */}
           <div className="text-center">
-            <p className="font-mono text-3xl font-bold tracking-tight text-white">
+            <Button
+              variant="link"
+              onClick={() => handleIcaoClick(data.destination.icao_code)}
+              className="h-auto p-0 font-mono text-3xl font-bold tracking-tight"
+              aria-label={`Go to ${data.destination.icao_code} layout`}
+            >
               {data.destination.icao_code}
-            </p>
+            </Button>
             <p className="mt-0.5 text-sm text-muted-foreground">{data.destination.name}</p>
             <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <PlaneLanding className="h-3 w-3" />
