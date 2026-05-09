@@ -230,7 +230,7 @@
       "support": "Support",
       "about": "情報",
       "companionApps": "コンパニオンアプリ",
-      "logs": "ログ"
+      "logs": "X-Plane ログ"
     },
     "support": {
       "reportProblem": "Report a Problem",
@@ -458,17 +458,13 @@
       "description": "前回のセッション中に X-Plane が報告した内容を Log.txt で確認します。",
       "refresh": "更新",
       "report": "この問題を報告",
-      "showFullLog": "完全なログを表示",
-      "hideFullLog": "完全なログを非表示",
-      "recognizedIssuesHeader": "認識された問題 ({{count}})",
-      "otherIssuesHeader": "その他の警告 / エラー ({{count}})",
-      "lineNumber": "行 {{line}}",
       "truncatedNotice": "{{totalMb}} MB のログのうち最後の {{shownMb}} MB を表示しています。",
       "empty": {
         "noPath": "X-Plane のパスが設定されていません。",
         "noPathCta": "X-Plane 設定を開く",
         "noLog": "ログがまだありません — このインストールで X-Plane を一度でも起動しましたか?",
-        "allClear": "X-Dispatch はこのログで指摘事項を検出していません。"
+        "allClear": "X-Dispatch はこのログで指摘事項を検出していません。",
+        "noMatches": "現在のフィルターに該当するエントリはありません。"
       },
       "reportDialog": {
         "title": "X-Plane の問題を報告",
@@ -479,8 +475,17 @@
         "success": "ありがとうございました! レポートを送信しました。",
         "error": "送信に失敗しました。再度お試しください。",
         "scaffoldHeader": "X-Plane ログ診断",
-        "scaffoldRecognized": "認識された問題:",
-        "scaffoldOther": "検出されたその他の E/W 行: {{count}}"
+        "scaffoldCounts": "エラー: {{errors}}, 警告: {{warnings}}"
+      },
+      "entriesHeader": "ログエントリ",
+      "entryCount": "{{total}} 件中 {{shown}} 件を表示",
+      "showHeader": "実行前ヘッダーを表示 ({{count}} 行)",
+      "hideHeader": "実行前ヘッダーを非表示",
+      "filter": {
+        "all": "すべて",
+        "errorsWarnings": "エラー + 警告",
+        "errors": "エラー",
+        "warnings": "警告"
       }
     }
   },
@@ -1158,11 +1163,6 @@
       "noNotams": "NOTAMはありません",
       "transAltTitle": "転移高度",
       "transAltDesc": "現地気圧（QNH）と標準気圧（STD）を切り替える高度 — 高度計を適切に設定してください"
-    }
-  },
-  "logs": {
-    "patterns": {
-      "flt-init-ok": "X-Plane は起動 JSON を受け取り、フライト初期化に成功しました。これ以降の失敗はこの段階より後で発生しています。"
     }
   }
 }

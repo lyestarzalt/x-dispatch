@@ -230,7 +230,7 @@
       "support": "Support",
       "about": "Sobre",
       "companionApps": "Apps complementares",
-      "logs": "Registos"
+      "logs": "Registos X-Plane"
     },
     "support": {
       "reportProblem": "Report a Problem",
@@ -458,17 +458,13 @@
       "description": "Lê o Log.txt do X-Plane para ver o que o simulador reportou durante a tua última sessão.",
       "refresh": "Atualizar",
       "report": "Reportar este problema",
-      "showFullLog": "Mostrar registo completo",
-      "hideFullLog": "Ocultar registo completo",
-      "recognizedIssuesHeader": "Problemas reconhecidos ({{count}})",
-      "otherIssuesHeader": "Outros avisos/erros ({{count}})",
-      "lineNumber": "Linha {{line}}",
       "truncatedNotice": "A mostrar os últimos {{shownMb}} MB de um registo de {{totalMb}} MB.",
       "empty": {
         "noPath": "Caminho do X-Plane não configurado.",
         "noPathCta": "Abrir definições do X-Plane",
         "noLog": "Ainda sem registo — o X-Plane já foi iniciado pelo menos uma vez nesta instalação?",
-        "allClear": "O X-Dispatch não sinaliza nada neste registo."
+        "allClear": "O X-Dispatch não sinaliza nada neste registo.",
+        "noMatches": "Nenhuma entrada corresponde ao filtro atual."
       },
       "reportDialog": {
         "title": "Reportar problema do X-Plane",
@@ -479,8 +475,17 @@
         "success": "Obrigado! O teu relatório foi enviado.",
         "error": "Falha ao enviar o relatório. Tenta novamente.",
         "scaffoldHeader": "Diagnóstico do registo do X-Plane",
-        "scaffoldRecognized": "Problemas reconhecidos:",
-        "scaffoldOther": "Outras linhas E/W detetadas: {{count}}"
+        "scaffoldCounts": "Erros: {{errors}}, Avisos: {{warnings}}"
+      },
+      "entriesHeader": "Entradas do registo",
+      "entryCount": "A mostrar {{shown}} de {{total}} entradas",
+      "showHeader": "Mostrar cabeçalho pré-execução ({{count}} linhas)",
+      "hideHeader": "Ocultar cabeçalho pré-execução",
+      "filter": {
+        "all": "Tudo",
+        "errorsWarnings": "Erros + Avisos",
+        "errors": "Erros",
+        "warnings": "Avisos"
       }
     }
   },
@@ -1158,11 +1163,6 @@
       "noNotams": "Nenhum NOTAM disponível",
       "transAltTitle": "Altitudes de transição",
       "transAltDesc": "Altitude onde você troca entre altímetro local (QNH) e pressão padrão (STD) — ajuste seu altímetro adequadamente"
-    }
-  },
-  "logs": {
-    "patterns": {
-      "flt-init-ok": "O X-Plane recebeu o teu JSON de lançamento e iniciou a inicialização de voo com sucesso — qualquer falha seguinte é a jusante deste passo."
     }
   }
 }

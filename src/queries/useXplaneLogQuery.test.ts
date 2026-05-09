@@ -45,7 +45,8 @@ describe('useXplaneLogQuery', () => {
     const args = vi.mocked(useQuery).mock.calls[0]?.[0];
     expect(args?.enabled).toBe(true);
 
-    const result = await args?.queryFn?.({} as never);
+    const queryFn = args?.queryFn as (() => Promise<unknown>) | undefined;
+    const result = await queryFn?.();
     expect(readMock).toHaveBeenCalledOnce();
     expect(result).toEqual({
       kind: 'ok',

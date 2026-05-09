@@ -230,7 +230,7 @@
       "support": "Support",
       "about": "About",
       "companionApps": "Companion Apps",
-      "logs": "Logs"
+      "logs": "X-Plane Logs"
     },
     "support": {
       "reportProblem": "Report a Problem",
@@ -458,17 +458,13 @@
       "description": "Read X-Plane's Log.txt to see what the simulator reported during your last session.",
       "refresh": "Refresh",
       "report": "Report this issue",
-      "showFullLog": "Show full log",
-      "hideFullLog": "Hide full log",
-      "recognizedIssuesHeader": "Recognized issues ({{count}})",
-      "otherIssuesHeader": "Other warnings/errors ({{count}})",
-      "lineNumber": "Line {{line}}",
       "truncatedNotice": "Showing the last {{shownMb}} MB of a {{totalMb}} MB log.",
       "empty": {
         "noPath": "X-Plane path not configured.",
         "noPathCta": "Open X-Plane settings",
         "noLog": "No log yet — has X-Plane been launched at least once on this install?",
-        "allClear": "Nothing X-Dispatch flags in this log."
+        "allClear": "Nothing X-Dispatch flags in this log.",
+        "noMatches": "No entries match the current filter."
       },
       "reportDialog": {
         "title": "Report X-Plane issue",
@@ -479,8 +475,17 @@
         "success": "Thanks! Your report has been sent.",
         "error": "Failed to send report. Please try again.",
         "scaffoldHeader": "X-Plane log diagnostic",
-        "scaffoldRecognized": "Recognized issues:",
-        "scaffoldOther": "Other E/W lines surfaced: {{count}}"
+        "scaffoldCounts": "Errors: {{errors}}, Warnings: {{warnings}}"
+      },
+      "entriesHeader": "Log entries",
+      "entryCount": "Showing {{shown}} of {{total}} entries",
+      "showHeader": "Show pre-runtime header ({{count}} lines)",
+      "hideHeader": "Hide pre-runtime header",
+      "filter": {
+        "all": "All",
+        "errorsWarnings": "Errors + Warnings",
+        "errors": "Errors",
+        "warnings": "Warnings"
       }
     }
   },
@@ -1158,11 +1163,6 @@
       "noNotams": "No NOTAMs available",
       "transAltTitle": "Transition Altitudes",
       "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD) — set your altimeter accordingly"
-    }
-  },
-  "logs": {
-    "patterns": {
-      "flt-init-ok": "X-Plane received your launch JSON and started flight init successfully — any failure that follows is downstream of this."
     }
   }
 }

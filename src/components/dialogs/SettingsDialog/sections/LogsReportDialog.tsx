@@ -112,19 +112,12 @@ function buildScaffold(
   t: (key: string, opts?: Record<string, unknown>) => string,
   parsed: ParseResult
 ): string {
+  const errors = parsed.entries.filter((e) => e.level === 'error').length;
+  const warnings = parsed.entries.filter((e) => e.level === 'warn').length;
   const lines: string[] = [];
   lines.push(t('settings.logs.reportDialog.scaffoldHeader'));
   lines.push('');
-  if (parsed.recognized.length > 0) {
-    lines.push(t('settings.logs.reportDialog.scaffoldRecognized'));
-    for (const m of parsed.recognized) {
-      lines.push(`- ${t(`logs.patterns.${m.id}`)}`);
-    }
-  } else {
-    lines.push(`${t('settings.logs.reportDialog.scaffoldRecognized')} —`);
-  }
-  lines.push('');
-  lines.push(t('settings.logs.reportDialog.scaffoldOther', { count: parsed.otherIssues.length }));
+  lines.push(t('settings.logs.reportDialog.scaffoldCounts', { errors, warnings }));
   lines.push('');
   lines.push(t('settings.logs.reportDialog.descriptionPlaceholder'));
   lines.push('');
@@ -134,10 +127,11 @@ function buildScaffold(
 function buildExcerpt(rawLog: string, parsed: ParseResult): string {
   const allLines = rawLog.split('\n');
   const wanted = new Set<number>();
-  const targets = [
-    ...parsed.recognized.map((m) => m.lineNumber),
-    ...parsed.otherIssues.map((m) => m.lineNumber),
-  ];
+  // Include every error + warning line and ±5 lines of surrounding context.
+  // Skip info lines from the excerpt to keep the attachment focused.
+  const targets = parsed.entries
+    .filter((e) => e.level === 'error' || e.level === 'warn')
+    .map((e) => e.lineNumber);
   for (const ln of targets) {
     for (let i = ln - CONTEXT_LINES; i <= ln + CONTEXT_LINES; i++) {
       if (i >= 1 && i <= allLines.length) wanted.add(i);

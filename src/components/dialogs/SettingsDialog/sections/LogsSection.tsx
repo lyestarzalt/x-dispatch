@@ -1,14 +1,24 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, RefreshCcw, ScrollText, ShieldAlert } from 'lucide-react';
+import { RefreshCcw, ScrollText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
-import { type ParseResult, parseLog } from '@/lib/xplaneServices/log/parseLog';
+import { cn } from '@/lib/utils/helpers';
+import { type LogEntry, type LogLevel, parseLog } from '@/lib/xplaneServices/log/parseLog';
 import { useXplaneLogQuery } from '@/queries';
 import { LogsReportDialog } from './LogsReportDialog';
+
+type LevelFilter = 'all' | 'errors-warnings' | 'errors' | 'warnings';
+
+const FILTER_OPTIONS: { id: LevelFilter; labelKey: string }[] = [
+  { id: 'errors-warnings', labelKey: 'settings.logs.filter.errorsWarnings' },
+  { id: 'errors', labelKey: 'settings.logs.filter.errors' },
+  { id: 'warnings', labelKey: 'settings.logs.filter.warnings' },
+  { id: 'all', labelKey: 'settings.logs.filter.all' },
+];
 
 interface LogsSectionProps {
   active: boolean;
@@ -17,7 +27,8 @@ interface LogsSectionProps {
 export function LogsSection({ active }: LogsSectionProps) {
   const { t } = useTranslation();
   const query = useXplaneLogQuery(active);
-  const [showRaw, setShowRaw] = useState(false);
+  const [filter, setFilter] = useState<LevelFilter>('errors-warnings');
+  const [showHeader, setShowHeader] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
   const handleRefresh = () => {
@@ -105,14 +116,14 @@ export function LogsSection({ active }: LogsSectionProps) {
     );
   }
 
-  const parsed: ParseResult = parseLog(result.data);
-  const isAllClear = parsed.recognized.length === 0 && parsed.otherIssues.length === 0;
+  const parsed = parseLog(result.data);
+  const filtered = applyFilter(parsed.entries, filter);
 
   return (
     <div className="space-y-6">
       {Header}
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {result.truncated ? (
           <p className="text-xs text-muted-foreground">
             {t('settings.logs.truncatedNotice', {
@@ -126,90 +137,67 @@ export function LogsSection({ active }: LogsSectionProps) {
         <Toolbar canReport />
       </div>
 
-      {parsed.recognized.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <ShieldAlert className="h-4 w-4" />
-              {t('settings.logs.recognizedIssuesHeader', { count: parsed.recognized.length })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {parsed.recognized.map((m) => (
-                <li
-                  key={`${m.lineNumber}-${m.id}`}
-                  className="flex items-start gap-3 rounded-md border border-border bg-muted/20 p-3"
-                >
-                  <Badge className={levelChipClass(m.level)}>{m.level}</Badge>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm text-foreground">{t(`logs.patterns.${m.id}`)}</p>
-                    <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
-                      {t('settings.logs.lineNumber', { line: m.lineNumber })} · {m.line}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {FILTER_OPTIONS.map((opt) => (
+          <Button
+            key={opt.id}
+            variant={filter === opt.id ? 'default' : 'outline'}
+            size="sm"
+            className="h-7 px-2.5 text-xs"
+            onClick={() => setFilter(opt.id)}
+          >
+            {t(opt.labelKey)}
+          </Button>
+        ))}
+        <span className="ml-auto text-xs text-muted-foreground">
+          {t('settings.logs.entryCount', { shown: filtered.length, total: parsed.entries.length })}
+        </span>
+      </div>
 
-      {parsed.otherIssues.length > 0 && (
+      {parsed.header.length > 0 && (
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <AlertTriangle className="h-4 w-4" />
-              {t('settings.logs.otherIssuesHeader', { count: parsed.otherIssues.length })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {parsed.otherIssues.map((m) => (
-                <li
-                  key={`${m.lineNumber}-${m.category}`}
-                  className="flex items-start gap-3 rounded-md border border-border bg-muted/10 p-3"
-                >
-                  <Badge className={levelChipClass(m.level)}>{m.level}</Badge>
-                  <Badge variant="outline" className="font-mono text-xs">
-                    {m.category}
-                  </Badge>
-                  <p className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">
-                    {t('settings.logs.lineNumber', { line: m.lineNumber })} · {m.line}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {isAllClear && (
-        <Card>
-          <CardContent className="py-6 text-center">
-            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.allClear')}</p>
-          </CardContent>
+          <Collapsible open={showHeader} onOpenChange={setShowHeader}>
+            <CardHeader className="pb-3">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
+                  <ScrollText className="mr-2 h-4 w-4" />
+                  {showHeader
+                    ? t('settings.logs.hideHeader')
+                    : t('settings.logs.showHeader', { count: parsed.header.length })}
+                </Button>
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent>
+                <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/10 p-3 font-mono text-xs text-muted-foreground">
+                  {parsed.header.join('\n')}
+                </pre>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
       )}
 
       <Card>
-        <Collapsible open={showRaw} onOpenChange={setShowRaw}>
-          <CardHeader className="pb-3">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
-                <ScrollText className="mr-2 h-4 w-4" />
-                {showRaw ? t('settings.logs.hideFullLog') : t('settings.logs.showFullLog')}
-              </Button>
-            </CollapsibleTrigger>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent>
-              <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/10 p-3 font-mono text-xs text-muted-foreground">
-                {result.data}
-              </pre>
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <ScrollText className="h-4 w-4" />
+            {t('settings.logs.entriesHeader')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filtered.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              {t('settings.logs.empty.noMatches')}
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {filtered.map((e) => (
+                <LogRow key={e.lineNumber} entry={e} />
+              ))}
+            </ul>
+          )}
+        </CardContent>
       </Card>
 
       <LogsReportDialog
@@ -222,7 +210,31 @@ export function LogsSection({ active }: LogsSectionProps) {
   );
 }
 
-function levelChipClass(level: 'info' | 'warn' | 'error'): string {
+function LogRow({ entry }: { entry: LogEntry }) {
+  return (
+    <li className="flex items-start gap-3 py-2 first:pt-0 last:pb-0">
+      <span className="mt-0.5 shrink-0 font-mono text-xs text-muted-foreground/70">
+        {entry.timestamp}
+      </span>
+      <Badge className={cn('shrink-0 uppercase', levelChipClass(entry.level))}>{entry.level}</Badge>
+      <Badge variant="outline" className="shrink-0 font-mono text-xs">
+        {entry.category}
+      </Badge>
+      <p className="min-w-0 flex-1 break-words font-mono text-xs text-foreground">
+        {entry.message}
+      </p>
+    </li>
+  );
+}
+
+function applyFilter(entries: LogEntry[], filter: LevelFilter): LogEntry[] {
+  if (filter === 'all') return entries;
+  if (filter === 'errors') return entries.filter((e) => e.level === 'error');
+  if (filter === 'warnings') return entries.filter((e) => e.level === 'warn');
+  return entries.filter((e) => e.level === 'error' || e.level === 'warn');
+}
+
+function levelChipClass(level: LogLevel): string {
   if (level === 'error') return 'bg-destructive/10 text-destructive';
   if (level === 'warn') return 'bg-warning/10 text-warning';
   return 'bg-info/10 text-info';
