@@ -465,7 +465,15 @@
       },
       "delayInline": "遅延 {{seconds}}秒",
       "add": "追加",
-      "unknownError": "不明なエラー"
+      "unknownError": "不明なエラー",
+      "notElevatedTitle": "X-Dispatchは管理者として実行されていません",
+      "notElevatedHint": "コンパニオンアプリは起動できません。X-Dispatchを右クリックして「管理者として実行」を選択してください（Windows）。または、ターミナルからsudoで再起動してください（macOS/Linux）。",
+      "error": {
+        "needsAdmin": "このアプリの起動にはX-Dispatchに管理者権限が必要です",
+        "fileMissing": "設定されたパスに実行ファイルが見つかりません",
+        "fileNotExecutable": "ファイルは実行可能ではありません",
+        "spawnFailed": "プロセスを開始できませんでした"
+      }
     },
     "logs": {
       "title": "X-Plane ログ",

@@ -465,7 +465,15 @@
       },
       "delayInline": "délai {{seconds}}s",
       "add": "Ajouter",
-      "unknownError": "Erreur inconnue"
+      "unknownError": "Erreur inconnue",
+      "notElevatedTitle": "X-Dispatch n'est pas exécuté en tant qu'administrateur",
+      "notElevatedHint": "Les applications compagnons ne pourront pas démarrer. Faites un clic droit sur X-Dispatch et choisissez Exécuter en tant qu'administrateur (Windows), ou relancez depuis un terminal avec sudo (macOS/Linux).",
+      "error": {
+        "needsAdmin": "X-Dispatch a besoin des privilèges administrateur pour lancer cette application",
+        "fileMissing": "Exécutable introuvable au chemin configuré",
+        "fileNotExecutable": "Le fichier n'est pas exécutable",
+        "spawnFailed": "Impossible de démarrer le processus"
+      }
     },
     "logs": {
       "title": "Journaux X-Plane",

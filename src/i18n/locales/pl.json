@@ -465,7 +465,15 @@
       },
       "delayInline": "opóźnienie {{seconds}}s",
       "add": "Dodaj",
-      "unknownError": "Nieznany błąd"
+      "unknownError": "Nieznany błąd",
+      "notElevatedTitle": "X-Dispatch nie jest uruchomiony jako administrator",
+      "notElevatedHint": "Aplikacje towarzyszące nie zostaną uruchomione. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz Uruchom jako administrator (Windows) lub uruchom z terminala z sudo (macOS/Linux).",
+      "error": {
+        "needsAdmin": "X-Dispatch potrzebuje uprawnień administratora do uruchomienia tej aplikacji",
+        "fileMissing": "Nie znaleziono pliku wykonywalnego pod skonfigurowaną ścieżką",
+        "fileNotExecutable": "Plik nie jest wykonywalny",
+        "spawnFailed": "Nie udało się uruchomić procesu"
+      }
     },
     "logs": {
       "title": "Dzienniki X-Plane",

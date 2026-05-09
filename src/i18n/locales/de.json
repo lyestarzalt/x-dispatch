@@ -465,7 +465,15 @@
       },
       "delayInline": "Verzögerung {{seconds}}s",
       "add": "Hinzufügen",
-      "unknownError": "Unbekannter Fehler"
+      "unknownError": "Unbekannter Fehler",
+      "notElevatedTitle": "X-Dispatch läuft nicht als Administrator",
+      "notElevatedHint": "Companion-Apps können nicht gestartet werden. Klicken Sie mit der rechten Maustaste auf X-Dispatch und wählen Sie 'Als Administrator ausführen' (Windows) oder starten Sie über ein Terminal mit sudo (macOS/Linux).",
+      "error": {
+        "needsAdmin": "X-Dispatch benötigt Administratorrechte, um diese App zu starten",
+        "fileMissing": "Die ausführbare Datei wurde unter dem konfigurierten Pfad nicht gefunden",
+        "fileNotExecutable": "Die Datei ist nicht ausführbar",
+        "spawnFailed": "Prozess konnte nicht gestartet werden"
+      }
     },
     "logs": {
       "title": "X-Plane-Protokolle",

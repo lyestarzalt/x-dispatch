@@ -465,7 +465,15 @@
       },
       "delayInline": "retraso {{seconds}}s",
       "add": "Añadir",
-      "unknownError": "Error desconocido"
+      "unknownError": "Error desconocido",
+      "notElevatedTitle": "X-Dispatch no se está ejecutando como administrador",
+      "notElevatedHint": "Las aplicaciones complementarias no se podrán iniciar. Haz clic derecho en X-Dispatch y selecciona Ejecutar como administrador (Windows), o relánzalo desde una terminal con sudo (macOS/Linux).",
+      "error": {
+        "needsAdmin": "X-Dispatch necesita privilegios de administrador para iniciar esta app",
+        "fileMissing": "No se encontró el ejecutable en la ruta configurada",
+        "fileNotExecutable": "El archivo no es ejecutable",
+        "spawnFailed": "No se pudo iniciar el proceso"
+      }
     },
     "logs": {
       "title": "Registros de X-Plane",

@@ -465,7 +465,15 @@
       },
       "delayInline": "ritardo {{seconds}}s",
       "add": "Aggiungi",
-      "unknownError": "Errore sconosciuto"
+      "unknownError": "Errore sconosciuto",
+      "notElevatedTitle": "X-Dispatch non è in esecuzione come amministratore",
+      "notElevatedHint": "Le app companion non potranno essere avviate. Fai clic destro su X-Dispatch e seleziona Esegui come amministratore (Windows), o riavvia da terminale con sudo (macOS/Linux).",
+      "error": {
+        "needsAdmin": "X-Dispatch ha bisogno dei privilegi di amministratore per avviare questa app",
+        "fileMissing": "Eseguibile non trovato nel percorso configurato",
+        "fileNotExecutable": "Il file non è eseguibile",
+        "spawnFailed": "Impossibile avviare il processo"
+      }
     },
     "logs": {
       "title": "Log di X-Plane",

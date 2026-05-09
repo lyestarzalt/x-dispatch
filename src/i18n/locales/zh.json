@@ -465,7 +465,15 @@
       },
       "delayInline": "延迟 {{seconds}}秒",
       "add": "添加",
-      "unknownError": "未知错误"
+      "unknownError": "未知错误",
+      "notElevatedTitle": "X-Dispatch 未以管理员身份运行",
+      "notElevatedHint": "辅助应用将无法启动。请右键 X-Dispatch 并选择以管理员身份运行（Windows），或在终端中使用 sudo 重新启动（macOS/Linux）。",
+      "error": {
+        "needsAdmin": "X-Dispatch 需要管理员权限才能启动此应用",
+        "fileMissing": "在配置的路径中找不到可执行文件",
+        "fileNotExecutable": "文件不可执行",
+        "spawnFailed": "无法启动进程"
+      }
     },
     "logs": {
       "title": "X-Plane 日志",

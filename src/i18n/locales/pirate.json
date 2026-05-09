@@ -465,7 +465,15 @@
       },
       "delayInline": "delay {{seconds}}s",
       "add": "Recruit",
-      "unknownError": "Unknown squall"
+      "unknownError": "Unknown squall",
+      "notElevatedTitle": "X-Dispatch ain't sailin' under the captain's flag",
+      "notElevatedHint": "Companion apps won't start. Right-click X-Dispatch and choose Run as administrator (Windows), or relaunch from a terminal with sudo (macOS/Linux), ye scallywag.",
+      "error": {
+        "needsAdmin": "X-Dispatch needs the captain's flag to start this app",
+        "fileMissing": "Couldn't find the executable at the configured path",
+        "fileNotExecutable": "File ain't executable, matey",
+        "spawnFailed": "Couldn't fire up the process"
+      }
     },
     "logs": {
       "title": "X-Plane cap'n's logs",

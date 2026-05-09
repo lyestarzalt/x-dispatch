@@ -465,7 +465,15 @@
       },
       "delayInline": "delay {{seconds}}s",
       "add": "Add",
-      "unknownError": "Unknown error"
+      "unknownError": "Unknown error",
+      "notElevatedTitle": "X-Dispatch isn't running as administrator",
+      "notElevatedHint": "Companion apps will fail to launch. Right-click X-Dispatch and choose Run as administrator (Windows), or relaunch from a terminal with sudo (macOS/Linux).",
+      "error": {
+        "needsAdmin": "X-Dispatch needs administrator privileges to launch this app",
+        "fileMissing": "Executable not found at the configured path",
+        "fileNotExecutable": "File is not executable",
+        "spawnFailed": "Couldn't start the process"
+      }
     },
     "logs": {
       "title": "X-Plane logs",
