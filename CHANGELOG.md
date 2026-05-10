@@ -1,6 +1,147 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.8.0 - 2026-05-10
+
+### Features
+
+- **window:** Custom title bar with native overlay on Windows/Linux([6b1e5f0](https://github.com/lyestarzalt/x-dispatch/commit/6b1e5f0324f9ec680e90310e62e090126331ea46))
+- **cli:** Add CLI flag parser and forward args to X-Plane by @lyestarzalt([5c3ea4c](https://github.com/lyestarzalt/x-dispatch/commit/5c3ea4c6511b9c103f6270d561abc219c2c6d944))
+- **map-style:** User-extensible map style picker by @lyestarzalt([991f77c](https://github.com/lyestarzalt/x-dispatch/commit/991f77c27fbda8cb1f083fa16dff73b684cb5bf9))
+- **taxi-route:** Arrival mode (runway → gate) by @lyestarzalt([66d017b](https://github.com/lyestarzalt/x-dispatch/commit/66d017b343df19ead4f0112b9cf7fb2f4f7bf34d))
+- **i18n:** Add pirate locale by @lyestarzalt([e852a33](https://github.com/lyestarzalt/x-dispatch/commit/e852a33db8d8abb886009e943bbdc2f3a5d0b5c9))
+- **vatsim:** Add sector overlays and airport ATC details by @lyestarzalt([4da648c](https://github.com/lyestarzalt/x-dispatch/commit/4da648c0934bc2ecde8630229389e353f4d863b4))
+- **airport-info:** Expandable ILS detail per runway end by @lyestarzalt([103f155](https://github.com/lyestarzalt/x-dispatch/commit/103f1553d604170131fe33b3574f710408a730ee))
+- **companion-apps:** Zustand store skeleton + CompanionApp type by @lyestarzalt([33bfdbb](https://github.com/lyestarzalt/x-dispatch/commit/33bfdbb239911ff99d6681450173b3b7bc301f00))
+- **companion-apps:** Detached spawn wrapper with mocked tests by @lyestarzalt([a71045c](https://github.com/lyestarzalt/x-dispatch/commit/a71045c813c56e4b9514143694765dc68f08f16a))
+- **companion-apps:** Curated suggested list with XPME entry by @lyestarzalt([7a148ea](https://github.com/lyestarzalt/x-dispatch/commit/7a148eadc90fc8cfa812cfec874e0a29102a0484))
+- **companion-apps:** IPC channel for launch + exe file picker by @lyestarzalt([379c6aa](https://github.com/lyestarzalt/x-dispatch/commit/379c6aa846aa2b4c3a16b59c3d92c5129a105fb6))
+- **companion-apps:** Edit dialog with file picker integration by @lyestarzalt([0acb708](https://github.com/lyestarzalt/x-dispatch/commit/0acb708c5a1f1288632e0ec73d747b3ada1a5fe6))
+- **companion-apps:** Settings section with list + suggested panel by @lyestarzalt([a3f697c](https://github.com/lyestarzalt/x-dispatch/commit/a3f697c69526b15ba7ba801f49471be76356ca3c))
+- **companion-apps:** Expose section in SettingsDialog nav by @lyestarzalt([7393e32](https://github.com/lyestarzalt/x-dispatch/commit/7393e322d8b2970a37986a874ba8af4dda575d81))
+- **companion-apps:** Fire autoLaunch tools before X-Plane, toast failures by @lyestarzalt([75a0d40](https://github.com/lyestarzalt/x-dispatch/commit/75a0d40e9aea4a2bc1f723ccc191d62255b1e024))
+- **map:** Basemap-aware airport overlay with halo ring by @lyestarzalt([96f7807](https://github.com/lyestarzalt/x-dispatch/commit/96f7807b14fd6f8846960ce254a5584763a32a6a))
+- **ui:** Add 6 shadcn primitives styled to design system by @lyestarzalt([bfdc184](https://github.com/lyestarzalt/x-dispatch/commit/bfdc184779219ce734682d1f1c94f937b2558f76))
+- **xp-log:** Pure parser with verified pattern + noise filter by @lyestarzalt([facda3e](https://github.com/lyestarzalt/x-dispatch/commit/facda3eb3a7161a9efa862eea41102571440ac5d))
+- **xp-log:** IPC handler reads last 5MB with no-path/no-log/error branches by @lyestarzalt([7121970](https://github.com/lyestarzalt/x-dispatch/commit/712197008ec90683a69c488e9c63ea360bb3bb48))
+- **xp-log:** Expose xpLogAPI via preload, register IPC in main by @lyestarzalt([2fa4b7e](https://github.com/lyestarzalt/x-dispatch/commit/2fa4b7ec24cc960f44140bd4db863696f6464b83))
+- **xp-log:** TanStack Query hook with enabled gating by @lyestarzalt([97aeb15](https://github.com/lyestarzalt/x-dispatch/commit/97aeb1502cefc9d382c9dc8700b4fa1e8b4b1114))
+- **xp-log:** Logs settings tab with parsed view + Sentry report dialog by @lyestarzalt([e446ed4](https://github.com/lyestarzalt/x-dispatch/commit/e446ed499c73cc4b464f9386b547a744356ad513))
+- **xp-log:** Add search input and 'Open Log.txt' button by @lyestarzalt([cc936c2](https://github.com/lyestarzalt/x-dispatch/commit/cc936c2c6e79184598f4f3ffd26e171c7f7c6d90))
+- **simbrief:** Curated format list + persisted FMS export targets by @lyestarzalt([bafab2f](https://github.com/lyestarzalt/x-dispatch/commit/bafab2f353df7d1796d95705c64f4f50bd088ab8))
+- **main:** IPC for downloading SimBrief FMS files + folder picker by @lyestarzalt([feb6898](https://github.com/lyestarzalt/x-dispatch/commit/feb68981d2079209bb42468c1e91736c3fbaef5c))
+- **simbrief:** FMS export UI in settings + briefing dialog by @lyestarzalt([84e0bc5](https://github.com/lyestarzalt/x-dispatch/commit/84e0bc54e8db1757173841830f9029d99be26f49))
+- **utils:** IsElevated + canExecute helpers by @lyestarzalt([51c6ea4](https://github.com/lyestarzalt/x-dispatch/commit/51c6ea477d0ababd557b7513685789abb1e737b0))
+- **companion-apps:** Elevation + access pre-flight, structured error codes by @lyestarzalt([37a39ed](https://github.com/lyestarzalt/x-dispatch/commit/37a39ed9129a413cdcc67ce3ebb26e5c17950132))
+- **companion-apps:** Admin warning banner + clear toasts by @lyestarzalt([1231718](https://github.com/lyestarzalt/x-dispatch/commit/123171843a7ee623a6f5ff9c299615992b7eea38))
+- **utils:** ResolveLnkSync wrapper for Windows .lnk parsing by @lyestarzalt([60d5284](https://github.com/lyestarzalt/x-dispatch/commit/60d5284c2f80e6312c0d92c1f6454337deee8e7a))
+- **scenery:** Follow .lnk shortcuts in SceneryManager dir walk by @lyestarzalt([2ece0fb](https://github.com/lyestarzalt/x-dispatch/commit/2ece0fb19d67942129d656be75c5b4118666ac9d))
+- **scenery:** Resolve .lnk paths in SceneryManager.processEntry by @lyestarzalt([8b9418c](https://github.com/lyestarzalt/x-dispatch/commit/8b9418c94bda97b7d162ca49c33c84f88e458478))
+- **scenery:** Follow .lnk shortcuts in customSceneryLoader airport scan by @lyestarzalt([c04e89f](https://github.com/lyestarzalt/x-dispatch/commit/c04e89f7acee58f6bc113cd714f4a4ffc85371f9))
+- **airport-jump:** Clickable ICAO codes across the UI by @lyestarzalt([d285818](https://github.com/lyestarzalt/x-dispatch/commit/d285818f5f01cc299fe6cc41acce7e3e47edc023))
+- **map:** Frame airports via fitBounds + drop detail layer minzoom dynamically by @lyestarzalt([21f4b50](https://github.com/lyestarzalt/x-dispatch/commit/21f4b504dcfea1e136042b7de94b31d3d96e0e42))
+- **compass:** Show cursor terrain elevation under heading by @lyestarzalt([8ff3b90](https://github.com/lyestarzalt/x-dispatch/commit/8ff3b90049f8b6f1e6ac78855fd2868f2979bd9d))
+
+### Bug Fixes
+
+- **window:** Render TitleBar on macOS with traffic-light clearance by @lyestarzalt([57550a6](https://github.com/lyestarzalt/x-dispatch/commit/57550a6a5366d0b0a7e80d8f952c50b045f3024c))
+- **apt-parser:** Handle 8.33 kHz frequency rows and correct legacy mapping by @lyestarzalt([da78e74](https://github.com/lyestarzalt/x-dispatch/commit/da78e74394a7fec9f79a747c142bb9702f6923db))
+- **taxi-route:** Drop arrival gate dropdown — startPosition is the gate by @lyestarzalt([3c3cd5e](https://github.com/lyestarzalt/x-dispatch/commit/3c3cd5ec3e72bc33c83298e9e2f6a74d07937ede))
+- **main:** Timeout + logging on proxyFetch so the app never silently hangs by @lyestarzalt([ba6c82b](https://github.com/lyestarzalt/x-dispatch/commit/ba6c82b09bdbcf199756317fd16a1d1483eaa636))
+- **i18n:** Sync locales and guard parity by @lyestarzalt([c50f853](https://github.com/lyestarzalt/x-dispatch/commit/c50f853f0ccdf2f5527e94bdd7112070748ad3d9))
+- **eslint:** Pin tsconfig root for editor linting by @lyestarzalt([cb3f9a4](https://github.com/lyestarzalt/x-dispatch/commit/cb3f9a4e4e68805cbe7281c28a54e75784864128))
+- **build:** Pin @xmldom/xmldom to 0.8.x for mac packaging by @lyestarzalt([0281eb3](https://github.com/lyestarzalt/x-dispatch/commit/0281eb31998fab2b73d858cb9c5f392d7da827a1))
+- **debug:** Position toolbar below custom title bar by @lyestarzalt([6c6cf6f](https://github.com/lyestarzalt/x-dispatch/commit/6c6cf6f6d3ea7f2276007c9ebac2efb7de70f382))
+- **simbrief:** Allow filenames with adjacent dots (regression) by @lyestarzalt([a526e85](https://github.com/lyestarzalt/x-dispatch/commit/a526e8540d6fbda147c6a1cd7a445a7cfbfd4243))
+- **simbrief:** Derive export filename from OFP, not SimBrief response by @lyestarzalt([9351cb1](https://github.com/lyestarzalt/x-dispatch/commit/9351cb1a3dae11a73f9c34fdfba47d6363e6ba18))
+- **airport-info:** Drop redundant Conditions heading in ConditionsCard by @lyestarzalt([8d8b94b](https://github.com/lyestarzalt/x-dispatch/commit/8d8b94b65d7b67e4e91054d53f336da5ade5b70b))
+- **companion-apps:** Scope elevation check to Windows only by @lyestarzalt([71d0ef0](https://github.com/lyestarzalt/x-dispatch/commit/71d0ef015dbae064ae72e5798e228c45d2e0c320))
+- **i18n:** Drop literal + from companionApps.addButton (icon already shows it) by @lyestarzalt([49de93e](https://github.com/lyestarzalt/x-dispatch/commit/49de93e20834d2f61fc669245ab596ba3b9d9043))
+- **map:** Cap raster basemap source maxzoom at 19 by @lyestarzalt([6535e8f](https://github.com/lyestarzalt/x-dispatch/commit/6535e8f82c167195cbac7afa3ec2c1e32369dc3c))
+- **scenery:** Use logger.addon channel + complete the test logger mock by @lyestarzalt([4c0cf16](https://github.com/lyestarzalt/x-dispatch/commit/4c0cf16baf879b23531138e03a5f6e03fe9d3ee2))
+- **test:** Skip Windows-only elevation check on POSIX platforms by @lyestarzalt([4ed575d](https://github.com/lyestarzalt/x-dispatch/commit/4ed575d1fa6abf0c64a044b91fc647544abecdfe))
+- **taxi-route:** Start arrival route at the rollout end of the landing runway by @lyestarzalt([3e4730c](https://github.com/lyestarzalt/x-dispatch/commit/3e4730c56358bc1426b4965c8a9d80a061bd5e01))
+- **map:** Cap maxPitch at 70 to dodge the click dead zone (#79) by @lyestarzalt([fbacf40](https://github.com/lyestarzalt/x-dispatch/commit/fbacf400eaeea8518acfc8e734feb78ceb9fed06))
+- **map:** Slot taxi route between taxiway centerlines and markings by @lyestarzalt([c904ab5](https://github.com/lyestarzalt/x-dispatch/commit/c904ab5a6a0d23b3f5950440447b455defe1046a))
+- **release-rc:** Bulletproof RC number resolution against paginated gh output by @lyestarzalt([a416ddd](https://github.com/lyestarzalt/x-dispatch/commit/a416ddd7dacba5e6cb2480bc26eeb3915634c3b5))
+- **launch:** Keep gate selection and taxi route after Launch by @lyestarzalt([35441d0](https://github.com/lyestarzalt/x-dispatch/commit/35441d08317b7074700f23ff7383789e512aced9))
+
+### Refactor
+
+- **launch:** Extract FlightInit JSON builder into a dedicated module by @lyestarzalt([679452b](https://github.com/lyestarzalt/x-dispatch/commit/679452b21f076f489108a5d8ca988c15b3f70e94))
+- **launch:** Expose E2E_USER_DATA_DIR hook and gate the dev fuse for tests by @lyestarzalt([ef18425](https://github.com/lyestarzalt/x-dispatch/commit/ef184254c661f1a4fac8472f0693a963a5b2c301))
+- **airport-info:** Redesign InfoTab with progressive disclosure by @lyestarzalt([2f00fd4](https://github.com/lyestarzalt/x-dispatch/commit/2f00fd4b3ae06e8fff21f27c049e9a6b08a27d28))
+- **metar:** Extract shared formatters into lib/utils/metar by @lyestarzalt([78fc0f1](https://github.com/lyestarzalt/x-dispatch/commit/78fc0f12b1e803ada7d7cca19ebe29d653468430))
+- **taxi-route:** Use ToggleGroup for direction toggle by @lyestarzalt([23c9c84](https://github.com/lyestarzalt/x-dispatch/commit/23c9c842553f2083fd681d82a006fd08637a567e))
+- **settings:** Consolidate map render settings under Graphics by @lyestarzalt([51af780](https://github.com/lyestarzalt/x-dispatch/commit/51af780281b99d857630eb593e9c695aac4737a7))
+- **map:** Extract setupAirportsLayer to layers/world/ by @lyestarzalt([51ed4ee](https://github.com/lyestarzalt/x-dispatch/commit/51ed4ee1f5092a9b24daf927189a87465a14a315))
+- **explore:** Tighten Featured + VATSIM tab hierarchy by @lyestarzalt([9085652](https://github.com/lyestarzalt/x-dispatch/commit/9085652962ec2cea4e63ba52aaf08a59c3809f7b))
+- **logger:** Replace stray console.* with scoped logger by @lyestarzalt([b2a3193](https://github.com/lyestarzalt/x-dispatch/commit/b2a319380626837fb2bc7d2c10e86b9836a0eca6))
+- **flight-init:** Consolidate JSON builder into flightInit/ folder by @lyestarzalt([1afc5cc](https://github.com/lyestarzalt/x-dispatch/commit/1afc5ccd0d61d22a6431144bae59d54f779107bf))
+- **flight-init:** One section helper per JSON field, builder is one expression by @lyestarzalt([11aa051](https://github.com/lyestarzalt/x-dispatch/commit/11aa051355e0725c0f15280ee1805e0a7138b314))
+- **launch:** Dedupe a string literal, neaten a few comments by @lyestarzalt([541b696](https://github.com/lyestarzalt/x-dispatch/commit/541b69655940526da30cbc34bc5bc9679c3a1463))
+- **xp-log:** Match settings page styling — small heading, outline buttons, top-right toolbar by @lyestarzalt([f1a8774](https://github.com/lyestarzalt/x-dispatch/commit/f1a87741e9da78e96c22c025b6bc19cfbf4ac90c))
+- **xp-log:** Match Appearance tab structure (icon header + Separator + Card blocks) by @lyestarzalt([f40dc77](https://github.com/lyestarzalt/x-dispatch/commit/f40dc779e2c55803cab2a0cf55aa33cebc397113))
+- **xp-log:** Pivot to a real log viewer — parsed entries + level filter chips by @lyestarzalt([6e18650](https://github.com/lyestarzalt/x-dispatch/commit/6e18650f869469ccbad65a08aa80a57602cfe1f6))
+- **xp-log:** Drop Report this issue button and dialog by @lyestarzalt([94e04fe](https://github.com/lyestarzalt/x-dispatch/commit/94e04fe00e6c2a67f4feaa1c7d9411cf83d16b95))
+- **simbrief:** Pin Send to FMS row above the dialog footer by @lyestarzalt([0e16391](https://github.com/lyestarzalt/x-dispatch/commit/0e163911176b8a57c7a6f8e1440c0ffa6518b876))
+- **debug:** Collapse top debug strip into title bar dropdown by @lyestarzalt([fd2fd2e](https://github.com/lyestarzalt/x-dispatch/commit/fd2fd2eb7699be7c4f9266c872ec1af783cf7116))
+- **taxi-route:** Render via native MapLibre layers instead of canvas by @lyestarzalt([62456f5](https://github.com/lyestarzalt/x-dispatch/commit/62456f51e7038a9305115aed0f731580adc1a8e4))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.7.0 by @github-actions[bot]([512f9b9](https://github.com/lyestarzalt/x-dispatch/commit/512f9b982536b8945c52a2bd9f59dded79694ffd))
+- **readme:** Mention X-Plane free demo for users without X-Plane by @lyestarzalt([d74bd93](https://github.com/lyestarzalt/x-dispatch/commit/d74bd9323c73c4bc356ff16abeee96ccf7e2d07c))
+- **manual:** Add CLI flags reference and link from README by @lyestarzalt([734594b](https://github.com/lyestarzalt/x-dispatch/commit/734594bcabcbd9f13ba059a4b34cca80555590e7))
+- Refresh contributor workflow by @lyestarzalt([212c228](https://github.com/lyestarzalt/x-dispatch/commit/212c228e223925790338c620141cb3158eec5ec2))
+
+### Miscellaneous
+
+- **issue-template:** Add X-Plane install type and Log.txt fields by @lyestarzalt([526c9f9](https://github.com/lyestarzalt/x-dispatch/commit/526c9f92f5edba71f6c4f293b3c10fdfb80b57e6))
+- **deps:** Bump @types/node minor version by @lyestarzalt([56847fd](https://github.com/lyestarzalt/x-dispatch/commit/56847fde3b191a1b07fc7417c3f77b4ad926f8a6))
+- **tsconfig:** Include test files for type-checking, gitignore tsc dist by @lyestarzalt([a7f8e8c](https://github.com/lyestarzalt/x-dispatch/commit/a7f8e8c95fed05379373b5514370e16805a7c250))
+- **ui:** Add data-testid attributes for stable E2E selectors by @lyestarzalt([ca221d6](https://github.com/lyestarzalt/x-dispatch/commit/ca221d690b564d4d9ae42d73ae93b6e53154d32a))
+- **deps:** Update maplibre-gl to ^5.24.0 by @lyestarzalt([d121d97](https://github.com/lyestarzalt/x-dispatch/commit/d121d97932010bdfa1e9c01d4aa05df1194c2bd5))
+- **deps:** Upgrade typescript to ^6.0.0 by @lyestarzalt([4a3ffd3](https://github.com/lyestarzalt/x-dispatch/commit/4a3ffd37208ae95a51f0ca5d13e19db21cc55c1a))
+- **deps:** Bump i18next, react-i18next, typescript-eslint by @lyestarzalt([3bee42b](https://github.com/lyestarzalt/x-dispatch/commit/3bee42b4b8dbee048202c963f72fb506e0ad3394))
+- Align project on Node 24 + pin xmldom by @lyestarzalt([35575fd](https://github.com/lyestarzalt/x-dispatch/commit/35575fd100d4016685526908b5dbaeea79dbf808))
+- **deps:** Add @recent-cli/resolve-lnk for .lnk parsing by @lyestarzalt([a6b782f](https://github.com/lyestarzalt/x-dispatch/commit/a6b782f4e8b53ffdb1b0e60e652fe599f22f83f6))
+
+### CI/CD
+
+- **release-rc:** Trim Discord changelog to user-facing changes by @lyestarzalt([d4fc54b](https://github.com/lyestarzalt/x-dispatch/commit/d4fc54bcffd65e8c0c68793f87ce13b102a55865))
+
+### Release
+
+- 1.8.0 by @github-actions[bot]([40de745](https://github.com/lyestarzalt/x-dispatch/commit/40de745380aad4e83f06891f00ba1547469d20b1))
+
+### I18n
+
+- **graphics:** Fully translate the consolidated Graphics section by @lyestarzalt([f8b67da](https://github.com/lyestarzalt/x-dispatch/commit/f8b67da2d1fea441ce63c16c6e59f9fba8155c33))
+- **companion-apps:** Add settings.companionApps namespace by @lyestarzalt([57e7b21](https://github.com/lyestarzalt/x-dispatch/commit/57e7b21d94fba6dbfb5bbc99d9209e44cb863f6d))
+- **companion-apps:** Translate namespace into 9 locales + pirate by @lyestarzalt([f8420ea](https://github.com/lyestarzalt/x-dispatch/commit/f8420ea1d7fe07c2568a912dec20285dadb2783e))
+- **xp-log:** Add settings.logs.* and logs.patterns namespace (en only) by @lyestarzalt([ebf1a13](https://github.com/lyestarzalt/x-dispatch/commit/ebf1a1385e761ce48f5c003fe0cf5de6c63578a7))
+- **xp-log:** Translate logs namespace into 10 locales by @lyestarzalt([b17b82a](https://github.com/lyestarzalt/x-dispatch/commit/b17b82a71dd363b0ab29db03589a153f22bcced2))
+- **simbrief:** Translate FMS export namespace into 9 locales + pirate by @lyestarzalt([aa9e36e](https://github.com/lyestarzalt/x-dispatch/commit/aa9e36eb67bfcdc964f782cb78e9356c13b1900f))
+- **companion-apps:** Translate elevation + error keys into 9 locales + pirate by @lyestarzalt([95eb583](https://github.com/lyestarzalt/x-dispatch/commit/95eb5837f5f99b301076b960aa4892a8eb36a127))
+
+### Test
+
+- **launch:** Add unit tests for FlightInit JSON builder by @lyestarzalt([d2b95b2](https://github.com/lyestarzalt/x-dispatch/commit/d2b95b2267400a1f719879a9fa87d97a0c2a839e))
+- **db:** Add corrupt-recovery and integrity tests by @lyestarzalt([4638fa4](https://github.com/lyestarzalt/x-dispatch/commit/4638fa43dc244af8d2b5db946cee11d9685faf84))
+- **navdata:** Add spatial query, lookup, and search tests by @lyestarzalt([9284d77](https://github.com/lyestarzalt/x-dispatch/commit/9284d77657bf4ab020450ea0ba02585dda44f83e))
+- **xplane:** Add boundary tests for paths, process check, version detector by @lyestarzalt([6c132c8](https://github.com/lyestarzalt/x-dispatch/commit/6c132c89c9e956e1af8b741c49385e47e268d483))
+- **e2e:** Add Playwright foundation with smoke, airport, and launch-flow tests by @lyestarzalt([9e2bb14](https://github.com/lyestarzalt/x-dispatch/commit/9e2bb14df6d2278eb8931f029ba3133a6916d4f5))
+- **companion-apps:** Cover addTool / updateTool / removeTool by @lyestarzalt([2dd4a60](https://github.com/lyestarzalt/x-dispatch/commit/2dd4a6013cdb2e25a771586b0c53d39fe581fbe7))
+- **utils:** Minimal .lnk Buffer builder for fixture-free tests by @lyestarzalt([b5a1769](https://github.com/lyestarzalt/x-dispatch/commit/b5a176933cc68971c02f1ffac317a60ea43aa936))
+- **utils:** Cover no-target branch in resolveLnkSync by @lyestarzalt([d58063a](https://github.com/lyestarzalt/x-dispatch/commit/d58063a4eaefee4624ea021f0d187ade89cbafcb))
+- **scenery:** Regression test for POSIX symlink path by @lyestarzalt([085b402](https://github.com/lyestarzalt/x-dispatch/commit/085b4021d117bc3fcb9897f0a87af477cf3c8135))
+
+
+
+### New Contributors
+
+- @ made their first contribution
 ## v1.7.0 - 2026-04-26
 
 ### Features
