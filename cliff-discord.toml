@@ -1,0 +1,51 @@
+# git-cliff config used ONLY for the Discord RC notification.
+#
+# Discord embed descriptions cap at 4096 chars. The full repo changelog
+# (cliff.toml) emits 9 conventional-commit groups with author + commit
+# SHA per line, which blows past that limit fast. End users downloading
+# an RC don't care about refactor/chore/docs/style/ci/test/build — only
+# the user-facing changes. This config skips those categories and emits
+# a slimmed-down body suitable for embedding in a Discord webhook.
+
+[changelog]
+header = ""
+body = """
+{% for group, commits in commits | unique(attribute="message") | filter(attribute="merge_commit", value=false) | group_by(attribute="group") %}
+**{{ group | striptags | trim | upper_first }}**
+{% for commit in commits %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{% if commit.breaking %}[**breaking**] {% endif %}\
+{{ commit.message | upper_first }}\
+{% if commit.remote.pr_number %} ([#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }})){%- endif %}
+{%- endfor %}
+{% endfor %}
+"""
+footer = ""
+trim = true
+
+[remote.github]
+owner = "lyestarzalt"
+repo = "x-dispatch"
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+protect_breaking_commits = true
+filter_commits = false
+tag_pattern = "v[0-9].*"
+sort_commits = "oldest"
+commit_parsers = [
+  { message = "^feat", group = "<!-- 0 -->Features" },
+  { message = "^fix", group = "<!-- 1 -->Bug Fixes" },
+  { message = "^perf", group = "<!-- 2 -->Performance" },
+  { message = "^refactor", skip = true },
+  { message = "^docs", skip = true },
+  { message = "^style", skip = true },
+  { message = "^chore", skip = true },
+  { message = "^ci", skip = true },
+  { message = "^release", skip = true },
+  { message = "^test", skip = true },
+  { message = "^build", skip = true },
+]
+link_parsers = [
+  { pattern = "#(\\d+)", href = "https://github.com/lyestarzalt/x-dispatch/issues/$1" },
+]

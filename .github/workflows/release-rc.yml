@@ -121,11 +121,47 @@ jobs:
         id: changelog
         uses: orhun/git-cliff-action@v4
         with:
-          config: cliff.toml
+          # Discord-specific config: only feat / fix / perf, no commit
+          # SHAs or author handles, so the embed stays under the 4096-char
+          # description limit and reads well to non-developers. The full
+          # changelog (cliff.toml) is still produced for release notes.
+          config: cliff-discord.toml
           args: --unreleased --strip header
         env:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Truncate changelog if over Discord's embed budget
+        id: changelog_safe
+        env:
+          FULL_CHANGELOG: ${{ steps.changelog.outputs.content }}
+        run: |
+          # Description budget is 4096 chars total — leave headroom for the
+          # downloads list (~700), header, warning footer, and the
+          # truncation marker itself.
+          MAX_LEN=3000
+
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -n "$LAST_TAG" ]; then
+            COMPARE_URL="https://github.com/${{ github.repository }}/compare/${LAST_TAG}...${{ github.sha }}"
+          else
+            COMPARE_URL="https://github.com/${{ github.repository }}/commits/${{ github.sha }}"
+          fi
+
+          if [ ${#FULL_CHANGELOG} -gt $MAX_LEN ]; then
+            CHANGELOG="${FULL_CHANGELOG:0:$MAX_LEN}…
+
+          [Full changelog](${COMPARE_URL})"
+          else
+            CHANGELOG="$FULL_CHANGELOG"
+          fi
+
+          EOF_MARKER=$(openssl rand -hex 16)
+          {
+            echo "content<<$EOF_MARKER"
+            echo "$CHANGELOG"
+            echo "$EOF_MARKER"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Compose download links
         id: links
@@ -154,7 +190,7 @@ jobs:
 
             ${{ steps.links.outputs.downloads }}
 
-            ${{ steps.changelog.outputs.content }}
+            ${{ steps.changelog_safe.outputs.content }}
 
             > :warning: This is a pre-release build for testing. Please report any issues.
           embed-color: 15105570
