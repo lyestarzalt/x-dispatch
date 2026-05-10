@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDebugStore } from '@/stores/debugStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { collectLayerInspectorData } from '../layerInspector';
 import { FloatingPanel } from './FloatingPanel';
@@ -8,14 +9,14 @@ import { MapPanel } from './panels/MapPanel';
 import { NetworkPanel } from './panels/NetworkPanel';
 import { PerfPanel } from './panels/PerfPanel';
 import { StatePanel } from './panels/StatePanel';
-import type { DebugStats, DetachedPanel, MapRef, TabId } from './types';
-import { TABS } from './types';
+import type { DebugStats, MapRef, TabId } from './types';
 
 export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   const [stats, setStats] = useState<DebugStats | null>(null);
   const visible = useSettingsStore((s) => s.appearance.debugOverlay);
   const setDebugOverlay = useSettingsStore((s) => s.setDebugOverlay);
-  const [detached, setDetached] = useState<DetachedPanel[]>([]);
+  const detached = useDebugStore((s) => s.detached);
+  const closePanel = useDebugStore((s) => s.closePanel);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fpsRef = useRef({ frames: 0, lastTime: performance.now(), fps: 0 });
 
@@ -189,22 +190,6 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
 
   if (!visible) return null;
 
-  const handleTabClick = (id: TabId) => {
-    // Already open — close it
-    if (detached.some((d) => d.id === id)) {
-      setDetached((prev) => prev.filter((d) => d.id !== id));
-      return;
-    }
-    // Open as floating window, center on screen
-    const x = Math.round(window.innerWidth / 2 - 160);
-    const y = Math.round(window.innerHeight / 3 + detached.length * 30);
-    setDetached((prev) => [...prev, { id, x, y }]);
-  };
-
-  const closeDetached = (id: TabId) => {
-    setDetached((prev) => prev.filter((d) => d.id !== id));
-  };
-
   const renderPanel = (tabId: TabId) => {
     if (!stats) return null;
     switch (tabId) {
@@ -225,55 +210,8 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
 
   return (
     <>
-      {/* Toolbar — `top-9` keeps it below the custom title bar (h-9). The
-          title bar's `WebkitAppRegion: 'drag'` is an OS-level window-drag
-          region that intercepts pointer events even through higher
-          z-indexes; overlapping it makes the tabs unclickable. */}
-      <div className="fixed inset-x-0 top-9 z-50 flex select-none flex-col font-mono text-sm text-muted-foreground">
-        <div className="flex items-center gap-px border-b border-border/40 bg-background px-2 py-0.5">
-          <span className="mr-2 text-sm font-semibold tracking-wider text-foreground/60">
-            DEBUG
-          </span>
-
-          {TABS.map((tab) => {
-            const isOpen = detached.some((d) => d.id === tab.id);
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabClick(tab.id)}
-                title={tab.tip}
-                className={`rounded px-2 py-0.5 text-sm transition-colors ${
-                  isOpen
-                    ? 'bg-primary/20 text-primary'
-                    : 'text-muted-foreground/60 hover:bg-muted/40 hover:text-foreground'
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-
-          {/* Quick stats */}
-          {stats && (
-            <div className="ml-auto flex items-center gap-3 text-sm text-muted-foreground/50">
-              <span title="Current zoom level">z{stats.zoom.toFixed(1)}</span>
-              {stats.airportICAO && <span title="Selected airport">{stats.airportICAO}</span>}
-            </div>
-          )}
-
-          <button
-            onClick={() => setDebugOverlay(false)}
-            title="Close debug toolbar (Ctrl+Shift+D)"
-            className="ml-2 flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 hover:bg-muted hover:text-foreground"
-          >
-            ×
-          </button>
-        </div>
-      </div>
-
-      {/* Detached floating panels */}
       {detached.map((panel) => (
-        <FloatingPanel key={panel.id} panel={panel} onClose={() => closeDetached(panel.id)}>
+        <FloatingPanel key={panel.id} panel={panel} onClose={() => closePanel(panel.id)}>
           {renderPanel(panel.id)}
         </FloatingPanel>
       ))}
