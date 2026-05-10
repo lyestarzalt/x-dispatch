@@ -8,8 +8,7 @@ import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
 import { calculateOptimalZoom } from '../utils/zoomCalculator';
 
-// Map layer IDs to visibility keys
-// NOTE: Taxiway lights are now rendered via deck.gl overlay, not MapLibre layers
+// Map layer IDs to visibility keys.
 const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-runways': 'runways',
   'airport-runway-centerlines': 'runways',
@@ -27,8 +26,8 @@ const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-taxiways': 'taxiways',
   'airport-linear-features': 'linearFeatures',
   'airport-linear-features-border': 'linearFeatures',
-  'airport-signs': 'signs',
-  'airport-signs-direction': 'signs',
+  'airport-linear-features-centerline': 'linearFeatures',
+  'airport-linear-features-centerline-border': 'linearFeatures',
   'airport-gates': 'gates',
   'airport-gate-labels': 'gates',
   'airport-windsocks': 'windsocks',

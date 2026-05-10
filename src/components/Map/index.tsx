@@ -84,7 +84,8 @@ interface MapProps {
 const CLICKABLE_LAYERS = [
   'airport-linear-features',
   'airport-linear-features-border',
-  'airport-signs',
+  'airport-linear-features-centerline',
+  'airport-linear-features-centerline-border',
   'airport-gates',
   'airport-runways',
   'airport-taxiways',
