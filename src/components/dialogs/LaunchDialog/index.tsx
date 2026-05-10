@@ -203,7 +203,11 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         try {
           await startFlightMutation.mutateAsync(flightConfig);
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
-          useAppStore.getState().setStartPosition(null);
+          // NOTE: intentionally NOT clearing `startPosition` here —
+          // the user wants to come back to the app and see their gate
+          // and taxi route exactly where they left them. Clearing the
+          // route lifecycle is handled in appStore (gate change /
+          // airport change / explicit Clear button).
           onClose();
           showSupportToastIfEligible();
           if (useSettingsStore.getState().launcher.closeOnLaunch) {
@@ -220,7 +224,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
         if (result.success) {
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
-          useAppStore.getState().setStartPosition(null);
+          // NOTE: see the matching note in the `isXPlaneRunning` branch —
+          // we keep `startPosition` so the user's gate + drawn taxi
+          // route stay visible after the launch dialog closes.
           onClose();
           showSupportToastIfEligible();
           if (useSettingsStore.getState().launcher.closeOnLaunch) {
