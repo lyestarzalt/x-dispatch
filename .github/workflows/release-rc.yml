@@ -28,12 +28,20 @@ jobs:
       - name: Compute RC version
         id: rc
         run: |
+          set -euo pipefail
           npm version ${{ inputs.version }} --no-git-tag-version
           NEXT=$(node -p "require('./package.json').version")
 
-          # Auto-increment: find highest existing rc.N for this version
-          LAST=$(gh api repos/${{ github.repository }}/actions/artifacts --paginate -q \
-            "[.artifacts[].name | select(startswith(\"rc-${NEXT}-rc.\"))] | map(split(\"rc.\")[-1] | split(\"-\")[0] | tonumber) | max // 0")
+          # Auto-increment: find the highest existing rc.N for this version
+          # among uploaded artifacts. With `--paginate`, the jq filter runs
+          # per page and emits one line per match — so we stream the
+          # numbers, sort, and take the tail to get the global max instead
+          # of trying to compute it inside jq (which previously produced
+          # multi-line output that broke the arithmetic below).
+          LAST=$(gh api "repos/${{ github.repository }}/actions/artifacts" --paginate \
+            --jq ".artifacts[] | select(.name | startswith(\"rc-${NEXT}-rc.\")) | .name | sub(\"^rc-${NEXT}-rc.\"; \"\") | split(\"-\")[0] | tonumber" \
+            | sort -n | tail -n 1)
+          [[ "$LAST" =~ ^[0-9]+$ ]] || LAST=0
           RC_NUM=$((LAST + 1))
 
           echo "rc_version=${NEXT}-rc.${RC_NUM}" >> $GITHUB_OUTPUT
