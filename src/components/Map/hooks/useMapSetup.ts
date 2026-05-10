@@ -157,6 +157,20 @@ export function useMapSetup({
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
 
+    // maplibre-gl 5.x raises rejected promises out the side of its tile
+    // image-fetch path that don't go through `map.on('error')`. They surface
+    // in DevTools as "Uncaught (in promise) TypeError: Cannot read properties
+    // of undefined (reading 'signal')" and flood the console on every
+    // projection swap. Filter them at the window level — the message is
+    // specific enough that we won't swallow real rejections.
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const msg = (event.reason as { message?: unknown } | null)?.message;
+      if (typeof msg === 'string' && msg.includes("reading 'signal'")) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+
     map.on('error', (e) => {
       // TODO: DEM tiles served as .webp via tile-cache:// trigger spurious "Could not
       // load image" errors in MapLibre's raster-dem decoder. The tiles decode correctly
@@ -164,6 +178,16 @@ export function useMapSetup({
       // switching DEM tile providers.
       const ev = e as unknown as Record<string, unknown>;
       if (ev.sourceId === 'terrain-dem' || ev.sourceId === 'terrain-hillshade-dem') return;
+
+      // maplibre-gl 5.x bug: when `setProjection` reloads raster tiles, the
+      // internal `getImage` call paths a request object missing its
+      // AbortController.signal, throwing
+      // `Cannot read properties of undefined (reading 'signal')`. The tile
+      // still ends up loading via the normal flow — this is purely the side
+      // channel rejection and floods the log on every projection swap.
+      // Suppress until we upgrade/downgrade maplibre-gl past the regression.
+      const errMsg = e.error?.message ?? '';
+      if (typeof errMsg === 'string' && errMsg.includes("reading 'signal'")) return;
 
       const parts: string[] = [];
       if (ev.sourceId) parts.push(`source: ${ev.sourceId}`);
@@ -212,6 +236,7 @@ export function useMapSetup({
     });
 
     return () => {
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
       map.remove();
     };
     // Note: mapStyleUrl changes are handled by Map/index.tsx style change handler
