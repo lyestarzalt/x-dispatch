@@ -29,6 +29,23 @@ interface LaunchPanelProps {
   startPosition: StartPosition | null;
 }
 
+/**
+ * Map Node spawn error codes from `window.launcherAPI.launch` into
+ * user-actionable messages. On Windows, a UAC-blocked launch surfaces as
+ * `EACCES`, hence the "run as administrator" hint. Falls back to whatever
+ * error string the main process provided, or a generic "failed to launch"
+ * message when neither is available.
+ */
+function launchErrorMessage(
+  t: ReturnType<typeof useTranslation>['t'],
+  code: string | undefined,
+  fallback: string | undefined
+): string {
+  if (code === 'EACCES') return t('launcher.spawnErrorAccess');
+  if (code === 'ENOENT') return t('launcher.spawnErrorMissing');
+  return fallback || t('launcher.spawnErrorGeneric');
+}
+
 export default function LaunchPanel({ open, onClose, startPosition }: LaunchPanelProps) {
   const { t } = useTranslation();
 
@@ -234,7 +251,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           }
         } else {
           window.appAPI.log.error('X-Plane launch failed', result.error);
-          setLaunchError(result.error || 'Failed to launch');
+          setLaunchError(launchErrorMessage(t, result.code, result.error));
         }
       }
     } catch (err) {

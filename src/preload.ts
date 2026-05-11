@@ -546,7 +546,7 @@ declare global {
       launch: (
         payload: FlightInit,
         extraArgs?: string[]
-      ) => Promise<{ success: boolean; error?: string }>;
+      ) => Promise<{ success: boolean; error?: string; code?: string }>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
     flightPlanAPI: {

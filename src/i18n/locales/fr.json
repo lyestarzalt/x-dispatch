@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Plane est en cours - le vol sera changé via l'API",
     "selectDeparture": "Sélectionnez un départ sur la carte",
     "selectAircraft": "Sélectionnez un aéronef",
+    "spawnErrorAccess": "Windows a bloqué le lancement. Faites un clic-droit sur X-Dispatch et choisissez « Exécuter en tant qu’administrateur », puis réessayez.",
+    "spawnErrorMissing": "Exécutable X-Plane introuvable au chemin configuré. Vérifiez le chemin d’installation de X-Plane dans les Paramètres.",
+    "spawnErrorGeneric": "Échec du lancement de X-Plane. Consultez les journaux pour plus de détails (Paramètres → Journaux).",
     "aircraft": {
       "title": "Aéronef",
       "search": "Rechercher un aéronef...",

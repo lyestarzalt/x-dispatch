@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Plane läuft - Flug wird über API geändert",
     "selectDeparture": "Wählen Sie einen Abflugort auf der Karte",
     "selectAircraft": "Wählen Sie ein Flugzeug",
+    "spawnErrorAccess": "Windows hat den Start blockiert. Klicken Sie mit der rechten Maustaste auf X-Dispatch und wählen Sie „Als Administrator ausführen“, und versuchen Sie es erneut.",
+    "spawnErrorMissing": "Die X-Plane-Programmdatei wurde am angegebenen Pfad nicht gefunden. Überprüfen Sie den X-Plane-Installationspfad in den Einstellungen.",
+    "spawnErrorGeneric": "X-Plane konnte nicht gestartet werden. Details finden Sie im Protokoll (Einstellungen → Protokolle).",
     "aircraft": {
       "title": "Flugzeug",
       "search": "Flugzeug suchen...",

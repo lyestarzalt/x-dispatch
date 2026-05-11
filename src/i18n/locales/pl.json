@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Plane działa - lot zostanie zmieniony przez API",
     "selectDeparture": "Wybierz miejsce odlotu na mapie",
     "selectAircraft": "Wybierz samolot",
+    "spawnErrorAccess": "Windows zablokował uruchomienie. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz „Uruchom jako administrator“, a następnie spróbuj ponownie.",
+    "spawnErrorMissing": "Nie znaleziono pliku wykonywalnego X-Plane w skonfigurowanej ścieżce. Sprawdź ścieżkę instalacji X-Plane w Ustawieniach.",
+    "spawnErrorGeneric": "Nie udało się uruchomić X-Plane. Szczegóły w dzienniku (Ustawienia → Dzienniki).",
     "aircraft": {
       "title": "Samolot",
       "search": "Szukaj samolotów...",

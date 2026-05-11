@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Plane está ejecutándose - el vuelo se cambiará vía API",
     "selectDeparture": "Selecciona una salida en el mapa",
     "selectAircraft": "Selecciona una aeronave",
+    "spawnErrorAccess": "Windows bloqueó el inicio. Haz clic con el botón derecho en X-Dispatch y elige «Ejecutar como administrador», luego inténtalo de nuevo.",
+    "spawnErrorMissing": "No se encontró el ejecutable de X-Plane en la ruta configurada. Comprueba la ruta de instalación de X-Plane en Ajustes.",
+    "spawnErrorGeneric": "No se pudo iniciar X-Plane. Consulta los registros para más detalles (Ajustes → Registros).",
     "aircraft": {
       "title": "Aeronave",
       "search": "Buscar aeronave...",

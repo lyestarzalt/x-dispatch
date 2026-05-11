@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Planeが実行中 - フライトはAPIで変更されます",
     "selectDeparture": "マップ上で出発地を選択",
     "selectAircraft": "機体を選択",
+    "spawnErrorAccess": "Windows が起動をブロックしました。X-Dispatch を右クリックして「管理者として実行」を選択し、もう一度お試しください。",
+    "spawnErrorMissing": "設定されたパスに X-Plane の実行ファイルが見つかりません。設定で X-Plane のインストールパスを確認してください。",
+    "spawnErrorGeneric": "X-Plane の起動に失敗しました。詳細はログをご確認ください(設定 → ログ)。",
     "aircraft": {
       "title": "機体",
       "search": "機体を検索...",

@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Plane is running - flight will be changed via API",
     "selectDeparture": "Select a departure on the map",
     "selectAircraft": "Select an aircraft",
+    "spawnErrorAccess": "Windows blocked the launch. Right-click X-Dispatch and choose \"Run as administrator\", then try again.",
+    "spawnErrorMissing": "X-Plane executable not found at the configured path. Check the X-Plane install path in Settings.",
+    "spawnErrorGeneric": "Failed to launch X-Plane. See the log for details (Settings → Logs).",
     "aircraft": {
       "title": "Aircraft",
       "search": "Search aircraft...",

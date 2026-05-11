@@ -762,6 +762,9 @@
     "xplaneRunning": "X-Plane 正在运行 - 将通过 API 更改飞行",
     "selectDeparture": "在地图上选择出发地",
     "selectAircraft": "选择飞机",
+    "spawnErrorAccess": "Windows 阻止了启动。请右键单击 X-Dispatch 并选择「以管理员身份运行」,然后重试。",
+    "spawnErrorMissing": "在配置路径中找不到 X-Plane 可执行文件。请在「设置」中检查 X-Plane 安装路径。",
+    "spawnErrorGeneric": "无法启动 X-Plane。请查看日志了解详情(设置 → 日志)。",
     "aircraft": {
       "title": "飞机",
       "search": "搜索飞机...",

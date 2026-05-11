@@ -84,7 +84,7 @@ class XPlaneLauncher {
   async launch(
     payload: FlightInit,
     extraArgs?: string[]
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<{ success: boolean; error?: string; code?: string }> {
     try {
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
@@ -156,18 +156,35 @@ class XPlaneLauncher {
       logger.launcher.info(`Arguments: ${xplaneArgs.join(' ')}`);
       logger.launcher.info(`Spawn options: ${JSON.stringify(spawnOptions)}`);
 
-      const xplaneProcess = spawn(executable, xplaneArgs, spawnOptions);
+      // Wait for the OS to confirm one of:
+      //   - 'spawn'  → the process has been started, we can detach and report success
+      //   - 'error'  → the OS refused (ENOENT for a missing exe, EACCES when UAC
+      //                blocks a Windows launch without admin, etc.)
+      // The two events are mutually exclusive per Node's docs, so a single
+      // resolve+cleanup covers both outcomes without races or timeouts.
+      // We only catch spawn-time errors here; once 'spawn' fires X-Plane is
+      // on its own — internal crashes/exits later aren't surfaced.
+      return await new Promise<{ success: boolean; error?: string; code?: string }>((resolve) => {
+        const xp = spawn(executable, xplaneArgs, spawnOptions);
+        let settled = false;
+        const settle = (result: { success: boolean; error?: string; code?: string }): void => {
+          if (settled) return;
+          settled = true;
+          resolve(result);
+        };
 
-      // Handle spawn errors (e.g., EACCES, ENOENT)
-      xplaneProcess.on('error', (err) => {
-        logger.launcher.error(`Spawn error: ${err.message}`, err);
+        xp.once('spawn', () => {
+          // Process is running; detach so it outlives the app.
+          xp.unref();
+          logger.launcher.info(`Spawn completed, process unref'd`);
+          settle({ success: true });
+        });
+
+        xp.once('error', (err: NodeJS.ErrnoException) => {
+          logger.launcher.error(`Spawn error: ${err.message}`, err);
+          settle({ success: false, error: err.message, code: err.code });
+        });
       });
-
-      // Unref the process so it can run independently
-      xplaneProcess.unref();
-
-      logger.launcher.info(`Spawn completed, process unref'd`);
-      return { success: true };
     } catch (err) {
       logger.launcher.error('Launch failed', err);
       return { success: false, error: (err as Error).message };
