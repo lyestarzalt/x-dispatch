@@ -1,6 +1,25 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.8.1 - 2026-05-11
+
+### Features
+
+- **logger:** Forward caught main-process errors to Sentry by @lyestarzalt([5724205](https://github.com/lyestarzalt/x-dispatch/commit/5724205b2cc8649e0d1f3b53a482d4bd91e1ffb5))
+
+### Bug Fixes
+
+- **apt-loader:** Dedup Custom Scenery .lnk targets to avoid UNIQUE constraint crash by @lyestarzalt([e9d12dd](https://github.com/lyestarzalt/x-dispatch/commit/e9d12dd361b417c34c1d2e8202cf4d18b2452ab5))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.8.0 by @github-actions[bot]([e0dcba6](https://github.com/lyestarzalt/x-dispatch/commit/e0dcba6390db378d44a05801bb97fda69286287d))
+
+### Release
+
+- 1.8.1 by @github-actions[bot]([17f9a6e](https://github.com/lyestarzalt/x-dispatch/commit/17f9a6e8dc0cb6819bbbbb63f34f7d4ffc289800))
+
+
 ## v1.8.0 - 2026-05-10
 
 ### Features
