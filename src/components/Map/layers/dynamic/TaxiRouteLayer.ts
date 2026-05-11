@@ -143,26 +143,6 @@ function buildEndpointsFC(endpoints: EndpointDef[]): GeoJSON.FeatureCollection {
   };
 }
 
-/**
- * Pick a `beforeId` so our taxi-route layers slot *between* the airport's
- * centerline pair and marking pair. `airport-linear-features-border` is the
- * marking casing — inserting before it keeps the visual stack:
- *   1. taxiway surface + centerline pair (rendered earlier)
- *   2. our route + chevrons (here)
- *   3. marking pair + lights + gates + plane (rendered after)
- *
- * If the airport hasn't rendered yet we return undefined (append). The
- * subsequent airport render adds the marking pair without a `before` arg,
- * so they end up on top of us anyway.
- */
-function pickTaxiRouteAnchor(map: maplibregl.Map): string | undefined {
-  const candidates = ['airport-linear-features-border', 'airport-linear-features'];
-  for (const id of candidates) {
-    if (map.getLayer(id)) return id;
-  }
-  return undefined;
-}
-
 function buildHandleFC(
   handle: { longitude: number; latitude: number; grabbed: boolean } | null
 ): GeoJSON.FeatureCollection {
@@ -213,62 +193,48 @@ export function addTaxiRouteLayer(map: maplibregl.Map): void {
 }
 
 function addTaxiRouteLayers(map: maplibregl.Map): void {
-  // Two z-bands. The route's visual layers (casing → line → chevrons) slot
-  // *between* the airport's centerline pair and marking pair so painted
-  // markings (hold-short bars, gate lines) still read on top of the green
-  // path. The interactive helpers (preview, endpoints, handle) go *on top*
-  // of everything — the user needs them clickable and unobscured while
-  // editing the route.
-  const before = pickTaxiRouteAnchor(map);
-
-  map.addLayer(
-    {
-      id: CASING_LAYER_ID,
-      type: 'line',
-      source: SOURCE_ID,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': ROUTE_CASING,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 13, 7, 18, 14, 22, 22],
-      },
+  // All six layers go on top of the stack (no beforeId) so the green path
+  // stays unobscured by airport markings (hold-short bars, gate hold lines)
+  // and by the runway/taxiway labels. The interactive helpers (preview,
+  // endpoints, handle) need to be on top to remain clickable; keeping the
+  // route there too means the user always sees the path they drew.
+  map.addLayer({
+    id: CASING_LAYER_ID,
+    type: 'line',
+    source: SOURCE_ID,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': ROUTE_CASING,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 13, 7, 18, 14, 22, 22],
     },
-    before
-  );
+  });
 
-  map.addLayer(
-    {
-      id: LINE_LAYER_ID,
-      type: 'line',
-      source: SOURCE_ID,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': ROUTE_GREEN,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 13, 5, 18, 10, 22, 18],
-      },
+  map.addLayer({
+    id: LINE_LAYER_ID,
+    type: 'line',
+    source: SOURCE_ID,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': ROUTE_GREEN,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 13, 5, 18, 10, 22, 18],
     },
-    before
-  );
+  });
 
-  map.addLayer(
-    {
-      id: CHEVRON_LAYER_ID,
-      type: 'symbol',
-      source: SOURCE_ID,
-      layout: {
-        'symbol-placement': 'line',
-        'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 13, 30, 18, 55, 22, 90],
-        'icon-image': CHEVRON_IMAGE_ID,
-        'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 18, 0.95, 22, 1.25],
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-      },
+  map.addLayer({
+    id: CHEVRON_LAYER_ID,
+    type: 'symbol',
+    source: SOURCE_ID,
+    layout: {
+      'symbol-placement': 'line',
+      'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 13, 30, 18, 55, 22, 90],
+      'icon-image': CHEVRON_IMAGE_ID,
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 18, 0.95, 22, 1.25],
+      'icon-rotation-alignment': 'map',
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
     },
-    before
-  );
+  });
 
-  // Helpers — no beforeId → appended to the top of the layer stack so they
-  // sit above every airport feature regardless of basemap or anchor lookup.
   map.addLayer({
     id: PREVIEW_LAYER_ID,
     type: 'line',
