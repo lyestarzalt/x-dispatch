@@ -529,3 +529,76 @@ describe('detectAptFileChanges cache invalidation', () => {
     expect(result.newFiles).toHaveLength(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Regression: updateStoredFileMeta must tolerate duplicate paths in input.
+// In v1.8 the Custom Scenery walker (findCustomSceneryAptFiles) gained .lnk
+// support and started producing the same physical apt.dat path twice when a
+// shortcut resolves to a folder already covered by a sibling — once for the
+// real directory entry, once for the resolved shortcut target. The bulk
+// INSERT then died on `UNIQUE constraint failed: apt_file_meta.path`,
+// surfacing to users as "trouble reading the airports" with that exact
+// SQLite message (reported by a user on v1.8.0).
+// ---------------------------------------------------------------------------
+
+describe('updateStoredFileMeta — duplicate path tolerance (regression for v1.8 .lnk dedup bug)', () => {
+  beforeEach(async () => {
+    await createTestDb();
+  });
+
+  afterEach(() => {
+    closeTestDb();
+  });
+
+  it('does not throw on a file list containing duplicate paths', () => {
+    const files = [
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 }, // same path, identical mtime
+    ];
+    const counts = new Map([['/xplane/custom/KLAX/apt.dat', 1]]);
+
+    expect(() => updateStoredFileMeta(files, counts)).not.toThrow();
+  });
+
+  it('persists exactly one row per unique path when the input has duplicates', () => {
+    const files = [
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
+      { path: '/xplane/custom/EGLL/apt.dat', mtime: 200 },
+    ];
+    const counts = new Map([
+      ['/xplane/custom/KLAX/apt.dat', 1],
+      ['/xplane/custom/EGLL/apt.dat', 1],
+    ]);
+
+    updateStoredFileMeta(files, counts);
+
+    // Reload via detectAptFileChanges to introspect the persisted rows
+    // without exporting an internal-only helper. A fresh scan with the same
+    // file list as the unique set should report "no rescan needed".
+    const result = detectAptFileChanges([
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
+      { path: '/xplane/custom/EGLL/apt.dat', mtime: 200 },
+    ]);
+    expect(result.needsReload).toBe(false);
+    expect(result.newFiles).toEqual([]);
+    expect(result.changedFiles).toEqual([]);
+    expect(result.deletedFiles).toEqual([]);
+  });
+
+  it('keeps the last mtime when the same path appears with different mtimes', () => {
+    // If a future producer hands us conflicting mtimes for the same path,
+    // we want last-write-wins behavior rather than a hard failure.
+    const files = [
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
+      { path: '/xplane/custom/KLAX/apt.dat', mtime: 500 },
+    ];
+    const counts = new Map([['/xplane/custom/KLAX/apt.dat', 1]]);
+
+    expect(() => updateStoredFileMeta(files, counts)).not.toThrow();
+
+    // Scanning with mtime=500 should match the stored row (no rescan).
+    const result = detectAptFileChanges([{ path: '/xplane/custom/KLAX/apt.dat', mtime: 500 }]);
+    expect(result.needsReload).toBe(false);
+  });
+});

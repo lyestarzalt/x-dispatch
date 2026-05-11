@@ -80,7 +80,14 @@ export function detectAptFileChanges(currentFiles: AptFileInfo[]): CacheCheckRes
 }
 
 /**
- * Update stored file metadata after successful load
+ * Update stored file metadata after successful load.
+ *
+ * Dedupes `files` by `path` before insert so a producer that emits the same
+ * path twice (e.g. v1.8's Custom Scenery .lnk walker resolving to a folder
+ * already covered by a sibling directory) doesn't trip the `apt_file_meta`
+ * PRIMARY KEY constraint. The producer-side `findCustomSceneryAptFiles`
+ * also dedupes, but this is the last line of defense so any future
+ * producer can't reintroduce the bug. Last-write-wins on conflict.
  */
 export function updateStoredFileMeta(
   files: AptFileInfo[],
@@ -91,8 +98,13 @@ export function updateStoredFileMeta(
   // Clear existing
   db.delete(aptFileMeta).run();
 
-  // Insert current state
-  const entries = files.map((f) => ({
+  // Dedup by path — `Map` keeps the last value per key, which matches
+  // last-write-wins semantics if a future caller hands us conflicting
+  // mtimes for the same path.
+  const byPath = new Map<string, AptFileInfo>();
+  for (const f of files) byPath.set(f.path, f);
+
+  const entries = [...byPath.values()].map((f) => ({
     path: f.path,
     mtime: f.mtime,
     airportCount: airportCounts.get(f.path) ?? 0,

@@ -80,7 +80,14 @@ export function findCustomSceneryAptFiles(xplanePath: string): string[] {
     logger.data.warn('Error scanning Custom Scenery:', err);
   }
 
-  return aptFiles;
+  // Dedup by canonical path. A .lnk shortcut whose target resolves to a
+  // sibling directory (or another .lnk's target) would otherwise emit the
+  // same physical apt.dat twice — once via the dir scan, once via the
+  // shortcut. `path.resolve` normalizes separators/case so different
+  // string spellings of the same path collapse. Without this, downstream
+  // parsing scans the same file twice and the `apt_file_meta` insert
+  // blows up on the path PRIMARY KEY.
+  return [...new Set(aptFiles.map((p) => path.resolve(p)))];
 }
 
 /**

@@ -97,4 +97,42 @@ describe('findCustomSceneryAptFiles', () => {
     const expectedPath = path.join(linkPath, 'Earth nav data', 'apt.dat');
     expect(findCustomSceneryAptFiles(xpRoot)).toContain(expectedPath);
   });
+
+  // ── Regression for v1.8 .lnk dedup bug (reported on v1.8.0) ──────────
+  // Two filesystem entries resolving to the same physical apt.dat used to
+  // produce duplicate entries in the returned list, which then tripped
+  // the `apt_file_meta.path` PRIMARY KEY when the loader pipeline
+  // persisted them. The walker now dedupes by canonical path.
+
+  it('dedupes when a .lnk inside Custom Scenery points at a sibling real directory', () => {
+    // Real subdir: Custom Scenery/KLAX/Earth nav data/apt.dat
+    const realDir = path.join(customScenery, 'KLAX');
+    fs.mkdirSync(path.join(realDir, 'Earth nav data'), { recursive: true });
+    const aptPath = path.join(realDir, 'Earth nav data', 'apt.dat');
+    fs.writeFileSync(aptPath, 'I\n1000 Version\n');
+
+    // Shortcut pointing at that real subdir — the resolved target's
+    // apt.dat is the same file as the one discovered via the dir scan.
+    fs.writeFileSync(
+      path.join(customScenery, 'KLAX-shortcut.lnk'),
+      buildMinimalLnk(realDir, 'ascii')
+    );
+
+    const found = findCustomSceneryAptFiles(xpRoot);
+    expect(found.filter((p) => p === path.resolve(aptPath))).toHaveLength(1);
+  });
+
+  it('dedupes when two .lnk shortcuts resolve to the same external folder', () => {
+    const target = path.join(externalDrive, 'SharedKLAX');
+    fs.mkdirSync(path.join(target, 'Earth nav data'), { recursive: true });
+    const aptPath = path.join(target, 'Earth nav data', 'apt.dat');
+    fs.writeFileSync(aptPath, 'I\n1000 Version\n');
+
+    // Two distinct .lnk filenames, identical target.
+    fs.writeFileSync(path.join(customScenery, 'A.lnk'), buildMinimalLnk(target, 'ascii'));
+    fs.writeFileSync(path.join(customScenery, 'B.lnk'), buildMinimalLnk(target, 'ascii'));
+
+    const found = findCustomSceneryAptFiles(xpRoot);
+    expect(found.filter((p) => p === path.resolve(aptPath))).toHaveLength(1);
+  });
 });
