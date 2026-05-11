@@ -1,6 +1,24 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.8.2 - 2026-05-11
+
+### Bug Fixes
+
+- **launch:** Surface X-Plane spawn errors (EACCES, ENOENT) in the dialog by @lyestarzalt([5554a4b](https://github.com/lyestarzalt/x-dispatch/commit/5554a4b2e3d33e31891d228f7ef090b35e54a02f))
+- **map:** Unify GeoJSON source adds to close addSource race (X-DISPATCH-S) by @lyestarzalt([b19a7b5](https://github.com/lyestarzalt/x-dispatch/commit/b19a7b5d1dc80368f177da861971e3790a0e1a80))
+- **taxi-route:** Always render the green path on top of airport markings by @lyestarzalt([c1ee3d8](https://github.com/lyestarzalt/x-dispatch/commit/c1ee3d87359720d7893b56ba5be660c3b243e641))
+- **taxi-route:** Lift route layers on every data change, not just at mount by @lyestarzalt([d948408](https://github.com/lyestarzalt/x-dispatch/commit/d9484083bdad10e80ed30602cb774930d841fdc9))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.8.1 by @github-actions[bot]([f0761d6](https://github.com/lyestarzalt/x-dispatch/commit/f0761d675eac101aa3c9c1de18db1d0690746b64))
+
+### Release
+
+- 1.8.2 by @github-actions[bot]([581a3ff](https://github.com/lyestarzalt/x-dispatch/commit/581a3fff95f37980071b51ee31ef977672a12796))
+
+
 ## v1.8.1 - 2026-05-11
 
 ### Features
