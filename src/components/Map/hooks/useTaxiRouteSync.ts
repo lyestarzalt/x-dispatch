@@ -17,6 +17,7 @@ import {
   type EndpointDef,
   type RoutePoint,
   addTaxiRouteLayer,
+  bringTaxiRouteToFront,
   removeTaxiRouteLayer,
   setTaxiRoute,
   setTaxiRouteEndpoints,
@@ -187,6 +188,11 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       }
       setTaxiRoute(map, drawPoints);
       setTaxiRouteEndpoints(map, buildEndpoints(drawPoints));
+      // The route layers mount on `load` (before any airport renders), so
+      // when the user selects an airport its 16 layers get appended on top
+      // of the route. Re-lift here whenever the route data changes — the
+      // user has just made a meaningful change, and `moveLayer` is cheap.
+      bringTaxiRouteToFront(map);
     };
 
     apply();

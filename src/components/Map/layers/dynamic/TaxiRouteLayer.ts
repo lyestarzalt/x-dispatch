@@ -283,6 +283,22 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
   });
 }
 
+/**
+ * Lift every taxi-route layer to the top of MapLibre's stack. Airport
+ * renders (`useAirportRenderer.renderAirport`) append their layers after the
+ * route is mounted on `map.on('load')`, so without this call the airport's
+ * marking pair ends up painting over the green path. Calling `moveLayer`
+ * with no `beforeId` moves each layer to the very top in the order they're
+ * passed — so we walk the list in stack order to preserve casing → line →
+ * chevrons → preview → endpoints → handle.
+ */
+export function bringTaxiRouteToFront(map: maplibregl.Map): void {
+  if (!map.getStyle()) return;
+  for (const id of TAXI_ROUTE_LAYER_IDS) {
+    if (map.getLayer(id)) map.moveLayer(id);
+  }
+}
+
 export function setTaxiRoute(map: maplibregl.Map, points: RoutePoint[]): void {
   const src = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
   src?.setData(buildLineFC(points));
