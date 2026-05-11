@@ -357,7 +357,9 @@ export default function Map({ airports }: MapProps) {
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation });
 
-  // Taxi route sync - renders user-placed waypoints as a canvas overlay
+  // Taxi route sync — renders user-placed waypoints as native MapLibre layers.
+  // Visual layers (casing/line/chevrons) slot between airport centerlines and
+  // markings; interactive helpers (preview/endpoints/handle) sit on top.
   useTaxiRouteSync(mapRef);
 
   // Approach light "rabbit" animation — canvas overlay, no MapLibre repaints

@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl';
-import { safeRemove, setLayersVisibility } from '../types';
+import { safeAddGeoJSONSource, safeRemove, setLayersVisibility } from '../types';
 
 /**
  * Base class for navigation layer renderers (VOR, NDB, DME, ILS, Waypoint, etc.)
@@ -33,23 +33,43 @@ export abstract class NavLayerRenderer<T> {
   }
 
   /**
-   * Add the layer to the map with the given data
+   * Add the layer to the map with the given data.
+   *
+   * Idempotent across concurrent calls: if a racer mounted the source while
+   * we awaited loadImages(), we update its data via setData() and skip the
+   * layer-add step (the racer already created the layers).
    */
   async add(map: maplibregl.Map, data: T[]): Promise<void> {
     this.remove(map);
     if (data.length === 0) return;
 
-    // Load images if needed
     await this.loadImages(map);
 
-    // Add source
     const geoJSON = this.createGeoJSON(data);
-    map.addSource(this.sourceId, {
-      type: 'geojson',
-      data: geoJSON,
-    });
+    this.safeAddSource(map, this.sourceId, geoJSON);
+    this.ensureLayers(map);
+  }
 
-    // Add layers
+  /**
+   * Idempotent source helper for subclasses with multiple sources (ILS,
+   * Airway). Wraps the shared `safeAddGeoJSONSource` utility.
+   */
+  protected safeAddSource(
+    map: maplibregl.Map,
+    sourceId: string,
+    data: GeoJSON.FeatureCollection
+  ): void {
+    safeAddGeoJSONSource(map, sourceId, data);
+  }
+
+  /**
+   * Add layers only if the primary layer isn't already mounted. Pair with
+   * `safeAddSource` to make `add()` overrides race-safe — layers and sources
+   * are added together, so a present `layerId` means the racer already
+   * called `addLayers`.
+   */
+  protected ensureLayers(map: maplibregl.Map): void {
+    if (map.getLayer(this.layerId)) return;
     this.addLayers(map);
   }
 

@@ -54,6 +54,30 @@ export function removeLayersAndSource(
 }
 
 /**
+ * Idempotent GeoJSON-source add. If the source already exists, update its
+ * data via setData(); otherwise add it fresh.
+ *
+ * MapLibre's `addSource` throws on duplicate IDs (see GeoJSONSource.id docs:
+ * "Must not be used by any existing source"). Layers with an async init step
+ * (loadImages, ensureIcons) can race: two concurrent calls both pass the
+ * `remove()` step, both await, and the second `addSource` throws.
+ *
+ * Mirrors `BaseLayerRenderer.addSource()` for the airport-layer family.
+ */
+export function safeAddGeoJSONSource(
+  map: maplibregl.Map,
+  sourceId: string,
+  data: GeoJSON.GeoJSON
+): void {
+  const existing = map.getSource(sourceId);
+  if (existing && 'setData' in existing) {
+    (existing as maplibregl.GeoJSONSource).setData(data);
+    return;
+  }
+  map.addSource(sourceId, { type: 'geojson', data });
+}
+
+/**
  * Helper to set visibility on multiple layers
  */
 export function setLayersVisibility(

@@ -13,6 +13,7 @@ import maplibregl from 'maplibre-gl';
 import { createHoldingPattern, createProcedureTurn, interpolateRFArc } from '@/lib/utils/geomath';
 import type { LonLat } from '@/types/geo';
 import type { AltitudeConstraint, TurnDirection } from '@/types/navigation';
+import { safeAddGeoJSONSource } from '../types';
 
 // ============================================================================
 // Types
@@ -359,15 +360,8 @@ export function addProcedureRouteLayer(
   const colors = COLORS[route.type];
 
   // Add sources
-  map.addSource(ROUTE_SOURCE_ID, {
-    type: 'geojson',
-    data: routeGeoJSON,
-  });
-
-  map.addSource(WAYPOINT_SOURCE_ID, {
-    type: 'geojson',
-    data: waypointGeoJSON,
-  });
+  safeAddGeoJSONSource(map, ROUTE_SOURCE_ID, routeGeoJSON);
+  safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
 
   // Route casing (dark outline for contrast on satellite)
   map.addLayer({

@@ -8,6 +8,7 @@
 import maplibregl from 'maplibre-gl';
 import { destinationPoint, haversineDistance, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import type { RangeRingCategory } from '@/types/layers';
+import { safeAddGeoJSONSource } from '../types';
 
 // ============================================================================
 // Types
@@ -225,7 +226,7 @@ export function addRangeRingsLayer(
   removeRangeRingsLayer(map);
   if (config.categories.length === 0) return;
 
-  map.addSource(RING_SOURCE_ID, { type: 'geojson', data: createRingsGeoJSON(config) });
+  safeAddGeoJSONSource(map, RING_SOURCE_ID, createRingsGeoJSON(config));
 
   // Glow layer — hidden by default, shown on hover
   map.addLayer({

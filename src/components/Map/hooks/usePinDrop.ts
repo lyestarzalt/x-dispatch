@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import { useAppStore } from '@/stores/appStore';
+import { safeAddGeoJSONSource } from '../layers/types';
 import type { MapRef } from './useMapSetup';
 
 const SOURCE_ID = 'pindrop-source';
@@ -78,12 +79,7 @@ function ensureImage(map: maplibregl.Map): Promise<void> {
 }
 
 function ensureSourceAndLayer(map: maplibregl.Map, lng: number, lat: number, heading: number) {
-  if (!map.getSource(SOURCE_ID)) {
-    map.addSource(SOURCE_ID, {
-      type: 'geojson',
-      data: makeGeoJSON(lng, lat, heading),
-    });
-  }
+  safeAddGeoJSONSource(map, SOURCE_ID, makeGeoJSON(lng, lat, heading));
   if (!map.getLayer(LAYER_ID)) {
     map.addLayer({
       id: LAYER_ID,

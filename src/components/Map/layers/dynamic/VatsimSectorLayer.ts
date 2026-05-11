@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { buildActiveFirMatches, buildActiveTraconMatches } from '@/lib/vatsimSectors/match';
 import type { VatsimController } from '@/types/vatsim';
 import type { VatsimSectorDataset } from '@/types/vatsimSectors';
+import { safeAddGeoJSONSource } from '../types';
 import { ensurePillImage } from './badgeImages';
 
 type SectorFeatureProperties = {
@@ -217,19 +218,6 @@ export function buildSectorFeatureCollections(
   };
 }
 
-function upsertGeoJsonSource(map: maplibregl.Map, sourceId: string, data: GeoJSON.GeoJSON): void {
-  const existing = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
-  if (existing) {
-    existing.setData(data);
-    return;
-  }
-
-  map.addSource(sourceId, {
-    type: 'geojson',
-    data,
-  });
-}
-
 function ensureSectorLabelImages(
   map: maplibregl.Map,
   labels: SectorLabelFeatureCollection['features']
@@ -262,10 +250,10 @@ export function updateVatsimSectorLayer(
 ): void {
   const collections = buildSectorFeatureCollections(dataset, controllers);
 
-  upsertGeoJsonSource(map, INACTIVE_SOURCE_ID, collections.inactive);
-  upsertGeoJsonSource(map, ACTIVE_SOURCE_ID, collections.active);
-  upsertGeoJsonSource(map, TRACON_SOURCE_ID, collections.tracon);
-  upsertGeoJsonSource(map, LABEL_SOURCE_ID, collections.labels);
+  safeAddGeoJSONSource(map, INACTIVE_SOURCE_ID, collections.inactive);
+  safeAddGeoJSONSource(map, ACTIVE_SOURCE_ID, collections.active);
+  safeAddGeoJSONSource(map, TRACON_SOURCE_ID, collections.tracon);
+  safeAddGeoJSONSource(map, LABEL_SOURCE_ID, collections.labels);
   ensureSectorLabelImages(map, collections.labels.features);
 
   if (!map.getLayer(INACTIVE_LAYER_ID)) {

@@ -213,9 +213,12 @@ export function addTaxiRouteLayer(map: maplibregl.Map): void {
 }
 
 function addTaxiRouteLayers(map: maplibregl.Map): void {
-  // All six layers go before the same anchor so they stay grouped (casing
-  // → line → chevrons → preview → endpoints → handle, in that order)
-  // between the airport's centerline pair and marking pair.
+  // Two z-bands. The route's visual layers (casing → line → chevrons) slot
+  // *between* the airport's centerline pair and marking pair so painted
+  // markings (hold-short bars, gate lines) still read on top of the green
+  // path. The interactive helpers (preview, endpoints, handle) go *on top*
+  // of everything — the user needs them clickable and unobscured while
+  // editing the route.
   const before = pickTaxiRouteAnchor(map);
 
   map.addLayer(
@@ -264,61 +267,54 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
     before
   );
 
-  map.addLayer(
-    {
-      id: PREVIEW_LAYER_ID,
-      type: 'line',
-      source: PREVIEW_SOURCE_ID,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': PREVIEW_COLOR,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 13, 3, 18, 6, 22, 9],
-        'line-dasharray': [2, 2],
-      },
+  // Helpers — no beforeId → appended to the top of the layer stack so they
+  // sit above every airport feature regardless of basemap or anchor lookup.
+  map.addLayer({
+    id: PREVIEW_LAYER_ID,
+    type: 'line',
+    source: PREVIEW_SOURCE_ID,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': PREVIEW_COLOR,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 13, 3, 18, 6, 22, 9],
+      'line-dasharray': [2, 2],
     },
-    before
-  );
+  });
 
-  map.addLayer(
-    {
-      id: ENDPOINTS_LAYER_ID,
-      type: 'circle',
-      source: ENDPOINTS_SOURCE_ID,
-      paint: {
-        'circle-color': ROUTE_GREEN,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 5, 18, 7, 22, 9],
-        'circle-stroke-color': ROUTE_CASING,
-        'circle-stroke-width': 2.5,
-      },
+  map.addLayer({
+    id: ENDPOINTS_LAYER_ID,
+    type: 'circle',
+    source: ENDPOINTS_SOURCE_ID,
+    paint: {
+      'circle-color': ROUTE_GREEN,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 5, 18, 7, 22, 9],
+      'circle-stroke-color': ROUTE_CASING,
+      'circle-stroke-width': 2.5,
     },
-    before
-  );
+  });
 
-  map.addLayer(
-    {
-      id: HANDLE_LAYER_ID,
-      type: 'circle',
-      source: HANDLE_SOURCE_ID,
-      paint: {
-        'circle-color': '#ffffff',
-        // MapLibre forbids nesting two zoom-based subexpressions, so the
-        // grab-vs-hover sizing lives inside the interpolate stops, not around
-        // a separate `case`.
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          13,
-          ['case', ['==', ['get', 'grabbed'], 1], 7, 5],
-          22,
-          ['case', ['==', ['get', 'grabbed'], 1], 11, 8],
-        ],
-        'circle-stroke-color': ROUTE_GREEN,
-        'circle-stroke-width': 2,
-      },
+  map.addLayer({
+    id: HANDLE_LAYER_ID,
+    type: 'circle',
+    source: HANDLE_SOURCE_ID,
+    paint: {
+      'circle-color': '#ffffff',
+      // MapLibre forbids nesting two zoom-based subexpressions, so the
+      // grab-vs-hover sizing lives inside the interpolate stops, not around
+      // a separate `case`.
+      'circle-radius': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        13,
+        ['case', ['==', ['get', 'grabbed'], 1], 7, 5],
+        22,
+        ['case', ['==', ['get', 'grabbed'], 1], 11, 8],
+      ],
+      'circle-stroke-color': ROUTE_GREEN,
+      'circle-stroke-width': 2,
     },
-    before
-  );
+  });
 }
 
 export function setTaxiRoute(map: maplibregl.Map, points: RoutePoint[]): void {

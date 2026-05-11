@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import type { ParsedAirport } from '@/types/apt';
-import { safeRemove } from '../types';
+import { safeAddGeoJSONSource, safeRemove } from '../types';
 
 /**
  * Interface for all layer renderers
@@ -76,18 +76,11 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
   }
 
   /**
-   * Helper to safely add a source if it doesn't exist
+   * Idempotent GeoJSON source add — delegates to the shared helper so airport
+   * and nav layers go through the same lifecycle code path.
    */
   protected addSource(map: maplibregl.Map, data: GeoJSON.FeatureCollection): void {
-    const existing = map.getSource(this.sourceId);
-    if (!existing) {
-      map.addSource(this.sourceId, {
-        type: 'geojson',
-        data,
-      });
-    } else if ('setData' in existing) {
-      (existing as maplibregl.GeoJSONSource).setData(data);
-    }
+    safeAddGeoJSONSource(map, this.sourceId, data);
   }
 
   /**

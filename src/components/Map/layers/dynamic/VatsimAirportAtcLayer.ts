@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { buildAirportAtcSummaries } from '@/lib/vatsimSectors/match';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { VatsimData } from '@/types/vatsim';
+import { safeAddGeoJSONSource } from '../types';
 import { renderVatsimAirportAtcPopup } from './VatsimAirportAtcPopup';
 import { type PillImageOptions, ensurePillImage } from './badgeImages';
 
@@ -126,19 +127,6 @@ export function buildAirportAtcFeatureCollection(
   };
 }
 
-function upsertSource(map: maplibregl.Map, data: AirportAtcFeatureCollection): void {
-  const existing = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-  if (existing) {
-    existing.setData(data);
-    return;
-  }
-
-  map.addSource(SOURCE_ID, {
-    type: 'geojson',
-    data,
-  });
-}
-
 export function updateVatsimAirportAtcLayer(
   map: maplibregl.Map,
   airports: Airport[],
@@ -146,7 +134,7 @@ export function updateVatsimAirportAtcLayer(
 ): void {
   const { collection, popupMap } = buildAirportAtcFeatureCollection(airports, vatsimData);
   popupSummaryCache.set(map, popupMap);
-  upsertSource(map, collection);
+  safeAddGeoJSONSource(map, SOURCE_ID, collection);
   ensureAirportBadgeImages(map);
 
   if (!map.getLayer(BADGE_LAYER_ID)) {

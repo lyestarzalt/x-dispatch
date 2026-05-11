@@ -174,24 +174,17 @@ export class HighAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithC
     });
   }
 
-  // Override add to handle label source
+  // Override add to handle label source. Idempotent for symmetry with the
+  // rest of the nav-layer family — these overrides don't have an await today
+  // but the helpers protect future yield points (e.g. loadImages).
   async add(map: maplibregl.Map, data: AirwaySegmentWithCoords[]): Promise<void> {
     this.remove(map);
     if (data.length === 0) return;
 
-    // Add line source
-    map.addSource(this.sourceId, {
-      type: 'geojson',
-      data: this.createGeoJSON(data),
-    });
+    this.safeAddSource(map, this.sourceId, this.createGeoJSON(data));
+    this.safeAddSource(map, this.labelSourceId, createAirwayLabelGeoJSON(data));
 
-    // Add label source
-    map.addSource(this.labelSourceId, {
-      type: 'geojson',
-      data: createAirwayLabelGeoJSON(data),
-    });
-
-    this.addLayers(map);
+    this.ensureLayers(map);
   }
 
   // Override update to handle label source
@@ -314,24 +307,17 @@ export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCo
     });
   }
 
-  // Override add to handle label source
+  // Override add to handle label source. Idempotent for symmetry with the
+  // rest of the nav-layer family — these overrides don't have an await today
+  // but the helpers protect future yield points (e.g. loadImages).
   async add(map: maplibregl.Map, data: AirwaySegmentWithCoords[]): Promise<void> {
     this.remove(map);
     if (data.length === 0) return;
 
-    // Add line source
-    map.addSource(this.sourceId, {
-      type: 'geojson',
-      data: this.createGeoJSON(data),
-    });
+    this.safeAddSource(map, this.sourceId, this.createGeoJSON(data));
+    this.safeAddSource(map, this.labelSourceId, createAirwayLabelGeoJSON(data));
 
-    // Add label source
-    map.addSource(this.labelSourceId, {
-      type: 'geojson',
-      data: createAirwayLabelGeoJSON(data),
-    });
-
-    this.addLayers(map);
+    this.ensureLayers(map);
   }
 
   // Override update to handle label source

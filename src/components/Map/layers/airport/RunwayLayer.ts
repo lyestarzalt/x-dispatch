@@ -3,6 +3,7 @@ import { SURFACE_TYPES, getSurfaceColor } from '@/config/mapStyles/surfaceColors
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
 import { createRunwayGeoJSON, createRunwayShoulderGeoJSON } from '../../utils/geoJsonFactory';
+import { safeAddGeoJSONSource } from '../types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 export class RunwayLayer extends BaseLayerRenderer {
@@ -33,12 +34,7 @@ export class RunwayLayer extends BaseLayerRenderer {
     // Create and add shoulder source/layer first (renders below runway)
     const shoulderGeoJSON = createRunwayShoulderGeoJSON(airport.runways);
     if (shoulderGeoJSON.features.length > 0) {
-      if (!map.getSource(this.shoulderSourceId)) {
-        map.addSource(this.shoulderSourceId, {
-          type: 'geojson',
-          data: shoulderGeoJSON,
-        });
-      }
+      safeAddGeoJSONSource(map, this.shoulderSourceId, shoulderGeoJSON);
 
       this.addLayer(map, {
         id: 'airport-runway-shoulders',

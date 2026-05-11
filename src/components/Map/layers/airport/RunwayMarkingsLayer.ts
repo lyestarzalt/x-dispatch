@@ -4,6 +4,7 @@ import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/util
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
 import { RunwayMarking } from '@/types/apt';
+import { safeAddGeoJSONSource } from '../types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 type LonLat = [number, number];
@@ -57,12 +58,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
 
     // Create numbers GeoJSON
     const numbers = this.generateRunwayNumbers(airport.runways);
-    if (!map.getSource(this.numberSourceId)) {
-      map.addSource(this.numberSourceId, {
-        type: 'geojson',
-        data: numbers,
-      });
-    }
+    safeAddGeoJSONSource(map, this.numberSourceId, numbers);
 
     const markingsMinZoom = ZOOM_BEHAVIORS.runwayMarkings.minZoom;
 

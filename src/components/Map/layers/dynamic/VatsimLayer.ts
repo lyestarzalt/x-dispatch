@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import type { VatsimPilot } from '@/types/vatsim';
+import { safeAddGeoJSONSource } from '../types';
 import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
 
 const PILOT_LAYER_ID = 'vatsim-pilots';
@@ -107,7 +108,15 @@ export async function addVatsimPilotLayer(
   // Bail if map was destroyed during async icon loading
   if (!map.getStyle()) return;
 
-  map.addSource(TRAIL_SOURCE_ID, { type: 'geojson', data: trailGeoJSON });
+  // A concurrent caller may have mounted us during the awaits above. If so,
+  // just refresh data on the existing sources and skip the layer adds.
+  if (map.getSource(PILOT_SOURCE_ID)) {
+    safeAddGeoJSONSource(map, TRAIL_SOURCE_ID, trailGeoJSON);
+    safeAddGeoJSONSource(map, PILOT_SOURCE_ID, pilotGeoJSON);
+    return;
+  }
+
+  safeAddGeoJSONSource(map, TRAIL_SOURCE_ID, trailGeoJSON);
   map.addLayer({
     id: TRAIL_LAYER_ID,
     type: 'line',
@@ -120,7 +129,7 @@ export async function addVatsimPilotLayer(
     },
   });
 
-  map.addSource(PILOT_SOURCE_ID, { type: 'geojson', data: pilotGeoJSON });
+  safeAddGeoJSONSource(map, PILOT_SOURCE_ID, pilotGeoJSON);
   map.addLayer({
     id: `${PILOT_LAYER_ID}-glow`,
     type: 'circle',

@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import type { StyleImageInterface } from 'maplibre-gl';
 import type { PlanePosition } from '@/types/xplane';
+import { safeAddGeoJSONSource } from '../types';
 
 const LAYER_ID = 'player-plane';
 const SOURCE_ID = 'player-plane-source';
@@ -216,7 +217,7 @@ export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | nul
   map.addImage(iconName, createPlayerIcon(isHeli ? HELICOPTER_CONFIG : AIRPLANE_CONFIG));
   activeCategory.set(map, category);
 
-  map.addSource(SOURCE_ID, { type: 'geojson', data: createGeoJSON(position) });
+  safeAddGeoJSONSource(map, SOURCE_ID, createGeoJSON(position));
   map.addLayer({
     id: LAYER_ID,
     type: 'symbol',

@@ -29,6 +29,7 @@ import {
   type BasemapTheme,
 } from '@/lib/map/basemapTheme';
 import type { Airport } from '@/lib/xplaneServices/dataService';
+import { safeAddGeoJSONSource } from '../types';
 
 const PIN_IMAGE_ID = 'custom-pin';
 
@@ -109,10 +110,7 @@ export function setupAirportsLayer(
     },
   }));
 
-  map.addSource('airports', {
-    type: 'geojson',
-    data: { type: 'FeatureCollection', features },
-  });
+  safeAddGeoJSONSource(map, 'airports', { type: 'FeatureCollection', features });
 
   const filterCustom: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 1];
   const filterDefault: maplibregl.FilterSpecification = ['==', ['get', 'isCustom'], 0];

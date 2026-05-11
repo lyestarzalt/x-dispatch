@@ -5,6 +5,7 @@
 import maplibregl from 'maplibre-gl';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
+import { safeAddGeoJSONSource } from '../types';
 
 // Layer IDs
 const SOURCE_ID = 'flightplan-route-source';
@@ -264,8 +265,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   };
 
   // Add sources
-  map.addSource(SOURCE_ID, { type: 'geojson', data: routeGeoJSON });
-  map.addSource(WAYPOINT_SOURCE_ID, { type: 'geojson', data: waypointGeoJSON });
+  safeAddGeoJSONSource(map, SOURCE_ID, routeGeoJSON);
+  safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
 
   // Route line — phase-colored via match expression
   map.addLayer({
@@ -375,7 +376,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       ],
     };
 
-    map.addSource(ALTERNATE_SOURCE_ID, { type: 'geojson', data: alternateGeoJSON });
+    safeAddGeoJSONSource(map, ALTERNATE_SOURCE_ID, alternateGeoJSON);
 
     map.addLayer({
       id: ALTERNATE_LINE_ID,

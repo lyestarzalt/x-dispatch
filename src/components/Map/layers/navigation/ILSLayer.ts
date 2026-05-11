@@ -309,7 +309,9 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     });
   }
 
-  // Override add to handle multiple sources
+  // Override add to handle multiple sources. Idempotent across concurrent
+  // calls — if a racer mounted us during loadImages(), the safeAddSource
+  // helpers fall through to setData() and ensureLayers() skips the layer add.
   async add(map: maplibregl.Map, data: Navaid[]): Promise<void> {
     this.remove(map);
     if (data.length === 0) return;
@@ -319,31 +321,12 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     const locData = data.filter((n) => n.type !== 'GS');
     const gsData = data.filter((n) => n.type === 'GS');
 
-    // Add cone source
-    map.addSource(this.coneSourceId, {
-      type: 'geojson',
-      data: createILSConeGeoJSON(locData),
-    });
+    this.safeAddSource(map, this.coneSourceId, createILSConeGeoJSON(locData));
+    this.safeAddSource(map, this.courseSourceId, createILSCourseGeoJSON(locData));
+    this.safeAddSource(map, this.gsSlopeSourceId, createGSSlopeGeoJSON(gsData));
+    this.safeAddSource(map, this.sourceId, this.createGeoJSON(locData));
 
-    // Add course source
-    map.addSource(this.courseSourceId, {
-      type: 'geojson',
-      data: createILSCourseGeoJSON(locData),
-    });
-
-    // Add glide slope 3D source
-    map.addSource(this.gsSlopeSourceId, {
-      type: 'geojson',
-      data: createGSSlopeGeoJSON(gsData),
-    });
-
-    // Add main source (localizer symbols only)
-    map.addSource(this.sourceId, {
-      type: 'geojson',
-      data: this.createGeoJSON(locData),
-    });
-
-    this.addLayers(map);
+    this.ensureLayers(map);
   }
 
   // Override update to handle multiple sources
