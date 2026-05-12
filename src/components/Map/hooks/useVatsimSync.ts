@@ -18,7 +18,16 @@ export function useVatsimSync({
 }: UseVatsimSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !vatsimEnabled) return;
+    if (!map) return;
+
+    // When VATSIM is toggled off, tear down the layer here instead of relying
+    // on the toggle handler — `updateVatsim` can queue itself for a future
+    // `styledata` event when the style is reloading, and that queued callback
+    // would otherwise re-add the layer after the user disabled it.
+    if (!vatsimEnabled) {
+      removeVatsimPilotLayer(map);
+      return;
+    }
 
     const updateVatsim = () => {
       if (!map.isStyleLoaded()) {
@@ -49,6 +58,9 @@ export function useVatsimSync({
 
     return () => {
       map.off('moveend', handleMoveEnd);
+      // Cancel any pending `once('styledata', updateVatsim)` queued by the
+      // deferred-load path so a late style.load can't bring the layer back.
+      map.off('styledata', updateVatsim);
     };
   }, [mapRef, vatsimPopupRef, vatsimData, vatsimEnabled]);
 }

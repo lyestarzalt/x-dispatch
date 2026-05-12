@@ -18,7 +18,15 @@ export function useIvaoSync({
 }: UseIvaoSyncOptions): void {
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !ivaoEnabled) return;
+    if (!map) return;
+
+    // Same shape as useVatsimSync: tear down when disabled so a deferred
+    // `once('styledata', updateIvao)` callback can't re-add the layer after
+    // the user toggled IVAO off.
+    if (!ivaoEnabled) {
+      removeIvaoPilotLayer(map);
+      return;
+    }
 
     const updateIvao = () => {
       if (!map.isStyleLoaded()) {
@@ -49,6 +57,8 @@ export function useIvaoSync({
 
     return () => {
       map.off('moveend', handleMoveEnd);
+      // Drop any pending styledata-deferred callback before it can re-add.
+      map.off('styledata', updateIvao);
     };
   }, [mapRef, ivaoPopupRef, ivaoData, ivaoEnabled]);
 }
