@@ -1153,6 +1153,7 @@
     "refetch": "Actualiser",
     "import": "Importer le plan de vol",
     "showDetails": "Afficher les détails",
+    "openFullBriefing": "Ouvrir le briefing complet",
     "tabs": {
       "fuel": "Carburant",
       "weights": "Masses",

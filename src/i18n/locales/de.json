@@ -1153,6 +1153,7 @@
     "refetch": "Aktualisieren",
     "import": "Flugplan importieren",
     "showDetails": "Details anzeigen",
+    "openFullBriefing": "Vollständiges Briefing öffnen",
     "tabs": {
       "fuel": "Treibstoff",
       "weights": "Gewichte",

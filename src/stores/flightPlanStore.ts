@@ -42,6 +42,7 @@ interface FlightPlanState {
   // UI state
   selectedWaypointIndex: number | null;
   showFlightPlanBar: boolean;
+  simbriefDialogOpen: boolean;
 
   // Actions
   setDeparture: (endpoint: FlightPlanEndpoint | null) => void;
@@ -62,6 +63,8 @@ interface FlightPlanState {
 
   // SimBrief Actions
   loadFromSimbrief: (data: SimBriefOFP) => void;
+  openSimbriefDialog: () => void;
+  closeSimbriefDialog: () => void;
 
   // Parse route string (e.g., "KJFK LOGEN J42 BOSSS KATL")
   parseRouteString: (routeString: string) => void;
@@ -78,6 +81,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
   simbriefData: null,
   selectedWaypointIndex: null,
   showFlightPlanBar: false,
+  simbriefDialogOpen: false,
 
   setDeparture: (endpoint) => set({ departure: endpoint }),
 
@@ -269,6 +273,10 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       },
     });
   },
+
+  openSimbriefDialog: () => set({ simbriefDialogOpen: true }),
+
+  closeSimbriefDialog: () => set({ simbriefDialogOpen: false }),
 
   getChips: () => {
     const { fmsData } = get();

@@ -81,14 +81,19 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
   const { t } = useTranslation();
   const { simbrief } = useSettingsStore();
   const { loadFromSimbrief } = useFlightPlanStore();
+  const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const fetchMutation = useSimbriefFetch();
 
+  // Fresh fetch wins over previously imported data; otherwise fall back to the
+  // in-memory OFP so re-opening the dialog after import shows the tabbed view.
+  const ofp = fetchMutation.data ?? simbriefData;
+
   // Get unit from API response (SimBrief returns "lbs" or "kgs")
-  const apiUnit = fetchMutation.data ? getApiUnit(fetchMutation.data) : 'lbs';
+  const apiUnit = ofp ? getApiUnit(ofp) : 'lbs';
 
   const handleOpenPDF = () => {
-    if (fetchMutation.data?.files.pdf.link) {
-      const fullUrl = fetchMutation.data.files.directory + fetchMutation.data.files.pdf.link;
+    if (ofp?.files.pdf.link) {
+      const fullUrl = ofp.files.directory + ofp.files.pdf.link;
       window.appAPI.openExternal(fullUrl);
     }
   };
@@ -100,8 +105,8 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
   };
 
   const handleImport = () => {
-    if (fetchMutation.data) {
-      loadFromSimbrief(fetchMutation.data);
+    if (ofp) {
+      loadFromSimbrief(ofp);
       onClose();
     }
   };
@@ -124,7 +129,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               </DialogDescription>
             </div>
           </div>
-          {fetchMutation.data && (
+          {ofp && (
             <Button
               variant="ghost"
               size="sm"
@@ -163,7 +168,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
         )}
 
         {/* Configured - Fetch UI */}
-        {isConfigured && !fetchMutation.data && (
+        {isConfigured && !ofp && (
           <div className="flex flex-col items-center justify-center gap-6 py-16">
             {fetchMutation.isPending ? (
               <>
@@ -216,11 +221,11 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
         )}
 
         {/* Flight Plan Preview */}
-        {fetchMutation.data && (
+        {ofp && (
           <ScrollArea className="max-h-[70vh]">
             <div className="space-y-0">
               {/* Flight Header - OFP Style */}
-              <FlightHeader data={fetchMutation.data} onAirportClick={onClose} />
+              <FlightHeader data={ofp} onAirportClick={onClose} />
 
               {/* Main Content Tabs */}
               <div className="p-4">
@@ -257,31 +262,31 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                   </TabsList>
 
                   <TabsContent value="flight" className="mt-0">
-                    <FlightTab data={fetchMutation.data} apiUnit={apiUnit} />
+                    <FlightTab data={ofp} apiUnit={apiUnit} />
                   </TabsContent>
 
                   <TabsContent value="performance" className="mt-0">
-                    <PerformanceTab data={fetchMutation.data} />
+                    <PerformanceTab data={ofp} />
                   </TabsContent>
 
                   <TabsContent value="navlog" className="mt-0">
-                    <NavlogTab data={fetchMutation.data} apiUnit={apiUnit} />
+                    <NavlogTab data={ofp} apiUnit={apiUnit} />
                   </TabsContent>
 
                   <TabsContent value="fuel" className="mt-0">
-                    <FuelTab data={fetchMutation.data} apiUnit={apiUnit} />
+                    <FuelTab data={ofp} apiUnit={apiUnit} />
                   </TabsContent>
 
                   <TabsContent value="weights" className="mt-0">
-                    <WeightsTab data={fetchMutation.data} apiUnit={apiUnit} />
+                    <WeightsTab data={ofp} apiUnit={apiUnit} />
                   </TabsContent>
 
                   <TabsContent value="weather" className="mt-0">
-                    <WeatherTab data={fetchMutation.data} />
+                    <WeatherTab data={ofp} />
                   </TabsContent>
 
                   <TabsContent value="briefing" className="mt-0">
-                    <BriefingTab data={fetchMutation.data} />
+                    <BriefingTab data={ofp} />
                   </TabsContent>
                 </Tabs>
               </div>
@@ -289,15 +294,15 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
           </ScrollArea>
         )}
 
-        {fetchMutation.data && (
+        {ofp && (
           <div className="border-t bg-card/50 px-6 py-3">
-            <FmsExportSection data={fetchMutation.data} />
+            <FmsExportSection data={ofp} />
           </div>
         )}
 
         <DialogFooter className="border-t bg-muted/30 px-6 py-4">
           <div className="flex w-full items-center justify-between">
-            {fetchMutation.data && (
+            {ofp && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -312,7 +317,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               <Button variant="outline" onClick={onClose}>
                 {t('common.cancel', 'Cancel')}
               </Button>
-              {fetchMutation.data && (
+              {ofp && (
                 <Button onClick={handleImport} className="gap-2">
                   <Route className="h-4 w-4" />
                   {t('simbrief.import', 'Import Flight Plan')}

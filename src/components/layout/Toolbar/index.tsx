@@ -426,7 +426,6 @@ export default function Toolbar({
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [simbriefOpen, setSimbriefOpen] = useState(false);
   const [addonManagerOpen, setAddonManagerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -467,6 +466,9 @@ export default function Toolbar({
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
+  const simbriefOpen = useFlightPlanStore((s) => s.simbriefDialogOpen);
+  const openSimbriefDialog = useFlightPlanStore((s) => s.openSimbriefDialog);
+  const closeSimbriefDialog = useFlightPlanStore((s) => s.closeSimbriefDialog);
 
   // Queries
   const { data: vatsimData } = useVatsimQuery(vatsimEnabled);
@@ -711,7 +713,7 @@ export default function Toolbar({
               {t('toolbar.loadPlan')}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => setSimbriefOpen(true)}
+              onClick={openSimbriefDialog}
               className={cn(simbriefData && 'text-info')}
             >
               <CloudDownload className="mr-2 h-4 w-4" />
@@ -1056,7 +1058,7 @@ export default function Toolbar({
       </div>
 
       {/* Dialogs */}
-      <SimbriefDialog open={simbriefOpen} onClose={() => setSimbriefOpen(false)} />
+      <SimbriefDialog open={simbriefOpen} onClose={closeSimbriefDialog} />
       <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
     </div>
   );

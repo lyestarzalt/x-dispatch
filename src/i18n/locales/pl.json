@@ -1153,6 +1153,7 @@
     "refetch": "Odśwież",
     "import": "Importuj plan lotu",
     "showDetails": "Pokaż szczegóły",
+    "openFullBriefing": "Otwórz pełny briefing",
     "tabs": {
       "fuel": "Paliwo",
       "weights": "Wagi",

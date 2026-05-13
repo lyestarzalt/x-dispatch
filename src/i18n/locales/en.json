@@ -1153,6 +1153,7 @@
     "refetch": "Refresh",
     "import": "Import Flight Plan",
     "showDetails": "Show details",
+    "openFullBriefing": "Open full briefing",
     "tabs": {
       "fuel": "Fuel",
       "weights": "Weights",

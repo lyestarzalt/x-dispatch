@@ -1153,6 +1153,7 @@
     "refetch": "刷新",
     "import": "导入飞行计划",
     "showDetails": "显示详情",
+    "openFullBriefing": "打开完整简报",
     "tabs": {
       "fuel": "燃油",
       "weights": "重量",

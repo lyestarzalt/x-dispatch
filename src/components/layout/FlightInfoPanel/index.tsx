@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ChevronLeft,
   ChevronRight,
   Cloud,
   Fuel,
+  Maximize2,
   Plane,
   PlaneLanding,
   PlaneTakeoff,
@@ -47,8 +49,10 @@ const TABS: Tab[] = [
 ];
 
 export default function FlightInfoPanel() {
+  const { t } = useTranslation();
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const clearFlightPlan = useFlightPlanStore((s) => s.clearFlightPlan);
+  const openSimbriefDialog = useFlightPlanStore((s) => s.openSimbriefDialog);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -107,6 +111,15 @@ export default function FlightInfoPanel() {
           )}
         >
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground/40 hover:text-foreground"
+              onClick={openSimbriefDialog}
+              tooltip={t('simbrief.openFullBriefing', 'Open full briefing')}
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"

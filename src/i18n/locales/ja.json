@@ -1153,6 +1153,7 @@
     "refetch": "更新",
     "import": "フライトプランをインポート",
     "showDetails": "詳細を表示",
+    "openFullBriefing": "ブリーフィング全文を開く",
     "tabs": {
       "fuel": "燃料",
       "weights": "重量",

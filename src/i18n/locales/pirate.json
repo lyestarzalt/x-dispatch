@@ -1153,6 +1153,7 @@
     "refetch": "Haul Again",
     "import": "Import Voyage Plan",
     "showDetails": "Show intel",
+    "openFullBriefing": "Open th' full briefin'",
     "tabs": {
       "fuel": "Fuel",
       "weights": "Weights",
