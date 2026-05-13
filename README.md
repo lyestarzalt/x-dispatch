@@ -109,10 +109,14 @@ Electron + React 18 + TypeScript, MapLibre GL JS, Zustand, SQLite. Node.js 24+.
 
 ## Donate
 
-X-Dispatch is a passion project built for the X-Plane community. Donations are entirely optional but appreciated.
+X-Dispatch started as a passion project for the X-Plane community and continues to be built with that spirit in mind: free to use, community-focused, and developed in the open. Donations are entirely optional, but they help support continued development.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A21V3IZZ)
 
+## Disclaimer
+
+References to X-Plane, SimBrief, Navigraph, VATSIM, and IVAO are for compatibility and identification purposes only. X-Dispatch is an independent community project and is not affiliated with, endorsed by, or sponsored by their respective owners.
+
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE).
+Licensed under GPL-3.0-only. See [LICENSE](LICENSE) for the full text.
