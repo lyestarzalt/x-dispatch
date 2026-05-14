@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
 import { appKeys, useActiveInstallation, useInstallations } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { SettingsHeader } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 import LaunchArgsSection from './LaunchArgsSection';
 
@@ -136,16 +137,11 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Plane className="h-5 w-5" />
-          {t('settings.xplane.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.xplane.description')}</p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={Plane}
+        title={t('settings.xplane.title')}
+        description={t('settings.xplane.description')}
+      />
 
       {/* Error */}
       {error && (

@@ -28,6 +28,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import { useLoadingStatus } from '@/queries';
+import { SettingsHeader, SettingsSectionBlock } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
 type SourceType = 'navigraph' | 'xplane-default' | 'custom-scenery' | 'unknown';
@@ -124,30 +125,21 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Database className="h-5 w-5" />
-          {t('settings.navigation.dataTitle', 'Navigation Data')}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {t('settings.navigation.dataDescription', 'View loaded navigation data sources')}
-        </p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={Database}
+        title={t('settings.navigation.dataTitle', 'Navigation Data')}
+        description={t(
+          'settings.navigation.dataDescription',
+          'View loaded navigation data sources'
+        )}
+      />
 
       {/* Airport Layout Data */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading flex items-center gap-2">
-            <Plane className="h-4 w-4" />
-            {t('settings.navigation.airportLayoutData')}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.navigation.airportLayoutDescription')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.navigation.airportLayoutData')}
+        description={t('settings.navigation.airportLayoutDescription')}
+        icon={Plane}
+      >
         {dataStatus && airportBreakdown && (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -188,21 +180,16 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
             </div>
           </div>
         )}
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Navigation Data Source */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading flex items-center gap-2">
-            <Radio className="h-4 w-4" />
-            {t('settings.navigation.navDataSource')}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.navigation.navDataSourceDescription')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.navigation.navDataSource')}
+        description={t('settings.navigation.navDataSourceDescription')}
+        icon={Radio}
+      >
         {globalSource && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -235,14 +222,13 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
             )}
           </div>
         )}
-      </div>
+      </SettingsSectionBlock>
 
       {/* Navigation Data Table */}
       {dataStatus && (
         <>
           <Separator />
-          <div className="space-y-3">
-            <h3 className="xp-section-heading">{t('settings.xplane.dataLoaded', 'Loaded Data')}</h3>
+          <SettingsSectionBlock title={t('settings.xplane.dataLoaded', 'Loaded Data')}>
             <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader>
@@ -310,26 +296,21 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 </TableBody>
               </Table>
             </div>
-          </div>
+          </SettingsSectionBlock>
         </>
       )}
 
       <Separator />
 
       {/* Cache Management */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            {t('settings.navigation.cacheManagement', 'Cache Management')}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t(
-              'settings.navigation.cacheDescription',
-              'Clear cached data to force a full reload from X-Plane files'
-            )}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.navigation.cacheManagement', 'Cache Management')}
+        description={t(
+          'settings.navigation.cacheDescription',
+          'Clear cached data to force a full reload from X-Plane files'
+        )}
+        icon={RefreshCw}
+      >
         <Button
           variant="outline"
           onClick={handleClearCache}
@@ -341,7 +322,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
             ? t('settings.navigation.clearingCache', 'Clearing...')
             : t('settings.navigation.clearCache', 'Clear Cache & Reload')}
         </Button>
-      </div>
+      </SettingsSectionBlock>
     </div>
   );
 }
