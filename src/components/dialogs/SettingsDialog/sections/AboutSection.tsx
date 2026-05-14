@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, FileText, FolderOpen, Info } from 'lucide-react';
+import { FileText, FolderOpen, Info } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import { useAppVersion, useConfigPath, useLogPath } from '@/queries';
+import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
 import type { SettingsSectionProps } from '../types';
-import { openSettingsExternalLink } from './externalLinks';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
 const PROJECT_WEBSITE = 'https://tarzalt.dev/projects/x-dispatch/';
@@ -18,20 +18,13 @@ export default function AboutSection({ className }: SettingsSectionProps) {
   const { data: logPath } = useLogPath();
   const { data: configPath } = useConfigPath();
 
-  const handleOpenExternal = (url: string) => {
-    void openSettingsExternalLink(url);
-  };
-
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Info className="h-5 w-5" />
-          {t('settings.about.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.about.description')}</p>
-      </div>
+      <SettingsHeader
+        icon={Info}
+        title={t('settings.about.title')}
+        description={t('settings.about.description')}
+      />
 
       {/* App Identity */}
       <div className="flex flex-col items-center pt-2 text-center">
@@ -50,7 +43,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
 
       <Separator />
 
-      {/* Credits + Links side-by-side */}
+      {/* Credits + Links side-by-side — the Separator above separates Identity from this grid */}
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="space-y-3">
           <h3 className="xp-section-heading">{t('settings.about.credits')}</h3>
@@ -77,22 +70,8 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <div className="space-y-3">
           <h3 className="xp-section-heading">{t('settings.about.links')}</h3>
           <div className="space-y-1">
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenExternal(PROJECT_WEBSITE)}
-              className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
-            >
-              <span className="min-w-0 truncate">{t('settings.about.website')}</span>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => handleOpenExternal(GITHUB_REPO)}
-              className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
-            >
-              <span className="min-w-0 truncate">{t('settings.about.sourceCode')}</span>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
+            <SettingsLinkRow label={t('settings.about.website')} href={PROJECT_WEBSITE} />
+            <SettingsLinkRow label={t('settings.about.sourceCode')} href={GITHUB_REPO} />
           </div>
         </div>
       </div>
@@ -123,11 +102,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               {t('settings.about.openDataFolder')}
             </Button>
           </div>
-          {configPath && (
-            <p className="truncate rounded bg-secondary/50 px-3 py-2 font-mono text-sm text-muted-foreground">
-              {configPath}
-            </p>
-          )}
+          {configPath && <SettingsPathDisplay path={configPath} />}
         </div>
 
         {/* Log Path */}
@@ -157,11 +132,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               </Button>
             </div>
           </div>
-          {logPath && (
-            <p className="truncate rounded bg-secondary/50 px-3 py-2 font-mono text-sm text-muted-foreground">
-              {logPath}
-            </p>
-          )}
+          {logPath && <SettingsPathDisplay path={logPath} />}
         </div>
       </div>
     </div>
