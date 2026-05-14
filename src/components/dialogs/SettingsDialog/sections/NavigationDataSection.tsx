@@ -55,17 +55,8 @@ function getSourceLabel(sourceType: SourceType | undefined, source: string | nul
   return 'Default';
 }
 
-function getSourceStyles(sourceType: SourceType | undefined, source: string | null): string {
-  const label = getSourceLabel(sourceType, source);
-  if (label === 'Navigraph') return 'bg-info/20 text-info hover:bg-info/30';
-  if (label === 'Custom Airport') return 'bg-violet/20 text-violet hover:bg-violet/30';
-  return ''; // Default secondary style
-}
-
 function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
   const displaySource = getSourceLabel(sourceType, source);
-  const isHighlighted = displaySource !== 'X-Plane Default' && displaySource !== 'Default';
-  const sourceStyles = getSourceStyles(sourceType, source);
 
   return (
     <TableRow>
@@ -81,10 +72,7 @@ function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
       <TableCell>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge
-              variant={isHighlighted ? 'default' : 'secondary'}
-              className={cn('cursor-help font-normal', sourceStyles)}
-            >
+            <Badge variant="secondary" className="cursor-help font-normal">
               {displaySource}
             </Badge>
           </TooltipTrigger>
@@ -193,11 +181,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         {globalSource && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {isNavigraph ? (
-                <Badge className="bg-info hover:bg-info/80">Navigraph</Badge>
-              ) : (
-                <Badge variant="secondary">X-Plane Default</Badge>
-              )}
+              <Badge variant="secondary">{isNavigraph ? 'Navigraph' : 'X-Plane Default'}</Badge>
               {globalSource.cycle && (
                 <span className="font-mono text-sm text-muted-foreground">
                   AIRAC {globalSource.cycle}
