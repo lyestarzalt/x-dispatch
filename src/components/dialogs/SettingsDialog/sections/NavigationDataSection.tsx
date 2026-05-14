@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
-  CheckCircle2,
   Database,
   Layers,
   MapPin,
@@ -189,19 +188,10 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 </span>
               )}
             </div>
-            {isNavigraph && (
-              <Badge variant={globalSource.isExpired ? 'destructive' : 'success'} className="gap-1">
-                {globalSource.isExpired ? (
-                  <>
-                    <XCircle className="h-3 w-3" />
-                    {t('settings.xplane.expired', 'Expired')}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-3 w-3" />
-                    {t('settings.xplane.current', 'Current')}
-                  </>
-                )}
+            {isNavigraph && globalSource.isExpired && (
+              <Badge variant="destructive" className="gap-1">
+                <XCircle className="h-3 w-3" />
+                {t('settings.xplane.expired', 'Expired')}
               </Badge>
             )}
           </div>
