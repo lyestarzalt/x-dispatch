@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { FileText, FolderOpen, Info } from 'lucide-react';
+import { FileText, FolderOpen, Heart, Info } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import type { SettingsSectionProps } from '../types';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
 const PROJECT_WEBSITE = 'https://tarzalt.dev/projects/x-dispatch/';
+const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
 export default function AboutSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -69,6 +70,11 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           <div className="space-y-1">
             <SettingsLinkRow label={t('settings.about.website')} href={PROJECT_WEBSITE} />
             <SettingsLinkRow label={t('settings.about.sourceCode')} href={GITHUB_REPO} />
+            <SettingsLinkRow
+              label={t('settings.about.supportProject')}
+              href={KOFI_URL}
+              leadingIcon={<Heart className="h-3.5 w-3.5 text-red-400" />}
+            />
           </div>
         </div>
       </div>
