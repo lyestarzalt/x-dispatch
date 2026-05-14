@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Map, Monitor, Mountain } from 'lucide-react';
+import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -38,6 +37,7 @@ export function GraphicsSection() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h3 className="flex items-center gap-2 text-lg font-semibold">
           <Monitor className="h-5 w-5" />
@@ -49,127 +49,111 @@ export function GraphicsSection() {
       <Separator />
 
       {/* Map Style */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Map className="h-4 w-4" />
-            {t('settings.graphics.mapStyle')}
-          </CardTitle>
-          <CardDescription>{t('settings.graphics.mapStyleDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <MapStylePicker
-            currentUrl={mapSettings.mapStyleUrl}
-            userStyles={mapSettings.userMapStyles ?? []}
-            onSelect={(url) => updateMapSettings({ mapStyleUrl: url })}
-            onAdd={addUserMapStyle}
-            onRemove={removeUserMapStyle}
-          />
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading">{t('settings.graphics.mapStyle')}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.graphics.mapStyleDescription')}
+          </p>
+        </div>
+        <MapStylePicker
+          currentUrl={mapSettings.mapStyleUrl}
+          userStyles={mapSettings.userMapStyles ?? []}
+          onSelect={(url) => updateMapSettings({ mapStyleUrl: url })}
+          onAdd={addUserMapStyle}
+          onRemove={removeUserMapStyle}
+        />
+      </div>
+
+      <Separator />
 
       {/* Terrain */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Mountain className="h-4 w-4" />
-            {t('settings.graphics.terrain')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">{t('settings.graphics.terrain3d')}</Label>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.graphics.terrain3dDesc')}
-              </p>
-            </div>
-            <Switch
-              checked={terrain3dEnabled}
-              onCheckedChange={(checked) => setTerrain3dEnabled(checked)}
-            />
+      <div className="space-y-3">
+        <h3 className="xp-section-heading">{t('settings.graphics.terrain')}</h3>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <Label className="text-sm font-medium">{t('settings.graphics.terrain3d')}</Label>
+            <p className="text-xs text-muted-foreground">{t('settings.graphics.terrain3dDesc')}</p>
           </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">{t('settings.graphics.terrainShading')}</Label>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.graphics.terrainShadingDesc')}
-              </p>
-            </div>
-            <Switch
-              checked={terrainShadingEnabled}
-              onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
-            />
+          <Switch
+            checked={terrain3dEnabled}
+            onCheckedChange={(checked) => setTerrain3dEnabled(checked)}
+          />
+        </div>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <Label className="text-sm font-medium">{t('settings.graphics.terrainShading')}</Label>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.graphics.terrainShadingDesc')}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <Switch
+            checked={terrainShadingEnabled}
+            onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
+          />
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Surface Detail */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">
-            {t('settings.graphics.surfaceDetail')}
-          </CardTitle>
-          <CardDescription>{t('settings.graphics.surfaceDetailDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            {SURFACE_DETAIL_OPTIONS.map(({ value, labelKey }) => (
-              <Button
-                key={value}
-                variant={graphics.surfaceDetail === value ? 'default' : 'outline'}
-                size="sm"
-                className={cn('flex-1', graphics.surfaceDetail === value && 'pointer-events-none')}
-                onClick={() => updateGraphics({ surfaceDetail: value })}
-              >
-                {t(labelKey)}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading">{t('settings.graphics.surfaceDetail')}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.graphics.surfaceDetailDesc')}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {SURFACE_DETAIL_OPTIONS.map(({ value, labelKey }) => (
+            <Button
+              key={value}
+              variant={graphics.surfaceDetail === value ? 'default' : 'outline'}
+              size="sm"
+              className={cn('flex-1', graphics.surfaceDetail === value && 'pointer-events-none')}
+              onClick={() => updateGraphics({ surfaceDetail: value })}
+            >
+              {t(labelKey)}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Lights */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('settings.graphics.lights')}</CardTitle>
-          <CardDescription>{t('settings.graphics.lightsPerfHint')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Approach light animation */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">{t('settings.graphics.approachLights')}</Label>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.graphics.approachLightsDesc')}
-              </p>
-            </div>
-            <Switch
-              checked={graphics.approachLightAnimation}
-              onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
-            />
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading">{t('settings.graphics.lights')}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.graphics.lightsPerfHint')}
+          </p>
+        </div>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <Label className="text-sm font-medium">{t('settings.graphics.approachLights')}</Label>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.graphics.approachLightsDesc')}
+            </p>
           </div>
-
-          <Separator />
-
-          {/* Taxiway light glow */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-sm font-medium">{t('settings.graphics.taxiwayGlow')}</Label>
-              <p className="text-xs text-muted-foreground">
-                {t('settings.graphics.taxiwayGlowDesc')}
-              </p>
-            </div>
-            <Switch
-              checked={graphics.taxiwayLightGlow}
-              onCheckedChange={(checked) => updateGraphics({ taxiwayLightGlow: checked })}
-            />
+          <Switch
+            checked={graphics.approachLightAnimation}
+            onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
+          />
+        </div>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div>
+            <Label className="text-sm font-medium">{t('settings.graphics.taxiwayGlow')}</Label>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.graphics.taxiwayGlowDesc')}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <Switch
+            checked={graphics.taxiwayLightGlow}
+            onCheckedChange={(checked) => updateGraphics({ taxiwayLightGlow: checked })}
+          />
+        </div>
+      </div>
     </div>
   );
 }

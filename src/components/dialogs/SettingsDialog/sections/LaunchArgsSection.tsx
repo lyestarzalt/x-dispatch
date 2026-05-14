@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils/helpers';
 import { useCliFlags } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
 
-export default function LaunchArgsCard() {
+export default function LaunchArgsSection() {
   const { t } = useTranslation();
   const customLaunchArgs = useSettingsStore((s) => s.launcher.customLaunchArgs);
   const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
@@ -67,8 +67,8 @@ export default function LaunchArgsCard() {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-medium">{t('settings.xplane.launchArgs')}</p>
-        <p className="text-xs text-muted-foreground">
+        <h3 className="xp-section-heading">{t('settings.xplane.launchArgs')}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           {t('settings.xplane.launchArgsDescription')}
         </p>
       </div>

@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
+import { Boxes, Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
+import { cn } from '@/lib/utils/helpers';
 import { useElevationQuery } from '@/queries/useElevationQuery';
 import { type CompanionApp, useCompanionAppsStore } from '@/stores/companionAppsStore';
+import type { SettingsSectionProps } from '../types';
 import { CompanionAppEditDialog } from './CompanionAppEditDialog';
 
 type SpawnErrorCode = 'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'SPAWN_FAILED';
@@ -31,7 +33,7 @@ type EditState =
   | { open: true; mode: 'add'; initial: Partial<Omit<CompanionApp, 'id'>>; targetId?: undefined }
   | { open: true; mode: 'edit'; initial: Partial<Omit<CompanionApp, 'id'>>; targetId: string };
 
-export function CompanionAppsSection() {
+export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
   const { t } = useTranslation();
   const tools = useCompanionAppsStore((s) => s.tools);
   const addTool = useCompanionAppsStore((s) => s.addTool);
@@ -97,16 +99,21 @@ export function CompanionAppsSection() {
   const showAdminBanner = elevation.data === false && window.appAPI.platform === 'win32';
 
   return (
-    <div className="space-y-6">
+    <div className={cn('space-y-6', className)}>
+      {/* Header */}
       <div>
-        <h3 className="xp-section-heading">{t('settings.companionApps.title')}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('settings.companionApps.description')}
-        </p>
+        <h3 className="flex items-center gap-2 text-lg font-semibold">
+          <Boxes className="h-5 w-5" />
+          {t('settings.companionApps.title')}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t('settings.companionApps.description')}</p>
       </div>
 
+      <Separator />
+
+      {/* Admin banner — flat inline alert */}
       {showAdminBanner && (
-        <Card className="flex items-start gap-3 border-warning/40 bg-warning/5 p-3">
+        <div className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning/5 p-3">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
           <div className="space-y-1 text-sm">
             <p className="font-medium text-foreground">
@@ -114,54 +121,51 @@ export function CompanionAppsSection() {
             </p>
             <p className="text-muted-foreground">{t('settings.companionApps.notElevatedHint')}</p>
           </div>
-        </Card>
+        </div>
       )}
 
+      {/* Configured tools */}
       {tools.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('settings.companionApps.empty')}</p>
       ) : (
         <ul className="space-y-2">
           {tools.map((tool) => (
-            <li key={tool.id}>
-              <Card className="bg-muted/20 p-3">
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">{tool.name}</span>
-                    </div>
-                    <p className="mt-0.5 truncate font-mono text-xs text-info">{tool.exePath}</p>
-                    {(tool.args || tool.delayBeforeXPlaneSec > 0) && (
-                      <p className="mt-0.5 text-xs text-muted-foreground/70">
-                        {tool.args && <span className="font-mono">{tool.args}</span>}
-                        {tool.args && tool.delayBeforeXPlaneSec > 0 && ' · '}
-                        {tool.delayBeforeXPlaneSec > 0 && (
-                          <span>
-                            {t('settings.companionApps.delayInline', {
-                              seconds: tool.delayBeforeXPlaneSec,
-                            })}
-                          </span>
-                        )}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Switch
-                      checked={tool.autoLaunch}
-                      onCheckedChange={(v) => updateTool(tool.id, { autoLaunch: v })}
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => launchNow(tool)}>
-                      <Play className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(tool)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => removeTool(tool.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+            <li key={tool.id} className="rounded-lg border p-3">
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-semibold text-foreground">{tool.name}</span>
+                  <p className="mt-0.5 truncate font-mono text-xs text-info">{tool.exePath}</p>
+                  {(tool.args || tool.delayBeforeXPlaneSec > 0) && (
+                    <p className="mt-0.5 text-xs text-muted-foreground/70">
+                      {tool.args && <span className="font-mono">{tool.args}</span>}
+                      {tool.args && tool.delayBeforeXPlaneSec > 0 && ' · '}
+                      {tool.delayBeforeXPlaneSec > 0 && (
+                        <span>
+                          {t('settings.companionApps.delayInline', {
+                            seconds: tool.delayBeforeXPlaneSec,
+                          })}
+                        </span>
+                      )}
+                    </p>
+                  )}
                 </div>
-              </Card>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <Switch
+                    checked={tool.autoLaunch}
+                    onCheckedChange={(v) => updateTool(tool.id, { autoLaunch: v })}
+                  />
+                  <Button variant="ghost" size="icon" onClick={() => launchNow(tool)}>
+                    <Play className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => openEdit(tool)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => removeTool(tool.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
@@ -172,31 +176,31 @@ export function CompanionAppsSection() {
         {t('settings.companionApps.addButton')}
       </Button>
 
-      <div className="space-y-2 pt-4">
-        <h4 className="xp-section-heading">{t('settings.companionApps.suggested')}</h4>
+      <Separator />
+
+      {/* Suggested */}
+      <div className="space-y-3">
+        <h3 className="xp-section-heading">{t('settings.companionApps.suggested')}</h3>
         <ul className="space-y-2">
           {SUGGESTED_COMPANION_APPS.map((s) => {
-            // Disable if any tool has the same name (case-insensitive). Good enough for v1.
             const alreadyAdded = tools.some(
               (tool) => tool.name.toLowerCase() === s.name.toLowerCase()
             );
             return (
-              <li key={s.id}>
-                <Card className="flex items-center gap-3 bg-muted/10 p-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{s.name}</p>
-                    <p className="text-xs text-muted-foreground/70">{s.description}</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={alreadyAdded}
-                    onClick={() => openAddFromSuggestion(s.id)}
-                  >
-                    <Plus className="mr-1 h-3 w-3" />
-                    {t('settings.companionApps.add')}
-                  </Button>
-                </Card>
+              <li key={s.id} className="flex items-center gap-3 rounded-lg border p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground">{s.name}</p>
+                  <p className="text-xs text-muted-foreground/70">{s.description}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={alreadyAdded}
+                  onClick={() => openAddFromSuggestion(s.id)}
+                >
+                  <Plus className="mr-1 h-3 w-3" />
+                  {t('settings.companionApps.add')}
+                </Button>
               </li>
             );
           })}

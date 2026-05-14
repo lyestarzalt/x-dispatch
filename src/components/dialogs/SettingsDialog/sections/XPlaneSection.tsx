@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils/helpers';
 import { appKeys, useActiveInstallation, useInstallations } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SettingsSectionProps } from '../types';
-import LaunchArgsCard from './LaunchArgsCard';
+import LaunchArgsSection from './LaunchArgsSection';
 
 export default function XPlaneSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -311,7 +311,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
       <Separator />
 
       {/* Launch Arguments */}
-      <LaunchArgsCard />
+      <LaunchArgsSection />
     </div>
   );
 }

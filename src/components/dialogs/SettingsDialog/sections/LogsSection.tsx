@@ -4,7 +4,6 @@ import { ExternalLink, RefreshCcw, ScrollText, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -93,11 +92,9 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         <Toolbar />
-        <Card>
-          <CardContent className="py-6 text-center">
-            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border py-6 text-center">
+          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
+        </div>
       </div>
     );
   }
@@ -107,11 +104,9 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         <Toolbar />
-        <Card>
-          <CardContent className="py-6 text-center">
-            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border py-6 text-center">
+          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
+        </div>
       </div>
     );
   }
@@ -121,11 +116,9 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         <Toolbar />
-        <Card className="border-destructive/30 bg-destructive/5">
-          <CardContent className="py-6">
-            <p className="font-mono text-xs text-destructive">{result.message}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
+          <p className="font-mono text-xs text-destructive">{result.message}</p>
+        </div>
       </div>
     );
   }
@@ -183,57 +176,49 @@ export function LogsSection({ active }: LogsSectionProps) {
       </div>
 
       {parsed.header.length > 0 && (
-        <Card>
-          <Collapsible open={showHeader} onOpenChange={setShowHeader}>
-            <CardHeader className="pb-3">
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
-                  <ScrollText className="mr-2 h-4 w-4" />
-                  {showHeader
-                    ? t('settings.logs.hideHeader')
-                    : t('settings.logs.showHeader', { count: parsed.header.length })}
-                </Button>
-              </CollapsibleTrigger>
-            </CardHeader>
-            <CollapsibleContent>
-              <CardContent>
-                <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/10 p-3 font-mono text-xs text-muted-foreground">
-                  {parsed.header.join('\n')}
-                </pre>
-              </CardContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
+        <Collapsible open={showHeader} onOpenChange={setShowHeader}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
+              <ScrollText className="mr-2 h-4 w-4" />
+              {showHeader
+                ? t('settings.logs.hideHeader')
+                : t('settings.logs.showHeader', { count: parsed.header.length })}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/10 p-3 font-mono text-xs text-muted-foreground">
+              {parsed.header.join('\n')}
+            </pre>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <ScrollText className="h-4 w-4" />
-            {t('settings.logs.entriesHeader')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filtered.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              {t('settings.logs.empty.noMatches')}
-            </p>
-          ) : (
+      <div className="space-y-3">
+        <h3 className="xp-section-heading flex items-center gap-2">
+          <ScrollText className="h-4 w-4" />
+          {t('settings.logs.entriesHeader')}
+        </h3>
+        {filtered.length === 0 ? (
+          <div className="rounded-lg border py-6 text-center">
+            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noMatches')}</p>
+          </div>
+        ) : (
+          <div className="rounded-lg border">
             <ul className="divide-y divide-border">
               {filtered.map((e) => (
                 <LogRow key={e.lineNumber} entry={e} />
               ))}
             </ul>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function LogRow({ entry }: { entry: LogEntry }) {
   return (
-    <li className="flex items-start gap-3 py-2 first:pt-0 last:pb-0">
+    <li className="flex items-start gap-3 px-3 py-2">
       <span className="mt-0.5 shrink-0 font-mono text-xs text-muted-foreground/70">
         {entry.timestamp}
       </span>

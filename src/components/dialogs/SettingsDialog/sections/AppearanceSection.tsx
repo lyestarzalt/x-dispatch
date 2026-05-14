@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Palette, RotateCcw, Scale, Type, ZoomIn } from 'lucide-react';
+import { Palette, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -13,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { changeLanguage, languages } from '@/i18n';
 import type { WeightUnit } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
@@ -34,42 +34,40 @@ function ZoomSlider({
   const display = preview ?? persisted;
 
   return (
-    <CardContent>
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-muted-foreground">70%</span>
-        <Slider
-          value={[display]}
-          onValueChange={(v) => {
-            const val = v[0];
-            if (val === undefined) return;
-            setPreview(val);
-          }}
-          onValueCommit={(v) => {
-            const val = v[0];
-            if (val === undefined) return;
-            setPreview(null);
-            onCommit(val / 100);
-          }}
-          min={70}
-          max={130}
-          step={10}
-          className="flex-1"
-        />
-        <span className="text-xs text-muted-foreground">130%</span>
-        <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
-        {persisted !== 100 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs text-muted-foreground"
-            onClick={() => onCommit(1.0)}
-          >
-            <RotateCcw className="mr-1 h-3 w-3" />
-            {resetLabel}
-          </Button>
-        )}
-      </div>
-    </CardContent>
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-muted-foreground">70%</span>
+      <Slider
+        value={[display]}
+        onValueChange={(v) => {
+          const val = v[0];
+          if (val === undefined) return;
+          setPreview(val);
+        }}
+        onValueCommit={(v) => {
+          const val = v[0];
+          if (val === undefined) return;
+          setPreview(null);
+          onCommit(val / 100);
+        }}
+        min={70}
+        max={130}
+        step={10}
+        className="flex-1"
+      />
+      <span className="text-xs text-muted-foreground">130%</span>
+      <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
+      {persisted !== 100 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 text-xs text-muted-foreground"
+          onClick={() => onCommit(1.0)}
+        >
+          <RotateCcw className="mr-1 h-3 w-3" />
+          {resetLabel}
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -81,6 +79,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
     appearance,
     setFontSize,
     setZoomLevel,
+    setDebugOverlay,
   } = useSettingsStore();
 
   const handleLanguageChange = (langCode: string) => {
@@ -100,104 +99,114 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
 
       <Separator />
 
-      {/* Language Selection */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Globe className="h-4 w-4" />
-            {t('settings.appearance.language')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={i18n.language} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  {lang.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      {/* Language */}
+      <div className="space-y-3">
+        <h3 className="xp-section-heading">{t('settings.appearance.language')}</h3>
+        <Select value={i18n.language} onValueChange={handleLanguageChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {languages.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code}>
+                {lang.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Separator />
 
       {/* Font Size */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Type className="h-4 w-4" />
-            {t('settings.appearance.fontSize')}
-          </CardTitle>
-          <CardDescription>{t('settings.appearance.fontSizeDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-2">
-            {(['small', 'medium', 'large'] as const).map((size) => (
-              <Button
-                key={size}
-                variant={appearance.fontSize === size ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFontSize(size as FontSize)}
-                className={cn(
-                  appearance.fontSize === size &&
-                    'ring-1 ring-primary ring-offset-1 ring-offset-background'
-                )}
-              >
-                {t(`settings.appearance.fontSize${size.charAt(0).toUpperCase() + size.slice(1)}`)}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading">{t('settings.appearance.fontSize')}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.appearance.fontSizeDescription')}
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {(['small', 'medium', 'large'] as const).map((size) => (
+            <Button
+              key={size}
+              variant={appearance.fontSize === size ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFontSize(size as FontSize)}
+              className={
+                appearance.fontSize === size
+                  ? 'ring-1 ring-primary ring-offset-1 ring-offset-background'
+                  : undefined
+              }
+            >
+              {t(`settings.appearance.fontSize${size.charAt(0).toUpperCase() + size.slice(1)}`)}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Zoom Level */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <ZoomIn className="h-4 w-4" />
-            {t('settings.appearance.zoomLevel')}
-          </CardTitle>
-          <CardDescription>{t('settings.appearance.zoomLevelDescription')}</CardDescription>
-        </CardHeader>
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading">{t('settings.appearance.zoomLevel')}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.appearance.zoomLevelDescription')}
+          </p>
+        </div>
         <ZoomSlider
           zoomLevel={appearance.zoomLevel}
           onCommit={setZoomLevel}
           resetLabel={t('settings.appearance.zoomReset')}
         />
-      </Card>
+      </div>
+
+      <Separator />
 
       {/* Units */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Scale className="h-4 w-4" />
-            {t('settings.appearance.units')}
-          </CardTitle>
-          <CardDescription>{t('settings.appearance.unitsDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <Label className="text-sm">{t('settings.appearance.weightUnit')}</Label>
-            <Select
-              value={mapSettings.units.weight}
-              onValueChange={(value: WeightUnit) =>
-                updateMapSettings({ units: { ...mapSettings.units, weight: value } })
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="lbs">{t('settings.appearance.lbs')}</SelectItem>
-                <SelectItem value="kg">{t('settings.appearance.kg')}</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading">{t('settings.appearance.units')}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.appearance.unitsDescription')}
+          </p>
+        </div>
+        <div className="flex items-center justify-between">
+          <Label className="text-sm">{t('settings.appearance.weightUnit')}</Label>
+          <Select
+            value={mapSettings.units.weight}
+            onValueChange={(value: WeightUnit) =>
+              updateMapSettings({ units: { ...mapSettings.units, weight: value } })
+            }
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lbs">{t('settings.appearance.lbs')}</SelectItem>
+              <SelectItem value="kg">{t('settings.appearance.kg')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Developer Tools */}
+      <div className="space-y-3">
+        <h3 className="xp-section-heading">{t('settings.about.tools')}</h3>
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">{t('settings.about.debugOverlay')}</p>
+            <p className="text-sm text-muted-foreground">
+              {t('settings.about.debugOverlayDescription')}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <Switch checked={appearance.debugOverlay} onCheckedChange={setDebugOverlay} />
+        </div>
+        <p className="text-xs text-muted-foreground">{t('settings.about.debugShortcut')}</p>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils/helpers';
 import type { SettingsSectionProps } from '../types';
+import { openSettingsExternalLink } from './externalLinks';
 
 const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
 const DISCORD_INVITE = 'https://discord.gg/76UYpxXWW7';
@@ -57,7 +58,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
   };
 
   const handleOpenExternal = (url: string) => {
-    window.open(url, '_blank');
+    void openSettingsExternalLink(url);
   };
 
   return (
@@ -118,27 +119,27 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           <Button
             variant="ghost"
             onClick={() => handleOpenExternal(GITHUB_ISSUES)}
-            className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
+            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
           >
-            <span>{t('settings.about.reportIssue')}</span>
+            <span className="min-w-0 truncate">{t('settings.about.reportIssue')}</span>
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
           <Button
             variant="ghost"
             onClick={() => handleOpenExternal(DISCORD_INVITE)}
-            className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
+            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
           >
-            <span>Discord</span>
+            <span className="min-w-0 truncate">{t('settings.support.discord')}</span>
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
           <Button
             variant="ghost"
             onClick={() => handleOpenExternal('https://ko-fi.com/A0A21V3IZZ')}
-            className="h-auto w-full justify-between px-3 py-2 text-sm hover:bg-secondary"
+            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
           >
-            <span className="flex items-center gap-1.5">
+            <span className="flex min-w-0 items-center gap-1.5">
               <Heart className="h-3.5 w-3.5 text-red-400" />
-              Support this project
+              <span className="truncate">{t('settings.about.supportProject')}</span>
             </span>
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>

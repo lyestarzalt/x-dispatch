@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import {
@@ -140,222 +139,218 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
 
       <Separator />
 
-      {/* Airport Layout Data Section */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+      {/* Airport Layout Data */}
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading flex items-center gap-2">
             <Plane className="h-4 w-4" />
             {t('settings.navigation.airportLayoutData')}
-          </CardTitle>
-          <CardDescription>{t('settings.navigation.airportLayoutDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {dataStatus && airportBreakdown && (
-            <div className="space-y-3">
-              {/* Airport breakdown */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Building2 className="h-3.5 w-3.5" />
-                    {t('settings.navigation.globalAirports')}
-                  </div>
-                  <div className="mt-1 font-mono text-lg font-semibold">
-                    {airportBreakdown.globalAirports.toLocaleString()}
-                  </div>
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.navigation.airportLayoutDescription')}
+          </p>
+        </div>
+        {dataStatus && airportBreakdown && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Building2 className="h-3.5 w-3.5" />
+                  {t('settings.navigation.globalAirports')}
                 </div>
-                <div className="rounded-lg border border-violet/30 bg-violet/10 p-3">
-                  <div className="flex items-center gap-2 text-xs text-violet">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {t('settings.navigation.customAirports')}
-                  </div>
-                  <div className="mt-1 font-mono text-lg font-semibold text-violet">
-                    {airportBreakdown.customScenery.toLocaleString()}
-                  </div>
-                  {airportBreakdown.customSceneryPacks > 0 && (
-                    <div className="text-xs text-violet/70">
-                      {t('settings.navigation.fromSceneryPacks', {
-                        count: airportBreakdown.customSceneryPacks,
-                      })}
-                    </div>
-                  )}
+                <div className="mt-1 font-mono text-lg font-semibold">
+                  {airportBreakdown.globalAirports.toLocaleString()}
                 </div>
               </div>
-
-              <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs">
-                <span className="text-muted-foreground">
-                  {t('settings.navigation.totalAirports')}
-                </span>
-                <span className="font-mono font-medium">
-                  {dataStatus.airports.count.toLocaleString()}
-                </span>
+              <div className="rounded-lg border border-violet/30 bg-violet/10 p-3">
+                <div className="flex items-center gap-2 text-xs text-violet">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {t('settings.navigation.customAirports')}
+                </div>
+                <div className="mt-1 font-mono text-lg font-semibold text-violet">
+                  {airportBreakdown.customScenery.toLocaleString()}
+                </div>
+                {airportBreakdown.customSceneryPacks > 0 && (
+                  <div className="text-xs text-violet/70">
+                    {t('settings.navigation.fromSceneryPacks', {
+                      count: airportBreakdown.customSceneryPacks,
+                    })}
+                  </div>
+                )}
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Navigation Data Source Card */}
-      <Card className={cn(isNavigraph ? 'border-info/30' : '')}>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs">
+              <span className="text-muted-foreground">
+                {t('settings.navigation.totalAirports')}
+              </span>
+              <span className="font-mono font-medium">
+                {dataStatus.airports.count.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Navigation Data Source */}
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading flex items-center gap-2">
             <Radio className="h-4 w-4" />
             {t('settings.navigation.navDataSource')}
-          </CardTitle>
-          <CardDescription>{t('settings.navigation.navDataSourceDescription')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {globalSource && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {isNavigraph ? (
-                  <Badge className="bg-info hover:bg-info/80">Navigraph</Badge>
-                ) : (
-                  <Badge variant="secondary">X-Plane Default</Badge>
-                )}
-                {globalSource.cycle && (
-                  <span className="font-mono text-sm text-muted-foreground">
-                    AIRAC {globalSource.cycle}
-                    {globalSource.revision && `.${globalSource.revision}`}
-                  </span>
-                )}
-              </div>
-              {isNavigraph && (
-                <Badge
-                  variant={globalSource.isExpired ? 'destructive' : 'success'}
-                  className="gap-1"
-                >
-                  {globalSource.isExpired ? (
-                    <>
-                      <XCircle className="h-3 w-3" />
-                      {t('settings.xplane.expired', 'Expired')}
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-3 w-3" />
-                      {t('settings.xplane.current', 'Current')}
-                    </>
-                  )}
-                </Badge>
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('settings.navigation.navDataSourceDescription')}
+          </p>
+        </div>
+        {globalSource && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {isNavigraph ? (
+                <Badge className="bg-info hover:bg-info/80">Navigraph</Badge>
+              ) : (
+                <Badge variant="secondary">X-Plane Default</Badge>
+              )}
+              {globalSource.cycle && (
+                <span className="font-mono text-sm text-muted-foreground">
+                  AIRAC {globalSource.cycle}
+                  {globalSource.revision && `.${globalSource.revision}`}
+                </span>
               )}
             </div>
-          )}
-
-          {globalSource?.effectiveDate && globalSource?.expirationDate && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-              {t('settings.xplane.validDates', 'Valid')}: {formatDate(globalSource.effectiveDate)} -{' '}
-              {formatDate(globalSource.expirationDate)}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            {isNavigraph && (
+              <Badge variant={globalSource.isExpired ? 'destructive' : 'success'} className="gap-1">
+                {globalSource.isExpired ? (
+                  <>
+                    <XCircle className="h-3 w-3" />
+                    {t('settings.xplane.expired', 'Expired')}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-3 w-3" />
+                    {t('settings.xplane.current', 'Current')}
+                  </>
+                )}
+              </Badge>
+            )}
+          </div>
+        )}
+        {globalSource?.effectiveDate && globalSource?.expirationDate && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar className="h-3.5 w-3.5" />
+            {t('settings.xplane.validDates', 'Valid')}: {formatDate(globalSource.effectiveDate)} -{' '}
+            {formatDate(globalSource.expirationDate)}
+          </div>
+        )}
+      </div>
 
       {/* Navigation Data Table */}
       {dataStatus && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">
-              {t('settings.xplane.dataLoaded', 'Loaded Data')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('settings.xplane.dataType', 'Type')}</TableHead>
-                  <TableHead className="text-right">
-                    {t('settings.xplane.count', 'Count')}
-                  </TableHead>
-                  <TableHead>{t('settings.xplane.source', 'Source')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <DataRow
-                  label={t('loading.steps.navaids', 'Navaids')}
-                  count={dataStatus.navaids.count}
-                  source={dataStatus.navaids.source}
-                  sourceType={dataStatus.sources?.navaids.source}
-                  icon={<Radio className="h-4 w-4 text-muted-foreground" />}
-                />
-                <DataRow
-                  label={t('loading.steps.waypoints', 'Waypoints')}
-                  count={dataStatus.waypoints.count}
-                  source={dataStatus.waypoints.source}
-                  sourceType={dataStatus.sources?.waypoints.source}
-                  icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
-                />
-                <DataRow
-                  label={t('loading.steps.airways', 'Airways')}
-                  count={dataStatus.airways.count}
-                  source={dataStatus.airways.source}
-                  sourceType={dataStatus.sources?.airways.source}
-                  icon={<Route className="h-4 w-4 text-muted-foreground" />}
-                />
-                <DataRow
-                  label={t('loading.steps.airspaces', 'Airspaces')}
-                  count={dataStatus.airspaces.count}
-                  source={dataStatus.airspaces.source}
-                  sourceType={dataStatus.sources?.airspaces.source}
-                  icon={<Layers className="h-4 w-4 text-muted-foreground" />}
-                />
-                {dataStatus.atc && dataStatus.atc.count > 0 && (
+        <>
+          <Separator />
+          <div className="space-y-3">
+            <h3 className="xp-section-heading">{t('settings.xplane.dataLoaded', 'Loaded Data')}</h3>
+            <div className="overflow-hidden rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('settings.xplane.dataType', 'Type')}</TableHead>
+                    <TableHead className="text-right">
+                      {t('settings.xplane.count', 'Count')}
+                    </TableHead>
+                    <TableHead>{t('settings.xplane.source', 'Source')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   <DataRow
-                    label={t('settings.xplane.atcFrequencies', 'ATC Frequencies')}
-                    count={dataStatus.atc.count}
-                    source={dataStatus.atc.source}
-                    sourceType="navigraph"
+                    label={t('loading.steps.navaids', 'Navaids')}
+                    count={dataStatus.navaids.count}
+                    source={dataStatus.navaids.source}
+                    sourceType={dataStatus.sources?.navaids.source}
+                    icon={<Radio className="h-4 w-4 text-muted-foreground" />}
                   />
-                )}
-                {dataStatus.holds && dataStatus.holds.count > 0 && (
                   <DataRow
-                    label={t('settings.xplane.holdingPatterns', 'Holdings')}
-                    count={dataStatus.holds.count}
-                    source={dataStatus.holds.source}
-                    sourceType={dataStatus.sources?.holds?.source}
+                    label={t('loading.steps.waypoints', 'Waypoints')}
+                    count={dataStatus.waypoints.count}
+                    source={dataStatus.waypoints.source}
+                    sourceType={dataStatus.sources?.waypoints.source}
+                    icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
                   />
-                )}
-                {dataStatus.aptMeta && dataStatus.aptMeta.count > 0 && (
                   <DataRow
-                    label={t('settings.xplane.airportMetadata', 'Airport Meta')}
-                    count={dataStatus.aptMeta.count}
-                    source={dataStatus.aptMeta.source}
-                    sourceType={dataStatus.sources?.aptMeta?.source}
+                    label={t('loading.steps.airways', 'Airways')}
+                    count={dataStatus.airways.count}
+                    source={dataStatus.airways.source}
+                    sourceType={dataStatus.sources?.airways.source}
+                    icon={<Route className="h-4 w-4 text-muted-foreground" />}
                   />
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  <DataRow
+                    label={t('loading.steps.airspaces', 'Airspaces')}
+                    count={dataStatus.airspaces.count}
+                    source={dataStatus.airspaces.source}
+                    sourceType={dataStatus.sources?.airspaces.source}
+                    icon={<Layers className="h-4 w-4 text-muted-foreground" />}
+                  />
+                  {dataStatus.atc && dataStatus.atc.count > 0 && (
+                    <DataRow
+                      label={t('settings.xplane.atcFrequencies', 'ATC Frequencies')}
+                      count={dataStatus.atc.count}
+                      source={dataStatus.atc.source}
+                      sourceType="navigraph"
+                    />
+                  )}
+                  {dataStatus.holds && dataStatus.holds.count > 0 && (
+                    <DataRow
+                      label={t('settings.xplane.holdingPatterns', 'Holdings')}
+                      count={dataStatus.holds.count}
+                      source={dataStatus.holds.source}
+                      sourceType={dataStatus.sources?.holds?.source}
+                    />
+                  )}
+                  {dataStatus.aptMeta && dataStatus.aptMeta.count > 0 && (
+                    <DataRow
+                      label={t('settings.xplane.airportMetadata', 'Airport Meta')}
+                      count={dataStatus.aptMeta.count}
+                      source={dataStatus.aptMeta.source}
+                      sourceType={dataStatus.sources?.aptMeta?.source}
+                    />
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </>
       )}
 
+      <Separator />
+
       {/* Cache Management */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+      <div className="space-y-3">
+        <div>
+          <h3 className="xp-section-heading flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             {t('settings.navigation.cacheManagement', 'Cache Management')}
-          </CardTitle>
-          <CardDescription>
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             {t(
               'settings.navigation.cacheDescription',
               'Clear cached data to force a full reload from X-Plane files'
             )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="outline"
-            onClick={handleClearCache}
-            disabled={isClearing}
-            className="gap-2"
-          >
-            {isClearing ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
-            {isClearing
-              ? t('settings.navigation.clearingCache', 'Clearing...')
-              : t('settings.navigation.clearCache', 'Clear Cache & Reload')}
-          </Button>
-        </CardContent>
-      </Card>
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleClearCache}
+          disabled={isClearing}
+          className="gap-2"
+        >
+          {isClearing ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
+          {isClearing
+            ? t('settings.navigation.clearingCache', 'Clearing...')
+            : t('settings.navigation.clearCache', 'Clear Cache & Reload')}
+        </Button>
+      </div>
     </div>
   );
 }
