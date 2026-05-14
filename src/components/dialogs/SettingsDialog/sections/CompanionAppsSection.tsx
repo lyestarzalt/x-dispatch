@@ -130,7 +130,12 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <span className="text-sm font-semibold text-foreground">{tool.name}</span>
-                  <p className="mt-0.5 truncate font-mono text-xs text-info">{tool.exePath}</p>
+                  <p
+                    className="mt-0.5 truncate font-mono text-xs text-muted-foreground"
+                    title={tool.exePath}
+                  >
+                    {tool.exePath}
+                  </p>
                   {(tool.args || tool.delayBeforeXPlaneSec > 0) && (
                     <p className="mt-0.5 text-xs text-muted-foreground/70">
                       {tool.args && <span className="font-mono">{tool.args}</span>}
