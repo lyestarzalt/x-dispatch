@@ -29,10 +29,10 @@ export function SettingsSectionBlock({
       {hasHeading ? (
         <div>
           {title ? (
-            <h3 className="xp-section-heading flex items-center gap-2">
+            <h4 className="xp-section-heading flex items-center gap-2">
               {Icon ? <Icon className="h-4 w-4" /> : null}
               {title}
-            </h3>
+            </h4>
           ) : null}
           {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
         </div>
