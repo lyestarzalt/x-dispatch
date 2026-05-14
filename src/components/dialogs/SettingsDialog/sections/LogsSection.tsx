@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import { type LogEntry, type LogLevel, parseLog } from '@/lib/xplaneServices/log/parseLog';
 import { useXplaneLogQuery } from '@/queries';
+import { SettingsEmptyState, SettingsHeader, SettingsSectionBlock } from '../primitives';
 
 type LevelFilter = 'all' | 'errors-warnings' | 'errors' | 'warnings';
 
@@ -50,16 +50,11 @@ export function LogsSection({ active }: LogsSectionProps) {
   };
 
   const Header = (
-    <>
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <ScrollText className="h-5 w-5" />
-          {t('settings.logs.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.logs.description')}</p>
-      </div>
-      <Separator />
-    </>
+    <SettingsHeader
+      icon={ScrollText}
+      title={t('settings.logs.title')}
+      description={t('settings.logs.description')}
+    />
   );
 
   const Toolbar = () => (
@@ -92,9 +87,7 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         <Toolbar />
-        <div className="rounded-lg border py-6 text-center">
-          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noPath')}</p>
-        </div>
+        <SettingsEmptyState message={t('settings.logs.empty.noPath')} />
       </div>
     );
   }
@@ -104,9 +97,7 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         <Toolbar />
-        <div className="rounded-lg border py-6 text-center">
-          <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noLog')}</p>
-        </div>
+        <SettingsEmptyState message={t('settings.logs.empty.noLog')} />
       </div>
     );
   }
@@ -193,15 +184,9 @@ export function LogsSection({ active }: LogsSectionProps) {
         </Collapsible>
       )}
 
-      <div className="space-y-3">
-        <h3 className="xp-section-heading flex items-center gap-2">
-          <ScrollText className="h-4 w-4" />
-          {t('settings.logs.entriesHeader')}
-        </h3>
+      <SettingsSectionBlock title={t('settings.logs.entriesHeader')} icon={ScrollText}>
         {filtered.length === 0 ? (
-          <div className="rounded-lg border py-6 text-center">
-            <p className="text-sm text-muted-foreground">{t('settings.logs.empty.noMatches')}</p>
-          </div>
+          <SettingsEmptyState message={t('settings.logs.empty.noMatches')} />
         ) : (
           <div className="rounded-lg border">
             <ul className="divide-y divide-border">
@@ -211,7 +196,7 @@ export function LogsSection({ active }: LogsSectionProps) {
             </ul>
           </div>
         )}
-      </div>
+      </SettingsSectionBlock>
     </div>
   );
 }
