@@ -9,6 +9,7 @@ import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
 import { cn } from '@/lib/utils/helpers';
 import { useElevationQuery } from '@/queries/useElevationQuery';
 import { type CompanionApp, useCompanionAppsStore } from '@/stores/companionAppsStore';
+import { SettingsEmptyState, SettingsHeader } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 import { CompanionAppEditDialog } from './CompanionAppEditDialog';
 
@@ -100,16 +101,11 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Boxes className="h-5 w-5" />
-          {t('settings.companionApps.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.companionApps.description')}</p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={Boxes}
+        title={t('settings.companionApps.title')}
+        description={t('settings.companionApps.description')}
+      />
 
       {/* Admin banner — flat inline alert */}
       {showAdminBanner && (
@@ -126,7 +122,7 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
 
       {/* Configured tools */}
       {tools.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('settings.companionApps.empty')}</p>
+        <SettingsEmptyState message={t('settings.companionApps.empty')} />
       ) : (
         <ul className="space-y-2">
           {tools.map((tool) => (
