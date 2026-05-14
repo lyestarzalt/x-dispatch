@@ -1,13 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import type { SurfaceDetail } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import { MapStylePicker } from './MapStylePicker';
 
 const SURFACE_DETAIL_OPTIONS: { value: SurfaceDetail; labelKey: string }[] = [
@@ -37,25 +36,17 @@ export function GraphicsSection() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Monitor className="h-5 w-5" />
-          {t('settings.graphics.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.graphics.description')}</p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={Monitor}
+        title={t('settings.graphics.title')}
+        description={t('settings.graphics.description')}
+      />
 
       {/* Map Style */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.graphics.mapStyle')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.graphics.mapStyleDescription')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.graphics.mapStyle')}
+        description={t('settings.graphics.mapStyleDescription')}
+      >
         <MapStylePicker
           currentUrl={mapSettings.mapStyleUrl}
           userStyles={mapSettings.userMapStyles ?? []}
@@ -63,47 +54,33 @@ export function GraphicsSection() {
           onAdd={addUserMapStyle}
           onRemove={removeUserMapStyle}
         />
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Terrain */}
-      <div className="space-y-3">
-        <h3 className="xp-section-heading">{t('settings.graphics.terrain')}</h3>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div>
-            <Label className="text-sm font-medium">{t('settings.graphics.terrain3d')}</Label>
-            <p className="text-xs text-muted-foreground">{t('settings.graphics.terrain3dDesc')}</p>
-          </div>
-          <Switch
-            checked={terrain3dEnabled}
-            onCheckedChange={(checked) => setTerrain3dEnabled(checked)}
-          />
-        </div>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div>
-            <Label className="text-sm font-medium">{t('settings.graphics.terrainShading')}</Label>
-            <p className="text-xs text-muted-foreground">
-              {t('settings.graphics.terrainShadingDesc')}
-            </p>
-          </div>
-          <Switch
-            checked={terrainShadingEnabled}
-            onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
-          />
-        </div>
-      </div>
+      <SettingsSectionBlock title={t('settings.graphics.terrain')}>
+        <SettingsToggleRow
+          title={t('settings.graphics.terrain3d')}
+          description={t('settings.graphics.terrain3dDesc')}
+          checked={terrain3dEnabled}
+          onCheckedChange={(checked) => setTerrain3dEnabled(checked)}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.terrainShading')}
+          description={t('settings.graphics.terrainShadingDesc')}
+          checked={terrainShadingEnabled}
+          onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
+        />
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Surface Detail */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.graphics.surfaceDetail')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.graphics.surfaceDetailDesc')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.graphics.surfaceDetail')}
+        description={t('settings.graphics.surfaceDetailDesc')}
+      >
         <div className="flex gap-2">
           {SURFACE_DETAIL_OPTIONS.map(({ value, labelKey }) => (
             <Button
@@ -117,43 +94,28 @@ export function GraphicsSection() {
             </Button>
           ))}
         </div>
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Lights */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.graphics.lights')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.graphics.lightsPerfHint')}
-          </p>
-        </div>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div>
-            <Label className="text-sm font-medium">{t('settings.graphics.approachLights')}</Label>
-            <p className="text-xs text-muted-foreground">
-              {t('settings.graphics.approachLightsDesc')}
-            </p>
-          </div>
-          <Switch
-            checked={graphics.approachLightAnimation}
-            onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
-          />
-        </div>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div>
-            <Label className="text-sm font-medium">{t('settings.graphics.taxiwayGlow')}</Label>
-            <p className="text-xs text-muted-foreground">
-              {t('settings.graphics.taxiwayGlowDesc')}
-            </p>
-          </div>
-          <Switch
-            checked={graphics.taxiwayLightGlow}
-            onCheckedChange={(checked) => updateGraphics({ taxiwayLightGlow: checked })}
-          />
-        </div>
-      </div>
+      <SettingsSectionBlock
+        title={t('settings.graphics.lights')}
+        description={t('settings.graphics.lightsPerfHint')}
+      >
+        <SettingsToggleRow
+          title={t('settings.graphics.approachLights')}
+          description={t('settings.graphics.approachLightsDesc')}
+          checked={graphics.approachLightAnimation}
+          onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.taxiwayGlow')}
+          description={t('settings.graphics.taxiwayGlowDesc')}
+          checked={graphics.taxiwayLightGlow}
+          onCheckedChange={(checked) => updateGraphics({ taxiwayLightGlow: checked })}
+        />
+      </SettingsSectionBlock>
     </div>
   );
 }
