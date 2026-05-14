@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
 import { changeLanguage, languages } from '@/i18n';
 import type { WeightUnit } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import type { FontSize } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
 function ZoomSlider({
@@ -88,20 +88,14 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Palette className="h-5 w-5" />
-          {t('settings.appearance.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.appearance.description')}</p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={Palette}
+        title={t('settings.appearance.title')}
+        description={t('settings.appearance.description')}
+      />
 
       {/* Language */}
-      <div className="space-y-3">
-        <h3 className="xp-section-heading">{t('settings.appearance.language')}</h3>
+      <SettingsSectionBlock title={t('settings.appearance.language')}>
         <Select value={i18n.language} onValueChange={handleLanguageChange}>
           <SelectTrigger className="w-full">
             <SelectValue />
@@ -114,18 +108,15 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Font Size */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.appearance.fontSize')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.appearance.fontSizeDescription')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.appearance.fontSize')}
+        description={t('settings.appearance.fontSizeDescription')}
+      >
         <div className="grid grid-cols-3 gap-2">
           {(['small', 'medium', 'large'] as const).map((size) => (
             <Button
@@ -143,35 +134,29 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
             </Button>
           ))}
         </div>
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Zoom Level */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.appearance.zoomLevel')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.appearance.zoomLevelDescription')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.appearance.zoomLevel')}
+        description={t('settings.appearance.zoomLevelDescription')}
+      >
         <ZoomSlider
           zoomLevel={appearance.zoomLevel}
           onCommit={setZoomLevel}
           resetLabel={t('settings.appearance.zoomReset')}
         />
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Units */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.appearance.units')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('settings.appearance.unitsDescription')}
-          </p>
-        </div>
+      <SettingsSectionBlock
+        title={t('settings.appearance.units')}
+        description={t('settings.appearance.unitsDescription')}
+      >
         <div className="flex items-center justify-between">
           <Label className="text-sm">{t('settings.appearance.weightUnit')}</Label>
           <Select
@@ -189,24 +174,20 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Developer Tools */}
-      <div className="space-y-3">
-        <h3 className="xp-section-heading">{t('settings.about.tools')}</h3>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">{t('settings.about.debugOverlay')}</p>
-            <p className="text-sm text-muted-foreground">
-              {t('settings.about.debugOverlayDescription')}
-            </p>
-          </div>
-          <Switch checked={appearance.debugOverlay} onCheckedChange={setDebugOverlay} />
-        </div>
+      <SettingsSectionBlock title={t('settings.about.tools')}>
+        <SettingsToggleRow
+          title={t('settings.about.debugOverlay')}
+          description={t('settings.about.debugOverlayDescription')}
+          checked={appearance.debugOverlay}
+          onCheckedChange={setDebugOverlay}
+        />
         <p className="text-xs text-muted-foreground">{t('settings.about.debugShortcut')}</p>
-      </div>
+      </SettingsSectionBlock>
     </div>
   );
 }
