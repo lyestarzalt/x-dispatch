@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Building2,
-  Calendar,
   CheckCircle2,
   Database,
   Layers,
@@ -27,7 +26,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatDate } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useLoadingStatus } from '@/queries';
 import type { SettingsSectionProps } from '../types';
@@ -162,16 +160,16 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   {airportBreakdown.globalAirports.toLocaleString()}
                 </div>
               </div>
-              <div className="rounded-lg border border-violet/30 bg-violet/10 p-3">
-                <div className="flex items-center gap-2 text-xs text-violet">
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" />
                   {t('settings.navigation.customAirports')}
                 </div>
-                <div className="mt-1 font-mono text-lg font-semibold text-violet">
+                <div className="mt-1 font-mono text-lg font-semibold">
                   {airportBreakdown.customScenery.toLocaleString()}
                 </div>
                 {airportBreakdown.customSceneryPacks > 0 && (
-                  <div className="text-xs text-violet/70">
+                  <div className="text-xs text-muted-foreground">
                     {t('settings.navigation.fromSceneryPacks', {
                       count: airportBreakdown.customSceneryPacks,
                     })}
@@ -235,13 +233,6 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 )}
               </Badge>
             )}
-          </div>
-        )}
-        {globalSource?.effectiveDate && globalSource?.expirationDate && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5" />
-            {t('settings.xplane.validDates', 'Valid')}: {formatDate(globalSource.effectiveDate)} -{' '}
-            {formatDate(globalSource.expirationDate)}
           </div>
         )}
       </div>
