@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { getFmsFormatLabel } from '@/lib/simbrief/fmsFormats';
 import { type FmsExportTarget, useSettingsStore } from '@/stores/settingsStore';
+import { SettingsEmptyState } from '../../primitives';
 import { EditFmsTargetDialog } from './EditFmsTargetDialog';
 
 export function FmsExportTargets() {
@@ -49,12 +50,12 @@ export function FmsExportTargets() {
       </div>
 
       {targets.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {t(
+        <SettingsEmptyState
+          message={t(
             'settings.simbrief.fmsExportTargets.empty',
             'No targets yet. Add one to send SimBrief plans straight into an addon folder.'
           )}
-        </p>
+        />
       ) : (
         <ul className="space-y-2">
           {targets.map((target) => (

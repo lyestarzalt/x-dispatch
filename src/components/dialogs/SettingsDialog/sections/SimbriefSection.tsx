@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, CloudDownload, ExternalLink, X } from 'lucide-react';
+import { Check, CloudDownload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -8,9 +8,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils/helpers';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { SettingsHeader, SettingsLinkRow, SettingsSectionBlock } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 import { FmsExportTargets } from './SimbriefSection/FmsExportTargets';
-import { openSettingsExternalLink } from './externalLinks';
 
 const SIMBRIEF_URL = 'https://www.simbrief.com';
 
@@ -35,33 +35,21 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
 
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <CloudDownload
-            className={cn('h-5 w-5', isConfigured ? 'text-primary' : 'text-muted-foreground')}
-          />
-          SimBrief
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {t('settings.simbrief.description', 'Import flight plans from SimBrief')}
-        </p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={CloudDownload}
+        iconClassName={cn('h-5 w-5', isConfigured ? 'text-primary' : 'text-muted-foreground')}
+        title="SimBrief"
+        description={t('settings.simbrief.description', 'Import flight plans from SimBrief')}
+      />
 
       {/* Pilot ID */}
-      <div className="space-y-3">
-        <div>
-          <h3 className="xp-section-heading">{t('settings.simbrief.pilotId', 'Pilot ID')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t(
-              'settings.simbrief.pilotIdHelp',
-              'Your SimBrief Pilot ID (found in your SimBrief account settings)'
-            )}
-          </p>
-        </div>
-
+      <SettingsSectionBlock
+        title={t('settings.simbrief.pilotId', 'Pilot ID')}
+        description={t(
+          'settings.simbrief.pilotIdHelp',
+          'Your SimBrief Pilot ID (found in your SimBrief account settings)'
+        )}
+      >
         <div className="flex gap-2">
           <Input
             value={localPilotId}
@@ -107,29 +95,20 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             'Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.'
           )}
         </p>
-      </div>
+      </SettingsSectionBlock>
 
       <Separator />
 
       {/* Help link */}
-      <div className="space-y-3">
-        <h3 className="xp-section-heading">
-          {t('settings.simbrief.needAccount', "Don't have a SimBrief account?")}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {t('settings.simbrief.freeService', 'SimBrief is a free flight planning service')}
-        </p>
-        <div className="space-y-1">
-          <Button
-            variant="ghost"
-            onClick={() => void openSettingsExternalLink(SIMBRIEF_URL)}
-            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
-          >
-            <span className="min-w-0 truncate">simbrief.com</span>
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-          </Button>
-        </div>
-      </div>
+      <SettingsSectionBlock
+        title={t('settings.simbrief.needAccount', "Don't have a SimBrief account?")}
+        description={t(
+          'settings.simbrief.freeService',
+          'SimBrief is a free flight planning service'
+        )}
+      >
+        <SettingsLinkRow label="simbrief.com" href={SIMBRIEF_URL} />
+      </SettingsSectionBlock>
 
       <Separator />
 
