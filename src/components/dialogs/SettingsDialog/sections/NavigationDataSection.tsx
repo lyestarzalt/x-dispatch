@@ -10,7 +10,6 @@ import {
   Radio,
   RefreshCw,
   Route,
-  XCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -178,21 +177,13 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         icon={Radio}
       >
         {globalSource && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{isNavigraph ? 'Navigraph' : 'X-Plane Default'}</Badge>
-              {globalSource.cycle && (
-                <span className="font-mono text-sm text-muted-foreground">
-                  AIRAC {globalSource.cycle}
-                  {globalSource.revision && `.${globalSource.revision}`}
-                </span>
-              )}
-            </div>
-            {isNavigraph && globalSource.isExpired && (
-              <Badge variant="destructive" className="gap-1">
-                <XCircle className="h-3 w-3" />
-                {t('settings.xplane.expired', 'Expired')}
-              </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">{isNavigraph ? 'Navigraph' : 'X-Plane Default'}</Badge>
+            {globalSource.cycle && (
+              <span className="font-mono text-sm text-muted-foreground">
+                AIRAC {globalSource.cycle}
+                {globalSource.revision && `.${globalSource.revision}`}
+              </span>
             )}
           </div>
         )}
