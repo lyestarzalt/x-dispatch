@@ -3,7 +3,6 @@ import { FileText, FolderOpen, Info } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import { useAppVersion, useConfigPath, useLogPath } from '@/queries';
 import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
@@ -41,9 +40,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         </p>
       </div>
 
-      <Separator />
-
-      {/* Credits + Links side-by-side — the Separator above separates Identity from this grid */}
+      {/* Credits + Links side-by-side */}
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="space-y-3">
           <h3 className="xp-section-heading">{t('settings.about.credits')}</h3>
@@ -75,8 +72,6 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           </div>
         </div>
       </div>
-
-      <Separator />
 
       {/* Data Storage */}
       <div className="space-y-3">

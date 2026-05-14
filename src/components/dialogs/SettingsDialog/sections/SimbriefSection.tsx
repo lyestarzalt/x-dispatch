@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Check, CloudDownload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils/helpers';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
@@ -97,8 +96,6 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
         </p>
       </SettingsSectionBlock>
 
-      <Separator />
-
       {/* Help link */}
       <SettingsSectionBlock
         title={t('settings.simbrief.needAccount', "Don't have a SimBrief account?")}
@@ -109,8 +106,6 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
       >
         <SettingsLinkRow label="simbrief.com" href={SIMBRIEF_URL} />
       </SettingsSectionBlock>
-
-      <Separator />
 
       <FmsExportTargets />
     </div>

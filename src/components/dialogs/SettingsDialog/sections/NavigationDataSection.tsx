@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import {
   Table,
@@ -168,8 +167,6 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         )}
       </SettingsSectionBlock>
 
-      <Separator />
-
       {/* Navigation Data Source */}
       <SettingsSectionBlock
         title={t('settings.navigation.navDataSource')}
@@ -191,81 +188,76 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
 
       {/* Navigation Data Table */}
       {dataStatus && (
-        <>
-          <Separator />
-          <SettingsSectionBlock title={t('settings.xplane.dataLoaded', 'Loaded Data')}>
-            <div className="overflow-hidden rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('settings.xplane.dataType', 'Type')}</TableHead>
-                    <TableHead className="text-right">
-                      {t('settings.xplane.count', 'Count')}
-                    </TableHead>
-                    <TableHead>{t('settings.xplane.source', 'Source')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+        <SettingsSectionBlock title={t('settings.xplane.dataLoaded', 'Loaded Data')}>
+          <div className="overflow-hidden rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('settings.xplane.dataType', 'Type')}</TableHead>
+                  <TableHead className="text-right">
+                    {t('settings.xplane.count', 'Count')}
+                  </TableHead>
+                  <TableHead>{t('settings.xplane.source', 'Source')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <DataRow
+                  label={t('loading.steps.navaids', 'Navaids')}
+                  count={dataStatus.navaids.count}
+                  source={dataStatus.navaids.source}
+                  sourceType={dataStatus.sources?.navaids.source}
+                  icon={<Radio className="h-4 w-4 text-muted-foreground" />}
+                />
+                <DataRow
+                  label={t('loading.steps.waypoints', 'Waypoints')}
+                  count={dataStatus.waypoints.count}
+                  source={dataStatus.waypoints.source}
+                  sourceType={dataStatus.sources?.waypoints.source}
+                  icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
+                />
+                <DataRow
+                  label={t('loading.steps.airways', 'Airways')}
+                  count={dataStatus.airways.count}
+                  source={dataStatus.airways.source}
+                  sourceType={dataStatus.sources?.airways.source}
+                  icon={<Route className="h-4 w-4 text-muted-foreground" />}
+                />
+                <DataRow
+                  label={t('loading.steps.airspaces', 'Airspaces')}
+                  count={dataStatus.airspaces.count}
+                  source={dataStatus.airspaces.source}
+                  sourceType={dataStatus.sources?.airspaces.source}
+                  icon={<Layers className="h-4 w-4 text-muted-foreground" />}
+                />
+                {dataStatus.atc && dataStatus.atc.count > 0 && (
                   <DataRow
-                    label={t('loading.steps.navaids', 'Navaids')}
-                    count={dataStatus.navaids.count}
-                    source={dataStatus.navaids.source}
-                    sourceType={dataStatus.sources?.navaids.source}
-                    icon={<Radio className="h-4 w-4 text-muted-foreground" />}
+                    label={t('settings.xplane.atcFrequencies', 'ATC Frequencies')}
+                    count={dataStatus.atc.count}
+                    source={dataStatus.atc.source}
+                    sourceType="navigraph"
                   />
+                )}
+                {dataStatus.holds && dataStatus.holds.count > 0 && (
                   <DataRow
-                    label={t('loading.steps.waypoints', 'Waypoints')}
-                    count={dataStatus.waypoints.count}
-                    source={dataStatus.waypoints.source}
-                    sourceType={dataStatus.sources?.waypoints.source}
-                    icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
+                    label={t('settings.xplane.holdingPatterns', 'Holdings')}
+                    count={dataStatus.holds.count}
+                    source={dataStatus.holds.source}
+                    sourceType={dataStatus.sources?.holds?.source}
                   />
+                )}
+                {dataStatus.aptMeta && dataStatus.aptMeta.count > 0 && (
                   <DataRow
-                    label={t('loading.steps.airways', 'Airways')}
-                    count={dataStatus.airways.count}
-                    source={dataStatus.airways.source}
-                    sourceType={dataStatus.sources?.airways.source}
-                    icon={<Route className="h-4 w-4 text-muted-foreground" />}
+                    label={t('settings.xplane.airportMetadata', 'Airport Meta')}
+                    count={dataStatus.aptMeta.count}
+                    source={dataStatus.aptMeta.source}
+                    sourceType={dataStatus.sources?.aptMeta?.source}
                   />
-                  <DataRow
-                    label={t('loading.steps.airspaces', 'Airspaces')}
-                    count={dataStatus.airspaces.count}
-                    source={dataStatus.airspaces.source}
-                    sourceType={dataStatus.sources?.airspaces.source}
-                    icon={<Layers className="h-4 w-4 text-muted-foreground" />}
-                  />
-                  {dataStatus.atc && dataStatus.atc.count > 0 && (
-                    <DataRow
-                      label={t('settings.xplane.atcFrequencies', 'ATC Frequencies')}
-                      count={dataStatus.atc.count}
-                      source={dataStatus.atc.source}
-                      sourceType="navigraph"
-                    />
-                  )}
-                  {dataStatus.holds && dataStatus.holds.count > 0 && (
-                    <DataRow
-                      label={t('settings.xplane.holdingPatterns', 'Holdings')}
-                      count={dataStatus.holds.count}
-                      source={dataStatus.holds.source}
-                      sourceType={dataStatus.sources?.holds?.source}
-                    />
-                  )}
-                  {dataStatus.aptMeta && dataStatus.aptMeta.count > 0 && (
-                    <DataRow
-                      label={t('settings.xplane.airportMetadata', 'Airport Meta')}
-                      count={dataStatus.aptMeta.count}
-                      source={dataStatus.aptMeta.source}
-                      sourceType={dataStatus.sources?.aptMeta?.source}
-                    />
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </SettingsSectionBlock>
-        </>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </SettingsSectionBlock>
       )}
-
-      <Separator />
 
       {/* Cache Management */}
       <SettingsSectionBlock

@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { changeLanguage, languages } from '@/i18n';
 import type { WeightUnit } from '@/lib/utils/format';
@@ -110,8 +109,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
         </Select>
       </SettingsSectionBlock>
 
-      <Separator />
-
       {/* Font Size */}
       <SettingsSectionBlock
         title={t('settings.appearance.fontSize')}
@@ -136,8 +133,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
         </div>
       </SettingsSectionBlock>
 
-      <Separator />
-
       {/* Zoom Level */}
       <SettingsSectionBlock
         title={t('settings.appearance.zoomLevel')}
@@ -149,8 +144,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           resetLabel={t('settings.appearance.zoomReset')}
         />
       </SettingsSectionBlock>
-
-      <Separator />
 
       {/* Units */}
       <SettingsSectionBlock
@@ -175,8 +168,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           </Select>
         </div>
       </SettingsSectionBlock>
-
-      <Separator />
 
       {/* Developer Tools */}
       <SettingsSectionBlock title={t('settings.about.tools')}>

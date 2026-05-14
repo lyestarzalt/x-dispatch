@@ -5,7 +5,6 @@ import { Heart, LifeBuoy, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils/helpers';
 import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitives';
@@ -100,8 +99,6 @@ export default function SupportSection({ className }: SettingsSectionProps) {
         </div>
       </div>
 
-      <Separator />
-
       {/* Community */}
       <div className="space-y-3">
         <h3 className="xp-section-heading">{t('settings.support.community')}</h3>
@@ -115,8 +112,6 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           />
         </div>
       </div>
-
-      <Separator />
 
       {/* Privacy */}
       <div className="space-y-3">

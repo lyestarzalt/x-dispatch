@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils/helpers';
@@ -288,8 +287,6 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
         </Button>
       )}
 
-      <Separator />
-
       {/* Launch Behavior */}
       <div className="flex items-center justify-between">
         <div>
@@ -303,8 +300,6 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
           onCheckedChange={(checked) => updateLauncherSettings({ closeOnLaunch: checked })}
         />
       </div>
-
-      <Separator />
 
       {/* Launch Arguments */}
       <LaunchArgsSection />

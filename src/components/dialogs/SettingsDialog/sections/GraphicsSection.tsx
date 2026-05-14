@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import type { SurfaceDetail } from '@/stores/settingsStore';
@@ -56,8 +55,6 @@ export function GraphicsSection() {
         />
       </SettingsSectionBlock>
 
-      <Separator />
-
       {/* Terrain */}
       <SettingsSectionBlock title={t('settings.graphics.terrain')}>
         <SettingsToggleRow
@@ -73,8 +70,6 @@ export function GraphicsSection() {
           onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
         />
       </SettingsSectionBlock>
-
-      <Separator />
 
       {/* Surface Detail */}
       <SettingsSectionBlock
@@ -95,8 +90,6 @@ export function GraphicsSection() {
           ))}
         </div>
       </SettingsSectionBlock>
-
-      <Separator />
 
       {/* Lights */}
       <SettingsSectionBlock

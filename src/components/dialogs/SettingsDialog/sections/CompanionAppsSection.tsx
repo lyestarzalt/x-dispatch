@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Boxes, Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
 import { cn } from '@/lib/utils/helpers';
@@ -176,8 +175,6 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
         <Plus className="mr-2 h-4 w-4" />
         {t('settings.companionApps.addButton')}
       </Button>
-
-      <Separator />
 
       {/* Suggested */}
       <div className="space-y-3">
