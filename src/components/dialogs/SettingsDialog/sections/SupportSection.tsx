@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
-import { ExternalLink, Heart, LifeBuoy, Loader2, Send } from 'lucide-react';
+import { Heart, LifeBuoy, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils/helpers';
+import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
-import { openSettingsExternalLink } from './externalLinks';
 
 const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
 const DISCORD_INVITE = 'https://discord.gg/76UYpxXWW7';
@@ -57,22 +56,13 @@ export default function SupportSection({ className }: SettingsSectionProps) {
     }
   };
 
-  const handleOpenExternal = (url: string) => {
-    void openSettingsExternalLink(url);
-  };
-
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div>
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <LifeBuoy className="h-5 w-5" />
-          {t('settings.tabs.support')}
-        </h3>
-        <p className="text-sm text-muted-foreground">{t('settings.support.reportDescription')}</p>
-      </div>
-
-      <Separator />
+      <SettingsHeader
+        icon={LifeBuoy}
+        title={t('settings.tabs.support')}
+        description={t('settings.support.reportDescription')}
+      />
 
       {/* Report a Problem */}
       <div className="space-y-3">
@@ -116,33 +106,13 @@ export default function SupportSection({ className }: SettingsSectionProps) {
       <div className="space-y-3">
         <h3 className="xp-section-heading">{t('settings.support.community')}</h3>
         <div className="space-y-1">
-          <Button
-            variant="ghost"
-            onClick={() => handleOpenExternal(GITHUB_ISSUES)}
-            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
-          >
-            <span className="min-w-0 truncate">{t('settings.about.reportIssue')}</span>
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleOpenExternal(DISCORD_INVITE)}
-            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
-          >
-            <span className="min-w-0 truncate">{t('settings.support.discord')}</span>
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleOpenExternal('https://ko-fi.com/A0A21V3IZZ')}
-            className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
-          >
-            <span className="flex min-w-0 items-center gap-1.5">
-              <Heart className="h-3.5 w-3.5 text-red-400" />
-              <span className="truncate">{t('settings.about.supportProject')}</span>
-            </span>
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-          </Button>
+          <SettingsLinkRow label={t('settings.about.reportIssue')} href={GITHUB_ISSUES} />
+          <SettingsLinkRow label={t('settings.support.discord')} href={DISCORD_INVITE} />
+          <SettingsLinkRow
+            label={t('settings.about.supportProject')}
+            href="https://ko-fi.com/A0A21V3IZZ"
+            leadingIcon={<Heart className="h-3.5 w-3.5 text-red-400" />}
+          />
         </div>
       </div>
 
@@ -151,19 +121,13 @@ export default function SupportSection({ className }: SettingsSectionProps) {
       {/* Privacy */}
       <div className="space-y-3">
         <h3 className="xp-section-heading">{t('settings.support.privacy')}</h3>
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">{t('settings.about.crashReports')}</p>
-            <p className="text-sm text-muted-foreground">
-              {t('settings.about.crashReportsDescription')}
-            </p>
-          </div>
-          <Switch
-            checked={sendCrashReports}
-            onCheckedChange={handleCrashReportsChange}
-            disabled={isLoadingCrashReports}
-          />
-        </div>
+        <SettingsToggleRow
+          title={t('settings.about.crashReports')}
+          description={t('settings.about.crashReportsDescription')}
+          checked={sendCrashReports}
+          onCheckedChange={handleCrashReportsChange}
+          disabled={isLoadingCrashReports}
+        />
         <p className="text-sm text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
       </div>
     </div>
