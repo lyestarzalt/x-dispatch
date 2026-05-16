@@ -68,8 +68,23 @@ export default tseslint.config(
       'security/detect-unsafe-regex': 'off',
 
       // General rules
-      'no-console': 'off',
+      // CLAUDE.md: no console.* in shipped code — use logger.<scope>.<level>.
+      // Tests and scripts are opted out below.
+      'no-console': 'error',
       'prefer-const': 'error',
+    },
+  },
+
+  // no-console: tests are allowed to use console
+  {
+    files: [
+      '**/*.test.{ts,tsx}',
+      '**/*.e2e.{ts,tsx}',
+      '**/__tests__/**/*.{ts,tsx}',
+      'tests/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'no-console': 'off',
     },
   },
 
