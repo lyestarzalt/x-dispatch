@@ -139,7 +139,9 @@ export default function Map({ airports }: MapProps) {
   const bringNetworkLayersToTopRef = useRef<(() => void) | null>(null);
   const selectedICAORef = useRef<string | null>(null);
   const airportsRef = useRef<Airport[]>(airports);
-  airportsRef.current = airports;
+  useEffect(() => {
+    airportsRef.current = airports;
+  });
 
   // Stable callback for airport click - uses refs to access renderer functions
   const handleAirportClick = useCallback(async (icao: string, coords: [number, number]) => {

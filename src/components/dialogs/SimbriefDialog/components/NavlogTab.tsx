@@ -18,26 +18,34 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
 
   const fixes = data.navlog.fix;
 
-  // Process fixes to add cumulative data
+  // Process fixes to add cumulative data. The new react-hooks/immutability
+  // rule flags mutation captured by closures (`.map` callback reassigning an
+  // outer `let`), so use a plain for-loop where the mutation is direct.
   const processedFixes = useMemo(() => {
+    const result: Array<
+      (typeof fixes)[number] & {
+        cumulativeDistance: number;
+        isTopOfClimb: boolean;
+        isTopOfDescent: boolean;
+        index: number;
+      }
+    > = [];
     let cumulativeDistance = 0;
-
-    return fixes.map((fix, index) => {
+    for (let index = 0; index < fixes.length; index++) {
+      const fix = fixes[index]!;
       cumulativeDistance += parseFloat(fix.distance) || 0;
-
-      // Detect phase transitions
       const nextFix = fixes[index + 1];
       const isTopOfClimb = fix.stage === 'CLB' && nextFix?.stage === 'CRZ';
       const isTopOfDescent = fix.stage === 'CRZ' && nextFix?.stage === 'DSC';
-
-      return {
+      result.push({
         ...fix,
         cumulativeDistance,
         isTopOfClimb,
         isTopOfDescent,
         index,
-      };
-    });
+      });
+    }
+    return result;
   }, [fixes]);
 
   const formatTime = (seconds: string) => {

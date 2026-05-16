@@ -57,7 +57,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     />
   );
 
-  const Toolbar = () => (
+  const toolbar = (
     <div className="flex flex-wrap items-center gap-2">
       <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
         <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
@@ -74,7 +74,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar />
+        {toolbar}
         <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       </div>
     );
@@ -86,7 +86,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar />
+        {toolbar}
         <SettingsEmptyState message={t('settings.logs.empty.noPath')} />
       </div>
     );
@@ -96,7 +96,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar />
+        {toolbar}
         <SettingsEmptyState message={t('settings.logs.empty.noLog')} />
       </div>
     );
@@ -106,7 +106,7 @@ export function LogsSection({ active }: LogsSectionProps) {
     return (
       <div className="space-y-6">
         {Header}
-        <Toolbar />
+        {toolbar}
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
           <p className="font-mono text-xs text-destructive">{result.message}</p>
         </div>
@@ -132,7 +132,7 @@ export function LogsSection({ active }: LogsSectionProps) {
         ) : (
           <span />
         )}
-        <Toolbar />
+        {toolbar}
       </div>
 
       <div className="flex flex-col gap-2">

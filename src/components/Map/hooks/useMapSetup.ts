@@ -101,14 +101,17 @@ export function useMapSetup({
   const vatsimPopupRef = useRef<maplibregl.Popup | null>(null);
 
   const onAirportClickRef = useRef(onAirportClick);
-  onAirportClickRef.current = onAirportClick;
 
   const { setCurrentZoom, setMapBearing } = useMapStore();
 
   const setCurrentZoomRef = useRef(setCurrentZoom);
   const setMapBearingRef = useRef(setMapBearing);
-  setCurrentZoomRef.current = setCurrentZoom;
-  setMapBearingRef.current = setMapBearing;
+
+  useEffect(() => {
+    onAirportClickRef.current = onAirportClick;
+    setCurrentZoomRef.current = setCurrentZoom;
+    setMapBearingRef.current = setMapBearing;
+  });
 
   useEffect(() => {
     if (!mapContainerRef.current) return;

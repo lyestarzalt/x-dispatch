@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
@@ -213,7 +213,11 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
     return 'text-warning bg-warning/10 border-warning/30';
   };
 
-  const HazardIcon = getHazardIcon(String(sigmet.hazard ?? ''));
+  // Use createElement instead of assigning to a PascalCase variable so the
+  // react-hooks/static-components rule doesn't think we're defining a new
+  // component during render — we're just holding a reference to an existing
+  // module-scope lucide icon.
+  const hazardIcon = getHazardIcon(String(sigmet.hazard ?? ''));
   const colorClasses = getHazardColor(String(sigmet.qualifier ?? sigmet.hazard ?? ''));
 
   return (
@@ -226,7 +230,8 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
           )}
         >
           <div className="flex items-center gap-2">
-            <HazardIcon className="h-4 w-4" />
+            {/* eslint-disable-next-line i18next/no-literal-string */}
+            {createElement(hazardIcon, { className: 'h-4 w-4' })}
             <span className="text-sm font-medium uppercase">
               {sigmet.qualifier} {sigmet.hazard}
             </span>

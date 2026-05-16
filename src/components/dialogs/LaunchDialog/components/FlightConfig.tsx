@@ -119,6 +119,9 @@ export function FlightConfig({
 
   useEffect(() => {
     if (!useRealWorldTime || !airportCoords) return;
+    // Refresh immediately when toggled on so the user isn't stuck with the
+    // previous frozen value for up to a minute.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentTime(new Date());
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(interval);

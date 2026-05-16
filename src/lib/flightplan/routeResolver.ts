@@ -210,7 +210,7 @@ export function resolveRoute(
     }
 
     // Try to resolve the fix
-    let coords: Coordinates | null = null;
+    let coords: Coordinates | null;
     let resolvedType = tokenType;
 
     // Use last known position or departure for proximity

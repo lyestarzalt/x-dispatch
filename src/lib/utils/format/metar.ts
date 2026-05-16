@@ -336,7 +336,7 @@ function generateHumanReadable(metar: DecodedMETAR): string {
 
   // Wind
   if (metar.wind) {
-    let windStr = '';
+    let windStr: string;
     if (metar.wind.direction === 'VRB') {
       windStr = `Variable winds at ${metar.wind.speed}`;
     } else if (metar.wind.speed === 0) {
@@ -542,7 +542,6 @@ export function decodeMetar(raw: string): DecodedMETAR {
       metar.altimeter = alt.value;
       metar.altimeterUnit = alt.unit;
     }
-    idx++;
   }
 
   // Everything after RMK is remarks

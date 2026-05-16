@@ -386,7 +386,7 @@ export class InstallerManager {
     const iniPath = path.join(this.xplanePath, 'Custom Scenery', 'scenery_packs.ini');
 
     // Read existing content
-    let content = '';
+    let content: string;
     if (fs.existsSync(iniPath)) {
       content = fs.readFileSync(iniPath, 'utf-8');
     } else {

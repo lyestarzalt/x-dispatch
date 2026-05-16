@@ -56,16 +56,19 @@ export default function TaxiRouteInline() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Hoist optional chain so the useMemo dep is a plain identifier — the
+  // React Compiler can't statically preserve `[obj?.prop]` form.
+  const runways = airport?.runways;
   const runwayEnds = useMemo(() => {
-    if (!airport?.runways) return [];
+    if (!runways) return [];
     const ends: { name: string; lat: number; lon: number }[] = [];
-    for (const rwy of airport.runways) {
+    for (const rwy of runways) {
       for (const end of rwy.ends) {
         ends.push({ name: end.name, lat: end.latitude, lon: end.longitude });
       }
     }
     return ends.sort((a, b) => a.name.localeCompare(b.name));
-  }, [airport?.runways]);
+  }, [runways]);
 
   // Both directions use `startPosition` (the gate selected in the launcher)
   // as the gate endpoint. Departure routes gate → runway, arrival routes

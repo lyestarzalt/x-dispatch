@@ -46,10 +46,14 @@ export function EditFmsTargetDialog({
 
   useEffect(() => {
     if (open) {
+      // Reset form fields when the dialog reopens with potentially-new initial
+      // values.
+      /* eslint-disable react-hooks/set-state-in-effect */
       setFormatKey(initial?.formatKey ?? FMS_FORMATS[0]!.key);
       setLabel(initial?.label ?? FMS_FORMATS[0]!.label);
       setLabelEdited(!!initial);
       setFolderPath(initial?.folderPath ?? '');
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open, initial]);
 

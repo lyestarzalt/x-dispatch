@@ -907,14 +907,15 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
     }
   }, [data.destination.metar]);
 
+  const alternateMetarRaw = data.alternate?.metar;
   const altMetar = useMemo(() => {
-    if (!data.alternate?.metar) return null;
+    if (!alternateMetarRaw) return null;
     try {
-      return parseMetar(data.alternate.metar);
+      return parseMetar(alternateMetarRaw);
     } catch {
       return null;
     }
-  }, [data.alternate?.metar]);
+  }, [alternateMetarRaw]);
 
   return (
     <div className="space-y-4">

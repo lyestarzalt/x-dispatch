@@ -18,7 +18,8 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
   const detached = useDebugStore((s) => s.detached);
   const closePanel = useDebugStore((s) => s.closePanel);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const fpsRef = useRef({ frames: 0, lastTime: performance.now(), fps: 0 });
+  // lastTime starts at 0; the first onRender call seeds it from performance.now().
+  const fpsRef = useRef({ frames: 0, lastTime: 0, fps: 0 });
 
   const hasLayersOpen = detached.some((d) => d.id === 'layers');
 

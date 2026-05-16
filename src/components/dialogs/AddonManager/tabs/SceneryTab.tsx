@@ -148,9 +148,11 @@ export function SceneryTab() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  // Sync local state when remote data changes
+  // Sync local state when remote data changes. We need a local fork so the
+  // user can stage reorders/toggles before saving back.
   useEffect(() => {
     if (entries.length > 0 && !hasUnsavedChanges) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalEntries(entries);
     }
   }, [entries, hasUnsavedChanges]);

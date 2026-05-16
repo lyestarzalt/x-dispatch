@@ -66,7 +66,7 @@ function deleteStaleDb(fingerprint: string): void {
   if (!fs.existsSync(dbPath)) return;
 
   const versionPath = dbPath + '.version';
-  let stored = '';
+  let stored: string;
 
   try {
     stored = fs.existsSync(versionPath) ? fs.readFileSync(versionPath, 'utf-8').trim() : '';

@@ -40,13 +40,16 @@ export function CompanionAppEditDialog({
 
   useEffect(() => {
     if (!open) return;
+    // Reset form fields when the dialog reopens with potentially-new initial
+    // values. `initial` intentionally excluded; we re-seed only on open.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setName(initial.name ?? '');
     setExePath(initial.exePath ?? '');
     setArgs(initial.args ?? '');
     setCwd(initial.cwd ?? '');
     setAutoLaunch(initial.autoLaunch ?? false);
     setDelaySec(initial.delayBeforeXPlaneSec ?? 0);
-    // initial intentionally excluded; we re-seed only when the dialog opens.
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const browseExe = async () => {

@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { cn } from '@/lib/utils/helpers';
 
 interface AppLogoProps {
@@ -15,8 +16,10 @@ const sizeClasses = {
 };
 
 export function AppLogo({ size = 'md', className, withBackground = false }: AppLogoProps) {
-  // Unique IDs to avoid conflicts when multiple instances are rendered
-  const id = Math.random().toString(36).slice(2, 8);
+  // Unique IDs to avoid conflicts when multiple instances are rendered.
+  // Strip colons from useId() output — they're valid in HTML/SVG ids but
+  // break some CSS-selector contexts.
+  const id = useId().replace(/:/g, '');
 
   return (
     <svg

@@ -46,8 +46,8 @@ export function parseSceneryPacksIni(
       continue;
     }
 
-    let enabled = true;
-    let sceneryPath = '';
+    let enabled: boolean;
+    let sceneryPath: string;
 
     if (line.startsWith(SCENERY_PACK_DISABLED_PREFIX)) {
       enabled = false;

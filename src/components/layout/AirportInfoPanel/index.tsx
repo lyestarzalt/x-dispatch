@@ -59,8 +59,11 @@ export default function AirportInfoPanel({
   useEffect(() => {
     // Only react to NEW selections, not initial mount
     if (selectedStartPosition && selectedStartPosition !== prevPositionRef.current) {
+      // Syncing panel UI with an external (map-driven) selection event.
+      /* eslint-disable react-hooks/set-state-in-effect */
       setActiveTab('start');
       if (isCollapsed) setIsCollapsed(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
     prevPositionRef.current = selectedStartPosition;
   }, [selectedStartPosition, isCollapsed]);

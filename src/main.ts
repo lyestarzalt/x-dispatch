@@ -767,7 +767,7 @@ function registerIpcHandlers() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       logger.main.error(`browseForPath: dialog failed - ${errorMsg}`, err);
-      throw new Error(`Failed to open folder picker: ${errorMsg}`);
+      throw new Error(`Failed to open folder picker: ${errorMsg}`, { cause: err });
     }
   });
 

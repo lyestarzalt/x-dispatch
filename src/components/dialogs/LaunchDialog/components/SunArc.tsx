@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SunCalc from 'suncalc';
 import tzlookup from 'tz-lookup';
 import { Slider } from '@/components/ui/slider';
 import { formatZulu } from '@/lib/utils/format';
+import { useThemeStore } from '@/stores/themeStore';
 
 interface SunArcProps {
   timeOfDay: number;
@@ -110,17 +111,16 @@ function buildTraversed(hour: number, rise: number, set: number): string {
 
 /* Twinkling stars — only rendered at night */
 function Stars({ opacity, C }: { opacity: number; C: Palette }) {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 15 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H * 0.45 + H * 0.02,
-        r: Math.random() * 1 + 0.3,
-        phase: Math.random() * Math.PI * 2,
-        speed: Math.random() * 0.5 + 0.3,
-        base: Math.random() * 0.25 + 0.4,
-      })),
-    []
+  // Lazy useState initializer runs once on mount; impure code is allowed here.
+  const [stars] = useState(() =>
+    Array.from({ length: 15 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H * 0.45 + H * 0.02,
+      r: Math.random() * 1 + 0.3,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.5 + 0.3,
+      base: Math.random() * 0.25 + 0.4,
+    }))
   );
   const [tick, setTick] = useState(0);
 
@@ -156,12 +156,16 @@ function Stars({ opacity, C }: { opacity: number; C: Palette }) {
 
 export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcProps) {
   const { t } = useTranslation();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const C = useMemo(() => {
-    const el = rootRef.current ?? document.documentElement;
-    return readPalette(el);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rootRef.current]);
+  // CSS vars cascade from :root, so reading from documentElement matches what
+  // any descendant would resolve to. Re-read on theme switch.
+  const theme = useThemeStore((s) => s.theme);
+  const [C, setC] = useState<Palette>(() => readPalette(document.documentElement));
+  useEffect(() => {
+    // Re-read palette when the user toggles light/dark — CSS vars on
+    // documentElement change with the theme class on :root.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setC(readPalette(document.documentElement));
+  }, [theme]);
 
   const { timezone, sunriseHours, sunsetHours, localTime, zuluTime, dateStr } = useMemo(() => {
     const tz = tzlookup(latitude, longitude) || 'UTC';
@@ -228,7 +232,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
   );
 
   return (
-    <div ref={rootRef} className="space-y-2">
+    <div className="space-y-2">
       {/* SVG arc visualization — bleeds to section edges */}
       <div className="-mx-4 overflow-hidden">
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>

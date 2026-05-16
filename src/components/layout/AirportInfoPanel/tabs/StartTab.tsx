@@ -50,10 +50,12 @@ export default function StartTab({
     if (!selectedStartPosition || selectedStartPosition === prevPositionRef.current) return;
     prevPositionRef.current = selectedStartPosition;
 
-    // Switch sub-tab based on position type
+    // Switch sub-tab to match map-driven position selection.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (selectedStartPosition.type === 'ramp') setViewType('gates');
     else if (selectedStartPosition.isHelipad) setViewType('helipads');
     else if (selectedStartPosition.type === 'runway') setViewType('runways');
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     // Scroll to the selected item after sub-tab switch renders
     setTimeout(() => {

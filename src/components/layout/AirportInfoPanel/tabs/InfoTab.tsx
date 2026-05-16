@@ -130,35 +130,42 @@ export default function InfoTab() {
     ? { departures: traffic.departures, arrivals: traffic.arrivals }
     : null;
 
+  // Hoist optional-chained values so the useMemo deps are plain identifiers —
+  // the React Compiler's static analysis can't preserve `[obj?.prop]` form.
+  const runways = airport?.runways;
+  const ilsList = navData?.ils;
+  const gsList = navData?.gs;
+  const airportFrequencies = airport?.frequencies;
+
   // Runways sorted by length, descending
   const sortedRunways = useMemo(() => {
-    if (!airport?.runways) return [];
-    return [...airport.runways].sort(
+    if (!runways) return [];
+    return [...runways].sort(
       (a, b) => runwayLengthFeet(b.ends[0], b.ends[1]) - runwayLengthFeet(a.ends[0], a.ends[1])
     );
-  }, [airport?.runways]);
+  }, [runways]);
 
   // Map of runway end name → ILS navaid (so we can show an ILS chip per end)
   const ilsByEnd = useMemo(() => {
     const map = new Map<string, Navaid>();
-    if (!navData?.ils) return map;
-    for (const ils of navData.ils) {
+    if (!ilsList) return map;
+    for (const ils of ilsList) {
       if (ils.associatedRunway) map.set(ils.associatedRunway.toUpperCase(), ils);
     }
     return map;
-  }, [navData?.ils]);
+  }, [ilsList]);
 
   // Map of runway end name → glide-slope navaid. GS records are separate from
   // ILS/LOC and carry `glidepathAngle`; we join by `associatedRunway` so the
   // ILS detail card can show the GS angle.
   const gsByEnd = useMemo(() => {
     const map = new Map<string, Navaid>();
-    if (!navData?.gs) return map;
-    for (const gs of navData.gs) {
+    if (!gsList) return map;
+    for (const gs of gsList) {
       if (gs.associatedRunway) map.set(gs.associatedRunway.toUpperCase(), gs);
     }
     return map;
-  }, [navData?.gs]);
+  }, [gsList]);
 
   // Active runway resolution: ATIS is authoritative when available, wind
   // alignment is a heuristic fallback used only when no ATIS is published.
@@ -187,8 +194,8 @@ export default function InfoTab() {
   // dedupe by (type, frequency) to avoid rendering twin rows where one
   // attaches a live VATSIM controller and the other appears offline.
   const frequencies = useMemo(() => {
-    if (!airport?.frequencies) return [];
-    const sorted = [...airport.frequencies].sort(
+    if (!airportFrequencies) return [];
+    const sorted = [...airportFrequencies].sort(
       (a, b) => freqOrderRank(a.type) - freqOrderRank(b.type)
     );
     const seen = new Set<string>();
@@ -198,7 +205,7 @@ export default function InfoTab() {
       seen.add(key);
       return true;
     });
-  }, [airport?.frequencies]);
+  }, [airportFrequencies]);
 
   // Merge static apt.dat frequencies with live VATSIM rows. Each static row
   // attaches the first matching VATSIM controller; unmatched VATSIM rows

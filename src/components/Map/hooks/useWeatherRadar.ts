@@ -150,6 +150,8 @@ export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarC
   useEffect(() => {
     if (!enabled) return;
 
+    // Initial fetch on enable — fetchRadarData internally calls setState.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRadarData();
 
     refetchRef.current = setInterval(fetchRadarData, REFETCH_INTERVAL);
@@ -188,6 +190,8 @@ export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarC
       clearInterval(animationRef.current);
       animationRef.current = null;
     }
+    // Disable-cleanup must reset play state to stay in sync with `enabled`.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsPlaying(false);
 
     const map = mapRef.current;
