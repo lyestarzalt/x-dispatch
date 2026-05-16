@@ -42,7 +42,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm run format:check",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test:run",
     "i18n:sync": "node scripts/sync-locales.mjs",
     "i18n:sync:dry": "node scripts/sync-locales.mjs --dry-run",
     "postinstall": "node -e \"try{require('fs').chmodSync(require('7zip-bin').path7za,0o755)}catch{}\"",
