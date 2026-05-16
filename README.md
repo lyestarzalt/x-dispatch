@@ -12,7 +12,7 @@
   <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest"><img src="https://img.shields.io/github/v/release/lyestarzalt/x-dispatch?style=flat-square&v=1" alt="Release"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/releases"><img src="https://img.shields.io/github/downloads/lyestarzalt/x-dispatch/total?style=flat-square&v=1" alt="Downloads"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lyestarzalt/x-dispatch?style=flat-square&v=1" alt="License"></a>
-  <a href="https://github.com/lyestarzalt/x-dispatch/actions"><img src="https://img.shields.io/github/actions/workflow/status/lyestarzalt/x-dispatch/check.yml?style=flat-square&label=checks&v=1" alt="CI"></a>
+  <a href="https://github.com/lyestarzalt/x-dispatch/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/lyestarzalt/x-dispatch/ci.yml?style=flat-square&label=ci&v=1" alt="CI"></a>
   <a href="https://discord.gg/76UYpxXWW7"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://ko-fi.com/lyestarzalt"><img src="https://img.shields.io/badge/Ko--fi-Donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
   <a href="https://hits.sh/github.com/lyestarzalt/x-dispatch/"><img src="https://hits.sh/github.com/lyestarzalt/x-dispatch.svg" alt="Hits"></a>
@@ -96,7 +96,7 @@ npm run typecheck     # TypeScript strict mode
 npm run lint          # ESLint
 npm run lint:fix      # auto-fix lint issues
 npm run format        # Prettier
-npm run check         # typecheck + lint + format (no tests)
+npm run check         # typecheck + lint + format + tests + migrations
 npm run test:run      # run Vitest once
 ```
 
