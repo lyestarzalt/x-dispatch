@@ -616,6 +616,16 @@
     "filterOther": "その他",
     "noGatesFound": "ゲートが見つかりません",
     "noFrequencies": "周波数がありません",
+    "tune": {
+      "active": "ACT",
+      "standby": "STBY",
+      "simOffline": "X-Plane が実行されていません",
+      "toast": {
+        "activeSet": "{{radio}} アクティブ → {{freq}}",
+        "standbySet": "{{radio}} スタンバイ → {{freq}}",
+        "failed": "{{radio}} を設定できませんでした"
+      }
+    },
     "noWeather": "気象データなし",
     "conditions": {
       "wind": "風",

@@ -616,6 +616,16 @@
     "filterOther": "OTHER GEAR",
     "noGatesFound": "NO BERTHS FOUND",
     "noFrequencies": "No frequencies available, matey",
+    "tune": {
+      "active": "ACT",
+      "standby": "STBY",
+      "simOffline": "X-Plane be not runnin', matey",
+      "toast": {
+        "activeSet": "{{radio}} active → {{freq}}, arrr!",
+        "standbySet": "{{radio}} standby → {{freq}}, savvy?",
+        "failed": "Couldn't tune {{radio}}, ye scallywag!"
+      }
+    },
     "noWeather": "No weather scrolls available, matey",
     "conditions": {
       "wind": "Wind o' the seas",

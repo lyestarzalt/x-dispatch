@@ -616,6 +616,16 @@
     "filterOther": "其他",
     "noGatesFound": "未找到登机口",
     "noFrequencies": "无可用频率",
+    "tune": {
+      "active": "主用",
+      "standby": "备用",
+      "simOffline": "X-Plane 未运行",
+      "toast": {
+        "activeSet": "{{radio}} 主用 → {{freq}}",
+        "standbySet": "{{radio}} 备用 → {{freq}}",
+        "failed": "无法调谐 {{radio}}"
+      }
+    },
     "noWeather": "无气象数据",
     "conditions": {
       "wind": "风",

@@ -18,6 +18,10 @@ interface ApiCapabilities {
 
 export class XPlaneRestClient {
   private port: number;
+  // Per X-Plane local web API docs: dataref id is stable within a session
+  // (even across aircraft load/unload). Caching skips the name→id lookup
+  // roundtrip on every setDataref/getDataref call after the first.
+  private datarefIdCache = new Map<string, number>();
 
   constructor(port: number = DEFAULT_PORT) {
     this.port = port;
@@ -25,6 +29,21 @@ export class XPlaneRestClient {
 
   private get baseUrl(): string {
     return `http://localhost:${this.port}/api/v3`;
+  }
+
+  private async resolveDatarefId(name: string): Promise<number | null> {
+    const cached = this.datarefIdCache.get(name);
+    if (cached !== undefined) return cached;
+    const response = await fetch(
+      `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(name)}&fields=id`,
+      { method: 'GET', headers: { Accept: 'application/json' } }
+    );
+    if (!response.ok) return null;
+    const body = await response.json();
+    const id = body.data?.[0]?.id;
+    if (typeof id !== 'number') return null;
+    this.datarefIdCache.set(name, id);
+    return id;
   }
 
   async isRunning(): Promise<boolean> {
@@ -83,19 +102,9 @@ export class XPlaneRestClient {
 
   async getDataref(datarefName: string): Promise<number | number[] | null> {
     try {
-      // Find dataref ID by name
-      const listResponse = await fetch(
-        `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(datarefName)}&fields=id`,
-        { method: 'GET', headers: { Accept: 'application/json' } }
-      );
+      const id = await this.resolveDatarefId(datarefName);
+      if (id === null) return null;
 
-      if (!listResponse.ok) return null;
-
-      const listData = await listResponse.json();
-      const id = listData.data?.[0]?.id;
-      if (!id) return null;
-
-      // Get value
       const valueResponse = await fetch(`${this.baseUrl}/datarefs/${id}/value`, {
         method: 'GET',
         headers: { Accept: 'application/json' },
@@ -114,19 +123,9 @@ export class XPlaneRestClient {
     value: number | number[]
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Find dataref ID by name
-      const listResponse = await fetch(
-        `${this.baseUrl}/datarefs?filter[name]=${encodeURIComponent(datarefName)}&fields=id`,
-        { method: 'GET', headers: { Accept: 'application/json' } }
-      );
+      const id = await this.resolveDatarefId(datarefName);
+      if (id === null) return { success: false, error: 'Dataref not found' };
 
-      if (!listResponse.ok) return { success: false, error: 'Dataref not found' };
-
-      const listData = await listResponse.json();
-      const id = listData.data?.[0]?.id;
-      if (!id) return { success: false, error: 'Dataref not found' };
-
-      // Set value
       const patchResponse = await fetch(`${this.baseUrl}/datarefs/${id}/value`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -134,6 +133,10 @@ export class XPlaneRestClient {
       });
 
       if (!patchResponse.ok) {
+        // A previously-cached id can go stale if the user restarts X-Plane
+        // on the same port without us noticing; drop the cache so the next
+        // attempt re-resolves it.
+        this.datarefIdCache.delete(datarefName);
         const error = await patchResponse.text();
         return { success: false, error };
       }
@@ -184,7 +187,7 @@ export class XPlaneRestClient {
   }
 
   clearCache(): void {
-    // No-op: reserved for future cache invalidation
+    this.datarefIdCache.clear();
   }
 }
 

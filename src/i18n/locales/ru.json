@@ -616,6 +616,16 @@
     "filterOther": "ДРУГОЕ",
     "noGatesFound": "ВЫХОДЫ НЕ НАЙДЕНЫ",
     "noFrequencies": "Нет доступных частот",
+    "tune": {
+      "active": "АКТ",
+      "standby": "STBY",
+      "simOffline": "X-Plane не запущен",
+      "toast": {
+        "activeSet": "{{radio}} активная → {{freq}}",
+        "standbySet": "{{radio}} резервная → {{freq}}",
+        "failed": "Не удалось настроить {{radio}}"
+      }
+    },
     "noWeather": "Нет данных о погоде",
     "conditions": {
       "wind": "Ветер",

@@ -84,6 +84,54 @@ export function useSetDataref() {
   });
 }
 
+export type ComRadio = 'COM1' | 'COM2';
+export type ComSlot = 'active' | 'standby';
+
+// X-Plane 12 8.33-kHz capable datarefs. All take an int in kHz
+// (e.g. 124850 for 124.850 MHz). Available since X-Plane 10.30.
+const COM_DATAREF: Record<ComRadio, Record<ComSlot, string>> = {
+  COM1: {
+    active: 'sim/cockpit2/radios/actuators/com1_frequency_hz_833',
+    standby: 'sim/cockpit2/radios/actuators/com1_standby_frequency_hz_833',
+  },
+  COM2: {
+    active: 'sim/cockpit2/radios/actuators/com2_frequency_hz_833',
+    standby: 'sim/cockpit2/radios/actuators/com2_standby_frequency_hz_833',
+  },
+};
+
+/**
+ * Parse a display frequency like "124.850" into the int kHz form
+ * X-Plane's *_hz_833 datarefs expect (124850). Returns null if the
+ * input doesn't look like a valid MHz frequency.
+ */
+export function freqStringToKhz(freq: string): number | null {
+  const trimmed = freq.trim();
+  if (!trimmed) return null;
+  const mhz = Number.parseFloat(trimmed);
+  if (!Number.isFinite(mhz)) return null;
+  const khz = Math.round(mhz * 1000);
+  // COM band is 118.000–136.975 MHz; reject anything outside it so we
+  // never silently write garbage to the radio dataref.
+  if (khz < 118_000 || khz > 137_000) return null;
+  return khz;
+}
+
+/**
+ * Tune one of the COM radios on the active aircraft.
+ */
+export function useTuneRadio() {
+  return useMutation({
+    mutationFn: async ({ radio, slot, freq }: { radio: ComRadio; slot: ComSlot; freq: string }) => {
+      const khz = freqStringToKhz(freq);
+      if (khz === null) {
+        return { success: false as const, error: 'invalid_frequency' };
+      }
+      return window.xplaneServiceAPI.setDataref(COM_DATAREF[radio][slot], khz);
+    },
+  });
+}
+
 /**
  * Activate a command
  */

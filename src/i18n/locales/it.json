@@ -616,6 +616,16 @@
     "filterOther": "ALTRO",
     "noGatesFound": "NESSUN GATE TROVATO",
     "noFrequencies": "Nessuna frequenza disponibile",
+    "tune": {
+      "active": "ATT",
+      "standby": "STBY",
+      "simOffline": "X-Plane non in esecuzione",
+      "toast": {
+        "activeSet": "{{radio}} attivo → {{freq}}",
+        "standbySet": "{{radio}} standby → {{freq}}",
+        "failed": "Impossibile sintonizzare {{radio}}"
+      }
+    },
     "noWeather": "Nessun dato meteo disponibile",
     "conditions": {
       "wind": "Vento",

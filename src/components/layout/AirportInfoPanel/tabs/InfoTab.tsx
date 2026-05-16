@@ -1,15 +1,9 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ChevronDown,
-  ChevronRight,
-  Copy,
-  ExternalLink,
-  PlaneLanding,
-  PlaneTakeoff,
-} from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
 import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -27,6 +21,12 @@ import {
   parseATISRunways,
   useVatsimQuery,
 } from '@/queries/useVatsimQuery';
+import {
+  type ComRadio,
+  type ComSlot,
+  useTuneRadio,
+  useXPlaneStatus,
+} from '@/queries/useXPlaneQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import type { Frequency, Runway, RunwayEnd } from '@/types/apt';
@@ -665,20 +665,13 @@ function FrequencyRow({
     !!row.staticName && row.staticName.trim().toUpperCase() !== row.label.toUpperCase();
   const hasAtisBody = !!live?.atisBody;
 
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (displayFreq) navigator.clipboard.writeText(displayFreq);
-  };
-
-  const onClick = hasAtisBody ? onToggle : handleCopy;
-
   return (
     <li>
       <Button
         variant="ghost"
-        onClick={onClick}
+        onClick={onToggle}
         className={cn(
-          'group h-auto w-full flex-col items-stretch gap-0 rounded-md px-2.5 py-1.5 text-left',
+          'h-auto w-full flex-col items-stretch gap-0 rounded-md px-2.5 py-1.5 text-left',
           live
             ? 'bg-cat-emerald/5 ring-1 ring-cat-emerald/25 hover:bg-cat-emerald/10'
             : 'bg-muted/20 hover:bg-muted/40'
@@ -713,22 +706,12 @@ function FrequencyRow({
             >
               {displayFreq}
             </span>
-            {hasAtisBody ? (
-              <ChevronDown
-                className={cn(
-                  'h-3 w-3 shrink-0 text-muted-foreground/60 transition-transform',
-                  expanded && 'rotate-180'
-                )}
-              />
-            ) : (
-              <Copy
-                className="h-3 w-3 shrink-0 text-muted-foreground/40 opacity-0 group-hover:opacity-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (displayFreq) navigator.clipboard.writeText(displayFreq);
-                }}
-              />
-            )}
+            <ChevronDown
+              className={cn(
+                'h-3 w-3 shrink-0 text-muted-foreground/60 transition-transform',
+                expanded && 'rotate-180'
+              )}
+            />
           </div>
         </div>
         {live && (
@@ -738,13 +721,106 @@ function FrequencyRow({
             <span className="truncate">{live.controllerName}</span>
           </div>
         )}
-        {hasAtisBody && expanded && (
-          <pre className="mt-1 whitespace-pre-wrap pl-[1.65rem] font-mono text-[11px] leading-relaxed text-muted-foreground">
-            {live?.atisBody}
-          </pre>
-        )}
       </Button>
+      {expanded && (
+        <div className="mt-1 space-y-2 rounded-md bg-muted/15 px-2.5 py-2">
+          <TuneStrip freq={displayFreq} onTuned={onToggle} />
+          {hasAtisBody && live?.atisBody && (
+            <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-muted-foreground">
+              {live.atisBody}
+            </pre>
+          )}
+        </div>
+      )}
     </li>
+  );
+}
+
+const TUNE_RADIOS: ReadonlyArray<ComRadio> = ['COM1', 'COM2'];
+const TUNE_SLOTS: ReadonlyArray<{ slot: ComSlot; labelKey: string; toastKey: string }> = [
+  {
+    slot: 'active',
+    labelKey: 'airportInfo.tune.active',
+    toastKey: 'airportInfo.tune.toast.activeSet',
+  },
+  {
+    slot: 'standby',
+    labelKey: 'airportInfo.tune.standby',
+    toastKey: 'airportInfo.tune.toast.standbySet',
+  },
+];
+
+function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
+  const { t } = useTranslation();
+  const status = useXPlaneStatus();
+  const tune = useTuneRadio();
+  const simReachable = status.data === true;
+
+  if (!freq) return null;
+
+  if (!simReachable) {
+    return (
+      <p className="text-center font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+        {t('airportInfo.tune.simOffline')}
+      </p>
+    );
+  }
+
+  const handleTune = async (radio: ComRadio, slot: ComSlot, toastKey: string) => {
+    const result = await tune.mutateAsync({ radio, slot, freq });
+    if (result.success) {
+      toast.success(t(toastKey, { radio, freq }));
+      onTuned();
+    } else {
+      toast.error(t('airportInfo.tune.toast.failed', { radio }), {
+        description: result.error,
+      });
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-1.5 gap-y-1">
+      {TUNE_SLOTS.map(({ slot, labelKey, toastKey }) => (
+        <Fragment key={slot}>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            {t(labelKey)}
+          </span>
+          {TUNE_RADIOS.map((radio) => (
+            <TuneButton
+              key={radio}
+              radio={radio}
+              pending={tune.isPending}
+              onClick={() => handleTune(radio, slot, toastKey)}
+            />
+          ))}
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
+function TuneButton({
+  radio,
+  pending,
+  onClick,
+}: {
+  radio: ComRadio;
+  pending: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={pending}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className="h-7 justify-center px-2 font-mono text-xs font-semibold"
+    >
+      {radio}
+    </Button>
   );
 }
 
