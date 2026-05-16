@@ -9,8 +9,28 @@ updates:
       prefix: "chore(deps)"
 
     ignore:
+      # @maplibre/maplibre-gl-style-spec pinned to 24.8.1 via package.json overrides.
+      # maplibre-gl 5.24.0 declares ^24.8.1 but npm resolves 24.8.2, which has a regression:
+      # it defines LayerSpecification, StyleSpecification, FilterSpecification,
+      # ExpressionSpecification, ProjectionSpecification, PropertyValueSpecification, etc.
+      # internally but forgot to export them. Without the pin, ~30 TS2459 errors cascade
+      # through maplibre-gl's own d.ts and any of our files that import these types.
+      # Remove only when (a) MapLibre publishes a fixed 24.8.x with the missing exports, OR
+      # (b) we upgrade to maplibre-gl v6 stable (ESM-only, requires import migration).
       - dependency-name: "@maplibre/maplibre-gl-style-spec"
+
+      # react-resizable-panels pinned to ^2.1.0.
+      # shadcn's resizable.tsx template uses the v3 API (PanelGroup, PanelResizeHandle).
+      # v4 renamed these to Group / Separator and dropped the old names entirely, so the
+      # shadcn template stops compiling on v4. The shadcn registry hasn't migrated yet.
+      # Bump only when shadcn ships a v4-compatible template; before bumping, run
+      # `npx shadcn diff resizable` and verify the new template uses v4 names.
       - dependency-name: "react-resizable-panels"
+
+      # @electron/fuses pinned to ^1.8.0.
+      # @electron-forge/plugin-fuses peerDepends on @electron/fuses ^1.0.0. Bumping to 2.x
+      # causes `npm install` to fail with ERESOLVE. Bump only after electron-forge ships a
+      # plugin-fuses release that accepts ^2.0.0.
       - dependency-name: "@electron/fuses"
 
     groups:
