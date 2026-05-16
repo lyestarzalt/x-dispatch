@@ -1,6 +1,73 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.8.3 - 2026-05-16
+
+### Features
+
+- **simbrief:** Reopen full briefing dialog from the compact panel by @lyestarzalt([f9eda1d](https://github.com/lyestarzalt/x-dispatch/commit/f9eda1d23e0b67af5fe4f78dc244d75fb4026617))
+- **settings/primitives:** Extract reusable section primitives by @lyestarzalt([0b7f839](https://github.com/lyestarzalt/x-dispatch/commit/0b7f8391ba6568c4bc104db3d6dfd439f0e8480a))
+- **settings/about:** Bring back the support-this-project link by @lyestarzalt([9a33425](https://github.com/lyestarzalt/x-dispatch/commit/9a33425b18776c2f3534ff5f52bfc9cee8e0a498))
+- **debug-overlay:** Collapsible JSON tree in state panel; resize sticks by @lyestarzalt([bd1d7e1](https://github.com/lyestarzalt/x-dispatch/commit/bd1d7e1d121afeb0f9ad339beb75a981359c17e5))
+- Improve startup loading progress by @lyestarzalt([e1d1b14](https://github.com/lyestarzalt/x-dispatch/commit/e1d1b1492042c882b22a04e7943f39d4d90e913d))
+
+### Bug Fixes
+
+- **vatsim,ivao:** Tear down pilot layer + deferred styledata callback on disable by @lyestarzalt([f0040b2](https://github.com/lyestarzalt/x-dispatch/commit/f0040b2a5e3de8c391e54ca6681b0dcd8704315f))
+- **settings/nav-data:** Drop violet accent on Custom Airports tile by @lyestarzalt([c884616](https://github.com/lyestarzalt/x-dispatch/commit/c884616390cd4659264a0cc1c1e57e74867cd3b1))
+- **settings/primitives:** A11y polish before migrations consume them by @lyestarzalt([5fc5f3f](https://github.com/lyestarzalt/x-dispatch/commit/5fc5f3fb955eaa4a3fc1e39f8dc4e16a23f3a10c))
+- **i18n:** Clean up locale wording by @lyestarzalt([2122eae](https://github.com/lyestarzalt/x-dispatch/commit/2122eaeecd6c085cb027baefe3eea96eb871e635))
+- Log main process failures by @lyestarzalt([f71cdc7](https://github.com/lyestarzalt/x-dispatch/commit/f71cdc749f05fa641a1b60fdd625960a49a21c09))
+
+### Refactor
+
+- **settings:** Flat-design pass on every dialog section by @lyestarzalt([74ebd6c](https://github.com/lyestarzalt/x-dispatch/commit/74ebd6c0f692d949845f00f0a57b8567f0a6762c))
+- **settings/about:** Consume primitives instead of inline shapes by @lyestarzalt([65259b1](https://github.com/lyestarzalt/x-dispatch/commit/65259b100e7492416a186194b219dfdce357a4df))
+- **settings/companion-apps:** Consume primitives, unify empty state by @lyestarzalt([b4163cb](https://github.com/lyestarzalt/x-dispatch/commit/b4163cb86e304677a93a527078ba6de9467a80d5))
+- **settings/simbrief:** Consume primitives, unify FMS empty state by @lyestarzalt([c6e3810](https://github.com/lyestarzalt/x-dispatch/commit/c6e381031b3ce6badf16fc14c850def00bfe56d6))
+- **settings/logs:** Consume primitives, unify all three empty states by @lyestarzalt([0c0bddc](https://github.com/lyestarzalt/x-dispatch/commit/0c0bddcd2420dd036bf6f0b0cf6215455bdac44a))
+- **settings/nav-data,x-plane:** Consume primitives by @lyestarzalt([08c038c](https://github.com/lyestarzalt/x-dispatch/commit/08c038c652e08941f7f2707ac958ef019254a440))
+- **settings/nav-data:** Drop category accent colours by @lyestarzalt([3439c14](https://github.com/lyestarzalt/x-dispatch/commit/3439c14fa80668887365441d6639316e4f722746))
+- **settings/companion-apps:** Use muted mono for exePath, not info by @lyestarzalt([1901d11](https://github.com/lyestarzalt/x-dispatch/commit/1901d110fbd97b2d3fef598c3134d1ddf7e8c806))
+- **settings/nav-data:** Drop "Current" badge, keep "Expired" only by @lyestarzalt([3e8c9e2](https://github.com/lyestarzalt/x-dispatch/commit/3e8c9e21a3ee86965d26f94a17a1fb89a5e4eb22))
+- **settings/nav-data:** Drop status badge entirely from data source row by @lyestarzalt([0635a7a](https://github.com/lyestarzalt/x-dispatch/commit/0635a7aa2f29f16a02be750227253d09cd6a6115))
+- **settings:** Drop inter-block separators, rely on space-y-6 by @lyestarzalt([4418828](https://github.com/lyestarzalt/x-dispatch/commit/4418828158e2d167b8d0f0e7c29fbebcc93147c9))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.8.2 by @github-actions[bot]([259dfd7](https://github.com/lyestarzalt/x-dispatch/commit/259dfd7248bd604aa8384584a5c0463510010a34))
+- Update CI badge by @lyestarzalt([7c3606e](https://github.com/lyestarzalt/x-dispatch/commit/7c3606e1911b8783064f16872a9e6971b7232b7d))
+
+### Miscellaneous
+
+- Align GPL-3.0-only messaging by @lyestarzalt([f39ed26](https://github.com/lyestarzalt/x-dispatch/commit/f39ed266c28441714bede1a66e293dcd23e4aebb))
+- **lint:** Enforce no-console, route stray console.warn through logger by @lyestarzalt([a9bbb04](https://github.com/lyestarzalt/x-dispatch/commit/a9bbb04d496ff2065e69290f5ff69870e12a93bd))
+- **scripts:** Include test:run in npm run check by @lyestarzalt([a432444](https://github.com/lyestarzalt/x-dispatch/commit/a432444f5713fdedc649a89d12b28bc92a24a519))
+- **deps:** Bump in-range patches and minors by @lyestarzalt([63171de](https://github.com/lyestarzalt/x-dispatch/commit/63171de6a1e9305c6e4bb51441fc7eb0bf6dbe03))
+- **deps:** Bump safe major devDeps by @lyestarzalt([1c51b83](https://github.com/lyestarzalt/x-dispatch/commit/1c51b83efd761c3a9ef3064740579e78fb200257))
+- **deps:** Bump eslint 9 -> 10, eslint-plugin-react-hooks 5 -> 7 by @lyestarzalt([dc4055b](https://github.com/lyestarzalt/x-dispatch/commit/dc4055b28aa65d2884c59f0ad0ee6f1dc388aba1))
+- **deps:** Bump @vitejs/plugin-react 4 -> 5 by @lyestarzalt([ad25c23](https://github.com/lyestarzalt/x-dispatch/commit/ad25c235cf0595bcc203880b4a58ffc2ca66c24d))
+- **deps:** Bump electron 40 -> 42 by @lyestarzalt([76e3132](https://github.com/lyestarzalt/x-dispatch/commit/76e3132d9fdef14a98489b1d517be00479f9612c))
+- **deps:** Bump lucide-react 0.474 -> 1.16 by @lyestarzalt([8d024c4](https://github.com/lyestarzalt/x-dispatch/commit/8d024c4025a1d2ba8a40b2a7c9449679aa44dd16))
+- **deps:** Bump three, eslint plugins, @types/*, and dev tools by @lyestarzalt([bc8d6b8](https://github.com/lyestarzalt/x-dispatch/commit/bc8d6b86645f54528359851d20dc403f1fc4fba6))
+- **deps:** Bump vite 6 -> 7 by @lyestarzalt([0e8b5f6](https://github.com/lyestarzalt/x-dispatch/commit/0e8b5f6c0bbd5dd40bec78ae81dbebedbfa442d9))
+- **ci:** Split dependabot into minors-batch + per-major PRs by @lyestarzalt([a2d069c](https://github.com/lyestarzalt/x-dispatch/commit/a2d069c1c00d92fd031201419c71b281484a8357))
+- **ci:** Annotate dependabot ignores with pin reasons by @lyestarzalt([e616ccf](https://github.com/lyestarzalt/x-dispatch/commit/e616ccf4a7b0d66602c1fa68c7e7a644311b2971))
+
+### CI/CD
+
+- Streamline project checks by @lyestarzalt([2daa347](https://github.com/lyestarzalt/x-dispatch/commit/2daa347ef12ba7bff5b3a3369fe548055e572dda))
+
+### Release
+
+- 1.8.3 by @github-actions[bot]([58a00f7](https://github.com/lyestarzalt/x-dispatch/commit/58a00f7425c1e07ad981aa8dd3167b75c143aae8))
+
+### I18n
+
+- Polish pirate locale by @lyestarzalt([2e6132e](https://github.com/lyestarzalt/x-dispatch/commit/2e6132e639a4b49077883ef544e66c9a49b76987))
+- Enforce no-literal-string lint and translate 10 locales by @lyestarzalt([7518da1](https://github.com/lyestarzalt/x-dispatch/commit/7518da1cbc2be2eef9dedc9f8ca5e36a5d61bb5a))
+
+
 ## v1.8.2 - 2026-05-11
 
 ### Bug Fixes
