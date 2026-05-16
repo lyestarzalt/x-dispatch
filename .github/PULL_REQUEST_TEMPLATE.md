@@ -1,18 +1,22 @@
 ## Summary
 
-Brief description of changes.
+What changed and why?
 
 ## Changes
 
-- Change 1
-- Change 2
+-
+
+## Testing
+
+-
 
 ## Related Issues
 
-Fixes #(issue number)
+Fixes #
 
 ## Checklist
 
-- [ ] Code passes `npm run check`
-- [ ] Changes are tested locally
+- [ ] Code passes CI checks
+- [ ] Drizzle migrations are generated if database schema changed
+- [ ] Affected flow was tested locally
 - [ ] Commit messages follow conventional commits
