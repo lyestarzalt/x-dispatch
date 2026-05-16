@@ -82,7 +82,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.9",
-    "electron": "^40.0.0",
+    "electron": "^42.1.0",
     "eslint": "^10.4.0",
     "eslint-plugin-i18next": "^6.1.4",
     "eslint-plugin-react-hooks": "^7.1.1",
