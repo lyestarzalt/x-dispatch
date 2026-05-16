@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { DetachedPanel } from './types';
 import { TABS } from './types';
 import { useDrag } from './useDrag';
@@ -17,12 +18,22 @@ export function FloatingPanel({
 }) {
   const { pos, onMouseDown } = useDrag({ x: panel.x, y: panel.y });
   const label = TABS.find((t) => t.id === panel.id)?.label ?? panel.id;
-  const width = TAB_WIDTHS[panel.id] ?? 320;
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Seed width/height once via the DOM so subsequent React re-renders (driven
+  // by drag pos updates and child polling) don't overwrite the user's resize.
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el || el.style.width) return;
+    el.style.width = `${TAB_WIDTHS[panel.id] ?? 320}px`;
+    el.style.height = 'auto';
+  }, [panel.id]);
 
   return (
     <div
-      className="fixed z-[60] min-h-[120px] min-w-[280px] select-none resize overflow-auto rounded-lg border border-border/40 bg-background font-mono text-sm text-muted-foreground shadow-2xl"
-      style={{ left: pos.x, top: pos.y, width, height: 'auto', maxHeight: '70vh' }}
+      ref={panelRef}
+      className="fixed z-[60] max-h-[80vh] min-h-[120px] min-w-[280px] select-none resize overflow-auto rounded-lg border border-border/40 bg-background font-mono text-sm text-muted-foreground shadow-2xl"
+      style={{ left: pos.x, top: pos.y }}
     >
       <div
         onMouseDown={onMouseDown}

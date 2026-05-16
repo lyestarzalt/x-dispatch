@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { JsonTree } from '../JsonTree';
 
 /** Strip functions from a store state object for display */
 function stripFunctions(obj: object): Record<string, unknown> {
@@ -68,9 +69,9 @@ export function StatePanel() {
               <span className="ml-auto text-muted-foreground/40">{keys.length} keys</span>
             </button>
             {isExpanded && (
-              <pre className="ml-3 overflow-x-auto border-l-2 border-border/30 pl-2 text-sm leading-relaxed text-foreground/60">
-                {JSON.stringify(state, null, 2)}
-              </pre>
+              <div className="ml-3 border-l-2 border-border/30 pl-1">
+                <JsonTree value={state} />
+              </div>
             )}
           </div>
         );
