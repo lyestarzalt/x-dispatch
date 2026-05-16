@@ -258,7 +258,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
             content={({ active, payload }) => (
               <CustomTooltip
                 active={active}
-                payload={payload as Array<{ payload: ProfileDataPoint }> | undefined}
+                payload={payload as unknown as Array<{ payload: ProfileDataPoint }> | undefined}
               />
             )}
             cursor={{

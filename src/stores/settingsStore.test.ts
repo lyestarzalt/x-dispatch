@@ -6,6 +6,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.stubGlobal('window', {
   appAPI: { setZoomFactor: vi.fn() },
   matchMedia: () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
+  localStorage: {
+    getItem: vi.fn(() => null),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+    key: vi.fn(() => null),
+    length: 0,
+  },
 });
 Object.defineProperty(globalThis, 'document', {
   value: { documentElement: { style: {} } },
