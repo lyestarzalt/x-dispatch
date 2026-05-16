@@ -102,7 +102,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "追跡",
-    "pin": "ピンを置く",
+    "pin": "マーカーを置く",
     "pinCoordinates": "座標を入力",
     "pinLat": "緯度",
     "pinLon": "経度",
@@ -153,7 +153,7 @@
       "launch": "選択した位置でX-Planeを起動",
       "pin": "マップ上の任意の場所に航空機を配置",
       "launchDisabled": "最初に空港を選択してください",
-      "launchSelectPosition": "ゲート、滑走路を選択するか、マップにピンをドロップしてください",
+      "launchSelectPosition": "ゲートまたは滑走路を選択するか、地図にマーカーを置いてください",
       "settings": "設定を開く"
     }
   },
@@ -234,23 +234,23 @@
       "simbrief": "SimBrief",
       "navigation": "ナビゲーション",
       "vatsim": "VATSIM",
-      "support": "Support",
+      "support": "サポート",
       "about": "情報",
       "companionApps": "コンパニオンアプリ",
       "logs": "X-Plane ログ"
     },
     "support": {
-      "reportProblem": "Report a Problem",
-      "reportDescription": "Describe what went wrong. Your app state and recent actions are automatically included to help diagnose the issue.",
-      "messagePlaceholder": "What happened?",
-      "emailLabel": "Email",
-      "emailPlaceholder": "your@email.com (for follow-up)",
-      "sendReport": "Send Report",
-      "sendSuccess": "Thanks! Your report has been sent.",
-      "sendError": "Failed to send report. Please try again.",
-      "community": "Community",
+      "reportProblem": "問題を報告",
+      "reportDescription": "問題の内容を説明してください。診断に役立てるため、アプリの状態と最近の操作が自動的に含まれます。",
+      "messagePlaceholder": "何が起きましたか？",
+      "emailLabel": "メール",
+      "emailPlaceholder": "your@email.com（返信用）",
+      "sendReport": "レポートを送信",
+      "sendSuccess": "ありがとうございます。レポートを送信しました。",
+      "sendError": "レポートの送信に失敗しました。もう一度お試しください。",
+      "community": "コミュニティ",
       "discord": "Discord",
-      "privacy": "Privacy"
+      "privacy": "プライバシー"
     },
     "simbrief": {
       "description": "SimBriefからフライトプランをインポート",
@@ -349,16 +349,16 @@
       "name": "名前",
       "namePlaceholder": "例: ベータ、クリーンインストール、MOD入り",
       "nameRequired": "必須",
-      "launchArgs": "Launch arguments",
-      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
-      "launchArgsBrowse": "Browse args",
-      "launchArgsSearch": "Search arguments...",
-      "launchArgsNoResults": "No matching arguments",
-      "launchArgsPlaceholder": "--flag or --flag=value",
-      "launchArgsActive": "Active ({{count}})",
-      "launchArgsSavedTitle": "Saved args",
-      "launchArgsSessionSubtext": "Set via --xp-arg, applied this session only",
-      "launchArgsSessionTitle": "Session args (from CLI)"
+      "launchArgs": "起動引数",
+      "launchArgsDescription": "X-Plane の各コールドスタート時に渡す追加のコマンドライン引数",
+      "launchArgsBrowse": "引数を参照",
+      "launchArgsSearch": "引数を検索...",
+      "launchArgsNoResults": "一致する引数はありません",
+      "launchArgsPlaceholder": "--flag または --flag=value",
+      "launchArgsActive": "有効 ({{count}})",
+      "launchArgsSavedTitle": "保存済み引数",
+      "launchArgsSessionSubtext": "--xp-arg で設定。このセッションにのみ適用されます",
+      "launchArgsSessionTitle": "セッション引数（CLIから）"
     },
     "appearance": {
       "title": "外観",
@@ -372,8 +372,8 @@
       "mapStyleDescription": "背景のマップスタイルを選択",
       "unlimited": "無制限",
       "customStyleUrl": "カスタムURL",
-      "customStyleHint": "Paste a MapLibre style URL (e.g. https://tiles.openfreemap.org/styles/liberty) or a raster tile URL pattern (e.g. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
-      "advanced": "Advanced",
+      "customStyleHint": "MapLibreスタイルURL（例: https://tiles.openfreemap.org/styles/liberty）またはラスタタイルURLパターン（例: https://tile.openstreetmap.org/{z}/{x}/{y}.png）を貼り付けてください。",
+      "advanced": "詳細",
       "language": "言語",
       "units": "単位",
       "unitsDescription": "測定単位を設定",
@@ -450,9 +450,9 @@
       "clearCache": "キャッシュをクリアして再読み込み",
       "clearingCache": "クリア中...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "X-Plane標準",
+      "customAirportLabel": "カスタム空港",
+      "defaultLabel": "標準",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "VATSIMネットワークからのライブ航空交通",
@@ -691,7 +691,7 @@
       "winch": "ウインチ",
       "tug": "曳航機",
       "tugAircraft": "曳航機: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "曳航: {{type}}"
     },
     "gateway": {
       "updateAvailable": "Gatewayに新しいリリースがあります",
@@ -857,8 +857,8 @@
       "title": "塗装",
       "count": "塗装（{{count}}）",
       "default": "デフォルト",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "前のリバリー",
+      "nextLivery": "次のリバリー"
     },
     "specs": {
       "emptyWeight": "空虚重量",
@@ -1030,11 +1030,11 @@
       "clearAll": "すべてクリア",
       "empty": "最近のフライトなし",
       "emptyHint": "起動後、最新10件のフライトがここに表示されます",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "ライブ",
+      "coldAndDark": "コールド&ダーク",
+      "ready": "準備完了"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "重量と燃料"
   },
   "addonManager": {
     "title": "アドオンマネージャー",
@@ -1123,7 +1123,7 @@
       "toggle": "切り替え",
       "lock": "ロック",
       "unlock": "ロック解除",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} 個のアドオン · 有効 {{enabled}} · 無効 {{disabled}}",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "{{name}}を削除しました",
       "deleteFailed": "削除に失敗しました",
       "packages": "{{count}}個のシーナリーパッケージ",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} 個のパック · 有効 {{enabled}} · 無効 {{disabled}}",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
       "unsafeMode": "危険",
@@ -1190,15 +1190,15 @@
       "unlock": "ロック解除"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} 個のリバリー",
+      "viewLiveries": "リバリーを表示",
+      "unlock": "ロック解除",
+      "lockPrevent": "ロック (変更防止)",
+      "openFolder": "フォルダーを開く",
+      "deleteAircraft": "機体を削除"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "アドオンマネージャー"
     },
     "pluginEntry": {
       "scripts": "{{count}}件のスクリプト",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "問題が発生しました",
+    "description": "予期しないエラーが発生しました。再試行するか、アプリケーションを再読み込みできます。",
+    "errorDetails": "エラー詳細",
+    "tryAgain": "再試行",
+    "reloadApp": "アプリを再読み込み",
+    "sectionFailed": "{{name}} の読み込みに失敗しました",
+    "retry": "再試行"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "パネル",
+    "hideDebugMenu": "デバッグメニューを隠す (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,10 +1524,10 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "データ提供"
     }
   },
   "sunArc": {
-    "local": "local"
+    "local": "現地"
   }
 }

@@ -153,7 +153,7 @@
       "launch": "Set sail from the chosen berth",
       "pin": "Drop aircraft anywhere on the chart",
       "launchDisabled": "Choose an airport first",
-      "launchSelectPosition": "Choose a gate, runway, or drop a pin on the chart",
+      "launchSelectPosition": "Choose a berth, runway, or drop a mark on the chart",
       "settings": "Open ship's settings"
     }
   },
@@ -450,8 +450,8 @@
       "clearCache": "Clear Cache & Rechart",
       "clearingCache": "Clearin'...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
+      "xplaneDefaultLabel": "X-Plane default",
+      "customAirportLabel": "Custom airfield",
       "defaultLabel": "Default",
       "vatsim": {
         "title": "VATSIM",
@@ -857,8 +857,8 @@
       "title": "Paint Schemes",
       "count": "{{count}} liveries",
       "default": "Standard",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "Previous paint",
+      "nextLivery": "Next paint"
     },
     "specs": {
       "emptyWeight": "Bare",
@@ -1031,10 +1031,10 @@
       "empty": "No recent voyages",
       "emptyHint": "Yer last 10 flights will appear here after launching",
       "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "coldAndDark": "Cold 'n dark",
+      "ready": "Ready fer flight"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Heft & Grog"
   },
   "addonManager": {
     "title": "Addon Quartermaster",
@@ -1123,7 +1123,7 @@
       "toggle": "Hoist/strike",
       "lock": "Lock fast",
       "unlock": "Unbolt",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} addons · {{enabled}} aboard · {{disabled}} ashore",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "Scuttled {{name}}",
       "deleteFailed": "Failed ta delete scenery",
       "packages": "{{count}} scenery packs",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} packs · {{enabled}} aboard · {{disabled}} ashore",
       "unsavedChanges": "Not stowed",
       "safeMode": "Careful",
       "unsafeMode": "Free rein",
@@ -1190,15 +1190,15 @@
       "unlock": "Unbolt"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
+      "liveriesCount": "{{count}} paints",
+      "viewLiveries": "View paints",
       "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "lockPrevent": "Lock (stop changes)",
+      "openFolder": "Open chest",
+      "deleteAircraft": "Scuttle aircraft"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Addon hold"
     },
     "pluginEntry": {
       "scripts": "{{count}} script scrolls",
@@ -1504,13 +1504,13 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
+    "title": "Something went sideways",
+    "description": "An unexpected error struck. Try again or reload the app.",
     "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
+    "tryAgain": "Try again",
+    "reloadApp": "Reload app",
     "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "retry": "Try again"
   },
   "titleBar": {
     "version": "v{{version}}",
@@ -1524,7 +1524,7 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "Charts from"
     }
   },
   "sunArc": {

@@ -70,7 +70,7 @@
     "steps": {
       "airports": "Aeropuertos",
       "navaids": "Radioayudas",
-      "waypoints": "Waypoints",
+      "waypoints": "Puntos de ruta",
       "airspaces": "Espacios aéreos",
       "airways": "Aerovías"
     },
@@ -102,7 +102,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Seguir",
-    "pin": "Soltar pin",
+    "pin": "Colocar marcador",
     "pinCoordinates": "Introducir coordenadas",
     "pinLat": "Lat",
     "pinLon": "Lon",
@@ -153,7 +153,7 @@
       "launch": "Iniciar X-Plane con la posición seleccionada",
       "pin": "Colocar aeronave en cualquier lugar del mapa",
       "launchDisabled": "Selecciona primero un aeropuerto",
-      "launchSelectPosition": "Elige una puerta, pista, o coloca un pin en el mapa",
+      "launchSelectPosition": "Elige una puerta, una pista o coloca un marcador en el mapa",
       "settings": "Abrir ajustes"
     }
   },
@@ -450,9 +450,9 @@
       "clearCache": "Vaciar caché y recargar",
       "clearingCache": "Vaciando...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "Predeterminado de X-Plane",
+      "customAirportLabel": "Aeropuerto personalizado",
+      "defaultLabel": "Predeterminado",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Tráfico aéreo en vivo de la red VATSIM",
@@ -687,11 +687,11 @@
       "approach": "Aproximación",
       "tow": "Remolque",
       "distance": "Distancia",
-      "approachNm": "{{distance}} nm final",
+      "approachNm": "final a {{distance}} nm",
       "winch": "Torno",
       "tug": "Remolcador",
       "tugAircraft": "Avión remolcador: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "Remolque: {{type}}"
     },
     "gateway": {
       "updateAvailable": "Gateway tiene una versión más reciente",
@@ -857,8 +857,8 @@
       "title": "Libreas",
       "count": "Libreas ({{count}})",
       "default": "Por defecto",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "Librea anterior",
+      "nextLivery": "Siguiente librea"
     },
     "specs": {
       "emptyWeight": "Vacío",
@@ -1030,11 +1030,11 @@
       "clearAll": "Borrar todo",
       "empty": "Sin vuelos recientes",
       "emptyHint": "Tus últimos 10 vuelos aparecerán aquí después del lanzamiento",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "En directo",
+      "coldAndDark": "Frío y oscuro",
+      "ready": "Listo"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Peso y combustible"
   },
   "addonManager": {
     "title": "Gestor de addons",
@@ -1123,7 +1123,7 @@
       "toggle": "Activar/Desactivar",
       "lock": "Bloquear",
       "unlock": "Desbloquear",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} addons · {{enabled}} activos · {{disabled}} inactivos",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "{{name}} eliminado",
       "deleteFailed": "Error al eliminar",
       "packages": "{{count}} paquetes de escenario",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} paquetes · {{enabled}} activos · {{disabled}} inactivos",
       "unsavedChanges": "Sin guardar",
       "safeMode": "Seguro",
       "unsafeMode": "Inseguro",
@@ -1190,15 +1190,15 @@
       "unlock": "Desbloquear"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} libreas",
+      "viewLiveries": "Ver libreas",
+      "unlock": "Desbloquear",
+      "lockPrevent": "Bloquear (evitar cambios)",
+      "openFolder": "Abrir carpeta",
+      "deleteAircraft": "Eliminar avión"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Gestor de addons"
     },
     "pluginEntry": {
       "scripts": "{{count}} scripts",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "Algo salió mal",
+    "description": "Se produjo un error inesperado. Puedes intentarlo de nuevo o recargar la aplicación.",
+    "errorDetails": "Detalles del error",
+    "tryAgain": "Intentar de nuevo",
+    "reloadApp": "Recargar app",
+    "sectionFailed": "{{name}} no se pudo cargar",
+    "retry": "Reintentar"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "Paneles",
+    "hideDebugMenu": "Ocultar menú de depuración (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,7 +1524,7 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "Datos de"
     }
   },
   "sunArc": {

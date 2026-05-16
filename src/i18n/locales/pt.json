@@ -70,7 +70,7 @@
     "steps": {
       "airports": "Aeroportos",
       "navaids": "Auxílios de navegação",
-      "waypoints": "Waypoints",
+      "waypoints": "Pontos de rota",
       "airspaces": "Espaços aéreos",
       "airways": "Aerovias"
     },
@@ -102,7 +102,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Rastrear",
-    "pin": "Soltar pin",
+    "pin": "Colocar marcador",
     "pinCoordinates": "Inserir coordenadas",
     "pinLat": "Lat",
     "pinLon": "Lon",
@@ -153,7 +153,7 @@
       "launch": "Iniciar X-Plane com a posição selecionada",
       "pin": "Posicionar aeronave em qualquer lugar do mapa",
       "launchDisabled": "Selecione primeiro um aeroporto",
-      "launchSelectPosition": "Escolha um portão, pista, ou solte um pin no mapa",
+      "launchSelectPosition": "Escolha um portão, uma pista ou coloque um marcador no mapa",
       "settings": "Abrir configurações"
     }
   },
@@ -234,23 +234,23 @@
       "simbrief": "SimBrief",
       "navigation": "Navegação",
       "vatsim": "VATSIM",
-      "support": "Support",
+      "support": "Suporte",
       "about": "Sobre",
       "companionApps": "Apps complementares",
       "logs": "Registos X-Plane"
     },
     "support": {
-      "reportProblem": "Report a Problem",
-      "reportDescription": "Describe what went wrong. Your app state and recent actions are automatically included to help diagnose the issue.",
-      "messagePlaceholder": "What happened?",
+      "reportProblem": "Relatar um problema",
+      "reportDescription": "Descreva o que aconteceu. O estado do app e suas ações recentes são incluídos automaticamente para ajudar no diagnóstico.",
+      "messagePlaceholder": "O que aconteceu?",
       "emailLabel": "Email",
-      "emailPlaceholder": "your@email.com (for follow-up)",
-      "sendReport": "Send Report",
-      "sendSuccess": "Thanks! Your report has been sent.",
-      "sendError": "Failed to send report. Please try again.",
-      "community": "Community",
+      "emailPlaceholder": "seu@email.com (para retorno)",
+      "sendReport": "Enviar relatório",
+      "sendSuccess": "Obrigado! Seu relatório foi enviado.",
+      "sendError": "Falha ao enviar o relatório. Tente novamente.",
+      "community": "Comunidade",
       "discord": "Discord",
-      "privacy": "Privacy"
+      "privacy": "Privacidade"
     },
     "simbrief": {
       "description": "Importar planos de voo do SimBrief",
@@ -349,16 +349,16 @@
       "name": "Nome",
       "namePlaceholder": "ex. Beta, Instalação limpa, Modded",
       "nameRequired": "Obrigatório",
-      "launchArgs": "Launch arguments",
-      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
-      "launchArgsBrowse": "Browse args",
-      "launchArgsSearch": "Search arguments...",
-      "launchArgsNoResults": "No matching arguments",
-      "launchArgsPlaceholder": "--flag or --flag=value",
-      "launchArgsActive": "Active ({{count}})",
-      "launchArgsSavedTitle": "Saved args",
-      "launchArgsSessionSubtext": "Set via --xp-arg, applied this session only",
-      "launchArgsSessionTitle": "Session args (from CLI)"
+      "launchArgs": "Argumentos de inicialização",
+      "launchArgsDescription": "Argumentos extras da linha de comando passados ao X-Plane em cada inicialização fria",
+      "launchArgsBrowse": "Procurar argumentos",
+      "launchArgsSearch": "Pesquisar argumentos...",
+      "launchArgsNoResults": "Nenhum argumento correspondente",
+      "launchArgsPlaceholder": "--flag ou --flag=valor",
+      "launchArgsActive": "Ativos ({{count}})",
+      "launchArgsSavedTitle": "Argumentos salvos",
+      "launchArgsSessionSubtext": "Definidos via --xp-arg, aplicados apenas nesta sessão",
+      "launchArgsSessionTitle": "Argumentos da sessão (via CLI)"
     },
     "appearance": {
       "title": "Aparência",
@@ -372,8 +372,8 @@
       "mapStyleDescription": "Selecione um estilo de mapa para o fundo",
       "unlimited": "Ilimitado",
       "customStyleUrl": "URL personalizada",
-      "customStyleHint": "Paste a MapLibre style URL (e.g. https://tiles.openfreemap.org/styles/liberty) or a raster tile URL pattern (e.g. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
-      "advanced": "Advanced",
+      "customStyleHint": "Cole uma URL de estilo MapLibre (ex.: https://tiles.openfreemap.org/styles/liberty) ou um padrão de URL de tiles raster (ex.: https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
+      "advanced": "Avançado",
       "language": "Idioma",
       "units": "Unidades",
       "unitsDescription": "Configure as unidades de medida",
@@ -450,9 +450,9 @@
       "clearCache": "Limpar cache e recarregar",
       "clearingCache": "Limpando...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "Padrão do X-Plane",
+      "customAirportLabel": "Aeroporto personalizado",
+      "defaultLabel": "Padrão",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Tráfego aéreo ao vivo da rede VATSIM",
@@ -687,11 +687,11 @@
       "approach": "Aproximação",
       "tow": "Reboque",
       "distance": "Distância",
-      "approachNm": "{{distance}} nm final",
+      "approachNm": "final de {{distance}} nm",
       "winch": "Guincho",
       "tug": "Rebocador",
       "tugAircraft": "Avião rebocador: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "Reboque: {{type}}"
     },
     "gateway": {
       "updateAvailable": "Gateway tem uma versão mais recente",
@@ -857,8 +857,8 @@
       "title": "Pinturas",
       "count": "Pinturas ({{count}})",
       "default": "Padrão",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "Pintura anterior",
+      "nextLivery": "Próxima pintura"
     },
     "specs": {
       "emptyWeight": "Vazio",
@@ -1030,11 +1030,11 @@
       "clearAll": "Limpar tudo",
       "empty": "Nenhum voo recente",
       "emptyHint": "Seus últimos 10 voos aparecerão aqui após o lançamento",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "Ao vivo",
+      "coldAndDark": "Frio e desligado",
+      "ready": "Pronto"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Peso e combustível"
   },
   "addonManager": {
     "title": "Gerenciador de Addons",
@@ -1123,7 +1123,7 @@
       "toggle": "Alternar",
       "lock": "Bloquear",
       "unlock": "Desbloquear",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} addons · {{enabled}} ativos · {{disabled}} inativos",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "{{name}} excluído",
       "deleteFailed": "Falha ao excluir",
       "packages": "{{count}} pacotes de cenário",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} pacotes · {{enabled}} ativos · {{disabled}} inativos",
       "unsavedChanges": "Não salvo",
       "safeMode": "Seguro",
       "unsafeMode": "Inseguro",
@@ -1150,7 +1150,7 @@
       "dragHintUnsafe": "Modo seguro DESATIVADO - Você pode arrastar itens entre categorias. Isso pode causar problemas se feito incorretamente.",
       "saveOrder": "Salvar",
       "autoSort": "Auto-Ordenar",
-      "backups": "Backups ({{count}})",
+      "backups": "Cópias de segurança ({{count}})",
       "backupsTitle": "Backups de cenários",
       "backupsDescription": "Restaurar uma versão anterior do scenery_packs.ini",
       "noBackups": "Sem backups ainda. Backups são criados automaticamente ao salvar alterações.",
@@ -1190,15 +1190,15 @@
       "unlock": "Desbloquear"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} pinturas",
+      "viewLiveries": "Ver pinturas",
+      "unlock": "Desbloquear",
+      "lockPrevent": "Bloquear (impedir alterações)",
+      "openFolder": "Abrir pasta",
+      "deleteAircraft": "Excluir aeronave"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Gerenciador de addons"
     },
     "pluginEntry": {
       "scripts": "{{count}} scripts",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Você pode tentar novamente ou recarregar o aplicativo.",
+    "errorDetails": "Detalhes do erro",
+    "tryAgain": "Tentar novamente",
+    "reloadApp": "Recarregar app",
+    "sectionFailed": "Falha ao carregar {{name}}",
+    "retry": "Tentar novamente"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "Painéis",
+    "hideDebugMenu": "Ocultar menu de depuração (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,7 +1524,7 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "Dados de"
     }
   },
   "sunArc": {

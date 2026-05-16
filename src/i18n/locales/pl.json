@@ -102,7 +102,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Śledź",
-    "pin": "Upuść pin",
+    "pin": "Umieść znacznik",
     "pinCoordinates": "Wprowadź współrzędne",
     "pinLat": "Szer",
     "pinLon": "Dł",
@@ -153,7 +153,7 @@
       "launch": "Uruchom X-Plane z wybraną pozycją",
       "pin": "Umieść samolot w dowolnym miejscu na mapie",
       "launchDisabled": "Najpierw wybierz lotnisko",
-      "launchSelectPosition": "Wybierz bramkę, pas startowy lub upuść pin na mapie",
+      "launchSelectPosition": "Wybierz bramkę, pas startowy lub umieść znacznik na mapie",
       "settings": "Otwórz ustawienia"
     }
   },
@@ -450,9 +450,9 @@
       "clearCache": "Wyczyść pamięć podręczną i przeładuj",
       "clearingCache": "Czyszczenie...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "Domyślne X-Plane",
+      "customAirportLabel": "Lotnisko niestandardowe",
+      "defaultLabel": "Domyślne",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Ruch lotniczy na żywo z sieci VATSIM",
@@ -691,7 +691,7 @@
       "winch": "Wyciągarka",
       "tug": "Holownik",
       "tugAircraft": "Samolot holujący: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "Holowanie: {{type}}"
     },
     "gateway": {
       "updateAvailable": "Gateway ma nowszą wersję",
@@ -857,8 +857,8 @@
       "title": "Malowania",
       "count": "Malowania ({{count}})",
       "default": "Domyślne",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "Poprzednie malowanie",
+      "nextLivery": "Następne malowanie"
     },
     "specs": {
       "emptyWeight": "Pusty",
@@ -1030,11 +1030,11 @@
       "clearAll": "Wyczyść wszystko",
       "empty": "Brak ostatnich lotów",
       "emptyHint": "Twoje ostatnie 10 lotów pojawi się tutaj po uruchomieniu",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "Na żywo",
+      "coldAndDark": "Zimny i wyłączony",
+      "ready": "Gotowy"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Masa i paliwo"
   },
   "addonManager": {
     "title": "Menedżer dodatków",
@@ -1123,7 +1123,7 @@
       "toggle": "Przełącz",
       "lock": "Zablokuj",
       "unlock": "Odblokuj",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} dodatków · {{enabled}} wł. · {{disabled}} wył.",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "Usunięto {{name}}",
       "deleteFailed": "Nie udało się usunąć",
       "packages": "{{count}} pakietów scenerii",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} pakietów · {{enabled}} wł. · {{disabled}} wył.",
       "unsavedChanges": "Niezapisane",
       "safeMode": "Bezpieczny",
       "unsafeMode": "Niebezpieczny",
@@ -1190,15 +1190,15 @@
       "unlock": "Odblokuj"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} malowań",
+      "viewLiveries": "Pokaż malowania",
+      "unlock": "Odblokuj",
+      "lockPrevent": "Zablokuj (zapobiegaj zmianom)",
+      "openFolder": "Otwórz folder",
+      "deleteAircraft": "Usuń samolot"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Menedżer dodatków"
     },
     "pluginEntry": {
       "scripts": "{{count}} skryptów",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "Coś poszło nie tak",
+    "description": "Wystąpił nieoczekiwany błąd. Możesz spróbować ponownie albo przeładować aplikację.",
+    "errorDetails": "Szczegóły błędu",
+    "tryAgain": "Spróbuj ponownie",
+    "reloadApp": "Przeładuj aplikację",
+    "sectionFailed": "Nie udało się załadować {{name}}",
+    "retry": "Spróbuj ponownie"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "Panele",
+    "hideDebugMenu": "Ukryj menu debugowania (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,10 +1524,10 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "Dane z"
     }
   },
   "sunArc": {
-    "local": "local"
+    "local": "lokalny"
   }
 }

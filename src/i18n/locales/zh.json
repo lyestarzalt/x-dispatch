@@ -450,9 +450,9 @@
       "clearCache": "清除缓存并重新加载",
       "clearingCache": "正在清除...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "X-Plane 默认",
+      "customAirportLabel": "自定义机场",
+      "defaultLabel": "默认",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "来自 VATSIM 网络的实时空中交通",
@@ -691,7 +691,7 @@
       "winch": "绞车",
       "tug": "拖机",
       "tugAircraft": "拖曳飞机: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "拖曳: {{type}}"
     },
     "gateway": {
       "updateAvailable": "Gateway 有更新的版本",
@@ -857,8 +857,8 @@
       "title": "涂装",
       "count": "涂装 ({{count}})",
       "default": "默认",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "上一涂装",
+      "nextLivery": "下一涂装"
     },
     "specs": {
       "emptyWeight": "空重",
@@ -1030,11 +1030,11 @@
       "clearAll": "清除全部",
       "empty": "没有最近的飞行",
       "emptyHint": "启动后，您最近的10次飞行将显示在此处",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "实时",
+      "coldAndDark": "冷舱断电",
+      "ready": "就绪"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "重量与燃油"
   },
   "addonManager": {
     "title": "插件管理器",
@@ -1123,7 +1123,7 @@
       "toggle": "切换",
       "lock": "锁定",
       "unlock": "解锁",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} 个插件 · {{enabled}} 开 · {{disabled}} 关",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "已删除{{name}}",
       "deleteFailed": "删除失败",
       "packages": "{{count}} 个场景包",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} 个包 · {{enabled}} 开 · {{disabled}} 关",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
       "unsafeMode": "不安全",
@@ -1190,15 +1190,15 @@
       "unlock": "解锁"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} 个涂装",
+      "viewLiveries": "查看涂装",
+      "unlock": "解锁",
+      "lockPrevent": "锁定 (防止更改)",
+      "openFolder": "打开文件夹",
+      "deleteAircraft": "删除飞机"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "插件管理器"
     },
     "pluginEntry": {
       "scripts": "{{count}} 个脚本",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "出了点问题",
+    "description": "发生意外错误。你可以重试或重新加载应用。",
+    "errorDetails": "错误详情",
+    "tryAgain": "重试",
+    "reloadApp": "重新加载应用",
+    "sectionFailed": "{{name}} 加载失败",
+    "retry": "重试"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "面板",
+    "hideDebugMenu": "隐藏调试菜单 (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,10 +1524,10 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "数据来自"
     }
   },
   "sunArc": {
-    "local": "local"
+    "local": "本地"
   }
 }

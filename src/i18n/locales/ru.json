@@ -102,7 +102,7 @@
     "nav": "НАВ",
     "vatsim": "VATSIM",
     "track": "Отслеживать",
-    "pin": "Поставить точку",
+    "pin": "Поставить маркер",
     "pinCoordinates": "Ввести координаты",
     "pinLat": "Шир",
     "pinLon": "Дол",
@@ -153,7 +153,7 @@
       "launch": "Запустить X-Plane с выбранной позицией",
       "pin": "Разместить воздушное судно в любом месте карты",
       "launchDisabled": "Сначала выберите аэропорт",
-      "launchSelectPosition": "Выберите гейт, ВПП или поставьте точку на карте",
+      "launchSelectPosition": "Выберите гейт, ВПП или поставьте маркер на карте",
       "settings": "Открыть настройки"
     }
   },
@@ -450,9 +450,9 @@
       "clearCache": "Очистить кэш и перезагрузить",
       "clearingCache": "Очистка...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "Стандарт X-Plane",
+      "customAirportLabel": "Пользовательский аэропорт",
+      "defaultLabel": "По умолчанию",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Воздушное движение в реальном времени из сети VATSIM",
@@ -691,7 +691,7 @@
       "winch": "Лебёдка",
       "tug": "Буксировщик",
       "tugAircraft": "Самолёт-буксировщик: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "Буксировка: {{type}}"
     },
     "gateway": {
       "updateAvailable": "На Gateway есть более новый релиз",
@@ -857,8 +857,8 @@
       "title": "Ливреи",
       "count": "Ливреи ({{count}})",
       "default": "По умолчанию",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "Предыдущая ливрея",
+      "nextLivery": "Следующая ливрея"
     },
     "specs": {
       "emptyWeight": "Пустой",
@@ -1030,11 +1030,11 @@
       "clearAll": "Очистить всё",
       "empty": "Нет недавних полётов",
       "emptyHint": "Ваши последние 10 полётов появятся здесь после запуска",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "В реальном времени",
+      "coldAndDark": "Холодный и выключенный",
+      "ready": "Готов"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Масса и топливо"
   },
   "addonManager": {
     "title": "Менеджер дополнений",
@@ -1123,7 +1123,7 @@
       "toggle": "Переключить",
       "lock": "Заблокировать",
       "unlock": "Разблокировать",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} аддонов · {{enabled}} вкл. · {{disabled}} выкл.",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "{{name}} удалён",
       "deleteFailed": "Ошибка удаления",
       "packages": "{{count}} пакетов сценариев",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} пакетов · {{enabled}} вкл. · {{disabled}} выкл.",
       "unsavedChanges": "Не сохранено",
       "safeMode": "Безопасный",
       "unsafeMode": "Небезопасный",
@@ -1190,15 +1190,15 @@
       "unlock": "Разблокировать"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} ливрей",
+      "viewLiveries": "Показать ливреи",
+      "unlock": "Разблокировать",
+      "lockPrevent": "Заблокировать (запретить изменения)",
+      "openFolder": "Открыть папку",
+      "deleteAircraft": "Удалить самолёт"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Менеджер аддонов"
     },
     "pluginEntry": {
       "scripts": "{{count}} скриптов",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "Что-то пошло не так",
+    "description": "Произошла непредвиденная ошибка. Можно попробовать снова или перезагрузить приложение.",
+    "errorDetails": "Сведения об ошибке",
+    "tryAgain": "Попробовать снова",
+    "reloadApp": "Перезагрузить приложение",
+    "sectionFailed": "Не удалось загрузить {{name}}",
+    "retry": "Повторить"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "Панели",
+    "hideDebugMenu": "Скрыть меню отладки (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,10 +1524,10 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "Данные от"
     }
   },
   "sunArc": {
-    "local": "local"
+    "local": "местное"
   }
 }

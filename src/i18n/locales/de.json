@@ -102,7 +102,7 @@
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Verfolgen",
-    "pin": "Pin setzen",
+    "pin": "Markierung setzen",
     "pinCoordinates": "Koordinaten eingeben",
     "pinLat": "Lat",
     "pinLon": "Lon",
@@ -153,7 +153,7 @@
       "launch": "X-Plane mit ausgewählter Position starten",
       "pin": "Flugzeug auf der Karte platzieren",
       "launchDisabled": "Wählen Sie zuerst einen Flughafen",
-      "launchSelectPosition": "Wählen Sie ein Gate, eine Landebahn, oder setzen Sie einen Pin auf der Karte",
+      "launchSelectPosition": "Wählen Sie ein Gate oder eine Landebahn, oder setzen Sie eine Markierung auf der Karte",
       "settings": "Einstellungen öffnen"
     }
   },
@@ -314,7 +314,7 @@
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
-      "title": "X-Plane Installation",
+      "title": "X-Plane-Installation",
       "description": "Konfigurieren Sie Ihre X-Plane Datenquelle",
       "currentPath": "Aktueller Pfad",
       "detectedInstallations": "Erkannte Installationen",
@@ -450,9 +450,9 @@
       "clearCache": "Cache leeren & neu laden",
       "clearingCache": "Wird geleert...",
       "navigraphLabel": "Navigraph",
-      "xplaneDefaultLabel": "X-Plane Default",
-      "customAirportLabel": "Custom Airport",
-      "defaultLabel": "Default",
+      "xplaneDefaultLabel": "X-Plane-Standard",
+      "customAirportLabel": "Benutzerdefinierter Flughafen",
+      "defaultLabel": "Standard",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live-Flugverkehr aus dem VATSIM-Netzwerk",
@@ -691,7 +691,7 @@
       "winch": "Winde",
       "tug": "Schleppflugzeug",
       "tugAircraft": "Schleppflugzeug: Cessna 172 SP",
-      "towWith": "{{type}} tow"
+      "towWith": "Schlepp: {{type}}"
     },
     "gateway": {
       "updateAvailable": "Gateway hat eine neuere Version",
@@ -857,8 +857,8 @@
       "title": "Bemalungen",
       "count": "Bemalungen ({{count}})",
       "default": "Standard",
-      "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "previousLivery": "Vorherige Bemalung",
+      "nextLivery": "Nächste Bemalung"
     },
     "specs": {
       "emptyWeight": "Leer",
@@ -1030,11 +1030,11 @@
       "clearAll": "Alle löschen",
       "empty": "Keine letzten Flüge",
       "emptyHint": "Ihre letzten 10 Flüge erscheinen hier nach dem Start",
-      "timeLive": "Live",
-      "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "timeLive": "Livezeit",
+      "coldAndDark": "Kalt und dunkel",
+      "ready": "Bereit"
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Gewicht & Treibstoff"
   },
   "addonManager": {
     "title": "Addon-Manager",
@@ -1123,7 +1123,7 @@
       "toggle": "Umschalten",
       "lock": "Sperren",
       "unlock": "Entsperren",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} Addons · {{enabled}} ein · {{disabled}} aus",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1139,7 +1139,7 @@
       "deleted": "{{name}} gelöscht",
       "deleteFailed": "Löschen fehlgeschlagen",
       "packages": "{{count}} Szenerie-Pakete",
-      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} Pakete · {{enabled}} ein · {{disabled}} aus",
       "unsavedChanges": "Ungespeichert",
       "safeMode": "Sicher",
       "unsafeMode": "Unsicher",
@@ -1150,7 +1150,7 @@
       "dragHintUnsafe": "Sicherer Modus AUS - Sie können Elemente zwischen Kategorien ziehen. Bei falscher Handhabung können Szenerie-Probleme auftreten.",
       "saveOrder": "Speichern",
       "autoSort": "Auto-Sortieren",
-      "backups": "Backups ({{count}})",
+      "backups": "Sicherungen ({{count}})",
       "backupsTitle": "Szenerie-Backups",
       "backupsDescription": "Eine frühere Version von scenery_packs.ini wiederherstellen",
       "noBackups": "Noch keine Backups. Backups werden automatisch beim Speichern erstellt.",
@@ -1190,15 +1190,15 @@
       "unlock": "Entsperren"
     },
     "aircraftEntry": {
-      "liveriesCount": "{{count}} liveries",
-      "viewLiveries": "View liveries",
-      "unlock": "Unlock",
-      "lockPrevent": "Lock (prevent changes)",
-      "openFolder": "Open folder",
-      "deleteAircraft": "Delete aircraft"
+      "liveriesCount": "{{count}} Bemalungen",
+      "viewLiveries": "Bemalungen anzeigen",
+      "unlock": "Entsperren",
+      "lockPrevent": "Sperren (Änderungen verhindern)",
+      "openFolder": "Ordner öffnen",
+      "deleteAircraft": "Flugzeug löschen"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Addon-Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}} Skripte",
@@ -1418,7 +1418,7 @@
       "notamEffectiveRange": "Gültig: {{start}} - {{end}}"
     },
     "navlog": {
-      "colFix": "Fix / Airway",
+      "colFix": "Fix / Luftstraße",
       "colAltitude": "Höhe",
       "colWind": "Wind",
       "colGsMach": "GS / Mach",
@@ -1504,19 +1504,19 @@
     }
   },
   "errorBoundary": {
-    "title": "Something went wrong",
-    "description": "An unexpected error occurred. You can try again or reload the application.",
-    "errorDetails": "Error details",
-    "tryAgain": "Try Again",
-    "reloadApp": "Reload App",
-    "sectionFailed": "{{name}} failed to load",
-    "retry": "Retry"
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Ein unerwarteter Fehler ist aufgetreten. Sie können es erneut versuchen oder die Anwendung neu laden.",
+    "errorDetails": "Fehlerdetails",
+    "tryAgain": "Erneut versuchen",
+    "reloadApp": "App neu laden",
+    "sectionFailed": "{{name}} konnte nicht geladen werden",
+    "retry": "Wiederholen"
   },
   "titleBar": {
     "version": "v{{version}}",
     "debug": "debug",
-    "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "panels": "Bereiche",
+    "hideDebugMenu": "Debug-Menü ausblenden (⌃⇧D)"
   },
   "explorePanel": {
     "routes": {
@@ -1524,10 +1524,10 @@
     },
     "vatsimEvents": {
       "arrow": "→",
-      "dataFrom": "Data from"
+      "dataFrom": "Daten von"
     }
   },
   "sunArc": {
-    "local": "local"
+    "local": "lokal"
   }
 }
