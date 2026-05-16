@@ -4,12 +4,19 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    groups:
-      dependencies:
-        patterns:
-          - "*"
+    open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
+
+    ignore:
+      - dependency-name: "@maplibre/maplibre-gl-style-spec"
+      - dependency-name: "react-resizable-panels"
+      - dependency-name: "@electron/fuses"
+
+    groups:
+      patches-and-minors:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: github-actions
     directory: /
