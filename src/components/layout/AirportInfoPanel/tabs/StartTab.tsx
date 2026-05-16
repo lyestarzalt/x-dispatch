@@ -334,6 +334,7 @@ interface RunwayListProps {
 }
 
 type RunwayStartMode = 'threshold' | 'approach' | 'tow';
+const RUNWAY_START_MODES: readonly RunwayStartMode[] = ['threshold', 'approach', 'tow'];
 const APPROACH_DISTANCES = [1, 2, 3, 5, 8, 10, 15, 20] as const;
 const DEFAULT_APPROACH_DISTANCE = 3.5;
 
@@ -402,7 +403,7 @@ function RunwayList({
   if (filteredRunways.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground/60">
-        No runways matching "{searchQuery}"
+        {t('airportInfo.noRunwaysMatching', { query: searchQuery })}
       </p>
     );
   }
@@ -434,7 +435,10 @@ function RunwayList({
                 {e1.name}/{e2.name}
               </span>
               <span className="text-[10px] text-muted-foreground/50">
-                {lengthFt.toLocaleString()}'×{widthFt}'
+                {t('airportInfo.runwayDimensions', {
+                  length: lengthFt.toLocaleString(),
+                  width: widthFt,
+                })}
               </span>
             </button>
 
@@ -512,7 +516,7 @@ function RunwayStartOptions({
     <div className="mt-2 space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-3">
       {/* Mode toggle: Threshold / Approach / Tow */}
       <div className="flex items-center gap-1">
-        {(['threshold', 'approach', 'tow'] as const).map((m) => (
+        {RUNWAY_START_MODES.map((m) => (
           <Button
             key={m}
             variant="ghost"
@@ -628,6 +632,7 @@ function HelipadList({
   onSelect,
   selectedIndex,
 }: HelipadListProps) {
+  const { t } = useTranslation();
   // Filter helipads by search
   const filteredHelipads = useMemo(() => {
     if (!searchQuery.trim()) return helipads.map((h, i) => ({ helipad: h, originalIndex: i }));
@@ -638,13 +643,17 @@ function HelipadList({
   }, [helipads, searchQuery]);
 
   if (helipads.length === 0) {
-    return <p className="py-8 text-center text-sm text-muted-foreground/60">No helipads found</p>;
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground/60">
+        {t('airportInfo.noHelipads')}
+      </p>
+    );
   }
 
   if (filteredHelipads.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground/60">
-        No helipads matching "{searchQuery}"
+        {t('airportInfo.noHelipadsMatching', { query: searchQuery })}
       </p>
     );
   }

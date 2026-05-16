@@ -271,12 +271,11 @@ export function SceneryTab() {
         {/* Left: stats + status */}
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">
-            <span className="font-mono tabular-nums text-foreground">{stats.total}</span>
-            {' packs · '}
-            <span className="text-success">{stats.enabled}</span>
-            {' on · '}
-            <span>{stats.disabled}</span>
-            {' off'}
+            {t('addonManager.scenery.tabStats', {
+              total: stats.total,
+              enabled: stats.enabled,
+              disabled: stats.disabled,
+            })}
           </span>
           {hasUnsavedChanges && (
             <span className="flex items-center gap-1.5 text-xs font-medium text-warning">

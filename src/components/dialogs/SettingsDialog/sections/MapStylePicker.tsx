@@ -119,7 +119,7 @@ export function MapStylePicker({
         <div className="flex gap-2">
           <Input
             type="url"
-            placeholder="https://example.com/style.json"
+            placeholder={t('settings.graphics.customStylePlaceholder')}
             value={draft}
             onChange={(e) => {
               setDraft(e.target.value);

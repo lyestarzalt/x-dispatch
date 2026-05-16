@@ -299,7 +299,7 @@ export function FlightConfig({
           <div className="flex items-center justify-between">
             <Label className="flex items-center gap-2 text-sm text-muted-foreground">
               <Weight className="h-4 w-4" />
-              Weight &amp; Fuel
+              {t('launcher.weightFuelLabel')}
             </Label>
             {selectedAircraft && (
               <Button
@@ -408,7 +408,9 @@ export function FlightConfig({
               )}
               {startPosition?.towType && (
                 <div className="text-xs text-muted-foreground">
-                  {t(`airportInfo.runway.${startPosition.towType}`)} tow
+                  {t('airportInfo.runway.towWith', {
+                    type: t(`airportInfo.runway.${startPosition.towType}`),
+                  })}
                 </div>
               )}
               {startPosition?.customStartMode === 'air' && (

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
@@ -39,6 +40,7 @@ function CustomTooltip({
   active?: boolean;
   payload?: Array<{ payload: ProfileDataPoint }>;
 }) {
+  const { t } = useTranslation();
   if (!active || !payload?.length) return null;
   const entry = payload[0];
   if (!entry) return null;
@@ -51,36 +53,43 @@ function CustomTooltip({
         <span className="font-mono font-semibold">{point.ident}</span>
         {point.isTopOfClimb && (
           <Badge variant="success" className="text-[10px]">
-            T/C
+            {t('simbriefDialog.profile.tocBadge')}
           </Badge>
         )}
         {point.isTopOfDescent && (
           <Badge variant="warning" className="text-[10px]">
-            T/D
+            {t('simbriefDialog.profile.todBadge')}
           </Badge>
         )}
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-        <span className="text-muted-foreground">Altitude</span>
+        <span className="text-muted-foreground">{t('simbriefDialog.profile.altitude')}</span>
         <span className="text-right font-mono">
           {point.altitude >= 10000
             ? `FL${Math.round(point.altitude / 100)}`
-            : `${point.altitude.toLocaleString()} ft`}
+            : t('simbriefDialog.profile.altitudeFt', { value: point.altitude.toLocaleString() })}
         </span>
-        <span className="text-muted-foreground">Distance</span>
-        <span className="text-right font-mono">{point.distance} nm</span>
-        <span className="text-muted-foreground">Wind</span>
+        <span className="text-muted-foreground">{t('simbriefDialog.profile.distance')}</span>
+        <span className="text-right font-mono">
+          {t('simbriefDialog.profile.distanceNm', { value: point.distance })}
+        </span>
+        <span className="text-muted-foreground">{t('simbriefDialog.profile.wind')}</span>
         <span className="text-right font-mono">{point.wind}</span>
         <span className="text-muted-foreground">OAT</span>
         <span className="text-right font-mono">{point.oat}</span>
-        <span className="text-muted-foreground">Terrain</span>
-        <span className="text-right font-mono">{point.groundHeight.toLocaleString()} ft</span>
+        <span className="text-muted-foreground">{t('simbriefDialog.profile.terrain')}</span>
+        <span className="text-right font-mono">
+          {t('simbriefDialog.profile.altitudeFt', {
+            value: point.groundHeight.toLocaleString(),
+          })}
+        </span>
       </div>
     </div>
   );
 }
 
 export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
+  const { t } = useTranslation();
   const { data, tocDistance, todDistance, maxAltitude } = useMemo(() => {
     if (!fixes || fixes.length < 2) {
       return { data: [], tocDistance: null, todDistance: null, maxAltitude: 40000 };
@@ -138,7 +147,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
     return (
       <div className={className}>
         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-          No profile data available
+          {t('simbriefDialog.profile.noData')}
         </div>
       </div>
     );
@@ -192,7 +201,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
               strokeDasharray="4 4"
               strokeWidth={2}
               label={{
-                value: 'T/C',
+                value: t('simbriefDialog.profile.tocBadge'),
                 position: 'top',
                 fill: 'oklch(var(--success))',
                 fontSize: 10,
@@ -209,7 +218,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
               strokeDasharray="4 4"
               strokeWidth={2}
               label={{
-                value: 'T/D',
+                value: t('simbriefDialog.profile.todBadge'),
                 position: 'top',
                 fill: 'oklch(var(--warning))',
                 fontSize: 10,
@@ -264,22 +273,25 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
       <div className="mt-2 flex items-center justify-center gap-6 text-xs">
         <div className="flex items-center gap-1.5">
           <div className="h-0.5 w-4 rounded bg-primary" />
-          <span className="text-muted-foreground">Flight Path</span>
+          <span className="text-muted-foreground">{t('simbriefDialog.profile.flightPath')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="h-2 w-4 rounded bg-muted-foreground/30" />
-          <span className="text-muted-foreground">Terrain</span>
+          <span className="text-muted-foreground">{t('simbriefDialog.profile.terrain')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="h-0.5 w-4 rounded border-t-2 border-dashed border-success" />
-          <span className="text-muted-foreground">T/C</span>
+          <span className="text-muted-foreground">{t('simbriefDialog.profile.tocBadge')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="h-0.5 w-4 rounded border-t-2 border-dashed border-warning" />
-          <span className="text-muted-foreground">T/D</span>
+          <span className="text-muted-foreground">{t('simbriefDialog.profile.todBadge')}</span>
         </div>
         <span className="text-muted-foreground">
-          Total: <span className="font-mono">{totalDistance} nm</span>
+          {t('simbriefDialog.profile.total')}{' '}
+          <span className="font-mono">
+            {t('simbriefDialog.profile.distanceNm', { value: totalDistance })}
+          </span>
         </span>
       </div>
     </div>

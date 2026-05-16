@@ -239,7 +239,10 @@ export default function TaxiRouteInline() {
       {/* Route summary */}
       {routeSummary && (
         <p className="xp-value-primary">
-          via {routeSummary.taxiways.join(', ')} · {routeSummary.distance}
+          {t('airportInfo.taxiRoute.summary', {
+            taxiways: routeSummary.taxiways.join(', '),
+            distance: routeSummary.distance,
+          })}
         </p>
       )}
       {isFreehand && waypoints.length > 0 && (

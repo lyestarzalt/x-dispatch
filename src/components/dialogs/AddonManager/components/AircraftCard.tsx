@@ -70,8 +70,12 @@ export function AircraftCard({
         <div className="mt-1 flex flex-wrap gap-1">
           {aircraft.version && (
             <Badge variant={aircraft.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
-              v{aircraft.version}
-              {aircraft.hasUpdate && aircraft.latestVersion && ` → ${aircraft.latestVersion}`}
+              {aircraft.hasUpdate && aircraft.latestVersion
+                ? t('addonManager.browser.versionUpdate', {
+                    current: aircraft.version,
+                    latest: aircraft.latestVersion,
+                  })
+                : t('addonManager.browser.version', { version: aircraft.version })}
             </Badge>
           )}
           {aircraft.hasLiveries && (

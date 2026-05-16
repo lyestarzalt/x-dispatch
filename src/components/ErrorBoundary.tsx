@@ -1,9 +1,10 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { type WithTranslation, withTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface ErrorBoundaryProps {
+interface ErrorBoundaryProps extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -13,7 +14,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -50,20 +51,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback;
       }
 
+      const { t } = this.props;
+
       return (
         <div className="flex h-full w-full flex-col items-center justify-center gap-6 bg-background p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
               <AlertCircle className="h-8 w-8 text-destructive" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground">Something went wrong</h1>
+            <h1 className="text-xl font-semibold text-foreground">{t('errorBoundary.title')}</h1>
             <p className="max-w-md text-center text-sm text-muted-foreground">
-              An unexpected error occurred. You can try again or reload the application.
+              {t('errorBoundary.description')}
             </p>
             {this.state.error && (
               <details className="mt-2 max-w-lg">
                 <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                  Error details
+                  {t('errorBoundary.errorDetails')}
                 </summary>
                 <pre className="mt-2 max-h-32 overflow-auto rounded bg-muted p-2 text-xs text-muted-foreground">
                   {this.state.error.message}
@@ -75,10 +78,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="flex gap-3">
             <Button variant="outline" onClick={this.handleReset} className="gap-2">
               <RefreshCw className="h-4 w-4" />
-              Try Again
+              {t('errorBoundary.tryAgain')}
             </Button>
             <Button onClick={this.handleReload} className="gap-2">
-              Reload App
+              {t('errorBoundary.reloadApp')}
             </Button>
           </div>
         </div>
@@ -88,3 +91,5 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryInner);

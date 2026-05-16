@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/AddonManagerButton.tsx
+import { useTranslation } from 'react-i18next';
 import { Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -8,6 +9,7 @@ interface AddonManagerButtonProps {
 }
 
 export function AddonManagerButton({ onClick }: AddonManagerButtonProps) {
+  const { t } = useTranslation();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -15,7 +17,7 @@ export function AddonManagerButton({ onClick }: AddonManagerButtonProps) {
           <Package className="h-5 w-5" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Addon Manager</TooltipContent>
+      <TooltipContent>{t('addonManager.button.tooltip')}</TooltipContent>
     </Tooltip>
   );
 }

@@ -32,8 +32,11 @@
     "m": "m",
     "nm": "nm",
     "kt": "kt",
+    "kts": "kts",
+    "ms": "m/s",
     "s": "s",
     "kg": "kg",
+    "lbs": "doubloons",
     "fpm": "fpm"
   },
   "directions": {
@@ -92,6 +95,10 @@
     "searchPlaceholder": "Search fer airports...",
     "clearSearch": "Clear the hunt",
     "addons": "Extra Gear",
+    "alphaTag": "arrr-pha",
+    "rangeRingsHours": "{{n}}h",
+    "rangeRingsKts": "{{speed}}kts",
+    "pinCoords": "{{lat}}°, {{lon}}°",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Shadow Craft",
@@ -263,10 +270,13 @@
         "format": "Chart format",
         "label": "Mark name",
         "folder": "Target hold",
+        "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "Pick export hold",
         "empty": "No marks yet, matey. Add one to send SimBrief plans straight into an addon hold.",
         "deleteTitle": "Scuttle this export mark?"
-      }
+      },
+      "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
+      "linkLabel": "simbrief.com"
     },
     "about": {
       "title": "Ship's Log",
@@ -297,7 +307,11 @@
       "debugOverlay": "Debug Spyglass",
       "debugOverlayDescription": "Show the shipwright's debug toolbar",
       "toggleDebug": "Toggle Spyglass",
-      "debugShortcut": "Ye can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)"
+      "debugShortcut": "Ye can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)",
+      "developerName": "Lyes Tarzalt",
+      "licenseValue": "GPL-3.0-only",
+      "specialThanksName": "Gilles",
+      "specialThanksHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Plane Install",
@@ -387,6 +401,7 @@
       "customStyleAdd": "Add chart",
       "customStyleRemove": "Cast off {{name}}",
       "customStyleFallbackName": "Custom chart",
+      "customStylePlaceholder": "https://example.com/style.json",
       "mapStyleError": {
         "required": "URL required",
         "invalid-url": "That URL be no good",
@@ -434,6 +449,10 @@
       "cacheDescription": "Clear cached data ta force a full reload from X-Plane files",
       "clearCache": "Clear Cache & Rechart",
       "clearingCache": "Clearin'...",
+      "navigraphLabel": "Navigraph",
+      "xplaneDefaultLabel": "X-Plane Default",
+      "customAirportLabel": "Custom Airport",
+      "defaultLabel": "Default",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live traffic from the VATSIM network",
@@ -574,6 +593,48 @@
     "filterOther": "OTHER GEAR",
     "noGatesFound": "NO BERTHS FOUND",
     "noFrequencies": "No frequencies available, matey",
+    "noWeather": "No weather scrolls available, matey",
+    "conditions": {
+      "wind": "Wind o' the seas",
+      "visibility": "Spyglass range",
+      "ceiling": "Cloud ceilin'",
+      "qnh": "QNH",
+      "tempDew": "Temp / Dewdrop",
+      "tempDewValue": "{{temp}}°C / {{dew}}°C",
+      "phenomena": "Weather omens"
+    },
+    "activeRunway": "Active landin' strip",
+    "windAligned": "· wind-blown, {{delta}}° askew",
+    "atisLabel": "ATIS {{letter}}",
+    "runwaysHeading": "Landin' strips",
+    "runwayCountTotal": "{{count}} all told",
+    "runwayLengthFt": "{{length}}'",
+    "runwayName": "Strip {{name}}",
+    "ils": {
+      "frequency": "Frequency",
+      "localizer": "Course-finder",
+      "glideslope": "Glide-path",
+      "range": "Range",
+      "ident": "Ident",
+      "rangeNm": "{{value}} NM"
+    },
+    "rawMetar": "Raw METAR scroll",
+    "routeTab": {
+      "tabApproach": "Approach",
+      "noneAvailable": "No {{type}} available",
+      "noneApproaches": "No approaches available",
+      "transitionCount_one": "1 transition",
+      "transitionCount_other": "{{count}} transitions",
+      "runwayVariantCount_one": "1 strip",
+      "runwayVariantCount_other": "{{count}} strips",
+      "variantCount_one": "1 variant",
+      "variantCount_other": "{{count}} variants",
+      "allVariants": "All"
+    },
+    "noRunwaysMatching": "No strips matchin' \"{{query}}\", matey",
+    "noHelipads": "No helo-perches found",
+    "noHelipadsMatching": "No helo-perches matchin' \"{{query}}\"",
+    "runwayDimensions": "{{length}}'×{{width}}'",
     "xplaneGateway": "X-Plane Gateway",
     "gatewayNotAvailable": "GATEWAY INTEL NOT AVAILABLE",
     "gatewayLoading": "LOADING GATEWAY INTEL...",
@@ -629,7 +690,8 @@
       "approachNm": "{{distance}} nm on final",
       "winch": "Capstan",
       "tug": "Tugboat",
-      "tugAircraft": "Tow craft: Cessna 172 SP"
+      "tugAircraft": "Tow craft: Cessna 172 SP",
+      "towWith": "{{type}} tow"
     },
     "gateway": {
       "updateAvailable": "Gateway has a newer chart",
@@ -649,7 +711,8 @@
       "autoRoute": "Auto course",
       "pointsPlaced": "{{count}} point(s) laid",
       "export": "Stow taxi route",
-      "exportSuccess": "Taxi route stowed"
+      "exportSuccess": "Taxi route stowed",
+      "summary": "via {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -793,7 +856,9 @@
     "liveries": {
       "title": "Paint Schemes",
       "count": "{{count}} liveries",
-      "default": "Standard"
+      "default": "Standard",
+      "previousLivery": "Previous livery",
+      "nextLivery": "Next livery"
     },
     "specs": {
       "emptyWeight": "Bare",
@@ -888,6 +953,7 @@
       "cloudCoverage": "Cloud Cover",
       "tops": "Top decks",
       "bases": "Base decks",
+      "ftMsl": "{{value}} ft MSL",
       "deleteCloud": "Strike Cloud Layer {{n}}",
       "cloudTypes": {
         "cirrus": "Cirrus wisps",
@@ -963,8 +1029,12 @@
       "title": "Captain's Log",
       "clearAll": "Clear the log",
       "empty": "No recent voyages",
-      "emptyHint": "Yer last 10 flights will appear here after launching"
-    }
+      "emptyHint": "Yer last 10 flights will appear here after launching",
+      "timeLive": "Live",
+      "coldAndDark": "Cold & Dark",
+      "ready": "Ready"
+    },
+    "weightFuelLabel": "Weight & Fuel"
   },
   "addonManager": {
     "title": "Addon Quartermaster",
@@ -1052,7 +1122,10 @@
       "openFolder": "Open locker",
       "toggle": "Hoist/strike",
       "lock": "Lock fast",
-      "unlock": "Unbolt"
+      "unlock": "Unbolt",
+      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "versionUpdate": "v{{current}} → {{latest}}",
+      "version": "v{{version}}"
     },
     "scenery": {
       "loading": "Scannin' scenery folders...",
@@ -1066,6 +1139,7 @@
       "deleted": "Scuttled {{name}}",
       "deleteFailed": "Failed ta delete scenery",
       "packages": "{{count}} scenery packs",
+      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
       "unsavedChanges": "Not stowed",
       "safeMode": "Careful",
       "unsafeMode": "Free rein",
@@ -1114,6 +1188,17 @@
       "openFolder": "Open locker",
       "lock": "Lock fast",
       "unlock": "Unbolt"
+    },
+    "aircraftEntry": {
+      "liveriesCount": "{{count}} liveries",
+      "viewLiveries": "View liveries",
+      "unlock": "Unlock",
+      "lockPrevent": "Lock (prevent changes)",
+      "openFolder": "Open folder",
+      "deleteAircraft": "Delete aircraft"
+    },
+    "button": {
+      "tooltip": "Addon Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}} script scrolls",
@@ -1198,5 +1283,251 @@
       "transAltTitle": "Altimeter change heights",
       "transAltDesc": "Altitude where ye switch between local altimeter (QNH) an' standard pressure (STD) — set yer altimeter accordingly"
     }
+  },
+  "flightInfoPanel": {
+    "tabs": {
+      "route": "Course",
+      "fuel": "Grog",
+      "weight": "Heft",
+      "wx": "WX"
+    },
+    "avgWind": "Avg wind",
+    "blockFuel": "Block grog",
+    "landing": "Touchdown",
+    "paxCargo": "PAX / Loot",
+    "alternate": "Alt port",
+    "blockLabel": "Block",
+    "landingLabel": "Touchdown",
+    "passengers": "Souls aboard",
+    "cargo": "Loot",
+    "payload": "Plunder",
+    "wind": "Wind",
+    "vis": "Spy",
+    "temp": "Temp",
+    "tempDeg": "{{value}}°",
+    "qnh": "QNH",
+    "noMetar": "No METAR scroll",
+    "fuelItems": {
+      "taxi": "Taxi",
+      "trip": "Voyage",
+      "contingency": "Just-in-case",
+      "alternate": "Alt port",
+      "reserve": "Reserve",
+      "extra": "Extra"
+    }
+  },
+  "weightBalance": {
+    "title": "Booty & Grog",
+    "empty": "Empty hold",
+    "fuel": "Grog",
+    "payload": "Cargo o' plunder",
+    "total": "Grand sum",
+    "max": "Max",
+    "over": "+{{amount}} too heavy, arr!",
+    "allTanks": "All grog kegs",
+    "done": "Aye, done",
+    "tankValue": "{{pct}}% ({{weight}})",
+    "overallFuelValue": "{{pct}}% ({{weight}})"
+  },
+  "simbriefDialog": {
+    "viewFullOfp": "Full OFP scroll (PDF)",
+    "notAvailable": "N/A",
+    "noMetarAvailable": "No METAR scroll, arr",
+    "header": {
+      "goToAirportLayoutAria": "Set course for {{icao}}",
+      "runway": "RWY {{rwy}}",
+      "takeoffWithIcao": "Cast off - {{icao}}",
+      "landingWithIcao": "Drop anchor - {{icao}}"
+    },
+    "tabs": {
+      "flight": "Voyage",
+      "performance": "Perf",
+      "navlog": "Logbook",
+      "fuel": "Grog",
+      "weights": "Heft",
+      "weather": "Skies",
+      "briefing": "Briefin'"
+    },
+    "stats": {
+      "ete": "ETE",
+      "fl": "FL",
+      "avgWind": "AVG WIND",
+      "ci": "CI",
+      "airac": "AIRAC"
+    },
+    "flight": {
+      "verticalProfile": "Up-down profile",
+      "sid": "SID: {{id}}",
+      "star": "STAR: {{id}}",
+      "route": "Course",
+      "fixesCount": "{{count}} marks",
+      "fuelSummary": "Grog summary",
+      "blockFuel": "Block grog",
+      "tripFuel": "Voyage grog",
+      "landingFuel": "Touchdown grog",
+      "weightsSummary": "Heft summary",
+      "payload": "Plunder",
+      "passengers": "Souls aboard",
+      "cargo": "Loot",
+      "totalPayload": "Total plunder",
+      "alternate": "Alt port"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "zfwFull": "Empty-fuel heft",
+      "towFull": "Cast-off heft",
+      "ldwFull": "Touchdown heft"
+    },
+    "fuelTab": {
+      "breakdown": "Grog breakdown",
+      "taxi": "Taxi",
+      "trip": "Voyage",
+      "contingency": "Just-in-case",
+      "alternate": "Alt port",
+      "finalReserve": "Last-stand reserve",
+      "extra": "Extra",
+      "blockFuel": "Block grog",
+      "takeoffFuel": "Cast-off grog",
+      "landingFuel": "Touchdown grog"
+    },
+    "weightsTab": {
+      "limits": "Heft limits",
+      "operating": "Operatin' heft",
+      "oew": "OEW",
+      "payload": "Plunder",
+      "details": "Plunder details",
+      "passengers": "Souls aboard",
+      "cargo": "Loot",
+      "paxCount": "{{count}} souls"
+    },
+    "briefing": {
+      "notamLabelDeparture": "Cast-off",
+      "notamLabelArrival": "Touchdown",
+      "notamLabelAlternate": "Alt port",
+      "transAltAbbr": "TA: {{value}} ft",
+      "transLevelAbbr": "TL: FL{{value}}",
+      "sigmetValid": "Valid: {{start}} - {{end}}",
+      "sigmetFir": "FIR: {{name}}",
+      "notamCount_one": "1 NOTAM",
+      "notamCount_other": "{{count}} NOTAMs",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "notamEffective": "In effect: {{date}}",
+      "notamEffectiveRange": "In effect: {{start}} - {{end}}"
+    },
+    "navlog": {
+      "colFix": "Mark / Highway",
+      "colAltitude": "Altitude",
+      "colWind": "Wind",
+      "colGsMach": "GS / Mach",
+      "colEta": "ETA",
+      "colFuelRem": "Grog left",
+      "waypointCount": "{{count}} marks",
+      "groundSpeedKt": "{{value}} kt",
+      "position": "Position",
+      "temperature": "Temp",
+      "windComponent": "Wind component",
+      "windCompValue": "{{value}} kt {{tag}}",
+      "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
+      "headwind": "(headwind, arr)",
+      "tailwind": "(tailwind, yarr)",
+      "tropopause": "Tropopause",
+      "fir": "FIR",
+      "groundElevation": "Land height",
+      "mora": "MORA",
+      "fuelUsed": "Grog burnt",
+      "fuelUsedValue": "{{value}} {{unit}}"
+    },
+    "profile": {
+      "noData": "No profile scroll",
+      "altitude": "Altitude",
+      "distance": "Distance",
+      "wind": "Wind",
+      "terrain": "Land",
+      "flightPath": "Voyage track",
+      "tocBadge": "T/C",
+      "todBadge": "T/D",
+      "total": "Grand sum:",
+      "distanceNm": "{{value}} NM",
+      "altitudeFt": "{{value}} ft"
+    },
+    "performance": {
+      "vspeeds": {
+        "v1": "V1",
+        "vr": "VR",
+        "v2": "V2",
+        "vref": "Vref"
+      },
+      "flexTemp": "Flex temp",
+      "togaThrust": "TOGA",
+      "wind": "Wind",
+      "flaps": "Flaps",
+      "thrust": "Thrust",
+      "rwyLength": "Strip length",
+      "meters": "{{value}} m",
+      "feet": "{{value}} ft",
+      "tlrNotAvailable": "TLR scrolls missin'",
+      "ldaDry": "LDA (dry)",
+      "ldaWet": "LDA (wet)",
+      "cruise": "Cruise perf",
+      "initialFl": "Start FL",
+      "costIndex": "Cost Index",
+      "cruiseMach": "Cruise Mach",
+      "machValue": "M{{mach}}",
+      "cruiseTas": "Cruise TAS",
+      "tasKt": "{{tas}} kt",
+      "stepClimbs": "Step climbs",
+      "stepFallback": "Step {{n}}",
+      "stepLabel": "{{altitude}} @ {{waypoint}}",
+      "transAltOrigin": "{{icao}} cross-over alt",
+      "transLevelDest": "{{icao}} cross-over level",
+      "flightLevel": "FL{{value}}",
+      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+    },
+    "weather": {
+      "alternate": "Alt port",
+      "icaoWithLabel": "{{icao}} ({{label}})",
+      "windsAloft": "Winds aloft",
+      "direction": "Bearing",
+      "speed": "Speed",
+      "directionDeg": "{{deg}}°",
+      "speedKt": "{{speed}} kt",
+      "metar": "METAR",
+      "taf": "TAF",
+      "wind": "Wind",
+      "visibility": "Spyglass range",
+      "ceiling": "Cloud ceilin'",
+      "temp": "Temp",
+      "qnh": "QNH"
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or reload the application.",
+    "errorDetails": "Error details",
+    "tryAgain": "Try Again",
+    "reloadApp": "Reload App",
+    "sectionFailed": "{{name}} failed to load",
+    "retry": "Retry"
+  },
+  "titleBar": {
+    "version": "v{{version}}",
+    "debug": "debug",
+    "panels": "Panels",
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+  },
+  "explorePanel": {
+    "routes": {
+      "arrow": "→"
+    },
+    "vatsimEvents": {
+      "arrow": "→",
+      "dataFrom": "Data from"
+    }
+  },
+  "sunArc": {
+    "local": "local"
   }
 }

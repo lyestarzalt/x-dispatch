@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { FEATURED_ROUTES } from '@/components/layout/Toolbar/ExplorePanel/featured';
 import { cn } from '@/lib/utils/helpers';
 import type { RoutesTabProps } from './types';
 
 export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {
+  const { t } = useTranslation();
   const isSelected = (from: string, to: string) =>
     selectedRoute?.from === from && selectedRoute?.to === to;
 
@@ -35,7 +37,9 @@ export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {
             >
               {route.from}
             </span>
-            <span className="text-xs text-muted-foreground/40">→</span>
+            <span className="text-xs text-muted-foreground/40">
+              {t('explorePanel.routes.arrow')}
+            </span>
             <span
               className={cn(
                 'shrink-0 font-mono text-sm font-semibold',

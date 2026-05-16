@@ -1,9 +1,10 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { type WithTranslation, withTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface SectionErrorBoundaryProps {
+interface SectionErrorBoundaryProps extends WithTranslation {
   children: ReactNode;
   name: string;
 }
@@ -13,7 +14,7 @@ interface SectionErrorBoundaryState {
   error: Error | null;
 }
 
-export class SectionErrorBoundary extends Component<
+class SectionErrorBoundaryInner extends Component<
   SectionErrorBoundaryProps,
   SectionErrorBoundaryState
 > {
@@ -48,11 +49,14 @@ export class SectionErrorBoundary extends Component<
 
   render(): ReactNode {
     if (this.state.hasError) {
+      const { t } = this.props;
       return (
         <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-4">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span className="text-sm font-medium">{this.props.name} failed to load</span>
+            <span className="text-sm font-medium">
+              {t('errorBoundary.sectionFailed', { name: this.props.name })}
+            </span>
           </div>
           {this.state.error && (
             <p className="max-w-xs text-center text-sm text-muted-foreground">
@@ -61,7 +65,7 @@ export class SectionErrorBoundary extends Component<
           )}
           <Button variant="outline" size="sm" onClick={this.handleReset} className="gap-2">
             <RefreshCw className="h-3 w-3" />
-            Retry
+            {t('errorBoundary.retry')}
           </Button>
         </div>
       );
@@ -70,3 +74,5 @@ export class SectionErrorBoundary extends Component<
     return this.props.children;
   }
 }
+
+export const SectionErrorBoundary = withTranslation()(SectionErrorBoundaryInner);

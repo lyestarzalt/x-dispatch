@@ -32,8 +32,11 @@
     "m": "м",
     "nm": "м. миля",
     "kt": "уз",
+    "kts": "уз",
+    "ms": "м/с",
     "s": "с",
     "kg": "кг",
+    "lbs": "фунт",
     "fpm": "фут/мин"
   },
   "directions": {
@@ -92,6 +95,10 @@
     "searchPlaceholder": "Поиск аэропортов...",
     "clearSearch": "Очистить поиск",
     "addons": "Дополнения",
+    "alphaTag": "альфа",
+    "rangeRingsHours": "{{n}}ч",
+    "rangeRingsKts": "{{speed}}уз",
+    "pinCoords": "{{lat}}°, {{lon}}°",
     "nav": "НАВ",
     "vatsim": "VATSIM",
     "track": "Отслеживать",
@@ -137,8 +144,8 @@
       "layers": "Переключить слои и наложения карты",
       "addons": "Управление самолётами, плагинами и сценариями",
       "loadPlan": "Загрузить файл плана полёта .fms X-Plane",
-      "explore": "Откройте для себя избранные аэропорты и маршруты",
       "simbrief": "Импортировать план полёта из SimBrief",
+      "explore": "Откройте для себя избранные аэропорты и маршруты",
       "nav": "Показать навигационные слои вокруг аэропорта",
       "track": "Отслеживать ваш самолёт в X-Plane",
       "vatsim": "Показать трафик VATSIM в реальном времени",
@@ -263,10 +270,13 @@
         "format": "Формат",
         "label": "Метка",
         "folder": "Целевая папка",
+        "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "Выбрать папку экспорта",
         "empty": "Целей пока нет. Добавьте, чтобы отправлять планы SimBrief прямо в папку аддона.",
         "deleteTitle": "Удалить эту цель экспорта?"
-      }
+      },
+      "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
+      "linkLabel": "simbrief.com"
     },
     "about": {
       "title": "О программе",
@@ -297,7 +307,11 @@
       "debugOverlay": "Отладочный оверлей",
       "debugOverlayDescription": "Показывать отладочную панель разработчика",
       "toggleDebug": "Переключить",
-      "debugShortcut": "Также можно использовать Ctrl+Shift+D (Cmd+Shift+D на Mac)"
+      "debugShortcut": "Также можно использовать Ctrl+Shift+D (Cmd+Shift+D на Mac)",
+      "developerName": "Lyes Tarzalt",
+      "licenseValue": "GPL-3.0-only",
+      "specialThanksName": "Gilles",
+      "specialThanksHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "Установка X-Plane",
@@ -387,6 +401,7 @@
       "customStyleAdd": "Добавить",
       "customStyleRemove": "Удалить {{name}}",
       "customStyleFallbackName": "Пользовательский",
+      "customStylePlaceholder": "https://example.com/style.json",
       "mapStyleError": {
         "required": "URL обязателен",
         "invalid-url": "Недействительный URL",
@@ -434,6 +449,10 @@
       "cacheDescription": "Очистите кэшированные данные, чтобы принудительно полностью перезагрузить их из файлов X-Plane",
       "clearCache": "Очистить кэш и перезагрузить",
       "clearingCache": "Очистка...",
+      "navigraphLabel": "Navigraph",
+      "xplaneDefaultLabel": "X-Plane Default",
+      "customAirportLabel": "Custom Airport",
+      "defaultLabel": "Default",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Воздушное движение в реальном времени из сети VATSIM",
@@ -574,6 +593,48 @@
     "filterOther": "ДРУГОЕ",
     "noGatesFound": "ВЫХОДЫ НЕ НАЙДЕНЫ",
     "noFrequencies": "Нет доступных частот",
+    "noWeather": "Нет данных о погоде",
+    "conditions": {
+      "wind": "Ветер",
+      "visibility": "Видимость",
+      "ceiling": "Высота облачности",
+      "qnh": "QNH",
+      "tempDew": "Темп / Точка росы",
+      "tempDewValue": "{{temp}}°C / {{dew}}°C",
+      "phenomena": "Явления"
+    },
+    "activeRunway": "Активная ВПП",
+    "windAligned": "· по ветру, {{delta}}° смещение",
+    "atisLabel": "ATIS {{letter}}",
+    "runwaysHeading": "ВПП",
+    "runwayCountTotal": "всего {{count}}",
+    "runwayLengthFt": "{{length}}'",
+    "runwayName": "ВПП {{name}}",
+    "ils": {
+      "frequency": "Частота",
+      "localizer": "Курсовой",
+      "glideslope": "Глиссада",
+      "range": "Дальность",
+      "ident": "Идент.",
+      "rangeNm": "{{value}} ММ"
+    },
+    "rawMetar": "Сырой METAR",
+    "routeTab": {
+      "tabApproach": "Заход",
+      "noneAvailable": "Нет {{type}}",
+      "noneApproaches": "Нет заходов",
+      "transitionCount_one": "1 переход",
+      "transitionCount_other": "{{count}} переходов",
+      "runwayVariantCount_one": "1 ВПП",
+      "runwayVariantCount_other": "{{count}} ВПП",
+      "variantCount_one": "1 вариант",
+      "variantCount_other": "{{count}} вариантов",
+      "allVariants": "Все"
+    },
+    "noRunwaysMatching": "Нет ВПП по запросу \"{{query}}\"",
+    "noHelipads": "Нет вертолётных площадок",
+    "noHelipadsMatching": "Нет площадок по запросу \"{{query}}\"",
+    "runwayDimensions": "{{length}}'×{{width}}'",
     "xplaneGateway": "X-Plane Gateway",
     "gatewayNotAvailable": "ДАННЫЕ GATEWAY НЕДОСТУПНЫ",
     "gatewayLoading": "ЗАГРУЗКА ДАННЫХ GATEWAY...",
@@ -629,7 +690,8 @@
       "approachNm": "{{distance}} nm финал",
       "winch": "Лебёдка",
       "tug": "Буксировщик",
-      "tugAircraft": "Самолёт-буксировщик: Cessna 172 SP"
+      "tugAircraft": "Самолёт-буксировщик: Cessna 172 SP",
+      "towWith": "{{type}} tow"
     },
     "gateway": {
       "updateAvailable": "На Gateway есть более новый релиз",
@@ -649,7 +711,8 @@
       "autoRoute": "Автомаршрут",
       "pointsPlaced": "{{count}} точка(и)",
       "export": "Сохранить маршрут руления",
-      "exportSuccess": "Маршрут руления сохранён"
+      "exportSuccess": "Маршрут руления сохранён",
+      "summary": "via {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -793,7 +856,9 @@
     "liveries": {
       "title": "Ливреи",
       "count": "Ливреи ({{count}})",
-      "default": "По умолчанию"
+      "default": "По умолчанию",
+      "previousLivery": "Previous livery",
+      "nextLivery": "Next livery"
     },
     "specs": {
       "emptyWeight": "Пустой",
@@ -888,6 +953,7 @@
       "cloudCoverage": "Облачность",
       "tops": "Верхняя граница",
       "bases": "Нижняя граница",
+      "ftMsl": "{{value}} ft MSL",
       "deleteCloud": "Удалить слой облаков {{n}}",
       "cloudTypes": {
         "cirrus": "Перистые",
@@ -963,8 +1029,12 @@
       "title": "Журнал полётов",
       "clearAll": "Очистить всё",
       "empty": "Нет недавних полётов",
-      "emptyHint": "Ваши последние 10 полётов появятся здесь после запуска"
-    }
+      "emptyHint": "Ваши последние 10 полётов появятся здесь после запуска",
+      "timeLive": "Live",
+      "coldAndDark": "Cold & Dark",
+      "ready": "Ready"
+    },
+    "weightFuelLabel": "Weight & Fuel"
   },
   "addonManager": {
     "title": "Менеджер дополнений",
@@ -1052,7 +1122,10 @@
       "openFolder": "Открыть папку",
       "toggle": "Переключить",
       "lock": "Заблокировать",
-      "unlock": "Разблокировать"
+      "unlock": "Разблокировать",
+      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "versionUpdate": "v{{current}} → {{latest}}",
+      "version": "v{{version}}"
     },
     "scenery": {
       "loading": "Сканирование папок сценариев...",
@@ -1066,6 +1139,7 @@
       "deleted": "{{name}} удалён",
       "deleteFailed": "Ошибка удаления",
       "packages": "{{count}} пакетов сценариев",
+      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
       "unsavedChanges": "Не сохранено",
       "safeMode": "Безопасный",
       "unsafeMode": "Небезопасный",
@@ -1114,6 +1188,17 @@
       "openFolder": "Открыть папку",
       "lock": "Заблокировать",
       "unlock": "Разблокировать"
+    },
+    "aircraftEntry": {
+      "liveriesCount": "{{count}} liveries",
+      "viewLiveries": "View liveries",
+      "unlock": "Unlock",
+      "lockPrevent": "Lock (prevent changes)",
+      "openFolder": "Open folder",
+      "deleteAircraft": "Delete aircraft"
+    },
+    "button": {
+      "tooltip": "Addon Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}} скриптов",
@@ -1198,5 +1283,251 @@
       "transAltTitle": "Высоты перехода",
       "transAltDesc": "Высота, на которой вы переключаетесь между местным давлением (QNH) и стандартным (STD) — установите высотомер соответственно"
     }
+  },
+  "flightInfoPanel": {
+    "tabs": {
+      "route": "Маршрут",
+      "fuel": "Топл.",
+      "weight": "Масса",
+      "wx": "Погода"
+    },
+    "avgWind": "Сред. ветер",
+    "blockFuel": "Топ. блок",
+    "landing": "Посадка",
+    "paxCargo": "PAX / Груз",
+    "alternate": "Запасной",
+    "blockLabel": "Блок",
+    "landingLabel": "Посадка",
+    "passengers": "Пассажиры",
+    "cargo": "Груз",
+    "payload": "Полезная нагрузка",
+    "wind": "Ветер",
+    "vis": "Вид",
+    "temp": "Темп",
+    "tempDeg": "{{value}}°",
+    "qnh": "QNH",
+    "noMetar": "Нет METAR",
+    "fuelItems": {
+      "taxi": "Руление",
+      "trip": "Маршрут",
+      "contingency": "Запасное",
+      "alternate": "Запасной",
+      "reserve": "Резерв",
+      "extra": "Доп."
+    }
+  },
+  "weightBalance": {
+    "title": "Масса и Топливо",
+    "empty": "Пустой",
+    "fuel": "Топливо",
+    "payload": "Полезная нагрузка",
+    "total": "Итого",
+    "max": "Макс.",
+    "over": "+{{amount}} превышение",
+    "allTanks": "Все баки",
+    "done": "Готово",
+    "tankValue": "{{pct}}% ({{weight}})",
+    "overallFuelValue": "{{pct}}% ({{weight}})"
+  },
+  "simbriefDialog": {
+    "viewFullOfp": "Полный OFP (PDF)",
+    "notAvailable": "нет",
+    "noMetarAvailable": "METAR недоступен",
+    "header": {
+      "goToAirportLayoutAria": "К схеме {{icao}}",
+      "runway": "RWY {{rwy}}",
+      "takeoffWithIcao": "Взлёт - {{icao}}",
+      "landingWithIcao": "Посадка - {{icao}}"
+    },
+    "tabs": {
+      "flight": "Полёт",
+      "performance": "Хар-ки",
+      "navlog": "Навлог",
+      "fuel": "Топливо",
+      "weights": "Массы",
+      "weather": "Погода",
+      "briefing": "Брифинг"
+    },
+    "stats": {
+      "ete": "ETE",
+      "fl": "FL",
+      "avgWind": "СР. ВЕТЕР",
+      "ci": "CI",
+      "airac": "AIRAC"
+    },
+    "flight": {
+      "verticalProfile": "Вертикальный профиль",
+      "sid": "SID: {{id}}",
+      "star": "STAR: {{id}}",
+      "route": "Маршрут",
+      "fixesCount": "{{count}} точек",
+      "fuelSummary": "Сводка по топливу",
+      "blockFuel": "Топливо в блоках",
+      "tripFuel": "Топл. маршрута",
+      "landingFuel": "Топл. посадки",
+      "weightsSummary": "Сводка по массам",
+      "payload": "Полезная нагрузка",
+      "passengers": "Пассажиры",
+      "cargo": "Груз",
+      "totalPayload": "Общая нагрузка",
+      "alternate": "Запасной"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "zfwFull": "Масса без топлива",
+      "towFull": "Взлётная масса",
+      "ldwFull": "Посадочная масса"
+    },
+    "fuelTab": {
+      "breakdown": "Разбивка топлива",
+      "taxi": "Руление",
+      "trip": "Маршрут",
+      "contingency": "Запасное",
+      "alternate": "Запасной",
+      "finalReserve": "Конечный резерв",
+      "extra": "Доп.",
+      "blockFuel": "Топ. блок",
+      "takeoffFuel": "Топл. на взлёт",
+      "landingFuel": "Топл. посадки"
+    },
+    "weightsTab": {
+      "limits": "Пределы массы",
+      "operating": "Эксплуат. массы",
+      "oew": "OEW",
+      "payload": "Полезная нагрузка",
+      "details": "Детали нагрузки",
+      "passengers": "Пассажиры",
+      "cargo": "Груз",
+      "paxCount": "{{count}} PAX"
+    },
+    "briefing": {
+      "notamLabelDeparture": "Вылет",
+      "notamLabelArrival": "Прибытие",
+      "notamLabelAlternate": "Запасной",
+      "transAltAbbr": "TA: {{value}} ft",
+      "transLevelAbbr": "TL: FL{{value}}",
+      "sigmetValid": "Действ.: {{start}} - {{end}}",
+      "sigmetFir": "FIR: {{name}}",
+      "notamCount_one": "1 NOTAM",
+      "notamCount_other": "{{count}} NOTAM",
+      "showMore": "Показать ещё",
+      "showLess": "Скрыть",
+      "notamEffective": "Действует: {{date}}",
+      "notamEffectiveRange": "Действует: {{start}} - {{end}}"
+    },
+    "navlog": {
+      "colFix": "Точка / Трасса",
+      "colAltitude": "Высота",
+      "colWind": "Ветер",
+      "colGsMach": "GS / Mach",
+      "colEta": "ETA",
+      "colFuelRem": "Топл. остаток",
+      "waypointCount": "{{count}} точек",
+      "groundSpeedKt": "{{value}} kt",
+      "position": "Позиция",
+      "temperature": "Температура",
+      "windComponent": "Сост. ветра",
+      "windCompValue": "{{value}} kt {{tag}}",
+      "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
+      "headwind": "(встречный)",
+      "tailwind": "(попутный)",
+      "tropopause": "Тропопауза",
+      "fir": "FIR",
+      "groundElevation": "Высота местн.",
+      "mora": "MORA",
+      "fuelUsed": "Расход топлива",
+      "fuelUsedValue": "{{value}} {{unit}}"
+    },
+    "profile": {
+      "noData": "Нет данных профиля",
+      "altitude": "Высота",
+      "distance": "Расстояние",
+      "wind": "Ветер",
+      "terrain": "Местность",
+      "flightPath": "Траектория",
+      "tocBadge": "T/C",
+      "todBadge": "T/D",
+      "total": "Итого:",
+      "distanceNm": "{{value}} NM",
+      "altitudeFt": "{{value}} ft"
+    },
+    "performance": {
+      "vspeeds": {
+        "v1": "V1",
+        "vr": "VR",
+        "v2": "V2",
+        "vref": "Vref"
+      },
+      "flexTemp": "Темп Flex",
+      "togaThrust": "TOGA",
+      "wind": "Ветер",
+      "flaps": "Закрылки",
+      "thrust": "Тяга",
+      "rwyLength": "Длина ВПП",
+      "meters": "{{value}} м",
+      "feet": "{{value}} ft",
+      "tlrNotAvailable": "Нет данных TLR",
+      "ldaDry": "LDA (сухая)",
+      "ldaWet": "LDA (мокрая)",
+      "cruise": "Хар-ки крейсера",
+      "initialFl": "Нач. FL",
+      "costIndex": "Cost Index",
+      "cruiseMach": "Крейсер. Mach",
+      "machValue": "M{{mach}}",
+      "cruiseTas": "Крейсер. TAS",
+      "tasKt": "{{tas}} kt",
+      "stepClimbs": "Ступенч. набор",
+      "stepFallback": "Ступень {{n}}",
+      "stepLabel": "{{altitude}} @ {{waypoint}}",
+      "transAltOrigin": "{{icao}} Высота перехода",
+      "transLevelDest": "{{icao}} Эшелон перехода",
+      "flightLevel": "FL{{value}}",
+      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+    },
+    "weather": {
+      "alternate": "Запасной",
+      "icaoWithLabel": "{{icao}} ({{label}})",
+      "windsAloft": "Средн. ветер на высоте",
+      "direction": "Направление",
+      "speed": "Скорость",
+      "directionDeg": "{{deg}}°",
+      "speedKt": "{{speed}} kt",
+      "metar": "METAR",
+      "taf": "TAF",
+      "wind": "Ветер",
+      "visibility": "Видимость",
+      "ceiling": "Высота облач.",
+      "temp": "Темп",
+      "qnh": "QNH"
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or reload the application.",
+    "errorDetails": "Error details",
+    "tryAgain": "Try Again",
+    "reloadApp": "Reload App",
+    "sectionFailed": "{{name}} failed to load",
+    "retry": "Retry"
+  },
+  "titleBar": {
+    "version": "v{{version}}",
+    "debug": "debug",
+    "panels": "Panels",
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+  },
+  "explorePanel": {
+    "routes": {
+      "arrow": "→"
+    },
+    "vatsimEvents": {
+      "arrow": "→",
+      "dataFrom": "Data from"
+    }
+  },
+  "sunArc": {
+    "local": "local"
   }
 }

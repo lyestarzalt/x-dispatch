@@ -122,7 +122,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
                   name={origin.name}
                   notams={originNotams}
                   icon={PlaneTakeoff}
-                  label="Departure"
+                  label={t('simbriefDialog.briefing.notamLabelDeparture')}
                 />
               )}
 
@@ -133,7 +133,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
                   name={destination.name}
                   notams={destNotams}
                   icon={PlaneLanding}
-                  label="Arrival"
+                  label={t('simbriefDialog.briefing.notamLabelArrival')}
                 />
               )}
 
@@ -144,7 +144,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
                   name={alternate.name}
                   notams={altNotams}
                   icon={MapPin}
-                  label="Alternate"
+                  label={t('simbriefDialog.briefing.notamLabelAlternate')}
                 />
               )}
             </div>
@@ -164,19 +164,25 @@ export function BriefingTab({ data }: BriefingTabProps) {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-sm text-muted-foreground">{origin.icao_code}</p>
-              <p className="font-mono text-sm font-medium">TA: {origin.trans_alt || '—'} ft</p>
+              <p className="font-mono text-sm font-medium">
+                {t('simbriefDialog.briefing.transAltAbbr', { value: origin.trans_alt || '—' })}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{destination.icao_code}</p>
               <p className="font-mono text-sm font-medium">
-                TL: FL{destination.trans_level || '—'}
+                {t('simbriefDialog.briefing.transLevelAbbr', {
+                  value: destination.trans_level || '—',
+                })}
               </p>
             </div>
             {alternate && (
               <div>
                 <p className="text-sm text-muted-foreground">{alternate.icao_code}</p>
                 <p className="font-mono text-sm font-medium">
-                  TL: FL{alternate.trans_level || '—'}
+                  {t('simbriefDialog.briefing.transLevelAbbr', {
+                    value: alternate.trans_level || '—',
+                  })}
                 </p>
               </div>
             )}
@@ -189,6 +195,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
 
 // SIGMET Card Component
 function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const getHazardIcon = (hazard: string) => {
@@ -235,9 +242,12 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
           <p className="font-mono leading-relaxed">{sigmet.text}</p>
           <div className="mt-2 flex items-center gap-4 text-[10px] text-muted-foreground">
             <span>
-              Valid: {formatSigmetTime(sigmet.start)} - {formatSigmetTime(sigmet.end)}
+              {t('simbriefDialog.briefing.sigmetValid', {
+                start: formatSigmetTime(sigmet.start),
+                end: formatSigmetTime(sigmet.end),
+              })}
             </span>
-            <span>FIR: {sigmet.fir_name}</span>
+            <span>{t('simbriefDialog.briefing.sigmetFir', { name: sigmet.fir_name })}</span>
           </div>
         </div>
       </CollapsibleContent>
@@ -259,6 +269,7 @@ function NotamSection({
   icon: typeof PlaneTakeoff;
   label: string;
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   // Categorize NOTAMs — SimBrief XML-to-JSON may return non-string values
@@ -291,7 +302,7 @@ function NotamSection({
               variant={runwayNotams.length > 0 ? 'destructive' : 'outline'}
               className="text-[10px]"
             >
-              {notams.length} NOTAM{notams.length !== 1 ? 's' : ''}
+              {t('simbriefDialog.briefing.notamCount', { count: notams.length })}
             </Badge>
             <ChevronDown className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')} />
           </div>
@@ -315,6 +326,7 @@ function NotamSection({
 
 // Individual NOTAM Card
 function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boolean }) {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Truncate text for preview
@@ -345,15 +357,23 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
               onClick={() => setIsExpanded(!isExpanded)}
               className="mt-1 h-auto p-0 text-[10px]"
             >
-              {isExpanded ? 'Show less' : 'Show more'}
+              {isExpanded
+                ? t('simbriefDialog.briefing.showLess')
+                : t('simbriefDialog.briefing.showMore')}
             </Button>
           )}
         </div>
       </div>
       {notam.date_effective && (
         <p className="mt-1 text-[10px] text-muted-foreground">
-          Effective: {formatNotamDate(notam.date_effective)}
-          {notam.date_expire && ` - ${formatNotamDate(notam.date_expire)}`}
+          {notam.date_expire
+            ? t('simbriefDialog.briefing.notamEffectiveRange', {
+                start: formatNotamDate(notam.date_effective),
+                end: formatNotamDate(notam.date_expire),
+              })
+            : t('simbriefDialog.briefing.notamEffective', {
+                date: formatNotamDate(notam.date_effective),
+              })}
         </p>
       )}
     </div>

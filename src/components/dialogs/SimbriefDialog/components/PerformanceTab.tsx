@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Gauge, PlaneLanding, PlaneTakeoff, Thermometer, Wind } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -9,6 +10,7 @@ interface PerformanceTabProps {
 }
 
 export function PerformanceTab({ data }: PerformanceTabProps) {
+  const { t } = useTranslation();
   const { tlr, general, origin, destination } = data;
 
   // Get the planned runway data from TLR
@@ -34,10 +36,12 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
           <div className="mb-3 flex items-center justify-between">
             <h4 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <PlaneTakeoff className="h-3.5 w-3.5" />
-              Takeoff - {origin.icao_code}
+              {t('simbriefDialog.header.takeoffWithIcao', { icao: origin.icao_code })}
             </h4>
             <Badge variant="outline" className="text-[10px]">
-              RWY {takeoffConditions?.planned_runway || origin.plan_rwy}
+              {t('simbriefDialog.header.runway', {
+                rwy: takeoffConditions?.planned_runway || origin.plan_rwy,
+              })}
             </Badge>
           </div>
 
@@ -45,9 +49,24 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
             <div className="space-y-4">
               {/* V-Speeds */}
               <div className="grid grid-cols-3 gap-2">
-                <SpeedBox label="V1" value={takeoffRunway.speeds_v1} unit="kt" color="warning" />
-                <SpeedBox label="VR" value={takeoffRunway.speeds_vr} unit="kt" color="success" />
-                <SpeedBox label="V2" value={takeoffRunway.speeds_v2} unit="kt" color="primary" />
+                <SpeedBox
+                  label={t('simbriefDialog.performance.vspeeds.v1')}
+                  value={takeoffRunway.speeds_v1}
+                  unit={t('units.kt')}
+                  color="warning"
+                />
+                <SpeedBox
+                  label={t('simbriefDialog.performance.vspeeds.vr')}
+                  value={takeoffRunway.speeds_vr}
+                  unit={t('units.kt')}
+                  color="success"
+                />
+                <SpeedBox
+                  label={t('simbriefDialog.performance.vspeeds.v2')}
+                  value={takeoffRunway.speeds_v2}
+                  unit={t('units.kt')}
+                  color="primary"
+                />
               </div>
 
               <Separator />
@@ -57,20 +76,27 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Thermometer className="h-4 w-4 text-warning" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">Flex Temp</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">
+                      {t('simbriefDialog.performance.flexTemp')}
+                    </p>
                     <p className="font-mono text-sm font-bold">
                       {takeoffRunway.flex_temperature
                         ? `${takeoffRunway.flex_temperature}°C`
-                        : 'TOGA'}
+                        : t('simbriefDialog.performance.togaThrust')}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Wind className="h-4 w-4 text-primary" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">Wind</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">
+                      {t('simbriefDialog.performance.wind')}
+                    </p>
                     <p className="font-mono text-sm font-bold">
-                      {takeoffConditions?.wind_direction}°/{takeoffConditions?.wind_speed}kt
+                      {t('simbriefDialog.performance.windDirSpeed', {
+                        dir: takeoffConditions?.wind_direction ?? '',
+                        speed: takeoffConditions?.wind_speed ?? '',
+                      })}
                     </p>
                   </div>
                 </div>
@@ -79,24 +105,32 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Runway Info */}
               <div className="rounded-md bg-muted/50 p-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Flaps</span>
+                  <span className="text-muted-foreground">
+                    {t('simbriefDialog.performance.flaps')}
+                  </span>
                   <span className="font-mono font-medium">{takeoffRunway.flap_setting}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Thrust</span>
+                  <span className="text-muted-foreground">
+                    {t('simbriefDialog.performance.thrust')}
+                  </span>
                   <span className="font-mono font-medium">{takeoffRunway.thrust_setting}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">RWY Length</span>
+                  <span className="text-muted-foreground">
+                    {t('simbriefDialog.performance.rwyLength')}
+                  </span>
                   <span className="font-mono font-medium">
-                    {parseInt(takeoffRunway.length, 10).toLocaleString()}m
+                    {t('simbriefDialog.performance.meters', {
+                      value: parseInt(takeoffRunway.length, 10).toLocaleString(),
+                    })}
                   </span>
                 </div>
               </div>
             </div>
           ) : (
             <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-              TLR data not available
+              {t('simbriefDialog.performance.tlrNotAvailable')}
             </div>
           )}
         </div>
@@ -106,10 +140,12 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
           <div className="mb-3 flex items-center justify-between">
             <h4 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <PlaneLanding className="h-3.5 w-3.5" />
-              Landing - {destination.icao_code}
+              {t('simbriefDialog.header.landingWithIcao', { icao: destination.icao_code })}
             </h4>
             <Badge variant="outline" className="text-[10px]">
-              RWY {landingConditions?.planned_runway || destination.plan_rwy}
+              {t('simbriefDialog.header.runway', {
+                rwy: landingConditions?.planned_runway || destination.plan_rwy,
+              })}
             </Badge>
           </div>
 
@@ -118,9 +154,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Vref */}
               <div className="flex justify-center">
                 <SpeedBox
-                  label="Vref"
+                  label={t('simbriefDialog.performance.vspeeds.vref')}
                   value={tlr.landing.distance_dry.speeds_vref}
-                  unit="kt"
+                  unit={t('units.kt')}
                   color="violet"
                   large
                 />
@@ -133,7 +169,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Gauge className="h-4 w-4 text-violet" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">Flaps</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">
+                      {t('simbriefDialog.performance.flaps')}
+                    </p>
                     <p className="font-mono text-sm font-bold">
                       {landingConditions?.flap_setting || tlr.landing.distance_dry.flap_setting}
                     </p>
@@ -142,9 +180,14 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Wind className="h-4 w-4 text-primary" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">Wind</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">
+                      {t('simbriefDialog.performance.wind')}
+                    </p>
                     <p className="font-mono text-sm font-bold">
-                      {landingConditions?.wind_direction}°/{landingConditions?.wind_speed}kt
+                      {t('simbriefDialog.performance.windDirSpeed', {
+                        dir: landingConditions?.wind_direction ?? '',
+                        speed: landingConditions?.wind_speed ?? '',
+                      })}
                     </p>
                   </div>
                 </div>
@@ -153,22 +196,40 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Landing Distances */}
               <div className="rounded-md bg-muted/50 p-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">LDA (Dry)</span>
+                  <span className="text-muted-foreground">
+                    {t('simbriefDialog.performance.ldaDry')}
+                  </span>
                   <span className="font-mono font-medium">
-                    {parseInt(tlr.landing.distance_dry.factored_distance, 10).toLocaleString()}m
+                    {t('simbriefDialog.performance.meters', {
+                      value: parseInt(
+                        tlr.landing.distance_dry.factored_distance,
+                        10
+                      ).toLocaleString(),
+                    })}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">LDA (Wet)</span>
+                  <span className="text-muted-foreground">
+                    {t('simbriefDialog.performance.ldaWet')}
+                  </span>
                   <span className="font-mono font-medium">
-                    {parseInt(tlr.landing.distance_wet.factored_distance, 10).toLocaleString()}m
+                    {t('simbriefDialog.performance.meters', {
+                      value: parseInt(
+                        tlr.landing.distance_wet.factored_distance,
+                        10
+                      ).toLocaleString(),
+                    })}
                   </span>
                 </div>
                 {landingRunway && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">RWY Length</span>
+                    <span className="text-muted-foreground">
+                      {t('simbriefDialog.performance.rwyLength')}
+                    </span>
                     <span className="font-mono font-medium">
-                      {parseInt(landingRunway.length, 10).toLocaleString()}m
+                      {t('simbriefDialog.performance.meters', {
+                        value: parseInt(landingRunway.length, 10).toLocaleString(),
+                      })}
                     </span>
                   </div>
                 )}
@@ -176,7 +237,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
             </div>
           ) : (
             <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-              TLR data not available
+              {t('simbriefDialog.performance.tlrNotAvailable')}
             </div>
           )}
         </div>
@@ -186,25 +247,37 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
       <div className="rounded-lg border bg-card p-4">
         <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           <Gauge className="h-3.5 w-3.5" />
-          Cruise Performance
+          {t('simbriefDialog.performance.cruise')}
         </h4>
 
         <div className="grid grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">Initial FL</p>
+            <p className="text-[10px] uppercase text-muted-foreground">
+              {t('simbriefDialog.performance.initialFl')}
+            </p>
             <p className="font-mono text-xl font-bold text-primary">{general.initial_altitude}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">Cost Index</p>
+            <p className="text-[10px] uppercase text-muted-foreground">
+              {t('simbriefDialog.performance.costIndex')}
+            </p>
             <p className="font-mono text-xl font-bold">{general.costindex}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">Cruise Mach</p>
-            <p className="font-mono text-xl font-bold">M{general.cruise_mach}</p>
+            <p className="text-[10px] uppercase text-muted-foreground">
+              {t('simbriefDialog.performance.cruiseMach')}
+            </p>
+            <p className="font-mono text-xl font-bold">
+              {t('simbriefDialog.performance.machValue', { mach: general.cruise_mach })}
+            </p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">Cruise TAS</p>
-            <p className="font-mono text-xl font-bold">{general.cruise_tas} kt</p>
+            <p className="text-[10px] uppercase text-muted-foreground">
+              {t('simbriefDialog.performance.cruiseTas')}
+            </p>
+            <p className="font-mono text-xl font-bold">
+              {t('simbriefDialog.performance.tasKt', { tas: general.cruise_tas })}
+            </p>
           </div>
         </div>
 
@@ -213,11 +286,17 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
           <>
             <Separator className="my-4" />
             <div>
-              <p className="mb-2 text-sm font-medium text-muted-foreground">Step Climbs</p>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {t('simbriefDialog.performance.stepClimbs')}
+              </p>
               <div className="flex flex-wrap gap-2">
                 {stepClimbs.map((step, i) => (
                   <Badge key={i} variant="secondary" className="font-mono">
-                    {step.altitude} @ {step.waypoint || `Step ${i + 1}`}
+                    {t('simbriefDialog.performance.stepLabel', {
+                      altitude: step.altitude,
+                      waypoint:
+                        step.waypoint || t('simbriefDialog.performance.stepFallback', { n: i + 1 }),
+                    })}
                   </Badge>
                 ))}
               </div>
@@ -231,8 +310,12 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">{origin.icao_code} Trans Alt</p>
-              <p className="font-mono text-lg font-bold">{origin.trans_alt || '—'} ft</p>
+              <p className="text-sm text-muted-foreground">
+                {t('simbriefDialog.performance.transAltOrigin', { icao: origin.icao_code })}
+              </p>
+              <p className="font-mono text-lg font-bold">
+                {t('simbriefDialog.performance.feet', { value: origin.trans_alt || '—' })}
+              </p>
             </div>
             <PlaneTakeoff className="h-5 w-5 text-muted-foreground" />
           </div>
@@ -240,8 +323,14 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">{destination.icao_code} Trans Level</p>
-              <p className="font-mono text-lg font-bold">FL{destination.trans_level || '—'}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('simbriefDialog.performance.transLevelDest', { icao: destination.icao_code })}
+              </p>
+              <p className="font-mono text-lg font-bold">
+                {t('simbriefDialog.performance.flightLevel', {
+                  value: destination.trans_level || '—',
+                })}
+              </p>
             </div>
             <PlaneLanding className="h-5 w-5 text-muted-foreground" />
           </div>

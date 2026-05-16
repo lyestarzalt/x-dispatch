@@ -402,7 +402,7 @@ function CloudLayerProperties({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('launcher.weatherDialog.tops')}</span>
             <span className="font-mono text-foreground">
-              {layer.tops_ft.toLocaleString()} ft MSL
+              {t('launcher.weatherDialog.ftMsl', { value: layer.tops_ft.toLocaleString() })}
             </span>
           </div>
           <Slider
@@ -423,7 +423,7 @@ function CloudLayerProperties({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('launcher.weatherDialog.bases')}</span>
             <span className="font-mono text-foreground">
-              {layer.base_ft.toLocaleString()} ft MSL
+              {t('launcher.weatherDialog.ftMsl', { value: layer.base_ft.toLocaleString() })}
             </span>
           </div>
           <Slider
@@ -475,7 +475,7 @@ function WindLayerProperties({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('launcher.weatherDialog.altitude')}</span>
             <span className="font-mono text-foreground">
-              {layer.altitude_ft.toLocaleString()} ft MSL
+              {t('launcher.weatherDialog.ftMsl', { value: layer.altitude_ft.toLocaleString() })}
             </span>
           </div>
           <Slider

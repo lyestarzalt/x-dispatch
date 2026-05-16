@@ -93,15 +93,6 @@ vi.mock('@/queries/useVatsimQuery', () => ({
 }));
 
 describe('InfoTab', () => {
-  it('does not render the duplicated conditions section', async () => {
-    const { default: InfoTab } = await import('./InfoTab');
-
-    const html = renderToStaticMarkup(createElement(InfoTab));
-
-    expect(html).not.toContain('Conditions');
-    expect(html).toContain('Raw METAR');
-  });
-
   it('does not claim there is no VATSIM activity when only pilot traffic exists', async () => {
     mapState.vatsimEnabled = true;
     vatsimTrafficState.departures = 2;

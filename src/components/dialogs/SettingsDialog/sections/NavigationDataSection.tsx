@@ -33,6 +33,8 @@ type SettingsDataLoadStatus = NonNullable<
   Awaited<ReturnType<typeof window.appAPI.getLoadingStatus>>['status']
 >;
 
+const NAVIGRAPH_SOURCE: SourceType = 'navigraph';
+
 interface DataRowProps {
   label: string;
   count: number;
@@ -41,19 +43,20 @@ interface DataRowProps {
   icon?: React.ReactNode;
 }
 
-function getSourceLabel(sourceType: SourceType | undefined, source: string | null): string {
-  if (sourceType === 'navigraph') return 'Navigraph';
-  if (sourceType === 'xplane-default') return 'X-Plane Default';
-  if (sourceType === 'custom-scenery') return 'Custom Airport';
+function getSourceLabelKey(sourceType: SourceType | undefined, source: string | null): string {
+  if (sourceType === 'navigraph') return 'settings.navigation.navigraphLabel';
+  if (sourceType === 'xplane-default') return 'settings.navigation.xplaneDefaultLabel';
+  if (sourceType === 'custom-scenery') return 'settings.navigation.customAirportLabel';
   // Fallback: detect from path
-  if (source?.includes('Custom Data')) return 'Navigraph';
-  if (source?.includes('Custom Scenery')) return 'Custom Airport';
-  if (source?.includes('default data')) return 'X-Plane Default';
-  return 'Default';
+  if (source?.includes('Custom Data')) return 'settings.navigation.navigraphLabel';
+  if (source?.includes('Custom Scenery')) return 'settings.navigation.customAirportLabel';
+  if (source?.includes('default data')) return 'settings.navigation.xplaneDefaultLabel';
+  return 'settings.navigation.defaultLabel';
 }
 
 function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
-  const displaySource = getSourceLabel(sourceType, source);
+  const { t } = useTranslation();
+  const displaySource = t(getSourceLabelKey(sourceType, source));
 
   return (
     <TableRow>
@@ -175,7 +178,11 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
       >
         {globalSource && (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{isNavigraph ? 'Navigraph' : 'X-Plane Default'}</Badge>
+            <Badge variant="secondary">
+              {isNavigraph
+                ? t('settings.navigation.navigraphLabel')
+                : t('settings.navigation.xplaneDefaultLabel')}
+            </Badge>
             {globalSource.cycle && (
               <span className="font-mono text-sm text-muted-foreground">
                 AIRAC {globalSource.cycle}
@@ -234,7 +241,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                     label={t('settings.xplane.atcFrequencies', 'ATC Frequencies')}
                     count={dataStatus.atc.count}
                     source={dataStatus.atc.source}
-                    sourceType="navigraph"
+                    sourceType={NAVIGRAPH_SOURCE}
                   />
                 )}
                 {dataStatus.holds && dataStatus.holds.count > 0 && (

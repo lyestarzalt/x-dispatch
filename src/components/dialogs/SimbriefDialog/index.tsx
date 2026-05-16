@@ -233,31 +233,31 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                   <TabsList variant="line" className="mb-4">
                     <TabsTrigger value="flight" className="flex-1 gap-1.5 text-xs">
                       <Route className="h-3.5 w-3.5" />
-                      Flight
+                      {t('simbriefDialog.tabs.flight')}
                     </TabsTrigger>
                     <TabsTrigger value="performance" className="flex-1 gap-1.5 text-xs">
                       <Zap className="h-3.5 w-3.5" />
-                      Perf
+                      {t('simbriefDialog.tabs.performance')}
                     </TabsTrigger>
                     <TabsTrigger value="navlog" className="flex-1 gap-1.5 text-xs">
                       <List className="h-3.5 w-3.5" />
-                      Navlog
+                      {t('simbriefDialog.tabs.navlog')}
                     </TabsTrigger>
                     <TabsTrigger value="fuel" className="flex-1 gap-1.5 text-xs">
                       <Fuel className="h-3.5 w-3.5" />
-                      Fuel
+                      {t('simbriefDialog.tabs.fuel')}
                     </TabsTrigger>
                     <TabsTrigger value="weights" className="flex-1 gap-1.5 text-xs">
                       <Scale className="h-3.5 w-3.5" />
-                      Weights
+                      {t('simbriefDialog.tabs.weights')}
                     </TabsTrigger>
                     <TabsTrigger value="weather" className="flex-1 gap-1.5 text-xs">
                       <Cloud className="h-3.5 w-3.5" />
-                      Weather
+                      {t('simbriefDialog.tabs.weather')}
                     </TabsTrigger>
                     <TabsTrigger value="briefing" className="flex-1 gap-1.5 text-xs">
                       <FileText className="h-3.5 w-3.5" />
-                      Briefing
+                      {t('simbriefDialog.tabs.briefing')}
                     </TabsTrigger>
                   </TabsList>
 
@@ -310,7 +310,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                 className="gap-2 text-sm text-muted-foreground"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                View Full OFP (PDF)
+                {t('simbriefDialog.viewFullOfp')}
               </Button>
             )}
             <div className="flex gap-2">
@@ -340,6 +340,7 @@ function FlightHeader({
   /** Called after the user clicks an ICAO so the dialog can close itself. */
   onAirportClick: () => void;
 }) {
+  const { t } = useTranslation();
   const flightNumber = data.general.icao_airline
     ? `${data.general.icao_airline}${data.general.flight_number}`
     : data.atc.callsign;
@@ -360,14 +361,16 @@ function FlightHeader({
               variant="link"
               onClick={() => handleIcaoClick(data.origin.icao_code)}
               className="h-auto p-0 font-mono text-3xl font-bold tracking-tight"
-              aria-label={`Go to ${data.origin.icao_code} layout`}
+              aria-label={t('simbriefDialog.header.goToAirportLayoutAria', {
+                icao: data.origin.icao_code,
+              })}
             >
               {data.origin.icao_code}
             </Button>
             <p className="mt-0.5 text-sm text-muted-foreground">{data.origin.name}</p>
             <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <PlaneTakeoff className="h-3 w-3" />
-              <span>RWY {data.origin.plan_rwy}</span>
+              <span>{t('simbriefDialog.header.runway', { rwy: data.origin.plan_rwy })}</span>
             </div>
           </div>
 
@@ -389,14 +392,16 @@ function FlightHeader({
               variant="link"
               onClick={() => handleIcaoClick(data.destination.icao_code)}
               className="h-auto p-0 font-mono text-3xl font-bold tracking-tight"
-              aria-label={`Go to ${data.destination.icao_code} layout`}
+              aria-label={t('simbriefDialog.header.goToAirportLayoutAria', {
+                icao: data.destination.icao_code,
+              })}
             >
               {data.destination.icao_code}
             </Button>
             <p className="mt-0.5 text-sm text-muted-foreground">{data.destination.name}</p>
             <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
               <PlaneLanding className="h-3 w-3" />
-              <span>RWY {data.destination.plan_rwy}</span>
+              <span>{t('simbriefDialog.header.runway', { rwy: data.destination.plan_rwy })}</span>
             </div>
           </div>
         </div>
@@ -412,7 +417,9 @@ function FlightHeader({
             <div className="flex items-center justify-end gap-2 text-muted-foreground">
               <span>{data.aircraft.icao_code}</span>
               <span className="text-border">|</span>
-              <span className="font-mono">{data.aircraft.reg || 'N/A'}</span>
+              <span className="font-mono">
+                {data.aircraft.reg || t('simbriefDialog.notAvailable')}
+              </span>
             </div>
             <p className="text-muted-foreground">{data.aircraft.name}</p>
           </div>
@@ -421,19 +428,31 @@ function FlightHeader({
 
       {/* Quick Stats Bar */}
       <div className="mt-5 flex items-center justify-between rounded-lg bg-card/50 px-4 py-3">
-        <StatItem icon={Timer} label="ETE" value={formatFlightTime(data.times.est_time_enroute)} />
+        <StatItem
+          icon={Timer}
+          label={t('simbriefDialog.stats.ete')}
+          value={formatFlightTime(data.times.est_time_enroute)}
+        />
         <Separator orientation="vertical" className="h-8 bg-border" />
-        <StatItem icon={Gauge} label="FL" value={data.general.initial_altitude} />
+        <StatItem
+          icon={Gauge}
+          label={t('simbriefDialog.stats.fl')}
+          value={data.general.initial_altitude}
+        />
         <Separator orientation="vertical" className="h-8 bg-border" />
         <StatItem
           icon={Wind}
-          label="AVG WIND"
+          label={t('simbriefDialog.stats.avgWind')}
           value={`${data.general.avg_wind_dir}°/${data.general.avg_wind_spd}kt`}
         />
         <Separator orientation="vertical" className="h-8 bg-border" />
-        <StatItem icon={Navigation} label="CI" value={data.general.costindex} />
+        <StatItem
+          icon={Navigation}
+          label={t('simbriefDialog.stats.ci')}
+          value={data.general.costindex}
+        />
         <Separator orientation="vertical" className="h-8 bg-border" />
-        <StatItem icon={Route} label="AIRAC" value={data.general.airac} />
+        <StatItem icon={Route} label={t('simbriefDialog.stats.airac')} value={data.general.airac} />
       </div>
     </div>
   );
@@ -461,23 +480,24 @@ function StatItem({
 
 // Flight Tab (with vertical profile)
 function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       {/* Vertical Profile */}
       <div className="rounded-lg border bg-card p-4">
         <div className="mb-2 flex items-center justify-between">
           <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Vertical Profile
+            {t('simbriefDialog.flight.verticalProfile')}
           </h4>
           <div className="flex items-center gap-2">
             {data.general.sid_ident && (
               <Badge variant="secondary" className="text-[10px]">
-                SID: {data.general.sid_ident}
+                {t('simbriefDialog.flight.sid', { id: data.general.sid_ident })}
               </Badge>
             )}
             {data.general.star_ident && (
               <Badge variant="secondary" className="text-[10px]">
-                STAR: {data.general.star_ident}
+                {t('simbriefDialog.flight.star', { id: data.general.star_ident })}
               </Badge>
             )}
           </div>
@@ -489,10 +509,10 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       <div className="rounded-lg border bg-card p-4">
         <div className="mb-2 flex items-center justify-between">
           <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Route
+            {t('simbriefDialog.flight.route')}
           </h4>
           <Badge variant="outline" className="text-[10px]">
-            {data.navlog.fix.length} fixes
+            {t('simbriefDialog.flight.fixesCount', { count: data.navlog.fix.length })}
           </Badge>
         </div>
         <p className="font-mono text-sm leading-relaxed text-foreground/80">{data.general.route}</p>
@@ -503,24 +523,30 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <Fuel className="h-3.5 w-3.5" />
-            Fuel Summary
+            {t('simbriefDialog.flight.fuelSummary')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Block Fuel</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.flight.blockFuel')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatFuel(data.fuel.plan_ramp, apiUnit)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Trip Fuel</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.flight.tripFuel')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatFuel(data.fuel.enroute_burn, apiUnit)}
               </span>
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Landing Fuel</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.flight.landingFuel')}
+              </span>
               <span className="font-mono text-sm font-medium text-success">
                 {formatFuel(data.fuel.plan_landing, apiUnit)}
               </span>
@@ -532,23 +558,29 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <Scale className="h-3.5 w-3.5" />
-            Weights Summary
+            {t('simbriefDialog.flight.weightsSummary')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">ZFW</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.weights.zfw')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatWeight(data.weights.est_zfw, apiUnit)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">TOW</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.weights.tow')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatWeight(data.weights.est_tow, apiUnit)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">LDW</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.weights.ldw')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatWeight(data.weights.est_ldw, apiUnit)}
               </span>
@@ -560,22 +592,28 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <Users className="h-3.5 w-3.5" />
-            Payload
+            {t('simbriefDialog.flight.payload')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Passengers</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.flight.passengers')}
+              </span>
               <span className="font-mono text-sm font-medium">{data.weights.pax_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Cargo</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.flight.cargo')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatWeight(data.weights.cargo, apiUnit)}
               </span>
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Total Payload</span>
+              <span className="text-sm text-muted-foreground">
+                {t('simbriefDialog.flight.totalPayload')}
+              </span>
               <span className="font-mono text-sm font-medium">
                 {formatWeight(data.weights.payload, apiUnit)}
               </span>
@@ -588,13 +626,15 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
           <div className="rounded-lg border bg-card p-4">
             <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <PlaneLanding className="h-3.5 w-3.5" />
-              Alternate
+              {t('simbriefDialog.flight.alternate')}
             </h4>
             <div className="flex items-center gap-3">
               <span className="font-mono text-xl font-bold">{data.alternate.icao_code}</span>
               <div>
                 <p className="text-sm">{data.alternate.name}</p>
-                <p className="text-sm text-muted-foreground">RWY {data.alternate.plan_rwy}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('simbriefDialog.header.runway', { rwy: data.alternate.plan_rwy })}
+                </p>
               </div>
             </div>
           </div>
@@ -606,14 +646,45 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
 // Fuel Tab
 function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+  const { t } = useTranslation();
   const totalFuel = parseInt(data.fuel.plan_ramp, 10);
   const fuelItems = [
-    { label: 'Taxi', value: data.fuel.taxi, color: 'bg-muted-foreground' },
-    { label: 'Trip', value: data.fuel.enroute_burn, color: 'bg-primary' },
-    { label: 'Contingency', value: data.fuel.contingency, color: 'bg-warning' },
-    { label: 'Alternate', value: data.fuel.alternate_burn, color: 'bg-warning' },
-    { label: 'Final Reserve', value: data.fuel.reserve, color: 'bg-destructive' },
-    { label: 'Extra', value: data.fuel.extra, color: 'bg-success' },
+    {
+      id: 'taxi',
+      label: t('simbriefDialog.fuelTab.taxi'),
+      value: data.fuel.taxi,
+      color: 'bg-muted-foreground',
+    },
+    {
+      id: 'trip',
+      label: t('simbriefDialog.fuelTab.trip'),
+      value: data.fuel.enroute_burn,
+      color: 'bg-primary',
+    },
+    {
+      id: 'contingency',
+      label: t('simbriefDialog.fuelTab.contingency'),
+      value: data.fuel.contingency,
+      color: 'bg-warning',
+    },
+    {
+      id: 'alternate',
+      label: t('simbriefDialog.fuelTab.alternate'),
+      value: data.fuel.alternate_burn,
+      color: 'bg-warning',
+    },
+    {
+      id: 'finalReserve',
+      label: t('simbriefDialog.fuelTab.finalReserve'),
+      value: data.fuel.reserve,
+      color: 'bg-destructive',
+    },
+    {
+      id: 'extra',
+      label: t('simbriefDialog.fuelTab.extra'),
+      value: data.fuel.extra,
+      color: 'bg-success',
+    },
   ];
 
   return (
@@ -621,14 +692,14 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       {/* Fuel Breakdown Visual */}
       <div className="rounded-lg border bg-card p-4">
         <h4 className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Fuel Breakdown
+          {t('simbriefDialog.fuelTab.breakdown')}
         </h4>
         <div className="space-y-3">
           {fuelItems.map((item) => {
             const amount = parseInt(item.value, 10);
             const percentage = (amount / totalFuel) * 100;
             return (
-              <div key={item.label} className="space-y-1">
+              <div key={item.id} className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <div className={cn('h-2 w-2 rounded-full', item.color)} />
@@ -651,19 +722,25 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       {/* Fuel Totals */}
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-lg border bg-primary/5 p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Block Fuel</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('simbriefDialog.fuelTab.blockFuel')}
+          </p>
           <p className="mt-1 font-mono text-xl font-bold text-primary">
             {formatFuel(data.fuel.plan_ramp, apiUnit)}
           </p>
         </div>
         <div className="rounded-lg border bg-card p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Takeoff Fuel</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('simbriefDialog.fuelTab.takeoffFuel')}
+          </p>
           <p className="mt-1 font-mono text-xl font-bold">
             {formatFuel(data.fuel.plan_takeoff, apiUnit)}
           </p>
         </div>
         <div className="rounded-lg border bg-success/5 p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Landing Fuel</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('simbriefDialog.fuelTab.landingFuel')}
+          </p>
           <p className="mt-1 font-mono text-xl font-bold text-success">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
@@ -675,22 +752,23 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
 // Weights Tab
 function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+  const { t } = useTranslation();
   const weights = [
     {
-      label: 'Zero Fuel Weight',
-      abbr: 'ZFW',
+      label: t('simbriefDialog.weights.zfwFull'),
+      abbr: t('simbriefDialog.weights.zfw'),
       est: parseInt(data.weights.est_zfw, 10),
       max: parseInt(data.weights.max_zfw, 10),
     },
     {
-      label: 'Takeoff Weight',
-      abbr: 'TOW',
+      label: t('simbriefDialog.weights.towFull'),
+      abbr: t('simbriefDialog.weights.tow'),
       est: parseInt(data.weights.est_tow, 10),
       max: parseInt(data.weights.max_tow, 10),
     },
     {
-      label: 'Landing Weight',
-      abbr: 'LDW',
+      label: t('simbriefDialog.weights.ldwFull'),
+      abbr: t('simbriefDialog.weights.ldw'),
       est: parseInt(data.weights.est_ldw, 10),
       max: parseInt(data.weights.max_ldw, 10),
     },
@@ -701,7 +779,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       {/* Weight Gauges */}
       <div className="rounded-lg border bg-card p-4">
         <h4 className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Weight Limits
+          {t('simbriefDialog.weightsTab.limits')}
         </h4>
         <div className="space-y-5">
           {weights.map((w) => {
@@ -754,24 +832,26 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Operating Weights
+            {t('simbriefDialog.weightsTab.operating')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">OEW</span>
+              <span className="text-muted-foreground">{t('simbriefDialog.weightsTab.oew')}</span>
               <span className="font-mono font-medium">
                 {formatWeight(data.weights.oew, apiUnit)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Payload</span>
+              <span className="text-muted-foreground">
+                {t('simbriefDialog.weightsTab.payload')}
+              </span>
               <span className="font-mono font-medium">
                 {formatWeight(data.weights.payload, apiUnit)}
               </span>
             </div>
             <Separator />
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">ZFW</span>
+              <span className="text-muted-foreground">{t('simbriefDialog.weights.zfw')}</span>
               <span className="font-mono font-medium">
                 {formatWeight(data.weights.est_zfw, apiUnit)}
               </span>
@@ -781,15 +861,19 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
         <div className="rounded-lg border bg-card p-4">
           <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Payload Details
+            {t('simbriefDialog.weightsTab.details')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Passengers</span>
-              <span className="font-mono font-medium">{data.weights.pax_count} pax</span>
+              <span className="text-muted-foreground">
+                {t('simbriefDialog.weightsTab.passengers')}
+              </span>
+              <span className="font-mono font-medium">
+                {t('simbriefDialog.weightsTab.paxCount', { count: data.weights.pax_count })}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Cargo</span>
+              <span className="text-muted-foreground">{t('simbriefDialog.weightsTab.cargo')}</span>
               <span className="font-mono font-medium">
                 {formatWeight(data.weights.cargo, apiUnit)}
               </span>
@@ -803,6 +887,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
 // Weather Tab
 function WeatherTab({ data }: { data: SimBriefOFP }) {
+  const { t } = useTranslation();
   // Parse METARs
   const originMetar = useMemo(() => {
     if (!data.origin.metar) return null;
@@ -856,7 +941,7 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
         <MetarCard
           icao={data.alternate.icao_code}
           icon={Route}
-          label="Alternate"
+          label={t('simbriefDialog.weather.alternate')}
           rawMetar={data.alternate.metar}
           parsedMetar={altMetar}
         />
@@ -866,7 +951,7 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
       <div className="rounded-lg border bg-card p-4">
         <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           <Wind className="h-3.5 w-3.5" />
-          Average Winds Aloft
+          {t('simbriefDialog.weather.windsAloft')}
         </h4>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
@@ -877,14 +962,20 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
               />
             </div>
             <div>
-              <p className="font-mono text-2xl font-bold">{data.general.avg_wind_dir}°</p>
-              <p className="text-xs text-muted-foreground">Direction</p>
+              <p className="font-mono text-2xl font-bold">
+                {t('simbriefDialog.weather.directionDeg', { deg: data.general.avg_wind_dir })}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('simbriefDialog.weather.direction')}
+              </p>
             </div>
           </div>
           <Separator orientation="vertical" className="h-12" />
           <div>
-            <p className="font-mono text-2xl font-bold">{data.general.avg_wind_spd} kt</p>
-            <p className="text-xs text-muted-foreground">Speed</p>
+            <p className="font-mono text-2xl font-bold">
+              {t('simbriefDialog.weather.speedKt', { speed: data.general.avg_wind_spd })}
+            </p>
+            <p className="text-xs text-muted-foreground">{t('simbriefDialog.weather.speed')}</p>
           </div>
         </div>
       </div>
@@ -908,38 +999,47 @@ function MetarCard({
   parsedMetar: IMetar | null;
   taf?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-lg border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
         <h4 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           <Icon className="h-3.5 w-3.5" />
-          {icao} {label && `(${label})`}
+          {label ? t('simbriefDialog.weather.icaoWithLabel', { icao, label }) : icao}
         </h4>
         <Badge variant="outline" className="text-[10px]">
-          METAR
+          {t('simbriefDialog.weather.metar')}
         </Badge>
       </div>
 
       {/* Decoded METAR Display */}
       {parsedMetar && (
         <div className="mb-3 grid grid-cols-5 gap-2">
-          <MetarItem icon={Wind} label="Wind" value={formatWind(parsedMetar.wind)} />
+          <MetarItem
+            icon={Wind}
+            label={t('simbriefDialog.weather.wind')}
+            value={formatWind(parsedMetar.wind)}
+          />
           <MetarItem
             icon={Eye}
-            label="Visibility"
+            label={t('simbriefDialog.weather.visibility')}
             value={formatVisibility(parsedMetar.visibility, parsedMetar.cavok)}
           />
           <MetarItem
             icon={Cloud}
-            label="Ceiling"
+            label={t('simbriefDialog.weather.ceiling')}
             value={formatCeiling(parsedMetar.clouds, parsedMetar.verticalVisibility)}
           />
           <MetarItem
             icon={Thermometer}
-            label="Temp"
+            label={t('simbriefDialog.weather.temp')}
             value={parsedMetar.temperature !== undefined ? `${parsedMetar.temperature}°C` : '—'}
           />
-          <MetarItem icon={Gauge} label="QNH" value={formatAltimeter(parsedMetar.altimeter)} />
+          <MetarItem
+            icon={Gauge}
+            label={t('simbriefDialog.weather.qnh')}
+            value={formatAltimeter(parsedMetar.altimeter)}
+          />
         </div>
       )}
 
@@ -955,14 +1055,16 @@ function MetarCard({
 
       {/* Raw METAR */}
       <div className="rounded bg-muted/50 p-3">
-        <p className="font-mono text-sm leading-relaxed">{rawMetar || 'No METAR available'}</p>
+        <p className="font-mono text-sm leading-relaxed">
+          {rawMetar || t('simbriefDialog.noMetarAvailable')}
+        </p>
       </div>
 
       {/* TAF */}
       {taf && (
         <div className="mt-3">
           <Badge variant="outline" className="mb-2 text-[10px]">
-            TAF
+            {t('simbriefDialog.weather.taf')}
           </Badge>
           <div className="rounded bg-muted/50 p-3">
             <p className="font-mono text-sm leading-relaxed">{taf}</p>

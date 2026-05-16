@@ -19,6 +19,8 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
+const FONT_SIZES = ['small', 'medium', 'large'] as const;
+
 function ZoomSlider({
   zoomLevel,
   onCommit,
@@ -115,7 +117,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
         description={t('settings.appearance.fontSizeDescription')}
       >
         <div className="grid grid-cols-3 gap-2">
-          {(['small', 'medium', 'large'] as const).map((size) => (
+          {FONT_SIZES.map((size) => (
             <Button
               key={size}
               variant={appearance.fontSize === size ? 'default' : 'outline'}

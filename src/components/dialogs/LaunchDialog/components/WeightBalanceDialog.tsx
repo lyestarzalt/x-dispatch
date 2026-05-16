@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { AlertTriangle, Fuel, Users, X } from 'lucide-react';
@@ -44,6 +45,7 @@ function WeightDonut({
   maxWeight: number;
   weightUnit: WeightUnit;
 }) {
+  const { t } = useTranslation();
   const totalWeight = emptyWeight + payloadWeight + fuelWeight;
   const usefulLoad = maxWeight - emptyWeight; // max capacity for fuel + payload
   const isOverweight = totalWeight > maxWeight;
@@ -110,8 +112,10 @@ function WeightDonut({
 
       {isOverweight && (
         <div className="flex items-center gap-1.5 rounded-md bg-destructive/10 px-2.5 py-1 text-sm font-medium text-destructive">
-          <AlertTriangle className="h-3.5 w-3.5" />+
-          {formatWeight(totalWeight - maxWeight, weightUnit)} over
+          <AlertTriangle className="h-3.5 w-3.5" />
+          {t('weightBalance.over', {
+            amount: formatWeight(totalWeight - maxWeight, weightUnit),
+          })}
         </div>
       )}
 
@@ -119,26 +123,31 @@ function WeightDonut({
       <div className="w-full space-y-1.5 text-sm">
         <WeightRow
           dotClass="bg-muted-foreground/40"
-          label="Empty"
+          label={t('weightBalance.empty')}
           value={emptyWeight}
           unit={weightUnit}
         />
-        <WeightRow dotClass="bg-primary" label="Fuel" value={fuelWeight} unit={weightUnit} />
+        <WeightRow
+          dotClass="bg-primary"
+          label={t('weightBalance.fuel')}
+          value={fuelWeight}
+          unit={weightUnit}
+        />
         <WeightRow
           dotClass={isOverweight ? 'bg-destructive' : 'bg-success'}
-          label="Payload"
+          label={t('weightBalance.payload')}
           value={payloadWeight}
           unit={weightUnit}
         />
         <div className="border-t border-border pt-1.5">
           <div className="flex items-center justify-between font-medium">
-            <span>Total</span>
+            <span>{t('weightBalance.total')}</span>
             <span className={cn('font-mono', isOverweight && 'text-destructive')}>
               {formatWeight(totalWeight, weightUnit)}
             </span>
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
-            <span>Max</span>
+            <span>{t('weightBalance.max')}</span>
             <span className="font-mono">{formatWeight(maxWeight, weightUnit)}</span>
           </div>
         </div>
@@ -172,6 +181,7 @@ function WeightRow({
 // ─── Dialog ──────────────────────────────────────────────────────────────────
 
 export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps) {
+  const { t } = useTranslation();
   const weightUnit = useSettingsStore((s) => s.map.units.weight);
   const mapSettings = useSettingsStore((s) => s.map);
   const updateMapSettings = useSettingsStore((s) => s.updateMapSettings);
@@ -213,12 +223,12 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
-            <DialogTitle>Weight &amp; Fuel</DialogTitle>
+            <DialogTitle>{t('weightBalance.title')}</DialogTitle>
           </VisuallyHidden.Root>
 
           {/* Header */}
           <div className="flex h-11 items-center justify-between border-b border-border bg-card px-4">
-            <span className="text-sm font-medium">Weight &amp; Fuel</span>
+            <span className="text-sm font-medium">{t('weightBalance.title')}</span>
             <div className="flex items-center gap-2">
               <ToggleGroup
                 type="single"
@@ -233,10 +243,10 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                 className="gap-0 rounded-md border border-border"
               >
                 <ToggleGroupItem value="kg" className="h-7 rounded-r-none px-2.5 text-xs">
-                  kg
+                  {t('units.kg')}
                 </ToggleGroupItem>
                 <ToggleGroupItem value="lbs" className="h-7 rounded-l-none px-2.5 text-xs">
-                  lbs
+                  {t('units.lbs')}
                 </ToggleGroupItem>
               </ToggleGroup>
               <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
@@ -258,7 +268,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                   <div className="mb-3 flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5 text-success" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Payload
+                      {t('weightBalance.payload')}
                     </span>
                   </div>
                   <div className="space-y-3">
@@ -283,19 +293,21 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                 <div className="mb-3 flex items-center gap-1.5">
                   <Fuel className="h-3.5 w-3.5 text-primary" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Fuel
+                    {t('weightBalance.fuel')}
                   </span>
                 </div>
 
                 {/* All tanks master control */}
                 <div className="mb-3 rounded-md bg-secondary/60 p-2.5">
                   <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="font-medium text-foreground">All Tanks</span>
+                    <span className="font-medium text-foreground">
+                      {t('weightBalance.allTanks')}
+                    </span>
                     <span className="font-mono text-foreground">
-                      {overallFuelPct}%
-                      <span className="ml-1 text-muted-foreground">
-                        ({formatWeight(totalFuelLbs, weightUnit)})
-                      </span>
+                      {t('weightBalance.overallFuelValue', {
+                        pct: overallFuelPct,
+                        weight: formatWeight(totalFuelLbs, weightUnit),
+                      })}
                     </span>
                   </div>
                   <Slider
@@ -327,7 +339,10 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                         step={1}
                         onChange={(v) => setTankPercentage(i, v)}
                         formatValue={(v) =>
-                          `${Math.round(v)}% (${formatWeight(weightLbs, weightUnit)})`
+                          t('weightBalance.tankValue', {
+                            pct: Math.round(v),
+                            weight: formatWeight(weightLbs, weightUnit),
+                          })
                         }
                       />
                     );
@@ -351,7 +366,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
           {/* Footer */}
           <div className="flex justify-end border-t border-border bg-card px-4 py-2.5">
             <Button onClick={onClose} size="sm">
-              Done
+              {t('weightBalance.done')}
             </Button>
           </div>
         </DialogPrimitive.Content>

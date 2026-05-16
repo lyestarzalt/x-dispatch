@@ -117,7 +117,9 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                     {primaryRoute && (
                       <span className="flex shrink-0 items-center gap-1 font-mono text-xs font-semibold text-info">
                         {primaryRoute.departure}
-                        <span className="text-muted-foreground/40">→</span>
+                        <span className="text-muted-foreground/40">
+                          {t('explorePanel.vatsimEvents.arrow')}
+                        </span>
                         {primaryRoute.arrival}
                       </span>
                     )}
@@ -133,7 +135,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
       {/* Attribution */}
       <div className="pt-1 text-center">
         <span className="text-xs text-muted-foreground/50">
-          Data from{' '}
+          {t('explorePanel.vatsimEvents.dataFrom')}{' '}
           <a
             href="https://vatsim.net"
             target="_blank"

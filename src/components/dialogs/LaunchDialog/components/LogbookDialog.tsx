@@ -222,6 +222,7 @@ interface LogbookCardProps {
 }
 
 function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const { data: previewImage } = useAircraftImage(entry.previewImagePath);
   const gradientKey = getWeatherGradientKey(entry);
@@ -289,10 +290,14 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
           <span className="text-border">·</span>
           <Clock className="h-3 w-3 shrink-0" />
           <span className="font-mono">
-            {entry.useRealWorldTime ? 'Live' : formatTimeOfDay(entry.timeOfDay)}
+            {entry.useRealWorldTime
+              ? t('launcher.logbook.timeLive')
+              : formatTimeOfDay(entry.timeOfDay)}
           </span>
           <span className="text-border">·</span>
-          <span>{entry.coldAndDark ? 'Cold & Dark' : 'Ready'}</span>
+          <span>
+            {entry.coldAndDark ? t('launcher.logbook.coldAndDark') : t('launcher.logbook.ready')}
+          </span>
         </div>
       </div>
 

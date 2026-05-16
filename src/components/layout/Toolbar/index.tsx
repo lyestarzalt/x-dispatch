@@ -233,7 +233,7 @@ function PinOptionsPopover({
                 <span className="xp-label">{t('toolbar.pinModes.altitude')}</span>
                 <span className="xp-value">
                   {airAltFt.toLocaleString()}
-                  <span className="ml-0.5 text-xs text-muted-foreground">ft</span>
+                  <span className="ml-0.5 text-xs text-muted-foreground">{t('units.ft')}</span>
                 </span>
               </div>
               <Slider
@@ -283,7 +283,7 @@ function PinOptionsPopover({
                     startPosition?.airSpeedMs != null && 'border-primary/50'
                   )}
                 />
-                <span className="shrink-0 text-xs text-muted-foreground">m/s</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{t('units.ms')}</span>
               </div>
             </div>
           </div>
@@ -326,7 +326,7 @@ function PinOptionsPopover({
                   <span className="xp-label">{t('toolbar.pinModes.approach')}</span>
                   <span className="xp-value">
                     {startPosition?.boatApproachNm ?? 1.5}
-                    <span className="ml-0.5 text-xs text-muted-foreground">nm</span>
+                    <span className="ml-0.5 text-xs text-muted-foreground">{t('units.nm')}</span>
                   </span>
                 </div>
                 <Slider
@@ -351,7 +351,10 @@ function PinOptionsPopover({
               className="flex w-full items-center justify-between rounded px-1 py-1 text-left transition-colors hover:bg-muted/50"
             >
               <span className="font-mono text-sm text-muted-foreground">
-                {startPosition?.latitude.toFixed(4)}°, {startPosition?.longitude.toFixed(4)}°
+                {t('toolbar.pinCoords', {
+                  lat: startPosition?.latitude.toFixed(4),
+                  lon: startPosition?.longitude.toFixed(4),
+                })}
               </span>
               <Pencil className="h-3 w-3 text-muted-foreground/50" />
             </button>
@@ -673,13 +676,13 @@ export default function Toolbar({
         variant="outline"
         onClick={() => setAddonManagerOpen(true)}
         className="h-9 gap-2 px-3"
-        tooltip="Manage aircraft, scenery & plugins"
+        tooltip={t('toolbar.tooltips.addons')}
         tooltipSide="bottom"
       >
         <Package className="h-4 w-4" />
-        <span className="text-sm font-medium">Addons</span>
+        <span className="text-sm font-medium">{t('toolbar.addons')}</span>
         <Badge variant="warning" className="px-1.5 py-0.5 text-[10px] uppercase leading-none">
-          alpha
+          {t('toolbar.alphaTag')}
         </Badge>
       </Button>
 
@@ -978,7 +981,7 @@ export default function Toolbar({
                           rangeRingsDuration === h && 'bg-primary/20 text-primary'
                         )}
                       >
-                        {h}h
+                        {t('toolbar.rangeRingsHours', { n: h })}
                       </Button>
                     ))}
                   </div>
@@ -994,7 +997,7 @@ export default function Toolbar({
                       />
                       <span className="flex-1">{RANGE_RING_LABELS[cat]}</span>
                       <span className="ml-2 font-mono text-xs text-muted-foreground">
-                        {RANGE_RING_SPEEDS[cat]}kts
+                        {t('toolbar.rangeRingsKts', { speed: RANGE_RING_SPEEDS[cat] })}
                       </span>
                     </DropdownMenuCheckboxItem>
                   ))}

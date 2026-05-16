@@ -32,8 +32,11 @@
     "m": "m",
     "nm": "nm",
     "kt": "kt",
+    "kts": "kts",
+    "ms": "m/s",
     "s": "s",
     "kg": "kg",
+    "lbs": "lbs",
     "fpm": "fpm"
   },
   "directions": {
@@ -92,6 +95,10 @@
     "searchPlaceholder": "空港を検索...",
     "clearSearch": "検索をクリア",
     "addons": "アドオン",
+    "alphaTag": "アルファ",
+    "rangeRingsHours": "{{n}}時間",
+    "rangeRingsKts": "{{speed}}kts",
+    "pinCoords": "{{lat}}°, {{lon}}°",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "追跡",
@@ -263,10 +270,13 @@
         "format": "フォーマット",
         "label": "ラベル",
         "folder": "保存先フォルダ",
+        "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "エクスポートフォルダを選択",
         "empty": "エクスポート先がまだありません。追加するとSimBriefプランを直接アドオンのフォルダに送れます。",
         "deleteTitle": "このエクスポート先を削除しますか？"
-      }
+      },
+      "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
+      "linkLabel": "simbrief.com"
     },
     "about": {
       "title": "情報",
@@ -297,7 +307,11 @@
       "debugOverlay": "デバッグオーバーレイ",
       "debugOverlayDescription": "開発者向けデバッグツールバーを表示",
       "toggleDebug": "切り替え",
-      "debugShortcut": "Ctrl+Shift+D（MacではCmd+Shift+D）も使用できます"
+      "debugShortcut": "Ctrl+Shift+D（MacではCmd+Shift+D）も使用できます",
+      "developerName": "Lyes Tarzalt",
+      "licenseValue": "GPL-3.0-only",
+      "specialThanksName": "Gilles",
+      "specialThanksHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Planeインストール",
@@ -387,6 +401,7 @@
       "customStyleAdd": "追加",
       "customStyleRemove": "{{name}}を削除",
       "customStyleFallbackName": "カスタム",
+      "customStylePlaceholder": "https://example.com/style.json",
       "mapStyleError": {
         "required": "URLは必須です",
         "invalid-url": "有効なURLではありません",
@@ -434,6 +449,10 @@
       "cacheDescription": "キャッシュデータをクリアして、X-Planeファイルから完全に再読み込みします",
       "clearCache": "キャッシュをクリアして再読み込み",
       "clearingCache": "クリア中...",
+      "navigraphLabel": "Navigraph",
+      "xplaneDefaultLabel": "X-Plane Default",
+      "customAirportLabel": "Custom Airport",
+      "defaultLabel": "Default",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "VATSIMネットワークからのライブ航空交通",
@@ -574,6 +593,48 @@
     "filterOther": "その他",
     "noGatesFound": "ゲートが見つかりません",
     "noFrequencies": "周波数がありません",
+    "noWeather": "気象データなし",
+    "conditions": {
+      "wind": "風",
+      "visibility": "視程",
+      "ceiling": "シーリング",
+      "qnh": "QNH",
+      "tempDew": "気温 / 露点",
+      "tempDewValue": "{{temp}}°C / {{dew}}°C",
+      "phenomena": "気象現象"
+    },
+    "activeRunway": "使用滑走路",
+    "windAligned": "· 風向沿い, {{delta}}°ずれ",
+    "atisLabel": "ATIS {{letter}}",
+    "runwaysHeading": "滑走路",
+    "runwayCountTotal": "計 {{count}}",
+    "runwayLengthFt": "{{length}}'",
+    "runwayName": "滑走路 {{name}}",
+    "ils": {
+      "frequency": "周波数",
+      "localizer": "ローカライザー",
+      "glideslope": "グライドスロープ",
+      "range": "有効範囲",
+      "ident": "識別符号",
+      "rangeNm": "{{value}} NM"
+    },
+    "rawMetar": "生METAR",
+    "routeTab": {
+      "tabApproach": "進入",
+      "noneAvailable": "{{type}}なし",
+      "noneApproaches": "進入手順なし",
+      "transitionCount_one": "トランジション 1",
+      "transitionCount_other": "トランジション {{count}}",
+      "runwayVariantCount_one": "滑走路 1",
+      "runwayVariantCount_other": "滑走路 {{count}}",
+      "variantCount_one": "バリアント 1",
+      "variantCount_other": "バリアント {{count}}",
+      "allVariants": "すべて"
+    },
+    "noRunwaysMatching": "\"{{query}}\"に一致する滑走路なし",
+    "noHelipads": "ヘリパッドなし",
+    "noHelipadsMatching": "\"{{query}}\"に一致するヘリパッドなし",
+    "runwayDimensions": "{{length}}'×{{width}}'",
     "xplaneGateway": "X-Plane Gateway",
     "gatewayNotAvailable": "Gatewayデータが利用できません",
     "gatewayLoading": "Gatewayデータを読み込み中...",
@@ -629,7 +690,8 @@
       "approachNm": "{{distance}} nm ファイナル",
       "winch": "ウインチ",
       "tug": "曳航機",
-      "tugAircraft": "曳航機: Cessna 172 SP"
+      "tugAircraft": "曳航機: Cessna 172 SP",
+      "towWith": "{{type}} tow"
     },
     "gateway": {
       "updateAvailable": "Gatewayに新しいリリースがあります",
@@ -649,7 +711,8 @@
       "autoRoute": "自動ルート",
       "pointsPlaced": "{{count}}ポイント",
       "export": "Follow the Greens用にエクスポート",
-      "exportSuccess": "Follow the Greens用にルートをエクスポートしました"
+      "exportSuccess": "Follow the Greens用にルートをエクスポートしました",
+      "summary": "via {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -793,7 +856,9 @@
     "liveries": {
       "title": "塗装",
       "count": "塗装（{{count}}）",
-      "default": "デフォルト"
+      "default": "デフォルト",
+      "previousLivery": "Previous livery",
+      "nextLivery": "Next livery"
     },
     "specs": {
       "emptyWeight": "空虚重量",
@@ -888,6 +953,7 @@
       "cloudCoverage": "雲量",
       "tops": "雲頂",
       "bases": "雲底",
+      "ftMsl": "{{value}} ft MSL",
       "deleteCloud": "雲レイヤー {{n}} を削除",
       "cloudTypes": {
         "cirrus": "巻雲",
@@ -963,8 +1029,12 @@
       "title": "フライトログ",
       "clearAll": "すべてクリア",
       "empty": "最近のフライトなし",
-      "emptyHint": "起動後、最新10件のフライトがここに表示されます"
-    }
+      "emptyHint": "起動後、最新10件のフライトがここに表示されます",
+      "timeLive": "Live",
+      "coldAndDark": "Cold & Dark",
+      "ready": "Ready"
+    },
+    "weightFuelLabel": "Weight & Fuel"
   },
   "addonManager": {
     "title": "アドオンマネージャー",
@@ -1052,7 +1122,10 @@
       "openFolder": "フォルダを開く",
       "toggle": "切り替え",
       "lock": "ロック",
-      "unlock": "ロック解除"
+      "unlock": "ロック解除",
+      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "versionUpdate": "v{{current}} → {{latest}}",
+      "version": "v{{version}}"
     },
     "scenery": {
       "loading": "シーナリーフォルダをスキャン中...",
@@ -1066,6 +1139,7 @@
       "deleted": "{{name}}を削除しました",
       "deleteFailed": "削除に失敗しました",
       "packages": "{{count}}個のシーナリーパッケージ",
+      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
       "unsafeMode": "危険",
@@ -1114,6 +1188,17 @@
       "openFolder": "フォルダを開く",
       "lock": "ロック",
       "unlock": "ロック解除"
+    },
+    "aircraftEntry": {
+      "liveriesCount": "{{count}} liveries",
+      "viewLiveries": "View liveries",
+      "unlock": "Unlock",
+      "lockPrevent": "Lock (prevent changes)",
+      "openFolder": "Open folder",
+      "deleteAircraft": "Delete aircraft"
+    },
+    "button": {
+      "tooltip": "Addon Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}}件のスクリプト",
@@ -1198,5 +1283,251 @@
       "transAltTitle": "転移高度",
       "transAltDesc": "現地気圧（QNH）と標準気圧（STD）を切り替える高度 — 高度計を適切に設定してください"
     }
+  },
+  "flightInfoPanel": {
+    "tabs": {
+      "route": "ルート",
+      "fuel": "燃料",
+      "weight": "重量",
+      "wx": "気象"
+    },
+    "avgWind": "平均風",
+    "blockFuel": "ブロック燃料",
+    "landing": "着陸",
+    "paxCargo": "PAX / 貨物",
+    "alternate": "代替",
+    "blockLabel": "ブロック",
+    "landingLabel": "着陸",
+    "passengers": "乗客",
+    "cargo": "貨物",
+    "payload": "ペイロード",
+    "wind": "風",
+    "vis": "視程",
+    "temp": "気温",
+    "tempDeg": "{{value}}°",
+    "qnh": "QNH",
+    "noMetar": "METARなし",
+    "fuelItems": {
+      "taxi": "タクシー",
+      "trip": "飛行",
+      "contingency": "予備",
+      "alternate": "代替",
+      "reserve": "リザーブ",
+      "extra": "追加"
+    }
+  },
+  "weightBalance": {
+    "title": "重量と燃料",
+    "empty": "空虚",
+    "fuel": "燃料",
+    "payload": "ペイロード",
+    "total": "合計",
+    "max": "最大",
+    "over": "+{{amount}} 超過",
+    "allTanks": "全タンク",
+    "done": "完了",
+    "tankValue": "{{pct}}% ({{weight}})",
+    "overallFuelValue": "{{pct}}% ({{weight}})"
+  },
+  "simbriefDialog": {
+    "viewFullOfp": "完全なOFP(PDF)",
+    "notAvailable": "N/A",
+    "noMetarAvailable": "METARなし",
+    "header": {
+      "goToAirportLayoutAria": "{{icao}}のレイアウトへ",
+      "runway": "RWY {{rwy}}",
+      "takeoffWithIcao": "離陸 - {{icao}}",
+      "landingWithIcao": "着陸 - {{icao}}"
+    },
+    "tabs": {
+      "flight": "飛行",
+      "performance": "性能",
+      "navlog": "ナブログ",
+      "fuel": "燃料",
+      "weights": "重量",
+      "weather": "気象",
+      "briefing": "ブリーフィング"
+    },
+    "stats": {
+      "ete": "ETE",
+      "fl": "FL",
+      "avgWind": "平均風",
+      "ci": "CI",
+      "airac": "AIRAC"
+    },
+    "flight": {
+      "verticalProfile": "垂直プロファイル",
+      "sid": "SID: {{id}}",
+      "star": "STAR: {{id}}",
+      "route": "ルート",
+      "fixesCount": "{{count}} 個のフィックス",
+      "fuelSummary": "燃料サマリー",
+      "blockFuel": "ブロック燃料",
+      "tripFuel": "飛行燃料",
+      "landingFuel": "着陸時燃料",
+      "weightsSummary": "重量サマリー",
+      "payload": "ペイロード",
+      "passengers": "乗客",
+      "cargo": "貨物",
+      "totalPayload": "総ペイロード",
+      "alternate": "代替"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "zfwFull": "無燃料重量",
+      "towFull": "離陸重量",
+      "ldwFull": "着陸重量"
+    },
+    "fuelTab": {
+      "breakdown": "燃料内訳",
+      "taxi": "タクシー",
+      "trip": "飛行",
+      "contingency": "予備",
+      "alternate": "代替",
+      "finalReserve": "最終予備",
+      "extra": "追加",
+      "blockFuel": "ブロック燃料",
+      "takeoffFuel": "離陸時燃料",
+      "landingFuel": "着陸時燃料"
+    },
+    "weightsTab": {
+      "limits": "重量制限",
+      "operating": "運用重量",
+      "oew": "OEW",
+      "payload": "ペイロード",
+      "details": "ペイロード詳細",
+      "passengers": "乗客",
+      "cargo": "貨物",
+      "paxCount": "{{count}} PAX"
+    },
+    "briefing": {
+      "notamLabelDeparture": "出発",
+      "notamLabelArrival": "到着",
+      "notamLabelAlternate": "代替",
+      "transAltAbbr": "TA: {{value}} ft",
+      "transLevelAbbr": "TL: FL{{value}}",
+      "sigmetValid": "有効: {{start}} - {{end}}",
+      "sigmetFir": "FIR: {{name}}",
+      "notamCount_one": "NOTAM 1",
+      "notamCount_other": "NOTAM {{count}}",
+      "showMore": "もっと見る",
+      "showLess": "閉じる",
+      "notamEffective": "発効: {{date}}",
+      "notamEffectiveRange": "有効: {{start}} - {{end}}"
+    },
+    "navlog": {
+      "colFix": "フィックス / 航路",
+      "colAltitude": "高度",
+      "colWind": "風",
+      "colGsMach": "GS / マッハ",
+      "colEta": "ETA",
+      "colFuelRem": "残燃料",
+      "waypointCount": "{{count}} ウェイポイント",
+      "groundSpeedKt": "{{value}} kt",
+      "position": "位置",
+      "temperature": "気温",
+      "windComponent": "風成分",
+      "windCompValue": "{{value}} kt {{tag}}",
+      "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
+      "headwind": "(向かい風)",
+      "tailwind": "(追い風)",
+      "tropopause": "圏界面",
+      "fir": "FIR",
+      "groundElevation": "地表標高",
+      "mora": "MORA",
+      "fuelUsed": "使用燃料",
+      "fuelUsedValue": "{{value}} {{unit}}"
+    },
+    "profile": {
+      "noData": "プロファイルデータなし",
+      "altitude": "高度",
+      "distance": "距離",
+      "wind": "風",
+      "terrain": "地形",
+      "flightPath": "飛行経路",
+      "tocBadge": "T/C",
+      "todBadge": "T/D",
+      "total": "合計:",
+      "distanceNm": "{{value}} NM",
+      "altitudeFt": "{{value}} ft"
+    },
+    "performance": {
+      "vspeeds": {
+        "v1": "V1",
+        "vr": "VR",
+        "v2": "V2",
+        "vref": "Vref"
+      },
+      "flexTemp": "フレックス気温",
+      "togaThrust": "TOGA",
+      "wind": "風",
+      "flaps": "フラップ",
+      "thrust": "推力",
+      "rwyLength": "滑走路長",
+      "meters": "{{value}} m",
+      "feet": "{{value}} ft",
+      "tlrNotAvailable": "TLRデータなし",
+      "ldaDry": "LDA(乾)",
+      "ldaWet": "LDA(濡)",
+      "cruise": "巡航性能",
+      "initialFl": "初期FL",
+      "costIndex": "コストインデックス",
+      "cruiseMach": "巡航マッハ",
+      "machValue": "M{{mach}}",
+      "cruiseTas": "巡航TAS",
+      "tasKt": "{{tas}} kt",
+      "stepClimbs": "ステップ上昇",
+      "stepFallback": "ステップ {{n}}",
+      "stepLabel": "{{altitude}} @ {{waypoint}}",
+      "transAltOrigin": "{{icao}} 遷移高度",
+      "transLevelDest": "{{icao}} 遷移高度",
+      "flightLevel": "FL{{value}}",
+      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+    },
+    "weather": {
+      "alternate": "代替",
+      "icaoWithLabel": "{{icao}} ({{label}})",
+      "windsAloft": "高層平均風",
+      "direction": "方向",
+      "speed": "速度",
+      "directionDeg": "{{deg}}°",
+      "speedKt": "{{speed}} kt",
+      "metar": "METAR",
+      "taf": "TAF",
+      "wind": "風",
+      "visibility": "視程",
+      "ceiling": "シーリング",
+      "temp": "気温",
+      "qnh": "QNH"
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or reload the application.",
+    "errorDetails": "Error details",
+    "tryAgain": "Try Again",
+    "reloadApp": "Reload App",
+    "sectionFailed": "{{name}} failed to load",
+    "retry": "Retry"
+  },
+  "titleBar": {
+    "version": "v{{version}}",
+    "debug": "debug",
+    "panels": "Panels",
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+  },
+  "explorePanel": {
+    "routes": {
+      "arrow": "→"
+    },
+    "vatsimEvents": {
+      "arrow": "→",
+      "dataFrom": "Data from"
+    }
+  },
+  "sunArc": {
+    "local": "local"
   }
 }

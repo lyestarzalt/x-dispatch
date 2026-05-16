@@ -32,8 +32,11 @@
     "m": "米",
     "nm": "海里",
     "kt": "节",
+    "kts": "节",
+    "ms": "米/秒",
     "s": "秒",
     "kg": "公斤",
+    "lbs": "磅",
     "fpm": "英尺/分"
   },
   "directions": {
@@ -92,6 +95,10 @@
     "searchPlaceholder": "搜索机场...",
     "clearSearch": "清除搜索",
     "addons": "插件",
+    "alphaTag": "测试",
+    "rangeRingsHours": "{{n}}小时",
+    "rangeRingsKts": "{{speed}}节",
+    "pinCoords": "{{lat}}°, {{lon}}°",
     "nav": "导航",
     "vatsim": "VATSIM",
     "track": "跟踪",
@@ -137,8 +144,8 @@
       "layers": "切换地图图层和叠加层",
       "addons": "管理飞机、插件和场景",
       "loadPlan": "加载 X-Plane .fms 飞行计划文件",
-      "explore": "发现精选机场和航线",
       "simbrief": "从SimBrief导入飞行计划",
+      "explore": "发现精选机场和航线",
       "nav": "显示机场周围的导航图层",
       "track": "在X-Plane中跟踪您的飞机",
       "vatsim": "显示VATSIM实时交通",
@@ -263,10 +270,13 @@
         "format": "格式",
         "label": "标签",
         "folder": "目标文件夹",
+        "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "选择导出文件夹",
         "empty": "尚无目标。添加一个即可将 SimBrief 计划直接发送到插件文件夹。",
         "deleteTitle": "删除此导出目标？"
-      }
+      },
+      "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
+      "linkLabel": "simbrief.com"
     },
     "about": {
       "title": "关于",
@@ -297,7 +307,11 @@
       "debugOverlay": "调试覆盖层",
       "debugOverlayDescription": "显示开发者调试工具栏",
       "toggleDebug": "切换",
-      "debugShortcut": "您也可以使用 Ctrl+Shift+D（Mac 上为 Cmd+Shift+D）"
+      "debugShortcut": "您也可以使用 Ctrl+Shift+D（Mac 上为 Cmd+Shift+D）",
+      "developerName": "Lyes Tarzalt",
+      "licenseValue": "GPL-3.0-only",
+      "specialThanksName": "Gilles",
+      "specialThanksHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Plane 安装",
@@ -387,6 +401,7 @@
       "customStyleAdd": "添加",
       "customStyleRemove": "移除 {{name}}",
       "customStyleFallbackName": "自定义",
+      "customStylePlaceholder": "https://example.com/style.json",
       "mapStyleError": {
         "required": "URL 必填",
         "invalid-url": "URL 无效",
@@ -434,6 +449,10 @@
       "cacheDescription": "清除缓存数据，以强制从 X-Plane 文件重新完整加载",
       "clearCache": "清除缓存并重新加载",
       "clearingCache": "正在清除...",
+      "navigraphLabel": "Navigraph",
+      "xplaneDefaultLabel": "X-Plane Default",
+      "customAirportLabel": "Custom Airport",
+      "defaultLabel": "Default",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "来自 VATSIM 网络的实时空中交通",
@@ -574,6 +593,48 @@
     "filterOther": "其他",
     "noGatesFound": "未找到登机口",
     "noFrequencies": "无可用频率",
+    "noWeather": "无气象数据",
+    "conditions": {
+      "wind": "风",
+      "visibility": "能见度",
+      "ceiling": "云底高",
+      "qnh": "QNH",
+      "tempDew": "温度 / 露点",
+      "tempDewValue": "{{temp}}°C / {{dew}}°C",
+      "phenomena": "天气现象"
+    },
+    "activeRunway": "使用跑道",
+    "windAligned": "· 顺风, 偏差{{delta}}°",
+    "atisLabel": "ATIS {{letter}}",
+    "runwaysHeading": "跑道",
+    "runwayCountTotal": "共 {{count}} 条",
+    "runwayLengthFt": "{{length}}'",
+    "runwayName": "跑道 {{name}}",
+    "ils": {
+      "frequency": "频率",
+      "localizer": "航向台",
+      "glideslope": "下滑道",
+      "range": "范围",
+      "ident": "识别码",
+      "rangeNm": "{{value}} NM"
+    },
+    "rawMetar": "原始 METAR",
+    "routeTab": {
+      "tabApproach": "进近",
+      "noneAvailable": "无可用 {{type}}",
+      "noneApproaches": "无可用进近",
+      "transitionCount_one": "1 个过渡",
+      "transitionCount_other": "{{count}} 个过渡",
+      "runwayVariantCount_one": "1 条跑道",
+      "runwayVariantCount_other": "{{count}} 条跑道",
+      "variantCount_one": "1 个变体",
+      "variantCount_other": "{{count}} 个变体",
+      "allVariants": "全部"
+    },
+    "noRunwaysMatching": "未找到匹配 \"{{query}}\" 的跑道",
+    "noHelipads": "无直升机停机坪",
+    "noHelipadsMatching": "未找到匹配 \"{{query}}\" 的停机坪",
+    "runwayDimensions": "{{length}}'×{{width}}'",
     "xplaneGateway": "X-Plane Gateway",
     "gatewayNotAvailable": "Gateway 数据不可用",
     "gatewayLoading": "正在加载 Gateway 数据...",
@@ -629,7 +690,8 @@
       "approachNm": "{{distance}} nm 五边",
       "winch": "绞车",
       "tug": "拖机",
-      "tugAircraft": "拖曳飞机: Cessna 172 SP"
+      "tugAircraft": "拖曳飞机: Cessna 172 SP",
+      "towWith": "{{type}} tow"
     },
     "gateway": {
       "updateAvailable": "Gateway 有更新的版本",
@@ -649,7 +711,8 @@
       "autoRoute": "自动航路",
       "pointsPlaced": "{{count}} 个点",
       "export": "保存滑行路线",
-      "exportSuccess": "滑行路线已保存"
+      "exportSuccess": "滑行路线已保存",
+      "summary": "via {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -793,7 +856,9 @@
     "liveries": {
       "title": "涂装",
       "count": "涂装 ({{count}})",
-      "default": "默认"
+      "default": "默认",
+      "previousLivery": "Previous livery",
+      "nextLivery": "Next livery"
     },
     "specs": {
       "emptyWeight": "空重",
@@ -888,6 +953,7 @@
       "cloudCoverage": "云覆盖量",
       "tops": "云顶",
       "bases": "云底",
+      "ftMsl": "{{value}} ft MSL",
       "deleteCloud": "删除云层 {{n}}",
       "cloudTypes": {
         "cirrus": "卷云",
@@ -963,8 +1029,12 @@
       "title": "飞行日志",
       "clearAll": "清除全部",
       "empty": "没有最近的飞行",
-      "emptyHint": "启动后，您最近的10次飞行将显示在此处"
-    }
+      "emptyHint": "启动后，您最近的10次飞行将显示在此处",
+      "timeLive": "Live",
+      "coldAndDark": "Cold & Dark",
+      "ready": "Ready"
+    },
+    "weightFuelLabel": "Weight & Fuel"
   },
   "addonManager": {
     "title": "插件管理器",
@@ -1052,7 +1122,10 @@
       "openFolder": "打开文件夹",
       "toggle": "切换",
       "lock": "锁定",
-      "unlock": "解锁"
+      "unlock": "解锁",
+      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "versionUpdate": "v{{current}} → {{latest}}",
+      "version": "v{{version}}"
     },
     "scenery": {
       "loading": "正在扫描场景文件夹...",
@@ -1066,6 +1139,7 @@
       "deleted": "已删除{{name}}",
       "deleteFailed": "删除失败",
       "packages": "{{count}} 个场景包",
+      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
       "unsavedChanges": "未保存",
       "safeMode": "安全",
       "unsafeMode": "不安全",
@@ -1114,6 +1188,17 @@
       "openFolder": "打开文件夹",
       "lock": "锁定",
       "unlock": "解锁"
+    },
+    "aircraftEntry": {
+      "liveriesCount": "{{count}} liveries",
+      "viewLiveries": "View liveries",
+      "unlock": "Unlock",
+      "lockPrevent": "Lock (prevent changes)",
+      "openFolder": "Open folder",
+      "deleteAircraft": "Delete aircraft"
+    },
+    "button": {
+      "tooltip": "Addon Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}} 个脚本",
@@ -1198,5 +1283,251 @@
       "transAltTitle": "过渡高度",
       "transAltDesc": "在本场气压（QNH）和标准气压（STD）之间切换的高度 — 请相应调整高度表"
     }
+  },
+  "flightInfoPanel": {
+    "tabs": {
+      "route": "航路",
+      "fuel": "燃油",
+      "weight": "重量",
+      "wx": "气象"
+    },
+    "avgWind": "平均风",
+    "blockFuel": "轮挡油",
+    "landing": "着陆",
+    "paxCargo": "乘客 / 货物",
+    "alternate": "备降",
+    "blockLabel": "轮挡",
+    "landingLabel": "着陆",
+    "passengers": "乘客",
+    "cargo": "货物",
+    "payload": "载重",
+    "wind": "风",
+    "vis": "能见",
+    "temp": "温度",
+    "tempDeg": "{{value}}°",
+    "qnh": "QNH",
+    "noMetar": "无 METAR",
+    "fuelItems": {
+      "taxi": "滑行",
+      "trip": "航段",
+      "contingency": "备用",
+      "alternate": "备降",
+      "reserve": "保留",
+      "extra": "额外"
+    }
+  },
+  "weightBalance": {
+    "title": "重量与燃料",
+    "empty": "空机",
+    "fuel": "燃油",
+    "payload": "载重",
+    "total": "总计",
+    "max": "最大",
+    "over": "+{{amount}} 超重",
+    "allTanks": "所有油箱",
+    "done": "完成",
+    "tankValue": "{{pct}}% ({{weight}})",
+    "overallFuelValue": "{{pct}}% ({{weight}})"
+  },
+  "simbriefDialog": {
+    "viewFullOfp": "完整 OFP (PDF)",
+    "notAvailable": "无",
+    "noMetarAvailable": "无 METAR 数据",
+    "header": {
+      "goToAirportLayoutAria": "前往 {{icao}} 布局",
+      "runway": "RWY {{rwy}}",
+      "takeoffWithIcao": "起飞 - {{icao}}",
+      "landingWithIcao": "着陆 - {{icao}}"
+    },
+    "tabs": {
+      "flight": "航班",
+      "performance": "性能",
+      "navlog": "航段记录",
+      "fuel": "燃油",
+      "weights": "重量",
+      "weather": "气象",
+      "briefing": "简报"
+    },
+    "stats": {
+      "ete": "ETE",
+      "fl": "FL",
+      "avgWind": "平均风",
+      "ci": "CI",
+      "airac": "AIRAC"
+    },
+    "flight": {
+      "verticalProfile": "垂直剖面",
+      "sid": "SID: {{id}}",
+      "star": "STAR: {{id}}",
+      "route": "航路",
+      "fixesCount": "{{count}} 个航点",
+      "fuelSummary": "燃油概览",
+      "blockFuel": "轮挡油",
+      "tripFuel": "航段油",
+      "landingFuel": "落地油",
+      "weightsSummary": "重量概览",
+      "payload": "载重",
+      "passengers": "乘客",
+      "cargo": "货物",
+      "totalPayload": "总载重",
+      "alternate": "备降"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "zfwFull": "零油重",
+      "towFull": "起飞重量",
+      "ldwFull": "着陆重量"
+    },
+    "fuelTab": {
+      "breakdown": "燃油明细",
+      "taxi": "滑行",
+      "trip": "航段",
+      "contingency": "备用",
+      "alternate": "备降",
+      "finalReserve": "最终保留",
+      "extra": "额外",
+      "blockFuel": "轮挡油",
+      "takeoffFuel": "起飞油",
+      "landingFuel": "落地油"
+    },
+    "weightsTab": {
+      "limits": "重量限制",
+      "operating": "运行重量",
+      "oew": "OEW",
+      "payload": "载重",
+      "details": "载重明细",
+      "passengers": "乘客",
+      "cargo": "货物",
+      "paxCount": "{{count}} 人"
+    },
+    "briefing": {
+      "notamLabelDeparture": "出发",
+      "notamLabelArrival": "到达",
+      "notamLabelAlternate": "备降",
+      "transAltAbbr": "TA: {{value}} ft",
+      "transLevelAbbr": "TL: FL{{value}}",
+      "sigmetValid": "有效期: {{start}} - {{end}}",
+      "sigmetFir": "FIR: {{name}}",
+      "notamCount_one": "1 个 NOTAM",
+      "notamCount_other": "{{count}} 个 NOTAM",
+      "showMore": "显示更多",
+      "showLess": "收起",
+      "notamEffective": "生效: {{date}}",
+      "notamEffectiveRange": "有效期: {{start}} - {{end}}"
+    },
+    "navlog": {
+      "colFix": "航点 / 航路",
+      "colAltitude": "高度",
+      "colWind": "风",
+      "colGsMach": "GS / 马赫",
+      "colEta": "ETA",
+      "colFuelRem": "剩余油",
+      "waypointCount": "{{count}} 航点",
+      "groundSpeedKt": "{{value}} kt",
+      "position": "位置",
+      "temperature": "温度",
+      "windComponent": "风分量",
+      "windCompValue": "{{value}} kt {{tag}}",
+      "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
+      "headwind": "(逆风)",
+      "tailwind": "(顺风)",
+      "tropopause": "对流层顶",
+      "fir": "FIR",
+      "groundElevation": "地面高度",
+      "mora": "MORA",
+      "fuelUsed": "已用油",
+      "fuelUsedValue": "{{value}} {{unit}}"
+    },
+    "profile": {
+      "noData": "无剖面数据",
+      "altitude": "高度",
+      "distance": "距离",
+      "wind": "风",
+      "terrain": "地形",
+      "flightPath": "飞行轨迹",
+      "tocBadge": "T/C",
+      "todBadge": "T/D",
+      "total": "总计:",
+      "distanceNm": "{{value}} NM",
+      "altitudeFt": "{{value}} ft"
+    },
+    "performance": {
+      "vspeeds": {
+        "v1": "V1",
+        "vr": "VR",
+        "v2": "V2",
+        "vref": "Vref"
+      },
+      "flexTemp": "减推力温度",
+      "togaThrust": "TOGA",
+      "wind": "风",
+      "flaps": "襟翼",
+      "thrust": "推力",
+      "rwyLength": "跑道长度",
+      "meters": "{{value}} 米",
+      "feet": "{{value}} ft",
+      "tlrNotAvailable": "无 TLR 数据",
+      "ldaDry": "LDA (干)",
+      "ldaWet": "LDA (湿)",
+      "cruise": "巡航性能",
+      "initialFl": "初始 FL",
+      "costIndex": "成本指数",
+      "cruiseMach": "巡航马赫",
+      "machValue": "M{{mach}}",
+      "cruiseTas": "巡航 TAS",
+      "tasKt": "{{tas}} kt",
+      "stepClimbs": "阶梯爬升",
+      "stepFallback": "阶 {{n}}",
+      "stepLabel": "{{altitude}} @ {{waypoint}}",
+      "transAltOrigin": "{{icao}} 过渡高度",
+      "transLevelDest": "{{icao}} 过渡高度层",
+      "flightLevel": "FL{{value}}",
+      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+    },
+    "weather": {
+      "alternate": "备降",
+      "icaoWithLabel": "{{icao}} ({{label}})",
+      "windsAloft": "高空平均风",
+      "direction": "方向",
+      "speed": "速度",
+      "directionDeg": "{{deg}}°",
+      "speedKt": "{{speed}} kt",
+      "metar": "METAR",
+      "taf": "TAF",
+      "wind": "风",
+      "visibility": "能见度",
+      "ceiling": "云底高",
+      "temp": "温度",
+      "qnh": "QNH"
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or reload the application.",
+    "errorDetails": "Error details",
+    "tryAgain": "Try Again",
+    "reloadApp": "Reload App",
+    "sectionFailed": "{{name}} failed to load",
+    "retry": "Retry"
+  },
+  "titleBar": {
+    "version": "v{{version}}",
+    "debug": "debug",
+    "panels": "Panels",
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+  },
+  "explorePanel": {
+    "routes": {
+      "arrow": "→"
+    },
+    "vatsimEvents": {
+      "arrow": "→",
+      "dataFrom": "Data from"
+    }
+  },
+  "sunArc": {
+    "local": "local"
   }
 }

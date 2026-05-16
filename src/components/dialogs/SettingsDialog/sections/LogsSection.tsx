@@ -75,7 +75,7 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         <Toolbar />
-        <p className="text-sm text-muted-foreground">…</p>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       </div>
     );
   }

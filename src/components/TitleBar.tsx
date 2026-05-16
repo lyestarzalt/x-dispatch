@@ -1,4 +1,5 @@
 import { type CSSProperties, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bug } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ const WIN_LINUX_CONTROLS_PAD =
   'calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 138px)))';
 
 export function TitleBar() {
+  const { t } = useTranslation();
   const [version, setVersion] = useState('');
   const [installation, setInstallation] = useState('');
 
@@ -50,7 +52,7 @@ export function TitleBar() {
       }}
     >
       <span className="font-medium tracking-tight text-foreground">X-Dispatch</span>
-      {version && <span className="font-mono">v{version}</span>}
+      {version && <span className="font-mono">{t('titleBar.version', { version })}</span>}
       {installation && (
         <>
           <span className="text-border">·</span>
@@ -63,6 +65,7 @@ export function TitleBar() {
 }
 
 function DebugMenu() {
+  const { t } = useTranslation();
   const visible = useSettingsStore((s) => s.appearance.debugOverlay);
   const detached = useDebugStore((s) => s.detached);
   const togglePanel = useDebugStore((s) => s.togglePanel);
@@ -83,13 +86,15 @@ function DebugMenu() {
           aria-label="Debug panels (Ctrl+Shift+D to toggle)"
         >
           <Bug className="h-3 w-3" />
-          <span>debug</span>
+          <span>{t('titleBar.debug')}</span>
           {detached.length > 0 && (
             <span className="ml-0.5 rounded bg-primary/20 px-1 text-[10px]">{detached.length}</span>
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel className="xp-section-heading">Panels</DropdownMenuLabel>
+          <DropdownMenuLabel className="xp-section-heading">
+            {t('titleBar.panels')}
+          </DropdownMenuLabel>
           {TABS.map((tab) => {
             const isOpen = detached.some((d) => d.id === tab.id);
             return (
@@ -108,7 +113,7 @@ function DebugMenu() {
           })}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setDebugOverlay(false)} className="text-xs">
-            Hide debug menu (⌃⇧D)
+            {t('titleBar.hideDebugMenu')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

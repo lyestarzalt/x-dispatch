@@ -135,7 +135,7 @@ export function EditFmsTargetDialog({
                 id="fms-target-folder"
                 value={folderPath}
                 onChange={(e) => setFolderPath(e.target.value)}
-                placeholder="/X-Plane 12/Output/FMS plans"
+                placeholder={t('settings.simbrief.fmsExportTargets.folderPlaceholder')}
                 className="font-mono text-xs"
               />
               <Button type="button" variant="outline" onClick={handlePickFolder}>

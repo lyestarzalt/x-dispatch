@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/AircraftEntry.tsx
+import { useTranslation } from 'react-i18next';
 import { FolderOpen, Lock, Plane, Trash2, Unlock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ export function AircraftEntry({
   onOpenLiveries,
   disabled,
 }: AircraftEntryProps) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -51,8 +53,12 @@ export function AircraftEntry({
       {/* Version badge */}
       {aircraft.version && (
         <Badge variant={aircraft.hasUpdate ? 'destructive' : 'outline'} className="text-sm">
-          v{aircraft.version}
-          {aircraft.hasUpdate && aircraft.latestVersion && ` → ${aircraft.latestVersion}`}
+          {aircraft.hasUpdate && aircraft.latestVersion
+            ? t('addonManager.browser.versionUpdate', {
+                current: aircraft.version,
+                latest: aircraft.latestVersion,
+              })
+            : t('addonManager.browser.version', { version: aircraft.version })}
         </Badge>
       )}
 
@@ -66,10 +72,10 @@ export function AircraftEntry({
               className="h-7 gap-1 px-2 text-sm"
               onClick={() => onOpenLiveries(aircraft.folderName)}
             >
-              {aircraft.liveryCount} liveries
+              {t('addonManager.aircraftEntry.liveriesCount', { count: aircraft.liveryCount })}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>View liveries</TooltipContent>
+          <TooltipContent>{t('addonManager.aircraftEntry.viewLiveries')}</TooltipContent>
         </Tooltip>
       )}
 
@@ -90,7 +96,11 @@ export function AircraftEntry({
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{aircraft.locked ? 'Unlock' : 'Lock (prevent changes)'}</TooltipContent>
+        <TooltipContent>
+          {aircraft.locked
+            ? t('addonManager.aircraftEntry.unlock')
+            : t('addonManager.aircraftEntry.lockPrevent')}
+        </TooltipContent>
       </Tooltip>
 
       {/* Open folder button */}
@@ -105,7 +115,7 @@ export function AircraftEntry({
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Open folder</TooltipContent>
+        <TooltipContent>{t('addonManager.aircraftEntry.openFolder')}</TooltipContent>
       </Tooltip>
 
       {/* Delete button */}
@@ -121,7 +131,7 @@ export function AircraftEntry({
             <Trash2 className="h-4 w-4" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Delete aircraft</TooltipContent>
+        <TooltipContent>{t('addonManager.aircraftEntry.deleteAircraft')}</TooltipContent>
       </Tooltip>
     </div>
   );

@@ -32,8 +32,11 @@
     "m": "m",
     "nm": "nm",
     "kt": "kt",
+    "kts": "kts",
+    "ms": "m/s",
     "s": "s",
     "kg": "kg",
+    "lbs": "lbs",
     "fpm": "fpm"
   },
   "directions": {
@@ -92,6 +95,10 @@
     "searchPlaceholder": "Search airports...",
     "clearSearch": "Clear search",
     "addons": "Addons",
+    "alphaTag": "alpha",
+    "rangeRingsHours": "{{n}}h",
+    "rangeRingsKts": "{{speed}}kts",
+    "pinCoords": "{{lat}}°, {{lon}}°",
     "nav": "NAV",
     "vatsim": "VATSIM",
     "track": "Track",
@@ -263,10 +270,13 @@
         "format": "Format",
         "label": "Label",
         "folder": "Target folder",
+        "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "Pick export folder",
         "empty": "No targets yet. Add one to send SimBrief plans straight into an addon folder.",
         "deleteTitle": "Delete this export target?"
-      }
+      },
+      "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
+      "linkLabel": "simbrief.com"
     },
     "about": {
       "title": "About",
@@ -297,7 +307,11 @@
       "debugOverlay": "Debug Overlay",
       "debugOverlayDescription": "Show the developer debug toolbar",
       "toggleDebug": "Toggle",
-      "debugShortcut": "You can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)"
+      "debugShortcut": "You can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)",
+      "developerName": "Lyes Tarzalt",
+      "licenseValue": "GPL-3.0-only",
+      "specialThanksName": "Gilles",
+      "specialThanksHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Plane Installation",
@@ -387,6 +401,7 @@
       "customStyleAdd": "Add",
       "customStyleRemove": "Remove {{name}}",
       "customStyleFallbackName": "Custom",
+      "customStylePlaceholder": "https://example.com/style.json",
       "mapStyleError": {
         "required": "URL is required",
         "invalid-url": "Not a valid URL",
@@ -434,6 +449,10 @@
       "cacheDescription": "Clear cached data to force a full reload from X-Plane files",
       "clearCache": "Clear Cache & Reload",
       "clearingCache": "Clearing...",
+      "navigraphLabel": "Navigraph",
+      "xplaneDefaultLabel": "X-Plane Default",
+      "customAirportLabel": "Custom Airport",
+      "defaultLabel": "Default",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live air traffic from the VATSIM network",
@@ -574,6 +593,48 @@
     "filterOther": "OTHER",
     "noGatesFound": "NO GATES FOUND",
     "noFrequencies": "No frequencies available",
+    "noWeather": "No weather data available",
+    "conditions": {
+      "wind": "Wind",
+      "visibility": "Visibility",
+      "ceiling": "Ceiling",
+      "qnh": "QNH",
+      "tempDew": "Temp / Dew",
+      "tempDewValue": "{{temp}}°C / {{dew}}°C",
+      "phenomena": "Phenomena"
+    },
+    "activeRunway": "Active runway",
+    "windAligned": "· wind-aligned, {{delta}}° off",
+    "atisLabel": "ATIS {{letter}}",
+    "runwaysHeading": "Runways",
+    "runwayCountTotal": "{{count}} total",
+    "runwayLengthFt": "{{length}}'",
+    "runwayName": "Runway {{name}}",
+    "ils": {
+      "frequency": "Frequency",
+      "localizer": "Localizer",
+      "glideslope": "Glideslope",
+      "range": "Range",
+      "ident": "Ident",
+      "rangeNm": "{{value}} NM"
+    },
+    "rawMetar": "Raw METAR",
+    "routeTab": {
+      "tabApproach": "Approach",
+      "noneAvailable": "No {{type}} available",
+      "noneApproaches": "No approaches available",
+      "transitionCount_one": "1 transition",
+      "transitionCount_other": "{{count}} transitions",
+      "runwayVariantCount_one": "1 runway",
+      "runwayVariantCount_other": "{{count}} runways",
+      "variantCount_one": "1 variant",
+      "variantCount_other": "{{count}} variants",
+      "allVariants": "All"
+    },
+    "noRunwaysMatching": "No runways matching \"{{query}}\"",
+    "noHelipads": "No helipads found",
+    "noHelipadsMatching": "No helipads matching \"{{query}}\"",
+    "runwayDimensions": "{{length}}'×{{width}}'",
     "xplaneGateway": "X-Plane Gateway",
     "gatewayNotAvailable": "GATEWAY DATA NOT AVAILABLE",
     "gatewayLoading": "LOADING GATEWAY DATA...",
@@ -629,7 +690,8 @@
       "approachNm": "{{distance}} nm final",
       "winch": "Winch",
       "tug": "Tug",
-      "tugAircraft": "Tow plane: Cessna 172 SP"
+      "tugAircraft": "Tow plane: Cessna 172 SP",
+      "towWith": "{{type}} tow"
     },
     "gateway": {
       "updateAvailable": "Gateway has a newer release",
@@ -649,7 +711,8 @@
       "autoRoute": "Auto route",
       "pointsPlaced": "{{count}} point(s)",
       "export": "Save taxi route",
-      "exportSuccess": "Taxi route saved"
+      "exportSuccess": "Taxi route saved",
+      "summary": "via {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -793,7 +856,9 @@
     "liveries": {
       "title": "Liveries",
       "count": "Liveries ({{count}})",
-      "default": "Default"
+      "default": "Default",
+      "previousLivery": "Previous livery",
+      "nextLivery": "Next livery"
     },
     "specs": {
       "emptyWeight": "Empty",
@@ -888,6 +953,7 @@
       "cloudCoverage": "Cloud Coverage",
       "tops": "Tops",
       "bases": "Bases",
+      "ftMsl": "{{value}} ft MSL",
       "deleteCloud": "Delete Cloud Layer {{n}}",
       "cloudTypes": {
         "cirrus": "Cirrus",
@@ -963,8 +1029,12 @@
       "title": "Flight Logbook",
       "clearAll": "Clear All",
       "empty": "No recent flights",
-      "emptyHint": "Your last 10 flights will appear here after launching"
-    }
+      "emptyHint": "Your last 10 flights will appear here after launching",
+      "timeLive": "Live",
+      "coldAndDark": "Cold & Dark",
+      "ready": "Ready"
+    },
+    "weightFuelLabel": "Weight & Fuel"
   },
   "addonManager": {
     "title": "Addon Manager",
@@ -1052,7 +1122,10 @@
       "openFolder": "Open Folder",
       "toggle": "Toggle",
       "lock": "Lock",
-      "unlock": "Unlock"
+      "unlock": "Unlock",
+      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "versionUpdate": "v{{current}} → {{latest}}",
+      "version": "v{{version}}"
     },
     "scenery": {
       "loading": "Scanning scenery folders...",
@@ -1066,6 +1139,7 @@
       "deleted": "Deleted {{name}}",
       "deleteFailed": "Failed to delete scenery",
       "packages": "{{count}} scenery packages",
+      "tabStats": "{{total}} packs · {{enabled}} on · {{disabled}} off",
       "unsavedChanges": "Unsaved",
       "safeMode": "Safe",
       "unsafeMode": "Unsafe",
@@ -1114,6 +1188,17 @@
       "openFolder": "Open folder",
       "lock": "Lock",
       "unlock": "Unlock"
+    },
+    "aircraftEntry": {
+      "liveriesCount": "{{count}} liveries",
+      "viewLiveries": "View liveries",
+      "unlock": "Unlock",
+      "lockPrevent": "Lock (prevent changes)",
+      "openFolder": "Open folder",
+      "deleteAircraft": "Delete aircraft"
+    },
+    "button": {
+      "tooltip": "Addon Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}} scripts",
@@ -1198,5 +1283,251 @@
       "transAltTitle": "Transition Altitudes",
       "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD) — set your altimeter accordingly"
     }
+  },
+  "flightInfoPanel": {
+    "tabs": {
+      "route": "Route",
+      "fuel": "Fuel",
+      "weight": "Weight",
+      "wx": "WX"
+    },
+    "avgWind": "Avg Wind",
+    "blockFuel": "Block Fuel",
+    "landing": "Landing",
+    "paxCargo": "PAX / Cargo",
+    "alternate": "Alternate",
+    "blockLabel": "Block",
+    "landingLabel": "Landing",
+    "passengers": "Passengers",
+    "cargo": "Cargo",
+    "payload": "Payload",
+    "wind": "Wind",
+    "vis": "Vis",
+    "temp": "Temp",
+    "tempDeg": "{{value}}°",
+    "qnh": "QNH",
+    "noMetar": "No METAR",
+    "fuelItems": {
+      "taxi": "Taxi",
+      "trip": "Trip",
+      "contingency": "Contingency",
+      "alternate": "Alternate",
+      "reserve": "Reserve",
+      "extra": "Extra"
+    }
+  },
+  "weightBalance": {
+    "title": "Weight & Fuel",
+    "empty": "Empty",
+    "fuel": "Fuel",
+    "payload": "Payload",
+    "total": "Total",
+    "max": "Max",
+    "over": "+{{amount}} over",
+    "allTanks": "All Tanks",
+    "done": "Done",
+    "tankValue": "{{pct}}% ({{weight}})",
+    "overallFuelValue": "{{pct}}% ({{weight}})"
+  },
+  "simbriefDialog": {
+    "viewFullOfp": "View Full OFP (PDF)",
+    "notAvailable": "N/A",
+    "noMetarAvailable": "No METAR available",
+    "header": {
+      "goToAirportLayoutAria": "Go to {{icao}} layout",
+      "runway": "RWY {{rwy}}",
+      "takeoffWithIcao": "Takeoff - {{icao}}",
+      "landingWithIcao": "Landing - {{icao}}"
+    },
+    "tabs": {
+      "flight": "Flight",
+      "performance": "Perf",
+      "navlog": "Navlog",
+      "fuel": "Fuel",
+      "weights": "Weights",
+      "weather": "Weather",
+      "briefing": "Briefing"
+    },
+    "stats": {
+      "ete": "ETE",
+      "fl": "FL",
+      "avgWind": "AVG WIND",
+      "ci": "CI",
+      "airac": "AIRAC"
+    },
+    "flight": {
+      "verticalProfile": "Vertical Profile",
+      "sid": "SID: {{id}}",
+      "star": "STAR: {{id}}",
+      "route": "Route",
+      "fixesCount": "{{count}} fixes",
+      "fuelSummary": "Fuel Summary",
+      "blockFuel": "Block Fuel",
+      "tripFuel": "Trip Fuel",
+      "landingFuel": "Landing Fuel",
+      "weightsSummary": "Weights Summary",
+      "payload": "Payload",
+      "passengers": "Passengers",
+      "cargo": "Cargo",
+      "totalPayload": "Total Payload",
+      "alternate": "Alternate"
+    },
+    "weights": {
+      "zfw": "ZFW",
+      "tow": "TOW",
+      "ldw": "LDW",
+      "zfwFull": "Zero Fuel Weight",
+      "towFull": "Takeoff Weight",
+      "ldwFull": "Landing Weight"
+    },
+    "fuelTab": {
+      "breakdown": "Fuel Breakdown",
+      "taxi": "Taxi",
+      "trip": "Trip",
+      "contingency": "Contingency",
+      "alternate": "Alternate",
+      "finalReserve": "Final Reserve",
+      "extra": "Extra",
+      "blockFuel": "Block Fuel",
+      "takeoffFuel": "Takeoff Fuel",
+      "landingFuel": "Landing Fuel"
+    },
+    "weightsTab": {
+      "limits": "Weight Limits",
+      "operating": "Operating Weights",
+      "oew": "OEW",
+      "payload": "Payload",
+      "details": "Payload Details",
+      "passengers": "Passengers",
+      "cargo": "Cargo",
+      "paxCount": "{{count}} pax"
+    },
+    "briefing": {
+      "notamLabelDeparture": "Departure",
+      "notamLabelArrival": "Arrival",
+      "notamLabelAlternate": "Alternate",
+      "transAltAbbr": "TA: {{value}} ft",
+      "transLevelAbbr": "TL: FL{{value}}",
+      "sigmetValid": "Valid: {{start}} - {{end}}",
+      "sigmetFir": "FIR: {{name}}",
+      "notamCount_one": "1 NOTAM",
+      "notamCount_other": "{{count}} NOTAMs",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "notamEffective": "Effective: {{date}}",
+      "notamEffectiveRange": "Effective: {{start}} - {{end}}"
+    },
+    "navlog": {
+      "colFix": "Fix / Airway",
+      "colAltitude": "Altitude",
+      "colWind": "Wind",
+      "colGsMach": "GS / Mach",
+      "colEta": "ETA",
+      "colFuelRem": "Fuel Rem",
+      "waypointCount": "{{count}} waypoints",
+      "groundSpeedKt": "{{value}} kt",
+      "position": "Position",
+      "temperature": "Temperature",
+      "windComponent": "Wind Component",
+      "windCompValue": "{{value}} kt {{tag}}",
+      "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
+      "headwind": "(headwind)",
+      "tailwind": "(tailwind)",
+      "tropopause": "Tropopause",
+      "fir": "FIR",
+      "groundElevation": "Ground Elevation",
+      "mora": "MORA",
+      "fuelUsed": "Fuel Used",
+      "fuelUsedValue": "{{value}} {{unit}}"
+    },
+    "profile": {
+      "noData": "No profile data available",
+      "altitude": "Altitude",
+      "distance": "Distance",
+      "wind": "Wind",
+      "terrain": "Terrain",
+      "flightPath": "Flight Path",
+      "tocBadge": "T/C",
+      "todBadge": "T/D",
+      "total": "Total:",
+      "distanceNm": "{{value}} nm",
+      "altitudeFt": "{{value}} ft"
+    },
+    "performance": {
+      "vspeeds": {
+        "v1": "V1",
+        "vr": "VR",
+        "v2": "V2",
+        "vref": "Vref"
+      },
+      "flexTemp": "Flex Temp",
+      "togaThrust": "TOGA",
+      "wind": "Wind",
+      "flaps": "Flaps",
+      "thrust": "Thrust",
+      "rwyLength": "RWY Length",
+      "meters": "{{value}} m",
+      "feet": "{{value}} ft",
+      "tlrNotAvailable": "TLR data not available",
+      "ldaDry": "LDA (Dry)",
+      "ldaWet": "LDA (Wet)",
+      "cruise": "Cruise Performance",
+      "initialFl": "Initial FL",
+      "costIndex": "Cost Index",
+      "cruiseMach": "Cruise Mach",
+      "machValue": "M{{mach}}",
+      "cruiseTas": "Cruise TAS",
+      "tasKt": "{{tas}} kt",
+      "stepClimbs": "Step Climbs",
+      "stepFallback": "Step {{n}}",
+      "stepLabel": "{{altitude}} @ {{waypoint}}",
+      "transAltOrigin": "{{icao}} Trans Alt",
+      "transLevelDest": "{{icao}} Trans Level",
+      "flightLevel": "FL{{value}}",
+      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+    },
+    "weather": {
+      "alternate": "Alternate",
+      "icaoWithLabel": "{{icao}} ({{label}})",
+      "windsAloft": "Average Winds Aloft",
+      "direction": "Direction",
+      "speed": "Speed",
+      "directionDeg": "{{deg}}°",
+      "speedKt": "{{speed}} kt",
+      "metar": "METAR",
+      "taf": "TAF",
+      "wind": "Wind",
+      "visibility": "Visibility",
+      "ceiling": "Ceiling",
+      "temp": "Temp",
+      "qnh": "QNH"
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or reload the application.",
+    "errorDetails": "Error details",
+    "tryAgain": "Try Again",
+    "reloadApp": "Reload App",
+    "sectionFailed": "{{name}} failed to load",
+    "retry": "Retry"
+  },
+  "titleBar": {
+    "version": "v{{version}}",
+    "debug": "debug",
+    "panels": "Panels",
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+  },
+  "explorePanel": {
+    "routes": {
+      "arrow": "→"
+    },
+    "vatsimEvents": {
+      "arrow": "→",
+      "dataFrom": "Data from"
+    }
+  },
+  "sunArc": {
+    "local": "local"
   }
 }

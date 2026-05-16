@@ -98,15 +98,16 @@ export function BrowserTab() {
     return { total, enabled, updates };
   }, [plugins]);
 
-  const handleOpenFolder = async (relativePath: string, type: 'aircraft' | 'plugins') => {
+  const handleOpenAircraftFolder = async (relativePath: string) => {
     const xplanePath = await window.xplaneAPI.getPath();
     if (!xplanePath) return;
+    window.appAPI.openPath(`${xplanePath}/Aircraft/${relativePath}`);
+  };
 
-    const fullPath =
-      type === 'aircraft'
-        ? `${xplanePath}/Aircraft/${relativePath}`
-        : `${xplanePath}/Resources/plugins/${relativePath}`;
-    window.appAPI.openPath(fullPath);
+  const handleOpenPluginFolder = async (relativePath: string) => {
+    const xplanePath = await window.xplaneAPI.getPath();
+    if (!xplanePath) return;
+    window.appAPI.openPath(`${xplanePath}/Resources/plugins/${relativePath}`);
   };
 
   const handleDeleteAircraft = async (folderName: string) => {
@@ -137,12 +138,11 @@ export function BrowserTab() {
         {/* Left: stats + updates badge */}
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">
-            <span className="font-mono tabular-nums text-foreground">{totalAddons}</span>
-            {' addons · '}
-            <span className="text-success">{totalEnabled}</span>
-            {' on · '}
-            <span>{totalAddons - totalEnabled}</span>
-            {' off'}
+            {t('addonManager.browser.tabStats', {
+              total: totalAddons,
+              enabled: totalEnabled,
+              disabled: totalAddons - totalEnabled,
+            })}
           </span>
         </div>
 
@@ -277,7 +277,7 @@ export function BrowserTab() {
                     onToggle={(name) => pluginToggle.mutate(name)}
                     onDelete={handleDeletePlugin}
                     onLock={(name) => pluginLock.mutate(name)}
-                    onOpenFolder={(name) => handleOpenFolder(name, 'plugins')}
+                    onOpenFolder={handleOpenPluginFolder}
                     onOpenScripts={
                       plugin.folderName.toLowerCase() === 'flywithlua'
                         ? () => setScriptsOpen(true)
@@ -328,7 +328,7 @@ export function BrowserTab() {
                     onToggle={(name) => aircraftToggle.mutate(name)}
                     onDelete={handleDeleteAircraft}
                     onLock={(name) => aircraftLock.mutate(name)}
-                    onOpenFolder={(name) => handleOpenFolder(name, 'aircraft')}
+                    onOpenFolder={handleOpenAircraftFolder}
                     onOpenLiveries={(name) =>
                       setLiveryDialog({
                         open: true,

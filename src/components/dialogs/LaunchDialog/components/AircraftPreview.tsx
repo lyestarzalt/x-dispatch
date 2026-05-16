@@ -17,6 +17,7 @@ const LIVERY_GAP = 12;
 const LIVERY_PADDING = 12;
 const LIVERY_VISIBLE_ROWS = 2;
 const LIVERY_COLUMNS = 4;
+const LIVERY_VIEWPORT_CLASS = 'snap-y snap-mandatory scroll-p-3';
 
 // Main preview image for selected livery
 function LiveryPreview({
@@ -208,7 +209,9 @@ export function AircraftPreview() {
               </div>
             </div>
             <div className="flex-shrink-0 rounded-lg bg-secondary/80 px-2.5 py-1.5 backdrop-blur-sm">
-              <span className="text-sm font-medium">{currentLivery?.displayName ?? 'Default'}</span>
+              <span className="text-sm font-medium">
+                {currentLivery?.displayName ?? t('launcher.liveries.default')}
+              </span>
               <span className="ml-2 text-sm text-muted-foreground">
                 {currentIndex + 1}/{selectedAircraft.liveries.length}
               </span>
@@ -232,7 +235,7 @@ export function AircraftPreview() {
                 onClick={goToPrevious}
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span className="sr-only">Previous livery</span>
+                <span className="sr-only">{t('launcher.liveries.previousLivery')}</span>
               </Button>
               <Button
                 variant="outline"
@@ -241,7 +244,7 @@ export function AircraftPreview() {
                 onClick={goToNext}
               >
                 <ArrowRight className="h-4 w-4" />
-                <span className="sr-only">Next livery</span>
+                <span className="sr-only">{t('launcher.liveries.nextLivery')}</span>
               </Button>
             </>
           )}
@@ -257,7 +260,7 @@ export function AircraftPreview() {
           <span className="text-sm text-muted-foreground">{selectedAircraft.liveries.length}</span>
         </div>
         <ScrollArea
-          viewportClassName="snap-y snap-mandatory scroll-p-3"
+          viewportClassName={LIVERY_VIEWPORT_CLASS}
           style={{
             maxHeight:
               LIVERY_CARD_HEIGHT * LIVERY_VISIBLE_ROWS +

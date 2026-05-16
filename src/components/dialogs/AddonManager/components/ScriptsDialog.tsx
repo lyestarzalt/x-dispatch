@@ -20,6 +20,9 @@ import {
   useLuaScriptToggle,
 } from '@/queries/useAddonManager';
 
+const LUA_EXTENSION = '.lua';
+const DISABLED_EXTENSION = '.xfml';
+
 interface ScriptsDialogProps {
   open: boolean;
   onClose: () => void;
@@ -84,7 +87,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
 
                   {/* Extension indicator */}
                   <span className="text-sm text-muted-foreground">
-                    {script.enabled ? '.lua' : '.xfml'}
+                    {script.enabled ? LUA_EXTENSION : DISABLED_EXTENSION}
                   </span>
 
                   {/* Delete button */}

@@ -48,18 +48,23 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between gap-3">
               <span className="text-muted-foreground">{t('settings.about.developer')}</span>
-              <span className="min-w-0 truncate text-right">Lyes Tarzalt</span>
+              <span className="min-w-0 truncate text-right">
+                {t('settings.about.developerName')}
+              </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground">{t('settings.about.license')}</span>
               <Badge variant="outline" className="font-mono text-xs">
-                GPL-3.0-only
+                {t('settings.about.licenseValue')}
               </Badge>
             </div>
             <div className="flex justify-between gap-3">
               <span className="text-muted-foreground">{t('settings.about.specialThanks')}</span>
               <span className="min-w-0 truncate text-right">
-                Gilles <span className="text-muted-foreground">(enjxp / simtwk3)</span>
+                {t('settings.about.specialThanksName')}{' '}
+                <span className="text-muted-foreground">
+                  {t('settings.about.specialThanksHandle')}
+                </span>
               </span>
             </div>
           </div>

@@ -8,6 +8,7 @@ import type { PlaneState } from '@/types/xplane';
 
 const DRAG_THRESHOLD = 5;
 const EDGE_PADDING = 16;
+const PRIMARY_COLOR_CLASS = 'text-primary';
 
 interface FlightStripProps {
   planeState: Partial<PlaneState> | null;
@@ -194,19 +195,19 @@ export default function FlightStrip({ planeState, connected, onCenterPlane }: Fl
             label={t('flightStrip.ias')}
             value={formatValue(planeState?.indicatedAirspeed)}
             unit={t('units.kt')}
-            valueColor="text-primary"
+            valueColor={PRIMARY_COLOR_CLASS}
           />
           <DataBlock
             label={t('flightStrip.gs')}
             value={formatValue(planeState?.groundspeed)}
             unit={t('units.kt')}
-            valueColor="text-primary"
+            valueColor={PRIMARY_COLOR_CLASS}
           />
           <DataBlock
             label={t('flightStrip.mach')}
             value={formatMach(planeState?.mach)}
             unit=""
-            valueColor="text-primary"
+            valueColor={PRIMARY_COLOR_CLASS}
           />
         </div>
 

@@ -41,13 +41,6 @@ interface Tab {
   label: string;
 }
 
-const TABS: Tab[] = [
-  { id: 'overview', label: 'Route', icon: <Route className="h-4 w-4" /> },
-  { id: 'fuel', label: 'Fuel', icon: <Fuel className="h-4 w-4" /> },
-  { id: 'weights', label: 'Weight', icon: <Scale className="h-4 w-4" /> },
-  { id: 'weather', label: 'WX', icon: <Cloud className="h-4 w-4" /> },
-];
-
 export default function FlightInfoPanel() {
   const { t } = useTranslation();
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
@@ -55,6 +48,21 @@ export default function FlightInfoPanel() {
   const openSimbriefDialog = useFlightPlanStore((s) => s.openSimbriefDialog);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const tabs: Tab[] = [
+    {
+      id: 'overview',
+      label: t('flightInfoPanel.tabs.route'),
+      icon: <Route className="h-4 w-4" />,
+    },
+    { id: 'fuel', label: t('flightInfoPanel.tabs.fuel'), icon: <Fuel className="h-4 w-4" /> },
+    {
+      id: 'weights',
+      label: t('flightInfoPanel.tabs.weight'),
+      icon: <Scale className="h-4 w-4" />,
+    },
+    { id: 'weather', label: t('flightInfoPanel.tabs.wx'), icon: <Cloud className="h-4 w-4" /> },
+  ];
 
   if (!simbriefData) {
     return null;
@@ -164,12 +172,14 @@ export default function FlightInfoPanel() {
                   useAppStore.getState().requestSelectAirport(simbriefData.origin.icao_code)
                 }
                 className="h-auto p-0 font-mono text-lg font-bold tracking-tight"
-                aria-label={`Go to ${simbriefData.origin.icao_code} layout`}
+                aria-label={t('simbriefDialog.header.goToAirportLayoutAria', {
+                  icao: simbriefData.origin.icao_code,
+                })}
               >
                 {simbriefData.origin.icao_code}
               </Button>
               <p className="text-[10px] text-muted-foreground">
-                RWY {simbriefData.origin.plan_rwy}
+                {t('simbriefDialog.header.runway', { rwy: simbriefData.origin.plan_rwy })}
               </p>
             </div>
             <div className="flex flex-col items-center gap-0.5">
@@ -189,12 +199,14 @@ export default function FlightInfoPanel() {
                   useAppStore.getState().requestSelectAirport(simbriefData.destination.icao_code)
                 }
                 className="h-auto p-0 font-mono text-lg font-bold tracking-tight"
-                aria-label={`Go to ${simbriefData.destination.icao_code} layout`}
+                aria-label={t('simbriefDialog.header.goToAirportLayoutAria', {
+                  icao: simbriefData.destination.icao_code,
+                })}
               >
                 {simbriefData.destination.icao_code}
               </Button>
               <p className="text-[10px] text-muted-foreground">
-                RWY {simbriefData.destination.plan_rwy}
+                {t('simbriefDialog.header.runway', { rwy: simbriefData.destination.plan_rwy })}
               </p>
             </div>
           </div>
@@ -206,7 +218,7 @@ export default function FlightInfoPanel() {
           className={cn('flex min-h-0 flex-1 flex-col', isCollapsed && 'opacity-0')}
         >
           <TabsList variant="line" className="border-border/30">
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1 text-[10px]">
                 {tab.icon}
                 <span className="hidden sm:inline">{tab.label}</span>
@@ -238,32 +250,39 @@ export default function FlightInfoPanel() {
 
 // Overview Tab
 function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3">
       {/* Quick Stats */}
       <div className="grid grid-cols-4 gap-2">
-        <StatBox label="ETE" value={formatFlightTime(data.times.est_time_enroute)} />
-        <StatBox label="FL" value={data.general.initial_altitude} />
-        <StatBox label="CI" value={data.general.costindex} />
-        <StatBox label="AIRAC" value={data.general.airac} />
+        <StatBox
+          label={t('simbriefDialog.stats.ete')}
+          value={formatFlightTime(data.times.est_time_enroute)}
+        />
+        <StatBox label={t('simbriefDialog.stats.fl')} value={data.general.initial_altitude} />
+        <StatBox label={t('simbriefDialog.stats.ci')} value={data.general.costindex} />
+        <StatBox label={t('simbriefDialog.stats.airac')} value={data.general.airac} />
       </div>
 
       {/* Wind */}
       <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
-        <span className="text-sm text-muted-foreground">Avg Wind</span>
+        <span className="text-sm text-muted-foreground">{t('flightInfoPanel.avgWind')}</span>
         <span className="font-mono text-sm font-medium">
-          {data.general.avg_wind_dir}°/{data.general.avg_wind_spd}kt
+          {t('simbriefDialog.performance.windDirSpeed', {
+            dir: data.general.avg_wind_dir,
+            speed: data.general.avg_wind_spd,
+          })}
         </span>
       </div>
 
       {/* Fuel Summary */}
       <div className="rounded-lg bg-muted/40 p-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Block Fuel</span>
+          <span className="text-muted-foreground">{t('flightInfoPanel.blockFuel')}</span>
           <span className="font-mono font-medium">{formatFuel(data.fuel.plan_ramp, apiUnit)}</span>
         </div>
         <div className="mt-1 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Landing</span>
+          <span className="text-muted-foreground">{t('flightInfoPanel.landing')}</span>
           <span className="font-mono font-medium text-success">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </span>
@@ -273,13 +292,13 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       {/* Weights Summary */}
       <div className="rounded-lg bg-muted/40 p-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">TOW</span>
+          <span className="text-muted-foreground">{t('simbriefDialog.weights.tow')}</span>
           <span className="font-mono font-medium">
             {formatWeight(data.weights.est_tow, apiUnit)}
           </span>
         </div>
         <div className="mt-1 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">PAX / Cargo</span>
+          <span className="text-muted-foreground">{t('flightInfoPanel.paxCargo')}</span>
           <span className="font-mono font-medium">
             {data.weights.pax_count} / {formatWeight(data.weights.cargo, apiUnit)}
           </span>
@@ -289,12 +308,14 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       {/* Alternate */}
       {data.alternate && (
         <div className="flex items-center justify-between rounded-lg bg-warning/10 px-3 py-2">
-          <span className="text-sm text-warning/70">Alternate</span>
+          <span className="text-sm text-warning/70">{t('flightInfoPanel.alternate')}</span>
           <Button
             variant="link"
             onClick={() => useAppStore.getState().requestSelectAirport(data.alternate!.icao_code)}
             className="h-auto p-0 font-mono text-sm font-medium"
-            aria-label={`Go to ${data.alternate.icao_code} layout`}
+            aria-label={t('simbriefDialog.header.goToAirportLayoutAria', {
+              icao: data.alternate.icao_code,
+            })}
           >
             {data.alternate.icao_code}
           </Button>
@@ -308,7 +329,7 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
         className="h-7 w-full justify-center text-[10px] text-muted-foreground"
         onClick={() => window.appAPI.openExternal(data.files.pdf.link)}
       >
-        View Full OFP (PDF)
+        {t('simbriefDialog.viewFullOfp')}
       </Button>
     </div>
   );
@@ -325,14 +346,45 @@ function StatBox({ label, value }: { label: string; value: string }) {
 
 // Fuel Tab
 function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+  const { t } = useTranslation();
   const totalFuel = parseInt(data.fuel.plan_ramp, 10);
   const fuelItems = [
-    { label: 'Taxi', value: data.fuel.taxi, color: 'bg-muted-foreground' },
-    { label: 'Trip', value: data.fuel.enroute_burn, color: 'bg-primary' },
-    { label: 'Contingency', value: data.fuel.contingency, color: 'bg-warning' },
-    { label: 'Alternate', value: data.fuel.alternate_burn, color: 'bg-warning' },
-    { label: 'Reserve', value: data.fuel.reserve, color: 'bg-destructive' },
-    { label: 'Extra', value: data.fuel.extra, color: 'bg-success' },
+    {
+      id: 'taxi',
+      label: t('flightInfoPanel.fuelItems.taxi'),
+      value: data.fuel.taxi,
+      color: 'bg-muted-foreground',
+    },
+    {
+      id: 'trip',
+      label: t('flightInfoPanel.fuelItems.trip'),
+      value: data.fuel.enroute_burn,
+      color: 'bg-primary',
+    },
+    {
+      id: 'contingency',
+      label: t('flightInfoPanel.fuelItems.contingency'),
+      value: data.fuel.contingency,
+      color: 'bg-warning',
+    },
+    {
+      id: 'alternate',
+      label: t('flightInfoPanel.fuelItems.alternate'),
+      value: data.fuel.alternate_burn,
+      color: 'bg-warning',
+    },
+    {
+      id: 'reserve',
+      label: t('flightInfoPanel.fuelItems.reserve'),
+      value: data.fuel.reserve,
+      color: 'bg-destructive',
+    },
+    {
+      id: 'extra',
+      label: t('flightInfoPanel.fuelItems.extra'),
+      value: data.fuel.extra,
+      color: 'bg-success',
+    },
   ];
 
   return (
@@ -343,7 +395,7 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         const percentage = (amount / totalFuel) * 100;
         if (amount === 0) return null;
         return (
-          <div key={item.label} className="space-y-1">
+          <div key={item.id} className="space-y-1">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <div className={cn('h-2 w-2 rounded-full', item.color)} />
@@ -366,13 +418,13 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       {/* Totals */}
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-primary/10 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground">Block</p>
+          <p className="text-[10px] text-muted-foreground">{t('flightInfoPanel.blockLabel')}</p>
           <p className="font-mono text-sm font-bold text-primary">
             {formatFuel(data.fuel.plan_ramp, apiUnit)}
           </p>
         </div>
         <div className="rounded-lg bg-success/10 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground">Landing</p>
+          <p className="text-[10px] text-muted-foreground">{t('flightInfoPanel.landingLabel')}</p>
           <p className="font-mono text-sm font-bold text-success">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
@@ -384,19 +436,20 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
 // Weights Tab
 function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
+  const { t } = useTranslation();
   const weights = [
     {
-      label: 'ZFW',
+      label: t('simbriefDialog.weights.zfw'),
       est: parseInt(data.weights.est_zfw, 10),
       max: parseInt(data.weights.max_zfw, 10),
     },
     {
-      label: 'TOW',
+      label: t('simbriefDialog.weights.tow'),
       est: parseInt(data.weights.est_tow, 10),
       max: parseInt(data.weights.max_tow, 10),
     },
     {
-      label: 'LDW',
+      label: t('simbriefDialog.weights.ldw'),
       est: parseInt(data.weights.est_ldw, 10),
       max: parseInt(data.weights.max_ldw, 10),
     },
@@ -447,19 +500,19 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       {/* Payload */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">OEW</span>
+          <span className="text-muted-foreground">{t('simbriefDialog.weightsTab.oew')}</span>
           <span className="font-mono font-medium">{formatWeight(data.weights.oew, apiUnit)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Passengers</span>
+          <span className="text-muted-foreground">{t('flightInfoPanel.passengers')}</span>
           <span className="font-mono font-medium">{data.weights.pax_count}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Cargo</span>
+          <span className="text-muted-foreground">{t('flightInfoPanel.cargo')}</span>
           <span className="font-mono font-medium">{formatWeight(data.weights.cargo, apiUnit)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Payload</span>
+          <span className="text-muted-foreground">{t('flightInfoPanel.payload')}</span>
           <span className="font-mono font-medium">
             {formatWeight(data.weights.payload, apiUnit)}
           </span>
@@ -471,6 +524,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
 // Weather Tab
 function WeatherTab({ data }: { data: SimBriefOFP }) {
+  const { t } = useTranslation();
   const originMetar = useMemo(() => {
     if (!data.origin.metar) return null;
     try {
@@ -513,7 +567,7 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
           <div className="flex items-center gap-2 text-sm text-warning">
             <Route className="h-3 w-3" />
             <span className="font-mono font-medium">{data.alternate.icao_code}</span>
-            <span className="text-warning/70">Alternate</span>
+            <span className="text-warning/70">{t('flightInfoPanel.alternate')}</span>
           </div>
         </div>
       )}
@@ -532,6 +586,7 @@ function WeatherCard({
   metar: IMetar | null;
   rawMetar: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-lg bg-muted/40 p-3">
       <div className="mb-2 flex items-center gap-2">
@@ -543,27 +598,29 @@ function WeatherCard({
         <div className="mb-2 grid grid-cols-4 gap-1 text-center">
           <div>
             <p className="font-mono text-[10px] font-medium">{formatWind(metar.wind)}</p>
-            <p className="text-[8px] text-muted-foreground">Wind</p>
+            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.wind')}</p>
           </div>
           <div>
             <p className="font-mono text-[10px] font-medium">
               {formatVisibility(metar.visibility, metar.cavok)}
             </p>
-            <p className="text-[8px] text-muted-foreground">Vis</p>
+            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.vis')}</p>
           </div>
           <div>
-            <p className="font-mono text-[10px] font-medium">{metar.temperature ?? '—'}°</p>
-            <p className="text-[8px] text-muted-foreground">Temp</p>
+            <p className="font-mono text-[10px] font-medium">
+              {t('flightInfoPanel.tempDeg', { value: metar.temperature ?? '—' })}
+            </p>
+            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.temp')}</p>
           </div>
           <div>
             <p className="font-mono text-[10px] font-medium">{formatAltimeter(metar.altimeter)}</p>
-            <p className="text-[8px] text-muted-foreground">QNH</p>
+            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.qnh')}</p>
           </div>
         </div>
       )}
 
       <p className="font-mono text-[9px] leading-relaxed text-muted-foreground">
-        {rawMetar || 'No METAR'}
+        {rawMetar || t('flightInfoPanel.noMetar')}
       </p>
     </div>
   );

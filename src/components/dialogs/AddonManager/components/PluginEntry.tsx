@@ -68,8 +68,12 @@ export function PluginEntry({
       {/* Version badge */}
       {plugin.version && (
         <Badge variant={plugin.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
-          v{plugin.version}
-          {plugin.hasUpdate && plugin.latestVersion && ` → ${plugin.latestVersion}`}
+          {plugin.hasUpdate && plugin.latestVersion
+            ? t('addonManager.browser.versionUpdate', {
+                current: plugin.version,
+                latest: plugin.latestVersion,
+              })
+            : t('addonManager.browser.version', { version: plugin.version })}
         </Badge>
       )}
 

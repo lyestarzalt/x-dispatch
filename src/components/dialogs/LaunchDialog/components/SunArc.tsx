@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SunCalc from 'suncalc';
 import tzlookup from 'tz-lookup';
 import { Slider } from '@/components/ui/slider';
@@ -154,6 +155,7 @@ function Stars({ opacity, C }: { opacity: number; C: Palette }) {
 }
 
 export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcProps) {
+  const { t } = useTranslation();
   const rootRef = useRef<HTMLDivElement>(null);
   const C = useMemo(() => {
     const el = rootRef.current ?? document.documentElement;
@@ -387,7 +389,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       <div className="flex items-baseline justify-between">
         <div className="flex items-baseline gap-1.5">
           <span className="font-mono text-lg font-semibold">{localTime}</span>
-          <span className="text-xs text-muted-foreground">local</span>
+          <span className="text-xs text-muted-foreground">{t('sunArc.local')}</span>
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-[10px]" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>

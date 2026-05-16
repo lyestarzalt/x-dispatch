@@ -74,11 +74,12 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
 
         {fetchMutation.isSuccess && (
           <div className="rounded-md bg-success/10 p-3 text-sm text-success">
-            {t('settings.simbrief.testSuccess', 'Found flight plan')}:{' '}
-            {fetchMutation.data.origin.icao_code} → {fetchMutation.data.destination.icao_code}
-            <span className="ml-2 text-sm opacity-80">
-              ({fetchMutation.data.aircraft.icao_code})
-            </span>
+            {t('settings.simbrief.testSuccessFull', {
+              message: t('settings.simbrief.testSuccess'),
+              origin: fetchMutation.data.origin.icao_code,
+              destination: fetchMutation.data.destination.icao_code,
+              aircraft: fetchMutation.data.aircraft.icao_code,
+            })}
           </div>
         )}
 
@@ -104,7 +105,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
           'SimBrief is a free flight planning service'
         )}
       >
-        <SettingsLinkRow label="simbrief.com" href={SIMBRIEF_URL} />
+        <SettingsLinkRow label={t('settings.simbrief.linkLabel')} href={SIMBRIEF_URL} />
       </SettingsSectionBlock>
 
       <FmsExportTargets />

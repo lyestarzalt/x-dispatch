@@ -93,7 +93,7 @@ export default function RouteTab() {
         <TabsList variant="line" className="gap-4 border-border/30">
           {(['SID', 'STAR', 'APP'] as ProcedureType[]).map((type) => (
             <TabsTrigger key={type} value={type} className="px-0 text-sm">
-              {type === 'APP' ? 'Approach' : type}
+              {type === 'APP' ? t('airportInfo.routeTab.tabApproach') : type}
               <span className="ml-2 text-muted-foreground/50">{counts[type]}</span>
             </TabsTrigger>
           ))}
@@ -103,7 +103,9 @@ export default function RouteTab() {
       {/* Procedure list */}
       {grouped.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground/60">
-          No {activeType === 'APP' ? 'approaches' : `${activeType}s`} available
+          {activeType === 'APP'
+            ? t('airportInfo.routeTab.noneApproaches')
+            : t('airportInfo.routeTab.noneAvailable', { type: `${activeType}s` })}
         </p>
       ) : (
         <div className="space-y-1">
@@ -130,7 +132,7 @@ export default function RouteTab() {
               const subtitle = proc.transition
                 ? proc.transition
                 : proc.runway
-                  ? `RWY ${proc.runway}`
+                  ? t('simbriefDialog.header.runway', { rwy: proc.runway })
                   : null;
 
               return (
@@ -166,11 +168,17 @@ export default function RouteTab() {
 
             let variantLabel: string;
             if (hasTransitions && !hasRunways) {
-              variantLabel = `${group.variants.length} transition${group.variants.length > 1 ? 's' : ''}`;
+              variantLabel = t('airportInfo.routeTab.transitionCount', {
+                count: group.variants.length,
+              });
             } else if (hasRunways && !hasTransitions) {
-              variantLabel = `${group.variants.length} runway${group.variants.length > 1 ? 's' : ''}`;
+              variantLabel = t('airportInfo.routeTab.runwayVariantCount', {
+                count: group.variants.length,
+              });
             } else {
-              variantLabel = `${group.variants.length} variant${group.variants.length > 1 ? 's' : ''}`;
+              variantLabel = t('airportInfo.routeTab.variantCount', {
+                count: group.variants.length,
+              });
             }
 
             return (
@@ -214,9 +222,9 @@ export default function RouteTab() {
                       if (proc.transition) {
                         displayLabel = proc.transition;
                       } else if (proc.runway) {
-                        displayLabel = `RWY ${proc.runway}`;
+                        displayLabel = t('simbriefDialog.header.runway', { rwy: proc.runway });
                       } else {
-                        displayLabel = 'All';
+                        displayLabel = t('airportInfo.routeTab.allVariants');
                       }
 
                       return (

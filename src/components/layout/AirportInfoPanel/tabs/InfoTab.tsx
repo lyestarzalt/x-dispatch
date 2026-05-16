@@ -298,10 +298,11 @@ function ConditionsCard({
   atisLetter: string | null;
   liveTraffic: { departures: number; arrivals: number } | null;
 }) {
+  const { t } = useTranslation();
   if (!metar && !activeRunway && !liveTraffic) {
     return (
       <div className="rounded-lg bg-muted/10 p-3 text-center text-sm text-muted-foreground">
-        No weather data available
+        {t('airportInfo.noWeather')}
       </div>
     );
   }
@@ -330,16 +331,28 @@ function ConditionsCard({
       )}
       {metar && (
         <div className="rounded-lg bg-card/40 px-3 py-2.5 text-sm">
-          <KvRow label="Wind" value={formatWind(metar.wind)} />
-          <KvRow label="Visibility" value={formatVisibility(metar.visibility, metar.cavok)} />
-          <KvRow label="Ceiling" value={formatCeiling(metar.clouds, metar.verticalVisibility)} />
-          <KvRow label="QNH" value={formatAltimeter(metar.altimeter)} />
+          <KvRow label={t('airportInfo.conditions.wind')} value={formatWind(metar.wind)} />
           <KvRow
-            label="Temp / Dew"
-            value={`${metar.temperature ?? '—'}°C / ${metar.dewPoint ?? '—'}°C`}
+            label={t('airportInfo.conditions.visibility')}
+            value={formatVisibility(metar.visibility, metar.cavok)}
+          />
+          <KvRow
+            label={t('airportInfo.conditions.ceiling')}
+            value={formatCeiling(metar.clouds, metar.verticalVisibility)}
+          />
+          <KvRow label={t('airportInfo.conditions.qnh')} value={formatAltimeter(metar.altimeter)} />
+          <KvRow
+            label={t('airportInfo.conditions.tempDew')}
+            value={t('airportInfo.conditions.tempDewValue', {
+              temp: metar.temperature ?? '—',
+              dew: metar.dewPoint ?? '—',
+            })}
           />
           {metar.weatherConditions.length > 0 && (
-            <KvRow label="Phenomena" value={formatWeatherConditions(metar.weatherConditions)} />
+            <KvRow
+              label={t('airportInfo.conditions.phenomena')}
+              value={formatWeatherConditions(metar.weatherConditions)}
+            />
           )}
         </div>
       )}
@@ -355,11 +368,12 @@ function ActiveRunwayLine({
   activeRunway: ActiveRunway | null;
   atisLetter: string | null;
 }) {
+  const { t } = useTranslation();
   if (!activeRunway) return null;
   const isAtis = activeRunway.source === 'atis';
   return (
     <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1 text-xs">
-      <span className="text-muted-foreground">Active runway</span>
+      <span className="text-muted-foreground">{t('airportInfo.activeRunway')}</span>
       <span
         className={cn('font-mono font-medium', isAtis ? 'text-cat-emerald' : 'text-foreground')}
       >
@@ -367,12 +381,12 @@ function ActiveRunwayLine({
       </span>
       {isAtis && atisLetter && (
         <Badge variant="cat-emerald" className="h-4 px-1.5 font-mono text-[10px]">
-          ATIS {atisLetter}
+          {t('airportInfo.atisLabel', { letter: atisLetter })}
         </Badge>
       )}
       {!isAtis && (
         <span className="text-muted-foreground/60">
-          · wind-aligned, {activeRunway.deltaDeg}° off
+          {t('airportInfo.windAligned', { delta: activeRunway.deltaDeg })}
         </span>
       )}
     </div>
@@ -399,11 +413,14 @@ function RunwaysSection({
   gsByEnd: Map<string, Navaid>;
   activeEndNames: Set<string>;
 }) {
+  const { t } = useTranslation();
   return (
     <section>
       <div className="mb-1.5 flex items-baseline justify-between">
-        <h4 className="xp-section-heading mb-0 border-b-0">Runways</h4>
-        <span className="text-xs text-muted-foreground">{runways.length} total</span>
+        <h4 className="xp-section-heading mb-0 border-b-0">{t('airportInfo.runwaysHeading')}</h4>
+        <span className="text-xs text-muted-foreground">
+          {t('airportInfo.runwayCountTotal', { count: runways.length })}
+        </span>
       </div>
       <ul className="space-y-1">
         {runways.map((rwy, i) => (
@@ -512,6 +529,7 @@ function RunwayRow({
 }
 
 function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Navaid }) {
+  const { t } = useTranslation();
   // Navaid frequencies are stored as Hz*100 (e.g. 10950 → 109.50 MHz). Same
   // formatting convention as ILSLayer / NavaidLayer use elsewhere.
   const freq = `${(ils.frequency / 100).toFixed(2)}`;
@@ -526,21 +544,21 @@ function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Na
   const rawGs = gs?.glidepathAngle;
   const gsAngle = rawGs !== undefined && rawGs < 0.5 ? rawGs * 100 : rawGs;
   const gsStr = gsAngle !== undefined ? `${gsAngle.toFixed(1)}°` : '—';
-  const rangeStr = ils.range > 0 ? `${ils.range} NM` : '—';
+  const rangeStr = ils.range > 0 ? t('airportInfo.ils.rangeNm', { value: ils.range }) : '—';
   // Flat block, no inner card — the runway-row container already provides
   // the surface. CDU-page feel: uppercase header with its natural underline,
   // KvRows indented under it.
   return (
     <div className="text-sm">
       <h5 className="mb-0.5 text-xs uppercase tracking-wider text-muted-foreground/70">
-        Runway {endName}
+        {t('airportInfo.runwayName', { name: endName })}
       </h5>
       <div className="pl-1">
-        <KvRow label="Frequency" value={freq} />
-        <KvRow label="Localizer" value={headingStr} />
-        <KvRow label="Glideslope" value={gsStr} />
-        <KvRow label="Range" value={rangeStr} />
-        <KvRow label="Ident" value={ils.id} />
+        <KvRow label={t('airportInfo.ils.frequency')} value={freq} />
+        <KvRow label={t('airportInfo.ils.localizer')} value={headingStr} />
+        <KvRow label={t('airportInfo.ils.glideslope')} value={gsStr} />
+        <KvRow label={t('airportInfo.ils.range')} value={rangeStr} />
+        <KvRow label={t('airportInfo.ils.ident')} value={ils.id} />
       </div>
     </div>
   );
@@ -732,6 +750,7 @@ function DetailsSection({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <section>
       <Button
@@ -741,7 +760,7 @@ function DetailsSection({
         className="h-7 w-full justify-start gap-1 px-1 text-xs text-muted-foreground hover:text-foreground"
       >
         {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        Raw METAR
+        {t('airportInfo.rawMetar')}
       </Button>
       {expanded && (
         <div className="mt-1.5 rounded bg-muted/30 p-2">
