@@ -89,6 +89,29 @@
       "permissionWindows": "Windows 正在阻止文件访问。右键点击 X-Dispatch 并选择「以管理员身份运行」，或在属性 > 安全中检查文件夹权限。",
       "permissionLinux": "权限被拒绝。请检查您的用户是否对 X-Plane 文件夹有读取权限，或对文件执行 chmod +r。",
       "fileBusy": "文件被另一个程序锁定。请关闭 X-Plane 和所有地景或插件工具，然后重试。"
+    },
+    "messages": {
+      "checking": "正在检查更改...",
+      "upToDate": "全部已是最新",
+      "firstLaunch": "首次启动 — 正在设置数据库...",
+      "sceneryChanged": "检测到景物更改 — 正在重建...",
+      "globalAirports": "正在解析 Global Airports...",
+      "customScenery": "正在扫描 Custom Scenery {{current}}/{{total}}",
+      "savingDatabase": "正在保存到数据库...",
+      "airportsDone": "机场已加载",
+      "navaids": "正在加载导航设施...",
+      "navaidsDone": "导航设施已加载",
+      "waypoints": "正在加载航点...",
+      "waypointsDone": "航点已加载",
+      "airspaces": "正在加载空域...",
+      "airspacesDone": "空域已加载",
+      "airways": "正在加载航路...",
+      "airwaysDone": "航路已加载",
+      "complete": "所有数据已加载",
+      "failed": "加载失败"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

@@ -89,6 +89,29 @@
       "permissionWindows": "Windowsがファイルアクセスをブロックしています。X-Dispatchを右クリックして「管理者として実行」を選択するか、プロパティ > セキュリティでフォルダのアクセス権を確認してください。",
       "permissionLinux": "アクセスが拒否されました。X-Planeフォルダへの読み取り権限があるか確認するか、ファイルに対してchmod +rを実行してください。",
       "fileBusy": "ファイルが他のプログラムによってロックされています。X-Planeとシーナリーやアドオンツールをすべて閉じてから再試行してください。"
+    },
+    "messages": {
+      "checking": "変更を確認中...",
+      "upToDate": "すべて最新です",
+      "firstLaunch": "初回起動 — データベースを設定中...",
+      "sceneryChanged": "シーナリーの変更を検出 — 再構築中...",
+      "globalAirports": "Global Airports を解析中...",
+      "customScenery": "Custom Scenery をスキャン中 {{current}}/{{total}}",
+      "savingDatabase": "データベースに保存中...",
+      "airportsDone": "空港を読み込みました",
+      "navaids": "航法援助施設を読み込み中...",
+      "navaidsDone": "航法援助施設を読み込みました",
+      "waypoints": "ウェイポイントを読み込み中...",
+      "waypointsDone": "ウェイポイントを読み込みました",
+      "airspaces": "空域を読み込み中...",
+      "airspacesDone": "空域を読み込みました",
+      "airways": "航空路を読み込み中...",
+      "airwaysDone": "航空路を読み込みました",
+      "complete": "すべてのデータを読み込みました",
+      "failed": "読み込みに失敗しました"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

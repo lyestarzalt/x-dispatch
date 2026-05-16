@@ -89,6 +89,29 @@
       "permissionWindows": "Windows bloque l'accès aux fichiers. Faites un clic droit sur X-Dispatch et sélectionnez « Exécuter en tant qu'administrateur », ou vérifiez les permissions du dossier dans Propriétés > Sécurité.",
       "permissionLinux": "Permission refusée. Vérifiez que votre utilisateur a un accès en lecture au dossier X-Plane, ou exécutez chmod +r sur le fichier.",
       "fileBusy": "Le fichier est verrouillé par un autre programme. Fermez X-Plane et tout outil de scènes ou d'addons, puis réessayez."
+    },
+    "messages": {
+      "checking": "Vérification des modifications...",
+      "upToDate": "Tout est à jour",
+      "firstLaunch": "Premier lancement — configuration de la base de données...",
+      "sceneryChanged": "Modifications de scènes détectées — reconstruction...",
+      "globalAirports": "Analyse de Global Airports...",
+      "customScenery": "Scan de Custom Scenery {{current}}/{{total}}",
+      "savingDatabase": "Enregistrement dans la base de données...",
+      "airportsDone": "Aéroports chargés",
+      "navaids": "Chargement des aides à la navigation...",
+      "navaidsDone": "Aides à la navigation chargées",
+      "waypoints": "Chargement des points de cheminement...",
+      "waypointsDone": "Points de cheminement chargés",
+      "airspaces": "Chargement des espaces aériens...",
+      "airspacesDone": "Espaces aériens chargés",
+      "airways": "Chargement des voies aériennes...",
+      "airwaysDone": "Voies aériennes chargées",
+      "complete": "Toutes les données sont chargées",
+      "failed": "Échec du chargement"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

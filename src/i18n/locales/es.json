@@ -89,6 +89,29 @@
       "permissionWindows": "Windows está bloqueando el acceso a los archivos. Haz clic derecho en X-Dispatch y selecciona \"Ejecutar como administrador\", o revisa los permisos de la carpeta en Propiedades > Seguridad.",
       "permissionLinux": "Permiso denegado. Verifica que tu usuario tenga acceso de lectura a la carpeta de X-Plane, o ejecuta chmod +r en el archivo.",
       "fileBusy": "El archivo está bloqueado por otro programa. Cierra X-Plane y cualquier herramienta de escenarios o addons, luego reintenta."
+    },
+    "messages": {
+      "checking": "Comprobando cambios...",
+      "upToDate": "Todo actualizado",
+      "firstLaunch": "Primer inicio: configurando la base de datos...",
+      "sceneryChanged": "Se detectaron cambios en escenarios: reconstruyendo...",
+      "globalAirports": "Analizando Global Airports...",
+      "customScenery": "Escaneando Custom Scenery {{current}}/{{total}}",
+      "savingDatabase": "Guardando en la base de datos...",
+      "airportsDone": "Aeropuertos cargados",
+      "navaids": "Cargando radioayudas...",
+      "navaidsDone": "Radioayudas cargadas",
+      "waypoints": "Cargando puntos de ruta...",
+      "waypointsDone": "Puntos de ruta cargados",
+      "airspaces": "Cargando espacios aéreos...",
+      "airspacesDone": "Espacios aéreos cargados",
+      "airways": "Cargando aerovías...",
+      "airwaysDone": "Aerovías cargadas",
+      "complete": "Todos los datos cargados",
+      "failed": "Error al cargar"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

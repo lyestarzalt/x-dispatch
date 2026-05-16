@@ -89,6 +89,29 @@
       "permissionWindows": "Windows is blocking file access. Right-click X-Dispatch an' choose \"Run as administrator\", or check the folder permissions in Properties > Security.",
       "permissionLinux": "Permission denied. Check that yer user has read access ta the X-Plane folder, or run chmod +r on the file.",
       "fileBusy": "The file is locked by another program. Close X-Plane an' any scenery or addon tools, then retry."
+    },
+    "messages": {
+      "checking": "Checkin' fer changes...",
+      "upToDate": "All shipshape",
+      "firstLaunch": "First launch — settin' up the data chest...",
+      "sceneryChanged": "Scenery changes spotted — rebuildin'...",
+      "globalAirports": "Parsin' Global Airports...",
+      "customScenery": "Scannin' Custom Scenery {{current}}/{{total}}",
+      "savingDatabase": "Stashin' in the data chest...",
+      "airportsDone": "Airports loaded",
+      "navaids": "Loadin' nav aids...",
+      "navaidsDone": "Nav aids loaded",
+      "waypoints": "Loadin' waypoints...",
+      "waypointsDone": "Waypoints loaded",
+      "airspaces": "Loadin' airspaces...",
+      "airspacesDone": "Airspaces loaded",
+      "airways": "Loadin' airways...",
+      "airwaysDone": "Airways loaded",
+      "complete": "All data loaded",
+      "failed": "Loadin' failed"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

@@ -89,6 +89,29 @@
       "permissionWindows": "Windows blockiert den Dateizugriff. Rechtsklick auf X-Dispatch und 'Als Administrator ausführen' wählen, oder die Ordnerberechtigungen unter Eigenschaften > Sicherheit prüfen.",
       "permissionLinux": "Zugriff verweigert. Prüfen Sie, ob Ihr Benutzer Leserechte für den X-Plane-Ordner hat, oder führen Sie chmod +r auf die Datei aus.",
       "fileBusy": "Die Datei wird von einem anderen Programm verwendet. Schließen Sie X-Plane und alle Szenen- oder Addon-Tools und versuchen Sie es erneut."
+    },
+    "messages": {
+      "checking": "Änderungen werden überprüft...",
+      "upToDate": "Alles aktuell",
+      "firstLaunch": "Erster Start — Datenbank wird eingerichtet...",
+      "sceneryChanged": "Szenerieänderungen erkannt — Neuaufbau...",
+      "globalAirports": "Global Airports werden ausgewertet...",
+      "customScenery": "Custom Scenery wird durchsucht {{current}}/{{total}}",
+      "savingDatabase": "In Datenbank speichern...",
+      "airportsDone": "Flughäfen geladen",
+      "navaids": "Navigationshilfen werden geladen...",
+      "navaidsDone": "Navigationshilfen geladen",
+      "waypoints": "Wegpunkte werden geladen...",
+      "waypointsDone": "Wegpunkte geladen",
+      "airspaces": "Lufträume werden geladen...",
+      "airspacesDone": "Lufträume geladen",
+      "airways": "Luftstraßen werden geladen...",
+      "airwaysDone": "Luftstraßen geladen",
+      "complete": "Alle Daten geladen",
+      "failed": "Laden fehlgeschlagen"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

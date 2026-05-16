@@ -89,6 +89,29 @@
       "permissionWindows": "Windows blokuje dostęp do plików. Kliknij prawym przyciskiem myszy na X-Dispatch i wybierz \"Uruchom jako administrator\" lub sprawdź uprawnienia folderu we Właściwości > Bezpieczeństwo.",
       "permissionLinux": "Odmowa dostępu. Sprawdź, czy Twój użytkownik ma uprawnienia do odczytu folderu X-Plane, lub uruchom chmod +r na pliku.",
       "fileBusy": "Plik jest zablokowany przez inny program. Zamknij X-Plane i wszystkie narzędzia scenerii lub dodatków, a następnie spróbuj ponownie."
+    },
+    "messages": {
+      "checking": "Sprawdzanie zmian...",
+      "upToDate": "Wszystko aktualne",
+      "firstLaunch": "Pierwsze uruchomienie — konfigurowanie bazy danych...",
+      "sceneryChanged": "Wykryto zmiany scenerii — przebudowywanie...",
+      "globalAirports": "Parsowanie Global Airports...",
+      "customScenery": "Skanowanie Custom Scenery {{current}}/{{total}}",
+      "savingDatabase": "Zapisywanie do bazy danych...",
+      "airportsDone": "Lotniska wczytane",
+      "navaids": "Wczytywanie pomocy nawigacyjnych...",
+      "navaidsDone": "Pomoce nawigacyjne wczytane",
+      "waypoints": "Wczytywanie punktów trasy...",
+      "waypointsDone": "Punkty trasy wczytane",
+      "airspaces": "Wczytywanie przestrzeni powietrznych...",
+      "airspacesDone": "Przestrzenie powietrzne wczytane",
+      "airways": "Wczytywanie dróg lotniczych...",
+      "airwaysDone": "Drogi lotnicze wczytane",
+      "complete": "Wszystkie dane wczytane",
+      "failed": "Wczytywanie nie powiodło się"
+    },
+    "details": {
+      "globalAirports": "Global Airports"
     }
   },
   "toolbar": {

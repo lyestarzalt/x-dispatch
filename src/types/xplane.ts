@@ -68,13 +68,17 @@ export interface LoadingDetail {
   current: number;
   total?: number;
   label?: string;
+  labelKey?: string;
+  labelParams?: Record<string, string | number | boolean | null | undefined>;
 }
 
 /** Progress event for X-Plane data loading */
 export interface LoadingProgress {
   step: string;
   status: 'pending' | 'loading' | 'complete' | 'error';
-  message: string;
+  message?: string;
+  messageKey?: string;
+  messageParams?: Record<string, string | number | boolean | null | undefined>;
   count?: number;
   error?: string;
   /** OS-specific hint for resolving the error */

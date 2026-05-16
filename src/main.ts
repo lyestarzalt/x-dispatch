@@ -57,6 +57,7 @@ import {
   setActiveInstallation,
   setSendCrashReports,
 } from './lib/xplaneServices/dataService/config';
+import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
@@ -497,7 +498,7 @@ function registerIpcHandlers() {
       sendLoadingProgress({
         step: 'config',
         status: 'error',
-        message: 'X-Plane path not configured',
+        messageKey: 'loading.pathNotConfigured',
         error: 'Please configure X-Plane path in settings',
       });
       return { success: false, error: 'X-Plane path not configured' };
@@ -514,143 +515,10 @@ function registerIpcHandlers() {
       // Detect X-Plane version concurrently with first data load
       const versionPromise = dataManager.detectAndStoreVersion(xplanePath).catch(() => {});
 
-      await dataManager.rebuildAirportCache(xplanePath, (event) => {
-        switch (event.phase) {
-          case 'cache-check':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'loading',
-              message: 'Checking for changes...',
-              phase: 'verifying',
-            });
-            break;
-          case 'cache-valid':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'loading',
-              message: 'All up to date',
-              phase: 'verifying',
-            });
-            break;
-          case 'cache-stale':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'loading',
-              message:
-                event.reason === 'first-launch'
-                  ? 'First launch — setting up database...'
-                  : 'Scenery changes detected — rebuilding...',
-              phase: 'loading',
-            });
-            break;
-          case 'global':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'loading',
-              message: 'Parsing Global Airports...',
-              phase: 'loading',
-              detail: {
-                current: event.parsed,
-                total: event.estimated,
-                label: 'Global Airports',
-              },
-            });
-            break;
-          case 'custom':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'loading',
-              message: `Scanning Custom Scenery ${event.packIndex + 1}/${event.packCount}`,
-              phase: 'loading',
-              detail: {
-                current: event.packIndex + 1,
-                total: event.packCount,
-                label: event.packName,
-              },
-            });
-            break;
-          case 'inserting':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'loading',
-              message: 'Saving to database...',
-              phase: 'loading',
-            });
-            break;
-          case 'done':
-            sendLoadingProgress({
-              step: 'airports',
-              status: 'complete',
-              message: 'Airports loaded',
-              count: event.count,
-              phase: event.fromCache ? 'verifying' : 'loading',
-            });
-            break;
-        }
-      });
+      await loadRequiredStartupData(dataManager, xplanePath, sendLoadingProgress);
 
       // Ensure version is stored before loading completes
       await versionPromise;
-
-      sendLoadingProgress({
-        step: 'navaids',
-        status: 'loading',
-        message: 'Loading navigation aids...',
-        phase: 'loading',
-      });
-      await dataManager.loadNavaidsOnly(xplanePath);
-      sendLoadingProgress({
-        step: 'navaids',
-        status: 'complete',
-        message: 'Navaids loaded',
-        count: dataManager.getStatus().navaids.count,
-        phase: 'loading',
-      });
-
-      sendLoadingProgress({
-        step: 'waypoints',
-        status: 'loading',
-        message: 'Loading waypoints...',
-        phase: 'loading',
-      });
-      await dataManager.loadWaypointsOnly(xplanePath);
-      sendLoadingProgress({
-        step: 'waypoints',
-        status: 'complete',
-        message: 'Waypoints loaded',
-        count: dataManager.getStatus().waypoints.count,
-        phase: 'loading',
-      });
-
-      sendLoadingProgress({
-        step: 'airspaces',
-        status: 'loading',
-        message: 'Loading airspaces...',
-        phase: 'loading',
-      });
-      await dataManager.loadAirspacesOnly(xplanePath);
-      sendLoadingProgress({
-        step: 'airspaces',
-        status: 'complete',
-        message: 'Airspaces loaded',
-        count: dataManager.getStatus().airspaces.count,
-        phase: 'loading',
-      });
-
-      sendLoadingProgress({
-        step: 'airways',
-        status: 'loading',
-        message: 'Loading airways...',
-        phase: 'loading',
-      });
-      await dataManager.loadAirwaysOnly(xplanePath);
-      sendLoadingProgress({
-        step: 'airways',
-        status: 'complete',
-        message: 'Airways loaded',
-        count: dataManager.getStatus().airways.count,
-        phase: 'loading',
-      });
 
       // Load optional data types (non-blocking)
       await Promise.allSettled([
@@ -659,7 +527,11 @@ function registerIpcHandlers() {
         dataManager.loadAirportMetadataOnly(xplanePath),
       ]);
 
-      sendLoadingProgress({ step: 'complete', status: 'complete', message: 'All data loaded' });
+      sendLoadingProgress({
+        step: 'complete',
+        status: 'complete',
+        messageKey: 'loading.messages.complete',
+      });
       logger.data.info(`Data loaded in ${((Date.now() - startTime) / 1000).toFixed(2)}s`);
 
       isLoading = false;
@@ -670,7 +542,7 @@ function registerIpcHandlers() {
       sendLoadingProgress({
         step: 'error',
         status: 'error',
-        message: 'Loading failed',
+        messageKey: 'loading.messages.failed',
         error: (error as Error).message,
         hint,
       });
