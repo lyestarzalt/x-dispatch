@@ -119,6 +119,55 @@ if (process.platform === 'win32' && require('electron-squirrel-startup')) app.qu
 
 app.name = 'X-Dispatch';
 
+process.on('uncaughtExceptionMonitor', (error) => {
+  logger.main.error('Uncaught exception in main process', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.main.error(
+    'Unhandled promise rejection in main process',
+    reason instanceof Error ? reason : new Error(String(reason))
+  );
+});
+
+app.on('render-process-gone', (_event, webContents, details) => {
+  if (details.reason === 'clean-exit') return;
+
+  let url: string | undefined;
+  try {
+    url = webContents.getURL();
+  } catch {
+    // Ignore inaccessible webContents metadata; the crash reason is enough.
+  }
+  logger.main.error(
+    'Renderer process gone',
+    new Error(
+      [`reason=${details.reason}`, `exitCode=${details.exitCode}`, url ? `url=${url}` : null]
+        .filter(Boolean)
+        .join(', ')
+    )
+  );
+});
+
+app.on('child-process-gone', (_event, details) => {
+  if (details.reason === 'clean-exit') return;
+
+  logger.main.error(
+    'Electron child process gone',
+    new Error(
+      [
+        `type=${details.type}`,
+        `reason=${details.reason}`,
+        `exitCode=${details.exitCode}`,
+        details.serviceName ? `service=${details.serviceName}` : null,
+        details.name ? `name=${details.name}` : null,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    )
+  );
+});
+
 let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
@@ -813,6 +862,7 @@ function registerIpcHandlers() {
       const status = await dataManager.loadAll(xplanePath || undefined);
       return { success: true, status };
     } catch (error) {
+      logger.data.error('Manual nav database load failed', error);
       return { success: false, error: (error as Error).message };
     }
   });
@@ -1165,6 +1215,7 @@ function registerIpcHandlers() {
       const aircraft = getLauncher(xplanePath).scanAircraft();
       return { success: true, aircraft };
     } catch (error) {
+      logger.launcher.error('Failed to scan aircraft', error);
       return { success: false, error: (error as Error).message, aircraft: [] };
     }
   });
@@ -1172,8 +1223,13 @@ function registerIpcHandlers() {
   ipcMain.handle('launcher:getAircraft', async () => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return [];
-    const { getLauncher } = await getLauncherModule();
-    return getLauncher(xplanePath).getAircraft();
+    try {
+      const { getLauncher } = await getLauncherModule();
+      return getLauncher(xplanePath).getAircraft();
+    } catch (error) {
+      logger.launcher.error('Failed to get aircraft', error);
+      return [];
+    }
   });
 
   ipcMain.handle('launcher:getWeatherPresets', async () => {
@@ -1270,6 +1326,7 @@ function registerIpcHandlers() {
       const { getXPlaneService } = await getXPlaneModule();
       return getXPlaneService().startFlight(payload);
     } catch (error) {
+      logger.main.error('Failed to start X-Plane flight', error);
       return { success: false, error: (error as Error).message };
     }
   });
@@ -1294,6 +1351,7 @@ function registerIpcHandlers() {
         const { getXPlaneService } = await getXPlaneModule();
         return getXPlaneService().setDataref(datarefName, value);
       } catch (error) {
+        logger.main.error('Failed to set X-Plane dataref', error);
         return { success: false, error: (error as Error).message };
       }
     }
@@ -1309,6 +1367,7 @@ function registerIpcHandlers() {
         const { getXPlaneService } = await getXPlaneModule();
         return getXPlaneService().activateCommand(commandName, duration);
       } catch (error) {
+        logger.main.error('Failed to activate X-Plane command', error);
         return { success: false, error: (error as Error).message };
       }
     }
@@ -1337,6 +1396,7 @@ function registerIpcHandlers() {
       );
       return { success: true };
     } catch (error) {
+      logger.main.error('Failed to start X-Plane state stream', error);
       return { success: false, error: (error as Error).message };
     }
   });
@@ -1347,6 +1407,7 @@ function registerIpcHandlers() {
       getXPlaneService().stopStateStream();
       return { success: true };
     } catch (error) {
+      logger.main.error('Failed to stop X-Plane state stream', error);
       return { success: false, error: (error as Error).message };
     }
   });
@@ -1357,6 +1418,7 @@ function registerIpcHandlers() {
       getXPlaneService().forceReconnect();
       return { success: true };
     } catch (error) {
+      logger.main.error('Failed to force X-Plane state stream reconnect', error);
       return { success: false, error: (error as Error).message };
     }
   });
