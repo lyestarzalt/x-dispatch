@@ -6,8 +6,18 @@ import { PublisherGithub } from '@electron-forge/publisher-github';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { MakerAppImage } from '@reforged/maker-appimage';
+import { readFileSync } from 'node:fs';
 import { cp, mkdir, rename } from 'node:fs/promises';
 import path from 'node:path';
+
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string };
+
+/** NuGet/Squirrel reject suffixes like `1.8.4a` — map to `1.8.4-a`. */
+function toNuGetVersion(version: string): string {
+  const m = /^(\d+\.\d+\.\d+)([a-z]\d*)$/i.exec(version);
+  if (m) return `${m[1]}-${m[2]}`;
+  return version;
+}
 
 function getPlatformLabel(platform: string, arch: string): string {
   if (platform === 'win32') return `windows-${arch}`;
@@ -38,6 +48,7 @@ const config: ForgeConfig = {
       name: 'XDispatch',
       setupIcon: './assets/icon.ico',
       loadingGif: './assets/transparent.gif',
+      version: toNuGetVersion(pkg.version),
     }),
     new MakerDMG({
       icon: './assets/icon.icns',
@@ -96,14 +107,16 @@ const config: ForgeConfig = {
   ],
   hooks: {
     async postMake(_forgeConfig, makeResults) {
-      const pkg = JSON.parse(require('node:fs').readFileSync('./package.json', 'utf-8'));
+      const pkgVersion = JSON.parse(
+        require('node:fs').readFileSync('./package.json', 'utf-8')
+      ) as { version: string };
       for (const result of makeResults) {
         const label = getPlatformLabel(result.platform, result.arch);
         const renamed: string[] = [];
         for (const artifact of result.artifacts) {
           const ext = path.extname(artifact);
           if (RENAME_EXTENSIONS.has(ext)) {
-            const newName = `X-Dispatch-${pkg.version}-${label}${ext}`;
+            const newName = `X-Dispatch-${pkgVersion.version}-${label}${ext}`;
             const newPath = path.join(path.dirname(artifact), newName);
             await rename(artifact, newPath);
             renamed.push(newPath);
