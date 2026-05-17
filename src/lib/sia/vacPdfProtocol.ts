@@ -41,7 +41,3 @@ export function registerVacPdfHandler(): void {
 
   logger.main.info('VAC PDF protocol handler registered');
 }
-
-export function vacPdfPreviewUrl(icao: string): string {
-  return `vac-pdf://${icao.toUpperCase()}/chart.pdf`;
-}

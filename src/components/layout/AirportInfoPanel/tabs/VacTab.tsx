@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { vacPdfPreviewUrl } from '@/lib/sia/vacPdfProtocol';
+import { vacPdfPreviewUrl } from '@/lib/sia/vacPdfUrl';
 import type { AirportGeorefInput } from '@/lib/sia/georef';
 import { useVacChartQuery, useSiaInstallStatusQuery } from '@/queries/useSiaQuery';
 import { useAppStore } from '@/stores/appStore';
