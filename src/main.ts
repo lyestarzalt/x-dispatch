@@ -1552,7 +1552,9 @@ app.whenReady().then(async () => {
     }
   }
 
-  Menu.setApplicationMenu(null);
+  if (app.isPackaged) {
+    Menu.setApplicationMenu(null);
+  }
 
   try {
     await initDb();
