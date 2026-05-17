@@ -1,3 +1,5 @@
+import { SolidPolygonLayer } from '@deck.gl/layers';
+import { MapboxOverlay } from '@deck.gl/mapbox';
 import maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
@@ -5,6 +7,7 @@ import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
+import { type BeamKind, type BeamPolygon, buildBeamPolygons } from './ilsMeshes';
 
 function createILSSymbolSVG(size: number = 36): string {
   const center = size / 2;
@@ -14,7 +17,6 @@ function createILSSymbolSVG(size: number = 36): string {
   </svg>`;
 }
 
-// Helper to calculate destination point using nautical miles
 function destinationPointNm(
   lat: number,
   lon: number,
@@ -24,149 +26,85 @@ function destinationPointNm(
   return destinationPoint(lat, lon, nauticalMilesToMeters(distanceNm), bearing);
 }
 
-function createILSConeGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
-  const features: GeoJSON.Feature[] = [];
-
-  for (const ils of ilsList) {
-    if (ils.bearing === undefined) continue;
-
-    const coneAngle = 2.5; // ILS localizer ~2.5° either side
-    const coneLength = 18;
-    const course = (ils.bearing + 180) % 360;
-
-    const leftBearing = (course - coneAngle + 360) % 360;
-    const rightBearing = (course + coneAngle) % 360;
-
-    const origin: [number, number] = [ils.longitude, ils.latitude];
-    const leftPoint = destinationPointNm(ils.latitude, ils.longitude, leftBearing, coneLength);
-    const rightPoint = destinationPointNm(ils.latitude, ils.longitude, rightBearing, coneLength);
-
-    features.push({
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[origin, leftPoint, rightPoint, origin]],
-      },
-      properties: {
-        id: ils.id,
-        runway: ils.associatedRunway || '',
-      },
-    });
-  }
-
-  return { type: 'FeatureCollection', features };
-}
-
 function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
   const features: GeoJSON.Feature[] = [];
-
   for (const ils of ilsList) {
     if (ils.bearing === undefined) continue;
-
-    const courseLength = 12;
     const course = (ils.bearing + 180) % 360;
-
     const origin: [number, number] = [ils.longitude, ils.latitude];
-    const endPoint = destinationPointNm(ils.latitude, ils.longitude, course, courseLength);
-
+    const endPoint = destinationPointNm(ils.latitude, ils.longitude, course, 12);
     features.push({
       type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: [origin, endPoint],
-      },
-      properties: {
-        id: ils.id,
-        runway: ils.associatedRunway || '',
-      },
+      geometry: { type: 'LineString', coordinates: [origin, endPoint] },
+      properties: { id: ils.id, runway: ils.associatedRunway || '' },
     });
   }
-
   return { type: 'FeatureCollection', features };
 }
 
-// ── Glide-slope 3D ramp (fill-extrusion) ────────────────────────────────
-
-function createGSSlopeGeoJSON(gsList: Navaid[]): GeoJSON.FeatureCollection {
-  const features: GeoJSON.Feature[] = [];
-  const SEGMENTS = 200;
-  const MAX_DISTANCE_NM = 10;
-  const BEAM_HALF_WIDTH = 0.7; // degrees, standard GS beam
-
-  for (const gs of gsList) {
-    if (gs.glidepathAngle === undefined || gs.bearing === undefined) continue;
-
-    // Workaround: old parser stored glidepathAngle ÷100 (e.g. 0.03 instead of 3.0)
-    const angle = gs.glidepathAngle < 0.5 ? gs.glidepathAngle * 100 : gs.glidepathAngle;
-    const course = (gs.bearing + 180) % 360;
-    const tanAngle = Math.tan((angle * Math.PI) / 180);
-    const leftBearing = (course - BEAM_HALF_WIDTH + 360) % 360;
-    const rightBearing = (course + BEAM_HALF_WIDTH) % 360;
-
-    for (let i = 0; i < SEGMENTS; i++) {
-      const dNear = (i * MAX_DISTANCE_NM) / SEGMENTS;
-      const dFar = ((i + 1) * MAX_DISTANCE_NM) / SEGMENTS;
-
-      const nearLeft = destinationPointNm(gs.latitude, gs.longitude, leftBearing, dNear);
-      const nearRight = destinationPointNm(gs.latitude, gs.longitude, rightBearing, dNear);
-      const farLeft = destinationPointNm(gs.latitude, gs.longitude, leftBearing, dFar);
-      const farRight = destinationPointNm(gs.latitude, gs.longitude, rightBearing, dFar);
-
-      // Each column rises from ground (base=0) to the slope height at its far edge.
-      // With 200 segments, each step is ~2.4m — invisible at any zoom level.
-      const heightMeters = nauticalMilesToMeters(dFar) * tanAngle;
-
-      features.push({
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[nearLeft, farLeft, farRight, nearRight, nearLeft]],
-        },
-        properties: {
-          id: gs.id,
-          height: heightMeters,
-        },
-      });
-    }
-  }
-
-  return { type: 'FeatureCollection', features };
+// Parse "#RRGGBB" → [R, G, B]. deck.gl wants RGB arrays, not CSS strings.
+function hexToRgb(hex: string): [number, number, number] {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m || !m[1] || !m[2] || !m[3]) return [255, 136, 0];
+  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
 }
+
+const ILS_BEAM_RGB = hexToRgb(NAV_COLORS.ils);
+
+// Lower opacity on both walls — the wedge reads as a translucent beam volume
+// rather than two opaque sheets.
+const BEAM_ALPHA: Record<BeamKind, number> = {
+  GS_LOWER: 51, // ~20%
+  GS_UPPER: 51,
+};
+
+const DECK_LAYER_ID = 'nav-ils-deck-beams';
 
 /**
- * ILS Layer - renders Instrument Landing System navaids with localizer cone
+ * ILS layer.
  *
- * This layer is more complex than others because it has multiple sources:
- * - Main source for ILS symbols and labels
- * - Cone source for localizer coverage polygon
- * - Course source for extended centerline
+ * Two-tier rendering:
+ *
+ *   - MapLibre native — the antenna symbol, frequency/runway label, and a
+ *     2D dashed extended centerline (`nav-ils`, `nav-ils-labels`,
+ *     `nav-ils-course`). These give the on-ground bearings of the LOC.
+ *   - deck.gl `SolidPolygonLayer` via an interleaved `MapboxOverlay` — the
+ *     GS wedge, drawn as two stacked tilted planes at ±0.7° around the
+ *     glide path. Interleaved mode shares MapLibre's depth buffer so the
+ *     wedge clips correctly behind 3D terrain.
+ *
+ * The LOC is intentionally NOT rendered as a separate fan: the GS wedge
+ * occupies the same lateral footprint as the LOC course (its centerline
+ * is the runway-extended centerline), so a flat LOC fan would just
+ * visually duplicate the wedge's projected footprint without adding
+ * information.
+ *
+ * LOC↔GS pairing in `ilsMeshes.ts` re-anchors the GS apex at the LOC
+ * antenna position — physical GS antennas sit ~400 ft beside the runway,
+ * which would otherwise put the wedge visibly off the extended centerline.
  */
 export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   readonly layerId = 'nav-ils';
   readonly sourceId = 'nav-ils-source';
-  readonly additionalLayerIds = [
-    'nav-ils-labels',
-    'nav-ils-cone',
-    'nav-ils-course',
-    'nav-ils-gs-slope',
-  ];
+  readonly additionalLayerIds = ['nav-ils-labels', 'nav-ils-course'];
 
-  // Additional sources for cone, course, and glide slope
-  private readonly coneSourceId = 'nav-ils-cone-source';
   private readonly courseSourceId = 'nav-ils-course-source';
-  private readonly gsSlopeSourceId = 'nav-ils-gs-source';
 
   private imagesLoaded = false;
+
+  // Overlay is bound to a specific map instance — recreated if the map is
+  // ever swapped (HMR / app-restart paths).
+  private deckOverlay: MapboxOverlay | null = null;
+  private deckMap: maplibregl.Map | null = null;
+  private currentBeams: BeamPolygon[] = [];
+  private beamsVisible = true;
 
   protected createGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
     return {
       type: 'FeatureCollection',
       features: ilsList.map((ils) => ({
         type: 'Feature' as const,
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [ils.longitude, ils.latitude],
-        },
+        geometry: { type: 'Point' as const, coordinates: [ils.longitude, ils.latitude] },
         properties: {
           id: ils.id,
           name: ils.name,
@@ -182,51 +120,31 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
 
   protected async loadImages(map: maplibregl.Map): Promise<boolean> {
     const id = 'ils-symbol';
-    if (!map.hasImage(id)) {
-      try {
-        const img = new Image();
-        const promise = new Promise<boolean>((resolve) => {
-          img.onload = () => {
-            if (!map.hasImage(id)) {
-              map.addImage(id, img, { sdf: false });
-            }
-            resolve(true);
-          };
-          img.onerror = () => {
-            resolve(false);
-          };
-        });
-        img.src = svgToDataUrl(createILSSymbolSVG(36));
-        this.imagesLoaded = await promise;
-        return this.imagesLoaded;
-      } catch {
-        this.imagesLoaded = false;
-        return false;
-      }
+    if (map.hasImage(id)) {
+      this.imagesLoaded = true;
+      return true;
     }
-    this.imagesLoaded = true;
-    return true;
+    try {
+      const img = new Image();
+      this.imagesLoaded = await new Promise<boolean>((resolve) => {
+        img.onload = () => {
+          if (!map.hasImage(id)) map.addImage(id, img, { sdf: false });
+          resolve(true);
+        };
+        img.onerror = () => resolve(false);
+        img.src = svgToDataUrl(createILSSymbolSVG(36));
+      });
+      return this.imagesLoaded;
+    } catch {
+      this.imagesLoaded = false;
+      return false;
+    }
   }
 
   protected addLayers(map: maplibregl.Map): void {
-    const labelsLayerId = this.additionalLayerIds[0]; // nav-ils-labels
-    const coneLayerId = this.additionalLayerIds[1]; // nav-ils-cone
-    const courseLayerId = this.additionalLayerIds[2]; // nav-ils-course
-    const gsSlopeLayerId = this.additionalLayerIds[3]; // nav-ils-gs-slope
-    if (!labelsLayerId || !coneLayerId || !courseLayerId || !gsSlopeLayerId) return;
+    const [labelsLayerId, courseLayerId] = this.additionalLayerIds;
+    if (!labelsLayerId || !courseLayerId) return;
 
-    // Cone fill layer
-    map.addLayer({
-      id: coneLayerId,
-      type: 'fill',
-      source: this.coneSourceId,
-      paint: {
-        'fill-color': NAV_COLORS.ils,
-        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.05, 12, 0.1, 16, 0.15],
-      },
-    });
-
-    // Course line layer
     map.addLayer({
       id: courseLayerId,
       type: 'line',
@@ -239,20 +157,6 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
       },
     });
 
-    // Glide slope 3D ramp (solid columns from ground to slope height)
-    map.addLayer({
-      id: gsSlopeLayerId,
-      type: 'fill-extrusion',
-      source: this.gsSlopeSourceId,
-      paint: {
-        'fill-extrusion-color': NAV_COLORS.ils,
-        'fill-extrusion-height': ['get', 'height'],
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.12,
-      },
-    });
-
-    // ILS symbol layer
     if (this.imagesLoaded && map.hasImage('ils-symbol')) {
       map.addLayer({
         id: this.layerId,
@@ -280,7 +184,6 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
       });
     }
 
-    // ILS labels
     map.addLayer({
       id: labelsLayerId,
       type: 'symbol',
@@ -309,9 +212,88 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     });
   }
 
-  // Override add to handle multiple sources. Idempotent across concurrent
-  // calls — if a racer mounted us during loadImages(), the safeAddSource
-  // helpers fall through to setData() and ensureLayers() skips the layer add.
+  /**
+   * Eagerly attach the deck.gl overlay to the map. Call once on
+   * `map.on('load')` from `useMapSetup`. Idempotent: a no-op if the same
+   * overlay is already attached to this map. If `add()` ran before attach
+   * (cold-start nav-data-arrived-first race), the pending state is flushed
+   * here so the wedge appears as soon as the overlay is wired.
+   */
+  attachTo(map: maplibregl.Map): void {
+    if (this.deckOverlay && this.deckMap === map) return;
+    if (this.deckOverlay && this.deckMap && this.deckMap !== map) {
+      try {
+        this.deckMap.removeControl(this.deckOverlay);
+      } catch {
+        /* ignore: control may already be detached */
+      }
+      this.deckOverlay.finalize();
+      this.deckOverlay = null;
+    }
+    const overlay = new MapboxOverlay({ interleaved: true, layers: [] });
+    map.addControl(overlay);
+    this.deckOverlay = overlay;
+    this.deckMap = map;
+    // Flush any state populated before attach.
+    overlay.setProps({ layers: this.buildDeckLayers() });
+  }
+
+  /** Detach on map teardown. */
+  detachFrom(map: maplibregl.Map): void {
+    if (!this.deckOverlay || this.deckMap !== map) return;
+    try {
+      map.removeControl(this.deckOverlay);
+    } catch {
+      /* ignore */
+    }
+    this.deckOverlay.finalize();
+    this.deckOverlay = null;
+    this.deckMap = null;
+  }
+
+  private buildDeckLayers(): SolidPolygonLayer[] {
+    if (this.currentBeams.length === 0 || !this.beamsVisible) return [];
+
+    const byKind: Record<BeamKind, BeamPolygon[]> = { GS_LOWER: [], GS_UPPER: [] };
+    for (const beam of this.currentBeams) byKind[beam.kind].push(beam);
+
+    const layers: SolidPolygonLayer[] = [];
+    (Object.keys(byKind) as BeamKind[]).forEach((kind) => {
+      const data = byKind[kind];
+      if (data.length === 0) return;
+      layers.push(
+        new SolidPolygonLayer({
+          id: `${DECK_LAYER_ID}-${kind.toLowerCase()}`,
+          data,
+          getPolygon: (d: BeamPolygon) => d.polygon,
+          getFillColor: [...ILS_BEAM_RGB, BEAM_ALPHA[kind]],
+          filled: true,
+          extruded: false,
+          stroked: false,
+          pickable: false,
+          // Tesselate on the largest-area plane of the tilted polygon
+          // (otherwise earcut projects to XY and the wedge degenerates).
+          _full3d: true,
+          // Read depth (so terrain occludes the wedge), but DON'T write
+          // depth. Two translucent stacked planes that both write depth
+          // occlude each other based on draw order — visible artifact
+          // where one wall "eats" the other.
+          parameters: { depthMask: false },
+        })
+      );
+    });
+    return layers;
+  }
+
+  /**
+   * Push current beam state to the overlay. No-op if not yet attached —
+   * `attachTo()` will flush state when it runs.
+   */
+  private pushDeckLayers(): void {
+    if (!this.deckOverlay) return;
+    this.deckOverlay.setProps({ layers: this.buildDeckLayers() });
+  }
+
   async add(map: maplibregl.Map, data: Navaid[]): Promise<void> {
     this.remove(map);
     if (data.length === 0) return;
@@ -319,45 +301,47 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     await this.loadImages(map);
 
     const locData = data.filter((n) => n.type !== 'GS');
-    const gsData = data.filter((n) => n.type === 'GS');
 
-    this.safeAddSource(map, this.coneSourceId, createILSConeGeoJSON(locData));
     this.safeAddSource(map, this.courseSourceId, createILSCourseGeoJSON(locData));
-    this.safeAddSource(map, this.gsSlopeSourceId, createGSSlopeGeoJSON(gsData));
     this.safeAddSource(map, this.sourceId, this.createGeoJSON(locData));
-
     this.ensureLayers(map);
+
+    this.currentBeams = buildBeamPolygons(data);
+    this.beamsVisible = true;
+    this.pushDeckLayers();
   }
 
-  // Override update to handle multiple sources
   async update(map: maplibregl.Map, data: Navaid[]): Promise<void> {
-    const source = map.getSource(this.sourceId) as maplibregl.GeoJSONSource;
-    if (source) {
-      const locData = data.filter((n) => n.type !== 'GS');
-      const gsData = data.filter((n) => n.type === 'GS');
-
-      source.setData(this.createGeoJSON(locData));
-      const coneSource = map.getSource(this.coneSourceId) as maplibregl.GeoJSONSource;
-      if (coneSource) coneSource.setData(createILSConeGeoJSON(locData));
-      const courseSource = map.getSource(this.courseSourceId) as maplibregl.GeoJSONSource;
-      if (courseSource) courseSource.setData(createILSCourseGeoJSON(locData));
-      const gsSource = map.getSource(this.gsSlopeSourceId) as maplibregl.GeoJSONSource;
-      if (gsSource) gsSource.setData(createGSSlopeGeoJSON(gsData));
-    } else {
+    const source = map.getSource(this.sourceId) as maplibregl.GeoJSONSource | undefined;
+    if (!source) {
       await this.add(map, data);
+      return;
     }
+    const locData = data.filter((n) => n.type !== 'GS');
+    source.setData(this.createGeoJSON(locData));
+    const courseSource = map.getSource(this.courseSourceId) as maplibregl.GeoJSONSource | undefined;
+    if (courseSource) courseSource.setData(createILSCourseGeoJSON(locData));
+
+    this.currentBeams = buildBeamPolygons(data);
+    this.pushDeckLayers();
   }
 
   protected performRemove(map: maplibregl.Map): void {
     super.performRemove(map);
-    if (map.getSource(this.coneSourceId)) map.removeSource(this.coneSourceId);
     if (map.getSource(this.courseSourceId)) map.removeSource(this.courseSourceId);
-    if (map.getSource(this.gsSlopeSourceId)) map.removeSource(this.gsSlopeSourceId);
+
+    this.currentBeams = [];
+    if (this.deckOverlay && this.deckMap === map) {
+      this.deckOverlay.setProps({ layers: [] });
+    }
   }
 
-  // Override setVisibility to include all layers
   setVisibility(map: maplibregl.Map, visible: boolean): void {
     setLayersVisibility(map, [this.layerId, ...this.additionalLayerIds], visible);
+    this.beamsVisible = visible;
+    if (this.deckOverlay && this.deckMap === map) {
+      this.deckOverlay.setProps({ layers: this.buildDeckLayers() });
+    }
   }
 }
 

@@ -6,12 +6,14 @@ import { Airport } from '@/lib/xplaneServices/dataService';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { ilsLayer } from '../layers/navigation';
 import {
   setSelectedAirportIcao,
   setupAirportsLayer,
   updateAirportFavoriteFlags,
 } from '../layers/world/AirportsLayer';
 import { captureBasemapSnapshot, setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
+import { runWhenStyleIsReady } from './styleReadiness';
 
 // ============================================================================
 // Safe Map Proxy
@@ -190,6 +192,9 @@ export function useMapSetup({
 
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
+    const cleanupIlsOverlayAttach = runWhenStyleIsReady(map, () => {
+      ilsLayer.attachTo(map);
+    });
 
     // maplibre-gl 5.x raises rejected promises out the side of its tile
     // image-fetch path that don't go through `map.on('error')`. They surface
@@ -274,10 +279,17 @@ export function useMapSetup({
         (zoom: number) => setCurrentZoomRef.current(zoom),
         (bearing: number) => setMapBearingRef.current(bearing)
       );
+
+      // The deck.gl ILS overlay is attached as soon as the style object is
+      // usable (above), not from this `load` handler. `load` waits for all
+      // sources to settle; airport animations/source churn can keep that
+      // false even after the style can safely accept controls/layers.
     });
 
     return () => {
       window.removeEventListener('unhandledrejection', onUnhandledRejection);
+      cleanupIlsOverlayAttach();
+      ilsLayer.detachFrom(map);
       map.remove();
     };
     // Note: mapStyleUrl changes are handled by Map/index.tsx style change handler

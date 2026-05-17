@@ -118,64 +118,83 @@ export function useAirportRenderer(
 
   const renderAirport = useCallback(
     async (icao: string, center: [number, number]): Promise<ParsedAirport | null> => {
-      if (!map.current) return null;
+      const m = map.current;
+      if (!m) return null;
 
-      // Toggle off: clicking the same airport deselects it
-      if (selectedAirport.current === icao) {
+      const doRender = async (): Promise<ParsedAirport | null> => {
+        // Toggle off: clicking the same airport deselects it
+        if (selectedAirport.current === icao) {
+          clearAirport();
+          return null;
+        }
+
+        // Clear previous airport layers before adding new ones
         clearAirport();
-        return null;
-      }
 
-      // Clear previous airport layers before adding new ones
-      clearAirport();
+        const result = await window.airportAPI.getAirportData(icao);
+        if (!result) return null;
 
-      const result = await window.airportAPI.getAirportData(icao);
-      if (!result) return null;
+        // Apply surface detail setting before parsing
+        const { surfaceDetail } = useSettingsStore.getState().graphics;
+        setActiveBezierResolution(surfaceDetail);
 
-      // Apply surface detail setting before parsing
-      const { surfaceDetail } = useSettingsStore.getState().graphics;
-      setActiveBezierResolution(surfaceDetail);
+        const parser = new AirportParser(result.data);
+        const { data: parsedAirport, errors, stats } = parser.parse();
 
-      const parser = new AirportParser(result.data);
-      const { data: parsedAirport, errors, stats } = parser.parse();
+        // Enrich with coordinates and source file path
+        parsedAirport.longitude = center[0];
+        parsedAirport.latitude = center[1];
+        parsedAirport.sourceFile = result.sourceFile;
 
-      // Enrich with coordinates and source file path
-      parsedAirport.longitude = center[0];
-      parsedAirport.latitude = center[1];
-      parsedAirport.sourceFile = result.sourceFile;
+        if (errors.length > 0) {
+          window.appAPI.log.warn(
+            `AirportParser ${icao}: ${errors.length} errors, ${stats.skipped} skipped`
+          );
+        }
 
-      if (errors.length > 0) {
-        window.appAPI.log.warn(
-          `AirportParser ${icao}: ${errors.length} errors, ${stats.skipped} skipped`
-        );
-      }
-
-      // Render all layers synchronously in one batch
-      for (const renderer of layerRenderers.current) {
-        if (renderer.hasData(parsedAirport)) {
-          try {
-            const result = renderer.render(map.current, parsedAirport);
-            if (result instanceof Promise) {
-              result.catch((err) =>
-                window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
-              );
+        // Render all layers synchronously in one batch
+        for (const renderer of layerRenderers.current) {
+          if (renderer.hasData(parsedAirport)) {
+            try {
+              const renderResult = renderer.render(m, parsedAirport);
+              if (renderResult instanceof Promise) {
+                renderResult.catch((err) =>
+                  window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
+                );
+              }
+            } catch (err) {
+              window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
             }
-          } catch (err) {
-            window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
           }
         }
+
+        const optimalZoom = calculateOptimalZoom(parsedAirport.runways);
+
+        m.flyTo({
+          center,
+          zoom: optimalZoom,
+          duration: 2000,
+        });
+
+        selectedAirport.current = icao;
+        return parsedAirport;
+      };
+
+      // Defer until the style is fully loaded. Each renderer's `render()`
+      // calls `addSource` / `addLayer`, which throw "Style is not done
+      // loading" while `style._loaded` is false. The cold-start home-
+      // airport autoload race (`App.tsx` fires `requestSelectAirport`
+      // when appState reaches 'ready', which can land before
+      // `map.on('load')` resolves) hits this path and floods the log
+      // with one swallowed error per layer.
+      if (!m.isStyleLoaded()) {
+        return new Promise<ParsedAirport | null>((resolve) => {
+          m.once('style.load', () => {
+            doRender().then(resolve);
+          });
+        });
       }
-
-      const optimalZoom = calculateOptimalZoom(parsedAirport.runways);
-
-      map.current.flyTo({
-        center,
-        zoom: optimalZoom,
-        duration: 2000,
-      });
-
-      selectedAirport.current = icao;
-      return parsedAirport;
+      return doRender();
     },
     [map, clearAirport]
   );
