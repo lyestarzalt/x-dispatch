@@ -54,7 +54,7 @@ const config: ForgeConfig = {
   publishers: [
     new PublisherGithub({
       repository: {
-        owner: 'lyestarzalt',
+        owner: '4SLSL',
         name: 'x-dispatch',
       },
       draft: true,
