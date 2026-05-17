@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 import { eq } from 'drizzle-orm';
-import { extractSevenZip } from '@/lib/addonManager/installer/extraction/sevenZipExtractor';
+import { extractArchive } from '@/lib/addonManager/installer/extraction';
 import { getDb, saveDb } from '@/lib/db';
 import { metadata, siaCharts } from '@/lib/db/schema';
 import logger from '@/lib/utils/logger';
@@ -25,6 +25,38 @@ import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
 const MANIFEST_VERSION = 1 as const;
 const METADATA_CYCLE_KEY = 'sia_eaip_cycle';
 const METADATA_INSTALLED_KEY = 'sia_installed_at';
+/** eAIP full ZIP can exceed 1 GB — allow long extraction on slow disks. */
+const EXTRACT_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+
+function emitInstallError(
+  productId: string,
+  error: string,
+  onProgress?: DownloadProgressCallback
+): { success: false; error: string } {
+  onProgress?.({
+    productId,
+    phase: 'error',
+    percent: 0,
+    message: error,
+  });
+  return { success: false, error };
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
 
 let storeInstance: ChartStore | null = null;
 
@@ -230,23 +262,43 @@ export class ChartStore {
       message: 'Extracting archive…',
     });
 
-    const extractResult = await extractSevenZip({
-      archivePath: zipPath,
-      targetDir: extractPath,
-      onProgress: (_bytes, file) => {
-        onProgress?.({
-          productId,
-          phase: 'extracting',
-          percent: 50,
-          message: file,
-        });
-      },
-    });
+    let extractResult: Awaited<ReturnType<typeof extractArchive>>;
+    try {
+      extractResult = await withTimeout(
+        extractArchive({
+          archivePath: zipPath,
+          targetDir: extractPath,
+          onProgress: (_bytes, file) => {
+            onProgress?.({
+              productId,
+              phase: 'extracting',
+              percent: 50,
+              message: file || 'Extracting archive…',
+            });
+          },
+        }),
+        EXTRACT_TIMEOUT_MS,
+        'Extraction timed out — the archive may be too large or corrupted'
+      );
+    } catch (err) {
+      logger.main.error('SIA archive extraction failed', err);
+      return emitInstallError(
+        productId,
+        (err as Error).message,
+        onProgress
+      );
+    }
 
     if (!extractResult.ok) {
-      const err = extractResult.error;
-      const msg = typeof err === 'object' && err && 'reason' in err ? String(err.reason) : String(err);
-      return { success: false, error: msg };
+      const extractErr = extractResult.error;
+      const msg =
+        typeof extractErr === 'object' && extractErr && 'reason' in extractErr
+          ? String(extractErr.reason)
+          : typeof extractErr === 'object' && extractErr && 'code' in extractErr
+            ? String(extractErr.code)
+            : String(extractErr);
+      logger.main.error('SIA archive extraction failed', extractErr);
+      return emitInstallError(productId, msg, onProgress);
     }
 
     onProgress?.({
@@ -258,12 +310,17 @@ export class ChartStore {
 
     let vacIndex = { ...this.manifest.vacIndex };
 
-    if (product.kind === 'eaip-full') {
-      const indexed = await indexEaipExtract(extractPath, cycle, validFrom, validTo);
-      vacIndex = indexed.vacIndex;
-      await this.persistXmlPaths(indexed.xmlPaths, cycle);
-    } else {
-      vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
+    try {
+      if (product.kind === 'eaip-full') {
+        const indexed = await indexEaipExtract(extractPath, cycle, validFrom, validTo);
+        vacIndex = indexed.vacIndex;
+        await this.persistXmlPaths(indexed.xmlPaths, cycle);
+      } else {
+        vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
+      }
+    } catch (err) {
+      logger.main.error('SIA chart indexing failed', err);
+      return emitInstallError(productId, (err as Error).message, onProgress);
     }
 
     this.manifest.installedProducts[productId] = {

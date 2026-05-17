@@ -32,7 +32,7 @@ export interface ExtractResult {
  * Check if a path component should be ignored
  */
 function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split('/');
+  const parts = filePath.split(/[/\\]/);
   return parts.some((part) => IGNORE_PATTERNS.includes(part));
 }
 
@@ -40,14 +40,13 @@ function shouldIgnore(filePath: string): boolean {
  * Sanitize path to prevent directory traversal attacks
  */
 function sanitizePath(entryPath: string): string | null {
-  // Reject absolute paths
-  if (path.isAbsolute(entryPath)) return null;
+  const normalized = entryPath.replace(/\\/g, '/');
 
-  // Reject path traversal
-  const parts = entryPath.split('/');
+  if (path.isAbsolute(normalized)) return null;
+
+  const parts = normalized.split('/');
   if (parts.some((p) => p === '..')) return null;
 
-  // Normalize and return
   return parts.filter((p) => p !== '').join('/');
 }
 

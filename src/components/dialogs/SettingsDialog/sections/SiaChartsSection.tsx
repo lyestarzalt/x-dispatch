@@ -52,13 +52,16 @@ export function SiaChartsSection() {
   useEffect(() => {
     const unsub = window.siaAPI.onDownloadProgress((p) => {
       setProgress({ percent: p.percent, message: p.message });
+      if (p.phase === 'error') {
+        setDownloadError(translateSiaError(t, p.message));
+      }
       if (p.phase === 'done' || p.phase === 'error') {
         void refetch();
-        setTimeout(() => setProgress(null), 2000);
+        setTimeout(() => setProgress(null), p.phase === 'error' ? 4000 : 2000);
       }
     });
     return unsub;
-  }, [refetch]);
+  }, [refetch, t]);
 
   useEffect(() => {
     void window.mbtilesAPI.getConfig().then((cfg) => {
@@ -75,7 +78,10 @@ export function SiaChartsSection() {
     if (!zip) return;
     setDownloadError(null);
     setProgress({ percent: 0, message: t('sia.installing') });
-    await installMutation.mutateAsync({ zipPath: zip, productId: fullProduct.id });
+    const result = await installMutation.mutateAsync({ zipPath: zip, productId: fullProduct.id });
+    if (!result.success) {
+      setDownloadError(translateSiaError(t, result.error));
+    }
   };
 
   const handleDownload = async (productId: string) => {
@@ -92,7 +98,10 @@ export function SiaChartsSection() {
     if (!zip) return;
     setDownloadError(null);
     setProgress({ percent: 0, message: t('sia.installing') });
-    await installMutation.mutateAsync({ zipPath: zip, productId });
+    const result = await installMutation.mutateAsync({ zipPath: zip, productId });
+    if (!result.success) {
+      setDownloadError(translateSiaError(t, result.error));
+    }
   };
 
   const handleSaveCredentials = async () => {

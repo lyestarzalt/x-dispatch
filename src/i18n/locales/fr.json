@@ -1623,7 +1623,8 @@
     },
     "errors": {
       "noCredentials": "Enregistrez d'abord votre compte SIA dans les réglages ci-dessus.",
-      "productNotFound": "Produit introuvable sur le catalogue SIA — réessayez plus tard ou importez le ZIP manuellement."
+      "productNotFound": "Produit introuvable sur le catalogue SIA — réessayez plus tard ou importez le ZIP manuellement.",
+      "extractTimeout": "Extraction interrompue (délai dépassé). Vérifiez que le fichier ZIP n'est pas corrompu."
     },
     "settings": {
       "title": "Cartes SIA / OACI",
