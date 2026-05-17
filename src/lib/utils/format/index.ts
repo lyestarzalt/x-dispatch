@@ -45,6 +45,21 @@ export function formatDate(date: Date | string | null): string {
 /**
  * Format a radio frequency for display
  */
+/**
+ * X-Plane apt.dat 1302 country values often have an ISO-3 prefix
+ * (`USA United States`, `DZA Algeria`, `GBR United Kingdom`). Some
+ * entries are just the bare ISO code with no name (`VIR`, `FRA`).
+ * Returns the readable name when one follows the code, otherwise the
+ * code itself; returns undefined for empty/missing input.
+ */
+export function formatAirportCountry(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  const match = trimmed.match(/^[A-Z]{3}\s+(.+)$/);
+  return match ? match[1] : trimmed;
+}
+
 export function formatFrequency(freq: number, decimals = 3): string {
   return freq.toFixed(decimals);
 }

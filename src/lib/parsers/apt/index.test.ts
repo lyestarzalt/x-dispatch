@@ -134,6 +134,19 @@ describe('KJFK – John F Kennedy Intl', () => {
     expect(parseFloat(airport.metadata['datum_lon'] ?? '')).toBeCloseTo(-73.78, 1);
   });
 
+  it('preserves multi-word values for every 1302 metadata key', () => {
+    // 1302 values can be 1..N whitespace-separated tokens. Any field with a
+    // multi-word value used to be silently truncated to its first token
+    // (e.g. KLAX showed "Los, California" instead of "Los Angeles, California").
+    expect(airport.metadata['city']).toBe('New York');
+    expect(airport.metadata['state']).toBe('New York');
+    expect(airport.metadata['country']).toBe('USA United States');
+    // gw_credits is the extreme case: many tokens, embedded commas.
+    expect(airport.metadata['gw_credits']).toBe(
+      'crisk73, HawkEagle, jazzy1, Julian Lockwood, Julien Coquel, Michael Minnhaar, morkunas, netoron, Raligard, X_Codr'
+    );
+  });
+
   it('has runways', () => {
     expect(airport.runways.length).toBeGreaterThan(0);
   });
@@ -210,6 +223,11 @@ describe('LFPG – Paris Charles De Gaulle', () => {
     const result = parseChunk('LFPG');
     expect(result.errors).toHaveLength(0);
   });
+
+  it('preserves Unicode characters in multi-word metadata values', () => {
+    expect(airport.metadata['city']).toBe('Paris');
+    expect(airport.metadata['state']).toBe('Île-de-France');
+  });
 });
 
 describe('KLAX – Los Angeles Intl', () => {
@@ -231,6 +249,27 @@ describe('KLAX – Los Angeles Intl', () => {
   it('has no parse errors', () => {
     const result = parseChunk('KLAX');
     expect(result.errors).toHaveLength(0);
+  });
+
+  it('parses two-word city without truncating', () => {
+    expect(airport.metadata['city']).toBe('Los Angeles');
+    expect(airport.metadata['state']).toBe('California');
+  });
+});
+
+describe('ENQA – Troll A Platform (heliport with (unassigned) state)', () => {
+  let airport: ParsedAirport;
+
+  beforeAll(() => {
+    const result = parseChunk('ENQA');
+    airport = result.data;
+  });
+
+  it('drops "(unassigned)" placeholder values from metadata', () => {
+    // The fixture has `1302 state (unassigned)` for ENQA (a North Sea oilrig
+    // heliport). The parser should skip it so the display falls back to country
+    // instead of showing the literal placeholder.
+    expect(airport.metadata['state']).toBeUndefined();
   });
 });
 

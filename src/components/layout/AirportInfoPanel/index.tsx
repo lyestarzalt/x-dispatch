@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatAirportCountry } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -159,7 +160,11 @@ export default function AirportInfoPanel({
           {/* Row 3: Location */}
           {(airport.metadata.city || airport.metadata.country) && (
             <p className="text-sm text-muted-foreground">
-              {[airport.metadata.city, airport.metadata.state || airport.metadata.country]
+              {[
+                airport.metadata.city,
+                airport.metadata.state,
+                formatAirportCountry(airport.metadata.country),
+              ]
                 .filter(Boolean)
                 .join(', ')}
             </p>

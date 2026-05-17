@@ -509,13 +509,19 @@ export class AirportParser {
           break;
         }
 
-        case RowCode.METADATA:
-          {
-            const metaKey = tokens[1];
-            if (metaKey) airport.metadata[metaKey] = token(tokens, 2);
-            break;
-          }
+        case RowCode.METADATA: {
+          // Metadata values may be multi-word (e.g. "1302 city Los Angeles",
+          // "1302 country United States"). Joining tokens past the key with
+          // a single space preserves the value verbatim.
+          // "(unassigned)" is X-Plane's literal placeholder for fields that
+          // have no real value (e.g. state for US territories) — drop it so
+          // downstream consumers see undefined instead of placeholder noise.
+          const metaKey = tokens[1];
+          if (!metaKey) break;
+          const value = tokens.slice(2).join(' ');
+          if (value && value !== '(unassigned)') airport.metadata[metaKey] = value;
           break;
+        }
 
         case RowCode.LAND_RUNWAY: {
           if (tokens.length < 26) {
