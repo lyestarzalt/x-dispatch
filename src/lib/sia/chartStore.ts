@@ -1,0 +1,378 @@
+import { app } from 'electron';
+import * as fs from 'fs';
+import * as fsp from 'fs/promises';
+import * as path from 'path';
+import { eq } from 'drizzle-orm';
+import { extractSevenZip } from '@/lib/addonManager/installer/extraction/sevenZipExtractor';
+import { getDb, saveDb } from '@/lib/db';
+import { metadata, siaCharts } from '@/lib/db/schema';
+import logger from '@/lib/utils/logger';
+import { getCatalogProduct, getLatestCatalogCycle } from './catalog';
+import { resolveMagentoProduct } from './catalogDiscovery';
+import { downloadToFile, getDirSizeBytes, type DownloadProgressCallback } from './downloader';
+import { loadCredentials } from './siaCredentials';
+import { purchaseAndGetDownloadUrl } from './siaGraphqlClient';
+import { indexEaipExtract, indexVacAmendmentPdfs } from './eaipIndexer';
+import type {
+  SiaInstallManifest,
+  SiaInstallStatus,
+  VacChartEntry,
+  VacChartInfo,
+} from './types';
+import { resolveVacGeoref, type AirportGeorefInput } from './georef';
+import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
+
+const MANIFEST_VERSION = 1 as const;
+const METADATA_CYCLE_KEY = 'sia_eaip_cycle';
+const METADATA_INSTALLED_KEY = 'sia_installed_at';
+
+let storeInstance: ChartStore | null = null;
+
+export function getChartStore(): ChartStore {
+  if (!storeInstance) storeInstance = new ChartStore();
+  return storeInstance;
+}
+
+export class ChartStore {
+  readonly rootDir: string;
+  readonly downloadsDir: string;
+  readonly extractDir: string;
+  readonly georefDir: string;
+  readonly pngCacheDir: string;
+  private manifest: SiaInstallManifest;
+
+  constructor() {
+    this.rootDir = path.join(app.getPath('userData'), 'sia-data');
+    this.downloadsDir = path.join(this.rootDir, 'downloads');
+    this.extractDir = path.join(this.rootDir, 'extracted');
+    this.georefDir = path.join(this.rootDir, 'georef');
+    this.pngCacheDir = path.join(this.rootDir, 'png-cache');
+    this.manifest = this.loadManifest();
+  }
+
+  init(): void {
+    for (const dir of [
+      this.rootDir,
+      this.downloadsDir,
+      this.extractDir,
+      this.georefDir,
+      this.pngCacheDir,
+    ]) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  private manifestPath(): string {
+    return path.join(this.rootDir, 'manifest.json');
+  }
+
+  private loadManifest(): SiaInstallManifest {
+    const p = this.manifestPath();
+    if (!fs.existsSync(p)) {
+      return {
+        version: MANIFEST_VERSION,
+        installedProducts: {},
+        vacIndex: {},
+        cycle: null,
+        installedAt: null,
+      };
+    }
+    try {
+      return JSON.parse(fs.readFileSync(p, 'utf-8')) as SiaInstallManifest;
+    } catch {
+      return {
+        version: MANIFEST_VERSION,
+        installedProducts: {},
+        vacIndex: {},
+        cycle: null,
+        installedAt: null,
+      };
+    }
+  }
+
+  private saveManifest(): void {
+    fs.writeFileSync(this.manifestPath(), JSON.stringify(this.manifest, null, 2), 'utf-8');
+  }
+
+  async getInstallStatus(): Promise<SiaInstallStatus> {
+    const diskUsageBytes = await getDirSizeBytes(this.rootDir);
+    const latestCatalogCycle = getLatestCatalogCycle();
+    return {
+      hasData: Object.keys(this.manifest.vacIndex).length > 0,
+      cycle: this.manifest.cycle,
+      installedAt: this.manifest.installedAt,
+      vacCount: Object.keys(this.manifest.vacIndex).length,
+      diskUsageBytes,
+      products: Object.values(this.manifest.installedProducts).map((p) => ({
+        productId: p.productId,
+        cycle: p.cycle,
+        installedAt: p.installedAt,
+      })),
+      updateAvailable:
+        !!this.manifest.cycle && latestCatalogCycle !== '' && this.manifest.cycle !== latestCatalogCycle,
+      latestCatalogCycle,
+    };
+  }
+
+  getVacEntry(icao: string): VacChartEntry | null {
+    return this.manifest.vacIndex[icao.toUpperCase()] ?? null;
+  }
+
+  getVacInfo(icao: string, airport: AirportGeorefInput | null): VacChartInfo | null {
+    const entry = this.getVacEntry(icao);
+    if (!entry) return null;
+    const code = icao.toUpperCase();
+    const pngPath = path.join(this.pngCacheDir, `${code}.png`);
+    return {
+      ...entry,
+      georef: resolveVacGeoref(this.georefDir, code, airport),
+      pngCachePath: fs.existsSync(pngPath) ? pngPath : null,
+    };
+  }
+
+  readVacPdf(icao: string): Buffer | null {
+    const entry = this.getVacEntry(icao);
+    if (!entry || !fs.existsSync(entry.pdfPath)) return null;
+    return fs.readFileSync(entry.pdfPath);
+  }
+
+  async installFromLocalZip(
+    zipPath: string,
+    productId: string,
+    onProgress?: DownloadProgressCallback
+  ): Promise<{ success: boolean; error?: string }> {
+    const product = getCatalogProduct(productId);
+    if (!product) return { success: false, error: 'Unknown product' };
+
+    const destZip = path.join(this.downloadsDir, `${productId}.zip`);
+    if (path.resolve(zipPath) !== path.resolve(destZip)) {
+      await fsp.copyFile(zipPath, destZip);
+    }
+
+    return this.installFromZip(destZip, productId, product.airacCycle, product.validFrom, product.validTo, onProgress);
+  }
+
+  async downloadAndInstall(
+    productId: string,
+    onProgress?: DownloadProgressCallback
+  ): Promise<{ success: boolean; error?: string }> {
+    const product = getCatalogProduct(productId);
+    if (!product) return { success: false, error: 'Unknown product' };
+
+    const destZip = path.join(this.downloadsDir, `${productId}.zip`);
+    let downloadUrl = product.downloadUrl;
+
+    if (!downloadUrl) {
+      const credentials = loadCredentials();
+      if (!credentials) {
+        return {
+          success: false,
+          error: 'sia.errors.noCredentials',
+        };
+      }
+
+      onProgress?.({
+        productId,
+        phase: 'downloading',
+        percent: 0,
+        message: 'Connecting to SIA…',
+      });
+
+      const resolved = await resolveMagentoProduct(productId);
+      if (!resolved?.magento) {
+        return {
+          success: false,
+          error: 'sia.errors.productNotFound',
+        };
+      }
+
+      const purchase = await purchaseAndGetDownloadUrl(credentials, resolved.magento);
+      if ('error' in purchase) {
+        return { success: false, error: purchase.error };
+      }
+      downloadUrl = purchase.downloadUrl;
+    }
+
+    const dl = await downloadToFile(downloadUrl, destZip, productId, onProgress);
+    if (!dl.success) return dl;
+
+    return this.installFromZip(
+      destZip,
+      productId,
+      product.airacCycle,
+      product.validFrom,
+      product.validTo,
+      onProgress
+    );
+  }
+
+  private async installFromZip(
+    zipPath: string,
+    productId: string,
+    cycle: string,
+    validFrom: string,
+    validTo: string,
+    onProgress?: DownloadProgressCallback
+  ): Promise<{ success: boolean; error?: string }> {
+    const product = getCatalogProduct(productId);
+    if (!product) return { success: false, error: 'Unknown product' };
+
+    const extractPath = path.join(this.extractDir, productId);
+    if (fs.existsSync(extractPath)) {
+      await fsp.rm(extractPath, { recursive: true, force: true });
+    }
+    await fsp.mkdir(extractPath, { recursive: true });
+
+    onProgress?.({
+      productId,
+      phase: 'extracting',
+      percent: 0,
+      message: 'Extracting archive…',
+    });
+
+    const extractResult = await extractSevenZip({
+      archivePath: zipPath,
+      targetDir: extractPath,
+      onProgress: (_bytes, file) => {
+        onProgress?.({
+          productId,
+          phase: 'extracting',
+          percent: 50,
+          message: file,
+        });
+      },
+    });
+
+    if (!extractResult.ok) {
+      const err = extractResult.error;
+      const msg = typeof err === 'object' && err && 'reason' in err ? String(err.reason) : String(err);
+      return { success: false, error: msg };
+    }
+
+    onProgress?.({
+      productId,
+      phase: 'indexing',
+      percent: 80,
+      message: 'Indexing charts…',
+    });
+
+    let vacIndex = { ...this.manifest.vacIndex };
+
+    if (product.kind === 'eaip-full') {
+      const indexed = await indexEaipExtract(extractPath, cycle, validFrom, validTo);
+      vacIndex = indexed.vacIndex;
+      await this.persistXmlPaths(indexed.xmlPaths, cycle);
+    } else {
+      vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
+    }
+
+    this.manifest.installedProducts[productId] = {
+      productId,
+      cycle,
+      installedAt: Date.now(),
+      extractPath,
+      zipPath,
+    };
+    this.manifest.vacIndex = vacIndex;
+    this.manifest.cycle = cycle;
+    this.manifest.installedAt = Date.now();
+    this.saveManifest();
+    await this.syncVacIndexToDb(vacIndex, cycle, validFrom, validTo);
+    await this.setMetadataCycle(cycle);
+
+    onProgress?.({
+      productId,
+      phase: 'done',
+      percent: 100,
+      message: 'Installation complete',
+    });
+
+    logger.data.info(`SIA product installed: ${productId}, ${Object.keys(vacIndex).length} VAC entries`);
+    return { success: true };
+  }
+
+  private async syncVacIndexToDb(
+    vacIndex: Record<string, VacChartEntry>,
+    cycle: string,
+    validFrom: string,
+    validTo: string
+  ): Promise<void> {
+    let db;
+    try {
+      db = getDb();
+    } catch {
+      return;
+    }
+
+    await db.delete(siaCharts);
+    const now = Date.now();
+    const rows = Object.values(vacIndex).map((e) => ({
+      icao: e.icao,
+      chartType: e.chartType,
+      pdfPath: e.pdfPath,
+      chartId: e.chartId,
+      cycle,
+      validFrom,
+      validTo,
+      installedAt: now,
+    }));
+    if (rows.length > 0) {
+      await db.insert(siaCharts).values(rows);
+    }
+    saveDb();
+  }
+
+  private async setMetadataCycle(cycle: string): Promise<void> {
+    const db = getDb();
+    if (!db) return;
+    const now = String(Date.now());
+    await db.delete(metadata).where(eq(metadata.key, METADATA_CYCLE_KEY));
+    await db.insert(metadata).values({ key: METADATA_CYCLE_KEY, value: cycle });
+    await db.delete(metadata).where(eq(metadata.key, METADATA_INSTALLED_KEY));
+    await db.insert(metadata).values({ key: METADATA_INSTALLED_KEY, value: now });
+    saveDb();
+  }
+
+  private async persistXmlPaths(xmlPaths: string[], cycle: string): Promise<void> {
+    if (xmlPaths.length === 0) return;
+    const listPath = path.join(this.rootDir, `xml-sources-${cycle.replace('/', '-')}.json`);
+    await fsp.writeFile(listPath, JSON.stringify(xmlPaths, null, 2), 'utf-8');
+  }
+
+  async clearCache(): Promise<void> {
+    if (fs.existsSync(this.rootDir)) {
+      await fsp.rm(this.rootDir, { recursive: true, force: true });
+    }
+    this.init();
+    this.manifest = this.loadManifest();
+
+    try {
+      const db = getDb();
+      await db.delete(siaCharts);
+      await db.delete(metadata).where(eq(metadata.key, METADATA_CYCLE_KEY));
+      await db.delete(metadata).where(eq(metadata.key, METADATA_INSTALLED_KEY));
+      saveDb();
+    } catch {
+      /* DB may not be initialized yet */
+    }
+  }
+
+  writePngCache(icao: string, buffer: Buffer): string {
+    const out = path.join(this.pngCacheDir, `${icao.toUpperCase()}.png`);
+    fs.writeFileSync(out, buffer);
+    return out;
+  }
+
+  loadOaciAirspaces(): import('./xml/airspaceParser').OaciAirspaceFeature[] {
+    if (!this.manifest.cycle) return [];
+    const listPath = path.join(
+      this.rootDir,
+      `xml-sources-${this.manifest.cycle.replace('/', '-')}.json`
+    );
+    try {
+      return loadOaciAirspacesFromIndex(listPath);
+    } catch {
+      return [];
+    }
+  }
+}

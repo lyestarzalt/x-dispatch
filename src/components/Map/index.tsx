@@ -37,6 +37,9 @@ import {
   useAirportRenderer,
   useApproachLightAnimation,
   useCursorElevation,
+  useVacOverlaySync,
+  useOaciBasemap,
+  useOaciVectorSync,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
   useMapSetup,
@@ -373,6 +376,10 @@ export default function Map({ airports }: MapProps) {
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
+
+  useVacOverlaySync(mapRef);
+  useOaciBasemap(mapRef);
+  useOaciVectorSync(mapRef);
 
   // Day/night terminator overlay
   useDayNightLayer(mapRef, dayNightEnabled);

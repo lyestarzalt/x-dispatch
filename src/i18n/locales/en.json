@@ -152,6 +152,9 @@
     },
     "weather": "Weather",
     "dayNight": "Day / Night",
+    "vacOverlay": "Georeferenced VAC",
+    "oaciBasemap": "OACI basemap",
+    "oaciVector": "OACI airspaces (SIA)",
     "terrainShading": "Terrain Shading",
     "launch": "Launch",
     "flightPlan": "Flight Plan",
@@ -611,6 +614,7 @@
       "info": "Info",
       "start": "Start",
       "proc": "Proc",
+      "vac": "VAC",
       "runways": "Runways",
       "gates": "Gates",
       "helipads": "Helipads",
@@ -1589,5 +1593,61 @@
   },
   "sunArc": {
     "local": "local"
+  },
+  "sia": {
+    "attribution": "Data © SIA/DGAC — VFR navigation use only. See terms at sia.aviation-civile.gouv.fr.",
+    "importEaip": "Import eAIP ZIP",
+    "downloadEaip": "Download from SIA",
+    "downloadAmdt": "Download amendment",
+    "installing": "Installing…",
+    "clearData": "Delete SIA data",
+    "updateAvailable": "A new AIRAC edition is available ({{cycle}}).",
+    "products": {
+      "eaipFull": "Full eAIP ZIP",
+      "vacAmdtMetro": "Metropolitan VAC amendment",
+      "vacAmdtHeli": "Heliport VAC amendment"
+    },
+    "account": {
+      "title": "SIA account (free)",
+      "description": "The SIA website requires a customer account to download free ZIP files (Magento downloadable products). Create an account at sia.aviation-civile.gouv.fr, then enter your credentials here.",
+      "email": "Email",
+      "password": "Password",
+      "save": "Save account",
+      "test": "Test login",
+      "clear": "Remove saved account",
+      "configured": "Saved account: {{email}}",
+      "loginOk": "SIA login successful.",
+      "loginFailed": "Login failed: {{error}}",
+      "saved": "Credentials saved securely.",
+      "noEncryption": "Secure storage is not available on this system — use manual ZIP import instead."
+    },
+    "errors": {
+      "noCredentials": "Save your SIA account in the settings above first.",
+      "productNotFound": "Product not found on the SIA catalog — try again later or import the ZIP manually."
+    },
+    "settings": {
+      "title": "SIA / OACI charts",
+      "description": "Install French VAC charts from eAIP and import an OACI MBTiles basemap.",
+      "eaip": "eAIP data (VAC)",
+      "installed": "Cycle {{cycle}} — {{count}} VAC charts — {{size}} on disk",
+      "notInstalled": "No SIA data installed. Download or import the eAIP ZIP from the SIA website."
+    }
+  },
+  "vac": {
+    "noData": "Install eAIP data in Settings → Graphics to view VAC charts.",
+    "notFound": "No VAC chart found for this aerodrome.",
+    "cycle": "Cycle {{cycle}}",
+    "openExternal": "Open PDF",
+    "print": "Print"
+  },
+  "oaci": {
+    "opacity": "OACI map opacity",
+    "importMbtiles": "Import OACI MBTiles",
+    "removeMbtiles": "Remove map",
+    "settings": {
+      "title": "OACI basemap (MBTiles)",
+      "loaded": "Loaded: {{name}}",
+      "none": "No OACI map imported."
+    }
   }
 }

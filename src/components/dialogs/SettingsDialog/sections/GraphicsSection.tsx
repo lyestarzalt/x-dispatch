@@ -7,6 +7,7 @@ import type { SurfaceDetail } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import { MapStylePicker } from './MapStylePicker';
+import { SiaChartsSection } from './SiaChartsSection';
 
 const SURFACE_DETAIL_OPTIONS: { value: SurfaceDetail; labelKey: string }[] = [
   { value: 'low', labelKey: 'settings.graphics.low' },
@@ -54,6 +55,8 @@ export function GraphicsSection() {
           onRemove={removeUserMapStyle}
         />
       </SettingsSectionBlock>
+
+      <SiaChartsSection />
 
       {/* Terrain */}
       <SettingsSectionBlock title={t('settings.graphics.terrain')}>

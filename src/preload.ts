@@ -380,6 +380,46 @@ contextBridge.exposeInMainWorld('xpLogAPI', {
   openExternal: (): Promise<XPLogOpenResult> => ipcRenderer.invoke('xp-log:openExternal'),
 });
 
+contextBridge.exposeInMainWorld('siaAPI', {
+  listProducts: () => ipcRenderer.invoke('sia:listProducts'),
+  getInstallStatus: () => ipcRenderer.invoke('sia:getInstallStatus'),
+  getVacForIcao: (icao: string, airport: import('./lib/sia/georef').AirportGeorefInput | null) =>
+    ipcRenderer.invoke('sia:getVacForIcao', icao, airport),
+  getVacPdfBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPdfBytes', icao),
+  writePngCache: (icao: string, data: Uint8Array) =>
+    ipcRenderer.invoke('sia:writePngCache', icao, data),
+  clearCache: () => ipcRenderer.invoke('sia:clearCache'),
+  downloadProduct: (productId: string) => ipcRenderer.invoke('sia:downloadProduct', productId),
+  getCredentialsStatus: () => ipcRenderer.invoke('sia:getCredentialsStatus'),
+  saveCredentials: (email: string, password: string) =>
+    ipcRenderer.invoke('sia:saveCredentials', email, password),
+  clearCredentials: () => ipcRenderer.invoke('sia:clearCredentials'),
+  testLogin: (email: string, password: string) =>
+    ipcRenderer.invoke('sia:testLogin', email, password),
+  installFromLocalZip: (zipPath: string, productId: string) =>
+    ipcRenderer.invoke('sia:installFromLocalZip', zipPath, productId),
+  browseForZip: () => ipcRenderer.invoke('sia:browseForZip'),
+  openVacPdf: (icao: string) => ipcRenderer.invoke('sia:openVacPdf', icao),
+  getOaciAirspaces: () => ipcRenderer.invoke('sia:getOaciAirspaces'),
+  onDownloadProgress: (
+    callback: (progress: import('./lib/sia/types').SiaDownloadProgress) => void
+  ) => {
+    const handler = (_event: Electron.IpcRendererEvent, progress: unknown) => {
+      callback(progress as import('./lib/sia/types').SiaDownloadProgress);
+    };
+    ipcRenderer.on('sia:download-progress', handler);
+    return () => ipcRenderer.removeListener('sia:download-progress', handler);
+  },
+});
+
+contextBridge.exposeInMainWorld('mbtilesAPI', {
+  getConfig: () => ipcRenderer.invoke('mbtiles:getConfig'),
+  browseAndImport: () => ipcRenderer.invoke('mbtiles:browseAndImport'),
+  importPath: (filePath: string, name?: string) =>
+    ipcRenderer.invoke('mbtiles:importPath', filePath, name),
+  clear: () => ipcRenderer.invoke('mbtiles:clear'),
+});
+
 declare global {
   interface XPlaneInstallation {
     id: string;
@@ -777,6 +817,44 @@ declare global {
     xpLogAPI: {
       read: () => Promise<XPLogReadResult>;
       openExternal: () => Promise<XPLogOpenResult>;
+    };
+    siaAPI: {
+      listProducts: () => Promise<readonly import('./lib/sia/types').SiaProduct[]>;
+      getInstallStatus: () => Promise<import('./lib/sia/types').SiaInstallStatus>;
+      getVacForIcao: (
+        icao: string,
+        airport: import('./lib/sia/georef').AirportGeorefInput | null
+      ) => Promise<import('./lib/sia/types').VacChartInfo | null>;
+      getVacPdfBytes: (icao: string) => Promise<Uint8Array | null>;
+      writePngCache: (icao: string, data: Uint8Array) => Promise<{ success: boolean; path?: string }>;
+      clearCache: () => Promise<{ success: boolean; error?: string }>;
+      downloadProduct: (productId: string) => Promise<{ success: boolean; error?: string }>;
+      getCredentialsStatus: () => Promise<import('./lib/sia/siaCredentials').SiaCredentialsStatus>;
+      saveCredentials: (
+        email: string,
+        password: string
+      ) => Promise<{ success: boolean; error?: string }>;
+      clearCredentials: () => Promise<{ success: boolean }>;
+      testLogin: (
+        email: string,
+        password: string
+      ) => Promise<{ success: boolean; error?: string }>;
+      installFromLocalZip: (
+        zipPath: string,
+        productId: string
+      ) => Promise<{ success: boolean; error?: string }>;
+      browseForZip: () => Promise<string | null>;
+      openVacPdf: (icao: string) => Promise<{ success: boolean }>;
+      getOaciAirspaces: () => Promise<import('./lib/sia/xml/airspaceParser').OaciAirspaceFeature[]>;
+      onDownloadProgress: (
+        callback: (progress: import('./lib/sia/types').SiaDownloadProgress) => void
+      ) => () => void;
+    };
+    mbtilesAPI: {
+      getConfig: () => Promise<import('./lib/mbtiles/MbtilesStore').OaciMbtilesConfig | null>;
+      browseAndImport: () => Promise<{ success: boolean; error?: string }>;
+      importPath: (filePath: string, name?: string) => Promise<{ success: boolean; error?: string }>;
+      clear: () => Promise<{ success: boolean }>;
     };
   }
 }

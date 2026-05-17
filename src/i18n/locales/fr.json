@@ -152,6 +152,9 @@
     },
     "weather": "Météo",
     "dayNight": "Jour / Nuit",
+    "vacOverlay": "VAC géoréférencée",
+    "oaciBasemap": "Fond OACI",
+    "oaciVector": "Espaces aériens OACI (SIA)",
     "terrainShading": "Ombrage du terrain",
     "launch": "Lancer",
     "flightPlan": "Plan de vol",
@@ -611,6 +614,7 @@
       "info": "Info",
       "start": "Départ",
       "proc": "Proc",
+      "vac": "VAC",
       "runways": "Pistes",
       "gates": "Portes",
       "helipads": "Hélipads",
@@ -1589,5 +1593,61 @@
   },
   "sunArc": {
     "local": "local"
+  },
+  "sia": {
+    "attribution": "Données © SIA/DGAC — usage navigation VFR. Consultez les conditions sur sia.aviation-civile.gouv.fr.",
+    "importEaip": "Importer le ZIP eAIP",
+    "downloadEaip": "Télécharger depuis le SIA",
+    "downloadAmdt": "Télécharger l'amendement",
+    "installing": "Installation en cours…",
+    "clearData": "Supprimer les données SIA",
+    "updateAvailable": "Une nouvelle édition AIRAC est disponible ({{cycle}}).",
+    "products": {
+      "eaipFull": "ZIP eAIP complet",
+      "vacAmdtMetro": "Amendement VAC métropole",
+      "vacAmdtHeli": "Amendement VAC hélistations"
+    },
+    "account": {
+      "title": "Compte SIA (gratuit)",
+      "description": "Le site du SIA exige un compte client pour télécharger les ZIP gratuits (produits numériques Magento). Créez un compte sur sia.aviation-civile.gouv.fr puis renseignez vos identifiants ici.",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "save": "Enregistrer le compte",
+      "test": "Tester la connexion",
+      "clear": "Supprimer le compte enregistré",
+      "configured": "Compte enregistré : {{email}}",
+      "loginOk": "Connexion au SIA réussie.",
+      "loginFailed": "Échec de connexion : {{error}}",
+      "saved": "Identifiants enregistrés de façon sécurisée.",
+      "noEncryption": "Le stockage sécurisé n'est pas disponible sur ce système — utilisez l'import manuel du ZIP."
+    },
+    "errors": {
+      "noCredentials": "Enregistrez d'abord votre compte SIA dans les réglages ci-dessus.",
+      "productNotFound": "Produit introuvable sur le catalogue SIA — réessayez plus tard ou importez le ZIP manuellement."
+    },
+    "settings": {
+      "title": "Cartes SIA / OACI",
+      "description": "Téléchargez les VAC françaises (eAIP) et importez un fond OACI au format MBTiles.",
+      "eaip": "Données eAIP (VAC)",
+      "installed": "Cycle {{cycle}} — {{count}} VAC — {{size}} sur disque",
+      "notInstalled": "Aucune donnée SIA installée. Téléchargez ou importez le ZIP eAIP depuis le site du SIA."
+    }
+  },
+  "vac": {
+    "noData": "Installez les données eAIP dans Réglages → Graphismes pour afficher les VAC.",
+    "notFound": "Aucune VAC trouvée pour cet aérodrome.",
+    "cycle": "Cycle {{cycle}}",
+    "openExternal": "Ouvrir le PDF",
+    "print": "Imprimer"
+  },
+  "oaci": {
+    "opacity": "Opacité carte OACI",
+    "importMbtiles": "Importer MBTiles OACI",
+    "removeMbtiles": "Retirer la carte",
+    "settings": {
+      "title": "Fond OACI (MBTiles)",
+      "loaded": "Carte chargée : {{name}}",
+      "none": "Aucune carte OACI importée."
+    }
   }
 }

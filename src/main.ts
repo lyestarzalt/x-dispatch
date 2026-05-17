@@ -20,6 +20,7 @@ import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
+import { registerMbtilesScheme, registerMbtilesHandler } from './lib/mbtiles/protocolHandler';
 import {
   closeTileCache,
   getTileCache,
@@ -27,6 +28,8 @@ import {
   registerTileCacheHandler,
   registerTileCacheScheme,
 } from './lib/tileCache';
+import { registerMbtilesIPC } from './main/mbtilesIpc';
+import { registerSiaIPC } from './main/siaIpc';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -1436,6 +1439,8 @@ function registerIpcHandlers() {
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
   registerXPlaneLogIPC(() => dataManager.getXPlanePath());
+  registerSiaIPC(() => mainWindow);
+  void registerMbtilesIPC(() => mainWindow);
 
   ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
     try {
@@ -1467,6 +1472,7 @@ if (!app.isPackaged) {
 
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
+registerMbtilesScheme();
 
 // Deep link protocol: xdispatch://airport/ICAO
 const PROTOCOL = 'xdispatch';
@@ -1626,9 +1632,9 @@ app.whenReady().then(async () => {
           "default-src 'self'; " +
             "script-src 'self' 'unsafe-inline'; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; " +
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com;" +
+            "img-src 'self' data: blob: mbtiles: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com; " +
             "font-src 'self' data: https://fonts.gstatic.com; " +
-            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com; " +
+            "connect-src 'self' ws://localhost:* http://localhost:* mbtiles: https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://www.sia.aviation-civile.gouv.fr; " +
             "worker-src 'self' blob:;",
         ],
       },
@@ -1637,6 +1643,7 @@ app.whenReady().then(async () => {
 
   initTileCache();
   registerTileCacheHandler();
+  registerMbtilesHandler();
 
   registerIpcHandlers();
   mainWindow = createWindow();

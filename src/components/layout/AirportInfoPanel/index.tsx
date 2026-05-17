@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Compass, Home, Info, PlaneTakeoff, Star } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Home,
+  Info,
+  Map,
+  PlaneTakeoff,
+  Star,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,8 +25,9 @@ import { NamedPosition } from '@/types/geo';
 import InfoTab from './tabs/InfoTab';
 import RouteTab from './tabs/RouteTab';
 import StartTab from './tabs/StartTab';
+import VacTab from './tabs/VacTab';
 
-type TabId = 'info' | 'start' | 'proc';
+type TabId = 'info' | 'start' | 'proc' | 'vac';
 
 interface Tab {
   id: TabId;
@@ -78,6 +88,13 @@ export default function AirportInfoPanel({
 
   const elevation = Math.round(airport.elevation);
   const transitionAlt = airport.metadata.transition_alt;
+  const isFrenchAirport =
+    airport.id.startsWith('LF') ||
+    (airport.metadata.country ?? '').includes('FRA');
+
+  const tabs = isFrenchAirport
+    ? [...TABS, { id: 'vac' as const, labelKey: 'airportInfo.tabs.vac', icon: <Map className="h-4 w-4" /> }]
+    : TABS;
 
   return (
     <div
@@ -228,7 +245,7 @@ export default function AirportInfoPanel({
           className="flex min-h-0 flex-1 flex-col"
         >
           <TabsList variant="line" className="border-border/30">
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1.5 text-xs">
                 {tab.icon}
                 <span>{t(tab.labelKey)}</span>
@@ -252,6 +269,11 @@ export default function AirportInfoPanel({
               <TabsContent value="proc" className="mt-0">
                 <RouteTab />
               </TabsContent>
+              {isFrenchAirport && (
+                <TabsContent value="vac" className="mt-0">
+                  <VacTab />
+                </TabsContent>
+              )}
             </div>
           </ScrollArea>
         </Tabs>

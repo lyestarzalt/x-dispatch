@@ -5,6 +5,7 @@ import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import ErrorScreen from './components/screens/ErrorScreen';
+import { SiaUpdateBanner } from './components/SiaUpdateBanner';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
 import { FullScreenSpinner } from './components/ui/spinner';
@@ -111,6 +112,7 @@ function AppContent() {
   } else {
     content = (
       <SectionErrorBoundary name="Map">
+        <SiaUpdateBanner />
         <Map airports={airports} />
       </SectionErrorBoundary>
     );

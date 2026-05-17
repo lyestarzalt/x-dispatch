@@ -18,3 +18,6 @@ export { useTerrainShading } from './useTerrainShading';
 export { useTaxiRouteSync } from './useTaxiRouteSync';
 export { useApproachLightAnimation } from './useApproachLightAnimation';
 export { useCursorElevation } from './useCursorElevation';
+export { useVacOverlaySync } from './useVacOverlaySync';
+export { useOaciBasemap } from './useOaciBasemap';
+export { useOaciVectorSync } from './useOaciVectorSync';

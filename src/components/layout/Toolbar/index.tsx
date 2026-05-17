@@ -13,6 +13,7 @@ import {
   Compass,
   FileUp,
   Layers,
+  Map,
   MapPin,
   Package,
   Pause,
@@ -448,6 +449,12 @@ export default function Toolbar({
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
   const setDayNightEnabled = useMapStore((s) => s.setDayNightEnabled);
+  const vacOverlayEnabled = useMapStore((s) => s.vacOverlayEnabled);
+  const setVacOverlayEnabled = useMapStore((s) => s.setVacOverlayEnabled);
+  const oaciBasemapEnabled = useMapStore((s) => s.oaciBasemapEnabled);
+  const setOaciBasemapEnabled = useMapStore((s) => s.setOaciBasemapEnabled);
+  const oaciVectorEnabled = useMapStore((s) => s.oaciVectorEnabled);
+  const setOaciVectorEnabled = useMapStore((s) => s.setOaciVectorEnabled);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
@@ -931,6 +938,27 @@ export default function Toolbar({
               >
                 <CloudSun className="mr-2 h-4 w-4" />
                 {t('toolbar.dayNight')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={vacOverlayEnabled}
+                onCheckedChange={() => setVacOverlayEnabled(!vacOverlayEnabled)}
+              >
+                <Map className="mr-2 h-4 w-4" />
+                {t('toolbar.vacOverlay')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={oaciBasemapEnabled}
+                onCheckedChange={() => setOaciBasemapEnabled(!oaciBasemapEnabled)}
+              >
+                <Map className="mr-2 h-4 w-4" />
+                {t('toolbar.oaciBasemap')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={oaciVectorEnabled}
+                onCheckedChange={() => setOaciVectorEnabled(!oaciVectorEnabled)}
+              >
+                <Map className="mr-2 h-4 w-4" />
+                {t('toolbar.oaciVector')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />
