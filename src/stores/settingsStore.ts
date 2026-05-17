@@ -103,6 +103,15 @@ export interface SupportSettings {
   promptDismissed: boolean;
 }
 
+export interface AirportsSettings {
+  /** ICAOs the user has starred, uppercase, insertion order. */
+  favoriteIcaos: string[];
+  /** ICAO of the user's home airport, or null. Independent of favoriteIcaos. */
+  homeIcao: string | null;
+  /** When true and homeIcao is set, frame & open the home airport on app launch. */
+  autoNavigateHomeOnStart: boolean;
+}
+
 interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
@@ -110,6 +119,7 @@ interface SettingsState {
   graphics: GraphicsSettings;
   launcher: LauncherSettings;
   support: SupportSettings;
+  airports: AirportsSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   addUserMapStyle: (style: MapStyle) => void;
   removeUserMapStyle: (id: string) => void;
@@ -120,6 +130,10 @@ interface SettingsState {
   updateGraphicsSettings: (settings: Partial<GraphicsSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
   updateSupportSettings: (settings: Partial<SupportSettings>) => void;
+  updateAirportsSettings: (settings: Partial<AirportsSettings>) => void;
+  toggleFavoriteAirport: (icao: string) => void;
+  removeFavoriteAirport: (icao: string) => void;
+  setHomeAirport: (icao: string | null) => void;
   setFontSize: (size: FontSize) => void;
   setZoomLevel: (level: number) => void;
   setDebugOverlay: (enabled: boolean) => void;
@@ -167,6 +181,12 @@ const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
   promptDismissed: false,
 };
 
+const DEFAULT_AIRPORTS_SETTINGS: AirportsSettings = {
+  favoriteIcaos: [],
+  homeIcao: null,
+  autoNavigateHomeOnStart: true,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -176,6 +196,7 @@ export const useSettingsStore = create<SettingsState>()(
       graphics: DEFAULT_GRAPHICS_SETTINGS,
       launcher: DEFAULT_LAUNCHER_SETTINGS,
       support: DEFAULT_SUPPORT_SETTINGS,
+      airports: DEFAULT_AIRPORTS_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -268,6 +289,39 @@ export const useSettingsStore = create<SettingsState>()(
           support: { ...state.support, ...settings },
         })),
 
+      updateAirportsSettings: (settings) =>
+        set((state) => ({
+          airports: { ...state.airports, ...settings },
+        })),
+
+      toggleFavoriteAirport: (icao) =>
+        set((state) => {
+          const upper = icao.toUpperCase();
+          const current = state.airports.favoriteIcaos;
+          const next = current.includes(upper)
+            ? current.filter((id) => id !== upper)
+            : [...current, upper];
+          return { airports: { ...state.airports, favoriteIcaos: next } };
+        }),
+
+      removeFavoriteAirport: (icao) =>
+        set((state) => {
+          const upper = icao.toUpperCase();
+          const current = state.airports.favoriteIcaos;
+          if (!current.includes(upper)) return state;
+          return {
+            airports: {
+              ...state.airports,
+              favoriteIcaos: current.filter((id) => id !== upper),
+            },
+          };
+        }),
+
+      setHomeAirport: (icao) =>
+        set((state) => ({
+          airports: { ...state.airports, homeIcao: icao ? icao.toUpperCase() : null },
+        })),
+
       setFontSize: (size: FontSize) => {
         applyFontSize(size);
         set((state) => ({ appearance: { ...state.appearance, fontSize: size } }));
@@ -293,12 +347,13 @@ export const useSettingsStore = create<SettingsState>()(
           graphics: DEFAULT_GRAPHICS_SETTINGS,
           launcher: DEFAULT_LAUNCHER_SETTINGS,
           support: DEFAULT_SUPPORT_SETTINGS,
+          airports: DEFAULT_AIRPORTS_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 21,
+      version: 22,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -418,6 +473,10 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       ...state,
       simbrief: { ...state.simbrief!, fmsExportTargets: [] },
     };
+  }
+  if (version < 22) {
+    // Add favorites/home airport settings.
+    state = { ...state, airports: DEFAULT_AIRPORTS_SETTINGS };
   }
 
   return state as SettingsState;

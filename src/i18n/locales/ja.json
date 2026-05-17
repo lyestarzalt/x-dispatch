@@ -254,6 +254,7 @@
       "data": "Navデータ",
       "appearance": "外観",
       "graphics": "グラフィック",
+      "airports": "空港",
       "simbrief": "SimBrief",
       "navigation": "ナビゲーション",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "情報",
       "companionApps": "コンパニオンアプリ",
       "logs": "X-Plane ログ"
+    },
+    "airports": {
+      "title": "空港",
+      "description": "お気に入りの空港とホーム空港を管理します。",
+      "startup": "起動時",
+      "autoNav": {
+        "label": "起動時にホーム空港を開く",
+        "description": "X-Dispatch 起動時にホーム空港にカメラを合わせ、情報パネルを開きます。"
+      },
+      "favorites": {
+        "title": "お気に入り",
+        "description": "空港パネルの星マークをタップしてここに追加します。ホーム空港が最初に表示されます。",
+        "empty": "お気に入りの空港はまだありません — 空港パネルの星マークをタップしてください。",
+        "notInAirac": "現在の AIRAC にありません"
+      },
+      "actions": {
+        "setHome": "ホーム空港に設定",
+        "clearHome": "ホーム空港を解除",
+        "remove": "削除"
+      }
     },
     "support": {
       "reportProblem": "問題を報告",
@@ -595,6 +616,12 @@
       "helipads": "ヘリパッド",
       "radio": "無線",
       "gateway": "GATEWAY"
+    },
+    "actions": {
+      "addFavorite": "お気に入りに追加",
+      "removeFavorite": "お気に入りから削除",
+      "setHome": "ホーム空港に設定",
+      "clearHome": "ホーム空港を解除"
     },
     "stats": {
       "elevation": "標高",

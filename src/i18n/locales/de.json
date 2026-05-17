@@ -254,6 +254,7 @@
       "data": "Nav-Daten",
       "appearance": "Aussehen",
       "graphics": "Grafik",
+      "airports": "Flughäfen",
       "simbrief": "SimBrief",
       "navigation": "Navigation",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "Über",
       "companionApps": "Begleit-Apps",
       "logs": "X-Plane-Protokolle"
+    },
+    "airports": {
+      "title": "Flughäfen",
+      "description": "Verwalte deine bevorzugten Flughäfen und Heimatbasis.",
+      "startup": "Start",
+      "autoNav": {
+        "label": "Heimatflughafen beim Start öffnen",
+        "description": "Beim Start von X-Dispatch die Kamera auf deinen Heimatflughafen ausrichten und dessen Info-Panel öffnen."
+      },
+      "favorites": {
+        "title": "Favoriten",
+        "description": "Tippe auf den Stern im Flughafen-Panel, um einen Flughafen hier hinzuzufügen. Dein Heimatflughafen wird zuerst angezeigt.",
+        "empty": "Noch keine Favoriten – tippe auf den Stern in einem Flughafen-Panel.",
+        "notInAirac": "Nicht im aktuellen AIRAC"
+      },
+      "actions": {
+        "setHome": "Als Heimatflughafen festlegen",
+        "clearHome": "Heimatflughafen entfernen",
+        "remove": "Entfernen"
+      }
     },
     "support": {
       "reportProblem": "Problem melden",
@@ -595,6 +616,12 @@
       "helipads": "Hubschrauber",
       "radio": "Funk",
       "gateway": "GATEWAY"
+    },
+    "actions": {
+      "addFavorite": "Zu Favoriten",
+      "removeFavorite": "Aus Favoriten entfernen",
+      "setHome": "Als Heimatflughafen festlegen",
+      "clearHome": "Heimatflughafen entfernen"
     },
     "stats": {
       "elevation": "HÖHE",

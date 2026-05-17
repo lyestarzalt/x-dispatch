@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Compass, Info, PlaneTakeoff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Compass, Home, Info, PlaneTakeoff, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import InfoTab from './tabs/InfoTab';
@@ -48,6 +49,10 @@ export default function AirportInfoPanel({
   const icao = useAppStore((s) => s.selectedICAO);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
+  const favoriteIcaos = useSettingsStore((s) => s.airports.favoriteIcaos);
+  const homeIcao = useSettingsStore((s) => s.airports.homeIcao);
+  const toggleFavoriteAirport = useSettingsStore((s) => s.toggleFavoriteAirport);
+  const setHomeAirport = useSettingsStore((s) => s.setHomeAirport);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
@@ -122,29 +127,64 @@ export default function AirportInfoPanel({
         {/* Header - Dense pilot info */}
         <div className="border-b border-border/30 px-4 pb-3 pt-4">
           {/* Row 1: ICAO + Flight Category */}
-          <div className="flex items-center justify-between pr-8">
+          <div className="flex items-center justify-between gap-2 pr-8">
             <div className="flex items-baseline gap-2">
               <h1 className="font-mono text-xl font-bold tracking-tight text-info">{airport.id}</h1>
               <span className="font-mono text-xs text-muted-foreground">
                 {elevation}' {transitionAlt && `TA${transitionAlt}'`}
               </span>
             </div>
-            {flightCategory && (
-              <Badge
-                variant={
-                  flightCategory === 'VFR'
-                    ? 'cat-emerald'
-                    : flightCategory === 'MVFR'
-                      ? 'cat-sky'
-                      : flightCategory === 'IFR'
-                        ? 'cat-red'
-                        : 'cat-fuchsia'
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-muted-foreground/60 hover:text-foreground"
+                onClick={() => toggleFavoriteAirport(airport.id)}
+                tooltip={
+                  favoriteIcaos.includes(airport.id)
+                    ? t('airportInfo.actions.removeFavorite')
+                    : t('airportInfo.actions.addFavorite')
                 }
-                className="px-2 py-0.5 font-mono text-xs font-bold"
               >
-                {flightCategory}
-              </Badge>
-            )}
+                <Star
+                  className={cn(
+                    'h-4 w-4',
+                    favoriteIcaos.includes(airport.id) && 'fill-current text-warning'
+                  )}
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-muted-foreground/60 hover:text-foreground"
+                onClick={() => setHomeAirport(homeIcao === airport.id ? null : airport.id)}
+                tooltip={
+                  homeIcao === airport.id
+                    ? t('airportInfo.actions.clearHome')
+                    : t('airportInfo.actions.setHome')
+                }
+              >
+                <Home
+                  className={cn('h-4 w-4', homeIcao === airport.id && 'fill-current text-primary')}
+                />
+              </Button>
+              {flightCategory && (
+                <Badge
+                  variant={
+                    flightCategory === 'VFR'
+                      ? 'cat-emerald'
+                      : flightCategory === 'MVFR'
+                        ? 'cat-sky'
+                        : flightCategory === 'IFR'
+                          ? 'cat-red'
+                          : 'cat-fuchsia'
+                  }
+                  className="ml-1 px-2 py-0.5 font-mono text-xs font-bold"
+                >
+                  {flightCategory}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {/* Row 2: Airport Name + IATA */}

@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
@@ -12,7 +12,8 @@ import { TooltipProvider } from './components/ui/tooltip';
 import './i18n';
 import type { Airport } from './lib/xplaneServices/dataService';
 import { QueryProvider } from './queries';
-import { initializeFontSize } from './stores/settingsStore';
+import { useAppStore } from './stores/appStore';
+import { initializeFontSize, useSettingsStore } from './stores/settingsStore';
 import { initializeTheme } from './stores/themeStore';
 
 type AppState = 'checking' | 'setup' | 'loading' | 'ready' | 'error';
@@ -72,6 +73,21 @@ function AppContent() {
       }
     });
   }, []);
+
+  // Auto-navigate to the user's home airport on first reach of 'ready'.
+  // Reads settings imperatively (not as a reactive selector) so toggling
+  // the setting later in the same session doesn't re-fire the nav. The
+  // pendingAirportSelectionIcao pipeline silently no-ops if the ICAO
+  // isn't in the cached airport list, so stale homes are safe.
+  const didAutoNavigateRef = useRef(false);
+  useEffect(() => {
+    if (appState !== 'ready' || didAutoNavigateRef.current) return;
+    const { homeIcao, autoNavigateHomeOnStart } = useSettingsStore.getState().airports;
+    if (autoNavigateHomeOnStart && homeIcao) {
+      useAppStore.getState().requestSelectAirport(homeIcao);
+    }
+    didAutoNavigateRef.current = true;
+  }, [appState]);
 
   let content: ReactNode;
   if (appState === 'checking') {

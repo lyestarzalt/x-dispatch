@@ -254,6 +254,7 @@
       "data": "Dane Nav",
       "appearance": "Wygląd",
       "graphics": "Grafika",
+      "airports": "Lotniska",
       "simbrief": "SimBrief",
       "navigation": "Nawigacja",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "O programie",
       "companionApps": "Aplikacje towarzyszące",
       "logs": "Dzienniki X-Plane"
+    },
+    "airports": {
+      "title": "Lotniska",
+      "description": "Zarządzaj ulubionymi lotniskami i bazą.",
+      "startup": "Uruchamianie",
+      "autoNav": {
+        "label": "Otwórz lotnisko domowe przy uruchomieniu",
+        "description": "Wycentruj kamerę na lotnisku domowym i otwórz jego panel po uruchomieniu X-Dispatch."
+      },
+      "favorites": {
+        "title": "Ulubione",
+        "description": "Dotknij gwiazdki w panelu lotniska, aby je dodać. Lotnisko domowe jest wyświetlane jako pierwsze.",
+        "empty": "Brak ulubionych — dotknij gwiazdki w panelu lotniska.",
+        "notInAirac": "Brak w obecnym AIRAC"
+      },
+      "actions": {
+        "setHome": "Ustaw jako lotnisko domowe",
+        "clearHome": "Wyczyść lotnisko domowe",
+        "remove": "Usuń"
+      }
     },
     "support": {
       "reportProblem": "Zgłoś problem",
@@ -595,6 +616,12 @@
       "helipads": "Lądowiska helik.",
       "radio": "Radio",
       "gateway": "GATEWAY"
+    },
+    "actions": {
+      "addFavorite": "Dodaj do ulubionych",
+      "removeFavorite": "Usuń z ulubionych",
+      "setHome": "Ustaw jako lotnisko domowe",
+      "clearHome": "Wyczyść lotnisko domowe"
     },
     "stats": {
       "elevation": "WYS.",

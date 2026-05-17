@@ -254,6 +254,7 @@
       "data": "Dati Nav",
       "appearance": "Aspetto",
       "graphics": "Grafica",
+      "airports": "Aeroporti",
       "simbrief": "SimBrief",
       "navigation": "Navigazione",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "Info",
       "companionApps": "App complementari",
       "logs": "Log X-Plane"
+    },
+    "airports": {
+      "title": "Aeroporti",
+      "description": "Gestisci i tuoi aeroporti preferiti e la base.",
+      "startup": "Avvio",
+      "autoNav": {
+        "label": "Apri l'aeroporto base all'avvio",
+        "description": "Inquadra la telecamera sull'aeroporto base e apri il suo pannello info all'avvio di X-Dispatch."
+      },
+      "favorites": {
+        "title": "Preferiti",
+        "description": "Tocca la stella nel pannello di un aeroporto per aggiungerlo qui. L'aeroporto base è mostrato per primo.",
+        "empty": "Nessun preferito ancora — tocca la stella in un pannello aeroporto.",
+        "notInAirac": "Non nell'AIRAC corrente"
+      },
+      "actions": {
+        "setHome": "Imposta come base",
+        "clearHome": "Rimuovi base",
+        "remove": "Rimuovi"
+      }
     },
     "support": {
       "reportProblem": "Segnala un problema",
@@ -595,6 +616,12 @@
       "helipads": "Eliporti",
       "radio": "Radio",
       "gateway": "GATEWAY"
+    },
+    "actions": {
+      "addFavorite": "Aggiungi ai preferiti",
+      "removeFavorite": "Rimuovi dai preferiti",
+      "setHome": "Imposta come base",
+      "clearHome": "Rimuovi base"
     },
     "stats": {
       "elevation": "ELEV",

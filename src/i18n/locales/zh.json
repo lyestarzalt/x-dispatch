@@ -254,6 +254,7 @@
       "data": "导航数据",
       "appearance": "外观",
       "graphics": "图形",
+      "airports": "机场",
       "simbrief": "SimBrief",
       "navigation": "导航",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "关于",
       "companionApps": "配套应用",
       "logs": "X-Plane 日志"
+    },
+    "airports": {
+      "title": "机场",
+      "description": "管理您的收藏机场和主基地。",
+      "startup": "启动",
+      "autoNav": {
+        "label": "启动时打开主基地机场",
+        "description": "启动 X-Dispatch 时将相机对准主基地机场并打开其信息面板。"
+      },
+      "favorites": {
+        "title": "收藏",
+        "description": "点击任意机场面板中的星标即可添加到此处。主基地机场显示在最前。",
+        "empty": "尚无收藏机场 — 点击任意机场面板中的星标。",
+        "notInAirac": "不在当前 AIRAC 中"
+      },
+      "actions": {
+        "setHome": "设为主基地",
+        "clearHome": "清除主基地",
+        "remove": "移除"
+      }
     },
     "support": {
       "reportProblem": "报告问题",
@@ -595,6 +616,12 @@
       "helipads": "直升机坪",
       "radio": "无线电",
       "gateway": "GATEWAY"
+    },
+    "actions": {
+      "addFavorite": "加入收藏",
+      "removeFavorite": "取消收藏",
+      "setHome": "设为主基地",
+      "clearHome": "清除主基地"
     },
     "stats": {
       "elevation": "海拔",

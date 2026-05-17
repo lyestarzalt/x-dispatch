@@ -140,6 +140,81 @@ describe('migrateSettings', () => {
     expect(result.simbrief.fmsExportTargets).toEqual([]);
     expect(result.simbrief.pilotId).toBe('1234567');
   });
+
+  it('seeds default airports settings when migrating from v21 to v22', () => {
+    const v21Blob = {
+      map: {
+        navDataRadiusNm: 100,
+        vatsimRefreshInterval: 15,
+        mapStyleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        userMapStyles: [],
+        idleOrbitEnabled: false,
+        units: { weight: 'lbs' as const },
+      },
+      simbrief: { pilotId: '1234567', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: true,
+        taxiwayLightGlow: true,
+        surfaceDetail: 'high' as const,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+    };
+    const result = migrateSettings(v21Blob, 21);
+    expect(result.airports).toEqual({
+      favoriteIcaos: [],
+      homeIcao: null,
+      autoNavigateHomeOnStart: true,
+    });
+    // Pre-existing fields untouched.
+    expect(result.simbrief.pilotId).toBe('1234567');
+  });
+});
+
+describe('Airport favorites/home actions', () => {
+  beforeEach(() => {
+    useSettingsStore.getState().resetToDefaults();
+  });
+
+  it('toggleFavoriteAirport adds then removes the same ICAO', () => {
+    const { toggleFavoriteAirport } = useSettingsStore.getState();
+    toggleFavoriteAirport('kjfk');
+    expect(useSettingsStore.getState().airports.favoriteIcaos).toEqual(['KJFK']);
+    toggleFavoriteAirport('KJFK');
+    expect(useSettingsStore.getState().airports.favoriteIcaos).toEqual([]);
+  });
+
+  it('toggleFavoriteAirport preserves insertion order', () => {
+    const { toggleFavoriteAirport } = useSettingsStore.getState();
+    toggleFavoriteAirport('KJFK');
+    toggleFavoriteAirport('EGLL');
+    toggleFavoriteAirport('LFPG');
+    expect(useSettingsStore.getState().airports.favoriteIcaos).toEqual(['KJFK', 'EGLL', 'LFPG']);
+  });
+
+  it('setHomeAirport sets and clears, normalizing to uppercase', () => {
+    const { setHomeAirport } = useSettingsStore.getState();
+    setHomeAirport('eham');
+    expect(useSettingsStore.getState().airports.homeIcao).toBe('EHAM');
+    setHomeAirport(null);
+    expect(useSettingsStore.getState().airports.homeIcao).toBeNull();
+  });
+
+  it('home and favorites are independent — removing from favorites does not clear home', () => {
+    const { toggleFavoriteAirport, setHomeAirport, removeFavoriteAirport } =
+      useSettingsStore.getState();
+    toggleFavoriteAirport('KJFK');
+    setHomeAirport('KJFK');
+    removeFavoriteAirport('KJFK');
+    expect(useSettingsStore.getState().airports.favoriteIcaos).toEqual([]);
+    expect(useSettingsStore.getState().airports.homeIcao).toBe('KJFK');
+  });
+
+  it('updateAirportsSettings patches the autoNavigateHomeOnStart toggle', () => {
+    useSettingsStore.getState().updateAirportsSettings({ autoNavigateHomeOnStart: false });
+    expect(useSettingsStore.getState().airports.autoNavigateHomeOnStart).toBe(false);
+  });
 });
 
 describe('FMS export target actions', () => {

@@ -254,6 +254,7 @@
       "data": "Chart Data",
       "appearance": "Look & Trim",
       "graphics": "Visual Rigging",
+      "airports": "Ports of Call",
       "simbrief": "SimBrief",
       "navigation": "Charting",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "Ship's Log",
       "companionApps": "Companion Mateys",
       "logs": "X-Plane Cap'n's Logs"
+    },
+    "airports": {
+      "title": "Ports of Call",
+      "description": "Mark yer favorite ports and yer home harbor.",
+      "startup": "Settin' Sail",
+      "autoNav": {
+        "label": "Sail to home harbor on launch",
+        "description": "When X-Dispatch sets sail, frame the spyglass on yer home harbor and open its log."
+      },
+      "favorites": {
+        "title": "Favorites",
+        "description": "Tap the star in any port's log to add it here. Yer home harbor be shown first, arr.",
+        "empty": "No favorite ports yet — tap the star in any port's log.",
+        "notInAirac": "Not in current AIRAC charts"
+      },
+      "actions": {
+        "setHome": "Mark as home harbor",
+        "clearHome": "Strike home harbor",
+        "remove": "Cast off"
+      }
     },
     "support": {
       "reportProblem": "Report Trouble Aboard",
@@ -595,6 +616,12 @@
       "helipads": "Rotor Pads",
       "radio": "Signals",
       "gateway": "GATEWAY CHARTS"
+    },
+    "actions": {
+      "addFavorite": "Add to favorites, matey",
+      "removeFavorite": "Strike from favorites",
+      "setHome": "Mark as home harbor",
+      "clearHome": "Strike home harbor"
     },
     "stats": {
       "elevation": "HEIGHT",

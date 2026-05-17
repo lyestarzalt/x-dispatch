@@ -10,6 +10,7 @@ import {
   Palette,
   Plane,
   ScrollText,
+  Star,
 } from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import {
@@ -25,6 +26,7 @@ import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
 import {
   AboutSection,
+  AirportsSection,
   AppearanceSection,
   CompanionAppsSection,
   GraphicsSection,
@@ -45,6 +47,7 @@ type TabId =
   | 'data'
   | 'appearance'
   | 'graphics'
+  | 'airports'
   | 'simbrief'
   | 'companion-apps'
   | 'logs'
@@ -62,6 +65,7 @@ const TABS: TabConfig[] = [
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'graphics', icon: Monitor, labelKey: 'settings.tabs.graphics' },
+  { id: 'airports', icon: Star, labelKey: 'settings.tabs.airports' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
   { id: 'companion-apps', icon: Boxes, labelKey: 'settings.tabs.companionApps' },
   { id: 'logs', icon: ScrollText, labelKey: 'settings.tabs.logs' },
@@ -160,6 +164,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="Graphics">
                   <GraphicsSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="airports"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Airports">
+                  <AirportsSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

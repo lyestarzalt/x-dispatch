@@ -254,6 +254,7 @@
       "data": "Nav Data",
       "appearance": "Appearance",
       "graphics": "Graphics",
+      "airports": "Airports",
       "simbrief": "SimBrief",
       "navigation": "Navigation",
       "vatsim": "VATSIM",
@@ -261,6 +262,26 @@
       "about": "About",
       "companionApps": "Companion Apps",
       "logs": "X-Plane Logs"
+    },
+    "airports": {
+      "title": "Airports",
+      "description": "Manage your favorite airports and home base.",
+      "startup": "Startup",
+      "autoNav": {
+        "label": "Open home airport on startup",
+        "description": "Frame the camera on your home airport and open its info panel when X-Dispatch launches."
+      },
+      "favorites": {
+        "title": "Favorites",
+        "description": "Tap the star in any airport panel to add it here. Your home airport is shown first.",
+        "empty": "No favorite airports yet — tap the star in any airport panel to add one.",
+        "notInAirac": "Not in current AIRAC"
+      },
+      "actions": {
+        "setHome": "Set as home airport",
+        "clearHome": "Clear home airport",
+        "remove": "Remove"
+      }
     },
     "support": {
       "reportProblem": "Report a Problem",
@@ -595,6 +616,12 @@
       "helipads": "Helipads",
       "radio": "Radio",
       "gateway": "GATEWAY"
+    },
+    "actions": {
+      "addFavorite": "Add to favorites",
+      "removeFavorite": "Remove from favorites",
+      "setHome": "Set as home airport",
+      "clearHome": "Clear home airport"
     },
     "stats": {
       "elevation": "ELEV",
