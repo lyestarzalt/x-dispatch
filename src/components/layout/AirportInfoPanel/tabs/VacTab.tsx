@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, Printer } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { Button } from '@/components/ui/button';
-import { renderVacPdfToPng } from '@/lib/sia/pdfToPng';
+import { vacPdfPreviewUrl } from '@/lib/sia/vacPdfProtocol';
 import type { AirportGeorefInput } from '@/lib/sia/georef';
 import { useVacChartQuery, useSiaInstallStatusQuery } from '@/queries/useSiaQuery';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 function buildGeorefInput(airport: ParsedAirport): AirportGeorefInput {
   const runways = airport.runways
@@ -32,76 +28,72 @@ function buildGeorefInput(airport: ParsedAirport): AirportGeorefInput {
   return { lat: airport.latitude, lon: airport.longitude, runways };
 }
 
+type PreviewMode = 'pdf' | 'png' | null;
+
 export default function VacTab() {
   const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
   const selectedIcao = useAppStore((s) => s.selectedICAO);
-  const icao = airport?.id ?? selectedIcao;
+  const icao = selectedIcao ?? airport?.id ?? null;
   const { data: status } = useSiaInstallStatusQuery();
   const georefInput = useMemo(
     () => (airport ? buildGeorefInput(airport) : null),
     [airport]
   );
   const { data: vacInfo, isLoading, isFetching } = useVacChartQuery(icao, georefInput);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [pdfError, setPdfError] = useState<string | null>(null);
-  const [rendering, setRendering] = useState(false);
-  const previewUrlRef = useRef<string | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState<PreviewMode>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const blobUrlRef = useRef<string | null>(null);
 
-  const clearPreviewUrl = useCallback(() => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
+  const clearPreview = useCallback(() => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
     }
-    setPreviewUrl(null);
+    setPreviewSrc(null);
+    setPreviewMode(null);
   }, []);
-
-  const setPreviewFromBytes = useCallback(
-    (bytes: Uint8Array) => {
-      clearPreviewUrl();
-      const blob = new Blob([Uint8Array.from(bytes)], { type: 'image/png' });
-      const url = URL.createObjectURL(blob);
-      previewUrlRef.current = url;
-      setPreviewUrl(url);
-    },
-    [clearPreviewUrl]
-  );
 
   const loadPreview = useCallback(async () => {
     if (!icao || !vacInfo) return;
-    setPdfError(null);
-    setRendering(true);
-    clearPreviewUrl();
+    setPreviewError(null);
+    setLoadingPreview(true);
+    clearPreview();
 
     try {
       const cached = await window.siaAPI.getVacPngBytes(icao);
       if (cached?.length) {
-        setPreviewFromBytes(cached);
+        const blob = new Blob([Uint8Array.from(cached)], { type: 'image/png' });
+        const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
+        setPreviewSrc(url);
+        setPreviewMode('png');
         return;
       }
 
       const pdfBytes = await window.siaAPI.getVacPdfBytes(icao);
       if (!pdfBytes?.length) {
-        setPdfError(t('vac.notFound'));
+        setPreviewError(t('vac.notFound'));
         return;
       }
 
-      const png = await renderVacPdfToPng(pdfBytes, 1.5);
-      await window.siaAPI.writePngCache(vacInfo.icao, png);
-      setPreviewFromBytes(png);
+      setPreviewSrc(vacPdfPreviewUrl(vacInfo.icao));
+      setPreviewMode('pdf');
     } catch (err) {
-      setPdfError((err as Error).message);
+      setPreviewError((err as Error).message);
     } finally {
-      setRendering(false);
+      setLoadingPreview(false);
     }
-  }, [icao, vacInfo, t, clearPreviewUrl, setPreviewFromBytes]);
+  }, [icao, vacInfo, t, clearPreview]);
 
   useLayoutEffect(() => {
     if (vacInfo) void loadPreview();
-    else clearPreviewUrl();
-  }, [vacInfo, loadPreview, clearPreviewUrl]);
+    else clearPreview();
+  }, [vacInfo, loadPreview, clearPreview]);
 
-  useEffect(() => () => clearPreviewUrl(), [clearPreviewUrl]);
+  useEffect(() => () => clearPreview(), [clearPreview]);
 
   if (!status?.hasData) {
     return (
@@ -138,16 +130,25 @@ export default function VacTab() {
       </div>
 
       <div className="overflow-auto rounded-md border border-border/40 bg-background/50 p-1">
-        {previewUrl ? (
-          <img src={previewUrl} alt={`VAC ${vacInfo.icao}`} className="max-w-full" />
+        {loadingPreview ? (
+          <p className="p-4 text-sm text-muted-foreground">{t('common.loading')}</p>
+        ) : previewSrc && previewMode === 'png' ? (
+          <img src={previewSrc} alt={`VAC ${vacInfo.icao}`} className="max-w-full" />
+        ) : previewSrc && previewMode === 'pdf' ? (
+          <embed
+            src={previewSrc}
+            type="application/pdf"
+            title={`VAC ${vacInfo.icao}`}
+            className="min-h-[420px] w-full"
+          />
         ) : (
           <p className="p-4 text-sm text-muted-foreground">
-            {rendering ? t('common.loading') : pdfError ?? t('vac.notFound')}
+            {previewError ?? t('vac.notFound')}
           </p>
         )}
       </div>
 
-      {pdfError && <p className="text-xs text-destructive">{pdfError}</p>}
+      {previewError && <p className="text-xs text-destructive">{previewError}</p>}
 
       <div className="flex flex-wrap gap-2">
         <Button

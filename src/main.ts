@@ -21,6 +21,7 @@ import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { registerMbtilesScheme, registerMbtilesHandler } from './lib/mbtiles/protocolHandler';
+import { registerVacPdfScheme, registerVacPdfHandler } from './lib/sia/vacPdfProtocol';
 import {
   closeTileCache,
   getTileCache,
@@ -1473,6 +1474,7 @@ if (!app.isPackaged) {
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
 registerMbtilesScheme();
+registerVacPdfScheme();
 
 // Deep link protocol: xdispatch://airport/ICAO
 const PROTOCOL = 'xdispatch';
@@ -1635,6 +1637,8 @@ app.whenReady().then(async () => {
             "img-src 'self' data: blob: mbtiles: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com; " +
             "font-src 'self' data: https://fonts.gstatic.com; " +
             "connect-src 'self' ws://localhost:* http://localhost:* mbtiles: https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://www.sia.aviation-civile.gouv.fr; " +
+            "object-src 'self' vac-pdf: blob:; " +
+            "frame-src 'self' vac-pdf: blob:; " +
             "worker-src 'self' blob:;",
         ],
       },
@@ -1644,6 +1648,7 @@ app.whenReady().then(async () => {
   initTileCache();
   registerTileCacheHandler();
   registerMbtilesHandler();
+  registerVacPdfHandler();
 
   registerIpcHandlers();
   mainWindow = createWindow();

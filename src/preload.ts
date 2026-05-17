@@ -387,6 +387,7 @@ contextBridge.exposeInMainWorld('siaAPI', {
     ipcRenderer.invoke('sia:getVacForIcao', icao, airport),
   getVacPdfBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPdfBytes', icao),
   getVacPngBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPngBytes', icao),
+  getPdfjsWorkerUrl: () => ipcRenderer.invoke('sia:getPdfjsWorkerUrl') as Promise<string | null>,
   writePngCache: (icao: string, data: Uint8Array) =>
     ipcRenderer.invoke('sia:writePngCache', icao, data),
   clearCache: () => ipcRenderer.invoke('sia:clearCache'),
@@ -828,6 +829,7 @@ declare global {
       ) => Promise<import('./lib/sia/types').VacChartInfo | null>;
       getVacPdfBytes: (icao: string) => Promise<Uint8Array | null>;
       getVacPngBytes: (icao: string) => Promise<Uint8Array | null>;
+      getPdfjsWorkerUrl: () => Promise<string | null>;
       writePngCache: (icao: string, data: Uint8Array) => Promise<{ success: boolean; path?: string }>;
       clearCache: () => Promise<{ success: boolean; error?: string }>;
       downloadProduct: (productId: string) => Promise<{ success: boolean; error?: string }>;

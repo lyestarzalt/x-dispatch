@@ -1,6 +1,7 @@
-import { BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
+import { pathToFileURL } from 'url';
 import {
   SIA_PRODUCT_CATALOG,
   clearCredentials,
@@ -69,6 +70,25 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
     if (!icao || typeof icao !== 'string') return null;
     const buf = store.readVacPng(icao);
     return buf ? Uint8Array.from(buf) : null;
+  });
+
+  ipcMain.handle('sia:getPdfjsWorkerUrl', () => {
+    const candidates = [
+      path.join(
+        process.resourcesPath,
+        'app.asar.unpacked',
+        'node_modules',
+        'pdfjs-dist',
+        'build',
+        'pdf.worker.min.mjs'
+      ),
+      path.join(app.getAppPath(), 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.mjs'),
+      path.join(process.cwd(), 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.mjs'),
+    ];
+    for (const workerPath of candidates) {
+      if (fs.existsSync(workerPath)) return pathToFileURL(workerPath).href;
+    }
+    return null;
   });
 
   ipcMain.handle('sia:writePngCache', (_, icao: string, data: Uint8Array) => {

@@ -22,6 +22,8 @@ export interface SiaProduct {
 export interface VacChartEntry {
   icao: string;
   pdfPath: string;
+  /** Path relative to product extract root (relocatable across machines). */
+  pdfRelPath?: string;
   chartId: string;
   chartType: 'vac' | 'iac' | 'other';
   cycle: string;

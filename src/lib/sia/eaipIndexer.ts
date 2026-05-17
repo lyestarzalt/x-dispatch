@@ -76,6 +76,7 @@ export async function indexEaipExtract(
     const entry: VacChartEntry = {
       icao,
       pdfPath: absPath,
+      pdfRelPath: relativePath,
       chartId: path.basename(relativePath, '.pdf'),
       chartType: classifyChartType(relativePath),
       cycle,
@@ -119,6 +120,7 @@ export function indexVacAmendmentPdfs(
     const entry: VacChartEntry = {
       icao,
       pdfPath: absPath,
+      pdfRelPath: rel,
       chartId: path.basename(rel, '.pdf'),
       chartType: 'vac',
       cycle,

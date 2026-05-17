@@ -22,6 +22,7 @@ import type {
 } from './types';
 import { resolveVacGeoref, type AirportGeorefInput } from './georef';
 import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
+import { extractEaipRelativeSuffix, findPdfByBasename } from './pdfPathResolve';
 import { findVacEntryForIcao } from './vacIndex';
 
 const MANIFEST_VERSION = 1 as const;
@@ -154,19 +155,45 @@ export class ChartStore {
   }
 
   private resolveEntryPdfPath(entry: VacChartEntry): string | null {
-    const candidates = [entry.pdfPath];
+    const basename = path.basename(entry.pdfPath);
+    const relSuffix =
+      entry.pdfRelPath ?? extractEaipRelativeSuffix(entry.pdfPath) ?? basename;
+    const candidates = new Set<string>();
+
+    candidates.add(path.normalize(entry.pdfPath));
     if (!path.isAbsolute(entry.pdfPath)) {
-      candidates.unshift(path.join(this.extractDir, entry.pdfPath));
+      candidates.add(path.join(this.extractDir, entry.pdfPath));
     }
+    if (entry.pdfRelPath) {
+      candidates.add(path.join(this.extractDir, entry.pdfRelPath));
+    }
+    candidates.add(path.join(this.extractDir, relSuffix));
+
     for (const product of Object.values(this.manifest.installedProducts)) {
-      if (product.extractPath) {
-        candidates.push(path.join(product.extractPath, path.basename(entry.pdfPath)));
-      }
+      if (!product.extractPath) continue;
+      const root = product.extractPath;
+      candidates.add(path.join(root, basename));
+      candidates.add(path.join(root, relSuffix));
+      if (entry.pdfRelPath) candidates.add(path.join(root, entry.pdfRelPath));
+      candidates.add(path.join(root, `${entry.chartId}.pdf`));
     }
+
     for (const candidate of candidates) {
       const normalized = path.normalize(candidate);
       if (fs.existsSync(normalized)) return normalized;
     }
+
+    const searchRoots = [
+      this.extractDir,
+      ...Object.values(this.manifest.installedProducts)
+        .map((p) => p.extractPath)
+        .filter((r): r is string => !!r),
+    ];
+    for (const root of searchRoots) {
+      const found = findPdfByBasename(root, basename);
+      if (found) return found;
+    }
+
     return null;
   }
 
@@ -178,6 +205,10 @@ export class ChartStore {
   getVacInfo(icao: string, airport: AirportGeorefInput | null): VacChartInfo | null {
     const entry = this.getVacEntry(icao);
     if (!entry) return null;
+    if (!this.resolveEntryPdfPath(entry)) {
+      logger.main.warn(`VAC indexed but PDF missing on disk: ${entry.pdfPath}`);
+      return null;
+    }
     const code = entry.icao.toUpperCase();
     const pngPath = path.normalize(path.join(this.pngCacheDir, `${code}.png`));
     return {

@@ -1,10 +1,18 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+let workerReady = false;
+
+async function ensurePdfWorker(): Promise<void> {
+  if (workerReady) return;
+  const fromMain = await window.siaAPI?.getPdfjsWorkerUrl?.();
+  pdfjsLib.GlobalWorkerOptions.workerSrc = fromMain ?? pdfWorkerUrl;
+  workerReady = true;
+}
 
 /** Render first page of a VAC PDF to PNG bytes (renderer process). */
 export async function renderVacPdfToPng(pdfBytes: Uint8Array, scale = 2): Promise<Uint8Array> {
+  await ensurePdfWorker();
   const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
   const pdf = await loadingTask.promise;
   const page = await pdf.getPage(1);

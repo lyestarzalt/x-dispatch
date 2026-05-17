@@ -30,6 +30,7 @@ const RENAME_EXTENSIONS = new Set(['.exe', '.dmg', '.AppImage']);
 const config: ForgeConfig = {
   packagerConfig: {
     asar: {
+      unpack: '**/node_modules/pdfjs-dist/**',
       unpackDir: 'node_modules/7zip-bin',
     },
     icon: './assets/icon',
