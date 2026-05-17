@@ -16,13 +16,15 @@ const BEAM_LENGTH_NM = 18;
 // Far-edge resolution. 12 segments → ~13 verts per ring; cheap and smooth.
 const FAR_EDGE_SEGMENTS = 12;
 
-export type BeamKind = 'GS_LOWER' | 'GS_UPPER';
+export type BeamKind = 'GS_LOWER' | 'GS_UPPER' | 'GS_LEFT_SIDE' | 'GS_RIGHT_SIDE' | 'GS_FAR_CAP';
+
+type BeamVertex = [number, number, number];
 
 export interface BeamPolygon {
   /** "<LOC-id> <runway>" for cross-referencing in deck.gl debug. */
   id: string;
-  /** Closed ring of [lon, lat, z_meters]. First vertex is the apex. */
-  polygon: [number, number, number][];
+  /** Closed face ring of [lon, lat, z_meters]. */
+  polygon: BeamVertex[];
   kind: BeamKind;
 }
 
@@ -114,45 +116,89 @@ export function pairLocAndGs(navaids: Navaid[]): BeamSpec[] {
 }
 
 /**
- * Build one slope of the GS beam (lower or upper bound). Two slopes stacked
- * vertically form the wedge; alpha compositing fills the gap and reads as a
- * beam volume rather than a paper-thin sheet.
+ * Build one far arc of the GS beam (lower or upper bound).
  *
  * The lower wall sits below centerline (slope = glidepath − 0.7°); the upper
  * wall is steeper (slope = glidepath + 0.7°). The sign of `verticalOffsetDeg`
  * picks which.
  */
-function buildGsSlope(spec: BeamSpec, verticalOffsetDeg: number): [number, number, number][] {
+function buildGsFarEdge(spec: BeamSpec, verticalOffsetDeg: number): BeamVertex[] {
   const baseZ = spec.apexElevationFt * FEET_TO_METERS;
   const farDistanceM = nauticalMilesToMeters(BEAM_LENGTH_NM);
   const slopeDeg = spec.glidepathAngle + verticalOffsetDeg;
   const tanSlope = Math.tan((slopeDeg * Math.PI) / 180);
 
-  const ring: [number, number, number][] = [];
-  ring.push([spec.apexLon, spec.apexLat, baseZ]);
+  const farEdge: BeamVertex[] = [];
   for (let i = 0; i <= FAR_EDGE_SEGMENTS; i++) {
     const t = i / FAR_EDGE_SEGMENTS;
     const bearing = (spec.course - GS_HALF_ANGLE_DEG + t * 2 * GS_HALF_ANGLE_DEG + 360) % 360;
     const [lon, lat] = destinationPoint(spec.apexLat, spec.apexLon, farDistanceM, bearing);
-    ring.push([lon, lat, baseZ + farDistanceM * tanSlope]);
+    farEdge.push([lon, lat, baseZ + farDistanceM * tanSlope]);
   }
-  ring.push([spec.apexLon, spec.apexLat, baseZ]);
-  return ring;
+  return farEdge;
+}
+
+function closeRing(vertices: BeamVertex[]): BeamVertex[] {
+  return [...vertices, vertices[0]!];
+}
+
+function buildGsSlopeFace(apex: BeamVertex, farEdge: BeamVertex[]): BeamVertex[] {
+  return closeRing([apex, ...farEdge]);
+}
+
+function buildGsWedgeFaces(spec: BeamSpec): BeamPolygon[] {
+  const apex: BeamVertex = [spec.apexLon, spec.apexLat, spec.apexElevationFt * FEET_TO_METERS];
+  const lowerFarEdge = buildGsFarEdge(spec, -GS_VERTICAL_HALF_ANGLE_DEG);
+  const upperFarEdge = buildGsFarEdge(spec, GS_VERTICAL_HALF_ANGLE_DEG);
+
+  const faces: BeamPolygon[] = [
+    {
+      id: spec.id,
+      polygon: buildGsSlopeFace(apex, lowerFarEdge),
+      kind: 'GS_LOWER',
+    },
+    {
+      id: spec.id,
+      polygon: buildGsSlopeFace(apex, upperFarEdge),
+      kind: 'GS_UPPER',
+    },
+    {
+      id: spec.id,
+      polygon: [apex, lowerFarEdge[0]!, upperFarEdge[0]!, apex],
+      kind: 'GS_LEFT_SIDE',
+    },
+    {
+      id: spec.id,
+      polygon: [
+        apex,
+        upperFarEdge[upperFarEdge.length - 1]!,
+        lowerFarEdge[lowerFarEdge.length - 1]!,
+        apex,
+      ],
+      kind: 'GS_RIGHT_SIDE',
+    },
+  ];
+
+  for (let i = 0; i < FAR_EDGE_SEGMENTS; i++) {
+    faces.push({
+      id: spec.id,
+      polygon: closeRing([
+        lowerFarEdge[i]!,
+        lowerFarEdge[i + 1]!,
+        upperFarEdge[i + 1]!,
+        upperFarEdge[i]!,
+      ]),
+      kind: 'GS_FAR_CAP',
+    });
+  }
+
+  return faces;
 }
 
 export function buildBeamPolygons(navaids: Navaid[]): BeamPolygon[] {
   const out: BeamPolygon[] = [];
   for (const spec of pairLocAndGs(navaids)) {
-    out.push({
-      id: spec.id,
-      polygon: buildGsSlope(spec, -GS_VERTICAL_HALF_ANGLE_DEG),
-      kind: 'GS_LOWER',
-    });
-    out.push({
-      id: spec.id,
-      polygon: buildGsSlope(spec, GS_VERTICAL_HALF_ANGLE_DEG),
-      kind: 'GS_UPPER',
-    });
+    out.push(...buildGsWedgeFaces(spec));
   }
   return out;
 }

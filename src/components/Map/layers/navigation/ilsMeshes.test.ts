@@ -85,14 +85,24 @@ describe('pairLocAndGs', () => {
 });
 
 describe('buildBeamPolygons', () => {
-  it('emits a GS_LOWER and a GS_UPPER ring per paired runway, and nothing for LOC', () => {
+  it('emits a closed GS wedge volume per paired runway, and nothing for LOC', () => {
     const navaids: Navaid[] = [
       makeNavaid({ type: 'ILS', id: 'ILOC' }),
       makeNavaid({ type: 'GS', id: 'IGS', glidepathAngle: 3 }),
     ];
     const beams = buildBeamPolygons(navaids);
-    const kinds = beams.map((b) => b.kind).sort();
-    expect(kinds).toEqual(['GS_LOWER', 'GS_UPPER']);
+    const kindCounts = beams.reduce<Record<string, number>>((counts, beam) => {
+      counts[beam.kind] = (counts[beam.kind] ?? 0) + 1;
+      return counts;
+    }, {});
+
+    expect(kindCounts).toEqual({
+      GS_LOWER: 1,
+      GS_UPPER: 1,
+      GS_LEFT_SIDE: 1,
+      GS_RIGHT_SIDE: 1,
+      GS_FAR_CAP: ILS_BEAM_CONSTANTS.FAR_EDGE_SEGMENTS,
+    });
   });
 
   it('emits nothing for a LOC-only airport (no GS to wedge)', () => {
@@ -110,6 +120,47 @@ describe('buildBeamPolygons', () => {
     const upper = beams.find((b) => b.kind === 'GS_UPPER')!;
     // index 1 is the first far-edge vertex (after the apex)
     expect(upper.polygon[1]![2]).toBeGreaterThan(lower.polygon[1]![2]);
+  });
+
+  it('side faces bridge the lower and upper far-edge corners', () => {
+    const navaids: Navaid[] = [
+      makeNavaid({ type: 'ILS', id: 'ILOC' }),
+      makeNavaid({ type: 'GS', id: 'IGS', glidepathAngle: 3 }),
+    ];
+    const beams = buildBeamPolygons(navaids);
+    const lower = beams.find((b) => b.kind === 'GS_LOWER')!;
+    const upper = beams.find((b) => b.kind === 'GS_UPPER')!;
+    const left = beams.find((b) => b.kind === 'GS_LEFT_SIDE')!;
+    const right = beams.find((b) => b.kind === 'GS_RIGHT_SIDE')!;
+
+    expect(left.polygon).toEqual([
+      lower.polygon[0],
+      lower.polygon[1],
+      upper.polygon[1],
+      lower.polygon[0],
+    ]);
+    expect(right.polygon).toEqual([
+      lower.polygon[0],
+      upper.polygon[upper.polygon.length - 2],
+      lower.polygon[lower.polygon.length - 2],
+      lower.polygon[0],
+    ]);
+  });
+
+  it('far cap is segmented into quads that connect lower and upper far arcs', () => {
+    const navaids: Navaid[] = [
+      makeNavaid({ type: 'ILS', id: 'ILOC' }),
+      makeNavaid({ type: 'GS', id: 'IGS', glidepathAngle: 3 }),
+    ];
+    const farCaps = buildBeamPolygons(navaids).filter((b) => b.kind === 'GS_FAR_CAP');
+
+    expect(farCaps).toHaveLength(ILS_BEAM_CONSTANTS.FAR_EDGE_SEGMENTS);
+    for (const cap of farCaps) {
+      expect(cap.polygon).toHaveLength(5);
+      expect(cap.polygon[0]).toEqual(cap.polygon[4]);
+      expect(cap.polygon[2]![2]).toBeGreaterThan(cap.polygon[0]![2]);
+      expect(cap.polygon[3]![2]).toBeGreaterThan(cap.polygon[1]![2]);
+    }
   });
 
   it('GS_UPPER far edge rises by length * tan(glidepath + 0.7°) above the apex', () => {

@@ -51,11 +51,22 @@ function hexToRgb(hex: string): [number, number, number] {
 
 const ILS_BEAM_RGB = hexToRgb(NAV_COLORS.ils);
 
-// Lower opacity on both walls — the wedge reads as a translucent beam volume
-// rather than two opaque sheets.
+const BEAM_RENDER_ORDER: BeamKind[] = [
+  'GS_LOWER',
+  'GS_UPPER',
+  'GS_LEFT_SIDE',
+  'GS_RIGHT_SIDE',
+  'GS_FAR_CAP',
+];
+
+// Side/cap faces are a touch stronger than the top/bottom sheets so the
+// wedge reads as a closed translucent volume instead of two loose slates.
 const BEAM_ALPHA: Record<BeamKind, number> = {
-  GS_LOWER: 51, // ~20%
-  GS_UPPER: 51,
+  GS_LOWER: 42,
+  GS_UPPER: 42,
+  GS_LEFT_SIDE: 56,
+  GS_RIGHT_SIDE: 56,
+  GS_FAR_CAP: 36,
 };
 
 const DECK_LAYER_ID = 'nav-ils-deck-beams';
@@ -69,9 +80,10 @@ const DECK_LAYER_ID = 'nav-ils-deck-beams';
  *     2D dashed extended centerline (`nav-ils`, `nav-ils-labels`,
  *     `nav-ils-course`). These give the on-ground bearings of the LOC.
  *   - deck.gl `SolidPolygonLayer` via an interleaved `MapboxOverlay` — the
- *     GS wedge, drawn as two stacked tilted planes at ±0.7° around the
- *     glide path. Interleaved mode shares MapLibre's depth buffer so the
- *     wedge clips correctly behind 3D terrain.
+ *     GS wedge, drawn as a closed translucent volume bounded by tilted
+ *     upper/lower glide-slope planes plus side walls and a segmented far
+ *     cap. Interleaved mode shares MapLibre's depth buffer so the wedge
+ *     clips correctly behind 3D terrain.
  *
  * The LOC is intentionally NOT rendered as a separate fan: the GS wedge
  * occupies the same lateral footprint as the LOC course (its centerline
@@ -254,13 +266,17 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   private buildDeckLayers(): SolidPolygonLayer[] {
     if (this.currentBeams.length === 0 || !this.beamsVisible) return [];
 
-    const byKind: Record<BeamKind, BeamPolygon[]> = { GS_LOWER: [], GS_UPPER: [] };
-    for (const beam of this.currentBeams) byKind[beam.kind].push(beam);
+    const byKind = new Map<BeamKind, BeamPolygon[]>();
+    for (const beam of this.currentBeams) {
+      const beams = byKind.get(beam.kind) ?? [];
+      beams.push(beam);
+      byKind.set(beam.kind, beams);
+    }
 
     const layers: SolidPolygonLayer[] = [];
-    (Object.keys(byKind) as BeamKind[]).forEach((kind) => {
-      const data = byKind[kind];
-      if (data.length === 0) return;
+    BEAM_RENDER_ORDER.forEach((kind) => {
+      const data = byKind.get(kind);
+      if (!data || data.length === 0) return;
       layers.push(
         new SolidPolygonLayer({
           id: `${DECK_LAYER_ID}-${kind.toLowerCase()}`,
