@@ -1,10 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
+import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
-import { setupAirportsLayer } from '../layers/world/AirportsLayer';
+import { useSettingsStore } from '@/stores/settingsStore';
+import {
+  setSelectedAirportIcao,
+  setupAirportsLayer,
+  updateAirportFavoriteFlags,
+} from '../layers/world/AirportsLayer';
 import { captureBasemapSnapshot, setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 
 // ============================================================================
@@ -102,15 +108,40 @@ export function useMapSetup({
 
   const onAirportClickRef = useRef(onAirportClick);
 
+  // Subscribe so the star markers re-render when the user toggles a
+  // favourite or sets a different home airport mid-session. Selectors are
+  // referentially stable when the values don't change.
+  const favoriteIcaos = useSettingsStore((s) => s.airports.favoriteIcaos);
+  const homeIcao = useSettingsStore((s) => s.airports.homeIcao);
+  const favoriteIcaoSet = useMemo(() => new Set(favoriteIcaos), [favoriteIcaos]);
+
   const { setCurrentZoom, setMapBearing } = useMapStore();
 
   const setCurrentZoomRef = useRef(setCurrentZoom);
   const setMapBearingRef = useRef(setMapBearing);
 
+  // Hide the planet-marker for the currently-open airport once we zoom in
+  // far enough that apt.dat detail layers carry the visual. Hoisted up
+  // here so `setupAirportsLayer` can pick up its initial value at map-load
+  // time (the live-update effect below handles subsequent changes).
+  const selectedIcao = useAppStore((s) => s.selectedICAO);
+
+  // Refs let the map-setup effect read the latest favourites/home at the
+  // moment it fires `setupAirportsLayer`, without making them effect deps
+  // (which would recreate the whole map on every favourite toggle).
+  const favoriteIcaoSetRef = useRef(favoriteIcaoSet);
+  const homeIcaoRef = useRef(homeIcao);
+  const selectedIcaoRef = useRef(selectedIcao);
+  const airportsRef = useRef(airports);
+
   useEffect(() => {
     onAirportClickRef.current = onAirportClick;
     setCurrentZoomRef.current = setCurrentZoom;
     setMapBearingRef.current = setMapBearing;
+    favoriteIcaoSetRef.current = favoriteIcaoSet;
+    homeIcaoRef.current = homeIcao;
+    selectedIcaoRef.current = selectedIcao;
+    airportsRef.current = airports;
   });
 
   useEffect(() => {
@@ -226,7 +257,14 @@ export function useMapSetup({
       captureBasemapSnapshot(map);
       setupGlobeProjection(map);
       setup3DTerrain(map);
-      setupAirportsLayer(map, airports, getBasemapTheme(mapStyleUrl));
+      setupAirportsLayer(
+        map,
+        airports,
+        getBasemapTheme(mapStyleUrl),
+        favoriteIcaoSetRef.current,
+        homeIcaoRef.current,
+        selectedIcaoRef.current
+      );
       setupAirportPopup(map, airportPopupRef, (icao: string, coords: [number, number]) =>
         onAirportClickRef.current(icao, coords)
       );
@@ -246,6 +284,25 @@ export function useMapSetup({
     // to preserve map state. Only recreate map when airports change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [airports]);
+
+  // Live-refresh the starred-airport markers when the user toggles a
+  // favourite or sets a home in any other component. No-op until the map
+  // has finished loading and the source exists.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    updateAirportFavoriteFlags(map, airportsRef.current, favoriteIcaoSet, homeIcao);
+  }, [favoriteIcaoSet, homeIcao]);
+
+  // Live-refresh the selected-airport fade. If the style isn't loaded yet
+  // (e.g. cold-start auto-nav fires before `map.on('load', …)` resolves),
+  // `setupAirportsLayer` re-applies it from selectedIcaoRef at the end of
+  // setup so we don't miss the initial selection.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    setSelectedAirportIcao(map, selectedIcao);
+  }, [selectedIcao]);
 
   return {
     mapRef,
