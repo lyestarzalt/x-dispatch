@@ -13,6 +13,9 @@ export function extractIcaoFromVacPath(filePath: string): string | null {
   if (fromName?.[1]) return fromName[1].toUpperCase();
 
   const normalized = filePath.replace(/\\/g, '/');
+  const adFolder = normalized.match(/\/AD\/(LF[A-Z0-9]{2,3})(?:\/|[_\-.])/i);
+  if (adFolder?.[1]) return adFolder[1].toUpperCase();
+
   const parts = normalized.split('/');
   for (let i = parts.length - 1; i >= 0; i--) {
     const part = parts[i] ?? '';
@@ -32,10 +35,15 @@ export function classifyChartType(relativePath: string): 'vac' | 'iac' | 'other'
 export function isVacPdfPath(relativePath: string): boolean {
   if (!relativePath.toLowerCase().endsWith('.pdf')) return false;
   const upper = relativePath.replace(/\\/g, '/').toUpperCase();
-  if (upper.includes('ATLAS-VAC')) return true;
-  if (upper.includes('/AD/') && (upper.includes('VAC') || upper.includes('ADC'))) return true;
+  const base = path.basename(relativePath).toUpperCase();
+
+  if (upper.includes('ATLAS-VAC') || upper.includes('ATLAS_VAC')) return true;
+  if (upper.includes('/AD/') && /LF[A-Z0-9]{2,3}/.test(upper)) return true;
+  if (upper.includes('PDF_AIP') && /LF[A-Z0-9]{2,3}/.test(upper)) return true;
   if (upper.includes('PDF_AIPPARSECTION') && upper.includes('/AD/')) return true;
-  return /VAC/i.test(path.basename(relativePath));
+  if (/VAC/i.test(base)) return true;
+  if (/ADC/i.test(base) && upper.includes('/AD/')) return true;
+  return false;
 }
 
 export function mergeVacEntry(

@@ -1624,7 +1624,9 @@
     "errors": {
       "noCredentials": "Save your SIA account in the settings above first.",
       "productNotFound": "Product not found on the SIA catalog — try again later or import the ZIP manually.",
-      "extractTimeout": "Extraction timed out. Check that the ZIP file is valid and not corrupted."
+      "extractTimeout": "Extraction timed out. Check that the ZIP file is valid and not corrupted.",
+      "noPdfsInArchive": "No PDF files found in the archive. The full eAIP ZIP may contain nested archives — retry with app version 1.8.5+.",
+      "noVacMatched": "PDFs were found but no French VAC charts (LF*) were recognized. Make sure you import the full SIA eAIP ZIP."
     },
     "settings": {
       "title": "SIA / OACI charts",

@@ -1624,7 +1624,9 @@
     "errors": {
       "noCredentials": "Enregistrez d'abord votre compte SIA dans les réglages ci-dessus.",
       "productNotFound": "Produit introuvable sur le catalogue SIA — réessayez plus tard ou importez le ZIP manuellement.",
-      "extractTimeout": "Extraction interrompue (délai dépassé). Vérifiez que le fichier ZIP n'est pas corrompu."
+      "extractTimeout": "Extraction interrompue (délai dépassé). Vérifiez que le fichier ZIP n'est pas corrompu.",
+      "noPdfsInArchive": "Aucun PDF trouvé dans l'archive. Le ZIP eAIP complet contient peut‑être des sous-archives non extraites — réessayez avec la version 1.8.5+.",
+      "noVacMatched": "Des PDF ont été trouvés mais aucune VAC française (LF*) n'a été reconnue. Vérifiez que vous importez bien le ZIP eAIP complet SIA."
     },
     "settings": {
       "title": "Cartes SIA / OACI",

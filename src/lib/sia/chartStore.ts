@@ -13,6 +13,7 @@ import { downloadToFile, getDirSizeBytes, type DownloadProgressCallback } from '
 import { loadCredentials } from './siaCredentials';
 import { purchaseAndGetDownloadUrl } from './siaGraphqlClient';
 import { indexEaipExtract, indexVacAmendmentPdfs } from './eaipIndexer';
+import { extractNestedArchives } from './nestedArchive';
 import type {
   SiaInstallManifest,
   SiaInstallStatus,
@@ -127,6 +128,7 @@ export class ChartStore {
   }
 
   async getInstallStatus(): Promise<SiaInstallStatus> {
+    this.manifest = this.loadManifest();
     const diskUsageBytes = await getDirSizeBytes(this.rootDir);
     const latestCatalogCycle = getLatestCatalogCycle();
     return {
@@ -301,6 +303,26 @@ export class ChartStore {
       return emitInstallError(productId, msg, onProgress);
     }
 
+    if (product.kind === 'eaip-full') {
+      onProgress?.({
+        productId,
+        phase: 'extracting',
+        percent: 60,
+        message: 'Extracting nested archives…',
+      });
+      const nested = await extractNestedArchives(extractPath, (name) => {
+        onProgress?.({
+          productId,
+          phase: 'extracting',
+          percent: 65,
+          message: name,
+        });
+      });
+      logger.data.info(
+        `SIA nested archives: ${nested.extracted} extracted, ${nested.failed} failed`
+      );
+    }
+
     onProgress?.({
       productId,
       phase: 'indexing',
@@ -315,8 +337,19 @@ export class ChartStore {
         const indexed = await indexEaipExtract(extractPath, cycle, validFrom, validTo);
         vacIndex = indexed.vacIndex;
         await this.persistXmlPaths(indexed.xmlPaths, cycle);
+
+        if (Object.keys(vacIndex).length === 0) {
+          const hint =
+            indexed.pdfCount === 0
+              ? 'sia.errors.noPdfsInArchive'
+              : 'sia.errors.noVacMatched';
+          return emitInstallError(productId, hint, onProgress);
+        }
       } else {
         vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
+        if (Object.keys(vacIndex).length === 0) {
+          return emitInstallError(productId, 'sia.errors.noVacMatched', onProgress);
+        }
       }
     } catch (err) {
       logger.main.error('SIA chart indexing failed', err);
