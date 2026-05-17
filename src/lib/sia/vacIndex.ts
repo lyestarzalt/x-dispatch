@@ -1,8 +1,8 @@
 import * as path from 'path';
 import type { VacChartEntry } from './types';
 
-const ICAO_IN_PATH_RE = /(?:^|[/\\_])(LF[A-Z0-9]{2,3})(?:[_\-.]|$)/i;
-const ICAO_FILENAME_RE = /^(LF[A-Z0-9]{2,3})[_\-.]/i;
+const ICAO_IN_PATH_RE = /(?:^|[/\\_])(LF[A-Z0-9]{2,4})(?:[_\-.]|$)/i;
+const ICAO_FILENAME_RE = /^(LF[A-Z0-9]{2,4})(?:[_\-.].*)?$/i;
 
 /**
  * Extract ICAO from SIA VAC PDF path or filename.
@@ -55,4 +55,40 @@ export function mergeVacEntry(
   if (existing.chartType === 'vac' && next.chartType !== 'vac') return existing;
   if (next.chartType === 'vac' && existing.chartType !== 'vac') return next;
   return next;
+}
+
+function pathMatchesIcao(pdfPath: string, icao: string): boolean {
+  const code = icao.toUpperCase();
+  const upper = pdfPath.replace(/\\/g, '/').toUpperCase();
+  const base = path.basename(pdfPath).toUpperCase();
+  if (base.startsWith(`${code}_`) || base.startsWith(`${code}-`)) return true;
+  if (base === `${code}.PDF` || base.startsWith(`${code}.`)) return true;
+  if (upper.includes(`/AD/${code}/`) || upper.includes(`/AD/${code}_`)) return true;
+  if (upper.includes(`ATLAS-VAC`) && (base.includes(code) || upper.includes(`/${code}`))) return true;
+  return extractIcaoFromVacPath(pdfPath) === code;
+}
+
+function rankVacEntry(entry: VacChartEntry): number {
+  const upper = entry.pdfPath.replace(/\\/g, '/').toUpperCase();
+  let score = 0;
+  if (entry.chartType === 'vac') score += 10;
+  if (upper.includes('ATLAS-VAC')) score += 8;
+  if (upper.includes('_VAC')) score += 4;
+  if (upper.includes('/AD/')) score += 1;
+  return score;
+}
+
+/** Resolve best VAC PDF for an aerodrome (handles AD vs Atlas-VAC duplicates). */
+export function findVacEntryForIcao(
+  vacIndex: Record<string, VacChartEntry>,
+  icao: string
+): VacChartEntry | null {
+  const code = icao.toUpperCase();
+  const direct = vacIndex[code];
+  if (direct) return direct;
+
+  const matches = Object.values(vacIndex).filter((e) => pathMatchesIcao(e.pdfPath, code));
+  if (matches.length === 0) return null;
+
+  return matches.sort((a, b) => rankVacEntry(b) - rankVacEntry(a))[0] ?? null;
 }

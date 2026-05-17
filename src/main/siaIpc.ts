@@ -65,6 +65,12 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
     return buf ? Uint8Array.from(buf) : null;
   });
 
+  ipcMain.handle('sia:getVacPngBytes', (_, icao: string) => {
+    if (!icao || typeof icao !== 'string') return null;
+    const buf = store.readVacPng(icao);
+    return buf ? Uint8Array.from(buf) : null;
+  });
+
   ipcMain.handle('sia:writePngCache', (_, icao: string, data: Uint8Array) => {
     if (!icao || typeof icao !== 'string') return { success: false };
     const buf = Buffer.from(data);
@@ -125,9 +131,9 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
   ipcMain.handle('sia:getOaciAirspaces', () => store.loadOaciAirspaces());
 
   ipcMain.handle('sia:openVacPdf', (_, icao: string) => {
-    const entry = store.getVacEntry(icao?.toUpperCase() ?? '');
-    if (!entry?.pdfPath || !fs.existsSync(entry.pdfPath)) return { success: false };
-    void shell.openPath(entry.pdfPath);
+    const pdfPath = store.getVacPdfPath(icao?.toUpperCase() ?? '');
+    if (!pdfPath) return { success: false };
+    void shell.openPath(pdfPath);
     return { success: true };
   });
 

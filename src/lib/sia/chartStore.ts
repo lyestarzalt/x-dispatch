@@ -22,6 +22,7 @@ import type {
 } from './types';
 import { resolveVacGeoref, type AirportGeorefInput } from './georef';
 import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
+import { findVacEntryForIcao } from './vacIndex';
 
 const MANIFEST_VERSION = 1 as const;
 const METADATA_CYCLE_KEY = 'sia_eaip_cycle';
@@ -148,15 +149,37 @@ export class ChartStore {
     };
   }
 
+  private refreshManifest(): void {
+    this.manifest = this.loadManifest();
+  }
+
+  private resolveEntryPdfPath(entry: VacChartEntry): string | null {
+    const candidates = [entry.pdfPath];
+    if (!path.isAbsolute(entry.pdfPath)) {
+      candidates.unshift(path.join(this.extractDir, entry.pdfPath));
+    }
+    for (const product of Object.values(this.manifest.installedProducts)) {
+      if (product.extractPath) {
+        candidates.push(path.join(product.extractPath, path.basename(entry.pdfPath)));
+      }
+    }
+    for (const candidate of candidates) {
+      const normalized = path.normalize(candidate);
+      if (fs.existsSync(normalized)) return normalized;
+    }
+    return null;
+  }
+
   getVacEntry(icao: string): VacChartEntry | null {
-    return this.manifest.vacIndex[icao.toUpperCase()] ?? null;
+    this.refreshManifest();
+    return findVacEntryForIcao(this.manifest.vacIndex, icao);
   }
 
   getVacInfo(icao: string, airport: AirportGeorefInput | null): VacChartInfo | null {
     const entry = this.getVacEntry(icao);
     if (!entry) return null;
-    const code = icao.toUpperCase();
-    const pngPath = path.join(this.pngCacheDir, `${code}.png`);
+    const code = entry.icao.toUpperCase();
+    const pngPath = path.normalize(path.join(this.pngCacheDir, `${code}.png`));
     return {
       ...entry,
       georef: resolveVacGeoref(this.georefDir, code, airport),
@@ -164,10 +187,29 @@ export class ChartStore {
     };
   }
 
+  getVacPdfPath(icao: string): string | null {
+    const entry = this.getVacEntry(icao);
+    if (!entry) return null;
+    return this.resolveEntryPdfPath(entry);
+  }
+
   readVacPdf(icao: string): Buffer | null {
     const entry = this.getVacEntry(icao);
-    if (!entry || !fs.existsSync(entry.pdfPath)) return null;
-    return fs.readFileSync(entry.pdfPath);
+    if (!entry) return null;
+    const pdfPath = this.resolveEntryPdfPath(entry);
+    if (!pdfPath) {
+      logger.main.warn(`VAC PDF not found on disk: ${entry.pdfPath}`);
+      return null;
+    }
+    return fs.readFileSync(pdfPath);
+  }
+
+  readVacPng(icao: string): Buffer | null {
+    const entry = this.getVacEntry(icao);
+    if (!entry) return null;
+    const pngPath = path.normalize(path.join(this.pngCacheDir, `${entry.icao.toUpperCase()}.png`));
+    if (!fs.existsSync(pngPath)) return null;
+    return fs.readFileSync(pngPath);
   }
 
   async installFromLocalZip(

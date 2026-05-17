@@ -18,7 +18,8 @@ export function useSiaInstallStatusQuery() {
 
 export function useVacChartQuery(icao: string | null, airportGeoref: unknown) {
   return useQuery({
-    queryKey: ['sia', 'vac', icao, airportGeoref],
+    // Georef input is rebuilt each render — keep it out of the key to avoid endless refetch.
+    queryKey: ['sia', 'vac', icao?.toUpperCase() ?? null],
     queryFn: () => {
       if (!icao) return null;
       return window.siaAPI.getVacForIcao(icao, airportGeoref as Parameters<
@@ -26,6 +27,7 @@ export function useVacChartQuery(icao: string | null, airportGeoref: unknown) {
       >[1]);
     },
     enabled: !!icao,
+    staleTime: 60_000,
   });
 }
 
