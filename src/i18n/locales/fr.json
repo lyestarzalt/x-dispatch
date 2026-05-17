@@ -1601,6 +1601,7 @@
     "downloadAmdt": "Télécharger l'amendement",
     "installing": "Installation en cours…",
     "clearData": "Supprimer les données SIA",
+    "reindexVac": "Réindexer les VAC",
     "updateAvailable": "Une nouvelle édition AIRAC est disponible ({{cycle}}).",
     "products": {
       "eaipFull": "ZIP eAIP complet",
@@ -1639,6 +1640,7 @@
   "vac": {
     "noData": "Installez les données eAIP dans Réglages → Graphismes pour afficher les VAC.",
     "notFound": "Aucune VAC trouvée pour cet aérodrome.",
+    "notFoundHint": "Importez aussi l’amendement VAC métropole (Paramètres → SIA) ou réimportez l’eAIP complet.",
     "cycle": "Cycle {{cycle}}",
     "openExternal": "Ouvrir le PDF",
     "print": "Imprimer"

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { extractIcaoFromVacPath, findVacEntryForIcao, isVacPdfPath } from './vacIndex';
+import {
+  extractIcaoFromVacPath,
+  findVacEntryForIcao,
+  isLfAirportPdfPath,
+  isVacPdfPath,
+} from './vacIndex';
 import type { VacChartEntry } from './types';
 
 describe('vacIndex', () => {
@@ -20,6 +25,26 @@ describe('vacIndex', () => {
     expect(extractIcaoFromVacPath('FRANCE/AIRAC-2026/html/eAIP/AD/LFPO/LFPO_ADC.pdf')).toBe(
       'LFPO'
     );
+  });
+
+  it('indexes any LF aerodrome pdf path', () => {
+    expect(isLfAirportPdfPath('FRANCE/html/eAIP/AD/LFPG/LFPG_ADC.pdf')).toBe(true);
+    expect(isLfAirportPdfPath('GEN/GEN_1.pdf')).toBe(false);
+  });
+
+  it('finds VAC by entry.icao when manifest key differs', () => {
+    const index: Record<string, VacChartEntry> = {
+      wrong_key: {
+        icao: 'LFPO',
+        pdfPath: 'FRANCE/html/eAIP/AD/LFPO/LFPO_ADC.pdf',
+        chartId: 'LFPO_ADC',
+        chartType: 'iac',
+        cycle: '05/26',
+        validFrom: '2026-01-01',
+        validTo: '2026-02-01',
+      },
+    };
+    expect(findVacEntryForIcao(index, 'LFPO')?.icao).toBe('LFPO');
   });
 
   it('finds VAC by path when index key differs', () => {

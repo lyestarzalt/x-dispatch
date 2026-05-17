@@ -1601,6 +1601,7 @@
     "downloadAmdt": "Download amendment",
     "installing": "Installing…",
     "clearData": "Delete SIA data",
+    "reindexVac": "Reindex VAC charts",
     "updateAvailable": "A new AIRAC edition is available ({{cycle}}).",
     "products": {
       "eaipFull": "Full eAIP ZIP",
@@ -1639,6 +1640,7 @@
   "vac": {
     "noData": "Install eAIP data in Settings → Graphics to view VAC charts.",
     "notFound": "No VAC chart found for this aerodrome.",
+    "notFoundHint": "Also import the metropolitan VAC amendment (Settings → SIA) or re-import the full eAIP.",
     "cycle": "Cycle {{cycle}}",
     "openExternal": "Open PDF",
     "print": "Print"

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import type maplibregl from 'maplibre-gl';
-import { renderVacPdfToPng } from '@/lib/sia/pdfToPng';
 import type { AirportGeorefInput } from '@/lib/sia/georef';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
@@ -60,11 +59,9 @@ export function useVacOverlaySync(mapRef: MapRef): void {
       const info = await window.siaAPI.getVacForIcao(icao, georef);
       if (cancelled || !info?.georef) return;
 
-      const bytes = await window.siaAPI.getVacPdfBytes(icao);
-      if (!bytes || cancelled) return;
-      const png = await renderVacPdfToPng(bytes, 1.5);
-      await window.siaAPI.writePngCache(icao, png);
-      const blob = new Blob([new Uint8Array(png)], { type: 'image/png' });
+      const png = await window.siaAPI.renderVacPng(icao);
+      if (!png?.length || cancelled) return;
+      const blob = new Blob([Uint8Array.from(png)], { type: 'image/png' });
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
       urlRef.current = URL.createObjectURL(blob);
       const imageUrl = urlRef.current;

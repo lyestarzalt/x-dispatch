@@ -14,6 +14,7 @@ import {
 import type { AirportGeorefInput } from '@/lib/sia/georef';
 import type { SiaDownloadProgress } from '@/lib/sia/types';
 import logger from '@/lib/utils/logger';
+import { capturePdfToPng } from './pdfCapture';
 
 function sendProgress(win: BrowserWindow | null, progress: SiaDownloadProgress): void {
   win?.webContents.send('sia:download-progress', progress);
@@ -55,9 +56,48 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
 
   ipcMain.handle('sia:getInstallStatus', () => store.getInstallStatus());
 
-  ipcMain.handle('sia:getVacForIcao', (_, icao: string, airport: AirportGeorefInput | null) => {
+  ipcMain.handle('sia:getVacForIcao', async (_, icao: string, airport: AirportGeorefInput | null) => {
     if (!icao || typeof icao !== 'string') return null;
-    return store.getVacInfo(icao.toUpperCase(), airport);
+    const code = icao.toUpperCase();
+    let info = store.getVacInfo(code, airport);
+    if (!info) {
+      const count = await store.reindexFromDisk();
+      logger.main.info(`SIA getVacForIcao ${code}: reindexed, ${count} entries in manifest`);
+      info = store.getVacInfo(code, airport);
+    }
+    if (!info) {
+      logger.main.warn(`SIA getVacForIcao: no chart indexed for ${code}`);
+    }
+    return info;
+  });
+
+  ipcMain.handle('sia:reindexVac', async () => {
+    try {
+      const count = await store.reindexFromDisk();
+      return { success: true, count };
+    } catch (err) {
+      logger.main.error('sia:reindexVac failed', err);
+      return { success: false, error: (err as Error).message };
+    }
+  });
+
+  ipcMain.handle('sia:renderVacPng', async (_, icao: string) => {
+    if (!icao || typeof icao !== 'string') return null;
+    const code = icao.toUpperCase();
+    const cached = store.readVacPng(code);
+    if (cached) return Uint8Array.from(cached);
+
+    let pdfPath = store.getVacPdfPath(code);
+    if (!pdfPath) {
+      await store.reindexFromDisk();
+      pdfPath = store.getVacPdfPath(code);
+    }
+    if (!pdfPath) return null;
+
+    const png = await capturePdfToPng(pdfPath);
+    if (!png?.length) return null;
+    store.writeVacPng(code, png);
+    return Uint8Array.from(png);
   });
 
   ipcMain.handle('sia:getVacPdfBytes', (_, icao: string) => {

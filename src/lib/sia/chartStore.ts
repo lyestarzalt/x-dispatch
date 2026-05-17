@@ -23,6 +23,7 @@ import type {
 import { resolveVacGeoref, type AirportGeorefInput } from './georef';
 import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
 import { extractEaipRelativeSuffix, findPdfByBasename } from './pdfPathResolve';
+import { recoverInstalledProductsFromExtractDir, reindexVacFromManifest } from './vacReindex';
 import { findVacEntryForIcao } from './vacIndex';
 
 const MANIFEST_VERSION = 1 as const;
@@ -197,18 +198,51 @@ export class ChartStore {
     return null;
   }
 
+  hasVacIndex(): boolean {
+    return Object.keys(this.manifest.vacIndex).length > 0;
+  }
+
   getVacEntry(icao: string): VacChartEntry | null {
     this.refreshManifest();
-    return findVacEntryForIcao(this.manifest.vacIndex, icao);
+    return findVacEntryForIcao(this.manifest.vacIndex, icao.toUpperCase());
+  }
+
+  async reindexFromDisk(): Promise<number> {
+    this.refreshManifest();
+    if (recoverInstalledProductsFromExtractDir(this.manifest, this.extractDir)) {
+      this.saveManifest();
+    }
+
+    const installed = Object.values(this.manifest.installedProducts)[0];
+    const catalog = installed ? getCatalogProduct(installed.productId) : undefined;
+    const cycle =
+      this.manifest.cycle ?? installed?.cycle ?? catalog?.airacCycle ?? '05/26';
+    const validFrom = catalog?.validFrom ?? '';
+    const validTo = catalog?.validTo ?? '';
+    const previousCount = Object.keys(this.manifest.vacIndex).length;
+    const vacIndex = await reindexVacFromManifest(
+      this.manifest,
+      this.extractDir,
+      cycle,
+      validFrom,
+      validTo
+    );
+    const newCount = Object.keys(vacIndex).length;
+    if (newCount > 0 || previousCount === 0) {
+      this.manifest.vacIndex = vacIndex;
+    } else {
+      logger.main.warn(
+        `SIA reindex returned 0 entries (was ${previousCount}) — keeping existing index`
+      );
+    }
+    if (!this.manifest.cycle && cycle) this.manifest.cycle = cycle;
+    this.saveManifest();
+    return Object.keys(this.manifest.vacIndex).length;
   }
 
   getVacInfo(icao: string, airport: AirportGeorefInput | null): VacChartInfo | null {
     const entry = this.getVacEntry(icao);
     if (!entry) return null;
-    if (!this.resolveEntryPdfPath(entry)) {
-      logger.main.warn(`VAC indexed but PDF missing on disk: ${entry.pdfPath}`);
-      return null;
-    }
     const code = entry.icao.toUpperCase();
     const pngPath = path.normalize(path.join(this.pngCacheDir, `${code}.png`));
     return {
@@ -241,6 +275,10 @@ export class ChartStore {
     const pngPath = path.normalize(path.join(this.pngCacheDir, `${entry.icao.toUpperCase()}.png`));
     if (!fs.existsSync(pngPath)) return null;
     return fs.readFileSync(pngPath);
+  }
+
+  writeVacPng(icao: string, buffer: Buffer): string {
+    return this.writePngCache(icao.toUpperCase(), buffer);
   }
 
   async installFromLocalZip(

@@ -288,6 +288,19 @@ export function SiaChartsSection() {
           <Button
             variant="ghost"
             size="sm"
+            disabled={busy || !status?.hasData}
+            onClick={async () => {
+              setProgress({ percent: 50, message: t('sia.reindexVac') });
+              await window.siaAPI.reindexVac();
+              void refetch();
+              setProgress(null);
+            }}
+          >
+            {t('sia.reindexVac')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={clearMutation.isPending || !status?.hasData}
             onClick={() => void clearMutation.mutateAsync()}
           >

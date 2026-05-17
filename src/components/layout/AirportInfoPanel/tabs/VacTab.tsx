@@ -2,9 +2,9 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { vacPdfPreviewUrl } from '@/lib/sia/vacPdfUrl';
 import type { AirportGeorefInput } from '@/lib/sia/georef';
 import { useVacChartQuery, useSiaInstallStatusQuery } from '@/queries/useSiaQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
 
@@ -28,10 +28,9 @@ function buildGeorefInput(airport: ParsedAirport): AirportGeorefInput {
   return { lat: airport.latitude, lon: airport.longitude, runways };
 }
 
-type PreviewMode = 'pdf' | 'png' | null;
-
 export default function VacTab() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const airport = useAppStore((s) => s.selectedAirportData);
   const selectedIcao = useAppStore((s) => s.selectedICAO);
   const icao = selectedIcao ?? airport?.id ?? null;
@@ -40,21 +39,31 @@ export default function VacTab() {
     () => (airport ? buildGeorefInput(airport) : null),
     [airport]
   );
-  const { data: vacInfo, isLoading, isFetching } = useVacChartQuery(icao, georefInput);
-  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
-  const [previewMode, setPreviewMode] = useState<PreviewMode>(null);
+  const { data: vacInfo, isLoading, isFetching, refetch } = useVacChartQuery(icao, georefInput);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const blobUrlRef = useRef<string | null>(null);
+  const reindexedRef = useRef(false);
 
   const clearPreview = useCallback(() => {
     if (blobUrlRef.current) {
       URL.revokeObjectURL(blobUrlRef.current);
       blobUrlRef.current = null;
     }
-    setPreviewSrc(null);
-    setPreviewMode(null);
+    setPreviewUrl(null);
   }, []);
+
+  const showPngPreview = useCallback(
+    (bytes: Uint8Array) => {
+      clearPreview();
+      const blob = new Blob([Uint8Array.from(bytes)], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      blobUrlRef.current = url;
+      setPreviewUrl(url);
+    },
+    [clearPreview]
+  );
 
   const loadPreview = useCallback(async () => {
     if (!icao || !vacInfo) return;
@@ -63,35 +72,37 @@ export default function VacTab() {
     clearPreview();
 
     try {
-      const cached = await window.siaAPI.getVacPngBytes(icao);
-      if (cached?.length) {
-        const blob = new Blob([Uint8Array.from(cached)], { type: 'image/png' });
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-        setPreviewSrc(url);
-        setPreviewMode('png');
+      let png = await window.siaAPI.getVacPngBytes(icao);
+      if (!png?.length) {
+        png = await window.siaAPI.renderVacPng(icao);
+      }
+      if (png?.length) {
+        showPngPreview(png);
         return;
       }
 
-      const pdfBytes = await window.siaAPI.getVacPdfBytes(icao);
-      if (!pdfBytes?.length) {
-        setPreviewError(t('vac.notFound'));
-        return;
-      }
-
-      setPreviewSrc(vacPdfPreviewUrl(vacInfo.icao));
-      setPreviewMode('pdf');
+      setPreviewError(t('vac.notFound'));
     } catch (err) {
       setPreviewError((err as Error).message);
     } finally {
       setLoadingPreview(false);
     }
-  }, [icao, vacInfo, t, clearPreview]);
+  }, [icao, vacInfo, t, clearPreview, showPngPreview]);
 
   useLayoutEffect(() => {
     if (vacInfo) void loadPreview();
     else clearPreview();
   }, [vacInfo, loadPreview, clearPreview]);
+
+  useEffect(() => {
+    if (vacInfo || !status?.hasData || !icao || reindexedRef.current) return;
+    reindexedRef.current = true;
+    void (async () => {
+      await window.siaAPI.reindexVac();
+      void queryClient.invalidateQueries({ queryKey: ['sia'] });
+      void refetch();
+    })();
+  }, [vacInfo, status?.hasData, icao, queryClient, refetch]);
 
   useEffect(() => () => clearPreview(), [clearPreview]);
 
@@ -112,6 +123,7 @@ export default function VacTab() {
     return (
       <div className="space-y-2 text-sm text-muted-foreground">
         <p>{t('vac.notFound')}</p>
+        <p className="text-xs">{t('vac.notFoundHint')}</p>
         <p className="text-xs">{t('sia.attribution')}</p>
       </div>
     );
@@ -132,15 +144,8 @@ export default function VacTab() {
       <div className="overflow-auto rounded-md border border-border/40 bg-background/50 p-1">
         {loadingPreview ? (
           <p className="p-4 text-sm text-muted-foreground">{t('common.loading')}</p>
-        ) : previewSrc && previewMode === 'png' ? (
-          <img src={previewSrc} alt={`VAC ${vacInfo.icao}`} className="max-w-full" />
-        ) : previewSrc && previewMode === 'pdf' ? (
-          <embed
-            src={previewSrc}
-            type="application/pdf"
-            title={`VAC ${vacInfo.icao}`}
-            className="min-h-[420px] w-full"
-          />
+        ) : previewUrl ? (
+          <img src={previewUrl} alt={`VAC ${vacInfo.icao}`} className="max-w-full" />
         ) : (
           <p className="p-4 text-sm text-muted-foreground">
             {previewError ?? t('vac.notFound')}

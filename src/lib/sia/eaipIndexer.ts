@@ -5,6 +5,7 @@ import logger from '@/lib/utils/logger';
 import {
   classifyChartType,
   extractIcaoFromVacPath,
+  isLfAirportPdfPath,
   isVacPdfPath,
   mergeVacEntry,
 } from './vacIndex';
@@ -67,7 +68,7 @@ export async function indexEaipExtract(
       return;
     }
 
-    if (!isVacPdfPath(relativePath)) return;
+    if (!isLfAirportPdfPath(relativePath) && !isVacPdfPath(relativePath)) return;
     pdfCount++;
 
     const icao = extractIcaoFromVacPath(relativePath);
@@ -114,7 +115,9 @@ export function indexVacAmendmentPdfs(
 
   for (const absPath of files) {
     const rel = path.relative(extractRoot, absPath).replace(/\\/g, '/');
-    if (!isVacPdfPath(rel) && !/VAC/i.test(path.basename(rel))) continue;
+    if (!isLfAirportPdfPath(rel) && !isVacPdfPath(rel) && !/VAC/i.test(path.basename(rel))) {
+      continue;
+    }
     const icao = extractIcaoFromVacPath(rel);
     if (!icao?.startsWith('LF')) continue;
     const entry: VacChartEntry = {

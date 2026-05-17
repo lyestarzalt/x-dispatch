@@ -387,6 +387,8 @@ contextBridge.exposeInMainWorld('siaAPI', {
     ipcRenderer.invoke('sia:getVacForIcao', icao, airport),
   getVacPdfBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPdfBytes', icao),
   getVacPngBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPngBytes', icao),
+  renderVacPng: (icao: string) => ipcRenderer.invoke('sia:renderVacPng', icao),
+  reindexVac: () => ipcRenderer.invoke('sia:reindexVac'),
   getPdfjsWorkerUrl: () => ipcRenderer.invoke('sia:getPdfjsWorkerUrl') as Promise<string | null>,
   writePngCache: (icao: string, data: Uint8Array) =>
     ipcRenderer.invoke('sia:writePngCache', icao, data),
@@ -829,6 +831,8 @@ declare global {
       ) => Promise<import('./lib/sia/types').VacChartInfo | null>;
       getVacPdfBytes: (icao: string) => Promise<Uint8Array | null>;
       getVacPngBytes: (icao: string) => Promise<Uint8Array | null>;
+      renderVacPng: (icao: string) => Promise<Uint8Array | null>;
+      reindexVac: () => Promise<{ success: boolean; count?: number; error?: string }>;
       getPdfjsWorkerUrl: () => Promise<string | null>;
       writePngCache: (icao: string, data: Uint8Array) => Promise<{ success: boolean; path?: string }>;
       clearCache: () => Promise<{ success: boolean; error?: string }>;

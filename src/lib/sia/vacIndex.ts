@@ -12,8 +12,11 @@ export function extractIcaoFromVacPath(filePath: string): string | null {
   const fromName = base.match(ICAO_FILENAME_RE);
   if (fromName?.[1]) return fromName[1].toUpperCase();
 
+  const embedded = base.match(/LF[A-Z]{2}[A-Z0-9]{1}/i);
+  if (embedded?.[0]?.length === 4) return embedded[0].toUpperCase();
+
   const normalized = filePath.replace(/\\/g, '/');
-  const adFolder = normalized.match(/\/AD\/(LF[A-Z0-9]{2,3})(?:\/|[_\-.])/i);
+  const adFolder = normalized.match(/\/AD\/(LF[A-Z0-9]{2,4})(?:\/|[_\-.]|$)/i);
   if (adFolder?.[1]) return adFolder[1].toUpperCase();
 
   const parts = normalized.split('/');
@@ -21,8 +24,16 @@ export function extractIcaoFromVacPath(filePath: string): string | null {
     const part = parts[i] ?? '';
     const m = part.match(ICAO_IN_PATH_RE);
     if (m?.[1] && m[1].length >= 4) return m[1].toUpperCase();
+    if (/^LF[A-Z0-9]{2,4}$/i.test(part)) return part.toUpperCase();
   }
   return null;
+}
+
+/** Any French aerodrome PDF (LF + 4 chars) under SIA extract tree. */
+export function isLfAirportPdfPath(relativePath: string): boolean {
+  if (!relativePath.toLowerCase().endsWith('.pdf')) return false;
+  const icao = extractIcaoFromVacPath(relativePath);
+  return !!icao && icao.length === 4 && icao.startsWith('LF');
 }
 
 export function classifyChartType(relativePath: string): 'vac' | 'iac' | 'other' {
@@ -37,11 +48,15 @@ export function isVacPdfPath(relativePath: string): boolean {
   const upper = relativePath.replace(/\\/g, '/').toUpperCase();
   const base = path.basename(relativePath).toUpperCase();
 
-  if (upper.includes('ATLAS-VAC') || upper.includes('ATLAS_VAC')) return true;
-  if (upper.includes('/AD/') && /LF[A-Z0-9]{2,3}/.test(upper)) return true;
-  if (upper.includes('PDF_AIP') && /LF[A-Z0-9]{2,3}/.test(upper)) return true;
+  if (upper.includes('ATLAS-VAC') || upper.includes('ATLAS_VAC') || upper.includes('ATLAS VAC')) {
+    return /LF[A-Z0-9]{2,4}/.test(upper);
+  }
+  if (upper.includes('AMDT') && upper.includes('VAC')) return /LF[A-Z0-9]{2,4}/.test(upper);
+  if (upper.includes('/AD/') && /LF[A-Z0-9]{2,4}/.test(upper)) return true;
+  if (upper.includes('PDF_AIP') && /LF[A-Z0-9]{2,4}/.test(upper)) return true;
   if (upper.includes('PDF_AIPPARSECTION') && upper.includes('/AD/')) return true;
-  if (/VAC/i.test(base)) return true;
+  if (/^LF[A-Z0-9]{2,4}[_\-.]?(VAC|ADC|IAC|APDC)/i.test(base)) return true;
+  if (/VAC/i.test(base) && /LF[A-Z0-9]{2,4}/.test(base)) return true;
   if (/ADC/i.test(base) && upper.includes('/AD/')) return true;
   return false;
 }
@@ -64,8 +79,17 @@ function pathMatchesIcao(pdfPath: string, icao: string): boolean {
   if (base.startsWith(`${code}_`) || base.startsWith(`${code}-`)) return true;
   if (base === `${code}.PDF` || base.startsWith(`${code}.`)) return true;
   if (upper.includes(`/AD/${code}/`) || upper.includes(`/AD/${code}_`)) return true;
+  if (upper.includes(`/AD/${code}.`)) return true;
   if (upper.includes(`ATLAS-VAC`) && (base.includes(code) || upper.includes(`/${code}`))) return true;
   return extractIcaoFromVacPath(pdfPath) === code;
+}
+
+function entryMatchesIcao(entry: VacChartEntry, icao: string): boolean {
+  const code = icao.toUpperCase();
+  if (entry.icao.toUpperCase() === code) return true;
+  if (entry.chartId.toUpperCase().startsWith(code)) return true;
+  if (entry.pdfRelPath && pathMatchesIcao(entry.pdfRelPath, code)) return true;
+  return pathMatchesIcao(entry.pdfPath, code);
 }
 
 function rankVacEntry(entry: VacChartEntry): number {
@@ -87,7 +111,7 @@ export function findVacEntryForIcao(
   const direct = vacIndex[code];
   if (direct) return direct;
 
-  const matches = Object.values(vacIndex).filter((e) => pathMatchesIcao(e.pdfPath, code));
+  const matches = Object.values(vacIndex).filter((e) => entryMatchesIcao(e, code));
   if (matches.length === 0) return null;
 
   return matches.sort((a, b) => rankVacEntry(b) - rankVacEntry(a))[0] ?? null;
