@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rc_version: ${{ steps.rc.outputs.rc_version }}
+      tag: ${{ steps.rc.outputs.tag }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -45,6 +46,7 @@ jobs:
           RC_NUM=$((LAST + 1))
 
           echo "rc_version=${NEXT}-rc.${RC_NUM}" >> $GITHUB_OUTPUT
+          echo "tag=v${NEXT}-rc.${RC_NUM}" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -125,6 +127,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: rc-${{ needs.resolve.outputs.rc_version }}-*
+          merge-multiple: true
+
+      - name: Flatten artifacts into release folder
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
+          test "$(find release-assets -type f | wc -l | tr -d ' ')" = "5"
+          (cd release-assets && sha256sum X-Dispatch-* > sha256sums.txt)
+          echo "Collected RC release assets:"
+          ls -la release-assets/
+
       - name: Generate changelog
         id: changelog
         uses: orhun/git-cliff-action@v4
@@ -174,8 +193,8 @@ jobs:
       - name: Compose download links
         id: links
         run: |
-          BASE="https://nightly.link/lyestarzalt/x-dispatch/actions/runs/${{ github.run_id }}"
-          VERSION="rc-${{ needs.resolve.outputs.rc_version }}"
+          BASE="https://github.com/${{ github.repository }}/releases/download/${{ needs.resolve.outputs.tag }}"
+          VERSION="${{ needs.resolve.outputs.rc_version }}"
           EOF_MARKER=$(openssl rand -hex 16)
           {
             echo "downloads<<$EOF_MARKER"
@@ -188,11 +207,61 @@ jobs:
             echo "$EOF_MARKER"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Write release notes
+        env:
+          CHANGELOG: ${{ steps.changelog_safe.outputs.content }}
+          DOWNLOADS: ${{ steps.links.outputs.downloads }}
+        run: |
+          {
+            echo "$CHANGELOG"
+            echo
+            echo "$DOWNLOADS"
+            echo
+            echo "---"
+            echo
+            echo "> :warning: This is a pre-release build for testing. Please report any issues."
+            echo
+            echo "> :apple: **macOS (Sequoia/Tahoe):** The app is unsigned. Go to **System Settings > Privacy & Security** and click **\"Open Anyway\"**, or run: \`xattr -rd com.apple.quarantine /Applications/X-Dispatch.app\`"
+            echo
+            echo "> :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator."
+          } > release-notes.md
+
+      - name: Create GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" release-assets/* \
+            --title "X-Dispatch $TAG — Release Candidate" \
+            --notes-file release-notes.md \
+            --prerelease \
+            --target "${{ github.sha }}"
+
+      - name: Sync website RC catalog
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.X_DISPATCH_SITE_TOKEN }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "X_DISPATCH_SITE_TOKEN is not configured; skipping website sync."
+            exit 0
+          fi
+          gh workflow run sync-release.yml \
+            --repo lyestarzalt/x-dispatch.app \
+            -f source_repo="${{ github.repository }}" \
+            -f channel="rc" \
+            -f tag="$TAG"
+
       - name: Send Discord notification
         uses: tsickert/discord-webhook@v7.0.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: "X-Dispatch v${{ needs.resolve.outputs.rc_version }} — Release Candidate"
+          embed-url: "https://github.com/${{ github.repository }}/releases/tag/${{ needs.resolve.outputs.tag }}"
           embed-description: |
             A new release candidate is available for testing.
 
