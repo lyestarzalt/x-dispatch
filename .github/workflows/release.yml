@@ -186,6 +186,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sync website stable catalog
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.X_DISPATCH_SITE_TOKEN }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "X_DISPATCH_SITE_TOKEN is not configured; skipping website sync."
+            exit 0
+          fi
+          gh workflow run sync-release.yml \
+            --repo lyestarzalt/x-dispatch.app \
+            -f source_repo="${{ github.repository }}" \
+            -f channel="stable" \
+            -f tag="$TAG"
+
       - name: Send Discord notification
         continue-on-error: true
         env:
