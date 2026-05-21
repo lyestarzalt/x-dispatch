@@ -1,6 +1,42 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.9.0 - 2026-05-21
+
+### CI/CD
+
+- Sync website stable catalog on release by @lyestarzalt([6118e5d](https://github.com/lyestarzalt/x-dispatch/commit/6118e5d5e5a20a13a4a639c662c9cd6b5952772b))
+
+### Release
+
+- 1.9.0 by @github-actions[bot]([e5363e3](https://github.com/lyestarzalt/x-dispatch/commit/e5363e359897608e161af39caa28a41170a3a0e6))
+
+
+## v1.8.4-rc.3 - 2026-05-19
+
+### Features
+
+- **airport-info:** Tune airport frequencies to COM1/COM2 via X-Plane REST by @lyestarzalt([34455e2](https://github.com/lyestarzalt/x-dispatch/commit/34455e2bc021165bbc62b909b299338a703ccc8f))
+- **airports:** Favorite airports, home airport, auto-nav on startup by @lyestarzalt([21aef01](https://github.com/lyestarzalt/x-dispatch/commit/21aef018bdf21113df0d8ac840923611b07ad203))
+- **map:** Star + home markers for favourite airports, fade on select by @lyestarzalt([6a1968f](https://github.com/lyestarzalt/x-dispatch/commit/6a1968f825a016e2ed58bc640b26218bb3f72a85))
+- **map:** Add 3D ILS glide slope rendering by @lyestarzalt([7b0fc60](https://github.com/lyestarzalt/x-dispatch/commit/7b0fc60ea9c67dbb5f0f7fc16b6cba04e45c9a9e))
+- **map:** Close ILS glide slope wedge volume by @lyestarzalt([dbca49b](https://github.com/lyestarzalt/x-dispatch/commit/dbca49b1f7527c36aaf06b7ed5deaa1bb7c94261))
+
+### Bug Fixes
+
+- **ui:** Portal tooltips so they escape overflow-hidden containers by @lyestarzalt([b35731a](https://github.com/lyestarzalt/x-dispatch/commit/b35731ac0ecf8dd289069d3357afe5da233629ca))
+- **airport-info:** Preserve multi-word apt.dat metadata and show full location by @lyestarzalt([2e5eee3](https://github.com/lyestarzalt/x-dispatch/commit/2e5eee38cfcbb62e9b3c44ddd56700b030ba5b3e))
+- **electron:** Keep dev menu in development by @lyestarzalt([4286b9a](https://github.com/lyestarzalt/x-dispatch/commit/4286b9af8d94feb414a8efe496f130911c991d9d))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.8.3 by @github-actions[bot]([461cbf7](https://github.com/lyestarzalt/x-dispatch/commit/461cbf73eee610f68f723d96d6c67af8aed465da))
+
+### CI/CD
+
+- Publish release candidates as prereleases by @lyestarzalt([509d72c](https://github.com/lyestarzalt/x-dispatch/commit/509d72cf7300712307ba80b07f3eecd2f549092b))
+
+
 ## v1.8.3 - 2026-05-16
 
 ### Features
