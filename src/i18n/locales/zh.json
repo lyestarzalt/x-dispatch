@@ -325,6 +325,8 @@
     "about": {
       "title": "关于",
       "description": "X-Plane 飞行签派和机场可视化",
+      "updateAvailable": "有可用更新 — v{{version}}",
+      "upToDate": "已是最新版本",
       "projectNotice": "这是一个为 X-Plane 社区打造的热情项目，免费提供，并以开放方式开发。",
       "credits": "制作人员",
       "developer": "开发者",
@@ -1589,5 +1591,13 @@
   },
   "sunArc": {
     "local": "本地"
+  },
+  "update": {
+    "available": {
+      "title": "有可用更新",
+      "description": "X-Dispatch {{version}} 可供下载",
+      "download": "下载",
+      "dismiss": "稍后"
+    }
   }
 }

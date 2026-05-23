@@ -51,3 +51,6 @@ export { useDistinctCountries } from './useDistinctCountries';
 
 // X-Plane log hook
 export { useXplaneLogQuery, xplaneLogKeys, type XPLogReadResult } from './useXplaneLogQuery';
+
+// Update check hook
+export { useUpdateCheck, type UpdateCheckResult } from './useUpdateCheck';

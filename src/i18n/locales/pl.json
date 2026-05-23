@@ -325,6 +325,8 @@
     "about": {
       "title": "O programie",
       "description": "Dyspozycja lotów i wizualizacja lotnisk dla X-Plane",
+      "updateAvailable": "Dostępna aktualizacja — v{{version}}",
+      "upToDate": "Masz najnowszą wersję",
       "projectNotice": "Projekt tworzony z pasji dla społeczności X-Plane, udostępniany za darmo i rozwijany otwarcie.",
       "credits": "Twórcy",
       "developer": "Deweloper",
@@ -1589,5 +1591,13 @@
   },
   "sunArc": {
     "local": "lokalny"
+  },
+  "update": {
+    "available": {
+      "title": "Dostępna aktualizacja",
+      "description": "X-Dispatch {{version}} jest gotowy do pobrania",
+      "download": "Pobierz",
+      "dismiss": "Później"
+    }
   }
 }

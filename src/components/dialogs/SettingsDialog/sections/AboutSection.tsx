@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { FileText, FolderOpen, Heart, Info } from 'lucide-react';
+import { CircleCheck, Download, FileText, FolderOpen, Heart, Info } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
-import { useAppVersion, useConfigPath, useLogPath } from '@/queries';
+import { isNewerVersion } from '@/lib/utils/versionCompare';
+import { useAppVersion, useConfigPath, useLogPath, useUpdateCheck } from '@/queries';
 import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
@@ -17,6 +18,12 @@ export default function AboutSection({ className }: SettingsSectionProps) {
   const { data: version } = useAppVersion();
   const { data: logPath } = useLogPath();
   const { data: configPath } = useConfigPath();
+  const { data: update } = useUpdateCheck();
+
+  const updateStatus = (() => {
+    if (!version || !update?.latestVersion) return null;
+    return isNewerVersion(version, update.latestVersion) ? 'outdated' : 'current';
+  })();
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -33,6 +40,22 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <p className="mt-1 font-mono text-sm text-muted-foreground">
           {version ? `v${version}` : t('common.loading')}
         </p>
+        {updateStatus === 'outdated' && update?.latestVersion && (
+          <button
+            type="button"
+            onClick={() => window.appAPI.openExternal(update.url)}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-info/40 bg-info/5 px-2.5 py-1 text-xs text-info transition-colors hover:bg-info/10"
+          >
+            <Download className="h-3.5 w-3.5" />
+            {t('settings.about.updateAvailable', { version: update.latestVersion })}
+          </button>
+        )}
+        {updateStatus === 'current' && (
+          <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-success">
+            <CircleCheck className="h-3.5 w-3.5" />
+            {t('settings.about.upToDate')}
+          </p>
+        )}
         <p className="mt-3 max-w-md text-sm text-muted-foreground">
           {t('settings.about.projectNotice')}
         </p>

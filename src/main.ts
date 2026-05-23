@@ -37,6 +37,7 @@ import {
   isValidSearchQuery,
   validateCoordinates,
 } from './lib/utils/validation';
+import { isNewerVersion } from './lib/utils/versionCompare';
 import {
   clearVatsimSectorData,
   getVatsimSectorData,
@@ -391,6 +392,48 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
+// `latestVersion` is populated whenever the GitHub fetch + parse succeeds, so the
+// About section can display it even when there's no update.
+// `available` means "should trigger the update toast" — gated on isPackaged + non-Windows.
+type UpdateCheckResult = {
+  latestVersion: string | null;
+  available: boolean;
+  url: string;
+};
+
+const GITHUB_RELEASES_LATEST_URL =
+  'https://api.github.com/repos/lyestarzalt/x-dispatch/releases/latest';
+const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
+
+async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
+  const result = await proxyFetch(GITHUB_RELEASES_LATEST_URL, { timeoutMs: 8_000 });
+  if (!result.data || result.error) {
+    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+  }
+  try {
+    const payload = JSON.parse(result.data) as {
+      tag_name?: string;
+      draft?: boolean;
+      prerelease?: boolean;
+    };
+    if (payload.draft || payload.prerelease || !payload.tag_name) {
+      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+    }
+    const latest = payload.tag_name.replace(/^v/, '');
+    const current = app.getVersion();
+    const shouldNotify =
+      isNewerVersion(current, latest) && app.isPackaged && process.platform !== 'win32';
+    return {
+      latestVersion: latest,
+      available: shouldNotify,
+      url: DOWNLOAD_PAGE_URL,
+    };
+  } catch (err) {
+    logger.main.warn(`Update check JSON parse failed: ${(err as Error).message}`);
+    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+  }
+}
+
 function registerIpcHandlers() {
   onVatsimSectorDataUpdated(() => {
     mainWindow?.webContents.send('vatsim-sectors:updated');
@@ -398,6 +441,15 @@ function registerIpcHandlers() {
 
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
+    // Dev builds skip the network call entirely to avoid hammering GitHub during HMR.
+    // Production always fetches: the About section needs latestVersion even when
+    // Windows users get their real update via update-electron-app (no toast for them).
+    if (!app.isPackaged) {
+      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+    }
+    return checkForUpdateAvailable();
+  });
   ipcMain.handle('app:getCliFlags', () => getCliFlags());
   ipcMain.handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();

@@ -1,12 +1,13 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { Toaster } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
+import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
+import { Toaster } from './components/ui/sonner';
 import { FullScreenSpinner } from './components/ui/spinner';
 import { TooltipProvider } from './components/ui/tooltip';
 import './i18n';
@@ -130,7 +131,8 @@ function App() {
       <QueryProvider>
         <TooltipProvider>
           <AppContent />
-          <Toaster position="bottom-center" theme="dark" />
+          <UpdateAvailableToast />
+          <Toaster position="bottom-center" />
         </TooltipProvider>
       </QueryProvider>
     </ErrorBoundary>

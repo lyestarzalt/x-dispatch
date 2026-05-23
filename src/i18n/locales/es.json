@@ -325,6 +325,8 @@
     "about": {
       "title": "Acerca de",
       "description": "Despacho de vuelos y visualización de aeropuertos para X-Plane",
+      "updateAvailable": "Actualización disponible — v{{version}}",
+      "upToDate": "Estás al día",
       "projectNotice": "Un proyecto hecho con pasión para la comunidad de X-Plane, compartido gratis y desarrollado abiertamente.",
       "credits": "Créditos",
       "developer": "Desarrollador",
@@ -1589,5 +1591,13 @@
   },
   "sunArc": {
     "local": "local"
+  },
+  "update": {
+    "available": {
+      "title": "Actualización disponible",
+      "description": "X-Dispatch {{version}} está listo para descargar",
+      "download": "Descargar",
+      "dismiss": "Más tarde"
+    }
   }
 }

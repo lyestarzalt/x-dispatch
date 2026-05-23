@@ -325,6 +325,8 @@
     "about": {
       "title": "情報",
       "description": "X-Plane用フライトディスパッチと空港可視化",
+      "updateAvailable": "アップデートが利用可能 — v{{version}}",
+      "upToDate": "最新版です",
       "projectNotice": "X-Planeコミュニティのために作られた情熱プロジェクトで、無料で公開され、オープンに開発されています。",
       "credits": "クレジット",
       "developer": "開発者",
@@ -1589,5 +1591,13 @@
   },
   "sunArc": {
     "local": "現地"
+  },
+  "update": {
+    "available": {
+      "title": "アップデートが利用可能です",
+      "description": "X-Dispatch {{version}} をダウンロードできます",
+      "download": "ダウンロード",
+      "dismiss": "後で"
+    }
   }
 }
