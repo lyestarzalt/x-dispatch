@@ -695,7 +695,7 @@ function registerIpcHandlers() {
     logger.main.info(`X-Plane path changed to: ${p}, clearing data and reloading...`);
 
     // Reload the window to trigger fresh data load
-    if (mainWindow) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.reload();
     }
 
@@ -1547,7 +1547,10 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('second-instance', (_event, commandLine) => {
-  if (mainWindow) {
+  // `if (mainWindow)` alone passes a destroyed BrowserWindow (still truthy),
+  // and any method on it throws "Object has been destroyed". Sentry
+  // X-DISPATCH-6.
+  if (mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
   }
@@ -1696,7 +1699,13 @@ app.whenReady().then(async () => {
   // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
   mainWindow.on('focus', () => {
     globalShortcut.register('CommandOrControl+F', () => {
-      mainWindow?.webContents.send('focus-search');
+      // The shortcut handler can outlive its registration window briefly
+      // during teardown; optional chaining catches the null case, but a
+      // destroyed-but-still-truthy `mainWindow` would still throw on
+      // `.webContents.send()`. Sentry X-DISPATCH-E.
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('focus-search');
+      }
     });
   });
   mainWindow.on('blur', () => {
@@ -1732,5 +1741,9 @@ app.on('before-quit', () => {
 });
 
 app.on('activate', () => {
+  // macOS can fire 'activate' (dock click) before whenReady resolves —
+  // createWindow() touches `screen` via electron-window-state, which throws
+  // until app is ready. Sentry X-DISPATCH-M.
+  if (!app.isReady()) return;
   if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
 });

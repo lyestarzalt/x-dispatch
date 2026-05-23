@@ -4,7 +4,7 @@
  */
 import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airports, aptFileMeta, closeDb, getDb } from '@/lib/db';
+import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
 import {
   ResolvedAirportProcedures,
@@ -1049,6 +1049,12 @@ export class XPlaneDataManager {
       }
     }
 
+    // Status can be requested before initDb() completes (e.g. cold-start
+    // renderer poll). The count helpers throw "Database not initialized"
+    // in that window — fall back to 0 rather than letting the IPC handler
+    // crash. Sentry X-DISPATCH-Y.
+    const dbReady = isDbReady();
+
     return {
       xplanePath: xp,
       pathValid: xp ? validateXPlanePath(xp).valid : false,
@@ -1060,23 +1066,23 @@ export class XPlaneDataManager {
       },
       navaids: {
         loaded: this.loadStatus.navaids,
-        count: getNavaidCount(),
-        byType: this.getNavaidCountsByType(),
+        count: dbReady ? getNavaidCount() : 0,
+        byType: dbReady ? this.getNavaidCountsByType() : {},
         source: xp ? getNavDataPath(xp) : null,
       },
       waypoints: {
         loaded: this.loadStatus.waypoints,
-        count: getWaypointCount(),
+        count: dbReady ? getWaypointCount() : 0,
         source: xp ? getFixDataPath(xp) : null,
       },
       airspaces: {
         loaded: this.loadStatus.airspaces,
-        count: getAirspaceCount(),
+        count: dbReady ? getAirspaceCount() : 0,
         source: xp ? getAirspaceDataPath(xp) : null,
       },
       airways: {
         loaded: this.loadStatus.airways,
-        count: getAirwayCount(),
+        count: dbReady ? getAirwayCount() : 0,
         source: xp ? getAirwayDataPath(xp) : null,
       },
       atc: this.loadStatus.atc
