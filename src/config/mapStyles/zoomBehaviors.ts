@@ -31,12 +31,12 @@ type ZoomBehaviorKey =
  * Adjust these to shift entire groups of features at once.
  */
 const ZOOM_LEVEL = {
-  FAR: 8, // Runways, boundaries — visible from high altitude
-  MEDIUM: 10, // Taxiways, pavements, beacon
-  CLOSE: 11, // Runway ends, tower, approach lights, runway numbers
-  DETAILED: 12, // Linear features, gates, windsocks, labels, markings
-  FINE: 13, // Lighting, TDZ marks
-  ULTRA: 14, // Signs
+  FAR: 9, // Runways, boundaries — visible from high altitude
+  MEDIUM: 11, // Taxiways, pavements, beacon
+  CLOSE: 12, // Runway ends, tower, approach lights, runway numbers
+  DETAILED: 13, // Linear features, gates, windsocks, labels, markings
+  FINE: 14, // Lighting, TDZ marks
+  ULTRA: 15, // Signs
   MAX: 24, // MapLibre max
 } as const;
 
