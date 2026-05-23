@@ -51,6 +51,7 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 ![Flight Setup](screenshots/flight-setup.png)
 
 ![3D Terrain](screenshots/3D-terrain.png)
+![3D Terrain — Alt view](screenshots/3D-terrain-2.png)
 
 <details>
 <summary>More screenshots</summary>
@@ -59,6 +60,7 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 ![Addon Browser](screenshots/addon-manager-1.png)
 ![Flight Tracking](screenshots/flight-tracking.png)
 ![Procedures](screenshots/procedures.png)
+![Companion App](screenshots/companion-app.png)
 
 </details>
 
