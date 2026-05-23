@@ -10,6 +10,7 @@
  * The RAF loop only runs when the animation is enabled and visible (zoom > 14).
  */
 import { useEffect, useRef } from 'react';
+import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { useAppStore } from '@/stores/appStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { MapRef } from './useMapSetup';
@@ -17,7 +18,9 @@ import type { MapRef } from './useMapSetup';
 /** Bars per second — real approach lights do ~2 sweeps/sec */
 const RABBIT_SPEED = 20;
 const BAR_COUNT = 30;
-const MIN_ZOOM = 14;
+// Track the underlying MapLibre `airport-approach-lights` dot layer so the
+// rabbit overlay and the dots come in together.
+const MIN_ZOOM = ZOOM_BEHAVIORS.runwayEnds.minZoom;
 
 interface CachedLight {
   lon: number;
