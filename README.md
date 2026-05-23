@@ -57,7 +57,7 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 ![SimBrief Import](screenshots/simbrief-1.png)
 ![Addon Browser](screenshots/addon-manager-1.png)
-![Flight Tracking](screenshots/track-plane.png)
+![Flight Tracking](screenshots/flight-tracking.png)
 ![Procedures](screenshots/procedures.png)
 
 </details>
