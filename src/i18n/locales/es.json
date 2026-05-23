@@ -469,8 +469,6 @@
       "lightsPerfHint": "Desactívalas para mejorar el rendimiento.",
       "approachLights": "Animación de luces de aproximación",
       "approachLightsDesc": "Destello secuencial animado en aproximación",
-      "taxiwayGlow": "Halo de luces de rodaje",
-      "taxiwayGlowDesc": "Efecto de halo multicapa en las luces de calles de rodaje",
       "dayNight": "Superposición día/noche",
       "dayNightDesc": "Sombra día/noche en tiempo real sobre el globo",
       "contours": "Curvas de nivel",

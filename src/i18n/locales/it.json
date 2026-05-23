@@ -469,8 +469,6 @@
       "lightsPerfHint": "Disattivale per migliorare le prestazioni.",
       "approachLights": "Animazione luci di avvicinamento",
       "approachLightsDesc": "Lampeggio sequenziale animato in avvicinamento",
-      "taxiwayGlow": "Bagliore luci taxiway",
-      "taxiwayGlowDesc": "Effetto bagliore multilivello sulle luci di taxiway",
       "dayNight": "Sovrapposizione giorno/notte",
       "dayNightDesc": "Ombra giorno/notte in tempo reale sul globo",
       "contours": "Curve di livello",

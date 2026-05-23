@@ -469,8 +469,6 @@
       "lightsPerfHint": "Turn these off to improve performance.",
       "approachLights": "Approach light animation",
       "approachLightsDesc": "Animated sequenced flashing on approach",
-      "taxiwayGlow": "Taxiway light glow",
-      "taxiwayGlowDesc": "Multi-layer glow effect on taxiway lights",
       "dayNight": "Day/night overlay",
       "dayNightDesc": "Real-time day/night shadow on the globe",
       "contours": "Contour lines",

@@ -469,8 +469,6 @@
       "lightsPerfHint": "Turn these off ta improve performance.",
       "approachLights": "Approach lights",
       "approachLightsDesc": "Sequenced flashin' lights on approach",
-      "taxiwayGlow": "Taxiway glow",
-      "taxiwayGlowDesc": "Extra glow fer taxiway lights",
       "dayNight": "Day/night veil",
       "dayNightDesc": "Live day/night shadow across the globe",
       "contours": "Hill contour lines",

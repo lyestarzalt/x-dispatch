@@ -469,8 +469,6 @@
       "lightsPerfHint": "Desative-as para melhorar o desempenho.",
       "approachLights": "Animação das luzes de aproximação",
       "approachLightsDesc": "Piscar sequencial animado na aproximação",
-      "taxiwayGlow": "Brilho das luzes de pista de táxi",
-      "taxiwayGlowDesc": "Efeito de brilho em várias camadas nas luzes de pista de táxi",
       "dayNight": "Sobreposição dia/noite",
       "dayNightDesc": "Sombra dia/noite em tempo real sobre o globo",
       "contours": "Curvas de nível",

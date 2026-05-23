@@ -46,7 +46,6 @@ describe('migrateSettings', () => {
       appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
       graphics: {
         approachLightAnimation: true,
-        taxiwayLightGlow: true,
         surfaceDetail: 'high' as const,
       },
       launcher: { closeOnLaunch: false, customLaunchArgs: [] },
@@ -74,7 +73,6 @@ describe('migrateSettings', () => {
       appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
       graphics: {
         approachLightAnimation: true,
-        taxiwayLightGlow: true,
         surfaceDetail: 'high' as const,
       },
       launcher: { closeOnLaunch: false, customLaunchArgs: [] },
@@ -105,7 +103,6 @@ describe('migrateSettings', () => {
       appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
       graphics: {
         approachLightAnimation: true,
-        taxiwayLightGlow: true,
         surfaceDetail: 'high' as const,
       },
       launcher: { closeOnLaunch: false, customLaunchArgs: [] },
@@ -130,7 +127,6 @@ describe('migrateSettings', () => {
       appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
       graphics: {
         approachLightAnimation: true,
-        taxiwayLightGlow: true,
         surfaceDetail: 'high' as const,
       },
       launcher: { closeOnLaunch: false, customLaunchArgs: [] },
@@ -155,7 +151,6 @@ describe('migrateSettings', () => {
       appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
       graphics: {
         approachLightAnimation: true,
-        taxiwayLightGlow: true,
         surfaceDetail: 'high' as const,
       },
       launcher: { closeOnLaunch: false, customLaunchArgs: [] },

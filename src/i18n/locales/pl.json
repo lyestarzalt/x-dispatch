@@ -469,8 +469,6 @@
       "lightsPerfHint": "Wyłącz, aby poprawić wydajność.",
       "approachLights": "Animacja świateł podejścia",
       "approachLightsDesc": "Animowane sekwencyjne błyski na podejściu",
-      "taxiwayGlow": "Poświata świateł dróg kołowania",
-      "taxiwayGlowDesc": "Wielowarstwowy efekt poświaty na światłach dróg kołowania",
       "dayNight": "Nakładka dzień/noc",
       "dayNightDesc": "Cień dnia i nocy na globusie w czasie rzeczywistym",
       "contours": "Poziomice",

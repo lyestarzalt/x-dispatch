@@ -469,8 +469,6 @@
       "lightsPerfHint": "オフにするとパフォーマンスが向上します。",
       "approachLights": "進入灯のアニメーション",
       "approachLightsDesc": "進入路のシーケンスフラッシュをアニメーション表示",
-      "taxiwayGlow": "誘導路灯のグロー",
-      "taxiwayGlowDesc": "誘導路灯の多層グロー効果",
       "dayNight": "昼夜オーバーレイ",
       "dayNightDesc": "地球儀上のリアルタイム昼夜の影",
       "contours": "等高線",

@@ -102,12 +102,6 @@ export function GraphicsSection() {
           checked={graphics.approachLightAnimation}
           onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
         />
-        <SettingsToggleRow
-          title={t('settings.graphics.taxiwayGlow')}
-          description={t('settings.graphics.taxiwayGlowDesc')}
-          checked={graphics.taxiwayLightGlow}
-          onCheckedChange={(checked) => updateGraphics({ taxiwayLightGlow: checked })}
-        />
       </SettingsSectionBlock>
     </div>
   );

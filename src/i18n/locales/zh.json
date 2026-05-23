@@ -469,8 +469,6 @@
       "lightsPerfHint": "关闭这些可提升性能。",
       "approachLights": "进近灯光动画",
       "approachLightsDesc": "进近时的动画顺序闪烁",
-      "taxiwayGlow": "滑行道灯光辉光",
-      "taxiwayGlowDesc": "滑行道灯的多层辉光效果",
       "dayNight": "昼夜叠加",
       "dayNightDesc": "地球上的实时昼夜阴影",
       "contours": "等高线",

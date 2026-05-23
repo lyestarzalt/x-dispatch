@@ -469,8 +469,6 @@
       "lightsPerfHint": "Schalten Sie diese aus, um die Leistung zu verbessern.",
       "approachLights": "Anflugbefeuerungs-Animation",
       "approachLightsDesc": "Animiertes sequenzielles Blinken im Anflug",
-      "taxiwayGlow": "Rollweg-Lichtschein",
-      "taxiwayGlowDesc": "Mehrschichtiger Glow-Effekt an Rollwegbefeuerung",
       "dayNight": "Tag/Nacht-Overlay",
       "dayNightDesc": "Echtzeit-Tag/Nacht-Schatten auf dem Globus",
       "contours": "Höhenlinien",

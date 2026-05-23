@@ -469,8 +469,6 @@
       "lightsPerfHint": "Désactivez-les pour améliorer les performances.",
       "approachLights": "Animation des feux d'approche",
       "approachLightsDesc": "Clignotement séquentiel animé en approche",
-      "taxiwayGlow": "Halo des feux de taxiway",
-      "taxiwayGlowDesc": "Effet de halo multicouche sur les feux de taxiway",
       "dayNight": "Superposition jour/nuit",
       "dayNightDesc": "Ombre jour/nuit en temps réel sur le globe",
       "contours": "Courbes de niveau",

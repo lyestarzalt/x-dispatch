@@ -64,22 +64,18 @@ export function useAirportRenderer(
    * BaseLayerRenderer.remove() delegates to safeRemove(), which checks
    * map.isStyleLoaded(). If false, removal is deferred to the 'idle' event.
    *
-   * Problem: TaxiwayLightsLayer's animation calls setPaintProperty() every
-   * frame, which keeps style._changed = true. MapLibre's isStyleLoaded()
-   * checks !style._changed, so it returns false permanently while the
-   * animation runs. This means safeRemove NEVER executes synchronously —
-   * it always defers. But 'idle' also never fires because the animation
-   * keeps dirtying the style. Result: old airport sources are never removed,
-   * they accumulate (20 sources × 10-16MB each), and by the 2nd-3rd airport
-   * switch the map stalls completely (black screen, no basemap tiles).
+   * Problem: any per-frame setPaintProperty() (e.g. an old animation loop)
+   * keeps style._changed = true. MapLibre's isStyleLoaded() checks
+   * !style._changed, so it returns false permanently while such an animation
+   * runs. safeRemove NEVER executes synchronously then — it always defers to
+   * 'idle', which also never fires. Result: old airport sources accumulate
+   * (20 sources × 10-16MB each), and by the 2nd-3rd airport switch the map
+   * stalls (black screen, no basemap tiles).
    *
    * Fix: bypass safeRemove entirely. Collect all layer/source IDs from the
    * renderer metadata and remove them directly. Individual try/catch ensures
    * one failure doesn't block others. Layers must be removed before their
    * sources (MapLibre throws if a source still has referencing layers).
-   *
-   * See also: TaxiwayLightsLayer.render() which defers its animation start
-   * to map.once('idle') for the same reason.
    */
   const clearAirport = useCallback(() => {
     const m = map.current;
@@ -223,11 +219,11 @@ export function useAirportRenderer(
    *
    * The approach lights "rabbit" animation used setPaintProperty() at 30fps,
    * which caused MapLibre to repaint every frame → 50-80% GPU usage even
-   * when the map was idle (#59). Same root cause as the TaxiwayLightsLayer
-   * issue (see TaxiwayLightsLayer.ts and clearAirport above).
+   * when the map was idle (#59). See clearAirport above for the related
+   * cleanup hazard.
    *
    * All airport lights now render at static opacity. The rabbit effect
-   * looked nice but isn't worth the battery drain on laptops.
+   * lives in `useApproachLightAnimation` as a Canvas2D overlay instead.
    */
   const startAnimations = useCallback(() => {
     // No-op — animations removed for GPU performance (#59)
