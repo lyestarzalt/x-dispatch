@@ -117,6 +117,29 @@ export function useAirportRenderer(
       const m = map.current;
       if (!m) return null;
 
+      const paintLayers = (parsedAirport: ParsedAirport): void => {
+        for (const renderer of layerRenderers.current) {
+          // Map may have been destroyed between layer calls (component unmount
+          // or basemap rebuild mid-paint). MapLibre nulls `style` on remove(),
+          // so subsequent `getSource()` / `getImage()` calls inside a renderer
+          // throw "Cannot read properties of null". Sentry X-DISPATCH-13 /
+          // X-DISPATCH-14 traced to exactly this cascade — bail rather than
+          // log a noise event per remaining layer.
+          if (!m.getStyle()) return;
+          if (!renderer.hasData(parsedAirport)) continue;
+          try {
+            const renderResult = renderer.render(m, parsedAirport);
+            if (renderResult instanceof Promise) {
+              renderResult.catch((err) =>
+                window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
+              );
+            }
+          } catch (err) {
+            window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
+          }
+        }
+      };
+
       const doRender = async (): Promise<ParsedAirport | null> => {
         // Toggle off: clicking the same airport deselects it
         if (selectedAirport.current === icao) {
@@ -148,21 +171,16 @@ export function useAirportRenderer(
           );
         }
 
-        // Render all layers synchronously in one batch
-        for (const renderer of layerRenderers.current) {
-          if (renderer.hasData(parsedAirport)) {
-            try {
-              const renderResult = renderer.render(m, parsedAirport);
-              if (renderResult instanceof Promise) {
-                renderResult.catch((err) =>
-                  window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
-                );
-              }
-            } catch (err) {
-              window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
-            }
-          }
-        }
+        // Note on Sentry X-DISPATCH-1C / X-DISPATCH-16 ("Style is not done
+        // loading"): an attempt to gate this on `isStyleLoaded()` here broke
+        // the home-airport autoload on cold start, because that helper
+        // returns false during normal tile loading (sourceCache.loaded()) —
+        // not just during a setStyle. addLayer/addSource only need
+        // `style._loaded`, which is true once `style.load` has fired. The
+        // per-layer try/catch below already catches the rare setStyle race
+        // and logs one event per affected layer; living with that noise is
+        // better than a silent paint-never-fires regression.
+        paintLayers(parsedAirport);
 
         const optimalZoom = calculateOptimalZoom(parsedAirport.runways);
 
