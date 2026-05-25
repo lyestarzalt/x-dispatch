@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, FileText, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { useVacChartQuery, useSiaInstallStatusQuery } from '@/queries/useSiaQuer
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
+import { VacChartPreview } from './VacChartPreview';
 
 function buildGeorefInput(airport: ParsedAirport): AirportGeorefInput {
   const runways = airport.runways
@@ -40,59 +41,7 @@ export default function VacTab() {
     [airport]
   );
   const { data: vacInfo, isLoading, isFetching, refetch } = useVacChartQuery(icao, georefInput);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewError, setPreviewError] = useState<string | null>(null);
-  const [loadingPreview, setLoadingPreview] = useState(false);
-  const blobUrlRef = useRef<string | null>(null);
   const reindexedRef = useRef(false);
-
-  const clearPreview = useCallback(() => {
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-    setPreviewUrl(null);
-  }, []);
-
-  const showPngPreview = useCallback(
-    (bytes: Uint8Array) => {
-      clearPreview();
-      const blob = new Blob([Uint8Array.from(bytes)], { type: 'image/png' });
-      const url = URL.createObjectURL(blob);
-      blobUrlRef.current = url;
-      setPreviewUrl(url);
-    },
-    [clearPreview]
-  );
-
-  const loadPreview = useCallback(async () => {
-    if (!icao || !vacInfo) return;
-    setPreviewError(null);
-    setLoadingPreview(true);
-    clearPreview();
-
-    try {
-      let png = await window.siaAPI.getVacPngBytes(icao);
-      if (!png?.length) {
-        png = await window.siaAPI.renderVacPng(icao);
-      }
-      if (png?.length) {
-        showPngPreview(png);
-        return;
-      }
-
-      setPreviewError(t('vac.notFound'));
-    } catch (err) {
-      setPreviewError((err as Error).message);
-    } finally {
-      setLoadingPreview(false);
-    }
-  }, [icao, vacInfo, t, clearPreview, showPngPreview]);
-
-  useLayoutEffect(() => {
-    if (vacInfo) void loadPreview();
-    else clearPreview();
-  }, [vacInfo, loadPreview, clearPreview]);
 
   useEffect(() => {
     if (vacInfo || !status?.hasData || !icao || reindexedRef.current) return;
@@ -103,8 +52,6 @@ export default function VacTab() {
       void refetch();
     })();
   }, [vacInfo, status?.hasData, icao, queryClient, refetch]);
-
-  useEffect(() => () => clearPreview(), [clearPreview]);
 
   if (!status?.hasData) {
     return (
@@ -119,7 +66,7 @@ export default function VacTab() {
     return <p className="text-sm text-muted-foreground">{t('common.loading')}</p>;
   }
 
-  if (!vacInfo) {
+  if (!vacInfo || !icao) {
     return (
       <div className="space-y-2 text-sm text-muted-foreground">
         <p>{t('vac.notFound')}</p>
@@ -141,26 +88,14 @@ export default function VacTab() {
         <span className="rounded bg-muted px-1.5 py-0.5 font-mono uppercase">{vacInfo.chartType}</span>
       </div>
 
-      <div className="overflow-auto rounded-md border border-border/40 bg-background/50 p-1">
-        {loadingPreview ? (
-          <p className="p-4 text-sm text-muted-foreground">{t('common.loading')}</p>
-        ) : previewUrl ? (
-          <img src={previewUrl} alt={`VAC ${vacInfo.icao}`} className="max-w-full" />
-        ) : (
-          <p className="p-4 text-sm text-muted-foreground">
-            {previewError ?? t('vac.notFound')}
-          </p>
-        )}
-      </div>
-
-      {previewError && <p className="text-xs text-destructive">{previewError}</p>}
+      <VacChartPreview icao={icao} chartIcao={vacInfo.icao} />
 
       <div className="flex flex-wrap gap-2">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           className="gap-1.5"
-          onClick={() => icao && void window.siaAPI.openVacPdf(icao)}
+          onClick={() => void window.siaAPI.openVacPdf(icao)}
         >
           <FileText className="h-3.5 w-3.5" />
           {t('vac.openExternal')}

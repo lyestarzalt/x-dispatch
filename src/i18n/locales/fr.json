@@ -1642,7 +1642,10 @@
     "notFound": "Aucune VAC trouvée pour cet aérodrome.",
     "notFoundHint": "Importez aussi l’amendement VAC métropole (Paramètres → SIA) ou réimportez l’eAIP complet.",
     "cycle": "Cycle {{cycle}}",
-    "openExternal": "Ouvrir le PDF",
+    "rendering": "Génération de l'aperçu…",
+    "previewFailed": "Impossible d'afficher la VAC dans l'application.",
+    "refresh": "Actualiser l'aperçu",
+    "openExternal": "Ouvrir dans le lecteur système",
     "print": "Imprimer"
   },
   "oaci": {

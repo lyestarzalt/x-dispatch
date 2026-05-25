@@ -1642,7 +1642,10 @@
     "notFound": "No VAC chart found for this aerodrome.",
     "notFoundHint": "Also import the metropolitan VAC amendment (Settings → SIA) or re-import the full eAIP.",
     "cycle": "Cycle {{cycle}}",
-    "openExternal": "Open PDF",
+    "rendering": "Generating preview…",
+    "previewFailed": "Could not display the VAC chart in the app.",
+    "refresh": "Refresh preview",
+    "openExternal": "Open in system viewer",
     "print": "Print"
   },
   "oaci": {

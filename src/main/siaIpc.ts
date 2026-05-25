@@ -14,7 +14,7 @@ import {
 import type { AirportGeorefInput } from '@/lib/sia/georef';
 import type { SiaDownloadProgress } from '@/lib/sia/types';
 import logger from '@/lib/utils/logger';
-import { capturePdfToPng } from './pdfCapture';
+import { capturePdfToPng, captureVacPdfToPng } from './pdfCapture';
 
 function sendProgress(win: BrowserWindow | null, progress: SiaDownloadProgress): void {
   win?.webContents.send('sia:download-progress', progress);
@@ -94,7 +94,10 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
     }
     if (!pdfPath) return null;
 
-    const png = await capturePdfToPng(pdfPath);
+    let png = await captureVacPdfToPng(code);
+    if (!png?.length) {
+      png = await capturePdfToPng(pdfPath);
+    }
     if (!png?.length) return null;
     store.writeVacPng(code, png);
     return Uint8Array.from(png);
