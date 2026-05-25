@@ -5,8 +5,8 @@ import logger from '@/lib/utils/logger';
 import {
   classifyChartType,
   extractIcaoFromVacPath,
-  isLfAirportPdfPath,
-  isVacPdfPath,
+  isAtlasVacPdfPath,
+  isEaipAdPdfPath,
   mergeVacEntry,
 } from './vacIndex';
 import type { VacChartEntry } from './types';
@@ -40,8 +40,32 @@ async function walkDir(
 
 export interface EaipIndexResult {
   vacIndex: Record<string, VacChartEntry>;
+  aipIndex: Record<string, VacChartEntry>;
   xmlPaths: string[];
   pdfCount: number;
+  atlasVacCount: number;
+  eaipAdCount: number;
+}
+
+function buildEntry(
+  absPath: string,
+  relativePath: string,
+  cycle: string,
+  validFrom: string,
+  validTo: string
+): VacChartEntry | null {
+  const icao = extractIcaoFromVacPath(relativePath);
+  if (!icao || !icao.startsWith('LF')) return null;
+  return {
+    icao,
+    pdfPath: absPath,
+    pdfRelPath: relativePath,
+    chartId: path.basename(relativePath, '.pdf'),
+    chartType: classifyChartType(relativePath),
+    cycle,
+    validFrom,
+    validTo,
+  };
 }
 
 export async function indexEaipExtract(
@@ -51,8 +75,11 @@ export async function indexEaipExtract(
   validTo: string
 ): Promise<EaipIndexResult> {
   const vacIndex: Record<string, VacChartEntry> = {};
+  const aipIndex: Record<string, VacChartEntry> = {};
   const xmlPaths: string[] = [];
   let pdfCount = 0;
+  let atlasVacCount = 0;
+  let eaipAdCount = 0;
 
   await walkDir(extractRoot, (absPath, relativePath) => {
     const lower = relativePath.toLowerCase();
@@ -68,28 +95,27 @@ export async function indexEaipExtract(
       return;
     }
 
-    if (!isLfAirportPdfPath(relativePath) && !isVacPdfPath(relativePath)) return;
+    if (!isAtlasVacPdfPath(relativePath)) return;
+    const entry = buildEntry(absPath, relativePath, cycle, validFrom, validTo);
+    if (!entry) return;
     pdfCount++;
-
-    const icao = extractIcaoFromVacPath(relativePath);
-    if (!icao || !icao.startsWith('LF')) return;
-
-    const entry: VacChartEntry = {
-      icao,
-      pdfPath: absPath,
-      pdfRelPath: relativePath,
-      chartId: path.basename(relativePath, '.pdf'),
-      chartType: classifyChartType(relativePath),
-      cycle,
-      validFrom,
-      validTo,
-    };
-
-    vacIndex[icao] = mergeVacEntry(vacIndex[icao], entry);
+    vacIndex[entry.icao] = mergeVacEntry(vacIndex[entry.icao], entry);
+    atlasVacCount++;
   });
 
-  logger.data.info(`SIA eAIP indexed: ${Object.keys(vacIndex).length} VAC charts, ${pdfCount} PDFs`);
-  return { vacIndex, xmlPaths, pdfCount };
+  await walkDir(extractRoot, (absPath, relativePath) => {
+    if (!isEaipAdPdfPath(relativePath)) return;
+    const entry = buildEntry(absPath, relativePath, cycle, validFrom, validTo);
+    if (!entry) return;
+    pdfCount++;
+    aipIndex[entry.icao] = mergeVacEntry(aipIndex[entry.icao], entry);
+    eaipAdCount++;
+  });
+
+  logger.data.info(
+    `SIA eAIP indexed: ${Object.keys(vacIndex).length} Atlas-VAC, ${Object.keys(aipIndex).length} eAIP AD, ${atlasVacCount} vac PDFs, ${eaipAdCount} aip PDFs`
+  );
+  return { vacIndex, aipIndex, xmlPaths, pdfCount, atlasVacCount, eaipAdCount };
 }
 
 export function indexVacAmendmentPdfs(
@@ -97,9 +123,9 @@ export function indexVacAmendmentPdfs(
   cycle: string,
   validFrom: string,
   validTo: string,
-  existing: Record<string, VacChartEntry>
+  existingVac: Record<string, VacChartEntry>
 ): Record<string, VacChartEntry> {
-  const next = { ...existing };
+  const next = { ...existingVac };
   const files: string[] = [];
 
   function collect(dir: string) {
@@ -115,22 +141,10 @@ export function indexVacAmendmentPdfs(
 
   for (const absPath of files) {
     const rel = path.relative(extractRoot, absPath).replace(/\\/g, '/');
-    if (!isLfAirportPdfPath(rel) && !isVacPdfPath(rel) && !/VAC/i.test(path.basename(rel))) {
-      continue;
-    }
-    const icao = extractIcaoFromVacPath(rel);
-    if (!icao?.startsWith('LF')) continue;
-    const entry: VacChartEntry = {
-      icao,
-      pdfPath: absPath,
-      pdfRelPath: rel,
-      chartId: path.basename(rel, '.pdf'),
-      chartType: 'vac',
-      cycle,
-      validFrom,
-      validTo,
-    };
-    next[icao] = mergeVacEntry(next[icao], entry);
+    if (!isAtlasVacPdfPath(rel) && !/VAC/i.test(path.basename(rel))) continue;
+    const entry = buildEntry(absPath, rel, cycle, validFrom, validTo);
+    if (!entry) continue;
+    next[entry.icao] = mergeVacEntry(next[entry.icao], { ...entry, chartType: 'vac' });
   }
 
   return next;

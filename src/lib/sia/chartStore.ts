@@ -23,8 +23,8 @@ import type {
 import { resolveVacGeoref, type AirportGeorefInput } from './georef';
 import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
 import { extractEaipRelativeSuffix, findPdfByBasename } from './pdfPathResolve';
-import { recoverInstalledProductsFromExtractDir, reindexVacFromManifest } from './vacReindex';
-import { findVacEntryForIcao } from './vacIndex';
+import { migrateLegacyVacIndex, recoverInstalledProductsFromExtractDir, reindexVacFromManifest } from './vacReindex';
+import { findAipEntryForIcao, findVacEntryForIcao, findVacPlateForIcao } from './vacIndex';
 
 const MANIFEST_VERSION = 1 as const;
 const METADATA_CYCLE_KEY = 'sia_eaip_cycle';
@@ -102,27 +102,26 @@ export class ChartStore {
     return path.join(this.rootDir, 'manifest.json');
   }
 
+  private emptyManifest(): SiaInstallManifest {
+    return {
+      version: MANIFEST_VERSION,
+      installedProducts: {},
+      vacIndex: {},
+      aipIndex: {},
+      cycle: null,
+      installedAt: null,
+    };
+  }
+
   private loadManifest(): SiaInstallManifest {
     const p = this.manifestPath();
-    if (!fs.existsSync(p)) {
-      return {
-        version: MANIFEST_VERSION,
-        installedProducts: {},
-        vacIndex: {},
-        cycle: null,
-        installedAt: null,
-      };
-    }
+    if (!fs.existsSync(p)) return this.emptyManifest();
     try {
-      return JSON.parse(fs.readFileSync(p, 'utf-8')) as SiaInstallManifest;
+      const raw = JSON.parse(fs.readFileSync(p, 'utf-8')) as SiaInstallManifest;
+      if (!raw.aipIndex) raw.aipIndex = {};
+      return migrateLegacyVacIndex(raw);
     } catch {
-      return {
-        version: MANIFEST_VERSION,
-        installedProducts: {},
-        vacIndex: {},
-        cycle: null,
-        installedAt: null,
-      };
+      return this.emptyManifest();
     }
   }
 
@@ -135,10 +134,13 @@ export class ChartStore {
     const diskUsageBytes = await getDirSizeBytes(this.rootDir);
     const latestCatalogCycle = getLatestCatalogCycle();
     return {
-      hasData: Object.keys(this.manifest.vacIndex).length > 0,
+      hasData:
+        Object.keys(this.manifest.vacIndex).length > 0 ||
+        Object.keys(this.manifest.aipIndex).length > 0,
       cycle: this.manifest.cycle,
       installedAt: this.manifest.installedAt,
       vacCount: Object.keys(this.manifest.vacIndex).length,
+      aipCount: Object.keys(this.manifest.aipIndex).length,
       diskUsageBytes,
       products: Object.values(this.manifest.installedProducts).map((p) => ({
         productId: p.productId,
@@ -199,12 +201,29 @@ export class ChartStore {
   }
 
   hasVacIndex(): boolean {
-    return Object.keys(this.manifest.vacIndex).length > 0;
+    return (
+      Object.keys(this.manifest.vacIndex).length > 0 ||
+      Object.keys(this.manifest.aipIndex).length > 0
+    );
+  }
+
+  getVacPlateEntry(icao: string): VacChartEntry | null {
+    this.refreshManifest();
+    return findVacPlateForIcao(this.manifest.vacIndex, icao.toUpperCase());
+  }
+
+  getAipEntry(icao: string): VacChartEntry | null {
+    this.refreshManifest();
+    return findAipEntryForIcao(this.manifest.aipIndex, icao.toUpperCase());
   }
 
   getVacEntry(icao: string): VacChartEntry | null {
     this.refreshManifest();
-    return findVacEntryForIcao(this.manifest.vacIndex, icao.toUpperCase());
+    return findVacEntryForIcao(
+      this.manifest.vacIndex,
+      icao.toUpperCase(),
+      this.manifest.aipIndex
+    );
   }
 
   async reindexFromDisk(): Promise<number> {
@@ -219,25 +238,24 @@ export class ChartStore {
       this.manifest.cycle ?? installed?.cycle ?? catalog?.airacCycle ?? '05/26';
     const validFrom = catalog?.validFrom ?? '';
     const validTo = catalog?.validTo ?? '';
-    const previousCount = Object.keys(this.manifest.vacIndex).length;
-    const vacIndex = await reindexVacFromManifest(
+    const previousVac = Object.keys(this.manifest.vacIndex).length;
+    const previousAip = Object.keys(this.manifest.aipIndex).length;
+    const { vacIndex, aipIndex } = await reindexVacFromManifest(
       this.manifest,
       this.extractDir,
       cycle,
       validFrom,
       validTo
     );
-    const newCount = Object.keys(vacIndex).length;
-    if (newCount > 0 || previousCount === 0) {
-      this.manifest.vacIndex = vacIndex;
-    } else {
-      logger.main.warn(
-        `SIA reindex returned 0 entries (was ${previousCount}) — keeping existing index`
-      );
-    }
+    const newVac = Object.keys(vacIndex).length;
+    const newAip = Object.keys(aipIndex).length;
+    if (newVac > 0 || previousVac === 0) this.manifest.vacIndex = vacIndex;
+    else logger.main.warn(`SIA reindex: keeping ${previousVac} VAC entries (reindex found 0)`);
+    if (newAip > 0 || previousAip === 0) this.manifest.aipIndex = aipIndex;
+    else logger.main.warn(`SIA reindex: keeping ${previousAip} AIP entries (reindex found 0)`);
     if (!this.manifest.cycle && cycle) this.manifest.cycle = cycle;
     this.saveManifest();
-    return Object.keys(this.manifest.vacIndex).length;
+    return Object.keys(this.manifest.vacIndex).length + Object.keys(this.manifest.aipIndex).length;
   }
 
   getVacInfo(icao: string, airport: AirportGeorefInput | null): VacChartInfo | null {
@@ -442,14 +460,25 @@ export class ChartStore {
     });
 
     let vacIndex = { ...this.manifest.vacIndex };
+    let aipIndex = { ...this.manifest.aipIndex };
 
     try {
       if (product.kind === 'eaip-full') {
         const indexed = await indexEaipExtract(extractPath, cycle, validFrom, validTo);
         vacIndex = indexed.vacIndex;
+        aipIndex = { ...aipIndex, ...indexed.aipIndex };
         await this.persistXmlPaths(indexed.xmlPaths, cycle);
 
-        if (Object.keys(vacIndex).length === 0) {
+        if (indexed.atlasVacCount === 0 && indexed.eaipAdCount > 0) {
+          logger.main.warn(
+            `SIA eAIP: no Atlas-VAC plates (AD-N.LFXX.pdf) under Atlas-VAC/PDF_AIPparSSection/VAC/AD — ${indexed.eaipAdCount} eAIP AD only`
+          );
+        }
+
+        if (
+          Object.keys(vacIndex).length === 0 &&
+          Object.keys(aipIndex).length === 0
+        ) {
           const hint =
             indexed.pdfCount === 0
               ? 'sia.errors.noPdfsInArchive'
@@ -475,10 +504,11 @@ export class ChartStore {
       zipPath,
     };
     this.manifest.vacIndex = vacIndex;
+    this.manifest.aipIndex = aipIndex;
     this.manifest.cycle = cycle;
     this.manifest.installedAt = Date.now();
     this.saveManifest();
-    await this.syncVacIndexToDb(vacIndex, cycle, validFrom, validTo);
+    await this.syncVacIndexToDb(vacIndex, aipIndex, cycle, validFrom, validTo);
     await this.setMetadataCycle(cycle);
 
     onProgress?.({
@@ -488,12 +518,15 @@ export class ChartStore {
       message: 'Installation complete',
     });
 
-    logger.data.info(`SIA product installed: ${productId}, ${Object.keys(vacIndex).length} VAC entries`);
+    logger.data.info(
+      `SIA product installed: ${productId}, ${Object.keys(vacIndex).length} VAC + ${Object.keys(aipIndex).length} AIP`
+    );
     return { success: true };
   }
 
   private async syncVacIndexToDb(
     vacIndex: Record<string, VacChartEntry>,
+    aipIndex: Record<string, VacChartEntry>,
     cycle: string,
     validFrom: string,
     validTo: string
@@ -507,7 +540,7 @@ export class ChartStore {
 
     await db.delete(siaCharts);
     const now = Date.now();
-    const rows = Object.values(vacIndex).map((e) => ({
+    const rows = [...Object.values(vacIndex), ...Object.values(aipIndex)].map((e) => ({
       icao: e.icao,
       chartType: e.chartType,
       pdfPath: e.pdfPath,

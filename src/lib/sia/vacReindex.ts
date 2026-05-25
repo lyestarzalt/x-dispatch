@@ -7,6 +7,11 @@ import type { SiaProductKind } from './types';
 import { mergeVacEntry } from './vacIndex';
 import type { SiaInstallManifest, VacChartEntry } from './types';
 
+export interface ReindexResult {
+  vacIndex: Record<string, VacChartEntry>;
+  aipIndex: Record<string, VacChartEntry>;
+}
+
 function inferProductKind(productId: string): SiaProductKind {
   const known = getCatalogProduct(productId);
   if (known) return known.kind;
@@ -17,15 +22,16 @@ function inferProductKind(productId: string): SiaProductKind {
   return 'eaip-full';
 }
 
-/** Rebuild vacIndex by scanning installed extract folders (fixes stale absolute paths). */
+/** Rebuild vac + aip indexes by scanning installed extract folders. */
 export async function reindexVacFromManifest(
   manifest: SiaInstallManifest,
   extractDir: string,
   defaultCycle: string,
   defaultValidFrom: string,
   defaultValidTo: string
-): Promise<Record<string, VacChartEntry>> {
+): Promise<ReindexResult> {
   let vacIndex: Record<string, VacChartEntry> = {};
+  let aipIndex: Record<string, VacChartEntry> = {};
   const roots: Array<{ extractPath: string; productId: string; cycle: string }> = [];
 
   for (const installed of Object.values(manifest.installedProducts)) {
@@ -57,13 +63,18 @@ export async function reindexVacFromManifest(
       for (const [icao, entry] of Object.entries(indexed.vacIndex)) {
         vacIndex[icao] = mergeVacEntry(vacIndex[icao], entry);
       }
+      for (const [icao, entry] of Object.entries(indexed.aipIndex)) {
+        aipIndex[icao] = mergeVacEntry(aipIndex[icao], entry);
+      }
     } else {
       vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
     }
   }
 
-  logger.data.info(`SIA reindex complete: ${Object.keys(vacIndex).length} VAC entries`);
-  return vacIndex;
+  logger.data.info(
+    `SIA reindex complete: ${Object.keys(vacIndex).length} VAC plates, ${Object.keys(aipIndex).length} AIP charts`
+  );
+  return { vacIndex, aipIndex };
 }
 
 export function recoverInstalledProductsFromExtractDir(
@@ -84,4 +95,19 @@ export function recoverInstalledProductsFromExtractDir(
     };
   }
   return Object.keys(manifest.installedProducts).length > 0;
+}
+
+/** Split legacy single-index manifests into vacIndex + aipIndex. */
+export function migrateLegacyVacIndex(manifest: SiaInstallManifest): SiaInstallManifest {
+  if (!manifest.aipIndex) manifest.aipIndex = {};
+  const nextVac: Record<string, VacChartEntry> = {};
+  for (const [key, entry] of Object.entries(manifest.vacIndex)) {
+    if (entry.chartType === 'iac') {
+      manifest.aipIndex[entry.icao] = mergeVacEntry(manifest.aipIndex[entry.icao], entry);
+    } else {
+      nextVac[key] = entry;
+    }
+  }
+  manifest.vacIndex = nextVac;
+  return manifest;
 }

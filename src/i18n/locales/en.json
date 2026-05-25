@@ -1633,7 +1633,7 @@
       "title": "SIA / OACI charts",
       "description": "Install French VAC charts from eAIP and import an OACI MBTiles basemap.",
       "eaip": "eAIP data (VAC)",
-      "installed": "Cycle {{cycle}} — {{count}} VAC charts — {{size}} on disk",
+      "installed": "Cycle {{cycle}} — {{vacCount}} VAC, {{aipCount}} AIP charts — {{size}} on disk",
       "notInstalled": "No SIA data installed. Download or import the eAIP ZIP from the SIA website."
     }
   },

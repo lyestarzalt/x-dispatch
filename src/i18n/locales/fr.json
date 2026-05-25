@@ -1633,7 +1633,7 @@
       "title": "Cartes SIA / OACI",
       "description": "Téléchargez les VAC françaises (eAIP) et importez un fond OACI au format MBTiles.",
       "eaip": "Données eAIP (VAC)",
-      "installed": "Cycle {{cycle}} — {{count}} VAC — {{size}} sur disque",
+      "installed": "Cycle {{cycle}} — {{vacCount}} VAC, {{aipCount}} AIP — {{size}} sur disque",
       "notInstalled": "Aucune donnée SIA installée. Téléchargez ou importez le ZIP eAIP depuis le site du SIA."
     }
   },

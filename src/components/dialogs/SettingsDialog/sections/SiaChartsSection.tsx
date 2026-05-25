@@ -226,7 +226,8 @@ export function SiaChartsSection() {
           {status?.hasData
             ? t('sia.settings.installed', {
                 cycle: status.cycle ?? '—',
-                count: status.vacCount,
+                vacCount: status.vacCount,
+                aipCount: status.aipCount,
                 size: formatBytes(status.diskUsageBytes),
               })
             : t('sia.settings.notInstalled')}

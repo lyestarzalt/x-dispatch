@@ -32,7 +32,14 @@ export function findPdfByBasename(root: string, basename: string, maxDepth = 12)
 /** Suffix after eAIP markers for relocatable installs (absolute path → relative). */
 export function extractEaipRelativeSuffix(pdfPath: string): string | null {
   const norm = pdfPath.replace(/\\/g, '/');
-  const markers = ['/html/eAIP/', '/eAIP/', '/ATLAS-VAC/', '/Atlas-VAC/', '/AD/'];
+  const markers = [
+    '/PDF_AIPPARSECTION/',
+    '/Atlas-VAC/',
+    '/ATLAS-VAC/',
+    '/html/eAIP/',
+    '/eAIP/',
+    '/AD/',
+  ];
   const upper = norm.toUpperCase();
   for (const marker of markers) {
     const idx = upper.indexOf(marker.toUpperCase());

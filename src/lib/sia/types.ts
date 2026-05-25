@@ -43,7 +43,10 @@ export interface SiaInstallManifest {
       zipPath?: string;
     }
   >;
+  /** Atlas-VAC approach plates (PDF_AIPparSSection/VAC/AD), keyed by ICAO. */
   vacIndex: Record<string, VacChartEntry>;
+  /** eAIP aerodrome charts (html/eAIP/AD), keyed by ICAO. */
+  aipIndex: Record<string, VacChartEntry>;
   cycle: string | null;
   installedAt: number | null;
 }
@@ -53,6 +56,7 @@ export interface SiaInstallStatus {
   cycle: string | null;
   installedAt: number | null;
   vacCount: number;
+  aipCount: number;
   diskUsageBytes: number;
   products: Array<{
     productId: string;
