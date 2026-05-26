@@ -1,5 +1,5 @@
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import type { OaciAirspaceFeature } from '@/lib/sia/xml/airspaceParser';
+import type { OaciAirspaceFeature } from '@/modules/sia-france/lib/xml/airspaceParser';
 
 const SOURCE_ID = 'oaci-airspaces';
 const FILL_ID = 'oaci-airspaces-fill';

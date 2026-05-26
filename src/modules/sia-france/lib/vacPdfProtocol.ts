@@ -20,7 +20,10 @@ export function registerVacPdfScheme(): void {
   ]);
 }
 
+let vacPdfHandlerRegistered = false;
+
 export function registerVacPdfHandler(): void {
+  if (vacPdfHandlerRegistered) return;
   protocol.handle('vac-pdf', async (request) => {
     try {
       const url = new URL(request.url);
@@ -39,5 +42,13 @@ export function registerVacPdfHandler(): void {
     }
   });
 
+  vacPdfHandlerRegistered = true;
   logger.main.info('VAC PDF protocol handler registered');
+}
+
+export function unregisterVacPdfHandler(): void {
+  if (!vacPdfHandlerRegistered) return;
+  protocol.unhandle('vac-pdf');
+  vacPdfHandlerRegistered = false;
+  logger.main.info('VAC PDF protocol handler unregistered');
 }

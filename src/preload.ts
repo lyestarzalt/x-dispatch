@@ -381,10 +381,26 @@ contextBridge.exposeInMainWorld('xpLogAPI', {
   openExternal: (): Promise<XPLogOpenResult> => ipcRenderer.invoke('xp-log:openExternal'),
 });
 
+contextBridge.exposeInMainWorld('modulesAPI', {
+  list: () => ipcRenderer.invoke('modules:list'),
+  getCatalog: () => ipcRenderer.invoke('modules:catalog'),
+  setEnabled: (moduleId: string, enabled: boolean) =>
+    ipcRenderer.invoke('modules:setEnabled', moduleId, enabled),
+  uninstall: (moduleId: string) => ipcRenderer.invoke('modules:uninstall', moduleId),
+  installFromZip: (zipPath: string) => ipcRenderer.invoke('modules:installFromZip', zipPath),
+  installFromGithub: (repoOrUrl: string) => ipcRenderer.invoke('modules:installFromGithub', repoOrUrl),
+  browseForZip: () => ipcRenderer.invoke('modules:browseForZip'),
+  onChanged: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on('modules:changed', listener);
+    return () => ipcRenderer.removeListener('modules:changed', listener);
+  },
+});
+
 contextBridge.exposeInMainWorld('siaAPI', {
   listProducts: () => ipcRenderer.invoke('sia:listProducts'),
   getInstallStatus: () => ipcRenderer.invoke('sia:getInstallStatus'),
-  getVacForIcao: (icao: string, airport: import('./lib/sia/georef').AirportGeorefInput | null) =>
+  getVacForIcao: (icao: string, airport: import('./modules/sia-france/lib/georef').AirportGeorefInput | null) =>
     ipcRenderer.invoke('sia:getVacForIcao', icao, airport),
   getVacPdfBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPdfBytes', icao),
   getVacPngBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPngBytes', icao),
@@ -407,10 +423,10 @@ contextBridge.exposeInMainWorld('siaAPI', {
   openVacPdf: (icao: string) => ipcRenderer.invoke('sia:openVacPdf', icao),
   getOaciAirspaces: () => ipcRenderer.invoke('sia:getOaciAirspaces'),
   onDownloadProgress: (
-    callback: (progress: import('./lib/sia/types').SiaDownloadProgress) => void
+    callback: (progress: import('./modules/sia-france/lib/types').SiaDownloadProgress) => void
   ) => {
     const handler = (_event: Electron.IpcRendererEvent, progress: unknown) => {
-      callback(progress as import('./lib/sia/types').SiaDownloadProgress);
+      callback(progress as import('./modules/sia-france/lib/types').SiaDownloadProgress);
     };
     ipcRenderer.on('sia:download-progress', handler);
     return () => ipcRenderer.removeListener('sia:download-progress', handler);
@@ -828,13 +844,27 @@ declare global {
       read: () => Promise<XPLogReadResult>;
       openExternal: () => Promise<XPLogOpenResult>;
     };
+    modulesAPI: {
+      list: () => Promise<import('./lib/modules/types').ModuleRuntimeInfo[]>;
+      getCatalog: () => Promise<import('./lib/modules/types').ModuleCatalogEntry[]>;
+      setEnabled: (moduleId: string, enabled: boolean) => Promise<{ success: boolean; error?: string }>;
+      uninstall: (moduleId: string) => Promise<{ success: boolean; error?: string }>;
+      installFromZip: (
+        zipPath: string
+      ) => Promise<{ success: boolean; error?: string; moduleId?: string }>;
+      installFromGithub: (
+        repoOrUrl: string
+      ) => Promise<{ success: boolean; error?: string; moduleId?: string }>;
+      browseForZip: () => Promise<string | null>;
+      onChanged: (callback: () => void) => () => void;
+    };
     siaAPI: {
-      listProducts: () => Promise<readonly import('./lib/sia/types').SiaProduct[]>;
-      getInstallStatus: () => Promise<import('./lib/sia/types').SiaInstallStatus>;
+      listProducts: () => Promise<readonly import('./modules/sia-france/lib/types').SiaProduct[]>;
+      getInstallStatus: () => Promise<import('./modules/sia-france/lib/types').SiaInstallStatus>;
       getVacForIcao: (
         icao: string,
-        airport: import('./lib/sia/georef').AirportGeorefInput | null
-      ) => Promise<import('./lib/sia/types').VacChartInfo | null>;
+        airport: import('./modules/sia-france/lib/georef').AirportGeorefInput | null
+      ) => Promise<import('./modules/sia-france/lib/types').VacChartInfo | null>;
       getVacPdfBytes: (icao: string) => Promise<Uint8Array | null>;
       getVacPngBytes: (icao: string) => Promise<Uint8Array | null>;
       renderVacPng: (icao: string) => Promise<Uint8Array | null>;
@@ -843,7 +873,7 @@ declare global {
       writePngCache: (icao: string, data: Uint8Array) => Promise<{ success: boolean; path?: string }>;
       clearCache: () => Promise<{ success: boolean; error?: string }>;
       downloadProduct: (productId: string) => Promise<{ success: boolean; error?: string }>;
-      getCredentialsStatus: () => Promise<import('./lib/sia/siaCredentials').SiaCredentialsStatus>;
+      getCredentialsStatus: () => Promise<import('./modules/sia-france/lib/siaCredentials').SiaCredentialsStatus>;
       saveCredentials: (
         email: string,
         password: string
@@ -859,9 +889,9 @@ declare global {
       ) => Promise<{ success: boolean; error?: string }>;
       browseForZip: () => Promise<string | null>;
       openVacPdf: (icao: string) => Promise<{ success: boolean }>;
-      getOaciAirspaces: () => Promise<import('./lib/sia/xml/airspaceParser').OaciAirspaceFeature[]>;
+      getOaciAirspaces: () => Promise<import('./modules/sia-france/lib/xml/airspaceParser').OaciAirspaceFeature[]>;
       onDownloadProgress: (
-        callback: (progress: import('./lib/sia/types').SiaDownloadProgress) => void
+        callback: (progress: import('./modules/sia-france/lib/types').SiaDownloadProgress) => void
       ) => () => void;
     };
     mbtilesAPI: {

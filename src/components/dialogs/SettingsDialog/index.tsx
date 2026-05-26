@@ -7,6 +7,7 @@ import {
   Info,
   LifeBuoy,
   Monitor,
+  Package,
   Palette,
   Plane,
   ScrollText,
@@ -31,6 +32,7 @@ import {
   CompanionAppsSection,
   GraphicsSection,
   LogsSection,
+  ModulesSection,
   NavigationDataSection,
   SimbriefSection,
   SupportSection,
@@ -50,6 +52,7 @@ type TabId =
   | 'airports'
   | 'simbrief'
   | 'companion-apps'
+  | 'modules'
   | 'logs'
   | 'support'
   | 'about';
@@ -68,6 +71,7 @@ const TABS: TabConfig[] = [
   { id: 'airports', icon: Star, labelKey: 'settings.tabs.airports' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
   { id: 'companion-apps', icon: Boxes, labelKey: 'settings.tabs.companionApps' },
+  { id: 'modules', icon: Package, labelKey: 'settings.tabs.modules' },
   { id: 'logs', icon: ScrollText, labelKey: 'settings.tabs.logs' },
   { id: 'support', icon: LifeBuoy, labelKey: 'settings.tabs.support' },
   { id: 'about', icon: Info, labelKey: 'settings.tabs.about' },
@@ -197,6 +201,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="Companion Apps">
                   <CompanionAppsSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="modules"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Modules">
+                  <ModulesSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

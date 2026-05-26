@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type maplibregl from 'maplibre-gl';
-import type { AirportGeorefInput } from '@/lib/sia/georef';
+import type { AirportGeorefInput } from '@/modules/sia-france/lib/georef';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import type { ParsedAirport } from '@/types/apt';

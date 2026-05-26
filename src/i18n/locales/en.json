@@ -264,6 +264,7 @@
       "support": "Support",
       "about": "About",
       "companionApps": "Companion Apps",
+      "modules": "Modules",
       "logs": "X-Plane Logs"
     },
     "airports": {
@@ -1645,8 +1646,28 @@
     "rendering": "Generating preview…",
     "previewFailed": "Could not display the VAC chart in the app.",
     "refresh": "Refresh preview",
+    "openModal": "Open chart",
+    "modalTitle": "VAC {{icao}}",
+    "chartLabel": "Visual approach chart",
+    "pageOf": "Page {{page}} / {{total}}",
+    "tapToOpen": "Tap to open full-screen chart",
     "openExternal": "Open in system viewer",
     "print": "Print"
+  },
+  "modules": {
+    "title": "Community modules",
+    "description": "Install and manage optional X-Dispatch modules developed by the community.",
+    "installed": "Installed modules",
+    "install": "Install",
+    "installZip": "Install from ZIP",
+    "installGithub": "Install from GitHub",
+    "githubPlaceholder": "https://github.com/owner/repository",
+    "store": "Trusted store",
+    "none": "No modules installed.",
+    "trusted": "Trusted",
+    "uninstall": "Remove",
+    "installSuccess": "Module installed.",
+    "uninstallSuccess": "Module removed."
   },
   "oaci": {
     "opacity": "OACI map opacity",

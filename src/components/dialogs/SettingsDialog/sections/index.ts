@@ -8,3 +8,4 @@ export { GraphicsSection } from './GraphicsSection';
 export { default as SupportSection } from './SupportSection';
 export { CompanionAppsSection } from './CompanionAppsSection';
 export { LogsSection } from './LogsSection';
+export { ModulesSection } from './ModulesSection';

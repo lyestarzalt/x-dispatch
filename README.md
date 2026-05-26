@@ -82,6 +82,7 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 ## Manual
 
 - [Command-line flags](manual/cli.md) — `--reset-cache`, `--xp-arg=`, `--help`, `--version`
+- [Community modules](registry/MODULES.md) — module manifest, extension points, publishing flow
 
 ## Development
 

@@ -1,0 +1,14 @@
+{
+  "modules": [
+    {
+      "id": "sia-france",
+      "repository": "4SLSL/x-dispatch-module-sia-france",
+      "defaultRef": "v1.0.0",
+      "trusted": true,
+      "bundled": true,
+      "name": "SIA France Charts",
+      "description": "French VAC/eAIP module maintained by the community",
+      "author": "4SLSL"
+    }
+  ]
+}

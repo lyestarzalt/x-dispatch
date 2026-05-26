@@ -6,7 +6,17 @@ import {
   setOaciMbtilesFile,
 } from '@/lib/mbtiles/MbtilesStore';
 
+const MBTILES_IPC_CHANNELS = [
+  'mbtiles:getConfig',
+  'mbtiles:browseAndImport',
+  'mbtiles:importPath',
+  'mbtiles:clear',
+] as const;
+
+let mbtilesIpcRegistered = false;
+
 export async function registerMbtilesIPC(getMainWindow: () => BrowserWindow | null): Promise<void> {
+  if (mbtilesIpcRegistered) return;
   await initMbtilesStore();
 
   ipcMain.handle('mbtiles:getConfig', () => getOaciMbtilesConfig());
@@ -33,4 +43,14 @@ export async function registerMbtilesIPC(getMainWindow: () => BrowserWindow | nu
     await clearOaciMbtiles();
     return { success: true };
   });
+
+  mbtilesIpcRegistered = true;
+}
+
+export function unregisterMbtilesIPC(): void {
+  if (!mbtilesIpcRegistered) return;
+  for (const channel of MBTILES_IPC_CHANNELS) {
+    ipcMain.removeHandler(channel);
+  }
+  mbtilesIpcRegistered = false;
 }

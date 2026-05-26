@@ -264,6 +264,7 @@
       "support": "Support",
       "about": "À propos",
       "companionApps": "Applications compagnons",
+      "modules": "Modules",
       "logs": "Journaux X-Plane"
     },
     "airports": {
@@ -1645,8 +1646,28 @@
     "rendering": "Génération de l'aperçu…",
     "previewFailed": "Impossible d'afficher la VAC dans l'application.",
     "refresh": "Actualiser l'aperçu",
+    "openModal": "Ouvrir la carte",
+    "modalTitle": "VAC {{icao}}",
+    "chartLabel": "Carte d'approche et d'atterrissage",
+    "pageOf": "Page {{page}} / {{total}}",
+    "tapToOpen": "Appuyez pour ouvrir la carte en plein écran",
     "openExternal": "Ouvrir dans le lecteur système",
     "print": "Imprimer"
+  },
+  "modules": {
+    "title": "Modules communautaires",
+    "description": "Installez et gérez des modules optionnels X-Dispatch créés par la communauté.",
+    "installed": "Modules installés",
+    "install": "Installer",
+    "installZip": "Installer depuis un ZIP",
+    "installGithub": "Installer depuis GitHub",
+    "githubPlaceholder": "https://github.com/owner/repository",
+    "store": "Store de confiance",
+    "none": "Aucun module installé.",
+    "trusted": "Fiable",
+    "uninstall": "Supprimer",
+    "installSuccess": "Module installé.",
+    "uninstallSuccess": "Module supprimé."
   },
   "oaci": {
     "opacity": "Opacité carte OACI",

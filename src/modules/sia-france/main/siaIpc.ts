@@ -10,17 +10,42 @@ import {
   getCredentialsStatus,
   loginCustomer,
   saveCredentials,
-} from '@/lib/sia';
-import type { AirportGeorefInput } from '@/lib/sia/georef';
-import type { SiaDownloadProgress } from '@/lib/sia/types';
+} from '@/modules/sia-france/lib';
+import type { AirportGeorefInput } from '@/modules/sia-france/lib/georef';
+import type { SiaDownloadProgress } from '@/modules/sia-france/lib/types';
 import logger from '@/lib/utils/logger';
-import { capturePdfToPng, captureVacPdfToPng } from './pdfCapture';
+import { capturePdfToPng, captureVacPdfToPng } from '@/main/pdfCapture';
+
+export const SIA_IPC_CHANNELS = [
+  'sia:listProducts',
+  'sia:getCredentialsStatus',
+  'sia:saveCredentials',
+  'sia:clearCredentials',
+  'sia:testLogin',
+  'sia:getInstallStatus',
+  'sia:getVacForIcao',
+  'sia:reindexVac',
+  'sia:renderVacPng',
+  'sia:getVacPdfBytes',
+  'sia:getVacPngBytes',
+  'sia:getPdfjsWorkerUrl',
+  'sia:writePngCache',
+  'sia:clearCache',
+  'sia:downloadProduct',
+  'sia:installFromLocalZip',
+  'sia:browseForZip',
+  'sia:getOaciAirspaces',
+  'sia:openVacPdf',
+] as const;
+
+let siaIpcRegistered = false;
 
 function sendProgress(win: BrowserWindow | null, progress: SiaDownloadProgress): void {
   win?.webContents.send('sia:download-progress', progress);
 }
 
 export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void {
+  if (siaIpcRegistered) return;
   const store = getChartStore();
   store.init();
 
@@ -200,5 +225,15 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
     return { success: true };
   });
 
+  siaIpcRegistered = true;
   logger.main.info('SIA IPC handlers registered');
+}
+
+export function unregisterSiaIPC(): void {
+  if (!siaIpcRegistered) return;
+  for (const channel of SIA_IPC_CHANNELS) {
+    ipcMain.removeHandler(channel);
+  }
+  siaIpcRegistered = false;
+  logger.main.info('SIA IPC handlers unregistered');
 }

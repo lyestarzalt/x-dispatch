@@ -19,7 +19,10 @@ import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
+import { isModuleActive } from '@/lib/modules/registry';
+import { SiaMapHooks } from '@/modules/sia-france/renderer/SiaMapHooks';
 import { useAppStore } from '@/stores/appStore';
+import { useModulesStore } from '@/stores/modulesStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -37,9 +40,6 @@ import {
   useAirportRenderer,
   useApproachLightAnimation,
   useCursorElevation,
-  useVacOverlaySync,
-  useOaciBasemap,
-  useOaciVectorSync,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
   useMapSetup,
@@ -130,6 +130,8 @@ export default function Map({ airports }: MapProps) {
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
+  const modules = useModulesStore((s) => s.modules);
+  const siaModuleEnabled = isModuleActive(modules, 'sia-france');
 
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
@@ -376,10 +378,6 @@ export default function Map({ airports }: MapProps) {
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
-
-  useVacOverlaySync(mapRef);
-  useOaciBasemap(mapRef);
-  useOaciVectorSync(mapRef);
 
   // Day/night terminator overlay
   useDayNightLayer(mapRef, dayNightEnabled);
@@ -812,6 +810,8 @@ export default function Map({ airports }: MapProps) {
     <div className="relative h-full w-full overflow-hidden">
       {/* MapLibre container - fills entire viewport */}
       <div ref={mapContainerRef} className="absolute inset-0" />
+
+      {siaModuleEnabled && <SiaMapHooks mapRef={mapRef} />}
 
       {/* Top bar overlay - full width, above sidebar */}
       <div className="absolute left-4 right-4 top-4 z-30 space-y-2">

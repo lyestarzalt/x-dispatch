@@ -6,7 +6,6 @@ import {
   Compass,
   Home,
   Info,
-  Map,
   PlaneTakeoff,
   Star,
 } from 'lucide-react';
@@ -14,20 +13,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { airportModuleTabs, isModuleActive } from '@/lib/modules/registry';
 import { formatAirportCountry } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useModulesStore } from '@/stores/modulesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import InfoTab from './tabs/InfoTab';
 import RouteTab from './tabs/RouteTab';
 import StartTab from './tabs/StartTab';
-import VacTab from './tabs/VacTab';
 
-type TabId = 'info' | 'start' | 'proc' | 'vac';
+type TabId = 'info' | 'start' | 'proc' | string;
 
 interface Tab {
   id: TabId;
@@ -67,6 +67,7 @@ export default function AirportInfoPanel({
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
+  const modules = useModulesStore((s) => s.modules);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('info');
 
@@ -88,13 +89,13 @@ export default function AirportInfoPanel({
 
   const elevation = Math.round(airport.elevation);
   const transitionAlt = airport.metadata.transition_alt;
-  const isFrenchAirport =
-    airport.id.startsWith('LF') ||
-    (airport.metadata.country ?? '').includes('FRA');
-
-  const tabs = isFrenchAirport
-    ? [...TABS, { id: 'vac' as const, labelKey: 'airportInfo.tabs.vac', icon: <Map className="h-4 w-4" /> }]
-    : TABS;
+  const moduleTabs = airportModuleTabs.filter(
+    (tab) => isModuleActive(modules, tab.moduleId) && tab.isVisible(airport)
+  );
+  const tabs = [
+    ...TABS,
+    ...moduleTabs.map((tab) => ({ id: tab.id, labelKey: tab.labelKey, icon: tab.icon })),
+  ];
 
   return (
     <div
@@ -269,11 +270,11 @@ export default function AirportInfoPanel({
               <TabsContent value="proc" className="mt-0">
                 <RouteTab />
               </TabsContent>
-              {isFrenchAirport && (
-                <TabsContent value="vac" className="mt-0">
-                  <VacTab />
+              {moduleTabs.map((tab) => (
+                <TabsContent key={tab.id} value={tab.id} className="mt-0">
+                  {tab.render()}
                 </TabsContent>
-              )}
+              ))}
             </div>
           </ScrollArea>
         </Tabs>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { SiaInstallStatus, SiaProduct } from '@/lib/sia/types';
+import type { SiaInstallStatus, SiaProduct } from '@/modules/sia-france/lib/types';
 
 export function useSiaProductsQuery() {
   return useQuery({
@@ -8,11 +8,12 @@ export function useSiaProductsQuery() {
   });
 }
 
-export function useSiaInstallStatusQuery() {
+export function useSiaInstallStatusQuery(enabled = true) {
   return useQuery({
     queryKey: ['sia', 'status'],
     queryFn: () => window.siaAPI.getInstallStatus() as Promise<SiaInstallStatus>,
-    refetchInterval: 30_000,
+    enabled,
+    refetchInterval: enabled ? 30_000 : false,
   });
 }
 

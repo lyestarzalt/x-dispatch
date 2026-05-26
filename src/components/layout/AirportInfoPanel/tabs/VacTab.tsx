@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, FileText, Printer } from 'lucide-react';
+import { ExternalLink, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { AirportGeorefInput } from '@/lib/sia/georef';
+import type { AirportGeorefInput } from '@/modules/sia-france/lib/georef';
 import { useVacChartQuery, useSiaInstallStatusQuery } from '@/queries/useSiaQuery';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/stores/appStore';
@@ -91,15 +91,6 @@ export default function VacTab() {
       <VacChartPreview icao={icao} chartIcao={vacInfo.icao} />
 
       <div className="flex flex-wrap gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5"
-          onClick={() => void window.siaAPI.openVacPdf(icao)}
-        >
-          <FileText className="h-3.5 w-3.5" />
-          {t('vac.openExternal')}
-        </Button>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.print()}>
           <Printer className="h-3.5 w-3.5" />
           {t('vac.print')}

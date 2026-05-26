@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Expand, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { renderVacPdfToPng } from '@/lib/sia/pdfToPng';
-import { vacPdfPreviewUrl } from '@/lib/sia/vacPdfUrl';
+import { normalizePdfBytes, renderVacPdfPageToPng } from '@/modules/sia-france/lib/vacPdfDocument';
 import { cn } from '@/lib/utils/helpers';
-
-type PreviewMode = 'png' | 'pdf' | null;
+import { VacPdfModal } from './VacPdfModal';
 
 interface VacChartPreviewProps {
   icao: string;
@@ -16,11 +14,11 @@ interface VacChartPreviewProps {
 
 export function VacChartPreview({ icao, chartIcao, className }: VacChartPreviewProps) {
   const { t } = useTranslation();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewMode, setPreviewMode] = useState<PreviewMode>(null);
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+  const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
   const blobUrlRef = useRef<string | null>(null);
 
   const clearBlob = useCallback(() => {
@@ -30,14 +28,13 @@ export function VacChartPreview({ icao, chartIcao, className }: VacChartPreviewP
     }
   }, []);
 
-  const showPng = useCallback(
+  const showThumb = useCallback(
     (bytes: Uint8Array) => {
       clearBlob();
       const blob = new Blob([Uint8Array.from(bytes)], { type: 'image/png' });
       const url = URL.createObjectURL(blob);
       blobUrlRef.current = url;
-      setPreviewUrl(url);
-      setPreviewMode('png');
+      setThumbUrl(url);
       setError(null);
     },
     [clearBlob]
@@ -47,22 +44,24 @@ export function VacChartPreview({ icao, chartIcao, className }: VacChartPreviewP
     setLoading(true);
     setError(null);
     clearBlob();
-    setPreviewUrl(null);
-    setPreviewMode(null);
-    setZoom(1);
+    setThumbUrl(null);
+    setPdfBytes(null);
 
     try {
       let png = await window.siaAPI.getVacPngBytes(icao);
-      let pdfBytes: Uint8Array | null = null;
+      let bytes: Uint8Array | null = null;
 
       if (!png?.length) {
-        pdfBytes = await window.siaAPI.getVacPdfBytes(icao);
-        if (pdfBytes?.length) {
+        const raw = await window.siaAPI.getVacPdfBytes(icao);
+        bytes = raw?.length ? normalizePdfBytes(raw) : null;
+        setPdfBytes(bytes);
+
+        if (bytes?.length) {
           try {
-            png = await renderVacPdfToPng(pdfBytes, 2.5);
+            png = await renderVacPdfPageToPng(bytes, 2);
             await window.siaAPI.writePngCache(chartIcao, png);
           } catch (pdfJsErr) {
-            console.warn('VAC pdf.js render failed, trying main capture', pdfJsErr);
+            console.warn('VAC pdf.js thumbnail failed', pdfJsErr);
           }
         }
       }
@@ -72,16 +71,22 @@ export function VacChartPreview({ icao, chartIcao, className }: VacChartPreviewP
       }
 
       if (png?.length) {
-        showPng(png);
+        showThumb(png);
+        if (!bytes?.length) {
+          const raw = await window.siaAPI.getVacPdfBytes(icao);
+          if (raw?.length) setPdfBytes(normalizePdfBytes(raw));
+        }
         return;
       }
 
-      if (!pdfBytes?.length) {
-        pdfBytes = await window.siaAPI.getVacPdfBytes(icao);
+      if (!bytes?.length) {
+        const raw = await window.siaAPI.getVacPdfBytes(icao);
+        bytes = raw?.length ? normalizePdfBytes(raw) : null;
+        setPdfBytes(bytes);
       }
-      if (pdfBytes?.length) {
-        setPreviewUrl(vacPdfPreviewUrl(chartIcao));
-        setPreviewMode('pdf');
+
+      if (bytes?.length) {
+        setError(null);
         return;
       }
 
@@ -91,57 +96,87 @@ export function VacChartPreview({ icao, chartIcao, className }: VacChartPreviewP
     } finally {
       setLoading(false);
     }
-  }, [icao, chartIcao, t, clearBlob, showPng]);
+  }, [icao, chartIcao, t, clearBlob, showThumb]);
 
   useEffect(() => {
     void load();
     return () => clearBlob();
   }, [load, clearBlob]);
 
-  const zoomIn = () => setZoom((z) => Math.min(4, z + 0.25));
-  const zoomOut = () => setZoom((z) => Math.max(0.5, z - 0.25));
+  const canOpen = Boolean(thumbUrl || pdfBytes?.length);
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="flex flex-wrap items-center gap-1">
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={zoomOut} disabled={!previewUrl}>
-          <ZoomOut className="h-3.5 w-3.5" />
-        </Button>
-        <span className="min-w-[3rem] text-center text-xs text-muted-foreground">
-          {Math.round(zoom * 100)}%
-        </span>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={zoomIn} disabled={!previewUrl}>
-          <ZoomIn className="h-3.5 w-3.5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => void load()} title={t('vac.refresh')}>
-          <RotateCcw className="h-3.5 w-3.5" />
-        </Button>
+    <>
+      <div className={cn('space-y-2', className)}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            className="gap-1.5"
+            disabled={!canOpen && !loading}
+            onClick={() => setModalOpen(true)}
+          >
+            <Expand className="h-3.5 w-3.5" />
+            {t('vac.openModal')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => void load()}
+            title={t('vac.refresh')}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+
+        <button
+          type="button"
+          disabled={!canOpen}
+          onClick={() => canOpen && setModalOpen(true)}
+          className={cn(
+            'group relative w-full overflow-hidden rounded-md border border-border/40 bg-muted/20 text-left transition-colors',
+            canOpen && 'cursor-pointer hover:border-primary/40 hover:bg-muted/30',
+            !canOpen && 'cursor-default'
+          )}
+        >
+          <div className="max-h-48 overflow-hidden">
+            {loading ? (
+              <p className="p-8 text-center text-sm text-muted-foreground">{t('vac.rendering')}</p>
+            ) : thumbUrl ? (
+              <img
+                src={thumbUrl}
+                alt={`VAC ${chartIcao}`}
+                className="w-full object-contain object-top"
+                draggable={false}
+              />
+            ) : error ? (
+              <p className="p-8 text-center text-sm text-muted-foreground">{error}</p>
+            ) : pdfBytes?.length ? (
+              <p className="p-8 text-center text-sm text-muted-foreground">{t('vac.tapToOpen')}</p>
+            ) : (
+              <p className="p-8 text-center text-sm text-muted-foreground">
+                {t('vac.previewFailed')}
+              </p>
+            )}
+          </div>
+          {canOpen && thumbUrl && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:bg-black/20 group-hover:opacity-100">
+              <span className="rounded-md bg-popover/90 px-2 py-1 text-xs font-medium shadow">
+                {t('vac.openModal')}
+              </span>
+            </div>
+          )}
+        </button>
       </div>
 
-      <div className="max-h-[min(70vh,560px)] overflow-auto rounded-md border border-border/40 bg-muted/30 p-1">
-        {loading ? (
-          <p className="p-6 text-center text-sm text-muted-foreground">{t('vac.rendering')}</p>
-        ) : previewMode === 'png' && previewUrl ? (
-          <img
-            src={previewUrl}
-            alt={`VAC ${chartIcao}`}
-            className="origin-top-left"
-            style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-            draggable={false}
-          />
-        ) : previewMode === 'pdf' && previewUrl ? (
-          <iframe
-            src={previewUrl}
-            title={`VAC ${chartIcao}`}
-            className="min-h-[480px] w-full border-0 bg-white"
-            style={{ height: `${480 * zoom}px` }}
-          />
-        ) : (
-          <p className="p-6 text-center text-sm text-muted-foreground">
-            {error ?? t('vac.previewFailed')}
-          </p>
-        )}
-      </div>
-    </div>
+      <VacPdfModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        icao={icao}
+        chartIcao={chartIcao}
+        pdfBytes={pdfBytes}
+      />
+    </>
   );
 }

@@ -21,7 +21,6 @@ import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { registerMbtilesScheme, registerMbtilesHandler } from './lib/mbtiles/protocolHandler';
-import { registerVacPdfScheme, registerVacPdfHandler } from './lib/sia/vacPdfProtocol';
 import {
   closeTileCache,
   getTileCache,
@@ -29,8 +28,13 @@ import {
   registerTileCacheHandler,
   registerTileCacheScheme,
 } from './lib/tileCache';
-import { registerMbtilesIPC } from './main/mbtilesIpc';
-import { registerSiaIPC } from './main/siaIpc';
+import {
+  initModuleManager,
+  registerModulesIPC,
+  syncBundledModulesRuntime,
+} from './main/modulesIpc';
+import { siaFranceManifest } from './modules/sia-france';
+import { registerVacPdfScheme } from './modules/sia-france/main/protocol';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -1492,8 +1496,7 @@ function registerIpcHandlers() {
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
   registerXPlaneLogIPC(() => dataManager.getXPlanePath());
-  registerSiaIPC(() => mainWindow);
-  void registerMbtilesIPC(() => mainWindow);
+  void registerModulesIPC(() => mainWindow);
 
   ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
     try {
@@ -1703,10 +1706,11 @@ app.whenReady().then(async () => {
   initTileCache();
   registerTileCacheHandler();
   registerMbtilesHandler();
-  registerVacPdfHandler();
+  await initModuleManager([siaFranceManifest]);
 
   registerIpcHandlers();
   mainWindow = createWindow();
+  await syncBundledModulesRuntime();
 
   // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
   mainWindow.on('focus', () => {
