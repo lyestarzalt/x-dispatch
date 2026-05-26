@@ -1607,7 +1607,8 @@
     "products": {
       "eaipFull": "Full eAIP ZIP",
       "vacAmdtMetro": "Metropolitan VAC amendment",
-      "vacAmdtHeli": "Heliport VAC amendment"
+      "vacAmdtHeli": "Heliport VAC amendment",
+      "vacImport": "Manual VAC import"
     },
     "account": {
       "title": "SIA account (free)",
@@ -1628,20 +1629,23 @@
       "productNotFound": "Product not found on the SIA catalog — try again later or import the ZIP manually.",
       "extractTimeout": "Extraction timed out. Check that the ZIP file is valid and not corrupted.",
       "noPdfsInArchive": "No PDF files found in the archive. The full eAIP ZIP may contain nested archives — retry with app version 1.8.5+.",
-      "noVacMatched": "PDFs were found but no French VAC charts (LF*) were recognized. Make sure you import the full SIA eAIP ZIP."
+      "noVacMatched": "PDFs were found but no VAC chart was recognized (4-letter ICAO in the filename, e.g. EGLL.pdf or AD-2.LFPO.pdf)."
     },
+    "importVacInternational": "Import VAC (other countries)",
     "settings": {
-      "title": "SIA / OACI charts",
-      "description": "Install French VAC charts from eAIP and import an OACI MBTiles basemap.",
-      "eaip": "eAIP data (VAC)",
+      "title": "VAC charts",
+      "description": "Download French VAC charts (SIA eAIP) or import VAC PDFs from any country.",
+      "eaip": "France eAIP data (SIA)",
+      "internationalVac": "International and other VAC sources",
+      "internationalVacDescription": "Import a folder or ZIP archive of VAC PDFs. Each file must include a 4-letter ICAO code (e.g. EGLL.pdf, LSGG_VAC.pdf).",
       "installed": "Cycle {{cycle}} — {{vacCount}} VAC, {{aipCount}} AIP charts — {{size}} on disk",
-      "notInstalled": "No SIA data installed. Download or import the eAIP ZIP from the SIA website."
+      "notInstalled": "No VAC charts installed. Use SIA (France) or international import below."
     }
   },
   "vac": {
-    "noData": "Install eAIP data in Settings → Graphics to view VAC charts.",
+    "noData": "Enable the VAC module under Settings → Modules, then import charts in the VAC / SIA tab.",
     "notFound": "No VAC chart found for this aerodrome.",
-    "notFoundHint": "Also import the metropolitan VAC amendment (Settings → SIA) or re-import the full eAIP.",
+    "notFoundHint": "Import a VAC for this ICAO under Settings → VAC / SIA (SIA France or international import).",
     "cycle": "Cycle {{cycle}}",
     "rendering": "Generating preview…",
     "previewFailed": "Could not display the VAC chart in the app.",
@@ -1667,7 +1671,10 @@
     "trusted": "Trusted",
     "uninstall": "Remove",
     "installSuccess": "Module installed.",
-    "uninstallSuccess": "Module removed."
+    "uninstallSuccess": "Module removed.",
+    "siaFrance": {
+      "settingsTab": "VAC / SIA"
+    }
   },
   "oaci": {
     "opacity": "OACI map opacity",

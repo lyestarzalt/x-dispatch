@@ -7,6 +7,7 @@ import {
   extractIcaoFromVacPath,
   isAtlasVacPdfPath,
   isEaipAdPdfPath,
+  isGenericVacPdfPath,
   mergeVacEntry,
 } from './vacIndex';
 import type { VacChartEntry } from './types';
@@ -55,7 +56,7 @@ function buildEntry(
   validTo: string
 ): VacChartEntry | null {
   const icao = extractIcaoFromVacPath(relativePath);
-  if (!icao || !icao.startsWith('LF')) return null;
+  if (!icao) return null;
   return {
     icao,
     pdfPath: absPath,
@@ -141,7 +142,42 @@ export function indexVacAmendmentPdfs(
 
   for (const absPath of files) {
     const rel = path.relative(extractRoot, absPath).replace(/\\/g, '/');
-    if (!isAtlasVacPdfPath(rel) && !/VAC/i.test(path.basename(rel))) continue;
+    if (!isAtlasVacPdfPath(rel) && !/VAC/i.test(path.basename(rel)) && !isGenericVacPdfPath(rel)) {
+      continue;
+    }
+    const entry = buildEntry(absPath, rel, cycle, validFrom, validTo);
+    if (!entry) continue;
+    next[entry.icao] = mergeVacEntry(next[entry.icao], { ...entry, chartType: 'vac' });
+  }
+
+  return next;
+}
+
+/** Index a flat folder or archive of VAC PDFs (any country, ICAO in filename or path). */
+export function indexGenericVacPdfs(
+  extractRoot: string,
+  cycle: string,
+  validFrom: string,
+  validTo: string,
+  existingVac: Record<string, VacChartEntry> = {}
+): Record<string, VacChartEntry> {
+  const next = { ...existingVac };
+  const files: string[] = [];
+
+  function collect(dir: string) {
+    if (!fs.existsSync(dir)) return;
+    for (const name of fs.readdirSync(dir)) {
+      const full = path.join(dir, name);
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) collect(full);
+      else if (name.toLowerCase().endsWith('.pdf')) files.push(full);
+    }
+  }
+  collect(extractRoot);
+
+  for (const absPath of files) {
+    const rel = path.relative(extractRoot, absPath).replace(/\\/g, '/');
+    if (!isGenericVacPdfPath(rel)) continue;
     const entry = buildEntry(absPath, rel, cycle, validFrom, validTo);
     if (!entry) continue;
     next[entry.icao] = mergeVacEntry(next[entry.icao], { ...entry, chartType: 'vac' });

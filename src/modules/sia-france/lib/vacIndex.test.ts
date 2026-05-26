@@ -60,6 +60,12 @@ describe('vacIndex', () => {
     expect(findVacEntryForIcao(vacIndex, 'LFPA', aipIndex)?.pdfRelPath).toBe(ATLAS_LFPA);
   });
 
+  it('extracts ICAO from international VAC filenames', () => {
+    expect(extractIcaoFromVacPath('EGLL.pdf')).toBe('EGLL');
+    expect(extractIcaoFromVacPath('charts/LSGG_VAC.pdf')).toBe('LSGG');
+    expect(extractIcaoFromVacPath('AD-2.EGLL.pdf')).toBe('EGLL');
+  });
+
   it('mergeVacEntry prefers Atlas-VAC plate over eAIP AD', () => {
     const atlas: VacChartEntry = {
       icao: 'LFPA',

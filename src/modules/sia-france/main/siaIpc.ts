@@ -34,8 +34,8 @@ export const SIA_IPC_CHANNELS = [
   'sia:downloadProduct',
   'sia:installFromLocalZip',
   'sia:browseForZip',
-  'sia:getOaciAirspaces',
   'sia:openVacPdf',
+  'sia:importVacArchive',
 ] as const;
 
 let siaIpcRegistered = false;
@@ -216,7 +216,25 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
     return result.filePaths[0];
   });
 
-  ipcMain.handle('sia:getOaciAirspaces', () => store.loadOaciAirspaces());
+  ipcMain.handle('sia:importVacArchive', async () => {
+    const win = getMainWindow();
+    const opts: OpenDialogOptions = {
+      title: 'Import VAC charts (ZIP or folder)',
+      properties: ['openFile', 'openDirectory'],
+      filters: [{ name: 'Archives', extensions: ['zip', '7z'] }],
+    };
+    const result = win
+      ? await dialog.showOpenDialog(win, opts)
+      : await dialog.showOpenDialog(opts);
+    if (result.canceled || !result.filePaths[0]) return { success: false, error: 'cancelled' };
+    const win2 = getMainWindow();
+    try {
+      return await store.installVacImport(result.filePaths[0], (p) => sendProgress(win2, p));
+    } catch (err) {
+      logger.main.error('sia:importVacArchive failed', err);
+      return { success: false, error: (err as Error).message };
+    }
+  });
 
   ipcMain.handle('sia:openVacPdf', (_, icao: string) => {
     const pdfPath = store.getVacPdfPath(icao?.toUpperCase() ?? '');

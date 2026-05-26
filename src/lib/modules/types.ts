@@ -6,9 +6,15 @@ export interface ModuleCondition {
   countryIncludes?: string;
 }
 
+/** @deprecated Use settings tab registration in registry instead. */
 export interface ModuleSettingsContribution {
   sectionId: string;
   tabId?: string;
+}
+
+export interface ModuleSettingsTabContribution {
+  tabId: string;
+  labelKey: string;
 }
 
 export interface ModuleAirportTabContribution {

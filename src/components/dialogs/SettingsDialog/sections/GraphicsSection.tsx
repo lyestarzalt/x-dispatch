@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { isModuleActive, settingsModuleSections } from '@/lib/modules/registry';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
-import { useModulesStore } from '@/stores/modulesStore';
 import type { SurfaceDetail } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
@@ -34,11 +32,6 @@ export function GraphicsSection() {
   const setTerrain3dEnabled = useMapStore((s) => s.setTerrain3dEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
-  const modules = useModulesStore((s) => s.modules);
-  const moduleSections = settingsModuleSections.filter(
-    (section) => section.tabId === 'graphics' && isModuleActive(modules, section.moduleId)
-  );
-
   return (
     <div className="space-y-6">
       <SettingsHeader
@@ -60,10 +53,6 @@ export function GraphicsSection() {
           onRemove={removeUserMapStyle}
         />
       </SettingsSectionBlock>
-
-      {moduleSections.map((section) => (
-        <div key={section.id}>{section.render()}</div>
-      ))}
 
       {/* Terrain */}
       <SettingsSectionBlock title={t('settings.graphics.terrain')}>

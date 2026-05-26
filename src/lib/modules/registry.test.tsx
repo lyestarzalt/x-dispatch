@@ -11,7 +11,7 @@ describe('modules registry', () => {
               id: 'sia-france',
               name: 'SIA',
               version: '1.0.0',
-              kind: 'core',
+              kind: 'bundled',
             },
             state: {
               id: 'sia-france',
@@ -28,20 +28,10 @@ describe('modules registry', () => {
     expect(isModuleActive([], 'sia-france')).toBe(false);
   });
 
-  it('keeps VAC tab scoped to french airports', () => {
+  it('shows VAC tab for any aerodrome when module is active', () => {
     const vac = airportModuleTabs.find((tab) => tab.id === 'vac');
     expect(vac).toBeDefined();
-    expect(
-      vac?.isVisible({
-        id: 'LFPO',
-        metadata: { country: 'FRA France' },
-      } as never)
-    ).toBe(true);
-    expect(
-      vac?.isVisible({
-        id: 'KJFK',
-        metadata: { country: 'USA' },
-      } as never)
-    ).toBe(false);
+    expect(vac?.isVisible({ id: 'LFPO', metadata: { country: 'FRA' } } as never)).toBe(true);
+    expect(vac?.isVisible({ id: 'EGLL', metadata: { country: 'GBR' } } as never)).toBe(true);
   });
 });

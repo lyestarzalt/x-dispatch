@@ -453,10 +453,6 @@ export default function Toolbar({
   const setDayNightEnabled = useMapStore((s) => s.setDayNightEnabled);
   const vacOverlayEnabled = useMapStore((s) => s.vacOverlayEnabled);
   const setVacOverlayEnabled = useMapStore((s) => s.setVacOverlayEnabled);
-  const oaciBasemapEnabled = useMapStore((s) => s.oaciBasemapEnabled);
-  const setOaciBasemapEnabled = useMapStore((s) => s.setOaciBasemapEnabled);
-  const oaciVectorEnabled = useMapStore((s) => s.oaciVectorEnabled);
-  const setOaciVectorEnabled = useMapStore((s) => s.setOaciVectorEnabled);
   const modules = useModulesStore((s) => s.modules);
   const siaModuleEnabled = isModuleActive(modules, 'sia-france');
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
@@ -944,29 +940,13 @@ export default function Toolbar({
                 {t('toolbar.dayNight')}
               </DropdownMenuCheckboxItem>
               {siaModuleEnabled && (
-                <>
-                  <DropdownMenuCheckboxItem
-                    checked={vacOverlayEnabled}
-                    onCheckedChange={() => setVacOverlayEnabled(!vacOverlayEnabled)}
-                  >
-                    <Map className="mr-2 h-4 w-4" />
-                    {t('toolbar.vacOverlay')}
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={oaciBasemapEnabled}
-                    onCheckedChange={() => setOaciBasemapEnabled(!oaciBasemapEnabled)}
-                  >
-                    <Map className="mr-2 h-4 w-4" />
-                    {t('toolbar.oaciBasemap')}
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={oaciVectorEnabled}
-                    onCheckedChange={() => setOaciVectorEnabled(!oaciVectorEnabled)}
-                  >
-                    <Map className="mr-2 h-4 w-4" />
-                    {t('toolbar.oaciVector')}
-                  </DropdownMenuCheckboxItem>
-                </>
+                <DropdownMenuCheckboxItem
+                  checked={vacOverlayEnabled}
+                  onCheckedChange={() => setVacOverlayEnabled(!vacOverlayEnabled)}
+                >
+                  <Map className="mr-2 h-4 w-4" />
+                  {t('toolbar.vacOverlay')}
+                </DropdownMenuCheckboxItem>
               )}
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />

@@ -13,7 +13,6 @@ import {
   useSiaInstallStatusQuery,
   useSiaProductsQuery,
 } from '@/queries/useSiaQuery';
-import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock } from '../primitives';
 
 function formatBytes(n: number): string {
@@ -36,10 +35,7 @@ export function SiaChartsSection() {
   const installMutation = useSiaInstallMutation();
   const downloadMutation = useSiaDownloadMutation();
   const clearMutation = useSiaClearMutation();
-  const oaciOpacity = useSettingsStore((s) => s.sia.oaciOpacity);
-  const updateSia = useSettingsStore((s) => s.updateSiaSettings);
   const [progress, setProgress] = useState<{ percent: number; message: string } | null>(null);
-  const [mbtilesName, setMbtilesName] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accountMessage, setAccountMessage] = useState<string | null>(null);
@@ -62,12 +58,6 @@ export function SiaChartsSection() {
     });
     return unsub;
   }, [refetch, t]);
-
-  useEffect(() => {
-    void window.mbtilesAPI.getConfig().then((cfg) => {
-      setMbtilesName(cfg?.name ?? null);
-    });
-  }, []);
 
   const fullProduct = products?.find((p) => p.kind === 'eaip-full');
   const busy = installMutation.isPending || downloadMutation.isPending;
@@ -134,11 +124,12 @@ export function SiaChartsSection() {
     }
   };
 
-  const handleImportMbtiles = async () => {
-    const result = await window.mbtilesAPI.browseAndImport();
-    if (result.success) {
-      const cfg = await window.mbtilesAPI.getConfig();
-      setMbtilesName(cfg?.name ?? null);
+  const handleImportInternationalVac = async () => {
+    setDownloadError(null);
+    setProgress({ percent: 0, message: t('sia.installing') });
+    const result = await window.siaAPI.importVacArchive();
+    if (!result.success && result.error !== 'cancelled') {
+      setDownloadError(translateSiaError(t, result.error));
     }
   };
 
@@ -310,38 +301,21 @@ export function SiaChartsSection() {
         </div>
       </SettingsSectionBlock>
 
-      <SettingsSectionBlock title={t('oaci.settings.title')}>
-        <p className="mb-3 text-sm text-muted-foreground">
-          {mbtilesName ? t('oaci.settings.loaded', { name: mbtilesName }) : t('oaci.settings.none')}
-        </p>
-        <label className="mb-2 flex items-center justify-between text-sm">
-          <span>{t('oaci.opacity')}</span>
-          <span className="font-mono text-muted-foreground">{Math.round(oaciOpacity * 100)}%</span>
-        </label>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(oaciOpacity * 100)}
-          className="mb-3 w-full"
-          onChange={(e) => updateSia({ oaciOpacity: Number(e.target.value) / 100 })}
-        />
+      <SettingsSectionBlock
+        title={t('sia.settings.internationalVac')}
+        description={t('sia.settings.internationalVacDescription')}
+      >
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => void handleImportMbtiles()}>
-            {t('oaci.importMbtiles')}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={busy}
+            onClick={() => void handleImportInternationalVac()}
+          >
+            <Download className="h-3.5 w-3.5" />
+            {t('sia.importVacInternational')}
           </Button>
-          {mbtilesName && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                await window.mbtilesAPI.clear();
-                setMbtilesName(null);
-              }}
-            >
-              {t('oaci.removeMbtiles')}
-            </Button>
-          )}
         </div>
       </SettingsSectionBlock>
 

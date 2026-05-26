@@ -19,5 +19,3 @@ export { useTaxiRouteSync } from './useTaxiRouteSync';
 export { useApproachLightAnimation } from './useApproachLightAnimation';
 export { useCursorElevation } from './useCursorElevation';
 export { useVacOverlaySync } from '@/modules/sia-france/renderer/hooks/useVacOverlaySync';
-export { useOaciBasemap } from '@/modules/sia-france/renderer/hooks/useOaciBasemap';
-export { useOaciVectorSync } from '@/modules/sia-france/renderer/hooks/useOaciVectorSync';

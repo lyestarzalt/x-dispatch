@@ -7,12 +7,12 @@ import { extractArchive } from '@/lib/addonManager/installer/extraction';
 import { getDb, saveDb } from '@/lib/db';
 import { metadata, siaCharts } from '@/lib/db/schema';
 import logger from '@/lib/utils/logger';
-import { getCatalogProduct, getLatestCatalogCycle } from './catalog';
+import { getCatalogProduct, getLatestCatalogCycle, VAC_IMPORT_PRODUCT } from './catalog';
 import { resolveMagentoProduct } from './catalogDiscovery';
 import { downloadToFile, getDirSizeBytes, type DownloadProgressCallback } from './downloader';
 import { loadCredentials } from './siaCredentials';
 import { purchaseAndGetDownloadUrl } from './siaGraphqlClient';
-import { indexEaipExtract, indexVacAmendmentPdfs } from './eaipIndexer';
+import { indexEaipExtract, indexGenericVacPdfs, indexVacAmendmentPdfs } from './eaipIndexer';
 import { extractNestedArchives } from './nestedArchive';
 import type {
   SiaInstallManifest,
@@ -315,6 +315,100 @@ export class ChartStore {
     return this.installFromZip(destZip, productId, product.airacCycle, product.validFrom, product.validTo, onProgress);
   }
 
+  /** Import VAC PDFs from a ZIP archive or a folder (international / ad-hoc). */
+  async installVacImport(
+    sourcePath: string,
+    onProgress?: DownloadProgressCallback
+  ): Promise<{ success: boolean; error?: string }> {
+    const product = VAC_IMPORT_PRODUCT;
+    const productId = product.id;
+    if (!fs.existsSync(sourcePath)) {
+      return { success: false, error: 'File not found' };
+    }
+
+    const stat = fs.statSync(sourcePath);
+    if (stat.isDirectory()) {
+      return this.installFromDirectory(
+        path.resolve(sourcePath),
+        productId,
+        product.airacCycle,
+        product.validFrom,
+        product.validTo,
+        onProgress
+      );
+    }
+
+    return this.installFromLocalZip(sourcePath, productId, onProgress);
+  }
+
+  private async installFromDirectory(
+    sourceDir: string,
+    productId: string,
+    cycle: string,
+    validFrom: string,
+    validTo: string,
+    onProgress?: DownloadProgressCallback
+  ): Promise<{ success: boolean; error?: string }> {
+    const extractPath = path.join(this.extractDir, `${productId}-${Date.now()}`);
+    await fsp.mkdir(extractPath, { recursive: true });
+
+    onProgress?.({
+      productId,
+      phase: 'indexing',
+      percent: 40,
+      message: 'Copying charts…',
+    });
+
+    await this.copyDirectoryRecursive(sourceDir, extractPath);
+
+    onProgress?.({
+      productId,
+      phase: 'indexing',
+      percent: 80,
+      message: 'Indexing charts…',
+    });
+
+    let vacIndex = { ...this.manifest.vacIndex };
+    vacIndex = indexGenericVacPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
+    if (Object.keys(vacIndex).length === 0) {
+      return emitInstallError(productId, 'sia.errors.noVacMatched', onProgress);
+    }
+
+    this.manifest.installedProducts[productId] = {
+      productId,
+      cycle,
+      installedAt: Date.now(),
+      extractPath,
+    };
+    this.manifest.vacIndex = vacIndex;
+    this.manifest.cycle = cycle;
+    this.manifest.installedAt = Date.now();
+    this.saveManifest();
+    await this.syncVacIndexToDb(vacIndex, this.manifest.aipIndex, cycle, validFrom, validTo);
+
+    onProgress?.({
+      productId,
+      phase: 'done',
+      percent: 100,
+      message: 'Installation complete',
+    });
+    return { success: true };
+  }
+
+  private async copyDirectoryRecursive(src: string, dest: string): Promise<void> {
+    await fsp.mkdir(dest, { recursive: true });
+    for (const name of await fsp.readdir(src)) {
+      const from = path.join(src, name);
+      const to = path.join(dest, name);
+      const stat = await fsp.stat(from);
+      if (stat.isDirectory()) {
+        await this.copyDirectoryRecursive(from, to);
+      } else {
+        await fsp.copyFile(from, to);
+      }
+    }
+  }
+
   async downloadAndInstall(
     productId: string,
     onProgress?: DownloadProgressCallback
@@ -484,6 +578,11 @@ export class ChartStore {
               ? 'sia.errors.noPdfsInArchive'
               : 'sia.errors.noVacMatched';
           return emitInstallError(productId, hint, onProgress);
+        }
+      } else if (product.kind === 'vac-import') {
+        vacIndex = indexGenericVacPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
+        if (Object.keys(vacIndex).length === 0) {
+          return emitInstallError(productId, 'sia.errors.noVacMatched', onProgress);
         }
       } else {
         vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);

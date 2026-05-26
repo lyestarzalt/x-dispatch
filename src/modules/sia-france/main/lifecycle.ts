@@ -1,5 +1,4 @@
 import type { BrowserWindow } from 'electron';
-import { registerMbtilesIPC, unregisterMbtilesIPC } from '@/main/mbtilesIpc';
 import { registerVacPdfHandler, unregisterVacPdfHandler } from '@/modules/sia-france/lib/vacPdfProtocol';
 import logger from '@/lib/utils/logger';
 import { registerSiaIPC, unregisterSiaIPC } from './siaIpc';
@@ -18,7 +17,6 @@ export async function enableSiaFranceModule(
   if (siaRuntimeEnabled) return;
   registerVacPdfHandler();
   registerSiaIPC(getMainWindow);
-  await registerMbtilesIPC(getMainWindow);
   siaRuntimeEnabled = true;
   logger.main.info(`${SIA_MODULE_ID} runtime enabled`);
 }
@@ -26,7 +24,6 @@ export async function enableSiaFranceModule(
 export async function disableSiaFranceModule(): Promise<void> {
   if (!siaRuntimeEnabled) return;
   unregisterSiaIPC();
-  unregisterMbtilesIPC();
   unregisterVacPdfHandler();
   siaRuntimeEnabled = false;
   logger.main.info(`${SIA_MODULE_ID} runtime disabled`);

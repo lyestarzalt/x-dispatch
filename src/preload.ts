@@ -421,7 +421,8 @@ contextBridge.exposeInMainWorld('siaAPI', {
     ipcRenderer.invoke('sia:installFromLocalZip', zipPath, productId),
   browseForZip: () => ipcRenderer.invoke('sia:browseForZip'),
   openVacPdf: (icao: string) => ipcRenderer.invoke('sia:openVacPdf', icao),
-  getOaciAirspaces: () => ipcRenderer.invoke('sia:getOaciAirspaces'),
+  importVacArchive: () =>
+    ipcRenderer.invoke('sia:importVacArchive') as Promise<{ success: boolean; error?: string }>,
   onDownloadProgress: (
     callback: (progress: import('./modules/sia-france/lib/types').SiaDownloadProgress) => void
   ) => {
@@ -889,7 +890,7 @@ declare global {
       ) => Promise<{ success: boolean; error?: string }>;
       browseForZip: () => Promise<string | null>;
       openVacPdf: (icao: string) => Promise<{ success: boolean }>;
-      getOaciAirspaces: () => Promise<import('./modules/sia-france/lib/xml/airspaceParser').OaciAirspaceFeature[]>;
+      importVacArchive: () => Promise<{ success: boolean; error?: string }>;
       onDownloadProgress: (
         callback: (progress: import('./modules/sia-france/lib/types').SiaDownloadProgress) => void
       ) => () => void;

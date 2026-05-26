@@ -1,5 +1,5 @@
 /** SIA chart product types distributed via eAIP. */
-export type SiaProductKind = 'eaip-full' | 'vac-amdt-metro' | 'vac-amdt-heli';
+export type SiaProductKind = 'eaip-full' | 'vac-amdt-metro' | 'vac-amdt-heli' | 'vac-import';
 
 export interface SiaProduct {
   id: string;

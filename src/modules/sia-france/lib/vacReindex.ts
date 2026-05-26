@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import { getCatalogProduct, getLatestCatalogCycle } from './catalog';
-import { indexEaipExtract, indexVacAmendmentPdfs } from './eaipIndexer';
+import { indexEaipExtract, indexGenericVacPdfs, indexVacAmendmentPdfs } from './eaipIndexer';
 import type { SiaProductKind } from './types';
 import { mergeVacEntry } from './vacIndex';
 import type { SiaInstallManifest, VacChartEntry } from './types';
@@ -19,6 +19,7 @@ function inferProductKind(productId: string): SiaProductKind {
   if (id.includes('heli')) return 'vac-amdt-heli';
   if (id.includes('vac') || id.includes('amdt')) return 'vac-amdt-metro';
   if (id.includes('eaip')) return 'eaip-full';
+  if (id.includes('vac-import') || id.includes('vac_import')) return 'vac-import';
   return 'eaip-full';
 }
 
@@ -66,6 +67,8 @@ export async function reindexVacFromManifest(
       for (const [icao, entry] of Object.entries(indexed.aipIndex)) {
         aipIndex[icao] = mergeVacEntry(aipIndex[icao], entry);
       }
+    } else if (kind === 'vac-import') {
+      vacIndex = indexGenericVacPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
     } else {
       vacIndex = indexVacAmendmentPdfs(extractPath, cycle, validFrom, validTo, vacIndex);
     }

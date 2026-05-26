@@ -40,7 +40,19 @@ export const SIA_PRODUCT_CATALOG: readonly SiaProduct[] = [
   },
 ] as const;
 
+/** Manual import of VAC PDFs (ZIP or folder) from any country. */
+export const VAC_IMPORT_PRODUCT: SiaProduct = {
+  id: 'vac-import',
+  kind: 'vac-import',
+  nameKey: 'sia.products.vacImport',
+  pageUrl: '',
+  airacCycle: 'manual',
+  validFrom: '',
+  validTo: '',
+};
+
 export function getCatalogProduct(productId: string): SiaProduct | undefined {
+  if (productId === VAC_IMPORT_PRODUCT.id) return VAC_IMPORT_PRODUCT;
   return SIA_PRODUCT_CATALOG.find((p) => p.id === productId);
 }
 

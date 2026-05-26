@@ -1,10 +1,11 @@
 import * as path from 'path';
 import type { VacChartEntry } from './types';
 
-const ICAO_IN_PATH_RE = /(?:^|[/\\_])(LF[A-Z0-9]{2,4})(?:[_\-.]|$)/i;
-const ICAO_FILENAME_RE = /^(LF[A-Z0-9]{2,4})(?:[_\-.].*)?$/i;
-/** SIA Atlas-VAC plate: AD-2.LFPA.pdf, AD-3.LFPO.pdf, … */
-const SIA_VAC_PLATE_FILENAME_RE = /^AD-\d+\.(LF[A-Z0-9]{2,4})$/i;
+const ICAO_IN_PATH_RE = /(?:^|[/\\_])([A-Z][A-Z0-9]{3})(?:[_\-.]|$)/i;
+const ICAO_FILENAME_RE = /^([A-Z][A-Z0-9]{3})(?:[_\-.].*)?$/i;
+/** SIA / Eurocontrol-style plate: AD-2.LFPA.pdf, AD-2.EGLL.pdf, … */
+const SIA_VAC_PLATE_FILENAME_RE = /^AD-\d+\.([A-Z][A-Z0-9]{3})$/i;
+const ICAO_FOUR_LETTER_RE = /^[A-Z][A-Z0-9]{3}$/;
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, '/').toUpperCase();
@@ -29,9 +30,9 @@ export function isAtlasVacPdfPath(relativePath: string): boolean {
 
   if (!inAtlasTree) return false;
 
-  if (upper.includes('/VAC/AD/') || /\/VAC\/AD\/LF[A-Z0-9]{2,4}/.test(upper)) return true;
+  if (upper.includes('/VAC/AD/') || /\/VAC\/AD\/[A-Z][A-Z0-9]{3}/.test(upper)) return true;
   if (isSiaVacPlateFilename(relativePath)) return true;
-  if (upper.includes('/VAC/') && /LF[A-Z0-9]{2,4}/.test(upper)) return true;
+  if (upper.includes('/VAC/') && ICAO_IN_PATH_RE.test(upper)) return true;
   return false;
 }
 
@@ -58,25 +59,25 @@ export function extractIcaoFromVacPath(filePath: string): string | null {
   const siaPlate = base.match(SIA_VAC_PLATE_FILENAME_RE);
   if (siaPlate?.[1]) return siaPlate[1].toUpperCase();
 
-  const dotIcao = base.match(/\.(LF[A-Z0-9]{2,4})$/i);
-  if (dotIcao?.[1]?.length === 4) return dotIcao[1].toUpperCase();
+  const dotIcao = base.match(/\.([A-Z][A-Z0-9]{3})$/i);
+  if (dotIcao?.[1] && ICAO_FOUR_LETTER_RE.test(dotIcao[1])) return dotIcao[1].toUpperCase();
 
   const fromName = base.match(ICAO_FILENAME_RE);
   if (fromName?.[1]) return fromName[1].toUpperCase();
 
-  const embedded = base.match(/LF[A-Z]{2}[A-Z0-9]{1}/i);
-  if (embedded?.[0]?.length === 4) return embedded[0].toUpperCase();
+  const embedded = base.match(/\b([A-Z][A-Z0-9]{3})\b/);
+  if (embedded?.[1] && ICAO_FOUR_LETTER_RE.test(embedded[1])) return embedded[1].toUpperCase();
 
   const normalized = filePath.replace(/\\/g, '/');
-  const adFolder = normalized.match(/\/AD\/(LF[A-Z0-9]{2,4})(?:\/|[_\-.]|$)/i);
-  if (adFolder?.[1]) return adFolder[1].toUpperCase();
+  const adFolder = normalized.match(/\/AD\/([A-Z][A-Z0-9]{3})(?:\/|[_\-.]|$)/i);
+  if (adFolder?.[1] && ICAO_FOUR_LETTER_RE.test(adFolder[1])) return adFolder[1].toUpperCase();
 
   const parts = normalized.split('/');
   for (let i = parts.length - 1; i >= 0; i--) {
     const part = parts[i] ?? '';
     const m = part.match(ICAO_IN_PATH_RE);
-    if (m?.[1] && m[1].length >= 4) return m[1].toUpperCase();
-    if (/^LF[A-Z0-9]{2,4}$/i.test(part)) return part.toUpperCase();
+    if (m?.[1] && ICAO_FOUR_LETTER_RE.test(m[1])) return m[1].toUpperCase();
+    if (ICAO_FOUR_LETTER_RE.test(part)) return part.toUpperCase();
   }
   return null;
 }
@@ -95,6 +96,13 @@ export function isVacPdfPath(relativePath: string): boolean {
 
 export function isLfAirportPdfPath(relativePath: string): boolean {
   return isVacPdfPath(relativePath);
+}
+
+/** Any PDF whose path or filename contains a valid 4-character ICAO. */
+export function isGenericVacPdfPath(relativePath: string): boolean {
+  if (!relativePath.toLowerCase().endsWith('.pdf')) return false;
+  const icao = extractIcaoFromVacPath(relativePath);
+  return icao !== null && ICAO_FOUR_LETTER_RE.test(icao);
 }
 
 export function mergeVacEntry(
