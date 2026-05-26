@@ -6,7 +6,7 @@ export const siaFranceManifest: XDispatchModuleManifest = {
   version: '1.1.1',
   description: 'VAC chart import, integrated preview, and map overlay for aerodromes worldwide',
   author: '4SLSL community',
-  minAppVersion: '1.9.1',
+  minAppVersion: '1.9.1a',
   kind: 'bundled',
   defaultEnabled: false,
   contributions: {

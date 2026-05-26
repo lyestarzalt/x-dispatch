@@ -3,7 +3,7 @@
     {
       "id": "sia-france",
       "repository": "4SLSL/vac-sia",
-      "defaultRef": "v1.1.1",
+      "defaultRef": "v1.1.2",
       "trusted": true,
       "bundled": true,
       "name": "SIA France Charts",

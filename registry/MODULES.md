@@ -6,27 +6,26 @@
 - **External module** (`kind: external`): installed from ZIP or GitHub.
 - **Trusted store**: `registry/modules.json`.
 
-## Phase 1 (current)
+## Phase 1
 
 - Declarative manifest `x-dispatch-module.json`
 - Main-process lifecycle (IPC, protocols) on enable/disable
-- UI via `moduleUiRegistry.tsx` for bundled modules
 - Settings sidebar tab per enabled module (`contributions.settingsTabs`)
 
 ## Phase 2
 
-### 2a — Manifest-driven UI (in progress)
+### 2a — Manifest-driven UI (done)
 
 - Manifest declares `settingsTabs`, `airportTabs`, etc.
-- Core maps `moduleId` → React entrypoints in `src/lib/modules/moduleUiRegistry.tsx`
-- External modules still need bundled UI in the app OR install path with pre-built bundle
+- Core maps `moduleId` → React entrypoints in `moduleUiRegistry.tsx`
+- SIA/VAC UI lives under `src/modules/sia-france/renderer/` (core re-exports kept for compatibility)
 
-### 2b — External renderer bundles (planned)
+### 2b — External renderer bundles (in progress)
 
-- Optional `renderer` field in manifest (e.g. `renderer.bundle.js`)
-- Build pipeline for module authors (Vite library mode)
-- Secure load from `userData/community-modules/<id>/<version>/`
-- Signature / trusted-store verification before execution
+- Optional `renderer` field in manifest (e.g. `dist/renderer.bundle.js`)
+- `modulesAPI.getRendererBundlePath` resolves the file under `userData/community-modules/<id>/<version>/`
+- `moduleRendererLoader.ts` — execution via custom protocol (next step)
+- Module authors: build with Vite library mode; see [4SLSL/vac-sia](https://github.com/4SLSL/vac-sia) `host-ui/`
 
 ## Module manifest
 

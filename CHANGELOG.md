@@ -1,12 +1,24 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## v1.9.1a - 2026-05-26
+
+### Features
+
+- **modules:** Registre UI manifest-driven (phase 2a) — onglets Réglages / VAC déclarés par le manifest
+- **modules:** UI SIA/VAC sous `src/modules/sia-france/renderer/` ; squelette chargement bundle externe (phase 2b)
+- **vac:** VAC internationales, onglet réglages module, retrait OACI (fork 4SLSL)
+
+### Release
+
+- Version communautaire **1.9.1a** (remplace les tags fork 1.9.2)
+
 ## v1.9.2 - 2026-05-26
 
 ### Release
 
-- 1.9.2 by @github-actions[bot]([1f9b08f](https://github.com/4SLSL/x-dispatch/commit/1f9b08fd5be4cf4ac51944a0b2707249668021c0))
-
+- 1.9.2 by @github-actions[bot](<[1f9b08f](https://github.com/4SLSL/x-dispatch/commit/1f9b08fd5be4cf4ac51944a0b2707249668021c0)>)
 
 ## v1.9.1 - 2026-05-26
 
@@ -35,7 +47,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.9.0 by @github-actions[bot]([e31cedc](https://github.com/4SLSL/x-dispatch/commit/e31cedcde0b62acf2b585fbe3929c2f22d60bf67))
+- Update CHANGELOG.md for v1.9.0 by @github-actions[bot](<[e31cedc](https://github.com/4SLSL/x-dispatch/commit/e31cedcde0b62acf2b585fbe3929c2f22d60bf67)>)
 - Backfill v1.9.0 changelog with rc.3 content by @lyestarzalt([efb3992](https://github.com/4SLSL/x-dispatch/commit/efb3992cff0c0b9f5267b8490b2df5ebdffdd576))
 - Refresh screenshots by @lyestarzalt([102f642](https://github.com/4SLSL/x-dispatch/commit/102f642bdf6ac623ba6f30400cc54c8d5dd14183))
 - Replace stale track-plane.png with refreshed flight-tracking.png by @lyestarzalt([e4ccfb2](https://github.com/4SLSL/x-dispatch/commit/e4ccfb2f3bd83428e7eedd274daeeb04790baa3c))
@@ -53,20 +65,18 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.9.0 by @github-actions[bot]([e5363e3](https://github.com/4SLSL/x-dispatch/commit/e5363e359897608e161af39caa28a41170a3a0e6))
+- 1.9.0 by @github-actions[bot](<[e5363e3](https://github.com/4SLSL/x-dispatch/commit/e5363e359897608e161af39caa28a41170a3a0e6)>)
 
 ### Tweak
 
 - **map:** Airport feature layers pop earlier when zooming in by @lyestarzalt([329c5d4](https://github.com/4SLSL/x-dispatch/commit/329c5d4fe7480d97d9f330bf284be39afe3b65cc))
 - **map:** Walk back airport zoom tiers by 1 by @lyestarzalt([9547e95](https://github.com/4SLSL/x-dispatch/commit/9547e95e0bd1db57c0a28bc0939383834f62f086))
 
-
 ## v1.8.5 - 2026-05-17
 
 ### Bug Fixes
 
 - **sia:** Extract nested 7z in eAIP ZIP and broaden VAC indexing by @4SLSL([2c4b459](https://github.com/4SLSL/x-dispatch/commit/2c4b4594b6cbd1448e05910dca7e3290bf09e0a5))
-
 
 ## v1.8.4 - 2026-05-17
 
@@ -88,7 +98,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.3 by @github-actions[bot]([461cbf7](https://github.com/4SLSL/x-dispatch/commit/461cbf73eee610f68f723d96d6c67af8aed465da))
+- Update CHANGELOG.md for v1.8.3 by @github-actions[bot](<[461cbf7](https://github.com/4SLSL/x-dispatch/commit/461cbf73eee610f68f723d96d6c67af8aed465da)>)
 
 ### Miscellaneous
 
@@ -98,11 +108,10 @@ All notable changes to this project will be documented in this file.
 
 - Add workflow to build Windows installer on demand by @4SLSL([72139dc](https://github.com/4SLSL/x-dispatch/commit/72139dc2a8a07d4446b9b1388cb18bd5721d92b6))
 
-
-
 ### New Contributors
 
 - @4SLSL made their first contribution
+
 ## v1.8.3 - 2026-05-16
 
 ### Features
@@ -137,7 +146,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.2 by @github-actions[bot]([259dfd7](https://github.com/4SLSL/x-dispatch/commit/259dfd7248bd604aa8384584a5c0463510010a34))
+- Update CHANGELOG.md for v1.8.2 by @github-actions[bot](<[259dfd7](https://github.com/4SLSL/x-dispatch/commit/259dfd7248bd604aa8384584a5c0463510010a34)>)
 - Update CI badge by @lyestarzalt([7c3606e](https://github.com/4SLSL/x-dispatch/commit/7c3606e1911b8783064f16872a9e6971b7232b7d))
 
 ### Miscellaneous
@@ -151,7 +160,7 @@ All notable changes to this project will be documented in this file.
 - **deps:** Bump @vitejs/plugin-react 4 -> 5 by @lyestarzalt([ad25c23](https://github.com/4SLSL/x-dispatch/commit/ad25c235cf0595bcc203880b4a58ffc2ca66c24d))
 - **deps:** Bump electron 40 -> 42 by @lyestarzalt([76e3132](https://github.com/4SLSL/x-dispatch/commit/76e3132d9fdef14a98489b1d517be00479f9612c))
 - **deps:** Bump lucide-react 0.474 -> 1.16 by @lyestarzalt([8d024c4](https://github.com/4SLSL/x-dispatch/commit/8d024c4025a1d2ba8a40b2a7c9449679aa44dd16))
-- **deps:** Bump three, eslint plugins, @types/*, and dev tools by @lyestarzalt([bc8d6b8](https://github.com/4SLSL/x-dispatch/commit/bc8d6b86645f54528359851d20dc403f1fc4fba6))
+- **deps:** Bump three, eslint plugins, @types/\*, and dev tools by @lyestarzalt([bc8d6b8](https://github.com/4SLSL/x-dispatch/commit/bc8d6b86645f54528359851d20dc403f1fc4fba6))
 - **deps:** Bump vite 6 -> 7 by @lyestarzalt([0e8b5f6](https://github.com/4SLSL/x-dispatch/commit/0e8b5f6c0bbd5dd40bec78ae81dbebedbfa442d9))
 - **ci:** Split dependabot into minors-batch + per-major PRs by @lyestarzalt([a2d069c](https://github.com/4SLSL/x-dispatch/commit/a2d069c1c00d92fd031201419c71b281484a8357))
 - **ci:** Annotate dependabot ignores with pin reasons by @lyestarzalt([e616ccf](https://github.com/4SLSL/x-dispatch/commit/e616ccf4a7b0d66602c1fa68c7e7a644311b2971))
@@ -162,13 +171,12 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.8.3 by @github-actions[bot]([58a00f7](https://github.com/4SLSL/x-dispatch/commit/58a00f7425c1e07ad981aa8dd3167b75c143aae8))
+- 1.8.3 by @github-actions[bot](<[58a00f7](https://github.com/4SLSL/x-dispatch/commit/58a00f7425c1e07ad981aa8dd3167b75c143aae8)>)
 
 ### I18n
 
 - Polish pirate locale by @lyestarzalt([2e6132e](https://github.com/4SLSL/x-dispatch/commit/2e6132e639a4b49077883ef544e66c9a49b76987))
 - Enforce no-literal-string lint and translate 10 locales by @lyestarzalt([7518da1](https://github.com/4SLSL/x-dispatch/commit/7518da1cbc2be2eef9dedc9f8ca5e36a5d61bb5a))
-
 
 ## v1.8.2 - 2026-05-11
 
@@ -181,12 +189,11 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.1 by @github-actions[bot]([f0761d6](https://github.com/4SLSL/x-dispatch/commit/f0761d675eac101aa3c9c1de18db1d0690746b64))
+- Update CHANGELOG.md for v1.8.1 by @github-actions[bot](<[f0761d6](https://github.com/4SLSL/x-dispatch/commit/f0761d675eac101aa3c9c1de18db1d0690746b64)>)
 
 ### Release
 
-- 1.8.2 by @github-actions[bot]([581a3ff](https://github.com/4SLSL/x-dispatch/commit/581a3fff95f37980071b51ee31ef977672a12796))
-
+- 1.8.2 by @github-actions[bot](<[581a3ff](https://github.com/4SLSL/x-dispatch/commit/581a3fff95f37980071b51ee31ef977672a12796)>)
 
 ## v1.8.1 - 2026-05-11
 
@@ -200,12 +207,11 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.0 by @github-actions[bot]([e0dcba6](https://github.com/4SLSL/x-dispatch/commit/e0dcba6390db378d44a05801bb97fda69286287d))
+- Update CHANGELOG.md for v1.8.0 by @github-actions[bot](<[e0dcba6](https://github.com/4SLSL/x-dispatch/commit/e0dcba6390db378d44a05801bb97fda69286287d)>)
 
 ### Release
 
-- 1.8.1 by @github-actions[bot]([17f9a6e](https://github.com/4SLSL/x-dispatch/commit/17f9a6e8dc0cb6819bbbbb63f34f7d4ffc289800))
-
+- 1.8.1 by @github-actions[bot](<[17f9a6e](https://github.com/4SLSL/x-dispatch/commit/17f9a6e8dc0cb6819bbbbb63f34f7d4ffc289800)>)
 
 ## v1.8.0 - 2026-05-10
 
@@ -282,7 +288,7 @@ All notable changes to this project will be documented in this file.
 - **settings:** Consolidate map render settings under Graphics by @lyestarzalt([51af780](https://github.com/4SLSL/x-dispatch/commit/51af780281b99d857630eb593e9c695aac4737a7))
 - **map:** Extract setupAirportsLayer to layers/world/ by @lyestarzalt([51ed4ee](https://github.com/4SLSL/x-dispatch/commit/51ed4ee1f5092a9b24daf927189a87465a14a315))
 - **explore:** Tighten Featured + VATSIM tab hierarchy by @lyestarzalt([9085652](https://github.com/4SLSL/x-dispatch/commit/9085652962ec2cea4e63ba52aaf08a59c3809f7b))
-- **logger:** Replace stray console.* with scoped logger by @lyestarzalt([b2a3193](https://github.com/4SLSL/x-dispatch/commit/b2a319380626837fb2bc7d2c10e86b9836a0eca6))
+- **logger:** Replace stray console.\* with scoped logger by @lyestarzalt([b2a3193](https://github.com/4SLSL/x-dispatch/commit/b2a319380626837fb2bc7d2c10e86b9836a0eca6))
 - **flight-init:** Consolidate JSON builder into flightInit/ folder by @lyestarzalt([1afc5cc](https://github.com/4SLSL/x-dispatch/commit/1afc5ccd0d61d22a6431144bae59d54f779107bf))
 - **flight-init:** One section helper per JSON field, builder is one expression by @lyestarzalt([11aa051](https://github.com/4SLSL/x-dispatch/commit/11aa051355e0725c0f15280ee1805e0a7138b314))
 - **launch:** Dedupe a string literal, neaten a few comments by @lyestarzalt([541b696](https://github.com/4SLSL/x-dispatch/commit/541b69655940526da30cbc34bc5bc9679c3a1463))
@@ -296,7 +302,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.7.0 by @github-actions[bot]([512f9b9](https://github.com/4SLSL/x-dispatch/commit/512f9b982536b8945c52a2bd9f59dded79694ffd))
+- Update CHANGELOG.md for v1.7.0 by @github-actions[bot](<[512f9b9](https://github.com/4SLSL/x-dispatch/commit/512f9b982536b8945c52a2bd9f59dded79694ffd)>)
 - **readme:** Mention X-Plane free demo for users without X-Plane by @lyestarzalt([d74bd93](https://github.com/4SLSL/x-dispatch/commit/d74bd9323c73c4bc356ff16abeee96ccf7e2d07c))
 - **manual:** Add CLI flags reference and link from README by @lyestarzalt([734594b](https://github.com/4SLSL/x-dispatch/commit/734594bcabcbd9f13ba059a4b34cca80555590e7))
 - Refresh contributor workflow by @lyestarzalt([212c228](https://github.com/4SLSL/x-dispatch/commit/212c228e223925790338c620141cb3158eec5ec2))
@@ -319,14 +325,14 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.8.0 by @github-actions[bot]([40de745](https://github.com/4SLSL/x-dispatch/commit/40de745380aad4e83f06891f00ba1547469d20b1))
+- 1.8.0 by @github-actions[bot](<[40de745](https://github.com/4SLSL/x-dispatch/commit/40de745380aad4e83f06891f00ba1547469d20b1)>)
 
 ### I18n
 
 - **graphics:** Fully translate the consolidated Graphics section by @lyestarzalt([f8b67da](https://github.com/4SLSL/x-dispatch/commit/f8b67da2d1fea441ce63c16c6e59f9fba8155c33))
 - **companion-apps:** Add settings.companionApps namespace by @lyestarzalt([57e7b21](https://github.com/4SLSL/x-dispatch/commit/57e7b21d94fba6dbfb5bbc99d9209e44cb863f6d))
 - **companion-apps:** Translate namespace into 9 locales + pirate by @lyestarzalt([f8420ea](https://github.com/4SLSL/x-dispatch/commit/f8420ea1d7fe07c2568a912dec20285dadb2783e))
-- **xp-log:** Add settings.logs.* and logs.patterns namespace (en only) by @lyestarzalt([ebf1a13](https://github.com/4SLSL/x-dispatch/commit/ebf1a1385e761ce48f5c003fe0cf5de6c63578a7))
+- **xp-log:** Add settings.logs.\* and logs.patterns namespace (en only) by @lyestarzalt([ebf1a13](https://github.com/4SLSL/x-dispatch/commit/ebf1a1385e761ce48f5c003fe0cf5de6c63578a7))
 - **xp-log:** Translate logs namespace into 10 locales by @lyestarzalt([b17b82a](https://github.com/4SLSL/x-dispatch/commit/b17b82a71dd363b0ab29db03589a153f22bcced2))
 - **simbrief:** Translate FMS export namespace into 9 locales + pirate by @lyestarzalt([aa9e36e](https://github.com/4SLSL/x-dispatch/commit/aa9e36eb67bfcdc964f782cb78e9356c13b1900f))
 - **companion-apps:** Translate elevation + error keys into 9 locales + pirate by @lyestarzalt([95eb583](https://github.com/4SLSL/x-dispatch/commit/95eb5837f5f99b301076b960aa4892a8eb36a127))
@@ -343,18 +349,17 @@ All notable changes to this project will be documented in this file.
 - **utils:** Cover no-target branch in resolveLnkSync by @lyestarzalt([d58063a](https://github.com/4SLSL/x-dispatch/commit/d58063a4eaefee4624ea021f0d187ade89cbafcb))
 - **scenery:** Regression test for POSIX symlink path by @lyestarzalt([085b402](https://github.com/4SLSL/x-dispatch/commit/085b4021d117bc3fcb9897f0a87af477cf3c8135))
 
-
-
 ### New Contributors
 
 - @ made their first contribution
+
 ## v1.7.0 - 2026-04-26
 
 ### Features
 
 - **parser:** Enrich taxi network parsing with full apt.dat 1200 spec by @lyestarzalt([59dd67a](https://github.com/4SLSL/x-dispatch/commit/59dd67accac701caddfb5241bfdca42154d7c003))
-- **taxi-graph:** Add graph library with A* pathfinding by @lyestarzalt([ede4932](https://github.com/4SLSL/x-dispatch/commit/ede4932befd922250e43ae80d3a472c7576bc8d1))
-- **taxi-route:** Add network mode with A* pathfinding to store by @lyestarzalt([7438563](https://github.com/4SLSL/x-dispatch/commit/743856374a924b86c3df2078e58a5bea63df5af5))
+- **taxi-graph:** Add graph library with A\* pathfinding by @lyestarzalt([ede4932](https://github.com/4SLSL/x-dispatch/commit/ede4932befd922250e43ae80d3a472c7576bc8d1))
+- **taxi-route:** Add network mode with A\* pathfinding to store by @lyestarzalt([7438563](https://github.com/4SLSL/x-dispatch/commit/743856374a924b86c3df2078e58a5bea63df5af5))
 - **taxi-route:** Add FTG export and IPC for route file writing by @lyestarzalt([c750cbd](https://github.com/4SLSL/x-dispatch/commit/c750cbd93b2299a7cffb263d5feab92599c8faaf))
 - **taxi-route:** Network-aware rendering and UI with FTG export by @lyestarzalt([d3b64af](https://github.com/4SLSL/x-dispatch/commit/d3b64affe1024c378712609f05d356243fed5ba5))
 - **taxi-route:** Redesign UX — gate→runway dropdown with auto-route by @lyestarzalt([90411bc](https://github.com/4SLSL/x-dispatch/commit/90411bcaa2e45dba1448b5439d342e79d7dea331))
@@ -409,14 +414,14 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.6.1 by @github-actions[bot]([50633a9](https://github.com/4SLSL/x-dispatch/commit/50633a91922e949e27f44cd786aedfcfb1d458ba))
+- Update CHANGELOG.md for v1.6.1 by @github-actions[bot](<[50633a9](https://github.com/4SLSL/x-dispatch/commit/50633a91922e949e27f44cd786aedfcfb1d458ba)>)
 - **map:** Document airport switching fix — why safeRemove is bypassed by @lyestarzalt([2e44470](https://github.com/4SLSL/x-dispatch/commit/2e44470ac7214cd26e34b6eff3ae797e9be3355d))
 - Add donation section to README by @lyestarzalt([e1b4153](https://github.com/4SLSL/x-dispatch/commit/e1b41532e3b3fd552cf2e6dbbf56edc97fc1e944))
 - Trim README, link to project page for full details by @lyestarzalt([6cd8f28](https://github.com/4SLSL/x-dispatch/commit/6cd8f289a07d8d3681c03243736b10961b1666f8))
 
 ### Miscellaneous
 
-- **map:** Expose map instance on window.__map in dev mode by @lyestarzalt([9563b21](https://github.com/4SLSL/x-dispatch/commit/9563b218ff84cbdee63c5437c30eb21cf3026bda))
+- **map:** Expose map instance on window.\_\_map in dev mode by @lyestarzalt([9563b21](https://github.com/4SLSL/x-dispatch/commit/9563b218ff84cbdee63c5437c30eb21cf3026bda))
 - Add .agents/ to gitignore by @lyestarzalt([75bc612](https://github.com/4SLSL/x-dispatch/commit/75bc6124ab1abfc1031aef17fc9ccb32c16c23cf))
 - Add vitest with config and test scripts by @lyestarzalt([a8ba2b1](https://github.com/4SLSL/x-dispatch/commit/a8ba2b10c33eef0865063eb607b4b48a639c4b81))
 - Remove one-time fixture extraction script by @lyestarzalt([e27b4f2](https://github.com/4SLSL/x-dispatch/commit/e27b4f24c491d3bb6638aa64aceb3c12408986f0))
@@ -425,7 +430,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.7.0 by @github-actions[bot]([b0c10b6](https://github.com/4SLSL/x-dispatch/commit/b0c10b6db33f64c0600d6bcf6b93a2c716fd0f00))
+- 1.7.0 by @github-actions[bot](<[b0c10b6](https://github.com/4SLSL/x-dispatch/commit/b0c10b6db33f64c0600d6bcf6b93a2c716fd0f00)>)
 
 ### Test
 
@@ -442,7 +447,6 @@ All notable changes to this project will be documented in this file.
 - Add 10 more airport fixtures covering heliports, seaplanes, and grass strips by @lyestarzalt([f1b5ffb](https://github.com/4SLSL/x-dispatch/commit/f1b5ffb8a45a76d06949e9cc669eb731c2e4a476))
 - **parsers:** Add structural fingerprint regression tests for 15 airports by @lyestarzalt([6ed08ca](https://github.com/4SLSL/x-dispatch/commit/6ed08caf2c7a3edafe0cffcc1a63d99b6d904749))
 - **parsers:** Add bezier, runway geometry, and path parser unit tests by @lyestarzalt([de9f1e6](https://github.com/4SLSL/x-dispatch/commit/de9f1e6566f5771d87dcac30a53d1eaa38abce6e))
-
 
 ## v1.6.1 - 2026-04-16
 
@@ -484,7 +488,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.6.0 by @github-actions[bot]([eaeff41](https://github.com/4SLSL/x-dispatch/commit/eaeff41d85603a3d09f3affb1d812fb986e06ae2))
+- Update CHANGELOG.md for v1.6.0 by @github-actions[bot](<[eaeff41](https://github.com/4SLSL/x-dispatch/commit/eaeff41d85603a3d09f3affb1d812fb986e06ae2)>)
 - Update README with recent features and expanded dev section by @lyestarzalt([7f3340c](https://github.com/4SLSL/x-dispatch/commit/7f3340cbdcdb5b30e4c02b1c80c4e9e74bed8536))
 - Fix X-Plane version, show 3D terrain screenshot, trim dev section by @lyestarzalt([cad5be7](https://github.com/4SLSL/x-dispatch/commit/cad5be718581039f20ca8eb7ce6c542fadfc6493))
 - Add hits badge to README by @lyestarzalt([eda737f](https://github.com/4SLSL/x-dispatch/commit/eda737fda854c1cfa4317853f8a8eb92c82d125d))
@@ -499,14 +503,13 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.6.1 by @github-actions[bot]([3fafbe0](https://github.com/4SLSL/x-dispatch/commit/3fafbe003ba79a1d4a66a276e2ac14962534c17b))
-
-
+- 1.6.1 by @github-actions[bot](<[3fafbe0](https://github.com/4SLSL/x-dispatch/commit/3fafbe003ba79a1d4a66a276e2ac14962534c17b)>)
 
 ### New Contributors
 
 - @Pwoodlock made their first contribution
 - @necromeo made their first contribution
+
 ## v1.6.0 - 2026-03-24
 
 ### Features
@@ -532,7 +535,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.5 by @github-actions[bot]([030dcab](https://github.com/4SLSL/x-dispatch/commit/030dcabc4504199ac0dc238d4db413f863dbfaf4))
+- Update CHANGELOG.md for v1.5.5 by @github-actions[bot](<[030dcab](https://github.com/4SLSL/x-dispatch/commit/030dcabc4504199ac0dc238d4db413f863dbfaf4)>)
 
 ### Miscellaneous
 
@@ -542,14 +545,13 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.6.0 by @github-actions[bot]([249c754](https://github.com/4SLSL/x-dispatch/commit/249c75485ce682f6870600b491ea0a454a454adc))
-
+- 1.6.0 by @github-actions[bot](<[249c754](https://github.com/4SLSL/x-dispatch/commit/249c75485ce682f6870600b491ea0a454a454adc)>)
 
 ## v1.5.5 - 2026-03-22
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.4 by @github-actions[bot]([7ad9e76](https://github.com/4SLSL/x-dispatch/commit/7ad9e76b0205d157557c3e20ebe81a0c44899f9b))
+- Update CHANGELOG.md for v1.5.4 by @github-actions[bot](<[7ad9e76](https://github.com/4SLSL/x-dispatch/commit/7ad9e76b0205d157557c3e20ebe81a0c44899f9b)>)
 
 ### CI/CD
 
@@ -558,8 +560,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.5.5 by @github-actions[bot]([7511556](https://github.com/4SLSL/x-dispatch/commit/7511556ca4c0ea4e762cd578a8da669e0f1f7117))
-
+- 1.5.5 by @github-actions[bot](<[7511556](https://github.com/4SLSL/x-dispatch/commit/7511556ca4c0ea4e762cd578a8da669e0f1f7117)>)
 
 ## v1.5.4 - 2026-03-22
 
@@ -602,13 +603,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.3 by @github-actions[bot]([71a35f6](https://github.com/4SLSL/x-dispatch/commit/71a35f642d38cc74a7678bdca1eeba6714ca048e))
+- Update CHANGELOG.md for v1.5.3 by @github-actions[bot](<[71a35f6](https://github.com/4SLSL/x-dispatch/commit/71a35f642d38cc74a7678bdca1eeba6714ca048e)>)
 - Update README screenshots and add fuel, weather, terrain views by @lyestarzalt([b1ba519](https://github.com/4SLSL/x-dispatch/commit/b1ba51934346b39c6b4e102f801c1aaa879c4b34))
 
 ### Release
 
-- 1.5.4 by @github-actions[bot]([e7e5ed0](https://github.com/4SLSL/x-dispatch/commit/e7e5ed09a8d4df7f133cacd53f3b87221b985f42))
-
+- 1.5.4 by @github-actions[bot](<[e7e5ed0](https://github.com/4SLSL/x-dispatch/commit/e7e5ed09a8d4df7f133cacd53f3b87221b985f42)>)
 
 ## v1.5.3 - 2026-03-18
 
@@ -634,13 +634,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.2 by @github-actions[bot]([cd1fcac](https://github.com/4SLSL/x-dispatch/commit/cd1fcac84f3302548cc0115878cd59cba8314a92))
+- Update CHANGELOG.md for v1.5.2 by @github-actions[bot](<[cd1fcac](https://github.com/4SLSL/x-dispatch/commit/cd1fcac84f3302548cc0115878cd59cba8314a92)>)
 - Rewrite README with complete feature inventory by @lyestarzalt([618796d](https://github.com/4SLSL/x-dispatch/commit/618796dadb1b5fa70efb760d2449fb2851b0ca4b))
 
 ### Release
 
-- 1.5.3 by @github-actions[bot]([55cf32a](https://github.com/4SLSL/x-dispatch/commit/55cf32a363de8a0b64a8232ba7b52a5ec14aa983))
-
+- 1.5.3 by @github-actions[bot](<[55cf32a](https://github.com/4SLSL/x-dispatch/commit/55cf32a363de8a0b64a8232ba7b52a5ec14aa983)>)
 
 ## v1.5.2 - 2026-03-16
 
@@ -657,12 +656,11 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.1 by @github-actions[bot]([567e58f](https://github.com/4SLSL/x-dispatch/commit/567e58f5d95fb80b2f25ba0b21d504c2465a0329))
+- Update CHANGELOG.md for v1.5.1 by @github-actions[bot](<[567e58f](https://github.com/4SLSL/x-dispatch/commit/567e58f5d95fb80b2f25ba0b21d504c2465a0329)>)
 
 ### Release
 
-- 1.5.2 by @github-actions[bot]([c0cb905](https://github.com/4SLSL/x-dispatch/commit/c0cb905f55ff40ef5ac84f7d8ba96ae563ca115f))
-
+- 1.5.2 by @github-actions[bot](<[c0cb905](https://github.com/4SLSL/x-dispatch/commit/c0cb905f55ff40ef5ac84f7d8ba96ae563ca115f)>)
 
 ## v1.5.1 - 2026-03-15
 
@@ -691,7 +689,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.0 by @github-actions[bot]([d3f585f](https://github.com/4SLSL/x-dispatch/commit/d3f585fed037c3de693df689714c037ae1077a5b))
+- Update CHANGELOG.md for v1.5.0 by @github-actions[bot](<[d3f585f](https://github.com/4SLSL/x-dispatch/commit/d3f585fed037c3de693df689714c037ae1077a5b)>)
 - Update Discord invite link by @lyestarzalt([22e14ff](https://github.com/4SLSL/x-dispatch/commit/22e14ff9fd0b136c45377adf0f0b3a35db5236c4))
 
 ### Miscellaneous
@@ -700,12 +698,11 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.5.1 by @github-actions[bot]([ba7c9ae](https://github.com/4SLSL/x-dispatch/commit/ba7c9ae0541412f7f1287698131af9d5e28af204))
+- 1.5.1 by @github-actions[bot](<[ba7c9ae](https://github.com/4SLSL/x-dispatch/commit/ba7c9ae0541412f7f1287698131af9d5e28af204)>)
 
 ### Wip
 
 - **ils:** Scaffold 3D glide slope visualization (disabled) by @lyestarzalt([b028548](https://github.com/4SLSL/x-dispatch/commit/b0285486fb39bf0d895537c2c89582aac75562f4))
-
 
 ## v1.5.0 - 2026-03-12
 
@@ -727,7 +724,7 @@ All notable changes to this project will be documented in this file.
 
 - **ui:** Add forwardRef to Badge component by @lyestarzalt([2f1f4cf](https://github.com/4SLSL/x-dispatch/commit/2f1f4cf773c86cdc0bf09f6c7d299682d6df7793))
 - **ui:** Correct ref types and add missing forwardRef in shadcn components by @lyestarzalt([b29b9fb](https://github.com/4SLSL/x-dispatch/commit/b29b9fbc2b6314425cbc5080e05c65192888cff4))
-- **launcher:** Derive fuel tank ratios from _cgpt capacity for third-party helicopters by @lyestarzalt([568afaf](https://github.com/4SLSL/x-dispatch/commit/568afaf95d9d629625c764127e9ac951f730f734))
+- **launcher:** Derive fuel tank ratios from \_cgpt capacity for third-party helicopters by @lyestarzalt([568afaf](https://github.com/4SLSL/x-dispatch/commit/568afaf95d9d629625c764127e9ac951f730f734))
 - **launcher:** Skip --version on Windows Steam to avoid launch dialog by @lyestarzalt([1223c8f](https://github.com/4SLSL/x-dispatch/commit/1223c8f1bba39a8156a4ff45afdee249c9efe6f2))
 - **launcher:** Correct fuel tank count for third-party aircraft by @lyestarzalt([993d7c9](https://github.com/4SLSL/x-dispatch/commit/993d7c92d70c5390a8ece4c4c105f0a3636e6c70))
 - **launcher:** Improve fuel parsing and add payload fallback for third-party aircraft by @lyestarzalt([d833981](https://github.com/4SLSL/x-dispatch/commit/d833981e35161ee95708f565b50446f17fe4f199))
@@ -749,7 +746,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.4.1 by @github-actions[bot]([9d2d105](https://github.com/4SLSL/x-dispatch/commit/9d2d1059c439e66586daabe3126b9340914d6dea))
+- Update CHANGELOG.md for v1.4.1 by @github-actions[bot](<[9d2d105](https://github.com/4SLSL/x-dispatch/commit/9d2d1059c439e66586daabe3126b9340914d6dea)>)
 
 ### Miscellaneous
 
@@ -757,8 +754,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.5.0 by @github-actions[bot]([7ab9b2c](https://github.com/4SLSL/x-dispatch/commit/7ab9b2c93e41599824cee0de7a14b24407efcc28))
-
+- 1.5.0 by @github-actions[bot](<[7ab9b2c](https://github.com/4SLSL/x-dispatch/commit/7ab9b2c93e41599824cee0de7a14b24407efcc28)>)
 
 ## v1.4.1 - 2026-03-06
 
@@ -781,7 +777,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.4.0 by @github-actions[bot]([d926081](https://github.com/4SLSL/x-dispatch/commit/d92608148a45b1ba467b0d9257c0f376fe23cbb2))
+- Update CHANGELOG.md for v1.4.0 by @github-actions[bot](<[d926081](https://github.com/4SLSL/x-dispatch/commit/d92608148a45b1ba467b0d9257c0f376fe23cbb2)>)
 
 ### Miscellaneous
 
@@ -790,8 +786,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.4.1 by @github-actions[bot]([3374b10](https://github.com/4SLSL/x-dispatch/commit/3374b101f88c45fb0bdb230e0a6844b7dec57e50))
-
+- 1.4.1 by @github-actions[bot](<[3374b10](https://github.com/4SLSL/x-dispatch/commit/3374b101f88c45fb0bdb230e0a6844b7dec57e50)>)
 
 ## v1.4.0 - 2026-03-03
 
@@ -812,12 +807,11 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.3.2 by @github-actions[bot]([e423c01](https://github.com/4SLSL/x-dispatch/commit/e423c017d4c2c7dc781241b549fd83ea9042d217))
+- Update CHANGELOG.md for v1.3.2 by @github-actions[bot](<[e423c01](https://github.com/4SLSL/x-dispatch/commit/e423c017d4c2c7dc781241b549fd83ea9042d217)>)
 
 ### Release
 
-- 1.4.0 by @github-actions[bot]([6232e9c](https://github.com/4SLSL/x-dispatch/commit/6232e9c1098cd828699a1a70b68f7d156b31a463))
-
+- 1.4.0 by @github-actions[bot](<[6232e9c](https://github.com/4SLSL/x-dispatch/commit/6232e9c1098cd828699a1a70b68f7d156b31a463)>)
 
 ## v1.3.2 - 2026-03-03
 
@@ -840,7 +834,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.3.1 by @github-actions[bot]([ca96d0c](https://github.com/4SLSL/x-dispatch/commit/ca96d0c2220590d4ee1b8267d036a63973102f23))
+- Update CHANGELOG.md for v1.3.1 by @github-actions[bot](<[ca96d0c](https://github.com/4SLSL/x-dispatch/commit/ca96d0c2220590d4ee1b8267d036a63973102f23)>)
 
 ### Miscellaneous
 
@@ -850,8 +844,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.3.2 by @github-actions[bot]([82bc52b](https://github.com/4SLSL/x-dispatch/commit/82bc52b5fa63cc93fdc30caa9c782721e9251fcb))
-
+- 1.3.2 by @github-actions[bot](<[82bc52b](https://github.com/4SLSL/x-dispatch/commit/82bc52b5fa63cc93fdc30caa9c782721e9251fcb)>)
 
 ## v1.3.1 - 2026-03-01
 
@@ -867,12 +860,11 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.3.0 by @github-actions[bot]([5ba61e0](https://github.com/4SLSL/x-dispatch/commit/5ba61e0f79793be546d41b3693d7b6faac746fd2))
+- Update CHANGELOG.md for v1.3.0 by @github-actions[bot](<[5ba61e0](https://github.com/4SLSL/x-dispatch/commit/5ba61e0f79793be546d41b3693d7b6faac746fd2)>)
 
 ### Release
 
-- 1.3.1 by @github-actions[bot]([ed300d0](https://github.com/4SLSL/x-dispatch/commit/ed300d01db28e9f786fc6339f922888e4b05a5ef))
-
+- 1.3.1 by @github-actions[bot](<[ed300d0](https://github.com/4SLSL/x-dispatch/commit/ed300d01db28e9f786fc6339f922888e4b05a5ef)>)
 
 ## v1.3.0 - 2026-03-01
 
@@ -898,15 +890,14 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.2.1 by @github-actions[bot]([420b945](https://github.com/4SLSL/x-dispatch/commit/420b9456597033318ad7a8bb7f6c8faa41e70ce6))
+- Update CHANGELOG.md for v1.2.1 by @github-actions[bot](<[420b945](https://github.com/4SLSL/x-dispatch/commit/420b9456597033318ad7a8bb7f6c8faa41e70ce6)>)
 - Add Ko-fi donation badge and link by @lyestarzalt([b0cce0f](https://github.com/4SLSL/x-dispatch/commit/b0cce0f87117511220fb756394b784f4a6ab5d8b))
 - Move macOS install notice below intro section by @lyestarzalt([fd944ae](https://github.com/4SLSL/x-dispatch/commit/fd944aefb44539083450f84ea61e28ec38a1d588))
 - Update X-Plane requirement to 12.4+ by @lyestarzalt([8ef8830](https://github.com/4SLSL/x-dispatch/commit/8ef8830e2f66382c7b622ab02b2f3e52e409f138))
 
 ### Release
 
-- 1.3.0 by @github-actions[bot]([109b094](https://github.com/4SLSL/x-dispatch/commit/109b09471fa7aa84867bdcffdeba65fa65e88696))
-
+- 1.3.0 by @github-actions[bot](<[109b094](https://github.com/4SLSL/x-dispatch/commit/109b09471fa7aa84867bdcffdeba65fa65e88696)>)
 
 ## v1.2.1 - 2026-02-28
 
@@ -934,8 +925,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.2.1 by @github-actions[bot]([1583ea1](https://github.com/4SLSL/x-dispatch/commit/1583ea1b2533ba42394bd13283a27836bffb3770))
-
+- 1.2.1 by @github-actions[bot](<[1583ea1](https://github.com/4SLSL/x-dispatch/commit/1583ea1b2533ba42394bd13283a27836bffb3770)>)
 
 ## v1.2.0 - 2026-02-28
 
@@ -954,8 +944,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.2.0 by @github-actions[bot]([89c4ac4](https://github.com/4SLSL/x-dispatch/commit/89c4ac405cd89bc3be9e6fdd8ae54473a308152b))
-
+- 1.2.0 by @github-actions[bot](<[89c4ac4](https://github.com/4SLSL/x-dispatch/commit/89c4ac405cd89bc3be9e6fdd8ae54473a308152b)>)
 
 ## v1.1.0 - 2026-02-27
 
@@ -1026,8 +1015,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.1.0 by @github-actions[bot]([2658ee0](https://github.com/4SLSL/x-dispatch/commit/2658ee0919b90b0e15dc91199487e358df444d49))
-
+- 1.1.0 by @github-actions[bot](<[2658ee0](https://github.com/4SLSL/x-dispatch/commit/2658ee0919b90b0e15dc91199487e358df444d49)>)
 
 ## v1.0.0 - 2026-02-24
 
@@ -1092,8 +1080,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.0.0 by @github-actions[bot]([bb630f9](https://github.com/4SLSL/x-dispatch/commit/bb630f993e6ac39f2d1d6258db38aebc0ebe2b0d))
-
+- 1.0.0 by @github-actions[bot](<[bb630f9](https://github.com/4SLSL/x-dispatch/commit/bb630f993e6ac39f2d1d6258db38aebc0ebe2b0d)>)
 
 ## v0.9.4 - 2026-02-19
 
@@ -1103,8 +1090,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.4 by @github-actions[bot]([06dc2a7](https://github.com/4SLSL/x-dispatch/commit/06dc2a75d0c8b4d9bdabf7d7170c47d0b7021adb))
-
+- 0.9.4 by @github-actions[bot](<[06dc2a7](https://github.com/4SLSL/x-dispatch/commit/06dc2a75d0c8b4d9bdabf7d7170c47d0b7021adb)>)
 
 ## v0.9.3 - 2026-02-19
 
@@ -1129,8 +1115,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.3 by @github-actions[bot]([ceb8111](https://github.com/4SLSL/x-dispatch/commit/ceb8111f032d3b8ba47266da424c8e457cf67dff))
-
+- 0.9.3 by @github-actions[bot](<[ceb8111](https://github.com/4SLSL/x-dispatch/commit/ceb8111f032d3b8ba47266da424c8e457cf67dff)>)
 
 ## v0.9.2 - 2026-02-19
 
@@ -1140,8 +1125,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.2 by @github-actions[bot]([273f536](https://github.com/4SLSL/x-dispatch/commit/273f53617d9d7b89ee01fabec1fccf2e63d16fd6))
-
+- 0.9.2 by @github-actions[bot](<[273f536](https://github.com/4SLSL/x-dispatch/commit/273f53617d9d7b89ee01fabec1fccf2e63d16fd6)>)
 
 ## v0.9.1 - 2026-02-18
 
@@ -1151,8 +1135,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.1 by @github-actions[bot]([6cb7933](https://github.com/4SLSL/x-dispatch/commit/6cb7933e70f06fecc0f013d7e886e5d7c538817f))
-
+- 0.9.1 by @github-actions[bot](<[6cb7933](https://github.com/4SLSL/x-dispatch/commit/6cb7933e70f06fecc0f013d7e886e5d7c538817f)>)
 
 ## v0.9.0 - 2026-02-13
 
@@ -1162,15 +1145,13 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.0 by @github-actions[bot]([f9b56f2](https://github.com/4SLSL/x-dispatch/commit/f9b56f2efb7b3c2f9086bfb68805ac94850ec49f))
-
+- 0.9.0 by @github-actions[bot](<[f9b56f2](https://github.com/4SLSL/x-dispatch/commit/f9b56f2efb7b3c2f9086bfb68805ac94850ec49f)>)
 
 ## v0.8.0 - 2026-02-08
 
 ### Release
 
-- 0.8.0 by @github-actions[bot]([05b3bf9](https://github.com/4SLSL/x-dispatch/commit/05b3bf96b62a3b85526e26c60b2791da898dddb9))
-
+- 0.8.0 by @github-actions[bot](<[05b3bf9](https://github.com/4SLSL/x-dispatch/commit/05b3bf96b62a3b85526e26c60b2791da898dddb9)>)
 
 ## v0.7.0 - 2026-02-07
 
@@ -1220,20 +1201,18 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.7.0 by @github-actions[bot]([b780a9c](https://github.com/4SLSL/x-dispatch/commit/b780a9c8f4ba87356cad743e22d8632c503cc091))
-
+- 0.7.0 by @github-actions[bot](<[b780a9c](https://github.com/4SLSL/x-dispatch/commit/b780a9c8f4ba87356cad743e22d8632c503cc091)>)
 
 ## v0.6.1 - 2026-02-03
 
 ### Miscellaneous
 
 - Fix repo URLs and add macOS install note (#10) by @lyestarzalt([55ea3f1](https://github.com/4SLSL/x-dispatch/commit/55ea3f1d70c5cb407ae13754580dbfa59b6dad59))
-- **ui:** Shadcn components, semantic colors, Map refactor & compass redesign  (#11) by @lyestarzalt([3620f16](https://github.com/4SLSL/x-dispatch/commit/3620f16bb6634aaa464b1728209e88f299d61380))
+- **ui:** Shadcn components, semantic colors, Map refactor & compass redesign (#11) by @lyestarzalt([3620f16](https://github.com/4SLSL/x-dispatch/commit/3620f16bb6634aaa464b1728209e88f299d61380))
 
 ### Release
 
-- 0.6.1 by @github-actions[bot]([e5e4a88](https://github.com/4SLSL/x-dispatch/commit/e5e4a889ee3927359465fe7d8fa50f99e2c98258))
-
+- 0.6.1 by @github-actions[bot](<[e5e4a88](https://github.com/4SLSL/x-dispatch/commit/e5e4a889ee3927359465fe7d8fa50f99e2c98258)>)
 
 ## v0.6.0 - 2026-02-02
 
@@ -1247,8 +1226,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.6.0 by @github-actions[bot]([311de60](https://github.com/4SLSL/x-dispatch/commit/311de6047a0884b349d79e6470c01f59404785bf))
-
+- 0.6.0 by @github-actions[bot](<[311de60](https://github.com/4SLSL/x-dispatch/commit/311de6047a0884b349d79e6470c01f59404785bf)>)
 
 ## v0.5.3 - 2026-02-02
 
@@ -1266,9 +1244,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.5.3 by @github-actions[bot]([96c4719](https://github.com/4SLSL/x-dispatch/commit/96c4719ad92934c6a7b8ea93e83770b9208564e3))
-
-
+- 0.5.3 by @github-actions[bot](<[96c4719](https://github.com/4SLSL/x-dispatch/commit/96c4719ad92934c6a7b8ea93e83770b9208564e3)>)
 
 ### New Contributors
 

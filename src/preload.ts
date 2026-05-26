@@ -388,8 +388,11 @@ contextBridge.exposeInMainWorld('modulesAPI', {
     ipcRenderer.invoke('modules:setEnabled', moduleId, enabled),
   uninstall: (moduleId: string) => ipcRenderer.invoke('modules:uninstall', moduleId),
   installFromZip: (zipPath: string) => ipcRenderer.invoke('modules:installFromZip', zipPath),
-  installFromGithub: (repoOrUrl: string) => ipcRenderer.invoke('modules:installFromGithub', repoOrUrl),
+  installFromGithub: (repoOrUrl: string) =>
+    ipcRenderer.invoke('modules:installFromGithub', repoOrUrl),
   browseForZip: () => ipcRenderer.invoke('modules:browseForZip'),
+  getRendererBundlePath: (moduleId: string) =>
+    ipcRenderer.invoke('modules:getRendererBundlePath', moduleId),
   onChanged: (callback: () => void) => {
     const listener = () => callback();
     ipcRenderer.on('modules:changed', listener);
@@ -400,8 +403,10 @@ contextBridge.exposeInMainWorld('modulesAPI', {
 contextBridge.exposeInMainWorld('siaAPI', {
   listProducts: () => ipcRenderer.invoke('sia:listProducts'),
   getInstallStatus: () => ipcRenderer.invoke('sia:getInstallStatus'),
-  getVacForIcao: (icao: string, airport: import('./modules/sia-france/lib/georef').AirportGeorefInput | null) =>
-    ipcRenderer.invoke('sia:getVacForIcao', icao, airport),
+  getVacForIcao: (
+    icao: string,
+    airport: import('./modules/sia-france/lib/georef').AirportGeorefInput | null
+  ) => ipcRenderer.invoke('sia:getVacForIcao', icao, airport),
   getVacPdfBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPdfBytes', icao),
   getVacPngBytes: (icao: string) => ipcRenderer.invoke('sia:getVacPngBytes', icao),
   renderVacPng: (icao: string) => ipcRenderer.invoke('sia:renderVacPng', icao),
@@ -848,7 +853,10 @@ declare global {
     modulesAPI: {
       list: () => Promise<import('./lib/modules/types').ModuleRuntimeInfo[]>;
       getCatalog: () => Promise<import('./lib/modules/types').ModuleCatalogEntry[]>;
-      setEnabled: (moduleId: string, enabled: boolean) => Promise<{ success: boolean; error?: string }>;
+      setEnabled: (
+        moduleId: string,
+        enabled: boolean
+      ) => Promise<{ success: boolean; error?: string }>;
       uninstall: (moduleId: string) => Promise<{ success: boolean; error?: string }>;
       installFromZip: (
         zipPath: string
@@ -857,6 +865,7 @@ declare global {
         repoOrUrl: string
       ) => Promise<{ success: boolean; error?: string; moduleId?: string }>;
       browseForZip: () => Promise<string | null>;
+      getRendererBundlePath: (moduleId: string) => Promise<string | null>;
       onChanged: (callback: () => void) => () => void;
     };
     siaAPI: {
@@ -871,19 +880,21 @@ declare global {
       renderVacPng: (icao: string) => Promise<Uint8Array | null>;
       reindexVac: () => Promise<{ success: boolean; count?: number; error?: string }>;
       getPdfjsWorkerUrl: () => Promise<string | null>;
-      writePngCache: (icao: string, data: Uint8Array) => Promise<{ success: boolean; path?: string }>;
+      writePngCache: (
+        icao: string,
+        data: Uint8Array
+      ) => Promise<{ success: boolean; path?: string }>;
       clearCache: () => Promise<{ success: boolean; error?: string }>;
       downloadProduct: (productId: string) => Promise<{ success: boolean; error?: string }>;
-      getCredentialsStatus: () => Promise<import('./modules/sia-france/lib/siaCredentials').SiaCredentialsStatus>;
+      getCredentialsStatus: () => Promise<
+        import('./modules/sia-france/lib/siaCredentials').SiaCredentialsStatus
+      >;
       saveCredentials: (
         email: string,
         password: string
       ) => Promise<{ success: boolean; error?: string }>;
       clearCredentials: () => Promise<{ success: boolean }>;
-      testLogin: (
-        email: string,
-        password: string
-      ) => Promise<{ success: boolean; error?: string }>;
+      testLogin: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
       installFromLocalZip: (
         zipPath: string,
         productId: string
@@ -898,7 +909,10 @@ declare global {
     mbtilesAPI: {
       getConfig: () => Promise<import('./lib/mbtiles/MbtilesStore').OaciMbtilesConfig | null>;
       browseAndImport: () => Promise<{ success: boolean; error?: string }>;
-      importPath: (filePath: string, name?: string) => Promise<{ success: boolean; error?: string }>;
+      importPath: (
+        filePath: string,
+        name?: string
+      ) => Promise<{ success: boolean; error?: string }>;
       clear: () => Promise<{ success: boolean }>;
     };
   }

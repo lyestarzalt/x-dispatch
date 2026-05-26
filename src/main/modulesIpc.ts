@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from 'electron';
+import { BrowserWindow, type OpenDialogOptions, dialog, ipcMain } from 'electron';
 import { ModuleManager } from '@/lib/modules/ModuleManager';
 import type { XDispatchModuleManifest } from '@/lib/modules/types';
 import { syncSiaFranceModule } from '@/modules/sia-france/main/lifecycle';
@@ -48,6 +48,9 @@ export async function registerModulesIPC(getMainWindow: () => BrowserWindow | nu
   );
   ipcMain.handle('modules:installFromGithub', (_, repoOrUrl: string) =>
     getManager().installFromGithub(repoOrUrl)
+  );
+  ipcMain.handle('modules:getRendererBundlePath', (_, moduleId: string) =>
+    getManager().getRendererBundlePath(moduleId)
   );
   ipcMain.handle('modules:browseForZip', async () => {
     const win = getMainWindow();

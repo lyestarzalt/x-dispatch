@@ -78,7 +78,11 @@ export class ModuleManager {
     return out.sort((a, b) => a.manifest.id.localeCompare(b.manifest.id));
   }
 
-  async installFromZip(zipPath: string, source: 'zip' | 'github', repository?: string): Promise<{
+  async installFromZip(
+    zipPath: string,
+    source: 'zip' | 'github',
+    repository?: string
+  ): Promise<{
     success: boolean;
     error?: string;
     moduleId?: string;
@@ -134,7 +138,9 @@ export class ModuleManager {
     }
   }
 
-  async installFromGithub(input: string): Promise<{ success: boolean; error?: string; moduleId?: string }> {
+  async installFromGithub(
+    input: string
+  ): Promise<{ success: boolean; error?: string; moduleId?: string }> {
     const repo = parseGithubRepo(input);
     if (!repo) return { success: false, error: 'Invalid GitHub repository URL' };
 
@@ -169,7 +175,10 @@ export class ModuleManager {
     }
   }
 
-  async setEnabled(moduleId: string, enabled: boolean): Promise<{ success: boolean; error?: string }> {
+  async setEnabled(
+    moduleId: string,
+    enabled: boolean
+  ): Promise<{ success: boolean; error?: string }> {
     const target = this.state.find((m) => m.id === moduleId);
     if (!target) return { success: false, error: 'Unknown module' };
     target.enabled = enabled;
@@ -201,13 +210,26 @@ export class ModuleManager {
     return this.state.some((m) => m.id === moduleId && m.enabled);
   }
 
+  async getRendererBundlePath(moduleId: string): Promise<string | null> {
+    const state = this.state.find((m) => m.id === moduleId);
+    if (!state?.installPath) return null;
+    const manifest = await this.getManifestForState(state);
+    if (!manifest?.renderer) return null;
+    const bundlePath = path.join(state.installPath, manifest.renderer);
+    return fs.existsSync(bundlePath) ? bundlePath : null;
+  }
+
   private async isTrustedRepository(repository: string): Promise<boolean> {
     if (!repository) return false;
     const trusted = await this.getCatalog();
-    return trusted.some((m) => m.repository.toLowerCase() === repository.toLowerCase() && m.trusted);
+    return trusted.some(
+      (m) => m.repository.toLowerCase() === repository.toLowerCase() && m.trusted
+    );
   }
 
-  private async getManifestForState(state: InstalledModuleState): Promise<XDispatchModuleManifest | null> {
+  private async getManifestForState(
+    state: InstalledModuleState
+  ): Promise<XDispatchModuleManifest | null> {
     if (state.source === 'bundled') {
       return this.bundledManifests.get(state.id) ?? null;
     }
