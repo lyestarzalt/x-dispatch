@@ -325,6 +325,8 @@
     "about": {
       "title": "情報",
       "description": "X-Plane用フライトディスパッチと空港可視化",
+      "updateAvailable": "アップデートが利用可能 — v{{version}}",
+      "upToDate": "最新版です",
       "projectNotice": "X-Planeコミュニティのために作られた情熱プロジェクトで、無料で公開され、オープンに開発されています。",
       "credits": "クレジット",
       "developer": "開発者",
@@ -467,8 +469,6 @@
       "lightsPerfHint": "オフにするとパフォーマンスが向上します。",
       "approachLights": "進入灯のアニメーション",
       "approachLightsDesc": "進入路のシーケンスフラッシュをアニメーション表示",
-      "taxiwayGlow": "誘導路灯のグロー",
-      "taxiwayGlowDesc": "誘導路灯の多層グロー効果",
       "dayNight": "昼夜オーバーレイ",
       "dayNightDesc": "地球儀上のリアルタイム昼夜の影",
       "contours": "等高線",
@@ -1589,5 +1589,13 @@
   },
   "sunArc": {
     "local": "現地"
+  },
+  "update": {
+    "available": {
+      "title": "アップデートが利用可能です",
+      "description": "X-Dispatch {{version}} をダウンロードできます",
+      "download": "ダウンロード",
+      "dismiss": "後で"
+    }
   }
 }

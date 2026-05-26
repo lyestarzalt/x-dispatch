@@ -325,6 +325,8 @@
     "about": {
       "title": "Über",
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
+      "updateAvailable": "Update verfügbar — v{{version}}",
+      "upToDate": "Du bist auf dem neuesten Stand",
       "projectNotice": "Ein Leidenschaftsprojekt für die X-Plane-Community, kostenlos geteilt und offen entwickelt.",
       "credits": "Danksagungen",
       "developer": "Entwickler",
@@ -467,8 +469,6 @@
       "lightsPerfHint": "Schalten Sie diese aus, um die Leistung zu verbessern.",
       "approachLights": "Anflugbefeuerungs-Animation",
       "approachLightsDesc": "Animiertes sequenzielles Blinken im Anflug",
-      "taxiwayGlow": "Rollweg-Lichtschein",
-      "taxiwayGlowDesc": "Mehrschichtiger Glow-Effekt an Rollwegbefeuerung",
       "dayNight": "Tag/Nacht-Overlay",
       "dayNightDesc": "Echtzeit-Tag/Nacht-Schatten auf dem Globus",
       "contours": "Höhenlinien",
@@ -1589,5 +1589,13 @@
   },
   "sunArc": {
     "local": "lokal"
+  },
+  "update": {
+    "available": {
+      "title": "Update verfügbar",
+      "description": "X-Dispatch {{version}} steht zum Download bereit",
+      "download": "Herunterladen",
+      "dismiss": "Später"
+    }
   }
 }

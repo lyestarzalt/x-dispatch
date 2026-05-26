@@ -156,6 +156,13 @@ export function getDb(): DrizzleDatabase<typeof schema> {
   return db;
 }
 
+/** True once initDb() has assigned the singleton. Use this to gate read-only
+ * callers that fire before app startup completes (e.g. the renderer asking
+ * for a status snapshot while initDb is still running). */
+export function isDbReady(): boolean {
+  return db !== null;
+}
+
 /** Raw sql.js handle for debug queries — only use in dev tools */
 export function getSqlite(): SqlJsDatabase | null {
   return sqlite;

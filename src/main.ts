@@ -41,6 +41,7 @@ import {
   isValidSearchQuery,
   validateCoordinates,
 } from './lib/utils/validation';
+import { isNewerVersion } from './lib/utils/versionCompare';
 import {
   clearVatsimSectorData,
   getVatsimSectorData,
@@ -395,6 +396,48 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
+// `latestVersion` is populated whenever the GitHub fetch + parse succeeds, so the
+// About section can display it even when there's no update.
+// `available` means "should trigger the update toast" — gated on isPackaged + non-Windows.
+type UpdateCheckResult = {
+  latestVersion: string | null;
+  available: boolean;
+  url: string;
+};
+
+const GITHUB_RELEASES_LATEST_URL =
+  'https://api.github.com/repos/lyestarzalt/x-dispatch/releases/latest';
+const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
+
+async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
+  const result = await proxyFetch(GITHUB_RELEASES_LATEST_URL, { timeoutMs: 8_000 });
+  if (!result.data || result.error) {
+    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+  }
+  try {
+    const payload = JSON.parse(result.data) as {
+      tag_name?: string;
+      draft?: boolean;
+      prerelease?: boolean;
+    };
+    if (payload.draft || payload.prerelease || !payload.tag_name) {
+      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+    }
+    const latest = payload.tag_name.replace(/^v/, '');
+    const current = app.getVersion();
+    const shouldNotify =
+      isNewerVersion(current, latest) && app.isPackaged && process.platform !== 'win32';
+    return {
+      latestVersion: latest,
+      available: shouldNotify,
+      url: DOWNLOAD_PAGE_URL,
+    };
+  } catch (err) {
+    logger.main.warn(`Update check JSON parse failed: ${(err as Error).message}`);
+    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+  }
+}
+
 function registerIpcHandlers() {
   onVatsimSectorDataUpdated(() => {
     mainWindow?.webContents.send('vatsim-sectors:updated');
@@ -402,6 +445,15 @@ function registerIpcHandlers() {
 
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
+    // Dev builds skip the network call entirely to avoid hammering GitHub during HMR.
+    // Production always fetches: the About section needs latestVersion even when
+    // Windows users get their real update via update-electron-app (no toast for them).
+    if (!app.isPackaged) {
+      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+    }
+    return checkForUpdateAvailable();
+  });
   ipcMain.handle('app:getCliFlags', () => getCliFlags());
   ipcMain.handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();
@@ -647,7 +699,7 @@ function registerIpcHandlers() {
     logger.main.info(`X-Plane path changed to: ${p}, clearing data and reloading...`);
 
     // Reload the window to trigger fresh data load
-    if (mainWindow) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.reload();
     }
 
@@ -1503,7 +1555,10 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('second-instance', (_event, commandLine) => {
-  if (mainWindow) {
+  // `if (mainWindow)` alone passes a destroyed BrowserWindow (still truthy),
+  // and any method on it throws "Object has been destroyed". Sentry
+  // X-DISPATCH-6.
+  if (mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
   }
@@ -1656,7 +1711,13 @@ app.whenReady().then(async () => {
   // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
   mainWindow.on('focus', () => {
     globalShortcut.register('CommandOrControl+F', () => {
-      mainWindow?.webContents.send('focus-search');
+      // The shortcut handler can outlive its registration window briefly
+      // during teardown; optional chaining catches the null case, but a
+      // destroyed-but-still-truthy `mainWindow` would still throw on
+      // `.webContents.send()`. Sentry X-DISPATCH-E.
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('focus-search');
+      }
     });
   });
   mainWindow.on('blur', () => {
@@ -1692,5 +1753,9 @@ app.on('before-quit', () => {
 });
 
 app.on('activate', () => {
+  // macOS can fire 'activate' (dock click) before whenReady resolves —
+  // createWindow() touches `screen` via electron-window-state, which throws
+  // until app is ready. Sentry X-DISPATCH-M.
+  if (!app.isReady()) return;
   if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
 });

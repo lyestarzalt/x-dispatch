@@ -201,7 +201,7 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
       case 'network':
         return <NetworkPanel stats={stats} />;
       case 'perf':
-        return <PerfPanel stats={stats} />;
+        return <PerfPanel stats={stats} mapRef={mapRef} />;
       case 'state':
         return <StatePanel />;
       case 'db':

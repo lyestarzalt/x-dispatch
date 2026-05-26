@@ -64,22 +64,18 @@ export function useAirportRenderer(
    * BaseLayerRenderer.remove() delegates to safeRemove(), which checks
    * map.isStyleLoaded(). If false, removal is deferred to the 'idle' event.
    *
-   * Problem: TaxiwayLightsLayer's animation calls setPaintProperty() every
-   * frame, which keeps style._changed = true. MapLibre's isStyleLoaded()
-   * checks !style._changed, so it returns false permanently while the
-   * animation runs. This means safeRemove NEVER executes synchronously —
-   * it always defers. But 'idle' also never fires because the animation
-   * keeps dirtying the style. Result: old airport sources are never removed,
-   * they accumulate (20 sources × 10-16MB each), and by the 2nd-3rd airport
-   * switch the map stalls completely (black screen, no basemap tiles).
+   * Problem: any per-frame setPaintProperty() (e.g. an old animation loop)
+   * keeps style._changed = true. MapLibre's isStyleLoaded() checks
+   * !style._changed, so it returns false permanently while such an animation
+   * runs. safeRemove NEVER executes synchronously then — it always defers to
+   * 'idle', which also never fires. Result: old airport sources accumulate
+   * (20 sources × 10-16MB each), and by the 2nd-3rd airport switch the map
+   * stalls (black screen, no basemap tiles).
    *
    * Fix: bypass safeRemove entirely. Collect all layer/source IDs from the
    * renderer metadata and remove them directly. Individual try/catch ensures
    * one failure doesn't block others. Layers must be removed before their
    * sources (MapLibre throws if a source still has referencing layers).
-   *
-   * See also: TaxiwayLightsLayer.render() which defers its animation start
-   * to map.once('idle') for the same reason.
    */
   const clearAirport = useCallback(() => {
     const m = map.current;
@@ -121,6 +117,29 @@ export function useAirportRenderer(
       const m = map.current;
       if (!m) return null;
 
+      const paintLayers = (parsedAirport: ParsedAirport): void => {
+        for (const renderer of layerRenderers.current) {
+          // Map may have been destroyed between layer calls (component unmount
+          // or basemap rebuild mid-paint). MapLibre nulls `style` on remove(),
+          // so subsequent `getSource()` / `getImage()` calls inside a renderer
+          // throw "Cannot read properties of null". Sentry X-DISPATCH-13 /
+          // X-DISPATCH-14 traced to exactly this cascade — bail rather than
+          // log a noise event per remaining layer.
+          if (!m.getStyle()) return;
+          if (!renderer.hasData(parsedAirport)) continue;
+          try {
+            const renderResult = renderer.render(m, parsedAirport);
+            if (renderResult instanceof Promise) {
+              renderResult.catch((err) =>
+                window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
+              );
+            }
+          } catch (err) {
+            window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
+          }
+        }
+      };
+
       const doRender = async (): Promise<ParsedAirport | null> => {
         // Toggle off: clicking the same airport deselects it
         if (selectedAirport.current === icao) {
@@ -152,21 +171,16 @@ export function useAirportRenderer(
           );
         }
 
-        // Render all layers synchronously in one batch
-        for (const renderer of layerRenderers.current) {
-          if (renderer.hasData(parsedAirport)) {
-            try {
-              const renderResult = renderer.render(m, parsedAirport);
-              if (renderResult instanceof Promise) {
-                renderResult.catch((err) =>
-                  window.appAPI.log.error(`Layer ${renderer.layerId} async failed for ${icao}`, err)
-                );
-              }
-            } catch (err) {
-              window.appAPI.log.error(`Layer ${renderer.layerId} render failed for ${icao}`, err);
-            }
-          }
-        }
+        // Note on Sentry X-DISPATCH-1C / X-DISPATCH-16 ("Style is not done
+        // loading"): an attempt to gate this on `isStyleLoaded()` here broke
+        // the home-airport autoload on cold start, because that helper
+        // returns false during normal tile loading (sourceCache.loaded()) —
+        // not just during a setStyle. addLayer/addSource only need
+        // `style._loaded`, which is true once `style.load` has fired. The
+        // per-layer try/catch below already catches the rare setStyle race
+        // and logs one event per affected layer; living with that noise is
+        // better than a silent paint-never-fires regression.
+        paintLayers(parsedAirport);
 
         const optimalZoom = calculateOptimalZoom(parsedAirport.runways);
 
@@ -223,11 +237,11 @@ export function useAirportRenderer(
    *
    * The approach lights "rabbit" animation used setPaintProperty() at 30fps,
    * which caused MapLibre to repaint every frame → 50-80% GPU usage even
-   * when the map was idle (#59). Same root cause as the TaxiwayLightsLayer
-   * issue (see TaxiwayLightsLayer.ts and clearAirport above).
+   * when the map was idle (#59). See clearAirport above for the related
+   * cleanup hazard.
    *
    * All airport lights now render at static opacity. The rabbit effect
-   * looked nice but isn't worth the battery drain on laptops.
+   * lives in `useApproachLightAnimation` as a Canvas2D overlay instead.
    */
   const startAnimations = useCallback(() => {
     // No-op — animations removed for GPU performance (#59)

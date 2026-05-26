@@ -1,7 +1,7 @@
 {
   "name": "x-dispatch",
   "productName": "X-Dispatch",
-  "version": "1.8.4e",
+  "version": "1.9.0",
   "description": "Flight dispatch, airport visualization, and addon management for X-Plane 12",
   "author": {
     "name": "Lyes Tarzalt"
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "https://github.com/4SLSL/x-dispatch"
   },
-  "homepage": "https://github.com/4SLSL/x-dispatch#readme",
+  "homepage": "https://x-dispatch.app/",
   "keywords": [
     "x-plane",
     "x-plane-12",

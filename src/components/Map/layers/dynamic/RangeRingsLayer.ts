@@ -195,21 +195,32 @@ function setupRingDrag(
 }
 
 function teardownRingDrag(): void {
-  if (!dragState) return;
-  const { map, onEnter, onLeave, onDown, onMove, onUp } = dragState;
-
-  // Remove layer-bound listeners
-  map.off('mouseenter', RING_HITBOX_LAYER_ID, onEnter);
-  map.off('mouseleave', RING_HITBOX_LAYER_ID, onLeave);
-  map.off('mousedown', RING_HITBOX_LAYER_ID, onDown);
-
-  // Remove active drag listeners if mid-drag
-  if (onMove) map.off('mousemove', onMove);
-  if (onUp) map.off('mouseup', onUp);
-
-  map.dragPan.enable();
-  map.getCanvas().style.cursor = '';
+  const state = dragState;
+  if (!state) return;
+  // Clear first so a throw below can't re-enter (and so the next setup sees a
+  // clean slate even if cleanup partially fails).
   dragState = null;
+
+  const { map, onEnter, onLeave, onDown, onMove, onUp } = state;
+
+  // If the map was destroyed before teardown ran, `dragPan` is nulled out by
+  // MapLibre's .remove(). Touching it (or any of the map's `.off` handlers)
+  // throws. We hold a module-level reference to the map, so this is the
+  // window we can land in. Skip cleanup — the map is already gone.
+  if (!map.dragPan) return;
+
+  try {
+    map.off('mouseenter', RING_HITBOX_LAYER_ID, onEnter);
+    map.off('mouseleave', RING_HITBOX_LAYER_ID, onLeave);
+    map.off('mousedown', RING_HITBOX_LAYER_ID, onDown);
+    if (onMove) map.off('mousemove', onMove);
+    if (onUp) map.off('mouseup', onUp);
+    map.dragPan.enable();
+    map.getCanvas().style.cursor = '';
+  } catch {
+    // Map is mid-teardown between the dragPan check and these calls — nothing
+    // to do.
+  }
 }
 
 // ============================================================================

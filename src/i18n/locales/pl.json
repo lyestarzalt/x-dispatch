@@ -325,6 +325,8 @@
     "about": {
       "title": "O programie",
       "description": "Dyspozycja lotów i wizualizacja lotnisk dla X-Plane",
+      "updateAvailable": "Dostępna aktualizacja — v{{version}}",
+      "upToDate": "Masz najnowszą wersję",
       "projectNotice": "Projekt tworzony z pasji dla społeczności X-Plane, udostępniany za darmo i rozwijany otwarcie.",
       "credits": "Twórcy",
       "developer": "Deweloper",
@@ -467,8 +469,6 @@
       "lightsPerfHint": "Wyłącz, aby poprawić wydajność.",
       "approachLights": "Animacja świateł podejścia",
       "approachLightsDesc": "Animowane sekwencyjne błyski na podejściu",
-      "taxiwayGlow": "Poświata świateł dróg kołowania",
-      "taxiwayGlowDesc": "Wielowarstwowy efekt poświaty na światłach dróg kołowania",
       "dayNight": "Nakładka dzień/noc",
       "dayNightDesc": "Cień dnia i nocy na globusie w czasie rzeczywistym",
       "contours": "Poziomice",
@@ -1589,5 +1589,13 @@
   },
   "sunArc": {
     "local": "lokalny"
+  },
+  "update": {
+    "available": {
+      "title": "Dostępna aktualizacja",
+      "description": "X-Dispatch {{version}} jest gotowy do pobrania",
+      "download": "Pobierz",
+      "dismiss": "Później"
+    }
   }
 }

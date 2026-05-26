@@ -27,8 +27,6 @@ import { BaseLayerRenderer } from './BaseLayerRenderer';
  *   51, 52 = same with a black border (runway taxiways)
  * Anything else with lineType ≥ 1 is a marking (hold-short bars, edge
  * markings, ILS critical-area lines, etc.).
- *
- * Lighting is handled separately by TaxiwayLightsLayer.
  */
 const CENTERLINE_LINE_TYPES = [1, 2, 51, 52] as const;
 

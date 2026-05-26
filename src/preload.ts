@@ -82,6 +82,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   platform: process.platform,
   isSetupComplete: () => ipcRenderer.invoke('app:isSetupComplete'),
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  checkForUpdate: () => ipcRenderer.invoke('app:checkForUpdate'),
   getCliFlags: () => ipcRenderer.invoke('app:getCliFlags'),
   getProcessMemory: () =>
     ipcRenderer.invoke('app:getProcessMemory') as Promise<{
@@ -436,6 +437,11 @@ declare global {
       platform: NodeJS.Platform;
       isSetupComplete: () => Promise<boolean>;
       getVersion: () => Promise<string>;
+      checkForUpdate: () => Promise<{
+        latestVersion: string | null;
+        available: boolean;
+        url: string;
+      }>;
       getCliFlags: () => Promise<CliFlags>;
       getProcessMemory: () => Promise<{ rss: number; heapUsed: number; heapTotal: number }>;
       startLoading: () => Promise<{ success: boolean; status?: DataLoadStatus; error?: string }>;

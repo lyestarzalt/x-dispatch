@@ -87,8 +87,6 @@ export type SurfaceDetail = 'low' | 'medium' | 'high';
 export interface GraphicsSettings {
   /** Approach light sequenced flash animation */
   approachLightAnimation: boolean;
-  /** Taxiway light glow layers (3-layer vs core only) */
-  taxiwayLightGlow: boolean;
   /** Surface detail — curve smoothness for taxiway/pavement edges */
   surfaceDetail: SurfaceDetail;
 }
@@ -175,7 +173,6 @@ function applyZoomLevel(level: number) {
 
 const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   approachLightAnimation: true,
-  taxiwayLightGlow: true,
   surfaceDetail: 'high',
 };
 
@@ -371,7 +368,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 23,
+      version: 25,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -498,6 +495,18 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   }
   if (version < 23) {
     state = { ...state, sia: DEFAULT_SIA_SETTINGS };
+  }
+  if (version < 24) {
+    // taxiwayLightGlow setting removed — the taxiway lights layer was
+    // dropped entirely (lights are too small at usable zoom to be worth
+    // the cost). Strip the orphan field if present.
+    if (state.graphics && 'taxiwayLightGlow' in state.graphics) {
+      const { taxiwayLightGlow: _drop, ...rest } = state.graphics as GraphicsSettings & {
+        taxiwayLightGlow?: boolean;
+      };
+      void _drop;
+      state = { ...state, graphics: rest };
+    }
   }
 
   return state as SettingsState;

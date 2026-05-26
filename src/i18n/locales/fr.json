@@ -328,6 +328,8 @@
     "about": {
       "title": "À propos",
       "description": "Dispatch de vol et visualisation d'aéroports pour X-Plane",
+      "updateAvailable": "Mise à jour disponible — v{{version}}",
+      "upToDate": "Vous êtes à jour",
       "projectNotice": "Un projet passion pour la communauté X-Plane, partagé gratuitement et développé au grand jour.",
       "credits": "Crédits",
       "developer": "Développeur",
@@ -470,8 +472,6 @@
       "lightsPerfHint": "Désactivez-les pour améliorer les performances.",
       "approachLights": "Animation des feux d'approche",
       "approachLightsDesc": "Clignotement séquentiel animé en approche",
-      "taxiwayGlow": "Halo des feux de taxiway",
-      "taxiwayGlowDesc": "Effet de halo multicouche sur les feux de taxiway",
       "dayNight": "Superposition jour/nuit",
       "dayNightDesc": "Ombre jour/nuit en temps réel sur le globe",
       "contours": "Courbes de niveau",
@@ -1656,6 +1656,14 @@
       "title": "Fond OACI (MBTiles)",
       "loaded": "Carte chargée : {{name}}",
       "none": "Aucune carte OACI importée."
+    }
+  },
+  "update": {
+    "available": {
+      "title": "Mise à jour disponible",
+      "description": "X-Dispatch {{version}} est prêt à être téléchargé",
+      "download": "Télécharger",
+      "dismiss": "Plus tard"
     }
   }
 }

@@ -325,6 +325,8 @@
     "about": {
       "title": "Ship's Log",
       "description": "Flight dispatch an' airport visualization fer X-Plane",
+      "updateAvailable": "New booty available — v{{version}}",
+      "upToDate": "Yer ship be shipshape",
       "projectNotice": "A passion-fueled project fer the X-Plane crew, shared free o' charge and built in the open.",
       "credits": "Crew Credits",
       "developer": "Shipwright",
@@ -467,8 +469,6 @@
       "lightsPerfHint": "Turn these off ta improve performance.",
       "approachLights": "Approach lights",
       "approachLightsDesc": "Sequenced flashin' lights on approach",
-      "taxiwayGlow": "Taxiway glow",
-      "taxiwayGlowDesc": "Extra glow fer taxiway lights",
       "dayNight": "Day/night veil",
       "dayNightDesc": "Live day/night shadow across the globe",
       "contours": "Hill contour lines",
@@ -1589,5 +1589,13 @@
   },
   "sunArc": {
     "local": "local"
+  },
+  "update": {
+    "available": {
+      "title": "New booty be available",
+      "description": "X-Dispatch {{version}} be ready t' plunder",
+      "download": "Plunder",
+      "dismiss": "Later, matey"
+    }
   }
 }

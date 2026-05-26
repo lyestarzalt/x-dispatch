@@ -325,6 +325,8 @@
     "about": {
       "title": "Acerca de",
       "description": "Despacho de vuelos y visualización de aeropuertos para X-Plane",
+      "updateAvailable": "Actualización disponible — v{{version}}",
+      "upToDate": "Estás al día",
       "projectNotice": "Un proyecto hecho con pasión para la comunidad de X-Plane, compartido gratis y desarrollado abiertamente.",
       "credits": "Créditos",
       "developer": "Desarrollador",
@@ -467,8 +469,6 @@
       "lightsPerfHint": "Desactívalas para mejorar el rendimiento.",
       "approachLights": "Animación de luces de aproximación",
       "approachLightsDesc": "Destello secuencial animado en aproximación",
-      "taxiwayGlow": "Halo de luces de rodaje",
-      "taxiwayGlowDesc": "Efecto de halo multicapa en las luces de calles de rodaje",
       "dayNight": "Superposición día/noche",
       "dayNightDesc": "Sombra día/noche en tiempo real sobre el globo",
       "contours": "Curvas de nivel",
@@ -1589,5 +1589,13 @@
   },
   "sunArc": {
     "local": "local"
+  },
+  "update": {
+    "available": {
+      "title": "Actualización disponible",
+      "description": "X-Dispatch {{version}} está listo para descargar",
+      "download": "Descargar",
+      "dismiss": "Más tarde"
+    }
   }
 }
