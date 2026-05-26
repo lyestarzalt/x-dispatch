@@ -44,15 +44,15 @@ jobs:
             NEW="v${{ inputs.custom_version }}"
             npm version "${{ inputs.custom_version }}" --no-git-tag-version --allow-same-version
             git add package.json package-lock.json
-            git commit -m "release: ${{ inputs.custom_version }}"
-            git tag "$NEW"
+            git diff --staged --quiet || git commit -m "release: ${{ inputs.custom_version }}"
+            git rev-parse "$NEW" >/dev/null 2>&1 || git tag "$NEW"
           else
             NEW=$(npm version ${{ inputs.version }} -m "release: %s")
           fi
           echo "version=${NEW#v}" >> $GITHUB_OUTPUT
           echo "tag=$NEW" >> $GITHUB_OUTPUT
-          git push --follow-tags
           git push origin HEAD
+          git push origin "$NEW" || true
 
   build:
     name: Build (${{ matrix.name }})
