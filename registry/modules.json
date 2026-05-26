@@ -2,7 +2,7 @@
   "modules": [
     {
       "id": "sia-france",
-      "repository": "4SLSL/x-dispatch-module-sia-france",
+      "repository": "4SLSL/vac-sia",
       "defaultRef": "v1.0.0",
       "trusted": true,
       "bundled": true,
