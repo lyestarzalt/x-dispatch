@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { airportModuleTabs, isModuleActive } from '@/lib/modules/registry';
+import { getAirportModuleTabs } from '@/lib/modules/registry';
 import { formatAirportCountry } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -89,9 +89,7 @@ export default function AirportInfoPanel({
 
   const elevation = Math.round(airport.elevation);
   const transitionAlt = airport.metadata.transition_alt;
-  const moduleTabs = airportModuleTabs.filter(
-    (tab) => isModuleActive(modules, tab.moduleId) && tab.isVisible(airport)
-  );
+  const moduleTabs = getAirportModuleTabs(modules).filter((tab) => tab.isVisible(airport));
   const tabs = [
     ...TABS,
     ...moduleTabs.map((tab) => ({ id: tab.id, labelKey: tab.labelKey, icon: tab.icon })),

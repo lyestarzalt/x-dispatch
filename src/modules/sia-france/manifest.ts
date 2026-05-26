@@ -10,7 +10,7 @@ export const siaFranceManifest: XDispatchModuleManifest = {
   kind: 'bundled',
   defaultEnabled: false,
   contributions: {
-    settingsSections: [{ sectionId: 'sia-charts', tabId: 'sia-france' }],
+    settingsTabs: [{ tabId: 'sia-france', labelKey: 'modules.siaFrance.settingsTab' }],
     airportTabs: [{ tabId: 'vac' }],
     toolbarToggles: [{ toggleId: 'vac-overlay' }],
     mapHooks: [{ hookId: 'vac-overlay' }],

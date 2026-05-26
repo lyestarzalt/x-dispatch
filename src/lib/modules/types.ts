@@ -35,7 +35,10 @@ export interface ModuleProtocolContribution {
 }
 
 export interface ModuleContributions {
+  /** @deprecated Prefer settingsTabs (phase 2). */
   settingsSections?: ModuleSettingsContribution[];
+  /** Dedicated Settings sidebar tab(s) for this module. */
+  settingsTabs?: ModuleSettingsTabContribution[];
   airportTabs?: ModuleAirportTabContribution[];
   toolbarToggles?: ModuleToolbarToggleContribution[];
   mapHooks?: ModuleMapHookContribution[];
@@ -52,6 +55,8 @@ export interface XDispatchModuleManifest {
   kind: ModuleKind;
   /** Default enable state when the module is first registered (bundled modules only). */
   defaultEnabled?: boolean;
+  /** Relative path inside the module package for phase-2 UI bundle (e.g. renderer.bundle.js). */
+  renderer?: string;
   main?: string;
   contributions?: ModuleContributions;
 }

@@ -1,9 +1,10 @@
-import { Map } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { SiaChartsSection } from '@/modules/sia-france/renderer/settings/SiaChartsSection';
-import VacTab from '@/modules/sia-france/renderer/airport/VacTab';
 import type { ParsedAirport } from '@/types/apt';
+import {
+  getAirportModuleTabsForRuntime,
+  getSettingsModuleTabsForRuntime,
+} from './moduleUiRegistry';
 import type { ModuleRuntimeInfo } from './types';
 
 export interface SettingsModuleTabRegistration {
@@ -33,27 +34,14 @@ export interface MapHookRegistration {
   moduleId: string;
 }
 
-/** Settings sidebar entry per enabled module (Réglages → onglet dédié). */
-export const settingsModuleTabs: SettingsModuleTabRegistration[] = [
-  {
-    id: 'sia-france',
-    moduleId: 'sia-france',
-    labelKey: 'modules.siaFrance.settingsTab',
-    icon: Map,
-    render: () => <SiaChartsSection />,
-  },
-];
+/** @deprecated Use getSettingsModuleTabsForRuntime(modules) — phase 2 manifest-driven tabs. */
+export function getSettingsModuleTabs(modules: ModuleRuntimeInfo[]): SettingsModuleTabRegistration[] {
+  return getSettingsModuleTabsForRuntime(modules);
+}
 
-export const airportModuleTabs: AirportTabRegistration[] = [
-  {
-    id: 'vac',
-    moduleId: 'sia-france',
-    labelKey: 'airportInfo.tabs.vac',
-    icon: <Map className="h-4 w-4" />,
-    isVisible: () => true,
-    render: () => <VacTab />,
-  },
-];
+export function getAirportModuleTabs(modules: ModuleRuntimeInfo[]): AirportTabRegistration[] {
+  return getAirportModuleTabsForRuntime(modules);
+}
 
 export const toolbarModuleToggles: ToolbarToggleRegistration[] = [
   { id: 'vac-overlay', moduleId: 'sia-france' },

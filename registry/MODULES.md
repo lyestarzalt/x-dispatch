@@ -1,28 +1,54 @@
 # X-Dispatch Community Modules
 
-X-Dispatch supports a modular architecture so features can be developed and maintained by the community.
-
 ## Concepts
 
-- **Bundled module** (`kind: bundled`): shipped with the app but **not part of core boot** — IPC, protocols, and map hooks register only when enabled (example: `sia-france`).
-- **Core module** (`kind: core`): reserved for features that must always run with the app.
-- **External module** (`kind: external`): installed from a `.zip` archive or a GitHub repository.
-- **Trusted store**: repository list in `registry/modules.json`.
+- **Bundled module** (`kind: bundled`): shipped with the app, optional at runtime.
+- **External module** (`kind: external`): installed from ZIP or GitHub.
+- **Trusted store**: `registry/modules.json`.
+
+## Phase 1 (current)
+
+- Declarative manifest `x-dispatch-module.json`
+- Main-process lifecycle (IPC, protocols) on enable/disable
+- UI via `moduleUiRegistry.tsx` for bundled modules
+- Settings sidebar tab per enabled module (`contributions.settingsTabs`)
+
+## Phase 2
+
+### 2a — Manifest-driven UI (in progress)
+
+- Manifest declares `settingsTabs`, `airportTabs`, etc.
+- Core maps `moduleId` → React entrypoints in `src/lib/modules/moduleUiRegistry.tsx`
+- External modules still need bundled UI in the app OR install path with pre-built bundle
+
+### 2b — External renderer bundles (planned)
+
+- Optional `renderer` field in manifest (e.g. `renderer.bundle.js`)
+- Build pipeline for module authors (Vite library mode)
+- Secure load from `userData/community-modules/<id>/<version>/`
+- Signature / trusted-store verification before execution
 
 ## Module manifest
 
-Each module archive must include an `x-dispatch-module.json` file. Types: `src/lib/modules/types.ts`.
+See `src/lib/modules/types.ts`. Example:
 
-- `kind`: `core`, `bundled`, or `external`
-- `defaultEnabled` (bundled): initial on/off for new installs (default `false`)
+```json
+{
+  "id": "sia-france",
+  "kind": "external",
+  "contributions": {
+    "settingsTabs": [{ "tabId": "sia-france", "labelKey": "modules.siaFrance.settingsTab" }],
+    "airportTabs": [{ "tabId": "vac" }],
+    "toolbarToggles": [{ "toggleId": "vac-overlay" }],
+    "mapHooks": [{ "hookId": "vac-overlay" }],
+    "protocols": [{ "scheme": "vac-pdf" }]
+  }
+}
+```
 
-## Bundled module in this repo
+## Bundled development
 
-1. Code under `src/modules/<module-id>/` (lib, main, renderer).
-2. Contributions registered in `src/lib/modules/registry.tsx`.
-3. Manifest passed to `initModuleManager([...])` in `src/main.ts`.
-4. `main/lifecycle.ts` registers/unregisters IPC and protocols when toggled.
-
-## Install external modules
-
-**Settings → Modules** — ZIP or GitHub URL. Catalog entries live in `registry/modules.json`.
+1. Code under `src/modules/<id>/` in x-dispatch
+2. Register UI in `moduleUiRegistry.tsx`
+3. Register lifecycle in `src/main.ts` + `initModuleManager`
+4. Mirror to [4SLSL/vac-sia](https://github.com/4SLSL/vac-sia) for distribution

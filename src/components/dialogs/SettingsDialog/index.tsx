@@ -26,10 +26,10 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import {
+  getSettingsModuleTabs,
   isModuleActive,
   isModuleSettingsTabId,
   moduleSettingsTabId,
-  settingsModuleTabs,
 } from '@/lib/modules/registry';
 import { cn } from '@/lib/utils/helpers';
 import { useModulesStore } from '@/stores/modulesStore';
@@ -93,16 +93,16 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const modules = useModulesStore((s) => s.modules);
   const [activeTab, setActiveTab] = useState<SettingsTabId>('xplane');
 
+  const settingsModuleTabs = useMemo(() => getSettingsModuleTabs(modules), [modules]);
+
   const sidebarTabs = useMemo((): TabConfig[] => {
-    const activeModuleTabs = settingsModuleTabs
-      .filter((tab) => isModuleActive(modules, tab.moduleId))
-      .map(
-        (tab): TabConfig => ({
-          id: moduleSettingsTabId(tab.id) as SettingsTabId,
-          icon: tab.icon,
-          labelKey: tab.labelKey,
-        })
-      );
+    const activeModuleTabs = settingsModuleTabs.map(
+      (tab): TabConfig => ({
+        id: moduleSettingsTabId(tab.id) as SettingsTabId,
+        icon: tab.icon,
+        labelKey: tab.labelKey,
+      })
+    );
 
     const modulesIdx = CORE_TABS.findIndex((tab) => tab.id === 'modules');
     const before = CORE_TABS.slice(0, modulesIdx + 1);
