@@ -1,7 +1,9 @@
-import { app, BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron';
+import { BrowserWindow, type OpenDialogOptions, app, dialog, ipcMain, shell } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
+import logger from '@/lib/utils/logger';
+import { capturePdfToPng, captureVacPdfToPng } from '@/main/pdfCapture';
 import {
   SIA_PRODUCT_CATALOG,
   clearCredentials,
@@ -13,8 +15,6 @@ import {
 } from '@/modules/sia-france/lib';
 import type { AirportGeorefInput } from '@/modules/sia-france/lib/georef';
 import type { SiaDownloadProgress } from '@/modules/sia-france/lib/types';
-import logger from '@/lib/utils/logger';
-import { capturePdfToPng, captureVacPdfToPng } from '@/main/pdfCapture';
 
 export const SIA_IPC_CHANNELS = [
   'sia:listProducts',
@@ -81,20 +81,23 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
 
   ipcMain.handle('sia:getInstallStatus', () => store.getInstallStatus());
 
-  ipcMain.handle('sia:getVacForIcao', async (_, icao: string, airport: AirportGeorefInput | null) => {
-    if (!icao || typeof icao !== 'string') return null;
-    const code = icao.toUpperCase();
-    let info = store.getVacInfo(code, airport);
-    if (!info) {
-      const count = await store.reindexFromDisk();
-      logger.main.info(`SIA getVacForIcao ${code}: reindexed, ${count} entries in manifest`);
-      info = store.getVacInfo(code, airport);
+  ipcMain.handle(
+    'sia:getVacForIcao',
+    async (_, icao: string, airport: AirportGeorefInput | null) => {
+      if (!icao || typeof icao !== 'string') return null;
+      const code = icao.toUpperCase();
+      let info = store.getVacInfo(code, airport);
+      if (!info) {
+        const count = await store.reindexFromDisk();
+        logger.main.info(`SIA getVacForIcao ${code}: reindexed, ${count} entries in manifest`);
+        info = store.getVacInfo(code, airport);
+      }
+      if (!info) {
+        logger.main.warn(`SIA getVacForIcao: no chart indexed for ${code}`);
+      }
+      return info;
     }
-    if (!info) {
-      logger.main.warn(`SIA getVacForIcao: no chart indexed for ${code}`);
-    }
-    return info;
-  });
+  );
 
   ipcMain.handle('sia:reindexVac', async () => {
     try {
@@ -209,9 +212,7 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
       properties: ['openFile'],
       filters: [{ name: 'ZIP archives', extensions: ['zip', '7z'] }],
     };
-    const result = win
-      ? await dialog.showOpenDialog(win, opts)
-      : await dialog.showOpenDialog(opts);
+    const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
     if (result.canceled || !result.filePaths[0]) return null;
     return result.filePaths[0];
   });
@@ -223,9 +224,7 @@ export function registerSiaIPC(getMainWindow: () => BrowserWindow | null): void 
       properties: ['openFile', 'openDirectory'],
       filters: [{ name: 'Archives', extensions: ['zip', '7z'] }],
     };
-    const result = win
-      ? await dialog.showOpenDialog(win, opts)
-      : await dialog.showOpenDialog(opts);
+    const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
     if (result.canceled || !result.filePaths[0]) return { success: false, error: 'cancelled' };
     const win2 = getMainWindow();
     try {

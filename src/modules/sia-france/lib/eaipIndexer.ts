@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
+import type { VacChartEntry } from './types';
 import {
   classifyChartType,
   extractIcaoFromVacPath,
@@ -10,7 +11,6 @@ import {
   isGenericVacPdfPath,
   mergeVacEntry,
 } from './vacIndex';
-import type { VacChartEntry } from './types';
 
 const XML_AIRSPACE_GLOB = ['.xml'];
 

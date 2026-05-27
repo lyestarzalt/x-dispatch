@@ -1,5 +1,5 @@
-import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import type { ParsedAirport } from '@/types/apt';
 import {
   getAirportModuleTabsForRuntime,
@@ -35,7 +35,9 @@ export interface MapHookRegistration {
 }
 
 /** @deprecated Use getSettingsModuleTabsForRuntime(modules) — phase 2 manifest-driven tabs. */
-export function getSettingsModuleTabs(modules: ModuleRuntimeInfo[]): SettingsModuleTabRegistration[] {
+export function getSettingsModuleTabs(
+  modules: ModuleRuntimeInfo[]
+): SettingsModuleTabRegistration[] {
   return getSettingsModuleTabsForRuntime(modules);
 }
 
@@ -47,7 +49,9 @@ export const toolbarModuleToggles: ToolbarToggleRegistration[] = [
   { id: 'vac-overlay', moduleId: 'sia-france' },
 ];
 
-export const mapModuleHooks: MapHookRegistration[] = [{ id: 'vac-overlay', moduleId: 'sia-france' }];
+export const mapModuleHooks: MapHookRegistration[] = [
+  { id: 'vac-overlay', moduleId: 'sia-france' },
+];
 
 export function isModuleActive(modules: ModuleRuntimeInfo[], moduleId: string): boolean {
   return modules.some((m) => m.manifest.id === moduleId && m.state.enabled);

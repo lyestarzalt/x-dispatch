@@ -122,7 +122,8 @@ function pathMatchesIcao(pdfPath: string, icao: string): boolean {
   if (new RegExp(`^AD-\\d+\\.${code}$`, 'i').test(path.basename(pdfPath, '.pdf'))) return true;
   if (upper.includes(`/AD/${code}/`) || upper.includes(`/AD/${code}_`)) return true;
   if (upper.includes(`/VAC/AD/${code}/`) || upper.includes(`/VAC/AD/${code}.`)) return true;
-  if (upper.includes(`ATLAS-VAC`) && (base.includes(code) || upper.includes(`/${code}/`))) return true;
+  if (upper.includes(`ATLAS-VAC`) && (base.includes(code) || upper.includes(`/${code}/`)))
+    return true;
   return extractIcaoFromVacPath(pdfPath) === code;
 }
 
@@ -172,8 +173,7 @@ export function findAipEntryForIcao(
   const direct = aipIndex[code];
   if (direct) return direct;
   return (
-    Object.values(aipIndex).find((e) => entryMatchesIcao(e, code) && e.chartType === 'iac') ??
-    null
+    Object.values(aipIndex).find((e) => entryMatchesIcao(e, code) && e.chartType === 'iac') ?? null
   );
 }
 

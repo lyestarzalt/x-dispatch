@@ -52,7 +52,10 @@ export function loadCredentials(): SiaMagentoCredentials | null {
   }
 }
 
-export function saveCredentials(credentials: SiaMagentoCredentials): { success: boolean; error?: string } {
+export function saveCredentials(credentials: SiaMagentoCredentials): {
+  success: boolean;
+  error?: string;
+} {
   if (!safeStorage.isEncryptionAvailable()) {
     return {
       success: false,

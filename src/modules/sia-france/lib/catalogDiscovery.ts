@@ -1,5 +1,5 @@
 import { SIA_PRODUCT_CATALOG, getCatalogProduct } from './catalog';
-import { searchDownloadableProducts, type SiaDownloadableProductRef } from './siaGraphqlClient';
+import { type SiaDownloadableProductRef, searchDownloadableProducts } from './siaGraphqlClient';
 import type { SiaProduct, SiaProductKind } from './types';
 
 const DISCOVERY_QUERIES: Array<{ kind: SiaProductKind; match: string }> = [
@@ -45,9 +45,7 @@ export async function discoverMagentoRefs(
 
   for (const { kind, match } of DISCOVERY_QUERIES) {
     const items = await searchDownloadableProducts(match, 6);
-    const picked =
-      items.find((i) => inferKindFromSku(i.sku, i.name) === kind) ??
-      items[0];
+    const picked = items.find((i) => inferKindFromSku(i.sku, i.name) === kind) ?? items[0];
     if (picked) byKind.set(kind, picked);
   }
 

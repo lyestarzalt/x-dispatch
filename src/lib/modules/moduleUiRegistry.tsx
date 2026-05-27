@@ -1,11 +1,11 @@
+import type { ReactNode } from 'react';
 import { Map } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { SiaChartsSection } from '@/modules/sia-france/renderer/settings/SiaChartsSection';
 import VacTab from '@/modules/sia-france/renderer/airport/VacTab';
+import { SiaChartsSection } from '@/modules/sia-france/renderer/settings/SiaChartsSection';
 import type { ParsedAirport } from '@/types/apt';
-import type { ModuleRuntimeInfo } from './types';
 import type { SettingsModuleTabRegistration } from './registry';
+import type { ModuleRuntimeInfo } from './types';
 
 /** Phase 2a: bundled module UI entrypoints (phase 2b = load renderer.bundle.js from install path). */
 const MODULE_UI: Record<

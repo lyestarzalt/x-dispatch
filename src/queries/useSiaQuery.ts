@@ -23,9 +23,10 @@ export function useVacChartQuery(icao: string | null, airportGeoref: unknown) {
     queryKey: ['sia', 'vac', icao?.toUpperCase() ?? null],
     queryFn: () => {
       if (!icao) return null;
-      return window.siaAPI.getVacForIcao(icao, airportGeoref as Parameters<
-        typeof window.siaAPI.getVacForIcao
-      >[1]);
+      return window.siaAPI.getVacForIcao(
+        icao,
+        airportGeoref as Parameters<typeof window.siaAPI.getVacForIcao>[1]
+      );
     },
     enabled: !!icao,
     staleTime: 60_000,
@@ -35,13 +36,8 @@ export function useVacChartQuery(icao: string | null, airportGeoref: unknown) {
 export function useSiaInstallMutation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      zipPath,
-      productId,
-    }: {
-      zipPath: string;
-      productId: string;
-    }) => window.siaAPI.installFromLocalZip(zipPath, productId),
+    mutationFn: async ({ zipPath, productId }: { zipPath: string; productId: string }) =>
+      window.siaAPI.installFromLocalZip(zipPath, productId),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['sia'] });
     },

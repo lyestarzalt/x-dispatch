@@ -1,6 +1,9 @@
 import type { BrowserWindow } from 'electron';
-import { registerVacPdfHandler, unregisterVacPdfHandler } from '@/modules/sia-france/lib/vacPdfProtocol';
 import logger from '@/lib/utils/logger';
+import {
+  registerVacPdfHandler,
+  unregisterVacPdfHandler,
+} from '@/modules/sia-france/lib/vacPdfProtocol';
 import { registerSiaIPC, unregisterSiaIPC } from './siaIpc';
 
 const SIA_MODULE_ID = 'sia-france';

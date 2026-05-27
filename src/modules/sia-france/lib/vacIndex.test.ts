@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { VacChartEntry } from './types';
 import {
   classifyChartType,
   extractIcaoFromVacPath,
@@ -11,10 +12,8 @@ import {
   mergeVacEntry,
   rankVacEntry,
 } from './vacIndex';
-import type { VacChartEntry } from './types';
 
-const ATLAS_LFPA =
-  'Atlas-VAC/PDF_AIPparSSection/VAC/AD/LFPA/AD-2.LFPA.pdf';
+const ATLAS_LFPA = 'Atlas-VAC/PDF_AIPparSSection/VAC/AD/LFPA/AD-2.LFPA.pdf';
 const EAIP_LFPA_ADC = 'FRANCE/html/eAIP/AD/LFPA/LFPA_ADC.pdf';
 
 describe('vacIndex', () => {

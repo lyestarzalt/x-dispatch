@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from 'electron';
+import { BrowserWindow, type OpenDialogOptions, dialog, ipcMain } from 'electron';
 import {
   clearOaciMbtiles,
   getOaciMbtilesConfig,
@@ -28,9 +28,7 @@ export async function registerMbtilesIPC(getMainWindow: () => BrowserWindow | nu
       properties: ['openFile'],
       filters: [{ name: 'MBTiles', extensions: ['mbtiles'] }],
     };
-    const result = win
-      ? await dialog.showOpenDialog(win, opts)
-      : await dialog.showOpenDialog(opts);
+    const result = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
     if (result.canceled || !result.filePaths[0]) return { success: false, error: 'cancelled' };
     return setOaciMbtilesFile(result.filePaths[0]);
   });

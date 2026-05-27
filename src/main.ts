@@ -18,9 +18,9 @@ import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
+import { registerMbtilesHandler, registerMbtilesScheme } from './lib/mbtiles/protocolHandler';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
-import { registerMbtilesScheme, registerMbtilesHandler } from './lib/mbtiles/protocolHandler';
 import {
   closeTileCache,
   getTileCache,
@@ -28,13 +28,6 @@ import {
   registerTileCacheHandler,
   registerTileCacheScheme,
 } from './lib/tileCache';
-import {
-  initModuleManager,
-  registerModulesIPC,
-  syncBundledModulesRuntime,
-} from './main/modulesIpc';
-import { siaFranceManifest } from './modules/sia-france';
-import { registerVacPdfScheme } from './modules/sia-france/main/protocol';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -68,6 +61,13 @@ import {
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
+import {
+  initModuleManager,
+  registerModulesIPC,
+  syncBundledModulesRuntime,
+} from './main/modulesIpc';
+import { siaFranceManifest } from './modules/sia-france';
+import { registerVacPdfScheme } from './modules/sia-france/main/protocol';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)

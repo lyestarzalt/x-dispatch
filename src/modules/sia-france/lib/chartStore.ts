@@ -1,30 +1,29 @@
 import { app } from 'electron';
+import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
-import { eq } from 'drizzle-orm';
 import { extractArchive } from '@/lib/addonManager/installer/extraction';
 import { getDb, saveDb } from '@/lib/db';
 import { metadata, siaCharts } from '@/lib/db/schema';
 import logger from '@/lib/utils/logger';
-import { getCatalogProduct, getLatestCatalogCycle, VAC_IMPORT_PRODUCT } from './catalog';
+import { VAC_IMPORT_PRODUCT, getCatalogProduct, getLatestCatalogCycle } from './catalog';
 import { resolveMagentoProduct } from './catalogDiscovery';
-import { downloadToFile, getDirSizeBytes, type DownloadProgressCallback } from './downloader';
+import { type DownloadProgressCallback, downloadToFile, getDirSizeBytes } from './downloader';
+import { indexEaipExtract, indexGenericVacPdfs, indexVacAmendmentPdfs } from './eaipIndexer';
+import { type AirportGeorefInput, resolveVacGeoref } from './georef';
+import { extractNestedArchives } from './nestedArchive';
+import { extractEaipRelativeSuffix, findPdfByBasename } from './pdfPathResolve';
 import { loadCredentials } from './siaCredentials';
 import { purchaseAndGetDownloadUrl } from './siaGraphqlClient';
-import { indexEaipExtract, indexGenericVacPdfs, indexVacAmendmentPdfs } from './eaipIndexer';
-import { extractNestedArchives } from './nestedArchive';
-import type {
-  SiaInstallManifest,
-  SiaInstallStatus,
-  VacChartEntry,
-  VacChartInfo,
-} from './types';
-import { resolveVacGeoref, type AirportGeorefInput } from './georef';
-import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
-import { extractEaipRelativeSuffix, findPdfByBasename } from './pdfPathResolve';
-import { migrateLegacyVacIndex, recoverInstalledProductsFromExtractDir, reindexVacFromManifest } from './vacReindex';
+import type { SiaInstallManifest, SiaInstallStatus, VacChartEntry, VacChartInfo } from './types';
 import { findAipEntryForIcao, findVacEntryForIcao, findVacPlateForIcao } from './vacIndex';
+import {
+  migrateLegacyVacIndex,
+  recoverInstalledProductsFromExtractDir,
+  reindexVacFromManifest,
+} from './vacReindex';
+import { loadOaciAirspacesFromIndex } from './xml/airspaceParser';
 
 const MANIFEST_VERSION = 1 as const;
 const METADATA_CYCLE_KEY = 'sia_eaip_cycle';
@@ -148,7 +147,9 @@ export class ChartStore {
         installedAt: p.installedAt,
       })),
       updateAvailable:
-        !!this.manifest.cycle && latestCatalogCycle !== '' && this.manifest.cycle !== latestCatalogCycle,
+        !!this.manifest.cycle &&
+        latestCatalogCycle !== '' &&
+        this.manifest.cycle !== latestCatalogCycle,
       latestCatalogCycle,
     };
   }
@@ -159,8 +160,7 @@ export class ChartStore {
 
   private resolveEntryPdfPath(entry: VacChartEntry): string | null {
     const basename = path.basename(entry.pdfPath);
-    const relSuffix =
-      entry.pdfRelPath ?? extractEaipRelativeSuffix(entry.pdfPath) ?? basename;
+    const relSuffix = entry.pdfRelPath ?? extractEaipRelativeSuffix(entry.pdfPath) ?? basename;
     const candidates = new Set<string>();
 
     candidates.add(path.normalize(entry.pdfPath));
@@ -219,11 +219,7 @@ export class ChartStore {
 
   getVacEntry(icao: string): VacChartEntry | null {
     this.refreshManifest();
-    return findVacEntryForIcao(
-      this.manifest.vacIndex,
-      icao.toUpperCase(),
-      this.manifest.aipIndex
-    );
+    return findVacEntryForIcao(this.manifest.vacIndex, icao.toUpperCase(), this.manifest.aipIndex);
   }
 
   async reindexFromDisk(): Promise<number> {
@@ -234,8 +230,7 @@ export class ChartStore {
 
     const installed = Object.values(this.manifest.installedProducts)[0];
     const catalog = installed ? getCatalogProduct(installed.productId) : undefined;
-    const cycle =
-      this.manifest.cycle ?? installed?.cycle ?? catalog?.airacCycle ?? '05/26';
+    const cycle = this.manifest.cycle ?? installed?.cycle ?? catalog?.airacCycle ?? '05/26';
     const validFrom = catalog?.validFrom ?? '';
     const validTo = catalog?.validTo ?? '';
     const previousVac = Object.keys(this.manifest.vacIndex).length;
@@ -312,7 +307,14 @@ export class ChartStore {
       await fsp.copyFile(zipPath, destZip);
     }
 
-    return this.installFromZip(destZip, productId, product.airacCycle, product.validFrom, product.validTo, onProgress);
+    return this.installFromZip(
+      destZip,
+      productId,
+      product.airacCycle,
+      product.validFrom,
+      product.validTo,
+      onProgress
+    );
   }
 
   /** Import VAC PDFs from a ZIP archive or a folder (international / ad-hoc). */
@@ -507,11 +509,7 @@ export class ChartStore {
       );
     } catch (err) {
       logger.main.error('SIA archive extraction failed', err);
-      return emitInstallError(
-        productId,
-        (err as Error).message,
-        onProgress
-      );
+      return emitInstallError(productId, (err as Error).message, onProgress);
     }
 
     if (!extractResult.ok) {
@@ -569,14 +567,9 @@ export class ChartStore {
           );
         }
 
-        if (
-          Object.keys(vacIndex).length === 0 &&
-          Object.keys(aipIndex).length === 0
-        ) {
+        if (Object.keys(vacIndex).length === 0 && Object.keys(aipIndex).length === 0) {
           const hint =
-            indexed.pdfCount === 0
-              ? 'sia.errors.noPdfsInArchive'
-              : 'sia.errors.noVacMatched';
+            indexed.pdfCount === 0 ? 'sia.errors.noPdfsInArchive' : 'sia.errors.noVacMatched';
           return emitInstallError(productId, hint, onProgress);
         }
       } else if (product.kind === 'vac-import') {

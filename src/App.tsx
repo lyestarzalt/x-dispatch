@@ -2,10 +2,10 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
+import { SiaUpdateBanner } from './components/SiaUpdateBanner';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import ErrorScreen from './components/screens/ErrorScreen';
-import { SiaUpdateBanner } from './components/SiaUpdateBanner';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
 import { Toaster } from './components/ui/sonner';

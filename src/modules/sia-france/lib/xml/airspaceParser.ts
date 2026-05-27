@@ -21,9 +21,7 @@ export function parseOaciAirspacesFromXml(xmlPath: string): OaciAirspaceFeature[
   for (let i = 1; i < blocks.length; i++) {
     const block = blocks[i]!.slice(0, 8000);
     const name =
-      matchAttr(block, 'designator') ??
-      matchTag(block, 'name') ??
-      `AS-${features.length}`;
+      matchAttr(block, 'designator') ?? matchTag(block, 'name') ?? `AS-${features.length}`;
     const coords = extractLatLonPairs(block);
     if (coords.length < 3) continue;
     features.push({

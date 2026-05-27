@@ -36,7 +36,9 @@ describe('modules registry', () => {
           name: 'SIA',
           version: '1.1.0',
           kind: 'bundled' as const,
-          contributions: { settingsTabs: [{ tabId: 'sia-france', labelKey: 'modules.siaFrance.settingsTab' }] },
+          contributions: {
+            settingsTabs: [{ tabId: 'sia-france', labelKey: 'modules.siaFrance.settingsTab' }],
+          },
         },
         state: {
           id: 'sia-france',

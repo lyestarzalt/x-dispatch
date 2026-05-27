@@ -1,1 +1,4 @@
-export { registerVacPdfHandler, registerVacPdfScheme } from '@/modules/sia-france/lib/vacPdfProtocol';
+export {
+  registerVacPdfHandler,
+  registerVacPdfScheme,
+} from '@/modules/sia-france/lib/vacPdfProtocol';
