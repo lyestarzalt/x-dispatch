@@ -1,0 +1,103 @@
+name: Release Rebuild
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to rebuild (e.g. v1.9.1)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            name: mac-intel
+            arch: x64
+          - os: windows-latest
+            name: windows
+          - os: ubuntu-24.04-arm
+            name: linux-arm64
+            arch: arm64
+    env:
+      ACTIONS_STEP_DEBUG: true
+    steps:
+      - name: Check out tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install platform dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools
+
+      - name: Install platform dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install python-setuptools
+
+      - name: List node_modules sanity (debug)
+        shell: bash
+        run: |
+          set -x
+          for pkg in sql.js electron-squirrel-startup ws bufferutil utf-8-validate 7zip-bin node-7z; do
+            if [ -d "node_modules/$pkg" ]; then echo "OK    $pkg"; else echo "MISS  $pkg"; fi
+          done
+          node --version
+          npm --version
+
+      - name: Package app (verbose)
+        shell: bash
+        run: |
+          set -x
+          npm run make ${ARCH_FLAG} --loglevel=verbose
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          DEBUG: electron-forge:*
+          ARCH_FLAG: ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
+
+      - name: List make output (debug)
+        if: always()
+        shell: bash
+        run: |
+          echo "=== out/make tree ==="
+          ls -laR out/make || echo "out/make missing"
+
+      - name: Collect assets
+        if: success()
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          find out/make -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
+          ls -la release-assets/
+
+      - name: Upload to existing release
+        if: success()
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          shopt -s nullglob
+          files=(release-assets/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No assets to upload"
+            exit 1
+          fi
+          gh release upload "$TAG" "${files[@]}" --clobber
