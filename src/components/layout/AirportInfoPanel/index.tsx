@@ -5,11 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAirportModuleTabs } from '@/lib/modules/registry';
 import { formatAirportCountry } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useModulesStore } from '@/stores/modulesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
@@ -17,7 +19,7 @@ import InfoTab from './tabs/InfoTab';
 import RouteTab from './tabs/RouteTab';
 import StartTab from './tabs/StartTab';
 
-type TabId = 'info' | 'start' | 'proc';
+type TabId = 'info' | 'start' | 'proc' | string;
 
 interface Tab {
   id: TabId;
@@ -57,6 +59,7 @@ export default function AirportInfoPanel({
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
+  const modules = useModulesStore((s) => s.modules);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('info');
 
@@ -78,6 +81,11 @@ export default function AirportInfoPanel({
 
   const elevation = Math.round(airport.elevation);
   const transitionAlt = airport.metadata.transition_alt;
+  const moduleTabs = getAirportModuleTabs(modules).filter((tab) => tab.isVisible(airport));
+  const tabs = [
+    ...TABS,
+    ...moduleTabs.map((tab) => ({ id: tab.id, labelKey: tab.labelKey, icon: tab.icon })),
+  ];
 
   return (
     <div
@@ -228,7 +236,7 @@ export default function AirportInfoPanel({
           className="flex min-h-0 flex-1 flex-col"
         >
           <TabsList variant="line" className="border-border/30">
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1.5 text-xs">
                 {tab.icon}
                 <span>{t(tab.labelKey)}</span>
@@ -252,6 +260,11 @@ export default function AirportInfoPanel({
               <TabsContent value="proc" className="mt-0">
                 <RouteTab />
               </TabsContent>
+              {moduleTabs.map((tab) => (
+                <TabsContent key={tab.id} value={tab.id} className="mt-0">
+                  {tab.render()}
+                </TabsContent>
+              ))}
             </div>
           </ScrollArea>
         </Tabs>

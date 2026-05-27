@@ -18,6 +18,7 @@ import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
+import { registerMbtilesHandler, registerMbtilesScheme } from './lib/mbtiles/protocolHandler';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import {
@@ -60,6 +61,13 @@ import {
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
+import {
+  initModuleManager,
+  registerModulesIPC,
+  syncBundledModulesRuntime,
+} from './main/modulesIpc';
+import { siaFranceManifest } from './modules/sia-france';
+import { registerVacPdfScheme } from './modules/sia-france/main/protocol';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
@@ -1488,6 +1496,7 @@ function registerIpcHandlers() {
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
   registerXPlaneLogIPC(() => dataManager.getXPlanePath());
+  void registerModulesIPC(() => mainWindow);
 
   ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
     try {
@@ -1519,6 +1528,8 @@ if (!app.isPackaged) {
 
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
+registerMbtilesScheme();
+registerVacPdfScheme();
 
 // Deep link protocol: xdispatch://airport/ICAO
 const PROTOCOL = 'xdispatch';
@@ -1681,9 +1692,11 @@ app.whenReady().then(async () => {
           "default-src 'self'; " +
             "script-src 'self' 'unsafe-inline'; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; " +
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com;" +
+            "img-src 'self' data: blob: mbtiles: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com; " +
             "font-src 'self' data: https://fonts.gstatic.com; " +
-            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com; " +
+            "connect-src 'self' ws://localhost:* http://localhost:* mbtiles: https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://www.sia.aviation-civile.gouv.fr; " +
+            "object-src 'self' vac-pdf: blob:; " +
+            "frame-src 'self' vac-pdf: blob:; " +
             "worker-src 'self' blob:;",
         ],
       },
@@ -1692,9 +1705,12 @@ app.whenReady().then(async () => {
 
   initTileCache();
   registerTileCacheHandler();
+  registerMbtilesHandler();
+  await initModuleManager([siaFranceManifest]);
 
   registerIpcHandlers();
   mainWindow = createWindow();
+  await syncBundledModulesRuntime();
 
   // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
   mainWindow.on('focus', () => {

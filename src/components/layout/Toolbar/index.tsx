@@ -13,6 +13,7 @@ import {
   Compass,
   FileUp,
   Layers,
+  Map,
   MapPin,
   Package,
   Pause,
@@ -53,6 +54,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { isModuleActive } from '@/lib/modules/registry';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useDistinctCountries, useNavDataCounts } from '@/queries';
@@ -61,6 +63,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
+import { useModulesStore } from '@/stores/modulesStore';
 import type { NavLayerVisibility } from '@/types/layers';
 import {
   ALL_RANGE_RING_CATEGORIES,
@@ -448,6 +451,10 @@ export default function Toolbar({
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
   const setDayNightEnabled = useMapStore((s) => s.setDayNightEnabled);
+  const vacOverlayEnabled = useMapStore((s) => s.vacOverlayEnabled);
+  const setVacOverlayEnabled = useMapStore((s) => s.setVacOverlayEnabled);
+  const modules = useModulesStore((s) => s.modules);
+  const siaModuleEnabled = isModuleActive(modules, 'sia-france');
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
@@ -932,6 +939,15 @@ export default function Toolbar({
                 <CloudSun className="mr-2 h-4 w-4" />
                 {t('toolbar.dayNight')}
               </DropdownMenuCheckboxItem>
+              {siaModuleEnabled && (
+                <DropdownMenuCheckboxItem
+                  checked={vacOverlayEnabled}
+                  onCheckedChange={() => setVacOverlayEnabled(!vacOverlayEnabled)}
+                >
+                  <Map className="mr-2 h-4 w-4" />
+                  {t('toolbar.vacOverlay')}
+                </DropdownMenuCheckboxItem>
+              )}
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />
                 {t('toolbar.vatsim')}

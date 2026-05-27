@@ -1,0 +1,3 @@
+#!/bin/sh
+# electron-winstaller expects wine64 on macOS arm64; Wine Stable only provides wine.
+exec wine "$@"

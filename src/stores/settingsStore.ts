@@ -110,6 +110,11 @@ export interface AirportsSettings {
   autoNavigateHomeOnStart: boolean;
 }
 
+export interface SiaSettings {
+  /** OACI MBTiles raster overlay opacity (0–1) */
+  oaciOpacity: number;
+}
+
 interface SettingsState {
   map: MapSettings;
   simbrief: SimBriefSettings;
@@ -118,6 +123,7 @@ interface SettingsState {
   launcher: LauncherSettings;
   support: SupportSettings;
   airports: AirportsSettings;
+  sia: SiaSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   addUserMapStyle: (style: MapStyle) => void;
   removeUserMapStyle: (id: string) => void;
@@ -132,6 +138,7 @@ interface SettingsState {
   toggleFavoriteAirport: (icao: string) => void;
   removeFavoriteAirport: (icao: string) => void;
   setHomeAirport: (icao: string | null) => void;
+  updateSiaSettings: (settings: Partial<SiaSettings>) => void;
   setFontSize: (size: FontSize) => void;
   setZoomLevel: (level: number) => void;
   setDebugOverlay: (enabled: boolean) => void;
@@ -184,6 +191,10 @@ const DEFAULT_AIRPORTS_SETTINGS: AirportsSettings = {
   autoNavigateHomeOnStart: true,
 };
 
+const DEFAULT_SIA_SETTINGS: SiaSettings = {
+  oaciOpacity: 0.75,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -194,6 +205,7 @@ export const useSettingsStore = create<SettingsState>()(
       launcher: DEFAULT_LAUNCHER_SETTINGS,
       support: DEFAULT_SUPPORT_SETTINGS,
       airports: DEFAULT_AIRPORTS_SETTINGS,
+      sia: DEFAULT_SIA_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -319,6 +331,11 @@ export const useSettingsStore = create<SettingsState>()(
           airports: { ...state.airports, homeIcao: icao ? icao.toUpperCase() : null },
         })),
 
+      updateSiaSettings: (settings) =>
+        set((state) => ({
+          sia: { ...state.sia, ...settings },
+        })),
+
       setFontSize: (size: FontSize) => {
         applyFontSize(size);
         set((state) => ({ appearance: { ...state.appearance, fontSize: size } }));
@@ -345,12 +362,13 @@ export const useSettingsStore = create<SettingsState>()(
           launcher: DEFAULT_LAUNCHER_SETTINGS,
           support: DEFAULT_SUPPORT_SETTINGS,
           airports: DEFAULT_AIRPORTS_SETTINGS,
+          sia: DEFAULT_SIA_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 24,
+      version: 25,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -474,6 +492,9 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   if (version < 22) {
     // Add favorites/home airport settings.
     state = { ...state, airports: DEFAULT_AIRPORTS_SETTINGS };
+  }
+  if (version < 23) {
+    state = { ...state, sia: DEFAULT_SIA_SETTINGS };
   }
   if (version < 24) {
     // taxiwayLightGlow setting removed — the taxiway lights layer was

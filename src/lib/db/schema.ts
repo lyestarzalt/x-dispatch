@@ -221,8 +221,28 @@ export const airspaces = sqliteTable(
   ]
 );
 
+/**
+ * SIA VAC charts index — PDF paths from eAIP installation
+ */
+export const siaCharts = sqliteTable(
+  'sia_charts',
+  {
+    icao: text('icao').primaryKey(),
+    chartType: text('chart_type', { enum: ['vac', 'iac', 'other'] }).notNull(),
+    pdfPath: text('pdf_path').notNull(),
+    chartId: text('chart_id'),
+    cycle: text('cycle'),
+    validFrom: text('valid_from'),
+    validTo: text('valid_to'),
+    installedAt: integer('installed_at').notNull(),
+  },
+  (table) => [index('idx_sia_charts_cycle').on(table.cycle)]
+);
+
 // Type exports
 export type Airport = typeof airports.$inferSelect;
+export type SiaChart = typeof siaCharts.$inferSelect;
+export type NewSiaChart = typeof siaCharts.$inferInsert;
 export type NewAirport = typeof airports.$inferInsert;
 export type AirportCustom = typeof airportsCustom.$inferSelect;
 export type NewAirportCustom = typeof airportsCustom.$inferInsert;

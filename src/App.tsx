@@ -2,6 +2,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
+import { SiaUpdateBanner } from './components/SiaUpdateBanner';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import ErrorScreen from './components/screens/ErrorScreen';
@@ -11,6 +12,7 @@ import { Toaster } from './components/ui/sonner';
 import { FullScreenSpinner } from './components/ui/spinner';
 import { TooltipProvider } from './components/ui/tooltip';
 import './i18n';
+import { ModuleHost } from './lib/modules/ModuleHost';
 import type { Airport } from './lib/xplaneServices/dataService';
 import { QueryProvider } from './queries';
 import { useAppStore } from './stores/appStore';
@@ -112,6 +114,7 @@ function AppContent() {
   } else {
     content = (
       <SectionErrorBoundary name="Map">
+        <SiaUpdateBanner />
         <Map airports={airports} />
       </SectionErrorBoundary>
     );
@@ -130,6 +133,7 @@ function App() {
     <ErrorBoundary>
       <QueryProvider>
         <TooltipProvider>
+          <ModuleHost />
           <AppContent />
           <UpdateAvailableToast />
           <Toaster position="bottom-center" />

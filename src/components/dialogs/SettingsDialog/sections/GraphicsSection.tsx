@@ -32,7 +32,6 @@ export function GraphicsSection() {
   const setTerrain3dEnabled = useMapStore((s) => s.setTerrain3dEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
-
   return (
     <div className="space-y-6">
       <SettingsHeader

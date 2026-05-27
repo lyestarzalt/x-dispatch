@@ -1,7 +1,7 @@
 {
   "name": "x-dispatch",
   "productName": "X-Dispatch",
-  "version": "1.9.0",
+  "version": "1.9.1-d",
   "description": "Flight dispatch, airport visualization, and addon management for X-Plane 12",
   "author": {
     "name": "Lyes Tarzalt"
@@ -9,7 +9,7 @@
   "license": "GPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lyestarzalt/x-dispatch"
+    "url": "https://github.com/4SLSL/x-dispatch"
   },
   "homepage": "https://x-dispatch.app/",
   "keywords": [
@@ -177,6 +177,7 @@
     "next-themes": "^0.4.6",
     "node-7z": "^3.0.0",
     "node-unrar-js": "^2.0.2",
+    "pdfjs-dist": "^4.10.38",
     "react-i18next": "^17.0.6",
     "react-resizable-panels": "^2.1.9",
     "recharts": "^3.7.0",

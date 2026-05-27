@@ -152,6 +152,9 @@
     },
     "weather": "Weather",
     "dayNight": "Day / Night",
+    "vacOverlay": "Georeferenced VAC",
+    "oaciBasemap": "OACI basemap",
+    "oaciVector": "OACI airspaces (SIA)",
     "terrainShading": "Terrain Shading",
     "launch": "Launch",
     "flightPlan": "Flight Plan",
@@ -261,6 +264,7 @@
       "support": "Support",
       "about": "About",
       "companionApps": "Companion Apps",
+      "modules": "Modules",
       "logs": "X-Plane Logs"
     },
     "airports": {
@@ -611,6 +615,7 @@
       "info": "Info",
       "start": "Start",
       "proc": "Proc",
+      "vac": "VAC",
       "runways": "Runways",
       "gates": "Gates",
       "helipads": "Helipads",
@@ -1589,6 +1594,99 @@
   },
   "sunArc": {
     "local": "local"
+  },
+  "sia": {
+    "attribution": "Data © SIA/DGAC — VFR navigation use only. See terms at sia.aviation-civile.gouv.fr.",
+    "importEaip": "Import eAIP ZIP",
+    "downloadEaip": "Download from SIA",
+    "downloadAmdt": "Download amendment",
+    "installing": "Installing…",
+    "clearData": "Delete SIA data",
+    "reindexVac": "Reindex VAC charts",
+    "updateAvailable": "A new AIRAC edition is available ({{cycle}}).",
+    "products": {
+      "eaipFull": "Full eAIP ZIP",
+      "vacAmdtMetro": "Metropolitan VAC amendment",
+      "vacAmdtHeli": "Heliport VAC amendment",
+      "vacImport": "Manual VAC import"
+    },
+    "account": {
+      "title": "SIA account (free)",
+      "description": "The SIA website requires a customer account to download free ZIP files (Magento downloadable products). Create an account at sia.aviation-civile.gouv.fr, then enter your credentials here.",
+      "email": "Email",
+      "password": "Password",
+      "save": "Save account",
+      "test": "Test login",
+      "clear": "Remove saved account",
+      "configured": "Saved account: {{email}}",
+      "loginOk": "SIA login successful.",
+      "loginFailed": "Login failed: {{error}}",
+      "saved": "Credentials saved securely.",
+      "noEncryption": "Secure storage is not available on this system — use manual ZIP import instead."
+    },
+    "errors": {
+      "noCredentials": "Save your SIA account in the settings above first.",
+      "productNotFound": "Product not found on the SIA catalog — try again later or import the ZIP manually.",
+      "extractTimeout": "Extraction timed out. Check that the ZIP file is valid and not corrupted.",
+      "noPdfsInArchive": "No PDF files found in the archive. The full eAIP ZIP may contain nested archives — retry with app version 1.8.5+.",
+      "noVacMatched": "PDFs were found but no VAC chart was recognized (4-letter ICAO in the filename, e.g. EGLL.pdf or AD-2.LFPO.pdf)."
+    },
+    "importVacInternational": "Import VAC (other countries)",
+    "settings": {
+      "title": "VAC charts",
+      "description": "Download French VAC charts (SIA eAIP) or import VAC PDFs from any country.",
+      "eaip": "France eAIP data (SIA)",
+      "internationalVac": "International and other VAC sources",
+      "internationalVacDescription": "Import a folder or ZIP archive of VAC PDFs. Each file must include a 4-letter ICAO code (e.g. EGLL.pdf, LSGG_VAC.pdf).",
+      "installed": "Cycle {{cycle}} — {{vacCount}} VAC, {{aipCount}} AIP charts — {{size}} on disk",
+      "notInstalled": "No VAC charts installed. Use SIA (France) or international import below."
+    }
+  },
+  "vac": {
+    "noData": "Enable the VAC module under Settings → Modules, then import charts in the VAC / SIA tab.",
+    "notFound": "No VAC chart found for this aerodrome.",
+    "notFoundHint": "Import a VAC for this ICAO under Settings → VAC / SIA (SIA France or international import).",
+    "cycle": "Cycle {{cycle}}",
+    "rendering": "Generating preview…",
+    "previewFailed": "Could not display the VAC chart in the app.",
+    "refresh": "Refresh preview",
+    "openModal": "Open chart",
+    "modalTitle": "VAC {{icao}}",
+    "chartLabel": "Visual approach chart",
+    "pageOf": "Page {{page}} / {{total}}",
+    "tapToOpen": "Tap to open full-screen chart",
+    "openExternal": "Open in system viewer",
+    "print": "Print"
+  },
+  "modules": {
+    "title": "Community modules",
+    "description": "Install and manage optional X-Dispatch modules developed by the community.",
+    "installed": "Installed modules",
+    "install": "Install",
+    "installZip": "Install from ZIP",
+    "installGithub": "Install from GitHub",
+    "githubPlaceholder": "https://github.com/owner/repository",
+    "store": "Trusted store",
+    "none": "No modules installed.",
+    "trusted": "Trusted",
+    "installedMeta": "{{id}} · v{{version}} · {{source}}{{trustedSuffix}}",
+    "trustedSuffix": " · Trusted",
+    "uninstall": "Remove",
+    "installSuccess": "Module installed.",
+    "uninstallSuccess": "Module removed.",
+    "siaFrance": {
+      "settingsTab": "VAC / SIA"
+    }
+  },
+  "oaci": {
+    "opacity": "OACI map opacity",
+    "importMbtiles": "Import OACI MBTiles",
+    "removeMbtiles": "Remove map",
+    "settings": {
+      "title": "OACI basemap (MBTiles)",
+      "loaded": "Loaded: {{name}}",
+      "none": "No OACI map imported."
+    }
   },
   "update": {
     "available": {

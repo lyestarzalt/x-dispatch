@@ -83,6 +83,9 @@ interface MapState {
   flightStripPosition: { x: number; y: number } | null;
   terrainShadingEnabled: boolean;
   terrain3dEnabled: boolean;
+  vacOverlayEnabled: boolean;
+  oaciBasemapEnabled: boolean;
+  oaciVectorEnabled: boolean;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -117,6 +120,9 @@ interface MapState {
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
   setTerrain3dEnabled: (enabled: boolean) => void;
+  setVacOverlayEnabled: (enabled: boolean) => void;
+  setOaciBasemapEnabled: (enabled: boolean) => void;
+  setOaciVectorEnabled: (enabled: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -154,6 +160,9 @@ export const useMapStore = create<MapState>()(
       flightStripPosition: null as { x: number; y: number } | null,
       terrainShadingEnabled: true,
       terrain3dEnabled: true,
+      vacOverlayEnabled: false,
+      oaciBasemapEnabled: false,
+      oaciVectorEnabled: false,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -246,10 +255,13 @@ export const useMapStore = create<MapState>()(
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),
+      setVacOverlayEnabled: (enabled) => set({ vacOverlayEnabled: enabled }),
+      setOaciBasemapEnabled: (enabled) => set({ oaciBasemapEnabled: enabled }),
+      setOaciVectorEnabled: (enabled) => set({ oaciVectorEnabled: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 10,
+      version: 11,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -262,6 +274,9 @@ export const useMapStore = create<MapState>()(
         flightStripPosition: state.flightStripPosition,
         terrainShadingEnabled: state.terrainShadingEnabled,
         terrain3dEnabled: state.terrain3dEnabled,
+        vacOverlayEnabled: state.vacOverlayEnabled,
+        oaciBasemapEnabled: state.oaciBasemapEnabled,
+        oaciVectorEnabled: state.oaciVectorEnabled,
       }),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
@@ -321,6 +336,11 @@ export const useMapStore = create<MapState>()(
         // MapLibre TerrainControl button that used to live on the map).
         if (version < 10) {
           if (state.terrain3dEnabled === undefined) state.terrain3dEnabled = true;
+        }
+        if (version < 11) {
+          if (state.vacOverlayEnabled === undefined) state.vacOverlayEnabled = false;
+          if (state.oaciBasemapEnabled === undefined) state.oaciBasemapEnabled = false;
+          if (state.oaciVectorEnabled === undefined) state.oaciVectorEnabled = false;
         }
         return state;
       },

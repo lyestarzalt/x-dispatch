@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version bump
+        description: Version bump (ignored if custom_version is set)
         required: true
         type: choice
         options:
           - patch
           - minor
           - major
+      custom_version:
+        description: Exact version (e.g. 1.9.1a) — overrides version bump
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -36,10 +40,19 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          NEW=$(npm version ${{ inputs.version }} -m "release: %s")
+          if [ -n "${{ inputs.custom_version }}" ]; then
+            NEW="v${{ inputs.custom_version }}"
+            npm version "${{ inputs.custom_version }}" --no-git-tag-version --allow-same-version
+            git add package.json package-lock.json
+            git diff --staged --quiet || git commit -m "release: ${{ inputs.custom_version }}"
+            git rev-parse "$NEW" >/dev/null 2>&1 || git tag "$NEW"
+          else
+            NEW=$(npm version ${{ inputs.version }} -m "release: %s")
+          fi
           echo "version=${NEW#v}" >> $GITHUB_OUTPUT
           echo "tag=$NEW" >> $GITHUB_OUTPUT
-          git push --follow-tags
+          git push origin HEAD
+          git push origin "$NEW" || true
 
   build:
     name: Build (${{ matrix.name }})

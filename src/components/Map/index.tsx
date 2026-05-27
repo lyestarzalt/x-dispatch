@@ -12,8 +12,10 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
+import { isModuleActive } from '@/lib/modules/registry';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
 import { Airport } from '@/lib/xplaneServices/dataService';
+import { SiaMapHooks } from '@/modules/sia-france/renderer/SiaMapHooks';
 import { usePlaneState, useVatsimSectorQuery } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
@@ -22,6 +24,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
+import { useModulesStore } from '@/stores/modulesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
@@ -127,6 +130,8 @@ export default function Map({ airports }: MapProps) {
 
   const { map: mapSettings } = useSettingsStore();
   const mapStyleUrl = mapSettings.mapStyleUrl;
+  const modules = useModulesStore((s) => s.modules);
+  const siaModuleEnabled = isModuleActive(modules, 'sia-france');
 
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
@@ -805,6 +810,8 @@ export default function Map({ airports }: MapProps) {
     <div className="relative h-full w-full overflow-hidden">
       {/* MapLibre container - fills entire viewport */}
       <div ref={mapContainerRef} className="absolute inset-0" />
+
+      {siaModuleEnabled && <SiaMapHooks mapRef={mapRef} />}
 
       {/* Top bar overlay - full width, above sidebar */}
       <div className="absolute left-4 right-4 top-4 z-30 space-y-2">

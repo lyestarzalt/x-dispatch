@@ -1,0 +1,14 @@
+{
+  "modules": [
+    {
+      "id": "sia-france",
+      "repository": "4SLSL/vac-sia",
+      "defaultRef": "v1.1.2",
+      "trusted": true,
+      "bundled": true,
+      "name": "SIA France Charts",
+      "description": "French VAC/eAIP module maintained by the community",
+      "author": "4SLSL"
+    }
+  ]
+}
