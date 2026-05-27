@@ -18,7 +18,7 @@
     "next": "Dalej",
     "browse": "Przeglądaj",
     "refresh": "Odśwież",
-    "showMore": "Pokaż wszystkie {{count}}",
+    "showMore": "Pokaż wszystkie ({{count}})",
     "showLess": "Pokaż mniej",
     "copiedToClipboard": "Skopiowano do schowka!",
     "notConfigured": "Nie skonfigurowano",
@@ -72,9 +72,9 @@
       "navaids": "Pomoce nawigacyjne",
       "waypoints": "Punkty trasy",
       "airspaces": "Przestrzenie powietrzne",
-      "airways": "Trasy lotnicze"
+      "airways": "Drogi lotnicze"
     },
-    "pathNotConfigured": "Ścieżka X-Plane nie skonfigurowana",
+    "pathNotConfigured": "Ścieżka X-Plane nie jest skonfigurowana",
     "configurationRequired": "Wymagana konfiguracja",
     "configureXPlanePath": "Skonfiguruj ścieżkę X-Plane",
     "verifying": "Sprawdzanie zmian...",
@@ -82,12 +82,12 @@
     "firstLaunch": "Pierwszy start — konfiguracja bazy danych...",
     "sceneryChanged": "Wykryto zmiany scenerii — odbudowa...",
     "parsingGlobal": "Analiza globalnych lotnisk...",
-    "scanningCustom": "Skanowanie Custom Scenery {{current}}/{{total}}: {{name}}",
+    "scanningCustom": "Analizowanie Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Zapisywanie do bazy danych...",
     "hints": {
-      "permissionMac": "macOS blokuje dostęp do plików. Przejdź do Ustawienia systemowe > Prywatność i bezpieczeństwo > Pliki i foldery i zezwól na X-Dispatch, a następnie uruchom ponownie aplikację.",
+      "permissionMac": "macOS blokuje dostęp do plików. Przejdź do Ustawienia systemowe > Prywatność i bezpieczeństwo > Pliki i foldery, przyznaj dostęp aplikacji X-Dispatch, a następnie uruchom ją ponownie.",
       "permissionWindows": "Windows blokuje dostęp do plików. Kliknij prawym przyciskiem myszy na X-Dispatch i wybierz \"Uruchom jako administrator\" lub sprawdź uprawnienia folderu we Właściwości > Bezpieczeństwo.",
-      "permissionLinux": "Odmowa dostępu. Sprawdź, czy Twój użytkownik ma uprawnienia do odczytu folderu X-Plane, lub uruchom chmod +r na pliku.",
+      "permissionLinux": "Odmowa dostępu. Sprawdź, czy Twoje konto ma uprawnienia do odczytu folderu X-Plane, lub uruchom chmod +r dla pliku.",
       "fileBusy": "Plik jest zablokowany przez inny program. Zamknij X-Plane i wszystkie narzędzia scenerii lub dodatków, a następnie spróbuj ponownie."
     },
     "messages": {
@@ -95,8 +95,8 @@
       "upToDate": "Wszystko aktualne",
       "firstLaunch": "Pierwsze uruchomienie — konfigurowanie bazy danych...",
       "sceneryChanged": "Wykryto zmiany scenerii — przebudowywanie...",
-      "globalAirports": "Parsowanie Global Airports...",
-      "customScenery": "Skanowanie Custom Scenery {{current}}/{{total}}",
+      "globalAirports": "Analizowanie Global Airports...",
+      "customScenery": "Analizowanie Custom Scenery ({{current}}/{{total}})",
       "savingDatabase": "Zapisywanie do bazy danych...",
       "airportsDone": "Lotniska wczytane",
       "navaids": "Wczytywanie pomocy nawigacyjnych...",
@@ -129,7 +129,7 @@
     "pinCoordinates": "Wprowadź współrzędne",
     "pinLat": "Szer",
     "pinLon": "Dł",
-    "pinDropAndFly": "Idź do pozycji",
+    "pinDropAndFly": "Przejdź do pozycji",
     "pinModes": {
       "title": "Tryb startu",
       "ground": "Na ziemi",
@@ -151,13 +151,13 @@
       "cat_deck": "Pokład"
     },
     "weather": "Pogoda",
-    "dayNight": "Dzień / Noc",
+    "dayNight": "Dzień / noc",
     "terrainShading": "Cieniowanie terenu",
     "launch": "Uruchom",
     "flightPlan": "Plan lotu",
     "layers": "Warstwy",
     "overlays": "Nakładki",
-    "aroundAirport": "Wokół lotniska (50nm)",
+    "aroundAirport": "Wokół lotniska (50 NM)",
     "rangeRings": "Pierścienie zasięgu",
     "enabled": "Włączone",
     "loadPlan": "Wczytaj .fms",
@@ -176,7 +176,7 @@
       "launch": "Uruchom X-Plane z wybraną pozycją",
       "pin": "Umieść samolot w dowolnym miejscu na mapie",
       "launchDisabled": "Najpierw wybierz lotnisko",
-      "launchSelectPosition": "Wybierz bramkę, pas startowy lub umieść znacznik na mapie",
+      "launchSelectPosition": "Wybierz stanowisko, drogę startową albo umieść znacznik na mapie",
       "settings": "Otwórz ustawienia"
     }
   },
@@ -198,9 +198,9 @@
     "surfaceOther": "Inne",
     "country": "Kraj",
     "allCountries": "Wszystkie kraje",
-    "runways": "Pasy startowe",
+    "runways": "Drogi startowe",
     "anyRunways": "Wszystkie",
-    "minRunways": "{{count}}+ Pasów",
+    "minRunways": "{{count}}+ dróg startowych",
     "reset": "Resetuj filtry"
   },
   "explore": {
@@ -217,7 +217,7 @@
       "events": "Wydarzenia",
       "noEvents": "Brak nadchodzących wydarzeń",
       "viewRoute": "Zobacz trasę",
-      "goToDeparture": "Idź do odlotu"
+      "goToDeparture": "Przejdź do odlotu"
     },
     "filters": {
       "country": "Kraj",
@@ -228,7 +228,7 @@
       "allTypes": "Wszystkie typy",
       "land": "Lądowy",
       "seaplane": "Hydroplan",
-      "heliport": "Lądowisko helikopterów",
+      "heliport": "Lądowisko śmigłowców",
       "hasIata": "Ma kod IATA"
     },
     "featured": {
@@ -247,39 +247,39 @@
   },
   "settings": {
     "title": "Ustawienia",
-    "subtitle": "Skonfiguruj swoje preferencje",
+    "subtitle": "Dostosuj ustawienia",
     "tabs": {
       "xplane": "X-Plane",
       "addons": "Dodatki",
-      "data": "Dane Nav",
+      "data": "Dane nawigacyjne",
       "appearance": "Wygląd",
       "graphics": "Grafika",
       "airports": "Lotniska",
       "simbrief": "SimBrief",
       "navigation": "Nawigacja",
       "vatsim": "VATSIM",
-      "support": "Wsparcie",
+      "support": "Pomoc",
       "about": "O programie",
       "companionApps": "Aplikacje towarzyszące",
       "logs": "Dzienniki X-Plane"
     },
     "airports": {
       "title": "Lotniska",
-      "description": "Zarządzaj ulubionymi lotniskami i bazą.",
+      "description": "Zarządzaj ulubionymi lotniskami i lotniskiem bazowym.",
       "startup": "Uruchamianie",
       "autoNav": {
-        "label": "Otwórz lotnisko domowe przy uruchomieniu",
-        "description": "Wycentruj kamerę na lotnisku domowym i otwórz jego panel po uruchomieniu X-Dispatch."
+        "label": "Otwórz lotnisko bazowe przy uruchomieniu",
+        "description": "Wycentruj kamerę na lotnisku bazowym i otwórz jego panel po uruchomieniu X-Dispatch."
       },
       "favorites": {
         "title": "Ulubione",
-        "description": "Dotknij gwiazdki w panelu lotniska, aby je dodać. Lotnisko domowe jest wyświetlane jako pierwsze.",
-        "empty": "Brak ulubionych — dotknij gwiazdki w panelu lotniska.",
+        "description": "Kliknij gwiazdkę w panelu lotniska, aby je dodać. Lotnisko bazowe jest wyświetlane jako pierwsze.",
+        "empty": "Brak ulubionych — kliknij gwiazdkę w panelu lotniska.",
         "notInAirac": "Brak w obecnym AIRAC"
       },
       "actions": {
-        "setHome": "Ustaw jako lotnisko domowe",
-        "clearHome": "Wyczyść lotnisko domowe",
+        "setHome": "Ustaw jako lotnisko bazowe",
+        "clearHome": "Usuń lotnisko bazowe",
         "remove": "Usuń"
       }
     },
@@ -298,19 +298,19 @@
     },
     "simbrief": {
       "description": "Importuj plany lotu z SimBrief",
-      "pilotId": "ID Pilota",
-      "pilotIdHelp": "Twój ID Pilota SimBrief (znajdziesz w ustawieniach konta SimBrief)",
-      "pilotIdNote": "Twój ID Pilota to identyfikator numeryczny. Znajdziesz go na simbrief.com → Ustawienia konta → ID Pilota.",
+      "pilotId": "ID pilota",
+      "pilotIdHelp": "Twój ID pilota SimBrief (znajdziesz go w ustawieniach konta SimBrief)",
+      "pilotIdNote": "Twój ID pilota to identyfikator numeryczny. Znajdziesz go na simbrief.com → Ustawienia konta → ID pilota.",
       "testSuccess": "Znaleziono plan lotu",
       "needAccount": "Nie masz konta SimBrief?",
       "freeService": "SimBrief to darmowy serwis planowania lotów",
       "fmsExportTargets": {
         "heading": "Cele eksportu FMS",
-        "description": "Wrzuć plan lotu SimBrief do folderu planów lotu twojego samolotu.",
+        "description": "Zapisz plan lotu SimBrief w folderze planów lotu wybranego samolotu.",
         "add": "Dodaj cel",
         "addTitle": "Dodaj cel eksportu",
         "editTitle": "Edytuj cel eksportu",
-        "dialogDescription": "Wybierz format SimBrief oczekiwany przez dodatek i folder, z którego czyta.",
+        "dialogDescription": "Wybierz format SimBrief wymagany przez dodatek oraz folder, z którego odczytuje plany.",
         "format": "Format",
         "label": "Etykieta",
         "folder": "Folder docelowy",
@@ -324,12 +324,12 @@
     },
     "about": {
       "title": "O programie",
-      "description": "Dyspozycja lotów i wizualizacja lotnisk dla X-Plane",
+      "description": "Planowanie lotów i wizualizacja lotnisk dla X-Plane",
       "updateAvailable": "Dostępna aktualizacja — v{{version}}",
       "upToDate": "Masz najnowszą wersję",
-      "projectNotice": "Projekt tworzony z pasji dla społeczności X-Plane, udostępniany za darmo i rozwijany otwarcie.",
+      "projectNotice": "Darmowy, otwarcie rozwijany projekt dla społeczności X-Plane.",
       "credits": "Twórcy",
-      "developer": "Deweloper",
+      "developer": "Twórca",
       "license": "Licencja",
       "specialThanks": "Specjalne podziękowania",
       "links": "Linki",
@@ -338,7 +338,7 @@
       "supportProject": "Wesprzyj ten projekt",
       "reportIssue": "Zgłoś problem",
       "dataStorage": "Dane i ustawienia",
-      "dataStorageDescription": "Preferencje aplikacji, pamięć podręczna i baza danych są przechowywane tutaj.",
+      "dataStorageDescription": "Ustawienia aplikacji, pamięć podręczna i baza danych są przechowywane tutaj.",
       "settingsCache": "Ustawienia i pamięć podręczna",
       "logFile": "Plik dziennika",
       "openDataFolder": "Otwórz folder danych",
@@ -349,9 +349,9 @@
       "crashReports": "Wysyłaj raporty o awariach",
       "crashReportsDescription": "Pomóż ulepszyć X-Dispatch, automatycznie wysyłając raporty o awariach",
       "crashReportsNote": "Wymagany restart. Żadne dane osobowe nie są zbierane.",
-      "independenceNotice": "X-Dispatch to niezależny projekt społecznościowy i nie jest powiązany ani wspierany przez X-Plane, SimBrief, Navigraph, VATSIM ani IVAO.",
+      "independenceNotice": "X-Dispatch to niezależny projekt społeczności i nie jest powiązany, wspierany ani rekomendowany przez X-Plane, SimBrief, Navigraph, VATSIM ani IVAO.",
       "debugOverlay": "Nakładka debugowania",
-      "debugOverlayDescription": "Pokaż pasek narzędzi debugowania dla deweloperów",
+      "debugOverlayDescription": "Pokaż pasek narzędzi debugowania dla twórców",
       "toggleDebug": "Przełącz",
       "debugShortcut": "Możesz też użyć Ctrl+Shift+D (Cmd+Shift+D na Macu)",
       "developerName": "Lyes Tarzalt",
@@ -369,14 +369,14 @@
       "custom": "Niestandardowa",
       "dataLoaded": "Załadowane dane",
       "dataType": "Typ",
-      "count": "Ilość",
+      "count": "Liczba",
       "source": "Źródło",
       "navDataSource": "Źródło danych nawigacyjnych",
       "validDates": "Ważne",
       "expired": "Wygasłe",
       "current": "Aktualne",
       "atcFrequencies": "Częstotliwości ATC",
-      "holdingPatterns": "Wzorce oczekiwania",
+      "holdingPatterns": "Procedury oczekiwania",
       "version": "Wersja",
       "steam": "Steam",
       "versionUnknown": "Nieznana wersja",
@@ -393,7 +393,7 @@
       "switch": "Przełącz",
       "remove": "Usuń",
       "name": "Nazwa",
-      "namePlaceholder": "np. Beta, Czysta instalacja, Zmodowana",
+      "namePlaceholder": "np. Beta, czysta instalacja, z modami",
       "nameRequired": "Wymagane",
       "launchArgs": "Argumenty uruchamiania",
       "launchArgsDescription": "Dodatkowe argumenty wiersza poleceń przekazywane do X-Plane przy każdym zimnym starcie",
@@ -417,13 +417,13 @@
       "mapStyle": "Styl mapy",
       "mapStyleDescription": "Wybierz styl mapy dla tła",
       "unlimited": "Nieograniczony",
-      "customStyleUrl": "Niestandardowy URL",
+      "customStyleUrl": "Własny URL",
       "customStyleHint": "Wklej adres URL stylu MapLibre (np. https://tiles.openfreemap.org/styles/liberty) albo wzorzec URL kafelków rastrowych (np. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
       "advanced": "Zaawansowane",
       "language": "Język",
       "units": "Jednostki",
       "unitsDescription": "Skonfiguruj jednostki miary",
-      "weightUnit": "Waga",
+      "weightUnit": "Masa",
       "lbs": "Funty (lbs)",
       "kg": "Kilogramy (kg)",
       "fontSize": "Rozmiar czcionki",
@@ -442,7 +442,7 @@
       "description": "Kontroluj efekty wizualne i animacje",
       "mapStyle": "Styl mapy",
       "mapStyleDescription": "Wybierz styl mapy dla tła",
-      "customStyleUrl": "Niestandardowy URL",
+      "customStyleUrl": "Własny URL",
       "customStyleHint": "Wklej URL pliku style.json MapLibre lub wzorzec kafelków raster z {{placeholder}}.",
       "customStyleAdd": "Dodaj",
       "customStyleRemove": "Usuń {{name}}",
@@ -451,7 +451,7 @@
       "mapStyleError": {
         "required": "Adres URL jest wymagany",
         "invalid-url": "Nieprawidłowy URL",
-        "insecure-protocol": "URL musi używać https:// (lub http://localhost dla dewelopera)",
+        "insecure-protocol": "URL musi używać https:// (lub http://localhost do prac deweloperskich)",
         "unsupported-format": "URL musi prowadzić do pliku style.json MapLibre lub wzorca kafelków raster z {{placeholder}}",
         "duplicate": "Już znajduje się na liście"
       },
@@ -461,7 +461,7 @@
       "terrainShading": "Cieniowanie terenu",
       "terrainShadingDesc": "Cieniowanie i poziomice ułatwiają rozpoznawanie gór.",
       "surfaceDetail": "Szczegółowość powierzchni",
-      "surfaceDetailDesc": "Gładkość krzywych krawędzi dróg kołowania i nawierzchni",
+      "surfaceDetailDesc": "Gładkość krzywych na krawędziach dróg kołowania i nawierzchni",
       "low": "Niska",
       "medium": "Średnia",
       "high": "Wysoka",
@@ -479,16 +479,16 @@
       "description": "Skonfiguruj ustawienia nawigacji",
       "dataTitle": "Dane nawigacyjne",
       "dataDescription": "Wyświetl załadowane źródła danych nawigacyjnych",
-      "navigraphInfo": "Dane Navigraph zapewniają ulepszone dane nawigacyjne, w tym zaktualizowane trasy lotnicze, procedury i częstotliwości.",
+      "navigraphInfo": "Dane Navigraph zapewniają rozszerzone dane nawigacyjne, w tym zaktualizowane drogi lotnicze, procedury i częstotliwości.",
       "searchRadius": "Promień wyszukiwania",
       "airportLayoutData": "Dane układu lotniska",
-      "airportLayoutDescription": "Geometria lotniska z plików apt.dat (drogi startowe, kołowania, bramy itp.)",
-      "globalAirports": "Globalne lotniska",
+      "airportLayoutDescription": "Geometria lotniska z plików apt.dat (drogi startowe, drogi kołowania, stanowiska itp.)",
+      "globalAirports": "Global Airports",
       "customAirports": "Niestandardowe lotniska",
       "fromSceneryPacks": "z {{count}} pakietów scenerii",
       "totalAirports": "Łącznie lotnisk",
       "navDataSource": "Źródło danych nawigacyjnych",
-      "navDataSourceDescription": "Pomoce nawigacyjne, punkty trasy, trasy lotnicze, procedury i częstotliwości",
+      "navDataSourceDescription": "Pomoce nawigacyjne, punkty trasy, drogi lotnicze, procedury i częstotliwości",
       "cacheManagement": "Zarządzanie pamięcią podręczną",
       "cacheDescription": "Wyczyść dane z pamięci podręcznej, aby wymusić pełne ponowne wczytanie z plików X-Plane",
       "clearCache": "Wyczyść pamięć podręczną i przeładuj",
@@ -514,12 +514,12 @@
     },
     "companionApps": {
       "title": "Aplikacje towarzyszące",
-      "description": "Programy uruchamiane razem z X-Plane (XPME, klienty ATC, sterowniki sprzętu).",
+      "description": "Programy uruchamiane razem z X-Plane (XPME, klienci ATC, sterowniki sprzętu).",
       "addButton": "Dodaj aplikację towarzyszącą",
       "suggested": "Sugerowane",
       "launchNow": "Uruchom teraz",
       "autoLaunch": "Uruchamiaj automatycznie z X-Plane",
-      "delayLabel": "Czekaj przed X-Plane (sekundy)",
+      "delayLabel": "Opóźnienie przed uruchomieniem X-Plane (sekundy)",
       "empty": "Brak skonfigurowanych aplikacji towarzyszących.",
       "spawnError": "Nie udało się uruchomić {{name}}: {{error}}",
       "statusPill": "Uruchamianie {{names}}…",
@@ -533,11 +533,11 @@
         "args": "Argumenty",
         "cwd": "Katalog roboczy (opcjonalny)"
       },
-      "delayInline": "opóźnienie {{seconds}}s",
+      "delayInline": "opóźnienie {{seconds}} s",
       "add": "Dodaj",
       "unknownError": "Nieznany błąd",
       "notElevatedTitle": "X-Dispatch nie jest uruchomiony jako administrator",
-      "notElevatedHint": "Aplikacje towarzyszące nie zostaną uruchomione. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz Uruchom jako administrator (Windows) lub uruchom z terminala z sudo (macOS/Linux).",
+      "notElevatedHint": "Aplikacje towarzyszące nie zostaną uruchomione. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz Uruchom jako administrator (Windows) albo uruchom z terminala z sudo (macOS/Linux).",
       "error": {
         "needsAdmin": "X-Dispatch potrzebuje uprawnień administratora do uruchomienia tej aplikacji",
         "fileMissing": "Nie znaleziono pliku wykonywalnego pod skonfigurowaną ścieżką",
@@ -547,20 +547,20 @@
     },
     "logs": {
       "title": "Dzienniki X-Plane",
-      "description": "Czytaj Log.txt X-Plane, aby zobaczyć, co symulator zgłosił podczas ostatniej sesji.",
+      "description": "Otwórz Log.txt X-Plane, aby sprawdzić, co symulator zgłosił podczas ostatniej sesji.",
       "refresh": "Odśwież",
-      "truncatedNotice": "Pokazuję ostatnie {{shownMb}} MB z dziennika o rozmiarze {{totalMb}} MB.",
+      "truncatedNotice": "Wyświetlane jest ostatnie {{shownMb}} MB z dziennika o rozmiarze {{totalMb}} MB.",
       "empty": {
-        "noPath": "Ścieżka X-Plane nie skonfigurowana.",
+        "noPath": "Ścieżka X-Plane nie jest skonfigurowana.",
         "noPathCta": "Otwórz ustawienia X-Plane",
         "noLog": "Brak dziennika — czy X-Plane został uruchomiony przynajmniej raz w tej instalacji?",
-        "allClear": "X-Dispatch nic nie zgłasza w tym dzienniku.",
+        "allClear": "W tym dzienniku nie wykryto problemów.",
         "noMatches": "Żadne wpisy nie pasują do bieżącego filtra."
       },
       "entriesHeader": "Wpisy dziennika",
       "entryCount": "Pokazano {{shown}} z {{total}} wpisów",
-      "showHeader": "Pokaż nagłówek przed-uruchomieniowy ({{count}} wierszy)",
-      "hideHeader": "Ukryj nagłówek przed-uruchomieniowy",
+      "showHeader": "Pokaż nagłówek sprzed uruchomienia ({{count}} wierszy)",
+      "hideHeader": "Ukryj nagłówek sprzed uruchomienia",
       "filter": {
         "all": "Wszystko",
         "errorsWarnings": "Błędy + Ostrzeżenia",
@@ -584,21 +584,21 @@
     "clouds": "Chmury",
     "noWeatherData": "Brak danych pogodowych",
     "noFrequencies": "Brak dostępnych częstotliwości",
-    "searchGates": "Szukaj bramek...",
+    "searchGates": "Szukaj stanowisk...",
     "searchRunways": "Szukaj dróg startowych...",
     "frequencies": "Częstotliwości",
     "runways": "Drogi startowe",
-    "gates": "Bramki",
-    "gatesParking": "Bramki i postój",
+    "gates": "Stanowiska",
+    "gatesParking": "Stanowiska i miejsca postojowe",
     "departurePosition": "Pozycja odlotu",
     "moreCount": "+{{count}} więcej",
     "more": "więcej",
     "procedures": "Procedury",
-    "nearbyNavaids": "Pobliskie pomoce nav.",
-    "withinRadius": "W promieniu 50nm",
+    "nearbyNavaids": "Pobliskie pomoce nawigacyjne",
+    "withinRadius": "W promieniu 50 NM",
     "ils": "ILS",
     "startFrom": "Rozpocznij od:",
-    "noGatesFound": "Nie znaleziono bramek",
+    "noGatesFound": "Nie znaleziono stanowisk",
     "noRunwaysFound": "Nie znaleziono dróg startowych",
     "copyFrequency": "Kopiuj częstotliwość",
     "vatsim": {
@@ -612,21 +612,21 @@
       "start": "Start",
       "proc": "Proc",
       "runways": "Drogi startowe",
-      "gates": "Bramki",
-      "helipads": "Lądowiska helik.",
+      "gates": "Stanowiska",
+      "helipads": "Lądowiska śmigł.",
       "radio": "Radio",
       "gateway": "GATEWAY"
     },
     "actions": {
       "addFavorite": "Dodaj do ulubionych",
       "removeFavorite": "Usuń z ulubionych",
-      "setHome": "Ustaw jako lotnisko domowe",
-      "clearHome": "Wyczyść lotnisko domowe"
+      "setHome": "Ustaw jako lotnisko bazowe",
+      "clearHome": "Usuń lotnisko bazowe"
     },
     "stats": {
       "elevation": "WYS.",
       "runways": "DS",
-      "gates": "BRAMKI",
+      "gates": "STANOWISKA",
       "hangars": "HANGARY"
     },
     "runwayCount": "{{count}} DS",
@@ -634,14 +634,14 @@
     "facilities": "OBIEKTY",
     "tower": "WIEŻA",
     "windsocks": "RĘKAW WIATROWY",
-    "beacon": "RADIOLATARNIA",
+    "beacon": "LATARNIA",
     "helipads": "LĄDOWISKA HELIK.",
-    "searchGates": "Szukaj bramek...",
+    "searchGates": "Szukaj stanowisk...",
     "filterAll": "WSZYSTKIE",
-    "filterGates": "BRAMKI",
+    "filterGates": "STANOWISKA",
     "filterHangars": "HANGARY",
     "filterOther": "INNE",
-    "noGatesFound": "NIE ZNALEZIONO BRAMEK",
+    "noGatesFound": "NIE ZNALEZIONO STANOWISK",
     "noFrequencies": "Brak dostępnych częstotliwości",
     "tune": {
       "active": "AKT",
@@ -649,7 +649,7 @@
       "simOffline": "X-Plane nie jest uruchomiony",
       "toast": {
         "activeSet": "{{radio}} aktywne → {{freq}}",
-        "standbySet": "{{radio}} rezerwowe → {{freq}}",
+        "standbySet": "{{radio}} standby → {{freq}}",
         "failed": "Nie udało się ustawić {{radio}}"
       }
     },
@@ -663,35 +663,35 @@
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
       "phenomena": "Zjawiska"
     },
-    "activeRunway": "Aktywny pas",
-    "windAligned": "· zgodna z wiatrem, {{delta}}° odchylenia",
+    "activeRunway": "Aktywna droga startowa",
+    "windAligned": "· ustawiona pod wiatr, odchylenie {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
-    "runwaysHeading": "Pasy startowe",
+    "runwaysHeading": "Drogi startowe",
     "runwayCountTotal": "łącznie {{count}}",
     "runwayLengthFt": "{{length}}'",
-    "runwayName": "Pas {{name}}",
+    "runwayName": "Droga startowa {{name}}",
     "ils": {
       "frequency": "Częstotliwość",
-      "localizer": "Localizer",
+      "localizer": "Lokalizer",
       "glideslope": "Ścieżka schodzenia",
       "range": "Zasięg",
       "ident": "Identyfikator",
       "rangeNm": "{{value}} NM"
     },
-    "rawMetar": "Surowy METAR",
+    "rawMetar": "Oryginalny METAR",
     "routeTab": {
       "tabApproach": "Podejście",
       "noneAvailable": "Brak dostępnych {{type}}",
       "noneApproaches": "Brak dostępnych podejść",
-      "transitionCount_one": "1 przejście",
-      "transitionCount_other": "{{count}} przejść",
+      "transitionCount_one": "1 transition",
+      "transitionCount_other": "{{count}} transition",
       "runwayVariantCount_one": "1 pas",
       "runwayVariantCount_other": "{{count}} pasów",
       "variantCount_one": "1 wariant",
       "variantCount_other": "{{count}} wariantów",
       "allVariants": "Wszystkie"
     },
-    "noRunwaysMatching": "Brak pasów pasujących do \"{{query}}\"",
+    "noRunwaysMatching": "Brak dróg startowych pasujących do \"{{query}}\"",
     "noHelipads": "Brak lądowisk",
     "noHelipadsMatching": "Brak lądowisk pasujących do \"{{query}}\"",
     "runwayDimensions": "{{length}}'×{{width}}'",
@@ -699,7 +699,7 @@
     "gatewayNotAvailable": "DANE GATEWAY NIEDOSTĘPNE",
     "gatewayLoading": "ŁADOWANIE DANYCH GATEWAY...",
     "noGatewayData": "BRAK DANYCH GATEWAY DLA TEGO LOTNISKA",
-    "gatewayDescription": "Te dane pokazują zgłoszenia dla tego lotniska.",
+    "gatewayDescription": "Pokazuje zgłoszenia do Gateway dla tego lotniska.",
     "viewOnGateway": "Zobacz na Gateway",
     "accepted": "ZAAKCEPTOWANE",
     "features": "CECHY",
@@ -711,7 +711,7 @@
     "beaconTypes": {
       "civil": "Cywilna (B-Z)",
       "seaplane": "Hydroplan (B-Ż)",
-      "heliport": "Lądowisko helikopterów",
+      "heliport": "Lądowisko śmigłowców",
       "military": "Wojskowa"
     },
     "surfaces": {
@@ -741,13 +741,13 @@
     },
     "noStartPositions": "Brak dostępnych pozycji startowych",
     "searchPlaceholder": "Szukaj...",
-    "noMatchingGates": "Nie znaleziono bramek dla \"{{query}}\"",
+    "noMatchingGates": "Nie znaleziono stanowisk dla \"{{query}}\"",
     "runway": {
       "threshold": "Próg",
       "approach": "Podejście",
       "tow": "Holowanie",
       "distance": "Odległość",
-      "approachNm": "{{distance}} nm finał",
+      "approachNm": "{{distance}} NM na prostej",
       "winch": "Wyciągarka",
       "tug": "Holownik",
       "tugAircraft": "Samolot holujący: Cessna 172 SP",
@@ -759,20 +759,20 @@
       "viewOnGateway": "Zobacz na Gateway"
     },
     "taxiRoute": {
-      "taxiTo": "Kołuj do",
-      "taxiFrom": "Kołuj z",
+      "taxiTo": "Kołowanie do",
+      "taxiFrom": "Kołowanie z",
       "departure": "Odlot",
       "arrival": "Przylot",
       "undo": "Cofnij",
       "clearAll": "Wyczyść",
-      "selectRunway": "Wybierz pas startowy",
+      "selectRunway": "Wybierz drogę startową",
       "noNetwork": "Brak danych kołowania",
       "drawManually": "Rysuj ręcznie",
       "autoRoute": "Automatyczna trasa",
-      "pointsPlaced": "{{count}} punkt(ów)",
+      "pointsPlaced": "{{count}} punktów",
       "export": "Zapisz trasę kołowania",
       "exportSuccess": "Trasa kołowania zapisana",
-      "summary": "via {{taxiways}} · {{distance}}"
+      "summary": "przez {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -781,7 +781,7 @@
     "calm": "Cisza"
   },
   "flightStrip": {
-    "notDetected": "X-Plane nie uruchomiony",
+    "notDetected": "X-Plane nie jest uruchomiony",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",
@@ -809,8 +809,8 @@
     "clouds": "CHMURY",
     "tempDew": "TEMP/ROSA",
     "altimeter": "WYSOKOŚCIOM.",
-    "showRaw": "Pokaż surowe",
-    "hideRaw": "Ukryj surowe",
+    "showRaw": "Pokaż dane surowe",
+    "hideRaw": "Ukryj dane surowe",
     "runway": "DS {{names}}",
     "useRunway": "Użyj {{name}}",
     "headwind": "HW",
@@ -839,7 +839,7 @@
     "navigation": {
       "title": "Warstwy nawigacyjne",
       "navaids": "Pomoce nawigacyjne",
-      "fixes": "Fixy",
+      "fixes": "Punkty nawigacyjne",
       "airspaces": "Przestrzenie powietrzne"
     },
     "items": {
@@ -853,17 +853,17 @@
       "rwyLights": "Światła DS",
       "twyLights": "Światła kołowania",
       "approach": "Podejście",
-      "gates": "Bramki",
+      "gates": "Stanowiska",
       "windsocks": "Rękawy wiatrowe",
       "animations": "Animacje",
       "weatherEffects": "Pogoda",
       "navaids": "Pomoce nawigacyjne (VOR/NDB/DME)",
       "ils": "ILS",
       "airwaysOff": "Wył",
-      "highAirways": "Górne trasy (Jet)",
-      "lowAirways": "Dolne trasy (Victor)"
+      "highAirways": "Górne drogi lotnicze (Jet)",
+      "lowAirways": "Dolne drogi lotnicze (Victor)"
     },
-    "loadViewport": "Załaduj pomoce nav. widoku",
+    "loadViewport": "Załaduj pomoce nawigacyjne w widoku",
     "showAll": "Pokaż wszystko",
     "hideAll": "Ukryj wszystko"
   },
@@ -873,12 +873,12 @@
     "descriptions": {
       "lines": "Linie (malowane oznaczenia)",
       "signs": "Znaki (znaki DS/kołowania)",
-      "gates": "Bramki i miejsca postojowe",
+      "gates": "Stanowiska i miejsca postojowe",
       "runways": "Drogi startowe i kołowania"
     },
     "properties": "Właściwości",
     "coordinates": "Współrzędne",
-    "rawAptDat": "Surowy apt.dat",
+    "rawAptDat": "Oryginalny apt.dat",
     "lineTypesHeader": "Typy linii X-Plane (apt.dat 1130):",
     "copyToClipboard": "Kopiuj do schowka",
     "clearSelection": "Wyczyść wybór"
@@ -889,10 +889,10 @@
     "launching": "Uruchamianie...",
     "changeFlight": "Zmień lot",
     "changingFlight": "Zmiana...",
-    "xplaneRunning": "X-Plane działa - lot zostanie zmieniony przez API",
+    "xplaneRunning": "X-Plane działa — lot zostanie zmieniony przez API",
     "selectDeparture": "Wybierz miejsce odlotu na mapie",
     "selectAircraft": "Wybierz samolot",
-    "spawnErrorAccess": "Windows zablokował uruchomienie. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz „Uruchom jako administrator“, a następnie spróbuj ponownie.",
+    "spawnErrorAccess": "Windows zablokował uruchomienie. Kliknij prawym przyciskiem myszy X-Dispatch, wybierz „Uruchom jako administrator” i spróbuj ponownie.",
     "spawnErrorMissing": "Nie znaleziono pliku wykonywalnego X-Plane w skonfigurowanej ścieżce. Sprawdź ścieżkę instalacji X-Plane w Ustawieniach.",
     "spawnErrorGeneric": "Nie udało się uruchomić X-Plane. Szczegóły w dzienniku (Ustawienia → Dzienniki).",
     "aircraft": {
@@ -903,7 +903,7 @@
       "allTypes": "Wszystkie typy",
       "allEngines": "Wszystkie silniki",
       "fixedWing": "Stałopłat",
-      "helicopter": "Helikopter",
+      "helicopter": "Śmigłowiec",
       "jet": "Odrzutowy",
       "prop": "Śmigłowy",
       "count": "{{count}} samolotów",
@@ -921,7 +921,7 @@
       "nextLivery": "Następne malowanie"
     },
     "specs": {
-      "emptyWeight": "Pusty",
+      "emptyWeight": "Masa własna",
       "maxWeight": "MTOW",
       "maxFuel": "Poj. paliwa",
       "tailNumber": "Nr ogonowy"
@@ -929,7 +929,7 @@
     "config": {
       "timeOfDay": "Pora dnia",
       "realWorldTime": "Czas rzeczywisty",
-      "coldAndDark": "Zimny i ciemny",
+      "coldAndDark": "Cold and dark",
       "startState": "Stan początkowy",
       "weather": "Pogoda",
       "fuel": "Paliwo",
@@ -939,7 +939,7 @@
     },
     "startState": {
       "ready": "Gotowy",
-      "cold": "Zimny i Wyłączony"
+      "cold": "Cold and dark"
     },
     "time": {
       "live": "Na żywo",
@@ -960,8 +960,8 @@
       "night": "Noc"
     },
     "weather": {
-      "real": "Rzeczywista",
-      "clear": "Czyste",
+      "real": "Rzeczywista pogoda",
+      "clear": "Bezchmurnie",
       "cloudy": "Pochmurno",
       "rainy": "Deszczowo",
       "stormy": "Burzowo",
@@ -981,10 +981,10 @@
       "addLayer": "Dodaj warstwę",
       "noClouds": "Brak warstw chmur",
       "layer": "Warstwa",
-      "coverage": "Pokrycie",
-      "cloudType": "Typ",
-      "base": "Podstawa (ft)",
-      "tops": "Szczyty (ft)",
+      "coverage": "Zachmurzenie",
+      "cloudType": "Typ chmur",
+      "base": "Podstawa chmur (ft)",
+      "tops": "Wierzchołki chmur (ft)",
       "precipitation": "Opady",
       "temperature": "Temperatura",
       "dewpoint": "Punkt rosy",
@@ -993,11 +993,11 @@
       "cloudTypes": {
         "stratus": "Warstwowe",
         "cumulus": "Kłębiaste",
-        "cumulonimbus": "Burzowe"
+        "cumulonimbus": "Kłębiasto-deszczowe"
       }
     },
     "weatherModal": {
-      "presets": "Presety",
+      "presets": "Ustawienia wstępne",
       "custom": "Niestandardowa",
       "poor": "Słaba",
       "unlimited": "Nieograniczona"
@@ -1011,7 +1011,7 @@
       "emptyHint": "Kliknij warstwę chmur lub wiatru na diagramie, aby edytować",
       "cloudType": "Typ chmury",
       "cloudCoverage": "Pokrycie chmurami",
-      "tops": "Szczyty",
+      "tops": "Wierzchołki",
       "bases": "Podstawy",
       "ftMsl": "{{value}} ft MSL",
       "deleteCloud": "Usuń warstwę chmur {{n}}",
@@ -1031,7 +1031,7 @@
       "direction": "Kierunek",
       "speed": "Prędkość",
       "gusts": "Porywy",
-      "shear": "Uskoki wiatru",
+      "shear": "Uskok wiatru",
       "turbulence": "Turbulencje",
       "deleteWind": "Usuń warstwę wiatru {{n}}",
       "atmosphere": "Atmosfera",
@@ -1051,7 +1051,7 @@
         "puddles": "Kałuże",
         "snow": "Śnieg",
         "ice": "Lód",
-        "mix": "Śnieg+Lód"
+        "mix": "Śnieg + lód"
       },
       "terrainIntensities": {
         "light": "Lekka",
@@ -1091,11 +1091,11 @@
       "empty": "Brak ostatnich lotów",
       "emptyHint": "Twoje ostatnie 10 lotów pojawi się tutaj po uruchomieniu",
       "timeLive": "Na żywo",
-      "coldAndDark": "Zimny i wyłączony",
+      "coldAndDark": "Cold and dark",
       "ready": "Gotowy",
-      "copyJson": "Kopiuj JSON startu",
-      "copyJsonToast": "JSON startu skopiowany. Wklej go na GitHubie lub Discordzie, jeśli wystąpił problem z tym lotem.",
-      "copyJsonError": "Nie udało się skopiować JSON startu",
+      "copyJson": "Kopiuj JSON uruchomienia",
+      "copyJsonToast": "JSON uruchomienia skopiowany. Wklej go na GitHubie lub Discordzie, jeśli wystąpił problem z tym lotem.",
+      "copyJsonError": "Nie udało się skopiować JSON uruchomienia",
       "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na GitHubie lub Discordzie."
     },
     "weightFuelLabel": "Masa i paliwo"
@@ -1103,7 +1103,7 @@
   "addonManager": {
     "title": "Menedżer dodatków",
     "openXPlaneFolder": "Otwórz folder X-Plane",
-    "rescan": "Przeskanuj ponownie",
+    "rescan": "Skanuj ponownie",
     "rescanFound": "Znaleziono {{count}} nowych elementów",
     "rescanRemoved": "Usunięto {{count}} elementów",
     "rescanNoChanges": "Nie wykryto zmian",
@@ -1142,7 +1142,7 @@
         "addMore": "Dodaj więcej plików",
         "browse": "lub przeglądaj pliki"
       },
-      "itemsDetected": "elementów gotowych",
+      "itemsDetected": "Elementy gotowe",
       "analyzing": "Analizowanie plików",
       "analyzingHint": "Wykrywanie typów dodatków i zawartości",
       "analysisFailed": "Analiza plików nie powiodła się",
@@ -1151,7 +1151,7 @@
       "progress": "Instalowanie {{current}} z {{total}}",
       "successOne": "Instalacja zakończona!",
       "successMany": "Zainstalowano {{count}} dodatków!",
-      "successHint": "Twoje dodatki są gotowe do użycia",
+      "successHint": "Dodatki są gotowe do użycia",
       "partialSuccess": "Zainstalowano {{success}} z {{total}} dodatków",
       "failed": "Błąd: {{error}}",
       "detectedOne": "Wykryto 1 dodatek",
@@ -1159,7 +1159,7 @@
       "installOne": "Zainstaluj dodatek",
       "installMany": "Zainstaluj {{count}} dodatków",
       "emptyState": "Upuść archiwa do zainstalowania",
-      "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i więcej",
+      "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i inne",
       "installMore": "Zainstaluj więcej dodatków",
       "clear": "Wyczyść wszystko"
     },
@@ -1208,12 +1208,12 @@
       "safeMode": "Bezpieczny",
       "unsafeMode": "Niebezpieczny",
       "safeModeOn": "Przeciąganie ograniczone do tej samej kategorii. Wyłącz, aby swobodnie zmieniać kolejność (zaawansowane).",
-      "safeModeOff": "Włączono swobodne sortowanie. Elementy można przeciągać między kategoriami - ostrożnie!",
+      "safeModeOff": "Włączono swobodne sortowanie. Elementy można przenosić między kategoriami — ostrożnie!",
       "priorityHint": "Wpisy na górze nadpisują te poniżej. Przeciągnij, aby zmienić kolejność lub użyj automatycznego sortowania.",
       "dragHintSafe": "Przeciągnij, aby zmienić kolejność w tej samej kategorii. Zmiany są zapisywane po kliknięciu Zapisz.",
-      "dragHintUnsafe": "Tryb bezpieczny WYŁĄCZONY - Możesz przeciągać elementy między kategoriami. Może to powodować problemy ze scenerią.",
+      "dragHintUnsafe": "Tryb bezpieczny wyłączony — możesz przenosić elementy między kategoriami. Błędna kolejność może powodować problemy ze scenerią.",
       "saveOrder": "Zapisz",
-      "autoSort": "Auto-Sortuj",
+      "autoSort": "Sortuj automatycznie",
       "backups": "Kopie zapasowe ({{count}})",
       "backupsTitle": "Kopie zapasowe scenerii",
       "backupsDescription": "Przywróć poprzednią wersję scenery_packs.ini",
@@ -1291,7 +1291,7 @@
       "heading": "Wyślij do FMS",
       "send": "Wyślij",
       "sendAll": "Wyślij wszystko",
-      "emptyHint": "Brak skonfigurowanych celów eksportu. Dodaj jeden w Ustawienia → SimBrief.",
+      "emptyHint": "Brak skonfigurowanych celów eksportu. Dodaj jeden w sekcji Ustawienia → SimBrief.",
       "noMatches": "Żaden ze skonfigurowanych formatów nie występuje w tym planie SimBrief.",
       "success": "Zapisano {{filename}} do {{label}}",
       "failure": "Nie udało się wyeksportować {{label}}: {{reason}}",
@@ -1299,8 +1299,8 @@
     },
     "title": "Importuj z SimBrief",
     "description": "Pobierz najnowszy plan lotu z SimBrief",
-    "notConfigured": "SimBrief nie skonfigurowany",
-    "configurePilotId": "Skonfiguruj swój ID Pilota w Ustawienia → SimBrief",
+    "notConfigured": "SimBrief nie jest skonfigurowany",
+    "configurePilotId": "Skonfiguruj swój ID pilota w Ustawienia → SimBrief",
     "fetching": "Pobieranie planu lotu...",
     "fetchError": "Nie udało się pobrać planu lotu",
     "ready": "Gotowy do pobrania",
@@ -1312,15 +1312,15 @@
     "openFullBriefing": "Otwórz pełny briefing",
     "tabs": {
       "fuel": "Paliwo",
-      "weights": "Wagi",
+      "weights": "Masy",
       "route": "Trasa"
     },
     "fuel": {
       "ramp": "Paliwo blokowe",
-      "trip": "Paliwo na lot",
+      "trip": "Paliwo na trasę",
       "contingency": "Rezerwa",
-      "reserve": "Minimalna rezerwa",
-      "alternate": "Lotnisko zapasowe",
+      "reserve": "Rezerwa końcowa",
+      "alternate": "Paliwo na lotnisko zapasowe",
       "taxi": "Kołowanie"
     },
     "weights": {
@@ -1329,7 +1329,7 @@
       "ldw": "LDW",
       "payload": "Ładunek",
       "pax": "Pasażerowie",
-      "cargo": "Cargo"
+      "cargo": "Ładunek"
     },
     "route": {
       "departure": "Odlot",
@@ -1340,12 +1340,12 @@
       "sigmetsDesc": "Istotne ostrzeżenia pogodowe wzdłuż trasy — turbulencje, oblodzenie, burze itp.",
       "noSigmets": "Brak istotnych ostrzeżeń pogodowych wzdłuż trasy",
       "firTitle": "Trasa FIR",
-      "firDesc": "Rejony kontroli ruchu lotniczego, przez które przelatuje Twój lot",
-      "notamsTitle": "NOTAMy",
-      "notamsDesc": "Zawiadomienia dla lotników — zamknięcia lotnisk, zmiany pasów startowych i inne alerty operacyjne",
-      "noNotams": "Brak dostępnych NOTAMów",
-      "transAltTitle": "Wysokości przejściowe",
-      "transAltDesc": "Wysokość, na której przełączasz się między lokalnym ciśnieniem (QNH) a ciśnieniem standardowym (STD) — ustaw odpowiednio wysokościomierz"
+      "firDesc": "Rejony informacji powietrznej, przez które przebiega trasa",
+      "notamsTitle": "NOTAM",
+      "notamsDesc": "Informacje lotnicze — zamknięcia lotnisk, zmiany dróg startowych i inne komunikaty operacyjne",
+      "noNotams": "Brak dostępnych NOTAM",
+      "transAltTitle": "Wysokości przejścia",
+      "transAltDesc": "Wysokość, na której przełącza się między lokalnym ciśnieniem (QNH) a ciśnieniem standardowym (STD) — ustaw odpowiednio wysokościomierz"
     }
   },
   "flightInfoPanel": {
@@ -1374,14 +1374,14 @@
     "fuelItems": {
       "taxi": "Kołowanie",
       "trip": "Trasa",
-      "contingency": "Awaryjne",
+      "contingency": "Rezerwa",
       "alternate": "Zapasowe",
       "reserve": "Rezerwa",
-      "extra": "Dodatkowe"
+      "extra": "Dodatkowe paliwo"
     }
   },
   "weightBalance": {
-    "title": "Masa i Paliwo",
+    "title": "Masa i paliwo",
     "empty": "Pusty",
     "fuel": "Paliwo",
     "payload": "Ładunek",
@@ -1398,10 +1398,10 @@
     "notAvailable": "b.d.",
     "noMetarAvailable": "Brak METAR",
     "header": {
-      "goToAirportLayoutAria": "Przejdź do układu {{icao}}",
+      "goToAirportLayoutAria": "Przejdź do planu lotniska {{icao}}",
       "runway": "RWY {{rwy}}",
-      "takeoffWithIcao": "Start - {{icao}}",
-      "landingWithIcao": "Lądowanie - {{icao}}"
+      "takeoffWithIcao": "Start: {{icao}}",
+      "landingWithIcao": "Lądowanie: {{icao}}"
     },
     "tabs": {
       "flight": "Lot",
@@ -1427,13 +1427,13 @@
       "fixesCount": "{{count}} punktów",
       "fuelSummary": "Podsum. paliwa",
       "blockFuel": "Paliwo blokowe",
-      "tripFuel": "Paliwo trasy",
-      "landingFuel": "Paliwo na lądow.",
+      "tripFuel": "Paliwo na trasę",
+      "landingFuel": "Paliwo przy lądowaniu",
       "weightsSummary": "Podsum. mas",
       "payload": "Ładunek",
       "passengers": "Pasażerowie",
       "cargo": "Ładunek",
-      "totalPayload": "Łącznie",
+      "totalPayload": "Łączny ładunek",
       "alternate": "Zapasowe"
     },
     "weights": {
@@ -1442,19 +1442,19 @@
       "ldw": "LDW",
       "zfwFull": "Masa bez paliwa",
       "towFull": "Masa do startu",
-      "ldwFull": "Masa do lądow."
+      "ldwFull": "Masa do lądowania"
     },
     "fuelTab": {
       "breakdown": "Rozkład paliwa",
       "taxi": "Kołowanie",
       "trip": "Trasa",
-      "contingency": "Awaryjne",
+      "contingency": "Rezerwa",
       "alternate": "Zapasowe",
-      "finalReserve": "Rezerwa końc.",
-      "extra": "Dodatkowe",
+      "finalReserve": "Rezerwa końcowa",
+      "extra": "Dodatkowe paliwo",
       "blockFuel": "Paliwo blokowe",
       "takeoffFuel": "Paliwo do startu",
-      "landingFuel": "Paliwo na lądow."
+      "landingFuel": "Paliwo przy lądowaniu"
     },
     "weightsTab": {
       "limits": "Limity masy",
@@ -1467,7 +1467,7 @@
       "paxCount": "{{count}} PAX"
     },
     "briefing": {
-      "notamLabelDeparture": "Wylot",
+      "notamLabelDeparture": "Odlot",
       "notamLabelArrival": "Przylot",
       "notamLabelAlternate": "Zapasowe",
       "transAltAbbr": "TA: {{value}} ft",
@@ -1475,19 +1475,19 @@
       "sigmetValid": "Ważne: {{start}} - {{end}}",
       "sigmetFir": "FIR: {{name}}",
       "notamCount_one": "1 NOTAM",
-      "notamCount_other": "{{count}} NOTAM-ów",
+      "notamCount_other": "{{count}} NOTAM",
       "showMore": "Pokaż więcej",
       "showLess": "Pokaż mniej",
       "notamEffective": "Obowiązuje od: {{date}}",
       "notamEffectiveRange": "Obowiązuje: {{start}} - {{end}}"
     },
     "navlog": {
-      "colFix": "Punkt / Droga",
+      "colFix": "Punkt / droga",
       "colAltitude": "Wysokość",
       "colWind": "Wiatr",
       "colGsMach": "GS / Mach",
       "colEta": "ETA",
-      "colFuelRem": "Paliwo rezerw.",
+      "colFuelRem": "Pozost. paliwa",
       "waypointCount": "{{count}} punktów",
       "groundSpeedKt": "{{value}} kt",
       "position": "Pozycja",
@@ -1495,8 +1495,8 @@
       "windComponent": "Składowa wiatru",
       "windCompValue": "{{value}} kt {{tag}}",
       "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
-      "headwind": "(czoło)",
-      "tailwind": "(z tyłu)",
+      "headwind": "(pod wiatr)",
+      "tailwind": "(z wiatrem)",
       "tropopause": "Tropopauza",
       "fir": "FIR",
       "groundElevation": "Wys. terenu",
@@ -1524,7 +1524,7 @@
         "v2": "V2",
         "vref": "Vref"
       },
-      "flexTemp": "Temp Flex",
+      "flexTemp": "Temp. FLEX",
       "togaThrust": "TOGA",
       "wind": "Wiatr",
       "flaps": "Klapy",
@@ -1545,15 +1545,15 @@
       "stepClimbs": "Wznoszenie stopniowe",
       "stepFallback": "Stopień {{n}}",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
-      "transAltOrigin": "{{icao}} Wys. przejścia",
-      "transLevelDest": "{{icao}} Poz. przejścia",
+      "transAltOrigin": "{{icao}} wysokość przejścia",
+      "transLevelDest": "{{icao}} poziom przejścia",
       "flightLevel": "FL{{value}}",
-      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+      "windDirSpeed": "{{dir}}°/{{speed}} kt"
     },
     "weather": {
       "alternate": "Zapasowe",
       "icaoWithLabel": "{{icao}} ({{label}})",
-      "windsAloft": "Wiatr na pułapie",
+      "windsAloft": "Wiatr w górnych warstwach",
       "direction": "Kierunek",
       "speed": "Prędkość",
       "directionDeg": "{{deg}}°",
@@ -1569,7 +1569,7 @@
   },
   "errorBoundary": {
     "title": "Coś poszło nie tak",
-    "description": "Wystąpił nieoczekiwany błąd. Możesz spróbować ponownie albo przeładować aplikację.",
+    "description": "Wystąpił nieoczekiwany błąd. Możesz spróbować ponownie albo wczytać aplikację od nowa.",
     "errorDetails": "Szczegóły błędu",
     "tryAgain": "Spróbuj ponownie",
     "reloadApp": "Przeładuj aplikację",

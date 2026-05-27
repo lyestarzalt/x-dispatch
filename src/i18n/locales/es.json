@@ -85,10 +85,10 @@
     "scanningCustom": "Analizando Custom Scenery {{current}}/{{total}}: {{name}}",
     "savingToDb": "Guardando en la base de datos...",
     "hints": {
-      "permissionMac": "macOS está bloqueando el acceso a los archivos. Ve a Ajustes del Sistema > Privacidad y Seguridad > Archivos y Carpetas y permite X-Dispatch, luego reinicia la app.",
+      "permissionMac": "macOS está bloqueando el acceso a los archivos. Ve a Ajustes del Sistema > Privacidad y Seguridad > Archivos y Carpetas, concede acceso a X-Dispatch y reinicia la app.",
       "permissionWindows": "Windows está bloqueando el acceso a los archivos. Haz clic derecho en X-Dispatch y selecciona \"Ejecutar como administrador\", o revisa los permisos de la carpeta en Propiedades > Seguridad.",
       "permissionLinux": "Permiso denegado. Verifica que tu usuario tenga acceso de lectura a la carpeta de X-Plane, o ejecuta chmod +r en el archivo.",
-      "fileBusy": "El archivo está bloqueado por otro programa. Cierra X-Plane y cualquier herramienta de escenarios o addons, luego reintenta."
+      "fileBusy": "El archivo está bloqueado por otro programa. Cierra X-Plane y cualquier herramienta de escenarios o complementos, y vuelve a intentarlo."
     },
     "messages": {
       "checking": "Comprobando cambios...",
@@ -96,7 +96,7 @@
       "firstLaunch": "Primer inicio: configurando la base de datos...",
       "sceneryChanged": "Se detectaron cambios en escenarios: reconstruyendo...",
       "globalAirports": "Analizando Global Airports...",
-      "customScenery": "Escaneando Custom Scenery {{current}}/{{total}}",
+      "customScenery": "Analizando Custom Scenery ({{current}}/{{total}})",
       "savingDatabase": "Guardando en la base de datos...",
       "airportsDone": "Aeropuertos cargados",
       "navaids": "Cargando radioayudas...",
@@ -117,7 +117,7 @@
   "toolbar": {
     "searchPlaceholder": "Buscar aeropuertos...",
     "clearSearch": "Limpiar búsqueda",
-    "addons": "Addons",
+    "addons": "Complementos",
     "alphaTag": "alfa",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}}kts",
@@ -150,8 +150,8 @@
       "cat_catapult_4": "Cat 4",
       "cat_deck": "Cubierta"
     },
-    "weather": "Clima",
-    "dayNight": "Día / Noche",
+    "weather": "Meteorología",
+    "dayNight": "Día / noche",
     "terrainShading": "Sombreado del terreno",
     "launch": "Iniciar",
     "flightPlan": "Plan de vuelo",
@@ -165,7 +165,7 @@
     "tooltips": {
       "flightPlan": "Cargar o importar un plan de vuelo",
       "layers": "Activar capas y superposiciones del mapa",
-      "addons": "Gestionar aeronaves, plugins y escenarios",
+      "addons": "Gestionar aviones, plugins y escenarios",
       "loadPlan": "Cargar un archivo de plan de vuelo .fms de X-Plane",
       "simbrief": "Importar plan de vuelo desde SimBrief",
       "explore": "Descubrir aeropuertos y rutas destacados",
@@ -247,7 +247,7 @@
   },
   "settings": {
     "title": "Configuración",
-    "subtitle": "Configura tus preferencias",
+    "subtitle": "Ajusta tus preferencias",
     "tabs": {
       "xplane": "X-Plane",
       "addons": "Complementos",
@@ -265,27 +265,27 @@
     },
     "airports": {
       "title": "Aeropuertos",
-      "description": "Gestiona tus aeropuertos favoritos y base.",
+      "description": "Gestiona tus aeropuertos favoritos y tu aeropuerto base.",
       "startup": "Inicio",
       "autoNav": {
         "label": "Abrir el aeropuerto base al iniciar",
-        "description": "Centra la cámara en tu aeropuerto base y abre su panel de información al iniciar X-Dispatch."
+        "description": "Centra la vista en tu aeropuerto base y abre su panel de información al iniciar X-Dispatch."
       },
       "favorites": {
         "title": "Favoritos",
-        "description": "Toca la estrella en cualquier panel de aeropuerto para añadirlo aquí. Tu aeropuerto base se muestra primero.",
+        "description": "Pulsa la estrella en cualquier panel de aeropuerto para añadirlo aquí. Tu aeropuerto base aparece primero.",
         "empty": "Aún no hay favoritos — toca la estrella en cualquier panel de aeropuerto.",
         "notInAirac": "No está en el AIRAC actual"
       },
       "actions": {
-        "setHome": "Establecer como base",
-        "clearHome": "Quitar base",
+        "setHome": "Establecer como aeropuerto base",
+        "clearHome": "Quitar aeropuerto base",
         "remove": "Eliminar"
       }
     },
     "support": {
       "reportProblem": "Informar de un problema",
-      "reportDescription": "Describe qué ha ido mal. El estado de la app y tus acciones recientes se incluyen automáticamente para ayudar a diagnosticar el problema.",
+      "reportDescription": "Describe qué salió mal. El estado de la app y tus acciones recientes se incluyen automáticamente para ayudar a diagnosticar el problema.",
       "messagePlaceholder": "¿Qué ha ocurrido?",
       "emailLabel": "Correo electrónico",
       "emailPlaceholder": "tu@correo.com (para seguimiento)",
@@ -298,9 +298,9 @@
     },
     "simbrief": {
       "description": "Importar planes de vuelo desde SimBrief",
-      "pilotId": "ID de Piloto",
-      "pilotIdHelp": "Tu ID de Piloto SimBrief (en la configuración de tu cuenta)",
-      "pilotIdNote": "Tu ID de Piloto es un identificador numérico. Encuéntralo en simbrief.com → Configuración de cuenta → Pilot ID.",
+      "pilotId": "ID de piloto",
+      "pilotIdHelp": "Tu ID de piloto de SimBrief (en la configuración de tu cuenta)",
+      "pilotIdNote": "Tu ID de piloto es un identificador numérico. Encuéntralo en simbrief.com → Configuración de cuenta → Pilot ID.",
       "testSuccess": "Plan de vuelo encontrado",
       "needAccount": "¿No tienes cuenta SimBrief?",
       "freeService": "SimBrief es un servicio gratuito de planificación de vuelos",
@@ -310,13 +310,13 @@
         "add": "Añadir destino",
         "addTitle": "Añadir destino de exportación",
         "editTitle": "Editar destino de exportación",
-        "dialogDescription": "Elige el formato SimBrief que espera tu addon y la carpeta desde la que lee.",
+        "dialogDescription": "Elige el formato de SimBrief que espera tu complemento y la carpeta desde la que lee los planes.",
         "format": "Formato",
         "label": "Etiqueta",
         "folder": "Carpeta destino",
         "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "Elegir carpeta de exportación",
-        "empty": "Aún no hay destinos. Añade uno para enviar planes SimBrief directamente a una carpeta de addon.",
+        "empty": "Aún no hay destinos. Añade uno para enviar planes de SimBrief directamente a una carpeta de complemento.",
         "deleteTitle": "¿Eliminar este destino de exportación?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
@@ -336,9 +336,9 @@
       "website": "Sitio web del proyecto",
       "sourceCode": "Código fuente",
       "supportProject": "Apoyar este proyecto",
-      "reportIssue": "Reportar un problema",
+      "reportIssue": "Informar de un problema",
       "dataStorage": "Datos y configuración",
-      "dataStorageDescription": "Las preferencias, caché y base de datos se almacenan aquí.",
+      "dataStorageDescription": "La configuración, la caché y la base de datos se almacenan aquí.",
       "settingsCache": "Configuración y caché",
       "logFile": "Archivo de registro",
       "openDataFolder": "Abrir carpeta de datos",
@@ -361,7 +361,7 @@
     },
     "xplane": {
       "title": "Instalación de X-Plane",
-      "description": "Configura tu fuente de datos de X-Plane",
+      "description": "Configura la fuente de datos de X-Plane",
       "currentPath": "Ruta actual",
       "detectedInstallations": "Instalaciones detectadas",
       "selectInstallation": "Selecciona una instalación para usar",
@@ -383,8 +383,8 @@
       "airportMetadata": "Metadatos de aeropuerto",
       "moraGrid": "Cuadrícula MORA",
       "msaSectors": "Sectores MSA",
-      "closeOnLaunch": "Cerrar tras el lanzamiento",
-      "closeOnLaunchDescription": "Cerrar X-Dispatch automáticamente cuando X-Plane se inicia",
+      "closeOnLaunch": "Cerrar al iniciar X-Plane",
+      "closeOnLaunchDescription": "Cerrar X-Dispatch automáticamente cuando se inicie X-Plane",
       "installations": "Instalaciones",
       "addInstallation": "Añadir instalación",
       "addAndSwitch": "Añadir y cambiar",
@@ -393,16 +393,16 @@
       "switch": "Cambiar",
       "remove": "Eliminar",
       "name": "Nombre",
-      "namePlaceholder": "ej. Beta, Instalación limpia, Modded",
+      "namePlaceholder": "p. ej. Beta, Instalación limpia, Con mods",
       "nameRequired": "Obligatorio",
-      "launchArgs": "Argumentos de lanzamiento",
-      "launchArgsDescription": "Argumentos de línea de comandos adicionales pasados a X-Plane en cada arranque en frío",
+      "launchArgs": "Argumentos de inicio",
+      "launchArgsDescription": "Argumentos adicionales de línea de comandos que se pasan a X-Plane en cada arranque en frío",
       "launchArgsBrowse": "Examinar argumentos",
       "launchArgsSearch": "Buscar argumentos...",
       "launchArgsNoResults": "Sin argumentos coincidentes",
       "launchArgsPlaceholder": "--flag o --flag=valor",
       "launchArgsActive": "Activos ({{count}})",
-      "launchArgsSavedTitle": "Argumentos guardados",
+      "launchArgsSavedTitle": "Argumentos de inicio guardados",
       "launchArgsSessionSubtext": "Establecidos vía --xp-arg, aplicados solo en esta sesión",
       "launchArgsSessionTitle": "Argumentos de sesión (desde CLI)"
     },
@@ -461,7 +461,7 @@
       "terrainShading": "Sombreado del terreno",
       "terrainShadingDesc": "Sombreado y curvas de nivel para distinguir mejor las montañas.",
       "surfaceDetail": "Detalle de superficie",
-      "surfaceDetailDesc": "Suavidad de las curvas en los bordes de calles de rodaje y pavimentos",
+      "surfaceDetailDesc": "Suavidad de las curvas en los bordes de calles de rodaje y plataformas",
       "low": "Bajo",
       "medium": "Medio",
       "high": "Alto",
@@ -479,13 +479,13 @@
       "description": "Configura los ajustes de navegación",
       "dataTitle": "Datos de navegación",
       "dataDescription": "Ver fuentes de datos de navegación cargadas",
-      "navigraphInfo": "Los datos de Navigraph proporcionan datos de navegación mejorados incluyendo aerovías, procedimientos y frecuencias actualizadas.",
+      "navigraphInfo": "Los datos de Navigraph amplían la navegación con aerovías, procedimientos y frecuencias actualizadas.",
       "searchRadius": "Radio de búsqueda",
-      "airportLayoutData": "Datos de diseño de aeropuerto",
-      "airportLayoutDescription": "Geometría del aeropuerto de archivos apt.dat (pistas, calles de rodaje, puertas, etc.)",
+      "airportLayoutData": "Datos del plano del aeropuerto",
+      "airportLayoutDescription": "Geometría del aeropuerto a partir de archivos apt.dat (pistas, calles de rodaje, puertas, etc.)",
       "globalAirports": "Aeropuertos globales",
       "customAirports": "Aeropuertos personalizados",
-      "fromSceneryPacks": "de {{count}} paquete(s) de escenarios",
+      "fromSceneryPacks": "de {{count}} paquetes de escenarios",
       "totalAirports": "Total de aeropuertos",
       "navDataSource": "Fuente de datos de navegación",
       "navDataSourceDescription": "Radioayudas, waypoints, aerovías, procedimientos y frecuencias",
@@ -500,29 +500,29 @@
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Tráfico aéreo en vivo de la red VATSIM",
-        "enable": "Habilitar capa VATSIM",
-        "description": "Mostrar posiciones de pilotos en vivo en el mapa",
-        "currentlyOnline": "Actualmente en línea",
+        "enable": "Activar capa VATSIM",
+        "description": "Mostrar posiciones de pilotos en tiempo real en el mapa",
+        "currentlyOnline": "En línea ahora",
         "refreshRate": "Tasa de actualización",
         "autoRefresh": "Intervalo de actualización automática",
         "refreshNote": "Los datos de VATSIM se actualizan cada 15 segundos según las directrices de la API.",
-        "aboutTitle": "Sobre la integración VATSIM",
-        "aboutDescription": "Los pilotos se muestran como iconos en el mapa. Haz clic en un piloto para ver los detalles de su vuelo, incluyendo indicativo, aeronave, salida y destino.",
+        "aboutTitle": "Acerca de la integración con VATSIM",
+        "aboutDescription": "Los pilotos se muestran como iconos en el mapa. Haz clic en uno para ver los detalles de su vuelo, como indicativo, aeronave, salida y destino.",
         "refreshInterval": "Intervalo de actualización",
         "refreshHelp": "Con qué frecuencia actualizar los datos de VATSIM (recomendado: 15s)"
       }
     },
     "companionApps": {
       "title": "Aplicaciones complementarias",
-      "description": "Programas para lanzar junto con X-Plane (XPME, clientes ATC, controladores de hardware).",
+      "description": "Programas para iniciar junto con X-Plane (XPME, clientes ATC, controladores de hardware).",
       "addButton": "Añadir aplicación complementaria",
       "suggested": "Sugeridas",
-      "launchNow": "Lanzar ahora",
-      "autoLaunch": "Lanzar automáticamente con X-Plane",
-      "delayLabel": "Esperar antes de X-Plane (segundos)",
+      "launchNow": "Iniciar ahora",
+      "autoLaunch": "Iniciar automáticamente con X-Plane",
+      "delayLabel": "Espera antes de iniciar X-Plane (segundos)",
       "empty": "Aún no hay aplicaciones complementarias configuradas.",
-      "spawnError": "No se pudo lanzar {{name}}: {{error}}",
-      "statusPill": "Lanzando {{names}}…",
+      "spawnError": "No se pudo iniciar {{name}}: {{error}}",
+      "statusPill": "Iniciando {{names}}…",
       "remove": "Eliminar",
       "edit": "Editar",
       "save": "Guardar",
@@ -533,11 +533,11 @@
         "args": "Argumentos",
         "cwd": "Directorio de trabajo (opcional)"
       },
-      "delayInline": "retraso {{seconds}}s",
+      "delayInline": "espera {{seconds}}s",
       "add": "Añadir",
       "unknownError": "Error desconocido",
       "notElevatedTitle": "X-Dispatch no se está ejecutando como administrador",
-      "notElevatedHint": "Las aplicaciones complementarias no se podrán iniciar. Haz clic derecho en X-Dispatch y selecciona Ejecutar como administrador (Windows), o relánzalo desde una terminal con sudo (macOS/Linux).",
+      "notElevatedHint": "Las aplicaciones complementarias no se podrán iniciar. Haz clic derecho en X-Dispatch y selecciona Ejecutar como administrador (Windows), o vuelve a iniciarlo desde una terminal con sudo (macOS/Linux).",
       "error": {
         "needsAdmin": "X-Dispatch necesita privilegios de administrador para iniciar esta app",
         "fileMissing": "No se encontró el ejecutable en la ruta configurada",
@@ -547,14 +547,14 @@
     },
     "logs": {
       "title": "Registros de X-Plane",
-      "description": "Lee el Log.txt de X-Plane para ver lo que el simulador reportó durante tu última sesión.",
+      "description": "Consulta el Log.txt de X-Plane para ver lo que el simulador registró durante tu última sesión.",
       "refresh": "Actualizar",
       "truncatedNotice": "Mostrando los últimos {{shownMb}} MB de un registro de {{totalMb}} MB.",
       "empty": {
         "noPath": "Ruta de X-Plane no configurada.",
         "noPathCta": "Abrir configuración de X-Plane",
         "noLog": "Aún no hay registro — ¿se ha iniciado X-Plane al menos una vez en esta instalación?",
-        "allClear": "X-Dispatch no detecta nada en este registro.",
+        "allClear": "No hay incidencias en este registro.",
         "noMatches": "Ninguna entrada coincide con el filtro actual."
       },
       "entriesHeader": "Entradas del registro",
@@ -573,8 +573,8 @@
     }
   },
   "sidebar": {
-    "weather": "Clima",
-    "weatherDetails": "Detalles del clima",
+    "weather": "Meteorología",
+    "weatherDetails": "Detalles meteorológicos",
     "wind": "Viento",
     "visibility": "Visibilidad",
     "ceiling": "Techo",
@@ -589,20 +589,20 @@
     "frequencies": "Frecuencias",
     "runways": "Pistas",
     "gates": "Puertas",
-    "gatesParking": "Puertas y estacionamiento",
+    "gatesParking": "Puertas y puestos de estacionamiento",
     "departurePosition": "Posición de salida",
     "moreCount": "+{{count}} más",
     "more": "más",
     "procedures": "Procedimientos",
     "nearbyNavaids": "Radioayudas cercanas",
-    "withinRadius": "Dentro de un radio de 50nm",
+    "withinRadius": "A 50 NM o menos",
     "ils": "ILS",
     "startFrom": "Iniciar desde:",
     "noGatesFound": "No se encontraron puertas",
     "noRunwaysFound": "No se encontraron pistas",
     "copyFrequency": "Copiar frecuencia",
     "vatsim": {
-      "notEnabled": "Habilita VATSIM en configuración para ver datos en vivo",
+      "notEnabled": "Activa VATSIM en la configuración para ver datos en tiempo real",
       "noActivity": "Sin actividad VATSIM"
     }
   },
@@ -620,8 +620,8 @@
     "actions": {
       "addFavorite": "Añadir a favoritos",
       "removeFavorite": "Quitar de favoritos",
-      "setHome": "Establecer como base",
-      "clearHome": "Quitar base"
+      "setHome": "Establecer como aeropuerto base",
+      "clearHome": "Quitar aeropuerto base"
     },
     "stats": {
       "elevation": "ELEV",
@@ -659,12 +659,12 @@
       "visibility": "Visibilidad",
       "ceiling": "Techo",
       "qnh": "QNH",
-      "tempDew": "Temp / Punto rocío",
+      "tempDew": "Temp / Punto de rocío",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
       "phenomena": "Fenómenos"
     },
     "activeRunway": "Pista activa",
-    "windAligned": "· alineada con viento, {{delta}}° desvío",
+    "windAligned": "· alineada con el viento, {{delta}}° de desvío",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "Pistas",
     "runwayCountTotal": "{{count}} en total",
@@ -673,7 +673,7 @@
     "ils": {
       "frequency": "Frecuencia",
       "localizer": "Localizador",
-      "glideslope": "Senda planeo",
+      "glideslope": "Senda de planeo",
       "range": "Alcance",
       "ident": "Identif.",
       "rangeNm": "{{value}} NM"
@@ -699,7 +699,7 @@
     "gatewayNotAvailable": "DATOS DE GATEWAY NO DISPONIBLES",
     "gatewayLoading": "CARGANDO DATOS DE GATEWAY...",
     "noGatewayData": "SIN DATOS DE GATEWAY PARA ESTE AEROPUERTO",
-    "gatewayDescription": "Estos datos muestran las contribuciones para este aeropuerto.",
+    "gatewayDescription": "Muestra los envíos de Gateway para este aeropuerto.",
     "viewOnGateway": "Ver en Gateway",
     "accepted": "ACEPTADO",
     "features": "CARACTERÍSTICAS",
@@ -747,7 +747,7 @@
       "approach": "Aproximación",
       "tow": "Remolque",
       "distance": "Distancia",
-      "approachNm": "final a {{distance}} nm",
+      "approachNm": "final de {{distance}} nm",
       "winch": "Torno",
       "tug": "Remolcador",
       "tugAircraft": "Avión remolcador: Cessna 172 SP",
@@ -772,7 +772,7 @@
       "pointsPlaced": "{{count}} punto(s)",
       "export": "Guardar ruta de rodaje",
       "exportSuccess": "Ruta de rodaje guardada",
-      "summary": "via {{taxiways}} · {{distance}}"
+      "summary": "vía {{taxiways}} · {{distance}}"
     }
   },
   "navigation": {
@@ -781,7 +781,7 @@
     "calm": "Calma"
   },
   "flightStrip": {
-    "notDetected": "X-Plane no está ejecutándose",
+    "notDetected": "X-Plane no se está ejecutando",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",
@@ -799,7 +799,7 @@
     "reconnectTooltip": "Forzar reconexión con el simulador X-Plane"
   },
   "weather": {
-    "fetching": "Obteniendo clima...",
+    "fetching": "Obteniendo meteorología...",
     "noData": "Sin datos meteorológicos disponibles",
     "tabs": {
       "metar": "METAR",
@@ -809,8 +809,8 @@
     "clouds": "NUBES",
     "tempDew": "TEMP/ROCÍO",
     "altimeter": "ALTÍMETRO",
-    "showRaw": "Mostrar sin procesar",
-    "hideRaw": "Ocultar sin procesar",
+    "showRaw": "Mostrar datos sin procesar",
+    "hideRaw": "Ocultar datos sin procesar",
     "runway": "PISTA {{names}}",
     "useRunway": "Usar {{name}}",
     "headwind": "HW",
@@ -819,7 +819,7 @@
   },
   "procedures": {
     "noData": "Sin procedimientos disponibles",
-    "noTypeData": "Sin {{type}}s disponibles",
+    "noTypeData": "Sin datos de {{type}} disponibles",
     "tabs": {
       "sid": "SID",
       "star": "STAR",
@@ -856,19 +856,19 @@
       "gates": "Puertas",
       "windsocks": "Mangas de viento",
       "animations": "Animaciones",
-      "weatherEffects": "Clima",
+      "weatherEffects": "Meteorología",
       "navaids": "Radioayudas (VOR/NDB/DME)",
       "ils": "ILS",
       "airwaysOff": "Apagado",
       "highAirways": "Aerovías altas (Jet)",
       "lowAirways": "Aerovías bajas (Victor)"
     },
-    "loadViewport": "Cargar radioayudas del viewport",
+    "loadViewport": "Cargar radioayudas del área visible",
     "showAll": "Mostrar todo",
     "hideAll": "Ocultar todo"
   },
   "debug": {
-    "title": "Modo debug activo",
+    "title": "Modo de depuración activo",
     "instruction": "Haz clic en cualquier elemento del mapa para inspeccionar sus propiedades.",
     "descriptions": {
       "lines": "Líneas (marcas pintadas)",
@@ -879,7 +879,7 @@
     "properties": "Propiedades",
     "coordinates": "Coordenadas",
     "rawAptDat": "apt.dat sin procesar",
-    "lineTypesHeader": "Tipos de línea X-Plane (apt.dat 1130):",
+    "lineTypesHeader": "Tipos de línea de X-Plane (apt.dat 1130):",
     "copyToClipboard": "Copiar al portapapeles",
     "clearSelection": "Limpiar selección"
   },
@@ -889,8 +889,8 @@
     "launching": "Iniciando...",
     "changeFlight": "Cambiar vuelo",
     "changingFlight": "Cambiando...",
-    "xplaneRunning": "X-Plane está ejecutándose - el vuelo se cambiará vía API",
-    "selectDeparture": "Selecciona una salida en el mapa",
+    "xplaneRunning": "X-Plane se está ejecutando: el vuelo se cambiará mediante la API",
+    "selectDeparture": "Selecciona un punto de salida en el mapa",
     "selectAircraft": "Selecciona una aeronave",
     "spawnErrorAccess": "Windows bloqueó el inicio. Haz clic con el botón derecho en X-Dispatch y elige «Ejecutar como administrador», luego inténtalo de nuevo.",
     "spawnErrorMissing": "No se encontró el ejecutable de X-Plane en la ruta configurada. Comprueba la ruta de instalación de X-Plane en Ajustes.",
@@ -921,17 +921,17 @@
       "nextLivery": "Siguiente librea"
     },
     "specs": {
-      "emptyWeight": "Vacío",
+      "emptyWeight": "Peso vacío",
       "maxWeight": "MTOW",
       "maxFuel": "Cap. combustible",
       "tailNumber": "Matrícula"
     },
     "config": {
       "timeOfDay": "Hora del día",
-      "realWorldTime": "Mundo real",
+      "realWorldTime": "Hora real",
       "coldAndDark": "Frío y oscuro",
       "startState": "Estado inicial",
-      "weather": "Clima",
+      "weather": "Meteorología",
       "fuel": "Combustible",
       "summary": "Resumen",
       "departure": "Salida",
@@ -939,7 +939,7 @@
     },
     "startState": {
       "ready": "Listo",
-      "cold": "Frío y Apagado"
+      "cold": "Frío y apagado"
     },
     "time": {
       "live": "En vivo",
@@ -960,7 +960,7 @@
       "night": "Noche"
     },
     "weather": {
-      "real": "Real",
+      "real": "Meteorología real",
       "clear": "Despejado",
       "cloudy": "Nublado",
       "rainy": "Lluvioso",
@@ -969,22 +969,22 @@
       "foggy": "Niebla"
     },
     "weatherBuilder": {
-      "custom": "Clima personalizado",
-      "customize": "Personalizar clima",
-      "details": "Detalles del clima",
+      "custom": "Meteorología personalizada",
+      "customize": "Personalizar meteorología",
+      "details": "Detalles meteorológicos",
       "visibility": "Visibilidad",
       "wind": "Viento",
       "direction": "Dirección",
       "speed": "Velocidad",
       "gusts": "Ráfagas",
       "clouds": "Nubes",
-      "addLayer": "Agregar capa",
+      "addLayer": "Añadir capa",
       "noClouds": "Sin capas de nubes",
       "layer": "Capa",
       "coverage": "Cobertura",
       "cloudType": "Tipo",
       "base": "Base (ft)",
-      "tops": "Tope (ft)",
+      "tops": "Cima (ft)",
       "precipitation": "Precipitación",
       "temperature": "Temperatura",
       "dewpoint": "Punto de rocío",
@@ -999,16 +999,16 @@
     "weatherModal": {
       "presets": "Preajustes",
       "custom": "Personalizado",
-      "poor": "Pobre",
+      "poor": "Mala",
       "unlimited": "Ilimitada"
     },
     "weatherDialog": {
-      "title": "Ajustes de clima",
+      "title": "Ajustes meteorológicos",
       "done": "Listo",
       "addCloud": "Capa de nubes",
       "addWind": "Capa de viento",
       "layerProperties": "Propiedades de capa",
-      "emptyHint": "Haz clic en una capa de nubes o viento en el diagrama para editar",
+      "emptyHint": "Haz clic en una capa de nubes o viento del diagrama para editarla",
       "cloudType": "Tipo de nube",
       "cloudCoverage": "Cobertura de nubes",
       "tops": "Topes",
@@ -1043,7 +1043,7 @@
       "altimeter": "Altímetro",
       "environment": "Entorno",
       "terrain": "Terreno",
-      "terrainCondition": "Condición",
+      "terrainCondition": "Estado",
       "terrainIntensity": "Intensidad",
       "terrainConditions": {
         "dry": "Seco",
@@ -1051,7 +1051,7 @@
         "puddles": "Charcos",
         "snow": "Nieve",
         "ice": "Hielo",
-        "mix": "Nieve+Hielo"
+        "mix": "Nieve + hielo"
       },
       "terrainIntensities": {
         "light": "Ligera",
@@ -1089,26 +1089,26 @@
       "title": "Libro de vuelo",
       "clearAll": "Borrar todo",
       "empty": "Sin vuelos recientes",
-      "emptyHint": "Tus últimos 10 vuelos aparecerán aquí después del lanzamiento",
+      "emptyHint": "Tus últimos 10 vuelos aparecerán aquí después de iniciar X-Plane",
       "timeLive": "En directo",
       "coldAndDark": "Frío y oscuro",
       "ready": "Listo",
-      "copyJson": "Copiar JSON de lanzamiento",
-      "copyJsonToast": "JSON de lanzamiento copiado. Pégalo en GitHub o Discord si tuviste un problema con este vuelo.",
-      "copyJsonError": "No se pudo copiar el JSON de lanzamiento",
+      "copyJson": "Copiar JSON de inicio",
+      "copyJsonToast": "JSON de inicio copiado. Pégalo en GitHub o Discord si tuviste un problema con este vuelo.",
+      "copyJsonError": "No se pudo copiar el JSON de inicio",
       "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en GitHub o Discord."
     },
     "weightFuelLabel": "Peso y combustible"
   },
   "addonManager": {
-    "title": "Gestor de addons",
-    "openXPlaneFolder": "Abrir carpeta X-Plane",
-    "rescan": "Reescanear archivos",
-    "rescanFound": "Se encontraron {{count}} elemento(s) nuevo(s)",
-    "rescanRemoved": "Se eliminaron {{count}} elemento(s)",
+    "title": "Gestor de complementos",
+    "openXPlaneFolder": "Abrir carpeta de X-Plane",
+    "rescan": "Volver a analizar archivos",
+    "rescanFound": "Se encontraron {{count}} elementos nuevos",
+    "rescanRemoved": "Se eliminaron {{count}} elementos",
     "rescanNoChanges": "No se detectaron cambios",
-    "rescanAirportsAdded": "{{count}} aeropuerto(s) añadido(s)",
-    "rescanAirportsRemoved": "{{count}} aeropuerto(s) eliminado(s)",
+    "rescanAirportsAdded": "{{count}} aeropuertos añadidos",
+    "rescanAirportsRemoved": "{{count}} aeropuertos eliminados",
     "tabs": {
       "scenery": "Escenarios",
       "installed": "Complementos",
@@ -1117,19 +1117,19 @@
     "nav": {
       "sceneryDesc": "Orden y gestión",
       "installedDesc": "Aeronaves y plugins",
-      "installerDesc": "Instalar nuevos addons"
+      "installerDesc": "Instalar nuevos complementos"
     },
     "installed": {
       "total": "instalados",
-      "searchPlaceholder": "Buscar addons...",
+      "searchPlaceholder": "Buscar complementos...",
       "checkUpdates": "Buscar actualizaciones",
       "updatesAvailable": "{{count}} actualizaciones",
       "aircraft": "Aeronaves",
       "plugins": "Plugins",
       "disabled": "desactivados",
       "updates": "actualizaciones",
-      "scanningAircraft": "Escaneando aeronaves...",
-      "scanningPlugins": "Escaneando plugins...",
+      "scanningAircraft": "Analizando aeronaves...",
+      "scanningPlugins": "Analizando plugins...",
       "loadFailed": "Error al cargar {{type}}",
       "noMatch": "No hay {{type}} que coincidan",
       "notFound": "No se encontraron {{type}}"
@@ -1138,29 +1138,29 @@
       "dropZone": {
         "title": "Suelta archivos para instalar",
         "subtitle": "Archivos ZIP, 7z o RAR",
-        "ariaLabel": "Suelta o haz clic para seleccionar archivos de addons",
+        "ariaLabel": "Suelta o haz clic para seleccionar archivos de complementos",
         "addMore": "Añadir más archivos",
         "browse": "o examinar archivos"
       },
-      "itemsDetected": "elementos listos",
+      "itemsDetected": "Elementos listos",
       "analyzing": "Analizando archivos",
-      "analyzingHint": "Detectando tipos de addon y contenido",
+      "analyzingHint": "Detectando tipos de complemento y contenido",
       "analysisFailed": "Error al analizar archivos",
       "installing": "Instalando...",
       "installFailed": "Error de instalación",
       "progress": "Instalando {{current}} de {{total}}",
       "successOne": "¡Instalación completa!",
-      "successMany": "¡{{count}} addons instalados!",
-      "successHint": "Tus addons están listos para usar",
-      "partialSuccess": "{{success}} de {{total}} addons instalados",
+      "successMany": "¡{{count}} complementos instalados!",
+      "successHint": "Tus complementos están listos para usar",
+      "partialSuccess": "{{success}} de {{total}} complementos instalados",
       "failed": "Error: {{error}}",
-      "detectedOne": "1 addon detectado",
-      "detectedMany": "{{count}} addons detectados",
-      "installOne": "Instalar addon",
-      "installMany": "Instalar {{count}} addons",
+      "detectedOne": "1 complemento detectado",
+      "detectedMany": "{{count}} complementos detectados",
+      "installOne": "Instalar complemento",
+      "installMany": "Instalar {{count}} complementos",
       "emptyState": "Suelta archivos para instalar",
       "supportedTypes": "Aeronaves, plugins, escenarios, libreas y más",
-      "installMore": "Instalar más addons",
+      "installMore": "Instalar más complementos",
       "clear": "Limpiar todo"
     },
     "browser": {
@@ -1173,8 +1173,8 @@
       "checkUpdates": "Buscar actualizaciones",
       "aircraft": "Aeronaves",
       "plugins": "Plugins",
-      "scanningAircraft": "Escaneando aeronaves...",
-      "scanningPlugins": "Escaneando plugins...",
+      "scanningAircraft": "Analizando aeronaves...",
+      "scanningPlugins": "Analizando plugins...",
       "loadFailed": "Error al cargar {{type}}",
       "noMatch": "No hay {{type}} que coincidan",
       "notFound": "No se encontraron {{type}}",
@@ -1187,12 +1187,12 @@
       "toggle": "Activar/Desactivar",
       "lock": "Bloquear",
       "unlock": "Desbloquear",
-      "tabStats": "{{total}} addons · {{enabled}} activos · {{disabled}} inactivos",
+      "tabStats": "{{total}} complementos · {{enabled}} activos · {{disabled}} inactivos",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
     "scenery": {
-      "loading": "Escaneando carpetas de escenarios...",
+      "loading": "Analizando carpetas de escenarios...",
       "loadingHint": "Esto puede tardar un momento para instalaciones grandes",
       "loadFailed": "Error al cargar escenarios",
       "total": "paquetes",
@@ -1207,13 +1207,13 @@
       "unsavedChanges": "Sin guardar",
       "safeMode": "Seguro",
       "unsafeMode": "Inseguro",
-      "safeModeOn": "Arrastre limitado a la misma categoría. Desactiva para reordenar libremente (avanzado).",
-      "safeModeOff": "Reordenación libre activada. Los elementos pueden arrastrarse entre categorías - ¡precaución!",
-      "priorityHint": "Las entradas superiores anulan las inferiores. Arrastra para reordenar o usa el orden automático.",
-      "dragHintSafe": "Arrastra para reordenar dentro de la misma categoría. Los cambios se guardan al hacer clic en Guardar.",
-      "dragHintUnsafe": "Modo seguro DESACTIVADO - Puedes arrastrar elementos entre categorías. Esto puede causar problemas si se hace incorrectamente.",
+      "safeModeOn": "Solo puedes arrastrar dentro de la misma categoría. Desactívalo para ordenar libremente (avanzado).",
+      "safeModeOff": "Orden libre activado. Puedes mover elementos entre categorías: cuidado.",
+      "priorityHint": "Las entradas superiores tienen prioridad sobre las inferiores. Arrastra para ordenar o usa el orden automático.",
+      "dragHintSafe": "Arrastra elementos dentro de la misma categoría. Los cambios se guardan al hacer clic en Guardar.",
+      "dragHintUnsafe": "Modo seguro desactivado: puedes mover elementos entre categorías. Un orden incorrecto puede causar problemas con los escenarios.",
       "saveOrder": "Guardar",
-      "autoSort": "Auto-Ordenar",
+      "autoSort": "Orden automático",
       "backups": "Copias de seguridad ({{count}})",
       "backupsTitle": "Copias de seguridad de escenarios",
       "backupsDescription": "Restaurar una versión anterior de scenery_packs.ini",
@@ -1262,12 +1262,12 @@
       "deleteAircraft": "Eliminar avión"
     },
     "button": {
-      "tooltip": "Gestor de addons"
+      "tooltip": "Gestor de complementos"
     },
     "pluginEntry": {
       "scripts": "{{count}} scripts",
       "manageScripts": "Gestionar scripts Lua",
-      "lock": "Bloquear (prevenir cambios)",
+      "lock": "Bloquear (evitar cambios)",
       "unlock": "Desbloquear",
       "openFolder": "Abrir carpeta",
       "deletePlugin": "Eliminar plugin"
@@ -1300,7 +1300,7 @@
     "title": "Importar desde SimBrief",
     "description": "Obtener tu último plan de vuelo desde SimBrief",
     "notConfigured": "SimBrief no configurado",
-    "configurePilotId": "Por favor configura tu ID de Piloto en Configuración → SimBrief",
+    "configurePilotId": "Configura tu ID de piloto en Configuración → SimBrief",
     "fetching": "Obteniendo plan de vuelo...",
     "fetchError": "Error al obtener el plan de vuelo",
     "ready": "Listo para obtener",
@@ -1317,7 +1317,7 @@
     },
     "fuel": {
       "ramp": "Combustible de bloque",
-      "trip": "Combustible de viaje",
+      "trip": "Combustible de ruta",
       "contingency": "Contingencia",
       "reserve": "Reserva final",
       "alternate": "Alternativo",
@@ -1340,9 +1340,9 @@
       "sigmetsDesc": "Avisos meteorológicos significativos a lo largo de la ruta — turbulencia, engelamiento, tormentas, etc.",
       "noSigmets": "Sin avisos meteorológicos significativos en la ruta",
       "firTitle": "Ruta FIR",
-      "firDesc": "Regiones de control de tráfico aéreo que atraviesa tu vuelo",
+      "firDesc": "Regiones de información de vuelo que atraviesa tu ruta",
       "notamsTitle": "NOTAMs",
-      "notamsDesc": "Avisos a navegantes aéreos — cierres de aeropuerto, cambios de pista y otras alertas operativas",
+      "notamsDesc": "Avisos aeronáuticos — cierres de aeropuertos, cambios de pista y otras alertas operativas",
       "noNotams": "No hay NOTAMs disponibles",
       "transAltTitle": "Altitudes de transición",
       "transAltDesc": "Altitud donde cambias entre altímetro local (QNH) y presión estándar (STD) — ajusta tu altímetro en consecuencia"
@@ -1373,7 +1373,7 @@
     "noMetar": "Sin METAR",
     "fuelItems": {
       "taxi": "Rodaje",
-      "trip": "Viaje",
+      "trip": "Ruta",
       "contingency": "Contingencia",
       "alternate": "Alternativo",
       "reserve": "Reserva",
@@ -1381,7 +1381,7 @@
     }
   },
   "weightBalance": {
-    "title": "Peso y Combustible",
+    "title": "Peso y combustible",
     "empty": "Vacío",
     "fuel": "Combustible",
     "payload": "Carga útil",
@@ -1398,7 +1398,7 @@
     "notAvailable": "N/D",
     "noMetarAvailable": "No hay METAR disponible",
     "header": {
-      "goToAirportLayoutAria": "Ir al diseño de {{icao}}",
+      "goToAirportLayoutAria": "Ir al plano de {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Despegue - {{icao}}",
       "landingWithIcao": "Aterrizaje - {{icao}}"
@@ -1415,7 +1415,7 @@
     "stats": {
       "ete": "ETE",
       "fl": "FL",
-      "avgWind": "VTO MED",
+      "avgWind": "VIENTO MED.",
       "ci": "CI",
       "airac": "AIRAC"
     },
@@ -1424,10 +1424,10 @@
       "sid": "SID: {{id}}",
       "star": "STAR: {{id}}",
       "route": "Ruta",
-      "fixesCount": "{{count}} fijos",
-      "fuelSummary": "Resumen combust.",
+      "fixesCount": "{{count}} puntos",
+      "fuelSummary": "Resumen de comb.",
       "blockFuel": "Comb. bloque",
-      "tripFuel": "Comb. viaje",
+      "tripFuel": "Comb. ruta",
       "landingFuel": "Comb. aterriz.",
       "weightsSummary": "Resumen pesos",
       "payload": "Carga útil",
@@ -1442,12 +1442,12 @@
       "ldw": "LDW",
       "zfwFull": "Peso sin combustible",
       "towFull": "Peso al despegue",
-      "ldwFull": "Peso al aterriz."
+      "ldwFull": "Peso al aterrizaje"
     },
     "fuelTab": {
-      "breakdown": "Desglose combust.",
+      "breakdown": "Desglose de comb.",
       "taxi": "Rodaje",
-      "trip": "Viaje",
+      "trip": "Ruta",
       "contingency": "Contingencia",
       "alternate": "Alternativo",
       "finalReserve": "Reserva final",
@@ -1487,7 +1487,7 @@
       "colWind": "Viento",
       "colGsMach": "GS / Mach",
       "colEta": "ETA",
-      "colFuelRem": "Comb. rest.",
+      "colFuelRem": "Comb. restante",
       "waypointCount": "{{count}} puntos",
       "groundSpeedKt": "{{value}} kt",
       "position": "Posición",
@@ -1524,7 +1524,7 @@
         "v2": "V2",
         "vref": "Vref"
       },
-      "flexTemp": "Temp Flex",
+      "flexTemp": "Temp. FLEX",
       "togaThrust": "TOGA",
       "wind": "Viento",
       "flaps": "Flaps",
@@ -1535,18 +1535,18 @@
       "tlrNotAvailable": "Datos TLR no disponibles",
       "ldaDry": "LDA (seca)",
       "ldaWet": "LDA (mojada)",
-      "cruise": "Rendim. crucero",
+      "cruise": "Rendimiento en crucero",
       "initialFl": "FL inicial",
       "costIndex": "Cost Index",
       "cruiseMach": "Mach crucero",
       "machValue": "M{{mach}}",
       "cruiseTas": "TAS crucero",
       "tasKt": "{{tas}} kt",
-      "stepClimbs": "Ascensos por escalón",
+      "stepClimbs": "Ascensos escalonados",
       "stepFallback": "Escalón {{n}}",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
-      "transAltOrigin": "{{icao}} Alt. transición",
-      "transLevelDest": "{{icao}} Nivel transición",
+      "transAltOrigin": "{{icao}} altitud de transición",
+      "transLevelDest": "{{icao}} nivel de transición",
       "flightLevel": "FL{{value}}",
       "windDirSpeed": "{{dir}}°/{{speed}}kt"
     },
@@ -1573,7 +1573,7 @@
     "errorDetails": "Detalles del error",
     "tryAgain": "Intentar de nuevo",
     "reloadApp": "Recargar app",
-    "sectionFailed": "{{name}} no se pudo cargar",
+    "sectionFailed": "No se pudo cargar {{name}}",
     "retry": "Reintentar"
   },
   "titleBar": {

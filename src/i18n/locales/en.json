@@ -78,26 +78,26 @@
     "configurationRequired": "Configuration required",
     "configureXPlanePath": "Configure X-Plane path",
     "verifying": "Checking for changes...",
-    "upToDate": "All up to date",
-    "firstLaunch": "First launch — setting up database...",
-    "sceneryChanged": "Scenery changes detected — rebuilding...",
+    "upToDate": "Everything is up to date",
+    "firstLaunch": "First launch — setting up the database...",
+    "sceneryChanged": "Scenery changes detected — rebuilding the database...",
     "parsingGlobal": "Parsing Global Airports...",
     "scanningCustom": "Scanning Custom Scenery {{current}}/{{total}}: {{name}}",
-    "savingToDb": "Saving to database...",
+    "savingToDb": "Saving to the database...",
     "hints": {
       "permissionMac": "macOS is blocking file access. Go to System Settings > Privacy & Security > Files and Folders and allow X-Dispatch, then restart the app.",
       "permissionWindows": "Windows is blocking file access. Right-click X-Dispatch and select \"Run as administrator\", or check the folder permissions in Properties > Security.",
       "permissionLinux": "Permission denied. Check that your user has read access to the X-Plane folder, or run chmod +r on the file.",
-      "fileBusy": "The file is locked by another program. Close X-Plane and any scenery or addon tools, then retry."
+      "fileBusy": "The file is locked by another program. Close X-Plane and any scenery or add-on tools, then retry."
     },
     "messages": {
       "checking": "Checking for changes...",
-      "upToDate": "All up to date",
-      "firstLaunch": "First launch — setting up database...",
-      "sceneryChanged": "Scenery changes detected — rebuilding...",
+      "upToDate": "Everything is up to date",
+      "firstLaunch": "First launch — setting up the database...",
+      "sceneryChanged": "Scenery changes detected — rebuilding the database...",
       "globalAirports": "Parsing Global Airports...",
       "customScenery": "Scanning Custom Scenery {{current}}/{{total}}",
-      "savingDatabase": "Saving to database...",
+      "savingDatabase": "Saving to the database...",
       "airportsDone": "Airports loaded",
       "navaids": "Loading navigation aids...",
       "navaidsDone": "Navaids loaded",
@@ -117,7 +117,7 @@
   "toolbar": {
     "searchPlaceholder": "Search airports...",
     "clearSearch": "Clear search",
-    "addons": "Addons",
+    "addons": "Add-ons",
     "alphaTag": "alpha",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}}kts",
@@ -157,7 +157,7 @@
     "flightPlan": "Flight Plan",
     "layers": "Layers",
     "overlays": "Overlays",
-    "aroundAirport": "Around Airport (50nm)",
+    "aroundAirport": "Around Airport (50 NM)",
     "rangeRings": "Range Rings",
     "enabled": "Enabled",
     "loadPlan": "Load .fms File",
@@ -165,11 +165,11 @@
     "tooltips": {
       "flightPlan": "Load or import a flight plan",
       "layers": "Toggle map layers and overlays",
-      "addons": "Manage aircraft, plugins, and scenery",
+      "addons": "Manage aircraft, plugins, and scenery add-ons",
       "loadPlan": "Load an X-Plane .fms flight plan file",
       "simbrief": "Import flight plan from SimBrief",
       "explore": "Discover featured airports and routes",
-      "nav": "Toggle navigation layers around airport",
+      "nav": "Toggle navigation layers around the airport",
       "track": "Track your aircraft in X-Plane",
       "vatsim": "Show live VATSIM traffic",
       "weather": "Toggle live weather radar",
@@ -250,7 +250,7 @@
     "subtitle": "Configure your preferences",
     "tabs": {
       "xplane": "X-Plane",
-      "addons": "Addons",
+      "addons": "Add-ons",
       "data": "Nav Data",
       "appearance": "Appearance",
       "graphics": "Graphics",
@@ -273,8 +273,8 @@
       },
       "favorites": {
         "title": "Favorites",
-        "description": "Tap the star in any airport panel to add it here. Your home airport is shown first.",
-        "empty": "No favorite airports yet — tap the star in any airport panel to add one.",
+        "description": "Select the star in any airport panel to add it here. Your home airport is shown first.",
+        "empty": "No favorite airports yet — select the star in any airport panel to add one.",
         "notInAirac": "Not in current AIRAC"
       },
       "actions": {
@@ -288,7 +288,7 @@
       "reportDescription": "Describe what went wrong. Your app state and recent actions are automatically included to help diagnose the issue.",
       "messagePlaceholder": "What happened?",
       "emailLabel": "Email",
-      "emailPlaceholder": "your@email.com (for follow-up)",
+      "emailPlaceholder": "you@example.com (for follow-up)",
       "sendReport": "Send Report",
       "sendSuccess": "Thanks! Your report has been sent.",
       "sendError": "Failed to send report. Please try again.",
@@ -306,17 +306,17 @@
       "freeService": "SimBrief is a free flight planning service",
       "fmsExportTargets": {
         "heading": "FMS export targets",
-        "description": "Drop the SimBrief flight plan into your aircraft's flight-plan folder.",
+        "description": "Save the SimBrief flight plan to your aircraft's flight-plan folder.",
         "add": "Add target",
         "addTitle": "Add export target",
         "editTitle": "Edit export target",
-        "dialogDescription": "Pick the SimBrief format your aircraft addon expects, and the folder it reads from.",
+        "dialogDescription": "Choose the SimBrief format your aircraft add-on expects and the folder it reads from.",
         "format": "Format",
         "label": "Label",
         "folder": "Target folder",
         "folderPlaceholder": "/X-Plane 12/Output/FMS plans",
         "pickFolderTitle": "Pick export folder",
-        "empty": "No targets yet. Add one to send SimBrief plans straight into an addon folder.",
+        "empty": "No targets yet. Add one to send SimBrief plans directly to an add-on folder.",
         "deleteTitle": "Delete this export target?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
@@ -396,15 +396,15 @@
       "namePlaceholder": "e.g. Beta, Clean Install, Modded",
       "nameRequired": "Required",
       "launchArgs": "Launch arguments",
-      "launchArgsDescription": "Extra command line arguments passed to X-Plane on every cold start",
+      "launchArgsDescription": "Extra command-line arguments passed to X-Plane on every cold start",
       "launchArgsBrowse": "Browse args",
       "launchArgsSearch": "Search arguments...",
       "launchArgsNoResults": "No matching arguments",
       "launchArgsPlaceholder": "--flag or --flag=value",
       "launchArgsActive": "Active ({{count}})",
-      "launchArgsSavedTitle": "Saved args",
+      "launchArgsSavedTitle": "Saved arguments",
       "launchArgsSessionSubtext": "Set via --xp-arg, applied this session only",
-      "launchArgsSessionTitle": "Session args (from CLI)"
+      "launchArgsSessionTitle": "Session arguments (from CLI)"
     },
     "appearance": {
       "title": "Appearance",
@@ -457,9 +457,9 @@
       },
       "terrain": "Terrain",
       "terrain3d": "3D terrain",
-      "terrain3dDesc": "Mountains rise off the map when zoomed in.",
+      "terrain3dDesc": "Show raised terrain when the map is zoomed in.",
       "terrainShading": "Terrain shading",
-      "terrainShadingDesc": "Shading and contour lines so mountains look better.",
+      "terrainShadingDesc": "Add shading and contour lines to make terrain easier to read.",
       "surfaceDetail": "Surface detail",
       "surfaceDetailDesc": "Curve smoothness for taxiway and pavement edges",
       "low": "Low",
@@ -468,11 +468,11 @@
       "lights": "Lights",
       "lightsPerfHint": "Turn these off to improve performance.",
       "approachLights": "Approach light animation",
-      "approachLightsDesc": "Animated sequenced flashing on approach",
+      "approachLightsDesc": "Animate sequenced approach lights",
       "dayNight": "Day/night overlay",
-      "dayNightDesc": "Real-time day/night shadow on the globe",
+      "dayNightDesc": "Show a real-time day/night shadow on the globe",
       "contours": "Contour lines",
-      "contoursDesc": "Elevation contour lines on terrain"
+      "contoursDesc": "Show elevation contour lines on terrain"
     },
     "navigation": {
       "title": "Navigation",
@@ -507,7 +507,7 @@
         "autoRefresh": "Auto-refresh interval",
         "refreshNote": "VATSIM data is refreshed every 15 seconds to comply with API guidelines.",
         "aboutTitle": "About VATSIM Integration",
-        "aboutDescription": "Pilots are displayed as icons on the map. Click on a pilot to see their flight details including callsign, aircraft, departure, and destination.",
+        "aboutDescription": "Pilots are displayed as icons on the map. Select a pilot to see flight details, including callsign, aircraft, departure, and destination.",
         "refreshInterval": "Refresh Interval",
         "refreshHelp": "How often to refresh VATSIM data (recommended: 15s)"
       }
@@ -519,7 +519,7 @@
       "suggested": "Suggested",
       "launchNow": "Launch now",
       "autoLaunch": "Auto-launch with X-Plane",
-      "delayLabel": "Wait before X-Plane (seconds)",
+      "delayLabel": "Delay before X-Plane (seconds)",
       "empty": "No companion apps configured yet.",
       "spawnError": "Couldn't launch {{name}}: {{error}}",
       "statusPill": "Launching {{names}}…",
@@ -537,7 +537,7 @@
       "add": "Add",
       "unknownError": "Unknown error",
       "notElevatedTitle": "X-Dispatch isn't running as administrator",
-      "notElevatedHint": "Companion apps will fail to launch. Right-click X-Dispatch and choose Run as administrator (Windows), or relaunch from a terminal with sudo (macOS/Linux).",
+      "notElevatedHint": "Companion apps may fail to launch. Right-click X-Dispatch and choose Run as administrator (Windows), or relaunch from a terminal with sudo (macOS/Linux).",
       "error": {
         "needsAdmin": "X-Dispatch needs administrator privileges to launch this app",
         "fileMissing": "Executable not found at the configured path",
@@ -553,8 +553,8 @@
       "empty": {
         "noPath": "X-Plane path not configured.",
         "noPathCta": "Open X-Plane settings",
-        "noLog": "No log yet — has X-Plane been launched at least once on this install?",
-        "allClear": "Nothing X-Dispatch flags in this log.",
+        "noLog": "No log yet — has X-Plane been launched at least once from this installation?",
+        "allClear": "X-Dispatch did not flag anything in this log.",
         "noMatches": "No entries match the current filter."
       },
       "entriesHeader": "Log entries",
@@ -595,7 +595,7 @@
     "more": "more",
     "procedures": "Procedures",
     "nearbyNavaids": "Nearby Navaids",
-    "withinRadius": "Within 50nm radius",
+    "withinRadius": "Within 50 NM radius",
     "ils": "ILS",
     "startFrom": "Start from:",
     "noGatesFound": "No gates found",
@@ -699,7 +699,7 @@
     "gatewayNotAvailable": "GATEWAY DATA NOT AVAILABLE",
     "gatewayLoading": "LOADING GATEWAY DATA...",
     "noGatewayData": "NO GATEWAY DATA FOR THIS AIRPORT",
-    "gatewayDescription": "This data shows submissions for this airport.",
+    "gatewayDescription": "Shows Gateway submissions for this airport.",
     "viewOnGateway": "View on Gateway",
     "accepted": "ACCEPTED",
     "features": "FEATURES",
@@ -796,7 +796,7 @@
     "following": "Following",
     "followingTooltip": "Click to stop following aircraft",
     "reconnect": "Reconnect",
-    "reconnectTooltip": "Force reconnect to X-Plane simulator"
+    "reconnectTooltip": "Force a reconnect to X-Plane"
   },
   "weather": {
     "fetching": "Fetching weather...",
@@ -863,7 +863,7 @@
       "highAirways": "High Airways (Jet)",
       "lowAirways": "Low Airways (Victor)"
     },
-    "loadViewport": "Load Viewport Navaids",
+    "loadViewport": "Load Navaids in View",
     "showAll": "Show All",
     "hideAll": "Hide All"
   },
@@ -889,7 +889,7 @@
     "launching": "Launching...",
     "changeFlight": "Change Flight",
     "changingFlight": "Changing...",
-    "xplaneRunning": "X-Plane is running - flight will be changed via API",
+    "xplaneRunning": "X-Plane is running. The flight will be changed through the API.",
     "selectDeparture": "Select a departure on the map",
     "selectAircraft": "Select an aircraft",
     "spawnErrorAccess": "Windows blocked the launch. Right-click X-Dispatch and choose \"Run as administrator\", then try again.",
@@ -1008,7 +1008,7 @@
       "addCloud": "Cloud Layer",
       "addWind": "Wind Layer",
       "layerProperties": "Layer Properties",
-      "emptyHint": "Click a cloud or wind layer in the diagram to edit",
+      "emptyHint": "Select a cloud or wind layer in the diagram to edit it",
       "cloudType": "Cloud Type",
       "cloudCoverage": "Cloud Coverage",
       "tops": "Tops",
@@ -1051,7 +1051,7 @@
         "puddles": "Puddles",
         "snow": "Snow",
         "ice": "Ice",
-        "mix": "Snow+Ice"
+        "mix": "Snow + Ice"
       },
       "terrainIntensities": {
         "light": "Light",
@@ -1089,7 +1089,7 @@
       "title": "Flight Logbook",
       "clearAll": "Clear All",
       "empty": "No recent flights",
-      "emptyHint": "Your last 10 flights will appear here after launching",
+      "emptyHint": "Your last 10 flights will appear here after launch",
       "timeLive": "Live",
       "coldAndDark": "Cold & Dark",
       "ready": "Ready",
@@ -1101,7 +1101,7 @@
     "weightFuelLabel": "Weight & Fuel"
   },
   "addonManager": {
-    "title": "Addon Manager",
+    "title": "Add-on Manager",
     "openXPlaneFolder": "Open X-Plane Folder",
     "rescan": "Rescan files",
     "rescanFound": "Found {{count}} new item(s)",
@@ -1111,17 +1111,17 @@
     "rescanAirportsRemoved": "{{count}} airport(s) removed",
     "tabs": {
       "scenery": "Scenery",
-      "installed": "Addons",
+      "installed": "Add-ons",
       "installer": "Installer"
     },
     "nav": {
       "sceneryDesc": "Order & manage",
       "installedDesc": "Aircraft & plugins",
-      "installerDesc": "Install new addons"
+      "installerDesc": "Install new add-ons"
     },
     "installed": {
       "total": "installed",
-      "searchPlaceholder": "Search addons...",
+      "searchPlaceholder": "Search add-ons...",
       "checkUpdates": "Check Updates",
       "updatesAvailable": "{{count}} updates",
       "aircraft": "Aircraft",
@@ -1131,36 +1131,36 @@
       "scanningAircraft": "Scanning aircraft...",
       "scanningPlugins": "Scanning plugins...",
       "loadFailed": "Failed to load {{type}}",
-      "noMatch": "No {{type}} match your search",
+      "noMatch": "No matching {{type}} found",
       "notFound": "No {{type}} found"
     },
     "installer": {
       "dropZone": {
         "title": "Drop files to install",
         "subtitle": "ZIP, 7z, or RAR archives",
-        "ariaLabel": "Drop or click to select addon archive files",
+        "ariaLabel": "Drop or click to select add-on archive files",
         "addMore": "Add more files",
         "browse": "or browse files"
       },
       "itemsDetected": "items ready",
       "analyzing": "Analyzing files",
-      "analyzingHint": "Detecting addon types and contents",
+      "analyzingHint": "Detecting add-on types and contents",
       "analysisFailed": "Failed to analyze files",
       "installing": "Installing...",
       "installFailed": "Installation failed",
       "progress": "Installing {{current}} of {{total}}",
       "successOne": "Installation complete!",
-      "successMany": "{{count}} addons installed!",
-      "successHint": "Your addons are ready to use",
-      "partialSuccess": "Installed {{success}} of {{total}} addons",
+      "successMany": "{{count}} add-ons installed!",
+      "successHint": "Your add-ons are ready to use",
+      "partialSuccess": "Installed {{success}} of {{total}} add-ons",
       "failed": "Failed: {{error}}",
-      "detectedOne": "Detected 1 addon",
-      "detectedMany": "Detected {{count}} addons",
-      "installOne": "Install addon",
-      "installMany": "Install {{count}} addons",
-      "emptyState": "Drop addon archives to install",
+      "detectedOne": "Detected 1 add-on",
+      "detectedMany": "Detected {{count}} add-ons",
+      "installOne": "Install add-on",
+      "installMany": "Install {{count}} add-ons",
+      "emptyState": "Drop add-on archives to install",
       "supportedTypes": "Aircraft, plugins, scenery, liveries, and more",
-      "installMore": "Install more addons",
+      "installMore": "Install more add-ons",
       "clear": "Clear all"
     },
     "browser": {
@@ -1176,7 +1176,7 @@
       "scanningAircraft": "Scanning aircraft...",
       "scanningPlugins": "Scanning plugins...",
       "loadFailed": "Failed to load {{type}}",
-      "noMatch": "No {{type}} match your search",
+      "noMatch": "No matching {{type}} found",
       "notFound": "No {{type}} found",
       "confirmDelete": "Delete \"{{name}}\"? This cannot be undone.",
       "disabled": "Disabled",
@@ -1187,7 +1187,7 @@
       "toggle": "Toggle",
       "lock": "Lock",
       "unlock": "Unlock",
-      "tabStats": "{{total}} addons · {{enabled}} on · {{disabled}} off",
+      "tabStats": "{{total}} add-ons · {{enabled}} on · {{disabled}} off",
       "versionUpdate": "v{{current}} → {{latest}}",
       "version": "v{{version}}"
     },
@@ -1208,10 +1208,10 @@
       "safeMode": "Safe",
       "unsafeMode": "Unsafe",
       "safeModeOn": "Drag restricted to same category. Turn off to freely reorder (advanced).",
-      "safeModeOff": "Free reorder enabled. Items can be dragged across categories - use with caution!",
+      "safeModeOff": "Free reorder enabled. Items can be dragged across categories — use with caution.",
       "priorityHint": "Entries at the top override those below. Drag to reorder or use Auto Sort.",
       "dragHintSafe": "Drag to reorder within the same category. Changes are saved when you click Save Order.",
-      "dragHintUnsafe": "Safe mode OFF - You can drag items across categories. This may cause scenery issues if done incorrectly.",
+      "dragHintUnsafe": "Safe mode off — you can drag items across categories. This may cause scenery issues if done incorrectly.",
       "saveOrder": "Save",
       "autoSort": "Auto-Sort",
       "backups": "Backups ({{count}})",
@@ -1262,7 +1262,7 @@
       "deleteAircraft": "Delete aircraft"
     },
     "button": {
-      "tooltip": "Addon Manager"
+      "tooltip": "Add-on Manager"
     },
     "pluginEntry": {
       "scripts": "{{count}} scripts",
@@ -1304,7 +1304,7 @@
     "fetching": "Fetching flight plan...",
     "fetchError": "Failed to fetch flight plan",
     "ready": "Ready to fetch",
-    "clickToFetch": "Click the button below to fetch your latest flight plan",
+    "clickToFetch": "Fetch your latest flight plan from SimBrief",
     "fetchLatest": "Fetch Latest",
     "refetch": "Refresh",
     "import": "Import Flight Plan",
@@ -1338,11 +1338,11 @@
     "briefing": {
       "sigmetsTitle": "Active SIGMETs ({{count}})",
       "sigmetsDesc": "Significant weather warnings along your route — turbulence, icing, thunderstorms, etc.",
-      "noSigmets": "No significant weather warnings along route",
+      "noSigmets": "No significant weather warnings along the route",
       "firTitle": "FIR Route",
       "firDesc": "Air traffic control regions your flight passes through",
       "notamsTitle": "NOTAMs",
-      "notamsDesc": "Notices to airmen — airport closures, runway changes, and other operational alerts",
+      "notamsDesc": "Operational notices — airport closures, runway changes, and other alerts",
       "noNotams": "No NOTAMs available",
       "transAltTitle": "Transition Altitudes",
       "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD) — set your altimeter accordingly"
@@ -1400,8 +1400,8 @@
     "header": {
       "goToAirportLayoutAria": "Go to {{icao}} layout",
       "runway": "RWY {{rwy}}",
-      "takeoffWithIcao": "Takeoff - {{icao}}",
-      "landingWithIcao": "Landing - {{icao}}"
+      "takeoffWithIcao": "Takeoff: {{icao}}",
+      "landingWithIcao": "Landing: {{icao}}"
     },
     "tabs": {
       "flight": "Flight",
@@ -1472,14 +1472,14 @@
       "notamLabelAlternate": "Alternate",
       "transAltAbbr": "TA: {{value}} ft",
       "transLevelAbbr": "TL: FL{{value}}",
-      "sigmetValid": "Valid: {{start}} - {{end}}",
+      "sigmetValid": "Valid: {{start}} to {{end}}",
       "sigmetFir": "FIR: {{name}}",
       "notamCount_one": "1 NOTAM",
       "notamCount_other": "{{count}} NOTAMs",
       "showMore": "Show more",
       "showLess": "Show less",
       "notamEffective": "Effective: {{date}}",
-      "notamEffectiveRange": "Effective: {{start}} - {{end}}"
+      "notamEffectiveRange": "Effective: {{start}} to {{end}}"
     },
     "navlog": {
       "colFix": "Fix / Airway",
