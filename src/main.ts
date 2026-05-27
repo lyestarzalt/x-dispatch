@@ -2,6 +2,7 @@ import {
   BrowserWindow,
   Menu,
   app,
+  clipboard,
   dialog,
   globalShortcut,
   ipcMain,
@@ -478,6 +479,10 @@ function registerIpcHandlers() {
       return;
     }
     shell.openPath(p);
+  });
+  ipcMain.handle('app:clipboardWrite', (_, text: string) => {
+    if (typeof text !== 'string') return;
+    clipboard.writeText(text);
   });
   ipcMain.handle('app:openExternal', (_, url: string) => {
     // Security: Only allow http/https URLs

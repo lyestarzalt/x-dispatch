@@ -1092,7 +1092,11 @@
       "emptyHint": "Ihre letzten 10 Flüge erscheinen hier nach dem Start",
       "timeLive": "Livezeit",
       "coldAndDark": "Kalt und dunkel",
-      "ready": "Bereit"
+      "ready": "Bereit",
+      "copyJson": "Start-JSON kopieren",
+      "copyJsonToast": "Start-JSON kopiert. Fügen Sie es bei einem Problem mit diesem Flug auf GitHub oder Discord ein.",
+      "copyJsonError": "Start-JSON konnte nicht kopiert werden",
+      "shareHint": "Probleme mit einem Flug? Klicken Sie auf das Kopier-Symbol, um die Details mit dem Entwickler auf GitHub oder Discord zu teilen."
     },
     "weightFuelLabel": "Gewicht & Treibstoff"
   },

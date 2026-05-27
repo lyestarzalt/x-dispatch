@@ -1092,7 +1092,11 @@
       "emptyHint": "起動後、最新10件のフライトがここに表示されます",
       "timeLive": "ライブ",
       "coldAndDark": "コールド&ダーク",
-      "ready": "準備完了"
+      "ready": "準備完了",
+      "copyJson": "起動JSONをコピー",
+      "copyJsonToast": "起動JSONをコピーしました。このフライトで問題があった場合は、GitHubまたはDiscordに貼り付けてください。",
+      "copyJsonError": "起動JSONをコピーできませんでした",
+      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細をGitHubまたはDiscordで開発者と共有してください。"
     },
     "weightFuelLabel": "重量と燃料"
   },

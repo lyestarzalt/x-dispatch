@@ -1092,7 +1092,11 @@
       "emptyHint": "启动后，您最近的10次飞行将显示在此处",
       "timeLive": "实时",
       "coldAndDark": "冷舱断电",
-      "ready": "就绪"
+      "ready": "就绪",
+      "copyJson": "复制启动 JSON",
+      "copyJsonToast": "已复制启动 JSON。如果此次飞行遇到问题，请粘贴到 GitHub 或 Discord。",
+      "copyJsonError": "无法复制启动 JSON",
+      "shareHint": "飞行遇到问题？点击复制图标，将详细信息分享到 GitHub 或 Discord 上的开发者。"
     },
     "weightFuelLabel": "重量与燃油"
   },

@@ -1092,7 +1092,11 @@
       "emptyHint": "Yer last 10 flights will appear here after launching",
       "timeLive": "Live",
       "coldAndDark": "Cold 'n dark",
-      "ready": "Ready fer flight"
+      "ready": "Ready fer flight",
+      "copyJson": "Plunder yer launch JSON",
+      "copyJsonToast": "Launch JSON pilfered. Paste it on GitHub or Discord if ye hit trouble with this voyage.",
+      "copyJsonError": "Couldn't pilfer the launch JSON, blast it",
+      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on GitHub or Discord."
     },
     "weightFuelLabel": "Heft & Grog"
   },

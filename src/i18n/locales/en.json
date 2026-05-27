@@ -1092,7 +1092,11 @@
       "emptyHint": "Your last 10 flights will appear here after launching",
       "timeLive": "Live",
       "coldAndDark": "Cold & Dark",
-      "ready": "Ready"
+      "ready": "Ready",
+      "copyJson": "Copy launch JSON",
+      "copyJsonToast": "Launch JSON copied. Paste it on GitHub or Discord if you hit a problem with this flight.",
+      "copyJsonError": "Couldn't copy launch JSON",
+      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on GitHub or Discord."
     },
     "weightFuelLabel": "Weight & Fuel"
   },

@@ -1092,7 +1092,11 @@
       "emptyHint": "Tus últimos 10 vuelos aparecerán aquí después del lanzamiento",
       "timeLive": "En directo",
       "coldAndDark": "Frío y oscuro",
-      "ready": "Listo"
+      "ready": "Listo",
+      "copyJson": "Copiar JSON de lanzamiento",
+      "copyJsonToast": "JSON de lanzamiento copiado. Pégalo en GitHub o Discord si tuviste un problema con este vuelo.",
+      "copyJsonError": "No se pudo copiar el JSON de lanzamiento",
+      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en GitHub o Discord."
     },
     "weightFuelLabel": "Peso y combustible"
   },

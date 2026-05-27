@@ -9,16 +9,17 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
+  Copy,
   Fuel,
   Globe,
   History,
-  MapPin,
   Plane,
   Sun,
   Trash2,
   Weight,
   X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
@@ -197,16 +198,21 @@ export function LogbookDialog({ open, onClose, aircraftList }: LogbookDialogProp
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col gap-2 p-4">
-                {logbook.map((entry) => (
-                  <LogbookCard
-                    key={entry.id}
-                    entry={entry}
-                    onRestore={handleRestore}
-                    onDelete={removeLogbookEntry}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="border-b border-border/40 bg-muted/20 px-4 py-2">
+                  <p className="text-xs text-muted-foreground">{t('launcher.logbook.shareHint')}</p>
+                </div>
+                <div className="flex flex-col gap-2 p-4">
+                  {logbook.map((entry) => (
+                    <LogbookCard
+                      key={entry.id}
+                      entry={entry}
+                      onRestore={handleRestore}
+                      onDelete={removeLogbookEntry}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </ScrollArea>
         </DialogPrimitive.Content>
@@ -225,6 +231,11 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const { data: previewImage } = useAircraftImage(entry.previewImagePath);
+
+  const handleCopyJson = async () => {
+    await window.appAPI.clipboardWrite(JSON.stringify(entry.flightInit, null, 2));
+    toast.success(t('launcher.logbook.copyJsonToast'));
+  };
   const gradientKey = getWeatherGradientKey(entry);
   const gradient = WEATHER_GRADIENTS[gradientKey] || WEATHER_GRADIENTS.clear;
   const WeatherIcon =
@@ -305,17 +316,14 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       <div className="h-auto w-px self-stretch bg-border/30" />
 
       {/* ── Location ──────────────────────────────────────── */}
-      <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 py-2">
+      <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 pb-7 pt-2">
         {isCustomPosition ? (
-          <>
-            <MapPin className="mb-1 h-3.5 w-3.5 text-muted-foreground/50" />
-            <span className="font-mono text-sm font-bold leading-tight text-foreground">
-              {entry.startPosition.latitude >= 0 ? 'N' : 'S'}
-              {Math.abs(entry.startPosition.latitude).toFixed(3)}°{' '}
-              {entry.startPosition.longitude >= 0 ? 'E' : 'W'}
-              {Math.abs(entry.startPosition.longitude).toFixed(3)}°
-            </span>
-          </>
+          <span className="font-mono text-sm font-bold leading-tight text-foreground">
+            {entry.startPosition.latitude >= 0 ? 'N' : 'S'}
+            {Math.abs(entry.startPosition.latitude).toFixed(3)}°{' '}
+            {entry.startPosition.longitude >= 0 ? 'E' : 'W'}
+            {Math.abs(entry.startPosition.longitude).toFixed(3)}°
+          </span>
         ) : (
           <>
             <span className="font-mono text-lg font-bold leading-none text-foreground">
@@ -333,26 +341,38 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
         )}
       </div>
 
-      {/* Relative time */}
-      <span className="absolute bottom-1 right-3 font-mono text-[10px] text-muted-foreground/30">
-        {formatRelativeTime(entry.launchedAt)}
-      </span>
-
-      {/* Delete button */}
-      <button
-        type="button"
-        className={cn(
-          'absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-md transition-opacity',
-          'bg-background/80 text-muted-foreground hover:bg-destructive/10 hover:text-destructive',
-          hovered ? 'opacity-100' : 'opacity-0'
-        )}
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(entry.id);
-        }}
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
+      {/* ── Bottom-right cluster: timestamp + actions ─────── */}
+      <div className="absolute bottom-1.5 right-2 z-10 flex items-center gap-1.5">
+        <span className="font-mono text-[10px] text-muted-foreground/40">
+          {formatRelativeTime(entry.launchedAt)}
+        </span>
+        <button
+          type="button"
+          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/60 hover:bg-secondary hover:text-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCopyJson();
+          }}
+          title={t('launcher.logbook.copyJson')}
+          aria-label={t('launcher.logbook.copyJson')}
+        >
+          <Copy className="h-3 w-3" />
+        </button>
+        <button
+          type="button"
+          className={cn(
+            'flex h-5 w-5 items-center justify-center rounded text-muted-foreground/60 transition-opacity hover:bg-destructive/10 hover:text-destructive',
+            hovered ? 'opacity-100' : 'opacity-0'
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(entry.id);
+          }}
+          aria-label={t('common.delete')}
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
     </button>
   );
 }
