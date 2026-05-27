@@ -4,8 +4,8 @@ import logger from '@/lib/utils/logger';
 import { getCatalogProduct, getLatestCatalogCycle } from './catalog';
 import { indexEaipExtract, indexGenericVacPdfs, indexVacAmendmentPdfs } from './eaipIndexer';
 import type { SiaProductKind } from './types';
-import { mergeVacEntry } from './vacIndex';
 import type { SiaInstallManifest, VacChartEntry } from './types';
+import { mergeVacEntry } from './vacIndex';
 
 export interface ReindexResult {
   vacIndex: Record<string, VacChartEntry>;
@@ -32,7 +32,7 @@ export async function reindexVacFromManifest(
   defaultValidTo: string
 ): Promise<ReindexResult> {
   let vacIndex: Record<string, VacChartEntry> = {};
-  let aipIndex: Record<string, VacChartEntry> = {};
+  const aipIndex: Record<string, VacChartEntry> = {};
   const roots: Array<{ extractPath: string; productId: string; cycle: string }> = [];
 
   for (const installed of Object.values(manifest.installedProducts)) {

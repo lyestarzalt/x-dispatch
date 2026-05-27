@@ -5,8 +5,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { useModulesStore } from '@/stores/modulesStore';
 import type { ModuleCatalogEntry } from '@/lib/modules/types';
+import { useModulesStore } from '@/stores/modulesStore';
 import { SettingsHeader, SettingsSectionBlock } from '../primitives';
 
 export function ModulesSection() {
@@ -110,8 +110,12 @@ export function ModulesSection() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{module.manifest.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {module.manifest.id} · v{module.manifest.version} · {module.state.source}
-                    {module.state.trusted ? ` · ${t('modules.trusted')}` : ''}
+                    {t('modules.installedMeta', {
+                      id: module.manifest.id,
+                      version: module.manifest.version,
+                      source: module.state.source,
+                      trustedSuffix: module.state.trusted ? t('modules.trustedSuffix') : '',
+                    })}
                   </p>
                 </div>
                 <Switch
@@ -132,7 +136,9 @@ export function ModulesSection() {
               </div>
             </div>
           ))}
-          {modules.length === 0 && <p className="text-sm text-muted-foreground">{t('modules.none')}</p>}
+          {modules.length === 0 && (
+            <p className="text-sm text-muted-foreground">{t('modules.none')}</p>
+          )}
         </div>
       </SettingsSectionBlock>
 

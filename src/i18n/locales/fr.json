@@ -1669,6 +1669,8 @@
     "store": "Store de confiance",
     "none": "Aucun module installé.",
     "trusted": "Fiable",
+    "installedMeta": "{{id}} · v{{version}} · {{source}}{{trustedSuffix}}",
+    "trustedSuffix": " · Fiable",
     "uninstall": "Supprimer",
     "installSuccess": "Module installé.",
     "uninstallSuccess": "Module supprimé.",
