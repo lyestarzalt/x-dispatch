@@ -9,20 +9,16 @@
 </p>
 
 <p align="center">
+  Requires X-Plane 12.4+ · Windows · macOS · Linux
+</p>
+
+<p align="center">
   <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest"><img src="https://img.shields.io/github/v/release/lyestarzalt/x-dispatch?style=flat-square&v=1" alt="Release"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/releases"><img src="https://img.shields.io/github/downloads/lyestarzalt/x-dispatch/total?style=flat-square&v=1" alt="Downloads"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lyestarzalt/x-dispatch?style=flat-square&v=1" alt="License"></a>
   <a href="https://github.com/lyestarzalt/x-dispatch/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/lyestarzalt/x-dispatch/ci.yml?style=flat-square&label=ci&v=1" alt="CI"></a>
   <a href="https://discord.gg/76UYpxXWW7"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://ko-fi.com/lyestarzalt"><img src="https://img.shields.io/badge/Ko--fi-Donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
-  <a href="https://hits.sh/github.com/lyestarzalt/x-dispatch/"><img src="https://hits.sh/github.com/lyestarzalt/x-dispatch.svg" alt="Hits"></a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white" alt="Electron">
-  <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/MapLibre-396CB2?style=flat-square&logo=maplibre&logoColor=white" alt="MapLibre">
 </p>
 
 <p align="center">
@@ -34,16 +30,6 @@
 ![Map Overview](screenshots/map-overview.png)
 
 All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, gates, and markings rendered from X-Plane's apt.dat. Set up your flight, import from SimBrief, and launch X-Plane directly.
-
-> **Download:** grab the installer for your OS from the [download page](https://x-dispatch.app/download/) (`.dmg` for macOS, `.exe` for Windows, `.AppImage` for Linux).
-
-> **macOS:** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
->
-> ```bash
-> xattr -rd com.apple.quarantine /Applications/X-Dispatch.app
-> ```
-
-> **Windows:** If X-Plane doesn't launch, try running X-Dispatch as administrator.
 
 ## Screenshots
 
@@ -57,10 +43,17 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 <summary>More screenshots</summary>
 
 ![SimBrief Import](screenshots/simbrief-1.png)
+![SimBrief Briefing](screenshots/simbrief-2.png)
+![Flight Plan](screenshots/flight-plan.png)
+![Fuel Setup](screenshots/fuel-setup.png)
+![Weather Setup](screenshots/weather-setup.png)
+![Starting Position](screenshots/starting-point-select.png)
 ![Addon Browser](screenshots/addon-manager-1.png)
+![Addon Manager — Scenery](screenshots/addon-manager-2.png)
 ![Flight Tracking](screenshots/flight-tracking.png)
 ![Procedures](screenshots/procedures.png)
 ![Companion App](screenshots/companion-app.png)
+![Settings](screenshots/settings.png)
 
 </details>
 
@@ -79,10 +72,6 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 > **Don't own X-Plane?** X-Plane has a [free demo](https://www.x-plane.com/desktop/try-it/) that works with X-Dispatch, so you can try both.
 
-## Manual
-
-- [Command-line flags](manual/cli.md) — `--reset-cache`, `--xp-arg=`, `--help`, `--version`
-
 ## Development
 
 ```bash
@@ -91,9 +80,6 @@ npm start             # dev mode with hot reload
 npm run start:clean   # fresh start (clears .vite cache)
 npm run start:fresh   # dev mode with --reset-cache
 npm run make          # build distributables
-```
-
-```bash
 npm run typecheck     # TypeScript strict mode
 npm run lint          # ESLint
 npm run lint:fix      # auto-fix lint issues
@@ -122,3 +108,5 @@ References to X-Plane, SimBrief, Navigraph, VATSIM, and IVAO are for compatibili
 ## License
 
 Licensed under GPL-3.0-only. See [LICENSE](LICENSE) for the full text.
+
+<img src="https://hits.sh/github.com/lyestarzalt/x-dispatch.svg" alt="" width="1" height="1">
