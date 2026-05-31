@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lyestarzalt/x-dispatch/releases/latest">Download</a> · <a href="https://tarzalt.dev/projects/x-dispatch/">Website</a> · <a href="https://discord.gg/76UYpxXWW7">Discord</a>
+  <a href="https://x-dispatch.app/download/">Download</a> · <a href="https://x-dispatch.app/">Website</a> · <a href="https://discord.gg/76UYpxXWW7">Discord</a>
 </p>
 
 ---
@@ -35,7 +35,7 @@
 
 All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, gates, and markings rendered from X-Plane's apt.dat. Set up your flight, import from SimBrief, and launch X-Plane directly.
 
-> **Download:** grab the installer for your OS from the [Releases page](https://github.com/lyestarzalt/x-dispatch/releases/latest) (`.dmg` for macOS, `.exe` for Windows, `.AppImage` for Linux).
+> **Download:** grab the installer for your OS from the [download page](https://x-dispatch.app/download/) (`.dmg` for macOS, `.exe` for Windows, `.AppImage` for Linux).
 
 > **macOS:** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run:
 >
@@ -102,7 +102,7 @@ npm run check         # typecheck + lint + format + tests + migrations
 npm run test:run      # run Vitest once
 ```
 
-Electron + React 18 + TypeScript, MapLibre GL JS, Zustand, SQLite. Node.js 24+.
+Electron + React 18 + TypeScript, MapLibre GL JS, Zustand, SQLite. Node.js 22+.
 
 ## Support
 
