@@ -10,7 +10,7 @@ import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primiti
 import type { SettingsSectionProps } from '../types';
 
 const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
-const PROJECT_WEBSITE = 'https://tarzalt.dev/projects/x-dispatch/';
+const PROJECT_WEBSITE = 'https://x-dispatch.app/';
 const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
 export default function AboutSection({ className }: SettingsSectionProps) {
