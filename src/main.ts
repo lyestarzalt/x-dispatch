@@ -20,6 +20,7 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
+import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import {
   closeTileCache,
@@ -113,6 +114,7 @@ if (shouldInitSentry) {
     release: `x-dispatch@${app.getVersion()}`,
     tracesSampleRate: 1.0,
     integrations: [Sentry.startupTracingIntegration()],
+    ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
   });
 }
 
