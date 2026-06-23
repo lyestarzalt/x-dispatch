@@ -1,6 +1,36 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v1.9.2 - 2026-06-23
+
+### CI/CD
+
+- Gate version commit on successful builds by @lyestarzalt([414ac0b](https://github.com/lyestarzalt/x-dispatch/commit/414ac0b7531993df2a4568212102e54b12ac72c0))
+
+
+## v1.9.2 - 2026-06-23
+
+### Bug Fixes
+
+- **settings:** Point About section website link to x-dispatch.app by @lyestarzalt([d5d7bc0](https://github.com/lyestarzalt/x-dispatch/commit/d5d7bc0a47f18905beac798a018f8a2e3b5266a2))
+- **sentry:** Ignore transient Electron net errors by @lyestarzalt([dc57703](https://github.com/lyestarzalt/x-dispatch/commit/dc5770378616421098edbe7a9fdc7468912df4b1))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.9.1 by @github-actions[bot]([976d355](https://github.com/lyestarzalt/x-dispatch/commit/976d355b899bf15b4590bec3c193288db6d5f1b1))
+- Point README links to x-dispatch.app by @lyestarzalt([3838cb3](https://github.com/lyestarzalt/x-dispatch/commit/3838cb3a743492179f3296b19c9edcb4794128e3))
+- Trim README and add requirements line by @lyestarzalt([c329304](https://github.com/lyestarzalt/x-dispatch/commit/c329304912beec3b0a1417b725051b1a8eed06c2))
+
+### CI/CD
+
+- Add one-off workflow to rebuild missing release assets by @lyestarzalt([7fb4b67](https://github.com/lyestarzalt/x-dispatch/commit/7fb4b674f967217a5c7cc82ec74d2844e6f9d768))
+- Pin Node to 22 across all workflows by @lyestarzalt([0772427](https://github.com/lyestarzalt/x-dispatch/commit/077242756b1b8791f9028add85f1378fbe4a0ba2))
+
+### Release
+
+- 1.9.2 by @github-actions[bot]([0fe794d](https://github.com/lyestarzalt/x-dispatch/commit/0fe794d19138a204304920372139f7cac16a98e3))
+
+
 ## v1.9.1 - 2026-05-27
 
 ### Features
