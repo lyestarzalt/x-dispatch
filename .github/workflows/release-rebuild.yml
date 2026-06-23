@@ -31,7 +31,7 @@ jobs:
       ACTIONS_STEP_DEBUG: true
     steps:
       - name: Check out tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
