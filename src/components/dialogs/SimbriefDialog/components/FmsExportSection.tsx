@@ -4,6 +4,7 @@ import { FolderOutput, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { buildFmsFilename } from '@/lib/simbrief/fmsFilename';
 import { useDownloadFmsFile } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SimBriefOFP } from '@/types/simbrief';
@@ -19,18 +20,6 @@ interface ResolvedTarget {
   formatKey: string;
   url: string;
   filename: string;
-}
-
-function buildFilename(data: SimBriefOFP, link: string): string {
-  // Filename is derived from the OFP itself, not from SimBrief's per-format
-  // `name` (which is a human label like "X-Plane 11/12") nor from the raw
-  // `link` (which can include CDN path segments). Extension is taken from the
-  // link since that's authoritative for each format (.fms, .flp, .rte, etc).
-  const sanitize = (s: string) => s.replace(/[^A-Za-z0-9]/g, '');
-  const orig = sanitize(data.origin.icao_code);
-  const dest = sanitize(data.destination.icao_code);
-  const ext = link.match(/\.[A-Za-z0-9]+$/)?.[0] ?? '';
-  return `${orig}_${dest}${ext}`;
 }
 
 function resolveTargets(data: SimBriefOFP): ResolvedTarget[] {
@@ -51,7 +40,7 @@ function resolveTargets(data: SimBriefOFP): ResolvedTarget[] {
         folderPath: t.folderPath,
         formatKey: t.formatKey,
         url: directory + file.link,
-        filename: buildFilename(data, file.link),
+        filename: buildFmsFilename(data, file.link),
       },
     ];
   });
