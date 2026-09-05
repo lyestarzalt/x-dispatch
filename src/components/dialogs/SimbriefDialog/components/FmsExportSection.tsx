@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { buildFmsFilename } from '@/lib/simbrief/fmsFilename';
+import { getFmsFixedFilename } from '@/lib/simbrief/fmsFormats';
 import { useDownloadFmsFile } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SimBriefOFP } from '@/types/simbrief';
@@ -40,7 +41,7 @@ function resolveTargets(data: SimBriefOFP): ResolvedTarget[] {
         folderPath: t.folderPath,
         formatKey: t.formatKey,
         url: directory + file.link,
-        filename: buildFmsFilename(data, file.link),
+        filename: getFmsFixedFilename(t.formatKey) ?? buildFmsFilename(data, file.link),
       },
     ];
   });
