@@ -3,7 +3,7 @@
  * Renders all airspace types: Class A/B/C/D/E, FIR, TMA, CTR, etc.
  * Can display both local airspaces (near airport) and global boundaries.
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import {
   NAV_LABEL_STYLES,
   NAV_LINE_STYLES,

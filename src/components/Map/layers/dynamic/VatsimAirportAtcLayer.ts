@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { buildAirportAtcSummaries } from '@/lib/vatsimSectors/match';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { VatsimData } from '@/types/vatsim';

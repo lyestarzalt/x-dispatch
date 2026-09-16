@@ -19,7 +19,7 @@
  * are enough of a direction indicator; if we ever want continuous motion
  * we'll need a `CustomLayerInterface` WebGL layer.
  */
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 
 const SOURCE_ID = 'taxi-route-source';
 const PREVIEW_SOURCE_ID = 'taxi-route-preview-source';

@@ -10,7 +10,7 @@
  * snow, forest, desert, ocean all at once. Theme controls only pins and
  * labels (see `lib/map/basemapTheme.ts`).
  */
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 import {
   AIRPORT_DOT_FILL,
   AIRPORT_DOT_STROKE,

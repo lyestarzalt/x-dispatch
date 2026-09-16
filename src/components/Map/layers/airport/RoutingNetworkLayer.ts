@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport, TaxiNodeUsage } from '@/types/apt';
 import { createRoutingNetworkGeoJSON } from '../../utils/geoJsonFactory';

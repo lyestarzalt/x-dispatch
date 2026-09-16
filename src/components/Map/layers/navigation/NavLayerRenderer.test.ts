@@ -9,7 +9,7 @@
  * The fix in NavLayerRenderer.add() is to re-check `map.getSource()` after the
  * await and fall back to `setData()` when a concurrent racer beat us to it.
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { describe, expect, it } from 'vitest';
 import { NavLayerRenderer } from './NavLayerRenderer';
 

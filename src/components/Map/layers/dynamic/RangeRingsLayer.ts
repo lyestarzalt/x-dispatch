@@ -5,7 +5,7 @@
  * Uses MapLibre symbol-placement: 'line' (same technique as contour elevation labels).
  * Includes a drag handle on the outermost ring to interactively resize all rings.
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { destinationPoint, haversineDistance, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import type { RangeRingCategory } from '@/types/layers';
 import { safeAddGeoJSONSource } from '../types';

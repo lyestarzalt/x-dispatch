@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { RUNWAY_LIGHT_COLORS } from '@/config/mapStyles/theme';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import {

@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import type { StyleImageInterface } from 'maplibre-gl';
 import type { PlanePosition } from '@/types/xplane';
 import { safeAddGeoJSONSource } from '../types';

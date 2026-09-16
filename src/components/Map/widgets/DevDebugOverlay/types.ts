@@ -1,3 +1,4 @@
+import type * as maplibregl from 'maplibre-gl';
 import type { LayerInspectorGroup } from '../layerInspector';
 
 export interface DebugStats {

@@ -19,33 +19,41 @@ export function logStartupEnvironment(shouldInitSentry: boolean): void {
     `Electron: ${process.versions.electron}, Chrome: ${process.versions.chrome}, Node: ${process.versions.node}`
   );
 
-  // GPU: basic info (vendor, device, driver) — async, logged when ready
+  // GPU: basic info (vendor, device, driver) — async, logged when ready.
+  // The payload is `{ auxAttributes, gpuDevice: [...] }`; there is no
+  // `gpu.devices` path, which is why this used to log nothing at all.
   app
     .getGPUInfo('basic')
     .then((gpu) => {
       const g = gpu as {
-        gpu?: {
-          devices?: Array<{
-            vendorId: number;
-            deviceId: number;
-            driverVersion?: string;
-          }>;
-        };
+        gpuDevice?: Array<{
+          vendorId: number;
+          deviceId: number;
+          deviceString?: string;
+          driverVersion?: string;
+          active?: boolean;
+        }>;
       };
-      const devices = g.gpu?.devices ?? [];
-      for (const dev of devices) {
+      for (const dev of g.gpuDevice ?? []) {
         logger.main.info(
-          `GPU: vendor=0x${dev.vendorId.toString(16)} device=0x${dev.deviceId.toString(16)} driver=${dev.driverVersion ?? 'unknown'}`
+          `GPU: ${dev.deviceString ?? 'unknown'} vendor=0x${dev.vendorId.toString(16)} device=0x${dev.deviceId.toString(16)} driver=${dev.driverVersion ?? 'unknown'}${dev.active ? ' (active)' : ''}`
         );
       }
     })
     .catch(() => logger.main.warn('GPU: failed to query gpu info'));
 
-  // GPU feature status (hardware acceleration state)
-  const gpuFeatures = app.getGPUFeatureStatus();
-  logger.main.info(
-    `GPU compositing: ${gpuFeatures.gpu_compositing}, webgl: ${gpuFeatures.webgl}, webgl2: ${gpuFeatures.webgl2}`
-  );
+  // GPU feature status (hardware acceleration state).
+  // Must wait for `gpu-info-update`: while the GPU process is still
+  // handshaking, `getGPUFeatureStatus()` reports everything as
+  // disabled_software / disabled_off no matter what the hardware does, so
+  // reading it on `ready` logged a permanent false "no GPU". There is also
+  // no `webgl2` key in the status object — `webgl: enabled` covers WebGL2.
+  app.once('gpu-info-update', () => {
+    const f = app.getGPUFeatureStatus();
+    logger.main.info(
+      `GPU compositing: ${f.gpu_compositing}, webgl: ${f.webgl}, rasterization: ${f.rasterization}, video decode: ${f.video_decode}`
+    );
+  });
 
   // Per-display details
   for (const [i, display] of displays.entries()) {

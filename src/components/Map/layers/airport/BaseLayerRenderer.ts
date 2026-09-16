@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import type { ParsedAirport } from '@/types/apt';
 import { safeAddGeoJSONSource, safeRemove } from '../types';
 

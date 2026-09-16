@@ -2,7 +2,7 @@
  * Flight Plan Route Layer
  * Renders the flight plan with proper aviation symbols.
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
 import { safeAddGeoJSONSource } from '../types';

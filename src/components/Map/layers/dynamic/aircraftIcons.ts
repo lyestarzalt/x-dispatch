@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 
 const ICON_SIZE = 48;
 const ICON_PREFIX = 'ac-';

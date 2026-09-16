@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import type { HoldingPattern } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';

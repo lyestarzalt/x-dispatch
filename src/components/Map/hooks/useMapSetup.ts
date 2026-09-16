@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
@@ -196,20 +196,6 @@ export function useMapSetup({
       ilsLayer.attachTo(map);
     });
 
-    // maplibre-gl 5.x raises rejected promises out the side of its tile
-    // image-fetch path that don't go through `map.on('error')`. They surface
-    // in DevTools as "Uncaught (in promise) TypeError: Cannot read properties
-    // of undefined (reading 'signal')" and flood the console on every
-    // projection swap. Filter them at the window level — the message is
-    // specific enough that we won't swallow real rejections.
-    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const msg = (event.reason as { message?: unknown } | null)?.message;
-      if (typeof msg === 'string' && msg.includes("reading 'signal'")) {
-        event.preventDefault();
-      }
-    };
-    window.addEventListener('unhandledrejection', onUnhandledRejection);
-
     map.on('error', (e) => {
       // TODO: DEM tiles served as .webp via tile-cache:// trigger spurious "Could not
       // load image" errors in MapLibre's raster-dem decoder. The tiles decode correctly
@@ -218,42 +204,12 @@ export function useMapSetup({
       const ev = e as unknown as Record<string, unknown>;
       if (ev.sourceId === 'terrain-dem' || ev.sourceId === 'terrain-hillshade-dem') return;
 
-      // maplibre-gl 5.x bug: when `setProjection` reloads raster tiles, the
-      // internal `getImage` call paths a request object missing its
-      // AbortController.signal, throwing
-      // `Cannot read properties of undefined (reading 'signal')`. The tile
-      // still ends up loading via the normal flow — this is purely the side
-      // channel rejection and floods the log on every projection swap.
-      // Suppress until we upgrade/downgrade maplibre-gl past the regression.
-      const errMsg = e.error?.message ?? '';
-      if (typeof errMsg === 'string' && errMsg.includes("reading 'signal'")) return;
-
       const parts: string[] = [];
       if (ev.sourceId) parts.push(`source: ${ev.sourceId}`);
       if (ev.tileId) parts.push(`tile: ${JSON.stringify(ev.tileId)}`);
       const detail = parts.length ? ` [${parts.join(', ')}]` : '';
       window.appAPI.log.error(`MapLibre error${detail}`, e.error?.message ?? e.error);
     });
-
-    // TODO: Remove this patch when upgrading to MapLibre >= 5.22 (5.21 has a projection regression).
-    // Monkey-patch: guard against partial layout in _updatePlacement.
-    // MapLibre 5.19.0 crashes when a layer's source cache isn't ready during placement.
-    // Fixed upstream in 5.21.0 (PR #7079) but that version has a projection regression.
-    // This wraps _updatePlacement in a try/catch to suppress the crash.
-
-    const origRender = (map as any)._render;
-
-    (map as any)._render = function (paintStartTimeStamp?: number) {
-      try {
-        return origRender.call(this, paintStartTimeStamp);
-      } catch (e) {
-        if (e instanceof TypeError && (e as Error).message?.includes("reading 'get'")) {
-          // Suppress known MapLibre placement crash — harmless, layers still render
-          return;
-        }
-        throw e;
-      }
-    };
 
     map.on('load', () => {
       // Snapshot the basemap's source/layer IDs BEFORE any app-added custom
@@ -287,7 +243,6 @@ export function useMapSetup({
     });
 
     return () => {
-      window.removeEventListener('unhandledrejection', onUnhandledRejection);
       cleanupIlsOverlayAttach();
       ilsLayer.detachFrom(map);
       map.remove();
