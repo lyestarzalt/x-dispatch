@@ -509,9 +509,9 @@ function registerIpcHandlers() {
     }
     shell.openPath(p);
   });
-  ipcMain.handle('app:clipboardWrite', (_, text: string) => {
+  ipcMain.handle('app:clipboardWrite', async (_, text: string) => {
     if (typeof text !== 'string') return;
-    clipboard.writeText(text);
+    await clipboard.writeText(text);
   });
   ipcMain.handle('app:openExternal', (_, url: string) => {
     // Security: Only allow http/https URLs
