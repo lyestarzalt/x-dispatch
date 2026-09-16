@@ -1,6 +1,6 @@
 import { MaplibreStarfieldLayer } from '@geoql/maplibre-gl-starfield';
 import mlcontour from 'maplibre-contour';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { useMapStore } from '@/stores/mapStore';
 import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './preserveCustomStyle';
 

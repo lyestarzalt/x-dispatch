@@ -1,6 +1,6 @@
 import { SolidPolygonLayer } from '@deck.gl/layers';
-import { MapboxOverlay } from '@deck.gl/mapbox';
-import maplibregl from 'maplibre-gl';
+import { MapLibreOverlay } from '@deck.gl/maplibre';
+import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
@@ -79,7 +79,7 @@ const DECK_LAYER_ID = 'nav-ils-deck-beams';
  *   - MapLibre native — the antenna symbol, frequency/runway label, and a
  *     2D dashed extended centerline (`nav-ils`, `nav-ils-labels`,
  *     `nav-ils-course`). These give the on-ground bearings of the LOC.
- *   - deck.gl `SolidPolygonLayer` via an interleaved `MapboxOverlay` — the
+ *   - deck.gl `SolidPolygonLayer` via an interleaved `MapLibreOverlay` — the
  *     GS wedge, drawn as a closed translucent volume bounded by tilted
  *     upper/lower glide-slope planes plus side walls and a segmented far
  *     cap. Interleaved mode shares MapLibre's depth buffer so the wedge
@@ -106,7 +106,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
 
   // Overlay is bound to a specific map instance — recreated if the map is
   // ever swapped (HMR / app-restart paths).
-  private deckOverlay: MapboxOverlay | null = null;
+  private deckOverlay: MapLibreOverlay | null = null;
   private deckMap: maplibregl.Map | null = null;
   private currentBeams: BeamPolygon[] = [];
   private beamsVisible = true;
@@ -242,7 +242,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
       this.deckOverlay.finalize();
       this.deckOverlay = null;
     }
-    const overlay = new MapboxOverlay({ interleaved: true, layers: [] });
+    const overlay = new MapLibreOverlay({ interleaved: true, layers: [] });
     map.addControl(overlay);
     this.deckOverlay = overlay;
     this.deckMap = map;

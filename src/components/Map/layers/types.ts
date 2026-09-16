@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 
 // TODO: Refactor all map layer management into a unified abstraction.
 // Currently every layer file (dynamic/, airport/, navigation/) duplicates

@@ -2,7 +2,7 @@
  * Consolidated Navaid Layer
  * Renders all radio navigation aids: VOR, VORTAC, VOR-DME, NDB, DME, TACAN
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';

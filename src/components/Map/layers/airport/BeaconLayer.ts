@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';

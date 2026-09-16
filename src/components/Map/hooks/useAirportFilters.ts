@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 import type { ExpressionSpecification } from 'maplibre-gl';
 import { ALL_SURFACE_TYPES, type AirportFilterState, useMapStore } from '@/stores/mapStore';
 import type { MapRef } from './useMapSetup';

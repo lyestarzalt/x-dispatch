@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { parseSignText } from '@/lib/parsers/apt/signs';
 import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';

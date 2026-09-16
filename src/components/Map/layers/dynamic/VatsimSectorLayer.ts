@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { buildActiveFirMatches, buildActiveTraconMatches } from '@/lib/vatsimSectors/match';
 import type { VatsimController } from '@/types/vatsim';
 import type { VatsimSectorDataset } from '@/types/vatsimSectors';

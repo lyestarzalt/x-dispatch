@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { AirportParser } from '@/lib/parsers/apt';
 import { setActiveBezierResolution } from '@/lib/parsers/apt/bezier';
 import { useSettingsStore } from '@/stores/settingsStore';

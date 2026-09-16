@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 import { useMapStore } from '@/stores/mapStore';
 import type { LayerInspectorGroup, RendererInfo, SublayerInfo } from '../../layerInspector';
 import { Legend, OrderBadge, SectionLabel, StatusDot } from '../shared';

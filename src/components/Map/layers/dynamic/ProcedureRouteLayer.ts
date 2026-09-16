@@ -9,7 +9,7 @@
  * - Speed constraints displayed at waypoints
  * - Different styling for departure vs arrival vs approach
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { createHoldingPattern, createProcedureTurn, interpolateRFArc } from '@/lib/utils/geomath';
 import type { LonLat } from '@/types/geo';
 import type { AltitudeConstraint, TurnDirection } from '@/types/navigation';

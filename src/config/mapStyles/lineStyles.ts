@@ -1,3 +1,4 @@
+import type { ExpressionSpecification } from 'maplibre-gl';
 import { LineType } from '@/types/apt';
 
 interface LineStyle {
@@ -398,7 +399,7 @@ const DEFAULT_LINE_STYLE: LineStyle = {
 /**
  * Build MapLibre paint expression for line colors
  */
-export function buildLineColorExpression(): maplibregl.ExpressionSpecification {
+export function buildLineColorExpression(): ExpressionSpecification {
   const matchExpression: unknown[] = ['match', ['get', 'lineType']];
 
   for (const [type, style] of Object.entries(LINE_STYLES)) {
@@ -406,13 +407,13 @@ export function buildLineColorExpression(): maplibregl.ExpressionSpecification {
   }
 
   matchExpression.push(DEFAULT_LINE_STYLE.color); // fallback
-  return matchExpression as maplibregl.ExpressionSpecification;
+  return matchExpression as ExpressionSpecification;
 }
 
 /**
  * Build MapLibre paint expression for line widths
  */
-export function buildLineWidthExpression(): maplibregl.ExpressionSpecification {
+export function buildLineWidthExpression(): ExpressionSpecification {
   const matchExpression: unknown[] = ['match', ['get', 'lineType']];
 
   for (const [type, style] of Object.entries(LINE_STYLES)) {
@@ -420,13 +421,13 @@ export function buildLineWidthExpression(): maplibregl.ExpressionSpecification {
   }
 
   matchExpression.push(DEFAULT_LINE_STYLE.width); // fallback
-  return matchExpression as maplibregl.ExpressionSpecification;
+  return matchExpression as ExpressionSpecification;
 }
 
 /**
  * Build MapLibre paint expression for border colors
  */
-export function buildBorderColorExpression(): maplibregl.ExpressionSpecification {
+export function buildBorderColorExpression(): ExpressionSpecification {
   const matchExpression: unknown[] = ['match', ['get', 'lineType']];
 
   for (const [type, style] of Object.entries(LINE_STYLES)) {
@@ -436,13 +437,13 @@ export function buildBorderColorExpression(): maplibregl.ExpressionSpecification
   }
 
   matchExpression.push('transparent'); // fallback
-  return matchExpression as maplibregl.ExpressionSpecification;
+  return matchExpression as ExpressionSpecification;
 }
 
 /**
  * Build MapLibre paint expression for border widths
  */
-export function buildBorderWidthExpression(): maplibregl.ExpressionSpecification {
+export function buildBorderWidthExpression(): ExpressionSpecification {
   const matchExpression: unknown[] = ['match', ['get', 'lineType']];
 
   for (const [type, style] of Object.entries(LINE_STYLES)) {
@@ -452,5 +453,5 @@ export function buildBorderWidthExpression(): maplibregl.ExpressionSpecification
   }
 
   matchExpression.push(0); // fallback
-  return matchExpression as maplibregl.ExpressionSpecification;
+  return matchExpression as ExpressionSpecification;
 }

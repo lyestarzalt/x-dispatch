@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 import logger from '@/lib/utils/loggerRenderer';
 import { safeRemove } from '../layers/types';
 import type { MapRef } from './useMapSetup';

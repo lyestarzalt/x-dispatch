@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import type { IvaoPilot } from '@/types/ivao';
 import { safeAddGeoJSONSource } from '../types';
 import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';

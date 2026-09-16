@@ -25,6 +25,12 @@ export default defineConfig((env) => {
       esbuildOptions: {
         target: 'es2022',
       },
+      // maplibre-gl v6 is ESM-only and loads its worker as a real URL
+      // (dist/maplibre-gl-worker.mjs) instead of a blob. Vite's dep
+      // pre-bundler rewrites the entry but does not emit that sibling
+      // chunk into .vite/deps, so the worker 404s at runtime. Excluding
+      // it lets the package resolve its own worker from node_modules.
+      exclude: ['maplibre-gl'],
     },
     esbuild: {
       target: 'es2022',

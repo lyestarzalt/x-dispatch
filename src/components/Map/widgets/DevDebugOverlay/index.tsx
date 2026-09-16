@@ -134,6 +134,12 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
       const { useAppStore } = await import('@/stores/appStore');
       const { selectedICAO, selectedAirportIsCustom } = useAppStore.getState();
 
+      // `map` was captured before the awaits above, which can span a map
+      // teardown (useMapSetup calls map.remove() and rebuilds when the
+      // airport set changes). On maplibre v6 a removed map's getters return
+      // undefined instead of a stale value, so getCenter().lng threw here.
+      if (mapRef.current !== map) return;
+
       const inspectorData = hasLayersOpen ? collectLayerInspectorData(map) : [];
 
       setStats({

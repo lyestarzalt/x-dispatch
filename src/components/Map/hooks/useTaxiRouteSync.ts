@@ -12,7 +12,7 @@
  *   - freehand: clicks place arbitrary waypoints connected directly
  */
 import { useEffect, useMemo, useRef } from 'react';
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 import {
   type EndpointDef,
   type RoutePoint,

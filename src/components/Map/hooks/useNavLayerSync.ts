@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import type { NavigationData } from '@/queries/useNavDataQuery';
 import type { NavLayerVisibility } from '@/types/layers';
 import { airspaceLayer, ilsLayer, navaidLayer } from '../layers';
