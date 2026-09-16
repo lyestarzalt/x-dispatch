@@ -92,10 +92,7 @@ export function buildWeatherValue(
   // X-Plane spells cumulonimbus as 'cumulunimbus' in its enum.
   const clouds = c.clouds.map((layer) => ({
     type: (layer.type === 'cumulonimbus' ? 'cumulunimbus' : layer.type) as
-      | 'cirrus'
-      | 'stratus'
-      | 'cumulus'
-      | 'cumulunimbus',
+      'cirrus' | 'stratus' | 'cumulus' | 'cumulunimbus',
     cover_ratio: layer.cover,
     bases_in_feet_msl: layer.base_ft,
     tops_in_feet_msl: layer.tops_ft,

@@ -18,8 +18,7 @@ function makeMapMock() {
     on: vi.fn(),
     off: vi.fn(),
     dragPan: { enable: vi.fn(), disable: vi.fn() } as
-      | { enable: () => void; disable: () => void }
-      | undefined,
+      { enable: () => void; disable: () => void } | undefined,
     getCanvas: () => ({ style: { cursor: '' } }) as { style: { cursor: string } },
   };
 }

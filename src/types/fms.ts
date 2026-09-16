@@ -42,14 +42,7 @@ export interface FMSParseResult {
 
 // Chip types for UI rendering
 export type FlightPlanChipType =
-  | 'departure'
-  | 'sid'
-  | 'vor'
-  | 'ndb'
-  | 'fix'
-  | 'latlon'
-  | 'star'
-  | 'arrival';
+  'departure' | 'sid' | 'vor' | 'ndb' | 'fix' | 'latlon' | 'star' | 'arrival';
 
 export interface FlightPlanChip {
   type: FlightPlanChipType;

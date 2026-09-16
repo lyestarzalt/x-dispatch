@@ -14,13 +14,7 @@ import type { AltitudeConstraint } from '@/types/navigation';
 // ============================================================================
 
 export type RouteSegmentType =
-  | 'AIRPORT'
-  | 'WAYPOINT'
-  | 'NAVAID'
-  | 'AIRWAY'
-  | 'SID'
-  | 'STAR'
-  | 'DIRECT';
+  'AIRPORT' | 'WAYPOINT' | 'NAVAID' | 'AIRWAY' | 'SID' | 'STAR' | 'DIRECT';
 
 export interface ResolvedRoutePoint {
   /** Original fix identifier */

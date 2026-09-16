@@ -178,12 +178,7 @@ interface GateListProps {
 
 // Human-readable aircraft size from ICAO width code
 type CatBadgeVariant =
-  | 'secondary'
-  | 'cat-sky'
-  | 'cat-amber'
-  | 'cat-red'
-  | 'cat-emerald'
-  | 'default';
+  'secondary' | 'cat-sky' | 'cat-amber' | 'cat-red' | 'cat-emerald' | 'default';
 
 const SIZE_LABELS: Record<string, { labelKey: string; variant: CatBadgeVariant }> = {
   A: { labelKey: 'airportInfo.sizes.small', variant: 'secondary' },

@@ -15,11 +15,7 @@ export interface SpawnInput {
  * with the i18n keys under `settings.companionApps.error.*`.
  */
 export type SpawnErrorCode =
-  | 'NEEDS_ADMIN'
-  | 'FILE_MISSING'
-  | 'FILE_NOT_EXECUTABLE'
-  | 'BATCH_NOT_SUPPORTED'
-  | 'SPAWN_FAILED';
+  'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'BATCH_NOT_SUPPORTED' | 'SPAWN_FAILED';
 
 /**
  * Batch files are interpreted by the shell, not executed, so `spawn` cannot
