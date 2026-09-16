@@ -143,33 +143,51 @@ app.on('render-process-gone', (_event, webContents, details) => {
   } catch {
     // Ignore inaccessible webContents metadata; the crash reason is enough.
   }
-  logger.main.error(
-    'Renderer process gone',
-    new Error(
-      [`reason=${details.reason}`, `exitCode=${details.exitCode}`, url ? `url=${url}` : null]
-        .filter(Boolean)
-        .join(', ')
-    )
-  );
+  // The URL carries the user's install path, so letting it reach the grouping
+  // algorithm would shard one crash across every machine that hits it. Group on
+  // the reason alone and keep the URL as message detail.
+  Sentry.withScope((scope) => {
+    scope.setFingerprint(['render-process-gone', details.reason]);
+    logger.main.error(
+      'Renderer process gone',
+      new Error(
+        [`reason=${details.reason}`, `exitCode=${details.exitCode}`, url ? `url=${url}` : null]
+          .filter(Boolean)
+          .join(', ')
+      )
+    );
+  });
 });
 
 app.on('child-process-gone', (_event, details) => {
   if (details.reason === 'clean-exit') return;
 
-  logger.main.error(
-    'Electron child process gone',
-    new Error(
-      [
-        `type=${details.type}`,
-        `reason=${details.reason}`,
-        `exitCode=${details.exitCode}`,
-        details.serviceName ? `service=${details.serviceName}` : null,
-        details.name ? `name=${details.name}` : null,
-      ]
-        .filter(Boolean)
-        .join(', ')
-    )
-  );
+  // Group by what actually died. The Error is built at a single call site, so
+  // without an explicit fingerprint Sentry buckets every child-process-gone
+  // event into one issue — a GPU crash ends up indistinguishable from a routine
+  // network-service restart. type/reason/service are all low-cardinality; the
+  // exit code stays in the message as detail rather than splitting the group.
+  Sentry.withScope((scope) => {
+    scope.setFingerprint(
+      ['child-process-gone', details.type, details.reason, details.serviceName].filter(
+        (part): part is string => Boolean(part)
+      )
+    );
+    logger.main.error(
+      'Electron child process gone',
+      new Error(
+        [
+          `type=${details.type}`,
+          `reason=${details.reason}`,
+          `exitCode=${details.exitCode}`,
+          details.serviceName ? `service=${details.serviceName}` : null,
+          details.name ? `name=${details.name}` : null,
+        ]
+          .filter(Boolean)
+          .join(', ')
+      )
+    );
+  });
 });
 
 let dataManager: ReturnType<typeof getXPlaneDataManager>;
