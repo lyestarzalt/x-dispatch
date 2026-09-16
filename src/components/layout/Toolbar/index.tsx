@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
+import { DAY_NIGHT_LAYER_SUPPORTED } from '@/components/Map/hooks/useDayNightLayer';
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
 import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
@@ -925,13 +926,17 @@ export default function Toolbar({
                 <CloudRain className="mr-2 h-4 w-4" />
                 {t('toolbar.weather')}
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={dayNightEnabled}
-                onCheckedChange={() => setDayNightEnabled(!dayNightEnabled)}
-              >
-                <CloudSun className="mr-2 h-4 w-4" />
-                {t('toolbar.dayNight')}
-              </DropdownMenuCheckboxItem>
+              {/* Hidden while maplibre-gl-nightlayer lacks maplibre v6
+                  support — see DAY_NIGHT_LAYER_SUPPORTED. */}
+              {DAY_NIGHT_LAYER_SUPPORTED && (
+                <DropdownMenuCheckboxItem
+                  checked={dayNightEnabled}
+                  onCheckedChange={() => setDayNightEnabled(!dayNightEnabled)}
+                >
+                  <CloudSun className="mr-2 h-4 w-4" />
+                  {t('toolbar.dayNight')}
+                </DropdownMenuCheckboxItem>
+              )}
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />
                 {t('toolbar.vatsim')}
