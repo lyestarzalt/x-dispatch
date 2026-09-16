@@ -46,4 +46,17 @@ describe('parseLog', () => {
     const result = parseLog(text);
     expect(result.entries[0]?.lineNumber).toBe(3);
   });
+
+  it('parses CRLF logs the same as LF logs', () => {
+    // X-Plane on Windows writes Log.txt with CRLF line endings.
+    const lf = 'Log.txt for X-Plane 12\n0:00:00.000 I/GFX: info\n0:00:00.001 W/APT: warn\n';
+    expect(parseLog(lf.replace(/\n/g, '\r\n'))).toEqual(parseLog(lf));
+  });
+
+  it('strips the trailing CR from raw and message on CRLF input', () => {
+    const result = parseLog('0:00:00.000 I/FLT: launched\r\n');
+    expect(result.entries).toHaveLength(1);
+    expect(result.entries[0]?.message).toBe('launched');
+    expect(result.entries[0]?.raw).toBe('0:00:00.000 I/FLT: launched');
+  });
 });
