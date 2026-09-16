@@ -774,11 +774,11 @@ declare global {
       dbExec: (sql: string) => Promise<{ columns: string[]; rows: unknown[][]; error?: string }>;
     };
     companionAppsAPI: {
-      launch: (input: { exePath: string; args?: string; cwd?: string }) => Promise<{
-        success: boolean;
-        error?: string;
-        code?: 'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'SPAWN_FAILED';
-      }>;
+      launch: (input: {
+        exePath: string;
+        args?: string;
+        cwd?: string;
+      }) => Promise<import('@/lib/companionApps/spawn').SpawnResult>;
       browseForExe: () => Promise<string | null>;
       isElevated: () => Promise<boolean>;
     };

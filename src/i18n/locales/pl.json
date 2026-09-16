@@ -542,6 +542,7 @@
         "needsAdmin": "X-Dispatch potrzebuje uprawnień administratora do uruchomienia tej aplikacji",
         "fileMissing": "Nie znaleziono pliku wykonywalnego pod skonfigurowaną ścieżką",
         "fileNotExecutable": "Plik nie jest wykonywalny",
+        "batchNotSupported": "Plików wsadowych (.bat, .cmd) nie można uruchomić bezpośrednio. W polu „Ścieżka do pliku wykonywalnego” wskaż sam program, na przykład javaw.exe, resztę wpisz w „Argumenty”, a w „Katalog roboczy” podaj folder aplikacji.",
         "spawnFailed": "Nie udało się uruchomić procesu"
       }
     },
@@ -895,11 +896,11 @@
     "spawnErrorAccess": "Windows zablokował uruchomienie. Kliknij prawym przyciskiem myszy X-Dispatch, wybierz „Uruchom jako administrator” i spróbuj ponownie.",
     "spawnErrorMissing": "Nie znaleziono pliku wykonywalnego X-Plane w skonfigurowanej ścieżce. Sprawdź ścieżkę instalacji X-Plane w Ustawieniach.",
     "spawnErrorGeneric": "Nie udało się uruchomić X-Plane. Szczegóły w dzienniku (Ustawienia → Dzienniki).",
-    "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
-    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
-    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
-    "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
+    "spawnErrorNeedsAdmin": "Windows odmówił uruchomienia X-Plane. Mogą być potrzebne uprawnienia administratora lub blokuje to program antywirusowy. Spróbuj uruchomić X-Dispatch jako administrator.",
+    "spawnErrorAccessBlocked": "Windows odmówił uruchomienia X-Plane, mimo że X-Dispatch działa już jako administrator, więc to nie problem z uprawnieniami. Najprawdopodobniej blokuje to program antywirusowy lub Kontrolowany dostęp do folderów. Zezwól na folder X-Plane i spróbuj ponownie.",
+    "spawnErrorAlreadyRunning": "X-Plane jest już uruchomiony. Użyj zamiast tego przycisku „Zmień lot”.",
+    "spawnErrorPathNotConfigured": "Nie skonfigurowano ścieżki instalacji X-Plane. Ustaw ją w Ustawienia → Instalacja X-Plane.",
+    "spawnErrorInvalidConfig": "Konfiguracja lotu jest niekompletna. Wybierz samolot i miejsce startu, a następnie spróbuj ponownie.",
     "aircraft": {
       "title": "Samolot",
       "search": "Szukaj samolotów...",

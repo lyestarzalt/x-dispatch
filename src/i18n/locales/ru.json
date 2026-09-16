@@ -542,6 +542,7 @@
         "needsAdmin": "X-Dispatch требуются права администратора для запуска этого приложения",
         "fileMissing": "Исполняемый файл не найден по настроенному пути",
         "fileNotExecutable": "Файл не является исполняемым",
+        "batchNotSupported": "Пакетные файлы (.bat, .cmd) нельзя запустить напрямую. Укажите в поле «Путь к исполняемому файлу» саму программу, например javaw.exe, остальное перенесите в «Аргументы», а в «Рабочий каталог» укажите папку приложения.",
         "spawnFailed": "Не удалось запустить процесс"
       }
     },
@@ -895,11 +896,11 @@
     "spawnErrorAccess": "Windows заблокировал запуск. Щёлкните правой кнопкой мыши по X-Dispatch и выберите «Запуск от имени администратора», затем повторите попытку.",
     "spawnErrorMissing": "Исполняемый файл X-Plane не найден по указанному пути. Проверьте путь установки X-Plane в Настройках.",
     "spawnErrorGeneric": "Не удалось запустить X-Plane. Подробности см. в журнале (Настройки → Журналы).",
-    "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
-    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
-    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
-    "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
+    "spawnErrorNeedsAdmin": "Windows отказался запускать X-Plane. Возможно, нужны права администратора или запуск блокирует антивирус. Попробуйте запустить X-Dispatch от имени администратора.",
+    "spawnErrorAccessBlocked": "Windows отказался запускать X-Plane, хотя X-Dispatch уже работает от имени администратора, поэтому дело не в правах доступа. Скорее всего, запуск блокирует антивирус или контролируемый доступ к папкам. Разрешите папку X-Plane и повторите попытку.",
+    "spawnErrorAlreadyRunning": "X-Plane уже запущен. Воспользуйтесь кнопкой «Изменить полёт».",
+    "spawnErrorPathNotConfigured": "Путь установки X-Plane не задан. Укажите его в Настройки → Установка X-Plane.",
+    "spawnErrorInvalidConfig": "Конфигурация полёта неполная. Выберите самолёт и точку вылета, затем повторите попытку.",
     "aircraft": {
       "title": "Самолёт",
       "search": "Поиск самолётов...",

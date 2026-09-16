@@ -542,6 +542,7 @@
         "needsAdmin": "X-Dispatch 需要管理员权限才能启动此应用",
         "fileMissing": "在配置的路径中找不到可执行文件",
         "fileNotExecutable": "文件不可执行",
+        "batchNotSupported": "批处理文件（.bat、.cmd）无法直接启动。请在「可执行文件路径」中指向程序本身（例如 javaw.exe），将其余内容填入「参数」，并将「工作目录」设为该应用的文件夹。",
         "spawnFailed": "无法启动进程"
       }
     },
@@ -895,11 +896,11 @@
     "spawnErrorAccess": "Windows 阻止了启动。请右键单击 X-Dispatch，选择「以管理员身份运行」，然后重试。",
     "spawnErrorMissing": "在配置路径中找不到 X-Plane 可执行文件。请在「设置」中检查 X-Plane 安装路径。",
     "spawnErrorGeneric": "无法启动 X-Plane。请查看日志了解详情（设置 → 日志）。",
-    "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
-    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
-    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
-    "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
+    "spawnErrorNeedsAdmin": "Windows 拒绝启动 X-Plane。可能需要管理员权限，或被杀毒软件阻止。请尝试以管理员身份运行 X-Dispatch。",
+    "spawnErrorAccessBlocked": "X-Dispatch 已以管理员身份运行，但 Windows 仍拒绝启动 X-Plane，因此不是权限问题。很可能是杀毒软件或「受控文件夹访问」阻止了它。请允许 X-Plane 所在文件夹后重试。",
+    "spawnErrorAlreadyRunning": "X-Plane 已在运行。请改用「更改飞行」按钮。",
+    "spawnErrorPathNotConfigured": "尚未配置 X-Plane 安装路径。请在「设置 → X-Plane 安装」中设置。",
+    "spawnErrorInvalidConfig": "飞行配置不完整。请选择飞机和出发点后重试。",
     "aircraft": {
       "title": "飞机",
       "search": "搜索飞机...",

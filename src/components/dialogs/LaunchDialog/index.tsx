@@ -146,6 +146,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             return 'settings.companionApps.error.fileMissing';
           case 'FILE_NOT_EXECUTABLE':
             return 'settings.companionApps.error.fileNotExecutable';
+          case 'BATCH_NOT_SUPPORTED':
+            return 'settings.companionApps.error.batchNotSupported';
           default:
             return 'settings.companionApps.error.spawnFailed';
         }

@@ -4,6 +4,7 @@ import { Boxes, Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import type { SpawnErrorCode } from '@/lib/companionApps/spawn';
 import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
 import { cn } from '@/lib/utils/helpers';
 import { useElevationQuery } from '@/queries/useElevationQuery';
@@ -11,8 +12,6 @@ import { type CompanionApp, useCompanionAppsStore } from '@/stores/companionApps
 import { SettingsEmptyState, SettingsHeader } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 import { CompanionAppEditDialog } from './CompanionAppEditDialog';
-
-type SpawnErrorCode = 'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'SPAWN_FAILED';
 
 /** Map a spawn error code to a localized i18n key under settings.companionApps.error.* */
 function errorKeyFor(code: SpawnErrorCode | undefined): string {
@@ -23,6 +22,8 @@ function errorKeyFor(code: SpawnErrorCode | undefined): string {
       return 'settings.companionApps.error.fileMissing';
     case 'FILE_NOT_EXECUTABLE':
       return 'settings.companionApps.error.fileNotExecutable';
+    case 'BATCH_NOT_SUPPORTED':
+      return 'settings.companionApps.error.batchNotSupported';
     default:
       return 'settings.companionApps.error.spawnFailed';
   }
