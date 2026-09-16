@@ -33,10 +33,7 @@ export function isVectorStyleUrl(url: string): boolean {
  * translated strings by the consumer (see `MapStylePicker`).
  */
 export type MapStyleUrlError =
-  | 'required'
-  | 'invalid-url'
-  | 'insecure-protocol'
-  | 'unsupported-format';
+  'required' | 'invalid-url' | 'insecure-protocol' | 'unsupported-format';
 
 /**
  * Validate that `url` is acceptable as a map style URL.

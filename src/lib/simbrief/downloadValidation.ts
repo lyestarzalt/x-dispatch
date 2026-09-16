@@ -7,8 +7,7 @@ export type ValidateDownloadArgs = {
 };
 
 export type ValidateDownloadResult =
-  | { ok: true; url: string; targetDir: string; filename: string }
-  | { ok: false; error: string };
+  { ok: true; url: string; targetDir: string; filename: string } | { ok: false; error: string };
 
 /**
  * Pure validator for `simbrief:downloadFmsFile` IPC arguments.

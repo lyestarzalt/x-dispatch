@@ -597,5 +597,4 @@ export interface SimBriefOFP {
 
 /** IPC response type for SimBrief fetch */
 export type SimBriefFetchResult =
-  | { success: true; data: SimBriefOFP }
-  | { success: false; error: string };
+  { success: true; data: SimBriefOFP } | { success: false; error: string };

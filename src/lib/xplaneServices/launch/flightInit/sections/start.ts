@@ -3,11 +3,7 @@ import type { StartPosition } from '@/types/position';
 import { type Float, float } from '../float';
 
 type StartFields =
-  | 'ramp_start'
-  | 'runway_start'
-  | 'lle_ground_start'
-  | 'lle_air_start'
-  | 'boat_start';
+  'ramp_start' | 'runway_start' | 'lle_ground_start' | 'lle_air_start' | 'boat_start';
 
 /**
  * Dispatch on the StartPosition variant and return exactly one start-block

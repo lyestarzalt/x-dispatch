@@ -1,13 +1,7 @@
 import type { Coordinates } from './geo';
 
 export type WeatherPresetName =
-  | 'real'
-  | 'clear'
-  | 'cloudy'
-  | 'rainy'
-  | 'stormy'
-  | 'snowy'
-  | 'foggy';
+  'real' | 'clear' | 'cloudy' | 'rainy' | 'stormy' | 'snowy' | 'foggy';
 
 export type AircraftCategory =
   | 'airliner'

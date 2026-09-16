@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 
 export type CanExecuteResult =
-  | { ok: true }
-  | { ok: false; reason: 'missing' | 'denied' | 'unknown'; error: string };
+  { ok: true } | { ok: false; reason: 'missing' | 'denied' | 'unknown'; error: string };
 
 /**
  * Pre-flight check that surfaces "file moved" and "file not executable" before

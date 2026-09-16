@@ -227,11 +227,7 @@ export interface FlightInit {
       path?: string;
     };
     mission:
-      | 'atc'
-      | 'combat_team_red'
-      | 'combat_team_blue'
-      | 'combat_team_green'
-      | 'combat_team_gold';
+      'atc' | 'combat_team_red' | 'combat_team_blue' | 'combat_team_green' | 'combat_team_gold';
   }[];
   /** AI aircraft for formation flying */
   formation_aircraft?: {
@@ -244,10 +240,7 @@ export interface FlightInit {
       path?: string;
     };
     type?:
-      | 'flight_incursion'
-      | 'runway_incursion_arm'
-      | 'runway_incursion_execute'
-      | 'clear_incursion';
+      'flight_incursion' | 'runway_incursion_arm' | 'runway_incursion_execute' | 'clear_incursion';
   };
   /** Use system time. Mutually exclusive with local_time, gmt_time, and time_enum. */
   use_system_time?: boolean;

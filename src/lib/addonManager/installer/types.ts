@@ -2,13 +2,7 @@
  * Addon types in detection priority order (lower = higher priority)
  */
 export type AddonType =
-  | 'Aircraft'
-  | 'SceneryLibrary'
-  | 'Scenery'
-  | 'Navdata'
-  | 'Plugin'
-  | 'Livery'
-  | 'LuaScript';
+  'Aircraft' | 'SceneryLibrary' | 'Scenery' | 'Navdata' | 'Plugin' | 'Livery' | 'LuaScript';
 
 export const ADDON_TYPE_PRIORITY: Record<AddonType, number> = {
   Aircraft: 0,
