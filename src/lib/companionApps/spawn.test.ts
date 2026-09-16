@@ -83,6 +83,9 @@ describe('launchCompanionApp', () => {
 
   beforeEach(() => {
     const fakeChild = Object.assign(new EventEmitter(), { unref: vi.fn() });
+    // restoreAllMocks() doesn't reset a module mock's call history, so without
+    // this any "spawn was not called" assertion depends on test ordering.
+    vi.mocked(spawn).mockClear();
     vi.mocked(spawn).mockReturnValue(fakeChild as never);
     vi.spyOn(isElevatedModule, 'isElevated').mockReturnValue(true);
   });
@@ -130,6 +133,31 @@ describe('launchCompanionApp', () => {
       ['--foo', '--bar'],
       expect.objectContaining({ detached: true, stdio: 'ignore', cwd: TMP_ROOT })
     );
+  });
+
+  it.each(['launch.cmd', 'launch.bat', 'LAUNCH.CMD', 'Run.Bat'])(
+    'refuses %s with BATCH_NOT_SUPPORTED rather than letting spawn throw EINVAL',
+    (name) => {
+      const result = launchCompanionApp({ exePath: path.join(TMP_ROOT, name) });
+      expect(result.success).toBe(false);
+      expect(result.code).toBe('BATCH_NOT_SUPPORTED');
+      expect(spawn).not.toHaveBeenCalled();
+    }
+  );
+
+  it('reports the batch file before elevation, since admin rights would not help', () => {
+    if (process.platform !== 'win32') return; // elevation check only on Windows
+    vi.spyOn(isElevatedModule, 'isElevated').mockReturnValue(false);
+    // Leading with NEEDS_ADMIN here is what sent the reported user chasing
+    // administrator rights for a .cmd that could never have started.
+    const result = launchCompanionApp({ exePath: path.join(TMP_ROOT, 'zhsi.cmd') });
+    expect(result.code).toBe('BATCH_NOT_SUPPORTED');
+  });
+
+  it('leaves non-batch extensions alone', () => {
+    const result = launchCompanionApp({ exePath: realExe });
+    expect(result.success).toBe(true);
+    expect(spawn).toHaveBeenCalled();
   });
 
   it('checks elevation before access (single source of error code)', () => {

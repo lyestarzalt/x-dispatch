@@ -542,6 +542,7 @@
         "needsAdmin": "X-Dispatch needs administrator privileges to launch this app",
         "fileMissing": "Executable not found at the configured path",
         "fileNotExecutable": "File is not executable",
+        "batchNotSupported": "Batch files (.bat, .cmd) can't be launched directly. Point Executable path at the program itself, for example javaw.exe, put the rest in Arguments, and set Working directory to the app's folder.",
         "spawnFailed": "Couldn't start the process"
       }
     },
@@ -896,9 +897,9 @@
     "spawnErrorMissing": "X-Plane executable not found at the configured path. Check the X-Plane install path in Settings.",
     "spawnErrorGeneric": "Failed to launch X-Plane. See the log for details (Settings → Logs).",
     "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
-    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
+    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it. Allow X-Plane's folder and try again.",
     "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
+    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane Installation.",
     "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
     "aircraft": {
       "title": "Aircraft",

@@ -542,6 +542,7 @@
         "needsAdmin": "このアプリの起動には X-Dispatch の管理者権限が必要です",
         "fileMissing": "設定されたパスに実行ファイルが見つかりません",
         "fileNotExecutable": "ファイルは実行可能ではありません",
+        "batchNotSupported": "バッチファイル（.bat、.cmd）は直接起動できません。「実行ファイルのパス」にはプログラム本体（例: javaw.exe）を指定し、残りを「引数」に入力して、「作業ディレクトリ」にアプリのフォルダーを設定してください。",
         "spawnFailed": "プロセスを開始できませんでした"
       }
     },
@@ -895,11 +896,11 @@
     "spawnErrorAccess": "Windows が起動をブロックしました。X-Dispatch を右クリックして「管理者として実行」を選択し、もう一度お試しください。",
     "spawnErrorMissing": "設定されたパスに X-Plane の実行ファイルが見つかりません。設定で X-Plane のインストールパスを確認してください。",
     "spawnErrorGeneric": "X-Plane の起動に失敗しました。詳細はログをご確認ください（設定 → ログ）。",
-    "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
-    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
-    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
-    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
-    "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
+    "spawnErrorNeedsAdmin": "Windows が X-Plane の起動を拒否しました。管理者権限が必要か、ウイルス対策ソフトがブロックしている可能性があります。X-Dispatch を管理者として実行してみてください。",
+    "spawnErrorAccessBlocked": "X-Dispatch はすでに管理者として実行されていますが、Windows が X-Plane の起動を拒否しました。権限の問題ではありません。ウイルス対策ソフトまたはフォルダー アクセスの制御がブロックしている可能性が高いです。X-Plane のフォルダーを許可してから、もう一度お試しください。",
+    "spawnErrorAlreadyRunning": "X-Plane はすでに実行中です。代わりに「フライトを変更」ボタンをご利用ください。",
+    "spawnErrorPathNotConfigured": "X-Plane のインストールパスが設定されていません。設定 → X-Plane インストール で指定してください。",
+    "spawnErrorInvalidConfig": "フライト設定が未完了です。機体と出発地点を選択してから、もう一度お試しください。",
     "aircraft": {
       "title": "機体",
       "search": "機体を検索...",

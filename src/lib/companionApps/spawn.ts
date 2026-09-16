@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import * as path from 'path';
 import { canExecute } from '@/lib/utils/canExecute';
 import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
@@ -17,7 +18,21 @@ export type SpawnErrorCode =
   | 'NEEDS_ADMIN'
   | 'FILE_MISSING'
   | 'FILE_NOT_EXECUTABLE'
+  | 'BATCH_NOT_SUPPORTED'
   | 'SPAWN_FAILED';
+
+/**
+ * Batch files are interpreted by the shell, not executed, so `spawn` cannot
+ * start them: since the CVE-2024-27980 hardening (Node 18.20.2 / 20.12.2) it
+ * throws `EINVAL` for `.cmd`/`.bat` unless `shell: true` is passed. We don't
+ * pass it — running a user-supplied path through a shell is a bigger change
+ * than this is worth — so the useful thing is to say so plainly.
+ */
+const BATCH_EXTENSIONS = ['.cmd', '.bat'];
+
+function isBatchFile(exePath: string): boolean {
+  return BATCH_EXTENSIONS.includes(path.extname(exePath).toLowerCase());
+}
 
 export interface SpawnResult {
   success: boolean;
@@ -38,6 +53,19 @@ export interface SpawnResult {
  * for no reason.
  */
 export function launchCompanionApp(input: SpawnInput): SpawnResult {
+  // Checked ahead of elevation deliberately. A batch file fails the same way
+  // as administrator, so leading with NEEDS_ADMIN sends people down a blind
+  // alley — which is what happens today: the reported case had users trying
+  // admin rights for a .cmd that was never going to start either way.
+  if (isBatchFile(input.exePath)) {
+    logger.main.warn(`companionApps refused launch: batch file (exe=${input.exePath})`);
+    return {
+      success: false,
+      code: 'BATCH_NOT_SUPPORTED',
+      error: `${path.extname(input.exePath)} files cannot be launched directly`,
+    };
+  }
+
   if (process.platform === 'win32' && !isElevated()) {
     logger.main.warn(`companionApps refused launch: not elevated (exe=${input.exePath})`);
     return {
