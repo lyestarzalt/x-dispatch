@@ -53,7 +53,7 @@ export function CompanionAppEditDialog({
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const browseExe = async () => {
-    const picked = await window.companionAppsAPI.browseForExe();
+    const picked = await window.companionAppsAPI.browseForExe(exePath || undefined);
     if (picked) setExePath(picked);
   };
 

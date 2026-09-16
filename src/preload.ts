@@ -373,7 +373,8 @@ contextBridge.exposeInMainWorld('debugAPI', {
 contextBridge.exposeInMainWorld('companionAppsAPI', {
   launch: (input: { exePath: string; args?: string; cwd?: string }) =>
     ipcRenderer.invoke('companion-apps:launch', input),
-  browseForExe: (): Promise<string | null> => ipcRenderer.invoke('companion-apps:browseForExe'),
+  browseForExe: (currentExePath?: string): Promise<string | null> =>
+    ipcRenderer.invoke('companion-apps:browseForExe', currentExePath),
   isElevated: (): Promise<boolean> => ipcRenderer.invoke('companion-apps:isElevated'),
 });
 
@@ -779,7 +780,7 @@ declare global {
         args?: string;
         cwd?: string;
       }) => Promise<import('@/lib/companionApps/spawn').SpawnResult>;
-      browseForExe: () => Promise<string | null>;
+      browseForExe: (currentExePath?: string) => Promise<string | null>;
       isElevated: () => Promise<boolean>;
     };
     xpLogAPI: {

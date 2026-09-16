@@ -741,9 +741,12 @@ function registerIpcHandlers() {
   ipcMain.handle('xplane:browseForPath', async () => {
     logger.main.info('browseForPath: called');
 
+    const configuredPath = dataManager.getXPlanePath();
+
     const dialogOptions: Electron.OpenDialogOptions = {
       properties: ['openDirectory'],
       title: 'Select X-Plane Installation Folder',
+      defaultPath: configuredPath ? path.dirname(configuredPath) : undefined,
     };
 
     try {
