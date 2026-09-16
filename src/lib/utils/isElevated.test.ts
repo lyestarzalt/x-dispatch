@@ -42,9 +42,11 @@ describe('isElevated (cached)', () => {
   });
 
   it('caches the first result and reuses it on subsequent calls', () => {
-    // Stub geteuid before first call so detection sees a non-root uid.
+    // Stub geteuid before first call so detection sees a non-root uid. The
+    // platform has to be stubbed too: on a Windows host isElevated() would
+    // take the fltmc path and never consult geteuid at all.
     const spy = vi.fn(() => 1000);
-    vi.stubGlobal('process', { ...process, geteuid: spy });
+    vi.stubGlobal('process', { ...process, platform: 'linux', geteuid: spy });
     const first = isElevated();
     expect(first).toBe(false);
     expect(spy).toHaveBeenCalledTimes(1);
@@ -59,7 +61,7 @@ describe('isElevated (cached)', () => {
 
   it('recomputes after _resetElevationCache', () => {
     const spy = vi.fn(() => 1000);
-    vi.stubGlobal('process', { ...process, geteuid: spy });
+    vi.stubGlobal('process', { ...process, platform: 'linux', geteuid: spy });
     expect(isElevated()).toBe(false);
 
     _resetElevationCache();
