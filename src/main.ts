@@ -20,6 +20,7 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
+import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import {
@@ -115,6 +116,13 @@ if (shouldInitSentry) {
     tracesSampleRate: 1.0,
     integrations: [Sentry.startupTracingIntegration()],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
+    beforeSend(event, hint) {
+      // Disk-full failures describe the user's machine, not a defect here, and
+      // every writer we have reports them differently — too path-dependent for
+      // an ignoreErrors pattern, so they get dropped here instead.
+      if (isDiskFullEvent(event, hint?.originalException)) return null;
+      return event;
+    },
   });
 }
 
