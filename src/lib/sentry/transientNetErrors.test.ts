@@ -13,6 +13,8 @@ describe('TRANSIENT_NET_ERROR_PATTERN', () => {
     'net::ERR_TIMED_OUT',
     'net::ERR_ADDRESS_UNREACHABLE',
     'net::ERR_PROXY_CONNECTION_FAILED',
+    'net::ERR_QUIC_PROTOCOL_ERROR',
+    'net::ERR_QUIC_HANDSHAKE_FAILED',
   ])('matches transient code %s', (msg) => {
     expect(TRANSIENT_NET_ERROR_PATTERN.test(msg)).toBe(true);
   });
