@@ -246,6 +246,12 @@ export function useMapSetup({
       cleanupIlsOverlayAttach();
       ilsLayer.detachFrom(map);
       map.remove();
+      // createSafeMapProxy turns every method into a no-op after remove(),
+      // but the ref still points at the proxy, which is truthy. Every
+      // `if (!map) return` guard therefore passes and callers operate on a
+      // dead map whose getters return undefined. Clear the ref so those
+      // guards actually fire.
+      if (mapRef.current === map) mapRef.current = null;
     };
     // Note: mapStyleUrl changes are handled by Map/index.tsx style change handler
     // to preserve map state. Only recreate map when airports change.
