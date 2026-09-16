@@ -34,6 +34,10 @@ const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-windsock-labels': 'windsocks',
   'airport-boundaries': 'boundaries',
   'airport-pavements': 'pavements',
+  'airport-routing-edges': 'routingNetwork',
+  'airport-routing-truck-edges': 'routingNetwork',
+  'airport-routing-arrows': 'routingNetwork',
+  'airport-routing-nodes': 'routingNetwork',
 };
 
 interface UseAirportRendererResult {

@@ -225,3 +225,82 @@ export function createTaxiwayNameGeoJSON(taxiNetwork: TaxiNetwork): GeoJSON.Feat
 
   return { type: 'FeatureCollection', features };
 }
+
+/**
+ * Build the raw ground routing network for display: the taxi routing graph
+ * (apt.dat rows 1201 nodes + 1202 edges) and the service road network (1206),
+ * which share the same node pool.
+ *
+ * This reads the parsed `TaxiNetwork` rather than the routing `TaxiGraph`,
+ * because the graph is lossy for drawing purposes: it stores one-way edges only
+ * once, inflates runway edge distances tenfold as a routing weight, and drops
+ * the node usage flag entirely.
+ *
+ * Returns two collections because edges and nodes need different geometry types
+ * and so different MapLibre layers.
+ */
+export function createRoutingNetworkGeoJSON(taxiNetwork: TaxiNetwork): {
+  edges: GeoJSON.FeatureCollection;
+  nodes: GeoJSON.FeatureCollection;
+} {
+  const nodeMap = new Map<number, { lat: number; lon: number }>();
+  for (const node of taxiNetwork.nodes) {
+    nodeMap.set(node.id, { lat: node.latitude, lon: node.longitude });
+  }
+
+  const edgeFeatures: GeoJSON.Feature[] = [];
+
+  const pushEdge = (
+    fromNodeId: number,
+    toNodeId: number,
+    kind: 'taxi' | 'runway' | 'truck',
+    oneway: boolean,
+    name: string
+  ): void => {
+    const from = nodeMap.get(fromNodeId);
+    const to = nodeMap.get(toNodeId);
+    // Edges referencing a node that isn't in the file are dropped rather than
+    // drawn to (0, 0), which would streak a line across the Atlantic.
+    if (!from || !to) return;
+
+    edgeFeatures.push({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: [
+          [from.lon, from.lat],
+          [to.lon, to.lat],
+        ],
+      },
+      properties: { kind, oneway, name },
+    });
+  };
+
+  for (const edge of taxiNetwork.edges) {
+    pushEdge(
+      edge.fromNodeId,
+      edge.toNodeId,
+      edge.widthClass === 'runway' ? 'runway' : 'taxi',
+      edge.direction === 'oneway',
+      edge.name
+    );
+  }
+
+  for (const edge of taxiNetwork.truckEdges) {
+    pushEdge(edge.fromNodeId, edge.toNodeId, 'truck', edge.direction === 'oneway', edge.name ?? '');
+  }
+
+  const nodeFeatures: GeoJSON.Feature[] = taxiNetwork.nodes.map((node) => ({
+    type: 'Feature' as const,
+    geometry: {
+      type: 'Point' as const,
+      coordinates: [node.longitude, node.latitude],
+    },
+    properties: { usage: node.usage, nodeId: node.id },
+  }));
+
+  return {
+    edges: { type: 'FeatureCollection', features: edgeFeatures },
+    nodes: { type: 'FeatureCollection', features: nodeFeatures },
+  };
+}

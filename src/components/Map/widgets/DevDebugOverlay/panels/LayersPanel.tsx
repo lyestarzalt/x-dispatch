@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type maplibregl from 'maplibre-gl';
+import { useMapStore } from '@/stores/mapStore';
 import type { LayerInspectorGroup, RendererInfo, SublayerInfo } from '../../layerInspector';
-import { Legend, OrderBadge, StatusDot } from '../shared';
+import { Legend, OrderBadge, SectionLabel, StatusDot } from '../shared';
 import type { DebugStats, MapRef } from '../types';
 
 // --- Toggle layer visibility on map ---
@@ -28,15 +29,51 @@ function toggleRendererVisibility(map: maplibregl.Map, renderer: RendererInfo) {
 // --- LayersPanel ---
 
 export function LayersPanel({ stats, mapRef }: { stats: DebugStats; mapRef: MapRef }) {
-  if (stats.inspectorData.length === 0) {
-    return <span className="text-muted-foreground/40">No app layers on map</span>;
-  }
   return (
     <div className="space-y-1">
-      {stats.inspectorData.map((group) => (
-        <InspectorGroup key={group.category} group={group} mapRef={mapRef} />
-      ))}
-      <Legend />
+      <TechnicalToggles />
+      {stats.inspectorData.length === 0 ? (
+        <span className="text-muted-foreground/40">No app layers on map</span>
+      ) : (
+        <>
+          {stats.inspectorData.map((group) => (
+            <InspectorGroup key={group.category} group={group} mapRef={mapRef} />
+          ))}
+          <Legend />
+        </>
+      )}
+    </div>
+  );
+}
+
+// --- Technical layers ---
+
+/**
+ * Toggles for layers that visualise the source data rather than depict the
+ * airport. These write to the store rather than flipping `visibility` on the
+ * map directly, so the choice survives selecting another airport — re-rendering
+ * an airport re-applies layer visibility from the store and would otherwise
+ * undo it.
+ */
+function TechnicalToggles() {
+  const routingNetwork = useMapStore((s) => s.layerVisibility.routingNetwork);
+  const toggleLayer = useMapStore((s) => s.toggleLayer);
+
+  return (
+    <div>
+      <SectionLabel>Technical</SectionLabel>
+      <label
+        className="flex cursor-pointer items-center justify-between gap-4 py-px"
+        title="Raw ground routing network: taxi nodes/edges (1201/1202) and service roads (1206)"
+      >
+        <span className="text-muted-foreground/70">Routing network</span>
+        <input
+          type="checkbox"
+          checked={routingNetwork}
+          onChange={() => toggleLayer('routingNetwork')}
+          className="h-3 w-3 cursor-pointer accent-primary"
+        />
+      </label>
     </div>
   );
 }
