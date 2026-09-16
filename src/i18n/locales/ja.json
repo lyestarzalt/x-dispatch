@@ -895,6 +895,11 @@
     "spawnErrorAccess": "Windows が起動をブロックしました。X-Dispatch を右クリックして「管理者として実行」を選択し、もう一度お試しください。",
     "spawnErrorMissing": "設定されたパスに X-Plane の実行ファイルが見つかりません。設定で X-Plane のインストールパスを確認してください。",
     "spawnErrorGeneric": "X-Plane の起動に失敗しました。詳細はログをご確認ください（設定 → ログ）。",
+    "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
+    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
+    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
+    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
+    "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
     "aircraft": {
       "title": "機体",
       "search": "機体を検索...",

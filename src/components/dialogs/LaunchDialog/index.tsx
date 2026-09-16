@@ -8,6 +8,7 @@ import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
+import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
   buildFlightInit,
   calculateFuelTankWeightsKg,
@@ -30,20 +31,38 @@ interface LaunchPanelProps {
 }
 
 /**
- * Map Node spawn error codes from `window.launcherAPI.launch` into
- * user-actionable messages. On Windows, a UAC-blocked launch surfaces as
- * `EACCES`, hence the "run as administrator" hint. Falls back to whatever
- * error string the main process provided, or a generic "failed to launch"
- * message when neither is available.
+ * Map the launcher's error codes into user-actionable messages.
+ *
+ * The main process classifies the failure rather than passing the raw errno up,
+ * because `EACCES` alone cannot distinguish "X-Plane wants administrator rights"
+ * from "antivirus is blocking it" — telling those apart needs our own elevation
+ * state, which only the main process has. See `classifySpawnError` in
+ * `@/lib/xplaneServices/launch`.
+ *
+ * Falls back to whatever string the main process provided, then to a generic
+ * message, so an unrecognised code never renders as nothing.
  */
 function launchErrorMessage(
   t: ReturnType<typeof useTranslation>['t'],
-  code: string | undefined,
+  code: LaunchErrorCode | undefined,
   fallback: string | undefined
 ): string {
-  if (code === 'EACCES') return t('launcher.spawnErrorAccess');
-  if (code === 'ENOENT') return t('launcher.spawnErrorMissing');
-  return fallback || t('launcher.spawnErrorGeneric');
+  switch (code) {
+    case 'ALREADY_RUNNING':
+      return t('launcher.spawnErrorAlreadyRunning');
+    case 'PATH_NOT_CONFIGURED':
+      return t('launcher.spawnErrorPathNotConfigured');
+    case 'INVALID_CONFIG':
+      return t('launcher.spawnErrorInvalidConfig');
+    case 'EXE_NOT_FOUND':
+      return t('launcher.spawnErrorMissing');
+    case 'NEEDS_ADMIN':
+      return t('launcher.spawnErrorNeedsAdmin');
+    case 'ACCESS_BLOCKED':
+      return t('launcher.spawnErrorAccessBlocked');
+    default:
+      return fallback || t('launcher.spawnErrorGeneric');
+  }
 }
 
 export default function LaunchPanel({ open, onClose, startPosition }: LaunchPanelProps) {

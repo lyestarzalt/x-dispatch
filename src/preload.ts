@@ -554,7 +554,7 @@ declare global {
       launch: (
         payload: FlightInit,
         extraArgs?: string[]
-      ) => Promise<{ success: boolean; error?: string; code?: string }>;
+      ) => Promise<import('@/lib/xplaneServices/launch').LaunchResult>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
     flightPlanAPI: {

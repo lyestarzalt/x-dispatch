@@ -895,6 +895,11 @@
     "spawnErrorAccess": "Windows scuttled th’ launch, matey. Right-click X-Dispatch and choose „Run as administrator“, then hoist th’ sails again.",
     "spawnErrorMissing": "Couldn’\t find X-Plane at th’ configured course. Check th’ X-Plane install path in Settings.",
     "spawnErrorGeneric": "X-Plane refused to launch, arr. Check th’ log fer clues (Settings → Logs).",
+    "spawnErrorNeedsAdmin": "Windows refused to start X-Plane. It may need administrator rights, or antivirus may be blocking it. Try running X-Dispatch as administrator.",
+    "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it — allow X-Plane's folder and try again.",
+    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
+    "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings → X-Plane.",
+    "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
     "aircraft": {
       "title": "Craft",
       "search": "Search fer aircraft...",

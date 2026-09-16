@@ -1,8 +1,10 @@
+import * as Sentry from '@sentry/electron/main';
 import { exec, spawn } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { getCliFlags } from '@/lib/cli';
+import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft, WeatherPreset } from '@/types/aircraft';
@@ -11,6 +13,60 @@ import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
 import { getXPlaneExecutable } from './freeflightGenerator';
 import { WEATHER_PRESETS } from './types';
+
+/**
+ * Stable reasons a launch can fail, in place of raw Node errnos. The renderer
+ * maps these to messages, so keep in sync with the i18n keys under `launcher.*`.
+ * Mirrors `SpawnErrorCode` in `@/lib/companionApps/spawn`.
+ */
+export type LaunchErrorCode =
+  | 'ALREADY_RUNNING'
+  | 'PATH_NOT_CONFIGURED'
+  | 'INVALID_CONFIG'
+  | 'EXE_NOT_FOUND'
+  | 'NEEDS_ADMIN'
+  | 'ACCESS_BLOCKED'
+  | 'SPAWN_FAILED';
+
+export interface LaunchResult {
+  success: boolean;
+  error?: string;
+  code?: LaunchErrorCode;
+}
+
+/**
+ * Decide what a spawn-time errno actually means.
+ *
+ * Windows `CreateProcess` cannot elevate. An executable manifested
+ * `requireAdministrator` fails with `ERROR_ELEVATION_REQUIRED` (740), and libuv
+ * maps 740 to `EACCES` — but `ERROR_ACCESS_DENIED` (5) maps to `EACCES` as well,
+ * so the errno alone cannot separate "needs admin" from "antivirus, ACLs or
+ * Controlled Folder Access refused it". Our own elevation state breaks the tie:
+ * if we are already elevated, elevation cannot be what Windows objected to.
+ *
+ * On POSIX there is no UAC — `EACCES` there means the executable bit or a path
+ * component denies us, which no amount of elevation prompting would fix.
+ */
+export function classifySpawnError(
+  errno: string | undefined,
+  ctx: { platform: NodeJS.Platform; elevated: boolean }
+): LaunchErrorCode {
+  if (errno === 'ENOENT') return 'EXE_NOT_FOUND';
+  if (errno === 'EACCES' || errno === 'EPERM') {
+    if (ctx.platform !== 'win32') return 'ACCESS_BLOCKED';
+    return ctx.elevated ? 'ACCESS_BLOCKED' : 'NEEDS_ADMIN';
+  }
+  return 'SPAWN_FAILED';
+}
+
+/** Best-effort facts about the target, for the Sentry breadcrumb only. */
+function describeExecutable(executable: string): { exists: boolean; isFile: boolean } {
+  try {
+    return { exists: true, isFile: fs.statSync(executable).isFile() };
+  } catch {
+    return { exists: false, isFile: false };
+  }
+}
 
 // Steam App IDs
 const STEAM_APP_IDS = {
@@ -81,10 +137,7 @@ class XPlaneLauncher {
    * Launch X-Plane with FlightInit payload (same schema as REST API, no { data } wrapper).
    * Writes raw payload to a temp JSON file and hands it to X-Plane on launch.
    */
-  async launch(
-    payload: FlightInit,
-    extraArgs?: string[]
-  ): Promise<{ success: boolean; error?: string; code?: string }> {
+  async launch(payload: FlightInit, extraArgs?: string[]): Promise<LaunchResult> {
     try {
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
@@ -92,6 +145,7 @@ class XPlaneLauncher {
         return {
           success: false,
           error: 'X-Plane is already running. Use the Change Flight button instead.',
+          code: 'ALREADY_RUNNING',
         };
       }
 
@@ -142,7 +196,7 @@ class XPlaneLauncher {
       const executable = getXPlaneExecutable(this.xplanePath);
       if (!executable) {
         logger.launcher.error(`X-Plane executable not found in: ${this.xplanePath}`);
-        return { success: false, error: 'X-Plane executable not found' };
+        return { success: false, error: 'X-Plane executable not found', code: 'EXE_NOT_FOUND' };
       }
 
       const spawnOptions: Parameters<typeof spawn>[2] = {
@@ -164,10 +218,10 @@ class XPlaneLauncher {
       // resolve+cleanup covers both outcomes without races or timeouts.
       // We only catch spawn-time errors here; once 'spawn' fires X-Plane is
       // on its own — internal crashes/exits later aren't surfaced.
-      return await new Promise<{ success: boolean; error?: string; code?: string }>((resolve) => {
+      return await new Promise<LaunchResult>((resolve) => {
         const xp = spawn(executable, xplaneArgs, spawnOptions);
         let settled = false;
-        const settle = (result: { success: boolean; error?: string; code?: string }): void => {
+        const settle = (result: LaunchResult): void => {
           if (settled) return;
           settled = true;
           resolve(result);
@@ -181,13 +235,30 @@ class XPlaneLauncher {
         });
 
         xp.once('error', (err: NodeJS.ErrnoException) => {
-          logger.launcher.error(`Spawn error: ${err.message}`, err);
-          settle({ success: false, error: err.message, code: err.code });
+          const elevated = isElevated();
+          const code = classifySpawnError(err.code, { platform: process.platform, elevated });
+
+          // The errno on its own has never been enough to triage these — attach
+          // what actually separates the causes, so the issue stream can tell us
+          // which one dominates instead of us guessing from the message.
+          Sentry.withScope((scope) => {
+            scope.setContext('launch', {
+              errno: err.code ?? null,
+              classified: code,
+              platform: process.platform,
+              elevated,
+              isSteam: isSteamInstallation(this.xplanePath),
+              ...describeExecutable(executable),
+            });
+            logger.launcher.error(`Spawn error: ${err.message}`, err);
+          });
+
+          settle({ success: false, error: err.message, code });
         });
       });
     } catch (err) {
       logger.launcher.error('Launch failed', err);
-      return { success: false, error: (err as Error).message };
+      return { success: false, error: (err as Error).message, code: 'SPAWN_FAILED' };
     }
   }
 }
