@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
+import { isTransientFileLockError } from '@/lib/utils/transientFileErrors';
 
 interface CacheEntry {
   url: string;
@@ -29,6 +30,14 @@ const MAX_CACHE_SIZE = 500 * 1024 * 1024; // 500 MB
 const MANIFEST_FLUSH_INTERVAL = 60_000; // 60 seconds
 const EVICT_TARGET_RATIO = 0.9; // Evict until 90% of max
 
+/**
+ * Consecutive transient flush failures tolerated before one is reported. A
+ * locked manifest clears by itself, and the flush retries every 60s, so a
+ * handful of failures in a row is a scanner doing its job. Past this the lock
+ * is not clearing and something is genuinely wrong with the cache directory.
+ */
+const MANIFEST_FLUSH_FAILURE_REPORT_THRESHOLD = 5;
+
 function hashUrl(url: string): string {
   // MD5 is fine here — not security-sensitive, just deduplication
   return crypto.createHash('md5').update(url).digest('hex');
@@ -44,10 +53,12 @@ export class TileCache {
   private cacheDir: string;
   private tilesDir: string;
   private manifestPath: string;
+  private manifestTmpPath: string;
   private manifest = new Map<string, CacheEntry>();
   private totalSize = 0;
   private flushTimer: ReturnType<typeof setInterval> | null = null;
   private dirty = false;
+  private consecutiveFlushFailures = 0;
   private hits = 0;
   private misses = 0;
 
@@ -55,6 +66,7 @@ export class TileCache {
     this.cacheDir = path.join(app.getPath('userData'), 'tile-cache');
     this.tilesDir = path.join(this.cacheDir, 'tiles');
     this.manifestPath = path.join(this.cacheDir, 'manifest.json');
+    this.manifestTmpPath = `${this.manifestPath}.tmp`;
   }
 
   init(): void {
@@ -212,9 +224,33 @@ export class TileCache {
     try {
       fs.mkdirSync(path.dirname(this.manifestPath), { recursive: true });
       const data = JSON.stringify([...this.manifest.entries()]);
-      fs.writeFileSync(this.manifestPath, data, 'utf-8');
+      // Write a sibling and rename over the target. writeFileSync truncates in
+      // place, so a write that fails partway leaves a manifest that no longer
+      // parses — loadManifest can only discard it, orphaning every tile already
+      // on disk and resetting the size accounting that drives eviction. rename
+      // is atomic, so a reader sees either the old manifest or the new one.
+      fs.writeFileSync(this.manifestTmpPath, data, 'utf-8');
+      fs.renameSync(this.manifestTmpPath, this.manifestPath);
       this.dirty = false;
+      this.consecutiveFlushFailures = 0;
     } catch (err) {
+      // `dirty` stays set, so the next interval tick retries on its own. That
+      // is the whole recovery strategy: a lock clears in a second or two and
+      // the manifest is rewritten wholesale each time, so there is nothing to
+      // reconcile and no reason to block the main process retrying inline.
+      this.consecutiveFlushFailures++;
+
+      if (
+        isTransientFileLockError(err) &&
+        this.consecutiveFlushFailures < MANIFEST_FLUSH_FAILURE_REPORT_THRESHOLD
+      ) {
+        logger.main.warn(
+          `Tile cache manifest flush failed (attempt ${this.consecutiveFlushFailures}), retrying at next flush`,
+          err
+        );
+        return;
+      }
+
       logger.main.error('Tile cache manifest flush failed', err);
     }
   }
