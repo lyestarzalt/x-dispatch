@@ -1,0 +1,19 @@
+# Normalize all text to LF in the repo and in the working tree.
+# Without this, a Windows clone with core.autocrlf=true checks everything out
+# as CRLF, which makes `npm run format:check` fail on every file and hides
+# CRLF-handling bugs from CI (which only ever runs on Linux).
+* text=auto eol=lf
+
+# Binary assets — never touch these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.webp binary
+*.zip binary
+*.7z binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
