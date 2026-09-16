@@ -51,6 +51,20 @@ vi.mock('./acfParser', () => ({
   scanAircraftDirectory: () => [],
 }));
 
+// Elevation drives the EACCES classification, so it has to be controllable.
+// The real implementation shells out to `fltmc`, which the child_process mock
+// below doesn't provide anyway.
+const isElevatedMock = vi.fn(() => false);
+vi.mock('@/lib/utils/isElevated', () => ({
+  isElevated: () => isElevatedMock(),
+}));
+
+// Sentry: the error path opens a scope to attach launch diagnostics. Run the
+// callback so the scope calls are exercised, but keep it inert.
+vi.mock('@sentry/electron/main', () => ({
+  withScope: (fn: (scope: { setContext: () => void }) => void) => fn({ setContext: () => {} }),
+}));
+
 // fs.writeFileSync writes the temp flight JSON before spawn — no-op it
 // (and keep readFileSync working for everything else that might import fs).
 vi.mock('fs', async () => {
@@ -77,7 +91,7 @@ vi.mock('child_process', () => ({
   exec: vi.fn(),
 }));
 
-const { getLauncher } = await import('./index');
+const { getLauncher, classifySpawnError } = await import('./index');
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -88,12 +102,21 @@ const FAKE_PATH = '/Users/test/X-Plane 12';
 // and at this layer it's mostly opaque (`buildFlightInit` is done upstream).
 const PAYLOAD = {} as unknown as Parameters<ReturnType<typeof getLauncher>['launch']>[0];
 
+const REAL_PLATFORM = process.platform;
+
+/** Classification branches on the host OS, so pin it rather than inherit CI's. */
+function setPlatform(platform: NodeJS.Platform): void {
+  Object.defineProperty(process, 'platform', { value: platform, configurable: true });
+}
+
 beforeEach(() => {
   lastSpawned = null;
   spawnMock.mockClear();
+  isElevatedMock.mockReturnValue(false);
 });
 
 afterEach(() => {
+  setPlatform(REAL_PLATFORM);
   vi.clearAllMocks();
 });
 
@@ -119,7 +142,9 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     expect(lastSpawned!.unref).toHaveBeenCalledTimes(1);
   });
 
-  it('resolves with EACCES code when the OS refuses the spawn (UAC denied on Windows)', async () => {
+  it('classifies an EACCES refusal as NEEDS_ADMIN on un-elevated Windows', async () => {
+    setPlatform('win32');
+    isElevatedMock.mockReturnValue(false);
     const launcher = getLauncher(FAKE_PATH);
     const launchPromise = launcher.launch(PAYLOAD);
     await Promise.resolve();
@@ -136,7 +161,7 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     expect(result).toEqual({
       success: false,
       error: 'spawn /fake/X-Plane.exe EACCES',
-      code: 'EACCES',
+      code: 'NEEDS_ADMIN',
     });
     expect(lastSpawned!.unref).not.toHaveBeenCalled();
   });
@@ -154,7 +179,7 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
 
     const result = await launchPromise;
     expect(result.success).toBe(false);
-    expect(result.code).toBe('ENOENT');
+    expect(result.code).toBe('EXE_NOT_FOUND');
   });
 
   it('preserves err.message in the error field when no code is provided', async () => {
@@ -169,7 +194,9 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     const result = await launchPromise;
     expect(result.success).toBe(false);
     expect(result.error).toBe('mystery failure');
-    expect(result.code).toBeUndefined();
+    // No errno to go on, but the renderer still gets a code it can switch on —
+    // it falls back to the raw message for SPAWN_FAILED.
+    expect(result.code).toBe('SPAWN_FAILED');
   });
 
   it('settles exactly once even if "error" fires after "spawn"', async () => {
@@ -207,4 +234,52 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     await launchPromise;
     expect(settled).toBe(true);
   });
+});
+
+describe('classifySpawnError', () => {
+  it('reports a missing executable regardless of platform or elevation', () => {
+    expect(classifySpawnError('ENOENT', { platform: 'win32', elevated: false })).toBe(
+      'EXE_NOT_FOUND'
+    );
+    expect(classifySpawnError('ENOENT', { platform: 'darwin', elevated: true })).toBe(
+      'EXE_NOT_FOUND'
+    );
+  });
+
+  it.each(['EACCES', 'EPERM'])(
+    'treats %s on un-elevated Windows as possibly needing admin',
+    (errno) => {
+      expect(classifySpawnError(errno, { platform: 'win32', elevated: false })).toBe('NEEDS_ADMIN');
+    }
+  );
+
+  it.each(['EACCES', 'EPERM'])(
+    'rules elevation out for %s when Windows already refused us as admin',
+    (errno) => {
+      // libuv maps both ERROR_ELEVATION_REQUIRED (740) and ERROR_ACCESS_DENIED
+      // (5) to EACCES. Being elevated already eliminates the former, so what
+      // is left is antivirus / ACLs — and "run as administrator" would be
+      // actively misleading advice.
+      expect(classifySpawnError(errno, { platform: 'win32', elevated: true })).toBe(
+        'ACCESS_BLOCKED'
+      );
+    }
+  );
+
+  it.each(['darwin', 'linux'] as const)(
+    'never suggests admin on %s, where there is no UAC',
+    (platform) => {
+      expect(classifySpawnError('EACCES', { platform, elevated: false })).toBe('ACCESS_BLOCKED');
+      expect(classifySpawnError('EACCES', { platform, elevated: true })).toBe('ACCESS_BLOCKED');
+    }
+  );
+
+  it.each([undefined, 'EBUSY', 'EMFILE', 'UNKNOWN'])(
+    'falls back to SPAWN_FAILED for unrecognised errno %s',
+    (errno) => {
+      expect(classifySpawnError(errno, { platform: 'win32', elevated: false })).toBe(
+        'SPAWN_FAILED'
+      );
+    }
+  );
 });

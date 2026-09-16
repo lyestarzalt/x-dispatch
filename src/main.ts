@@ -62,6 +62,7 @@ import {
   setSendCrashReports,
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
+import type { LaunchResult } from './lib/xplaneServices/launch';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
@@ -1322,37 +1323,46 @@ function registerIpcHandlers() {
     return WEATHER_PRESETS;
   });
 
-  ipcMain.handle('launcher:launch', async (_, payload: unknown, extraArgs?: string[]) => {
-    const xplanePath = dataManager.getXPlanePath();
-    if (!xplanePath) return { success: false, error: 'X-Plane path not configured' };
-
-    // Validate payload has required FlightInit properties (same schema as REST API)
-    if (!payload || typeof payload !== 'object' || !('aircraft' in payload)) {
-      return { success: false, error: 'Invalid flight configuration' };
-    }
-
-    const flightPayload =
-      payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
-    const aircraftPath = flightPayload.aircraft?.path || 'unknown';
-    const airport =
-      flightPayload.ramp_start?.airport_id || flightPayload.runway_start?.airport_id || 'unknown';
-    logger.launcher.info(`[User] Launch attempt: ${aircraftPath} at ${airport}`);
-
-    try {
-      const { getLauncher } = await getLauncherModule();
-      const result = await getLauncher(xplanePath).launch(flightPayload, extraArgs);
-      if (result.success) {
-        logger.launcher.info('[User] Launch successful');
-      } else {
-        logger.launcher.error(`[User] Launch failed: ${result.error}`);
+  ipcMain.handle(
+    'launcher:launch',
+    async (_, payload: unknown, extraArgs?: string[]): Promise<LaunchResult> => {
+      const xplanePath = dataManager.getXPlanePath();
+      if (!xplanePath) {
+        return {
+          success: false,
+          error: 'X-Plane path not configured',
+          code: 'PATH_NOT_CONFIGURED',
+        };
       }
-      return result;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.launcher.error(`[User] Launch exception: ${message}`);
-      return { success: false, error: message };
+
+      // Validate payload has required FlightInit properties (same schema as REST API)
+      if (!payload || typeof payload !== 'object' || !('aircraft' in payload)) {
+        return { success: false, error: 'Invalid flight configuration', code: 'INVALID_CONFIG' };
+      }
+
+      const flightPayload =
+        payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
+      const aircraftPath = flightPayload.aircraft?.path || 'unknown';
+      const airport =
+        flightPayload.ramp_start?.airport_id || flightPayload.runway_start?.airport_id || 'unknown';
+      logger.launcher.info(`[User] Launch attempt: ${aircraftPath} at ${airport}`);
+
+      try {
+        const { getLauncher } = await getLauncherModule();
+        const result = await getLauncher(xplanePath).launch(flightPayload, extraArgs);
+        if (result.success) {
+          logger.launcher.info('[User] Launch successful');
+        } else {
+          logger.launcher.error(`[User] Launch failed: ${result.code} — ${result.error}`);
+        }
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.launcher.error(`[User] Launch exception: ${message}`);
+        return { success: false, error: message, code: 'SPAWN_FAILED' };
+      }
     }
-  });
+  );
 
   ipcMain.handle('launcher:getAircraftImage', async (_, imagePath: string) => {
     if (!imagePath || typeof imagePath !== 'string') return null;
