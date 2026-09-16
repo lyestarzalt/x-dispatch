@@ -45,6 +45,9 @@ const CATEGORY_PREFIXES: { prefix: string; category: 'airport' | 'nav' | 'dynami
   { prefix: 'player-', category: 'dynamic' },
 ];
 
+// Note: 'taxi-route-' is deliberately absent above and so the taxi route layers
+// are invisible to this panel. Pre-existing, not addressed here.
+
 // --- Helpers ---
 
 /** Classify a layer ID into a category, or null if it's a base map layer */

@@ -5,6 +5,7 @@ export { BoundaryLayer } from './BoundaryLayer';
 export { GateLayer } from './GateLayer';
 export { LinearFeatureLayer } from './LinearFeatureLayer';
 export { PavementLayer } from './PavementLayer';
+export { RoutingNetworkLayer } from './RoutingNetworkLayer';
 export { RunwayEndLayer } from './RunwayEndLayer';
 export { RunwayLayer } from './RunwayLayer';
 export { RunwayLightsLayer } from './RunwayLightsLayer';

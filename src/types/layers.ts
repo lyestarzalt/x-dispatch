@@ -20,6 +20,10 @@ export interface LayerVisibility {
   gates: boolean;
   windsocks: boolean;
 
+  // Technical
+  /** Raw ground routing network (apt.dat 1201/1202 nodes+edges, 1206 service roads) */
+  routingNetwork: boolean;
+
   // Effects
   animations: boolean;
   weather: boolean;
@@ -54,6 +58,8 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
   boundaries: true,
   pavements: true,
   approachLights: true,
+  // Off by default: a technical overlay, not part of the airport depiction.
+  routingNetwork: false,
   animations: true,
   weather: true,
 };

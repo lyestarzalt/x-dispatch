@@ -213,7 +213,12 @@ export default function Map({ airports }: MapProps) {
 
   useEffect(() => {
     layerVisibilityRef.current = layerVisibility;
-  }, [layerVisibility]);
+    // Push the change straight to the map. Without this, visibility was only
+    // applied inside selectAirport, so toggling a layer did nothing until the
+    // airport was re-selected. Nothing toggled these at runtime before, so the
+    // gap was invisible.
+    applyLayerVisibility(layerVisibility);
+  }, [layerVisibility, applyLayerVisibility]);
 
   useEffect(() => {
     selectedICAORef.current = selectedICAO;

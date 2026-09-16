@@ -5,6 +5,7 @@ import {
   GateLayer,
   LinearFeatureLayer,
   PavementLayer,
+  RoutingNetworkLayer,
   RunwayEndLayer,
   RunwayLayer,
   RunwayLightsLayer,
@@ -87,5 +88,8 @@ export function createLayerRenderers(): LayerRenderer[] {
     new BeaconLayer(),
     new TowerLayer(),
     new TaxiwayNameLayer(),
+    // Technical view of the routing graph — drawn last so it reads on top
+    // of the surfaces it describes. Hidden by default via LayerVisibility.
+    new RoutingNetworkLayer(),
   ];
 }

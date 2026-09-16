@@ -249,7 +249,7 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 10,
+      version: 11,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -321,6 +321,15 @@ export const useMapStore = create<MapState>()(
         // MapLibre TerrainControl button that used to live on the map).
         if (version < 10) {
           if (state.terrain3dEnabled === undefined) state.terrain3dEnabled = true;
+        }
+        // Migration to v11: routing network layer, off by default. Persisted
+        // layerVisibility from v10 has no such key, which would leave it
+        // undefined rather than false.
+        if (version < 11) {
+          const layers = state.layerVisibility as Record<string, unknown> | undefined;
+          if (layers && layers.routingNetwork === undefined) {
+            layers.routingNetwork = false;
+          }
         }
         return state;
       },
