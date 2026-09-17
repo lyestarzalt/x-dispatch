@@ -4,15 +4,13 @@ import { Crosshair, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
-import type { PlaneState } from '@/types/xplane';
+import { usePlaneStore } from '@/stores/planeStore';
 
 const DRAG_THRESHOLD = 5;
 const EDGE_PADDING = 16;
 const PRIMARY_COLOR_CLASS = 'text-primary';
 
 interface FlightStripProps {
-  planeState: Partial<PlaneState> | null;
-  connected: boolean;
   onCenterPlane: () => void;
 }
 
@@ -147,7 +145,9 @@ function useDragPosition() {
 
 // --- Main component ---
 
-export default function FlightStrip({ planeState, connected, onCenterPlane }: FlightStripProps) {
+export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
+  const planeState = usePlaneStore((s) => s.state);
+  const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } = useDragPosition();

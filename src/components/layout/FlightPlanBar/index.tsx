@@ -13,7 +13,7 @@ interface FlightPlanBarProps {
   onWaypointClick?: (chip: FlightPlanChip) => void;
 }
 
-export default function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
+function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
@@ -210,3 +210,5 @@ const WaypointChip = memo(function WaypointChip({ chip, isActive, onClick }: Way
     </Badge>
   );
 });
+
+export default memo(FlightPlanBar);

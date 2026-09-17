@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Anchor,
@@ -415,7 +415,7 @@ interface ToolbarProps {
   onPinDropAtCoordinates: (lat: number, lon: number) => void;
 }
 
-export default function Toolbar({
+function Toolbar({
   airports,
   onSelectAirport,
   onToggleVatsim,
@@ -1071,6 +1071,10 @@ export default function Toolbar({
     </div>
   );
 }
+
+// The parent Map re-renders on airport selection and store toggles; the
+// toolbar's own state comes from stores, so identical props mean no work.
+export default memo(Toolbar);
 
 /* ---------- Weather radar playback controls (no toggle, controls only) ---------- */
 

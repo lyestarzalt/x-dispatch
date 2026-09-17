@@ -1,122 +1,33 @@
 /**
- * X-Plane WebSocket Streaming Hooks
- * For live plane state updates via WebSocket (through Electron IPC)
+ * X-Plane WebSocket Streaming
+ * Live plane state updates via WebSocket (through Electron IPC).
  *
  * Note: WebSocket connections go through Electron main process
  * because renderer can't directly connect to local WebSocket.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PlanePosition, PlaneState } from '@/types/xplane';
+import { useEffect } from 'react';
+import { usePlaneStore } from '@/stores/planeStore';
 
 /**
- * Live plane state streaming via WebSocket
- * Automatically connects when mounted and disconnects when unmounted
+ * Starts the plane state stream while mounted and publishes every snapshot
+ * to `usePlaneStore`. Mount once, in the component that owns the map. Read
+ * the values with store selectors so a snapshot only re-renders subscribers.
  */
-export function usePlaneState() {
-  const [state, setState] = useState<PlaneState | null>(null);
-  const [connected, setConnected] = useState(false);
-  const unsubscribeRef = useRef<{
-    state: (() => void) | null;
-    connection: (() => void) | null;
-    stateClear: (() => void) | null;
-  }>({
-    state: null,
-    connection: null,
-    stateClear: null,
-  });
-
+export function usePlaneStateStream(): void {
   useEffect(() => {
-    // Start streaming
-    window.xplaneServiceAPI.startStateStream();
+    const { setState, setConnected } = usePlaneStore.getState();
 
-    // Subscribe to updates
+    window.xplaneServiceAPI.startStateStream();
     const unsubState = window.xplaneServiceAPI.onStateUpdate(setState);
     const unsubConnection = window.xplaneServiceAPI.onConnectionChange(setConnected);
     // Clear state only after grace period expires (fired by main process)
-    const unsubStateClear = window.xplaneServiceAPI.onStateClear(() => {
-      setState(null);
-    });
-    unsubscribeRef.current = {
-      state: unsubState,
-      connection: unsubConnection,
-      stateClear: unsubStateClear,
-    };
+    const unsubStateClear = window.xplaneServiceAPI.onStateClear(() => setState(null));
 
     return () => {
-      // Stop streaming and unsubscribe
       window.xplaneServiceAPI.stopStateStream();
       unsubState();
       unsubConnection();
       unsubStateClear();
     };
   }, []);
-
-  return { state, connected };
-}
-
-/**
- * Simplified plane position for map display
- */
-export function usePlanePosition(): { connected: boolean; position: PlanePosition | null } {
-  const { state, connected } = usePlaneState();
-
-  const position: PlanePosition | null = state
-    ? {
-        lat: state.latitude,
-        lng: state.longitude,
-        altitude: state.altitudeMSL,
-        heading: state.heading,
-        groundspeed: state.groundspeed,
-        aircraftCategory: state.aircraftCategory,
-      }
-    : null;
-
-  return { connected, position };
-}
-
-/**
- * Connection-aware state streaming with manual control
- */
-export function usePlaneStateManual() {
-  const [state, setState] = useState<PlaneState | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [streaming, setStreaming] = useState(false);
-  const unsubscribeRef = useRef<{ state: (() => void) | null; connection: (() => void) | null }>({
-    state: null,
-    connection: null,
-  });
-
-  const start = useCallback(() => {
-    if (streaming) return;
-
-    window.xplaneServiceAPI.startStateStream();
-    unsubscribeRef.current.state = window.xplaneServiceAPI.onStateUpdate(setState);
-    unsubscribeRef.current.connection = window.xplaneServiceAPI.onConnectionChange(setConnected);
-    setStreaming(true);
-  }, [streaming]);
-
-  const stop = useCallback(() => {
-    if (!streaming) return;
-
-    window.xplaneServiceAPI.stopStateStream();
-    unsubscribeRef.current.state?.();
-    unsubscribeRef.current.connection?.();
-    unsubscribeRef.current = { state: null, connection: null };
-    setStreaming(false);
-    setConnected(false);
-    setState(null);
-  }, [streaming]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (streaming) {
-        window.xplaneServiceAPI.stopStateStream();
-        unsubscribeRef.current.state?.();
-        unsubscribeRef.current.connection?.();
-      }
-    };
-  }, [streaming]);
-
-  return { state, connected, streaming, start, stop };
 }

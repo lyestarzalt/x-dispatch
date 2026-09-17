@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as maplibregl from 'maplibre-gl';
 import logger from '@/lib/utils/loggerRenderer';
 import { safeRemove } from '../layers/types';
@@ -257,14 +257,18 @@ export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarC
     frames.length > 0 && frameIndex < frames.length ? frames[frameIndex] : undefined;
   const currentTimestamp = currentFrame?.time ?? null;
 
-  return {
-    isPlaying,
-    currentTimestamp,
-    frameIndex,
-    frameCount: frames.length,
-    play,
-    pause,
-    stepForward,
-    stepBack,
-  };
+  // Stable object so the memoized Toolbar only re-renders on real changes.
+  return useMemo(
+    () => ({
+      isPlaying,
+      currentTimestamp,
+      frameIndex,
+      frameCount: frames.length,
+      play,
+      pause,
+      stepForward,
+      stepBack,
+    }),
+    [isPlaying, currentTimestamp, frameIndex, frames.length, play, pause, stepForward, stepBack]
+  );
 }

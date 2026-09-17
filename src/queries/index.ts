@@ -13,7 +13,7 @@ export {
 } from './useXPlaneQuery';
 
 // X-Plane WebSocket hooks (live streaming)
-export { usePlaneState, usePlanePosition, usePlaneStateManual } from './useXPlaneWebSocket';
+export { usePlaneStateStream } from './useXPlaneWebSocket';
 
 // Nav data hooks
 export { useNavDataQuery, useNavDataCounts, getNavDataCounts } from './useNavDataQuery';

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Compass, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ interface ExplorePanelProps {
   onSelectAirport: (airport: Airport) => void;
 }
 
-export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
+function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps) {
   const { t } = useTranslation();
   const explore = useMapStore((s) => s.explore);
   const setExploreTab = useMapStore((s) => s.setExploreTab);
@@ -143,3 +143,5 @@ export function ExplorePanel({ airports, onSelectAirport }: ExplorePanelProps) {
     </div>
   );
 }
+
+export const ExplorePanel = memo(ExplorePanelComponent);

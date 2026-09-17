@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
@@ -73,12 +73,44 @@ const LABEL_POSITIONS = Object.entries({
 // Lubber line points (static)
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
+// The rose is re-rendered on every rotation frame; its 84 tick and label
+// elements never change, so they are built once and reused as-is.
+const TICK_ELEMENTS = TICK_MARKS.map((tick) => (
+  <line
+    key={tick.deg}
+    x1={CENTER}
+    y1={CENTER - RADIUS + 2}
+    x2={CENTER}
+    y2={CENTER - RADIUS + 2 + tick.tickLength}
+    stroke={tick.isNorth ? 'oklch(var(--cat-red))' : 'oklch(var(--foreground) / 0.5)'}
+    strokeOpacity={tick.opacity}
+    strokeWidth={tick.tickWidth}
+    transform={`rotate(${tick.deg}, ${CENTER}, ${CENTER})`}
+  />
+));
+
+const LABEL_ELEMENTS = LABEL_POSITIONS.map((pos) => (
+  <text
+    key={pos.deg}
+    x={pos.x}
+    y={pos.y}
+    textAnchor="middle"
+    dominantBaseline="central"
+    fontSize={pos.fontSize}
+    fontFamily="ui-monospace, monospace"
+    fontWeight={pos.fontWeight}
+    fill={pos.isNorth ? 'oklch(var(--cat-red))' : 'oklch(var(--foreground) / 0.6)'}
+  >
+    {pos.label}
+  </text>
+));
+
 /**
  * Bearing and cursor elevation change on every map frame, so this widget
  * subscribes to them itself. Subscribing in the parent `Map` component
  * re-rendered the whole toolbar tree per frame during rotation.
  */
-export default function CompassWidget() {
+function CompassWidget() {
   const { t } = useTranslation();
   const mapBearing = useMapStore((s) => s.mapBearing);
   const cursorElevation = useMapStore((s) => s.cursorElevation);
@@ -136,37 +168,8 @@ export default function CompassWidget() {
                 transition: 'transform 150ms ease-out',
               }}
             >
-              {/* Tick marks */}
-              {TICK_MARKS.map((tick) => (
-                <line
-                  key={tick.deg}
-                  x1={CENTER}
-                  y1={CENTER - RADIUS + 2}
-                  x2={CENTER}
-                  y2={CENTER - RADIUS + 2 + tick.tickLength}
-                  stroke={tick.isNorth ? 'oklch(var(--cat-red))' : 'oklch(var(--foreground) / 0.5)'}
-                  strokeOpacity={tick.opacity}
-                  strokeWidth={tick.tickWidth}
-                  transform={`rotate(${tick.deg}, ${CENTER}, ${CENTER})`}
-                />
-              ))}
-
-              {/* Heading labels */}
-              {LABEL_POSITIONS.map((pos) => (
-                <text
-                  key={pos.deg}
-                  x={pos.x}
-                  y={pos.y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontSize={pos.fontSize}
-                  fontFamily="ui-monospace, monospace"
-                  fontWeight={pos.fontWeight}
-                  fill={pos.isNorth ? 'oklch(var(--cat-red))' : 'oklch(var(--foreground) / 0.6)'}
-                >
-                  {pos.label}
-                </text>
-              ))}
+              {TICK_ELEMENTS}
+              {LABEL_ELEMENTS}
             </g>
 
             {/* Fixed lubber line (top reference) */}
@@ -208,3 +211,5 @@ export default function CompassWidget() {
     </div>
   );
 }
+
+export default memo(CompassWidget);
