@@ -251,16 +251,17 @@ export class AirportParser {
 
   private parsePavement(tokens: string[], paths: ParsedPath[]): Pavement | null {
     if (tokens.length < 4) return null;
-    // First path without isHole is the outer boundary, rest are holes
-    const outer = paths.find((p) => !p.isHole);
-    const holes = paths.filter((p) => p.isHole);
+    // apt.dat defines ring order, not winding: the first ring is the outer
+    // boundary and every following ring is a hole. Winding-based detection
+    // flagged real outer rings as holes and inverted multi-ring pavements.
+    const [outer, ...holes] = paths;
 
     return {
       surface_type: parseInt(token(tokens, 1)),
       smoothness: parseFloat(token(tokens, 2)),
       texture_orientation: parseFloat(token(tokens, 3)),
       name: tokens.slice(4).join(' '),
-      coordinates: outer?.coordinates || paths[0]?.coordinates || [],
+      coordinates: outer?.coordinates ?? [],
       holes: holes.length > 0 ? holes.map((h) => h.coordinates) : undefined,
     };
   }
