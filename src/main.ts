@@ -388,6 +388,30 @@ function createWindow(): BrowserWindow {
   });
 
   window.on('page-title-updated', (e) => e.preventDefault());
+
+  if (!app.isPackaged) {
+    // titleBarStyle 'hidden' leaves the window without a native menu bar, so the default
+    // menu's DevTools accelerators never reach it.
+    window.webContents.on('before-input-event', (_event, input) => {
+      if (input.type !== 'keyDown') return;
+      const isDevToolsKey =
+        input.key === 'F12' ||
+        ((input.control || input.meta) && input.shift && input.key.toLowerCase() === 'i');
+      if (isDevToolsKey) {
+        window.webContents.toggleDevTools();
+      }
+    });
+
+    window.webContents.on('context-menu', (_event, params) => {
+      Menu.buildFromTemplate([
+        {
+          label: 'Inspect element',
+          click: () => window.webContents.inspectElement(params.x, params.y),
+        },
+      ]).popup({ window });
+    });
+  }
+
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
