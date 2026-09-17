@@ -14,7 +14,7 @@ import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
 import { Airport } from '@/lib/xplaneServices/dataService';
-import { usePlaneState, useVatsimSectorQuery } from '@/queries';
+import { usePlaneStateStream, useVatsimSectorQuery } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -22,11 +22,12 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
+import { planePositionFrom, usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
-import type { PlanePosition } from '@/types/xplane';
+import { PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
 import {
   applyAirportTheme,
   applyNavVisibilityChange,
@@ -108,7 +109,6 @@ export default function Map({ airports }: MapProps) {
   const layerVisibility = useMapStore((s) => s.layerVisibility);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const isNightMode = useMapStore((s) => s.isNightMode);
-  const mapBearing = useMapStore((s) => s.mapBearing);
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
@@ -125,8 +125,7 @@ export default function Map({ airports }: MapProps) {
   const setIvaoEnabled = useMapStore((s) => s.setIvaoEnabled);
   const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
 
-  const { map: mapSettings } = useSettingsStore();
-  const mapStyleUrl = mapSettings.mapStyleUrl;
+  const mapStyleUrl = useSettingsStore((s) => s.map.mapStyleUrl);
 
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
@@ -263,24 +262,11 @@ export default function Map({ airports }: MapProps) {
   const { data: vatsimSectorResult } = useVatsimSectorQuery(vatsimEnabled);
   const { data: ivaoData } = useIvaoQuery(ivaoEnabled);
 
-  // Plane tracker - live position via WebSocket
-  const { state: planeState, connected: isXPlaneConnected } = usePlaneState();
-
-  // Derive position from state for the map layer
-  const planePosition = useMemo<PlanePosition | null>(
-    () =>
-      planeState
-        ? {
-            lat: planeState.latitude,
-            lng: planeState.longitude,
-            altitude: planeState.altitudeMSL,
-            heading: planeState.heading,
-            groundspeed: planeState.groundspeed,
-            aircraftCategory: planeState.aircraftCategory,
-          }
-        : null,
-    [planeState]
-  );
+  // Plane tracker - live position via WebSocket. Snapshots go to planeStore;
+  // this component only subscribes to the connection flag so a position
+  // update does not re-render the whole map UI.
+  usePlaneStateStream();
+  const isXPlaneConnected = usePlaneStore((s) => s.connected);
 
   // Auto-enable plane tracker ONCE when X-Plane WebSocket first connects
   const hasAutoEnabledRef = useRef(false);
@@ -291,18 +277,27 @@ export default function Map({ airports }: MapProps) {
     }
   }, [isXPlaneConnected, showPlaneTracker, setShowPlaneTracker]);
 
-  // Plane layer sync - update plane position on map
+  // Plane layer sync - push each snapshot straight to the map layer
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    if (showPlaneTracker && isXPlaneConnected && planePosition) {
-      updatePlaneLayer(map, planePosition);
-      bringPlaneLayerToTop(map);
-    } else if (!showPlaneTracker || !isXPlaneConnected) {
+    if (!showPlaneTracker || !isXPlaneConnected) {
       removePlaneLayer(map);
+      return;
     }
-  }, [mapRef, showPlaneTracker, isXPlaneConnected, planePosition]);
+
+    const apply = (state: PlaneState | null) => {
+      const position = planePositionFrom(state);
+      if (!position) return;
+      updatePlaneLayer(map, position);
+      bringPlaneLayerToTop(map);
+    };
+    apply(usePlaneStore.getState().state);
+    return usePlaneStore.subscribe((s, prev) => {
+      if (s.state !== prev.state) apply(s.state);
+    });
+  }, [mapRef, showPlaneTracker, isXPlaneConnected]);
 
   // Cleanup plane layer on unmount
   useEffect(() => {
@@ -385,11 +380,9 @@ export default function Map({ airports }: MapProps) {
   // Terrain shading (hillshade + contour lines)
   useTerrainShading(mapRef, terrainShadingEnabled);
 
-  // Cursor-following terrain elevation. `supported` flips with terrain
-  // availability so the compass keeps the elevation row mounted in mercator
-  // mode (showing a placeholder while the cursor is off-map) and only drops
-  // it when terrain itself is gone.
-  const cursorElevation = useCursorElevation(mapRef);
+  // Cursor-following terrain elevation, published to the map store for the
+  // compass widget.
+  useCursorElevation(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -751,6 +744,7 @@ export default function Map({ airports }: MapProps) {
   const isProgrammaticMoveRef = useRef(false);
 
   const handleCenterPlane = useCallback(() => {
+    const planePosition = planePositionFrom(usePlaneStore.getState().state);
     if (!planePosition || !mapRef.current) return;
     // Toggle follow mode
     const newFollowState = !followPlane;
@@ -770,21 +764,46 @@ export default function Map({ airports }: MapProps) {
         isProgrammaticMoveRef.current = false;
       }, 1600);
     }
-  }, [mapRef, planePosition, followPlane, setFollowPlane]);
+  }, [mapRef, followPlane, setFollowPlane]);
 
-  // Follow plane position and heading when follow mode is active
+  // Follow plane position and heading when follow mode is active. Position
+  // snapshots arrive at a fixed rate from the main process; a linear ease
+  // of the same length glides the camera between them instead of stepping.
+  // A parked aircraft produces identical snapshots, which must not keep the
+  // map animating.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !followPlane || !planePosition) return;
+    if (!map || !followPlane) return;
 
-    // Use jumpTo for instant updates - no lag from overlapping animations
-    isProgrammaticMoveRef.current = true;
-    map.jumpTo({
-      center: [planePosition.lng, planePosition.lat],
-      bearing: planePosition.heading ?? 0,
+    let last: { lng: number; lat: number; heading: number } | null = null;
+    const follow = (state: PlaneState | null) => {
+      const position = planePositionFrom(state);
+      if (!position) return;
+      const target = { lng: position.lng, lat: position.lat, heading: position.heading ?? 0 };
+      if (
+        last &&
+        last.lng === target.lng &&
+        last.lat === target.lat &&
+        last.heading === target.heading
+      ) {
+        return;
+      }
+      last = target;
+
+      isProgrammaticMoveRef.current = true;
+      map.easeTo({
+        center: [target.lng, target.lat],
+        bearing: target.heading,
+        duration: PLANE_STATE_INTERVAL_MS,
+        easing: (t) => t,
+      });
+      isProgrammaticMoveRef.current = false;
+    };
+    follow(usePlaneStore.getState().state);
+    return usePlaneStore.subscribe((s, prev) => {
+      if (s.state !== prev.state) follow(s.state);
     });
-    isProgrammaticMoveRef.current = false;
-  }, [mapRef, followPlane, planePosition]);
+  }, [mapRef, followPlane]);
 
   // Disable follow mode when user interacts with the map (not programmatic)
   useEffect(() => {
@@ -828,17 +847,11 @@ export default function Map({ airports }: MapProps) {
       </div>
 
       {/* Map widgets - left side */}
-      <CompassWidget mapBearing={mapBearing} cursorElevation={cursorElevation} />
+      <CompassWidget />
       <DevDebugOverlay mapRef={mapRef} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
-      {showPlaneTracker && (
-        <FlightStrip
-          planeState={planeState}
-          connected={isXPlaneConnected}
-          onCenterPlane={handleCenterPlane}
-        />
-      )}
+      {showPlaneTracker && <FlightStrip onCenterPlane={handleCenterPlane} />}
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />

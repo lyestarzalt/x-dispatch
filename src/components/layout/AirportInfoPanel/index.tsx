@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Compass, Home, Info, PlaneTakeoff, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +38,7 @@ interface AirportInfoPanelProps {
   onSelectHelipadAsStart?: (helipad: NamedPosition) => void;
 }
 
-export default function AirportInfoPanel({
+function AirportInfoPanel({
   onSelectRunway,
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
@@ -259,3 +259,5 @@ export default function AirportInfoPanel({
     </div>
   );
 }
+
+export default memo(AirportInfoPanel);

@@ -6,10 +6,13 @@ import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './pr
 
 const TERRAIN_SOURCE_ID = 'terrain-dem';
 const HILLSHADE_SOURCE_ID = 'terrain-hillshade-dem';
-const TERRAIN_TILES_URL = 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
 // Use tile-cache:// scheme for contour worker fetches — bypasses Electron CSP
 // (blob workers don't inherit CSP from onHeadersReceived)
 const TERRAIN_TILES_CACHE_URL = 'tile-cache://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
+const TERRAIN_DEM_MAXZOOM = 10;
+// Contour thresholds start at this zoom; requesting contour tiles below it
+// only produces empty tiles after a DEM fetch.
+const CONTOUR_MINZOOM = 11;
 const HILLSHADE_LAYER_ID = 'terrain-hillshade';
 const CONTOUR_SOURCE_ID = 'terrain-contours';
 const CONTOUR_LINE_LAYER_ID = 'terrain-contour-lines';
@@ -23,7 +26,7 @@ function getContourDemSource(): InstanceType<typeof mlcontour.DemSource> {
     contourDemSource = new mlcontour.DemSource({
       url: TERRAIN_TILES_CACHE_URL,
       encoding: 'terrarium',
-      maxzoom: 10,
+      maxzoom: TERRAIN_DEM_MAXZOOM,
     });
     contourDemSource.setupMaplibre(maplibregl);
   }
@@ -148,13 +151,19 @@ export const TERRAIN_SHADING_LAYER_IDS = [
 export function setup3DTerrain(map: maplibregl.Map): void {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
 
+  // Terrain, hillshade and contours all consume the same DEM tiles. The
+  // contour worker keeps a decoded-tile cache and exposes it through a
+  // protocol URL, so the two raster-dem sources read from that cache instead
+  // of fetching every tile a second and third time.
+  const demSource = getContourDemSource();
+
   // Terrain DEM source — used for 3D terrain extrusion (enabled only in mercator mode)
   map.addSource(TERRAIN_SOURCE_ID, {
     type: 'raster-dem',
     encoding: 'terrarium',
-    tiles: [TERRAIN_TILES_URL],
+    tiles: [demSource.sharedDemProtocolUrl],
     tileSize: 256,
-    maxzoom: 10,
+    maxzoom: TERRAIN_DEM_MAXZOOM,
   });
 
   // Separate DEM source for hillshade — avoids competing with terrain extrusion
@@ -162,9 +171,9 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   map.addSource(HILLSHADE_SOURCE_ID, {
     type: 'raster-dem',
     encoding: 'terrarium',
-    tiles: [TERRAIN_TILES_URL],
+    tiles: [demSource.sharedDemProtocolUrl],
     tileSize: 256,
-    maxzoom: 10,
+    maxzoom: TERRAIN_DEM_MAXZOOM,
   });
 
   // Terrain is not enabled here — we start in globe mode where it would crash.
@@ -190,10 +199,9 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   );
 
   // Contour lines
-  const demSource = getContourDemSource();
-
   map.addSource(CONTOUR_SOURCE_ID, {
     type: 'vector',
+    minzoom: CONTOUR_MINZOOM,
     tiles: [
       demSource.contourProtocolUrl({
         overzoom: 1,

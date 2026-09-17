@@ -225,42 +225,36 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   /**
-   * Eagerly attach the deck.gl overlay to the map. Call once on
-   * `map.on('load')` from `useMapSetup`. Idempotent: a no-op if the same
-   * overlay is already attached to this map. If `add()` ran before attach
-   * (cold-start nav-data-arrived-first race), the pending state is flushed
-   * here so the wedge appears as soon as the overlay is wired.
+   * Bind the renderer to a map. Call once from `useMapSetup` as soon as the
+   * style is usable. The deck.gl overlay itself is only created while there
+   * are beams to draw: an attached overlay runs its own requestAnimationFrame
+   * loop every frame even with zero layers, which kept the GPU busy on an
+   * otherwise idle map. If `add()` ran before attach (cold-start
+   * nav-data-arrived-first race), the pending beams are flushed here.
    */
   attachTo(map: maplibregl.Map): void {
-    if (this.deckOverlay && this.deckMap === map) return;
-    if (this.deckOverlay && this.deckMap && this.deckMap !== map) {
-      try {
-        this.deckMap.removeControl(this.deckOverlay);
-      } catch {
-        /* ignore: control may already be detached */
-      }
-      this.deckOverlay.finalize();
-      this.deckOverlay = null;
-    }
-    const overlay = new MapLibreOverlay({ interleaved: true, layers: [] });
-    map.addControl(overlay);
-    this.deckOverlay = overlay;
+    if (this.deckMap === map) return;
+    if (this.deckMap && this.deckMap !== map) this.destroyOverlay(this.deckMap);
     this.deckMap = map;
-    // Flush any state populated before attach.
-    overlay.setProps({ layers: this.buildDeckLayers() });
+    this.pushDeckLayers();
   }
 
   /** Detach on map teardown. */
   detachFrom(map: maplibregl.Map): void {
-    if (!this.deckOverlay || this.deckMap !== map) return;
+    if (this.deckMap !== map) return;
+    this.destroyOverlay(map);
+    this.deckMap = null;
+  }
+
+  private destroyOverlay(map: maplibregl.Map): void {
+    if (!this.deckOverlay) return;
     try {
       map.removeControl(this.deckOverlay);
     } catch {
-      /* ignore */
+      /* ignore: control may already be detached */
     }
     this.deckOverlay.finalize();
     this.deckOverlay = null;
-    this.deckMap = null;
   }
 
   private buildDeckLayers(): SolidPolygonLayer[] {
@@ -302,12 +296,23 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   }
 
   /**
-   * Push current beam state to the overlay. No-op if not yet attached —
+   * Push current beam state to the overlay, creating it on the first beams
+   * and tearing it down when none are left. No-op if not yet attached —
    * `attachTo()` will flush state when it runs.
    */
   private pushDeckLayers(): void {
-    if (!this.deckOverlay) return;
-    this.deckOverlay.setProps({ layers: this.buildDeckLayers() });
+    if (!this.deckMap) return;
+    const layers = this.buildDeckLayers();
+    if (layers.length === 0) {
+      this.destroyOverlay(this.deckMap);
+      return;
+    }
+    if (!this.deckOverlay) {
+      this.deckOverlay = new MapLibreOverlay({ interleaved: true, layers });
+      this.deckMap.addControl(this.deckOverlay);
+      return;
+    }
+    this.deckOverlay.setProps({ layers });
   }
 
   async add(map: maplibregl.Map, data: Navaid[]): Promise<void> {
@@ -347,17 +352,13 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     if (map.getSource(this.courseSourceId)) map.removeSource(this.courseSourceId);
 
     this.currentBeams = [];
-    if (this.deckOverlay && this.deckMap === map) {
-      this.deckOverlay.setProps({ layers: [] });
-    }
+    if (this.deckMap === map) this.pushDeckLayers();
   }
 
   setVisibility(map: maplibregl.Map, visible: boolean): void {
     setLayersVisibility(map, [this.layerId, ...this.additionalLayerIds], visible);
     this.beamsVisible = visible;
-    if (this.deckOverlay && this.deckMap === map) {
-      this.deckOverlay.setProps({ layers: this.buildDeckLayers() });
-    }
+    if (this.deckMap === map) this.pushDeckLayers();
   }
 }
 

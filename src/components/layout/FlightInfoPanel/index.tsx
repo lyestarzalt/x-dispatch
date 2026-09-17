@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronLeft,
@@ -41,7 +41,7 @@ interface Tab {
   label: string;
 }
 
-export default function FlightInfoPanel() {
+function FlightInfoPanel() {
   const { t } = useTranslation();
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const clearFlightPlan = useFlightPlanStore((s) => s.clearFlightPlan);
@@ -651,3 +651,5 @@ function formatAltimeter(alt: IAltimeter | undefined): string {
   if (alt.unit === 'inHg') return `${alt.value.toFixed(2)}"`;
   return `${alt.value}`;
 }
+
+export default memo(FlightInfoPanel);

@@ -88,3 +88,6 @@ design-system/
 # Sentry Config File
 .env.sentry-build-plugin
 
+
+# Local map benchmark results (npm run bench:map --json)
+bench-*.json

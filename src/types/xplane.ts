@@ -1,5 +1,12 @@
 import type { Coordinates } from './geo';
 
+/**
+ * How often the main process emits a plane state snapshot to the renderer.
+ * The follow-camera ease uses the same length so motion between snapshots
+ * is continuous.
+ */
+export const PLANE_STATE_INTERVAL_MS = 100;
+
 export type WeatherPresetName =
   'real' | 'clear' | 'cloudy' | 'rainy' | 'stormy' | 'snowy' | 'foggy';
 

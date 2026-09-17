@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import logger from '@/lib/utils/logger';
-import type { AircraftCategory, PlaneState } from '@/types/xplane';
+import { type AircraftCategory, PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
 
 const DEFAULT_PORT = 8086;
 const RESOLVE_TIMEOUT = 5000;
@@ -100,6 +100,8 @@ export class XPlaneWebSocketClient {
   private pingInterval: NodeJS.Timeout | null = null;
   private pongTimeout: NodeJS.Timeout | null = null;
   private graceTimer: NodeJS.Timeout | null = null;
+  private emitTimer: NodeJS.Timeout | null = null;
+  private stateDirty = false;
 
   constructor(port: number = DEFAULT_PORT) {
     this.port = port;
@@ -342,6 +344,11 @@ export class XPlaneWebSocketClient {
       clearTimeout(this.graceTimer);
       this.graceTimer = null;
     }
+    if (this.emitTimer) {
+      clearTimeout(this.emitTimer);
+      this.emitTimer = null;
+    }
+    this.stateDirty = false;
   }
 
   private subscribeToDatarefs(): void {
@@ -392,13 +399,27 @@ export class XPlaneWebSocketClient {
     // Derive aircraft category from metadata flags
     this.currentState.aircraftCategory = this.deriveAircraftCategory();
 
-    if (
-      this.currentState.latitude !== undefined &&
-      this.currentState.longitude !== undefined &&
-      this.onStateUpdate
-    ) {
-      this.onStateUpdate(this.currentState as PlaneState);
+    if (this.currentState.latitude !== undefined && this.currentState.longitude !== undefined) {
+      this.scheduleStateEmit();
     }
+  }
+
+  /**
+   * X-Plane streams one message per dataref change at sim frame rate, so
+   * latitude and longitude of the same frame arrive in different messages.
+   * Emitting per message flooded the renderer with hundreds of IPC updates a
+   * second and produced positions mixing an old longitude with a new
+   * latitude. Coalesce into one snapshot per interval instead.
+   */
+  private scheduleStateEmit(): void {
+    this.stateDirty = true;
+    if (this.emitTimer) return;
+    this.emitTimer = setTimeout(() => {
+      this.emitTimer = null;
+      if (!this.stateDirty || !this.onStateUpdate) return;
+      this.stateDirty = false;
+      this.onStateUpdate({ ...(this.currentState as PlaneState) });
+    }, PLANE_STATE_INTERVAL_MS);
   }
 
   private deriveAircraftCategory(): AircraftCategory | null {

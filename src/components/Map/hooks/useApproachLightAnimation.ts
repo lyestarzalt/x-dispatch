@@ -7,7 +7,8 @@
  *
  * Light positions are cached from MapLibre source features and re-queried
  * only on moveend. Drawing uses RAF for smooth projection during panning.
- * The RAF loop only runs when the animation is enabled and visible (zoom > 14).
+ * The RAF loop only runs while there are lights to draw at the current zoom;
+ * it stops itself otherwise and is restarted from moveend.
  */
 import { useEffect, useRef } from 'react';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
@@ -110,13 +111,24 @@ export function useApproachLightAnimation(mapRef: MapRef): void {
       }
     };
 
-    queryLights();
-    lastTimeRef.current = performance.now();
-
     let cancelled = false;
+    let running = false;
+
+    const clear = () => {
+      const dpr = window.devicePixelRatio || 1;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    };
 
     const render = () => {
       if (cancelled) return;
+
+      const lights = lightsRef.current;
+      if (lights.length === 0 || map.getZoom() < MIN_ZOOM) {
+        clear();
+        running = false;
+        return;
+      }
 
       const now = performance.now();
       const dt = (now - lastTimeRef.current) / 1000;
@@ -128,8 +140,7 @@ export function useApproachLightAnimation(mapRef: MapRef): void {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
 
-      const lights = lightsRef.current;
-      if (lights.length > 0 && map.getZoom() >= MIN_ZOOM) {
+      {
         phaseRef.current += RABBIT_SPEED * dt;
         const currentBar = Math.floor(phaseRef.current % BAR_COUNT);
         const zoom = map.getZoom();
@@ -170,10 +181,22 @@ export function useApproachLightAnimation(mapRef: MapRef): void {
       rafRef.current = requestAnimationFrame(render);
     };
 
-    rafRef.current = requestAnimationFrame(render);
+    const start = () => {
+      if (running || cancelled) return;
+      if (lightsRef.current.length === 0 || map.getZoom() < MIN_ZOOM) return;
+      running = true;
+      lastTimeRef.current = performance.now();
+      rafRef.current = requestAnimationFrame(render);
+    };
+
+    queryLights();
+    start();
 
     // Re-query on map change (visible features may differ)
-    const onMapChange = () => queryLights();
+    const onMapChange = () => {
+      queryLights();
+      start();
+    };
     map.on('moveend', onMapChange);
 
     return () => {
