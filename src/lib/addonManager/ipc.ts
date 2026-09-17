@@ -23,6 +23,8 @@ import { SceneryManager } from './scenery/SceneryManager';
  * @param getXPlanePath - Function to get the current X-Plane path
  */
 export function registerAddonManagerIPC(getXPlanePath: () => string | null): void {
+  let lastBrowsedDir: string | null = null;
+
   // ===== SCENERY MANAGER =====
 
   ipcMain.handle('addon:scenery:analyze', async () => {
@@ -492,6 +494,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
         { name: 'All Files', extensions: ['*'] },
       ],
       properties: ['openFile', 'multiSelections'],
+      defaultPath: lastBrowsedDir ?? undefined,
     };
 
     try {
@@ -502,6 +505,9 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       if (result.canceled || result.filePaths.length === 0) {
         return { ok: true, value: [] };
       }
+
+      const firstPath = result.filePaths[0];
+      if (firstPath) lastBrowsedDir = path.dirname(firstPath);
 
       return { ok: true, value: result.filePaths };
     } catch (e) {
