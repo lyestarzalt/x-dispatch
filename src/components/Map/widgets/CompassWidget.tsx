@@ -1,18 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils/helpers';
-import type { CursorElevation } from '../hooks/useCursorElevation';
-
-interface CompassWidgetProps {
-  mapBearing: number;
-  /**
-   * Cursor terrain elevation. The row is mounted whenever `supported` is
-   * true (terrain is on) and shows a placeholder when the cursor leaves
-   * the map — that way the readout doesn't flicker in/out as the cursor
-   * moves over the canvas.
-   */
-  cursorElevation?: CursorElevation;
-}
+import { useMapStore } from '@/stores/mapStore';
 
 const METERS_TO_FEET = 3.28084;
 
@@ -84,16 +73,23 @@ const LABEL_POSITIONS = Object.entries({
 // Lubber line points (static)
 const LUBBER_POINTS = `${CENTER},${CENTER - RADIUS - 1} ${CENTER - 3},${CENTER - RADIUS + 5} ${CENTER + 3},${CENTER - RADIUS + 5}`;
 
-export default function CompassWidget({ mapBearing, cursorElevation }: CompassWidgetProps) {
+/**
+ * Bearing and cursor elevation change on every map frame, so this widget
+ * subscribes to them itself. Subscribing in the parent `Map` component
+ * re-rendered the whole toolbar tree per frame during rotation.
+ */
+export default function CompassWidget() {
   const { t } = useTranslation();
+  const mapBearing = useMapStore((s) => s.mapBearing);
+  const cursorElevation = useMapStore((s) => s.cursorElevation);
 
   const headingDisplay = useMemo(() => formatHeading(mapBearing), [mapBearing]);
 
-  const showElevationRow = cursorElevation?.supported ?? false;
+  const showElevationRow = cursorElevation.supported;
   const elevationFt = useMemo(() => {
-    const m = cursorElevation?.valueM;
+    const m = cursorElevation.valueM;
     return m == null ? null : formatElevationFt(m);
-  }, [cursorElevation?.valueM]);
+  }, [cursorElevation.valueM]);
 
   return (
     <div className="absolute bottom-10 left-12 z-10" role="region" aria-label="Compass heading">

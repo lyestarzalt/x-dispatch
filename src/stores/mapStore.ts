@@ -19,6 +19,17 @@ export interface FeatureDebugInfo {
   rawData?: string;
 }
 
+export interface CursorElevation {
+  /**
+   * True when the map has terrain set (mercator + user toggle on). Callers
+   * use this to decide whether to render an elevation row at all — separate
+   * from `valueM`, which is null whenever the cursor isn't over the map.
+   */
+  supported: boolean;
+  /** Last queried elevation in metres, or null if the cursor is off-canvas. */
+  valueM: number | null;
+}
+
 export type SurfaceTypeFilter = 'paved' | 'unpaved' | 'water' | 'other';
 
 export interface AirportFilterState {
@@ -66,6 +77,11 @@ interface MapState {
   isNightMode: boolean;
   currentZoom: number;
   mapBearing: number;
+  /**
+   * Updated on every map frame while the cursor is over terrain. Lives in
+   * the store rather than React state so only the compass re-renders.
+   */
+  cursorElevation: CursorElevation;
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
   vatsimEnabled: boolean;
@@ -93,6 +109,7 @@ interface MapState {
   toggleNightMode: () => void;
   setCurrentZoom: (zoom: number) => void;
   setMapBearing: (bearing: number) => void;
+  setCursorElevation: (elevation: CursorElevation) => void;
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
@@ -127,6 +144,7 @@ export const useMapStore = create<MapState>()(
       isNightMode: false,
       currentZoom: 2,
       mapBearing: 0,
+      cursorElevation: { supported: false, valueM: null },
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
@@ -193,6 +211,13 @@ export const useMapStore = create<MapState>()(
       toggleNightMode: () => set((state) => ({ isNightMode: !state.isNightMode })),
       setCurrentZoom: (zoom) => set({ currentZoom: zoom }),
       setMapBearing: (bearing) => set({ mapBearing: bearing }),
+      setCursorElevation: (elevation) =>
+        set((state) =>
+          state.cursorElevation.supported === elevation.supported &&
+          state.cursorElevation.valueM === elevation.valueM
+            ? state
+            : { cursorElevation: elevation }
+        ),
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setVatsimEnabled: (enabled) =>

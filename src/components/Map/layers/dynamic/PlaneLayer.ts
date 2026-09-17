@@ -20,6 +20,13 @@ const PULSE_DURATION_MS = 2000;
 const PULSE_MIN_R = 10;
 const PULSE_MAX_R = ICON_SIZE / 2;
 
+// An animated StyleImage that returns true from render() on every frame
+// forces MapLibre to redraw the whole scene, terrain included, at the
+// display refresh rate for as long as the tracker is on. The pulse and rotor
+// read fine at a fraction of that, so redraws are paced by a timer instead.
+const ICON_FRAME_INTERVAL_MS = 1000 / 12;
+const ROTOR_REVOLUTIONS_PER_SECOND = 4;
+
 // A320 top-down silhouette
 const PLANE_PATH =
   'm 17.10525,0.06681738 -0.902035,0.73499118 -0.968852,2.50565184 -0.167044,1.4365737 -0.03341,7.0826419 -0.26727,1.302939 -2.605878,1.236122 0.06682,-0.935443 -0.0167,-1.670435 -0.133635,-0.267269 -1.670435,-0.01671 -0.200452,0.200452 -0.0167,2.238382 0.167043,0.918739 0.233861,0.367496 -9.92238106,5.128234 -0.36749561,0.434313 -0.25056518,0.684878 0.01670434,1.369756 0.13363476,0.0167 0.0668174,-0.701583 4.49346885,-1.403165 0.1837478,0.551244 0.1670434,1e-6 0.066818,-0.584652 3.2239386,-1.119191 0.1837478,0.517835 0.1670433,-1e-6 0.1336344,-0.618061 1.7038432,-0.534539 1.403165,0.0167 0.08352,0.467722 0.167043,0.01671 0.08352,-0.484427 2.655991,0.01671 0.03341,9.153982 0.283974,1.954408 0.434313,2.021224 -0.183748,0.317383 -4.426651,2.856445 -0.26727,0.400904 0.01671,1.035669 5.328686,-1.18601 0.317383,1.152601 0.417609,0.885331 0.267269,0.01669 0.379656,-0.846045 0.30033,-1.204534 5.433805,1.198658 -0.01671,-1.002261 -0.250565,-0.451016 -4.476765,-2.873148 -0.183748,-0.367495 0.3842,-1.987818 0.317383,-1.920999 -0.0167,-9.18739 2.65599,-0.03341 0.15034,0.551243 h 0.150339 l 0.100226,-0.50113 1.286234,-0.05011 1.787365,0.551243 0.06682,0.584652 0.217157,-3e-6 0.11693,-0.467721 3.240644,1.00226 0.100227,0.668174 0.23386,0.0167 0.133635,-0.567947 4.526878,1.38646 0.100224,0.65147 0.150339,-0.0167 -0.06681,-1.503392 -0.317384,-0.651469 -0.400904,-0.3842 -9.822155,-4.994599 c 0.07965,-0.247814 0.334087,-0.367497 0.334087,-0.367497 l 0.03341,-3.006782 -0.267269,-0.300678 -1.570209,0.03341 -0.200452,0.23386 10e-7,1.904296 0.150339,0.734991 -2.622582,-1.386461 -0.334087,-1.336347 0.0167,-7.0826429 -0.283974,-1.2862345 -0.835217,-2.62258215 z';
@@ -116,6 +123,16 @@ function createPlayerIcon(config: IconConfig): StyleImageInterface {
 
   let angle = 0;
   let mapInstance: maplibregl.Map | null = null;
+  let lastFrameAt = 0;
+  let repaintTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function scheduleRepaint(delayMs: number): void {
+    if (repaintTimer !== null || !mapInstance) return;
+    repaintTimer = setTimeout(() => {
+      repaintTimer = null;
+      mapInstance?.triggerRepaint();
+    }, delayMs);
+  }
   const data = new Uint8Array(ICON_SIZE * ICON_SIZE * 4);
 
   function draw(): void {
@@ -186,11 +203,20 @@ function createPlayerIcon(config: IconConfig): StyleImageInterface {
     },
     onRemove() {
       mapInstance = null;
+      if (repaintTimer !== null) clearTimeout(repaintTimer);
+      repaintTimer = null;
     },
     render(): boolean {
-      if (rotor) angle += (Math.PI * 2 * 4) / 60;
+      const now = performance.now();
+      const elapsed = now - lastFrameAt;
+      if (elapsed < ICON_FRAME_INTERVAL_MS) {
+        scheduleRepaint(ICON_FRAME_INTERVAL_MS - elapsed);
+        return false;
+      }
+      lastFrameAt = now;
+      if (rotor) angle += Math.PI * 2 * ROTOR_REVOLUTIONS_PER_SECOND * (elapsed / 1000);
       draw();
-      mapInstance?.triggerRepaint();
+      scheduleRepaint(ICON_FRAME_INTERVAL_MS);
       return true;
     },
   };

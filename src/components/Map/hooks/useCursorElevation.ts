@@ -1,76 +1,66 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import type * as maplibregl from 'maplibre-gl';
+import { useMapStore } from '@/stores/mapStore';
 import type { MapRef } from './useMapSetup';
 
-export interface CursorElevation {
-  /**
-   * True when the map has terrain set (mercator + user toggle on). Callers
-   * use this to decide whether to render an elevation row at all — separate
-   * from `valueM`, which is null whenever the cursor isn't over the map.
-   */
-  supported: boolean;
-  /** Last queried elevation in metres, or null if the cursor is off-canvas. */
-  valueM: number | null;
-}
+export type { CursorElevation } from '@/stores/mapStore';
 
 /**
  * Tracks the terrain elevation under the user's cursor and whether terrain
- * is even available. Splitting the two lets the UI keep its layout stable:
- * the elevation row stays mounted while terrain is on (showing a placeholder
- * when the cursor leaves the map) and only collapses when the projection or
- * the user setting drops terrain entirely.
+ * is even available, and publishes both to the map store. Splitting the two
+ * lets the UI keep its layout stable: the elevation row stays mounted while
+ * terrain is on (showing a placeholder when the cursor leaves the map) and
+ * only collapses when the projection or the user setting drops terrain.
  *
  * The screen-space cursor pixel is remembered across map moves so the value
  * stays current as the user pans/zooms with the cursor stationary.
+ *
+ * Call this from the component that owns the map so the effect runs after
+ * the map exists; consumers read `cursorElevation` from the store.
  */
-export function useCursorElevation(mapRef: MapRef): CursorElevation {
-  const [supported, setSupported] = useState(false);
-  const [valueM, setValueM] = useState<number | null>(null);
-  const cursorPixelRef = useRef<{ x: number; y: number } | null>(null);
-
+export function useCursorElevation(mapRef: MapRef): void {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    const refreshSupported = () => setSupported(map.getTerrain() != null);
+    const publish = useMapStore.getState().setCursorElevation;
+    let cursorPixel: { x: number; y: number } | null = null;
 
     const recompute = () => {
-      const pixel = cursorPixelRef.current;
-      if (!pixel || !map.getTerrain()) {
-        setValueM(null);
+      const supported = map.getTerrain() != null;
+      if (!cursorPixel || !supported) {
+        publish({ supported, valueM: null });
         return;
       }
-      const lngLat = map.unproject([pixel.x, pixel.y]);
+      const lngLat = map.unproject([cursorPixel.x, cursorPixel.y]);
       const elev = map.queryTerrainElevation([lngLat.lng, lngLat.lat]);
-      setValueM(typeof elev === 'number' && Number.isFinite(elev) ? elev : null);
+      publish({
+        supported,
+        valueM: typeof elev === 'number' && Number.isFinite(elev) ? elev : null,
+      });
     };
 
     const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
-      cursorPixelRef.current = { x: e.point.x, y: e.point.y };
+      cursorPixel = { x: e.point.x, y: e.point.y };
       recompute();
     };
     const handleMouseOut = () => {
-      cursorPixelRef.current = null;
-      setValueM(null);
-    };
-    const handleTerrain = () => {
-      refreshSupported();
+      cursorPixel = null;
       recompute();
     };
 
-    refreshSupported();
+    recompute();
     map.on('mousemove', handleMouseMove);
     map.on('mouseout', handleMouseOut);
     map.on('move', recompute);
-    map.on('terrain', handleTerrain);
+    map.on('terrain', recompute);
 
     return () => {
       map.off('mousemove', handleMouseMove);
       map.off('mouseout', handleMouseOut);
       map.off('move', recompute);
-      map.off('terrain', handleTerrain);
+      map.off('terrain', recompute);
+      publish({ supported: false, valueM: null });
     };
   }, [mapRef]);
-
-  return { supported, valueM };
 }

@@ -26,7 +26,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
-import type { PlanePosition } from '@/types/xplane';
+import { PLANE_STATE_INTERVAL_MS, type PlanePosition } from '@/types/xplane';
 import {
   applyAirportTheme,
   applyNavVisibilityChange,
@@ -108,7 +108,6 @@ export default function Map({ airports }: MapProps) {
   const layerVisibility = useMapStore((s) => s.layerVisibility);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const isNightMode = useMapStore((s) => s.isNightMode);
-  const mapBearing = useMapStore((s) => s.mapBearing);
   const debugEnabled = useMapStore((s) => s.debugEnabled);
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
@@ -385,11 +384,9 @@ export default function Map({ airports }: MapProps) {
   // Terrain shading (hillshade + contour lines)
   useTerrainShading(mapRef, terrainShadingEnabled);
 
-  // Cursor-following terrain elevation. `supported` flips with terrain
-  // availability so the compass keeps the elevation row mounted in mercator
-  // mode (showing a placeholder while the cursor is off-map) and only drops
-  // it when terrain itself is gone.
-  const cursorElevation = useCursorElevation(mapRef);
+  // Cursor-following terrain elevation, published to the map store for the
+  // compass widget.
+  useCursorElevation(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -772,16 +769,38 @@ export default function Map({ airports }: MapProps) {
     }
   }, [mapRef, planePosition, followPlane, setFollowPlane]);
 
-  // Follow plane position and heading when follow mode is active
+  // Follow plane position and heading when follow mode is active. Position
+  // snapshots arrive at a fixed rate from the main process; a linear ease
+  // of the same length glides the camera between them instead of stepping.
+  // A parked aircraft produces identical snapshots, which must not keep the
+  // map animating.
+  const lastFollowedRef = useRef<{ lng: number; lat: number; heading: number } | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !followPlane || !planePosition) return;
 
-    // Use jumpTo for instant updates - no lag from overlapping animations
+    const target = {
+      lng: planePosition.lng,
+      lat: planePosition.lat,
+      heading: planePosition.heading ?? 0,
+    };
+    const last = lastFollowedRef.current;
+    if (
+      last &&
+      last.lng === target.lng &&
+      last.lat === target.lat &&
+      last.heading === target.heading
+    ) {
+      return;
+    }
+    lastFollowedRef.current = target;
+
     isProgrammaticMoveRef.current = true;
-    map.jumpTo({
-      center: [planePosition.lng, planePosition.lat],
-      bearing: planePosition.heading ?? 0,
+    map.easeTo({
+      center: [target.lng, target.lat],
+      bearing: target.heading,
+      duration: PLANE_STATE_INTERVAL_MS,
+      easing: (t) => t,
     });
     isProgrammaticMoveRef.current = false;
   }, [mapRef, followPlane, planePosition]);
@@ -828,7 +847,7 @@ export default function Map({ airports }: MapProps) {
       </div>
 
       {/* Map widgets - left side */}
-      <CompassWidget mapBearing={mapBearing} cursorElevation={cursorElevation} />
+      <CompassWidget />
       <DevDebugOverlay mapRef={mapRef} />
       <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
