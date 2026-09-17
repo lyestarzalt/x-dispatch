@@ -6,22 +6,27 @@ import {
 } from '@/config/mapStyles/surfaceColors';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { ParsedAirport } from '@/types/apt';
-import { createTaxiwayGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
+/**
+ * Every apt.dat taxiway row is also a pavement, so this layer draws the
+ * polygons the PavementLayer already uploaded rather than tiling a second
+ * copy of the same geometry. PavementLayer renders first and owns the source.
+ */
 export class TaxiwayLayer extends BaseLayerRenderer {
   layerId = 'airport-taxiways';
-  sourceId = 'airport-taxiways';
+  sourceId = 'airport-pavements';
 
   hasData(airport: ParsedAirport): boolean {
-    return airport.taxiways && airport.taxiways.length > 0;
+    return airport.pavements && airport.pavements.length > 0;
+  }
+
+  protected performRemove(map: maplibregl.Map): void {
+    if (map.getLayer(this.layerId)) map.removeLayer(this.layerId);
   }
 
   render(map: maplibregl.Map, airport: ParsedAirport): void {
-    if (!this.hasData(airport)) return;
-
-    const geoJSON = createTaxiwayGeoJSON(airport.taxiways);
-    this.addSource(map, geoJSON);
+    if (!this.hasData(airport) || !map.getSource(this.sourceId)) return;
 
     // Build color expression for surface types
     const colorExpression = this.buildSurfaceColorExpression();

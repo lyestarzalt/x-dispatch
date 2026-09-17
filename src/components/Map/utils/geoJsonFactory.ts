@@ -52,42 +52,6 @@ export function createRunwayShoulderGeoJSON(runways: Runway[]): GeoJSON.FeatureC
   };
 }
 
-export function createTaxiwayGeoJSON(
-  taxiways: ParsedAirport['taxiways']
-): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: taxiways.map((taxiway) => {
-      const paths = taxiway.paths as { coordinates: [number, number][]; isHole?: boolean }[];
-
-      // First path is always outer, rest are holes (based on X-Plane spec order)
-      const outer = paths[0];
-      const holes = paths.slice(1);
-
-      const coordinates: [number, number][][] = [];
-      if (outer) {
-        coordinates.push(outer.coordinates.map(([lon, lat]) => [lon, lat]));
-      }
-      for (const hole of holes) {
-        coordinates.push(hole.coordinates.map(([lon, lat]) => [lon, lat]));
-      }
-
-      return {
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Polygon' as const,
-          coordinates,
-        },
-        properties: {
-          surface: taxiway.surface,
-          smoothness: taxiway.smoothness,
-          orientation: taxiway.orientation,
-        },
-      };
-    }),
-  };
-}
-
 export function createBoundaryGeoJSON(
   boundaries: ParsedAirport['boundaries']
 ): GeoJSON.FeatureCollection {
