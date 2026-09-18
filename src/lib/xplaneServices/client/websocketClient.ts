@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import { RECORDER_DATAREF_NAMES } from '@/lib/flightRecorder/frames';
 import logger from '@/lib/utils/logger';
 import { type AircraftCategory, PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
 
@@ -20,7 +21,7 @@ const GRACE_PERIOD_MS = 5_000;
 const METERS_TO_FEET = 3.28084;
 const MPS_TO_KNOTS = 1.94384;
 
-const DATAREF_NAMES = [
+const STATE_DATAREF_NAMES = [
   'sim/flightmodel/position/latitude',
   'sim/flightmodel/position/longitude',
   'sim/flightmodel/position/elevation',
@@ -44,7 +45,14 @@ const DATAREF_NAMES = [
   'sim/aircraft2/metadata/is_ultralight',
   'sim/aircraft2/metadata/is_seaplane',
   'sim/aircraft2/metadata/is_vtol',
+  'sim/flightmodel/position/theta',
+  'sim/flightmodel/position/phi',
+  'sim/flightmodel2/misc/gforce_normal',
+  'sim/flightmodel/failures/onground_any',
+  'sim/flightmodel/weight/m_fuel_total',
 ];
+
+const DATAREF_NAMES = Array.from(new Set([...STATE_DATAREF_NAMES, ...RECORDER_DATAREF_NAMES]));
 
 // Maps metadata dataref names to aircraft categories (checked in priority order)
 const METADATA_CATEGORY_MAP: [string, AircraftCategory][] = [
@@ -79,6 +87,10 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/weather/aircraft/temperature_ambient_deg_c': 'oat',
   'sim/time/zulu_time_sec': 'simZuluTimeSec',
   'sim/time/local_date_days': 'simDayOfYear',
+  'sim/flightmodel/position/theta': 'pitch',
+  'sim/flightmodel/position/phi': 'roll',
+  'sim/flightmodel2/misc/gforce_normal': 'gForceNormal',
+  'sim/flightmodel/weight/m_fuel_total': 'fuelKg',
 };
 
 type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';
@@ -86,12 +98,19 @@ type StateUpdateCallback = (state: PlaneState) => void;
 type ConnectionCallback = (connected: boolean) => void;
 type StateClearCallback = () => void;
 
+/** Frame-rate consumer of every dataref update, used by the flight recorder. */
+export interface RawDatarefSink {
+  onDataref: (name: string, value: number | number[]) => void;
+  onConnectionChange: (connected: boolean) => void;
+}
+
 export class XPlaneWebSocketClient {
   private ws: WebSocket | null = null;
   private port: number;
   private onStateUpdate: StateUpdateCallback | null = null;
   private onConnectionChange: ConnectionCallback | null = null;
   private onStateClear: StateClearCallback | null = null;
+  private sink: RawDatarefSink | null = null;
   private currentState: Partial<PlaneState> = {};
   private datarefIdToName: Map<number, string> = new Map();
   private resolvedDatarefs: DatarefInfo[] = [];
@@ -187,6 +206,7 @@ export class XPlaneWebSocketClient {
       this.ws = null;
     }
     // Intentional disconnect — clear state immediately, no grace period
+    this.sink?.onConnectionChange(false);
     this.currentState = {};
     this.metadataFlags.clear();
     this.resolvedDatarefs = [];
@@ -195,6 +215,10 @@ export class XPlaneWebSocketClient {
 
   isConnected(): boolean {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  setSink(sink: RawDatarefSink | null): void {
+    this.sink = sink;
   }
 
   getPort(): number {
@@ -241,6 +265,7 @@ export class XPlaneWebSocketClient {
         }
 
         this.onConnectionChange?.(true);
+        this.sink?.onConnectionChange(true);
         this.startPingInterval();
         this.subscribeToDatarefs();
       });
@@ -334,6 +359,7 @@ export class XPlaneWebSocketClient {
       this.currentState = {};
       this.metadataFlags.clear();
       this.onConnectionChange?.(false);
+      this.sink?.onConnectionChange(false);
       this.onStateClear?.();
     }, GRACE_PERIOD_MS);
   }
@@ -375,6 +401,12 @@ export class XPlaneWebSocketClient {
       const id = parseInt(idStr, 10);
       const datarefName = this.datarefIdToName.get(id);
       if (!datarefName) continue;
+      this.sink?.onDataref(datarefName, value);
+
+      if (datarefName === 'sim/flightmodel/failures/onground_any' && typeof value === 'number') {
+        this.currentState.onGround = value >= 0.5;
+        continue;
+      }
 
       // Handle metadata flags (is_helicopter, is_airliner, etc.)
       if (datarefName.startsWith('sim/aircraft2/metadata/is_') && typeof value === 'number') {

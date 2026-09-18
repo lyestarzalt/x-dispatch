@@ -46,6 +46,7 @@ interface AppState {
    * forget; the Map is the single consumer.
    */
   pendingAirportSelectionIcao: string | null;
+  logbook: { open: boolean; tab: LogbookTab; flightId: string | null };
 
   selectAirport: (icao: string, data: ParsedAirport, isCustom?: boolean) => void;
   clearAirport: () => void;
@@ -58,7 +59,13 @@ interface AppState {
   requestSelectAirport: (icao: string) => void;
   /** Consumer: clears the pending request once handled (or to drop it). */
   clearPendingAirportSelection: () => void;
+  openLogbook: (tab?: LogbookTab, flightId?: string | null) => void;
+  closeLogbook: () => void;
+  setLogbookTab: (tab: LogbookTab) => void;
+  setLogbookFlight: (flightId: string | null) => void;
 }
+
+export type LogbookTab = 'flights' | 'launches';
 
 export const useAppStore = create<AppState>()(
   subscribeWithSelector((set) => ({
@@ -71,6 +78,7 @@ export const useAppStore = create<AppState>()(
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
     pendingAirportSelectionIcao: null as string | null,
+    logbook: { open: false, tab: 'flights' as LogbookTab, flightId: null as string | null },
 
     selectAirport: (icao, data, isCustom) =>
       set({
@@ -103,5 +111,17 @@ export const useAppStore = create<AppState>()(
     requestSelectAirport: (icao) => set({ pendingAirportSelectionIcao: icao.toUpperCase() }),
 
     clearPendingAirportSelection: () => set({ pendingAirportSelectionIcao: null }),
+
+    openLogbook: (tab, flightId) =>
+      set((state) => ({
+        logbook: {
+          open: true,
+          tab: tab ?? state.logbook.tab,
+          flightId: flightId === undefined ? state.logbook.flightId : flightId,
+        },
+      })),
+    closeLogbook: () => set((state) => ({ logbook: { ...state.logbook, open: false } })),
+    setLogbookTab: (tab) => set((state) => ({ logbook: { ...state.logbook, tab } })),
+    setLogbookFlight: (flightId) => set((state) => ({ logbook: { ...state.logbook, flightId } })),
   }))
 );

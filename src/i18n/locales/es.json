@@ -178,8 +178,11 @@
       "pin": "Colocar aeronave en cualquier lugar del mapa",
       "launchDisabled": "Selecciona primero un aeropuerto",
       "launchSelectPosition": "Elige una puerta, una pista o coloca un marcador en el mapa",
-      "settings": "Abrir ajustes"
-    }
+      "settings": "Abrir ajustes",
+      "logbook": "Vuelos grabados, aterrizajes e historial de lanzamientos"
+    },
+    "logbook": "Bitácora",
+    "flightTrail": "Estela de vuelo"
   },
   "airportFilters": {
     "title": "Aeropuertos",
@@ -262,7 +265,8 @@
       "support": "Soporte",
       "about": "Acerca de",
       "companionApps": "Apps complementarias",
-      "logs": "Registros de X-Plane"
+      "logs": "Registros de X-Plane",
+      "flights": "Vuelos"
     },
     "airports": {
       "title": "Aeropuertos",
@@ -578,6 +582,24 @@
       "openExternal": "Abrir Log.txt",
       "searchPlaceholder": "Buscar en el registro…",
       "openFailed": "No se pudo abrir Log.txt."
+    },
+    "flights": {
+      "title": "Vuelos",
+      "description": "Grabación de vuelos, la estela detrás del avión y el informe de aterrizaje.",
+      "recordingSection": "Grabación",
+      "recording": "Grabar vuelos",
+      "recordingDesc": "Registrar cada vuelo automáticamente desde el primer movimiento hasta el estacionamiento mientras X-Plane esté conectado.",
+      "trail": "Estela de vuelo",
+      "trailDesc": "Dibujar la trayectoria grabada detrás del avión, coloreada por altitud.",
+      "landingSection": "Informe de aterrizaje",
+      "landingReport": "Mostrar informe de aterrizaje",
+      "landingReportDesc": "La tasa de descenso al tocar, la g máxima, la calidad del flare y la posición en pista aparecen en el mapa justo después de aterrizar.",
+      "landingFlyTo": "Acercar al punto de toma",
+      "landingFlyToDesc": "Mover la cámara a la pista cuando aparezca el informe de aterrizaje.",
+      "credit": "Las bandas de valoración siguen LandingRate for FlyWithLua de Dan Berry, para que los números sean comparables.",
+      "storage": "Almacenamiento",
+      "storageDesc": "Los vuelos se guardan como archivos en la carpeta de datos de X-Dispatch.",
+      "openFolder": "Abrir carpeta de vuelos"
     }
   },
   "sidebar": {
@@ -1614,5 +1636,84 @@
       "download": "Descargar",
       "dismiss": "Más tarde"
     }
+  },
+  "logbook": {
+    "title": "Bitácora",
+    "tabs": {
+      "flights": "Vuelos",
+      "launches": "Historial de lanzamientos"
+    },
+    "empty": "Aún no hay vuelos grabados",
+    "emptyHint": "Los vuelos se graban automáticamente mientras X-Plane está conectado. Rueda hacia la pista y tu primera entrada aparecerá aquí.",
+    "active": "En curso",
+    "aborted": "Interrumpido",
+    "unknownAirport": "Aeropuerto desconocido",
+    "unknownAircraft": "Avión desconocido",
+    "blockTime": "Tiempo calzo a calzo",
+    "airTime": "Tiempo de vuelo",
+    "distance": "Distancia",
+    "maxAltitude": "Altitud máx.",
+    "maxSpeed": "Velocidad respecto al suelo máx.",
+    "fuelBurned": "Combustible consumido",
+    "landings": "Aterrizajes",
+    "points": "Puntos de trayectoria",
+    "showOnMap": "Mostrar en el mapa",
+    "replay": "Repetición",
+    "delete": "Eliminar vuelo",
+    "confirmDelete": "¿Eliminar este vuelo?",
+    "confirmDeleteHint": "La trayectoria y el informe de aterrizaje se borran del disco. No se puede deshacer.",
+    "clearAll": "Borrar todo",
+    "confirmClearAll": "¿Eliminar todos los vuelos grabados?",
+    "confirmClearAllHint": "Todos los archivos de vuelo se borran del disco. No se puede deshacer.",
+    "noLanding": "No se registró ningún aterrizaje en este vuelo.",
+    "selectFlight": "Selecciona un vuelo para ver sus detalles",
+    "copyImage": "Copiar como imagen",
+    "imageCopied": "Tarjeta de aterrizaje copiada al portapapeles",
+    "imageCopyFailed": "No se pudo copiar la tarjeta de aterrizaje",
+    "earlierLandings": "Tomas anteriores en este vuelo: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Aterrizaje",
+    "rating": {
+      "butter": "Mantequilla",
+      "great": "Gran aterrizaje",
+      "acceptable": "Aceptable",
+      "hard": "Aterrizaje duro",
+      "severe": "Aterrizaje muy duro"
+    },
+    "flare": {
+      "veryGood": "Muy bueno",
+      "goodEarly": "Bueno, algo temprano",
+      "goodLate": "Bueno, algo tarde",
+      "poorEarly": "Demasiado temprano",
+      "poorLate": "Demasiado tarde"
+    },
+    "flareLabel": "Flare",
+    "peakG": "g máx.",
+    "pitch": "Cabeceo",
+    "float": "Flotación",
+    "bounces": "Rebotes",
+    "noseRate": "Bajada del morro",
+    "pastThresholdLabel": "Tras el umbral",
+    "centerlineLabel": "Eje de pista",
+    "pastThreshold": "{{m}} m después del umbral",
+    "shortOfThreshold": "{{m}} m antes del umbral",
+    "centerlineOffset": "{{m}} m a la {{side}} del eje",
+    "left": "izquierda",
+    "right": "derecha",
+    "runway": "{{icao}} · Pista {{runway}}",
+    "unknownRunway": "Pista no identificada",
+    "showOnMap": "Mostrar en el mapa",
+    "dismiss": "Cerrar",
+    "cardFooter": "Grabado con X-Dispatch"
+  },
+  "replay": {
+    "title": "Repetición",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Cambiar la velocidad de reproducción",
+    "follow": "Seguir al avión",
+    "stop": "Detener la repetición"
   }
 }

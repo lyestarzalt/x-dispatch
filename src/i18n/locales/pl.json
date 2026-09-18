@@ -178,8 +178,11 @@
       "pin": "Umieść samolot w dowolnym miejscu na mapie",
       "launchDisabled": "Najpierw wybierz lotnisko",
       "launchSelectPosition": "Wybierz stanowisko, drogę startową albo umieść znacznik na mapie",
-      "settings": "Otwórz ustawienia"
-    }
+      "settings": "Otwórz ustawienia",
+      "logbook": "Nagrane loty, lądowania i historia uruchomień"
+    },
+    "logbook": "Dziennik lotów",
+    "flightTrail": "Ślad lotu"
   },
   "airportFilters": {
     "title": "Lotniska",
@@ -262,7 +265,8 @@
       "support": "Pomoc",
       "about": "O programie",
       "companionApps": "Aplikacje towarzyszące",
-      "logs": "Dzienniki X-Plane"
+      "logs": "Dzienniki X-Plane",
+      "flights": "Loty"
     },
     "airports": {
       "title": "Lotniska",
@@ -578,6 +582,24 @@
       "openExternal": "Otwórz Log.txt",
       "searchPlaceholder": "Szukaj w dzienniku…",
       "openFailed": "Nie można otworzyć Log.txt."
+    },
+    "flights": {
+      "title": "Loty",
+      "description": "Nagrywanie lotów, ślad za samolotem i raport z lądowania.",
+      "recordingSection": "Nagrywanie",
+      "recording": "Nagrywaj loty",
+      "recordingDesc": "Automatycznie zapisuj każdy lot od pierwszego ruchu do zaparkowania, gdy X-Plane jest połączony.",
+      "trail": "Ślad lotu",
+      "trailDesc": "Rysuj nagraną trasę za samolotem, pokolorowaną według wysokości.",
+      "landingSection": "Raport z lądowania",
+      "landingReport": "Pokazuj raport z lądowania",
+      "landingReportDesc": "Prędkość opadania przy przyziemieniu, maksymalne g, ocena wyrównania i pozycja na pasie pojawiają się na mapie zaraz po lądowaniu.",
+      "landingFlyTo": "Przybliż do punktu przyziemienia",
+      "landingFlyToDesc": "Przenieś kamerę na pas, gdy pojawi się raport z lądowania.",
+      "credit": "Progi ocen odpowiadają LandingRate for FlyWithLua Dana Berry’ego, więc liczby są porównywalne.",
+      "storage": "Przechowywanie",
+      "storageDesc": "Loty są zapisywane jako pliki w folderze danych X-Dispatch.",
+      "openFolder": "Otwórz folder lotów"
     }
   },
   "sidebar": {
@@ -1614,5 +1636,84 @@
       "download": "Pobierz",
       "dismiss": "Później"
     }
+  },
+  "logbook": {
+    "title": "Dziennik lotów",
+    "tabs": {
+      "flights": "Loty",
+      "launches": "Historia uruchomień"
+    },
+    "empty": "Brak nagranych lotów",
+    "emptyHint": "Loty są nagrywane automatycznie, gdy X-Plane jest połączony. Rozpocznij kołowanie, a pierwszy wpis pojawi się tutaj.",
+    "active": "W trakcie",
+    "aborted": "Przerwany",
+    "unknownAirport": "Nieznane lotnisko",
+    "unknownAircraft": "Nieznany samolot",
+    "blockTime": "Czas blokowy",
+    "airTime": "Czas w powietrzu",
+    "distance": "Dystans",
+    "maxAltitude": "Maks. wysokość",
+    "maxSpeed": "Maks. prędkość względem ziemi",
+    "fuelBurned": "Zużyte paliwo",
+    "landings": "Lądowania",
+    "points": "Punkty trasy",
+    "showOnMap": "Pokaż na mapie",
+    "replay": "Odtwórz",
+    "delete": "Usuń lot",
+    "confirmDelete": "Usunąć ten lot?",
+    "confirmDeleteHint": "Trasa i raport z lądowania zostaną usunięte z dysku. Tej operacji nie można cofnąć.",
+    "clearAll": "Wyczyść wszystko",
+    "confirmClearAll": "Usunąć wszystkie nagrane loty?",
+    "confirmClearAllHint": "Wszystkie pliki lotów zostaną usunięte z dysku. Tej operacji nie można cofnąć.",
+    "noLanding": "W tym locie nie zarejestrowano lądowania.",
+    "selectFlight": "Wybierz lot, aby zobaczyć szczegóły",
+    "copyImage": "Kopiuj jako obraz",
+    "imageCopied": "Karta lądowania skopiowana do schowka",
+    "imageCopyFailed": "Nie udało się skopiować karty lądowania",
+    "earlierLandings": "Wcześniejsze przyziemienia w tym locie: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Lądowanie",
+    "rating": {
+      "butter": "Jak po maśle",
+      "great": "Świetne lądowanie",
+      "acceptable": "Akceptowalne",
+      "hard": "Twarde lądowanie",
+      "severe": "Bardzo twarde lądowanie"
+    },
+    "flare": {
+      "veryGood": "Bardzo dobre",
+      "goodEarly": "Dobre, trochę za wcześnie",
+      "goodLate": "Dobre, trochę za późno",
+      "poorEarly": "Za wcześnie",
+      "poorLate": "Za późno"
+    },
+    "flareLabel": "Wyrównanie",
+    "peakG": "Maks. g",
+    "pitch": "Pochylenie",
+    "float": "Wytrzymanie",
+    "bounces": "Odbicia",
+    "noseRate": "Opuszczenie nosa",
+    "pastThresholdLabel": "Za progiem",
+    "centerlineLabel": "Oś pasa",
+    "pastThreshold": "{{m}} m za progiem",
+    "shortOfThreshold": "{{m}} m przed progiem",
+    "centerlineOffset": "{{m}} m na {{side}} od osi",
+    "left": "lewo",
+    "right": "prawo",
+    "runway": "{{icao}} · Pas {{runway}}",
+    "unknownRunway": "Nie rozpoznano pasa",
+    "showOnMap": "Pokaż na mapie",
+    "dismiss": "Zamknij",
+    "cardFooter": "Nagrano w X-Dispatch"
+  },
+  "replay": {
+    "title": "Odtwarzanie",
+    "play": "Odtwórz",
+    "pause": "Pauza",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Zmień prędkość odtwarzania",
+    "follow": "Śledź samolot",
+    "stop": "Zatrzymaj odtwarzanie"
   }
 }

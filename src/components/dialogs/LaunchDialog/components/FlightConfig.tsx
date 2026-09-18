@@ -33,7 +33,6 @@ import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '../types';
 import { WEATHER_OPTIONS } from '../types';
 import { getWeatherSummary } from '../weatherTypes';
-import { LogbookDialog } from './LogbookDialog';
 import { SunArc } from './SunArc';
 import { WeatherDialog } from './WeatherDialog';
 import { WeightBalanceDialog } from './WeightBalanceDialog';
@@ -77,6 +76,7 @@ export function FlightConfig({
   aircraftList,
 }: FlightConfigProps) {
   const { t } = useTranslation();
+  const openLaunchHistory = () => useAppStore.getState().openLogbook('launches');
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
   // Get selected airport data for lat/lon (enriched with coordinates at parse time)
@@ -113,7 +113,6 @@ export function FlightConfig({
 
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
   const [weatherDialogOpen, setWeatherDialogOpen] = useState(false);
-  const [logbookOpen, setLogbookOpen] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
@@ -469,7 +468,7 @@ export function FlightConfig({
           <Button
             variant="outline"
             size="lg"
-            onClick={() => setLogbookOpen(true)}
+            onClick={openLaunchHistory}
             tooltip={t('launcher.logbook.title')}
           >
             <History className="h-4 w-4" />
@@ -493,11 +492,6 @@ export function FlightConfig({
         airportElevationFt={selectedAirportData?.elevation}
       />
       <WeightBalanceDialog open={weightDialogOpen} onClose={() => setWeightDialogOpen(false)} />
-      <LogbookDialog
-        open={logbookOpen}
-        onClose={() => setLogbookOpen(false)}
-        aircraftList={aircraftList}
-      />
     </div>
   );
 }

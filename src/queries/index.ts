@@ -15,6 +15,16 @@ export {
 // X-Plane WebSocket hooks (live streaming)
 export { usePlaneStateStream } from './useXPlaneWebSocket';
 
+// Flight recorder
+export {
+  useFlightsQuery,
+  useFlightDetailQuery,
+  useDeleteFlight,
+  useClearFlights,
+  useFlightRecorderStream,
+  flightKeys,
+} from './useFlightsQuery';
+
 // Nav data hooks
 export { useNavDataQuery, useNavDataCounts, getNavDataCounts } from './useNavDataQuery';
 

@@ -19,6 +19,7 @@ import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
+import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
@@ -1557,6 +1558,17 @@ function registerIpcHandlers() {
   // Addon Manager IPC handlers (extracted to separate module)
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
+  registerFlightRecorderIPC({
+    getAllAirports: () => dataManager.getAllAirports(),
+    getAirportData: (icao) => dataManager.getAirportData(icao),
+    getDataref: async (name) => {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().getDataref(name);
+    },
+    attachSink: (sink) => {
+      void getXPlaneModule().then(({ setRecorderSink }) => setRecorderSink(sink));
+    },
+  });
   registerXPlaneLogIPC(() => dataManager.getXPlanePath());
 
   ipcMain.handle('taxi:writeRoute', async (_, json: string) => {

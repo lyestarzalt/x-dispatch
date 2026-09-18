@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Anchor,
+  BookOpen,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -20,6 +21,7 @@ import {
   Plane,
   Play,
   Radar,
+  Route,
   Search,
   Settings,
   Ship,
@@ -442,12 +444,16 @@ function Toolbar({
   const isCustomPin = useAppStore((s) => s.startPosition?.type === 'custom');
   const setShowSettings = useAppStore((s) => s.setShowSettings);
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
+  const openLogbook = useAppStore((s) => s.openLogbook);
+  const logbookOpen = useAppStore((s) => s.logbook.open);
 
   // Map store
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
+  const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
+  const setFlightTrailEnabled = useMapStore((s) => s.setFlightTrailEnabled);
   const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
   const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
   const updateGraphicsSettings = useSettingsStore((s) => s.updateGraphicsSettings);
@@ -740,6 +746,17 @@ function Toolbar({
         <span className="text-sm font-medium">{t('explore.title')}</span>
       </Button>
 
+      {/* Logbook button */}
+      <Button
+        variant="outline"
+        onClick={() => openLogbook()}
+        className={cn('h-9 gap-2 px-3', logbookOpen && 'border-primary/50 text-primary')}
+        tooltip={t('toolbar.tooltips.logbook')}
+      >
+        <BookOpen className="h-4 w-4" />
+        <span className="text-sm font-medium">{t('toolbar.logbook')}</span>
+      </Button>
+
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
@@ -941,6 +958,13 @@ function Toolbar({
               >
                 <Lightbulb className="mr-2 h-4 w-4" />
                 {t('toolbar.cityLights')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={flightTrailEnabled}
+                onCheckedChange={() => setFlightTrailEnabled(!flightTrailEnabled)}
+              >
+                <Route className="mr-2 h-4 w-4" />
+                {t('toolbar.flightTrail')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />

@@ -178,8 +178,11 @@
       "pin": "マップ上の任意の場所に航空機を配置",
       "launchDisabled": "最初に空港を選択してください",
       "launchSelectPosition": "ゲートまたは滑走路を選択するか、地図にマーカーを置いてください",
-      "settings": "設定を開く"
-    }
+      "settings": "設定を開く",
+      "logbook": "記録したフライト、着陸、起動履歴"
+    },
+    "logbook": "ログブック",
+    "flightTrail": "飛行軌跡"
   },
   "airportFilters": {
     "title": "空港",
@@ -262,7 +265,8 @@
       "support": "サポート",
       "about": "情報",
       "companionApps": "コンパニオンアプリ",
-      "logs": "X-Plane ログ"
+      "logs": "X-Plane ログ",
+      "flights": "フライト"
     },
     "airports": {
       "title": "空港",
@@ -578,6 +582,24 @@
       "openExternal": "Log.txt を開く",
       "searchPlaceholder": "ログを検索…",
       "openFailed": "Log.txt を開けませんでした。"
+    },
+    "flights": {
+      "title": "フライト",
+      "description": "フライトの記録、機体の後ろに描く軌跡、着陸レポート。",
+      "recordingSection": "記録",
+      "recording": "フライトを記録",
+      "recordingDesc": "X-Plane が接続されている間、最初の移動から駐機まで各フライトを自動で記録します。",
+      "trail": "飛行軌跡",
+      "trailDesc": "記録した経路を高度で色分けして機体の後ろに描きます。",
+      "landingSection": "着陸レポート",
+      "landingReport": "着陸レポートを表示",
+      "landingReportDesc": "接地時の降下率、最大 G、フレアの評価、滑走路上の位置が着陸直後にマップに表示されます。",
+      "landingFlyTo": "接地点にズーム",
+      "landingFlyToDesc": "着陸レポートが表示されたときにカメラを滑走路へ移動します。",
+      "credit": "評価の区分は Dan Berry 氏の LandingRate for FlyWithLua に合わせているため、数値を見慣れたものと比較できます。",
+      "storage": "保存先",
+      "storageDesc": "フライトは X-Dispatch のデータフォルダーにファイルとして保存されます。",
+      "openFolder": "フライトフォルダーを開く"
     }
   },
   "sidebar": {
@@ -1614,5 +1636,84 @@
       "download": "ダウンロード",
       "dismiss": "後で"
     }
+  },
+  "logbook": {
+    "title": "ログブック",
+    "tabs": {
+      "flights": "フライト",
+      "launches": "起動履歴"
+    },
+    "empty": "記録されたフライトはまだありません",
+    "emptyHint": "X-Plane が接続されている間、フライトは自動で記録されます。タキシングを始めると最初の記録がここに表示されます。",
+    "active": "進行中",
+    "aborted": "中断",
+    "unknownAirport": "不明な空港",
+    "unknownAircraft": "不明な機体",
+    "blockTime": "ブロックタイム",
+    "airTime": "飛行時間",
+    "distance": "距離",
+    "maxAltitude": "最高高度",
+    "maxSpeed": "最大対地速度",
+    "fuelBurned": "消費燃料",
+    "landings": "着陸回数",
+    "points": "軌跡ポイント",
+    "showOnMap": "マップに表示",
+    "replay": "リプレイ",
+    "delete": "フライトを削除",
+    "confirmDelete": "このフライトを削除しますか？",
+    "confirmDeleteHint": "軌跡と着陸レポートがディスクから削除されます。元に戻せません。",
+    "clearAll": "すべて削除",
+    "confirmClearAll": "記録したフライトをすべて削除しますか？",
+    "confirmClearAllHint": "すべてのフライトファイルがディスクから削除されます。元に戻せません。",
+    "noLanding": "このフライトでは着陸が記録されていません。",
+    "selectFlight": "フライトを選択すると詳細が表示されます",
+    "copyImage": "画像としてコピー",
+    "imageCopied": "着陸カードをクリップボードにコピーしました",
+    "imageCopyFailed": "着陸カードをコピーできませんでした",
+    "earlierLandings": "このフライトでの以前の接地: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "着陸",
+    "rating": {
+      "butter": "バター",
+      "great": "グレートランディング",
+      "acceptable": "許容範囲",
+      "hard": "ハードランディング",
+      "severe": "非常にハードな着陸"
+    },
+    "flare": {
+      "veryGood": "とても良い",
+      "goodEarly": "良い（少し早め）",
+      "goodLate": "良い（少し遅め）",
+      "poorEarly": "早すぎ",
+      "poorLate": "遅すぎ"
+    },
+    "flareLabel": "フレア",
+    "peakG": "最大 G",
+    "pitch": "ピッチ",
+    "float": "フロート",
+    "bounces": "バウンド",
+    "noseRate": "ノーズダウン",
+    "pastThresholdLabel": "末端からの距離",
+    "centerlineLabel": "センターライン",
+    "pastThreshold": "滑走路末端から {{m}} m",
+    "shortOfThreshold": "滑走路末端の {{m}} m 手前",
+    "centerlineOffset": "センターラインから {{side}}に {{m}} m",
+    "left": "左",
+    "right": "右",
+    "runway": "{{icao}} · 滑走路 {{runway}}",
+    "unknownRunway": "滑走路を特定できません",
+    "showOnMap": "マップに表示",
+    "dismiss": "閉じる",
+    "cardFooter": "X-Dispatch で記録"
+  },
+  "replay": {
+    "title": "リプレイ",
+    "play": "再生",
+    "pause": "一時停止",
+    "speed": "{{speed}}×",
+    "speedTooltip": "再生速度を変更",
+    "follow": "機体を追従",
+    "stop": "リプレイを停止"
   }
 }

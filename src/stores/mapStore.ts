@@ -90,6 +90,8 @@ interface MapState {
   /** When true, map follows plane position and heading */
   followPlane: boolean;
   weatherRadarEnabled: boolean;
+  /** Draw the recorded track behind the aircraft. */
+  flightTrailEnabled: boolean;
   explore: ExploreState;
   airportFilters: AirportFilterState;
   rangeRingsEnabled: boolean;
@@ -116,6 +118,7 @@ interface MapState {
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   setWeatherRadarEnabled: (enabled: boolean) => void;
+  setFlightTrailEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
   setAirportFilters: (filters: Partial<AirportFilterState>) => void;
   resetAirportFilters: () => void;
@@ -150,6 +153,7 @@ export const useMapStore = create<MapState>()(
       showPlaneTracker: false,
       followPlane: false,
       weatherRadarEnabled: false,
+      flightTrailEnabled: true,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -230,6 +234,7 @@ export const useMapStore = create<MapState>()(
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
       setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),
+      setFlightTrailEnabled: (enabled) => set({ flightTrailEnabled: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
@@ -270,8 +275,9 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 12,
+      version: 13,
       partialize: (state) => ({
+        flightTrailEnabled: state.flightTrailEnabled,
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
@@ -355,6 +361,9 @@ export const useMapStore = create<MapState>()(
         // atmosphere shows the night side instead.
         if (version < 12) {
           delete state.dayNightEnabled;
+        }
+        if (version < 13) {
+          if (state.flightTrailEnabled === undefined) state.flightTrailEnabled = true;
         }
         return state;
       },

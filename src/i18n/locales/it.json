@@ -178,8 +178,11 @@
       "pin": "Posiziona l'aereo ovunque sulla mappa",
       "launchDisabled": "Seleziona prima un aeroporto",
       "launchSelectPosition": "Scegli un gate, una pista o posiziona un segnaposto sulla mappa",
-      "settings": "Apri impostazioni"
-    }
+      "settings": "Apri impostazioni",
+      "logbook": "Voli registrati, atterraggi e cronologia degli avvii"
+    },
+    "logbook": "Diario di volo",
+    "flightTrail": "Scia di volo"
   },
   "airportFilters": {
     "title": "Aeroporti",
@@ -262,7 +265,8 @@
       "support": "Supporto",
       "about": "Info",
       "companionApps": "App complementari",
-      "logs": "Log di X-Plane"
+      "logs": "Log di X-Plane",
+      "flights": "Voli"
     },
     "airports": {
       "title": "Aeroporti",
@@ -578,6 +582,24 @@
       "openExternal": "Apri Log.txt",
       "searchPlaceholder": "Cerca nel log…",
       "openFailed": "Impossibile aprire Log.txt."
+    },
+    "flights": {
+      "title": "Voli",
+      "description": "Registrazione dei voli, la scia dietro l'aereo e il rapporto di atterraggio.",
+      "recordingSection": "Registrazione",
+      "recording": "Registra i voli",
+      "recordingDesc": "Registra automaticamente ogni volo dal primo movimento al parcheggio mentre X-Plane è connesso.",
+      "trail": "Scia di volo",
+      "trailDesc": "Disegna la rotta registrata dietro l'aereo, colorata in base all'altitudine.",
+      "landingSection": "Rapporto di atterraggio",
+      "landingReport": "Mostra il rapporto di atterraggio",
+      "landingReportDesc": "Rateo di discesa al contatto, g massimo, qualità della richiamata e posizione sulla pista compaiono sulla mappa subito dopo l'atterraggio.",
+      "landingFlyTo": "Zoom sul punto di contatto",
+      "landingFlyToDesc": "Sposta la camera sulla pista quando compare il rapporto di atterraggio.",
+      "credit": "Le fasce di valutazione seguono LandingRate for FlyWithLua di Dan Berry, così i numeri restano confrontabili.",
+      "storage": "Archiviazione",
+      "storageDesc": "I voli sono salvati come file nella cartella dati di X-Dispatch.",
+      "openFolder": "Apri la cartella dei voli"
     }
   },
   "sidebar": {
@@ -1614,5 +1636,84 @@
       "download": "Scarica",
       "dismiss": "Più tardi"
     }
+  },
+  "logbook": {
+    "title": "Diario di volo",
+    "tabs": {
+      "flights": "Voli",
+      "launches": "Cronologia avvii"
+    },
+    "empty": "Nessun volo registrato",
+    "emptyHint": "I voli vengono registrati automaticamente mentre X-Plane è connesso. Rulla verso la pista e la tua prima voce apparirà qui.",
+    "active": "In corso",
+    "aborted": "Interrotto",
+    "unknownAirport": "Aeroporto sconosciuto",
+    "unknownAircraft": "Aereo sconosciuto",
+    "blockTime": "Tempo blocco",
+    "airTime": "Tempo di volo",
+    "distance": "Distanza",
+    "maxAltitude": "Altitudine max",
+    "maxSpeed": "Velocità al suolo max",
+    "fuelBurned": "Carburante consumato",
+    "landings": "Atterraggi",
+    "points": "Punti della traccia",
+    "showOnMap": "Mostra sulla mappa",
+    "replay": "Replay",
+    "delete": "Elimina volo",
+    "confirmDelete": "Eliminare questo volo?",
+    "confirmDeleteHint": "La traccia e il rapporto di atterraggio vengono rimossi dal disco. Non si può annullare.",
+    "clearAll": "Cancella tutto",
+    "confirmClearAll": "Eliminare tutti i voli registrati?",
+    "confirmClearAllHint": "Tutti i file dei voli vengono rimossi dal disco. Non si può annullare.",
+    "noLanding": "Nessun atterraggio registrato per questo volo.",
+    "selectFlight": "Seleziona un volo per vederne i dettagli",
+    "copyImage": "Copia come immagine",
+    "imageCopied": "Scheda di atterraggio copiata negli appunti",
+    "imageCopyFailed": "Impossibile copiare la scheda di atterraggio",
+    "earlierLandings": "Contatti precedenti in questo volo: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Atterraggio",
+    "rating": {
+      "butter": "Burro",
+      "great": "Ottimo atterraggio",
+      "acceptable": "Accettabile",
+      "hard": "Atterraggio duro",
+      "severe": "Atterraggio molto duro"
+    },
+    "flare": {
+      "veryGood": "Molto buona",
+      "goodEarly": "Buona, un po' anticipata",
+      "goodLate": "Buona, un po' in ritardo",
+      "poorEarly": "Troppo anticipata",
+      "poorLate": "Troppo in ritardo"
+    },
+    "flareLabel": "Richiamata",
+    "peakG": "g max",
+    "pitch": "Assetto",
+    "float": "Galleggiamento",
+    "bounces": "Rimbalzi",
+    "noseRate": "Abbassamento del muso",
+    "pastThresholdLabel": "Oltre la soglia",
+    "centerlineLabel": "Asse pista",
+    "pastThreshold": "{{m}} m oltre la soglia",
+    "shortOfThreshold": "{{m}} m prima della soglia",
+    "centerlineOffset": "{{m}} m a {{side}} dell'asse",
+    "left": "sinistra",
+    "right": "destra",
+    "runway": "{{icao}} · Pista {{runway}}",
+    "unknownRunway": "Pista non identificata",
+    "showOnMap": "Mostra sulla mappa",
+    "dismiss": "Chiudi",
+    "cardFooter": "Registrato con X-Dispatch"
+  },
+  "replay": {
+    "title": "Replay",
+    "play": "Riproduci",
+    "pause": "Pausa",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Cambia la velocità di riproduzione",
+    "follow": "Segui l'aereo",
+    "stop": "Interrompi il replay"
   }
 }

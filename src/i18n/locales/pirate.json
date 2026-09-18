@@ -178,8 +178,11 @@
       "pin": "Drop aircraft anywhere on the chart",
       "launchDisabled": "Choose an airport first",
       "launchSelectPosition": "Choose a berth, runway, or drop a mark on the chart",
-      "settings": "Open ship's settings"
-    }
+      "settings": "Open ship's settings",
+      "logbook": "Voyages logged, landin's an' launch history"
+    },
+    "logbook": "Cap'n's Log",
+    "flightTrail": "Wake o' the Voyage"
   },
   "airportFilters": {
     "title": "Airfields",
@@ -262,7 +265,8 @@
       "support": "Crew Help",
       "about": "Ship's Log",
       "companionApps": "Companion Mateys",
-      "logs": "X-Plane Cap'n's Logs"
+      "logs": "X-Plane Cap'n's Logs",
+      "flights": "Voyages"
     },
     "airports": {
       "title": "Ports of Call",
@@ -578,6 +582,24 @@
       "openExternal": "Pry open Log.txt",
       "searchPlaceholder": "Search th' scroll…",
       "openFailed": "Couldn't pry open Log.txt, matey."
+    },
+    "flights": {
+      "title": "Voyages",
+      "description": "Loggin' o' voyages, the wake behind yer bird an' the landin' report.",
+      "recordingSection": "Loggin'",
+      "recording": "Log every voyage",
+      "recordingDesc": "Scribe every voyage from first roll to droppin' anchor, long as X-Plane be aboard.",
+      "trail": "Wake o' the voyage",
+      "trailDesc": "Paint the logged course behind yer bird, coloured by how high ye flew.",
+      "landingSection": "Landin' report",
+      "landingReport": "Show the landin' report",
+      "landingReportDesc": "Sink rate at touchdown, top g, flare grade an' where ye hit the runway show on the chart right after ye land.",
+      "landingFlyTo": "Zoom to the touchdown",
+      "landingFlyToDesc": "Swing the spyglass to the runway when the landin' report shows.",
+      "credit": "Ratin' bands follow LandingRate for FlyWithLua by Dan Berry, so the numbers match what ye know.",
+      "storage": "Stowage",
+      "storageDesc": "Voyages be stowed as files in the X-Dispatch data hold.",
+      "openFolder": "Open the voyages hold"
     }
   },
   "sidebar": {
@@ -1614,5 +1636,84 @@
       "download": "Plunder",
       "dismiss": "Later, matey"
     }
+  },
+  "logbook": {
+    "title": "Cap'n's Log",
+    "tabs": {
+      "flights": "Voyages",
+      "launches": "Launch history"
+    },
+    "empty": "No voyages logged yet",
+    "emptyHint": "Voyages get logged on their own while X-Plane be aboard. Roll out an' yer first entry shows here.",
+    "active": "Under way",
+    "aborted": "Cut short",
+    "unknownAirport": "Unknown port",
+    "unknownAircraft": "Unknown bird",
+    "blockTime": "Block time",
+    "airTime": "Time aloft",
+    "distance": "Distance",
+    "maxAltitude": "Highest altitude",
+    "maxSpeed": "Fastest groundspeed",
+    "fuelBurned": "Fuel burned",
+    "landings": "Landin's",
+    "points": "Wake points",
+    "showOnMap": "Show on the chart",
+    "replay": "Replay",
+    "delete": "Scuttle voyage",
+    "confirmDelete": "Scuttle this voyage?",
+    "confirmDeleteHint": "The wake an' landin' report go to the deep. No bringin' 'em back.",
+    "clearAll": "Scuttle all",
+    "confirmClearAll": "Scuttle every logged voyage?",
+    "confirmClearAllHint": "Every voyage file goes to the deep. No bringin' 'em back.",
+    "noLanding": "No landin' logged for this voyage.",
+    "selectFlight": "Pick a voyage to see its tale",
+    "copyImage": "Copy as a picture",
+    "imageCopied": "Landin' card copied to yer clipboard",
+    "imageCopyFailed": "Couldn't copy the landin' card",
+    "earlierLandings": "Earlier touchdowns this voyage: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Landin'",
+    "rating": {
+      "butter": "Butter!",
+      "great": "Fine landin'!",
+      "acceptable": "Passable",
+      "hard": "Hard landin'!",
+      "severe": "Ye wrecked her!"
+    },
+    "flare": {
+      "veryGood": "Very fine",
+      "goodEarly": "Fine, a mite early",
+      "goodLate": "Fine, a mite late",
+      "poorEarly": "Too early",
+      "poorLate": "Too late"
+    },
+    "flareLabel": "Flare",
+    "peakG": "Top g",
+    "pitch": "Pitch",
+    "float": "Float",
+    "bounces": "Bounces",
+    "noseRate": "Nose down",
+    "pastThresholdLabel": "Past threshold",
+    "centerlineLabel": "Centreline",
+    "pastThreshold": "{{m}} m past the threshold",
+    "shortOfThreshold": "{{m}} m shy o' the threshold",
+    "centerlineOffset": "{{m}} m {{side}} o' centreline",
+    "left": "port",
+    "right": "starboard",
+    "runway": "{{icao}} · Runway {{runway}}",
+    "unknownRunway": "Runway not spied",
+    "showOnMap": "Show on the chart",
+    "dismiss": "Begone",
+    "cardFooter": "Logged with X-Dispatch"
+  },
+  "replay": {
+    "title": "Replay",
+    "play": "Play",
+    "pause": "Hold",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Change how fast she plays",
+    "follow": "Follow the bird",
+    "stop": "Stop the replay"
   }
 }

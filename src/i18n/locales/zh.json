@@ -178,8 +178,11 @@
       "pin": "在地图上任意位置放置飞机",
       "launchDisabled": "请先选择一个机场",
       "launchSelectPosition": "选择机位、跑道，或在地图上放置标记",
-      "settings": "打开设置"
-    }
+      "settings": "打开设置",
+      "logbook": "已记录的飞行、着陆和启动历史"
+    },
+    "logbook": "飞行日志",
+    "flightTrail": "飞行轨迹"
   },
   "airportFilters": {
     "title": "机场",
@@ -262,7 +265,8 @@
       "support": "支持",
       "about": "关于",
       "companionApps": "配套应用",
-      "logs": "X-Plane 日志"
+      "logs": "X-Plane 日志",
+      "flights": "飞行"
     },
     "airports": {
       "title": "机场",
@@ -578,6 +582,24 @@
       "openExternal": "打开 Log.txt",
       "searchPlaceholder": "搜索日志…",
       "openFailed": "无法打开 Log.txt。"
+    },
+    "flights": {
+      "title": "飞行",
+      "description": "飞行记录、飞机后方的轨迹以及着陆报告。",
+      "recordingSection": "记录",
+      "recording": "记录飞行",
+      "recordingDesc": "在 X-Plane 连接期间，自动记录每次飞行，从首次移动直到停机。",
+      "trail": "飞行轨迹",
+      "trailDesc": "在飞机后方绘制记录的航迹，按高度着色。",
+      "landingSection": "着陆报告",
+      "landingReport": "显示着陆报告",
+      "landingReportDesc": "着陆后立即在地图上显示接地下降率、峰值 G、拉平评价和跑道上的位置。",
+      "landingFlyTo": "缩放到接地点",
+      "landingFlyToDesc": "着陆报告出现时将镜头移到跑道。",
+      "credit": "评级区间沿用 Dan Berry 的 LandingRate for FlyWithLua，数值可与你熟悉的结果直接比较。",
+      "storage": "存储",
+      "storageDesc": "飞行以文件形式保存在 X-Dispatch 数据文件夹中。",
+      "openFolder": "打开飞行文件夹"
     }
   },
   "sidebar": {
@@ -1614,5 +1636,84 @@
       "download": "下载",
       "dismiss": "稍后"
     }
+  },
+  "logbook": {
+    "title": "飞行日志",
+    "tabs": {
+      "flights": "飞行",
+      "launches": "启动历史"
+    },
+    "empty": "尚无已记录的飞行",
+    "emptyHint": "X-Plane 连接期间会自动记录飞行。开始滑行后，第一条记录就会出现在这里。",
+    "active": "进行中",
+    "aborted": "已中断",
+    "unknownAirport": "未知机场",
+    "unknownAircraft": "未知机型",
+    "blockTime": "轮挡时间",
+    "airTime": "空中时间",
+    "distance": "距离",
+    "maxAltitude": "最大高度",
+    "maxSpeed": "最大地速",
+    "fuelBurned": "燃油消耗",
+    "landings": "着陆次数",
+    "points": "轨迹点",
+    "showOnMap": "在地图上显示",
+    "replay": "回放",
+    "delete": "删除飞行",
+    "confirmDelete": "删除此次飞行？",
+    "confirmDeleteHint": "轨迹和着陆报告将从磁盘中删除，无法撤销。",
+    "clearAll": "全部清除",
+    "confirmClearAll": "删除所有已记录的飞行？",
+    "confirmClearAllHint": "所有飞行文件将从磁盘中删除，无法撤销。",
+    "noLanding": "此次飞行未记录到着陆。",
+    "selectFlight": "选择一次飞行以查看详情",
+    "copyImage": "复制为图片",
+    "imageCopied": "着陆卡片已复制到剪贴板",
+    "imageCopyFailed": "无法复制着陆卡片",
+    "earlierLandings": "本次飞行中较早的接地：{{rates}} fpm"
+  },
+  "landing": {
+    "title": "着陆",
+    "rating": {
+      "butter": "黄油着陆",
+      "great": "漂亮的着陆",
+      "acceptable": "可以接受",
+      "hard": "重着陆",
+      "severe": "严重重着陆"
+    },
+    "flare": {
+      "veryGood": "非常好",
+      "goodEarly": "不错，略早",
+      "goodLate": "不错，略晚",
+      "poorEarly": "过早",
+      "poorLate": "过晚"
+    },
+    "flareLabel": "拉平",
+    "peakG": "峰值 G",
+    "pitch": "俯仰",
+    "float": "飘飞",
+    "bounces": "跳跃",
+    "noseRate": "前轮接地",
+    "pastThresholdLabel": "过入口距离",
+    "centerlineLabel": "中线",
+    "pastThreshold": "过跑道入口 {{m}} 米",
+    "shortOfThreshold": "距跑道入口尚有 {{m}} 米",
+    "centerlineOffset": "偏离中线{{side}} {{m}} 米",
+    "left": "左",
+    "right": "右",
+    "runway": "{{icao}} · 跑道 {{runway}}",
+    "unknownRunway": "未能识别跑道",
+    "showOnMap": "在地图上显示",
+    "dismiss": "关闭",
+    "cardFooter": "由 X-Dispatch 记录"
+  },
+  "replay": {
+    "title": "回放",
+    "play": "播放",
+    "pause": "暂停",
+    "speed": "{{speed}}×",
+    "speedTooltip": "更改播放速度",
+    "follow": "跟随飞机",
+    "stop": "停止回放"
   }
 }
