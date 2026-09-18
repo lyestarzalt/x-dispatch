@@ -132,6 +132,8 @@ export interface InstallResult {
   success: boolean;
   error?: string;
   verificationStats?: VerificationStats;
+  /** Folder holding the files this install replaced, when it replaced any */
+  backupPath?: string;
 }
 
 export interface VerificationStats {

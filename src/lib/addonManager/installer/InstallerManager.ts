@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
@@ -18,6 +19,7 @@ import {
   isFlyWithLuaInstalled,
   isLiveryAircraftInstalled,
 } from './targetResolver';
+import { InstallTransaction, type StagedComponent } from './transaction';
 import type {
   DetectedItem,
   InstallProgress,
@@ -197,9 +199,9 @@ export class InstallerManager {
   /**
    * Install a single task.
    *
-   * A task can carry several components - a Lua pack writes into both Scripts
-   * and Modules - so each one is extracted and moved in turn. Every component
-   * is verified before anything touches the target.
+   * Every component is extracted and verified before anything is written into
+   * X-Plane. The move itself runs inside a transaction, so a failure halfway
+   * through leaves the folder exactly as it was.
    */
   private async installTask(
     task: InstallTask,
@@ -210,7 +212,9 @@ export class InstallerManager {
         ? task.components
         : [{ internalRoot: task.archiveInternalRoot, targetPath: task.targetPath }];
 
-    const tempDirs: string[] = [];
+    const backupRoot = path.join(this.xplanePath, 'Output', 'xdispatch_backups');
+    const transaction = new InstallTransaction(backupRoot, task.displayName);
+    const staged: StagedComponent[] = [];
     const totals: VerificationStats = {
       totalFiles: 0,
       verifiedFiles: 0,
@@ -218,14 +222,15 @@ export class InstallerManager {
       skippedFiles: 0,
     };
 
-    const cleanup = () => {
-      for (const dir of tempDirs) {
-        try {
-          fs.rmSync(dir, { recursive: true, force: true });
-        } catch {
-          // Temp folders are best effort
-        }
+    const discardStaging = async () => {
+      for (const component of staged) {
+        await fsp.rm(component.tempDir, { recursive: true, force: true }).catch(() => undefined);
       }
+    };
+
+    const failure = async (error: string): Promise<InstallResult> => {
+      await discardStaging();
+      return { taskId: task.id, success: false, error, verificationStats: totals };
     };
 
     try {
@@ -234,8 +239,12 @@ export class InstallerManager {
         if (!component) continue;
 
         const tempDir = path.join(os.tmpdir(), `xdispatch_install_${crypto.randomUUID()}`);
-        tempDirs.push(tempDir);
-        fs.mkdirSync(tempDir, { recursive: true });
+        await fsp.mkdir(tempDir, { recursive: true });
+        staged.push({
+          tempDir,
+          targetPath: component.targetPath,
+          clean: i === 0 && task.installMode === 'clean' && task.conflictExists,
+        });
 
         const extractResult = await extractArchive({
           archivePath: task.sourcePath,
@@ -248,12 +257,7 @@ export class InstallerManager {
           logger.addon.error(
             `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
           );
-          cleanup();
-          return {
-            taskId: task.id,
-            success: false,
-            error: `Extraction failed: ${extractResult.error.code}`,
-          };
+          return failure(`Extraction failed: ${extractResult.error.code}`);
         }
 
         // A partial extraction must never reach the target, or a half-written
@@ -265,156 +269,42 @@ export class InstallerManager {
         totals.skippedFiles += stats.skippedFiles;
 
         if (stats.failedFiles > 0) {
-          cleanup();
-          return {
-            taskId: task.id,
-            success: false,
-            error: `Extraction incomplete: ${stats.failedFiles} of ${stats.totalFiles} files failed`,
-            verificationStats: totals,
-          };
+          return failure(
+            `Extraction incomplete: ${stats.failedFiles} of ${stats.totalFiles} files failed`
+          );
         }
         if (stats.totalFiles === 0) {
-          cleanup();
-          return {
-            taskId: task.id,
-            success: false,
-            error: 'Archive contained no installable files',
-            verificationStats: totals,
-          };
+          return failure('Archive contained no installable files');
         }
-
-        // The install mode describes the addon as a whole, so it applies once,
-        // to the folder the user sees as the target.
-        if (i === 0 && task.installMode === 'clean' && task.conflictExists) {
-          await this.backupBeforeClean(task);
-          fs.rmSync(task.targetPath, { recursive: true, force: true });
-        }
-
-        this.placeComponent(tempDir, component.targetPath);
       }
 
-      await this.postInstall(task);
-      cleanup();
-
-      return {
-        taskId: task.id,
-        success: true,
-        verificationStats: totals,
-      };
+      await transaction.apply(staged);
     } catch (e) {
-      logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
-      cleanup();
-
-      return {
-        taskId: task.id,
-        success: false,
-        error: String(e),
-      };
-    }
-  }
-
-  /**
-   * Move an extracted component into place, merging when the target is there.
-   */
-  private placeComponent(tempDir: string, targetPath: string): void {
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-
-    if (fs.existsSync(targetPath)) {
-      this.copyMerge(tempDir, targetPath);
-      return;
+      logger.addon.error(`Install failed for ${task.displayName}, rolling back: ${e}`);
+      await transaction.rollback();
+      await discardStaging();
+      return { taskId: task.id, success: false, error: String(e) };
     }
 
+    // The addon is in place. A failure past this point is worth reporting but
+    // not worth undoing a good install for.
     try {
-      fs.renameSync(tempDir, targetPath);
-    } catch (e: unknown) {
-      // EXDEV: rename fails across different drives (temp on C:, X-Plane on D:)
-      if ((e as NodeJS.ErrnoException).code !== 'EXDEV') throw e;
-      fs.cpSync(tempDir, targetPath, { recursive: true });
-      fs.rmSync(tempDir, { recursive: true, force: true });
-    }
-  }
-
-  /**
-   * Backup items before clean install
-   */
-  private async backupBeforeClean(task: InstallTask): Promise<void> {
-    if (!task.conflictExists) return;
-
-    const backupDir = `${task.targetPath}.backup_${Date.now()}`;
-
-    if (task.backupOptions.liveries) {
-      const liveriesDir = path.join(task.targetPath, 'liveries');
-      if (fs.existsSync(liveriesDir)) {
-        const backupLiveries = path.join(backupDir, 'liveries');
-        fs.mkdirSync(backupLiveries, { recursive: true });
-        fs.cpSync(liveriesDir, backupLiveries, { recursive: true });
-      }
+      await this.postInstall(task);
+    } catch (e) {
+      logger.addon.error(`Post-install step failed for ${task.displayName}: ${e}`);
     }
 
-    if (task.backupOptions.configFiles && task.backupOptions.configPatterns.length > 0) {
-      for (const pattern of task.backupOptions.configPatterns) {
-        // Simple glob matching for common patterns
-        const files = this.findMatchingFiles(task.targetPath, pattern);
-        for (const file of files) {
-          const relativePath = path.relative(task.targetPath, file);
-          const backupPath = path.join(backupDir, relativePath);
-          fs.mkdirSync(path.dirname(backupPath), { recursive: true });
-          fs.copyFileSync(file, backupPath);
-        }
-      }
-    }
+    await discardStaging();
+    await InstallTransaction.pruneBackups(backupRoot);
 
-    // Store backup location for potential restore
-    if (fs.existsSync(backupDir)) {
-      // After install, we'd restore from here
-      // For now, just leave the backup
-    }
-  }
+    const backupPath = transaction.getBackupPath();
 
-  /**
-   * Find files matching a simple glob pattern
-   */
-  private findMatchingFiles(dir: string, pattern: string): string[] {
-    const results: string[] = [];
-    if (!fs.existsSync(dir)) return results;
-
-    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i');
-
-    const walk = (currentDir: string) => {
-      const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = path.join(currentDir, entry.name);
-        if (entry.isDirectory()) {
-          walk(fullPath);
-        } else if (regex.test(entry.name)) {
-          results.push(fullPath);
-        }
-      }
+    return {
+      taskId: task.id,
+      success: true,
+      verificationStats: totals,
+      ...(backupPath ? { backupPath } : {}),
     };
-
-    walk(dir);
-    return results;
-  }
-
-  /**
-   * Copy source into dest, merging directories
-   */
-  private copyMerge(src: string, dst: string): void {
-    if (!fs.existsSync(src)) return;
-
-    fs.mkdirSync(dst, { recursive: true });
-    const entries = fs.readdirSync(src, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const srcPath = path.join(src, entry.name);
-      const dstPath = path.join(dst, entry.name);
-
-      if (entry.isDirectory()) {
-        this.copyMerge(srcPath, dstPath);
-      } else {
-        fs.copyFileSync(srcPath, dstPath);
-      }
-    }
   }
 
   /**
