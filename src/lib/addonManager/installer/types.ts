@@ -1,3 +1,5 @@
+import type { LuaComponent } from './detection/luaScripts';
+
 /**
  * Addon types in detection priority order (lower = higher priority)
  */
@@ -54,7 +56,22 @@ export interface DetectedItem {
   versionInfo?: VersionInfo;
   liveryInfo?: DetectedLiveryInfo;
   navdataInfo?: NavdataInfo;
+  /** Folder segments under Custom Data this navdata package belongs in */
+  navdataSubPath?: string[];
+  /** FlyWithLua folders a Lua pack writes into */
+  luaComponents?: LuaComponent[];
   warnings: string[];
+}
+
+/**
+ * One archive subtree and where it installs.
+ * Most addons have a single component; a Lua pack or a multi-target navdata
+ * package has several.
+ */
+export interface InstallComponent {
+  /** Path inside the archive, with a trailing slash. Empty means the whole archive. */
+  internalRoot?: string;
+  targetPath: string;
 }
 
 export interface VersionInfo {
@@ -78,6 +95,8 @@ export interface NavdataInfo {
  */
 export interface InstallTask extends DetectedItem {
   targetPath: string;
+  /** Every subtree this task installs; the first one matches targetPath. */
+  components: InstallComponent[];
   conflictExists: boolean;
   installMode: 'fresh' | 'overwrite' | 'clean';
   backupOptions: BackupOptions;

@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "updated": "2026-05-24",
+  "patterns": [
+    {
+      "aircraft_type_id": "FF_B777",
+      "aircraft_name": "FlightFactor 777v2",
+      "detection_rules": [
+        {
+          "pattern_type": "path",
+          "pattern": "objects/777"
+        }
+      ],
+      "acf_identifiers": ["777-200*", "777-300*", "777-F*"]
+    },
+    {
+      "aircraft_type_id": "TOLISS_A319",
+      "aircraft_name": "ToLiss A319",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "a319_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage319*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage319*.dds"
+        }
+      ],
+      "acf_identifiers": ["a319*"]
+    },
+    {
+      "aircraft_type_id": "TOLISS_A320",
+      "aircraft_name": "ToLiss A320",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "a320_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage320*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage320*.dds"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/LEAP1A.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/LEAP1A.dds"
+        }
+      ],
+      "acf_identifiers": ["a320*"]
+    },
+    {
+      "aircraft_type_id": "TOLISS_A321",
+      "aircraft_name": "ToLiss A321",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "a321_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage321*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage321*.dds"
+        }
+      ],
+      "acf_identifiers": ["a321*"]
+    },
+    {
+      "aircraft_type_id": "TOLISS_A339",
+      "aircraft_name": "ToLiss A339",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "A330-900_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/A339_Engines.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/A339_Engines.dds"
+        }
+      ],
+      "acf_identifiers": ["A330-900*"]
+    },
+    {
+      "aircraft_type_id": "TOLISS_A346",
+      "aircraft_name": "ToLiss A346",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "A340-600_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/EngineA346*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/EngineA346*.dds"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/FuselageA346*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/FuselageA346*.dds"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/StabilizersA346*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/StabilizersA346*.dds"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/WING?A346.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/WING?A346.dds"
+        }
+      ],
+      "acf_identifiers": ["A340-600*"]
+    },
+    {
+      "aircraft_type_id": "ZIBO_B738",
+      "aircraft_name": "Zibo B738",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "b738_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/738*.png"
+        }
+      ],
+      "acf_identifiers": ["b738???"]
+    },
+    {
+      "aircraft_type_id": "LEVELUP_B737",
+      "aircraft_name": "LevelUp B737",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "737_??NG_icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/737_??NG/737_*NG*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/737_??NG/737_*NG*.dds"
+        }
+      ],
+      "acf_identifiers": ["737_??NG"]
+    },
+    {
+      "aircraft_type_id": "X-CRAFTS_E170",
+      "aircraft_name": "X-Crafts E170",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "E170_*icon11*.png"
+        },
+        {
+          "pattern_type": "path",
+          "pattern": "objects/E170"
+        }
+      ],
+      "acf_identifiers": ["E170*"]
+    },
+    {
+      "aircraft_type_id": "X-CRAFTS_E175",
+      "aircraft_name": "X-Crafts E175",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "E175_*icon11*.png"
+        },
+        {
+          "pattern_type": "path",
+          "pattern": "objects/E175"
+        }
+      ],
+      "acf_identifiers": ["E175*"]
+    },
+    {
+      "aircraft_type_id": "X-CRAFTS_E190",
+      "aircraft_name": "X-Crafts E190",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "E190_*icon11*.png"
+        },
+        {
+          "pattern_type": "path",
+          "pattern": "objects/E190"
+        }
+      ],
+      "acf_identifiers": ["E190*"]
+    },
+    {
+      "aircraft_type_id": "X-CRAFTS_E195",
+      "aircraft_name": "X-Crafts E195",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "E195_*icon11*.png"
+        },
+        {
+          "pattern_type": "path",
+          "pattern": "objects/E195"
+        }
+      ],
+      "acf_identifiers": ["E195*"]
+    },
+    {
+      "aircraft_type_id": "X-CRAFTS_LINEAGE",
+      "aircraft_name": "X-Crafts Lineage",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "Lineage_*icon11*.png"
+        },
+        {
+          "pattern_type": "path",
+          "pattern": "objects/LINEAGE"
+        }
+      ],
+      "acf_identifiers": ["Lineage*"]
+    },
+    {
+      "aircraft_type_id": "FELIS_B742-P",
+      "aircraft_name": "Felis B742 Classic",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "B742_PW_Felis_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage_main.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage_main.dds"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/wings_main.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/wings_main.dds"
+        }
+      ],
+      "acf_identifiers": ["B742_PW_Felis*"]
+    },
+    {
+      "aircraft_type_id": "FELIS_B742-F",
+      "aircraft_name": "Felis B742 Freighter",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "B742_Cargo_Felis_*icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage_cargo.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/fuselage_cargo.dds"
+        }
+      ],
+      "acf_identifiers": ["B742_GE_Felis"]
+    },
+    {
+      "aircraft_type_id": "ROTATE_MD11-F",
+      "aircraft_name": "Rotate MD-11 Freighter",
+      "detection_rules": [
+        {
+          "pattern_type": "file",
+          "pattern": "Rotate-MD-11_icon11*.png"
+        },
+        {
+          "pattern_type": "file",
+          "pattern": "objects/MD-11-exterior-*.png"
+        }
+      ],
+      "acf_identifiers": ["Rotate-MD-11"]
+    }
+  ]
+}

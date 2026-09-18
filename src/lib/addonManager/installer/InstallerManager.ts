@@ -24,6 +24,7 @@ import type {
   InstallResult,
   InstallTask,
   InstallerError,
+  VerificationStats,
 } from './types';
 import { INSTALLER_CONSTANTS } from './types';
 
@@ -194,116 +195,142 @@ export class InstallerManager {
   }
 
   /**
-   * Install a single task
+   * Install a single task.
+   *
+   * A task can carry several components - a Lua pack writes into both Scripts
+   * and Modules - so each one is extracted and moved in turn. Every component
+   * is verified before anything touches the target.
    */
   private async installTask(
     task: InstallTask,
     onProgress: (bytes: number, file: string) => void
   ): Promise<InstallResult> {
-    const tempDir = path.join(os.tmpdir(), `xdispatch_install_${crypto.randomUUID()}`);
+    const components =
+      task.components.length > 0
+        ? task.components
+        : [{ internalRoot: task.archiveInternalRoot, targetPath: task.targetPath }];
 
-    try {
-      // Create temp directory
-      fs.mkdirSync(tempDir, { recursive: true });
+    const tempDirs: string[] = [];
+    const totals: VerificationStats = {
+      totalFiles: 0,
+      verifiedFiles: 0,
+      failedFiles: 0,
+      skippedFiles: 0,
+    };
 
-      // Extract to temp directory
-      const extractResult = await extractArchive({
-        archivePath: task.sourcePath,
-        targetDir: tempDir,
-        internalRoot: task.archiveInternalRoot,
-        onProgress,
-      });
-
-      if (!extractResult.ok) {
-        logger.addon.error(
-          `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
-        );
-        return {
-          taskId: task.id,
-          success: false,
-          error: `Extraction failed: ${extractResult.error.code}`,
-        };
-      }
-
-      // A partial extraction must never reach the target, or a half-written
-      // addon silently replaces a working one.
-      const stats = extractResult.value.stats;
-      if (stats.failedFiles > 0) {
-        return {
-          taskId: task.id,
-          success: false,
-          error: `Extraction incomplete: ${stats.failedFiles} of ${stats.totalFiles} files failed`,
-          verificationStats: stats,
-        };
-      }
-      if (stats.totalFiles === 0) {
-        return {
-          taskId: task.id,
-          success: false,
-          error: 'Archive contained no installable files',
-          verificationStats: stats,
-        };
-      }
-
-      // Handle installation mode
-      if (task.installMode === 'clean' && task.conflictExists) {
-        // Backup if needed
-        await this.backupBeforeClean(task);
-        // Remove existing
-        fs.rmSync(task.targetPath, { recursive: true, force: true });
-      }
-
-      // Move/merge to target
-      fs.mkdirSync(path.dirname(task.targetPath), { recursive: true });
-
-      if (task.installMode === 'overwrite' && task.conflictExists) {
-        // Merge files
-        this.copyMerge(tempDir, task.targetPath);
-      } else {
-        // Fresh install or clean install - just rename
-        if (fs.existsSync(task.targetPath)) {
-          // Merge if target exists (shouldn't happen for clean, but be safe)
-          this.copyMerge(tempDir, task.targetPath);
-        } else {
-          try {
-            fs.renameSync(tempDir, task.targetPath);
-          } catch (err: unknown) {
-            // EXDEV: rename fails across different drives (e.g., temp on C:, X-Plane on D:)
-            if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
-              fs.cpSync(tempDir, task.targetPath, { recursive: true });
-              fs.rmSync(tempDir, { recursive: true, force: true });
-            } else {
-              throw err;
-            }
-          }
+    const cleanup = () => {
+      for (const dir of tempDirs) {
+        try {
+          fs.rmSync(dir, { recursive: true, force: true });
+        } catch {
+          // Temp folders are best effort
         }
       }
+    };
 
-      // Post-install actions
-      await this.postInstall(task);
+    try {
+      for (let i = 0; i < components.length; i++) {
+        const component = components[i];
+        if (!component) continue;
 
-      // Cleanup temp if it still exists
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
+        const tempDir = path.join(os.tmpdir(), `xdispatch_install_${crypto.randomUUID()}`);
+        tempDirs.push(tempDir);
+        fs.mkdirSync(tempDir, { recursive: true });
+
+        const extractResult = await extractArchive({
+          archivePath: task.sourcePath,
+          targetDir: tempDir,
+          internalRoot: component.internalRoot,
+          onProgress,
+        });
+
+        if (!extractResult.ok) {
+          logger.addon.error(
+            `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
+          );
+          cleanup();
+          return {
+            taskId: task.id,
+            success: false,
+            error: `Extraction failed: ${extractResult.error.code}`,
+          };
+        }
+
+        // A partial extraction must never reach the target, or a half-written
+        // addon silently replaces a working one.
+        const stats = extractResult.value.stats;
+        totals.totalFiles += stats.totalFiles;
+        totals.verifiedFiles += stats.verifiedFiles;
+        totals.failedFiles += stats.failedFiles;
+        totals.skippedFiles += stats.skippedFiles;
+
+        if (stats.failedFiles > 0) {
+          cleanup();
+          return {
+            taskId: task.id,
+            success: false,
+            error: `Extraction incomplete: ${stats.failedFiles} of ${stats.totalFiles} files failed`,
+            verificationStats: totals,
+          };
+        }
+        if (stats.totalFiles === 0) {
+          cleanup();
+          return {
+            taskId: task.id,
+            success: false,
+            error: 'Archive contained no installable files',
+            verificationStats: totals,
+          };
+        }
+
+        // The install mode describes the addon as a whole, so it applies once,
+        // to the folder the user sees as the target.
+        if (i === 0 && task.installMode === 'clean' && task.conflictExists) {
+          await this.backupBeforeClean(task);
+          fs.rmSync(task.targetPath, { recursive: true, force: true });
+        }
+
+        this.placeComponent(tempDir, component.targetPath);
       }
+
+      await this.postInstall(task);
+      cleanup();
 
       return {
         taskId: task.id,
         success: true,
-        verificationStats: stats,
+        verificationStats: totals,
       };
     } catch (e) {
       logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
-      // Cleanup temp on failure
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
+      cleanup();
 
       return {
         taskId: task.id,
         success: false,
         error: String(e),
       };
+    }
+  }
+
+  /**
+   * Move an extracted component into place, merging when the target is there.
+   */
+  private placeComponent(tempDir: string, targetPath: string): void {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+
+    if (fs.existsSync(targetPath)) {
+      this.copyMerge(tempDir, targetPath);
+      return;
+    }
+
+    try {
+      fs.renameSync(tempDir, targetPath);
+    } catch (e: unknown) {
+      // EXDEV: rename fails across different drives (temp on C:, X-Plane on D:)
+      if ((e as NodeJS.ErrnoException).code !== 'EXDEV') throw e;
+      fs.cpSync(tempDir, targetPath, { recursive: true });
+      fs.rmSync(tempDir, { recursive: true, force: true });
     }
   }
 
