@@ -97,6 +97,15 @@ export interface GraphicsSettings {
   followSimTime: boolean;
 }
 
+export interface FlightsSettings {
+  /** Record every flight while X-Plane is connected. */
+  recording: boolean;
+  /** Show the landing card on the map after touchdown. */
+  landingReport: boolean;
+  /** Move the camera to the touchdown point when the card appears. */
+  landingFlyTo: boolean;
+}
+
 export interface LauncherSettings {
   closeOnLaunch: boolean;
   customLaunchArgs: string[];
@@ -122,6 +131,7 @@ interface SettingsState {
   appearance: AppearanceSettings;
   graphics: GraphicsSettings;
   launcher: LauncherSettings;
+  flights: FlightsSettings;
   support: SupportSettings;
   airports: AirportsSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
@@ -133,6 +143,7 @@ interface SettingsState {
   removeFmsExportTarget: (id: string) => void;
   updateGraphicsSettings: (settings: Partial<GraphicsSettings>) => void;
   updateLauncherSettings: (settings: Partial<LauncherSettings>) => void;
+  updateFlightsSettings: (settings: Partial<FlightsSettings>) => void;
   updateSupportSettings: (settings: Partial<SupportSettings>) => void;
   updateAirportsSettings: (settings: Partial<AirportsSettings>) => void;
   toggleFavoriteAirport: (icao: string) => void;
@@ -183,6 +194,12 @@ const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   customLaunchArgs: [],
 };
 
+const DEFAULT_FLIGHTS_SETTINGS: FlightsSettings = {
+  recording: true,
+  landingReport: true,
+  landingFlyTo: true,
+};
+
 const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
   promptDismissed: false,
 };
@@ -201,6 +218,7 @@ export const useSettingsStore = create<SettingsState>()(
       appearance: DEFAULT_APPEARANCE_SETTINGS,
       graphics: DEFAULT_GRAPHICS_SETTINGS,
       launcher: DEFAULT_LAUNCHER_SETTINGS,
+      flights: DEFAULT_FLIGHTS_SETTINGS,
       support: DEFAULT_SUPPORT_SETTINGS,
       airports: DEFAULT_AIRPORTS_SETTINGS,
 
@@ -289,6 +307,10 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           launcher: { ...state.launcher, ...settings },
         })),
+      updateFlightsSettings: (settings) =>
+        set((state) => ({
+          flights: { ...state.flights, ...settings },
+        })),
 
       updateSupportSettings: (settings) =>
         set((state) => ({
@@ -352,6 +374,7 @@ export const useSettingsStore = create<SettingsState>()(
           appearance: DEFAULT_APPEARANCE_SETTINGS,
           graphics: DEFAULT_GRAPHICS_SETTINGS,
           launcher: DEFAULT_LAUNCHER_SETTINGS,
+          flights: DEFAULT_FLIGHTS_SETTINGS,
           support: DEFAULT_SUPPORT_SETTINGS,
           airports: DEFAULT_AIRPORTS_SETTINGS,
         });
@@ -359,7 +382,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 25,
+      version: 26,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -502,6 +525,9 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       ...state,
       graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics },
     };
+  }
+  if (version < 26) {
+    state = { ...state, flights: { ...DEFAULT_FLIGHTS_SETTINGS, ...state.flights } };
   }
 
   return state as SettingsState;

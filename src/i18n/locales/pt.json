@@ -178,8 +178,11 @@
       "pin": "Posicionar aeronave em qualquer lugar do mapa",
       "launchDisabled": "Selecione primeiro um aeroporto",
       "launchSelectPosition": "Escolha um portão, uma pista ou coloque um marcador no mapa",
-      "settings": "Abrir definições"
-    }
+      "settings": "Abrir definições",
+      "logbook": "Voos gravados, pousos e histórico de lançamentos"
+    },
+    "logbook": "Diário de bordo",
+    "flightTrail": "Rastro de voo"
   },
   "airportFilters": {
     "title": "Aeroportos",
@@ -262,7 +265,8 @@
       "support": "Suporte",
       "about": "Sobre",
       "companionApps": "Aplicações complementares",
-      "logs": "Registos do X-Plane"
+      "logs": "Registos do X-Plane",
+      "flights": "Voos"
     },
     "airports": {
       "title": "Aeroportos",
@@ -578,6 +582,24 @@
       "openExternal": "Abrir Log.txt",
       "searchPlaceholder": "Pesquisar no registo...",
       "openFailed": "Não foi possível abrir Log.txt."
+    },
+    "flights": {
+      "title": "Voos",
+      "description": "Gravação de voos, o rastro atrás da aeronave e o relatório de pouso.",
+      "recordingSection": "Gravação",
+      "recording": "Gravar voos",
+      "recordingDesc": "Registrar cada voo automaticamente do primeiro movimento até o estacionamento enquanto o X-Plane estiver conectado.",
+      "trail": "Rastro de voo",
+      "trailDesc": "Desenhar a trajetória gravada atrás da aeronave, colorida por altitude.",
+      "landingSection": "Relatório de pouso",
+      "landingReport": "Mostrar relatório de pouso",
+      "landingReportDesc": "Razão de descida no toque, g máximo, qualidade do arredondamento e posição na pista aparecem no mapa logo após o pouso.",
+      "landingFlyTo": "Aproximar no ponto de toque",
+      "landingFlyToDesc": "Mover a câmera para a pista quando o relatório de pouso aparecer.",
+      "credit": "As faixas de avaliação seguem o LandingRate for FlyWithLua de Dan Berry, para que os números sejam comparáveis.",
+      "storage": "Armazenamento",
+      "storageDesc": "Os voos são guardados como arquivos na pasta de dados do X-Dispatch.",
+      "openFolder": "Abrir pasta de voos"
     }
   },
   "sidebar": {
@@ -1663,5 +1685,84 @@
       "download": "Transferir",
       "dismiss": "Mais tarde"
     }
+  },
+  "logbook": {
+    "title": "Diário de bordo",
+    "tabs": {
+      "flights": "Voos",
+      "launches": "Histórico de lançamentos"
+    },
+    "empty": "Nenhum voo gravado ainda",
+    "emptyHint": "Os voos são gravados automaticamente enquanto o X-Plane está conectado. Taxie para a pista e sua primeira entrada aparecerá aqui.",
+    "active": "Em andamento",
+    "aborted": "Interrompido",
+    "unknownAirport": "Aeroporto desconhecido",
+    "unknownAircraft": "Aeronave desconhecida",
+    "blockTime": "Tempo calço a calço",
+    "airTime": "Tempo de voo",
+    "distance": "Distância",
+    "maxAltitude": "Altitude máx.",
+    "maxSpeed": "Velocidade no solo máx.",
+    "fuelBurned": "Combustível consumido",
+    "landings": "Pousos",
+    "points": "Pontos da trajetória",
+    "showOnMap": "Mostrar no mapa",
+    "replay": "Replay",
+    "delete": "Excluir voo",
+    "confirmDelete": "Excluir este voo?",
+    "confirmDeleteHint": "A trajetória e o relatório de pouso são removidos do disco. Isso não pode ser desfeito.",
+    "clearAll": "Limpar tudo",
+    "confirmClearAll": "Excluir todos os voos gravados?",
+    "confirmClearAllHint": "Todos os arquivos de voo são removidos do disco. Isso não pode ser desfeito.",
+    "noLanding": "Nenhum pouso registrado neste voo.",
+    "selectFlight": "Selecione um voo para ver os detalhes",
+    "copyImage": "Copiar como imagem",
+    "imageCopied": "Cartão de pouso copiado para a área de transferência",
+    "imageCopyFailed": "Não foi possível copiar o cartão de pouso",
+    "earlierLandings": "Toques anteriores neste voo: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Pouso",
+    "rating": {
+      "butter": "Manteiga",
+      "great": "Ótimo pouso",
+      "acceptable": "Aceitável",
+      "hard": "Pouso duro",
+      "severe": "Pouso muito duro"
+    },
+    "flare": {
+      "veryGood": "Muito bom",
+      "goodEarly": "Bom, um pouco cedo",
+      "goodLate": "Bom, um pouco tarde",
+      "poorEarly": "Cedo demais",
+      "poorLate": "Tarde demais"
+    },
+    "flareLabel": "Arredondamento",
+    "peakG": "g máx.",
+    "pitch": "Arfagem",
+    "float": "Flutuação",
+    "bounces": "Quiques",
+    "noseRate": "Baixada do nariz",
+    "pastThresholdLabel": "Após a cabeceira",
+    "centerlineLabel": "Eixo da pista",
+    "pastThreshold": "{{m}} m após a cabeceira",
+    "shortOfThreshold": "{{m}} m antes da cabeceira",
+    "centerlineOffset": "{{m}} m à {{side}} do eixo",
+    "left": "esquerda",
+    "right": "direita",
+    "runway": "{{icao}} · Pista {{runway}}",
+    "unknownRunway": "Pista não identificada",
+    "showOnMap": "Mostrar no mapa",
+    "dismiss": "Fechar",
+    "cardFooter": "Gravado com X-Dispatch"
+  },
+  "replay": {
+    "title": "Replay",
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Alterar a velocidade de reprodução",
+    "follow": "Seguir a aeronave",
+    "stop": "Parar o replay"
   }
 }

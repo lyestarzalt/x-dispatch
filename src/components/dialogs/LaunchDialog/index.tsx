@@ -212,6 +212,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         selectedAircraft.previewImage ??
         selectedAircraft.thumbnailImage;
 
+      void window.flightsAPI.setAircraftHint({
+        icao: selectedAircraft.icao || null,
+        name: selectedAircraft.name,
+        livery: selectedLivery,
+      });
+
       const logbookEntry = {
         id: crypto.randomUUID(),
         launchedAt: new Date().toISOString(),

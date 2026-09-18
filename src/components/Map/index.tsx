@@ -3,6 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
+import LogbookDialog from '@/components/dialogs/LogbookDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import AirportInfoPanel from '@/components/layout/AirportInfoPanel';
 import FlightInfoPanel from '@/components/layout/FlightInfoPanel';
@@ -14,7 +15,7 @@ import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
 import { Airport } from '@/lib/xplaneServices/dataService';
-import { usePlaneStateStream, useVatsimSectorQuery } from '@/queries';
+import { useFlightRecorderStream, usePlaneStateStream, useVatsimSectorQuery } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -39,6 +40,8 @@ import {
   useApproachLightAnimation,
   useCityLights,
   useCursorElevation,
+  useFlightReplay,
+  useFlightTrail,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
   useMapSetup,
@@ -79,6 +82,8 @@ import { makePreserveCustomStyle } from './utils/globeUtils';
 import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
+import LandingReportCard from './widgets/LandingReportCard';
+import ReplayWidget from './widgets/ReplayWidget';
 
 interface MapProps {
   airports: Airport[];
@@ -117,6 +122,7 @@ export default function Map({ airports }: MapProps) {
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
+  const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const followPlane = useMapStore((s) => s.followPlane);
   const setFollowPlane = useMapStore((s) => s.setFollowPlane);
@@ -129,6 +135,8 @@ export default function Map({ airports }: MapProps) {
   const mapStyleUrl = useSettingsStore((s) => s.map.mapStyleUrl);
   const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
   const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
+  const landingReportEnabled = useSettingsStore((s) => s.flights.landingReport);
+  const landingFlyTo = useSettingsStore((s) => s.flights.landingFlyTo);
 
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
@@ -269,6 +277,7 @@ export default function Map({ airports }: MapProps) {
   // this component only subscribes to the connection flag so a position
   // update does not re-render the whole map UI.
   usePlaneStateStream();
+  useFlightRecorderStream();
   const isXPlaneConnected = usePlaneStore((s) => s.connected);
 
   // Auto-enable plane tracker ONCE when X-Plane WebSocket first connects
@@ -386,6 +395,21 @@ export default function Map({ airports }: MapProps) {
 
   // Terrain shading (hillshade + contour lines)
   useTerrainShading(mapRef, terrainShadingEnabled);
+
+  // Recorded track behind the aircraft, touchdown markers and flight replay.
+  useFlightTrail({
+    mapRef,
+    enabled: flightTrailEnabled,
+    flyToLanding: landingReportEnabled && landingFlyTo,
+  });
+  useFlightReplay(mapRef);
+
+  const handleShowLanding = useCallback(
+    (lat: number, lon: number) => {
+      mapRef.current?.flyTo({ center: [lon, lat], zoom: 15, pitch: 0, duration: 2000 });
+    },
+    [mapRef]
+  );
 
   // Cursor-following terrain elevation, published to the map store for the
   // compass widget.
@@ -860,6 +884,18 @@ export default function Map({ airports }: MapProps) {
 
       {showPlaneTracker && <FlightStrip onCenterPlane={handleCenterPlane} />}
 
+      {/* Landing card and replay transport, stacked above the flight strip */}
+      <div className="pointer-events-none absolute bottom-24 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2">
+        <div className="pointer-events-auto">
+          <ReplayWidget />
+        </div>
+        {landingReportEnabled && (
+          <div className="pointer-events-auto">
+            <LandingReportCard onShowOnMap={handleShowLanding} />
+          </div>
+        )}
+      </div>
+
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />
 
@@ -883,6 +919,8 @@ export default function Map({ airports }: MapProps) {
         onClose={() => setShowLaunchDialog(false)}
         startPosition={startPosition}
       />
+
+      <LogbookDialog />
     </div>
   );
 }

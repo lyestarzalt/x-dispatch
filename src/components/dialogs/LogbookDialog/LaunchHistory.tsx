@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
   Clock,
   CloudFog,
@@ -22,20 +20,13 @@ import {
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
+import { useAircraftList } from '@/queries/useLaunchQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
-import type { Aircraft } from '@/types/aircraft';
-import type { LogbookEntry } from '../types';
-
-interface LogbookDialogProps {
-  open: boolean;
-  onClose: () => void;
-  aircraftList: Aircraft[];
-}
+import type { LogbookEntry } from '../LaunchDialog/types';
 
 const WEATHER_ICONS: Record<string, typeof Sun> = {
   real: Globe,
@@ -104,11 +95,13 @@ function formatTimeOfDay(hours: number): string {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}L`;
 }
 
-export function LogbookDialog({ open, onClose, aircraftList }: LogbookDialogProps) {
+/** Recent launch setups, restorable into the launch dialog. */
+export function LaunchHistory() {
   const { t } = useTranslation();
   const logbook = useLaunchStore((s) => s.logbook);
   const removeLogbookEntry = useLaunchStore((s) => s.removeLogbookEntry);
   const clearLogbook = useLaunchStore((s) => s.clearLogbook);
+  const { data: aircraftList = [] } = useAircraftList();
 
   const handleRestore = (entry: LogbookEntry) => {
     const {
@@ -140,84 +133,53 @@ export function LogbookDialog({ open, onClose, aircraftList }: LogbookDialogProp
     setTimeOfDay(entry.timeOfDay);
     setUseRealWorldTime(entry.useRealWorldTime);
     setColdAndDark(entry.coldAndDark);
-    useAppStore.getState().setStartPosition(entry.startPosition);
-
-    onClose();
+    const app = useAppStore.getState();
+    app.setStartPosition(entry.startPosition);
+    app.closeLogbook();
+    app.setShowLaunchDialog(true);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogPrimitive.Content
-          className="fixed inset-6 z-[60] flex flex-col rounded-lg border border-border bg-background shadow-xl"
-          aria-describedby={undefined}
-        >
-          <VisuallyHidden.Root>
-            <DialogTitle>{t('launcher.logbook.title')}</DialogTitle>
-          </VisuallyHidden.Root>
-
-          {/* Header */}
-          <div className="flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b border-border bg-card px-4">
-            <div className="flex items-center gap-3">
-              <History className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{t('launcher.logbook.title')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {logbook.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearLogbook}
-                  className="h-7 text-xs text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                  {t('launcher.logbook.clearAll')}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-8 w-8"
-                tooltip={t('common.close')}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+    <div className="flex h-full flex-col">
+      {logbook.length > 0 && (
+        <div className="flex flex-shrink-0 items-center justify-end border-b border-border/40 px-4 py-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearLogbook}
+            className="h-7 text-xs text-destructive hover:text-destructive"
+          >
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+            {t('launcher.logbook.clearAll')}
+          </Button>
+        </div>
+      )}
+      <ScrollArea className="flex-1">
+        {logbook.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-12 text-center">
+            <History className="h-10 w-10 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">{t('launcher.logbook.empty')}</p>
+            <p className="text-xs text-muted-foreground/60">{t('launcher.logbook.emptyHint')}</p>
           </div>
-
-          {/* Body */}
-          <ScrollArea className="flex-1">
-            {logbook.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 p-12 text-center">
-                <History className="h-10 w-10 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">{t('launcher.logbook.empty')}</p>
-                <p className="text-xs text-muted-foreground/60">
-                  {t('launcher.logbook.emptyHint')}
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="border-b border-border/40 bg-muted/20 px-4 py-2">
-                  <p className="text-xs text-muted-foreground">{t('launcher.logbook.shareHint')}</p>
-                </div>
-                <div className="flex flex-col gap-2 p-4">
-                  {logbook.map((entry) => (
-                    <LogbookCard
-                      key={entry.id}
-                      entry={entry}
-                      onRestore={handleRestore}
-                      onDelete={removeLogbookEntry}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </ScrollArea>
-        </DialogPrimitive.Content>
-      </DialogPortal>
-    </Dialog>
+        ) : (
+          <>
+            <div className="border-b border-border/40 bg-muted/20 px-4 py-2">
+              <p className="text-xs text-muted-foreground">{t('launcher.logbook.shareHint')}</p>
+            </div>
+            <div className="flex flex-col gap-2 p-4">
+              {logbook.map((entry) => (
+                <LogbookCard
+                  key={entry.id}
+                  entry={entry}
+                  onRestore={handleRestore}
+                  onDelete={removeLogbookEntry}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </ScrollArea>
+    </div>
   );
 }
 

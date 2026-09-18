@@ -9,6 +9,7 @@ import {
   Monitor,
   Palette,
   Plane,
+  PlaneLanding,
   ScrollText,
   Star,
 } from 'lucide-react';
@@ -29,6 +30,7 @@ import {
   AirportsSection,
   AppearanceSection,
   CompanionAppsSection,
+  FlightsSection,
   GraphicsSection,
   LogsSection,
   NavigationDataSection,
@@ -47,6 +49,7 @@ type TabId =
   | 'data'
   | 'appearance'
   | 'graphics'
+  | 'flights'
   | 'airports'
   | 'simbrief'
   | 'companion-apps'
@@ -65,6 +68,7 @@ const TABS: TabConfig[] = [
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'graphics', icon: Monitor, labelKey: 'settings.tabs.graphics' },
+  { id: 'flights', icon: PlaneLanding, labelKey: 'settings.tabs.flights' },
   { id: 'airports', icon: Star, labelKey: 'settings.tabs.airports' },
   { id: 'simbrief', icon: CloudDownload, labelKey: 'settings.tabs.simbrief' },
   { id: 'companion-apps', icon: Boxes, labelKey: 'settings.tabs.companionApps' },
@@ -164,6 +168,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="Graphics">
                   <GraphicsSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="flights"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Flights">
+                  <FlightsSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

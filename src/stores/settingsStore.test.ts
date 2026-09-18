@@ -143,6 +143,35 @@ describe('migrateSettings', () => {
     });
   });
 
+  it('adds flight recorder defaults at v26 and keeps earlier sections', () => {
+    const v25Blob = {
+      map: {
+        navDataRadiusNm: 100,
+        vatsimRefreshInterval: 15,
+        mapStyleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        idleOrbitEnabled: false,
+        userMapStyles: [],
+        units: { weight: 'lbs' as const },
+      },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: true,
+        surfaceDetail: 'high' as const,
+        dynamicSky: false,
+        cityLights: true,
+        followSimTime: true,
+      },
+      launcher: { closeOnLaunch: true, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+    };
+    const result = migrateSettings(v25Blob, 25);
+    expect(result.flights).toEqual({ recording: true, landingReport: true, landingFlyTo: true });
+    expect(result.graphics.dynamicSky).toBe(false);
+    expect(result.launcher.closeOnLaunch).toBe(true);
+  });
+
   it('seeds an empty fmsExportTargets array when migrating from v20 to v21', () => {
     const v20Blob = {
       map: {

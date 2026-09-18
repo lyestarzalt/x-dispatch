@@ -178,8 +178,11 @@
       "pin": "Place aircraft anywhere on the map",
       "launchDisabled": "Select an airport first",
       "launchSelectPosition": "Choose a gate, runway, or drop a pin on the map",
-      "settings": "Open settings"
-    }
+      "settings": "Open settings",
+      "logbook": "Recorded flights, landings and launch history"
+    },
+    "logbook": "Logbook",
+    "flightTrail": "Flight Trail"
   },
   "airportFilters": {
     "title": "Airports",
@@ -262,7 +265,8 @@
       "support": "Support",
       "about": "About",
       "companionApps": "Companion Apps",
-      "logs": "X-Plane Logs"
+      "logs": "X-Plane Logs",
+      "flights": "Flights"
     },
     "airports": {
       "title": "Airports",
@@ -578,6 +582,24 @@
       "openExternal": "Open Log.txt",
       "searchPlaceholder": "Search log…",
       "openFailed": "Could not open Log.txt."
+    },
+    "flights": {
+      "title": "Flights",
+      "description": "Flight recording, the trail behind your aircraft and the landing report.",
+      "recordingSection": "Recording",
+      "recording": "Record flights",
+      "recordingDesc": "Log every flight automatically from first movement to parking while X-Plane is connected.",
+      "trail": "Flight trail",
+      "trailDesc": "Draw the recorded track behind the aircraft, coloured by altitude.",
+      "landingSection": "Landing report",
+      "landingReport": "Show landing report",
+      "landingReportDesc": "Touchdown rate, peak g, flare grade and runway position appear on the map right after landing.",
+      "landingFlyTo": "Zoom to touchdown",
+      "landingFlyToDesc": "Move the camera to the runway when the landing report appears.",
+      "credit": "Rating bands follow LandingRate for FlyWithLua by Dan Berry, so numbers compare with what you know.",
+      "storage": "Storage",
+      "storageDesc": "Flights are stored as files in the X-Dispatch data folder.",
+      "openFolder": "Open flights folder"
     }
   },
   "sidebar": {
@@ -1663,5 +1685,84 @@
       "download": "Download",
       "dismiss": "Later"
     }
+  },
+  "logbook": {
+    "title": "Logbook",
+    "tabs": {
+      "flights": "Flights",
+      "launches": "Launch history"
+    },
+    "empty": "No recorded flights yet",
+    "emptyHint": "Flights are recorded automatically while X-Plane is connected. Taxi out and your first entry appears here.",
+    "active": "In progress",
+    "aborted": "Interrupted",
+    "unknownAirport": "Unknown airport",
+    "unknownAircraft": "Unknown aircraft",
+    "blockTime": "Block time",
+    "airTime": "Air time",
+    "distance": "Distance",
+    "maxAltitude": "Max altitude",
+    "maxSpeed": "Max groundspeed",
+    "fuelBurned": "Fuel burned",
+    "landings": "Landings",
+    "points": "Track points",
+    "showOnMap": "Show on map",
+    "replay": "Replay",
+    "delete": "Delete flight",
+    "confirmDelete": "Delete this flight?",
+    "confirmDeleteHint": "The track and landing report are removed from disk. This cannot be undone.",
+    "clearAll": "Clear all",
+    "confirmClearAll": "Delete all recorded flights?",
+    "confirmClearAllHint": "Every flight file is removed from disk. This cannot be undone.",
+    "noLanding": "No landing recorded for this flight.",
+    "selectFlight": "Select a flight to see its details",
+    "copyImage": "Copy as image",
+    "imageCopied": "Landing card copied to the clipboard",
+    "imageCopyFailed": "Could not copy the landing card",
+    "earlierLandings": "Earlier touchdowns this flight: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Landing",
+    "rating": {
+      "butter": "Butter",
+      "great": "Great landing",
+      "acceptable": "Acceptable",
+      "hard": "Hard landing",
+      "severe": "Very hard landing"
+    },
+    "flare": {
+      "veryGood": "Very good",
+      "goodEarly": "Good, a little early",
+      "goodLate": "Good, a little late",
+      "poorEarly": "Too early",
+      "poorLate": "Too late"
+    },
+    "flareLabel": "Flare",
+    "peakG": "Peak g",
+    "pitch": "Pitch",
+    "float": "Float",
+    "bounces": "Bounces",
+    "noseRate": "Nose down",
+    "pastThresholdLabel": "Past threshold",
+    "centerlineLabel": "Centreline",
+    "pastThreshold": "{{m}} m past the threshold",
+    "shortOfThreshold": "{{m}} m short of the threshold",
+    "centerlineOffset": "{{m}} m {{side}} of centreline",
+    "left": "left",
+    "right": "right",
+    "runway": "{{icao}} · Runway {{runway}}",
+    "unknownRunway": "Runway not identified",
+    "showOnMap": "Show on map",
+    "dismiss": "Dismiss",
+    "cardFooter": "Recorded with X-Dispatch"
+  },
+  "replay": {
+    "title": "Replay",
+    "play": "Play",
+    "pause": "Pause",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Change playback speed",
+    "follow": "Follow the aircraft",
+    "stop": "Stop replay"
   }
 }

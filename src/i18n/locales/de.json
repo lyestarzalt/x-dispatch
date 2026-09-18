@@ -178,8 +178,11 @@
       "pin": "Flugzeug auf der Karte platzieren",
       "launchDisabled": "Wählen Sie zuerst einen Flughafen",
       "launchSelectPosition": "Gate, Piste oder Markierung auf der Karte wählen",
-      "settings": "Einstellungen öffnen"
-    }
+      "settings": "Einstellungen öffnen",
+      "logbook": "Aufgezeichnete Flüge, Landungen und Startverlauf"
+    },
+    "logbook": "Logbuch",
+    "flightTrail": "Flugspur"
   },
   "airportFilters": {
     "title": "Flughäfen",
@@ -262,7 +265,8 @@
       "support": "Support",
       "about": "Über",
       "companionApps": "Begleit-Apps",
-      "logs": "X-Plane-Protokolle"
+      "logs": "X-Plane-Protokolle",
+      "flights": "Flüge"
     },
     "airports": {
       "title": "Flughäfen",
@@ -578,6 +582,24 @@
       "openExternal": "Log.txt öffnen",
       "searchPlaceholder": "Protokoll durchsuchen…",
       "openFailed": "Log.txt konnte nicht geöffnet werden."
+    },
+    "flights": {
+      "title": "Flüge",
+      "description": "Flugaufzeichnung, die Spur hinter dem Flugzeug und der Landebericht.",
+      "recordingSection": "Aufzeichnung",
+      "recording": "Flüge aufzeichnen",
+      "recordingDesc": "Jeden Flug automatisch vom ersten Rollen bis zum Parken protokollieren, solange X-Plane verbunden ist.",
+      "trail": "Flugspur",
+      "trailDesc": "Die aufgezeichnete Strecke hinter dem Flugzeug zeichnen, nach Höhe eingefärbt.",
+      "landingSection": "Landebericht",
+      "landingReport": "Landebericht anzeigen",
+      "landingReportDesc": "Sinkrate beim Aufsetzen, maximale g-Last, Abfangbewertung und Position auf der Bahn erscheinen direkt nach der Landung.",
+      "landingFlyTo": "Zum Aufsetzpunkt zoomen",
+      "landingFlyToDesc": "Die Kamera zur Landebahn bewegen, wenn der Landebericht erscheint.",
+      "credit": "Die Bewertungsstufen folgen LandingRate for FlyWithLua von Dan Berry, damit die Zahlen vergleichbar bleiben.",
+      "storage": "Speicherort",
+      "storageDesc": "Flüge werden als Dateien im Datenordner von X-Dispatch gespeichert.",
+      "openFolder": "Flugordner öffnen"
     }
   },
   "sidebar": {
@@ -1663,5 +1685,84 @@
       "download": "Herunterladen",
       "dismiss": "Später"
     }
+  },
+  "logbook": {
+    "title": "Logbuch",
+    "tabs": {
+      "flights": "Flüge",
+      "launches": "Startverlauf"
+    },
+    "empty": "Noch keine aufgezeichneten Flüge",
+    "emptyHint": "Flüge werden automatisch aufgezeichnet, solange X-Plane verbunden ist. Rolle los, und dein erster Eintrag erscheint hier.",
+    "active": "Läuft",
+    "aborted": "Unterbrochen",
+    "unknownAirport": "Unbekannter Flughafen",
+    "unknownAircraft": "Unbekanntes Flugzeug",
+    "blockTime": "Blockzeit",
+    "airTime": "Flugzeit",
+    "distance": "Strecke",
+    "maxAltitude": "Max. Höhe",
+    "maxSpeed": "Max. Grundgeschwindigkeit",
+    "fuelBurned": "Verbrauchter Kraftstoff",
+    "landings": "Landungen",
+    "points": "Spurpunkte",
+    "showOnMap": "Auf der Karte zeigen",
+    "replay": "Wiedergabe",
+    "delete": "Flug löschen",
+    "confirmDelete": "Diesen Flug löschen?",
+    "confirmDeleteHint": "Spur und Landebericht werden von der Festplatte entfernt. Das lässt sich nicht rückgängig machen.",
+    "clearAll": "Alle löschen",
+    "confirmClearAll": "Alle aufgezeichneten Flüge löschen?",
+    "confirmClearAllHint": "Alle Flugdateien werden von der Festplatte entfernt. Das lässt sich nicht rückgängig machen.",
+    "noLanding": "Für diesen Flug wurde keine Landung aufgezeichnet.",
+    "selectFlight": "Wähle einen Flug, um Details zu sehen",
+    "copyImage": "Als Bild kopieren",
+    "imageCopied": "Landekarte in die Zwischenablage kopiert",
+    "imageCopyFailed": "Landekarte konnte nicht kopiert werden",
+    "earlierLandings": "Frühere Aufsetzer in diesem Flug: {{rates}} fpm"
+  },
+  "landing": {
+    "title": "Landung",
+    "rating": {
+      "butter": "Butterweich",
+      "great": "Tolle Landung",
+      "acceptable": "Akzeptabel",
+      "hard": "Harte Landung",
+      "severe": "Sehr harte Landung"
+    },
+    "flare": {
+      "veryGood": "Sehr gut",
+      "goodEarly": "Gut, etwas früh",
+      "goodLate": "Gut, etwas spät",
+      "poorEarly": "Zu früh",
+      "poorLate": "Zu spät"
+    },
+    "flareLabel": "Abfangen",
+    "peakG": "Max. g",
+    "pitch": "Nicklage",
+    "float": "Schweben",
+    "bounces": "Hüpfer",
+    "noseRate": "Bugrad ab",
+    "pastThresholdLabel": "Hinter Schwelle",
+    "centerlineLabel": "Mittellinie",
+    "pastThreshold": "{{m}} m hinter der Schwelle",
+    "shortOfThreshold": "{{m}} m vor der Schwelle",
+    "centerlineOffset": "{{m}} m {{side}} der Mittellinie",
+    "left": "links",
+    "right": "rechts",
+    "runway": "{{icao}} · Bahn {{runway}}",
+    "unknownRunway": "Bahn nicht erkannt",
+    "showOnMap": "Auf der Karte zeigen",
+    "dismiss": "Ausblenden",
+    "cardFooter": "Aufgezeichnet mit X-Dispatch"
+  },
+  "replay": {
+    "title": "Wiedergabe",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "speed": "{{speed}}×",
+    "speedTooltip": "Wiedergabegeschwindigkeit ändern",
+    "follow": "Dem Flugzeug folgen",
+    "stop": "Wiedergabe beenden"
   }
 }
