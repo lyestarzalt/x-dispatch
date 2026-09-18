@@ -59,13 +59,14 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 ## What it does
 
-- **Airport map** — 35,000+ airports on a 3D globe with terrain and contour lines. Runways, taxiways, gates, helipads, markings, lights. Custom scenery detection.
+- **Airport map** — 35,000+ airports on a 3D globe with terrain and contour lines. Runways, taxiways, gates, helipads, markings, lights. Custom scenery detection. Sun-lit globe with real night city lights.
 - **Flight setup** — Pick your aircraft, livery, starting position, fuel, payload, weather. Launch X-Plane directly or relocate mid-flight.
 - **Taxi routing** — Select a gate and runway, get a shortest-path taxi route. Drag to reroute through different taxiways.
+- **Flight recording** — Automatic flight recording with trail visualization, landing detection, replay mode, and flight logbook with landing statistics.
 - **SimBrief** — Import your OFP. Route goes on the map with fuel breakdown and nav log.
 - **Nav data** — VORs, NDBs, ILS, airways, airspace, SID/STAR/approach procedures. Works with Navigraph.
 - **Live traffic** — VATSIM and IVAO overlays. Live METAR per airport.
-- **Flight tracking** — See your aircraft in real time with a flight strip.
+- **Flight tracking** — See your aircraft in real time with a flight strip and dynamic landing report card.
 - **Addon manager** — Browse installed aircraft, scenery, plugins. Drag-and-drop install. Scenery priority reordering.
 
 10 languages. Requires X-Plane 12.4+. More details on the [project page](https://x-dispatch.app/).
