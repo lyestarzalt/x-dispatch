@@ -11,7 +11,21 @@ import type {
 import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
 import { getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
 import type { SceneryConflicts } from '@/lib/addonManager/scenery/conflicts';
+import type {
+  UpdateManagerError,
+  UpdateTargetType,
+} from '@/lib/addonManager/updates/UpdateManager';
+import { getUpdateErrorMessage } from '@/lib/addonManager/updates/skunkcrafts';
 import { launchKeys } from './useLaunchQuery';
+
+/**
+ * The update manager adds a couple of codes on top of the protocol's own.
+ */
+function getUpdateManagerErrorMessage(error: UpdateManagerError): string {
+  if (error.code === 'NOT_FOUND') return `Addon not found: ${error.path}`;
+  if (error.code === 'NOT_CONFIGURED') return `${error.path} has no update server configured`;
+  return getUpdateErrorMessage(error);
+}
 
 // Query keys
 export const addonKeys = {
@@ -517,6 +531,42 @@ export function useInstallerPrepare() {
         throw new Error(getInstallerErrorMessage(result.error));
       }
       return result.value;
+    },
+  });
+}
+
+/**
+ * Compare an installed addon against its SkunkCrafts manifest.
+ */
+export function useAddonUpdateCheck() {
+  return useMutation({
+    mutationFn: async (input: { type: UpdateTargetType; folderName: string }) => {
+      const result = await window.addonManagerAPI.updates.check(input.type, input.folderName);
+      if (!result.ok) {
+        throw new Error(getUpdateManagerErrorMessage(result.error));
+      }
+      return result.value;
+    },
+  });
+}
+
+/**
+ * Download and apply a SkunkCrafts update.
+ */
+export function useAddonUpdateApply() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { type: UpdateTargetType; folderName: string }) => {
+      const result = await window.addonManagerAPI.updates.apply(input.type, input.folderName);
+      if (!result.ok) {
+        throw new Error(getUpdateManagerErrorMessage(result.error));
+      }
+      return result.value;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
     },
   });
 }

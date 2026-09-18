@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} mosaicos partilhados",
       "kindMesh": "Malha",
       "kindOverlay": "Sobreposição"
+    },
+    "updates": {
+      "title": "Atualizar {{name}}",
+      "description": "Só são transferidos os ficheiros que mudaram.",
+      "checking": "A comparar com o servidor de atualizações",
+      "versions": "Instalada {{local}}, disponível {{remote}}",
+      "summary": "{{changed}} ficheiros a transferir, {{removed}} a remover, {{size}}",
+      "upToDate": "Já está atualizado",
+      "apply": "Atualizar",
+      "done": "Atualizado para {{version}}: {{updated}} ficheiros escritos, {{removed}} removidos",
+      "failed": "A atualização falhou"
     }
   },
   "simbrief": {

@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} shared tiles",
       "kindMesh": "Mesh",
       "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "Update {{name}}",
+      "description": "Only the files that changed are downloaded.",
+      "checking": "Comparing with the update server",
+      "versions": "Installed {{local}}, available {{remote}}",
+      "summary": "{{changed}} files to download, {{removed}} to remove, {{size}}",
+      "upToDate": "Already up to date",
+      "apply": "Update",
+      "done": "Updated to {{version}}: {{updated}} files written, {{removed}} removed",
+      "failed": "Update failed"
     }
   },
   "simbrief": {

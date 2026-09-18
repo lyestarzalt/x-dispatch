@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} tuiles partagées",
       "kindMesh": "Relief",
       "kindOverlay": "Surcouche"
+    },
+    "updates": {
+      "title": "Mettre à jour {{name}}",
+      "description": "Seuls les fichiers modifiés sont téléchargés.",
+      "checking": "Comparaison avec le serveur de mise à jour",
+      "versions": "Installée {{local}}, disponible {{remote}}",
+      "summary": "{{changed}} fichiers à télécharger, {{removed}} à supprimer, {{size}}",
+      "upToDate": "Déjà à jour",
+      "apply": "Mettre à jour",
+      "done": "Mis à jour en {{version}} : {{updated}} fichiers écrits, {{removed}} supprimés",
+      "failed": "Échec de la mise à jour"
     }
   },
   "simbrief": {

@@ -15,6 +15,7 @@ interface AircraftEntryProps {
   onLock: (folderName: string) => void;
   onOpenFolder: (folderName: string) => void;
   onOpenLiveries: (folderName: string) => void;
+  onUpdate?: () => void;
   disabled: boolean;
 }
 
@@ -25,6 +26,7 @@ export function AircraftEntry({
   onLock,
   onOpenFolder,
   onOpenLiveries,
+  onUpdate,
   disabled,
 }: AircraftEntryProps) {
   const { t } = useTranslation();
@@ -52,7 +54,11 @@ export function AircraftEntry({
 
       {/* Version badge */}
       {aircraft.version && (
-        <Badge variant={aircraft.hasUpdate ? 'destructive' : 'outline'} className="text-sm">
+        <Badge
+          variant={aircraft.hasUpdate ? 'destructive' : 'outline'}
+          className={cn('text-sm', aircraft.hasUpdate && onUpdate && 'cursor-pointer')}
+          onClick={aircraft.hasUpdate ? onUpdate : undefined}
+        >
           {aircraft.hasUpdate && aircraft.latestVersion
             ? t('addonManager.browser.versionUpdate', {
                 current: aircraft.version,

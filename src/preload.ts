@@ -343,6 +343,32 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
     getAircraftIcon: (iconPath: string) =>
       ipcRenderer.invoke('addon:browser:getAircraftIcon', iconPath),
   },
+  updates: {
+    check: (type: 'aircraft' | 'plugin', folderName: string) =>
+      ipcRenderer.invoke('addon:updates:check', type, folderName),
+    apply: (type: 'aircraft' | 'plugin', folderName: string) =>
+      ipcRenderer.invoke('addon:updates:apply', type, folderName),
+    cancel: () => ipcRenderer.invoke('addon:updates:cancel'),
+    onProgress: (
+      callback: (
+        progress: import('./lib/addonManager/updates/skunkcrafts').DownloadProgress & {
+          folderName: string;
+        }
+      ) => void
+    ) => {
+      const handler = (_event: Electron.IpcRendererEvent, progress: unknown) => {
+        callback(
+          progress as import('./lib/addonManager/updates/skunkcrafts').DownloadProgress & {
+            folderName: string;
+          }
+        );
+      };
+      ipcRenderer.on('addon:updates:progress', handler);
+      return () => {
+        ipcRenderer.removeListener('addon:updates:progress', handler);
+      };
+    },
+  },
   installer: {
     browse: () => ipcRenderer.invoke('addon:installer:browse'),
     analyze: (filePaths: string[]) => ipcRenderer.invoke('addon:installer:analyze', filePaths),
@@ -742,6 +768,39 @@ declare global {
           | { ok: false; error: import('./lib/addonManager/core/types').BrowserError }
         >;
         getAircraftIcon: (iconPath: string) => Promise<string | null>;
+      };
+      updates: {
+        check: (
+          type: 'aircraft' | 'plugin',
+          folderName: string
+        ) => Promise<
+          | { ok: true; value: import('./lib/addonManager/updates/UpdateManager').UpdateStatus }
+          | {
+              ok: false;
+              error: import('./lib/addonManager/updates/UpdateManager').UpdateManagerError;
+            }
+        >;
+        apply: (
+          type: 'aircraft' | 'plugin',
+          folderName: string
+        ) => Promise<
+          | {
+              ok: true;
+              value: import('./lib/addonManager/updates/UpdateManager').ApplyUpdateResult;
+            }
+          | {
+              ok: false;
+              error: import('./lib/addonManager/updates/UpdateManager').UpdateManagerError;
+            }
+        >;
+        cancel: () => Promise<{ ok: true; value: boolean }>;
+        onProgress: (
+          callback: (
+            progress: import('./lib/addonManager/updates/skunkcrafts').DownloadProgress & {
+              folderName: string;
+            }
+          ) => void
+        ) => () => void;
       };
       installer: {
         browse: () => Promise<

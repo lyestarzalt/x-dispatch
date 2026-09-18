@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} shared tiles",
       "kindMesh": "Mesh",
       "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "Refit {{name}}",
+      "description": "Only the cargo that changed gets hauled aboard.",
+      "checking": "Comparin' charts with the update port",
+      "versions": "Aboard {{local}}, on offer {{remote}}",
+      "summary": "{{changed}} files to haul, {{removed}} to heave over, {{size}}",
+      "upToDate": "Already shipshape",
+      "apply": "Refit",
+      "done": "Refit to {{version}}: {{updated}} files stowed, {{removed}} tossed",
+      "failed": "Refit ran aground"
     }
   },
   "simbrief": {

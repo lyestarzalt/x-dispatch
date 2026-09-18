@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "Wspólne kafelki: {{count}}",
       "kindMesh": "Mesh",
       "kindOverlay": "Nakładka"
+    },
+    "updates": {
+      "title": "Zaktualizuj {{name}}",
+      "description": "Pobierane są tylko zmienione pliki.",
+      "checking": "Porównywanie z serwerem aktualizacji",
+      "versions": "Zainstalowana {{local}}, dostępna {{remote}}",
+      "summary": "Do pobrania: {{changed}}, do usunięcia: {{removed}}, {{size}}",
+      "upToDate": "Już aktualne",
+      "apply": "Aktualizuj",
+      "done": "Zaktualizowano do {{version}}: zapisano {{updated}}, usunięto {{removed}}",
+      "failed": "Aktualizacja nie powiodła się"
     }
   },
   "simbrief": {

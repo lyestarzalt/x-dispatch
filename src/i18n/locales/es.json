@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} teselas compartidas",
       "kindMesh": "Malla",
       "kindOverlay": "Superposición"
+    },
+    "updates": {
+      "title": "Actualizar {{name}}",
+      "description": "Solo se descargan los archivos que han cambiado.",
+      "checking": "Comparando con el servidor de actualizaciones",
+      "versions": "Instalada {{local}}, disponible {{remote}}",
+      "summary": "{{changed}} archivos por descargar, {{removed}} por eliminar, {{size}}",
+      "upToDate": "Ya está actualizado",
+      "apply": "Actualizar",
+      "done": "Actualizado a {{version}}: {{updated}} archivos escritos, {{removed}} eliminados",
+      "failed": "Error al actualizar"
     }
   },
   "simbrief": {

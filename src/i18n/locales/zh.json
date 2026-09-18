@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} 个共用地块",
       "kindMesh": "地形",
       "kindOverlay": "叠加层"
+    },
+    "updates": {
+      "title": "更新 {{name}}",
+      "description": "只下载发生变化的文件。",
+      "checking": "正在与更新服务器比对",
+      "versions": "已安装 {{local}}，可用 {{remote}}",
+      "summary": "待下载 {{changed}} 个，待删除 {{removed}} 个，{{size}}",
+      "upToDate": "已是最新",
+      "apply": "更新",
+      "done": "已更新至 {{version}}：写入 {{updated}} 个，删除 {{removed}} 个",
+      "failed": "更新失败"
     }
   },
   "simbrief": {

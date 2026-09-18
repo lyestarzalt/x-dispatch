@@ -23,6 +23,7 @@ interface AircraftCardProps {
   onLock: (folderName: string) => void;
   onOpenFolder: (folderName: string) => void;
   onOpenLiveries: (folderName: string) => void;
+  onUpdate?: () => void;
   disabled: boolean;
 }
 
@@ -33,6 +34,7 @@ export function AircraftCard({
   onLock,
   onOpenFolder,
   onOpenLiveries,
+  onUpdate,
   disabled,
 }: AircraftCardProps) {
   const { t } = useTranslation();
@@ -69,7 +71,11 @@ export function AircraftCard({
         {/* Badges row */}
         <div className="mt-1 flex flex-wrap gap-1">
           {aircraft.version && (
-            <Badge variant={aircraft.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
+            <Badge
+              variant={aircraft.hasUpdate ? 'destructive' : 'secondary'}
+              className={cn('text-sm', aircraft.hasUpdate && onUpdate && 'cursor-pointer')}
+              onClick={aircraft.hasUpdate ? onUpdate : undefined}
+            >
               {aircraft.hasUpdate && aircraft.latestVersion
                 ? t('addonManager.browser.versionUpdate', {
                     current: aircraft.version,

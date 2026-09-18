@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} общих тайлов",
       "kindMesh": "Меш",
       "kindOverlay": "Оверлей"
+    },
+    "updates": {
+      "title": "Обновить {{name}}",
+      "description": "Скачиваются только изменённые файлы.",
+      "checking": "Сравнение с сервером обновлений",
+      "versions": "Установлена {{local}}, доступна {{remote}}",
+      "summary": "Скачать {{changed}}, удалить {{removed}}, {{size}}",
+      "upToDate": "Уже актуально",
+      "apply": "Обновить",
+      "done": "Обновлено до {{version}}: записано {{updated}}, удалено {{removed}}",
+      "failed": "Не удалось обновить"
     }
   },
   "simbrief": {

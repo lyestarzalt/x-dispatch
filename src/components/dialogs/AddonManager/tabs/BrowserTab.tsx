@@ -25,6 +25,7 @@ import { AircraftCard } from '../components/AircraftCard';
 import { LiveryDialog } from '../components/LiveryDialog';
 import { PluginEntry } from '../components/PluginEntry';
 import { ScriptsDialog } from '../components/ScriptsDialog';
+import { UpdateDialog, type UpdateTarget } from '../components/UpdateDialog';
 
 type SubTab = 'plugins' | 'aircraft';
 
@@ -33,6 +34,7 @@ export function BrowserTab() {
   // Default to plugins tab
   const [subTab, setSubTab] = useState<SubTab>('plugins');
   const [search, setSearch] = useState('');
+  const [updateTarget, setUpdateTarget] = useState<UpdateTarget | null>(null);
   const [liveryDialog, setLiveryDialog] = useState<{
     open: boolean;
     folder: string;
@@ -283,6 +285,13 @@ export function BrowserTab() {
                         ? () => setScriptsOpen(true)
                         : undefined
                     }
+                    onUpdate={() =>
+                      setUpdateTarget({
+                        type: 'plugin',
+                        folderName: plugin.folderName,
+                        displayName: plugin.displayName,
+                      })
+                    }
                     disabled={isPluginPending}
                   />
                 ))}
@@ -336,6 +345,13 @@ export function BrowserTab() {
                         name: ac.displayName,
                       })
                     }
+                    onUpdate={() =>
+                      setUpdateTarget({
+                        type: 'aircraft',
+                        folderName: ac.folderName,
+                        displayName: ac.displayName,
+                      })
+                    }
                     disabled={isAircraftPending}
                   />
                 ))}
@@ -346,6 +362,8 @@ export function BrowserTab() {
       </Tabs>
 
       {/* Livery Dialog */}
+      <UpdateDialog target={updateTarget} onClose={() => setUpdateTarget(null)} />
+
       <LiveryDialog
         open={liveryDialog.open}
         onClose={() => setLiveryDialog({ open: false, folder: '', name: '' })}

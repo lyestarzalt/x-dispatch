@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} gemeinsame Kacheln",
       "kindMesh": "Mesh",
       "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "{{name}} aktualisieren",
+      "description": "Es werden nur die geänderten Dateien heruntergeladen.",
+      "checking": "Abgleich mit dem Update-Server",
+      "versions": "Installiert {{local}}, verfügbar {{remote}}",
+      "summary": "{{changed}} Dateien zum Herunterladen, {{removed}} zu entfernen, {{size}}",
+      "upToDate": "Bereits aktuell",
+      "apply": "Aktualisieren",
+      "done": "Auf {{version}} aktualisiert: {{updated}} Dateien geschrieben, {{removed}} entfernt",
+      "failed": "Aktualisierung fehlgeschlagen"
     }
   },
   "simbrief": {

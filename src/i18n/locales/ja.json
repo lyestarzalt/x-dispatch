@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "共通タイル {{count}} 枚",
       "kindMesh": "メッシュ",
       "kindOverlay": "オーバーレイ"
+    },
+    "updates": {
+      "title": "{{name}} を更新",
+      "description": "変更されたファイルだけをダウンロードします。",
+      "checking": "更新サーバーと照合中",
+      "versions": "インストール済み {{local}}、利用可能 {{remote}}",
+      "summary": "ダウンロード {{changed}} 件、削除 {{removed}} 件、{{size}}",
+      "upToDate": "すでに最新です",
+      "apply": "更新",
+      "done": "{{version}} に更新：{{updated}} 件書き込み、{{removed}} 件削除",
+      "failed": "更新に失敗しました"
     }
   },
   "simbrief": {

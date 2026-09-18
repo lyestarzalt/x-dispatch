@@ -10,6 +10,7 @@ import { err } from './core/types';
 import { InstallerManager } from './installer';
 import type { DetectedItem, InstallTask } from './installer/types';
 import { SceneryManager } from './scenery/SceneryManager';
+import { UpdateManager } from './updates/UpdateManager';
 
 // TODO: Refactor main.ts - move other IPC handlers to separate files based on module:
 // - xplane/* handlers -> lib/xplaneData/ipc.ts
@@ -27,6 +28,8 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
   let lastBrowsedDir: string | null = null;
   /** The install currently running, so it can be cancelled from the renderer. */
   let activeInstall: { cancelled: boolean } | null = null;
+  /** The update currently running, so it can be cancelled from the renderer. */
+  let activeUpdate: { cancelled: boolean } | null = null;
 
   // ===== SCENERY MANAGER =====
 
@@ -235,7 +238,11 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return { ok: true, value: manager.scanAircraft() };
+    const aircraft = manager.scanAircraft();
+    // Version lookups are cached for an hour, so this costs a request per
+    // addon at most once per session.
+    await manager.checkAircraftUpdates(aircraft);
+    return { ok: true, value: aircraft };
   });
 
   ipcMain.handle('addon:browser:toggleAircraft', async (_event, folderName: unknown) => {
@@ -297,7 +304,9 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return { ok: true, value: manager.scanPlugins() };
+    const plugins = manager.scanPlugins();
+    await manager.checkPluginUpdates(plugins);
+    return { ok: true, value: plugins };
   });
 
   ipcMain.handle('addon:browser:togglePlugin', async (_event, folderName: unknown) => {
@@ -502,6 +511,65 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
   });
 
   // ===== INSTALLER =====
+
+  // ===== UPDATES =====
+
+  const isUpdateTarget = (value: unknown): value is 'aircraft' | 'plugin' =>
+    value === 'aircraft' || value === 'plugin';
+
+  ipcMain.handle('addon:updates:check', async (_event, type: unknown, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+    if (!isUpdateTarget(type) || typeof folderName !== 'string') {
+      return { ok: false, error: { code: 'NOT_FOUND', path: String(folderName) } };
+    }
+
+    const manager = new UpdateManager(xplanePath);
+    return manager.check(type, folderName);
+  });
+
+  ipcMain.handle('addon:updates:apply', async (_event, type: unknown, folderName: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+    if (!isUpdateTarget(type) || typeof folderName !== 'string') {
+      return { ok: false, error: { code: 'NOT_FOUND', path: String(folderName) } };
+    }
+    if (activeUpdate) {
+      return { ok: false, error: { code: 'WRITE_FAILED', path: folderName, reason: 'busy' } };
+    }
+
+    const run = { cancelled: false };
+    activeUpdate = run;
+
+    try {
+      const { BrowserWindow } = await import('electron');
+      const manager = new UpdateManager(xplanePath);
+
+      return await manager.apply(type, folderName, {
+        isCancelled: () => run.cancelled,
+        onProgress: (progress) => {
+          BrowserWindow.getAllWindows().forEach((win) => {
+            win.webContents.send('addon:updates:progress', { folderName, ...progress });
+          });
+        },
+      });
+    } catch (e) {
+      logger.addon.error(`Update failed for ${folderName}: ${e}`);
+      return { ok: false, error: { code: 'WRITE_FAILED', path: folderName, reason: String(e) } };
+    } finally {
+      activeUpdate = null;
+    }
+  });
+
+  ipcMain.handle('addon:updates:cancel', async () => {
+    if (!activeUpdate) return { ok: true, value: false };
+    activeUpdate.cancelled = true;
+    return { ok: true, value: true };
+  });
 
   ipcMain.handle('addon:installer:browse', async () => {
     const { dialog, BrowserWindow } = await import('electron');

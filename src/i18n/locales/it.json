@@ -1335,6 +1335,17 @@
       "tileOverlap_other": "{{count}} tessere in comune",
       "kindMesh": "Mesh",
       "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "Aggiorna {{name}}",
+      "description": "Vengono scaricati solo i file cambiati.",
+      "checking": "Confronto con il server di aggiornamento",
+      "versions": "Installata {{local}}, disponibile {{remote}}",
+      "summary": "{{changed}} file da scaricare, {{removed}} da rimuovere, {{size}}",
+      "upToDate": "Già aggiornato",
+      "apply": "Aggiorna",
+      "done": "Aggiornato a {{version}}: {{updated}} file scritti, {{removed}} rimossi",
+      "failed": "Aggiornamento non riuscito"
     }
   },
   "simbrief": {

@@ -22,6 +22,7 @@ interface PluginEntryProps {
   onDelete: (folderName: string) => void;
   onLock: (folderName: string) => void;
   onOpenFolder: (folderName: string) => void;
+  onUpdate?: () => void;
   onOpenScripts?: () => void;
   disabled: boolean;
 }
@@ -32,6 +33,7 @@ export function PluginEntry({
   onDelete,
   onLock,
   onOpenFolder,
+  onUpdate,
   onOpenScripts,
   disabled,
 }: PluginEntryProps) {
@@ -67,7 +69,11 @@ export function PluginEntry({
 
       {/* Version badge */}
       {plugin.version && (
-        <Badge variant={plugin.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
+        <Badge
+          variant={plugin.hasUpdate ? 'destructive' : 'secondary'}
+          className={cn('text-sm', plugin.hasUpdate && onUpdate && 'cursor-pointer')}
+          onClick={plugin.hasUpdate ? onUpdate : undefined}
+        >
           {plugin.hasUpdate && plugin.latestVersion
             ? t('addonManager.browser.versionUpdate', {
                 current: plugin.version,
