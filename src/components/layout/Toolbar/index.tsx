@@ -9,10 +9,10 @@ import {
   ChevronsUpDown,
   CloudDownload,
   CloudRain,
-  CloudSun,
   Compass,
   FileUp,
   Layers,
+  Lightbulb,
   MapPin,
   Package,
   Pause,
@@ -23,11 +23,11 @@ import {
   Search,
   Settings,
   Ship,
+  Sunrise,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
-import { DAY_NIGHT_LAYER_SUPPORTED } from '@/components/Map/hooks/useDayNightLayer';
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
 import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
@@ -62,6 +62,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { NavLayerVisibility } from '@/types/layers';
 import {
   ALL_RANGE_RING_CATEGORIES,
@@ -447,8 +448,9 @@ function Toolbar({
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
-  const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
-  const setDayNightEnabled = useMapStore((s) => s.setDayNightEnabled);
+  const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
+  const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
+  const updateGraphicsSettings = useSettingsStore((s) => s.updateGraphicsSettings);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
@@ -926,17 +928,20 @@ function Toolbar({
                 <CloudRain className="mr-2 h-4 w-4" />
                 {t('toolbar.weather')}
               </DropdownMenuCheckboxItem>
-              {/* Hidden while maplibre-gl-nightlayer lacks maplibre v6
-                  support — see DAY_NIGHT_LAYER_SUPPORTED. */}
-              {DAY_NIGHT_LAYER_SUPPORTED && (
-                <DropdownMenuCheckboxItem
-                  checked={dayNightEnabled}
-                  onCheckedChange={() => setDayNightEnabled(!dayNightEnabled)}
-                >
-                  <CloudSun className="mr-2 h-4 w-4" />
-                  {t('toolbar.dayNight')}
-                </DropdownMenuCheckboxItem>
-              )}
+              <DropdownMenuCheckboxItem
+                checked={dynamicSkyEnabled}
+                onCheckedChange={() => updateGraphicsSettings({ dynamicSky: !dynamicSkyEnabled })}
+              >
+                <Sunrise className="mr-2 h-4 w-4" />
+                {t('toolbar.dynamicSky')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={cityLightsEnabled}
+                onCheckedChange={() => updateGraphicsSettings({ cityLights: !cityLightsEnabled })}
+              >
+                <Lightbulb className="mr-2 h-4 w-4" />
+                {t('toolbar.cityLights')}
+              </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />
                 {t('toolbar.vatsim')}

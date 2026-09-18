@@ -119,9 +119,6 @@
     ]
   },
   "overrides": {
-    "maplibre-gl-nightlayer": {
-      "maplibre-gl": "$maplibre-gl"
-    },
     "tar": ">=7.5.22",
     "@xmldom/xmldom": ">=0.8.10 <0.9.0"
   },
@@ -173,7 +170,6 @@
     "lucide-react": "^1.16.0",
     "maplibre-contour": "^0.1.0",
     "maplibre-gl": "^6.10.0",
-    "maplibre-gl-nightlayer": "^1.0.0-alpha.14",
     "metar-taf-parser": "^9.1.2",
     "node-7z": "^3.0.0",
     "node-unrar-js": "^2.0.2",
