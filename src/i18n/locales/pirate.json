@@ -1705,7 +1705,9 @@
     "unknownRunway": "Runway not spied",
     "showOnMap": "Show on the chart",
     "dismiss": "Begone",
-    "cardFooter": "Logged with X-Dispatch"
+    "cardFooter": "Logged with X-Dispatch",
+    "touchdownRate": "Touchdown",
+    "gUnit": "g"
   },
   "replay": {
     "title": "Replay",

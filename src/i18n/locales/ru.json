@@ -1705,7 +1705,9 @@
     "unknownRunway": "ВПП не определена",
     "showOnMap": "Показать на карте",
     "dismiss": "Скрыть",
-    "cardFooter": "Записано в X-Dispatch"
+    "cardFooter": "Записано в X-Dispatch",
+    "touchdownRate": "Касание",
+    "gUnit": "g"
   },
   "replay": {
     "title": "Воспроизведение",

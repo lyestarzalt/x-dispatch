@@ -281,7 +281,7 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
 // --- Sub-components ---
 
-function GroupSeparator() {
+export function GroupSeparator() {
   return <div className="h-8 w-px bg-border/50" />;
 }
 
@@ -292,7 +292,7 @@ interface DataBlockProps {
   valueColor?: string;
 }
 
-function DataBlock({ label, value, unit, valueColor }: DataBlockProps) {
+export function DataBlock({ label, value, unit, valueColor }: DataBlockProps) {
   return (
     <div className="flex flex-col items-center">
       <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>

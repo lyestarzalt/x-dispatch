@@ -1705,7 +1705,9 @@
     "unknownRunway": "Nie rozpoznano pasa",
     "showOnMap": "Pokaż na mapie",
     "dismiss": "Zamknij",
-    "cardFooter": "Nagrano w X-Dispatch"
+    "cardFooter": "Nagrano w X-Dispatch",
+    "touchdownRate": "Przyziemienie",
+    "gUnit": "g"
   },
   "replay": {
     "title": "Odtwarzanie",

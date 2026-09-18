@@ -1705,7 +1705,9 @@
     "unknownRunway": "Runway not identified",
     "showOnMap": "Show on map",
     "dismiss": "Dismiss",
-    "cardFooter": "Recorded with X-Dispatch"
+    "cardFooter": "Recorded with X-Dispatch",
+    "touchdownRate": "Touchdown",
+    "gUnit": "g"
   },
   "replay": {
     "title": "Replay",

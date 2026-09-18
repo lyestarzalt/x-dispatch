@@ -1705,7 +1705,9 @@
     "unknownRunway": "滑走路を特定できません",
     "showOnMap": "マップに表示",
     "dismiss": "閉じる",
-    "cardFooter": "X-Dispatch で記録"
+    "cardFooter": "X-Dispatch で記録",
+    "touchdownRate": "接地",
+    "gUnit": "g"
   },
   "replay": {
     "title": "リプレイ",

@@ -1705,7 +1705,9 @@
     "unknownRunway": "Piste non identifiée",
     "showOnMap": "Afficher sur la carte",
     "dismiss": "Fermer",
-    "cardFooter": "Enregistré avec X-Dispatch"
+    "cardFooter": "Enregistré avec X-Dispatch",
+    "touchdownRate": "Toucher",
+    "gUnit": "g"
   },
   "replay": {
     "title": "Relecture",

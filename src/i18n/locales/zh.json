@@ -1705,7 +1705,9 @@
     "unknownRunway": "未能识别跑道",
     "showOnMap": "在地图上显示",
     "dismiss": "关闭",
-    "cardFooter": "由 X-Dispatch 记录"
+    "cardFooter": "由 X-Dispatch 记录",
+    "touchdownRate": "接地",
+    "gUnit": "g"
   },
   "replay": {
     "title": "回放",

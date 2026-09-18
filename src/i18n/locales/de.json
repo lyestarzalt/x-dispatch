@@ -1705,7 +1705,9 @@
     "unknownRunway": "Bahn nicht erkannt",
     "showOnMap": "Auf der Karte zeigen",
     "dismiss": "Ausblenden",
-    "cardFooter": "Aufgezeichnet mit X-Dispatch"
+    "cardFooter": "Aufgezeichnet mit X-Dispatch",
+    "touchdownRate": "Aufsetzen",
+    "gUnit": "g"
   },
   "replay": {
     "title": "Wiedergabe",
