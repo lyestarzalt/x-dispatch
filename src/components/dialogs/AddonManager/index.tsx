@@ -62,7 +62,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-6 z-50 flex overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+          className="fixed inset-x-6 bottom-6 top-[60px] z-50 flex overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>

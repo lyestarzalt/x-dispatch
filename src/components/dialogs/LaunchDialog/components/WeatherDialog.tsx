@@ -167,7 +167,7 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-8 z-50 flex flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+          className="fixed inset-x-8 bottom-8 top-[68px] z-50 flex flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>

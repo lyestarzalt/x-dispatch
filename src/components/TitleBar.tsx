@@ -44,7 +44,7 @@ export function TitleBar() {
 
   return (
     <header
-      className="flex h-9 w-full shrink-0 select-none items-center gap-2 border-b border-border/40 bg-background text-xs text-muted-foreground"
+      className="relative z-[70] flex h-9 w-full shrink-0 select-none items-center gap-2 border-b border-border/40 bg-background text-xs text-muted-foreground"
       style={{
         ...dragStyle,
         paddingLeft: isMac ? MAC_TRAFFIC_LIGHT_OFFSET : '0.75rem',

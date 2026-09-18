@@ -294,7 +294,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-8 z-50 flex flex-col rounded-lg border border-border bg-background"
+          className="fixed inset-x-8 bottom-8 top-[68px] z-50 flex flex-col rounded-lg border border-border bg-background"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>

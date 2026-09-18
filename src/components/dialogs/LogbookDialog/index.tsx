@@ -47,7 +47,7 @@ export default function LogbookDialog() {
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-6 z-[60] flex flex-col rounded-lg border border-border bg-background shadow-xl"
+          className="fixed inset-x-6 bottom-6 top-[60px] z-[60] flex flex-col rounded-lg border border-border bg-background shadow-xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
