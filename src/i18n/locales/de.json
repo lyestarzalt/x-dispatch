@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Ordner öffnen",
-      "delete": "Von Festplatte löschen"
+      "delete": "Von Festplatte löschen",
+      "missing": "Fehlt",
+      "missingHint": "In scenery_packs.ini aufgeführt, aber nicht auf der Festplatte gefunden. Beim Speichern bleibt der Eintrag erhalten."
     },
     "addonTypes": {
       "Aircraft": "Flugzeug",

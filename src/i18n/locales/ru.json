@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Открыть папку",
-      "delete": "Удалить с диска"
+      "delete": "Удалить с диска",
+      "missing": "Нет на диске",
+      "missingHint": "Указан в scenery_packs.ini, но не найден на диске. При сохранении строка остаётся."
     },
     "addonTypes": {
       "Aircraft": "Самолёт",

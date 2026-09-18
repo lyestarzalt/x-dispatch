@@ -59,28 +59,41 @@ export interface SceneryClassification {
  * A single scenery entry with classification and state.
  */
 export interface SceneryEntry {
-  folderName: string;
+  /** Unique key, and the exact path written to scenery_packs.ini (forward slashes, no trailing slash) */
+  sceneryPath: string;
+  /** Last path component, shown in the UI */
+  displayName: string;
   fullPath: string;
   enabled: boolean;
   priority: SceneryPriority;
   classification: SceneryClassification;
   originalIndex: number;
   isGlobalAirports?: boolean;
-  /** Original path as written in scenery_packs.ini (for absolute/external paths) */
-  sceneryPath?: string;
+  /** Listed in the INI but absent from disk. Kept so a save never drops the line. */
+  missing?: boolean;
+  /** Windows shortcut that produced this entry. Deleting removes the shortcut, never its target. */
+  shortcutPath?: string;
 }
 
 /**
  * Parsed line from scenery_packs.ini.
  */
 export interface ParsedIniEntry {
-  folderName: string;
+  sceneryPath: string;
   fullPath: string;
   enabled: boolean;
+  isAbsolute: boolean;
   isGlobalAirports: boolean;
   originalLine: string;
-  /** Original path as written in the INI (preserved for absolute/external paths) */
-  sceneryPath?: string;
+}
+
+/**
+ * A parsed scenery_packs.ini, including the header lines that precede the pack list.
+ */
+export interface ParsedIni {
+  header: string[];
+  entries: ParsedIniEntry[];
+  eol: string;
 }
 
 /**

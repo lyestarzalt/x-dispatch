@@ -2,38 +2,15 @@
  * Archive Extraction Module
  * Unified extraction interface for ZIP, 7z, and RAR archives.
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import type { Result } from '../../core/types';
-import { err } from '../../core/types';
+import { err, ok } from '../../core/types';
 import { detectArchiveFormat } from '../detection/ArchiveScanner';
 import type { ArchiveFormat, InstallerError, VerificationStats } from '../types';
-import { IGNORE_PATTERNS } from '../types';
+import { listFilesRecursive, moveTree, normalizeInternalRoot, pruneIgnored } from './entryPaths';
 import { extractSevenZip } from './sevenZipExtractor';
 import { extractZip } from './zipExtractor';
-
-/**
- * Check if a path component should be ignored
- */
-function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split(/[/\\]/);
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
-}
-
-/**
- * Sanitize path to prevent directory traversal attacks
- */
-function sanitizePath(entryPath: string): string | null {
-  // Normalize separators
-  const normalized = entryPath.replace(/\\/g, '/');
-
-  // Reject absolute paths
-  if (normalized.startsWith('/') || /^[a-zA-Z]:/.test(normalized)) return null;
-
-  // Reject path traversal
-  const parts = normalized.split('/');
-  if (parts.some((p) => p === '..')) return null;
-
-  return parts.filter((p) => p !== '').join('/');
-}
 
 export interface ExtractOptions {
   /** Archive path */
@@ -91,77 +68,62 @@ async function extractByFormat(
 }
 
 /**
- * Extract RAR archive using node-unrar-js
+ * Extract a RAR archive using node-unrar-js.
+ *
+ * The library writes the files itself, so the archive is unpacked into a
+ * staging folder and only the requested internal root is moved into the target.
  */
 async function extractRar(options: ExtractOptions): Promise<Result<ExtractResult, InstallerError>> {
   const { archivePath, targetDir, internalRoot, password, onProgress } = options;
-  const fs = await import('fs');
-  const path = await import('path');
+
+  const staging = path.join(targetDir, `.xdispatch-staging-${process.pid}-${Date.now()}`);
 
   try {
     const { createExtractorFromFile } = await import('node-unrar-js');
 
+    fs.mkdirSync(staging, { recursive: true });
+
     const extractor = await createExtractorFromFile({
       filepath: archivePath,
-      targetPath: targetDir,
+      targetPath: staging,
       password: password,
     });
 
-    const stats: VerificationStats = {
-      totalFiles: 0,
-      verifiedFiles: 0,
-      failedFiles: 0,
-      skippedFiles: 0,
-    };
-    const extractedFiles: string[] = [];
-
-    // Extract all files
     const extracted = extractor.extract();
-
     for (const file of extracted.files) {
-      if (file.fileHeader.flags.directory) continue;
-
-      let relativePath = file.fileHeader.name;
-
-      // Skip ignored files (macOS/Windows junk)
-      if (shouldIgnore(relativePath)) {
-        stats.skippedFiles++;
-        continue;
-      }
-
-      // Apply internal root filter
-      if (internalRoot) {
-        const normalizedPath = relativePath.replace(/\\/g, '/');
-        if (!normalizedPath.startsWith(internalRoot)) {
-          stats.skippedFiles++;
-          continue;
-        }
-        relativePath = normalizedPath.substring(internalRoot.length);
-      }
-
-      // Sanitize path to prevent directory traversal
-      const sanitized = sanitizePath(relativePath);
-      if (!sanitized) {
-        stats.skippedFiles++;
-        continue;
-      }
-
-      stats.totalFiles++;
-
-      // Check if file was extracted successfully
-      const fullPath = path.join(targetDir, sanitized);
-      if (fs.existsSync(fullPath)) {
-        const stat = fs.statSync(fullPath);
-        onProgress?.(stat.size, sanitized);
-        stats.verifiedFiles++;
-        extractedFiles.push(sanitized);
-      } else {
-        stats.failedFiles++;
+      if (!file.fileHeader.flags.directory) {
+        onProgress?.(file.fileHeader.unpSize ?? 0, file.fileHeader.name);
       }
     }
 
-    return { ok: true, value: { stats, extractedFiles } };
+    const skippedFiles = pruneIgnored(staging);
+
+    const root = internalRoot ? normalizeInternalRoot(internalRoot).replace(/\/$/, '') : '';
+    const sourceDir = root ? path.join(staging, ...root.split('/')) : staging;
+
+    if (!fs.existsSync(sourceDir)) {
+      fs.rmSync(staging, { recursive: true, force: true });
+      return err({
+        code: 'EXTRACTION_FAILED',
+        path: archivePath,
+        reason: `Archive has no folder "${root}"`,
+      });
+    }
+
+    const extractedFiles = listFilesRecursive(sourceDir);
+    const { moved, failed } = moveTree(sourceDir, targetDir);
+    fs.rmSync(staging, { recursive: true, force: true });
+
+    const stats: VerificationStats = {
+      totalFiles: extractedFiles.length,
+      verifiedFiles: moved,
+      failedFiles: failed + Math.max(0, extractedFiles.length - moved - failed),
+      skippedFiles,
+    };
+
+    return ok({ stats, extractedFiles });
   } catch (e) {
+    fs.rmSync(staging, { recursive: true, force: true });
     const errorMsg = String(e);
     if (errorMsg.includes('password') || errorMsg.includes('encrypted')) {
       return err({ code: 'PASSWORD_REQUIRED', path: archivePath });

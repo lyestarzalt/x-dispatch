@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {
+  type ParsedIni,
   type ParsedIniEntry,
   type Result,
   type SceneryEntry,
@@ -13,14 +14,54 @@ const SCENERY_PACK_PREFIX = 'SCENERY_PACK ';
 const SCENERY_PACK_DISABLED_PREFIX = 'SCENERY_PACK_DISABLED ';
 const GLOBAL_AIRPORTS_MARKER = '*GLOBAL_AIRPORTS*';
 
+const PLATFORM_MARKERS = ['I', 'A'];
+const VERSION_LINE = /^\d+\s+Version$/;
+const SCENERY_LINE = 'SCENERY';
+
 /**
- * Parse scenery_packs.ini file into entries.
- * Skips comments, empty lines, and the I/A header lines.
+ * Normalize a path as written in the INI: forward slashes, no trailing slash.
+ * The result is what gets written back, so nested paths survive a round trip.
  */
-export function parseSceneryPacksIni(
-  iniPath: string,
-  customSceneryPath: string
-): Result<ParsedIniEntry[], SceneryError> {
+export function normalizeIniPath(raw: string): string {
+  return raw.replace(/\\/g, '/').trim().replace(/\/+$/, '');
+}
+
+/**
+ * X-Plane accepts both `Custom Scenery/Foo` and `D:/Scenery/Foo`.
+ * `path.isAbsolute` only recognizes the host platform's form, so check both.
+ */
+export function isAbsoluteIniPath(sceneryPath: string): boolean {
+  return /^([a-zA-Z]:[/\\]|[/\\])/.test(sceneryPath);
+}
+
+/**
+ * X-Plane writes `I` / `1000 Version` / `SCENERY` before the pack list.
+ * Re-add whichever of those is missing without disturbing anything else.
+ */
+function normalizeHeader(header: string[]): string[] {
+  const lines = [...header];
+  while (lines.length > 0 && lines[lines.length - 1]?.trim() === '') {
+    lines.pop();
+  }
+
+  if (!lines.some((l) => PLATFORM_MARKERS.includes(l.trim()))) {
+    lines.unshift('I');
+  }
+  if (!lines.some((l) => VERSION_LINE.test(l.trim()))) {
+    lines.splice(1, 0, '1000 Version');
+  }
+  if (!lines.some((l) => l.trim() === SCENERY_LINE)) {
+    lines.push(SCENERY_LINE);
+  }
+
+  return lines;
+}
+
+/**
+ * Read the header of an existing scenery_packs.ini so a rewrite can preserve it.
+ * Returns the X-Plane default header when the file is missing or headerless.
+ */
+export function readIni(iniPath: string): Result<ParsedIni, SceneryError> {
   if (!fs.existsSync(iniPath)) {
     return err({ code: 'INI_NOT_FOUND', path: iniPath });
   }
@@ -33,115 +74,116 @@ export function parseSceneryPacksIni(
     return err({ code: 'INI_PARSE_ERROR', line: 0, content: message });
   }
 
-  const lines = content.split('\n');
+  const eol = content.includes('\r\n') ? '\r\n' : '\n';
+  const lines = content.split(/\r?\n/);
+
+  const header: string[] = [];
   const entries: ParsedIniEntry[] = [];
+  let seenPack = false;
 
-  for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i];
-    if (rawLine === undefined) continue;
+  for (const rawLine of lines) {
     const line = rawLine.trim();
+    const isPack =
+      line.startsWith(SCENERY_PACK_PREFIX) || line.startsWith(SCENERY_PACK_DISABLED_PREFIX);
 
-    // Skip empty lines and header
-    if (line === '' || line === 'I' || line === 'A' || line.startsWith('1000')) {
+    if (!isPack) {
+      if (!seenPack) header.push(rawLine);
       continue;
     }
+    seenPack = true;
 
-    let enabled: boolean;
-    let sceneryPath: string;
+    const enabled = !line.startsWith(SCENERY_PACK_DISABLED_PREFIX);
+    const prefixLength = enabled ? SCENERY_PACK_PREFIX.length : SCENERY_PACK_DISABLED_PREFIX.length;
+    const sceneryPath = normalizeIniPath(line.slice(prefixLength));
 
-    if (line.startsWith(SCENERY_PACK_DISABLED_PREFIX)) {
-      enabled = false;
-      sceneryPath = line.slice(SCENERY_PACK_DISABLED_PREFIX.length).trim();
-    } else if (line.startsWith(SCENERY_PACK_PREFIX)) {
-      enabled = true;
-      sceneryPath = line.slice(SCENERY_PACK_PREFIX.length).trim();
-    } else {
-      // Unknown line format, skip
-      continue;
-    }
+    if (sceneryPath === '') continue;
 
-    // Remove trailing slash if present
-    if (sceneryPath.endsWith('/')) {
-      sceneryPath = sceneryPath.slice(0, -1);
-    }
-
-    // Check for *GLOBAL_AIRPORTS*
     if (sceneryPath === GLOBAL_AIRPORTS_MARKER) {
       entries.push({
-        folderName: GLOBAL_AIRPORTS_MARKER,
+        sceneryPath: GLOBAL_AIRPORTS_MARKER,
         fullPath: '',
-        enabled: true,
+        enabled,
+        isAbsolute: false,
         isGlobalAirports: true,
         originalLine: line,
       });
       continue;
     }
 
-    // Extract folder name from path (last component)
-    const folderName = path.basename(sceneryPath);
-
-    const xplaneRoot = path.dirname(customSceneryPath);
-
-    // Absolute paths (e.g. /Volumes/ExternalDrive/scenery/) are used as-is
-    // Relative paths (e.g. Custom Scenery/FolderName/) are resolved from X-Plane root
-    const isAbsolute = path.isAbsolute(sceneryPath);
-    const fullPath = isAbsolute ? sceneryPath : path.join(xplaneRoot, sceneryPath);
-    const resolvedFull = path.resolve(fullPath);
+    const isAbsolute = isAbsoluteIniPath(sceneryPath);
+    const xplaneRoot = path.dirname(path.dirname(iniPath));
+    const resolvedFull = path.resolve(
+      isAbsolute ? sceneryPath : path.join(xplaneRoot, sceneryPath)
+    );
 
     if (!isAbsolute) {
-      // Defense-in-depth: validate resolved relative path is within X-Plane directory
-      // Skip entries with path traversal attempts
       const resolvedRoot = path.resolve(xplaneRoot);
       if (!resolvedFull.startsWith(resolvedRoot + path.sep)) {
-        continue; // Skip this entry - potential path traversal
+        continue; // Relative entry escaping the X-Plane folder
       }
     }
 
     entries.push({
-      folderName,
+      sceneryPath,
       fullPath: resolvedFull,
       enabled,
+      isAbsolute,
       isGlobalAirports: false,
       originalLine: line,
-      sceneryPath: isAbsolute ? sceneryPath : undefined,
     });
   }
 
-  return ok(entries);
+  return ok({ header: normalizeHeader(header), entries, eol });
 }
 
 /**
- * Write sorted scenery entries back to scenery_packs.ini.
- * Inserts *GLOBAL_AIRPORTS* before first DefaultAirport entry.
+ * Parse scenery_packs.ini into entries, discarding the header.
+ */
+export function parseSceneryPacksIni(iniPath: string): Result<ParsedIniEntry[], SceneryError> {
+  const result = readIni(iniPath);
+  return result.ok ? ok(result.value.entries) : result;
+}
+
+export interface WriteIniOptions {
+  header?: string[];
+  eol?: string;
+}
+
+/**
+ * Write scenery entries back to scenery_packs.ini.
+ * Writes to a sibling temp file and renames, so an interrupted write cannot
+ * leave the user with a truncated INI.
  */
 export function writeSceneryPacksIni(
   iniPath: string,
-  entries: SceneryEntry[]
+  entries: SceneryEntry[],
+  options: WriteIniOptions = {}
 ): Result<void, SceneryError> {
-  const lines: string[] = [];
+  const header = normalizeHeader(options.header ?? []);
+  const eol = options.eol ?? '\n';
 
-  // Header
-  lines.push('I');
-  lines.push('1000 Version');
-  lines.push('');
+  const lines = [...header, ''];
 
   for (const entry of entries) {
     const prefix = entry.enabled ? SCENERY_PACK_PREFIX : SCENERY_PACK_DISABLED_PREFIX;
     if (entry.isGlobalAirports) {
       lines.push(`${prefix}${GLOBAL_AIRPORTS_MARKER}`);
-    } else if (entry.sceneryPath) {
-      // Absolute/external path — preserve as-is
-      const trailingSlash = entry.sceneryPath.endsWith('/') ? '' : '/';
-      lines.push(`${prefix}${entry.sceneryPath}${trailingSlash}`);
     } else {
-      lines.push(`${prefix}Custom Scenery/${entry.folderName}/`);
+      lines.push(`${prefix}${entry.sceneryPath}/`);
     }
   }
 
+  const tempPath = `${iniPath}.${process.pid}.tmp`;
   try {
-    fs.writeFileSync(iniPath, lines.join('\n') + '\n', 'utf-8');
+    fs.writeFileSync(tempPath, lines.join(eol) + eol, 'utf-8');
+    fs.renameSync(tempPath, iniPath);
     return ok(undefined);
   } catch (e) {
+    try {
+      fs.rmSync(tempPath, { force: true });
+    } catch {
+      // Best effort
+    }
     const message = e instanceof Error ? e.message : String(e);
     return err({ code: 'WRITE_FAILED', path: iniPath, reason: message });
   }
@@ -163,18 +205,14 @@ export function backupSceneryPacksIni(
   }
 
   try {
-    // Create backup directory if needed
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
     }
 
-    // Generate backup filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupPath = path.join(backupDir, `scenery_packs_${timestamp}.ini`);
 
     fs.copyFileSync(iniPath, backupPath);
-
-    // Cleanup old backups - keep only last MAX_BACKUPS
     cleanupOldBackups(backupDir);
 
     return ok(backupPath);
@@ -197,9 +235,8 @@ function cleanupOldBackups(backupDir: string): void {
         path: path.join(backupDir, f),
         mtime: fs.statSync(path.join(backupDir, f)).mtime.getTime(),
       }))
-      .sort((a, b) => b.mtime - a.mtime); // Newest first
+      .sort((a, b) => b.mtime - a.mtime);
 
-    // Delete all but the newest MAX_BACKUPS
     for (let i = MAX_BACKUPS; i < files.length; i++) {
       const file = files[i];
       if (file) fs.unlinkSync(file.path);

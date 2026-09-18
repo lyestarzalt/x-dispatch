@@ -72,7 +72,7 @@ function GlobalAirportsRow({
   const { t } = useTranslation();
   const positionWidth = Math.max(2, String(totalCount).length);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: entry.folderName,
+    id: entry.sceneryPath,
   });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
@@ -145,7 +145,7 @@ export function SceneryTab() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showBackups, setShowBackups] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SceneryEntry | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
   // Sync local state when remote data changes. We need a local fork so the
@@ -168,7 +168,12 @@ export function SceneryTab() {
   const filteredEntries = useMemo(() => {
     if (!searchQuery.trim()) return localEntries;
     const q = searchQuery.toLowerCase();
-    return localEntries.filter((e) => e.folderName.toLowerCase().includes(q) || e.isGlobalAirports);
+    return localEntries.filter(
+      (e) =>
+        e.displayName.toLowerCase().includes(q) ||
+        e.sceneryPath.toLowerCase().includes(q) ||
+        e.isGlobalAirports
+    );
   }, [localEntries, searchQuery]);
 
   const sensors = useSensors(
@@ -186,8 +191,8 @@ export function SceneryTab() {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = localEntries.findIndex((e) => e.folderName === active.id);
-      const newIndex = localEntries.findIndex((e) => e.folderName === over.id);
+      const oldIndex = localEntries.findIndex((e) => e.sceneryPath === active.id);
+      const newIndex = localEntries.findIndex((e) => e.sceneryPath === over.id);
 
       // Only allow reorder within the same priority tier
       const oldEntry = localEntries[oldIndex];
@@ -202,8 +207,8 @@ export function SceneryTab() {
   };
 
   const handleSaveOrder = async () => {
-    const folderNames = localEntries.map((e) => e.folderName);
-    await saveOrderMutation.mutateAsync(folderNames);
+    const sceneryPaths = localEntries.map((e) => e.sceneryPath);
+    await saveOrderMutation.mutateAsync(sceneryPaths);
     setHasUnsavedChanges(false);
   };
 
@@ -215,8 +220,8 @@ export function SceneryTab() {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await deleteMutation.mutateAsync(deleteTarget);
-      toast.success(t('addonManager.scenery.deleted', { name: deleteTarget }));
+      await deleteMutation.mutateAsync(deleteTarget.sceneryPath);
+      toast.success(t('addonManager.scenery.deleted', { name: deleteTarget.displayName }));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('addonManager.scenery.deleteFailed'));
     }
@@ -390,7 +395,7 @@ export function SceneryTab() {
       <ScrollArea className="flex-1">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext
-            items={filteredEntries.map((e) => e.folderName)}
+            items={filteredEntries.map((e) => e.sceneryPath)}
             strategy={verticalListSortingStrategy}
           >
             <div className="flex flex-col gap-1 p-4">
@@ -401,18 +406,18 @@ export function SceneryTab() {
                     entry={entry}
                     position={index + 1}
                     totalCount={stats.total}
-                    onToggle={() => toggleMutation.mutate(entry.folderName)}
+                    onToggle={() => toggleMutation.mutate(entry.sceneryPath)}
                     disabled={isPending}
                   />
                 ) : (
                   <SortableSceneryEntry
-                    key={entry.folderName}
+                    key={entry.sceneryPath}
                     entry={entry}
                     position={index + 1}
                     totalCount={stats.total}
-                    onToggle={(name) => toggleMutation.mutate(name)}
+                    onToggle={(sceneryPath) => toggleMutation.mutate(sceneryPath)}
                     onOpenFolder={handleOpenFolder}
-                    onDelete={(name) => setDeleteTarget(name)}
+                    onDelete={() => setDeleteTarget(entry)}
                     disabled={isPending}
                   />
                 )
@@ -472,7 +477,7 @@ export function SceneryTab() {
           <DialogHeader>
             <DialogTitle>{t('addonManager.scenery.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              {t('addonManager.scenery.deleteDescription', { name: deleteTarget })}
+              {t('addonManager.scenery.deleteDescription', { name: deleteTarget?.displayName })}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">

@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Open locker",
-      "delete": "Scuttle from disk"
+      "delete": "Scuttle from disk",
+      "missing": "Lost at sea",
+      "missingHint": "Listed in yer scenery_packs.ini but nowhere on the disk. Savin' keeps the line, matey."
     },
     "addonTypes": {
       "Aircraft": "Flying craft",

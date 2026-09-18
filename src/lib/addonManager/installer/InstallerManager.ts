@@ -5,6 +5,7 @@ import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import type { Result } from '../core/types';
 import { err, ok } from '../core/types';
+import { SceneryManager } from '../scenery/SceneryManager';
 import {
   checkCompressionRatio,
   detectArchiveFormat,
@@ -224,6 +225,26 @@ export class InstallerManager {
         };
       }
 
+      // A partial extraction must never reach the target, or a half-written
+      // addon silently replaces a working one.
+      const stats = extractResult.value.stats;
+      if (stats.failedFiles > 0) {
+        return {
+          taskId: task.id,
+          success: false,
+          error: `Extraction incomplete: ${stats.failedFiles} of ${stats.totalFiles} files failed`,
+          verificationStats: stats,
+        };
+      }
+      if (stats.totalFiles === 0) {
+        return {
+          taskId: task.id,
+          success: false,
+          error: 'Archive contained no installable files',
+          verificationStats: stats,
+        };
+      }
+
       // Handle installation mode
       if (task.installMode === 'clean' && task.conflictExists) {
         // Backup if needed
@@ -269,7 +290,7 @@ export class InstallerManager {
       return {
         taskId: task.id,
         success: true,
-        verificationStats: extractResult.value.stats,
+        verificationStats: stats,
       };
     } catch (e) {
       logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
@@ -373,51 +394,49 @@ export class InstallerManager {
    * Post-installation actions
    */
   private async postInstall(task: InstallTask): Promise<void> {
-    // Update scenery_packs.ini for scenery types
     if (task.addonType === 'Scenery' || task.addonType === 'SceneryLibrary') {
-      await this.addToSceneryPacks(task.displayName);
+      await this.addToSceneryPacks(task.targetPath);
     }
   }
 
   /**
-   * Add scenery to scenery_packs.ini
+   * Register a freshly installed pack in scenery_packs.ini.
+   *
+   * The pack goes at the end of its own priority tier, so an airport lands
+   * above the meshes and an ortho tile below them. Everything else keeps its
+   * order, and the INI is backed up before it is rewritten.
    */
-  private async addToSceneryPacks(sceneryName: string): Promise<void> {
+  private async addToSceneryPacks(targetPath: string): Promise<void> {
     const iniPath = path.join(this.xplanePath, 'Custom Scenery', 'scenery_packs.ini');
-
-    // Read existing content
-    let content: string;
-    if (fs.existsSync(iniPath)) {
-      content = fs.readFileSync(iniPath, 'utf-8');
-    } else {
-      content = 'I\n1000 Version\nSCENERY\n\n';
+    if (!fs.existsSync(iniPath)) {
+      fs.mkdirSync(path.dirname(iniPath), { recursive: true });
+      fs.writeFileSync(iniPath, ['I', '1000 Version', 'SCENERY', '', ''].join('\n'), 'utf-8');
     }
 
-    const entry = `SCENERY_PACK Custom Scenery/${sceneryName}/`;
-
-    // Check if already exists
-    if (content.includes(entry)) {
+    const manager = new SceneryManager(this.xplanePath);
+    const analyzed = await manager.analyze();
+    if (!analyzed.ok) {
+      logger.addon.error(`scenery_packs.ini not updated: ${analyzed.error.code}`);
       return;
     }
 
-    // Add after the SCENERY header
-    const lines = content.split('\n');
-    const sceneryIndex = lines.findIndex((l) => l.trim() === 'SCENERY');
+    const entries = analyzed.value;
+    const resolved = path.resolve(targetPath);
+    const index = entries.findIndex((e) => path.resolve(e.fullPath) === resolved);
+    if (index === -1) return;
 
-    if (sceneryIndex >= 0) {
-      // Insert after SCENERY line (and any blank line after it)
-      let insertIndex = sceneryIndex + 1;
-      let nextLine = lines[insertIndex];
-      while (insertIndex < lines.length && nextLine !== undefined && nextLine.trim() === '') {
-        insertIndex++;
-        nextLine = lines[insertIndex];
-      }
-      lines.splice(insertIndex, 0, entry);
-    } else {
-      // Append at end
-      lines.push(entry);
+    const [entry] = entries.splice(index, 1);
+    if (!entry) return;
+
+    const before = entries.findIndex((e) => e.priority > entry.priority);
+    entries.splice(before === -1 ? entries.length : before, 0, entry);
+    entries.forEach((e, i) => {
+      e.originalIndex = i;
+    });
+
+    const saved = await manager.save(entries, true);
+    if (!saved.ok) {
+      logger.addon.error(`scenery_packs.ini not updated: ${saved.error.code}`);
     }
-
-    fs.writeFileSync(iniPath, lines.join('\n'));
   }
 }

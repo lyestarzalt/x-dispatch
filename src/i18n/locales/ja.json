@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "フォルダを開く",
-      "delete": "ディスクから削除"
+      "delete": "ディスクから削除",
+      "missing": "未検出",
+      "missingHint": "scenery_packs.ini に記載されていますが、ディスク上に見つかりません。保存してもこの行は残ります。"
     },
     "addonTypes": {
       "Aircraft": "機体",

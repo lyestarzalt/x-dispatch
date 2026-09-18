@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Open folder",
-      "delete": "Delete from disk"
+      "delete": "Delete from disk",
+      "missing": "Missing",
+      "missingHint": "Listed in scenery_packs.ini but not found on disk. Saving keeps the line."
     },
     "addonTypes": {
       "Aircraft": "Aircraft",

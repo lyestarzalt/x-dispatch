@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Abrir pasta",
-      "delete": "Eliminar do disco"
+      "delete": "Eliminar do disco",
+      "missing": "Ausente",
+      "missingHint": "Listado em scenery_packs.ini mas não encontrado no disco. Ao guardar, a linha é mantida."
     },
     "addonTypes": {
       "Aircraft": "Aeronave",

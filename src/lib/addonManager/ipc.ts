@@ -53,25 +53,25 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.save(analyzeResult.value, false); // Explicit sort requested by user
   });
 
-  ipcMain.handle('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {
+  ipcMain.handle('addon:scenery:saveOrder', async (_event, sceneryPaths: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
     }
 
     // Validate input
-    if (!Array.isArray(folderNames) || !folderNames.every((n) => typeof n === 'string')) {
+    if (!Array.isArray(sceneryPaths) || !sceneryPaths.every((n) => typeof n === 'string')) {
       return {
         ok: false,
-        error: { code: 'WRITE_FAILED', path: '', reason: 'Invalid folder names' },
+        error: { code: 'WRITE_FAILED', path: '', reason: 'Invalid scenery paths' },
       };
     }
 
     // Security: validate no path traversal in any folder name
-    if (folderNames.some((n) => n.includes('..') || n.length > 500)) {
+    if (sceneryPaths.some((n) => n.includes('..') || n.length > 500)) {
       return {
         ok: false,
-        error: { code: 'WRITE_FAILED', path: '', reason: 'Invalid folder name' },
+        error: { code: 'WRITE_FAILED', path: '', reason: 'Invalid scenery path' },
       };
     }
 
@@ -83,11 +83,18 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       return analyzeResult;
     }
 
-    // Reorder entries based on provided folderNames order
-    const entryMap = new Map(analyzeResult.value.map((e) => [e.folderName, e]));
-    const reorderedEntries = (folderNames as string[])
+    // Reorder entries to the order the renderer sent
+    const entryMap = new Map(analyzeResult.value.map((e) => [e.sceneryPath, e]));
+    const reorderedEntries = (sceneryPaths as string[])
       .map((name) => entryMap.get(name))
       .filter((e): e is NonNullable<typeof e> => e !== undefined);
+
+    // Anything the renderer left out (a filtered view, a pack added since it
+    // loaded) keeps its place at the end rather than being dropped from the INI.
+    const ordered = new Set(reorderedEntries);
+    for (const entry of analyzeResult.value) {
+      if (!ordered.has(entry)) reorderedEntries.push(entry);
+    }
 
     // Update originalIndex to match new order
     reorderedEntries.forEach((entry, index) => {
@@ -98,7 +105,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.save(reorderedEntries, true);
   });
 
-  ipcMain.handle('addon:scenery:toggle', async (_event, folderName: unknown) => {
+  ipcMain.handle('addon:scenery:toggle', async (_event, sceneryPath: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -106,38 +113,38 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
     // Validate input
     if (
-      typeof folderName !== 'string' ||
-      folderName.length === 0 ||
-      folderName.length > 500 ||
-      folderName.includes('..')
+      typeof sceneryPath !== 'string' ||
+      sceneryPath.length === 0 ||
+      sceneryPath.length > 500 ||
+      sceneryPath.includes('..')
     ) {
-      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderName) } };
+      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(sceneryPath) } };
     }
 
     const manager = new SceneryManager(xplanePath);
-    return manager.toggle(folderName);
+    return manager.toggle(sceneryPath);
   });
 
-  ipcMain.handle('addon:scenery:delete', async (_event, folderName: unknown) => {
+  ipcMain.handle('addon:scenery:delete', async (_event, sceneryPath: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
     }
 
     if (
-      typeof folderName !== 'string' ||
-      folderName.length === 0 ||
-      folderName.length > 500 ||
-      folderName.includes('..')
+      typeof sceneryPath !== 'string' ||
+      sceneryPath.length === 0 ||
+      sceneryPath.length > 500 ||
+      sceneryPath.includes('..')
     ) {
-      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderName) } };
+      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(sceneryPath) } };
     }
 
     const manager = new SceneryManager(xplanePath);
-    return manager.deleteScenery(folderName);
+    return manager.deleteScenery(sceneryPath);
   });
 
-  ipcMain.handle('addon:scenery:move', async (_event, folderName: unknown, direction: unknown) => {
+  ipcMain.handle('addon:scenery:move', async (_event, sceneryPath: unknown, direction: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -145,19 +152,19 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
     // Validate input
     if (
-      typeof folderName !== 'string' ||
-      folderName.length === 0 ||
-      folderName.length > 500 ||
-      folderName.includes('..')
+      typeof sceneryPath !== 'string' ||
+      sceneryPath.length === 0 ||
+      sceneryPath.length > 500 ||
+      sceneryPath.includes('..')
     ) {
-      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderName) } };
+      return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(sceneryPath) } };
     }
     if (direction !== 'up' && direction !== 'down') {
       return { ok: false, error: { code: 'WRITE_FAILED', path: '', reason: 'Invalid direction' } };
     }
 
     const manager = new SceneryManager(xplanePath);
-    return manager.move(folderName, direction);
+    return manager.move(sceneryPath, direction);
   });
 
   ipcMain.handle('addon:scenery:backup', async () => {

@@ -14,9 +14,9 @@ interface SortableSceneryEntryProps {
   entry: SceneryEntry;
   position: number;
   totalCount: number;
-  onToggle: (folderName: string) => void;
+  onToggle: (sceneryPath: string) => void;
   onOpenFolder: (fullPath: string) => void;
-  onDelete: (folderName: string) => void;
+  onDelete: () => void;
   disabled: boolean;
 }
 
@@ -31,7 +31,7 @@ export function SortableSceneryEntry({
 }: SortableSceneryEntryProps) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: entry.folderName,
+    id: entry.sceneryPath,
   });
 
   const style = {
@@ -50,6 +50,7 @@ export function SortableSceneryEntry({
         'group flex items-center gap-2 rounded-lg border border-border/50 bg-card/50 px-2 py-1.5',
         'transition-all duration-150',
         !entry.enabled && 'bg-muted/20 opacity-50',
+        entry.missing && 'border-dashed border-warning/50',
         isDragging && 'z-50 border-primary bg-card shadow-xl shadow-primary/10',
         !isDragging && 'hover:border-border hover:bg-card'
       )}
@@ -85,7 +86,7 @@ export function SortableSceneryEntry({
       <div className="flex items-center">
         <Switch
           checked={entry.enabled}
-          onCheckedChange={() => onToggle(entry.folderName)}
+          onCheckedChange={() => onToggle(entry.sceneryPath)}
           disabled={disabled}
           className="scale-90"
         />
@@ -101,11 +102,23 @@ export function SortableSceneryEntry({
             'block truncate font-mono text-sm',
             entry.enabled ? 'text-foreground' : 'text-muted-foreground'
           )}
-          title={entry.folderName}
+          title={entry.sceneryPath}
         >
-          {entry.folderName}
+          {entry.displayName}
         </span>
       </div>
+
+      {/* Referenced by the INI but not on disk */}
+      {entry.missing && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="shrink-0 rounded border border-warning/40 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning">
+              {t('addonManager.sceneryEntry.missing')}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="left">{t('addonManager.sceneryEntry.missingHint')}</TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Open folder button */}
       <Tooltip>
@@ -115,6 +128,7 @@ export function SortableSceneryEntry({
             size="icon"
             className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={() => onOpenFolder(entry.fullPath)}
+            disabled={entry.missing}
           >
             <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
@@ -129,7 +143,7 @@ export function SortableSceneryEntry({
             variant="ghost"
             size="icon"
             className="h-7 w-7 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-            onClick={() => onDelete(entry.folderName)}
+            onClick={onDelete}
             disabled={disabled}
           >
             <Trash2 className="h-3.5 w-3.5" />

@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Otwórz folder",
-      "delete": "Usuń z dysku"
+      "delete": "Usuń z dysku",
+      "missing": "Brak",
+      "missingHint": "Wymieniony w scenery_packs.ini, ale nie znaleziono go na dysku. Zapis zachowuje ten wpis."
     },
     "addonTypes": {
       "Aircraft": "Samolot",

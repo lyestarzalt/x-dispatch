@@ -1287,7 +1287,9 @@
     },
     "sceneryEntry": {
       "openFolder": "打开文件夹",
-      "delete": "从磁盘删除"
+      "delete": "从磁盘删除",
+      "missing": "缺失",
+      "missingHint": "scenery_packs.ini 中有此项，但磁盘上找不到。保存时会保留该行。"
     },
     "addonTypes": {
       "Aircraft": "飞机",
