@@ -52,6 +52,9 @@ export interface PlaneState extends Coordinates {
   simZuluTimeSec?: number;
   /** Simulator clock: zero-based day of the year. */
   simDayOfYear?: number;
+  /** Any wheel in contact with the ground. */
+  onGround?: boolean;
+  fuelKg?: number;
 }
 
 export interface PlanePosition {

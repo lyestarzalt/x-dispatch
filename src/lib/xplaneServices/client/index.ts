@@ -1,1 +1,1 @@
-export { getXPlaneService } from './service';
+export { getXPlaneService, setRecorderSink } from './service';

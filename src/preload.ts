@@ -11,6 +11,13 @@ import type {
 import type { Aircraft, WeatherPreset } from './types/aircraft';
 import type { CliFlags } from './types/cli';
 import type {
+  AircraftHint,
+  FlightDetail,
+  FlightRecorderEvent,
+  FlightSummary,
+  LiveRecorderState,
+} from './types/flightRecorder';
+import type {
   ApiResponse,
   BrowseResult,
   NavDBStatus,
@@ -406,6 +413,23 @@ contextBridge.exposeInMainWorld('companionAppsAPI', {
   browseForExe: (currentExePath?: string): Promise<string | null> =>
     ipcRenderer.invoke('companion-apps:browseForExe', currentExePath),
   isElevated: (): Promise<boolean> => ipcRenderer.invoke('companion-apps:isElevated'),
+});
+
+contextBridge.exposeInMainWorld('flightsAPI', {
+  list: () => ipcRenderer.invoke('flights:list'),
+  get: (id: string) => ipcRenderer.invoke('flights:get', id),
+  delete: (id: string) => ipcRenderer.invoke('flights:delete', id),
+  clear: () => ipcRenderer.invoke('flights:clear'),
+  liveState: () => ipcRenderer.invoke('flights:liveState'),
+  setAircraftHint: (hint: AircraftHint | null) =>
+    ipcRenderer.invoke('flights:setAircraftHint', hint),
+  setEnabled: (enabled: boolean) => ipcRenderer.invoke('flights:setEnabled', enabled),
+  openFolder: () => ipcRenderer.invoke('flights:openFolder'),
+  onEvent: (callback: (event: FlightRecorderEvent) => void) => {
+    const listener = (_: IpcRendererEvent, event: FlightRecorderEvent) => callback(event);
+    ipcRenderer.on('flights:event', listener);
+    return () => ipcRenderer.removeListener('flights:event', listener);
+  },
 });
 
 contextBridge.exposeInMainWorld('xpLogAPI', {
@@ -858,6 +882,17 @@ declare global {
     xpLogAPI: {
       read: () => Promise<XPLogReadResult>;
       openExternal: () => Promise<XPLogOpenResult>;
+    };
+    flightsAPI: {
+      list: () => Promise<FlightSummary[]>;
+      get: (id: string) => Promise<FlightDetail | null>;
+      delete: (id: string) => Promise<void>;
+      clear: () => Promise<void>;
+      liveState: () => Promise<LiveRecorderState>;
+      setAircraftHint: (hint: AircraftHint | null) => Promise<void>;
+      setEnabled: (enabled: boolean) => Promise<void>;
+      openFolder: () => Promise<string>;
+      onEvent: (callback: (event: FlightRecorderEvent) => void) => () => void;
     };
   }
 }

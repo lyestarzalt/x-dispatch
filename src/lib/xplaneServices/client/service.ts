@@ -8,7 +8,9 @@ import type { PlaneState } from '@/types/xplane';
 import type { FlightInit } from './generated/xplaneApi';
 import { isXPlaneProcessRunning } from './processCheck';
 import { getRestClient } from './restClient';
-import { XPlaneWebSocketClient } from './websocketClient';
+import { type RawDatarefSink, XPlaneWebSocketClient } from './websocketClient';
+
+let recorderSink: RawDatarefSink | null = null;
 
 export class XPlaneService {
   private wsClient: XPlaneWebSocketClient;
@@ -17,6 +19,7 @@ export class XPlaneService {
   constructor(apiPort: number = 8086) {
     this.apiPort = apiPort;
     this.wsClient = new XPlaneWebSocketClient(apiPort);
+    this.wsClient.setSink(recorderSink);
   }
 
   // === REST API Methods ===
@@ -77,6 +80,15 @@ export class XPlaneService {
 }
 
 let serviceInstance: XPlaneService | null = null;
+
+/**
+ * The recorder outlives any one service instance (the port can change), so
+ * the sink is kept here and handed to every client the service creates.
+ */
+export function setRecorderSink(sink: RawDatarefSink | null): void {
+  recorderSink = sink;
+  serviceInstance?.['wsClient'].setSink(sink);
+}
 
 export function getXPlaneService(port?: number): XPlaneService {
   if (!serviceInstance || (port !== undefined && serviceInstance.getPort() !== port)) {
