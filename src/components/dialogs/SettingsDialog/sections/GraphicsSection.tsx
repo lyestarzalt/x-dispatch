@@ -71,6 +71,31 @@ export function GraphicsSection() {
         />
       </SettingsSectionBlock>
 
+      {/* Sky and night */}
+      <SettingsSectionBlock
+        title={t('settings.graphics.skyAndNight')}
+        description={t('settings.graphics.skyAndNightDesc')}
+      >
+        <SettingsToggleRow
+          title={t('settings.graphics.dynamicSky')}
+          description={t('settings.graphics.dynamicSkyDesc')}
+          checked={graphics.dynamicSky}
+          onCheckedChange={(checked) => updateGraphics({ dynamicSky: checked })}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.cityLights')}
+          description={t('settings.graphics.cityLightsDesc')}
+          checked={graphics.cityLights}
+          onCheckedChange={(checked) => updateGraphics({ cityLights: checked })}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.followSimTime')}
+          description={t('settings.graphics.followSimTimeDesc')}
+          checked={graphics.followSimTime}
+          onCheckedChange={(checked) => updateGraphics({ followSimTime: checked })}
+        />
+      </SettingsSectionBlock>
+
       {/* Surface Detail */}
       <SettingsSectionBlock
         title={t('settings.graphics.surfaceDetail')}

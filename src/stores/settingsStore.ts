@@ -89,6 +89,12 @@ export interface GraphicsSettings {
   approachLightAnimation: boolean;
   /** Surface detail — curve smoothness for taxiway/pavement edges */
   surfaceDetail: SurfaceDetail;
+  /** Sky colours, globe lighting and hillshade follow the sun. */
+  dynamicSky: boolean;
+  /** Cities and roads glow on the night side. */
+  cityLights: boolean;
+  /** Drive the sun from the simulator clock while X-Plane is connected. */
+  followSimTime: boolean;
 }
 
 export interface LauncherSettings {
@@ -167,6 +173,9 @@ function applyZoomLevel(level: number) {
 const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   approachLightAnimation: true,
   surfaceDetail: 'high',
+  dynamicSky: true,
+  cityLights: true,
+  followSimTime: true,
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -350,7 +359,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 24,
+      version: 25,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -486,6 +495,13 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       void _drop;
       state = { ...state, graphics: rest };
     }
+  }
+  if (version < 25) {
+    // Sun-driven sky, city lights and the simulator clock source.
+    state = {
+      ...state,
+      graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics },
+    };
   }
 
   return state as SettingsState;

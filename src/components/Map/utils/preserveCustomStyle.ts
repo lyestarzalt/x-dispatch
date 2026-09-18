@@ -54,14 +54,15 @@ export function captureBasemapSnapshot(map: maplibregl.Map): void {
  * initially by `captureBasemapSnapshot` on map 'load' and refreshed here
  * after every transition.
  *
- * @param terrainShadingLayerIds layer IDs that should be inserted before
- *   the first symbol layer of the new basemap (so they render below labels)
+ * @param belowLabelLayerIds layer IDs that should be inserted before the
+ *   first symbol layer of the new basemap (so they render below labels):
+ *   terrain shading and the city lights
  * @param starfieldLayerId layer ID of the starfield (rendered before all
  *   other layers, including the basemap)
  */
 export function makePreserveCustomStyle(
   map: maplibregl.Map,
-  terrainShadingLayerIds: ReadonlyArray<string>,
+  belowLabelLayerIds: ReadonlyArray<string>,
   starfieldLayerId: string
 ) {
   return function preserveCustomStyle(
@@ -100,23 +101,24 @@ export function makePreserveCustomStyle(
     // Snapshot the new basemap's IDs so the *next* transition knows what to drop.
     basemapSnapshots.set(map, snapshotOf(next));
 
-    // Insert terrain shading layers (hillshade, contours) before the first
-    // symbol layer so they render below labels; everything else goes on top.
-    const terrainIds = new Set(terrainShadingLayerIds);
+    // Insert below-label layers (hillshade, contours, city lights) before the
+    // first symbol layer so they render below labels; everything else goes
+    // on top.
+    const belowLabelIds = new Set(belowLabelLayerIds);
     const starfieldLayer = customLayers.filter((l) => l.id === starfieldLayerId);
-    const terrainLayers = customLayers.filter((l) => terrainIds.has(l.id));
+    const belowLabelLayers = customLayers.filter((l) => belowLabelIds.has(l.id));
     const otherLayers = customLayers.filter(
-      (l) => !terrainIds.has(l.id) && l.id !== starfieldLayerId
+      (l) => !belowLabelIds.has(l.id) && l.id !== starfieldLayerId
     );
 
     // Starfield goes first (behind everything)
     const layers = [...starfieldLayer, ...next.layers];
-    if (terrainLayers.length > 0) {
+    if (belowLabelLayers.length > 0) {
       const symbolIdx = layers.findIndex((l) => l.type === 'symbol');
       if (symbolIdx >= 0) {
-        layers.splice(symbolIdx, 0, ...terrainLayers);
+        layers.splice(symbolIdx, 0, ...belowLabelLayers);
       } else {
-        layers.push(...terrainLayers);
+        layers.push(...belowLabelLayers);
       }
     }
     layers.push(...otherLayers);

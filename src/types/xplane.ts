@@ -48,6 +48,10 @@ export interface PlaneState extends Coordinates {
   apAirspeed: number;
   apVerticalSpeed: number;
   aircraftCategory: AircraftCategory | null;
+  /** Simulator clock: seconds since midnight UTC. Absent until the first sample arrives. */
+  simZuluTimeSec?: number;
+  /** Simulator clock: zero-based day of the year. */
+  simDayOfYear?: number;
 }
 
 export interface PlanePosition {

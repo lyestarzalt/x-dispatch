@@ -1,7 +1,12 @@
 import { MaplibreStarfieldLayer } from '@geoql/maplibre-gl-starfield';
 import mlcontour from 'maplibre-contour';
 import * as maplibregl from 'maplibre-gl';
+import {
+  CITY_LIGHTS_BASEMAP_LAYER_IDS,
+  CITY_LIGHTS_PLACE_LAYER_IDS,
+} from '@/lib/map/solar/cityLightsStyle';
 import { useMapStore } from '@/stores/mapStore';
+import { lowestOf } from '../layers/world/layerOrder';
 import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './preserveCustomStyle';
 
 const TERRAIN_SOURCE_ID = 'terrain-dem';
@@ -13,7 +18,7 @@ const TERRAIN_DEM_MAXZOOM = 10;
 // Contour thresholds start at this zoom; requesting contour tiles below it
 // only produces empty tiles after a DEM fetch.
 const CONTOUR_MINZOOM = 11;
-const HILLSHADE_LAYER_ID = 'terrain-hillshade';
+export const HILLSHADE_LAYER_ID = 'terrain-hillshade';
 const CONTOUR_SOURCE_ID = 'terrain-contours';
 const CONTOUR_LINE_LAYER_ID = 'terrain-contour-lines';
 const CONTOUR_LABEL_LAYER_ID = 'terrain-contour-labels';
@@ -35,9 +40,18 @@ function getContourDemSource(): InstanceType<typeof mlcontour.DemSource> {
 
 // Zoom level at which to switch from globe to mercator projection
 // Globe projection causes layer displacement issues when rotated at higher zooms
-const GLOBE_TO_MERCATOR_ZOOM = 7;
+export const GLOBE_TO_MERCATOR_ZOOM = 7;
 
 const STARFIELD_LAYER_ID = 'starfield';
+
+/**
+ * Sky settings that hold regardless of the sun: the atmosphere halo fades
+ * out as the globe hands over to mercator. The solar sky hook layers its
+ * colours on top of this.
+ */
+export const BASE_SKY: maplibregl.SkySpecification = {
+  'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
+};
 
 // Re-export from the dedicated style-transition module so external callers
 // keep the single import surface (`from './utils/globeUtils'`).
@@ -63,9 +77,7 @@ function addStarfieldIfMissing(map: maplibregl.Map): void {
 export function setupGlobeProjection(map: maplibregl.Map): void {
   // Start with globe projection
   map.setProjection({ type: 'globe' });
-  map.setSky({
-    'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
-  });
+  map.setSky(BASE_SKY);
 
   addStarfieldIfMissing(map);
 
@@ -125,9 +137,7 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     // Sky is also style-scoped — re-apply for globe so the atmosphere
     // gradient comes back when the user toggles styles at low zoom.
     if (currentProjection === 'globe') {
-      map.setSky({
-        'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
-      });
+      map.setSky(BASE_SKY);
     }
     // Re-add the starfield since CustomLayerInterface doesn't survive setStyle.
     addStarfieldIfMissing(map);
@@ -180,8 +190,10 @@ export function setup3DTerrain(map: maplibregl.Map): void {
   // setupGlobeProjection() enables/disables terrain on projection switches
   // based on the `terrain3dEnabled` setting in mapStore (Settings → Graphics).
 
-  // Hillshade — shadow/light shading from DEM (uses its own source)
-  const beforeLayer = getFirstSymbolLayerId(map);
+  // Hillshade — shadow/light shading from DEM (uses its own source). Sits
+  // below labels and below the sun-driven overlays, which may already be on
+  // the map since they attach as soon as the style is usable.
+  const beforeLayer = lowestOf(map, SOLAR_OVERLAY_LAYER_IDS);
   map.addLayer(
     {
       id: HILLSHADE_LAYER_ID,
@@ -268,22 +280,25 @@ export function setTerrainShadingVisibility(map: maplibregl.Map, visible: boolea
   }
 }
 
+/** City lights: above terrain shading, below labels. */
+const SOLAR_OVERLAY_LAYER_IDS: ReadonlySet<string> = new Set([
+  ...CITY_LIGHTS_BASEMAP_LAYER_IDS,
+  ...CITY_LIGHTS_PLACE_LAYER_IDS,
+]);
+
+/**
+ * App layers that must stay below the basemap's labels across a style
+ * change. The city-light layers drawn from basemap tiles are not listed:
+ * they reference the old basemap's source and are rebuilt on `style.load`.
+ */
+const BELOW_LABEL_LAYER_IDS = [...TERRAIN_SHADING_LAYER_IDS, ...CITY_LIGHTS_PLACE_LAYER_IDS];
+
 /**
  * Build a transformStyle callback bound to a specific map instance, wired
- * with this app's known custom-layer IDs (starfield, terrain shading).
+ * with this app's known custom-layer IDs (starfield, below-label overlays).
  * Implementation lives in `./preserveCustomStyle` so it can be tested
  * without dragging in `maplibre-contour` and the starfield runtime.
  */
 export function makePreserveCustomStyle(map: maplibregl.Map) {
-  return makePreserveCustomStyleInternal(map, TERRAIN_SHADING_LAYER_IDS, STARFIELD_LAYER_ID);
-}
-
-/** Find the first symbol layer to insert raster/line layers below labels. */
-function getFirstSymbolLayerId(map: maplibregl.Map): string | undefined {
-  const layers = map.getStyle()?.layers;
-  if (!layers) return undefined;
-  for (const layer of layers) {
-    if (layer.type === 'symbol') return layer.id;
-  }
-  return undefined;
+  return makePreserveCustomStyleInternal(map, BELOW_LABEL_LAYER_IDS, STARFIELD_LAYER_ID);
 }

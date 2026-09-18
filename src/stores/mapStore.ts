@@ -90,7 +90,6 @@ interface MapState {
   /** When true, map follows plane position and heading */
   followPlane: boolean;
   weatherRadarEnabled: boolean;
-  dayNightEnabled: boolean;
   explore: ExploreState;
   airportFilters: AirportFilterState;
   rangeRingsEnabled: boolean;
@@ -117,7 +116,6 @@ interface MapState {
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   setWeatherRadarEnabled: (enabled: boolean) => void;
-  setDayNightEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
   setAirportFilters: (filters: Partial<AirportFilterState>) => void;
   resetAirportFilters: () => void;
@@ -152,7 +150,6 @@ export const useMapStore = create<MapState>()(
       showPlaneTracker: false,
       followPlane: false,
       weatherRadarEnabled: false,
-      dayNightEnabled: false,
       explore: {
         isOpen: false,
         activeTab: 'featured' as ExploreTab,
@@ -233,7 +230,6 @@ export const useMapStore = create<MapState>()(
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
       setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),
-      setDayNightEnabled: (enabled) => set({ dayNightEnabled: enabled }),
       resetLayerVisibility: () =>
         set({
           layerVisibility: DEFAULT_LAYER_VISIBILITY,
@@ -274,13 +270,12 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 11,
+      version: 12,
       partialize: (state) => ({
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,
         airportFilters: state.airportFilters,
-        dayNightEnabled: state.dayNightEnabled,
         rangeRingsEnabled: state.rangeRingsEnabled,
         rangeRingsDuration: state.rangeRingsDuration,
         rangeRingsCategories: state.rangeRingsCategories,
@@ -355,6 +350,11 @@ export const useMapStore = create<MapState>()(
           if (layers && layers.routingNetwork === undefined) {
             layers.routingNetwork = false;
           }
+        }
+        // Migration to v12: the day/night overlay is gone, the sun-lit globe
+        // atmosphere shows the night side instead.
+        if (version < 12) {
+          delete state.dayNightEnabled;
         }
         return state;
       },

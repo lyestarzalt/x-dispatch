@@ -1,0 +1,2 @@
+# One compact array per line; expanding it would bury the diff.
+src/lib/map/solar/populatedPlaces.json
