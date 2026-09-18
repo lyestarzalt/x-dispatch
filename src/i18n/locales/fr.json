@@ -1174,7 +1174,22 @@
       "emptyState": "Déposez des archives à installer",
       "supportedTypes": "Avions, plugins, scènes, livrées et plus",
       "installMore": "Installer d'autres extensions",
-      "clear": "Tout effacer"
+      "clear": "Tout effacer",
+      "target": "Installé dans {{path}}",
+      "alreadyInstalled": "Déjà installé",
+      "modeMerge": "Fusionner",
+      "modeClean": "Remplacer",
+      "modeMergeHint": "Conserve les fichiers absents de la nouvelle version",
+      "modeCleanHint": "Supprime d'abord l'ancien dossier, après une sauvegarde",
+      "installSelected_one": "Installer 1 module",
+      "installSelected_other": "Installer {{count}} modules",
+      "selectionSummary_one": "1 module sélectionné, {{size}}",
+      "selectionSummary_other": "{{count}} modules sélectionnés, {{size}}",
+      "cancel": "Annuler",
+      "cancelling": "Annulation",
+      "skipped": "Non installé, l'opération a été annulée",
+      "backupSaved": "Les fichiers remplacés ont été sauvegardés",
+      "resultsSummary": "{{succeeded}} installés, {{failed}} en échec, {{skipped}} ignorés"
     },
     "browser": {
       "searchPlaceholder": "Rechercher...",

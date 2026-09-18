@@ -1174,7 +1174,22 @@
       "emptyState": "Archive zum Installieren ablegen",
       "supportedTypes": "Flugzeuge, Plugins, Szenerien, Bemalungen und mehr",
       "installMore": "Weitere Add-ons installieren",
-      "clear": "Alle löschen"
+      "clear": "Alle löschen",
+      "target": "Wird nach {{path}} installiert",
+      "alreadyInstalled": "Bereits installiert",
+      "modeMerge": "Zusammenführen",
+      "modeClean": "Ersetzen",
+      "modeMergeHint": "Behält Dateien, die die neue Version nicht mitbringt",
+      "modeCleanHint": "Entfernt den alten Ordner zuerst, nach einer Sicherung",
+      "installSelected_one": "1 Add-on installieren",
+      "installSelected_other": "{{count}} Add-ons installieren",
+      "selectionSummary_one": "1 Add-on ausgewählt, {{size}}",
+      "selectionSummary_other": "{{count}} Add-ons ausgewählt, {{size}}",
+      "cancel": "Abbrechen",
+      "cancelling": "Wird abgebrochen",
+      "skipped": "Nicht installiert, der Vorgang wurde abgebrochen",
+      "backupSaved": "Ersetzte Dateien wurden gesichert",
+      "resultsSummary": "{{succeeded}} installiert, {{failed}} fehlgeschlagen, {{skipped}} übersprungen"
     },
     "browser": {
       "searchPlaceholder": "Suchen...",

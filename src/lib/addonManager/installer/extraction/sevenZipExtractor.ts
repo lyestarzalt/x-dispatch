@@ -28,7 +28,7 @@ async function get7zipPath(): Promise<string> {
 export async function extractSevenZip(
   options: ExtractOptions
 ): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, password, onProgress } = options;
+  const { archivePath, targetDir, internalRoot, password, onProgress, isCancelled } = options;
 
   const node7z = await import('node-7z');
   const extractFull = node7z.default?.extractFull ?? node7z.extractFull;
@@ -56,6 +56,11 @@ export async function extractSevenZip(
       });
 
       extractStream.on('end', () => {
+        if (isCancelled?.()) {
+          finish(err({ code: 'CANCELLED', path: archivePath }));
+          return;
+        }
+
         const skippedFiles = pruneIgnored(staging);
 
         const root = internalRoot ? normalizeInternalRoot(internalRoot).replace(/\/$/, '') : '';

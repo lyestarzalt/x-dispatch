@@ -1174,7 +1174,22 @@
       "emptyState": "Upuść archiwa do zainstalowania",
       "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i inne",
       "installMore": "Zainstaluj więcej dodatków",
-      "clear": "Wyczyść wszystko"
+      "clear": "Wyczyść wszystko",
+      "target": "Instalacja w {{path}}",
+      "alreadyInstalled": "Już zainstalowany",
+      "modeMerge": "Scal",
+      "modeClean": "Zastąp",
+      "modeMergeHint": "Zachowuje pliki, których nie ma w nowej wersji",
+      "modeCleanHint": "Najpierw usuwa stary folder, po wykonaniu kopii zapasowej",
+      "installSelected_one": "Zainstaluj 1 dodatek",
+      "installSelected_other": "Zainstaluj dodatki: {{count}}",
+      "selectionSummary_one": "Wybrano 1 dodatek, {{size}}",
+      "selectionSummary_other": "Wybrano dodatków: {{count}}, {{size}}",
+      "cancel": "Anuluj",
+      "cancelling": "Anulowanie",
+      "skipped": "Nie zainstalowano, operacja została anulowana",
+      "backupSaved": "Zastąpione pliki zostały zarchiwizowane",
+      "resultsSummary": "Zainstalowano: {{succeeded}}, błędy: {{failed}}, pominięte: {{skipped}}"
     },
     "browser": {
       "searchPlaceholder": "Szukaj...",

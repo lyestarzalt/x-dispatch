@@ -482,15 +482,11 @@ export function useInstallerInstall() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (items: import('@/lib/addonManager/installer/types').DetectedItem[]) => {
-      // First prepare install tasks
-      const prepareResult = await window.addonManagerAPI.installer.prepareInstall(items);
-      if (!prepareResult.ok) {
-        throw new Error(getInstallerErrorMessage(prepareResult.error));
-      }
-
-      // Then execute installation
-      const installResult = await window.addonManagerAPI.installer.install(prepareResult.value);
+    mutationFn: async (input: {
+      items: import('@/lib/addonManager/installer/types').DetectedItem[];
+      modes?: Record<string, 'overwrite' | 'clean'>;
+    }) => {
+      const installResult = await window.addonManagerAPI.installer.install(input);
       if (!installResult.ok) {
         throw new Error(getInstallerErrorMessage(installResult.error));
       }
@@ -502,7 +498,25 @@ export function useInstallerInstall() {
       queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
       queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
       queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
+      queryClient.invalidateQueries({ queryKey: addonKeys.sceneryConflicts });
       queryClient.invalidateQueries({ queryKey: addonKeys.luaScripts });
+    },
+  });
+}
+
+/**
+ * Resolve where each detected addon would be installed, and what it conflicts with.
+ */
+export function useInstallerPrepare() {
+  return useMutation({
+    mutationFn: async (
+      items: import('@/lib/addonManager/installer/types').DetectedItem[]
+    ): Promise<import('@/lib/addonManager/installer/types').InstallTask[]> => {
+      const result = await window.addonManagerAPI.installer.prepareInstall(items);
+      if (!result.ok) {
+        throw new Error(getInstallerErrorMessage(result.error));
+      }
+      return result.value;
     },
   });
 }

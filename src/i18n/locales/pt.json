@@ -1174,7 +1174,22 @@
       "emptyState": "Arraste ficheiros para instalar",
       "supportedTypes": "Aeronaves, plugins, cenários, pinturas e mais",
       "installMore": "Instalar mais add-ons",
-      "clear": "Limpar tudo"
+      "clear": "Limpar tudo",
+      "target": "Instala em {{path}}",
+      "alreadyInstalled": "Já instalado",
+      "modeMerge": "Combinar",
+      "modeClean": "Substituir",
+      "modeMergeHint": "Mantém os ficheiros que a nova versão não inclui",
+      "modeCleanHint": "Remove primeiro a pasta antiga, depois de uma cópia de segurança",
+      "installSelected_one": "Instalar 1 extra",
+      "installSelected_other": "Instalar {{count}} extras",
+      "selectionSummary_one": "1 extra selecionado, {{size}}",
+      "selectionSummary_other": "{{count}} extras selecionados, {{size}}",
+      "cancel": "Cancelar",
+      "cancelling": "A cancelar",
+      "skipped": "Não instalado, a operação foi cancelada",
+      "backupSaved": "Foi guardada cópia dos ficheiros substituídos",
+      "resultsSummary": "{{succeeded}} instalados, {{failed}} falharam, {{skipped}} ignorados"
     },
     "browser": {
       "searchPlaceholder": "Pesquisar...",

@@ -33,6 +33,8 @@ import { INSTALLER_CONSTANTS } from './types';
 export interface InstallOptions {
   /** Progress callback */
   onProgress?: (progress: InstallProgress) => void;
+  /** Checked between tasks and archive entries so a cancel takes effect quickly */
+  isCancelled?: () => boolean;
 }
 
 export class InstallerManager {
@@ -162,7 +164,12 @@ export class InstallerManager {
         bytesTotal: totalBytes,
       });
 
-      const result = await this.installTask(task, (bytes, file) => {
+      if (options?.isCancelled?.()) {
+        results.push({ taskId: task.id, success: false, skipped: true });
+        continue;
+      }
+
+      const result = await this.installTask(task, options?.isCancelled, (bytes, file) => {
         processedBytes = taskStartBytes + bytes;
         options?.onProgress?.({
           phase: 'extracting',
@@ -205,6 +212,7 @@ export class InstallerManager {
    */
   private async installTask(
     task: InstallTask,
+    isCancelled: (() => boolean) | undefined,
     onProgress: (bytes: number, file: string) => void
   ): Promise<InstallResult> {
     const components =
@@ -251,9 +259,14 @@ export class InstallerManager {
           targetDir: tempDir,
           internalRoot: component.internalRoot,
           onProgress,
+          isCancelled,
         });
 
         if (!extractResult.ok) {
+          if (extractResult.error.code === 'CANCELLED') {
+            await discardStaging();
+            return { taskId: task.id, success: false, skipped: true };
+          }
           logger.addon.error(
             `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
           );
@@ -278,6 +291,13 @@ export class InstallerManager {
         }
       }
 
+      if (isCancelled?.()) {
+        await discardStaging();
+        return { taskId: task.id, success: false, skipped: true };
+      }
+
+      // Past this point the files start moving, so cancelling has to wait for
+      // the transaction rather than leave a half-installed addon behind.
       await transaction.apply(staged);
     } catch (e) {
       logger.addon.error(`Install failed for ${task.displayName}, rolling back: ${e}`);

@@ -1174,7 +1174,22 @@
       "emptyState": "インストールするアーカイブをドロップ",
       "supportedTypes": "機体、プラグイン、シーナリー、リバリーなど",
       "installMore": "他のアドオンをインストール",
-      "clear": "すべてクリア"
+      "clear": "すべてクリア",
+      "target": "{{path}} にインストールされます",
+      "alreadyInstalled": "インストール済み",
+      "modeMerge": "マージ",
+      "modeClean": "置き換え",
+      "modeMergeHint": "新しい版に含まれないファイルを残します",
+      "modeCleanHint": "バックアップ後、古いフォルダーを先に削除します",
+      "installSelected_one": "1 件のアドオンをインストール",
+      "installSelected_other": "{{count}} 件のアドオンをインストール",
+      "selectionSummary_one": "1 件選択中、{{size}}",
+      "selectionSummary_other": "{{count}} 件選択中、{{size}}",
+      "cancel": "キャンセル",
+      "cancelling": "キャンセル中",
+      "skipped": "中止されたためインストールされていません",
+      "backupSaved": "置き換えたファイルをバックアップしました",
+      "resultsSummary": "成功 {{succeeded}} 件、失敗 {{failed}} 件、スキップ {{skipped}} 件"
     },
     "browser": {
       "searchPlaceholder": "検索...",

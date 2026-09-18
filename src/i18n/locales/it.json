@@ -1174,7 +1174,22 @@
       "emptyState": "Trascina archivi da installare",
       "supportedTypes": "Aerei, plugin, scenari, livree e altro",
       "installMore": "Installa altri add-on",
-      "clear": "Cancella tutto"
+      "clear": "Cancella tutto",
+      "target": "Viene installato in {{path}}",
+      "alreadyInstalled": "Già installato",
+      "modeMerge": "Unisci",
+      "modeClean": "Sostituisci",
+      "modeMergeHint": "Mantiene i file che la nuova versione non include",
+      "modeCleanHint": "Rimuove prima la cartella precedente, dopo un backup",
+      "installSelected_one": "Installa 1 add-on",
+      "installSelected_other": "Installa {{count}} add-on",
+      "selectionSummary_one": "1 add-on selezionato, {{size}}",
+      "selectionSummary_other": "{{count}} add-on selezionati, {{size}}",
+      "cancel": "Annulla",
+      "cancelling": "Annullamento",
+      "skipped": "Non installato, l'operazione è stata annullata",
+      "backupSaved": "I file sostituiti sono stati salvati in un backup",
+      "resultsSummary": "{{succeeded}} installati, {{failed}} non riusciti, {{skipped}} saltati"
     },
     "browser": {
       "searchPlaceholder": "Cerca...",

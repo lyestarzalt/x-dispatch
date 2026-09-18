@@ -1174,7 +1174,22 @@
       "emptyState": "Перетащите архивы для установки",
       "supportedTypes": "Самолёты, плагины, сценарии, ливреи и другое",
       "installMore": "Установить ещё дополнения",
-      "clear": "Очистить всё"
+      "clear": "Очистить всё",
+      "target": "Установка в {{path}}",
+      "alreadyInstalled": "Уже установлено",
+      "modeMerge": "Объединить",
+      "modeClean": "Заменить",
+      "modeMergeHint": "Сохраняет файлы, которых нет в новой версии",
+      "modeCleanHint": "Сначала удаляет старую папку, после резервной копии",
+      "installSelected_one": "Установить 1 дополнение",
+      "installSelected_other": "Установить дополнений: {{count}}",
+      "selectionSummary_one": "Выбрано 1 дополнение, {{size}}",
+      "selectionSummary_other": "Выбрано дополнений: {{count}}, {{size}}",
+      "cancel": "Отменить",
+      "cancelling": "Отмена",
+      "skipped": "Не установлено, операция отменена",
+      "backupSaved": "Заменённые файлы сохранены в резервной копии",
+      "resultsSummary": "установлено {{succeeded}}, ошибок {{failed}}, пропущено {{skipped}}"
     },
     "browser": {
       "searchPlaceholder": "Поиск...",

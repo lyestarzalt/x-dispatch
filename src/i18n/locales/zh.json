@@ -1174,7 +1174,22 @@
       "emptyState": "拖放附加组件压缩包进行安装",
       "supportedTypes": "飞机、插件、地景、涂装等",
       "installMore": "安装更多附加组件",
-      "clear": "全部清除"
+      "clear": "全部清除",
+      "target": "安装到 {{path}}",
+      "alreadyInstalled": "已安装",
+      "modeMerge": "合并",
+      "modeClean": "替换",
+      "modeMergeHint": "保留新版本不包含的文件",
+      "modeCleanHint": "先备份，再删除旧文件夹",
+      "installSelected_one": "安装 1 个插件",
+      "installSelected_other": "安装 {{count}} 个插件",
+      "selectionSummary_one": "已选 1 个，{{size}}",
+      "selectionSummary_other": "已选 {{count}} 个，{{size}}",
+      "cancel": "取消",
+      "cancelling": "正在取消",
+      "skipped": "未安装，操作已取消",
+      "backupSaved": "被替换的文件已备份",
+      "resultsSummary": "成功 {{succeeded}} 个，失败 {{failed}} 个，跳过 {{skipped}} 个"
     },
     "browser": {
       "searchPlaceholder": "搜索...",

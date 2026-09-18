@@ -134,6 +134,8 @@ export interface InstallResult {
   verificationStats?: VerificationStats;
   /** Folder holding the files this install replaced, when it replaced any */
   backupPath?: string;
+  /** Never started, because the user cancelled first */
+  skipped?: boolean;
 }
 
 export interface VerificationStats {
@@ -155,7 +157,8 @@ export type InstallerError =
   | { code: 'SIZE_EXCEEDED'; size: number; limit: number }
   | { code: 'SUSPICIOUS_RATIO'; ratio: number; limit: number }
   | { code: 'DISK_SPACE'; required: number; available: number }
-  | { code: 'INSTALL_FAILED'; path: string; reason: string };
+  | { code: 'INSTALL_FAILED'; path: string; reason: string }
+  | { code: 'CANCELLED'; path: string };
 
 /**
  * Constants
@@ -201,6 +204,8 @@ export function getInstallerErrorMessage(error: InstallerError): string {
       return `Insufficient disk space: need ${(error.required / 1024 / 1024 / 1024).toFixed(1)} GB, have ${(error.available / 1024 / 1024 / 1024).toFixed(1)} GB`;
     case 'INSTALL_FAILED':
       return `Installation failed: ${error.reason}`;
+    case 'CANCELLED':
+      return 'Installation cancelled';
     default:
       // Handle any unexpected error codes (e.g., from IPC layer)
       return `Installation error: ${(error as { code: string }).code}`;

@@ -23,6 +23,8 @@ export interface ExtractOptions {
   password?: string;
   /** Progress callback: (bytesWritten, currentFile) */
   onProgress?: (bytes: number, file: string) => void;
+  /** Checked between entries so a large archive stops promptly */
+  isCancelled?: () => boolean;
 }
 
 export interface ExtractResult {
@@ -74,7 +76,7 @@ async function extractByFormat(
  * staging folder and only the requested internal root is moved into the target.
  */
 async function extractRar(options: ExtractOptions): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, password, onProgress } = options;
+  const { archivePath, targetDir, internalRoot, password, onProgress, isCancelled } = options;
 
   const staging = path.join(targetDir, `.xdispatch-staging-${process.pid}-${Date.now()}`);
 
@@ -94,6 +96,11 @@ async function extractRar(options: ExtractOptions): Promise<Result<ExtractResult
       if (!file.fileHeader.flags.directory) {
         onProgress?.(file.fileHeader.unpSize ?? 0, file.fileHeader.name);
       }
+    }
+
+    if (isCancelled?.()) {
+      fs.rmSync(staging, { recursive: true, force: true });
+      return err({ code: 'CANCELLED', path: archivePath });
     }
 
     const skippedFiles = pruneIgnored(staging);

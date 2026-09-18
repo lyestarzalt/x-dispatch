@@ -21,6 +21,8 @@ export interface ExtractOptions {
   password?: string;
   /** Progress callback: (bytesWritten, currentFile) */
   onProgress?: (bytes: number, file: string) => void;
+  /** Checked between entries so a large archive stops promptly */
+  isCancelled?: () => boolean;
 }
 
 export interface ExtractResult {
@@ -34,7 +36,7 @@ export interface ExtractResult {
 export async function extractZip(
   options: ExtractOptions
 ): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, onProgress } = options;
+  const { archivePath, targetDir, internalRoot, onProgress, isCancelled } = options;
 
   return new Promise((resolve) => {
     yauzl.open(archivePath, { lazyEntries: true }, (openErr, zipFile) => {
@@ -64,6 +66,13 @@ export async function extractZip(
 
       zipFile.on('entry', (entry: yauzl.Entry) => {
         if (hasError) return;
+
+        if (isCancelled?.()) {
+          hasError = true;
+          zipFile.close();
+          resolve(err({ code: 'CANCELLED', path: archivePath }));
+          return;
+        }
 
         const entryPath = entry.fileName;
 

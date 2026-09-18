@@ -348,8 +348,11 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
     analyze: (filePaths: string[]) => ipcRenderer.invoke('addon:installer:analyze', filePaths),
     prepareInstall: (items: import('./lib/addonManager/installer/types').DetectedItem[]) =>
       ipcRenderer.invoke('addon:installer:prepareInstall', items),
-    install: (tasks: import('./lib/addonManager/installer/types').InstallTask[]) =>
-      ipcRenderer.invoke('addon:installer:install', tasks),
+    install: (payload: {
+      items: import('./lib/addonManager/installer/types').DetectedItem[];
+      modes?: Record<string, 'overwrite' | 'clean'>;
+    }) => ipcRenderer.invoke('addon:installer:install', payload),
+    cancel: () => ipcRenderer.invoke('addon:installer:cancel'),
     onProgress: (
       callback: (progress: import('./lib/addonManager/installer/types').InstallProgress) => void
     ) => {
@@ -756,12 +759,14 @@ declare global {
           | { ok: true; value: import('./lib/addonManager/installer/types').InstallTask[] }
           | { ok: false; error: import('./lib/addonManager/installer/types').InstallerError }
         >;
-        install: (
-          tasks: import('./lib/addonManager/installer/types').InstallTask[]
-        ) => Promise<
+        install: (payload: {
+          items: import('./lib/addonManager/installer/types').DetectedItem[];
+          modes?: Record<string, 'overwrite' | 'clean'>;
+        }) => Promise<
           | { ok: true; value: import('./lib/addonManager/installer/types').InstallResult[] }
           | { ok: false; error: import('./lib/addonManager/installer/types').InstallerError }
         >;
+        cancel: () => Promise<{ ok: true; value: boolean }>;
         onProgress: (
           callback: (progress: import('./lib/addonManager/installer/types').InstallProgress) => void
         ) => () => void;

@@ -8,6 +8,7 @@ import { BrowserManager } from './browser';
 import type { BrowserError } from './core/types';
 import { err } from './core/types';
 import { InstallerManager } from './installer';
+import type { DetectedItem, InstallTask } from './installer/types';
 import { SceneryManager } from './scenery/SceneryManager';
 
 // TODO: Refactor main.ts - move other IPC handlers to separate files based on module:
@@ -24,6 +25,8 @@ import { SceneryManager } from './scenery/SceneryManager';
  */
 export function registerAddonManagerIPC(getXPlanePath: () => string | null): void {
   let lastBrowsedDir: string | null = null;
+  /** The install currently running, so it can be cancelled from the renderer. */
+  let activeInstall: { cancelled: boolean } | null = null;
 
   // ===== SCENERY MANAGER =====
 
@@ -581,40 +584,65 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
   });
 
-  ipcMain.handle('addon:installer:install', async (_event, tasks: unknown) => {
+  ipcMain.handle('addon:installer:install', async (_event, payload: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
     }
 
-    // Validate input
-    if (!Array.isArray(tasks)) {
-      return { ok: false, error: { code: 'INVALID_INPUT', field: 'tasks' } };
+    if (typeof payload !== 'object' || payload === null) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'payload' } };
     }
 
-    // Security: validate task paths
-    for (const task of tasks) {
-      if (typeof task !== 'object' || task === null) {
-        return { ok: false, error: { code: 'INVALID_INPUT', field: 'task' } };
+    const { items, modes } = payload as {
+      items?: unknown;
+      modes?: Record<string, unknown>;
+    };
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'items' } };
+    }
+
+    for (const item of items) {
+      if (typeof item !== 'object' || item === null) {
+        return { ok: false, error: { code: 'INVALID_INPUT', field: 'item' } };
       }
-      const t = task as Record<string, unknown>;
-      if (
-        typeof t.sourcePath !== 'string' ||
-        t.sourcePath.includes('..') ||
-        typeof t.targetPath !== 'string' ||
-        t.targetPath.includes('..')
-      ) {
-        logger.security.warn(`Path traversal attempt in install task: ${t.sourcePath}`);
-        return { ok: false, error: { code: 'PATH_TRAVERSAL', path: String(t.sourcePath) } };
+      const sourcePath = (item as Record<string, unknown>).sourcePath;
+      if (typeof sourcePath !== 'string' || sourcePath.includes('..') || sourcePath.length > 1000) {
+        logger.security.warn(`Path traversal attempt in install item: ${String(sourcePath)}`);
+        return { ok: false, error: { code: 'PATH_TRAVERSAL', path: String(sourcePath) } };
       }
     }
+
+    if (activeInstall) {
+      return {
+        ok: false,
+        error: { code: 'INSTALL_FAILED', path: '', reason: 'Install in progress' },
+      };
+    }
+
+    const run = { cancelled: false };
+    activeInstall = run;
 
     try {
-      logger.addon.info(`Installing ${tasks.length} addon(s)`);
+      logger.addon.info(`Installing ${items.length} addon(s)`);
       const manager = new InstallerManager(xplanePath);
       const { BrowserWindow } = await import('electron');
 
-      const result = await manager.install(tasks as never[], {
+      // Targets are resolved here rather than taken from the renderer, so a
+      // compromised window cannot point an install at an arbitrary folder.
+      const tasks: InstallTask[] = manager
+        .prepareInstallTasks(items as DetectedItem[])
+        .map((task) => {
+          const mode = modes?.[task.id];
+          if (task.conflictExists && (mode === 'clean' || mode === 'overwrite')) {
+            return { ...task, installMode: mode as InstallTask['installMode'] };
+          }
+          return task;
+        });
+
+      const result = await manager.install(tasks, {
+        isCancelled: () => run.cancelled,
         onProgress: (progress) => {
           // Send progress to all windows
           BrowserWindow.getAllWindows().forEach((win) => {
@@ -625,7 +653,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
       if (result.ok) {
         const succeeded = result.value.filter((r) => r.success).length;
-        const failed = result.value.filter((r) => !r.success).length;
+        const failed = result.value.filter((r) => !r.success && !r.skipped).length;
         logger.addon.info(`Installation complete: ${succeeded} succeeded, ${failed} failed`);
       }
 
@@ -633,6 +661,15 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     } catch (e) {
       logger.addon.error(`Installation failed: ${e}`);
       return { ok: false, error: { code: 'INSTALL_FAILED', path: '', reason: String(e) } };
+    } finally {
+      activeInstall = null;
     }
+  });
+
+  ipcMain.handle('addon:installer:cancel', async () => {
+    if (!activeInstall) return { ok: true, value: false };
+    activeInstall.cancelled = true;
+    logger.addon.info('Installation cancelled by user');
+    return { ok: true, value: true };
   });
 }

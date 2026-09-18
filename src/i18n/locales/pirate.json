@@ -1174,7 +1174,22 @@
       "emptyState": "Drop addon archives ta install",
       "supportedTypes": "Aircraft, plugins, scenery, liveries, an' more",
       "installMore": "Bring aboard more addons",
-      "clear": "Clear cargo"
+      "clear": "Clear cargo",
+      "target": "Lands in {{path}}",
+      "alreadyInstalled": "Already aboard",
+      "modeMerge": "Mix in",
+      "modeClean": "Swap out",
+      "modeMergeHint": "Keeps whatever the new cargo don't carry",
+      "modeCleanHint": "Heaves the old crate overboard first, after a copy be stowed",
+      "installSelected_one": "Stow 1 add-on",
+      "installSelected_other": "Stow {{count}} add-ons",
+      "selectionSummary_one": "1 add-on picked, {{size}}",
+      "selectionSummary_other": "{{count}} add-ons picked, {{size}}",
+      "cancel": "Belay it",
+      "cancelling": "Belayin'",
+      "skipped": "Never stowed, the run were called off",
+      "backupSaved": "Replaced files be safe in the hold",
+      "resultsSummary": "{{succeeded}} stowed, {{failed}} sunk, {{skipped}} left ashore"
     },
     "browser": {
       "searchPlaceholder": "Search fer...",
