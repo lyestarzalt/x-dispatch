@@ -1,115 +1,158 @@
 // src/components/dialogs/AddonManager/tabs/InstallerTab.tsx
-// Single addon installer - one at a time for simplicity
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AlertCircle,
-  CheckCircle2,
-  Download,
-  Package,
-  Sparkles,
-  Trash2,
-  XCircle,
-} from 'lucide-react';
+import { AlertCircle, Download, Sparkles, Trash2, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import type {
-  DetectedItem,
   InstallProgress,
   InstallResult,
+  InstallTask,
 } from '@/lib/addonManager/installer/types';
-import { cn } from '@/lib/utils/helpers';
-import { useInstallerAnalyze, useInstallerInstall } from '@/queries/useAddonManager';
-import { DetectedItemCard } from '../components/DetectedItemCard';
+import {
+  useInstallerAnalyze,
+  useInstallerInstall,
+  useInstallerPrepare,
+} from '@/queries/useAddonManager';
 import { DropZone } from '../components/DropZone';
+import { type InstallMode, InstallReviewRow, type RowStatus } from '../components/InstallReviewRow';
+
+type Phase = 'idle' | 'review' | 'installing' | 'done';
+
+function formatSize(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
 
 export function InstallerTab() {
   const { t } = useTranslation();
-  // Single item only
-  const [detectedItem, setDetectedItem] = useState<DetectedItem | null>(null);
+
+  const [tasks, setTasks] = useState<InstallTask[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [modes, setModes] = useState<Record<string, InstallMode>>({});
   const [progress, setProgress] = useState<InstallProgress | null>(null);
-  const [result, setResult] = useState<InstallResult | null>(null);
+  const [results, setResults] = useState<InstallResult[]>([]);
+  const [cancelling, setCancelling] = useState(false);
 
   const analyzeMutation = useInstallerAnalyze();
+  const prepareMutation = useInstallerPrepare();
   const installMutation = useInstallerInstall();
 
-  // Subscribe to progress updates
   useEffect(() => {
-    const unsubscribe = window.addonManagerAPI.installer.onProgress((p) => {
-      setProgress(p);
-    });
-    return unsubscribe;
+    return window.addonManagerAPI.installer.onProgress(setProgress);
   }, []);
 
-  const formatSize = (bytes: number) => {
-    if (bytes >= 1024 * 1024 * 1024) {
-      return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-    }
-    if (bytes >= 1024 * 1024) {
-      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    }
-    return `${(bytes / 1024).toFixed(0)} KB`;
-  };
+  const phase: Phase = installMutation.isPending
+    ? 'installing'
+    : results.length > 0
+      ? 'done'
+      : tasks.length > 0
+        ? 'review'
+        : 'idle';
+
+  const isBusy =
+    analyzeMutation.isPending || prepareMutation.isPending || installMutation.isPending;
+
+  const selectedTasks = useMemo(
+    () => tasks.filter((task) => selected.has(task.id)),
+    [tasks, selected]
+  );
+  const selectedSize = selectedTasks.reduce((sum, task) => sum + task.estimatedSize, 0);
+
+  const resultById = useMemo(
+    () => new Map(results.map((result) => [result.taskId, result])),
+    [results]
+  );
 
   const handleFilesDropped = async (paths: string[]) => {
     try {
-      setResult(null);
-      // Only take the first file
-      const firstPath = paths[0];
-      if (!firstPath) return;
-      const items = await analyzeMutation.mutateAsync([firstPath]);
-      // Only use the first detected item
-      setDetectedItem(items[0] || null);
+      setResults([]);
+      const items = await analyzeMutation.mutateAsync(paths);
+      if (items.length === 0) {
+        setTasks([]);
+        return;
+      }
+      const prepared = await prepareMutation.mutateAsync(items);
+      setTasks(prepared);
+      setSelected(new Set(prepared.map((task) => task.id)));
+      setModes(Object.fromEntries(prepared.map((task) => [task.id, 'overwrite' as InstallMode])));
     } catch {
-      // Error handled by mutation state
+      // Surfaced through the mutation's error state
     }
   };
 
   const handleInstall = async () => {
-    if (!detectedItem) return;
+    if (selectedTasks.length === 0) return;
+    setProgress(null);
+    setResults([]);
+    setCancelling(false);
     try {
-      setProgress(null);
-      setResult(null);
-      const installResults = await installMutation.mutateAsync([detectedItem]);
-      setResult(installResults[0] || null);
-      setProgress(null);
-      // Clear item after successful install
-      if (installResults[0]?.success) {
-        setDetectedItem(null);
-      }
+      const installResults = await installMutation.mutateAsync({
+        items: selectedTasks,
+        modes: Object.fromEntries(
+          selectedTasks.map((task) => [task.id, modes[task.id] ?? 'overwrite'])
+        ),
+      });
+      setResults(installResults);
     } catch {
+      // Surfaced through the mutation's error state
+    } finally {
       setProgress(null);
+      setCancelling(false);
     }
   };
 
+  const handleCancel = async () => {
+    setCancelling(true);
+    await window.addonManagerAPI.installer.cancel();
+  };
+
   const handleClear = () => {
-    setDetectedItem(null);
-    setResult(null);
+    setTasks([]);
+    setSelected(new Set());
+    setModes({});
+    setResults([]);
     setProgress(null);
     analyzeMutation.reset();
+    prepareMutation.reset();
     installMutation.reset();
   };
 
-  const isInstalling = installMutation.isPending;
-  const isAnalyzing = analyzeMutation.isPending;
-  const isDisabled = isInstalling || isAnalyzing;
-  const hasItem = detectedItem !== null;
+  const runningTaskId =
+    phase === 'installing' && progress ? selectedTasks[progress.currentTaskIndex]?.id : undefined;
+
+  const visibleTasks = phase === 'idle' || phase === 'review' ? tasks : selectedTasks;
+
+  const rowStatus = (taskId: string): RowStatus => {
+    if (phase === 'done') return 'done';
+    if (phase !== 'installing') return 'pending';
+    return taskId === runningTaskId ? 'running' : 'done';
+  };
+
+  const rows = visibleTasks.map((task) => ({
+    task,
+    status: rowStatus(task.id),
+    mode: modes[task.id] ?? ('overwrite' as InstallMode),
+  }));
+
+  const succeeded = results.filter((r) => r.success).length;
+  const failed = results.filter((r) => !r.success && !r.skipped).length;
+  const skipped = results.filter((r) => r.skipped).length;
 
   return (
     <div className="flex h-full flex-col">
-      {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Drop zone - always full size, hidden during install */}
-        {!isInstalling && !result && (
+        {phase === 'idle' && !isBusy && (
           <div className="p-4">
-            <DropZone onFilesDropped={handleFilesDropped} disabled={isDisabled} />
+            <DropZone onFilesDropped={handleFilesDropped} disabled={isBusy} />
           </div>
         )}
 
-        {/* Analyzing state */}
-        {isAnalyzing && (
+        {isBusy && phase !== 'installing' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-12">
             <div className="relative">
               <div className="h-16 w-16 rounded-full border-2 border-primary/20" />
@@ -124,148 +167,85 @@ export function InstallerTab() {
           </div>
         )}
 
-        {/* Analysis error */}
-        {analyzeMutation.isError && (
-          <div className="px-4">
+        {(analyzeMutation.isError || prepareMutation.isError) && (
+          <div className="px-4 pb-2">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {analyzeMutation.error instanceof Error
-                  ? analyzeMutation.error.message
+                {(analyzeMutation.error ?? prepareMutation.error) instanceof Error
+                  ? (analyzeMutation.error ?? prepareMutation.error)!.message
                   : t('addonManager.installer.analysisFailed')}
               </AlertDescription>
             </Alert>
           </div>
         )}
 
-        {/* Detected item */}
-        {hasItem && !isInstalling && !result && (
-          <div className="px-4 pb-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {formatSize(detectedItem.estimatedSize)}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                disabled={isDisabled}
-                className="gap-2 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-                {t('addonManager.installer.clear')}
-              </Button>
-            </div>
-            <DetectedItemCard item={detectedItem} />
-          </div>
-        )}
-
-        {/* Installation progress */}
-        {isInstalling && progress && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 p-8">
-            <div className="relative h-24 w-24">
-              {/* Circular progress background */}
-              <svg className="h-full w-full -rotate-90">
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="44"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  className="text-muted/30"
-                />
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="44"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeDasharray={276.46}
-                  strokeDashoffset={276.46 - (276.46 * progress.overallPercent) / 100}
-                  className="text-primary transition-all duration-300"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold tabular-nums">{progress.overallPercent}%</span>
-              </div>
-            </div>
-
-            <div className="w-full max-w-sm space-y-3 text-center">
-              <div className="flex items-center justify-center gap-2">
+        {phase === 'installing' && progress && (
+          <div className="border-b border-border px-4 py-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="flex items-center gap-2 text-sm font-medium">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">
-                  {t('addonManager.installer.installing')}
-                </span>
-              </div>
-              <Progress value={progress.overallPercent} className="h-1.5" />
-              <p className="truncate text-xs text-muted-foreground">
-                {progress.currentTaskName}
-                {progress.currentFile && (
-                  <span className="mt-0.5 block opacity-70">{progress.currentFile}</span>
-                )}
+                {cancelling
+                  ? t('addonManager.installer.cancelling')
+                  : t('addonManager.installer.progress', {
+                      current: Math.min(progress.currentTaskIndex + 1, selectedTasks.length),
+                      total: selectedTasks.length,
+                    })}
+              </span>
+              <span className="text-sm tabular-nums text-muted-foreground">
+                {progress.overallPercent}%
+              </span>
+            </div>
+            <Progress value={progress.overallPercent} className="h-1.5" />
+            {progress.currentFile && (
+              <p className="mt-1.5 truncate text-xs text-muted-foreground">
+                {progress.currentFile}
               </p>
-            </div>
+            )}
           </div>
         )}
 
-        {/* Installation result */}
-        {result && (
-          <div className="flex flex-1 flex-col items-center justify-center p-8">
-            <div
-              className={cn(
-                'w-full max-w-sm rounded-xl border p-6 text-center',
-                result.success
-                  ? 'border-success/30 bg-success/5'
-                  : 'border-destructive/30 bg-destructive/5'
-              )}
-            >
-              <div
-                className={cn(
-                  'mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full',
-                  result.success ? 'bg-success/20' : 'bg-destructive/20'
-                )}
-              >
-                {result.success ? (
-                  <CheckCircle2 className="h-7 w-7 text-success" />
-                ) : (
-                  <XCircle className="h-7 w-7 text-destructive" />
-                )}
-              </div>
-
-              {result.success ? (
-                <>
-                  <h3 className="text-lg font-semibold text-success">
-                    {t('addonManager.installer.successOne')}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t('addonManager.installer.successHint')}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-lg font-semibold text-destructive">
-                    {t('addonManager.installer.installFailed')}
-                  </h3>
-                  <p className="mt-2 text-sm text-destructive/80">{result.error}</p>
-                </>
-              )}
-
-              <Button variant="outline" size="sm" onClick={handleClear} className="mt-4">
-                {t('addonManager.installer.installMore')}
-              </Button>
-            </div>
+        {phase === 'done' && (
+          <div className="border-b border-border px-4 py-3">
+            <p className="text-sm font-medium">
+              {t('addonManager.installer.resultsSummary', {
+                succeeded,
+                failed,
+                skipped,
+              })}
+            </p>
           </div>
         )}
 
-        {/* Install error */}
-        {installMutation.isError && !result && (
-          <div className="px-4">
+        {rows.length > 0 && (
+          <ScrollArea className="flex-1">
+            <div className="flex flex-col gap-2 p-4">
+              {rows.map(({ task, status, mode }) => (
+                <InstallReviewRow
+                  key={task.id}
+                  task={task}
+                  selected={selected.has(task.id)}
+                  mode={mode}
+                  status={status}
+                  result={resultById.get(task.id)}
+                  disabled={isBusy}
+                  onSelectedChange={(isSelected) =>
+                    setSelected((current) => {
+                      const next = new Set(current);
+                      if (isSelected) next.add(task.id);
+                      else next.delete(task.id);
+                      return next;
+                    })
+                  }
+                  onModeChange={(next) => setModes((current) => ({ ...current, [task.id]: next }))}
+                />
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+
+        {installMutation.isError && (
+          <div className="px-4 pb-2">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -278,17 +258,57 @@ export function InstallerTab() {
         )}
       </div>
 
-      {/* Install button - sticky at bottom */}
-      {hasItem && !isInstalling && !result && (
-        <div className="border-t border-border bg-card/50 p-4">
+      {phase === 'review' && (
+        <div className="flex items-center gap-2 border-t border-border bg-card/50 p-4">
+          <div className="flex-1 text-sm text-muted-foreground">
+            {t('addonManager.installer.selectionSummary', {
+              count: selectedTasks.length,
+              size: formatSize(selectedSize),
+            })}
+          </div>
           <Button
-            className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            disabled={isBusy}
+            className="gap-2 text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('addonManager.installer.clear')}
+          </Button>
+          <Button
             size="lg"
+            className="gap-2"
             onClick={handleInstall}
-            disabled={isDisabled}
+            disabled={isBusy || selectedTasks.length === 0}
           >
             <Download className="h-5 w-5" />
-            {t('addonManager.installer.installOne')}
+            {t('addonManager.installer.installSelected', { count: selectedTasks.length })}
+          </Button>
+        </div>
+      )}
+
+      {phase === 'installing' && (
+        <div className="flex justify-end border-t border-border bg-card/50 p-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleCancel}
+            disabled={cancelling}
+          >
+            <X className="h-4 w-4" />
+            {cancelling
+              ? t('addonManager.installer.cancelling')
+              : t('addonManager.installer.cancel')}
+          </Button>
+        </div>
+      )}
+
+      {phase === 'done' && (
+        <div className="flex justify-end border-t border-border bg-card/50 p-4">
+          <Button variant="outline" size="sm" onClick={handleClear}>
+            {t('addonManager.installer.installMore')}
           </Button>
         </div>
       )}

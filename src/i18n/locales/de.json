@@ -1174,7 +1174,22 @@
       "emptyState": "Archive zum Installieren ablegen",
       "supportedTypes": "Flugzeuge, Plugins, Szenerien, Bemalungen und mehr",
       "installMore": "Weitere Add-ons installieren",
-      "clear": "Alle löschen"
+      "clear": "Alle löschen",
+      "target": "Wird nach {{path}} installiert",
+      "alreadyInstalled": "Bereits installiert",
+      "modeMerge": "Zusammenführen",
+      "modeClean": "Ersetzen",
+      "modeMergeHint": "Behält Dateien, die die neue Version nicht mitbringt",
+      "modeCleanHint": "Entfernt den alten Ordner zuerst, nach einer Sicherung",
+      "installSelected_one": "1 Add-on installieren",
+      "installSelected_other": "{{count}} Add-ons installieren",
+      "selectionSummary_one": "1 Add-on ausgewählt, {{size}}",
+      "selectionSummary_other": "{{count}} Add-ons ausgewählt, {{size}}",
+      "cancel": "Abbrechen",
+      "cancelling": "Wird abgebrochen",
+      "skipped": "Nicht installiert, der Vorgang wurde abgebrochen",
+      "backupSaved": "Ersetzte Dateien wurden gesichert",
+      "resultsSummary": "{{succeeded}} installiert, {{failed}} fehlgeschlagen, {{skipped}} übersprungen"
     },
     "browser": {
       "searchPlaceholder": "Suchen...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Ordner öffnen",
-      "delete": "Von Festplatte löschen"
+      "delete": "Von Festplatte löschen",
+      "missing": "Fehlt",
+      "missingHint": "In scenery_packs.ini aufgeführt, aber nicht auf der Festplatte gefunden. Beim Speichern bleibt der Eintrag erhalten."
     },
     "addonTypes": {
       "Aircraft": "Flugzeug",
@@ -1297,6 +1314,38 @@
       "Livery": "Bemalung",
       "LuaScript": "Lua-Skript",
       "Navdata": "Navigationsdaten"
+    },
+    "conflicts": {
+      "button": "Konflikte",
+      "buttonWithCount": "{{count}} Konflikte",
+      "title": "Szenerie-Konflikte",
+      "description": "Pakete, die sich um denselben Boden streiten, und Bibliotheken, die niemand bereitstellt.",
+      "none": "Kein Streit. Deine Szenerie-Bibliothek ist stimmig.",
+      "librariesTitle": "Fehlende Bibliotheken",
+      "librariesDescription": "Diese Pakete greifen auf nicht installierte Bibliotheken zu. X-Plane zeigt stattdessen rote Kästen.",
+      "requiredBy_one": "Benötigt von {{name}}",
+      "requiredBy_other": "Benötigt von {{name}} und insgesamt {{count}} Paketen",
+      "download": "Herunterladen",
+      "icaoTitle": "Doppelte Flugplätze",
+      "icaoDescription": "Mehr als ein Paket beansprucht denselben Flugplatz.",
+      "icaoWinner": "X-Plane lädt {{name}}",
+      "tilesTitle": "Überlappende Kacheln",
+      "tilesDescription": "Zwei Pakete derselben Art decken denselben Boden ab. Das obere gewinnt.",
+      "tileOverlap_one": "{{count}} gemeinsame Kachel",
+      "tileOverlap_other": "{{count}} gemeinsame Kacheln",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "{{name}} aktualisieren",
+      "description": "Es werden nur die geänderten Dateien heruntergeladen.",
+      "checking": "Abgleich mit dem Update-Server",
+      "versions": "Installiert {{local}}, verfügbar {{remote}}",
+      "summary": "{{changed}} Dateien zum Herunterladen, {{removed}} zu entfernen, {{size}}",
+      "upToDate": "Bereits aktuell",
+      "apply": "Aktualisieren",
+      "done": "Auf {{version}} aktualisiert: {{updated}} Dateien geschrieben, {{removed}} entfernt",
+      "failed": "Aktualisierung fehlgeschlagen"
     }
   },
   "simbrief": {

@@ -1174,7 +1174,22 @@
       "emptyState": "Drop addon archives ta install",
       "supportedTypes": "Aircraft, plugins, scenery, liveries, an' more",
       "installMore": "Bring aboard more addons",
-      "clear": "Clear cargo"
+      "clear": "Clear cargo",
+      "target": "Lands in {{path}}",
+      "alreadyInstalled": "Already aboard",
+      "modeMerge": "Mix in",
+      "modeClean": "Swap out",
+      "modeMergeHint": "Keeps whatever the new cargo don't carry",
+      "modeCleanHint": "Heaves the old crate overboard first, after a copy be stowed",
+      "installSelected_one": "Stow 1 add-on",
+      "installSelected_other": "Stow {{count}} add-ons",
+      "selectionSummary_one": "1 add-on picked, {{size}}",
+      "selectionSummary_other": "{{count}} add-ons picked, {{size}}",
+      "cancel": "Belay it",
+      "cancelling": "Belayin'",
+      "skipped": "Never stowed, the run were called off",
+      "backupSaved": "Replaced files be safe in the hold",
+      "resultsSummary": "{{succeeded}} stowed, {{failed}} sunk, {{skipped}} left ashore"
     },
     "browser": {
       "searchPlaceholder": "Search fer...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Open locker",
-      "delete": "Scuttle from disk"
+      "delete": "Scuttle from disk",
+      "missing": "Lost at sea",
+      "missingHint": "Listed in yer scenery_packs.ini but nowhere on the disk. Savin' keeps the line, matey."
     },
     "addonTypes": {
       "Aircraft": "Flying craft",
@@ -1297,6 +1314,38 @@
       "Livery": "Paint scheme",
       "LuaScript": "Lua script scroll",
       "Navdata": "Navigation charts"
+    },
+    "conflicts": {
+      "button": "Squabbles",
+      "buttonWithCount": "{{count}} squabbles",
+      "title": "Scenery squabbles",
+      "description": "Packs brawlin' over the same patch o' ground, and libraries nobody carries.",
+      "none": "No brawls aboard. Yer scenery holds together, matey.",
+      "librariesTitle": "Missin' libraries",
+      "librariesDescription": "These packs reach for chests that ain't in the hold. X-Plane serves up red boxes instead.",
+      "requiredBy_one": "Wanted by {{name}}",
+      "requiredBy_other": "Wanted by {{name}} and {{count}} packs all told",
+      "download": "Haul aboard",
+      "icaoTitle": "Twice-claimed ports",
+      "icaoDescription": "More than one pack claims the same port o' call.",
+      "icaoWinner": "X-Plane sails with {{name}}",
+      "tilesTitle": "Overlappin' tiles",
+      "tilesDescription": "Two packs o' the same stripe cover the same ground. The one up top wins.",
+      "tileOverlap_one": "{{count}} shared tile",
+      "tileOverlap_other": "{{count}} shared tiles",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "Refit {{name}}",
+      "description": "Only the cargo that changed gets hauled aboard.",
+      "checking": "Comparin' charts with the update port",
+      "versions": "Aboard {{local}}, on offer {{remote}}",
+      "summary": "{{changed}} files to haul, {{removed}} to heave over, {{size}}",
+      "upToDate": "Already shipshape",
+      "apply": "Refit",
+      "done": "Refit to {{version}}: {{updated}} files stowed, {{removed}} tossed",
+      "failed": "Refit ran aground"
     }
   },
   "simbrief": {

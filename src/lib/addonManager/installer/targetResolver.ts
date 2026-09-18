@@ -4,7 +4,8 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import type { DetectedItem, InstallTask } from './types';
+import { getLiveryPatterns, matchesAcfIdentifier } from './detection/liveryPatterns';
+import type { DetectedItem, InstallComponent, InstallTask } from './types';
 
 /**
  * Sanitize a folder name to prevent path traversal
@@ -68,14 +69,83 @@ function getTargetDirectory(item: DetectedItem, xplanePath: string): string {
 }
 
 /**
+ * Every subtree the task installs, in the order they are applied.
+ */
+function resolveComponents(
+  item: DetectedItem,
+  xplanePath: string,
+  targetPath: string
+): InstallComponent[] {
+  if (item.addonType === 'LuaScript' && item.luaComponents?.length) {
+    const flyWithLua = path.join(xplanePath, 'Resources', 'plugins', 'FlyWithLua');
+    return item.luaComponents.map((component) => ({
+      internalRoot: component.internalRoot || undefined,
+      targetPath: path.join(flyWithLua, component.targetSubdir),
+    }));
+  }
+
+  return [{ internalRoot: item.archiveInternalRoot, targetPath }];
+}
+
+/**
+ * Every .acf file under Aircraft, mapped to the folder that holds it.
+ * One walk per resolve pass; the tree is shallow and this runs on drop, not
+ * per frame.
+ */
+function collectInstalledAcf(aircraftDir: string): { acfFile: string; folder: string }[] {
+  const found: { acfFile: string; folder: string }[] = [];
+
+  const walk = (dir: string, depth: number) => {
+    if (depth > 3) return;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full, depth + 1);
+      } else if (path.extname(entry.name).toLowerCase() === '.acf') {
+        found.push({ acfFile: entry.name, folder: dir });
+      }
+    }
+  };
+
+  walk(aircraftDir, 0);
+  return found;
+}
+
+/**
+ * Find the installed aircraft a livery belongs to.
+ *
+ * Matching runs against the .acf file names the aircraft ships, which is what
+ * identifies a model. Folder names are renamed freely by users and say nothing.
+ */
+export function findAircraftForLivery(aircraftDir: string, aircraftTypeId: string): string | null {
+  if (!fs.existsSync(aircraftDir)) return null;
+
+  const pattern = getLiveryPatterns().find((p) => p.aircraft_type_id === aircraftTypeId);
+  if (!pattern) return null;
+
+  for (const candidate of collectInstalledAcf(aircraftDir)) {
+    if (matchesAcfIdentifier(candidate.acfFile, pattern.acf_identifiers)) {
+      return candidate.folder;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Resolve livery target path by finding the matching aircraft
  */
 function resolveLiveryTarget(item: DetectedItem, xplanePath: string): string {
   const safeName = sanitizeFolderName(item.displayName);
 
   if (!item.liveryInfo) {
-    // Fallback: put in Custom Scenery
-    return path.join(xplanePath, 'Custom Scenery', safeName);
+    return path.join(xplanePath, 'Aircraft', 'Unknown', 'liveries', safeName);
   }
 
   const aircraftDir = path.join(xplanePath, 'Aircraft');
@@ -85,67 +155,16 @@ function resolveLiveryTarget(item: DetectedItem, xplanePath: string): string {
     return path.join(targetAircraft, 'liveries', safeName);
   }
 
-  // Aircraft not found - still return the expected path
-  // The install will work but user should be warned
+  // Aircraft not found - still return the expected path so the confirmation
+  // screen can show where it would go, with the warning attached by the caller.
   return path.join(xplanePath, 'Aircraft', 'Unknown', 'liveries', safeName);
 }
 
 /**
- * Find aircraft folder that matches a livery's aircraft type
- */
-function findAircraftForLivery(aircraftDir: string, aircraftTypeId: string): string | null {
-  if (!fs.existsSync(aircraftDir)) return null;
-
-  // Known aircraft folder patterns based on type ID
-  const patterns: Record<string, string[]> = {
-    FF_B777: ['777', 'FlightFactor 777'],
-    TOLISS_A319: ['A319', 'ToLiss A319'],
-    TOLISS_A320: ['A320', 'ToLiss A320'],
-    TOLISS_A321: ['A321', 'ToLiss A321'],
-    TOLISS_A339: ['A330', 'ToLiss A330'],
-    TOLISS_A346: ['A340', 'ToLiss A340'],
-    ZIBO_B738: ['B737-800X', 'b738', 'zibo'],
-    LEVELUP_B737: ['737', 'LevelUp'],
-  };
-
-  const searchPatterns = patterns[aircraftTypeId] || [aircraftTypeId];
-
-  const entries = fs.readdirSync(aircraftDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-
-    const lowerName = entry.name.toLowerCase();
-    for (const pattern of searchPatterns) {
-      if (lowerName.includes(pattern.toLowerCase())) {
-        return path.join(aircraftDir, entry.name);
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Resolve navdata target path based on provider
+ * Resolve navdata target path based on the layout detected in the archive
  */
 function resolveNavdataTarget(item: DetectedItem, xplanePath: string): string {
-  const customData = path.join(xplanePath, 'Custom Data');
-
-  if (!item.navdataInfo) {
-    return customData;
-  }
-
-  const name = item.navdataInfo.name;
-
-  if (name.includes('GNS430')) {
-    return path.join(customData, 'GNS430');
-  }
-
-  if (name.includes('FlightFactor Boeing 777v2')) {
-    return path.join(customData, 'STSFF', 'nav-data', 'ndbl', 'data');
-  }
-
-  return customData;
+  return path.join(xplanePath, 'Custom Data', ...(item.navdataSubPath ?? []));
 }
 
 /**
@@ -157,6 +176,7 @@ export function createInstallTask(item: DetectedItem, xplanePath: string): Insta
   return {
     ...item,
     targetPath,
+    components: resolveComponents(item, xplanePath, targetPath),
     conflictExists,
     installMode: conflictExists ? 'overwrite' : 'fresh',
     backupOptions: {

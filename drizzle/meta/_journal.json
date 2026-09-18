@@ -15,6 +15,13 @@
       "when": 1774161226570,
       "tag": "0001_add-airports-custom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789753936758,
+      "tag": "0002_add-scenery-index",
+      "breakpoints": true
     }
   ]
 }

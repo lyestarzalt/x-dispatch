@@ -1,6 +1,6 @@
 /**
  * ZIP Extraction Module
- * Extracts ZIP files with CRC32 verification and progress tracking.
+ * Extracts ZIP files with size verification and progress tracking.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -8,7 +8,7 @@ import * as yauzl from 'yauzl';
 import type { Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 import type { InstallerError, VerificationStats } from '../types';
-import { IGNORE_PATTERNS } from '../types';
+import { containsPath, sanitizeEntryPath, shouldIgnore, stripInternalRoot } from './entryPaths';
 
 export interface ExtractOptions {
   /** Archive path */
@@ -21,6 +21,8 @@ export interface ExtractOptions {
   password?: string;
   /** Progress callback: (bytesWritten, currentFile) */
   onProgress?: (bytes: number, file: string) => void;
+  /** Checked between entries so a large archive stops promptly */
+  isCancelled?: () => boolean;
 }
 
 export interface ExtractResult {
@@ -29,35 +31,12 @@ export interface ExtractResult {
 }
 
 /**
- * Check if a path component should be ignored
- */
-function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split('/');
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
-}
-
-/**
- * Sanitize path to prevent directory traversal attacks
- */
-function sanitizePath(entryPath: string): string | null {
-  // Reject absolute paths
-  if (path.isAbsolute(entryPath)) return null;
-
-  // Reject path traversal
-  const parts = entryPath.split('/');
-  if (parts.some((p) => p === '..')) return null;
-
-  // Normalize and return
-  return parts.filter((p) => p !== '').join('/');
-}
-
-/**
  * Extract a ZIP archive
  */
 export async function extractZip(
   options: ExtractOptions
 ): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, onProgress } = options;
+  const { archivePath, targetDir, internalRoot, onProgress, isCancelled } = options;
 
   return new Promise((resolve) => {
     yauzl.open(archivePath, { lazyEntries: true }, (openErr, zipFile) => {
@@ -88,41 +67,35 @@ export async function extractZip(
       zipFile.on('entry', (entry: yauzl.Entry) => {
         if (hasError) return;
 
+        if (isCancelled?.()) {
+          hasError = true;
+          zipFile.close();
+          resolve(err({ code: 'CANCELLED', path: archivePath }));
+          return;
+        }
+
         const entryPath = entry.fileName;
 
-        // Skip directories (they're created automatically)
+        // Directories are created as their files are written
         if (entryPath.endsWith('/')) {
           processEntry();
           return;
         }
 
-        // Skip ignored files
         if (shouldIgnore(entryPath)) {
           stats.skippedFiles++;
           processEntry();
           return;
         }
 
-        // Apply internal root filter
-        let relativePath = entryPath;
-        if (internalRoot) {
-          if (!entryPath.startsWith(internalRoot)) {
-            stats.skippedFiles++;
-            processEntry();
-            return;
-          }
-          relativePath = entryPath.substring(internalRoot.length);
-        }
-
-        // Skip if empty path after stripping
-        if (!relativePath || relativePath === '') {
+        const relativePath = stripInternalRoot(entryPath, internalRoot);
+        if (relativePath === null) {
           stats.skippedFiles++;
           processEntry();
           return;
         }
 
-        // Sanitize path
-        const sanitized = sanitizePath(relativePath);
+        const sanitized = sanitizeEntryPath(relativePath);
         if (!sanitized) {
           stats.skippedFiles++;
           processEntry();
@@ -130,12 +103,22 @@ export async function extractZip(
         }
 
         const outPath = path.join(targetDir, sanitized);
+        if (!containsPath(targetDir, outPath)) {
+          stats.skippedFiles++;
+          processEntry();
+          return;
+        }
+
         stats.totalFiles++;
 
-        // Create parent directories
-        fs.mkdirSync(path.dirname(outPath), { recursive: true });
+        try {
+          fs.mkdirSync(path.dirname(outPath), { recursive: true });
+        } catch {
+          stats.failedFiles++;
+          processEntry();
+          return;
+        }
 
-        // Open read stream for entry
         zipFile.openReadStream(entry, (streamErr, readStream) => {
           if (streamErr || !readStream) {
             stats.failedFiles++;
@@ -153,13 +136,12 @@ export async function extractZip(
 
           writeStream.on('close', () => {
             if (hasStreamError) return;
-            // Verify size matches
             if (bytesWritten === entry.uncompressedSize) {
               stats.verifiedFiles++;
+              extractedFiles.push(sanitized);
             } else {
               stats.failedFiles++;
             }
-            extractedFiles.push(sanitized);
             onProgress?.(bytesWritten, sanitized);
             processEntry();
           });
@@ -195,7 +177,6 @@ export async function extractZip(
         resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: readErr.message }));
       });
 
-      // Start processing
       processEntry();
     });
   });

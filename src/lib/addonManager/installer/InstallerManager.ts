@@ -1,10 +1,12 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import type { Result } from '../core/types';
 import { err, ok } from '../core/types';
+import { SceneryManager } from '../scenery/SceneryManager';
 import {
   checkCompressionRatio,
   detectArchiveFormat,
@@ -17,18 +19,22 @@ import {
   isFlyWithLuaInstalled,
   isLiveryAircraftInstalled,
 } from './targetResolver';
+import { InstallTransaction, type StagedComponent } from './transaction';
 import type {
   DetectedItem,
   InstallProgress,
   InstallResult,
   InstallTask,
   InstallerError,
+  VerificationStats,
 } from './types';
 import { INSTALLER_CONSTANTS } from './types';
 
 export interface InstallOptions {
   /** Progress callback */
   onProgress?: (progress: InstallProgress) => void;
+  /** Checked between tasks and archive entries so a cancel takes effect quickly */
+  isCancelled?: () => boolean;
 }
 
 export class InstallerManager {
@@ -158,7 +164,12 @@ export class InstallerManager {
         bytesTotal: totalBytes,
       });
 
-      const result = await this.installTask(task, (bytes, file) => {
+      if (options?.isCancelled?.()) {
+        results.push({ taskId: task.id, success: false, skipped: true });
+        continue;
+      }
+
+      const result = await this.installTask(task, options?.isCancelled, (bytes, file) => {
         processedBytes = taskStartBytes + bytes;
         options?.onProgress?.({
           phase: 'extracting',
@@ -193,231 +204,176 @@ export class InstallerManager {
   }
 
   /**
-   * Install a single task
+   * Install a single task.
+   *
+   * Every component is extracted and verified before anything is written into
+   * X-Plane. The move itself runs inside a transaction, so a failure halfway
+   * through leaves the folder exactly as it was.
    */
   private async installTask(
     task: InstallTask,
+    isCancelled: (() => boolean) | undefined,
     onProgress: (bytes: number, file: string) => void
   ): Promise<InstallResult> {
-    const tempDir = path.join(os.tmpdir(), `xdispatch_install_${crypto.randomUUID()}`);
+    const components =
+      task.components.length > 0
+        ? task.components
+        : [{ internalRoot: task.archiveInternalRoot, targetPath: task.targetPath }];
 
-    try {
-      // Create temp directory
-      fs.mkdirSync(tempDir, { recursive: true });
+    const backupRoot = path.join(this.xplanePath, 'Output', 'xdispatch_backups');
+    const transaction = new InstallTransaction(backupRoot, task.displayName);
+    const staged: StagedComponent[] = [];
+    const totals: VerificationStats = {
+      totalFiles: 0,
+      verifiedFiles: 0,
+      failedFiles: 0,
+      skippedFiles: 0,
+    };
 
-      // Extract to temp directory
-      const extractResult = await extractArchive({
-        archivePath: task.sourcePath,
-        targetDir: tempDir,
-        internalRoot: task.archiveInternalRoot,
-        onProgress,
-      });
-
-      if (!extractResult.ok) {
-        logger.addon.error(
-          `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
-        );
-        return {
-          taskId: task.id,
-          success: false,
-          error: `Extraction failed: ${extractResult.error.code}`,
-        };
-      }
-
-      // Handle installation mode
-      if (task.installMode === 'clean' && task.conflictExists) {
-        // Backup if needed
-        await this.backupBeforeClean(task);
-        // Remove existing
-        fs.rmSync(task.targetPath, { recursive: true, force: true });
-      }
-
-      // Move/merge to target
-      fs.mkdirSync(path.dirname(task.targetPath), { recursive: true });
-
-      if (task.installMode === 'overwrite' && task.conflictExists) {
-        // Merge files
-        this.copyMerge(tempDir, task.targetPath);
-      } else {
-        // Fresh install or clean install - just rename
-        if (fs.existsSync(task.targetPath)) {
-          // Merge if target exists (shouldn't happen for clean, but be safe)
-          this.copyMerge(tempDir, task.targetPath);
-        } else {
-          try {
-            fs.renameSync(tempDir, task.targetPath);
-          } catch (err: unknown) {
-            // EXDEV: rename fails across different drives (e.g., temp on C:, X-Plane on D:)
-            if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
-              fs.cpSync(tempDir, task.targetPath, { recursive: true });
-              fs.rmSync(tempDir, { recursive: true, force: true });
-            } else {
-              throw err;
-            }
-          }
-        }
-      }
-
-      // Post-install actions
-      await this.postInstall(task);
-
-      // Cleanup temp if it still exists
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-
-      return {
-        taskId: task.id,
-        success: true,
-        verificationStats: extractResult.value.stats,
-      };
-    } catch (e) {
-      logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
-      // Cleanup temp on failure
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-
-      return {
-        taskId: task.id,
-        success: false,
-        error: String(e),
-      };
-    }
-  }
-
-  /**
-   * Backup items before clean install
-   */
-  private async backupBeforeClean(task: InstallTask): Promise<void> {
-    if (!task.conflictExists) return;
-
-    const backupDir = `${task.targetPath}.backup_${Date.now()}`;
-
-    if (task.backupOptions.liveries) {
-      const liveriesDir = path.join(task.targetPath, 'liveries');
-      if (fs.existsSync(liveriesDir)) {
-        const backupLiveries = path.join(backupDir, 'liveries');
-        fs.mkdirSync(backupLiveries, { recursive: true });
-        fs.cpSync(liveriesDir, backupLiveries, { recursive: true });
-      }
-    }
-
-    if (task.backupOptions.configFiles && task.backupOptions.configPatterns.length > 0) {
-      for (const pattern of task.backupOptions.configPatterns) {
-        // Simple glob matching for common patterns
-        const files = this.findMatchingFiles(task.targetPath, pattern);
-        for (const file of files) {
-          const relativePath = path.relative(task.targetPath, file);
-          const backupPath = path.join(backupDir, relativePath);
-          fs.mkdirSync(path.dirname(backupPath), { recursive: true });
-          fs.copyFileSync(file, backupPath);
-        }
-      }
-    }
-
-    // Store backup location for potential restore
-    if (fs.existsSync(backupDir)) {
-      // After install, we'd restore from here
-      // For now, just leave the backup
-    }
-  }
-
-  /**
-   * Find files matching a simple glob pattern
-   */
-  private findMatchingFiles(dir: string, pattern: string): string[] {
-    const results: string[] = [];
-    if (!fs.existsSync(dir)) return results;
-
-    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i');
-
-    const walk = (currentDir: string) => {
-      const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = path.join(currentDir, entry.name);
-        if (entry.isDirectory()) {
-          walk(fullPath);
-        } else if (regex.test(entry.name)) {
-          results.push(fullPath);
-        }
+    const discardStaging = async () => {
+      for (const component of staged) {
+        await fsp.rm(component.tempDir, { recursive: true, force: true }).catch(() => undefined);
       }
     };
 
-    walk(dir);
-    return results;
-  }
+    const failure = async (error: string): Promise<InstallResult> => {
+      await discardStaging();
+      return { taskId: task.id, success: false, error, verificationStats: totals };
+    };
 
-  /**
-   * Copy source into dest, merging directories
-   */
-  private copyMerge(src: string, dst: string): void {
-    if (!fs.existsSync(src)) return;
+    try {
+      for (let i = 0; i < components.length; i++) {
+        const component = components[i];
+        if (!component) continue;
 
-    fs.mkdirSync(dst, { recursive: true });
-    const entries = fs.readdirSync(src, { withFileTypes: true });
+        const tempDir = path.join(os.tmpdir(), `xdispatch_install_${crypto.randomUUID()}`);
+        await fsp.mkdir(tempDir, { recursive: true });
+        staged.push({
+          tempDir,
+          targetPath: component.targetPath,
+          clean: i === 0 && task.installMode === 'clean' && task.conflictExists,
+        });
 
-    for (const entry of entries) {
-      const srcPath = path.join(src, entry.name);
-      const dstPath = path.join(dst, entry.name);
+        const extractResult = await extractArchive({
+          archivePath: task.sourcePath,
+          targetDir: tempDir,
+          internalRoot: component.internalRoot,
+          onProgress,
+          isCancelled,
+        });
 
-      if (entry.isDirectory()) {
-        this.copyMerge(srcPath, dstPath);
-      } else {
-        fs.copyFileSync(srcPath, dstPath);
+        if (!extractResult.ok) {
+          if (extractResult.error.code === 'CANCELLED') {
+            await discardStaging();
+            return { taskId: task.id, success: false, skipped: true };
+          }
+          logger.addon.error(
+            `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
+          );
+          return failure(`Extraction failed: ${extractResult.error.code}`);
+        }
+
+        // A partial extraction must never reach the target, or a half-written
+        // addon silently replaces a working one.
+        const stats = extractResult.value.stats;
+        totals.totalFiles += stats.totalFiles;
+        totals.verifiedFiles += stats.verifiedFiles;
+        totals.failedFiles += stats.failedFiles;
+        totals.skippedFiles += stats.skippedFiles;
+
+        if (stats.failedFiles > 0) {
+          return failure(
+            `Extraction incomplete: ${stats.failedFiles} of ${stats.totalFiles} files failed`
+          );
+        }
+        if (stats.totalFiles === 0) {
+          return failure('Archive contained no installable files');
+        }
       }
+
+      if (isCancelled?.()) {
+        await discardStaging();
+        return { taskId: task.id, success: false, skipped: true };
+      }
+
+      // Past this point the files start moving, so cancelling has to wait for
+      // the transaction rather than leave a half-installed addon behind.
+      await transaction.apply(staged);
+    } catch (e) {
+      logger.addon.error(`Install failed for ${task.displayName}, rolling back: ${e}`);
+      await transaction.rollback();
+      await discardStaging();
+      return { taskId: task.id, success: false, error: String(e) };
     }
+
+    // The addon is in place. A failure past this point is worth reporting but
+    // not worth undoing a good install for.
+    try {
+      await this.postInstall(task);
+    } catch (e) {
+      logger.addon.error(`Post-install step failed for ${task.displayName}: ${e}`);
+    }
+
+    await discardStaging();
+    await InstallTransaction.pruneBackups(backupRoot);
+
+    const backupPath = transaction.getBackupPath();
+
+    return {
+      taskId: task.id,
+      success: true,
+      verificationStats: totals,
+      ...(backupPath ? { backupPath } : {}),
+    };
   }
 
   /**
    * Post-installation actions
    */
   private async postInstall(task: InstallTask): Promise<void> {
-    // Update scenery_packs.ini for scenery types
     if (task.addonType === 'Scenery' || task.addonType === 'SceneryLibrary') {
-      await this.addToSceneryPacks(task.displayName);
+      await this.addToSceneryPacks(task.targetPath);
     }
   }
 
   /**
-   * Add scenery to scenery_packs.ini
+   * Register a freshly installed pack in scenery_packs.ini.
+   *
+   * The pack goes at the end of its own priority tier, so an airport lands
+   * above the meshes and an ortho tile below them. Everything else keeps its
+   * order, and the INI is backed up before it is rewritten.
    */
-  private async addToSceneryPacks(sceneryName: string): Promise<void> {
+  private async addToSceneryPacks(targetPath: string): Promise<void> {
     const iniPath = path.join(this.xplanePath, 'Custom Scenery', 'scenery_packs.ini');
-
-    // Read existing content
-    let content: string;
-    if (fs.existsSync(iniPath)) {
-      content = fs.readFileSync(iniPath, 'utf-8');
-    } else {
-      content = 'I\n1000 Version\nSCENERY\n\n';
+    if (!fs.existsSync(iniPath)) {
+      fs.mkdirSync(path.dirname(iniPath), { recursive: true });
+      fs.writeFileSync(iniPath, ['I', '1000 Version', 'SCENERY', '', ''].join('\n'), 'utf-8');
     }
 
-    const entry = `SCENERY_PACK Custom Scenery/${sceneryName}/`;
-
-    // Check if already exists
-    if (content.includes(entry)) {
+    const manager = new SceneryManager(this.xplanePath);
+    const analyzed = await manager.analyze();
+    if (!analyzed.ok) {
+      logger.addon.error(`scenery_packs.ini not updated: ${analyzed.error.code}`);
       return;
     }
 
-    // Add after the SCENERY header
-    const lines = content.split('\n');
-    const sceneryIndex = lines.findIndex((l) => l.trim() === 'SCENERY');
+    const entries = analyzed.value;
+    const resolved = path.resolve(targetPath);
+    const index = entries.findIndex((e) => path.resolve(e.fullPath) === resolved);
+    if (index === -1) return;
 
-    if (sceneryIndex >= 0) {
-      // Insert after SCENERY line (and any blank line after it)
-      let insertIndex = sceneryIndex + 1;
-      let nextLine = lines[insertIndex];
-      while (insertIndex < lines.length && nextLine !== undefined && nextLine.trim() === '') {
-        insertIndex++;
-        nextLine = lines[insertIndex];
-      }
-      lines.splice(insertIndex, 0, entry);
-    } else {
-      // Append at end
-      lines.push(entry);
+    const [entry] = entries.splice(index, 1);
+    if (!entry) return;
+
+    const before = entries.findIndex((e) => e.priority > entry.priority);
+    entries.splice(before === -1 ? entries.length : before, 0, entry);
+    entries.forEach((e, i) => {
+      e.originalIndex = i;
+    });
+
+    const saved = await manager.save(entries, true);
+    if (!saved.ok) {
+      logger.addon.error(`scenery_packs.ini not updated: ${saved.error.code}`);
     }
-
-    fs.writeFileSync(iniPath, lines.join('\n'));
   }
 }

@@ -1,5 +1,6 @@
 // src/lib/addonManager/core/dsfParser.ts
-import * as fs from 'fs';
+import type { FileHandle } from 'fs/promises';
+import * as fsp from 'fs/promises';
 import { type DsfInfo } from './types';
 
 const DSF_MAGIC = 'XPLNEDSF';
@@ -24,34 +25,29 @@ const ATOM_PORP = 0x50524f50;
  * - sim/overlay: "1" means overlay scenery
  * - sim/creation_agent: tool that made it (WorldEditor = airport)
  */
-export function parseDsfHeader(dsfPath: string): DsfInfo {
-  let fd: number | undefined;
+export async function parseDsfHeader(dsfPath: string): Promise<DsfInfo> {
+  let handle: FileHandle | undefined;
 
   try {
-    fd = fs.openSync(dsfPath, 'r');
+    handle = await fsp.open(dsfPath, 'r');
     const headerBuffer = Buffer.alloc(12);
 
     // Read magic + version
-    const bytesRead = fs.readSync(fd, headerBuffer, 0, 12, 0);
+    const { bytesRead } = await handle.read(headerBuffer, 0, 12, 0);
     if (bytesRead < 12) {
       return { parsed: false };
     }
 
-    // Check magic bytes
-    const magic = headerBuffer.slice(0, 8).toString('ascii');
+    // Check magic bytes. A 7z signature means a compressed DSF, not supported.
+    const magic = headerBuffer.subarray(0, 8).toString('ascii');
     if (magic !== DSF_MAGIC) {
-      // Might be compressed (7z)
-      if (headerBuffer[0] === 0x37 && headerBuffer[1] === 0x7a) {
-        // 7z signature - compressed DSF not supported yet
-        return { parsed: false };
-      }
       return { parsed: false };
     }
 
     // Skip version (4 bytes), now at offset 12
     // Read atoms looking for DAEH (HEAD)
     let offset = 12;
-    const stat = fs.statSync(dsfPath);
+    const stat = await handle.stat();
     const fileSize = stat.size;
 
     // Limit search to first 64KB for performance
@@ -59,8 +55,8 @@ export function parseDsfHeader(dsfPath: string): DsfInfo {
     const atomBuffer = Buffer.alloc(8);
 
     while (offset < maxOffset) {
-      const read = fs.readSync(fd, atomBuffer, 0, 8, offset);
-      if (read < 8) break;
+      const read = await handle.read(atomBuffer, 0, 8, offset);
+      if (read.bytesRead < 8) break;
 
       const atomId = atomBuffer.readUInt32LE(0);
       const atomLength = atomBuffer.readUInt32LE(4);
@@ -72,7 +68,7 @@ export function parseDsfHeader(dsfPath: string): DsfInfo {
 
       if (atomId === ATOM_DAEH) {
         // Found HEAD atom, search for PORP inside it
-        const propResult = findPropInHead(fd, offset + 8, atomLength - 8);
+        const propResult = await findPropInHead(handle, offset + 8, atomLength - 8);
         if (propResult) {
           return {
             parsed: true,
@@ -91,9 +87,7 @@ export function parseDsfHeader(dsfPath: string): DsfInfo {
   } catch {
     return { parsed: false };
   } finally {
-    if (fd !== undefined) {
-      fs.closeSync(fd);
-    }
+    await handle?.close().catch(() => undefined);
   }
 }
 
@@ -103,14 +97,18 @@ interface PropResult {
   hasTerrainRefs: boolean;
 }
 
-function findPropInHead(fd: number, headStart: number, headLength: number): PropResult | undefined {
+async function findPropInHead(
+  handle: FileHandle,
+  headStart: number,
+  headLength: number
+): Promise<PropResult | undefined> {
   const atomBuffer = Buffer.alloc(8);
   let offset = headStart;
   const headEnd = headStart + headLength;
 
   while (offset < headEnd) {
-    const read = fs.readSync(fd, atomBuffer, 0, 8, offset);
-    if (read < 8) break;
+    const read = await handle.read(atomBuffer, 0, 8, offset);
+    if (read.bytesRead < 8) break;
 
     const atomId = atomBuffer.readUInt32LE(0);
     const atomLength = atomBuffer.readUInt32LE(4);
@@ -121,7 +119,7 @@ function findPropInHead(fd: number, headStart: number, headLength: number): Prop
       // Found PROP atom, parse key-value pairs
       const dataLength = atomLength - 8;
       const dataBuffer = Buffer.alloc(dataLength);
-      fs.readSync(fd, dataBuffer, 0, dataLength, offset + 8);
+      await handle.read(dataBuffer, 0, dataLength, offset + 8);
 
       return parsePropData(dataBuffer);
     }
@@ -141,13 +139,13 @@ function parsePropData(data: Buffer): PropResult {
     const keyStart = i;
     while (i < data.length && data[i] !== 0) i++;
     if (i >= data.length) break;
-    const key = data.slice(keyStart, i).toString('utf-8');
+    const key = data.subarray(keyStart, i).toString('utf-8');
     i++; // Skip null
 
     // Read value (null-terminated)
     const valueStart = i;
     while (i < data.length && data[i] !== 0) i++;
-    const value = data.slice(valueStart, i).toString('utf-8');
+    const value = data.subarray(valueStart, i).toString('utf-8');
     i++; // Skip null
 
     if (key) {

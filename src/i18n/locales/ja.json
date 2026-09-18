@@ -1174,7 +1174,22 @@
       "emptyState": "インストールするアーカイブをドロップ",
       "supportedTypes": "機体、プラグイン、シーナリー、リバリーなど",
       "installMore": "他のアドオンをインストール",
-      "clear": "すべてクリア"
+      "clear": "すべてクリア",
+      "target": "{{path}} にインストールされます",
+      "alreadyInstalled": "インストール済み",
+      "modeMerge": "マージ",
+      "modeClean": "置き換え",
+      "modeMergeHint": "新しい版に含まれないファイルを残します",
+      "modeCleanHint": "バックアップ後、古いフォルダーを先に削除します",
+      "installSelected_one": "1 件のアドオンをインストール",
+      "installSelected_other": "{{count}} 件のアドオンをインストール",
+      "selectionSummary_one": "1 件選択中、{{size}}",
+      "selectionSummary_other": "{{count}} 件選択中、{{size}}",
+      "cancel": "キャンセル",
+      "cancelling": "キャンセル中",
+      "skipped": "中止されたためインストールされていません",
+      "backupSaved": "置き換えたファイルをバックアップしました",
+      "resultsSummary": "成功 {{succeeded}} 件、失敗 {{failed}} 件、スキップ {{skipped}} 件"
     },
     "browser": {
       "searchPlaceholder": "検索...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "フォルダを開く",
-      "delete": "ディスクから削除"
+      "delete": "ディスクから削除",
+      "missing": "未検出",
+      "missingHint": "scenery_packs.ini に記載されていますが、ディスク上に見つかりません。保存してもこの行は残ります。"
     },
     "addonTypes": {
       "Aircraft": "機体",
@@ -1297,6 +1314,38 @@
       "Livery": "塗装",
       "LuaScript": "Lua スクリプト",
       "Navdata": "航法データ"
+    },
+    "conflicts": {
+      "button": "競合",
+      "buttonWithCount": "競合 {{count}} 件",
+      "title": "シーナリーの競合",
+      "description": "同じ地域を争うパックと、供給元のないライブラリです。",
+      "none": "競合はありません。シーナリー構成は整合しています。",
+      "librariesTitle": "不足しているライブラリ",
+      "librariesDescription": "これらのパックは未インストールのライブラリを参照しています。X-Plane には赤い箱が表示されます。",
+      "requiredBy_one": "{{name}} が必要としています",
+      "requiredBy_other": "{{name}} ほか合計 {{count}} 個のパックが必要としています",
+      "download": "ダウンロード",
+      "icaoTitle": "重複した空港",
+      "icaoDescription": "複数のパックが同じ空港を提供しています。",
+      "icaoWinner": "X-Plane は {{name}} を読み込みます",
+      "tilesTitle": "重なるタイル",
+      "tilesDescription": "同種のパック 2 つが同じ地域を覆っています。上にある方が優先されます。",
+      "tileOverlap_one": "共通タイル {{count}} 枚",
+      "tileOverlap_other": "共通タイル {{count}} 枚",
+      "kindMesh": "メッシュ",
+      "kindOverlay": "オーバーレイ"
+    },
+    "updates": {
+      "title": "{{name}} を更新",
+      "description": "変更されたファイルだけをダウンロードします。",
+      "checking": "更新サーバーと照合中",
+      "versions": "インストール済み {{local}}、利用可能 {{remote}}",
+      "summary": "ダウンロード {{changed}} 件、削除 {{removed}} 件、{{size}}",
+      "upToDate": "すでに最新です",
+      "apply": "更新",
+      "done": "{{version}} に更新：{{updated}} 件書き込み、{{removed}} 件削除",
+      "failed": "更新に失敗しました"
     }
   },
   "simbrief": {

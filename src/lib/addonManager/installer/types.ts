@@ -1,3 +1,5 @@
+import type { LuaComponent } from './detection/luaScripts';
+
 /**
  * Addon types in detection priority order (lower = higher priority)
  */
@@ -54,7 +56,22 @@ export interface DetectedItem {
   versionInfo?: VersionInfo;
   liveryInfo?: DetectedLiveryInfo;
   navdataInfo?: NavdataInfo;
+  /** Folder segments under Custom Data this navdata package belongs in */
+  navdataSubPath?: string[];
+  /** FlyWithLua folders a Lua pack writes into */
+  luaComponents?: LuaComponent[];
   warnings: string[];
+}
+
+/**
+ * One archive subtree and where it installs.
+ * Most addons have a single component; a Lua pack or a multi-target navdata
+ * package has several.
+ */
+export interface InstallComponent {
+  /** Path inside the archive, with a trailing slash. Empty means the whole archive. */
+  internalRoot?: string;
+  targetPath: string;
 }
 
 export interface VersionInfo {
@@ -78,6 +95,8 @@ export interface NavdataInfo {
  */
 export interface InstallTask extends DetectedItem {
   targetPath: string;
+  /** Every subtree this task installs; the first one matches targetPath. */
+  components: InstallComponent[];
   conflictExists: boolean;
   installMode: 'fresh' | 'overwrite' | 'clean';
   backupOptions: BackupOptions;
@@ -113,6 +132,10 @@ export interface InstallResult {
   success: boolean;
   error?: string;
   verificationStats?: VerificationStats;
+  /** Folder holding the files this install replaced, when it replaced any */
+  backupPath?: string;
+  /** Never started, because the user cancelled first */
+  skipped?: boolean;
 }
 
 export interface VerificationStats {
@@ -134,7 +157,8 @@ export type InstallerError =
   | { code: 'SIZE_EXCEEDED'; size: number; limit: number }
   | { code: 'SUSPICIOUS_RATIO'; ratio: number; limit: number }
   | { code: 'DISK_SPACE'; required: number; available: number }
-  | { code: 'INSTALL_FAILED'; path: string; reason: string };
+  | { code: 'INSTALL_FAILED'; path: string; reason: string }
+  | { code: 'CANCELLED'; path: string };
 
 /**
  * Constants
@@ -180,6 +204,8 @@ export function getInstallerErrorMessage(error: InstallerError): string {
       return `Insufficient disk space: need ${(error.required / 1024 / 1024 / 1024).toFixed(1)} GB, have ${(error.available / 1024 / 1024 / 1024).toFixed(1)} GB`;
     case 'INSTALL_FAILED':
       return `Installation failed: ${error.reason}`;
+    case 'CANCELLED':
+      return 'Installation cancelled';
     default:
       // Handle any unexpected error codes (e.g., from IPC layer)
       return `Installation error: ${(error as { code: string }).code}`;

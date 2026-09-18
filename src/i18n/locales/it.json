@@ -1174,7 +1174,22 @@
       "emptyState": "Trascina archivi da installare",
       "supportedTypes": "Aerei, plugin, scenari, livree e altro",
       "installMore": "Installa altri add-on",
-      "clear": "Cancella tutto"
+      "clear": "Cancella tutto",
+      "target": "Viene installato in {{path}}",
+      "alreadyInstalled": "Già installato",
+      "modeMerge": "Unisci",
+      "modeClean": "Sostituisci",
+      "modeMergeHint": "Mantiene i file che la nuova versione non include",
+      "modeCleanHint": "Rimuove prima la cartella precedente, dopo un backup",
+      "installSelected_one": "Installa 1 add-on",
+      "installSelected_other": "Installa {{count}} add-on",
+      "selectionSummary_one": "1 add-on selezionato, {{size}}",
+      "selectionSummary_other": "{{count}} add-on selezionati, {{size}}",
+      "cancel": "Annulla",
+      "cancelling": "Annullamento",
+      "skipped": "Non installato, l'operazione è stata annullata",
+      "backupSaved": "I file sostituiti sono stati salvati in un backup",
+      "resultsSummary": "{{succeeded}} installati, {{failed}} non riusciti, {{skipped}} saltati"
     },
     "browser": {
       "searchPlaceholder": "Cerca...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Apri cartella",
-      "delete": "Elimina dal disco"
+      "delete": "Elimina dal disco",
+      "missing": "Mancante",
+      "missingHint": "Elencato in scenery_packs.ini ma non trovato sul disco. Il salvataggio mantiene la riga."
     },
     "addonTypes": {
       "Aircraft": "Aereo",
@@ -1297,6 +1314,38 @@
       "Livery": "Livrea",
       "LuaScript": "Script Lua",
       "Navdata": "Dati di navigazione"
+    },
+    "conflicts": {
+      "button": "Conflitti",
+      "buttonWithCount": "{{count}} conflitti",
+      "title": "Conflitti tra scenari",
+      "description": "Pacchetti che si contendono lo stesso terreno e librerie che nessuno fornisce.",
+      "none": "Nessun conflitto. La tua libreria di scenari è coerente.",
+      "librariesTitle": "Librerie mancanti",
+      "librariesDescription": "Questi pacchetti usano librerie non installate. X-Plane mostra riquadri rossi al loro posto.",
+      "requiredBy_one": "Richiesta da {{name}}",
+      "requiredBy_other": "Richiesta da {{name}} e da {{count}} pacchetti in totale",
+      "download": "Scarica",
+      "icaoTitle": "Aeroporti duplicati",
+      "icaoDescription": "Più di un pacchetto rivendica lo stesso aeroporto.",
+      "icaoWinner": "X-Plane carica {{name}}",
+      "tilesTitle": "Tessere sovrapposte",
+      "tilesDescription": "Due pacchetti dello stesso tipo coprono lo stesso terreno. Vince quello più in alto.",
+      "tileOverlap_one": "{{count}} tessera in comune",
+      "tileOverlap_other": "{{count}} tessere in comune",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
+    },
+    "updates": {
+      "title": "Aggiorna {{name}}",
+      "description": "Vengono scaricati solo i file cambiati.",
+      "checking": "Confronto con il server di aggiornamento",
+      "versions": "Installata {{local}}, disponibile {{remote}}",
+      "summary": "{{changed}} file da scaricare, {{removed}} da rimuovere, {{size}}",
+      "upToDate": "Già aggiornato",
+      "apply": "Aggiorna",
+      "done": "Aggiornato a {{version}}: {{updated}} file scritti, {{removed}} rimossi",
+      "failed": "Aggiornamento non riuscito"
     }
   },
   "simbrief": {

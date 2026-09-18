@@ -1,22 +1,28 @@
 // src/lib/addonManager/scenery/folderScanner.ts
-import * as fs from 'fs';
+import type { Dirent } from 'fs';
+import * as fsp from 'fs/promises';
 import * as path from 'path';
+import { parseAptIcaos } from '../core/aptDat';
+import { libraryPrefix, parseDsfDefinitions } from '../core/dsfDefinitions';
 import { parseDsfHeader } from '../core/dsfParser';
 import { type SceneryClassification, createDefaultClassification } from '../core/types';
 
 const MAX_APT_DAT_DEPTH = 5;
 const MAX_DSF_SEARCH_DEPTH = 3;
 const MAX_LIBRARY_READ_BYTES = 64 * 1024;
+/** DSFs read for library references. A pack draws from the same libraries
+ * throughout, and an ortho set has thousands of tiles. */
+const MAX_DSF_DEFINITION_READS = 4;
 
 /**
  * Symlink-aware directory check.
- * Follows symlinks via statSync fallback (same pattern as customSceneryLoader.ts).
+ * Follows symlinks via stat fallback (same pattern as customSceneryLoader.ts).
  */
-function isDirectoryEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isDirectoryEntry(entry: Dirent, parentPath: string): Promise<boolean> {
   if (entry.isDirectory()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+      return (await fsp.stat(path.join(parentPath, entry.name))).isDirectory();
     } catch {
       return false;
     }
@@ -26,13 +32,13 @@ function isDirectoryEntry(entry: fs.Dirent, parentPath: string): boolean {
 
 /**
  * Symlink-aware file check.
- * Follows symlinks via statSync fallback.
+ * Follows symlinks via stat fallback.
  */
-function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isFileEntry(entry: Dirent, parentPath: string): Promise<boolean> {
   if (entry.isFile()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+      return (await fsp.stat(path.join(parentPath, entry.name))).isFile();
     } catch {
       return false;
     }
@@ -41,22 +47,28 @@ function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
 }
 
 /**
+ * Read the first bytes of a file without pulling the whole thing into memory.
+ */
+async function readHead(filePath: string, byteCount: number): Promise<string> {
+  const handle = await fsp.open(filePath, 'r');
+  try {
+    const buf = Buffer.alloc(byteCount);
+    const { bytesRead } = await handle.read(buf, 0, byteCount, 0);
+    return bytesRead === 0 ? '' : buf.toString('utf8', 0, bytesRead);
+  } finally {
+    await handle.close().catch(() => undefined);
+  }
+}
+
+/**
  * Validate that a file is a real apt.dat by checking its header.
  * Line 1 must be 'I' (IBM byte order) or 'A' (Apple byte order).
  */
-function isValidAptDat(filePath: string): boolean {
+async function isValidAptDat(filePath: string): Promise<boolean> {
   try {
-    const fd = fs.openSync(filePath, 'r');
-    try {
-      const buf = Buffer.alloc(16);
-      const bytesRead = fs.readSync(fd, buf, 0, 16, 0);
-      if (bytesRead === 0) return false;
-
-      const firstLine = (buf.toString('utf8', 0, bytesRead).split(/\r?\n/)[0] ?? '').trim();
-      return firstLine === 'I' || firstLine === 'A';
-    } finally {
-      fs.closeSync(fd);
-    }
+    const head = await readHead(filePath, 16);
+    const firstLine = (head.split(/\r?\n/)[0] ?? '').trim();
+    return firstLine === 'I' || firstLine === 'A';
   } catch {
     return false;
   }
@@ -66,37 +78,28 @@ function isValidAptDat(filePath: string): boolean {
  * Parse EXPORT / EXPORT_EXTEND directives from a library.txt file.
  * Returns unique first path components of virtual paths.
  */
-function parseLibraryExports(filePath: string): string[] {
+async function parseLibraryExports(filePath: string): Promise<string[]> {
   try {
-    const fd = fs.openSync(filePath, 'r');
-    try {
-      const buf = Buffer.alloc(MAX_LIBRARY_READ_BYTES);
-      const bytesRead = fs.readSync(fd, buf, 0, MAX_LIBRARY_READ_BYTES, 0);
-      if (bytesRead === 0) return [];
+    const content = await readHead(filePath, MAX_LIBRARY_READ_BYTES);
+    const prefixes = new Set<string>();
 
-      const content = buf.toString('utf8', 0, bytesRead);
-      const prefixes = new Set<string>();
+    for (const line of content.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      // Match EXPORT or EXPORT_EXTEND followed by whitespace and a virtual path
+      if (!trimmed.startsWith('EXPORT')) continue;
 
-      for (const line of content.split(/\r?\n/)) {
-        const trimmed = line.trim();
-        // Match EXPORT or EXPORT_EXTEND followed by whitespace and a virtual path
-        if (!trimmed.startsWith('EXPORT')) continue;
+      const match = trimmed.match(/^EXPORT(?:_EXTEND)?\s+(\S+)/);
+      if (!match) continue;
 
-        const match = trimmed.match(/^EXPORT(?:_EXTEND)?\s+(\S+)/);
-        if (!match) continue;
-
-        const virtualPath = match[1]!;
-        // First path component (before first /)
-        const firstComponent = virtualPath.split('/')[0];
-        if (firstComponent) {
-          prefixes.add(firstComponent);
-        }
+      const virtualPath = match[1]!;
+      // First path component (before first /)
+      const firstComponent = virtualPath.split('/')[0];
+      if (firstComponent) {
+        prefixes.add(firstComponent);
       }
-
-      return [...prefixes];
-    } finally {
-      fs.closeSync(fd);
     }
+
+    return [...prefixes];
   } catch {
     return [];
   }
@@ -112,8 +115,10 @@ function parseLibraryExports(filePath: string): string[] {
  * - *.dsf files (parses first one found for header info, collects count/names)
  *
  * Follows symlinks so symlinked scenery packs are detected correctly.
+ * All I/O is async so a library of a few thousand packs does not block the
+ * main thread while it is classified.
  */
-export function scanSceneryFolder(folderPath: string): SceneryClassification {
+export async function scanSceneryFolder(folderPath: string): Promise<SceneryClassification> {
   const classification = createDefaultClassification();
 
   // Security: basic path validation
@@ -121,55 +126,56 @@ export function scanSceneryFolder(folderPath: string): SceneryClassification {
     return classification;
   }
 
-  if (!fs.existsSync(folderPath)) {
+  let entries: Dirent[];
+  try {
+    entries = await fsp.readdir(folderPath, { withFileTypes: true });
+  } catch {
     return classification;
   }
 
-  try {
-    const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(folderPath, entry.name);
+    const lowerName = entry.name.toLowerCase();
 
-    for (const entry of entries) {
-      const entryPath = path.join(folderPath, entry.name);
-      const lowerName = entry.name.toLowerCase();
-
-      if (isFileEntry(entry, folderPath)) {
-        // Check for library.txt and parse exports
+    try {
+      if (await isFileEntry(entry, folderPath)) {
         if (lowerName === 'library.txt') {
           classification.hasLibraryTxt = true;
-          classification.libraryExports = parseLibraryExports(entryPath);
+          classification.libraryExports = await parseLibraryExports(entryPath);
         }
 
-        // Check for plugin files
         if (lowerName.endsWith('.xpl')) {
           classification.hasPlugins = true;
         }
       }
 
-      if (isDirectoryEntry(entry, folderPath)) {
-        // Check for Earth nav data folder
+      if (await isDirectoryEntry(entry, folderPath)) {
         if (lowerName === 'earth nav data') {
           classification.hasEarthNavData = true;
 
-          // Search for apt.dat and DSF files inside Earth nav data
-          const earthNavResult = scanEarthNavData(entryPath);
+          const earthNavResult = await scanEarthNavData(entryPath);
           classification.hasAptDat = earthNavResult.hasAptDat;
           classification.hasDsf = earthNavResult.hasDsf;
           classification.dsfCount = earthNavResult.dsfCount;
           classification.dsfFilenames = earthNavResult.dsfFilenames;
+          classification.icaos = await collectIcaos(earthNavResult.aptDatPaths);
+          classification.libraryRefs = await collectLibraryRefs(
+            folderPath,
+            earthNavResult.dsfPaths
+          );
 
           if (earthNavResult.firstDsfPath) {
-            classification.dsfInfo = parseDsfHeader(earthNavResult.firstDsfPath);
+            classification.dsfInfo = await parseDsfHeader(earthNavResult.firstDsfPath);
           }
         }
 
-        // Also check for plugins in subdirectories (one level)
         if (lowerName === 'plugins') {
-          classification.hasPlugins = hasPluginFiles(entryPath);
+          classification.hasPlugins = await hasPluginFiles(entryPath);
         }
       }
+    } catch {
+      // A single unreadable entry should not void the whole classification
     }
-  } catch {
-    // Return default classification on error
   }
 
   return classification;
@@ -181,60 +187,109 @@ interface EarthNavScanResult {
   firstDsfPath: string;
   dsfCount: number;
   dsfFilenames: string[];
+  aptDatPaths: string[];
+  dsfPaths: string[];
 }
 
-function scanEarthNavData(earthNavPath: string): EarthNavScanResult {
+/**
+ * Airports declared across every apt.dat in the pack.
+ */
+async function collectIcaos(aptDatPaths: string[]): Promise<string[]> {
+  const icaos = new Set<string>();
+  for (const aptPath of aptDatPaths) {
+    for (const icao of await parseAptIcaos(aptPath)) icaos.add(icao);
+  }
+  return [...icaos];
+}
+
+/** Prefix of the library X-Plane ships with, always present. */
+const BUILTIN_LIBRARY = 'lib';
+
+/**
+ * Libraries the pack draws from, read out of a sample of its DSFs.
+ * A reference that resolves to a file inside the pack is the pack's own asset,
+ * not a dependency on someone else's library.
+ */
+async function collectLibraryRefs(folderPath: string, dsfPaths: string[]): Promise<string[]> {
+  const libraries = new Set<string>();
+
+  for (const dsfPath of dsfPaths.slice(0, MAX_DSF_DEFINITION_READS)) {
+    for (const virtualPath of await parseDsfDefinitions(dsfPath)) {
+      const prefix = libraryPrefix(virtualPath);
+      if (!prefix || prefix.toLowerCase() === BUILTIN_LIBRARY) continue;
+      if (libraries.has(prefix)) continue;
+
+      try {
+        await fsp.access(path.join(folderPath, ...virtualPath.split('/')));
+        continue; // Ships with the pack
+      } catch {
+        libraries.add(prefix);
+      }
+    }
+  }
+
+  return [...libraries];
+}
+
+async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResult> {
   const result: EarthNavScanResult = {
     hasAptDat: false,
     hasDsf: false,
     firstDsfPath: '',
     dsfCount: 0,
     dsfFilenames: [],
+    aptDatPaths: [],
+    dsfPaths: [],
   };
 
-  function scan(dir: string, depth: number): void {
+  async function scan(dir: string, depth: number): Promise<void> {
     if (depth > MAX_APT_DAT_DEPTH) return;
 
+    let entries: Dirent[];
     try {
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      entries = await fsp.readdir(dir, { withFileTypes: true });
+    } catch {
+      return; // Ignore errors in subdirectories
+    }
 
-      for (const entry of entries) {
-        const entryPath = path.join(dir, entry.name);
-        const lowerName = entry.name.toLowerCase();
+    for (const entry of entries) {
+      const entryPath = path.join(dir, entry.name);
+      const lowerName = entry.name.toLowerCase();
 
-        if (isFileEntry(entry, dir)) {
-          if (lowerName === 'apt.dat' && isValidAptDat(entryPath)) {
-            result.hasAptDat = true;
-          }
-
-          if (lowerName.endsWith('.dsf')) {
-            result.hasDsf = true;
-            result.dsfCount++;
-            result.dsfFilenames.push(entry.name);
-            if (!result.firstDsfPath) {
-              result.firstDsfPath = entryPath;
-            }
-          }
+      if (await isFileEntry(entry, dir)) {
+        if (lowerName === 'apt.dat' && (await isValidAptDat(entryPath))) {
+          result.hasAptDat = true;
+          result.aptDatPaths.push(entryPath);
         }
 
-        if (isDirectoryEntry(entry, dir) && depth < MAX_DSF_SEARCH_DEPTH) {
-          scan(entryPath, depth + 1);
+        if (lowerName.endsWith('.dsf')) {
+          result.hasDsf = true;
+          result.dsfCount++;
+          result.dsfFilenames.push(entry.name);
+          if (result.dsfPaths.length < MAX_DSF_DEFINITION_READS) {
+            result.dsfPaths.push(entryPath);
+          }
+          if (!result.firstDsfPath) {
+            result.firstDsfPath = entryPath;
+          }
         }
       }
-    } catch {
-      // Ignore errors in subdirectories
+
+      if (depth < MAX_DSF_SEARCH_DEPTH && (await isDirectoryEntry(entry, dir))) {
+        await scan(entryPath, depth + 1);
+      }
     }
   }
 
-  scan(earthNavPath, 0);
+  await scan(earthNavPath, 0);
   return result;
 }
 
-function hasPluginFiles(pluginsPath: string): boolean {
+async function hasPluginFiles(pluginsPath: string): Promise<boolean> {
   try {
-    const entries = fs.readdirSync(pluginsPath, { withFileTypes: true });
+    const entries = await fsp.readdir(pluginsPath, { withFileTypes: true });
     for (const entry of entries) {
-      if (isFileEntry(entry, pluginsPath) && entry.name.toLowerCase().endsWith('.xpl')) {
+      if (entry.name.toLowerCase().endsWith('.xpl') && (await isFileEntry(entry, pluginsPath))) {
         return true;
       }
     }

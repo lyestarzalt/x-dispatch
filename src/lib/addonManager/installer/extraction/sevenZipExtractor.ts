@@ -7,33 +7,8 @@ import * as path from 'path';
 import type { Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 import type { InstallerError, VerificationStats } from '../types';
-import { IGNORE_PATTERNS } from '../types';
+import { listFilesRecursive, moveTree, normalizeInternalRoot, pruneIgnored } from './entryPaths';
 import type { ExtractOptions, ExtractResult } from './zipExtractor';
-
-/**
- * Check if a path component should be ignored
- */
-function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split(/[/\\]/);
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
-}
-
-/**
- * Sanitize path to prevent directory traversal attacks
- */
-function sanitizePath(entryPath: string): string | null {
-  // Normalize separators
-  const normalized = entryPath.replace(/\\/g, '/');
-
-  // Reject absolute paths
-  if (path.isAbsolute(normalized)) return null;
-
-  // Reject path traversal
-  const parts = normalized.split('/');
-  if (parts.some((p) => p === '..')) return null;
-
-  return parts.filter((p) => p !== '').join('/');
-}
 
 /**
  * Get path to bundled 7zip binary
@@ -44,127 +19,86 @@ async function get7zipPath(): Promise<string> {
 }
 
 /**
- * Extract a 7z archive
+ * Extract a 7z archive.
+ *
+ * 7za writes the files itself, so the archive is unpacked into a staging
+ * folder first. Only the requested internal root is then moved into the
+ * target, which is what keeps sibling folders out of the install.
  */
 export async function extractSevenZip(
   options: ExtractOptions
 ): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, password, onProgress } = options;
+  const { archivePath, targetDir, internalRoot, password, onProgress, isCancelled } = options;
 
   const node7z = await import('node-7z');
   const extractFull = node7z.default?.extractFull ?? node7z.extractFull;
   const pathTo7zip = await get7zipPath();
 
-  return new Promise((resolve) => {
-    const stats: VerificationStats = {
-      totalFiles: 0,
-      verifiedFiles: 0,
-      failedFiles: 0,
-      skippedFiles: 0,
-    };
-    const extractedFiles: string[] = [];
+  const staging = path.join(targetDir, `.xdispatch-staging-${process.pid}-${Date.now()}`);
 
-    // Create target directory
-    fs.mkdirSync(targetDir, { recursive: true });
+  return new Promise((resolve) => {
+    const finish = (result: Result<ExtractResult, InstallerError>) => {
+      fs.rmSync(staging, { recursive: true, force: true });
+      resolve(result);
+    };
 
     try {
-      const extractStream = extractFull(archivePath, targetDir, {
+      fs.mkdirSync(staging, { recursive: true });
+
+      const extractStream = extractFull(archivePath, staging, {
         $bin: pathTo7zip,
         recursive: true,
         password: password,
       });
 
       extractStream.on('data', (data: { file: string; status?: string }) => {
-        const filePath = data.file;
-        if (!filePath) return;
-
-        // Skip ignored files
-        if (shouldIgnore(filePath)) {
-          stats.skippedFiles++;
-          return;
-        }
-
-        // Apply internal root filter
-        let relativePath = filePath;
-        if (internalRoot) {
-          const normalizedPath = filePath.replace(/\\/g, '/');
-          if (!normalizedPath.startsWith(internalRoot)) {
-            stats.skippedFiles++;
-            return;
-          }
-          relativePath = normalizedPath.substring(internalRoot.length);
-        }
-
-        // Sanitize
-        const sanitized = sanitizePath(relativePath);
-        if (!sanitized) {
-          stats.skippedFiles++;
-          return;
-        }
-
-        stats.totalFiles++;
-        extractedFiles.push(sanitized);
-
-        // Get file size for progress
-        const fullPath = path.join(targetDir, sanitized);
-        try {
-          const stat = fs.statSync(fullPath);
-          onProgress?.(stat.size, sanitized);
-          stats.verifiedFiles++;
-        } catch {
-          stats.failedFiles++;
-        }
+        if (data.file) onProgress?.(0, data.file);
       });
 
       extractStream.on('end', () => {
-        // If internalRoot is specified, we need to move files from the extracted subfolder
-        if (internalRoot) {
-          const sourceDir = path.join(targetDir, internalRoot.replace(/\/$/, ''));
-          if (fs.existsSync(sourceDir)) {
-            // Move contents up
-            moveContentsUp(sourceDir, targetDir);
-          }
+        if (isCancelled?.()) {
+          finish(err({ code: 'CANCELLED', path: archivePath }));
+          return;
         }
 
-        resolve(ok({ stats, extractedFiles }));
+        const skippedFiles = pruneIgnored(staging);
+
+        const root = internalRoot ? normalizeInternalRoot(internalRoot).replace(/\/$/, '') : '';
+        const sourceDir = root ? path.join(staging, ...root.split('/')) : staging;
+
+        if (!fs.existsSync(sourceDir)) {
+          finish(
+            err({
+              code: 'EXTRACTION_FAILED',
+              path: archivePath,
+              reason: `Archive has no folder "${root}"`,
+            })
+          );
+          return;
+        }
+
+        const extractedFiles = listFilesRecursive(sourceDir);
+        const { moved, failed } = moveTree(sourceDir, targetDir);
+
+        const stats: VerificationStats = {
+          totalFiles: extractedFiles.length,
+          verifiedFiles: moved,
+          failedFiles: failed + Math.max(0, extractedFiles.length - moved - failed),
+          skippedFiles,
+        };
+
+        finish(ok({ stats, extractedFiles }));
       });
 
       extractStream.on('error', (extractErr: Error) => {
-        if (extractErr.message.includes('password')) {
-          resolve(err({ code: 'PASSWORD_REQUIRED', path: archivePath }));
+        if (extractErr.message.includes('password') || extractErr.message.includes('Wrong')) {
+          finish(err({ code: 'PASSWORD_REQUIRED', path: archivePath }));
         } else {
-          resolve(
-            err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: extractErr.message })
-          );
+          finish(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: extractErr.message }));
         }
       });
     } catch (e) {
-      resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) }));
+      finish(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) }));
     }
   });
-}
-
-/**
- * Move contents from a subdirectory up to the parent
- */
-function moveContentsUp(sourceDir: string, targetDir: string): void {
-  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(sourceDir, entry.name);
-    const dstPath = path.join(targetDir, entry.name);
-
-    if (srcPath === targetDir) continue; // Skip if same as target
-
-    if (entry.isDirectory()) {
-      // Recursively copy directory
-      fs.cpSync(srcPath, dstPath, { recursive: true });
-    } else {
-      // Copy file
-      fs.copyFileSync(srcPath, dstPath);
-    }
-  }
-
-  // Remove the source directory
-  fs.rmSync(sourceDir, { recursive: true, force: true });
 }

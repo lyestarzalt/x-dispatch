@@ -10,7 +10,22 @@ import type {
 } from '@/lib/addonManager/core/types';
 import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
 import { getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
+import type { SceneryConflicts } from '@/lib/addonManager/scenery/conflicts';
+import type {
+  UpdateManagerError,
+  UpdateTargetType,
+} from '@/lib/addonManager/updates/UpdateManager';
+import { getUpdateErrorMessage } from '@/lib/addonManager/updates/skunkcrafts';
 import { launchKeys } from './useLaunchQuery';
+
+/**
+ * The update manager adds a couple of codes on top of the protocol's own.
+ */
+function getUpdateManagerErrorMessage(error: UpdateManagerError): string {
+  if (error.code === 'NOT_FOUND') return `Addon not found: ${error.path}`;
+  if (error.code === 'NOT_CONFIGURED') return `${error.path} has no update server configured`;
+  return getUpdateErrorMessage(error);
+}
 
 // Query keys
 export const addonKeys = {
@@ -18,6 +33,7 @@ export const addonKeys = {
   scenery: ['addon', 'scenery'] as const,
   sceneryList: ['addon', 'scenery', 'list'] as const,
   sceneryBackups: ['addon', 'scenery', 'backups'] as const,
+  sceneryConflicts: ['addon', 'scenery', 'conflicts'] as const,
   aircraft: ['addon', 'aircraft'] as const,
   aircraftIcon: (iconPath: string) => ['addon', 'aircraftIcon', iconPath] as const,
   plugins: ['addon', 'plugins'] as const,
@@ -40,6 +56,24 @@ export function useSceneryList(enabled = true) {
     },
     enabled,
     staleTime: 0,
+  });
+}
+
+/**
+ * Tile overlaps, duplicate airports and libraries nothing provides.
+ */
+export function useSceneryConflicts(enabled = true) {
+  return useQuery({
+    queryKey: addonKeys.sceneryConflicts,
+    queryFn: async (): Promise<SceneryConflicts> => {
+      const result = await window.addonManagerAPI.scenery.conflicts();
+      if (!result.ok) {
+        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+      }
+      return result.value;
+    },
+    enabled,
+    staleTime: 60_000,
   });
 }
 
@@ -462,15 +496,11 @@ export function useInstallerInstall() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (items: import('@/lib/addonManager/installer/types').DetectedItem[]) => {
-      // First prepare install tasks
-      const prepareResult = await window.addonManagerAPI.installer.prepareInstall(items);
-      if (!prepareResult.ok) {
-        throw new Error(getInstallerErrorMessage(prepareResult.error));
-      }
-
-      // Then execute installation
-      const installResult = await window.addonManagerAPI.installer.install(prepareResult.value);
+    mutationFn: async (input: {
+      items: import('@/lib/addonManager/installer/types').DetectedItem[];
+      modes?: Record<string, 'overwrite' | 'clean'>;
+    }) => {
+      const installResult = await window.addonManagerAPI.installer.install(input);
       if (!installResult.ok) {
         throw new Error(getInstallerErrorMessage(installResult.error));
       }
@@ -482,7 +512,61 @@ export function useInstallerInstall() {
       queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
       queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
       queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
+      queryClient.invalidateQueries({ queryKey: addonKeys.sceneryConflicts });
       queryClient.invalidateQueries({ queryKey: addonKeys.luaScripts });
+    },
+  });
+}
+
+/**
+ * Resolve where each detected addon would be installed, and what it conflicts with.
+ */
+export function useInstallerPrepare() {
+  return useMutation({
+    mutationFn: async (
+      items: import('@/lib/addonManager/installer/types').DetectedItem[]
+    ): Promise<import('@/lib/addonManager/installer/types').InstallTask[]> => {
+      const result = await window.addonManagerAPI.installer.prepareInstall(items);
+      if (!result.ok) {
+        throw new Error(getInstallerErrorMessage(result.error));
+      }
+      return result.value;
+    },
+  });
+}
+
+/**
+ * Compare an installed addon against its SkunkCrafts manifest.
+ */
+export function useAddonUpdateCheck() {
+  return useMutation({
+    mutationFn: async (input: { type: UpdateTargetType; folderName: string }) => {
+      const result = await window.addonManagerAPI.updates.check(input.type, input.folderName);
+      if (!result.ok) {
+        throw new Error(getUpdateManagerErrorMessage(result.error));
+      }
+      return result.value;
+    },
+  });
+}
+
+/**
+ * Download and apply a SkunkCrafts update.
+ */
+export function useAddonUpdateApply() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { type: UpdateTargetType; folderName: string }) => {
+      const result = await window.addonManagerAPI.updates.apply(input.type, input.folderName);
+      if (!result.ok) {
+        throw new Error(getUpdateManagerErrorMessage(result.error));
+      }
+      return result.value;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
     },
   });
 }

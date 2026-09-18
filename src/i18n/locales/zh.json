@@ -1174,7 +1174,22 @@
       "emptyState": "拖放附加组件压缩包进行安装",
       "supportedTypes": "飞机、插件、地景、涂装等",
       "installMore": "安装更多附加组件",
-      "clear": "全部清除"
+      "clear": "全部清除",
+      "target": "安装到 {{path}}",
+      "alreadyInstalled": "已安装",
+      "modeMerge": "合并",
+      "modeClean": "替换",
+      "modeMergeHint": "保留新版本不包含的文件",
+      "modeCleanHint": "先备份，再删除旧文件夹",
+      "installSelected_one": "安装 1 个插件",
+      "installSelected_other": "安装 {{count}} 个插件",
+      "selectionSummary_one": "已选 1 个，{{size}}",
+      "selectionSummary_other": "已选 {{count}} 个，{{size}}",
+      "cancel": "取消",
+      "cancelling": "正在取消",
+      "skipped": "未安装，操作已取消",
+      "backupSaved": "被替换的文件已备份",
+      "resultsSummary": "成功 {{succeeded}} 个，失败 {{failed}} 个，跳过 {{skipped}} 个"
     },
     "browser": {
       "searchPlaceholder": "搜索...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "打开文件夹",
-      "delete": "从磁盘删除"
+      "delete": "从磁盘删除",
+      "missing": "缺失",
+      "missingHint": "scenery_packs.ini 中有此项，但磁盘上找不到。保存时会保留该行。"
     },
     "addonTypes": {
       "Aircraft": "飞机",
@@ -1297,6 +1314,38 @@
       "Livery": "涂装",
       "LuaScript": "Lua 脚本",
       "Navdata": "导航数据"
+    },
+    "conflicts": {
+      "button": "冲突",
+      "buttonWithCount": "{{count}} 个冲突",
+      "title": "场景冲突",
+      "description": "争夺同一地面的场景包，以及无人提供的库。",
+      "none": "没有冲突。你的场景库一致。",
+      "librariesTitle": "缺失的库",
+      "librariesDescription": "这些场景包引用了未安装的库。X-Plane 会改为显示红色方块。",
+      "requiredBy_one": "{{name}} 需要它",
+      "requiredBy_other": "{{name}} 等共 {{count}} 个场景包需要它",
+      "download": "下载",
+      "icaoTitle": "重复的机场",
+      "icaoDescription": "多个场景包提供了同一个机场。",
+      "icaoWinner": "X-Plane 加载 {{name}}",
+      "tilesTitle": "重叠的地块",
+      "tilesDescription": "两个同类场景包覆盖了同一块地面，靠上的胜出。",
+      "tileOverlap_one": "{{count}} 个共用地块",
+      "tileOverlap_other": "{{count}} 个共用地块",
+      "kindMesh": "地形",
+      "kindOverlay": "叠加层"
+    },
+    "updates": {
+      "title": "更新 {{name}}",
+      "description": "只下载发生变化的文件。",
+      "checking": "正在与更新服务器比对",
+      "versions": "已安装 {{local}}，可用 {{remote}}",
+      "summary": "待下载 {{changed}} 个，待删除 {{removed}} 个，{{size}}",
+      "upToDate": "已是最新",
+      "apply": "更新",
+      "done": "已更新至 {{version}}：写入 {{updated}} 个，删除 {{removed}} 个",
+      "failed": "更新失败"
     }
   },
   "simbrief": {

@@ -1174,7 +1174,22 @@
       "emptyState": "Arraste ficheiros para instalar",
       "supportedTypes": "Aeronaves, plugins, cenários, pinturas e mais",
       "installMore": "Instalar mais add-ons",
-      "clear": "Limpar tudo"
+      "clear": "Limpar tudo",
+      "target": "Instala em {{path}}",
+      "alreadyInstalled": "Já instalado",
+      "modeMerge": "Combinar",
+      "modeClean": "Substituir",
+      "modeMergeHint": "Mantém os ficheiros que a nova versão não inclui",
+      "modeCleanHint": "Remove primeiro a pasta antiga, depois de uma cópia de segurança",
+      "installSelected_one": "Instalar 1 extra",
+      "installSelected_other": "Instalar {{count}} extras",
+      "selectionSummary_one": "1 extra selecionado, {{size}}",
+      "selectionSummary_other": "{{count}} extras selecionados, {{size}}",
+      "cancel": "Cancelar",
+      "cancelling": "A cancelar",
+      "skipped": "Não instalado, a operação foi cancelada",
+      "backupSaved": "Foi guardada cópia dos ficheiros substituídos",
+      "resultsSummary": "{{succeeded}} instalados, {{failed}} falharam, {{skipped}} ignorados"
     },
     "browser": {
       "searchPlaceholder": "Pesquisar...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Abrir pasta",
-      "delete": "Eliminar do disco"
+      "delete": "Eliminar do disco",
+      "missing": "Ausente",
+      "missingHint": "Listado em scenery_packs.ini mas não encontrado no disco. Ao guardar, a linha é mantida."
     },
     "addonTypes": {
       "Aircraft": "Aeronave",
@@ -1297,6 +1314,38 @@
       "Livery": "Pintura",
       "LuaScript": "Script Lua",
       "Navdata": "Dados de navegação"
+    },
+    "conflicts": {
+      "button": "Conflitos",
+      "buttonWithCount": "{{count}} conflitos",
+      "title": "Conflitos de cenário",
+      "description": "Pacotes que disputam o mesmo terreno e bibliotecas que ninguém fornece.",
+      "none": "Nada em conflito. A sua biblioteca de cenários está coerente.",
+      "librariesTitle": "Bibliotecas em falta",
+      "librariesDescription": "Estes pacotes usam bibliotecas que não estão instaladas. O X-Plane mostra caixas vermelhas no lugar.",
+      "requiredBy_one": "Necessária para {{name}}",
+      "requiredBy_other": "Necessária para {{name}} e {{count}} pacotes no total",
+      "download": "Transferir",
+      "icaoTitle": "Aeroportos duplicados",
+      "icaoDescription": "Mais do que um pacote reivindica o mesmo aeroporto.",
+      "icaoWinner": "O X-Plane carrega {{name}}",
+      "tilesTitle": "Mosaicos sobrepostos",
+      "tilesDescription": "Dois pacotes do mesmo tipo cobrem o mesmo terreno. Ganha o que estiver mais acima.",
+      "tileOverlap_one": "{{count}} mosaico partilhado",
+      "tileOverlap_other": "{{count}} mosaicos partilhados",
+      "kindMesh": "Malha",
+      "kindOverlay": "Sobreposição"
+    },
+    "updates": {
+      "title": "Atualizar {{name}}",
+      "description": "Só são transferidos os ficheiros que mudaram.",
+      "checking": "A comparar com o servidor de atualizações",
+      "versions": "Instalada {{local}}, disponível {{remote}}",
+      "summary": "{{changed}} ficheiros a transferir, {{removed}} a remover, {{size}}",
+      "upToDate": "Já está atualizado",
+      "apply": "Atualizar",
+      "done": "Atualizado para {{version}}: {{updated}} ficheiros escritos, {{removed}} removidos",
+      "failed": "A atualização falhou"
     }
   },
   "simbrief": {

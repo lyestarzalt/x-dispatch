@@ -221,6 +221,26 @@ export const airspaces = sqliteTable(
   ]
 );
 
+/**
+ * Scenery index - cached classification of each Custom Scenery pack.
+ *
+ * Classifying a pack means walking its folder and reading DSF and apt.dat
+ * headers. A library of a few thousand packs makes that slow enough to notice,
+ * so the result is cached and reused while the folder is untouched.
+ */
+export const sceneryIndex = sqliteTable(
+  'scenery_index',
+  {
+    fullPath: text('full_path').primaryKey(),
+    sceneryPath: text('scenery_path').notNull(),
+    fingerprint: text('fingerprint').notNull(),
+    priority: integer('priority').notNull(),
+    classification: text('classification').notNull(),
+    scannedAt: integer('scanned_at').notNull(),
+  },
+  (table) => [index('idx_scenery_index_fingerprint').on(table.fingerprint)]
+);
+
 // Type exports
 export type Airport = typeof airports.$inferSelect;
 export type NewAirport = typeof airports.$inferInsert;
@@ -239,3 +259,5 @@ export type DbAirway = typeof airways.$inferSelect;
 export type NewDbAirway = typeof airways.$inferInsert;
 export type DbAirspace = typeof airspaces.$inferSelect;
 export type NewDbAirspace = typeof airspaces.$inferInsert;
+export type SceneryIndexRow = typeof sceneryIndex.$inferSelect;
+export type NewSceneryIndexRow = typeof sceneryIndex.$inferInsert;

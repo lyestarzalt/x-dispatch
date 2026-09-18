@@ -1,10 +1,12 @@
 // src/lib/addonManager/scenery/SceneryManager.ts
 import * as fs from 'fs';
+import type { Dirent } from 'fs';
+import * as fsp from 'fs/promises';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import { resolveLnkSync } from '@/lib/utils/resolveLnk';
 import {
-  type ParsedIniEntry,
+  type ParsedIni,
   type Result,
   type SceneryEntry,
   type SceneryError,
@@ -14,8 +16,145 @@ import {
   ok,
 } from '../core/types';
 import { classifyScenery } from './classifier';
+import { type SceneryConflicts, findConflicts, promoteAirportMeshes } from './conflicts';
 import { scanSceneryFolder } from './folderScanner';
-import { backupSceneryPacksIni, parseSceneryPacksIni, writeSceneryPacksIni } from './iniParser';
+import {
+  backupSceneryPacksIni,
+  normalizeIniPath,
+  readIni,
+  writeSceneryPacksIni,
+} from './iniParser';
+import {
+  type CachedScenery,
+  fingerprintFolder,
+  readSceneryIndex,
+  writeSceneryIndex,
+} from './sceneryIndex';
+
+const GLOBAL_AIRPORTS_MARKER = '*GLOBAL_AIRPORTS*';
+
+/** Windows and macOS compare paths case-insensitively; Linux does not. */
+function pathKey(fullPath: string): string {
+  return process.platform === 'linux' ? fullPath : fullPath.toLowerCase();
+}
+
+/** Folders classified at once. High enough to keep the disk busy, low enough
+ * to leave the event loop responsive between batches. */
+const SCAN_CONCURRENCY = 8;
+
+/** A scenery folder found but not yet classified. */
+interface PendingEntry {
+  sceneryPath: string;
+  fullPath: string;
+  enabled: boolean;
+  /** Folder to classify, when it differs from fullPath (a .lnk target) */
+  scanPath?: string;
+  shortcutPath?: string;
+  missing?: boolean;
+  isGlobalAirports?: boolean;
+  /** Folder state at collection time, used to validate the cache */
+  fingerprint?: string;
+  /** Classification reused from the index instead of a fresh scan */
+  cached?: CachedScenery;
+}
+
+/**
+ * Resolve a path that points at a Windows shortcut to the folder it names.
+ * Returns null for anything that is not a resolvable .lnk.
+ */
+function resolveShortcutTarget(fullPath: string): string | null {
+  if (!fullPath.toLowerCase().endsWith('.lnk')) return null;
+  try {
+    if (!fs.statSync(fullPath).isFile()) return null;
+    const resolved = resolveLnkSync(fullPath);
+    if (resolved.ok && fs.existsSync(resolved.targetPath)) return resolved.targetPath;
+  } catch {
+    // Not resolvable; classification falls back to the original path
+  }
+  return null;
+}
+
+/**
+ * Fingerprint every pending folder and reuse the cached classification of the
+ * ones that have not changed since the last scan.
+ */
+async function attachCachedClassifications(pending: PendingEntry[]): Promise<void> {
+  const scannable = pending.filter((item) => !item.isGlobalAirports && !item.missing);
+  if (scannable.length === 0) return;
+
+  const cache = await readSceneryIndex();
+
+  await mapWithConcurrency(scannable, SCAN_CONCURRENCY, async (item) => {
+    item.fingerprint = await fingerprintFolder(item.scanPath ?? item.fullPath);
+    const hit = cache.get(item.fullPath);
+    if (hit && hit.fingerprint === item.fingerprint) {
+      item.cached = hit;
+    }
+  });
+}
+
+/**
+ * Run an async mapper over a list, at most `limit` at a time, keeping order.
+ */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  mapper: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (;;) {
+      const index = next++;
+      const item = items[index];
+      if (index >= items.length || item === undefined) return;
+      results[index] = await mapper(item, index);
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
+}
+
+/**
+ * Scan and classify one folder.
+ * DefaultAirport tier is ONLY for the *GLOBAL_AIRPORTS* marker, not real folders.
+ */
+async function buildEntry(item: PendingEntry, index: number): Promise<SceneryEntry> {
+  const displayName = item.isGlobalAirports
+    ? GLOBAL_AIRPORTS_MARKER
+    : path.basename(item.sceneryPath);
+
+  if (item.isGlobalAirports || item.missing) {
+    return {
+      sceneryPath: item.sceneryPath,
+      displayName,
+      fullPath: item.fullPath,
+      enabled: item.enabled,
+      priority: item.isGlobalAirports
+        ? SceneryPriority.DefaultAirport
+        : SceneryPriority.Unrecognized,
+      classification: createDefaultClassification(),
+      originalIndex: index,
+      ...(item.isGlobalAirports ? { isGlobalAirports: true } : { missing: true }),
+    };
+  }
+
+  const classification =
+    item.cached?.classification ?? (await scanSceneryFolder(item.scanPath ?? item.fullPath));
+
+  return {
+    sceneryPath: item.sceneryPath,
+    displayName,
+    fullPath: item.fullPath,
+    enabled: item.enabled,
+    priority: item.cached?.priority ?? classifyScenery(displayName, classification),
+    classification,
+    originalIndex: index,
+    ...(item.shortcutPath ? { shortcutPath: item.shortcutPath } : {}),
+  };
+}
 
 export class SceneryManager {
   private readonly customSceneryPath: string;
@@ -32,162 +171,165 @@ export class SceneryManager {
    * Analyze all scenery: read INI, scan folders, classify.
    * Returns entries in INI file order (preserves user's custom order).
    * Use sort() explicitly if you want priority-based ordering.
+   *
+   * Folders are listed first and classified afterwards, a few at a time, so a
+   * library of several thousand packs never blocks the main thread on one long
+   * synchronous walk.
    */
   async analyze(): Promise<Result<SceneryEntry[], SceneryError>> {
-    // Parse INI
-    const parseResult = parseSceneryPacksIni(this.iniPath, this.customSceneryPath);
-    if (!parseResult.ok) {
-      return parseResult;
+    const iniResult = readIni(this.iniPath);
+    if (!iniResult.ok) {
+      return iniResult;
     }
 
-    // Process all INI entries including *GLOBAL_AIRPORTS*
-    const entries: SceneryEntry[] = [];
-    const staleNames = new Set<string>();
+    const pending: PendingEntry[] = [];
+    const seen = new Set<string>();
 
-    for (let i = 0; i < parseResult.value.length; i++) {
-      const iniEntry = parseResult.value[i];
-      if (!iniEntry) continue;
-
-      // Include *GLOBAL_AIRPORTS* as a special entry
+    for (const iniEntry of iniResult.value.entries) {
       if (iniEntry.isGlobalAirports) {
-        entries.push({
-          folderName: '*GLOBAL_AIRPORTS*',
+        if (seen.has(GLOBAL_AIRPORTS_MARKER)) continue;
+        seen.add(GLOBAL_AIRPORTS_MARKER);
+        pending.push({
+          sceneryPath: GLOBAL_AIRPORTS_MARKER,
           fullPath: '',
           enabled: iniEntry.enabled,
-          priority: SceneryPriority.DefaultAirport,
-          classification: createDefaultClassification(),
-          originalIndex: i,
           isGlobalAirports: true,
         });
         continue;
       }
 
+      if (seen.has(pathKey(iniEntry.fullPath))) continue;
+      seen.add(pathKey(iniEntry.fullPath));
+
+      // A pack the INI lists but disk no longer has is kept as `missing` so a
+      // save writes the line back untouched. An external drive may just be
+      // unplugged, and an entry the user still wants is not ours to drop.
       if (!fs.existsSync(iniEntry.fullPath)) {
-        // Only mark relative (Custom Scenery/) entries as stale.
-        // Absolute paths (external drives) may just be unmounted — never auto-remove them.
-        if (!iniEntry.sceneryPath) {
-          staleNames.add(iniEntry.folderName);
-        }
+        pending.push({
+          sceneryPath: iniEntry.sceneryPath,
+          fullPath: iniEntry.fullPath,
+          enabled: iniEntry.enabled,
+          missing: true,
+        });
         continue;
       }
-      const entry = this.processEntry(iniEntry, i);
-      entries.push(entry);
-    }
 
-    // Detect folders in Custom Scenery/ that aren't in the INI yet
-    // (shown in UI but NOT written to INI — only explicit user saves modify the file)
-    const knownFolders = new Set(parseResult.value.map((e) => e.folderName));
-    staleNames.forEach((name) => knownFolders.add(name)); // don't re-add removed ones
-
-    try {
-      if (fs.existsSync(this.customSceneryPath)) {
-        const dirEntries = fs.readdirSync(this.customSceneryPath, { withFileTypes: true });
-        for (const dirEntry of dirEntries) {
-          // Skip hidden folders and common non-scenery dirs
-          if (dirEntry.name.startsWith('.') || dirEntry.name === '__MACOSX') continue;
-
-          if (dirEntry.isDirectory() || dirEntry.isSymbolicLink()) {
-            if (knownFolders.has(dirEntry.name)) continue;
-            const fullPath = path.join(this.customSceneryPath, dirEntry.name);
-            const iniEntry: ParsedIniEntry = {
-              folderName: dirEntry.name,
-              fullPath,
-              enabled: true,
-              isGlobalAirports: false,
-              originalLine: '',
-            };
-            entries.push(this.processEntry(iniEntry, entries.length));
-            // Track so a same-named .lnk later in the walk doesn't re-add.
-            knownFolders.add(dirEntry.name);
-            continue;
-          }
-
-          // Windows shell shortcut (.lnk): resolve target and treat as a virtual
-          // scenery folder. Real folders with the same display name win because
-          // they're encountered first; we de-dup via knownFolders.
-          if (dirEntry.isFile() && dirEntry.name.toLowerCase().endsWith('.lnk')) {
-            const lnkPath = path.join(this.customSceneryPath, dirEntry.name);
-            const resolved = resolveLnkSync(lnkPath);
-            if (!resolved.ok) {
-              logger.addon.warn(
-                `scenery: unresolved shortcut ${dirEntry.name} (${resolved.reason})`
-              );
-              continue;
-            }
-            try {
-              if (!fs.statSync(resolved.targetPath).isDirectory()) {
-                logger.addon.warn(
-                  `scenery: shortcut target is not a directory: ${dirEntry.name} → ${resolved.targetPath}`
-                );
-                continue;
-              }
-            } catch {
-              logger.addon.warn(
-                `scenery: shortcut target missing: ${dirEntry.name} → ${resolved.targetPath}`
-              );
-              continue;
-            }
-            const folderName = dirEntry.name.replace(/\.lnk$/i, '');
-            // Dedup against both forms: a real folder named `Heathrow` already
-            // claimed the slot, OR an INI entry referenced `Heathrow.lnk` directly.
-            if (knownFolders.has(folderName) || knownFolders.has(dirEntry.name)) continue;
-            knownFolders.add(folderName);
-            knownFolders.add(dirEntry.name);
-            const iniEntry: ParsedIniEntry = {
-              folderName,
-              fullPath: resolved.targetPath,
-              enabled: true,
-              isGlobalAirports: false,
-              originalLine: '',
-            };
-            entries.push(this.processEntry(iniEntry, entries.length));
-          }
-        }
+      // An INI entry may point straight at a .lnk file. Classify its target,
+      // but keep the path the INI uses so the round trip stays byte-identical.
+      const entry: PendingEntry = {
+        sceneryPath: iniEntry.sceneryPath,
+        fullPath: iniEntry.fullPath,
+        enabled: iniEntry.enabled,
+      };
+      const target = resolveShortcutTarget(iniEntry.fullPath);
+      if (target) {
+        entry.scanPath = target;
+        entry.shortcutPath = iniEntry.fullPath;
+        // Claim the target too, so the directory walk does not list the same
+        // scenery a second time under its resolved path.
+        seen.add(pathKey(path.resolve(target)));
       }
-    } catch {
-      // Non-critical — new folders will be picked up by X-Plane on next launch
+      pending.push(entry);
     }
 
-    // Return in INI file order (analyze is read-only — never writes to the INI)
+    await this.collectUnlistedFolders(pending, seen);
+
+    await attachCachedClassifications(pending);
+
+    const entries = await mapWithConcurrency(pending, SCAN_CONCURRENCY, (item, i) =>
+      buildEntry(item, i)
+    );
+
+    // Cached before promotion: a pack is only an airport mesh while the
+    // airport it serves is installed, and that is decided on every analyze.
+    await writeSceneryIndex(
+      entries.flatMap((entry, i) => {
+        const fingerprint = pending[i]?.fingerprint;
+        if (!fingerprint || entry.isGlobalAirports || entry.missing) return [];
+        return [
+          {
+            fullPath: entry.fullPath,
+            sceneryPath: entry.sceneryPath,
+            fingerprint,
+            priority: entry.priority,
+            classification: entry.classification,
+          },
+        ];
+      })
+    );
+
+    promoteAirportMeshes(entries);
+
     return ok(entries);
   }
 
   /**
-   * Process a single INI entry: scan folder, classify.
-   * Note: DefaultAirport tier is ONLY for *GLOBAL_AIRPORTS* marker, not real folders.
+   * Add Custom Scenery folders the INI does not list yet.
+   * They are shown in the UI; nothing is written until the user saves.
    */
-  private processEntry(iniEntry: ParsedIniEntry, index: number): SceneryEntry {
-    // If the INI references a .lnk file directly, resolve to its target
-    // before classifying. The displayed folderName stays as the .lnk name
-    // because that's what scenery_packs.ini knows about.
-    let scanPath = iniEntry.fullPath;
+  private async collectUnlistedFolders(pending: PendingEntry[], seen: Set<string>): Promise<void> {
+    let dirEntries: Dirent[];
     try {
-      if (
-        iniEntry.fullPath.toLowerCase().endsWith('.lnk') &&
-        fs.statSync(iniEntry.fullPath).isFile()
-      ) {
-        const resolved = resolveLnkSync(iniEntry.fullPath);
-        if (resolved.ok && fs.existsSync(resolved.targetPath)) {
-          scanPath = resolved.targetPath;
-        }
-      }
+      dirEntries = await fsp.readdir(this.customSceneryPath, { withFileTypes: true });
     } catch {
-      // Fall through with the original path — classification will likely
-      // come back empty, which is fine.
+      return; // Non-critical: X-Plane picks new folders up on its next launch
     }
 
-    const classification = scanSceneryFolder(scanPath);
-    const priority = classifyScenery(iniEntry.folderName, classification);
+    for (const dirEntry of dirEntries) {
+      if (dirEntry.name.startsWith('.') || dirEntry.name === '__MACOSX') continue;
 
-    return {
-      folderName: iniEntry.folderName,
-      fullPath: iniEntry.fullPath,
-      enabled: iniEntry.enabled,
-      priority,
-      classification,
-      originalIndex: index,
-      sceneryPath: iniEntry.sceneryPath,
-    };
+      if (dirEntry.isDirectory() || dirEntry.isSymbolicLink()) {
+        const fullPath = path.resolve(path.join(this.customSceneryPath, dirEntry.name));
+        if (seen.has(pathKey(fullPath))) continue;
+        // A folder that only holds packs the INI already lists (an ortho tile
+        // parent, say) is a container, not a scenery pack of its own.
+        const prefix = pathKey(fullPath) + path.sep;
+        if ([...seen].some((key) => key.startsWith(prefix))) continue;
+        seen.add(pathKey(fullPath));
+        pending.push({
+          sceneryPath: `Custom Scenery/${dirEntry.name}`,
+          fullPath,
+          enabled: true,
+        });
+        continue;
+      }
+
+      // A Windows shortcut stands in for a scenery folder living elsewhere.
+      // X-Plane does not follow .lnk files, so the INI gets the resolved target.
+      if (!dirEntry.isFile() || !dirEntry.name.toLowerCase().endsWith('.lnk')) continue;
+
+      const shortcutPath = path.join(this.customSceneryPath, dirEntry.name);
+      const resolved = resolveLnkSync(shortcutPath);
+      if (!resolved.ok) {
+        logger.addon.warn(`scenery: unresolved shortcut ${dirEntry.name} (${resolved.reason})`);
+        continue;
+      }
+
+      try {
+        if (!(await fsp.stat(resolved.targetPath)).isDirectory()) {
+          logger.addon.warn(
+            `scenery: shortcut target is not a directory: ${dirEntry.name} -> ${resolved.targetPath}`
+          );
+          continue;
+        }
+      } catch {
+        logger.addon.warn(
+          `scenery: shortcut target missing: ${dirEntry.name} -> ${resolved.targetPath}`
+        );
+        continue;
+      }
+
+      const targetFull = path.resolve(resolved.targetPath);
+      if (seen.has(pathKey(targetFull))) continue;
+      seen.add(pathKey(targetFull));
+
+      pending.push({
+        sceneryPath: normalizeIniPath(resolved.targetPath),
+        fullPath: targetFull,
+        enabled: true,
+        shortcutPath,
+      });
+    }
   }
 
   /**
@@ -195,18 +337,17 @@ export class SceneryManager {
    */
   sort(entries: SceneryEntry[]): SceneryEntry[] {
     return [...entries].sort((a, b) => {
-      // Primary: by priority (lower = higher in file)
       if (a.priority !== b.priority) {
         return a.priority - b.priority;
       }
-      // Secondary: preserve original order within same tier
       return a.originalIndex - b.originalIndex;
     });
   }
 
   /**
    * Save entries to INI file.
-   * Creates backup first.
+   * Backs up first and reuses the existing header so the file X-Plane reads
+   * keeps its `SCENERY` line and line endings.
    * @param entries - Entries to save
    * @param preserveOrder - If true, don't auto-sort (for custom ordering)
    */
@@ -214,16 +355,19 @@ export class SceneryManager {
     entries: SceneryEntry[],
     preserveOrder = true
   ): Promise<Result<{ backupPath: string }, SceneryError>> {
-    // Create backup first
     const backupResult = backupSceneryPacksIni(this.iniPath, this.backupDir);
     if (!backupResult.ok) {
       return backupResult;
     }
 
-    // Sort entries unless preserveOrder is true
+    const existing = readIni(this.iniPath);
+    const layout: Pick<ParsedIni, 'header' | 'eol'> = existing.ok
+      ? { header: existing.value.header, eol: existing.value.eol }
+      : { header: [], eol: '\n' };
+
     const toWrite = preserveOrder ? entries : this.sort(entries);
 
-    const writeResult = writeSceneryPacksIni(this.iniPath, toWrite);
+    const writeResult = writeSceneryPacksIni(this.iniPath, toWrite, layout);
     if (!writeResult.ok) {
       return writeResult;
     }
@@ -234,23 +378,21 @@ export class SceneryManager {
   /**
    * Toggle enabled/disabled for a single entry.
    */
-  async toggle(folderName: string): Promise<Result<SceneryEntry, SceneryError>> {
+  async toggle(sceneryPath: string): Promise<Result<SceneryEntry, SceneryError>> {
     const analyzeResult = await this.analyze();
     if (!analyzeResult.ok) {
       return analyzeResult;
     }
 
     const entries = analyzeResult.value;
-    const entry = entries.find((e) => e.folderName === folderName);
+    const entry = entries.find((e) => e.sceneryPath === sceneryPath);
 
     if (!entry) {
-      return err({ code: 'FOLDER_NOT_FOUND', folderName });
+      return err({ code: 'FOLDER_NOT_FOUND', folderName: sceneryPath });
     }
 
-    // Toggle
     entry.enabled = !entry.enabled;
 
-    // Save
     const saveResult = await this.save(entries);
     if (!saveResult.ok) {
       return saveResult;
@@ -260,24 +402,39 @@ export class SceneryManager {
   }
 
   /**
-   * Delete a scenery folder from disk and remove from INI.
-   * Symlinks are unlinked (target untouched), real folders are removed recursively.
-   * Returns whether the path was a symlink.
+   * Delete a scenery folder from disk and remove it from the INI.
+   * A shortcut or symlink is unlinked and its target left alone; only a real
+   * folder is removed recursively.
    */
-  async deleteScenery(folderName: string): Promise<Result<{ wasSymlink: boolean }, SceneryError>> {
+  async deleteScenery(sceneryPath: string): Promise<Result<{ wasSymlink: boolean }, SceneryError>> {
     const analyzeResult = await this.analyze();
     if (!analyzeResult.ok) {
       return analyzeResult;
     }
 
     const entries = analyzeResult.value;
-    const entry = entries.find((e) => e.folderName === folderName);
+    const entry = entries.find((e) => e.sceneryPath === sceneryPath);
 
     if (!entry || entry.isGlobalAirports) {
-      return err({ code: 'FOLDER_NOT_FOUND', folderName });
+      return err({ code: 'FOLDER_NOT_FOUND', folderName: sceneryPath });
+    }
+
+    const remaining = entries.filter((e) => e.sceneryPath !== sceneryPath);
+
+    if (entry.missing) {
+      const saveResult = await this.save(remaining);
+      if (!saveResult.ok) return saveResult;
+      return ok({ wasSymlink: false });
     }
 
     try {
+      if (entry.shortcutPath) {
+        fs.rmSync(entry.shortcutPath, { force: true });
+        const saveResult = await this.save(remaining);
+        if (!saveResult.ok) return saveResult;
+        return ok({ wasSymlink: true });
+      }
+
       const stat = fs.lstatSync(entry.fullPath);
       const wasSymlink = stat.isSymbolicLink();
 
@@ -287,9 +444,8 @@ export class SceneryManager {
         fs.rmSync(entry.fullPath, { recursive: true, force: true });
       }
 
-      // Remove deleted entry from INI
-      const remaining = entries.filter((e) => e.folderName !== folderName);
-      await this.save(remaining);
+      const saveResult = await this.save(remaining);
+      if (!saveResult.ok) return saveResult;
 
       return ok({ wasSymlink });
     } catch (e) {
@@ -302,7 +458,7 @@ export class SceneryManager {
    * Move entry up or down within its priority tier.
    */
   async move(
-    folderName: string,
+    sceneryPath: string,
     direction: 'up' | 'down'
   ): Promise<Result<SceneryEntry[], SceneryError>> {
     const analyzeResult = await this.analyze();
@@ -311,22 +467,21 @@ export class SceneryManager {
     }
 
     const entries = analyzeResult.value;
-    const index = entries.findIndex((e) => e.folderName === folderName);
+    const index = entries.findIndex((e) => e.sceneryPath === sceneryPath);
 
     if (index === -1) {
-      return err({ code: 'FOLDER_NOT_FOUND', folderName });
+      return err({ code: 'FOLDER_NOT_FOUND', folderName: sceneryPath });
     }
 
     const entry = entries[index];
     if (!entry) {
-      return err({ code: 'FOLDER_NOT_FOUND', folderName });
+      return err({ code: 'FOLDER_NOT_FOUND', folderName: sceneryPath });
     }
 
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
-    // Check bounds and same priority tier
     if (targetIndex < 0 || targetIndex >= entries.length) {
-      return ok(entries); // No change
+      return ok(entries);
     }
 
     const targetEntry = entries[targetIndex];
@@ -334,21 +489,28 @@ export class SceneryManager {
       return ok(entries); // Can't move across tiers
     }
 
-    // Swap
     entries[index] = targetEntry;
     entries[targetIndex] = entry;
-
-    // Update original indices to reflect new order
     targetEntry.originalIndex = index;
     entry.originalIndex = targetIndex;
 
-    // Save
     const saveResult = await this.save(entries);
     if (!saveResult.ok) {
       return saveResult;
     }
 
     return ok(entries);
+  }
+
+  /**
+   * Report the conflicts across the installed library.
+   */
+  async conflicts(): Promise<Result<SceneryConflicts, SceneryError>> {
+    const analyzeResult = await this.analyze();
+    if (!analyzeResult.ok) {
+      return analyzeResult;
+    }
+    return ok(findConflicts(analyzeResult.value));
   }
 
   /**
@@ -394,7 +556,6 @@ export class SceneryManager {
    * Only allows restoring files from the backup directory.
    */
   async restore(backupPath: string): Promise<Result<void, SceneryError>> {
-    // Security: Ensure backupPath is within our backup directory
     const normalizedBackupPath = path.resolve(backupPath);
     const normalizedBackupDir = path.resolve(this.backupDir);
 

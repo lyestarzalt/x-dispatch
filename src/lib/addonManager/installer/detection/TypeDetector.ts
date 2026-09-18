@@ -1,12 +1,15 @@
 import * as path from 'path';
 import type { AddonType, ArchiveEntry, ArchiveFormat, DetectedItem, MarkerFile } from '../types';
 import { ADDON_TYPE_PRIORITY, IGNORE_PATTERNS, PLATFORM_FOLDERS } from '../types';
+import { detectLiveries, looksLikeUnknownLivery } from './liveryPatterns';
+import { detectLuaComponents } from './luaScripts';
+import { detectNavdata } from './navdata';
 
 /**
  * Check if a path should be ignored
  */
 function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split('/');
+  const parts = filePath.split(/[/\\]/);
   return parts.some((part) => IGNORE_PATTERNS.includes(part));
 }
 
@@ -28,25 +31,40 @@ function detectMarkerType(filePath: string): AddonType | null {
 }
 
 /**
- * Get the addon root folder from a marker file path
+ * Folder holding a marker file, with a trailing slash.
+ * Returns null when the marker sits at the archive root, meaning the archive
+ * itself is the addon folder.
+ */
+function parentDir(markerPath: string): string | null {
+  const segments = markerPath.replace(/\\/g, '/').split('/');
+  if (segments.length < 2) return null;
+  return segments.slice(0, -1).join('/') + '/';
+}
+
+/**
+ * Get the addon root folder from a marker file path.
+ *
+ * The root is the folder that gets copied into X-Plane, so it is the marker's
+ * own folder, not the outermost folder in the archive. `Pack/B738/B738.acf`
+ * installs `B738`, never `Pack`.
  */
 function getAddonRoot(markerPath: string, markerType: AddonType): string | null {
-  const parts = markerPath.split('/').filter((p) => p.length > 0);
+  const normalized = markerPath.replace(/\\/g, '/');
+  const parent = parentDir(normalized);
 
   switch (markerType) {
     case 'Aircraft': {
-      // ACF parent folder = aircraft root
-      // Handle _TCAS_AI_ subfolder
-      const parent = path.dirname(markerPath);
-      const parentName = path.basename(parent);
+      if (!parent) return null;
+      // An AI variant lives one level below the aircraft it belongs to.
+      const parentName = path.basename(parent.replace(/\/$/, ''));
       if (parentName === '_TCAS_AI_') {
-        return parts.length > 1 ? parts[0] + '/' : null;
+        return parentDir(parent.replace(/\/$/, ''));
       }
-      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
+      return parent;
     }
 
     case 'Scenery': {
-      // Find "Earth nav data" in path, scenery root is its parent
+      const parts = normalized.split('/').filter((p) => p.length > 0);
       for (let i = parts.length - 1; i >= 0; i--) {
         if (parts[i]?.toLowerCase() === 'earth nav data') {
           if (i === 0) return null;
@@ -56,30 +74,15 @@ function getAddonRoot(markerPath: string, markerType: AddonType): string | null 
       return null;
     }
 
-    case 'SceneryLibrary': {
-      const parent = path.dirname(markerPath);
-      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
-    }
+    case 'SceneryLibrary':
+    case 'Navdata':
+      return parent;
 
-    case 'Navdata': {
-      const parent = path.dirname(markerPath);
-      return parent === '.' ? null : parent + '/';
-    }
+    case 'Plugin':
+      return getPluginDir(normalized);
 
-    case 'Plugin': {
-      const parent = path.dirname(markerPath);
-      const parentName = path.basename(parent);
-      // Handle platform subfolders
-      if (PLATFORM_FOLDERS.includes(parentName.toLowerCase())) {
-        return parts.length > 1 ? parts[0] + '/' : null;
-      }
-      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
-    }
-
-    case 'LuaScript': {
-      const parent = path.dirname(markerPath);
-      return parent === '.' || parts.length === 0 ? null : parts[0] + '/';
-    }
+    case 'LuaScript':
+      return parent;
 
     default:
       return null;
@@ -91,10 +94,8 @@ function getAddonRoot(markerPath: string, markerType: AddonType): string | null 
  */
 function getDisplayName(archivePath: string, internalRoot: string | null): string {
   if (internalRoot) {
-    // Remove trailing slash and get last component
     return path.basename(internalRoot.replace(/\/$/, ''));
   }
-  // Use archive filename without extension
   return path.basename(archivePath, path.extname(archivePath));
 }
 
@@ -125,6 +126,26 @@ function isInsideAny(filePath: string, dirs: Set<string>): boolean {
 }
 
 /**
+ * Deepest folder that contains every given root, with a trailing slash.
+ */
+function commonRoot(roots: string[]): string | null {
+  if (roots.length === 0) return null;
+  let prefix = (roots[0] ?? '').split('/').filter(Boolean);
+  for (const root of roots.slice(1)) {
+    const segments = root.split('/').filter(Boolean);
+    let i = 0;
+    while (i < prefix.length && i < segments.length && prefix[i] === segments[i]) i++;
+    prefix = prefix.slice(0, i);
+  }
+  return prefix.length === 0 ? null : prefix.join('/') + '/';
+}
+
+function sizeUnder(entries: ArchiveEntry[], internalRoot: string | null): number {
+  const scoped = internalRoot ? entries.filter((e) => e.path.startsWith(internalRoot)) : entries;
+  return scoped.reduce((sum, e) => sum + e.uncompressedSize, 0);
+}
+
+/**
  * Scan archive entries and detect all addons
  */
 export function detectAddons(
@@ -132,15 +153,16 @@ export function detectAddons(
   archiveFormat: ArchiveFormat,
   entries: ArchiveEntry[]
 ): DetectedItem[] {
+  const usable = entries.filter((e) => !shouldIgnore(e.path));
+
   // Collect markers and directory sets
   const markers: MarkerFile[] = [];
   const pluginDirs = new Set<string>();
   const aircraftDirs = new Set<string>();
 
   // Pass 1: Collect all markers
-  for (const entry of entries) {
+  for (const entry of usable) {
     if (entry.isDirectory) continue;
-    if (shouldIgnore(entry.path)) continue;
 
     const markerType = detectMarkerType(entry.path);
     if (markerType) {
@@ -174,6 +196,7 @@ export function detectAddons(
   // Pass 3: Process markers with skip logic
   const skipPrefixes: string[] = [];
   const detected: DetectedItem[] = [];
+  let luaEmitted = false;
 
   for (const marker of markers) {
     // Skip if already inside a detected addon
@@ -194,7 +217,7 @@ export function detectAddons(
     if (marker.type === 'SceneryLibrary') {
       const root = getAddonRoot(marker.path, 'SceneryLibrary');
       if (root) {
-        const hasDsf = entries.some(
+        const hasDsf = usable.some(
           (e) =>
             e.path.startsWith(root) &&
             e.path.toLowerCase().includes('earth nav data') &&
@@ -204,14 +227,32 @@ export function detectAddons(
       }
     }
 
+    // A Lua pack is described by its components, so one item covers every
+    // .lua file in it rather than one item per script.
+    if (marker.type === 'LuaScript') {
+      if (luaEmitted) continue;
+      const components = detectLuaComponents(usable);
+      if (components.length === 0) continue;
+      luaEmitted = true;
+
+      const packRoot = commonRoot(components.map((c) => c.internalRoot));
+
+      detected.push({
+        id: crypto.randomUUID(),
+        addonType: 'LuaScript',
+        displayName: getDisplayName(archivePath, packRoot),
+        sourcePath: archivePath,
+        archiveFormat,
+        archiveInternalRoot: packRoot ?? undefined,
+        luaComponents: components,
+        estimatedSize: sizeUnder(usable, packRoot),
+        warnings: [],
+      });
+      continue;
+    }
+
     const internalRoot = getAddonRoot(marker.path, marker.type);
     const displayName = getDisplayName(archivePath, internalRoot);
-
-    // Calculate size for this addon
-    const addonEntries = internalRoot
-      ? entries.filter((e) => e.path.startsWith(internalRoot))
-      : entries;
-    const estimatedSize = addonEntries.reduce((sum, e) => sum + e.uncompressedSize, 0);
 
     const item: DetectedItem = {
       id: crypto.randomUUID(),
@@ -220,9 +261,15 @@ export function detectAddons(
       sourcePath: archivePath,
       archiveFormat,
       archiveInternalRoot: internalRoot ?? undefined,
-      estimatedSize,
+      estimatedSize: sizeUnder(usable, internalRoot),
       warnings: [],
     };
+
+    if (marker.type === 'Navdata') {
+      const navdata = detectNavdata(archivePath, usable, internalRoot ?? '');
+      item.navdataInfo = navdata.info;
+      item.navdataSubPath = navdata.subPath;
+    }
 
     // Add to skip prefixes
     if (internalRoot) {
@@ -232,5 +279,54 @@ export function detectAddons(
     detected.push(item);
   }
 
+  detected.push(...detectLiveryItems(archivePath, archiveFormat, usable, skipPrefixes, detected));
+
   return detected;
+}
+
+/**
+ * Liveries an archive carries that are not already part of a detected aircraft.
+ */
+function detectLiveryItems(
+  archivePath: string,
+  archiveFormat: ArchiveFormat,
+  entries: ArchiveEntry[],
+  skipPrefixes: string[],
+  detected: DetectedItem[]
+): DetectedItem[] {
+  const items: DetectedItem[] = [];
+
+  for (const match of detectLiveries(entries)) {
+    if (match.internalRoot && skipPrefixes.some((p) => match.internalRoot.startsWith(p))) continue;
+    if (!match.internalRoot && detected.length > 0) continue;
+
+    items.push({
+      id: crypto.randomUUID(),
+      addonType: 'Livery',
+      displayName: getDisplayName(archivePath, match.internalRoot || null),
+      sourcePath: archivePath,
+      archiveFormat,
+      archiveInternalRoot: match.internalRoot || undefined,
+      liveryInfo: {
+        aircraftTypeId: match.aircraftTypeId,
+        aircraftName: match.aircraftName,
+      },
+      estimatedSize: sizeUnder(entries, match.internalRoot || null),
+      warnings: [],
+    });
+  }
+
+  if (items.length === 0 && detected.length === 0 && looksLikeUnknownLivery(entries)) {
+    items.push({
+      id: crypto.randomUUID(),
+      addonType: 'Livery',
+      displayName: getDisplayName(archivePath, null),
+      sourcePath: archivePath,
+      archiveFormat,
+      estimatedSize: sizeUnder(entries, null),
+      warnings: ['Aircraft could not be identified - choose the target aircraft before installing'],
+    });
+  }
+
+  return items;
 }

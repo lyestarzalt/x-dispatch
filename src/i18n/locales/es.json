@@ -1174,7 +1174,22 @@
       "emptyState": "Suelta archivos para instalar",
       "supportedTypes": "Aeronaves, plugins, escenarios, libreas y más",
       "installMore": "Instalar más complementos",
-      "clear": "Limpiar todo"
+      "clear": "Limpiar todo",
+      "target": "Se instala en {{path}}",
+      "alreadyInstalled": "Ya instalado",
+      "modeMerge": "Combinar",
+      "modeClean": "Reemplazar",
+      "modeMergeHint": "Conserva los archivos que la nueva versión no incluye",
+      "modeCleanHint": "Elimina primero la carpeta anterior, tras una copia de seguridad",
+      "installSelected_one": "Instalar 1 complemento",
+      "installSelected_other": "Instalar {{count}} complementos",
+      "selectionSummary_one": "1 complemento seleccionado, {{size}}",
+      "selectionSummary_other": "{{count}} complementos seleccionados, {{size}}",
+      "cancel": "Cancelar",
+      "cancelling": "Cancelando",
+      "skipped": "No instalado, se canceló el proceso",
+      "backupSaved": "Se hizo copia de seguridad de los archivos reemplazados",
+      "resultsSummary": "{{succeeded}} instalados, {{failed}} fallidos, {{skipped}} omitidos"
     },
     "browser": {
       "searchPlaceholder": "Buscar...",
@@ -1287,7 +1302,9 @@
     },
     "sceneryEntry": {
       "openFolder": "Abrir carpeta",
-      "delete": "Eliminar del disco"
+      "delete": "Eliminar del disco",
+      "missing": "Ausente",
+      "missingHint": "Aparece en scenery_packs.ini pero no se encuentra en el disco. Al guardar se conserva la línea."
     },
     "addonTypes": {
       "Aircraft": "Aeronave",
@@ -1297,6 +1314,38 @@
       "Livery": "Librea",
       "LuaScript": "Script Lua",
       "Navdata": "Datos de navegación"
+    },
+    "conflicts": {
+      "button": "Conflictos",
+      "buttonWithCount": "{{count}} conflictos",
+      "title": "Conflictos de escenario",
+      "description": "Paquetes que se disputan el mismo terreno y bibliotecas que nadie proporciona.",
+      "none": "Nada en disputa. Tu biblioteca de escenarios es coherente.",
+      "librariesTitle": "Bibliotecas ausentes",
+      "librariesDescription": "Estos paquetes usan bibliotecas que no están instaladas. X-Plane muestra cajas rojas en su lugar.",
+      "requiredBy_one": "Necesaria para {{name}}",
+      "requiredBy_other": "Necesaria para {{name}} y {{count}} paquetes en total",
+      "download": "Descargar",
+      "icaoTitle": "Aeropuertos duplicados",
+      "icaoDescription": "Más de un paquete reclama el mismo aeropuerto.",
+      "icaoWinner": "X-Plane carga {{name}}",
+      "tilesTitle": "Teselas superpuestas",
+      "tilesDescription": "Dos paquetes del mismo tipo cubren el mismo terreno. Gana el que esté más arriba.",
+      "tileOverlap_one": "{{count}} tesela compartida",
+      "tileOverlap_other": "{{count}} teselas compartidas",
+      "kindMesh": "Malla",
+      "kindOverlay": "Superposición"
+    },
+    "updates": {
+      "title": "Actualizar {{name}}",
+      "description": "Solo se descargan los archivos que han cambiado.",
+      "checking": "Comparando con el servidor de actualizaciones",
+      "versions": "Instalada {{local}}, disponible {{remote}}",
+      "summary": "{{changed}} archivos por descargar, {{removed}} por eliminar, {{size}}",
+      "upToDate": "Ya está actualizado",
+      "apply": "Actualizar",
+      "done": "Actualizado a {{version}}: {{updated}} archivos escritos, {{removed}} eliminados",
+      "failed": "Error al actualizar"
     }
   },
   "simbrief": {
