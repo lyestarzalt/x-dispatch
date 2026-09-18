@@ -1299,6 +1299,27 @@
       "Livery": "Paint scheme",
       "LuaScript": "Lua script scroll",
       "Navdata": "Navigation charts"
+    },
+    "conflicts": {
+      "button": "Squabbles",
+      "buttonWithCount": "{{count}} squabbles",
+      "title": "Scenery squabbles",
+      "description": "Packs brawlin' over the same patch o' ground, and libraries nobody carries.",
+      "none": "No brawls aboard. Yer scenery holds together, matey.",
+      "librariesTitle": "Missin' libraries",
+      "librariesDescription": "These packs reach for chests that ain't in the hold. X-Plane serves up red boxes instead.",
+      "requiredBy_one": "Wanted by {{name}}",
+      "requiredBy_other": "Wanted by {{name}} and {{count}} packs all told",
+      "download": "Haul aboard",
+      "icaoTitle": "Twice-claimed ports",
+      "icaoDescription": "More than one pack claims the same port o' call.",
+      "icaoWinner": "X-Plane sails with {{name}}",
+      "tilesTitle": "Overlappin' tiles",
+      "tilesDescription": "Two packs o' the same stripe cover the same ground. The one up top wins.",
+      "tileOverlap_one": "{{count}} shared tile",
+      "tileOverlap_other": "{{count}} shared tiles",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
     }
   },
   "simbrief": {

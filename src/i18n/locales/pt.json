@@ -1299,6 +1299,27 @@
       "Livery": "Pintura",
       "LuaScript": "Script Lua",
       "Navdata": "Dados de navegação"
+    },
+    "conflicts": {
+      "button": "Conflitos",
+      "buttonWithCount": "{{count}} conflitos",
+      "title": "Conflitos de cenário",
+      "description": "Pacotes que disputam o mesmo terreno e bibliotecas que ninguém fornece.",
+      "none": "Nada em conflito. A sua biblioteca de cenários está coerente.",
+      "librariesTitle": "Bibliotecas em falta",
+      "librariesDescription": "Estes pacotes usam bibliotecas que não estão instaladas. O X-Plane mostra caixas vermelhas no lugar.",
+      "requiredBy_one": "Necessária para {{name}}",
+      "requiredBy_other": "Necessária para {{name}} e {{count}} pacotes no total",
+      "download": "Transferir",
+      "icaoTitle": "Aeroportos duplicados",
+      "icaoDescription": "Mais do que um pacote reivindica o mesmo aeroporto.",
+      "icaoWinner": "O X-Plane carrega {{name}}",
+      "tilesTitle": "Mosaicos sobrepostos",
+      "tilesDescription": "Dois pacotes do mesmo tipo cobrem o mesmo terreno. Ganha o que estiver mais acima.",
+      "tileOverlap_one": "{{count}} mosaico partilhado",
+      "tileOverlap_other": "{{count}} mosaicos partilhados",
+      "kindMesh": "Malha",
+      "kindOverlay": "Sobreposição"
     }
   },
   "simbrief": {

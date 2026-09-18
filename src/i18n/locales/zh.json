@@ -1299,6 +1299,27 @@
       "Livery": "涂装",
       "LuaScript": "Lua 脚本",
       "Navdata": "导航数据"
+    },
+    "conflicts": {
+      "button": "冲突",
+      "buttonWithCount": "{{count}} 个冲突",
+      "title": "场景冲突",
+      "description": "争夺同一地面的场景包，以及无人提供的库。",
+      "none": "没有冲突。你的场景库一致。",
+      "librariesTitle": "缺失的库",
+      "librariesDescription": "这些场景包引用了未安装的库。X-Plane 会改为显示红色方块。",
+      "requiredBy_one": "{{name}} 需要它",
+      "requiredBy_other": "{{name}} 等共 {{count}} 个场景包需要它",
+      "download": "下载",
+      "icaoTitle": "重复的机场",
+      "icaoDescription": "多个场景包提供了同一个机场。",
+      "icaoWinner": "X-Plane 加载 {{name}}",
+      "tilesTitle": "重叠的地块",
+      "tilesDescription": "两个同类场景包覆盖了同一块地面，靠上的胜出。",
+      "tileOverlap_one": "{{count}} 个共用地块",
+      "tileOverlap_other": "{{count}} 个共用地块",
+      "kindMesh": "地形",
+      "kindOverlay": "叠加层"
     }
   },
   "simbrief": {

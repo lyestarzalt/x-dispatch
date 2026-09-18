@@ -27,6 +27,7 @@ import {
   RefreshCw,
   Save,
   Search,
+  ShieldAlert,
   Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -48,12 +49,14 @@ import { cn } from '@/lib/utils/helpers';
 import {
   useScenarySaveOrder,
   useSceneryBackups,
+  useSceneryConflicts,
   useSceneryDelete,
   useSceneryList,
   useSceneryRestore,
   useScenerySort,
   useSceneryToggle,
 } from '@/queries/useAddonManager';
+import { ConflictsDialog } from '../components/ConflictsDialog';
 import { SortableSceneryEntry } from '../components/SceneryEntry';
 
 function GlobalAirportsRow({
@@ -139,11 +142,13 @@ export function SceneryTab() {
   const toggleMutation = useSceneryToggle();
   const deleteMutation = useSceneryDelete();
   const { data: backups = [] } = useSceneryBackups();
+  const { data: conflicts, isLoading: conflictsLoading } = useSceneryConflicts();
   const restoreMutation = useSceneryRestore();
 
   const [localEntries, setLocalEntries] = useState<SceneryEntry[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showBackups, setShowBackups] = useState(false);
+  const [showConflicts, setShowConflicts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<SceneryEntry | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -264,6 +269,11 @@ export function SceneryTab() {
     );
   }
 
+  const conflictCount =
+    (conflicts?.tileOverlaps.length ?? 0) +
+    (conflicts?.icaoConflicts.length ?? 0) +
+    (conflicts?.missingLibraries.length ?? 0);
+
   const isPending =
     sortMutation.isPending ||
     saveOrderMutation.isPending ||
@@ -370,6 +380,18 @@ export function SceneryTab() {
 
           <Button
             variant="ghost"
+            size="sm"
+            onClick={() => setShowConflicts(true)}
+            className="gap-1.5 text-muted-foreground"
+          >
+            <ShieldAlert className={cn('h-3.5 w-3.5', conflictCount > 0 && 'text-warning')} />
+            {conflictCount > 0
+              ? t('addonManager.conflicts.buttonWithCount', { count: conflictCount })
+              : t('addonManager.conflicts.button')}
+          </Button>
+
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => setShowBackups(true)}
             className="h-8 w-8 text-muted-foreground"
@@ -426,6 +448,13 @@ export function SceneryTab() {
           </SortableContext>
         </DndContext>
       </ScrollArea>
+
+      <ConflictsDialog
+        open={showConflicts}
+        onOpenChange={setShowConflicts}
+        conflicts={conflicts}
+        isLoading={conflictsLoading}
+      />
 
       {/* Backups Dialog */}
       <Dialog open={showBackups} onOpenChange={setShowBackups}>

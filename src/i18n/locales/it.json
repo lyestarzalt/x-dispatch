@@ -1299,6 +1299,27 @@
       "Livery": "Livrea",
       "LuaScript": "Script Lua",
       "Navdata": "Dati di navigazione"
+    },
+    "conflicts": {
+      "button": "Conflitti",
+      "buttonWithCount": "{{count}} conflitti",
+      "title": "Conflitti tra scenari",
+      "description": "Pacchetti che si contendono lo stesso terreno e librerie che nessuno fornisce.",
+      "none": "Nessun conflitto. La tua libreria di scenari è coerente.",
+      "librariesTitle": "Librerie mancanti",
+      "librariesDescription": "Questi pacchetti usano librerie non installate. X-Plane mostra riquadri rossi al loro posto.",
+      "requiredBy_one": "Richiesta da {{name}}",
+      "requiredBy_other": "Richiesta da {{name}} e da {{count}} pacchetti in totale",
+      "download": "Scarica",
+      "icaoTitle": "Aeroporti duplicati",
+      "icaoDescription": "Più di un pacchetto rivendica lo stesso aeroporto.",
+      "icaoWinner": "X-Plane carica {{name}}",
+      "tilesTitle": "Tessere sovrapposte",
+      "tilesDescription": "Due pacchetti dello stesso tipo coprono lo stesso terreno. Vince quello più in alto.",
+      "tileOverlap_one": "{{count}} tessera in comune",
+      "tileOverlap_other": "{{count}} tessere in comune",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
     }
   },
   "simbrief": {

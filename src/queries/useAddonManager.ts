@@ -10,6 +10,7 @@ import type {
 } from '@/lib/addonManager/core/types';
 import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
 import { getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
+import type { SceneryConflicts } from '@/lib/addonManager/scenery/conflicts';
 import { launchKeys } from './useLaunchQuery';
 
 // Query keys
@@ -18,6 +19,7 @@ export const addonKeys = {
   scenery: ['addon', 'scenery'] as const,
   sceneryList: ['addon', 'scenery', 'list'] as const,
   sceneryBackups: ['addon', 'scenery', 'backups'] as const,
+  sceneryConflicts: ['addon', 'scenery', 'conflicts'] as const,
   aircraft: ['addon', 'aircraft'] as const,
   aircraftIcon: (iconPath: string) => ['addon', 'aircraftIcon', iconPath] as const,
   plugins: ['addon', 'plugins'] as const,
@@ -40,6 +42,24 @@ export function useSceneryList(enabled = true) {
     },
     enabled,
     staleTime: 0,
+  });
+}
+
+/**
+ * Tile overlaps, duplicate airports and libraries nothing provides.
+ */
+export function useSceneryConflicts(enabled = true) {
+  return useQuery({
+    queryKey: addonKeys.sceneryConflicts,
+    queryFn: async (): Promise<SceneryConflicts> => {
+      const result = await window.addonManagerAPI.scenery.conflicts();
+      if (!result.ok) {
+        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+      }
+      return result.value;
+    },
+    enabled,
+    staleTime: 60_000,
   });
 }
 

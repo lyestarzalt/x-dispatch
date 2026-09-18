@@ -1299,6 +1299,27 @@
       "Livery": "Livery",
       "LuaScript": "Lua Script",
       "Navdata": "Navigation Data"
+    },
+    "conflicts": {
+      "button": "Conflicts",
+      "buttonWithCount": "{{count}} conflicts",
+      "title": "Scenery conflicts",
+      "description": "Packs that fight over the same ground, and libraries nothing provides.",
+      "none": "Nothing is fighting. Your scenery library is consistent.",
+      "librariesTitle": "Missing libraries",
+      "librariesDescription": "These packs draw from libraries that are not installed. X-Plane shows red boxes instead.",
+      "requiredBy_one": "Needed by {{name}}",
+      "requiredBy_other": "Needed by {{name}} and {{count}} packs in total",
+      "download": "Download",
+      "icaoTitle": "Duplicate airports",
+      "icaoDescription": "More than one pack claims the same airport.",
+      "icaoWinner": "X-Plane loads {{name}}",
+      "tilesTitle": "Overlapping tiles",
+      "tilesDescription": "Two packs of the same kind cover the same ground. The higher one wins.",
+      "tileOverlap_one": "{{count}} shared tile",
+      "tileOverlap_other": "{{count}} shared tiles",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
     }
   },
   "simbrief": {

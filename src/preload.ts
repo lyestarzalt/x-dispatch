@@ -302,6 +302,7 @@ contextBridge.exposeInMainWorld('addonManagerAPI', {
     deleteScenery: (folderName: string) => ipcRenderer.invoke('addon:scenery:delete', folderName),
     move: (folderName: string, direction: 'up' | 'down') =>
       ipcRenderer.invoke('addon:scenery:move', folderName, direction),
+    conflicts: () => ipcRenderer.invoke('addon:scenery:conflicts'),
     backup: () => ipcRenderer.invoke('addon:scenery:backup'),
     listBackups: () => ipcRenderer.invoke('addon:scenery:listBackups'),
     restore: (backupPath: string) => ipcRenderer.invoke('addon:scenery:restore', backupPath),
@@ -630,6 +631,13 @@ declare global {
           direction: 'up' | 'down'
         ) => Promise<
           | { ok: true; value: import('./lib/addonManager/core/types').SceneryEntry[] }
+          | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
+        >;
+        conflicts: () => Promise<
+          | {
+              ok: true;
+              value: import('./lib/addonManager/scenery/conflicts').SceneryConflicts;
+            }
           | { ok: false; error: import('./lib/addonManager/core/types').SceneryError }
         >;
         backup: () => Promise<

@@ -167,6 +167,16 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.move(sceneryPath, direction);
   });
 
+  ipcMain.handle('addon:scenery:conflicts', async () => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) {
+      return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    const manager = new SceneryManager(xplanePath);
+    return manager.conflicts();
+  });
+
   ipcMain.handle('addon:scenery:backup', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {

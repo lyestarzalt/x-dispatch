@@ -2,12 +2,17 @@
 import type { Dirent } from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
+import { parseAptIcaos } from '../core/aptDat';
+import { libraryPrefix, parseDsfDefinitions } from '../core/dsfDefinitions';
 import { parseDsfHeader } from '../core/dsfParser';
 import { type SceneryClassification, createDefaultClassification } from '../core/types';
 
 const MAX_APT_DAT_DEPTH = 5;
 const MAX_DSF_SEARCH_DEPTH = 3;
 const MAX_LIBRARY_READ_BYTES = 64 * 1024;
+/** DSFs read for library references. A pack draws from the same libraries
+ * throughout, and an ortho set has thousands of tiles. */
+const MAX_DSF_DEFINITION_READS = 4;
 
 /**
  * Symlink-aware directory check.
@@ -153,6 +158,11 @@ export async function scanSceneryFolder(folderPath: string): Promise<SceneryClas
           classification.hasDsf = earthNavResult.hasDsf;
           classification.dsfCount = earthNavResult.dsfCount;
           classification.dsfFilenames = earthNavResult.dsfFilenames;
+          classification.icaos = await collectIcaos(earthNavResult.aptDatPaths);
+          classification.libraryRefs = await collectLibraryRefs(
+            folderPath,
+            earthNavResult.dsfPaths
+          );
 
           if (earthNavResult.firstDsfPath) {
             classification.dsfInfo = await parseDsfHeader(earthNavResult.firstDsfPath);
@@ -177,6 +187,48 @@ interface EarthNavScanResult {
   firstDsfPath: string;
   dsfCount: number;
   dsfFilenames: string[];
+  aptDatPaths: string[];
+  dsfPaths: string[];
+}
+
+/**
+ * Airports declared across every apt.dat in the pack.
+ */
+async function collectIcaos(aptDatPaths: string[]): Promise<string[]> {
+  const icaos = new Set<string>();
+  for (const aptPath of aptDatPaths) {
+    for (const icao of await parseAptIcaos(aptPath)) icaos.add(icao);
+  }
+  return [...icaos];
+}
+
+/** Prefix of the library X-Plane ships with, always present. */
+const BUILTIN_LIBRARY = 'lib';
+
+/**
+ * Libraries the pack draws from, read out of a sample of its DSFs.
+ * A reference that resolves to a file inside the pack is the pack's own asset,
+ * not a dependency on someone else's library.
+ */
+async function collectLibraryRefs(folderPath: string, dsfPaths: string[]): Promise<string[]> {
+  const libraries = new Set<string>();
+
+  for (const dsfPath of dsfPaths.slice(0, MAX_DSF_DEFINITION_READS)) {
+    for (const virtualPath of await parseDsfDefinitions(dsfPath)) {
+      const prefix = libraryPrefix(virtualPath);
+      if (!prefix || prefix.toLowerCase() === BUILTIN_LIBRARY) continue;
+      if (libraries.has(prefix)) continue;
+
+      try {
+        await fsp.access(path.join(folderPath, ...virtualPath.split('/')));
+        continue; // Ships with the pack
+      } catch {
+        libraries.add(prefix);
+      }
+    }
+  }
+
+  return [...libraries];
 }
 
 async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResult> {
@@ -186,6 +238,8 @@ async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResul
     firstDsfPath: '',
     dsfCount: 0,
     dsfFilenames: [],
+    aptDatPaths: [],
+    dsfPaths: [],
   };
 
   async function scan(dir: string, depth: number): Promise<void> {
@@ -205,12 +259,16 @@ async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResul
       if (await isFileEntry(entry, dir)) {
         if (lowerName === 'apt.dat' && (await isValidAptDat(entryPath))) {
           result.hasAptDat = true;
+          result.aptDatPaths.push(entryPath);
         }
 
         if (lowerName.endsWith('.dsf')) {
           result.hasDsf = true;
           result.dsfCount++;
           result.dsfFilenames.push(entry.name);
+          if (result.dsfPaths.length < MAX_DSF_DEFINITION_READS) {
+            result.dsfPaths.push(entryPath);
+          }
           if (!result.firstDsfPath) {
             result.firstDsfPath = entryPath;
           }

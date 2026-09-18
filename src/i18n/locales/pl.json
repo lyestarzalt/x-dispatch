@@ -1299,6 +1299,27 @@
       "Livery": "Malowanie",
       "LuaScript": "Skrypt Lua",
       "Navdata": "Dane nawigacyjne"
+    },
+    "conflicts": {
+      "button": "Konflikty",
+      "buttonWithCount": "Konflikty: {{count}}",
+      "title": "Konflikty scenerii",
+      "description": "Paczki walczące o ten sam teren i biblioteki, których nikt nie dostarcza.",
+      "none": "Brak konfliktów. Twoja biblioteka scenerii jest spójna.",
+      "librariesTitle": "Brakujące biblioteki",
+      "librariesDescription": "Te paczki korzystają z niezainstalowanych bibliotek. X-Plane pokazuje zamiast nich czerwone pudełka.",
+      "requiredBy_one": "Potrzebna dla {{name}}",
+      "requiredBy_other": "Potrzebna dla {{name}} i łącznie {{count}} paczek",
+      "download": "Pobierz",
+      "icaoTitle": "Zduplikowane lotniska",
+      "icaoDescription": "Więcej niż jedna paczka obsługuje to samo lotnisko.",
+      "icaoWinner": "X-Plane wczytuje {{name}}",
+      "tilesTitle": "Nakładające się kafelki",
+      "tilesDescription": "Dwie paczki tego samego rodzaju pokrywają ten sam teren. Wygrywa ta wyżej.",
+      "tileOverlap_one": "{{count}} wspólny kafelek",
+      "tileOverlap_other": "Wspólne kafelki: {{count}}",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Nakładka"
     }
   },
   "simbrief": {

@@ -1299,6 +1299,27 @@
       "Livery": "Bemalung",
       "LuaScript": "Lua-Skript",
       "Navdata": "Navigationsdaten"
+    },
+    "conflicts": {
+      "button": "Konflikte",
+      "buttonWithCount": "{{count}} Konflikte",
+      "title": "Szenerie-Konflikte",
+      "description": "Pakete, die sich um denselben Boden streiten, und Bibliotheken, die niemand bereitstellt.",
+      "none": "Kein Streit. Deine Szenerie-Bibliothek ist stimmig.",
+      "librariesTitle": "Fehlende Bibliotheken",
+      "librariesDescription": "Diese Pakete greifen auf nicht installierte Bibliotheken zu. X-Plane zeigt stattdessen rote Kästen.",
+      "requiredBy_one": "Benötigt von {{name}}",
+      "requiredBy_other": "Benötigt von {{name}} und insgesamt {{count}} Paketen",
+      "download": "Herunterladen",
+      "icaoTitle": "Doppelte Flugplätze",
+      "icaoDescription": "Mehr als ein Paket beansprucht denselben Flugplatz.",
+      "icaoWinner": "X-Plane lädt {{name}}",
+      "tilesTitle": "Überlappende Kacheln",
+      "tilesDescription": "Zwei Pakete derselben Art decken denselben Boden ab. Das obere gewinnt.",
+      "tileOverlap_one": "{{count}} gemeinsame Kachel",
+      "tileOverlap_other": "{{count}} gemeinsame Kacheln",
+      "kindMesh": "Mesh",
+      "kindOverlay": "Overlay"
     }
   },
   "simbrief": {

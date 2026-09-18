@@ -1299,6 +1299,27 @@
       "Livery": "Livrée",
       "LuaScript": "Script Lua",
       "Navdata": "Données de navigation"
+    },
+    "conflicts": {
+      "button": "Conflits",
+      "buttonWithCount": "{{count}} conflits",
+      "title": "Conflits de scènes",
+      "description": "Les paquets qui se disputent le même terrain, et les bibliothèques que personne ne fournit.",
+      "none": "Aucun conflit. Votre bibliothèque de scènes est cohérente.",
+      "librariesTitle": "Bibliothèques manquantes",
+      "librariesDescription": "Ces paquets utilisent des bibliothèques non installées. X-Plane affiche des boîtes rouges à la place.",
+      "requiredBy_one": "Requise par {{name}}",
+      "requiredBy_other": "Requise par {{name}} et {{count}} paquets au total",
+      "download": "Télécharger",
+      "icaoTitle": "Aéroports en double",
+      "icaoDescription": "Plusieurs paquets revendiquent le même aéroport.",
+      "icaoWinner": "X-Plane charge {{name}}",
+      "tilesTitle": "Tuiles qui se chevauchent",
+      "tilesDescription": "Deux paquets du même type couvrent le même terrain. Le plus haut l'emporte.",
+      "tileOverlap_one": "{{count}} tuile partagée",
+      "tileOverlap_other": "{{count}} tuiles partagées",
+      "kindMesh": "Relief",
+      "kindOverlay": "Surcouche"
     }
   },
   "simbrief": {

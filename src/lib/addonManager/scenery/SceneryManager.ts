@@ -16,6 +16,7 @@ import {
   ok,
 } from '../core/types';
 import { classifyScenery } from './classifier';
+import { type SceneryConflicts, findConflicts, promoteAirportMeshes } from './conflicts';
 import { scanSceneryFolder } from './folderScanner';
 import {
   backupSceneryPacksIni,
@@ -23,6 +24,12 @@ import {
   readIni,
   writeSceneryPacksIni,
 } from './iniParser';
+import {
+  type CachedScenery,
+  fingerprintFolder,
+  readSceneryIndex,
+  writeSceneryIndex,
+} from './sceneryIndex';
 
 const GLOBAL_AIRPORTS_MARKER = '*GLOBAL_AIRPORTS*';
 
@@ -45,6 +52,10 @@ interface PendingEntry {
   shortcutPath?: string;
   missing?: boolean;
   isGlobalAirports?: boolean;
+  /** Folder state at collection time, used to validate the cache */
+  fingerprint?: string;
+  /** Classification reused from the index instead of a fresh scan */
+  cached?: CachedScenery;
 }
 
 /**
@@ -61,6 +72,25 @@ function resolveShortcutTarget(fullPath: string): string | null {
     // Not resolvable; classification falls back to the original path
   }
   return null;
+}
+
+/**
+ * Fingerprint every pending folder and reuse the cached classification of the
+ * ones that have not changed since the last scan.
+ */
+async function attachCachedClassifications(pending: PendingEntry[]): Promise<void> {
+  const scannable = pending.filter((item) => !item.isGlobalAirports && !item.missing);
+  if (scannable.length === 0) return;
+
+  const cache = await readSceneryIndex();
+
+  await mapWithConcurrency(scannable, SCAN_CONCURRENCY, async (item) => {
+    item.fingerprint = await fingerprintFolder(item.scanPath ?? item.fullPath);
+    const hit = cache.get(item.fullPath);
+    if (hit && hit.fingerprint === item.fingerprint) {
+      item.cached = hit;
+    }
+  });
 }
 
 /**
@@ -111,14 +141,15 @@ async function buildEntry(item: PendingEntry, index: number): Promise<SceneryEnt
     };
   }
 
-  const classification = await scanSceneryFolder(item.scanPath ?? item.fullPath);
+  const classification =
+    item.cached?.classification ?? (await scanSceneryFolder(item.scanPath ?? item.fullPath));
 
   return {
     sceneryPath: item.sceneryPath,
     displayName,
     fullPath: item.fullPath,
     enabled: item.enabled,
-    priority: classifyScenery(displayName, classification),
+    priority: item.cached?.priority ?? classifyScenery(displayName, classification),
     classification,
     originalIndex: index,
     ...(item.shortcutPath ? { shortcutPath: item.shortcutPath } : {}),
@@ -203,9 +234,33 @@ export class SceneryManager {
 
     await this.collectUnlistedFolders(pending, seen);
 
-    return ok(
-      await mapWithConcurrency(pending, SCAN_CONCURRENCY, (item, i) => buildEntry(item, i))
+    await attachCachedClassifications(pending);
+
+    const entries = await mapWithConcurrency(pending, SCAN_CONCURRENCY, (item, i) =>
+      buildEntry(item, i)
     );
+
+    // Cached before promotion: a pack is only an airport mesh while the
+    // airport it serves is installed, and that is decided on every analyze.
+    await writeSceneryIndex(
+      entries.flatMap((entry, i) => {
+        const fingerprint = pending[i]?.fingerprint;
+        if (!fingerprint || entry.isGlobalAirports || entry.missing) return [];
+        return [
+          {
+            fullPath: entry.fullPath,
+            sceneryPath: entry.sceneryPath,
+            fingerprint,
+            priority: entry.priority,
+            classification: entry.classification,
+          },
+        ];
+      })
+    );
+
+    promoteAirportMeshes(entries);
+
+    return ok(entries);
   }
 
   /**
@@ -445,6 +500,17 @@ export class SceneryManager {
     }
 
     return ok(entries);
+  }
+
+  /**
+   * Report the conflicts across the installed library.
+   */
+  async conflicts(): Promise<Result<SceneryConflicts, SceneryError>> {
+    const analyzeResult = await this.analyze();
+    if (!analyzeResult.ok) {
+      return analyzeResult;
+    }
+    return ok(findConflicts(analyzeResult.value));
   }
 
   /**

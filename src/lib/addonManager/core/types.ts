@@ -52,7 +52,12 @@ export interface SceneryClassification {
   dsfInfo: DsfInfo;
   dsfCount: number;
   dsfFilenames: string[];
+  /** Virtual paths this pack exports, for a library */
   libraryExports: string[];
+  /** Airports the pack's apt.dat declares */
+  icaos: string[];
+  /** Libraries the pack's DSFs draw from */
+  libraryRefs: string[];
 }
 
 /**
@@ -122,6 +127,8 @@ export function createDefaultClassification(): SceneryClassification {
     dsfCount: 0,
     dsfFilenames: [],
     libraryExports: [],
+    icaos: [],
+    libraryRefs: [],
   };
 }
 

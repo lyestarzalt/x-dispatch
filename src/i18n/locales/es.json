@@ -1299,6 +1299,27 @@
       "Livery": "Librea",
       "LuaScript": "Script Lua",
       "Navdata": "Datos de navegación"
+    },
+    "conflicts": {
+      "button": "Conflictos",
+      "buttonWithCount": "{{count}} conflictos",
+      "title": "Conflictos de escenario",
+      "description": "Paquetes que se disputan el mismo terreno y bibliotecas que nadie proporciona.",
+      "none": "Nada en disputa. Tu biblioteca de escenarios es coherente.",
+      "librariesTitle": "Bibliotecas ausentes",
+      "librariesDescription": "Estos paquetes usan bibliotecas que no están instaladas. X-Plane muestra cajas rojas en su lugar.",
+      "requiredBy_one": "Necesaria para {{name}}",
+      "requiredBy_other": "Necesaria para {{name}} y {{count}} paquetes en total",
+      "download": "Descargar",
+      "icaoTitle": "Aeropuertos duplicados",
+      "icaoDescription": "Más de un paquete reclama el mismo aeropuerto.",
+      "icaoWinner": "X-Plane carga {{name}}",
+      "tilesTitle": "Teselas superpuestas",
+      "tilesDescription": "Dos paquetes del mismo tipo cubren el mismo terreno. Gana el que esté más arriba.",
+      "tileOverlap_one": "{{count}} tesela compartida",
+      "tileOverlap_other": "{{count}} teselas compartidas",
+      "kindMesh": "Malla",
+      "kindOverlay": "Superposición"
     }
   },
   "simbrief": {
