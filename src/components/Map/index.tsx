@@ -37,6 +37,7 @@ import {
   useAirportInteractions,
   useAirportRenderer,
   useApproachLightAnimation,
+  useCityLights,
   useCursorElevation,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
@@ -46,6 +47,8 @@ import {
   useProcedureRouteSync,
   useRangeRingsSync,
   useRouteLineSync,
+  useSolarClock,
+  useSolarSky,
   useTaxiRouteSync,
   useTerrainShading,
   useTrackControl,
@@ -53,7 +56,6 @@ import {
   useVatsimSectorSync,
   useVatsimSync,
 } from './hooks';
-import { useDayNightLayer } from './hooks/useDayNightLayer';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   addFlightPlanLayer,
@@ -114,7 +116,6 @@ export default function Map({ airports }: MapProps) {
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
-  const dayNightEnabled = useMapStore((s) => s.dayNightEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
   const followPlane = useMapStore((s) => s.followPlane);
@@ -126,6 +127,8 @@ export default function Map({ airports }: MapProps) {
   const setShowPlaneTracker = useMapStore((s) => s.setShowPlaneTracker);
 
   const mapStyleUrl = useSettingsStore((s) => s.map.mapStyleUrl);
+  const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
+  const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
 
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
@@ -374,8 +377,12 @@ export default function Map({ airports }: MapProps) {
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
 
-  // Day/night terminator overlay
-  useDayNightLayer(mapRef, dayNightEnabled);
+  // Sun-driven scene: one clock feeds the sky lighting and the city lights.
+  // Each hook subscribes to the solar store directly, so a tick never
+  // re-renders this component.
+  useSolarClock();
+  useSolarSky(mapRef, dynamicSkyEnabled);
+  useCityLights(mapRef, cityLightsEnabled);
 
   // Terrain shading (hillshade + contour lines)
   useTerrainShading(mapRef, terrainShadingEnabled);

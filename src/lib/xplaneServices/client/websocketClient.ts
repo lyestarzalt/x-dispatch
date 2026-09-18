@@ -33,6 +33,8 @@ const DATAREF_NAMES = [
   'sim/weather/aircraft/wind_now_direction_degt',
   'sim/weather/aircraft/wind_now_speed_msc',
   'sim/weather/aircraft/temperature_ambient_deg_c',
+  'sim/time/zulu_time_sec',
+  'sim/time/local_date_days',
   'sim/aircraft2/metadata/is_helicopter',
   'sim/aircraft2/metadata/is_airliner',
   'sim/aircraft2/metadata/is_cargo',
@@ -75,6 +77,8 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/weather/aircraft/wind_now_direction_degt': 'windDirection',
   'sim/weather/aircraft/wind_now_speed_msc': 'windSpeed',
   'sim/weather/aircraft/temperature_ambient_deg_c': 'oat',
+  'sim/time/zulu_time_sec': 'simZuluTimeSec',
+  'sim/time/local_date_days': 'simDayOfYear',
 };
 
 type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';

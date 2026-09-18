@@ -113,6 +113,36 @@ describe('migrateSettings', () => {
     expect(result.map.userMapStyles[0]?.id).toBe('user-existing');
   });
 
+  it('adds the sky and night defaults at v25 without touching existing graphics choices', () => {
+    const v24Blob = {
+      map: {
+        navDataRadiusNm: 100,
+        vatsimRefreshInterval: 15,
+        mapStyleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        idleOrbitEnabled: false,
+        userMapStyles: [],
+        units: { weight: 'lbs' as const },
+      },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: false,
+        surfaceDetail: 'low' as const,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+    };
+    const result = migrateSettings(v24Blob, 24);
+    expect(result.graphics).toEqual({
+      approachLightAnimation: false,
+      surfaceDetail: 'low',
+      dynamicSky: true,
+      cityLights: true,
+      followSimTime: true,
+    });
+  });
+
   it('seeds an empty fmsExportTargets array when migrating from v20 to v21', () => {
     const v20Blob = {
       map: {
