@@ -33,18 +33,24 @@ describe('taxiwayLightPoints', () => {
     expect(colors).toEqual(['amber', 'green', 'amber', 'green']);
   });
 
-  it('marks pulsating hold bars and skips unlit lines', () => {
+  it('skips amber hold bars and unlit lines', () => {
     const fc = taxiwayLightPoints([
-      feature(LineLightingType.AMBER_UNIDIRECTIONAL_PULSATING_LIGHTS, [
+      feature(LineLightingType.AMBER_UNIDIRECTIONAL_PULSATING_LIGHTS, KM_EAST),
+      feature(LineLightingType.AMBER_UNIDIRECTIONAL_LIGHTS, KM_EAST),
+      feature(LineLightingType.NONE, KM_EAST),
+    ]);
+    expect(fc.features).toHaveLength(0);
+  });
+
+  it('keeps red stop bars', () => {
+    const fc = taxiwayLightPoints([
+      feature(LineLightingType.RED_OMNIDIRECTIONAL_LIGHTS, [
         [0, 0],
         [0.0001, 0],
       ]),
-      feature(LineLightingType.NONE, KM_EAST),
     ]);
     expect(fc.features.length).toBeGreaterThan(0);
-    expect(fc.features.every((f) => f.properties.pulse && f.properties.color === 'amber')).toBe(
-      true
-    );
+    expect(fc.features.every((f) => f.properties.color === 'red')).toBe(true);
   });
 
   it('keeps spacing across vertices instead of restarting at each one', () => {

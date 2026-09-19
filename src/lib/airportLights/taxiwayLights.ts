@@ -11,7 +11,11 @@ export interface LightRule {
   pulse: boolean;
 }
 
-/** apt.dat 100-series light codes and how the fixtures sit along the line. */
+/**
+ * apt.dat 100-series light codes and how the fixtures sit along the line.
+ * Amber hold bars (103, 104) are left out: a lit bar every 3 m reads as a
+ * solid glowing block at map scale.
+ */
 export const LIGHT_RULES: Partial<Record<LineLightingType, LightRule>> = {
   [LineLightingType.GREEN_BIDIRECTIONAL_LIGHTS]: {
     colors: ['green'],
@@ -30,18 +34,6 @@ export const LIGHT_RULES: Partial<Record<LineLightingType, LightRule>> = {
     spacingM: 30,
     offsetM: 0,
     pulse: false,
-  },
-  [LineLightingType.AMBER_UNIDIRECTIONAL_LIGHTS]: {
-    colors: ['amber'],
-    spacingM: 3,
-    offsetM: 0,
-    pulse: false,
-  },
-  [LineLightingType.AMBER_UNIDIRECTIONAL_PULSATING_LIGHTS]: {
-    colors: ['amber'],
-    spacingM: 3,
-    offsetM: 0,
-    pulse: true,
   },
   [LineLightingType.ALTERNATING_AMBER_GREEN_BIDIRECTIONAL_LIGHTS]: {
     colors: ['amber', 'green'],

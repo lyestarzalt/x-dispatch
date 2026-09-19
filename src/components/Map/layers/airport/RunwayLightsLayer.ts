@@ -9,7 +9,7 @@ import {
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
-import { lightCoreLayerId, lightLayers } from './lightLayers';
+import { LIGHT_HEX, lightCoreLayerId, lightLayers } from './lightLayers';
 
 const RUNWAY_LIGHT_HALO_LAYERS = [
   'airport-runway-edge-lights',
@@ -18,13 +18,12 @@ const RUNWAY_LIGHT_HALO_LAYERS = [
   'airport-runway-end-lights',
   'airport-runway-tdz-lights',
   'airport-runway-reil-lights',
-  'airport-approach-lights',
 ];
 
-export const RUNWAY_LIGHT_LAYERS = RUNWAY_LIGHT_HALO_LAYERS.flatMap((id) => [
-  id,
-  lightCoreLayerId(id),
-]);
+export const RUNWAY_LIGHT_LAYERS = [
+  ...RUNWAY_LIGHT_HALO_LAYERS.flatMap((id) => [id, lightCoreLayerId(id)]),
+  'airport-approach-lights',
+];
 
 const TDZ_LENGTH_M = 900;
 const TDZ_SPACING_M = 30;
@@ -84,13 +83,33 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       },
       { id: 'airport-runway-tdz-lights', type: 'tdz', minzoom: lightingMinZoom + 1, scale: 0.7 },
       { id: 'airport-runway-reil-lights', type: 'reil', minzoom: lightingMinZoom, scale: 1.2 },
-      {
-        id: 'airport-approach-lights',
-        type: 'approach',
-        minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
-        scale: 1.1,
-      },
     ];
+
+    // Approach light arrays stay as small crisp points; glow halos on several
+    // hundred fixtures per end read as a smear. The rabbit overlay draws on them.
+    this.addLayer(map, {
+      id: 'airport-approach-lights',
+      type: 'circle',
+      source: this.sourceId,
+      filter: ['==', ['get', 'type'], 'approach'],
+      minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
+      paint: {
+        'circle-color': ['case', ['get', 'isRed'], LIGHT_HEX.red, LIGHT_HEX.white],
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          ZOOM_BEHAVIORS.runwayEnds.minZoom,
+          0.8,
+          16,
+          1.5,
+          18,
+          2.5,
+        ],
+        'circle-blur': 0.2,
+        'circle-opacity': 0,
+      },
+    });
 
     for (const group of groups) {
       for (const spec of lightLayers({

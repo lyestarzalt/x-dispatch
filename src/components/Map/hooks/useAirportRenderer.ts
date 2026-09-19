@@ -27,7 +27,6 @@ const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-runway-end-lights': 'runwayLights',
   'airport-runway-end-lights-core': 'runwayLights',
   'airport-approach-lights': 'approachLights',
-  'airport-approach-lights-core': 'approachLights',
   'airport-runway-tdz-lights': 'runwayLights',
   'airport-runway-tdz-lights-core': 'runwayLights',
   'airport-runway-reil-lights': 'runwayLights',
