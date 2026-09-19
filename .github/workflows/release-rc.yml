@@ -200,11 +200,11 @@ jobs:
           {
             echo "downloads<<$EOF_MARKER"
             echo "**Downloads:**"
-            echo "- [:apple: macOS (Apple Silicon)](${BASE}/${VERSION}-mac-apple-silicon.zip)"
-            echo "- [:apple: macOS (Intel)](${BASE}/${VERSION}-mac-intel.zip)"
-            echo "- [:window: Windows](${BASE}/${VERSION}-windows.zip)"
-            echo "- [:penguin: Linux x64](${BASE}/${VERSION}-linux-x64.zip)"
-            echo "- [:penguin: Linux ARM64](${BASE}/${VERSION}-linux-arm64.zip)"
+            echo "- [:apple: macOS (Apple Silicon)](${BASE}/X-Dispatch-${VERSION}-mac-apple-silicon.dmg)"
+            echo "- [:apple: macOS (Intel)](${BASE}/X-Dispatch-${VERSION}-mac-intel.dmg)"
+            echo "- [:window: Windows](${BASE}/X-Dispatch-${VERSION}-windows-x64.exe)"
+            echo "- [:penguin: Linux x64](${BASE}/X-Dispatch-${VERSION}-linux-x64.AppImage)"
+            echo "- [:penguin: Linux ARM64](${BASE}/X-Dispatch-${VERSION}-linux-arm64.AppImage)"
             echo "$EOF_MARKER"
           } >> "$GITHUB_OUTPUT"
 
