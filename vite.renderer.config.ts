@@ -35,6 +35,9 @@ export default defineConfig((env) => {
     esbuild: {
       target: 'es2022',
     },
+    worker: {
+      format: 'es',
+    },
     plugins: [
       react(),
       pluginExposeRenderer(name),

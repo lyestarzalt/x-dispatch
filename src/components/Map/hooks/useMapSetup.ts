@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
+import '@/lib/map/maplibreWorker';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useAppStore } from '@/stores/appStore';
