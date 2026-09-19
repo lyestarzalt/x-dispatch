@@ -44,22 +44,19 @@ interface LightLayerOptions {
 export function lightLayers(opts: LightLayerOptions): maplibregl.CircleLayerSpecification[] {
   const scale = opts.scale ?? 1;
   const size: maplibregl.ExpressionSpecification = ['coalesce', ['get', 'size'], 1];
+  // Zoom must drive the top-level interpolate; the per-feature size multiplies each stop.
   const radius = (base: number[]): maplibregl.ExpressionSpecification => [
-    '*',
-    size,
-    [
-      'interpolate',
-      ['exponential', 1.7],
-      ['zoom'],
-      opts.minzoom,
-      base[0]! * scale,
-      16,
-      base[1]! * scale,
-      18,
-      base[2]! * scale,
-      20,
-      base[3]! * scale,
-    ],
+    'interpolate',
+    ['exponential', 1.7],
+    ['zoom'],
+    opts.minzoom,
+    ['*', size, base[0]! * scale],
+    16,
+    ['*', size, base[1]! * scale],
+    18,
+    ['*', size, base[2]! * scale],
+    20,
+    ['*', size, base[3]! * scale],
   ];
   const common = {
     source: opts.source,
