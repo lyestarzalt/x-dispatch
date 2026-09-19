@@ -474,6 +474,8 @@
       "lightsPerfHint": "Désactivez-les pour améliorer les performances.",
       "approachLights": "Animation des feux d'approche",
       "approachLightsDesc": "Clignotement séquentiel animé en approche",
+      "groundWeather": "Météo au sol",
+      "groundWeatherDesc": "Traînées de vent, pluie, neige et brouillard sur l’aéroport sélectionné d’après son METAR.",
       "skyAndNight": "Ciel et nuit",
       "skyAndNightDesc": "La carte suit le soleil. Mise à jour environ chaque minute.",
       "dynamicSky": "Ciel éclairé par le soleil",

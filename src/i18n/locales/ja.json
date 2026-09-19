@@ -474,6 +474,8 @@
       "lightsPerfHint": "オフにするとパフォーマンスが向上します。",
       "approachLights": "進入灯のアニメーション",
       "approachLightsDesc": "進入路のシーケンスフラッシュをアニメーション表示",
+      "groundWeather": "地上の天気",
+      "groundWeatherDesc": "METAR に基づく風の流れ、雨、雪、霧を選択した空港に表示します。",
       "skyAndNight": "空と夜",
       "skyAndNightDesc": "地図は太陽に追従します。約1分ごとに更新されます。",
       "dynamicSky": "太陽光の空",

@@ -42,6 +42,7 @@ import {
   useCursorElevation,
   useFlightReplay,
   useFlightTrail,
+  useGroundWeather,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
   useMapSetup,
@@ -378,6 +379,7 @@ export default function Map({ airports }: MapProps) {
 
   // Approach light "rabbit" animation — canvas overlay, no MapLibre repaints
   useApproachLightAnimation(mapRef);
+  useGroundWeather(mapRef);
 
   // Pin-drop custom start location
   const { placeAtCenter: handlePinDrop, placeAtCoordinates: handlePinDropAtCoordinates } =

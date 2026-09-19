@@ -127,6 +127,12 @@ export function GraphicsSection() {
           checked={graphics.approachLightAnimation}
           onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
         />
+        <SettingsToggleRow
+          title={t('settings.graphics.groundWeather')}
+          description={t('settings.graphics.groundWeatherDesc')}
+          checked={graphics.groundWeather}
+          onCheckedChange={(checked) => updateGraphics({ groundWeather: checked })}
+        />
       </SettingsSectionBlock>
     </div>
   );

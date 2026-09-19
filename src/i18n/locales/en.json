@@ -474,6 +474,8 @@
       "lightsPerfHint": "Turn these off to improve performance.",
       "approachLights": "Approach light animation",
       "approachLightsDesc": "Animate sequenced approach lights",
+      "groundWeather": "Ground weather",
+      "groundWeatherDesc": "Wind streaks, rain, snow and fog over the selected airport from its METAR.",
       "skyAndNight": "Sky and night",
       "skyAndNightDesc": "The map follows the sun. Updates about once a minute.",
       "dynamicSky": "Sun-lit sky",

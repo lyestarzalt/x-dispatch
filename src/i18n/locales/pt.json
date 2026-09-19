@@ -474,6 +474,8 @@
       "lightsPerfHint": "Desative-as para melhorar o desempenho.",
       "approachLights": "Animação das luzes de aproximação",
       "approachLightsDesc": "Piscar sequencial animado na aproximação",
+      "groundWeather": "Tempo no solo",
+      "groundWeatherDesc": "Rastros de vento, chuva, neve e nevoeiro sobre o aeroporto selecionado a partir do METAR.",
       "skyAndNight": "Céu e noite",
       "skyAndNightDesc": "O mapa segue o sol. Atualiza cerca de uma vez por minuto.",
       "dynamicSky": "Céu iluminado pelo sol",

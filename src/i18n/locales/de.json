@@ -474,6 +474,8 @@
       "lightsPerfHint": "Schalten Sie diese aus, um die Leistung zu verbessern.",
       "approachLights": "Anflugbefeuerungs-Animation",
       "approachLightsDesc": "Animiertes sequenzielles Blinken im Anflug",
+      "groundWeather": "Bodenwetter",
+      "groundWeatherDesc": "Windstreifen, Regen, Schnee und Nebel über dem gewählten Flughafen aus dem METAR.",
       "skyAndNight": "Himmel und Nacht",
       "skyAndNightDesc": "Die Karte folgt der Sonne. Aktualisierung etwa jede Minute.",
       "dynamicSky": "Sonnenbeleuchteter Himmel",

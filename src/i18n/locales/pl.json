@@ -474,6 +474,8 @@
       "lightsPerfHint": "Wyłącz, aby poprawić wydajność.",
       "approachLights": "Animacja świateł podejścia",
       "approachLightsDesc": "Animowane sekwencyjne błyski na podejściu",
+      "groundWeather": "Pogoda na ziemi",
+      "groundWeatherDesc": "Smugi wiatru, deszcz, śnieg i mgła nad wybranym lotniskiem według METAR.",
       "skyAndNight": "Niebo i noc",
       "skyAndNightDesc": "Mapa podąża za słońcem. Aktualizacja mniej więcej co minutę.",
       "dynamicSky": "Niebo oświetlone słońcem",

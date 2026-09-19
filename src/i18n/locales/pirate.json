@@ -474,6 +474,8 @@
       "lightsPerfHint": "Turn these off ta improve performance.",
       "approachLights": "Approach lights",
       "approachLightsDesc": "Sequenced flashin' lights on approach",
+      "groundWeather": "Weather on deck",
+      "groundWeatherDesc": "Wind streaks, rain, snow an’ fog over the chosen port from its METAR.",
       "skyAndNight": "Sky an' night",
       "skyAndNightDesc": "The chart follows the sun. Freshened about once a minute.",
       "dynamicSky": "Sun-lit sky",

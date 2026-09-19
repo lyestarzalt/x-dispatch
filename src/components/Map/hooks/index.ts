@@ -17,6 +17,7 @@ export { useIdleOrbit } from './useIdleOrbit';
 export { useTerrainShading } from './useTerrainShading';
 export { useTaxiRouteSync } from './useTaxiRouteSync';
 export { useApproachLightAnimation } from './useApproachLightAnimation';
+export { useGroundWeather } from './useGroundWeather';
 export { useCursorElevation } from './useCursorElevation';
 export { useSolarClock } from './useSolarClock';
 export { useSolarSky } from './useSolarSky';
