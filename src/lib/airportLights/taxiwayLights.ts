@@ -66,6 +66,8 @@ export const LIGHT_RULES: Partial<Record<LineLightingType, LightRule>> = {
 export interface LightPointProps {
   color: LightColor;
   pulse: boolean;
+  /** Radius multiplier for fixtures larger than a taxiway light. */
+  size?: number;
 }
 
 /**

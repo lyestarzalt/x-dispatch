@@ -4,32 +4,24 @@ import { taxiwayLightLines, taxiwayLightPoints } from '@/lib/airportLights/taxiw
 import type { ParsedAirport } from '@/types/apt';
 import { safeAddGeoJSONSource } from '../types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
-import { LIGHT_HEX, ensureLightSprites, lightSymbolLayout } from './lightSprites';
+import { LIGHT_COLOR_EXPR, lightCoreLayerId, lightLayers } from './lightLayers';
 
-export const TAXIWAY_LIGHT_LAYERS = ['airport-taxiway-lights', 'airport-taxiway-light-glow'];
+const WINDSOCK_GLOW_SIZE = 3;
 
-const LINE_COLOR: maplibregl.ExpressionSpecification = [
-  'match',
-  ['get', 'color'],
-  'green',
-  LIGHT_HEX.green,
-  'blue',
-  LIGHT_HEX.blue,
-  'amber',
-  LIGHT_HEX.amber,
-  'red',
-  LIGHT_HEX.red,
-  LIGHT_HEX.white,
+export const TAXIWAY_LIGHT_LAYERS = [
+  'airport-taxiway-lights',
+  lightCoreLayerId('airport-taxiway-lights'),
+  'airport-taxiway-light-glow',
 ];
 
 /**
- * Taxiway fixtures from the apt.dat line light codes: single glowing points
- * when close, the same segments as blurred lines further out.
+ * Taxiway fixtures from the apt.dat line light codes: glowing points when
+ * close, the same segments as blurred lines further out.
  */
 export class AirfieldLightsLayer extends BaseLayerRenderer {
   layerId = 'airport-taxiway-lights';
   sourceId = 'airport-taxiway-lights';
-  additionalLayerIds = ['airport-taxiway-light-glow'];
+  additionalLayerIds = TAXIWAY_LIGHT_LAYERS.filter((id) => id !== 'airport-taxiway-lights');
   additionalSourceIds = ['airport-taxiway-light-lines'];
 
   hasData(airport: ParsedAirport): boolean {
@@ -41,7 +33,6 @@ export class AirfieldLightsLayer extends BaseLayerRenderer {
 
   render(map: maplibregl.Map, airport: ParsedAirport): void {
     if (!this.hasData(airport)) return;
-    ensureLightSprites(map);
 
     const pointZoom = ZOOM_BEHAVIORS.lighting.minZoom;
     const points = taxiwayLightPoints(airport.linearFeatures);
@@ -50,7 +41,7 @@ export class AirfieldLightsLayer extends BaseLayerRenderer {
       points.features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [sock.longitude, sock.latitude] },
-        properties: { color: 'white', pulse: false },
+        properties: { color: 'white', pulse: false, size: WINDSOCK_GLOW_SIZE },
       });
     }
     this.addSource(map, points);
@@ -68,20 +59,20 @@ export class AirfieldLightsLayer extends BaseLayerRenderer {
       maxzoom: pointZoom,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': LINE_COLOR,
+        'line-color': LIGHT_COLOR_EXPR,
         'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.6, pointZoom, 1.6],
         'line-blur': 1.2,
         'line-opacity': 0,
       },
     });
 
-    this.addLayer(map, {
+    for (const spec of lightLayers({
       id: this.layerId,
-      type: 'symbol',
       source: this.sourceId,
       minzoom: pointZoom,
-      layout: lightSymbolLayout(pointZoom, 0.8),
-      paint: { 'icon-opacity': 0 },
-    });
+      scale: 0.8,
+    })) {
+      this.addLayer(map, spec);
+    }
   }
 }

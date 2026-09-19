@@ -16,7 +16,7 @@ function applyFactor(map: maplibregl.Map, factor: number): void {
   for (const id of LIGHT_LAYERS) {
     const layer = map.getLayer(id);
     if (!layer) continue;
-    const prop = layer.type === 'line' ? 'line-opacity' : 'icon-opacity';
+    const prop = layer.type === 'line' ? 'line-opacity' : 'circle-opacity';
     if (map.getPaintProperty(id, prop) !== value) map.setPaintProperty(id, prop, value);
   }
 }

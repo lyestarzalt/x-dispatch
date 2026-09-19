@@ -9,9 +9,9 @@ import {
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
-import { ensureLightSprites, lightSymbolLayout } from './lightSprites';
+import { lightCoreLayerId, lightLayers } from './lightLayers';
 
-export const RUNWAY_LIGHT_LAYERS = [
+const RUNWAY_LIGHT_HALO_LAYERS = [
   'airport-runway-edge-lights',
   'airport-runway-threshold-lights',
   'airport-runway-centerline-lights',
@@ -20,6 +20,11 @@ export const RUNWAY_LIGHT_LAYERS = [
   'airport-runway-reil-lights',
   'airport-approach-lights',
 ];
+
+export const RUNWAY_LIGHT_LAYERS = RUNWAY_LIGHT_HALO_LAYERS.flatMap((id) => [
+  id,
+  lightCoreLayerId(id),
+]);
 
 const TDZ_LENGTH_M = 900;
 const TDZ_SPACING_M = 30;
@@ -60,7 +65,6 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
 
     const lights = this.generateRunwayLights(airport.runways);
     this.addSource(map, lights);
-    ensureLightSprites(map);
 
     const lightingMinZoom = ZOOM_BEHAVIORS.lighting.minZoom;
     const groups: Array<{ id: string; type: string; minzoom: number; scale: number }> = [
@@ -89,15 +93,15 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
     ];
 
     for (const group of groups) {
-      this.addLayer(map, {
+      for (const spec of lightLayers({
         id: group.id,
-        type: 'symbol',
         source: this.sourceId,
         filter: ['==', ['get', 'type'], group.type],
         minzoom: group.minzoom,
-        layout: lightSymbolLayout(group.minzoom, group.scale),
-        paint: { 'icon-opacity': 0 },
-      });
+        scale: group.scale,
+      })) {
+        this.addLayer(map, spec);
+      }
     }
   }
 

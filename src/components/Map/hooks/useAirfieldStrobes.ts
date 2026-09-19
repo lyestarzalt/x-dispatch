@@ -23,6 +23,8 @@ const REIL_ON_MS = 70;
 const BEACON_PERIOD_MS = 2500;
 const BEACON_ON_MS = 140;
 const PULSE_PERIOD_MS = 1000;
+/** Strobes and pulses are readable at 30 fps; no need to wake on every vsync. */
+const FRAME_MS = 33;
 
 const BEACON_MIN_ZOOM = ZOOM_BEHAVIORS.beacon.minZoom;
 const FIXTURE_MIN_ZOOM = ZOOM_BEHAVIORS.lighting.minZoom;
@@ -67,7 +69,6 @@ function collect(map: maplibregl.Map): Strobe[] {
 export function useAirfieldStrobes(mapRef: MapRef): void {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const strobesRef = useRef<Strobe[]>([]);
-  const rafRef = useRef(0);
   const airport = useAppStore((s) => s.selectedAirportData);
   const mode = useSettingsStore((s) => s.graphics.airfieldLights);
 
@@ -115,6 +116,7 @@ export function useAirfieldStrobes(mapRef: MapRef): void {
     let cancelled = false;
     let running = false;
     let factor = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     const refreshFactor = () => {
       factor = airfieldLightFactor(
@@ -142,6 +144,12 @@ export function useAirfieldStrobes(mapRef: MapRef): void {
       ctx.fill();
     };
 
+    /** Milliseconds until a flash next switches on or off. */
+    const untilNextEdge = (now: number, period: number, on: number): number => {
+      const phase = now % period;
+      return phase < on ? on - phase : period - phase;
+    };
+
     const render = () => {
       if (cancelled) return;
       if (!visible()) {
@@ -149,38 +157,50 @@ export function useAirfieldStrobes(mapRef: MapRef): void {
         running = false;
         return;
       }
-      const dpr = window.devicePixelRatio || 1;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-
       const now = performance.now();
       const zoom = map.getZoom();
       const scale = Math.max(0.6, Math.min(3, 2 ** (zoom - 15)));
+      const fixturesInView = zoom >= FIXTURE_MIN_ZOOM;
+      const hasPulse = fixturesInView && strobesRef.current.some((s) => s.kind === 'pulse');
       const reilOn = now % REIL_PERIOD_MS < REIL_ON_MS;
-      const beaconPhase = now % BEACON_PERIOD_MS;
-      const beaconOn = beaconPhase < BEACON_ON_MS;
+      const beaconOn = now % BEACON_PERIOD_MS < BEACON_ON_MS;
       const beaconGreen = Math.floor(now / BEACON_PERIOD_MS) % 2 === 1;
       const pulse = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin((now / PULSE_PERIOD_MS) * Math.PI * 2));
+
+      // Pulsing bars need steady frames; strobes only need a wake-up at each edge.
+      const next = hasPulse
+        ? FRAME_MS
+        : Math.max(
+            16,
+            Math.min(
+              untilNextEdge(now, REIL_PERIOD_MS, REIL_ON_MS),
+              untilNextEdge(now, BEACON_PERIOD_MS, BEACON_ON_MS)
+            )
+          );
+      timer = setTimeout(render, next);
+
+      const dpr = window.devicePixelRatio || 1;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
       for (const s of strobesRef.current) {
         if (s.kind === 'beacon') {
           if (!beaconOn || zoom < BEACON_MIN_ZOOM) continue;
           const pt = map.project([s.lon, s.lat]);
           drawLight(pt.x, pt.y, 22 * scale, beaconGreen ? '80,255,120' : '255,250,235', factor);
-        } else if (zoom >= FIXTURE_MIN_ZOOM) {
+        } else if (fixturesInView) {
           if (s.kind === 'reil' && !reilOn) continue;
           const pt = map.project([s.lon, s.lat]);
           if (s.kind === 'reil') drawLight(pt.x, pt.y, 12 * scale, '255,250,235', factor);
           else drawLight(pt.x, pt.y, 5 * scale, '255,190,60', factor * pulse);
         }
       }
-      rafRef.current = requestAnimationFrame(render);
     };
 
     const start = () => {
       if (running || cancelled || !visible()) return;
       running = true;
-      rafRef.current = requestAnimationFrame(render);
+      render();
     };
 
     const refresh = () => {
@@ -190,8 +210,9 @@ export function useAirfieldStrobes(mapRef: MapRef): void {
     };
 
     refresh();
+    // Sources fill in after the airport is selected; one idle pass catches them.
+    map.once('idle', refresh);
     map.on('moveend', refresh);
-    map.on('idle', refresh);
     const unsubscribe = useSolarStore.subscribe((state, prev) => {
       if (state.timeMs !== prev.timeMs) {
         refreshFactor();
@@ -201,7 +222,7 @@ export function useAirfieldStrobes(mapRef: MapRef): void {
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(rafRef.current);
+      clearTimeout(timer);
       map.off('moveend', refresh);
       map.off('idle', refresh);
       unsubscribe();
