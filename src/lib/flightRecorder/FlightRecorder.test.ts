@@ -136,10 +136,43 @@ describe('FlightRecorder', () => {
         frame({ onGroundAny: false, onGroundAll: false, aglM: 2000, simT: (t += 0.5) })
       );
     }
-    recorder.onConnectionChange(false);
+    vi.useFakeTimers();
+    try {
+      recorder.onConnectionChange(false);
+      expect(recorder.liveState().flight).not.toBeNull();
+      vi.advanceTimersByTime(61_000);
+    } finally {
+      vi.useRealTimers();
+    }
     const ended = events.find((e) => e.type === 'flightEnded') as { flight: FlightSummary };
     expect(ended.flight.status).toBe('aborted');
     expect(recorder.liveState().flight).toBeNull();
+  });
+
+  it('keeps the flight when the stream restarts within the grace period', () => {
+    const { events, recorder } = setup();
+    let t = 0;
+    for (let i = 0; i < 10; i++) {
+      feed(
+        recorder,
+        frame({ onGroundAny: false, onGroundAll: false, aglM: 2000, simT: (t += 0.5) })
+      );
+    }
+    vi.useFakeTimers();
+    try {
+      recorder.onConnectionChange(false);
+      vi.advanceTimersByTime(3_000);
+      recorder.onConnectionChange(true);
+      feed(
+        recorder,
+        frame({ onGroundAny: false, onGroundAll: false, aglM: 2000, simT: (t += 0.5) })
+      );
+      vi.advanceTimersByTime(120_000);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(events.find((e) => e.type === 'flightEnded')).toBeUndefined();
+    expect(recorder.liveState().flight).not.toBeNull();
   });
 
   it('fills in the aircraft from the REST lookup when no hint was given', async () => {

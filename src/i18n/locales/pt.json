@@ -1707,7 +1707,9 @@
     "dismiss": "Fechar",
     "cardFooter": "Gravado com X-Dispatch",
     "touchdownRate": "Toque",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "V/S do X-Plane no toque",
+    "bounceContacts": "Contatos após quique: {{rates}} fpm"
   },
   "replay": {
     "title": "Replay",

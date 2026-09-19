@@ -15,14 +15,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
-import { RATING_TEXT_CLASS, formatDateTime, formatDuration } from '@/lib/flightRecorder/format';
+import { formatDateTime, formatDuration } from '@/lib/flightRecorder/format';
 import { copyLandingCard } from '@/lib/flightRecorder/landingCardImage';
-import { cn } from '@/lib/utils/helpers';
 import { useDeleteFlight, useFlightDetailQuery } from '@/queries/useFlightsQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import type { FlightDetail } from '@/types/flightRecorder';
-import { LandingStats, landingCardLabels, runwayLine, thresholdLine } from './LandingStats';
+import { LandingSection } from './LandingSection';
+import { landingCardLabels } from './LandingStats';
 import { TrailThumbnail } from './TrailThumbnail';
 
 interface FlightDetailPanelProps {
@@ -157,41 +157,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
           ))}
         </dl>
 
-        <section className="rounded-lg border border-border/50 bg-card/60 p-4">
-          <h3 className="xp-section-heading mb-2">{t('landing.title')}</h3>
-          {landing ? (
-            <>
-              <div className="flex items-baseline gap-3">
-                <span
-                  className={cn('font-mono text-4xl font-black', RATING_TEXT_CLASS[landing.rating])}
-                >
-                  {landing.touchdownRateFpm}
-                </span>
-                <span className="text-sm text-muted-foreground">{t('units.fpm')}</span>
-                <span className={cn('text-base font-semibold', RATING_TEXT_CLASS[landing.rating])}>
-                  {t(`landing.rating.${landing.rating}`)}
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">{runwayLine(t, landing)}</p>
-              {thresholdLine(t, landing) && (
-                <p className="text-xs text-muted-foreground/80">{thresholdLine(t, landing)}</p>
-              )}
-              <LandingStats report={landing} className="mt-3" columns={4} />
-              {flight.landings.length > 1 && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {t('logbook.earlierLandings', {
-                    rates: flight.landings
-                      .slice(0, -1)
-                      .map((l) => `${l.touchdownRateFpm}`)
-                      .join(', '),
-                  })}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t('logbook.noLanding')}</p>
-          )}
-        </section>
+        <LandingSection flight={flight} />
       </div>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>

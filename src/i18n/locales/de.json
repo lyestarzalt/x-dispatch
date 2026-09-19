@@ -1707,7 +1707,9 @@
     "dismiss": "Ausblenden",
     "cardFooter": "Aufgezeichnet mit X-Dispatch",
     "touchdownRate": "Aufsetzen",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "X-Plane V/S beim Aufsetzen",
+    "bounceContacts": "Aufsetzer nach Sprung: {{rates}} fpm"
   },
   "replay": {
     "title": "Wiedergabe",

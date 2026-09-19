@@ -138,6 +138,11 @@ export class XPlaneWebSocketClient {
     this.onStateUpdate = onStateUpdate;
     this.onConnectionChange = onConnectionChange ?? null;
     this.onStateClear = onStateClear ?? null;
+    // A second subscriber reuses the live socket instead of opening another one.
+    if (this.state !== 'IDLE') {
+      if (this.isConnected()) onConnectionChange?.(true);
+      return;
+    }
     this.state = 'CONNECTING';
     this.backoffMs = BACKOFF_INITIAL_MS;
     this.resolveDatarefsAndConnect();

@@ -84,21 +84,21 @@ export function renderLandingCard(
   return canvas;
 }
 
-export async function landingCardBlob(
-  report: LandingReport,
-  labels: LandingCardLabels
-): Promise<Blob | null> {
-  const canvas = renderLandingCard(report, labels);
-  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-}
-
+/**
+ * Electron's clipboard module is the reliable path: the renderer's async
+ * clipboard API refuses image writes unless the page holds focus.
+ */
 export async function copyLandingCard(
   report: LandingReport,
   labels: LandingCardLabels
 ): Promise<boolean> {
-  const blob = await landingCardBlob(report, labels);
-  if (!blob) return false;
+  const canvas = renderLandingCard(report, labels);
   try {
+    if (window.appAPI?.clipboardWriteImage) {
+      return await window.appAPI.clipboardWriteImage(canvas.toDataURL('image/png'));
+    }
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) return false;
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     return true;
   } catch {

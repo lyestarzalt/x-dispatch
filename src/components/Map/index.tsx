@@ -884,17 +884,11 @@ export default function Map({ airports }: MapProps) {
 
       {showPlaneTracker && <FlightStrip onCenterPlane={handleCenterPlane} />}
 
-      {/* Landing card and replay transport, stacked above the flight strip */}
-      <div className="pointer-events-none absolute bottom-24 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2">
-        <div className="pointer-events-auto">
-          <ReplayWidget />
-        </div>
-        {landingReportEnabled && (
-          <div className="pointer-events-auto">
-            <LandingReportCard onShowOnMap={handleShowLanding} />
-          </div>
-        )}
+      {/* Replay transport above the flight strip; the landing card floats bottom-right and is draggable */}
+      <div className="absolute bottom-24 left-1/2 z-20 -translate-x-1/2">
+        <ReplayWidget />
       </div>
+      {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />

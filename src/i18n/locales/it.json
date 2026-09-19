@@ -1707,7 +1707,9 @@
     "dismiss": "Chiudi",
     "cardFooter": "Registrato con X-Dispatch",
     "touchdownRate": "Contatto",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "V/S X-Plane al contatto",
+    "bounceContacts": "Contatti dopo il rimbalzo: {{rates}} fpm"
   },
   "replay": {
     "title": "Replay",

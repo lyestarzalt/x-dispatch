@@ -22,6 +22,7 @@ const TRACK_INTERVAL_S = 1;
 const FLUSH_INTERVAL_MS = 1000;
 const PREVIEW_EVERY = 30;
 const AIRPORT_SEARCH_RADIUS_M = 6000;
+const DISCONNECT_GRACE_MS = 60_000;
 
 export interface FlightRecorderDeps {
   store: FlightStore;
@@ -54,6 +55,7 @@ export class FlightRecorder {
   private lastFrame: SimFrame | null = null;
   private airTimeMs = 0;
   private aircraftLookup: Promise<void> | null = null;
+  private disconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly deps: FlightRecorderDeps) {
     this.assembler = new FrameAssembler(deps.now ?? Date.now);
@@ -74,17 +76,29 @@ export class FlightRecorder {
   }
 
   onDataref(name: string, value: number | number[]): void {
+    if (this.disconnectTimer) {
+      clearTimeout(this.disconnectTimer);
+      this.disconnectTimer = null;
+    }
     const frame = this.assembler.update(name, value);
     if (frame && this.enabled) this.process(frame);
   }
 
+  /**
+   * The renderer stops and restarts the stream whenever a subscriber remounts,
+   * so a disconnect only ends the flight once no data has come back for a while.
+   */
   onConnectionChange(connected: boolean): void {
     if (connected) return;
-    this.endFlight(this.phases.current === 'parked' ? 'complete' : 'aborted');
-    this.phases = new FlightPhaseMachine();
-    this.landing = new LandingDetector();
-    this.assembler.reset();
-    this.lastFrame = null;
+    if (!this.flight || this.disconnectTimer) return;
+    this.disconnectTimer = setTimeout(() => {
+      this.disconnectTimer = null;
+      this.endFlight(this.phases.current === 'parked' ? 'complete' : 'aborted');
+      this.phases = new FlightPhaseMachine();
+      this.landing = new LandingDetector();
+      this.assembler.reset();
+      this.lastFrame = null;
+    }, DISCONNECT_GRACE_MS);
   }
 
   liveState(): LiveRecorderState {

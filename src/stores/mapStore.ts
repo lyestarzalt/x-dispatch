@@ -98,6 +98,7 @@ interface MapState {
   rangeRingsDuration: number;
   rangeRingsCategories: RangeRingCategory[];
   flightStripPosition: { x: number; y: number } | null;
+  landingCardPosition: { x: number; y: number } | null;
   terrainShadingEnabled: boolean;
   terrain3dEnabled: boolean;
 
@@ -133,6 +134,7 @@ interface MapState {
   setExploreFilters: (filters: Partial<ExploreFilters>) => void;
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
+  setLandingCardPosition: (pos: { x: number; y: number } | null) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
   setTerrain3dEnabled: (enabled: boolean) => void;
 }
@@ -171,6 +173,7 @@ export const useMapStore = create<MapState>()(
       rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
       rangeRingsCategories: ['jet', 'turboprop', 'prop'] as RangeRingCategory[],
       flightStripPosition: null as { x: number; y: number } | null,
+      landingCardPosition: null as { x: number; y: number } | null,
       terrainShadingEnabled: true,
       terrain3dEnabled: true,
 
@@ -270,13 +273,15 @@ export const useMapStore = create<MapState>()(
       setFeaturedCategory: (category) =>
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
+      setLandingCardPosition: (pos) => set({ landingCardPosition: pos }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 13,
+      version: 14,
       partialize: (state) => ({
+        landingCardPosition: state.landingCardPosition,
         flightTrailEnabled: state.flightTrailEnabled,
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
@@ -364,6 +369,9 @@ export const useMapStore = create<MapState>()(
         }
         if (version < 13) {
           if (state.flightTrailEnabled === undefined) state.flightTrailEnabled = true;
+        }
+        if (version < 14) {
+          if (state.landingCardPosition === undefined) state.landingCardPosition = null;
         }
         return state;
       },

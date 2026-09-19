@@ -72,12 +72,13 @@ export default function LogbookDialog() {
               </Tabs>
             </div>
             <div className="flex items-center gap-2">
-              {tab === 'flights' && flights.length > 0 && (
+              {tab === 'flights' && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
+                      disabled={flights.length === 0}
                       className="h-7 text-xs text-destructive hover:text-destructive"
                     >
                       <Trash2 className="mr-1.5 h-3.5 w-3.5" />

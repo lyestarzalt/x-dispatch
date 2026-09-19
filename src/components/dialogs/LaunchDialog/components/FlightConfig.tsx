@@ -10,7 +10,6 @@ import {
   CloudSnow,
   CloudSun,
   Globe,
-  History,
   Power,
   PowerOff,
   Radio,
@@ -76,7 +75,6 @@ export function FlightConfig({
   aircraftList,
 }: FlightConfigProps) {
   const { t } = useTranslation();
-  const openLaunchHistory = () => useAppStore.getState().openLogbook('launches');
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
   // Get selected airport data for lat/lon (enriched with coordinates at parse time)
@@ -446,34 +444,24 @@ export function FlightConfig({
 
       {/* Launch button — pinned to bottom */}
       <div className="flex-shrink-0 p-3">
-        <div className="flex gap-2">
-          <Button
-            data-testid="confirm-launch"
-            onClick={onLaunch}
-            disabled={!selectedAircraft || !startPosition || isLaunching}
-            className="flex-1"
-            size="lg"
-          >
-            {isLaunching ? (
-              <>
-                <Spinner className="mr-2" />
-                {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
-              </>
-            ) : isXPlaneRunning ? (
-              t('launcher.changeFlight')
-            ) : (
-              t('launcher.launch')
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={openLaunchHistory}
-            tooltip={t('launcher.logbook.title')}
-          >
-            <History className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          data-testid="confirm-launch"
+          onClick={onLaunch}
+          disabled={!selectedAircraft || !startPosition || isLaunching}
+          className="w-full"
+          size="lg"
+        >
+          {isLaunching ? (
+            <>
+              <Spinner className="mr-2" />
+              {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
+            </>
+          ) : isXPlaneRunning ? (
+            t('launcher.changeFlight')
+          ) : (
+            t('launcher.launch')
+          )}
+        </Button>
         {!startPosition && (
           <p className="mt-1.5 text-center text-sm text-muted-foreground">
             {t('launcher.selectDeparture')}

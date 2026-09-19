@@ -1707,7 +1707,9 @@
     "dismiss": "关闭",
     "cardFooter": "由 X-Dispatch 记录",
     "touchdownRate": "接地",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "接地时 X-Plane V/S",
+    "bounceContacts": "弹跳后接地：{{rates}} fpm"
   },
   "replay": {
     "title": "回放",

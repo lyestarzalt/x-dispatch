@@ -1707,7 +1707,9 @@
     "dismiss": "Zamknij",
     "cardFooter": "Nagrano w X-Dispatch",
     "touchdownRate": "Przyziemienie",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "V/S X-Plane przy przyziemieniu",
+    "bounceContacts": "Przyziemienia po odbiciu: {{rates}} fpm"
   },
   "replay": {
     "title": "Odtwarzanie",

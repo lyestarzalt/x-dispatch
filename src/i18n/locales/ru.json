@@ -1707,7 +1707,9 @@
     "dismiss": "Скрыть",
     "cardFooter": "Записано в X-Dispatch",
     "touchdownRate": "Касание",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "V/S X-Plane при касании",
+    "bounceContacts": "Касания после отскока: {{rates}} fpm"
   },
   "replay": {
     "title": "Воспроизведение",

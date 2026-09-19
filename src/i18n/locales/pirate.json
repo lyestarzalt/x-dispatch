@@ -1707,7 +1707,9 @@
     "dismiss": "Begone",
     "cardFooter": "Logged with X-Dispatch",
     "touchdownRate": "Touchdown",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "X-Plane's V/S at the thump",
+    "bounceContacts": "Bounce thumps: {{rates}} fpm"
   },
   "replay": {
     "title": "Replay",

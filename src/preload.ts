@@ -117,6 +117,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   openConfigFolder: () => ipcRenderer.invoke('app:openConfigFolder'),
   openPath: (path: string) => ipcRenderer.invoke('app:openPath', path),
   clipboardWrite: (text: string) => ipcRenderer.invoke('app:clipboardWrite', text),
+  clipboardWriteImage: (dataUrl: string) => ipcRenderer.invoke('app:clipboardWriteImage', dataUrl),
   openExternal: (url: string) => ipcRenderer.invoke('app:openExternal', url),
   getSendCrashReports: () => ipcRenderer.invoke('app:getSendCrashReports'),
   setSendCrashReports: (enabled: boolean) => ipcRenderer.invoke('app:setSendCrashReports', enabled),
@@ -442,6 +443,7 @@ declare global {
       openConfigFolder: () => Promise<void>;
       openPath: (path: string) => Promise<void>;
       clipboardWrite: (text: string) => Promise<void>;
+      clipboardWriteImage: (dataUrl: string) => Promise<boolean>;
       openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
       getSendCrashReports: () => Promise<boolean>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;

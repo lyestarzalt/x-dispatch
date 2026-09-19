@@ -1707,7 +1707,9 @@
     "dismiss": "閉じる",
     "cardFooter": "X-Dispatch で記録",
     "touchdownRate": "接地",
-    "gUnit": "g"
+    "gUnit": "g",
+    "indicatedRate": "接地時の X-Plane V/S",
+    "bounceContacts": "バウンド後の接地: {{rates}} fpm"
   },
   "replay": {
     "title": "リプレイ",

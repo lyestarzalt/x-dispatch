@@ -148,7 +148,12 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
     return store.get(id);
   });
   ipcMain.handle('flights:delete', (_, id: string) => store.delete(id));
-  ipcMain.handle('flights:clear', () => store.clear());
+  ipcMain.handle('flights:clear', async () => {
+    await store.clear();
+    // The flight being recorded keeps going; give it a fresh file to append to.
+    const live = recorder.liveState().flight;
+    if (live) store.create(live);
+  });
   ipcMain.handle('flights:liveState', () => recorder.liveState());
   ipcMain.handle('flights:setAircraftHint', (_, hint: AircraftHint | null) => {
     recorder.setAircraftHint(hint);

@@ -41,6 +41,14 @@ export const RATING_TEXT_CLASS: Record<LandingRating, string> = {
   severe: 'text-red-400',
 };
 
+export const RATING_BG_CLASS: Record<LandingRating, string> = {
+  butter: 'bg-yellow-300',
+  great: 'bg-green-400',
+  acceptable: 'bg-emerald-400',
+  hard: 'bg-orange-400',
+  severe: 'bg-red-400',
+};
+
 export const RATING_BORDER_CLASS: Record<LandingRating, string> = {
   butter: 'border-yellow-300/60',
   great: 'border-green-400/60',

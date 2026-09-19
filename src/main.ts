@@ -1,5 +1,6 @@
 import {
   BrowserWindow,
+  ClipboardItem,
   Menu,
   app,
   clipboard,
@@ -537,6 +538,20 @@ function registerIpcHandlers() {
   ipcMain.handle('app:clipboardWrite', async (_, text: string) => {
     if (typeof text !== 'string') return;
     await clipboard.writeText(text);
+  });
+  ipcMain.handle('app:clipboardWriteImage', async (_, dataUrl: string) => {
+    const prefix = 'data:image/png;base64,';
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith(prefix)) return false;
+    const bytes = Buffer.from(dataUrl.slice(prefix.length), 'base64');
+    if (bytes.length === 0) return false;
+    try {
+      const png = new Blob([bytes], { type: 'image/png' });
+      await clipboard.write([new ClipboardItem({ 'image/png': png })]);
+      return true;
+    } catch (error) {
+      logger.main.warn('Clipboard image write failed', error);
+      return false;
+    }
   });
   ipcMain.handle('app:openExternal', (_, url: string) => {
     // Security: Only allow http/https URLs
