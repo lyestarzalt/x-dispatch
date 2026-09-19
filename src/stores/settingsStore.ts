@@ -190,7 +190,7 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   dynamicSky: true,
   cityLights: true,
   followSimTime: true,
-  airfieldLights: 'auto',
+  airfieldLights: 'on',
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {

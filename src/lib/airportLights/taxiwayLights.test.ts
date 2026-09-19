@@ -25,18 +25,12 @@ describe('taxiwayLightPoints', () => {
     expect(fc.features.every((f) => f.properties.color === 'green')).toBe(true);
   });
 
-  it('alternates amber and green on lead-off lights', () => {
-    const fc = taxiwayLightPoints([
-      feature(LineLightingType.ALTERNATING_AMBER_GREEN_BIDIRECTIONAL_LIGHTS, KM_EAST),
-    ]);
-    const colors = fc.features.slice(0, 4).map((f) => f.properties.color);
-    expect(colors).toEqual(['amber', 'green', 'amber', 'green']);
-  });
-
-  it('skips amber hold bars and unlit lines', () => {
+  it('skips amber hold bars, lead-on lights and unlit lines', () => {
     const fc = taxiwayLightPoints([
       feature(LineLightingType.AMBER_UNIDIRECTIONAL_PULSATING_LIGHTS, KM_EAST),
       feature(LineLightingType.AMBER_UNIDIRECTIONAL_LIGHTS, KM_EAST),
+      feature(LineLightingType.ALTERNATING_AMBER_GREEN_BIDIRECTIONAL_LIGHTS, KM_EAST),
+      feature(LineLightingType.ALTERNATING_AMBER_GREEN_UNIDIRECTIONAL_LIGHTS, KM_EAST),
       feature(LineLightingType.NONE, KM_EAST),
     ]);
     expect(fc.features).toHaveLength(0);

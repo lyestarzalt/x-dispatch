@@ -13,8 +13,9 @@ export interface LightRule {
 
 /**
  * apt.dat 100-series light codes and how the fixtures sit along the line.
- * Amber hold bars (103, 104) are left out: a lit bar every 3 m reads as a
- * solid glowing block at map scale.
+ * Amber hold bars (103, 104) and amber-green lead-on lights (105, 108) are
+ * left out: at map scale they read as glowing yellow blocks at every runway
+ * entrance.
  */
 export const LIGHT_RULES: Partial<Record<LineLightingType, LightRule>> = {
   [LineLightingType.GREEN_BIDIRECTIONAL_LIGHTS]: {
@@ -32,18 +33,6 @@ export const LIGHT_RULES: Partial<Record<LineLightingType, LightRule>> = {
   [LineLightingType.BLUE_OMNIDIRECTIONAL_LIGHTS]: {
     colors: ['blue'],
     spacingM: 30,
-    offsetM: 0,
-    pulse: false,
-  },
-  [LineLightingType.ALTERNATING_AMBER_GREEN_BIDIRECTIONAL_LIGHTS]: {
-    colors: ['amber', 'green'],
-    spacingM: 15,
-    offsetM: 0,
-    pulse: false,
-  },
-  [LineLightingType.ALTERNATING_AMBER_GREEN_UNIDIRECTIONAL_LIGHTS]: {
-    colors: ['amber', 'green'],
-    spacingM: 15,
     offsetM: 0,
     pulse: false,
   },
