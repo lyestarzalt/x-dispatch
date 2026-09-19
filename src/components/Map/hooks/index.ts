@@ -16,6 +16,8 @@ export { useTrackControl } from './useTrackControl';
 export { useIdleOrbit } from './useIdleOrbit';
 export { useTerrainShading } from './useTerrainShading';
 export { useTaxiRouteSync } from './useTaxiRouteSync';
+export { useAirfieldLights } from './useAirfieldLights';
+export { useAirfieldStrobes } from './useAirfieldStrobes';
 export { useApproachLightAnimation } from './useApproachLightAnimation';
 export { useCursorElevation } from './useCursorElevation';
 export { useSolarClock } from './useSolarClock';
