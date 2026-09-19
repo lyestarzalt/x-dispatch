@@ -22,7 +22,7 @@ jobs:
           - os: macos-15-intel
             name: mac-intel
             arch: x64
-          - os: windows-latest
+          - os: windows-2022
             name: windows
           - os: ubuntu-24.04-arm
             name: linux-arm64

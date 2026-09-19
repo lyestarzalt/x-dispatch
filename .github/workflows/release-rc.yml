@@ -55,6 +55,7 @@ jobs:
     needs: resolve
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -63,7 +64,7 @@ jobs:
           - os: macos-15-intel
             name: mac-intel
             arch: x64
-          - os: windows-latest
+          - os: windows-2022
             name: windows
           - os: ubuntu-latest
             name: linux-x64
