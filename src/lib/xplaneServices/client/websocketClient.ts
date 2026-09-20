@@ -8,7 +8,8 @@ const RESOLVE_TIMEOUT = 5000;
 
 // Backoff constants
 const BACKOFF_INITIAL_MS = 1000;
-const BACKOFF_MAX_MS = 30_000;
+/** Polling localhost is cheap; a short cap means X-Plane is picked up within seconds of starting. */
+const BACKOFF_MAX_MS = 5_000;
 const BACKOFF_MULTIPLIER = 2;
 
 // Keepalive constants
@@ -199,7 +200,19 @@ export class XPlaneWebSocketClient {
       throw new Error('Failed to resolve datarefs');
     }
 
+    // The Web API answers before the sim has registered its datarefs during
+    // startup; an empty list must retry rather than open a silent stream.
+    if (results.length === 0) {
+      throw new Error('No datarefs resolved yet');
+    }
+
     return results;
+  }
+
+  /** Dataref ids are only stable for one X-Plane process, so drop them whenever the socket is lost. */
+  private forgetResolvedDatarefs(): void {
+    this.resolvedDatarefs = [];
+    this.datarefIdToName.clear();
   }
 
   disconnect(): void {
@@ -230,10 +243,7 @@ export class XPlaneWebSocketClient {
     return this.port;
   }
 
-  /**
-   * Force reconnect — resets backoff and reconnects immediately.
-   * Keeps dataref cache to avoid re-resolving.
-   */
+  /** Force reconnect: resets backoff, re-resolves dataref ids and reconnects immediately. */
   forceReconnect(): void {
     logger.tracker.info('Force reconnect requested');
     this.clearAllTimers();
@@ -244,6 +254,7 @@ export class XPlaneWebSocketClient {
       this.ws = null;
     }
 
+    this.forgetResolvedDatarefs();
     this.backoffMs = BACKOFF_INITIAL_MS;
 
     if (this.onStateUpdate) {
@@ -303,6 +314,7 @@ export class XPlaneWebSocketClient {
 
         if (this.state === 'IDLE') return; // intentional disconnect, already handled
 
+        this.forgetResolvedDatarefs();
         this.state = 'RECONNECTING';
         logger.tracker.debug(`WebSocket disconnected, reconnecting in ${this.backoffMs}ms`);
         this.startGraceTimer();
