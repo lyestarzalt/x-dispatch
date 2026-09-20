@@ -12,6 +12,7 @@ import {
   CloudRain,
   Compass,
   FileUp,
+  Flashlight,
   Layers,
   Lightbulb,
   MapPin,
@@ -26,6 +27,7 @@ import {
   Settings,
   Ship,
   Sunrise,
+  Wind,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -56,6 +58,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useDistinctCountries, useNavDataCounts } from '@/queries';
@@ -74,6 +77,9 @@ import {
 } from '@/types/layers';
 
 type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
+
+const AIRFIELD_LIGHTS_ON: AirfieldLightsMode = 'on';
+const AIRFIELD_LIGHTS_OFF: AirfieldLightsMode = 'off';
 
 const PIN_MODE_CONFIG: { mode: CustomStartMode; icon: typeof MapPin; labelKey: string }[] = [
   { mode: 'ground', icon: MapPin, labelKey: 'toolbar.pinModes.ground' },
@@ -456,6 +462,8 @@ function Toolbar({
   const setFlightTrailEnabled = useMapStore((s) => s.setFlightTrailEnabled);
   const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
   const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
+  const groundWeatherEnabled = useSettingsStore((s) => s.graphics.groundWeather);
+  const airfieldLightsOn = useSettingsStore((s) => s.graphics.airfieldLights !== 'off');
   const updateGraphicsSettings = useSettingsStore((s) => s.updateGraphicsSettings);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
@@ -958,6 +966,26 @@ function Toolbar({
               >
                 <Lightbulb className="mr-2 h-4 w-4" />
                 {t('toolbar.cityLights')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={groundWeatherEnabled}
+                onCheckedChange={() =>
+                  updateGraphicsSettings({ groundWeather: !groundWeatherEnabled })
+                }
+              >
+                <Wind className="mr-2 h-4 w-4" />
+                {t('toolbar.groundWeather')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={airfieldLightsOn}
+                onCheckedChange={(checked) =>
+                  updateGraphicsSettings({
+                    airfieldLights: checked ? AIRFIELD_LIGHTS_ON : AIRFIELD_LIGHTS_OFF,
+                  })
+                }
+              >
+                <Flashlight className="mr-2 h-4 w-4" />
+                {t('toolbar.airfieldLights')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={flightTrailEnabled}

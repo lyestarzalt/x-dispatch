@@ -1,6 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
-import { RUNWAY_LIGHT_COLORS } from '@/config/mapStyles/theme';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import type { LightColor } from '@/lib/airportLights/taxiwayLights';
 import {
   calculateBearing,
   destinationPoint as calculatePoint,
@@ -9,6 +9,43 @@ import {
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
+import { LIGHT_HEX, lightCoreLayerId, lightLayers } from './lightLayers';
+
+const RUNWAY_LIGHT_HALO_LAYERS = [
+  'airport-runway-edge-lights',
+  'airport-runway-threshold-lights',
+  'airport-runway-centerline-lights',
+  'airport-runway-end-lights',
+  'airport-runway-tdz-lights',
+  'airport-runway-reil-lights',
+];
+
+export const RUNWAY_LIGHT_LAYERS = [
+  ...RUNWAY_LIGHT_HALO_LAYERS.flatMap((id) => [id, lightCoreLayerId(id)]),
+  'airport-approach-lights',
+];
+
+const TDZ_LENGTH_M = 900;
+const TDZ_SPACING_M = 30;
+const REIL_OFFSET_M = 12;
+
+function lightColor(p: GeoJSON.GeoJsonProperties & object): LightColor {
+  switch (p.type) {
+    case 'threshold':
+      return 'green';
+    case 'end':
+      return 'red';
+    case 'approach':
+      return p.isRed ? 'red' : 'white';
+    case 'tdz':
+    case 'reil':
+      return 'white';
+    case 'centerline':
+      return p.isRedZone ? 'red' : p.isYellowZone ? 'amber' : 'white';
+    default:
+      return p.isYellowZone ? 'amber' : 'white';
+  }
+}
 
 /**
  * Runway Lights Layer - Creates realistic runway lighting
@@ -16,13 +53,7 @@ import { BaseLayerRenderer } from './BaseLayerRenderer';
 export class RunwayLightsLayer extends BaseLayerRenderer {
   layerId = 'airport-runway-lights';
   sourceId = 'airport-runway-lights';
-  additionalLayerIds = [
-    'airport-runway-edge-lights',
-    'airport-runway-threshold-lights',
-    'airport-runway-centerline-lights',
-    'airport-runway-end-lights',
-    'airport-approach-lights',
-  ];
+  additionalLayerIds = RUNWAY_LIGHT_LAYERS;
 
   hasData(airport: ParsedAirport): boolean {
     return airport.runways && airport.runways.length > 0;
@@ -35,100 +66,27 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
     this.addSource(map, lights);
 
     const lightingMinZoom = ZOOM_BEHAVIORS.lighting.minZoom;
-
-    // Edge lights - white/yellow (small subtle points)
-    this.addLayer(map, {
-      id: 'airport-runway-edge-lights',
-      type: 'circle',
-      source: this.sourceId,
-      filter: ['==', ['get', 'type'], 'edge'],
-      minzoom: lightingMinZoom,
-      paint: {
-        'circle-color': [
-          'case',
-          ['get', 'isYellowZone'],
-          RUNWAY_LIGHT_COLORS.edgeYellow,
-          RUNWAY_LIGHT_COLORS.edgeWhite,
-        ],
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          lightingMinZoom,
-          0.8,
-          17,
-          1.5,
-          20,
-          2.5,
-        ],
-        'circle-blur': 0.2,
-        'circle-opacity': 0.85,
+    const groups: Array<{ id: string; type: string; minzoom: number; scale: number }> = [
+      { id: 'airport-runway-edge-lights', type: 'edge', minzoom: lightingMinZoom, scale: 1 },
+      {
+        id: 'airport-runway-threshold-lights',
+        type: 'threshold',
+        minzoom: lightingMinZoom,
+        scale: 1,
       },
-    });
-
-    // Threshold lights - green (small row of points)
-    this.addLayer(map, {
-      id: 'airport-runway-threshold-lights',
-      type: 'circle',
-      source: this.sourceId,
-      filter: ['==', ['get', 'type'], 'threshold'],
-      minzoom: lightingMinZoom,
-      paint: {
-        'circle-color': RUNWAY_LIGHT_COLORS.thresholdGreen,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], lightingMinZoom, 1, 17, 2, 20, 3],
-        'circle-blur': 0.3,
-        'circle-opacity': 0.9,
+      { id: 'airport-runway-end-lights', type: 'end', minzoom: lightingMinZoom, scale: 1 },
+      {
+        id: 'airport-runway-centerline-lights',
+        type: 'centerline',
+        minzoom: lightingMinZoom + 1,
+        scale: 0.7,
       },
-    });
+      { id: 'airport-runway-tdz-lights', type: 'tdz', minzoom: lightingMinZoom + 1, scale: 0.7 },
+      { id: 'airport-runway-reil-lights', type: 'reil', minzoom: lightingMinZoom, scale: 1.2 },
+    ];
 
-    // End lights - red (small row of points)
-    this.addLayer(map, {
-      id: 'airport-runway-end-lights',
-      type: 'circle',
-      source: this.sourceId,
-      filter: ['==', ['get', 'type'], 'end'],
-      minzoom: lightingMinZoom,
-      paint: {
-        'circle-color': RUNWAY_LIGHT_COLORS.endRed,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], lightingMinZoom, 1, 17, 2, 20, 3],
-        'circle-blur': 0.3,
-        'circle-opacity': 0.9,
-      },
-    });
-
-    // Centerline lights (very small points)
-    this.addLayer(map, {
-      id: 'airport-runway-centerline-lights',
-      type: 'circle',
-      source: this.sourceId,
-      filter: ['==', ['get', 'type'], 'centerline'],
-      minzoom: lightingMinZoom + 1,
-      paint: {
-        'circle-color': [
-          'case',
-          ['get', 'isRedZone'],
-          RUNWAY_LIGHT_COLORS.centerlineRed,
-          ['get', 'isYellowZone'],
-          RUNWAY_LIGHT_COLORS.centerlineYellow,
-          RUNWAY_LIGHT_COLORS.centerlineWhite,
-        ],
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          lightingMinZoom + 1,
-          0.5,
-          18,
-          1.5,
-          20,
-          2,
-        ],
-        'circle-blur': 0.2,
-        'circle-opacity': 0.75,
-      },
-    });
-
-    // Approach lights (small crisp points - not big blobs!)
+    // Approach light arrays stay as small crisp points; glow halos on several
+    // hundred fixtures per end read as a smear. The rabbit overlay draws on them.
     this.addLayer(map, {
       id: 'airport-approach-lights',
       type: 'circle',
@@ -136,12 +94,7 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       filter: ['==', ['get', 'type'], 'approach'],
       minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
       paint: {
-        'circle-color': [
-          'case',
-          ['get', 'isRed'],
-          RUNWAY_LIGHT_COLORS.approachRed,
-          RUNWAY_LIGHT_COLORS.approachWhite,
-        ],
+        'circle-color': ['case', ['get', 'isRed'], LIGHT_HEX.red, LIGHT_HEX.white],
         'circle-radius': [
           'interpolate',
           ['linear'],
@@ -154,9 +107,21 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
           2.5,
         ],
         'circle-blur': 0.2,
-        'circle-opacity': 0.9,
+        'circle-opacity': 0,
       },
     });
+
+    for (const group of groups) {
+      for (const spec of lightLayers({
+        id: group.id,
+        source: this.sourceId,
+        filter: ['==', ['get', 'type'], group.type],
+        minzoom: group.minzoom,
+        scale: group.scale,
+      })) {
+        this.addLayer(map, spec);
+      }
+    }
   }
 
   private generateRunwayLights(runways: Runway[]): GeoJSON.FeatureCollection {
@@ -276,8 +241,54 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
       if (end2.lighting && end2.lighting > 0) {
         this.generateApproachLights(features, end2, heading2 + 180);
       }
+
+      // Touchdown zone barrettes and runway end identifier strobes, per end.
+      for (const [end, heading] of [
+        [end1, heading1],
+        [end2, heading2],
+      ] as const) {
+        if (end.tdz_lighting) {
+          const tdzEnd = Math.min(TDZ_LENGTH_M, length / 2);
+          for (let dist = TDZ_SPACING_M; dist <= tdzEnd; dist += TDZ_SPACING_M) {
+            const center = calculatePoint(end.latitude, end.longitude, dist, heading);
+            for (const side of [-1, 1]) {
+              for (const lateral of [9, 10.5, 12]) {
+                features.push({
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: calculatePoint(center[1], center[0], lateral, heading + side * 90),
+                  },
+                  properties: { type: 'tdz', intensity: 0.9 },
+                });
+              }
+            }
+          }
+        }
+        if (end.reil && end.reil > 0) {
+          for (const side of [-1, 1]) {
+            features.push({
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: calculatePoint(
+                  end.latitude,
+                  end.longitude,
+                  width / 2 + REIL_OFFSET_M,
+                  heading + side * 90
+                ),
+              },
+              properties: { type: 'reil', intensity: 1.0 },
+            });
+          }
+        }
+      }
     }
 
+    for (const feature of features) {
+      const p = feature.properties!;
+      p.color = lightColor(p);
+    }
     return { type: 'FeatureCollection', features };
   }
 

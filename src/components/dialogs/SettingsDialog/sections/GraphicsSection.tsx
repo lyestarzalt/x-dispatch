@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import type { SurfaceDetail } from '@/stores/settingsStore';
@@ -12,6 +13,12 @@ const SURFACE_DETAIL_OPTIONS: { value: SurfaceDetail; labelKey: string }[] = [
   { value: 'low', labelKey: 'settings.graphics.low' },
   { value: 'medium', labelKey: 'settings.graphics.medium' },
   { value: 'high', labelKey: 'settings.graphics.high' },
+];
+
+const AIRFIELD_LIGHT_OPTIONS: { value: AirfieldLightsMode; labelKey: string }[] = [
+  { value: 'auto', labelKey: 'settings.graphics.airfieldLightsAuto' },
+  { value: 'on', labelKey: 'settings.graphics.airfieldLightsOn' },
+  { value: 'off', labelKey: 'settings.graphics.airfieldLightsOff' },
 ];
 
 export function GraphicsSection() {
@@ -116,10 +123,10 @@ export function GraphicsSection() {
         </div>
       </SettingsSectionBlock>
 
-      {/* Lights */}
+      {/* Airport effects */}
       <SettingsSectionBlock
-        title={t('settings.graphics.lights')}
-        description={t('settings.graphics.lightsPerfHint')}
+        title={t('settings.graphics.airportEffects')}
+        description={t('settings.graphics.airportEffectsDesc')}
       >
         <SettingsToggleRow
           title={t('settings.graphics.approachLights')}
@@ -127,6 +134,33 @@ export function GraphicsSection() {
           checked={graphics.approachLightAnimation}
           onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
         />
+        <SettingsToggleRow
+          title={t('settings.graphics.groundWeather')}
+          description={t('settings.graphics.groundWeatherDesc')}
+          checked={graphics.groundWeather}
+          onCheckedChange={(checked) => updateGraphics({ groundWeather: checked })}
+        />
+        <div className="space-y-2 pt-2">
+          <div>
+            <p className="text-sm font-medium">{t('settings.graphics.airfieldLights')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.graphics.airfieldLightsDesc')}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {AIRFIELD_LIGHT_OPTIONS.map(({ value, labelKey }) => (
+              <Button
+                key={value}
+                variant={graphics.airfieldLights === value ? 'default' : 'outline'}
+                size="sm"
+                className={cn('flex-1', graphics.airfieldLights === value && 'pointer-events-none')}
+                onClick={() => updateGraphics({ airfieldLights: value })}
+              >
+                {t(labelKey)}
+              </Button>
+            ))}
+          </div>
+        </div>
       </SettingsSectionBlock>
     </div>
   );

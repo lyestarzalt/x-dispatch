@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import type { WeightUnit } from '@/lib/utils/format';
 
@@ -95,6 +96,10 @@ export interface GraphicsSettings {
   cityLights: boolean;
   /** Drive the sun from the simulator clock while X-Plane is connected. */
   followSimTime: boolean;
+  /** Wind streaks, rain, snow and fog over the selected airport. */
+  groundWeather: boolean;
+  /** Airfield fixtures: follow the sun, always lit, or hidden. */
+  airfieldLights: AirfieldLightsMode;
 }
 
 export interface FlightsSettings {
@@ -187,6 +192,8 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   dynamicSky: true,
   cityLights: true,
   followSimTime: true,
+  groundWeather: true,
+  airfieldLights: 'on',
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -382,7 +389,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 26,
+      version: 27,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -528,6 +535,10 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   }
   if (version < 26) {
     state = { ...state, flights: { ...DEFAULT_FLIGHTS_SETTINGS, ...state.flights } };
+  }
+
+  if (version < 27) {
+    state = { ...state, graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics } };
   }
 
   return state as SettingsState;
