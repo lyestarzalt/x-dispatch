@@ -34,6 +34,8 @@ import {
   applyNavVisibilityChange,
   toggleIvaoLayer,
   toggleVatsimLayer,
+  useAirfieldLights,
+  useAirfieldStrobes,
   useAirportFilters,
   useAirportInteractions,
   useAirportRenderer,
@@ -380,6 +382,8 @@ export default function Map({ airports }: MapProps) {
   // Approach light "rabbit" animation — canvas overlay, no MapLibre repaints
   useApproachLightAnimation(mapRef);
   useGroundWeather(mapRef);
+  useAirfieldLights(mapRef);
+  useAirfieldStrobes(mapRef);
 
   // Pin-drop custom start location
   const { placeAtCenter: handlePinDrop, placeAtCoordinates: handlePinDropAtCoordinates } =

@@ -1,4 +1,5 @@
 // Airport layers - rendering apt.dat parsed data
+export { AirfieldLightsLayer } from './AirfieldLightsLayer';
 export { type LayerRenderer } from './BaseLayerRenderer';
 export { BeaconLayer } from './BeaconLayer';
 export { BoundaryLayer } from './BoundaryLayer';

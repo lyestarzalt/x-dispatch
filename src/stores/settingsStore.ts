@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import type { WeightUnit } from '@/lib/utils/format';
 
@@ -97,6 +98,8 @@ export interface GraphicsSettings {
   followSimTime: boolean;
   /** Wind streaks, rain, snow and fog over the selected airport. */
   groundWeather: boolean;
+  /** Airfield fixtures: follow the sun, always lit, or hidden. */
+  airfieldLights: AirfieldLightsMode;
 }
 
 export interface FlightsSettings {
@@ -190,6 +193,7 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   cityLights: true,
   followSimTime: true,
   groundWeather: true,
+  airfieldLights: 'on',
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {

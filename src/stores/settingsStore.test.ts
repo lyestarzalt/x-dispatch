@@ -141,6 +141,7 @@ describe('migrateSettings', () => {
       cityLights: true,
       followSimTime: true,
       groundWeather: true,
+      airfieldLights: 'on',
     });
   });
 
