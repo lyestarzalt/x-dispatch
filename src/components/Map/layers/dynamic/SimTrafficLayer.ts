@@ -32,8 +32,17 @@ function toGeoJSON(targets: TrafficTarget[]): GeoJSON.FeatureCollection {
   };
 }
 
-/** Updates in place when mounted, mounts on first call. Icons load lazily per type. */
-export async function updateSimTrafficLayer(
+/** Cheap per-frame update; no-op until the layer has been mounted. */
+export function setSimTrafficData(map: maplibregl.Map, targets: TrafficTarget[]): boolean {
+  if (!map.getStyle()) return false;
+  const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+  if (!source) return false;
+  source.setData(toGeoJSON(targets));
+  return true;
+}
+
+/** Loads any new silhouette icons and mounts the layers on first call. */
+export async function ensureSimTrafficLayer(
   map: maplibregl.Map,
   targets: TrafficTarget[]
 ): Promise<void> {
@@ -43,15 +52,9 @@ export async function updateSimTrafficLayer(
   await ensureFallbackIcon(map);
   await ensureAircraftIcons(map, icons);
   if (!map.getStyle()) return;
+  if (map.getSource(SOURCE_ID)) return;
 
-  const data = toGeoJSON(targets);
-  const existing = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-  if (existing) {
-    existing.setData(data);
-    return;
-  }
-
-  safeAddGeoJSONSource(map, SOURCE_ID, data);
+  safeAddGeoJSONSource(map, SOURCE_ID, toGeoJSON(targets));
   map.addLayer({
     id: GLOW_LAYER_ID,
     type: 'circle',
