@@ -17,10 +17,12 @@ const MAX_BACKING_SCALE = 1;
 const TRAIL_FADE = 0.09;
 const WIND_PARTICLES_PER_MEGAPIXEL = 140;
 const RAIN_PARTICLES_PER_MEGAPIXEL = 90;
-const SNOW_PARTICLES_PER_MEGAPIXEL = 70;
-const FOG_BLOBS = 6;
+const SNOW_PARTICLES_PER_MEGAPIXEL = 40;
+const FOG_PATCHES = 5;
+/** Even veil over the whole view at full fog; patches add a little texture on top. */
+const FOG_VEIL_ALPHA = 0.16;
+const FOG_PATCH_ALPHA = 0.1;
 const SNOW_LIFE_S = 3;
-const SNOW_HAZE = 0.12;
 const RIPPLE_LIFE_S = 0.7;
 const FLAKE_SPRITE_PX = 48;
 const BLOB_SPRITE_PX = 128;
@@ -69,7 +71,7 @@ function spawnBlob(w: number, h: number): Blob {
   return {
     x: Math.random() * w,
     y: Math.random() * h,
-    r: Math.max(w, h) * (0.18 + Math.random() * 0.2),
+    r: Math.max(w, h) * (0.25 + Math.random() * 0.25),
     drift: 0.4 + Math.random() * 0.6,
   };
 }
@@ -127,8 +129,9 @@ function blobSprite(): HTMLCanvasElement | null {
   const [c, ctx] = off;
   const mid = BLOB_SPRITE_PX / 2;
   const g = ctx.createRadialGradient(mid, mid, 0, mid, mid, mid);
-  g.addColorStop(0, 'rgba(200,206,214,1)');
-  g.addColorStop(1, 'rgba(200,206,214,0)');
+  g.addColorStop(0, 'rgba(215,220,228,1)');
+  g.addColorStop(0.5, 'rgba(215,220,228,0.45)');
+  g.addColorStop(1, 'rgba(215,220,228,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, BLOB_SPRITE_PX, BLOB_SPRITE_PX);
   return c;
@@ -171,15 +174,22 @@ class SegmentBatch {
   }
 }
 
+function overlayCanvas(zIndex: number): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:${zIndex}`;
+  return canvas;
+}
+
 /**
  * Wind streaks, rain or snow and drifting fog over the selected airport,
- * drawn on a 2D canvas from the METAR the info panel already fetched. Screen
- * space only, so the map never repaints for it. Frames fade instead of
- * clearing so particles leave motion trails; the loop stops when there is
- * nothing to show or the airport is zoomed out.
+ * drawn from the METAR the info panel already fetched. Screen space only, so
+ * the map never repaints for it. Two canvases: streaks and rain fade frame to
+ * frame for motion trails, fog and snow are redrawn clean every frame. The
+ * loop stops when there is nothing to show or the airport is zoomed out.
  */
 export function useGroundWeather(mapRef: MapRef): void {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const trailRef = useRef<HTMLCanvasElement | null>(null);
+  const cleanRef = useRef<HTMLCanvasElement | null>(null);
   const enabled = useSettingsStore((s) => s.graphics.groundWeather);
   const icao = useAppStore((s) => s.selectedICAO);
   const { data: metar } = useVatsimMetarQuery(enabled ? icao : null);
@@ -189,24 +199,29 @@ export function useGroundWeather(mapRef: MapRef): void {
     const map = mapRef.current;
     if (!map) return;
     const container = map.getContainer();
-    const canvas = document.createElement('canvas');
-    canvas.style.cssText =
-      'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4';
-    container.appendChild(canvas);
-    canvasRef.current = canvas;
+    const clean = overlayCanvas(4);
+    const trail = overlayCanvas(5);
+    container.appendChild(clean);
+    container.appendChild(trail);
+    cleanRef.current = clean;
+    trailRef.current = trail;
     const resize = () => {
       const rect = container.getBoundingClientRect();
       const scale = backingScale();
-      canvas.width = Math.round(rect.width * scale);
-      canvas.height = Math.round(rect.height * scale);
+      for (const canvas of [clean, trail]) {
+        canvas.width = Math.round(rect.width * scale);
+        canvas.height = Math.round(rect.height * scale);
+      }
     };
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(container);
     return () => {
       observer.disconnect();
-      canvas.remove();
-      canvasRef.current = null;
+      clean.remove();
+      trail.remove();
+      cleanRef.current = null;
+      trailRef.current = null;
     };
   }, [mapRef]);
 
@@ -214,31 +229,39 @@ export function useGroundWeather(mapRef: MapRef): void {
 
   useEffect(() => {
     const map = mapRef.current;
-    const canvas = canvasRef.current;
-    if (!map || !canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const trail = trailRef.current;
+    const clean = cleanRef.current;
+    if (!map || !trail || !clean) return;
+    const tctx = trail.getContext('2d');
+    const cctx = clean.getContext('2d');
+    if (!tctx || !cctx) return;
 
-    const clear = () => {
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const clearAll = () => {
+      for (const [ctx, canvas] of [
+        [tctx, trail],
+        [cctx, clean],
+      ] as const) {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
     };
 
     const hasWind = windFromDeg !== null && windKt >= MIN_WIND_KT;
     const active = enabled && icao !== null && (hasWind || precip !== 'none' || fog > 0);
     if (!active) {
-      clear();
+      clearAll();
       return;
     }
 
     let cancelled = false;
     let running = false;
+    let moving = false;
+    let blank = false;
     let frame = 0;
     let lastMs = 0;
     let wind: Particle[] = [];
     let drops: Particle[] = [];
     let blobs: Blob[] = [];
-    let vignette: CanvasGradient | null = null;
     const ripples: Ripple[] = [];
     const batch = new SegmentBatch();
     const flake = precip === 'snow' ? flakeSprite() : null;
@@ -246,7 +269,7 @@ export function useGroundWeather(mapRef: MapRef): void {
 
     const cssSize = () => {
       const scale = backingScale();
-      return { w: canvas.width / scale, h: canvas.height / scale, scale };
+      return { w: trail.width / scale, h: trail.height / scale, scale };
     };
 
     const seed = () => {
@@ -262,14 +285,8 @@ export function useGroundWeather(mapRef: MapRef): void {
       const dropCount = Math.round(perMegapixel * megapixels);
       wind = Array.from({ length: windCount }, () => spawn(w, h));
       drops = Array.from({ length: dropCount }, () => spawn(w, h));
-      blobs = fog > 0 ? Array.from({ length: FOG_BLOBS }, () => spawnBlob(w, h)) : [];
+      blobs = fog > 0 ? Array.from({ length: FOG_PATCHES }, () => spawnBlob(w, h)) : [];
       ripples.length = 0;
-      if (fog > 0) {
-        const r = Math.hypot(w, h) / 2;
-        vignette = ctx.createRadialGradient(w / 2, h / 2, r * 0.3, w / 2, h / 2, r);
-        vignette.addColorStop(0, 'rgba(190,198,208,0)');
-        vignette.addColorStop(1, `rgba(190,198,208,${0.85 * fog * TRAIL_FADE})`);
-      }
     };
 
     const inView = () => map.getZoom() >= MIN_ZOOM && !document.hidden;
@@ -282,18 +299,18 @@ export function useGroundWeather(mapRef: MapRef): void {
     };
 
     const fade = (w: number, h: number, amount: number) => {
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = `rgba(0,0,0,${amount})`;
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'source-over';
+      tctx.globalCompositeOperation = 'destination-out';
+      tctx.fillStyle = `rgba(0,0,0,${amount})`;
+      tctx.fillRect(0, 0, w, h);
+      tctx.globalCompositeOperation = 'source-over';
     };
 
-    // Drawn every frame on top of the fade, so the visible alpha settles at
-    // (drawn alpha / TRAIL_FADE): scale down to land on the intended strength.
     const drawFog = (w: number, h: number, dx: number, dy: number, dt: number) => {
       if (fog <= 0 || !blob) return;
+      cctx.fillStyle = `rgba(215,220,228,${FOG_VEIL_ALPHA * fog})`;
+      cctx.fillRect(0, 0, w, h);
       const speed = (6 + windKt * 1.5) * dt;
-      ctx.globalAlpha = 0.6 * fog * TRAIL_FADE;
+      cctx.globalAlpha = FOG_PATCH_ALPHA * fog;
       for (const b of blobs) {
         b.x += dx * speed * b.drift;
         b.y += dy * speed * b.drift;
@@ -301,36 +318,74 @@ export function useGroundWeather(mapRef: MapRef): void {
         if (b.x > w + b.r) b.x = -b.r;
         if (b.y < -b.r) b.y = h + b.r;
         if (b.y > h + b.r) b.y = -b.r;
-        ctx.drawImage(blob, b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
+        cctx.drawImage(blob, b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
       }
-      ctx.globalAlpha = 1;
-      if (vignette) {
-        ctx.fillStyle = vignette;
-        ctx.fillRect(0, 0, w, h);
+      cctx.globalAlpha = 1;
+    };
+
+    const drawSnow = (
+      w: number,
+      h: number,
+      dx: number,
+      dy: number,
+      dt: number,
+      windPxPerS: number,
+      zoomScale: number
+    ) => {
+      if (!flake) return;
+      // Seen from above, flakes come toward the camera: they only drift with
+      // the wind while growing and fading over a short life.
+      const driftPxPerS = hasWind ? windPxPerS * 0.4 : 8 * zoomScale;
+      for (const p of drops) {
+        p.age += dt;
+        p.x += dx * driftPxPerS * p.depth * dt;
+        p.y += dy * driftPxPerS * p.depth * dt;
+        if (p.age > SNOW_LIFE_S || p.x < -12 || p.x > w + 12 || p.y < -12 || p.y > h + 12) {
+          Object.assign(p, spawn(w, h), { age: 0 });
+          continue;
+        }
+        const life = p.age / SNOW_LIFE_S;
+        const size = (4 + life * 7) * (0.6 + p.depth * 0.6) * zoomScale;
+        cctx.globalAlpha = 0.85 * Math.sin(life * Math.PI);
+        cctx.drawImage(flake, p.x - size / 2, p.y - size / 2, size, size);
       }
+      cctx.globalAlpha = 1;
     };
 
     const render = (nowMs: number) => {
       if (cancelled) return;
       if (!inView()) {
-        clear();
+        clearAll();
         running = false;
         return;
       }
       frame = requestAnimationFrame(render);
+      // Particles live in screen space: while the camera moves, old trails
+      // would smear over ground that has shifted, so show nothing until it stops.
+      if (moving) {
+        if (!blank) {
+          clearAll();
+          blank = true;
+        }
+        return;
+      }
       if (nowMs - lastMs < FRAME_MS) return;
+      blank = false;
       const dt = lastMs === 0 ? FRAME_MS / 1000 : Math.min(MAX_DT_S, (nowMs - lastMs) / 1000);
       lastMs = nowMs;
 
       const { w, h, scale } = cssSize();
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      fade(w, h, TRAIL_FADE);
-
       const { dx, dy } = screenWind();
       const zoomScale = Math.min(2, Math.max(0.5, 2 ** (map.getZoom() - 14)));
-      drawFog(w, h, dx, dy, dt);
-
       const windPxPerS = (25 + windKt * 7) * zoomScale;
+
+      cctx.setTransform(scale, 0, 0, scale, 0, 0);
+      cctx.clearRect(0, 0, w, h);
+      drawFog(w, h, dx, dy, dt);
+      if (precip === 'snow') drawSnow(w, h, dx, dy, dt, windPxPerS, zoomScale);
+
+      tctx.setTransform(scale, 0, 0, scale, 0, 0);
+      fade(w, h, TRAIL_FADE);
       const gust = 1 + 0.15 * Math.sin(nowMs / 900);
 
       if (hasWind) {
@@ -349,9 +404,9 @@ export function useGroundWeather(mapRef: MapRef): void {
           const alpha = Math.sin(life * Math.PI) * (0.5 + p.depth * 0.5);
           batch.add(px, py, p.x, p.y, alpha, (p.depth - 0.5) / 0.8);
         }
-        ctx.lineCap = 'round';
+        tctx.lineCap = 'round';
         batch.flush(
-          ctx,
+          tctx,
           (a) => `rgba(225,238,255,${0.55 * a})`,
           (wPos) => 0.8 + wPos * 0.8
         );
@@ -377,13 +432,13 @@ export function useGroundWeather(mapRef: MapRef): void {
             (p.depth - 0.5) / 0.8
           );
         }
-        ctx.lineCap = 'butt';
+        tctx.lineCap = 'butt';
         batch.flush(
-          ctx,
+          tctx,
           (a) => `rgba(185,210,255,${0.12 + a * 0.16})`,
           (wPos) => 0.5 + wPos * 0.4
         );
-        ctx.lineWidth = 1;
+        tctx.lineWidth = 1;
         for (let i = ripples.length - 1; i >= 0; i--) {
           const r = ripples[i];
           if (!r) continue;
@@ -393,39 +448,11 @@ export function useGroundWeather(mapRef: MapRef): void {
             continue;
           }
           const t = r.age / RIPPLE_LIFE_S;
-          ctx.strokeStyle = `rgba(200,220,255,${0.5 * (1 - t) * TRAIL_FADE * 4})`;
-          ctx.beginPath();
-          ctx.arc(r.x, r.y, 2 + t * 10 * zoomScale, 0, Math.PI * 2);
-          ctx.stroke();
+          tctx.strokeStyle = `rgba(200,220,255,${0.5 * (1 - t) * TRAIL_FADE * 4})`;
+          tctx.beginPath();
+          tctx.arc(r.x, r.y, 2 + t * 10 * zoomScale, 0, Math.PI * 2);
+          tctx.stroke();
         }
-      } else if (precip === 'snow' && flake) {
-        // Flakes are stamps, not streaks: erase the previous stamp so the fade
-        // trail never shows behind them.
-        const eraseHalf = 12 * zoomScale;
-        ctx.globalCompositeOperation = 'destination-out';
-        for (const p of drops) {
-          ctx.fillRect(p.x - eraseHalf, p.y - eraseHalf, eraseHalf * 2, eraseHalf * 2);
-        }
-        ctx.globalCompositeOperation = 'source-over';
-        // Seen from above, flakes come toward the camera: they only drift with
-        // the wind while growing and fading over a short life.
-        const driftPxPerS = hasWind ? windPxPerS * 0.4 : 8 * zoomScale;
-        for (const p of drops) {
-          p.age += dt;
-          p.x += dx * driftPxPerS * p.depth * dt;
-          p.y += dy * driftPxPerS * p.depth * dt;
-          if (p.age > SNOW_LIFE_S || p.x < -12 || p.x > w + 12 || p.y < -12 || p.y > h + 12) {
-            Object.assign(p, spawn(w, h), { age: 0 });
-            continue;
-          }
-          const life = p.age / SNOW_LIFE_S;
-          const size = (6 + life * 10) * (0.6 + p.depth * 0.6) * zoomScale;
-          ctx.globalAlpha = 0.9 * Math.sin(life * Math.PI);
-          ctx.drawImage(flake, p.x - size / 2, p.y - size / 2, size, size);
-        }
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = `rgba(235,240,248,${SNOW_HAZE * TRAIL_FADE})`;
-        ctx.fillRect(0, 0, w, h);
       }
     };
 
@@ -436,19 +463,31 @@ export function useGroundWeather(mapRef: MapRef): void {
       frame = requestAnimationFrame(render);
     };
 
+    const onMoveStart = () => {
+      moving = true;
+    };
+    const onMoveEnd = () => {
+      moving = false;
+      lastMs = 0;
+      seed();
+      start();
+    };
+
     seed();
     start();
-    map.on('moveend', start);
+    map.on('movestart', onMoveStart);
+    map.on('moveend', onMoveEnd);
     map.on('resize', seed);
     document.addEventListener('visibilitychange', start);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
-      map.off('moveend', start);
+      map.off('movestart', onMoveStart);
+      map.off('moveend', onMoveEnd);
       map.off('resize', seed);
       document.removeEventListener('visibilitychange', start);
-      clear();
+      clearAll();
     };
   }, [mapRef, enabled, icao, windFromDeg, windKt, precip, fog]);
 }
