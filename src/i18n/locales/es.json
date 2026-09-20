@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Código {{code}}, envergadura hasta {{m}} m",
+    "operation": {
+      "airline": "Puesto de aerolínea",
+      "cargo": "Puesto de carga",
+      "general_aviation": "Aviación general",
+      "military": "Militar",
+      "none": "Cualquier operador"
+    },
+    "moreAirlines": "+{{count}} más",
+    "clickToStart": "Haz clic para empezar aquí"
+  },
   "toolbar": {
     "searchPlaceholder": "Buscar aeropuertos...",
     "clearSearch": "Limpiar búsqueda",

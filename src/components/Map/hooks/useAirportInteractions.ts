@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import {
+  type StandHover,
+  normalizeOperation,
+  normalizeWidthCode,
+} from '@/lib/airports/standIdentity';
 import logger from '@/lib/utils/loggerRenderer';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
@@ -9,6 +14,28 @@ import type { MapRef } from './useMapSetup';
 interface UseAirportInteractionsOptions {
   mapRef: MapRef;
   selectedAirportData: ParsedAirport | null;
+  /** Called with the stand under the cursor and its screen position, null when leaving. */
+  onStandHover?: (hover: StandHover | null) => void;
+}
+
+function standHoverFrom(
+  point: maplibregl.Point,
+  props: Record<string, unknown> | null | undefined
+): StandHover | null {
+  if (!props) return null;
+  const airlines =
+    typeof props.airlines === 'string' && props.airlines.length > 0
+      ? props.airlines.split(',')
+      : [];
+  return {
+    x: point.x,
+    y: point.y,
+    name: String(props.name ?? ''),
+    locationType: String(props.locationType ?? ''),
+    operation: normalizeOperation(props.operation as string | undefined),
+    widthCode: normalizeWidthCode(props.icaoWidthCode as string | undefined),
+    airlines,
+  };
 }
 
 interface UseAirportInteractionsReturn {
@@ -45,8 +72,13 @@ interface UseAirportInteractionsReturn {
 export function useAirportInteractions({
   mapRef,
   selectedAirportData,
+  onStandHover,
 }: UseAirportInteractionsOptions): UseAirportInteractionsReturn {
   const hoveredGateId = useRef<number | null>(null);
+  const onStandHoverRef = useRef(onStandHover);
+  useEffect(() => {
+    onStandHoverRef.current = onStandHover;
+  }, [onStandHover]);
   const hoveredRunwayEndId = useRef<number | null>(null);
   const selectedGateId = useRef<number | null>(null);
   const selectedRunwayEndId = useRef<number | null>(null);
@@ -86,6 +118,19 @@ export function useAirportInteractions({
       }
       hoveredGateId.current = featureId;
       map.setFeatureState({ source: 'airport-gates', id: featureId }, { hover: true });
+      onStandHoverRef.current?.(standHoverFrom(e.point, feature.properties));
+    };
+
+    const handleGateMouseMove = (
+      e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
+    ) => {
+      const feature = e.features?.[0];
+      if (!feature || !onStandHoverRef.current) return;
+      if ((feature.id as number) !== hoveredGateId.current) {
+        handleGateMouseEnter(e);
+        return;
+      }
+      onStandHoverRef.current(standHoverFrom(e.point, feature.properties));
     };
 
     const handleGateMouseLeave = () => {
@@ -97,6 +142,7 @@ export function useAirportInteractions({
         );
         hoveredGateId.current = null;
       }
+      onStandHoverRef.current?.(null);
     };
 
     const handleGateClick = (
@@ -275,6 +321,7 @@ export function useAirportInteractions({
     // Wait for map to be loaded before attaching events
     const attachEvents = () => {
       map.on('mouseenter', 'airport-gates-ring', handleGateMouseEnter);
+      map.on('mousemove', 'airport-gates-ring', handleGateMouseMove);
       map.on('mouseleave', 'airport-gates-ring', handleGateMouseLeave);
       map.on('click', 'airport-gates-ring', handleGateClick);
       map.on('mouseenter', 'airport-gates-helipad-bg', handleGateMouseEnter);
@@ -293,7 +340,9 @@ export function useAirportInteractions({
 
     return () => {
       map.off('mouseenter', 'airport-gates-ring', handleGateMouseEnter);
+      map.off('mousemove', 'airport-gates-ring', handleGateMouseMove);
       map.off('mouseleave', 'airport-gates-ring', handleGateMouseLeave);
+      onStandHoverRef.current?.(null);
       map.off('click', 'airport-gates-ring', handleGateClick);
       map.off('mouseenter', 'airport-gates-helipad-bg', handleGateMouseEnter);
       map.off('mouseleave', 'airport-gates-helipad-bg', handleGateMouseLeave);

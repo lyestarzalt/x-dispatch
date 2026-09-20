@@ -1,5 +1,11 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import {
+  STAND_TINT,
+  isWideBody,
+  normalizeOperation,
+  normalizeWidthCode,
+} from '@/lib/airports/standIdentity';
 import type { ParsedAirport } from '@/types/apt';
 import type { Helipad, StartupLocation } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -31,6 +37,15 @@ const GATE_ICONS: Record<string, string> = {
   // Commercial airliner - swept wings, twin engines
   'gate-airliner': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
     <path fill="white" d="M24 4c-1.1 0-2 .9-2 2v12l-14 8v3l14-4v10l-4 3v2l6-2 6 2v-2l-4-3V25l14 4v-3l-14-8V6c0-1.1-.9-2-2-2z"/>
+  </svg>`,
+
+  // Wide-body airliner - long fuselage, four engines
+  'gate-widebody': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <path fill="white" d="M24 2c-1.4 0-2.5 1.1-2.5 2.5V16L4 26v3.5l17.5-5v11l-5.5 4v2.5l8-2 8 2V39.5l-5.5-4v-11l17.5 5V26L26.5 16V4.5C26.5 3.1 25.4 2 24 2z"/>
+    <rect fill="white" x="13" y="24" width="3" height="6" rx="1" opacity="0.7"/>
+    <rect fill="white" x="18" y="21" width="3" height="6" rx="1" opacity="0.7"/>
+    <rect fill="white" x="27" y="21" width="3" height="6" rx="1" opacity="0.7"/>
+    <rect fill="white" x="32" y="24" width="3" height="6" rx="1" opacity="0.7"/>
   </svg>`,
 
   // Cargo freighter - wider body, box indicator
@@ -125,7 +140,19 @@ export class GateLayer extends BaseLayerRenderer {
           GATE_COLORS.selected,
           ['boolean', ['feature-state', 'hover'], false],
           GATE_COLORS.hover,
-          GATE_COLORS.default,
+          [
+            'match',
+            ['get', 'operation'],
+            'airline',
+            STAND_TINT.airline,
+            'cargo',
+            STAND_TINT.cargo,
+            'general_aviation',
+            STAND_TINT.general_aviation,
+            'military',
+            STAND_TINT.military,
+            GATE_COLORS.default,
+          ],
         ],
         'circle-opacity': [
           'case',
@@ -279,7 +306,10 @@ export class GateLayer extends BaseLayerRenderer {
   ): GeoJSON.FeatureCollection {
     const locationFeatures = (locations || []).map((location, index) => {
       const gateType = this.normalizeGateType(location.location_type, location.airplane_types);
-      const typeConfig = GATE_TYPES[gateType];
+      const widthCode = normalizeWidthCode(location.icaoWidthCode);
+      const operation = normalizeOperation(location.operationType);
+      const iconName =
+        gateType === 'gate' && isWideBody(widthCode) ? 'gate-widebody' : GATE_TYPES[gateType].icon;
 
       return {
         type: 'Feature' as const,
@@ -295,13 +325,13 @@ export class GateLayer extends BaseLayerRenderer {
           gateType,
           heading: location.heading,
           airplaneTypes: location.airplane_types,
-          iconScale: this.getIconScale(location.airplane_types),
-          iconName: typeConfig.icon,
+          iconScale: this.getIconScale(widthCode ?? location.airplane_types),
+          iconName,
           latitude: location.latitude,
           longitude: location.longitude,
           // 1301 metadata
-          icaoWidthCode: location.icaoWidthCode,
-          operationType: location.operationType,
+          icaoWidthCode: widthCode,
+          operation,
           airlines: location.airlines?.join(','),
         },
       };

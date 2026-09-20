@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "コード{{code}}、翼幅{{m}} mまで",
+    "operation": {
+      "airline": "航空会社スポット",
+      "cargo": "貨物スポット",
+      "general_aviation": "ジェネラルアビエーション",
+      "military": "軍用",
+      "none": "運航者指定なし"
+    },
+    "moreAirlines": "他{{count}}社",
+    "clickToStart": "クリックしてここから開始"
+  },
   "toolbar": {
     "searchPlaceholder": "空港を検索...",
     "clearSearch": "検索をクリア",

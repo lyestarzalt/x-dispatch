@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Code {{code}}, wingspan to {{m}} m",
+    "operation": {
+      "airline": "Airline stand",
+      "cargo": "Cargo stand",
+      "general_aviation": "General aviation",
+      "military": "Military",
+      "none": "Any operator"
+    },
+    "moreAirlines": "+{{count}} more",
+    "clickToStart": "Click to start here"
+  },
   "toolbar": {
     "searchPlaceholder": "Search airports...",
     "clearSearch": "Clear search",

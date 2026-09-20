@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Kod {{code}}, rozpiętość do {{m}} m",
+    "operation": {
+      "airline": "Stanowisko liniowe",
+      "cargo": "Stanowisko cargo",
+      "general_aviation": "Lotnictwo ogólne",
+      "military": "Wojskowe",
+      "none": "Dowolny operator"
+    },
+    "moreAirlines": "+{{count}} więcej",
+    "clickToStart": "Kliknij, aby zacząć tutaj"
+  },
   "toolbar": {
     "searchPlaceholder": "Szukaj lotnisk...",
     "clearSearch": "Wyczyść wyszukiwanie",

@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Code {{code}}, Spannweite bis {{m}} m",
+    "operation": {
+      "airline": "Airline-Position",
+      "cargo": "Fracht-Position",
+      "general_aviation": "Allgemeine Luftfahrt",
+      "military": "Militär",
+      "none": "Beliebiger Betreiber"
+    },
+    "moreAirlines": "+{{count}} weitere",
+    "clickToStart": "Klicken, um hier zu starten"
+  },
   "toolbar": {
     "searchPlaceholder": "Flughäfen suchen...",
     "clearSearch": "Suche löschen",

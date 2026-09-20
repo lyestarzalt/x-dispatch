@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Код {{code}}, размах крыла до {{m}} м",
+    "operation": {
+      "airline": "Стоянка авиакомпании",
+      "cargo": "Грузовая стоянка",
+      "general_aviation": "Авиация общего назначения",
+      "military": "Военная",
+      "none": "Любой оператор"
+    },
+    "moreAirlines": "+{{count}} ещё",
+    "clickToStart": "Нажмите, чтобы начать здесь"
+  },
   "toolbar": {
     "searchPlaceholder": "Поиск аэропортов...",
     "clearSearch": "Очистить поиск",
