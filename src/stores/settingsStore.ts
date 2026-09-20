@@ -96,6 +96,8 @@ export interface GraphicsSettings {
   cityLights: boolean;
   /** Drive the sun from the simulator clock while X-Plane is connected. */
   followSimTime: boolean;
+  /** Wind streaks, rain, snow and fog over the selected airport. */
+  groundWeather: boolean;
   /** Airfield fixtures: follow the sun, always lit, or hidden. */
   airfieldLights: AirfieldLightsMode;
 }
@@ -190,6 +192,7 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   dynamicSky: true,
   cityLights: true,
   followSimTime: true,
+  groundWeather: true,
   airfieldLights: 'on',
 };
 
@@ -535,10 +538,7 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   }
 
   if (version < 27) {
-    state = {
-      ...state,
-      graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics },
-    };
+    state = { ...state, graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics } };
   }
 
   return state as SettingsState;

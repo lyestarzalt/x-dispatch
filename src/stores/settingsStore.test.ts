@@ -140,6 +140,7 @@ describe('migrateSettings', () => {
       dynamicSky: true,
       cityLights: true,
       followSimTime: true,
+      groundWeather: true,
       airfieldLights: 'on',
     });
   });

@@ -123,16 +123,22 @@ export function GraphicsSection() {
         </div>
       </SettingsSectionBlock>
 
-      {/* Lights */}
+      {/* Airport effects */}
       <SettingsSectionBlock
-        title={t('settings.graphics.lights')}
-        description={t('settings.graphics.lightsPerfHint')}
+        title={t('settings.graphics.airportEffects')}
+        description={t('settings.graphics.airportEffectsDesc')}
       >
         <SettingsToggleRow
           title={t('settings.graphics.approachLights')}
           description={t('settings.graphics.approachLightsDesc')}
           checked={graphics.approachLightAnimation}
           onCheckedChange={(checked) => updateGraphics({ approachLightAnimation: checked })}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.groundWeather')}
+          description={t('settings.graphics.groundWeatherDesc')}
+          checked={graphics.groundWeather}
+          onCheckedChange={(checked) => updateGraphics({ groundWeather: checked })}
         />
         <div className="space-y-2 pt-2">
           <div>

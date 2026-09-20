@@ -27,6 +27,7 @@ import {
   Settings,
   Ship,
   Sunrise,
+  Wind,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -461,6 +462,7 @@ function Toolbar({
   const setFlightTrailEnabled = useMapStore((s) => s.setFlightTrailEnabled);
   const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
   const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
+  const groundWeatherEnabled = useSettingsStore((s) => s.graphics.groundWeather);
   const airfieldLightsOn = useSettingsStore((s) => s.graphics.airfieldLights !== 'off');
   const updateGraphicsSettings = useSettingsStore((s) => s.updateGraphicsSettings);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
@@ -964,6 +966,15 @@ function Toolbar({
               >
                 <Lightbulb className="mr-2 h-4 w-4" />
                 {t('toolbar.cityLights')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={groundWeatherEnabled}
+                onCheckedChange={() =>
+                  updateGraphicsSettings({ groundWeather: !groundWeatherEnabled })
+                }
+              >
+                <Wind className="mr-2 h-4 w-4" />
+                {t('toolbar.groundWeather')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={airfieldLightsOn}
