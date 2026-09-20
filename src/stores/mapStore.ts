@@ -59,7 +59,7 @@ export interface ExploreFilters {
   hasIata: boolean;
 }
 
-export type ExploreTab = 'featured' | 'routes' | 'vatsim';
+export type ExploreTab = 'featured' | 'routes' | 'vatsim' | 'weather';
 /** Filter variant includes 'all' option for UI */
 export type FeaturedCategoryFilter = 'all' | FeaturedCategory;
 

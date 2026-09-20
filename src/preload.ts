@@ -56,6 +56,7 @@ contextBridge.exposeInMainWorld('airportAPI', {
     ipcRenderer.invoke('fetch-gateway-scenery', sceneryId),
   fetchVatsimData: () => ipcRenderer.invoke('fetch-vatsim-data'),
   fetchVatsimMetar: (icao: string) => ipcRenderer.invoke('fetch-vatsim-metar', icao),
+  fetchVatsimMetarsAll: () => ipcRenderer.invoke('fetch-vatsim-metars-all'),
   fetchVatsimEvents: () => ipcRenderer.invoke('fetch-vatsim-events'),
   fetchIvaoData: () => ipcRenderer.invoke('fetch-ivao-data'),
 });
@@ -483,6 +484,7 @@ declare global {
       fetchGatewayScenery: (sceneryId: number) => Promise<ApiResponse>;
       fetchVatsimData: () => Promise<{ data: VatsimData | null; error: string | null }>;
       fetchVatsimMetar: (icao: string) => Promise<ApiResponse>;
+      fetchVatsimMetarsAll: () => Promise<ApiResponse>;
       fetchVatsimEvents: () => Promise<{ data: VatsimEventsResponse | null; error: string | null }>;
       fetchIvaoData: () => Promise<{ data: IvaoData | null; error: string | null }>;
     };

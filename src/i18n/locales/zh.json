@@ -228,7 +228,8 @@
       "filters": "筛选",
       "featured": "精选",
       "routes": "航线",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "天气"
     },
     "vatsim": {
       "busiestNow": "当前最繁忙",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "无法加载天气数据",
+      "noneNow": "当前没有相关报告",
+      "unknownStation": "未知观测站",
+      "notInXPlane": "X-Plane 中尚未收录。请在 Gateway 提交",
+      "minutesAgo": "{{minutes}} 分钟前",
+      "categories": {
+        "snow": "雪",
+        "fog": "雾",
+        "lowVisibility": "低能见度",
+        "heavyPrecipitation": "大雨",
+        "thunderstorm": "雷暴",
+        "strongWind": "大风",
+        "freezing": "积冰",
+        "lowCeiling": "低云底",
+        "severe": "恶劣天气",
+        "dustSand": "沙尘",
+        "clear": "晴朗"
       }
     }
   },

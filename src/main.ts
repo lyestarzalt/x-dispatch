@@ -958,6 +958,10 @@ function registerIpcHandlers() {
     return result;
   });
 
+  ipcMain.handle('fetch-vatsim-metars-all', async () => {
+    return proxyFetch('https://metar.vatsim.net/metar.php?id=all');
+  });
+
   ipcMain.handle('fetch-vatsim-events', async () => {
     const result = await proxyFetch('https://my.vatsim.net/api/v2/events/latest');
     if (result.data) {

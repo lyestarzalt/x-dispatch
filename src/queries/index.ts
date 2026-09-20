@@ -33,6 +33,14 @@ export { useVatsimQuery } from './useVatsimQuery';
 export { useVatsimSectorQuery } from './useVatsimSectorQuery';
 export { useVatsimMetarQuery } from './useVatsimMetarQuery';
 export { useVatsimEventsQuery } from './useVatsimEventsQuery';
+export {
+  useWeatherScanQuery,
+  filterByCategory,
+  sortBySeverity,
+  WEATHER_CATEGORIES,
+  type MetarObservation,
+  type WeatherCategory,
+} from './useWeatherScanQuery';
 
 // App data hooks
 export {

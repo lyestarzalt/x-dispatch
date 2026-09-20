@@ -228,7 +228,8 @@
       "filters": "フィルター",
       "featured": "注目",
       "routes": "ルート",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "気象"
     },
     "vatsim": {
       "busiestNow": "現在最も混雑",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "気象情報を読み込めませんでした",
+      "noneNow": "現在該当する報告はありません",
+      "unknownStation": "不明な観測点",
+      "notInXPlane": "X-Plane に未収録です。Gateway に登録してください",
+      "minutesAgo": "{{minutes}} 分前",
+      "categories": {
+        "snow": "雪",
+        "fog": "霧",
+        "lowVisibility": "低視程",
+        "heavyPrecipitation": "大雨",
+        "thunderstorm": "雷雨",
+        "strongWind": "強風",
+        "freezing": "着氷",
+        "lowCeiling": "低シーリング",
+        "severe": "悪天",
+        "dustSand": "砂塵",
+        "clear": "晴天"
       }
     }
   },

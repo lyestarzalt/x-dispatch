@@ -228,7 +228,8 @@
       "filters": "Filtry",
       "featured": "Wyróżnione",
       "routes": "Trasy",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "Pogoda"
     },
     "vatsim": {
       "busiestNow": "Najbardziej ruchliwe teraz",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "Nie udało się wczytać pogody",
+      "noneNow": "Brak zgłoszeń w tej chwili",
+      "unknownStation": "Nieznana stacja",
+      "notInXPlane": "Brak w X-Plane. Zgłoś w Gateway",
+      "minutesAgo": "{{minutes}} min temu",
+      "categories": {
+        "snow": "Śnieg",
+        "fog": "Mgła",
+        "lowVisibility": "Widzialność",
+        "heavyPrecipitation": "Ulewa",
+        "thunderstorm": "Burze",
+        "strongWind": "Wiatr",
+        "freezing": "Oblodzenie",
+        "lowCeiling": "Niska podstawa",
+        "severe": "Groźne",
+        "dustSand": "Pył",
+        "clear": "Bezchmurnie"
       }
     }
   },
