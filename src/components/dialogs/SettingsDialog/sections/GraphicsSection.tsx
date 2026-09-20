@@ -116,10 +116,10 @@ export function GraphicsSection() {
         </div>
       </SettingsSectionBlock>
 
-      {/* Lights */}
+      {/* Airport effects */}
       <SettingsSectionBlock
-        title={t('settings.graphics.lights')}
-        description={t('settings.graphics.lightsPerfHint')}
+        title={t('settings.graphics.airportEffects')}
+        description={t('settings.graphics.airportEffectsDesc')}
       >
         <SettingsToggleRow
           title={t('settings.graphics.approachLights')}

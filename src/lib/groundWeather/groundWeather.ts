@@ -15,6 +15,8 @@ export const CALM: GroundWeather = { windFromDeg: null, windKt: 0, precip: 'none
 
 const FOG_FULL_M = 800;
 const FOG_NONE_M = 6000;
+/** Mist or fog in the report always shows, even when visibility is decent. */
+const FOG_OBSCURED_MIN = 0.4;
 const SNOW_CODES = new Set(['SN', 'SG', 'IC', 'PL', 'GS']);
 const RAIN_CODES = new Set(['RA', 'DZ', 'GR', 'UP']);
 const FOG_CODES = new Set(['FG', 'BR', 'HZ', 'FU']);
@@ -57,9 +59,10 @@ export function groundWeatherFrom(metar: IMetar | null | undefined): GroundWeath
   }
 
   const visM = visibilityMeters(metar);
-  let fog = 0;
+  let fog = obscured ? FOG_OBSCURED_MIN : 0;
   if (visM !== null && (obscured || visM < FOG_NONE_M)) {
-    fog = Math.min(1, Math.max(0, (FOG_NONE_M - visM) / (FOG_NONE_M - FOG_FULL_M)));
+    const byVisibility = (FOG_NONE_M - visM) / (FOG_NONE_M - FOG_FULL_M);
+    fog = Math.min(1, Math.max(fog, byVisibility));
   }
 
   return { windFromDeg, windKt, precip, fog };
