@@ -233,6 +233,8 @@ export function useGroundWeather(mapRef: MapRef): void {
 
     let cancelled = false;
     let running = false;
+    let moving = false;
+    let blank = false;
     let frame = 0;
     let lastMs = 0;
     let wind: Particle[] = [];
@@ -318,7 +320,17 @@ export function useGroundWeather(mapRef: MapRef): void {
         return;
       }
       frame = requestAnimationFrame(render);
+      // Particles live in screen space: while the camera moves, old trails
+      // would smear over ground that has shifted, so show nothing until it stops.
+      if (moving) {
+        if (!blank) {
+          clear();
+          blank = true;
+        }
+        return;
+      }
       if (nowMs - lastMs < FRAME_MS) return;
+      blank = false;
       const dt = lastMs === 0 ? FRAME_MS / 1000 : Math.min(MAX_DT_S, (nowMs - lastMs) / 1000);
       lastMs = nowMs;
 
@@ -436,16 +448,28 @@ export function useGroundWeather(mapRef: MapRef): void {
       frame = requestAnimationFrame(render);
     };
 
+    const onMoveStart = () => {
+      moving = true;
+    };
+    const onMoveEnd = () => {
+      moving = false;
+      lastMs = 0;
+      seed();
+      start();
+    };
+
     seed();
     start();
-    map.on('moveend', start);
+    map.on('movestart', onMoveStart);
+    map.on('moveend', onMoveEnd);
     map.on('resize', seed);
     document.addEventListener('visibilitychange', start);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
-      map.off('moveend', start);
+      map.off('movestart', onMoveStart);
+      map.off('moveend', onMoveEnd);
       map.off('resize', seed);
       document.removeEventListener('visibilitychange', start);
       clear();
