@@ -52,7 +52,33 @@ const STATE_DATAREF_NAMES = [
   'sim/flightmodel2/misc/gforce_normal',
   'sim/flightmodel/failures/onground_any',
   'sim/flightmodel/weight/m_fuel_total',
+  'sim/aircraft/view/acf_ICAO',
+  'sim/aircraft/view/acf_ui_name',
+  'sim/aircraft/view/acf_tailnum',
+  'sim/aircraft/view/acf_size_x',
+  'sim/cockpit2/switches/navigation_lights_on',
+  'sim/cockpit2/switches/beacon_on',
+  'sim/cockpit2/switches/strobe_lights_on',
 ];
+
+/** Byte-array datarefs, base64 on the wire, decoded into plane state strings. */
+const TEXT_DATAREF_MAPPING: Record<string, 'icaoType' | 'aircraftName' | 'tailNumber'> = {
+  'sim/aircraft/view/acf_ICAO': 'icaoType',
+  'sim/aircraft/view/acf_ui_name': 'aircraftName',
+  'sim/aircraft/view/acf_tailnum': 'tailNumber',
+};
+
+const SWITCH_DATAREF_MAPPING: Record<string, 'navLightsOn' | 'beaconOn' | 'strobesOn'> = {
+  'sim/cockpit2/switches/navigation_lights_on': 'navLightsOn',
+  'sim/cockpit2/switches/beacon_on': 'beaconOn',
+  'sim/cockpit2/switches/strobe_lights_on': 'strobesOn',
+};
+
+function decodeText(base64: string): string {
+  const bytes = Buffer.from(base64, 'base64');
+  const end = bytes.indexOf(0);
+  return bytes.toString('latin1', 0, end === -1 ? bytes.length : end).trim();
+}
 
 const TRAFFIC_PREFIX = 'sim/cockpit2/tcas/targets/';
 /** TCAS target table, 64 slots each. Subscribed only while the traffic layer is on. */
@@ -487,11 +513,24 @@ export class XPlaneWebSocketClient {
         }
         continue;
       }
-      if (typeof value === 'string') continue;
+      if (typeof value === 'string') {
+        const textKey = TEXT_DATAREF_MAPPING[datarefName];
+        if (textKey) this.currentState[textKey] = decodeText(value);
+        continue;
+      }
       this.sink?.onDataref(datarefName, value);
 
       if (datarefName === 'sim/flightmodel/failures/onground_any' && typeof value === 'number') {
         this.currentState.onGround = value >= 0.5;
+        continue;
+      }
+      if (datarefName === 'sim/aircraft/view/acf_size_x' && typeof value === 'number') {
+        this.currentState.wingspanM = value * 2;
+        continue;
+      }
+      const switchKey = SWITCH_DATAREF_MAPPING[datarefName];
+      if (switchKey && typeof value === 'number') {
+        this.currentState[switchKey] = value >= 0.5;
         continue;
       }
 

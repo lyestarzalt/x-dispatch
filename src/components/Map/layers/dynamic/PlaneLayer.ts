@@ -1,68 +1,98 @@
 import * as maplibregl from 'maplibre-gl';
 import type { StyleImageInterface } from 'maplibre-gl';
+import { useSolarStore } from '@/stores/solarStore';
 import type { PlanePosition } from '@/types/xplane';
 import { safeAddGeoJSONSource } from '../types';
+import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
 
-const LAYER_ID = 'player-plane';
 const SOURCE_ID = 'player-plane-source';
-
-// Canvas dimensions: 64px total, 48px shape area, 8px padding for glow bleed
-const ICON_SIZE = 64;
-const SHAPE_SIZE = 48;
-const PADDING = (ICON_SIZE - SHAPE_SIZE) / 2;
+const GLOW_LAYER_ID = 'player-plane-glow';
+const SHADOW_LAYER_ID = 'player-plane-shadow';
+const LAYER_ID = 'player-plane';
+const LABEL_LAYER_ID = 'player-plane-label';
+const HELI_ICON_ID = 'player-heli-icon';
+const ALL_LAYER_IDS = [GLOW_LAYER_ID, SHADOW_LAYER_ID, LAYER_ID, LABEL_LAYER_ID];
 
 // Design-system cyan (--xp-cyan-primary #1DA0F2 → rgb 29, 160, 242)
 const CYAN = '#1DA0F2';
-const CYAN_RGB = '29, 160, 242';
 
-// Pulse ring animation
-const PULSE_DURATION_MS = 2000;
-const PULSE_MIN_R = 10;
-const PULSE_MAX_R = ICON_SIZE / 2;
+/** Wingspan of the silhouette in sprite pixels; the sprites are 48 px with a little padding. */
+const SPRITE_SPAN_PX = 40;
+/** Readable floor when zoomed out, and a ceiling so a heavy does not swallow the screen at zoom 22. */
+const MIN_ICON_SCALE = 0.55;
+const MAX_ICON_SCALE = 8;
+const DEFAULT_WINGSPAN_M = 30;
+const SIZE_STOPS = [10, 12, 14, 16, 18, 20, 22];
+/** Shadow drifts away from the sun as the aircraft climbs, capped so it stays attached. */
+const SHADOW_MAX_PX = 18;
+const SHADOW_FT_PER_PX = 250;
+/** Recompute the zoom-to-size curve only when the span or latitude moved enough to matter. */
+const RELAYOUT_LAT_DELTA_DEG = 3;
 
-// An animated StyleImage that returns true from render() on every frame
-// forces MapLibre to redraw the whole scene, terrain included, at the
-// display refresh rate for as long as the tracker is on. The pulse and rotor
-// read fine at a fraction of that, so redraws are paced by a timer instead.
+// Helicopter body stays a canvas icon: the spinning rotor is the one animation worth a repaint.
+const ICON_SIZE = 64;
+const SHAPE_SIZE = 48;
+const PADDING = (ICON_SIZE - SHAPE_SIZE) / 2;
 const ICON_FRAME_INTERVAL_MS = 1000 / 12;
 const ROTOR_REVOLUTIONS_PER_SECOND = 4;
-
-// A320 top-down silhouette
-const PLANE_PATH =
-  'm 17.10525,0.06681738 -0.902035,0.73499118 -0.968852,2.50565184 -0.167044,1.4365737 -0.03341,7.0826419 -0.26727,1.302939 -2.605878,1.236122 0.06682,-0.935443 -0.0167,-1.670435 -0.133635,-0.267269 -1.670435,-0.01671 -0.200452,0.200452 -0.0167,2.238382 0.167043,0.918739 0.233861,0.367496 -9.92238106,5.128234 -0.36749561,0.434313 -0.25056518,0.684878 0.01670434,1.369756 0.13363476,0.0167 0.0668174,-0.701583 4.49346885,-1.403165 0.1837478,0.551244 0.1670434,1e-6 0.066818,-0.584652 3.2239386,-1.119191 0.1837478,0.517835 0.1670433,-1e-6 0.1336344,-0.618061 1.7038432,-0.534539 1.403165,0.0167 0.08352,0.467722 0.167043,0.01671 0.08352,-0.484427 2.655991,0.01671 0.03341,9.153982 0.283974,1.954408 0.434313,2.021224 -0.183748,0.317383 -4.426651,2.856445 -0.26727,0.400904 0.01671,1.035669 5.328686,-1.18601 0.317383,1.152601 0.417609,0.885331 0.267269,0.01669 0.379656,-0.846045 0.30033,-1.204534 5.433805,1.198658 -0.01671,-1.002261 -0.250565,-0.451016 -4.476765,-2.873148 -0.183748,-0.367495 0.3842,-1.987818 0.317383,-1.920999 -0.0167,-9.18739 2.65599,-0.03341 0.15034,0.551243 h 0.150339 l 0.100226,-0.50113 1.286234,-0.05011 1.787365,0.551243 0.06682,0.584652 0.217157,-3e-6 0.11693,-0.467721 3.240644,1.00226 0.100227,0.668174 0.23386,0.0167 0.133635,-0.567947 4.526878,1.38646 0.100224,0.65147 0.150339,-0.0167 -0.06681,-1.503392 -0.317384,-0.651469 -0.400904,-0.3842 -9.822155,-4.994599 c 0.07965,-0.247814 0.334087,-0.367497 0.334087,-0.367497 l 0.03341,-3.006782 -0.267269,-0.300678 -1.570209,0.03341 -0.200452,0.23386 10e-7,1.904296 0.150339,0.734991 -2.622582,-1.386461 -0.334087,-1.336347 0.0167,-7.0826429 -0.283974,-1.2862345 -0.835217,-2.62258215 z';
-
-// EC35 helicopter body (rotor drawn procedurally for animation)
 const HELI_BODY =
   'm 4.5262285,1.0018037 -0.637168,0.212389 -0.232617,0.586598 -0.0708,0.728193 0.02022,0.202275 -0.141593,-0.01012 -0.02023,-0.627054 -0.121366,0.01012 0.06069,3.206066 0.09102,-0.01011 -0.01012,-0.202275 0.141593,0.02023 0.101139,0.869784 0.303413,0.839444 0.242732,0.353982 0.0809,2.235144 -1.345135,-0.02023 -0.121366,0.8293303 h 0.13148 l 0.04046,-0.2326173 h 1.264223 l 0.121365,1.5676363 0.121367,0.525916 0.192161,-0.02023 0.05057,-2.0834383 1.213654,0.01011 0.01011,0.2326183 0.111252,0.01011 0.09102,-0.8394433 -1.405817,0.01012 -0.03033,-2.265486 0.303414,-0.374209 0.273072,-0.707965 0.06069,-1.001263 h 0.13148 l 0.01012,0.24273 0.161821,0.02023 -0.04046,-1.517067 v -1.689001 l -0.131479,-0.03034 v 0.627054 l -0.161821,0.02023 -0.05057,-0.849556 -0.202276,-0.566372 -0.21239,-0.202276 z';
+const HELI_ROTOR = { cx: 4.5, cy: 3.5, bladeRadius: 14 };
 
-// ── Icon configs ──────────────────────────────────────────────────────────────
-
-interface RotorConfig {
-  /** Hub center X in SVG path coordinates */
-  cx: number;
-  /** Hub center Y in SVG path coordinates */
-  cy: number;
-  /** Blade length in canvas pixels */
-  bladeRadius: number;
+function metersPerPixel(zoom: number, latDeg: number): number {
+  return (156543.03392 * Math.cos((latDeg * Math.PI) / 180)) / 2 ** zoom;
 }
 
-interface IconConfig {
-  path: string;
-  rotor?: RotorConfig;
+/** True-size curve: the silhouette covers its real wingspan once zoomed in, clamped either side. */
+function sizeExpression(wingspanM: number, latDeg: number): maplibregl.ExpressionSpecification {
+  const stops: number[] = [];
+  for (const z of SIZE_STOPS) {
+    const scale = wingspanM / (metersPerPixel(z, latDeg) * SPRITE_SPAN_PX);
+    stops.push(z, Math.min(MAX_ICON_SCALE, Math.max(MIN_ICON_SCALE, scale)));
+  }
+  return ['interpolate', ['exponential', 2], ['zoom'], ...stops];
 }
 
-const AIRPLANE_CONFIG: IconConfig = {
-  path: PLANE_PATH,
-};
+function bearingDeg(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
+  const φ1 = (fromLat * Math.PI) / 180;
+  const φ2 = (toLat * Math.PI) / 180;
+  const Δλ = ((toLon - fromLon) * Math.PI) / 180;
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
 
-const HELICOPTER_CONFIG: IconConfig = {
-  path: HELI_BODY,
-  rotor: { cx: 4.5, cy: 3.5, bladeRadius: 14 },
-};
+/** Screen-space shadow offset: away from the sun, growing with height above ground. */
+function shadowTranslate(map: maplibregl.Map, position: PlanePosition): [number, number] {
+  const px = Math.min(SHADOW_MAX_PX, Math.max(0, position.altitudeAGL) / SHADOW_FT_PER_PX);
+  if (px < 0.5) return [0, 0];
+  const sun = useSolarStore.getState().subsolar;
+  const awayFromSun = bearingDeg(position.lat, position.lng, sun.lat, sun.lon) + 180;
+  const screenRad = ((awayFromSun - map.getBearing()) * Math.PI) / 180;
+  return [Math.sin(screenRad) * px, -Math.cos(screenRad) * px];
+}
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+function createGeoJSON(position: PlanePosition | null): GeoJSON.FeatureCollection {
+  if (!position) return { type: 'FeatureCollection', features: [] };
+  return {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [position.lng, position.lat] },
+        properties: {
+          heading: position.heading,
+          altitude: Math.round(position.altitude),
+          flightLevel: Math.round(position.altitude / 100),
+          groundspeed: Math.round(position.groundspeed),
+          acIcon: position.icaoType ? normalizeIcao(position.icaoType) : '',
+          label: position.tailNumber || position.icaoType,
+        },
+      },
+    ],
+  };
+}
 
-/** Compute exact bounding box of an SVG path via DOM getBBox(). */
 function getPathBounds(d: string): { x: number; y: number; w: number; h: number } {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -77,88 +107,35 @@ function getPathBounds(d: string): { x: number; y: number; w: number; h: number 
   return { x, y, w: width, h: height };
 }
 
-function createGeoJSON(position: PlanePosition | null): GeoJSON.FeatureCollection {
-  if (!position) {
-    return { type: 'FeatureCollection', features: [] };
-  }
-  return {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [position.lng, position.lat] },
-        properties: {
-          heading: position.heading,
-          altitude: position.altitude,
-          groundspeed: position.groundspeed,
-        },
-      },
-    ],
-  };
-}
-
-// ── StyleImageInterface factory ───────────────────────────────────────────────
-
-function createPlayerIcon(config: IconConfig): StyleImageInterface {
-  const { path, rotor } = config;
-
+function createHeliIcon(): StyleImageInterface {
   const canvas = document.createElement('canvas');
   canvas.width = ICON_SIZE;
   canvas.height = ICON_SIZE;
   const ctx = canvas.getContext('2d')!;
-
-  // Compute exact bounds so shape + glow are perfectly centered
-  const bounds = getPathBounds(path);
+  const bounds = getPathBounds(HELI_BODY);
   const scale = Math.min(SHAPE_SIZE / bounds.w, SHAPE_SIZE / bounds.h);
-  const scaledW = bounds.w * scale;
-  const scaledH = bounds.h * scale;
-  const tx = PADDING + (SHAPE_SIZE - scaledW) / 2 - bounds.x * scale;
-  const ty = PADDING + (SHAPE_SIZE - scaledH) / 2 - bounds.y * scale;
-
-  const shape = new Path2D(path);
-
-  // Rotor hub in canvas coordinates
-  const hubX = rotor ? tx + rotor.cx * scale : 0;
-  const hubY = rotor ? ty + rotor.cy * scale : 0;
+  const tx = PADDING + (SHAPE_SIZE - bounds.w * scale) / 2 - bounds.x * scale;
+  const ty = PADDING + (SHAPE_SIZE - bounds.h * scale) / 2 - bounds.y * scale;
+  const shape = new Path2D(HELI_BODY);
+  const hubX = tx + HELI_ROTOR.cx * scale;
+  const hubY = ty + HELI_ROTOR.cy * scale;
 
   let angle = 0;
   let mapInstance: maplibregl.Map | null = null;
   let lastFrameAt = 0;
   let repaintTimer: ReturnType<typeof setTimeout> | null = null;
+  const data = new Uint8Array(ICON_SIZE * ICON_SIZE * 4);
 
-  function scheduleRepaint(delayMs: number): void {
+  const scheduleRepaint = (delayMs: number) => {
     if (repaintTimer !== null || !mapInstance) return;
     repaintTimer = setTimeout(() => {
       repaintTimer = null;
       mapInstance?.triggerRepaint();
     }, delayMs);
-  }
-  const data = new Uint8Array(ICON_SIZE * ICON_SIZE * 4);
+  };
 
-  function draw(): void {
+  const draw = () => {
     ctx.clearRect(0, 0, ICON_SIZE, ICON_SIZE);
-    const mid = ICON_SIZE / 2;
-    const t = (performance.now() % PULSE_DURATION_MS) / PULSE_DURATION_MS;
-
-    // Pulsing ring — "this is you" radar ping
-    const pulseR = PULSE_MIN_R + (PULSE_MAX_R - PULSE_MIN_R) * t;
-    ctx.beginPath();
-    ctx.arc(mid, mid, pulseR, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(${CYAN_RGB}, ${0.5 * (1 - t)})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Soft radial glow
-    const grad = ctx.createRadialGradient(mid, mid, 0, mid, mid, mid);
-    grad.addColorStop(0, `rgba(${CYAN_RGB}, 0.4)`);
-    grad.addColorStop(0.5, `rgba(${CYAN_RGB}, 0.12)`);
-    grad.addColorStop(1, `rgba(${CYAN_RGB}, 0)`);
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(mid, mid, mid, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Cyan silhouette with white outline for contrast on any map style
     ctx.save();
     ctx.translate(tx, ty);
     ctx.scale(scale, scale);
@@ -168,31 +145,21 @@ function createPlayerIcon(config: IconConfig): StyleImageInterface {
     ctx.fillStyle = CYAN;
     ctx.fill(shape);
     ctx.restore();
-
-    // Spinning rotor blades
-    if (rotor) {
-      ctx.save();
-      ctx.translate(hubX, hubY);
-      ctx.rotate(angle);
-      ctx.strokeStyle = CYAN;
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(-rotor.bladeRadius, 0);
-      ctx.lineTo(rotor.bladeRadius, 0);
-      ctx.moveTo(0, -rotor.bladeRadius);
-      ctx.lineTo(0, rotor.bladeRadius);
-      ctx.stroke();
-      ctx.fillStyle = CYAN;
-      ctx.beginPath();
-      ctx.arc(0, 0, 2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    const imgData = ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE);
-    data.set(new Uint8Array(imgData.data.buffer));
-  }
+    ctx.save();
+    ctx.translate(hubX, hubY);
+    ctx.rotate(angle);
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-HELI_ROTOR.bladeRadius, 0);
+    ctx.lineTo(HELI_ROTOR.bladeRadius, 0);
+    ctx.moveTo(0, -HELI_ROTOR.bladeRadius);
+    ctx.lineTo(0, HELI_ROTOR.bladeRadius);
+    ctx.stroke();
+    ctx.restore();
+    data.set(new Uint8Array(ctx.getImageData(0, 0, ICON_SIZE, ICON_SIZE).data.buffer));
+  };
 
   return {
     width: ICON_SIZE,
@@ -214,7 +181,7 @@ function createPlayerIcon(config: IconConfig): StyleImageInterface {
         return false;
       }
       lastFrameAt = now;
-      if (rotor) angle += Math.PI * 2 * ROTOR_REVOLUTIONS_PER_SECOND * (elapsed / 1000);
+      angle += Math.PI * 2 * ROTOR_REVOLUTIONS_PER_SECOND * (elapsed / 1000);
       draw();
       scheduleRepaint(ICON_FRAME_INTERVAL_MS);
       return true;
@@ -222,57 +189,140 @@ function createPlayerIcon(config: IconConfig): StyleImageInterface {
   };
 }
 
-// ── Layer management ──────────────────────────────────────────────────────────
+interface LayoutMemo {
+  heli: boolean;
+  wingspanM: number;
+  lat: number;
+  shadow: [number, number];
+}
+const layoutMemo = new WeakMap<maplibregl.Map, LayoutMemo>();
 
-const activeCategory = new WeakMap<maplibregl.Map, string | null>();
+function iconImageExpression(heli: boolean): maplibregl.ExpressionSpecification | string {
+  if (heli) return HELI_ICON_ID;
+  return ['coalesce', ['image', ['concat', 'ac-', ['get', 'acIcon']]], ['image', 'ac-fallback']];
+}
 
 export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | null): void {
   if (!map.getStyle()) return;
-
   removePlaneLayer(map);
 
-  const category = position?.aircraftCategory ?? null;
-  const isHeli = category === 'helicopter';
-  const iconName = isHeli ? 'player-heli-icon' : 'player-plane-icon';
-  const otherIcon = isHeli ? 'player-plane-icon' : 'player-heli-icon';
+  const heli = position?.aircraftCategory === 'helicopter';
+  const wingspanM = position?.wingspanM ?? DEFAULT_WINGSPAN_M;
+  const lat = position?.lat ?? 0;
 
-  // Clean up both icon slots so stale StyleImageInterface instances are freed
-  if (map.hasImage(iconName)) map.removeImage(iconName);
-  if (map.hasImage(otherIcon)) map.removeImage(otherIcon);
+  if (heli) {
+    if (map.hasImage(HELI_ICON_ID)) map.removeImage(HELI_ICON_ID);
+    map.addImage(HELI_ICON_ID, createHeliIcon());
+  } else {
+    // Fire and forget: symbol layers pick a sprite up as soon as it is added.
+    void ensureFallbackIcon(map);
+    if (position?.icaoType) void ensureAircraftIcons(map, [normalizeIcao(position.icaoType)]);
+  }
 
-  map.addImage(iconName, createPlayerIcon(isHeli ? HELICOPTER_CONFIG : AIRPLANE_CONFIG));
-  activeCategory.set(map, category);
+  const size = heli ? 0.8 : sizeExpression(wingspanM, lat);
+  const shadow: [number, number] = position ? shadowTranslate(map, position) : [0, 0];
+  layoutMemo.set(map, { heli, wingspanM, lat, shadow });
 
   safeAddGeoJSONSource(map, SOURCE_ID, createGeoJSON(position));
+
+  map.addLayer({
+    id: GLOW_LAYER_ID,
+    type: 'circle',
+    source: SOURCE_ID,
+    paint: {
+      'circle-color': CYAN,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 9, 10, 14, 16, 26],
+      'circle-blur': 0.9,
+      'circle-opacity': 0.35,
+    },
+  });
+
+  const symbolLayout: maplibregl.SymbolLayerSpecification['layout'] = {
+    'icon-image': iconImageExpression(heli),
+    'icon-size': size,
+    'icon-rotate': ['get', 'heading'],
+    'icon-rotation-alignment': 'map',
+    'icon-allow-overlap': true,
+    'icon-ignore-placement': true,
+  };
+
+  if (!heli) {
+    map.addLayer({
+      id: SHADOW_LAYER_ID,
+      type: 'symbol',
+      source: SOURCE_ID,
+      layout: symbolLayout,
+      paint: {
+        'icon-color': '#000000',
+        'icon-opacity': 0.35,
+        'icon-translate': shadow,
+        'icon-translate-anchor': 'viewport',
+      },
+    });
+  }
+
   map.addLayer({
     id: LAYER_ID,
     type: 'symbol',
     source: SOURCE_ID,
+    layout: symbolLayout,
+    paint: heli
+      ? {}
+      : {
+          'icon-color': CYAN,
+          'icon-halo-color': '#ffffff',
+          'icon-halo-width': 1,
+        },
+  });
+
+  map.addLayer({
+    id: LABEL_LAYER_ID,
+    type: 'symbol',
+    source: SOURCE_ID,
+    minzoom: 7,
     layout: {
-      'icon-image': iconName,
-      'icon-size': 0.8,
-      'icon-rotate': ['get', 'heading'],
-      'icon-rotation-alignment': 'map',
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
+      'text-field': [
+        'format',
+        ['get', 'label'],
+        { 'font-scale': 1 },
+        '\n',
+        {},
+        [
+          'concat',
+          'FL',
+          ['to-string', ['get', 'flightLevel']],
+          '  ',
+          ['to-string', ['get', 'groundspeed']],
+          ' kt',
+        ],
+        { 'font-scale': 0.8 },
+      ],
+      'text-font': ['Open Sans Semibold'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 7, 10, 12, 12],
+      'text-offset': [1.6, 0],
+      'text-anchor': 'left',
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+    },
+    paint: {
+      'text-color': CYAN,
+      'text-halo-color': 'rgba(0, 0, 0, 0.9)',
+      'text-halo-width': 1.5,
     },
   });
 }
 
 export function removePlaneLayer(map: maplibregl.Map | null | undefined): void {
-  if (!map) return;
-
-  const doRemove = () => {
-    try {
-      if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-      if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-    } catch {
-      // Map might be in invalid state during unmount
+  if (!map || !map.getStyle()) return;
+  try {
+    for (const id of ALL_LAYER_IDS) {
+      if (map.getLayer(id)) map.removeLayer(id);
     }
-  };
-
-  if (!map.getStyle()) return;
-  doRemove();
+    if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+    layoutMemo.delete(map);
+  } catch {
+    // Map might be in invalid state during unmount
+  }
 }
 
 export function updatePlaneLayer(
@@ -281,17 +331,39 @@ export function updatePlaneLayer(
 ): void {
   if (!map || !map.getStyle()) return;
   try {
-    const currentCat = position?.aircraftCategory ?? null;
-    if (activeCategory.get(map) !== currentCat && map.getSource(SOURCE_ID)) {
+    const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (!source) {
+      if (position) addPlaneLayer(map, position);
+      return;
+    }
+    const memo = layoutMemo.get(map);
+    const heli = position?.aircraftCategory === 'helicopter';
+    if (!memo || memo.heli !== heli) {
       addPlaneLayer(map, position);
       return;
     }
 
-    const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource;
-    if (source) {
-      source.setData(createGeoJSON(position));
-    } else if (position) {
-      addPlaneLayer(map, position);
+    source.setData(createGeoJSON(position));
+    if (!position || heli) return;
+
+    if (position.icaoType) void ensureAircraftIcons(map, [normalizeIcao(position.icaoType)]);
+
+    const wingspanM = position.wingspanM ?? DEFAULT_WINGSPAN_M;
+    if (
+      wingspanM !== memo.wingspanM ||
+      Math.abs(position.lat - memo.lat) > RELAYOUT_LAT_DELTA_DEG
+    ) {
+      const size = sizeExpression(wingspanM, position.lat);
+      map.setLayoutProperty(LAYER_ID, 'icon-size', size);
+      map.setLayoutProperty(SHADOW_LAYER_ID, 'icon-size', size);
+      memo.wingspanM = wingspanM;
+      memo.lat = position.lat;
+    }
+
+    const shadow = shadowTranslate(map, position);
+    if (Math.abs(shadow[0] - memo.shadow[0]) > 0.5 || Math.abs(shadow[1] - memo.shadow[1]) > 0.5) {
+      map.setPaintProperty(SHADOW_LAYER_ID, 'icon-translate', shadow);
+      memo.shadow = shadow;
     }
   } catch {
     // Map might be in invalid state
@@ -301,7 +373,9 @@ export function updatePlaneLayer(
 export function bringPlaneLayerToTop(map: maplibregl.Map | null | undefined): void {
   if (!map) return;
   try {
-    if (map.getLayer(LAYER_ID)) map.moveLayer(LAYER_ID);
+    for (const id of ALL_LAYER_IDS) {
+      if (map.getLayer(id)) map.moveLayer(id);
+    }
   } catch {
     // Map might be in invalid state
   }
