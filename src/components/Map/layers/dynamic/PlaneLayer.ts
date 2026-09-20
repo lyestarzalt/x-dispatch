@@ -19,7 +19,7 @@ const CYAN = '#1DA0F2';
 /** Wingspan of the silhouette in sprite pixels; the sprites are 48 px with a little padding. */
 const SPRITE_SPAN_PX = 40;
 /** Readable floor when zoomed out, and a ceiling so a heavy does not swallow the screen at zoom 22. */
-const MIN_ICON_SCALE = 0.55;
+const MIN_ICON_SCALE = 1.3;
 const MAX_ICON_SCALE = 8;
 const DEFAULT_WINGSPAN_M = 30;
 const SIZE_STOPS = [10, 12, 14, 16, 18, 20, 22];
@@ -231,9 +231,9 @@ export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | nul
     source: SOURCE_ID,
     paint: {
       'circle-color': CYAN,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 9, 10, 14, 16, 26],
-      'circle-blur': 0.9,
-      'circle-opacity': 0.35,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 16, 10, 22, 16, 34],
+      'circle-blur': 0.85,
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.55, 12, 0.4, 16, 0.25],
     },
   });
 
