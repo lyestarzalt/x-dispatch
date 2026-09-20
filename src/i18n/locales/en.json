@@ -152,6 +152,7 @@
     },
     "weather": "Weather",
     "cityLights": "City Lights",
+    "airfieldLights": "Airfield Lights",
     "dynamicSky": "Sun-lit Sky",
     "terrainShading": "Terrain Shading",
     "launch": "Launch",

@@ -152,6 +152,7 @@
     },
     "weather": "Météo",
     "cityLights": "Lumières des villes",
+    "airfieldLights": "Balisage lumineux",
     "dynamicSky": "Ciel solaire",
     "terrainShading": "Ombrage du terrain",
     "launch": "Lancer",

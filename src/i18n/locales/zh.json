@@ -152,6 +152,7 @@
     },
     "weather": "天气",
     "cityLights": "城市灯光",
+    "airfieldLights": "机场灯光",
     "dynamicSky": "阳光天空",
     "terrainShading": "地形着色",
     "launch": "启动",

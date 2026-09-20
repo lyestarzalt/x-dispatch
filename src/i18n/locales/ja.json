@@ -152,6 +152,7 @@
     },
     "weather": "天気",
     "cityLights": "都市の灯り",
+    "airfieldLights": "飛行場灯火",
     "dynamicSky": "太陽光の空",
     "terrainShading": "地形シェーディング",
     "launch": "起動",

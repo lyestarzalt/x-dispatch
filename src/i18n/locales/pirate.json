@@ -152,6 +152,7 @@
     },
     "weather": "Skies",
     "cityLights": "Town Lanterns",
+    "airfieldLights": "Harbor Lanterns",
     "dynamicSky": "Sun-lit Sky",
     "terrainShading": "Terrain Shadowin'",
     "launch": "Set Sail",

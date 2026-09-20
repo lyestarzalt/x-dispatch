@@ -152,6 +152,7 @@
     },
     "weather": "Погода",
     "cityLights": "Огни городов",
+    "airfieldLights": "Огни аэродрома",
     "dynamicSky": "Солнечное небо",
     "terrainShading": "Затенение рельефа",
     "launch": "Запуск",
