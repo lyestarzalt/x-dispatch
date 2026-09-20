@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Code {{code}}, wings to {{m}} m",
+    "operation": {
+      "airline": "Merchant berth",
+      "cargo": "Cargo berth",
+      "general_aviation": "Small craft",
+      "military": "Navy",
+      "none": "Any crew"
+    },
+    "moreAirlines": "+{{count}} more",
+    "clickToStart": "Click ta set sail from here"
+  },
   "toolbar": {
     "searchPlaceholder": "Search fer airports...",
     "clearSearch": "Clear the hunt",

@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "Codice {{code}}, apertura alare fino a {{m}} m",
+    "operation": {
+      "airline": "Piazzola di linea",
+      "cargo": "Piazzola cargo",
+      "general_aviation": "Aviazione generale",
+      "military": "Militare",
+      "none": "Qualsiasi operatore"
+    },
+    "moreAirlines": "+{{count}} altre",
+    "clickToStart": "Clicca per partire da qui"
+  },
   "toolbar": {
     "searchPlaceholder": "Cerca aeroporti...",
     "clearSearch": "Cancella ricerca",

@@ -114,6 +114,18 @@
       "globalAirports": "Global Airports"
     }
   },
+  "stands": {
+    "sizeClass": "代码 {{code}}，翼展不超过 {{m}} 米",
+    "operation": {
+      "airline": "航空公司机位",
+      "cargo": "货运机位",
+      "general_aviation": "通用航空",
+      "military": "军用",
+      "none": "任意运营商"
+    },
+    "moreAirlines": "还有 {{count}} 家",
+    "clickToStart": "点击从此处开始"
+  },
   "toolbar": {
     "searchPlaceholder": "搜索机场...",
     "clearSearch": "清除搜索",

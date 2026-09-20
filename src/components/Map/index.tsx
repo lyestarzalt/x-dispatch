@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
@@ -11,6 +11,7 @@ import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
+import type { StandHover } from '@/lib/airports/standIdentity';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
@@ -84,6 +85,7 @@ import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
 import LandingReportCard from './widgets/LandingReportCard';
 import ReplayWidget from './widgets/ReplayWidget';
+import StandHoverCard from './widgets/StandHoverCard';
 
 interface MapProps {
   airports: Airport[];
@@ -235,10 +237,12 @@ export default function Map({ airports }: MapProps) {
   }, [selectedICAO]);
 
   // Airport interactions (gates, runway ends, helipads)
+  const [standHover, setStandHover] = useState<StandHover | null>(null);
   const { selectGateAsStart, selectRunwayEndAsStart, selectHelipadAsStart, navigateToRunway } =
     useAirportInteractions({
       mapRef,
       selectedAirportData,
+      onStandHover: setStandHover,
     });
 
   // Queries - VATSIM METAR always fetched for selected airport (independent of live traffic toggle)
@@ -889,6 +893,7 @@ export default function Map({ airports }: MapProps) {
         <ReplayWidget />
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
+      <StandHoverCard hover={standHover} />
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />
