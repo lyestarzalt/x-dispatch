@@ -9,8 +9,9 @@ import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
 import { RoutesTab } from './RoutesTab';
 import { VatsimEventsTab } from './VatsimEventsTab';
+import { WeatherTab } from './WeatherTab';
 
-const TABS = ['featured', 'routes', 'vatsim'] as const;
+const TABS = ['featured', 'routes', 'vatsim', 'weather'] as const;
 
 interface ExplorePanelProps {
   airports: Airport[];
@@ -135,6 +136,9 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
               </TabsContent>
               <TabsContent value="vatsim" className="mt-0">
                 <VatsimEventsTab onSelectAirport={handleSelectAirport} />
+              </TabsContent>
+              <TabsContent value="weather" className="mt-0">
+                <WeatherTab airports={airports} onSelectAirport={handleSelectAirport} />
               </TabsContent>
             </div>
           </div>

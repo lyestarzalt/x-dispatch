@@ -228,7 +228,8 @@
       "filters": "Sifters",
       "featured": "Marked",
       "routes": "Courses",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "Skies"
     },
     "vatsim": {
       "busiestNow": "Busy Skies",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "Couldn't spy the skies",
+      "noneNow": "Naught to report, cap'n",
+      "unknownStation": "Uncharted port",
+      "notInXPlane": "Not on the charts yet. File it at the Gateway",
+      "minutesAgo": "{{minutes}} min past",
+      "categories": {
+        "snow": "Snow",
+        "fog": "Fog",
+        "lowVisibility": "Murk",
+        "heavyPrecipitation": "Downpour",
+        "thunderstorm": "Thunder",
+        "strongWind": "Gales",
+        "freezing": "Ice",
+        "lowCeiling": "Low sky",
+        "severe": "Wrath",
+        "dustSand": "Dust",
+        "clear": "Fair winds"
       }
     }
   },

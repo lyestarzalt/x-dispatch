@@ -228,7 +228,8 @@
       "filters": "Фильтры",
       "featured": "Подборка",
       "routes": "Маршруты",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "Погода"
     },
     "vatsim": {
       "busiestNow": "Самые загруженные сейчас",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "Не удалось загрузить погоду",
+      "noneNow": "Сейчас ничего не сообщается",
+      "unknownStation": "Неизвестная станция",
+      "notInXPlane": "Пока нет в X-Plane. Сообщите на Gateway",
+      "minutesAgo": "{{minutes}} мин назад",
+      "categories": {
+        "snow": "Снег",
+        "fog": "Туман",
+        "lowVisibility": "Видимость",
+        "heavyPrecipitation": "Ливень",
+        "thunderstorm": "Грозы",
+        "strongWind": "Ветер",
+        "freezing": "Обледенение",
+        "lowCeiling": "Низкая облачность",
+        "severe": "Опасные",
+        "dustSand": "Пыль",
+        "clear": "Ясно"
       }
     }
   },

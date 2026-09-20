@@ -228,7 +228,8 @@
       "filters": "Filtri",
       "featured": "In evidenza",
       "routes": "Rotte",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "Meteo"
     },
     "vatsim": {
       "busiestNow": "Più trafficati ora",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "Impossibile caricare il meteo",
+      "noneNow": "Nessuna segnalazione al momento",
+      "unknownStation": "Stazione sconosciuta",
+      "notInXPlane": "Non ancora in X-Plane. Segnalalo sul Gateway",
+      "minutesAgo": "{{minutes}} min fa",
+      "categories": {
+        "snow": "Neve",
+        "fog": "Nebbia",
+        "lowVisibility": "Visibilità",
+        "heavyPrecipitation": "Pioggia forte",
+        "thunderstorm": "Temporali",
+        "strongWind": "Vento",
+        "freezing": "Ghiaccio",
+        "lowCeiling": "Ceiling basso",
+        "severe": "Severo",
+        "dustSand": "Polvere",
+        "clear": "Sereno"
       }
     }
   },

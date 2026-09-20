@@ -228,7 +228,8 @@
       "filters": "Filters",
       "featured": "Featured",
       "routes": "Routes",
-      "vatsim": "VATSIM"
+      "vatsim": "VATSIM",
+      "weather": "Weather"
     },
     "vatsim": {
       "busiestNow": "Busiest Now",
@@ -260,6 +261,26 @@
         "sunrise": "*",
         "sparkles": "+",
         "landmark": "#"
+      }
+    },
+    "weather": {
+      "error": "Could not load weather",
+      "noneNow": "Nothing reported right now",
+      "unknownStation": "Unknown station",
+      "notInXPlane": "Not in X-Plane yet. File it on the Gateway",
+      "minutesAgo": "{{minutes}} min ago",
+      "categories": {
+        "snow": "Snow",
+        "fog": "Fog",
+        "lowVisibility": "Low vis",
+        "heavyPrecipitation": "Heavy rain",
+        "thunderstorm": "Storms",
+        "strongWind": "Wind",
+        "freezing": "Icing",
+        "lowCeiling": "Low ceiling",
+        "severe": "Severe",
+        "dustSand": "Dust",
+        "clear": "Clear"
       }
     }
   },
