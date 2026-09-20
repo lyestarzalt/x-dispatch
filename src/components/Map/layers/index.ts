@@ -1,5 +1,6 @@
 // Layer imports for registry
 import {
+  AirfieldLightsLayer,
   BeaconLayer,
   BoundaryLayer,
   GateLayer,
@@ -81,6 +82,7 @@ export function createLayerRenderers(): LayerRenderer[] {
     new RunwayMarkingsLayer(),
     new LinearFeatureLayer(),
     new RunwayLightsLayer(),
+    new AirfieldLightsLayer(),
     new GateLayer(),
     new RunwayEndLayer(),
     new WindsockLayer(),
