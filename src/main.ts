@@ -1543,6 +1543,21 @@ function registerIpcHandlers() {
     }
   });
 
+  ipcMain.handle('xplaneService:setTrafficEnabled', async (event, enabled: boolean) => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      getXPlaneService().setTrafficEnabled(enabled === true, (snapshot) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('xplaneService:trafficUpdate', snapshot);
+        }
+      });
+      return { success: true };
+    } catch (error) {
+      logger.main.error('Failed to toggle X-Plane traffic stream', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
   ipcMain.handle('xplaneService:stopStateStream', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();

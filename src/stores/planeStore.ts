@@ -27,8 +27,12 @@ export function planePositionFrom(state: PlaneState | null): PlanePosition | nul
     lat: state.latitude,
     lng: state.longitude,
     altitude: state.altitudeMSL,
+    altitudeAGL: state.altitudeAGL,
     heading: state.heading,
     groundspeed: state.groundspeed,
     aircraftCategory: state.aircraftCategory,
+    icaoType: state.icaoType ?? '',
+    tailNumber: state.tailNumber ?? '',
+    wingspanM: state.wingspanM ?? null,
   };
 }

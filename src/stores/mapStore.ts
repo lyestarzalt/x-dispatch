@@ -86,6 +86,8 @@ interface MapState {
   selectedFeature: FeatureDebugInfo | null;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;
+  /** X-Plane's own AI and plugin traffic from the TCAS target table. */
+  simTrafficEnabled: boolean;
   showPlaneTracker: boolean;
   /** When true, map follows plane position and heading */
   followPlane: boolean;
@@ -116,6 +118,7 @@ interface MapState {
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setIvaoEnabled: (enabled: boolean) => void;
+  setSimTrafficEnabled: (enabled: boolean) => void;
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   setWeatherRadarEnabled: (enabled: boolean) => void;
@@ -151,6 +154,7 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       vatsimEnabled: false,
+      simTrafficEnabled: false,
       ivaoEnabled: false,
       showPlaneTracker: false,
       followPlane: false,
@@ -234,6 +238,7 @@ export const useMapStore = create<MapState>()(
           ivaoEnabled: enabled,
           ...(enabled && state.vatsimEnabled ? { vatsimEnabled: false } : {}),
         })),
+      setSimTrafficEnabled: (enabled) => set({ simTrafficEnabled: enabled }),
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
       setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),
@@ -283,6 +288,7 @@ export const useMapStore = create<MapState>()(
       partialize: (state) => ({
         landingCardPosition: state.landingCardPosition,
         flightTrailEnabled: state.flightTrailEnabled,
+        simTrafficEnabled: state.simTrafficEnabled,
         layerVisibility: state.layerVisibility,
         navVisibility: state.navVisibility,
         isNightMode: state.isNightMode,

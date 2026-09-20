@@ -4,6 +4,7 @@
  * Handles both REST API and WebSocket streaming.
  * Runs in Electron's main process to avoid CORS issues.
  */
+import type { TrafficSnapshot } from '@/types/traffic';
 import type { PlaneState } from '@/types/xplane';
 import type { FlightInit } from './generated/xplaneApi';
 import { isXPlaneProcessRunning } from './processCheck';
@@ -68,6 +69,10 @@ export class XPlaneService {
 
   forceReconnect(): void {
     this.wsClient.forceReconnect();
+  }
+
+  setTrafficEnabled(enabled: boolean, onTraffic: ((snapshot: TrafficSnapshot) => void) | null) {
+    this.wsClient.setTrafficEnabled(enabled, onTraffic);
   }
 
   isStreamConnected(): boolean {

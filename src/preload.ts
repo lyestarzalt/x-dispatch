@@ -36,6 +36,7 @@ import type {
   Waypoint,
 } from './types/navigation';
 import type { AirwaySegmentWithCoords } from './types/navigation';
+import type { TrafficSnapshot } from './types/traffic';
 import type { VatsimData, VatsimEventsResponse } from './types/vatsim';
 import type { VatsimSectorCacheState, VatsimSectorQueryResult } from './types/vatsimSectors';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from './types/xplane';
@@ -297,6 +298,13 @@ contextBridge.exposeInMainWorld('xplaneServiceAPI', {
     const listener = () => callback();
     ipcRenderer.on('xplaneService:stateClear', listener);
     return () => ipcRenderer.removeListener('xplaneService:stateClear', listener);
+  },
+  setTrafficEnabled: (enabled: boolean) =>
+    ipcRenderer.invoke('xplaneService:setTrafficEnabled', enabled),
+  onTrafficUpdate: (callback: (snapshot: TrafficSnapshot) => void) => {
+    const listener = (_: IpcRendererEvent, snapshot: TrafficSnapshot) => callback(snapshot);
+    ipcRenderer.on('xplaneService:trafficUpdate', listener);
+    return () => ipcRenderer.removeListener('xplaneService:trafficUpdate', listener);
   },
 });
 
@@ -624,6 +632,8 @@ declare global {
       onStateUpdate: (callback: (state: PlaneState) => void) => () => void;
       onConnectionChange: (callback: (connected: boolean) => void) => () => void;
       onStateClear: (callback: () => void) => () => void;
+      setTrafficEnabled: (enabled: boolean) => Promise<XPlaneAPIResult>;
+      onTrafficUpdate: (callback: (snapshot: TrafficSnapshot) => void) => () => void;
     };
     addonManagerAPI: {
       scenery: {

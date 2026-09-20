@@ -63,6 +63,8 @@ import {
   useVatsimSectorSync,
   useVatsimSync,
 } from './hooks';
+import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
+import { useSimTraffic } from './hooks/useSimTraffic';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
   addFlightPlanLayer,
@@ -386,6 +388,8 @@ export default function Map({ airports }: MapProps) {
   // Approach light "rabbit" animation — canvas overlay, no MapLibre repaints
   useApproachLightAnimation(mapRef);
   useGroundWeather(mapRef);
+  useSimTraffic(mapRef);
+  useOwnAircraftLights(mapRef);
   useAirfieldLights(mapRef);
   useAirfieldStrobes(mapRef);
 

@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import { RECORDER_DATAREF_NAMES } from '@/lib/flightRecorder/frames';
 import logger from '@/lib/utils/logger';
+import type { TrafficSnapshot, TrafficTarget } from '@/types/traffic';
 import { type AircraftCategory, PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
 
 const DEFAULT_PORT = 8086;
@@ -51,9 +52,55 @@ const STATE_DATAREF_NAMES = [
   'sim/flightmodel2/misc/gforce_normal',
   'sim/flightmodel/failures/onground_any',
   'sim/flightmodel/weight/m_fuel_total',
+  'sim/aircraft/view/acf_ICAO',
+  'sim/aircraft/view/acf_ui_name',
+  'sim/aircraft/view/acf_tailnum',
+  'sim/aircraft/view/acf_size_x',
+  'sim/cockpit2/switches/navigation_lights_on',
+  'sim/cockpit2/switches/beacon_on',
+  'sim/cockpit2/switches/strobe_lights_on',
 ];
 
-const DATAREF_NAMES = Array.from(new Set([...STATE_DATAREF_NAMES, ...RECORDER_DATAREF_NAMES]));
+/** Byte-array datarefs, base64 on the wire, decoded into plane state strings. */
+const TEXT_DATAREF_MAPPING: Record<string, 'icaoType' | 'aircraftName' | 'tailNumber'> = {
+  'sim/aircraft/view/acf_ICAO': 'icaoType',
+  'sim/aircraft/view/acf_ui_name': 'aircraftName',
+  'sim/aircraft/view/acf_tailnum': 'tailNumber',
+};
+
+const SWITCH_DATAREF_MAPPING: Record<string, 'navLightsOn' | 'beaconOn' | 'strobesOn'> = {
+  'sim/cockpit2/switches/navigation_lights_on': 'navLightsOn',
+  'sim/cockpit2/switches/beacon_on': 'beaconOn',
+  'sim/cockpit2/switches/strobe_lights_on': 'strobesOn',
+};
+
+function decodeText(base64: string): string {
+  const bytes = Buffer.from(base64, 'base64');
+  const end = bytes.indexOf(0);
+  return bytes.toString('latin1', 0, end === -1 ? bytes.length : end).trim();
+}
+
+const TRAFFIC_PREFIX = 'sim/cockpit2/tcas/targets/';
+/** TCAS target table, 64 slots each. Subscribed only while the traffic layer is on. */
+const TRAFFIC_DATAREF_NAMES = [
+  `${TRAFFIC_PREFIX}position/lat`,
+  `${TRAFFIC_PREFIX}position/lon`,
+  `${TRAFFIC_PREFIX}position/ele`,
+  `${TRAFFIC_PREFIX}position/psi`,
+  `${TRAFFIC_PREFIX}position/V_msc`,
+  `${TRAFFIC_PREFIX}position/vertical_speed`,
+  `${TRAFFIC_PREFIX}modeS_id`,
+  `${TRAFFIC_PREFIX}flight_id`,
+  `${TRAFFIC_PREFIX}icao_type`,
+];
+const TRAFFIC_SLOTS = 64;
+const TRAFFIC_TEXT_BYTES = 8;
+const TRAFFIC_INTERVAL_MS = 500;
+
+const DATAREF_NAMES = Array.from(
+  new Set([...STATE_DATAREF_NAMES, ...RECORDER_DATAREF_NAMES, ...TRAFFIC_DATAREF_NAMES])
+);
+const TRAFFIC_NAME_SET = new Set(TRAFFIC_DATAREF_NAMES);
 
 // Maps metadata dataref names to aircraft categories (checked in priority order)
 const METADATA_CATEGORY_MAP: [string, AircraftCategory][] = [
@@ -98,6 +145,9 @@ type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';
 type StateUpdateCallback = (state: PlaneState) => void;
 type ConnectionCallback = (connected: boolean) => void;
 type StateClearCallback = () => void;
+type TrafficCallback = (snapshot: TrafficSnapshot) => void;
+/** Web API v3 value: scalar, numeric array, or base64 text for byte arrays. */
+type DatarefValue = number | number[] | string;
 
 /** Frame-rate consumer of every dataref update, used by the flight recorder. */
 export interface RawDatarefSink {
@@ -126,6 +176,13 @@ export class XPlaneWebSocketClient {
   private graceTimer: NodeJS.Timeout | null = null;
   private emitTimer: NodeJS.Timeout | null = null;
   private stateDirty = false;
+
+  // Traffic: raw TCAS arrays by dataref name, coalesced into snapshots.
+  private trafficEnabled = false;
+  private onTraffic: TrafficCallback | null = null;
+  private trafficArrays: Map<string, DatarefValue> = new Map();
+  private trafficTimer: NodeJS.Timeout | null = null;
+  private trafficDirty = false;
 
   constructor(port: number = DEFAULT_PORT) {
     this.port = port;
@@ -233,6 +290,27 @@ export class XPlaneWebSocketClient {
 
   isConnected(): boolean {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  /**
+   * Turns the TCAS target stream on or off. The arrays update every sim frame,
+   * so they are only subscribed while something is listening.
+   */
+  setTrafficEnabled(enabled: boolean, onTraffic: TrafficCallback | null): void {
+    this.onTraffic = enabled ? onTraffic : null;
+    if (this.trafficEnabled === enabled) return;
+    this.trafficEnabled = enabled;
+    if (!enabled) {
+      this.trafficArrays.clear();
+      if (this.trafficTimer) {
+        clearTimeout(this.trafficTimer);
+        this.trafficTimer = null;
+      }
+    }
+    this.sendSubscription(
+      this.resolvedDatarefs.filter((dr) => TRAFFIC_NAME_SET.has(dr.name)),
+      enabled
+    );
   }
 
   setSink(sink: RawDatarefSink | null): void {
@@ -396,32 +474,63 @@ export class XPlaneWebSocketClient {
       this.emitTimer = null;
     }
     this.stateDirty = false;
+    if (this.trafficTimer) {
+      clearTimeout(this.trafficTimer);
+      this.trafficTimer = null;
+    }
+    this.trafficDirty = false;
   }
 
   private subscribeToDatarefs(): void {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-    if (this.resolvedDatarefs.length === 0) return;
-
-    const message = JSON.stringify({
-      req_id: 1,
-      type: 'dataref_subscribe_values',
-      params: {
-        datarefs: this.resolvedDatarefs.map((dr) => ({ id: dr.id })),
-      },
-    });
-
-    this.ws.send(message);
+    const wanted = this.resolvedDatarefs.filter(
+      (dr) => this.trafficEnabled || !TRAFFIC_NAME_SET.has(dr.name)
+    );
+    this.sendSubscription(wanted, true);
   }
 
-  private handleDatarefUpdate(data: Record<string, number | number[]>): void {
+  private sendSubscription(datarefs: DatarefInfo[], subscribe: boolean): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (datarefs.length === 0) return;
+
+    this.ws.send(
+      JSON.stringify({
+        req_id: subscribe ? 1 : 2,
+        type: subscribe ? 'dataref_subscribe_values' : 'dataref_unsubscribe_values',
+        params: { datarefs: datarefs.map((dr) => ({ id: dr.id })) },
+      })
+    );
+  }
+
+  private handleDatarefUpdate(data: Record<string, DatarefValue>): void {
     for (const [idStr, value] of Object.entries(data)) {
       const id = parseInt(idStr, 10);
       const datarefName = this.datarefIdToName.get(id);
       if (!datarefName) continue;
+      if (TRAFFIC_NAME_SET.has(datarefName)) {
+        if (this.trafficEnabled) {
+          this.trafficArrays.set(datarefName, value);
+          this.scheduleTrafficEmit();
+        }
+        continue;
+      }
+      if (typeof value === 'string') {
+        const textKey = TEXT_DATAREF_MAPPING[datarefName];
+        if (textKey) this.currentState[textKey] = decodeText(value);
+        continue;
+      }
       this.sink?.onDataref(datarefName, value);
 
       if (datarefName === 'sim/flightmodel/failures/onground_any' && typeof value === 'number') {
         this.currentState.onGround = value >= 0.5;
+        continue;
+      }
+      if (datarefName === 'sim/aircraft/view/acf_size_x' && typeof value === 'number') {
+        this.currentState.wingspanM = value * 2;
+        continue;
+      }
+      const switchKey = SWITCH_DATAREF_MAPPING[datarefName];
+      if (switchKey && typeof value === 'number') {
+        this.currentState[switchKey] = value >= 0.5;
         continue;
       }
 
@@ -473,6 +582,69 @@ export class XPlaneWebSocketClient {
       this.stateDirty = false;
       this.onStateUpdate({ ...(this.currentState as PlaneState) });
     }, PLANE_STATE_INTERVAL_MS);
+  }
+
+  private scheduleTrafficEmit(): void {
+    this.trafficDirty = true;
+    if (this.trafficTimer) return;
+    this.trafficTimer = setTimeout(() => {
+      this.trafficTimer = null;
+      if (!this.trafficDirty || !this.onTraffic) return;
+      this.trafficDirty = false;
+      this.onTraffic({ targets: this.buildTrafficTargets(), at: Date.now() });
+    }, TRAFFIC_INTERVAL_MS);
+  }
+
+  private trafficNumbers(name: string): number[] {
+    const value = this.trafficArrays.get(`${TRAFFIC_PREFIX}${name}`);
+    return Array.isArray(value) ? value : [];
+  }
+
+  /** Byte arrays arrive base64 encoded: 64 fixed-width, NUL padded strings. */
+  private trafficStrings(name: string): string[] {
+    const value = this.trafficArrays.get(`${TRAFFIC_PREFIX}${name}`);
+    if (typeof value !== 'string') return [];
+    const bytes = Buffer.from(value, 'base64');
+    const out: string[] = [];
+    for (let i = 0; i < TRAFFIC_SLOTS; i++) {
+      const chunk = bytes.subarray(i * TRAFFIC_TEXT_BYTES, (i + 1) * TRAFFIC_TEXT_BYTES);
+      const end = chunk.indexOf(0);
+      out.push(chunk.toString('latin1', 0, end === -1 ? chunk.length : end).trim());
+    }
+    return out;
+  }
+
+  private buildTrafficTargets(): TrafficTarget[] {
+    const lat = this.trafficNumbers('position/lat');
+    const lon = this.trafficNumbers('position/lon');
+    const ele = this.trafficNumbers('position/ele');
+    const psi = this.trafficNumbers('position/psi');
+    const speed = this.trafficNumbers('position/V_msc');
+    const vs = this.trafficNumbers('position/vertical_speed');
+    const modeS = this.trafficNumbers('modeS_id');
+    const callsigns = this.trafficStrings('flight_id');
+    const types = this.trafficStrings('icao_type');
+
+    const targets: TrafficTarget[] = [];
+    // Slot 0 is the user aircraft; empty slots read as 0,0.
+    for (let i = 1; i < Math.min(TRAFFIC_SLOTS, lat.length, lon.length); i++) {
+      const la = lat[i] ?? 0;
+      const lo = lon[i] ?? 0;
+      if (la === 0 && lo === 0) continue;
+      targets.push({
+        slot: i,
+        modeS: modeS[i] ?? 0,
+        callsign: callsigns[i] ?? '',
+        icaoType: types[i] ?? '',
+        latitude: la,
+        longitude: lo,
+        altitudeFt: (ele[i] ?? 0) * METERS_TO_FEET,
+        headingDeg: psi[i] ?? 0,
+        groundspeedKt: (speed[i] ?? 0) * MPS_TO_KNOTS,
+        verticalSpeedFpm: vs[i] ?? 0,
+      });
+    }
+    return targets;
   }
 
   private deriveAircraftCategory(): AircraftCategory | null {

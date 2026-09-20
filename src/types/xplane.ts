@@ -55,15 +55,28 @@ export interface PlaneState extends Coordinates {
   /** Any wheel in contact with the ground. */
   onGround?: boolean;
   fuelKg?: number;
+  /** ICAO type designator from the aircraft file, for example B77W. Empty when the author left it blank. */
+  icaoType?: string;
+  aircraftName?: string;
+  tailNumber?: string;
+  /** Full wingspan in metres, twice the model's half extent. */
+  wingspanM?: number;
+  navLightsOn?: boolean;
+  beaconOn?: boolean;
+  strobesOn?: boolean;
 }
 
 export interface PlanePosition {
   lat: number;
   lng: number;
   altitude: number;
+  altitudeAGL: number;
   heading: number;
   groundspeed: number;
   aircraftCategory: AircraftCategory | null;
+  icaoType: string;
+  tailNumber: string;
+  wingspanM: number | null;
 }
 
 export interface XPlaneAPIResult {

@@ -112,6 +112,19 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
         <div className="flex items-center gap-1.5 px-3 py-2">
           <div className="h-2 w-2 animate-pulse rounded-full bg-success" />
           <Plane className="h-3.5 w-3.5 text-primary" />
+          {(planeState?.icaoType || planeState?.tailNumber) && (
+            <div
+              className="flex flex-col leading-tight"
+              title={planeState?.aircraftName || undefined}
+            >
+              <span className="font-mono text-xs font-semibold text-foreground">
+                {planeState?.icaoType}
+              </span>
+              <span className="font-mono text-[10px] text-muted-foreground">
+                {planeState?.tailNumber}
+              </span>
+            </div>
+          )}
         </div>
 
         <GroupSeparator />

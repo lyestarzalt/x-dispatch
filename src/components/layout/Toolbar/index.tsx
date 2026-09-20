@@ -456,6 +456,8 @@ function Toolbar({
   // Map store
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
+  const simTrafficEnabled = useMapStore((s) => s.simTrafficEnabled);
+  const setSimTrafficEnabled = useMapStore((s) => s.setSimTrafficEnabled);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
@@ -993,6 +995,13 @@ function Toolbar({
               >
                 <Route className="mr-2 h-4 w-4" />
                 {t('toolbar.flightTrail')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={simTrafficEnabled}
+                onCheckedChange={() => setSimTrafficEnabled(!simTrafficEnabled)}
+              >
+                <Plane className="mr-2 h-4 w-4" />
+                {t('toolbar.simTraffic')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
                 <Radar className="mr-2 h-4 w-4" />
