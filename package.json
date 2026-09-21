@@ -81,7 +81,7 @@
     "@types/tz-lookup": "^6.1.2",
     "@types/ws": "^8.18.1",
     "@types/yauzl": "^3.4.0",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.1",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.9",
