@@ -469,8 +469,8 @@ function Toolbar({
   );
 
   const filteredAirports = useMemo(() => {
-    if (searchQuery.length < 2) return [];
-    const query = searchQuery.toUpperCase();
+    const query = searchQuery.trim().toUpperCase();
+    if (query.length < 2) return [];
 
     const matches = airports.filter(
       (a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query)
@@ -502,7 +502,7 @@ function Toolbar({
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setSelectedIndex(0);
-    setShowResults(query.length >= 2);
+    setShowResults(query.trim().length >= 2);
   }, []);
 
   const handleSelect = useCallback(
