@@ -84,6 +84,7 @@ function customStart(overrides: Partial<StartPosition> = {}): StartPosition {
     longitude: -0.12,
     heading: 270,
     index: 0,
+    airSpeedMs: 40,
     ...overrides,
   };
 }
@@ -306,25 +307,33 @@ describe('buildFlightInit start position: custom air', () => {
     expect(out.lle_air_start?.speed_in_meters_per_second).toBe(80.001);
   });
 
-  it('uses airSpeedEnum when airSpeedMs is null', () => {
+  it.each([undefined, NaN, Infinity, 0, -1])(
+    'rejects invalid or missing explicit speed %s',
+    (speed) => {
+      expect(() =>
+        buildFlightInit({
+          ...baseParams,
+          startPosition: customStart({
+            customStartMode: 'air',
+            airSpeedMs: speed,
+            airSpeedEnum: 'normal_approach',
+          }),
+        })
+      ).toThrow('Air start requires a positive, finite speed.');
+    }
+  );
+
+  it('sends explicit speed even when a saved position contains a legacy preset', () => {
     const out = buildFlightInit({
       ...baseParams,
       startPosition: customStart({
         customStartMode: 'air',
-        airSpeedMs: null as unknown as undefined,
-        airSpeedEnum: 'cruise',
+        airSpeedMs: 40,
+        airSpeedEnum: 'normal_approach',
       }),
     });
-    expect(out.lle_air_start?.speed_enum).toBe('cruise');
-    expect(out.lle_air_start?.speed_in_meters_per_second).toBeUndefined();
-  });
-
-  it('falls back to "normal_approach" when neither airSpeedMs nor airSpeedEnum is provided', () => {
-    const out = buildFlightInit({
-      ...baseParams,
-      startPosition: customStart({ customStartMode: 'air' }),
-    });
-    expect(out.lle_air_start?.speed_enum).toBe('normal_approach');
+    expect(out.lle_air_start?.speed_in_meters_per_second).toBe(float(40));
+    expect(out.lle_air_start).not.toHaveProperty('speed_enum');
   });
 
   it('defaults airAltitudeM to 1000m when missing', () => {

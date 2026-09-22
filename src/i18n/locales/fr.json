@@ -154,6 +154,8 @@
       "speed_normal_approach": "Normale",
       "speed_cruise": "Croisière",
       "speedCustom": "Vitesse personnalisée",
+      "speedUnit": "Unité de vitesse",
+      "speedRequired": "Saisissez une vitesse supérieure à zéro.",
       "position": "Position sur le pont",
       "approach": "Approche finale",
       "cat_catapult_1": "Catapulte 1",

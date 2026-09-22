@@ -154,6 +154,8 @@
       "speed_normal_approach": "Steady",
       "speed_cruise": "Cruisin'",
       "speedCustom": "Set yer speed",
+      "speedUnit": "Speed unit",
+      "speedRequired": "Enter a speed above zero, matey.",
       "position": "Spot on Deck",
       "approach": "Final Run-in",
       "cat_catapult_1": "Cat 1",

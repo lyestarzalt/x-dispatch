@@ -154,6 +154,8 @@
       "speed_normal_approach": "正常",
       "speed_cruise": "巡航",
       "speedCustom": "自定义速度",
+      "speedUnit": "速度单位",
+      "speedRequired": "请输入大于零的速度。",
       "position": "甲板位置",
       "approach": "最终进近",
       "cat_catapult_1": "Cat 1",

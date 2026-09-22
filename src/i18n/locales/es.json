@@ -154,6 +154,8 @@
       "speed_normal_approach": "Normal",
       "speed_cruise": "Crucero",
       "speedCustom": "Velocidad personalizada",
+      "speedUnit": "Unidad de velocidad",
+      "speedRequired": "Introduce una velocidad mayor que cero.",
       "position": "Posición en cubierta",
       "approach": "Aproximación final",
       "cat_catapult_1": "Cat 1",

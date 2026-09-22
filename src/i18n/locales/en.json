@@ -154,6 +154,8 @@
       "speed_normal_approach": "Normal",
       "speed_cruise": "Cruise",
       "speedCustom": "Custom speed",
+      "speedUnit": "Speed unit",
+      "speedRequired": "Enter a speed greater than zero.",
       "position": "Deck Position",
       "approach": "Final Approach",
       "cat_catapult_1": "Cat 1",
