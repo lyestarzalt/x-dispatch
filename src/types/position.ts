@@ -28,10 +28,12 @@ export interface StartPosition extends Coordinates {
   customStartMode?: 'ground' | 'air' | 'carrier' | 'frigate';
   /** Air start: altitude MSL in meters */
   airAltitudeM?: number;
-  /** Air start: speed preset (mutually exclusive with airSpeedMs) */
+  /** Legacy speed preset, retained for saved positions; an explicit speed is now required. */
   airSpeedEnum?: 'short_field_approach' | 'normal_approach' | 'cruise';
   /** Air start: speed in m/s (mutually exclusive with airSpeedEnum) */
   airSpeedMs?: number;
+  /** Display/input unit only; airSpeedMs always stores metres per second. */
+  airSpeedUnit?: 'kt' | 'ms';
   /** Boat start: deck position (mutually exclusive with boatApproachNm) */
   boatPosition?: 'catapult_1' | 'catapult_2' | 'catapult_3' | 'catapult_4' | 'deck';
   /** Boat start: final approach distance in nm (mutually exclusive with boatPosition) */

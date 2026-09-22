@@ -258,6 +258,7 @@ function setStartPositionFromPin(lng: number, lat: number, heading: number) {
           airAltitudeM: prev.airAltitudeM,
           airSpeedEnum: prev.airSpeedEnum,
           airSpeedMs: prev.airSpeedMs,
+          airSpeedUnit: prev.airSpeedUnit,
           boatPosition: prev.boatPosition,
           boatApproachNm: prev.boatApproachNm,
         }

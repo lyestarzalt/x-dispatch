@@ -11,6 +11,7 @@ import type { Aircraft, WeatherPreset } from '@/types/aircraft';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
+import { validateNewFlight } from './flightInit/schema';
 import { getXPlaneExecutable } from './freeflightGenerator';
 import { WEATHER_PRESETS } from './types';
 
@@ -138,6 +139,11 @@ class XPlaneLauncher {
    * Writes raw payload to a temp JSON file and hands it to X-Plane on launch.
    */
   async launch(payload: FlightInit, extraArgs?: string[]): Promise<LaunchResult> {
+    try {
+      payload = validateNewFlight(payload);
+    } catch (error) {
+      return { success: false, error: (error as Error).message, code: 'INVALID_CONFIG' };
+    }
     try {
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {

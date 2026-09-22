@@ -1,3 +1,4 @@
+import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { StartPosition } from '@/types/position';
 import { type Float, float } from '../float';
@@ -46,8 +47,7 @@ export type LleAirBlock = {
   longitude: Float;
   elevation_in_meters: Float;
   heading_true: Float;
-  speed_in_meters_per_second?: Float;
-  speed_enum?: 'short_field_approach' | 'normal_approach' | 'cruise';
+  speed_in_meters_per_second: Float;
 };
 
 export type BoatBlock = {
@@ -89,19 +89,16 @@ export function buildLleGround(pos: StartPosition): LleGroundBlock {
 }
 
 export function buildLleAir(pos: StartPosition): LleAirBlock {
+  if (!isValidAirStartSpeed(pos.airSpeedMs)) {
+    throw new Error('Air start requires a positive, finite speed.');
+  }
   const block: LleAirBlock = {
     latitude: float(pos.latitude),
     longitude: float(pos.longitude),
     elevation_in_meters: float(pos.airAltitudeM ?? 1000),
     heading_true: float(pos.heading),
+    speed_in_meters_per_second: float(pos.airSpeedMs),
   };
-  if (pos.airSpeedMs != null) {
-    block.speed_in_meters_per_second = float(pos.airSpeedMs);
-  } else if (pos.airSpeedEnum) {
-    block.speed_enum = pos.airSpeedEnum;
-  } else {
-    block.speed_enum = 'normal_approach';
-  }
   return block;
 }
 

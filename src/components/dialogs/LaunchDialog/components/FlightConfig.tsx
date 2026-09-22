@@ -18,11 +18,13 @@ import {
   Weight,
 } from 'lucide-react';
 import tzLookup from 'tz-lookup';
+import { AirStartSpeedInput } from '@/components/AirStartSpeedInput';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { airSpeedFromMs, isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
@@ -75,6 +77,8 @@ export function FlightConfig({
   aircraftList,
 }: FlightConfigProps) {
   const { t } = useTranslation();
+  const isAirStart = startPosition?.type === 'custom' && startPosition.customStartMode === 'air';
+  const invalidAirSpeed = isAirStart && !isValidAirStartSpeed(startPosition.airSpeedMs);
   const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
   // Get selected airport data for lat/lon (enriched with coordinates at parse time)
@@ -382,6 +386,14 @@ export function FlightConfig({
         </section>
 
         {/* ── Flight Summary ─────────────────────────────── */}
+        {isAirStart && (
+          <AirStartSpeedInput
+            position={startPosition}
+            onChange={(fields) =>
+              useAppStore.getState().setStartPosition({ ...startPosition, ...fields })
+            }
+          />
+        )}
         <div className="space-y-1.5 rounded-lg bg-secondary/50 p-3">
           <div className="flex items-start justify-between gap-2">
             <span className="xp-label shrink-0">{t('launcher.aircraft.title')}</span>
@@ -417,7 +429,8 @@ export function FlightConfig({
                 <div className="text-xs text-muted-foreground">
                   {t('toolbar.pinModes.air')}{' '}
                   {Math.round((startPosition.airAltitudeM ?? 914.4) / 0.3048).toLocaleString()} ft
-                  {startPosition.airSpeedMs != null && ` · ${startPosition.airSpeedMs} m/s`}
+                  {isValidAirStartSpeed(startPosition.airSpeedMs) &&
+                    ` · ${Math.round(airSpeedFromMs(startPosition.airSpeedMs, startPosition.airSpeedUnit ?? 'kt'))} ${t(`units.${startPosition.airSpeedUnit ?? 'kt'}`)}`}
                 </div>
               )}
               {(startPosition?.customStartMode === 'carrier' ||
@@ -447,7 +460,7 @@ export function FlightConfig({
         <Button
           data-testid="confirm-launch"
           onClick={onLaunch}
-          disabled={!selectedAircraft || !startPosition || isLaunching}
+          disabled={!selectedAircraft || !startPosition || isLaunching || invalidAirSpeed}
           className="w-full"
           size="lg"
         >

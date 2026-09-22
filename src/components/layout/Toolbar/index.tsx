@@ -31,6 +31,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AirStartSpeedInput } from '@/components/AirStartSpeedInput';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
 import { AddonManager } from '@/components/dialogs/AddonManager';
@@ -96,8 +97,6 @@ const CATAPULT_POSITIONS = [
   'deck',
 ] as const;
 
-const SPEED_PRESETS = ['short_field_approach', 'normal_approach', 'cruise'] as const;
-
 function PinOptionsPopover({
   isCustomPin,
   onSubmit,
@@ -109,7 +108,6 @@ function PinOptionsPopover({
   const [open, setOpen] = useState(false);
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
-  const [speedInput, setSpeedInput] = useState('');
   const [editingCoords, setEditingCoords] = useState(false);
 
   const startPosition = useAppStore((s) => s.startPosition);
@@ -144,9 +142,6 @@ function PinOptionsPopover({
         setLat(pos.latitude.toFixed(4));
         setLon(pos.longitude.toFixed(4));
       }
-      if (pos?.airSpeedMs != null) {
-        setSpeedInput(String(pos.airSpeedMs));
-      }
     }
     setOpen(nextOpen);
   };
@@ -162,26 +157,12 @@ function PinOptionsPopover({
       ...startPosition,
       customStartMode: mode,
       airAltitudeM: mode === 'air' ? (startPosition.airAltitudeM ?? 914.4) : undefined,
-      airSpeedEnum: mode === 'air' ? (startPosition.airSpeedEnum ?? 'normal_approach') : undefined,
-      airSpeedMs: undefined,
+      airSpeedEnum: undefined,
+      airSpeedMs: mode === 'air' ? startPosition.airSpeedMs : undefined,
+      airSpeedUnit: startPosition.airSpeedUnit ?? 'kt',
       boatPosition: mode === 'carrier' ? 'catapult_1' : undefined,
       boatApproachNm: mode === 'carrier' || mode === 'frigate' ? 1.5 : undefined,
     });
-    setSpeedInput('');
-  };
-
-  const setAirSpeedPreset = (preset: string) => {
-    updatePos({
-      airSpeedEnum: preset as (typeof SPEED_PRESETS)[number],
-      airSpeedMs: undefined,
-    });
-    setSpeedInput('');
-  };
-
-  const applySpeedMs = () => {
-    const ms = parseFloat(speedInput);
-    if (!Number.isFinite(ms) || ms <= 0) return;
-    updatePos({ airSpeedMs: ms, airSpeedEnum: undefined });
   };
 
   const setBoatPosition = (pos: string | null) => {
@@ -258,44 +239,7 @@ function PinOptionsPopover({
               />
             </div>
 
-            {/* Speed — presets OR custom m/s */}
-            <div>
-              <span className="xp-label mb-1.5 block">{t('toolbar.pinModes.speed')}</span>
-              <div className="flex flex-wrap gap-1">
-                {SPEED_PRESETS.map((preset) => (
-                  <Button
-                    key={preset}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setAirSpeedPreset(preset)}
-                    className={cn(
-                      'h-7 text-sm',
-                      startPosition?.airSpeedEnum === preset && !startPosition?.airSpeedMs
-                        ? 'bg-primary/15 text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    {t(`toolbar.pinModes.speed_${preset}`)}
-                  </Button>
-                ))}
-              </div>
-              <div className="mt-1.5 flex items-center gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={t('toolbar.pinModes.speedCustom')}
-                  value={speedInput}
-                  onChange={(e) => setSpeedInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && applySpeedMs()}
-                  onBlur={applySpeedMs}
-                  className={cn(
-                    'h-7 font-mono text-sm',
-                    startPosition?.airSpeedMs != null && 'border-primary/50'
-                  )}
-                />
-                <span className="shrink-0 text-xs text-muted-foreground">{t('units.ms')}</span>
-              </div>
-            </div>
+            <AirStartSpeedInput position={startPosition!} onChange={updatePos} />
           </div>
         )}
 

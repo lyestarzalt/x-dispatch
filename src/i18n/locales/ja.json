@@ -154,6 +154,8 @@
       "speed_normal_approach": "通常",
       "speed_cruise": "巡航",
       "speedCustom": "カスタム速度",
+      "speedUnit": "速度の単位",
+      "speedRequired": "0より大きい速度を入力してください。",
       "position": "デッキ位置",
       "approach": "ファイナルアプローチ",
       "cat_catapult_1": "Cat 1",

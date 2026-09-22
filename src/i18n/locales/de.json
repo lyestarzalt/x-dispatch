@@ -154,6 +154,8 @@
       "speed_normal_approach": "Normal",
       "speed_cruise": "Reiseflug",
       "speedCustom": "Eigene Geschwindigkeit",
+      "speedUnit": "Geschwindigkeitseinheit",
+      "speedRequired": "Gib eine Geschwindigkeit größer als null ein.",
       "position": "Deckposition",
       "approach": "Endanflug",
       "cat_catapult_1": "Katapult 1",

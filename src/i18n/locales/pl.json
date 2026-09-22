@@ -154,6 +154,8 @@
       "speed_normal_approach": "Normalne",
       "speed_cruise": "Przelot",
       "speedCustom": "Własna prędkość",
+      "speedUnit": "Jednostka prędkości",
+      "speedRequired": "Wprowadź prędkość większą od zera.",
       "position": "Pozycja na pokładzie",
       "approach": "Podejście końcowe",
       "cat_catapult_1": "Kat 1",

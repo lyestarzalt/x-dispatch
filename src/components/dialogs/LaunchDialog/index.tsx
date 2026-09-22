@@ -8,6 +8,7 @@ import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
+import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
   buildFlightInit,
@@ -15,6 +16,7 @@ import {
   calculatePayloadWeightsKg,
   resolveLaunchTime,
 } from '@/lib/xplaneServices/launch/flightInit';
+import { validateNewFlight } from '@/lib/xplaneServices/launch/flightInit/schema';
 import { useAircraftList, useStartFlight, useWeatherPresets, useXPlaneStatus } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import { useCompanionAppsStore } from '@/stores/companionAppsStore';
@@ -53,7 +55,7 @@ function launchErrorMessage(
     case 'PATH_NOT_CONFIGURED':
       return t('launcher.spawnErrorPathNotConfigured');
     case 'INVALID_CONFIG':
-      return t('launcher.spawnErrorInvalidConfig');
+      return fallback || t('launcher.spawnErrorInvalidConfig');
     case 'EXE_NOT_FOUND':
       return t('launcher.spawnErrorMissing');
     case 'NEEDS_ADMIN':
@@ -112,6 +114,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   // Launch - same FlightInit payload for both: REST API (running) or cold start
   const handleLaunch = async () => {
     if (!selectedAircraft || !startPosition) return;
+    if (
+      startPosition.type === 'custom' &&
+      startPosition.customStartMode === 'air' &&
+      !isValidAirStartSpeed(startPosition.airSpeedMs)
+    ) {
+      setLaunchError(t('toolbar.pinModes.speedRequired'));
+      return;
+    }
     setIsLaunching(true);
     setLaunchError(null);
 
@@ -126,6 +136,22 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         startPosition,
         useRealWorldTime,
         timeOfDay
+      );
+
+      // Same FlightInit payload for both paths (REST API and cold start)
+      const flightConfig = validateNewFlight(
+        buildFlightInit({
+          aircraft: selectedAircraft,
+          livery: selectedLivery,
+          startPosition,
+          weatherConfig,
+          useRealWorldTime,
+          dayOfYear,
+          timeOfDay: timeInHours,
+          fuelTanksKg: tankWeightsKg,
+          payloadKg: payloadWeightsKg,
+          enginesRunning: !coldAndDark,
+        })
       );
 
       // Fire autoLaunch companion apps and wait for max configured delay.
@@ -190,20 +216,6 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       if (maxDelaySec > 0) {
         await new Promise((resolve) => setTimeout(resolve, maxDelaySec * 1000));
       }
-
-      // Same FlightInit payload for both paths (REST API and cold start)
-      const flightConfig = buildFlightInit({
-        aircraft: selectedAircraft,
-        livery: selectedLivery,
-        startPosition,
-        weatherConfig,
-        useRealWorldTime,
-        dayOfYear,
-        timeOfDay: timeInHours,
-        fuelTanksKg: tankWeightsKg,
-        payloadKg: payloadWeightsKg,
-        enginesRunning: !coldAndDark,
-      });
 
       // Resolve the preview image path: livery image → aircraft preview → aircraft thumbnail
       const selectedLiveryObj = selectedAircraft.liveries.find((l) => l.name === selectedLivery);

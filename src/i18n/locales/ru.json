@@ -154,6 +154,8 @@
       "speed_normal_approach": "Обычный",
       "speed_cruise": "Крейсерская",
       "speedCustom": "Своя скорость",
+      "speedUnit": "Единица скорости",
+      "speedRequired": "Введите скорость больше нуля.",
       "position": "Позиция на палубе",
       "approach": "Финальный заход",
       "cat_catapult_1": "Катапульта 1",

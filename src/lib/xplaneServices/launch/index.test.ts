@@ -100,7 +100,10 @@ const { getLauncher, classifySpawnError } = await import('./index');
 const FAKE_PATH = '/Users/test/X-Plane 12';
 // Minimal payload — only fields the launcher actually reads end up mattering,
 // and at this layer it's mostly opaque (`buildFlightInit` is done upstream).
-const PAYLOAD = {} as unknown as Parameters<ReturnType<typeof getLauncher>['launch']>[0];
+const PAYLOAD = {
+  aircraft: { path: 'Aircraft/Laminar Research/Cessna 172 SP/Cessna_172SP.acf' },
+  ramp_start: { airport_id: 'YRED', ramp: 'GA5' },
+};
 
 const REAL_PLATFORM = process.platform;
 
@@ -125,6 +128,15 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
+  it('rejects invalid configurations before writing JSON or spawning', async () => {
+    const fs = await import('fs');
+    const result = await getLauncher(FAKE_PATH).launch({ aircraft: PAYLOAD.aircraft });
+    expect(result.code).toBe('INVALID_CONFIG');
+    expect(result.error).toContain('exactly one start location');
+    expect(fs.writeFileSync).not.toHaveBeenCalled();
+    expect(spawnMock).not.toHaveBeenCalled();
+  });
+
   it('resolves { success: true } when the "spawn" event fires', async () => {
     const launcher = getLauncher(FAKE_PATH);
     const launchPromise = launcher.launch(PAYLOAD);

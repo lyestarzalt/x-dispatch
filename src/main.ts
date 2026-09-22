@@ -1382,16 +1382,13 @@ function registerIpcHandlers() {
         };
       }
 
-      // Validate payload has required FlightInit properties (same schema as REST API)
-      if (!payload || typeof payload !== 'object' || !('aircraft' in payload)) {
-        return { success: false, error: 'Invalid flight configuration', code: 'INVALID_CONFIG' };
-      }
-
       const flightPayload =
         payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
-      const aircraftPath = flightPayload.aircraft?.path || 'unknown';
+      const aircraftPath = flightPayload?.aircraft?.path || 'unknown';
       const airport =
-        flightPayload.ramp_start?.airport_id || flightPayload.runway_start?.airport_id || 'unknown';
+        flightPayload?.ramp_start?.airport_id ||
+        flightPayload?.runway_start?.airport_id ||
+        'unknown';
       logger.launcher.info(`[User] Launch attempt: ${aircraftPath} at ${airport}`);
 
       try {
