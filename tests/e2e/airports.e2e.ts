@@ -81,6 +81,20 @@ test.describe('airports loaded from fixture apt.dat', () => {
     await expect(mainWindow.getByText(/John F Kennedy/i).first()).toBeVisible({ timeout: 5_000 });
   });
 
+  test('search ignores surrounding whitespace', async () => {
+    const search = mainWindow.getByPlaceholder('Search airports...');
+    await expect(search).toBeVisible({ timeout: 30_000 });
+
+    await search.fill(' KJFK ');
+
+    await expect(mainWindow.getByText(/KJFK/).first()).toBeVisible({ timeout: 5_000 });
+    await expect(mainWindow.getByText(/John F Kennedy/i).first()).toBeVisible({ timeout: 5_000 });
+
+    await search.fill(' John F Kennedy ');
+
+    await expect(mainWindow.getByText(/KJFK/).first()).toBeVisible({ timeout: 5_000 });
+  });
+
   test('search finds EGLL (London Heathrow) — proves multiple airports loaded, not just one', async () => {
     const search = mainWindow.getByPlaceholder('Search airports...');
     await expect(search).toBeVisible({ timeout: 30_000 });
