@@ -96,6 +96,22 @@ export class XPlaneRestClient {
         return { success: false, error };
       }
 
+      // Flight endpoints return a result code, unlike dataref endpoints.
+      // HTTP success alone does not confirm that flight initialization succeeded.
+      const result: unknown = await response.json();
+      const code =
+        result && typeof result === 'object' && 'error_code' in result
+          ? result.error_code
+          : undefined;
+      if (code !== 'success') {
+        return {
+          success: false,
+          error:
+            typeof code === 'string'
+              ? `X-Plane rejected the flight: ${code}`
+              : 'X-Plane returned an invalid flight initialization response.',
+        };
+      }
       return { success: true };
     } catch (err) {
       return { success: false, error: String(err) };
