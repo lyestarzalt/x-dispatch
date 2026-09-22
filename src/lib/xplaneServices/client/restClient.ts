@@ -6,6 +6,7 @@
  *
  * Types are from the generated OpenAPI client at ./generated/xplaneApi.ts
  */
+import { validateNewFlight } from '../launch/flightInit/schema';
 import type { FlightInit } from './generated/xplaneApi';
 
 const DEFAULT_PORT = 8086;
@@ -80,6 +81,7 @@ export class XPlaneRestClient {
 
   async startFlight(payload: FlightInit): Promise<{ success: boolean; error?: string }> {
     try {
+      payload = validateNewFlight(payload);
       const response = await fetch(`${this.baseUrl}/flight`, {
         method: 'POST',
         headers: {
