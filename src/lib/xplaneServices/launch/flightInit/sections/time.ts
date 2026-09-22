@@ -43,7 +43,7 @@ export function resolveLaunchTime(
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      hour12: false,
+      hourCycle: 'h23',
     });
 
     const [datePart, timePart] = airportTimeStr.split(', ');
@@ -56,17 +56,17 @@ export function resolveLaunchTime(
     const hours = timeParts[0] ?? 0;
     const minutes = timeParts[1] ?? 0;
 
-    const airportDate = new Date(year, month - 1, day);
-    const startOfYear = new Date(year, 0, 0);
-    const dayOfYear = Math.floor(
-      (airportDate.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const dayOfYear = calendarDayOfYear(year, month - 1, day);
     const timeInHours = hours + minutes / 60;
     return { dayOfYear, timeInHours };
   }
 
   const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+  const dayOfYear = calendarDayOfYear(now.getFullYear(), now.getMonth(), now.getDate());
   return { dayOfYear, timeInHours: timeOfDay };
+}
+
+/** The API counts January 1 as zero. UTC arithmetic avoids daylight-saving offsets. */
+function calendarDayOfYear(year: number, month: number, day: number): number {
+  return (Date.UTC(year, month, day) - Date.UTC(year, 0, 1)) / 86_400_000;
 }
