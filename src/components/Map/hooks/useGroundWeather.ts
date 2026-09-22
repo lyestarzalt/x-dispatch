@@ -197,7 +197,7 @@ export function useGroundWeather(mapRef: MapRef): void {
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || !enabled) return;
     const container = map.getContainer();
     const clean = overlayCanvas(4);
     const trail = overlayCanvas(5);
@@ -223,7 +223,7 @@ export function useGroundWeather(mapRef: MapRef): void {
       cleanRef.current = null;
       trailRef.current = null;
     };
-  }, [mapRef]);
+  }, [mapRef, enabled]);
 
   const { windFromDeg, windKt, precip, fog } = weather;
 
