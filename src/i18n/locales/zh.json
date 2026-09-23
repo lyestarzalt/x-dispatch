@@ -1357,6 +1357,7 @@
       "dragHintSafe": "可在同一类别内拖动排序。点击保存后更改才会生效。",
       "dragHintUnsafe": "安全模式已关闭，可以跨类别拖动项目。排序不当可能导致地景问题。",
       "saveOrder": "保存",
+      "discardOrder": "放弃",
       "autoSort": "自动排序",
       "backups": "备份 ({{count}})",
       "backupsTitle": "地景备份",

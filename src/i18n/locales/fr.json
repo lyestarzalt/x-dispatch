@@ -1361,6 +1361,7 @@
       "dragHintSafe": "Déplacez les éléments dans la même catégorie. Les modifications sont enregistrées en cliquant sur Enregistrer.",
       "dragHintUnsafe": "Mode sécurisé DÉSACTIVÉ - vous pouvez déplacer les éléments entre catégories. Une mauvaise organisation peut créer des problèmes de scènes.",
       "saveOrder": "Enregistrer",
+      "discardOrder": "Annuler",
       "autoSort": "Tri automatique",
       "backups": "Sauvegardes ({{count}})",
       "backupsTitle": "Sauvegardes des scènes",

@@ -28,6 +28,7 @@ import {
   Save,
   Search,
   Sparkles,
+  Undo2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -207,6 +208,11 @@ export function SceneryTab() {
     setHasUnsavedChanges(false);
   };
 
+  const handleDiscard = () => {
+    setLocalEntries(entries);
+    setHasUnsavedChanges(false);
+  };
+
   const handleAutoSort = async () => {
     await sortMutation.mutateAsync();
     setHasUnsavedChanges(false);
@@ -289,18 +295,30 @@ export function SceneryTab() {
 
         {/* Right: actions */}
         <div className="flex items-center gap-1.5">
-          {/* Save — primary when dirty */}
+          {/* Save and discard — only while dirty */}
           {hasUnsavedChanges && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSaveOrder}
-              disabled={isPending}
-              className="mr-1 gap-1.5"
-            >
-              {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-3.5 w-3.5" />}
-              {t('addonManager.scenery.saveOrder')}
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDiscard}
+                disabled={isPending}
+                className="gap-1.5"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+                {t('addonManager.scenery.discardOrder')}
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSaveOrder}
+                disabled={isPending}
+                className="mr-1 gap-1.5"
+              >
+                {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-3.5 w-3.5" />}
+                {t('addonManager.scenery.saveOrder')}
+              </Button>
+            </>
           )}
 
           {/* Auto-sort */}

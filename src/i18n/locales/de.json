@@ -1361,6 +1361,7 @@
       "dragHintSafe": "Ziehen Sie Einträge innerhalb derselben Kategorie. Änderungen werden beim Klicken auf Speichern übernommen.",
       "dragHintUnsafe": "Sicherer Modus AUS: Elemente können zwischen Kategorien verschoben werden. Falsche Sortierung kann Szenerie-Probleme verursachen.",
       "saveOrder": "Speichern",
+      "discardOrder": "Verwerfen",
       "autoSort": "Automatisch sortieren",
       "backups": "Sicherungen ({{count}})",
       "backupsTitle": "Szenerie-Backups",

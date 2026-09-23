@@ -1357,6 +1357,7 @@
       "dragHintSafe": "Arrastra elementos dentro de la misma categoría. Los cambios se guardan al hacer clic en Guardar.",
       "dragHintUnsafe": "Modo seguro desactivado: puedes mover elementos entre categorías. Un orden incorrecto puede causar problemas con los escenarios.",
       "saveOrder": "Guardar",
+      "discardOrder": "Descartar",
       "autoSort": "Orden automático",
       "backups": "Copias de seguridad ({{count}})",
       "backupsTitle": "Copias de seguridad de escenarios",

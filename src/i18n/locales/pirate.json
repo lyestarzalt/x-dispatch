@@ -1357,6 +1357,7 @@
       "dragHintSafe": "Drag ta reorder within the same category. Changes are saved when ye click Save Order.",
       "dragHintUnsafe": "Safe mode OFF - Ye can drag items across categories. This may cause scenery issues if done incorrectly.",
       "saveOrder": "Stow",
+      "discardOrder": "Toss overboard",
       "autoSort": "Auto-sort the hold",
       "backups": "Backup charts ({{count}})",
       "backupsTitle": "Backup Charts",
