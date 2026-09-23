@@ -45,6 +45,17 @@ describe('geometry', () => {
     }
   });
 
+  it('keeps shallow turns hugging the corner', () => {
+    // A 10 degree bend; the arc must stay within the tangent length of the corner.
+    const corner = { latitude: 25, longitude: 53 };
+    const path = [{ latitude: 25, longitude: 52 }, corner, { latitude: 25.16, longitude: 54 }];
+    const smooth = smoothRoutePath(path, 3);
+    expect(smooth.length).toBeGreaterThan(path.length);
+    for (const p of smooth.slice(1, -1)) {
+      expect(greatCircleNm(p, corner)).toBeLessThan(1);
+    }
+  });
+
   it('leaves straight and two-point paths alone', () => {
     const straight = [
       { latitude: 50, longitude: 7 },

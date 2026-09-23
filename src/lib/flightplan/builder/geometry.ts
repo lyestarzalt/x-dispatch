@@ -106,7 +106,8 @@ export function smoothRoutePath(points: LatLon[], radiusNm: number): LatLon[] {
     const end = { x: ub.x * tangent, y: ub.y * tangent };
     const bisector = { x: ua.x + ub.x, y: ua.y + ub.y };
     const bisLen = Math.hypot(bisector.x, bisector.y);
-    const centerDist = radius / Math.sin(turn / 2);
+    // The centre sits on the bisector, radius / sin(half the interior angle) from the corner.
+    const centerDist = radius / Math.cos(turn / 2);
     const center = {
       x: (bisector.x / bisLen) * centerDist,
       y: (bisector.y / bisLen) * centerDist,
