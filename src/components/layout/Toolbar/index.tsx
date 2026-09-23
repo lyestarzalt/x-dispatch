@@ -68,6 +68,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
+import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { NavLayerVisibility } from '@/types/layers';
 import {
@@ -433,6 +434,7 @@ function Toolbar({
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const simbriefOpen = useFlightPlanStore((s) => s.simbriefDialogOpen);
+  const openPlanBuilder = usePlanBuilderStore((s) => s.open);
   const openSimbriefDialog = useFlightPlanStore((s) => s.openSimbriefDialog);
   const closeSimbriefDialog = useFlightPlanStore((s) => s.closeSimbriefDialog);
 
@@ -643,9 +645,6 @@ function Toolbar({
       >
         <Package className="h-4 w-4" />
         <span className="text-sm font-medium">{t('toolbar.addons')}</span>
-        <Badge variant="warning" className="px-1.5 py-0.5 text-[10px] leading-none uppercase">
-          {t('toolbar.alphaTag')}
-        </Badge>
       </Button>
 
       {/* Flight Plan dropdown */}
@@ -670,6 +669,10 @@ function Toolbar({
             <p>{t('toolbar.tooltips.flightPlan')}</p>
           </TooltipContent>
           <DropdownMenuContent align="start" className="w-52">
+            <DropdownMenuItem onClick={openPlanBuilder}>
+              <Route className="mr-2 h-4 w-4" />
+              {t('toolbar.planFlight')}
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleLoadFlightPlan}
               className={cn(fmsData && !simbriefData && 'text-info')}

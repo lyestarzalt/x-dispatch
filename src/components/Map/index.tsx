@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
+import FlightPlanBuilder from '@/components/dialogs/FlightPlanBuilder';
 import LaunchDialog from '@/components/dialogs/LaunchDialog';
 import LogbookDialog from '@/components/dialogs/LogbookDialog';
 import SettingsDialog from '@/components/dialogs/SettingsDialog';
@@ -909,6 +910,11 @@ export default function Map({ airports }: MapProps) {
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />
+
+      {/* Flight planner - docked left, the map is its live preview */}
+      <SectionErrorBoundary name="FlightPlanBuilder">
+        <FlightPlanBuilder airports={airports} />
+      </SectionErrorBoundary>
 
       {/* Airport Info Panel - floating overlay */}
       {showSidebar && selectedAirportData && (

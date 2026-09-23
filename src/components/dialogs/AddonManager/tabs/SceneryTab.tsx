@@ -28,6 +28,7 @@ import {
   Save,
   Search,
   Sparkles,
+  Undo2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -147,6 +148,7 @@ export function SceneryTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [freeReorder, setFreeReorder] = useState(false);
 
   // Sync local state when remote data changes. We need a local fork so the
   // user can stage reorders/toggles before saving back.
@@ -189,12 +191,11 @@ export function SceneryTab() {
       const oldIndex = localEntries.findIndex((e) => e.folderName === active.id);
       const newIndex = localEntries.findIndex((e) => e.folderName === over.id);
 
-      // Only allow reorder within the same priority tier
+      // By default a pack stays inside its priority tier; free reorder lifts that.
       const oldEntry = localEntries[oldIndex];
       const newEntry = localEntries[newIndex];
-      if (!oldEntry || !newEntry || oldEntry.priority !== newEntry.priority) {
-        return;
-      }
+      if (!oldEntry || !newEntry) return;
+      if (!freeReorder && oldEntry.priority !== newEntry.priority) return;
 
       setLocalEntries(arrayMove(localEntries, oldIndex, newIndex));
       setHasUnsavedChanges(true);
@@ -204,6 +205,11 @@ export function SceneryTab() {
   const handleSaveOrder = async () => {
     const folderNames = localEntries.map((e) => e.folderName);
     await saveOrderMutation.mutateAsync(folderNames);
+    setHasUnsavedChanges(false);
+  };
+
+  const handleDiscard = () => {
+    setLocalEntries(entries);
     setHasUnsavedChanges(false);
   };
 
@@ -285,22 +291,43 @@ export function SceneryTab() {
               {t('addonManager.scenery.unsavedChanges')}
             </span>
           )}
+          <label className="text-muted-foreground flex items-center gap-2 text-xs">
+            <Switch
+              checked={freeReorder}
+              onCheckedChange={setFreeReorder}
+              className="scale-75"
+              aria-label={t('addonManager.scenery.freeReorder')}
+            />
+            {t('addonManager.scenery.freeReorder')}
+          </label>
         </div>
 
         {/* Right: actions */}
         <div className="flex items-center gap-1.5">
-          {/* Save — primary when dirty */}
+          {/* Save and discard — only while dirty */}
           {hasUnsavedChanges && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSaveOrder}
-              disabled={isPending}
-              className="mr-1 gap-1.5"
-            >
-              {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-3.5 w-3.5" />}
-              {t('addonManager.scenery.saveOrder')}
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDiscard}
+                disabled={isPending}
+                className="gap-1.5"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+                {t('addonManager.scenery.discardOrder')}
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSaveOrder}
+                disabled={isPending}
+                className="mr-1 gap-1.5"
+              >
+                {saveOrderMutation.isPending ? <Spinner /> : <Save className="h-3.5 w-3.5" />}
+                {t('addonManager.scenery.saveOrder')}
+              </Button>
+            </>
           )}
 
           {/* Auto-sort */}

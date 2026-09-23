@@ -1,4 +1,11 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer, webFrame, webUtils } from 'electron';
+import type {
+  AutoRouteRequest,
+  AutoRouteResult,
+  PlanDraft,
+  RouteResolveResult,
+  SaveFmsResult,
+} from './lib/flightplan/builder/types';
 import type { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/XPlaneDataManager';
@@ -259,6 +266,10 @@ contextBridge.exposeInMainWorld('flightPlanAPI', {
   openFile: () => ipcRenderer.invoke('flightplan:openFile'),
   enrich: (fmsData: import('./types/fms').FMSFlightPlan) =>
     ipcRenderer.invoke('flightplan:enrich', fmsData),
+  resolveRoute: (draft: PlanDraft) => ipcRenderer.invoke('flightplan:resolveRoute', draft),
+  autoRoute: (request: AutoRouteRequest) => ipcRenderer.invoke('flightplan:autoRoute', request),
+  saveFms: (args: { stem: string; content: string }) =>
+    ipcRenderer.invoke('flightplan:saveFms', args),
 });
 
 contextBridge.exposeInMainWorld('simbriefAPI', {
@@ -599,6 +610,9 @@ declare global {
       enrich: (
         fmsData: import('./types/fms').FMSFlightPlan
       ) => Promise<import('./types/fms').EnrichedFlightPlan | null>;
+      resolveRoute: (draft: PlanDraft) => Promise<RouteResolveResult | null>;
+      autoRoute: (request: AutoRouteRequest) => Promise<AutoRouteResult | null>;
+      saveFms: (args: { stem: string; content: string }) => Promise<SaveFmsResult>;
     };
     simbriefAPI: {
       fetchLatest: (pilotId: string) => Promise<import('./types/simbrief').SimBriefFetchResult>;
