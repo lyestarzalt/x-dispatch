@@ -240,8 +240,6 @@ jobs:
             --prerelease \
             --target "${{ github.sha }}"
 
-      # A short-lived installation token, rather than a PAT that expires
-      # silently and strands the website on an old release.
       - name: Mint website sync token
         id: site-token
         continue-on-error: true
