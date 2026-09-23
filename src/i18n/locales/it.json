@@ -129,6 +129,18 @@
   "planBuilder": {
     "title": "Pianifica un volo",
     "description": "Scegli partenza e arrivo, scrivi una rotta o vola diretto, poi invia a X-Plane.",
+    "sections": {
+      "airports": "Aeroporti",
+      "enroute": "In rotta",
+      "summary": "Crociera e riepilogo"
+    },
+    "sid": "SID",
+    "star": "STAR",
+    "approach": "Avvicinamento",
+    "noProcedure": "Nessuna",
+    "routeHint": "Aerovie e punti come depositati. La rotta automatica trova il percorso più breve sulle aerovie.",
+    "nmUnit": "NM",
+    "removeToken": "Rimuovi {{token}}",
     "departure": "Partenza",
     "arrival": "Arrivo",
     "pickAirport": "Scegli un aeroporto",
@@ -141,6 +153,9 @@
     "routePlaceholder": "Aerovie e punti, ad esempio SUGOL UL620 KEKIX. Lascia vuoto per volare diretto.",
     "cruise": "Quota di crociera (ft)",
     "suggest": "Suggerisci",
+    "autoRoute": "Rotta automatica",
+    "autoRouting": "Calcolo…",
+    "autoRouteFailed": "Nessuna rotta su aerovie tra questi aeroporti. Vola diretto o scrivi una rotta.",
     "pickEndpoints": "Scegli una partenza e un arrivo per iniziare.",
     "resolving": "Risoluzione della rotta…",
     "distance": "Distanza",

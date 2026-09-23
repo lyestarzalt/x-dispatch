@@ -9,11 +9,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAirportProcedures } from '@/queries';
+import { useAirportRunways } from '@/queries/useAirportRunways';
 import type { AirportProcedures } from '@/types/navigation';
 
 const ANY = '__any__';
 
-/** Runways named by any SID, STAR or approach at the airport, in numeric order. */
+/** Runways named by any SID, STAR or approach at the airport. */
 export function runwaysFromProcedures(procedures: AirportProcedures | null | undefined): string[] {
   if (!procedures) return [];
   const names = new Set<string>();
@@ -24,7 +25,13 @@ export function runwaysFromProcedures(procedures: AirportProcedures | null | und
       if (/^\d{2}[LCR]?$/.test(bare)) names.add(bare);
     }
   }
-  return [...names].sort((a, b) => parseInt(a, 10) - parseInt(b, 10) || a.localeCompare(b));
+  return [...names];
+}
+
+function sortRunways(names: Iterable<string>): string[] {
+  return [...new Set(names)].sort(
+    (a, b) => parseInt(a, 10) - parseInt(b, 10) || a.localeCompare(b)
+  );
 }
 
 interface RunwaySelectProps {
@@ -33,14 +40,19 @@ interface RunwaySelectProps {
   onChange: (runway: string | undefined) => void;
 }
 
+/** apt.dat is the source of truth; procedures fill in when the airport file is not available. */
 export function RunwaySelect({ icao, value, onChange }: RunwaySelectProps) {
   const { t } = useTranslation();
+  const { data: aptRunways, isLoading } = useAirportRunways(icao);
   const { data: procedures } = useAirportProcedures(icao);
-  const runways = useMemo(() => runwaysFromProcedures(procedures), [procedures]);
+  const runways = useMemo(
+    () => sortRunways([...(aptRunways ?? []), ...runwaysFromProcedures(procedures)]),
+    [aptRunways, procedures]
+  );
 
   if (!icao) return null;
 
-  if (runways.length === 0) {
+  if (runways.length === 0 && !isLoading) {
     return (
       <Input
         value={value ?? ''}
@@ -53,8 +65,12 @@ export function RunwaySelect({ icao, value, onChange }: RunwaySelectProps) {
   }
 
   return (
-    <Select value={value ?? ANY} onValueChange={(v) => onChange(v === ANY ? undefined : v)}>
-      <SelectTrigger className="h-9 w-28 font-mono">
+    <Select
+      value={value ?? ANY}
+      onValueChange={(v) => onChange(v === ANY ? undefined : v)}
+      disabled={isLoading}
+    >
+      <SelectTrigger className="h-9 w-32 font-mono">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

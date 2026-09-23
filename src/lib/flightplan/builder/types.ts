@@ -1,12 +1,23 @@
 import type { EnrichedFlightPlan, FMSFlightPlan } from '@/types/fms';
 
-/** One end of the plan: an airport with coordinates, plus the runway once chosen. */
+/** A published procedure picked by name plus its enroute transition, if any. */
+export interface ProcedureChoice {
+  name: string;
+  transition: string | null;
+}
+
+/** One end of the plan: an airport with coordinates, plus runway and procedures once chosen. */
 export interface PlanEndpoint {
   icao: string;
   name?: string;
   latitude: number;
   longitude: number;
   runway?: string;
+  /** Departure only. */
+  sid?: ProcedureChoice;
+  /** Arrival only. */
+  star?: ProcedureChoice;
+  approach?: ProcedureChoice;
 }
 
 /** What the user typed or picked. Persisted so a half-built plan survives a restart. */
@@ -47,6 +58,12 @@ export interface RouteResolution {
 /** What the main process hands back: the raw plan plus the enriched copy the map layer draws. */
 export interface RouteResolveResult extends RouteResolution {
   enriched: EnrichedFlightPlan;
+}
+
+export interface AutoRouteResult {
+  /** Route in filing form, ready for the route field: "ARNEM UL620 OSN T180 KEKIX". */
+  routeText: string;
+  distanceNm: number;
 }
 
 export interface SaveFmsResult {

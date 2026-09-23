@@ -129,6 +129,18 @@
   "planBuilder": {
     "title": "Flug planen",
     "description": "Start und Ziel wählen, Route eingeben oder direkt fliegen, dann an X-Plane senden.",
+    "sections": {
+      "airports": "Flughäfen",
+      "enroute": "Streckenflug",
+      "summary": "Reiseflug und Übersicht"
+    },
+    "sid": "SID",
+    "star": "STAR",
+    "approach": "Anflug",
+    "noProcedure": "Keine",
+    "routeHint": "Luftstraßen und Wegpunkte wie aufgegeben. Auto-Route findet den kürzesten Weg über Luftstraßen.",
+    "nmUnit": "NM",
+    "removeToken": "{{token}} entfernen",
     "departure": "Abflug",
     "arrival": "Ankunft",
     "pickAirport": "Flughafen wählen",
@@ -141,6 +153,9 @@
     "routePlaceholder": "Luftstraßen und Wegpunkte, z. B. SUGOL UL620 KEKIX. Leer lassen für Direktflug.",
     "cruise": "Reiseflughöhe (ft)",
     "suggest": "Vorschlag",
+    "autoRoute": "Auto-Route",
+    "autoRouting": "Route wird berechnet…",
+    "autoRouteFailed": "Keine Luftstraßenroute zwischen diesen Flughäfen gefunden. Direkt fliegen oder Route eingeben.",
     "pickEndpoints": "Wählen Sie Abflug und Ankunft, um zu beginnen.",
     "resolving": "Route wird aufgelöst…",
     "distance": "Distanz",

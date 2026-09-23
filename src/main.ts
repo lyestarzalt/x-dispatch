@@ -1259,6 +1259,24 @@ function registerIpcHandlers() {
     }
   });
 
+  ipcMain.handle('flightplan:autoRoute', async (_, draft: unknown) => {
+    try {
+      const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
+      const { departure, arrival, cruiseAltitudeFt } =
+        draft as import('./lib/flightplan/builder/types').PlanDraft;
+      if (!departure || !arrival) return null;
+      const startedAt = Date.now();
+      const result = autoRoute(departure, arrival, cruiseAltitudeFt);
+      logger.main.info(
+        `Auto route ${departure.icao}-${arrival.icao}: ${result ? 'found' : 'none'} in ${Date.now() - startedAt}ms`
+      );
+      return result;
+    } catch (err) {
+      logger.main.error('Auto route failed', err);
+      return null;
+    }
+  });
+
   ipcMain.handle('flightplan:saveFms', async (_, args: { stem?: unknown; content?: unknown }) => {
     const stem = typeof args?.stem === 'string' ? args.stem.replace(/[^A-Za-z0-9_-]/g, '') : '';
     const content = typeof args?.content === 'string' ? args.content : '';

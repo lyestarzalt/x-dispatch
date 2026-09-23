@@ -129,6 +129,18 @@
   "planBuilder": {
     "title": "Planifier un vol",
     "description": "Choisissez départ et arrivée, saisissez une route ou volez direct, puis envoyez à X-Plane.",
+    "sections": {
+      "airports": "Aéroports",
+      "enroute": "En route",
+      "summary": "Croisière et résumé"
+    },
+    "sid": "SID",
+    "star": "STAR",
+    "approach": "Approche",
+    "noProcedure": "Aucune",
+    "routeHint": "Voies aériennes et points tels que déposés. La route auto trouve le chemin le plus court par voies aériennes.",
+    "nmUnit": "NM",
+    "removeToken": "Retirer {{token}}",
     "departure": "Départ",
     "arrival": "Arrivée",
     "pickAirport": "Choisir un aéroport",
@@ -141,6 +153,9 @@
     "routePlaceholder": "Voies aériennes et points, par exemple SUGOL UL620 KEKIX. Laissez vide pour un vol direct.",
     "cruise": "Altitude de croisière (ft)",
     "suggest": "Suggérer",
+    "autoRoute": "Route auto",
+    "autoRouting": "Calcul…",
+    "autoRouteFailed": "Aucune route par voies aériennes entre ces aéroports. Volez direct ou saisissez une route.",
     "pickEndpoints": "Choisissez un départ et une arrivée pour commencer.",
     "resolving": "Résolution de la route…",
     "distance": "Distance",
