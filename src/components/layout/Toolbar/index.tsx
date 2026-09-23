@@ -640,7 +640,6 @@ function Toolbar({
         onClick={() => setAddonManagerOpen(true)}
         className="h-9 gap-2 px-3"
         tooltip={t('toolbar.tooltips.addons')}
-        tooltipSide="bottom"
       >
         <Package className="h-4 w-4" />
         <span className="text-sm font-medium">{t('toolbar.addons')}</span>
