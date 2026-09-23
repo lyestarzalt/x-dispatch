@@ -27,6 +27,8 @@ const JOIN_FALLBACK_COUNT = 5;
 /** Airways of the wrong altitude family cost a little more so a jet stays on the upper network. */
 const WRONG_FAMILY_PENALTY = 1.15;
 const HIGH_FAMILY_MIN_FT = 18000;
+/** Switching airway costs a few miles so the route reads as a handful of long airways. */
+const AIRWAY_CHANGE_PENALTY_NM = 12;
 
 /** Only en-route navaids sit on airways; ILS, glideslope and markers are noise here. */
 const AIRWAY_NAVAID_TYPES = ['VOR', 'NDB', 'DME', 'VOR-DME', 'VORTAC', 'TACAN'];
@@ -173,9 +175,13 @@ export function autoRoute(
     if (!pa || !pb) continue;
     const family = s.isHigh === preferHigh ? 1 : WRONG_FAMILY_PENALTY;
     const weight = greatCircleNm(pa, pb) * family;
-    // direction: 0 both ways, 1 forward only, 2 backward only
-    if (s.direction !== 2) addEdge(a, b, weight, s.name);
-    if (s.direction !== 1) addEdge(b, a, weight, s.name);
+    // A segment shared by several airways is stored as "A31-A411": one edge per airway,
+    // so the path can stay on whichever name it arrived on.
+    for (const name of s.name.split('-')) {
+      // direction: 0 both ways, 1 forward only, 2 backward only
+      if (s.direction !== 2) addEdge(a, b, weight, name);
+      if (s.direction !== 1) addEdge(b, a, weight, name);
+    }
   }
 
   const joinable = [...edges.keys()];
@@ -210,9 +216,11 @@ export function autoRoute(
     if (current.key === END) break;
     closed.add(current.key);
     const g = best.get(current.key)!;
+    const arrivedBy = cameFrom.get(current.key)?.airway ?? null;
     for (const edge of edges.get(current.key) ?? []) {
       if (closed.has(edge.to)) continue;
-      const tentative = g + edge.weight;
+      const changes = arrivedBy !== null && edge.airway !== null && edge.airway !== arrivedBy;
+      const tentative = g + edge.weight + (changes ? AIRWAY_CHANGE_PENALTY_NM : 0);
       if (tentative >= (best.get(edge.to) ?? Infinity)) continue;
       best.set(edge.to, tentative);
       cameFrom.set(edge.to, { from: current.key, airway: edge.airway });

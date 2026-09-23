@@ -19,7 +19,7 @@ import type {
   RouteResolveResult,
 } from '@/lib/flightplan/builder/types';
 import logger from '@/lib/utils/loggerRenderer';
-import type { EnrichedFlightPlan, FMSFlightPlan } from '@/types/fms';
+import type { EnrichedFlightPlan, FMSFlightPlan, RunwayEnd } from '@/types/fms';
 import { useAppStore } from './appStore';
 import { useFlightPlanStore } from './flightPlanStore';
 
@@ -39,7 +39,11 @@ interface PlanBuilderState extends PlanDraft {
   close: () => void;
   setDeparture: (endpoint: PlanEndpoint | null) => void;
   setArrival: (endpoint: PlanEndpoint | null) => void;
-  setRunway: (end: 'departure' | 'arrival', runway: string | undefined) => void;
+  setRunway: (
+    end: 'departure' | 'arrival',
+    runway: string | undefined,
+    runwayEnd?: RunwayEnd
+  ) => void;
   setProcedureChoice: (kind: ProcedureKind, choice: ProcedureChoice | undefined) => void;
   setResolvedProcedures: (parts: ProcedureParts) => void;
   swapEndpoints: () => void;
@@ -80,14 +84,14 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
 
       setDeparture: (endpoint) => set({ departure: endpoint, savedPath: null }),
       setArrival: (endpoint) => set({ arrival: endpoint, savedPath: null }),
-      setRunway: (end, runway) =>
+      setRunway: (end, runway, runwayEnd) =>
         set((state) => {
           const endpoint = state[end];
           if (!endpoint) return {};
           // A runway change invalidates procedures published for the old one.
           const cleared =
             end === 'departure' ? { sid: undefined } : { star: undefined, approach: undefined };
-          return { [end]: { ...endpoint, runway, ...cleared }, savedPath: null };
+          return { [end]: { ...endpoint, runway, runwayEnd, ...cleared }, savedPath: null };
         }),
       setProcedureChoice: (kind, choice) =>
         set((state) => {
@@ -164,10 +168,11 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       },
 
       composed: () => {
-        const { result, procedures } = get();
+        const { result, procedures, departure, arrival } = get();
         if (!result) return null;
         const plan = composePlan(result.plan, procedures);
-        return { plan, enriched: enrichedFromPlan(plan) };
+        const runwayEnds = { departure: departure?.runwayEnd, arrival: arrival?.runwayEnd };
+        return { plan, enriched: enrichedFromPlan(plan, runwayEnds) };
       },
 
       showOnMap: () => {

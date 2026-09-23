@@ -4,6 +4,7 @@
  */
 import * as maplibregl from 'maplibre-gl';
 import { smoothRoutePath } from '@/lib/flightplan/builder/geometry';
+import { routeLinePoints } from '@/lib/flightplan/builder/routeLine';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
 import { safeAddGeoJSONSource } from '../types';
@@ -197,10 +198,10 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: smoothRoutePath(waypoints, TURN_RADIUS_NM).map((p) => [
-          p.longitude,
-          p.latitude,
-        ]),
+        coordinates: smoothRoutePath(
+          routeLinePoints(waypoints, fmsData.runwayEnds),
+          TURN_RADIUS_NM
+        ).map((p) => [p.longitude, p.latitude]),
       },
       properties: { stage: '' },
     });

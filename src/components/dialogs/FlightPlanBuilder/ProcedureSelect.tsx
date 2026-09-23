@@ -19,6 +19,7 @@ interface ProcedureSelectProps {
   value: ProcedureChoice | undefined;
   placeholder: string;
   onChange: (choice: ProcedureChoice | undefined) => void;
+  className?: string;
 }
 
 /** One entry per procedure name and transition, filtered to the chosen runway. */
@@ -28,6 +29,7 @@ export function ProcedureSelect({
   value,
   placeholder,
   onChange,
+  className,
 }: ProcedureSelectProps) {
   const { t } = useTranslation();
   const options = useMemo(() => {
@@ -42,14 +44,13 @@ export function ProcedureSelect({
     );
   }, [procedures, runway]);
 
-  if (options.length === 0) return null;
-
   return (
     <Select
       value={value ? choiceKey(value) : NONE}
       onValueChange={(v) => onChange(options.find((o) => choiceKey(o) === v))}
+      disabled={options.length === 0}
     >
-      <SelectTrigger className="h-9 font-mono text-xs">
+      <SelectTrigger className={className ?? 'h-9 font-mono text-xs'}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

@@ -14,6 +14,15 @@ export interface FMSWaypoint {
   longitude: number;
 }
 
+/** One end of a land runway: its threshold, true heading along the runway and the paved length. */
+export interface RunwayEnd {
+  name: string;
+  latitude: number;
+  longitude: number;
+  headingDeg: number;
+  lengthNm: number;
+}
+
 export interface FMSFlightPlan {
   version: number;
   cycle?: string;
@@ -102,6 +111,9 @@ export interface EnrichedFlightPlan {
 
   // Alternate airport (SimBrief only)
   alternate?: { icao: string; latitude: number; longitude: number };
+
+  /** Chosen runway ends so the drawn line leaves and joins the actual runway, not the airport datum. */
+  runwayEnds?: { departure?: RunwayEnd; arrival?: RunwayEnd };
 
   // Resolution summary
   resolution: {

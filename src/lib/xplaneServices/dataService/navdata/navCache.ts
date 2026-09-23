@@ -891,7 +891,8 @@ export function getAirwaysByName(airwayName: string): AirwaySegment[] {
   const results = db
     .select()
     .from(airways)
-    .where(sql`${airways.name} = ${airwayName.toUpperCase()}`)
+    // Segments shared by several airways are stored as "A31-A411"; match either name.
+    .where(sql`'-' || ${airways.name} || '-' LIKE ${`%-${airwayName.toUpperCase()}-%`}`)
     .all();
 
   return results.map((r) => ({

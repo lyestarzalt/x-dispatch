@@ -128,9 +128,13 @@ export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlig
 }
 
 /** Every waypoint here came from the database, so the enriched copy for the map is all found. */
-export function enrichedFromPlan(plan: FMSFlightPlan): EnrichedFlightPlan {
+export function enrichedFromPlan(
+  plan: FMSFlightPlan,
+  runwayEnds?: EnrichedFlightPlan['runwayEnds']
+): EnrichedFlightPlan {
   return {
     ...plan,
+    runwayEnds,
     waypoints: plan.waypoints.map((wp) => ({ ...wp, found: true })),
     resolution: {
       total: plan.waypoints.length,

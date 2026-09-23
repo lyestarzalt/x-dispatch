@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { useAirportProcedures } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
+import type { RunwayEnd } from '@/types/fms';
 import type { AirportProcedures } from '@/types/navigation';
 
 const ANY = '__any__';
@@ -37,16 +38,18 @@ function sortRunways(names: Iterable<string>): string[] {
 interface RunwaySelectProps {
   icao: string | null;
   value: string | undefined;
-  onChange: (runway: string | undefined) => void;
+  onChange: (runway: string | undefined, end?: RunwayEnd) => void;
+  className?: string;
 }
 
 /** apt.dat is the source of truth; procedures fill in when the airport file is not available. */
-export function RunwaySelect({ icao, value, onChange }: RunwaySelectProps) {
+export function RunwaySelect({ icao, value, onChange, className }: RunwaySelectProps) {
   const { t } = useTranslation();
   const { data: aptRunways, isLoading } = useAirportRunways(icao);
   const { data: procedures } = useAirportProcedures(icao);
   const runways = useMemo(
-    () => sortRunways([...(aptRunways ?? []), ...runwaysFromProcedures(procedures)]),
+    () =>
+      sortRunways([...(aptRunways ?? []).map((e) => e.name), ...runwaysFromProcedures(procedures)]),
     [aptRunways, procedures]
   );
 
@@ -58,7 +61,7 @@ export function RunwaySelect({ icao, value, onChange }: RunwaySelectProps) {
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value.toUpperCase().trim() || undefined)}
         placeholder={t('planBuilder.runwayPlaceholder')}
-        className="h-9 w-24 font-mono uppercase"
+        className={className ?? 'h-9 font-mono uppercase'}
         maxLength={3}
       />
     );
@@ -67,10 +70,16 @@ export function RunwaySelect({ icao, value, onChange }: RunwaySelectProps) {
   return (
     <Select
       value={value ?? ANY}
-      onValueChange={(v) => onChange(v === ANY ? undefined : v)}
+      onValueChange={(v) => {
+        if (v === ANY) return onChange(undefined);
+        onChange(
+          v,
+          aptRunways?.find((e) => e.name === v)
+        );
+      }}
       disabled={isLoading}
     >
-      <SelectTrigger className="h-9 w-32 font-mono">
+      <SelectTrigger className={className ?? 'h-9 font-mono'}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

@@ -17,6 +17,32 @@ export function greatCircleNm(a: LatLon, b: LatLon): number {
   return 2 * EARTH_RADIUS_NM * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/** Initial true bearing from a to b, 0 to 360. */
+export function bearingDeg(a: LatLon, b: LatLon): number {
+  const φ1 = (a.latitude * Math.PI) / 180;
+  const φ2 = (b.latitude * Math.PI) / 180;
+  const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+/** Point reached from p after travelling the distance along a true bearing. */
+export function destinationPoint(p: LatLon, bearing: number, distanceNm: number): LatLon {
+  const δ = distanceNm / EARTH_RADIUS_NM;
+  const θ = (bearing * Math.PI) / 180;
+  const φ1 = (p.latitude * Math.PI) / 180;
+  const λ1 = (p.longitude * Math.PI) / 180;
+  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
+  const λ2 =
+    λ1 +
+    Math.atan2(Math.sin(θ) * Math.sin(δ) * Math.cos(φ1), Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2));
+  return {
+    latitude: (φ2 * 180) / Math.PI,
+    longitude: (((λ2 * 180) / Math.PI + 540) % 360) - 180,
+  };
+}
+
 export function pathDistanceNm(points: LatLon[]): number {
   let total = 0;
   for (let i = 1; i < points.length; i++) {

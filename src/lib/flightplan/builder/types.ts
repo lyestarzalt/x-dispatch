@@ -1,4 +1,4 @@
-import type { EnrichedFlightPlan, FMSFlightPlan } from '@/types/fms';
+import type { EnrichedFlightPlan, FMSFlightPlan, RunwayEnd } from '@/types/fms';
 
 /** A published procedure picked by name plus its enroute transition, if any. */
 export interface ProcedureChoice {
@@ -13,6 +13,8 @@ export interface PlanEndpoint {
   latitude: number;
   longitude: number;
   runway?: string;
+  /** Geometry of the chosen runway when apt.dat had it; procedure-only runways have none. */
+  runwayEnd?: RunwayEnd;
   /** Departure only. */
   sid?: ProcedureChoice;
   /** Arrival only. */
