@@ -205,22 +205,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # A short-lived installation token, rather than a PAT that expires
+      # silently and strands the website on an old release.
+      - name: Mint website sync token
+        id: site-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.X_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
+          owner: lyestarzalt
+          repositories: x-dispatch.app
+
       - name: Sync website stable catalog
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.X_DISPATCH_SITE_TOKEN }}
+          GH_TOKEN: ${{ steps.site-token.outputs.token }}
           TAG: ${{ needs.compute-version.outputs.tag }}
         run: |
           set -euo pipefail
           if [ -z "${GH_TOKEN:-}" ]; then
-            echo "X_DISPATCH_SITE_TOKEN is not configured; skipping website sync."
+            echo "::warning title=Website sync skipped::No token for x-dispatch.app. The website still points at the previous release."
+            echo "- :warning: Website sync **skipped** for \`$TAG\` (no token)" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          gh workflow run sync-release.yml \
+          if ! gh workflow run sync-release.yml \
             --repo lyestarzalt/x-dispatch.app \
             -f source_repo="${{ github.repository }}" \
             -f channel="stable" \
-            -f tag="$TAG"
+            -f tag="$TAG"; then
+            echo "::warning title=Website sync failed::Dispatch of sync-release.yml failed. The website still points at the previous release."
+            echo "- :warning: Website sync **failed** for \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "- :white_check_mark: Website sync dispatched for \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Send Discord notification
         continue-on-error: true
