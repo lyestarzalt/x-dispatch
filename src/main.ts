@@ -1242,6 +1242,72 @@ function registerIpcHandlers() {
     }
   });
 
+  ipcMain.handle('flightplan:resolveRoute', async (_, draft: unknown) => {
+    try {
+      const { resolveRoute } = await import('./lib/flightplan/builder/routeResolver');
+      const { enrichFlightPlan } = await import('./lib/flightplan/fmsResolver');
+      const cycle = dataManager.getDataSources()?.global?.cycle ?? undefined;
+      const resolution = resolveRoute(
+        draft as import('./lib/flightplan/builder/types').PlanDraft,
+        cycle
+      );
+      if (!resolution) return null;
+      return { ...resolution, enriched: enrichFlightPlan(resolution.plan, cycle) };
+    } catch (err) {
+      logger.main.error('Failed to resolve route', err);
+      return null;
+    }
+  });
+
+  ipcMain.handle('flightplan:autoRoute', async (_, request: unknown) => {
+    try {
+      const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
+      const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo, exits, entries } =
+        request as import('./lib/flightplan/builder/types').AutoRouteRequest;
+      if (!departure || !arrival) return null;
+      const startedAt = Date.now();
+      const result = autoRoute({
+        departure,
+        arrival,
+        from: routeFrom ?? departure,
+        to: routeTo ?? arrival,
+        exits,
+        entries,
+        cruiseAltitudeFt,
+        trace: (message) => logger.main.debug(`Auto route pass ${message}`),
+      });
+      logger.main.info(
+        `Auto route ${departure.icao}-${arrival.icao}: ${result ? 'found' : 'none'} in ${Date.now() - startedAt}ms`
+      );
+      return result;
+    } catch (err) {
+      logger.main.error('Auto route failed', err);
+      return null;
+    }
+  });
+
+  ipcMain.handle('flightplan:saveFms', async (_, args: { stem?: unknown; content?: unknown }) => {
+    const stem = typeof args?.stem === 'string' ? args.stem.replace(/[^A-Za-z0-9_-]/g, '') : '';
+    const content = typeof args?.content === 'string' ? args.content : '';
+    if (!stem || !content || content.length > 1_000_000) {
+      return { success: false, error: 'Invalid flight plan' };
+    }
+    const xplanePath = dataManager.getXPlanePath();
+    if (!xplanePath) return { success: false, error: 'X-Plane path is not set' };
+    const dir = path.join(xplanePath, 'Output', 'FMS plans');
+    const target = path.join(dir, `${stem}.fms`);
+    try {
+      await fs.promises.mkdir(dir, { recursive: true });
+      await fs.promises.writeFile(target, content, 'utf-8');
+      logger.main.info(`Flight plan written to ${target}`);
+      return { success: true, path: target };
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      logger.main.warn(`Flight plan write failed for ${target}: ${reason}`);
+      return { success: false, error: reason };
+    }
+  });
+
   // SimBrief API
   ipcMain.handle('simbrief:fetchLatest', async (_, pilotId: string) => {
     // Validate pilot ID
