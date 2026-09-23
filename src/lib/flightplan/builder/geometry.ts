@@ -59,6 +59,20 @@ export function estimateMinutes(distanceNm: number, category: RangeRingCategory)
   return Math.round((distanceNm / RANGE_RING_SPEEDS[category]) * 60 + TERMINAL_MINUTES[category]);
 }
 
+/** Typical block burn per class, kg per hour: a narrow-body jet, a regional turboprop, a light piston. */
+const BURN_KG_PER_HOUR: Record<RangeRingCategory, number> = { jet: 2500, turboprop: 600, prop: 30 };
+const RESERVE_MINUTES = 45;
+const CONTINGENCY = 0.05;
+
+/** Trip fuel plus five percent contingency and a 45 minute reserve, rounded to 10 kg. */
+export function estimateFuelKg(distanceNm: number, category: RangeRingCategory): number {
+  if (distanceNm <= 0) return 0;
+  const perMinute = BURN_KG_PER_HOUR[category] / 60;
+  const trip = estimateMinutes(distanceNm, category) * perMinute;
+  const block = trip * (1 + CONTINGENCY) + RESERVE_MINUTES * perMinute;
+  return Math.round(block / 10) * 10;
+}
+
 /**
  * Rule-of-thumb cruise: climb as high as the leg allows, capped per class, rounded
  * to a thousand and nudged onto the hemispheric level for eastbound tracks.

@@ -1262,11 +1262,20 @@ function registerIpcHandlers() {
   ipcMain.handle('flightplan:autoRoute', async (_, request: unknown) => {
     try {
       const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
-      const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo } =
+      const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo, exits, entries } =
         request as import('./lib/flightplan/builder/types').AutoRouteRequest;
       if (!departure || !arrival) return null;
       const startedAt = Date.now();
-      const result = autoRoute(routeFrom ?? departure, routeTo ?? arrival, cruiseAltitudeFt);
+      const result = autoRoute({
+        departure,
+        arrival,
+        from: routeFrom ?? departure,
+        to: routeTo ?? arrival,
+        exits,
+        entries,
+        cruiseAltitudeFt,
+        trace: (message) => logger.main.debug(`Auto route pass ${message}`),
+      });
       logger.main.info(
         `Auto route ${departure.icao}-${arrival.icao}: ${result ? 'found' : 'none'} in ${Date.now() - startedAt}ms`
       );

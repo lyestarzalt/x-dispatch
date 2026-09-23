@@ -20,6 +20,7 @@ import type {
   PlanDraft,
   PlanEndpoint,
   ProcedureChoice,
+  RouteJoin,
   RouteResolveResult,
 } from '@/lib/flightplan/builder/types';
 import logger from '@/lib/utils/loggerRenderer';
@@ -57,7 +58,9 @@ interface PlanBuilderState extends PlanDraft {
   /** Re-resolves the current draft; stale responses are dropped. */
   resolve: () => Promise<void>;
   /** Asks the main process for a shortest airway route and puts it in the route field. */
-  autoRoute: () => Promise<boolean>;
+  /** Candidate procedure joins let the router pick the SID and STAR along with the route. */
+  autoRoute: (joins?: { exits?: RouteJoin[]; entries?: RouteJoin[] }) => Promise<boolean>;
+  setAlternate: (endpoint: PlanEndpoint | null) => void;
   /** Enroute resolution with the chosen procedures stitched in, or null before the first resolve. */
   composed: () => { plan: FMSFlightPlan; enriched: EnrichedFlightPlan } | null;
   /** Pushes the composed plan into the flight plan store so the map draws it. */
@@ -74,6 +77,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
     (set, get) => ({
       departure: null,
       arrival: null,
+      alternate: null,
       routeText: '',
       cruiseAltitudeFt: null,
       isOpen: false,
@@ -99,10 +103,11 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         set((state) => ({
           arrival: endpoint,
           ...(endpoint?.icao !== state.arrival?.icao
-            ? { routeText: '', cruiseAltitudeFt: null, result: null }
+            ? { routeText: '', cruiseAltitudeFt: null, result: null, alternate: null }
             : {}),
           savedPath: null,
         })),
+      setAlternate: (endpoint) => set({ alternate: endpoint }),
       setRunway: (end, runway, runwayEnd) =>
         set((state) => {
           const endpoint = state[end];
@@ -173,7 +178,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         }
       },
 
-      autoRoute: async () => {
+      autoRoute: async (joins) => {
         const { departure, arrival, routeText, cruiseAltitudeFt, procedures } = get();
         if (!departure || !arrival) return false;
         set({ autoRouting: true });
@@ -187,9 +192,14 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             cruiseAltitudeFt,
             routeFrom: exit && { latitude: exit.latitude, longitude: exit.longitude },
             routeTo: entry && { latitude: entry.latitude, longitude: entry.longitude },
+            // Candidates only matter while that end has no procedure fixed yet.
+            exits: exit ? undefined : joins?.exits,
+            entries: entry ? undefined : joins?.entries,
           });
           if (!result) return false;
           set({ routeText: result.routeText, savedPath: null });
+          if (result.sid) get().setProcedureChoice('sid', result.sid);
+          if (result.star) get().setProcedureChoice('star', result.star);
           return true;
         } catch (err) {
           logger.flight.error('Auto route failed', err);
@@ -200,13 +210,16 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       },
 
       composed: () => {
-        const { result, procedures, departure, arrival } = get();
+        const { result, procedures, departure, arrival, alternate } = get();
         if (!result) return null;
         const plan = composePlan(result.plan, procedures);
         const runwayEnds = { departure: departure?.runwayEnd, arrival: arrival?.runwayEnd };
+        const alt = alternate
+          ? { icao: alternate.icao, latitude: alternate.latitude, longitude: alternate.longitude }
+          : undefined;
         return {
           plan,
-          enriched: enrichedFromPlan(plan, runwayEnds, sidFirstTurn(procedures.sid)),
+          enriched: enrichedFromPlan(plan, runwayEnds, sidFirstTurn(procedures.sid), alt),
         };
       },
 
@@ -261,6 +274,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         set({
           departure: null,
           arrival: null,
+          alternate: null,
           routeText: '',
           cruiseAltitudeFt: null,
           status: 'idle',
@@ -275,6 +289,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       partialize: (state) => ({
         departure: state.departure,
         arrival: state.arrival,
+        alternate: state.alternate,
         routeText: state.routeText,
         cruiseAltitudeFt: state.cruiseAltitudeFt,
       }),

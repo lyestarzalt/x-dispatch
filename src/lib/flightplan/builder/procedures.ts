@@ -4,7 +4,7 @@
  */
 import type { EnrichedFlightPlan, FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
 import type { ResolvedProcedure, ResolvedProcedureWaypoint } from '@/types/navigation';
-import type { ProcedureChoice } from './types';
+import type { ProcedureChoice, RouteJoin } from './types';
 
 export interface ProcedureParts {
   sid?: ResolvedProcedure;
@@ -85,6 +85,30 @@ export function constraintLabel(wp: ResolvedProcedureWaypoint): string {
     default:
       return a1;
   }
+}
+
+/**
+ * Candidate joins for the router: one per distinct fix, procedure and
+ * transition, from whichever end of each procedure `pick` returns.
+ */
+export function procedureJoins(
+  list: ResolvedProcedure[],
+  pick: (p: ResolvedProcedure) => FMSWaypoint | undefined
+): RouteJoin[] {
+  const seen = new Map<string, RouteJoin>();
+  for (const p of list) {
+    const wp = pick(p);
+    if (!wp) continue;
+    const join: RouteJoin = {
+      id: wp.id,
+      latitude: wp.latitude,
+      longitude: wp.longitude,
+      procedure: p.name,
+      transition: p.transition ?? null,
+    };
+    seen.set(`${join.id}|${join.procedure}|${join.transition ?? ''}`, join);
+  }
+  return [...seen.values()];
 }
 
 /** Published direction of the first turn after take-off, if the SID says. */
@@ -233,12 +257,14 @@ export function planForFile(base: FMSFlightPlan, parts: ProcedureParts): FMSFlig
 export function enrichedFromPlan(
   plan: FMSFlightPlan,
   runwayEnds?: EnrichedFlightPlan['runwayEnds'],
-  firstTurn?: EnrichedFlightPlan['firstTurn']
+  firstTurn?: EnrichedFlightPlan['firstTurn'],
+  alternate?: EnrichedFlightPlan['alternate']
 ): EnrichedFlightPlan {
   return {
     ...plan,
     runwayEnds,
     firstTurn,
+    alternate,
     // Enroute fixes carry the cruise level for the file; the map shows only published constraints.
     waypoints: plan.waypoints.map((wp) => ({
       ...wp,

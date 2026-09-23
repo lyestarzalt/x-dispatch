@@ -21,12 +21,21 @@ import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
+  estimateFuelKg,
   estimateMinutes,
+  greatCircleNm,
   isEastbound,
   suggestCruiseAltitudeFt,
 } from '@/lib/flightplan/builder/geometry';
-import { matchProcedure } from '@/lib/flightplan/builder/procedures';
+import {
+  matchProcedure,
+  procedureEntry,
+  procedureExit,
+  procedureJoins,
+  proceduresForRunway,
+} from '@/lib/flightplan/builder/procedures';
 import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { cn } from '@/lib/utils/helpers';
 import { formatWind } from '@/lib/utils/metar';
@@ -41,7 +50,7 @@ import type { RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
 import type { AircraftCategory } from '@/types/xplane';
-import { AirportPicker } from './AirportPicker';
+import { AirportPicker, toEndpoint } from './AirportPicker';
 import { ProcedureSelect } from './ProcedureSelect';
 import { RunwaySelect } from './RunwaySelect';
 
@@ -206,6 +215,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const cruiseAltitudeFt = usePlanBuilderStore((s) => s.cruiseAltitudeFt);
   const status = usePlanBuilderStore((s) => s.status);
   const result = usePlanBuilderStore((s) => s.result);
+  const alternate = usePlanBuilderStore((s) => s.alternate ?? null);
+  const setAlternate = usePlanBuilderStore((s) => s.setAlternate);
   const savedPath = usePlanBuilderStore((s) => s.savedPath);
   const autoRouting = usePlanBuilderStore((s) => s.autoRouting);
   const setDeparture = usePlanBuilderStore((s) => s.setDeparture);
@@ -225,8 +236,12 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const [saving, setSaving] = useState(false);
 
-  const { data: depProcedures } = useAirportProcedures(isOpen ? (departure?.icao ?? null) : null);
-  const { data: arrProcedures } = useAirportProcedures(isOpen ? (arrival?.icao ?? null) : null);
+  const { data: depProcedures, isLoading: depLoading } = useAirportProcedures(
+    isOpen ? (departure?.icao ?? null) : null
+  );
+  const { data: arrProcedures, isLoading: arrLoading } = useAirportProcedures(
+    isOpen ? (arrival?.icao ?? null) : null
+  );
   // The IPC returns procedures already resolved to coordinates despite the narrower type.
   const sids = (depProcedures?.sids as ResolvedProcedure[] | undefined) ?? NO_PROCEDURES;
   const stars = (arrProcedures?.stars as ResolvedProcedure[] | undefined) ?? NO_PROCEDURES;
@@ -249,16 +264,39 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     resolve,
   ]);
 
+  const cls = planningClass(aircraftCategory);
+
+  // Published joins for the router: SID exits and STAR or approach entries for the chosen
+  // runways, so it can pick the procedures along with the airways.
+  const joins = useMemo(
+    () => ({
+      exits: procedureJoins(proceduresForRunway(sids, departure?.runway), procedureExit),
+      entries: procedureJoins(
+        proceduresForRunway(stars.length > 0 ? stars : approaches, arrival?.runway),
+        procedureEntry
+      ),
+    }),
+    [sids, stars, approaches, departure?.runway, arrival?.runway]
+  );
+
   // A new pair of airports with nothing typed gets an airway route straight away, once per pair,
-  // so clearing the field on purpose stays cleared.
+  // so clearing the field on purpose stays cleared. Waits for the procedures so joins are known.
   const autoRoutedPair = useRef<string | null>(null);
   useEffect(() => {
     if (!isOpen || !departure || !arrival || routeText !== '') return;
+    if (depLoading || arrLoading) return;
     const pair = `${departure.icao}-${arrival.icao}`;
     if (autoRoutedPair.current === pair) return;
     autoRoutedPair.current = pair;
-    void autoRoute();
-  }, [isOpen, departure, arrival, routeText, autoRoute]);
+    void autoRoute(joins);
+  }, [isOpen, departure, arrival, routeText, autoRoute, joins, depLoading, arrLoading]);
+
+  // An alternate is suggested once per arrival; the user can still pick another.
+  useEffect(() => {
+    if (!arrival || alternate !== null) return;
+    const pick = suggestAlternate(airports, arrival, departure?.icao ?? null, cls);
+    if (pick) setAlternate(toEndpoint(pick));
+  }, [airports, arrival, alternate, departure?.icao, cls, setAlternate]);
 
   // A stored draft knows its runway names but not their geometry; fill it in once apt.dat is read.
   const { data: depRunways } = useAirportRunways(isOpen ? (departure?.icao ?? null) : null);
@@ -305,7 +343,6 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const ready = status === 'ready' && result !== null;
   const hasEndpoints = !!departure && !!arrival;
   const resolving = hasEndpoints && (status === 'resolving' || !result);
-  const cls = planningClass(aircraftCategory);
 
   // Cruise is picked for the user from distance, aircraft class and direction of flight.
   useEffect(() => {
@@ -314,7 +351,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   }, [ready, departure, arrival, cruiseAltitudeFt, distanceNm, cls, setCruiseAltitude]);
 
   const handleAutoRoute = async () => {
-    const ok = await autoRoute();
+    const ok = await autoRoute(joins);
     if (!ok) toast.error(t('planBuilder.autoRouteFailed'));
   };
 
@@ -416,9 +453,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             />
             <Stat label={t('planBuilder.cruiseShort')} value={formatLevel(cruiseAltitudeFt)} />
             <Stat
-              label={t('planBuilder.sections.enroute')}
-              value={ready ? String(fixCount) : '—'}
-              unit={t('planBuilder.fixesUnit')}
+              label={t('planBuilder.fuel')}
+              value={ready ? String(estimateFuelKg(distanceNm, cls)) : '—'}
+              unit={t('planBuilder.kgUnit')}
             />
           </div>
         </header>
@@ -533,6 +570,22 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                       selected={arrival.runway}
                       onUse={(end) => setRunway('arrival', end.name, end)}
                     />
+                    <Field
+                      label={
+                        alternate
+                          ? t('planBuilder.alternateAt', {
+                              nm: Math.round(greatCircleNm(arrival, alternate)),
+                            })
+                          : t('planBuilder.alternate')
+                      }
+                    >
+                      <AirportPicker
+                        airports={airports}
+                        value={alternate}
+                        placeholder={t('planBuilder.noAlternate')}
+                        onChange={setAlternate}
+                      />
+                    </Field>
                   </>
                 )}
               </Card>
