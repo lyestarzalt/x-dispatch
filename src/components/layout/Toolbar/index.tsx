@@ -35,7 +35,6 @@ import { AirStartSpeedInput } from '@/components/AirStartSpeedInput';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
 import { AddonManager } from '@/components/dialogs/AddonManager';
-import FlightPlanBuilder from '@/components/dialogs/FlightPlanBuilder';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -1083,7 +1082,6 @@ function Toolbar({
 
       {/* Dialogs */}
       <SimbriefDialog open={simbriefOpen} onClose={closeSimbriefDialog} />
-      <FlightPlanBuilder airports={airports} />
       <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
     </div>
   );

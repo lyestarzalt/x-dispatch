@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FMSFlightPlan } from '@/types/fms';
 import type { ResolvedProcedure } from '@/types/navigation';
-import { composePlan, matchProcedure, proceduresForRunway } from './procedures';
+import { composePlan, matchProcedure, planForFile, proceduresForRunway } from './procedures';
 
 const base: FMSFlightPlan = {
   version: 1100,
@@ -83,6 +83,28 @@ describe('composePlan', () => {
 
   it('leaves the plan untouched with no procedures', () => {
     expect(composePlan(base, {}).waypoints).toEqual(base.waypoints);
+  });
+
+  it('writes only airports and enroute fixes to the file, naming the procedures instead', () => {
+    const file = planForFile(base, { sid, star });
+    expect(file.waypoints.map((w) => w.id)).toEqual(['EHAM', 'ARNEM', 'UNOKO', 'EDDF']);
+    expect(file.departure.sid).toBe('ARNEM2S');
+    expect(file.arrival.star).toBe('UNOKO1A');
+    expect(file.arrival.starTransition).toBe('UNOKO');
+  });
+
+  it('fills the runway from the procedure when the user left it open', () => {
+    const open: FMSFlightPlan = {
+      ...base,
+      departure: { icao: 'EHAM' },
+      arrival: { icao: 'EDDF' },
+    };
+    const file = planForFile(open, { sid, star: { ...star, runway: 'RW25L' } });
+    expect(file.departure.runway).toBe('36L');
+    expect(file.arrival.runway).toBe('25L');
+    expect(
+      planForFile(open, { sid: { ...sid, runway: 'RW36B' } }).departure.runway
+    ).toBeUndefined();
   });
 
   it('drops enroute fixes that would double back over the SID or STAR', () => {

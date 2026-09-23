@@ -10,6 +10,7 @@ import {
   type ProcedureParts,
   composePlan,
   enrichedFromPlan,
+  planForFile,
   procedureEntry,
   procedureExit,
   sidFirstTurn,
@@ -85,8 +86,23 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
 
-      setDeparture: (endpoint) => set({ departure: endpoint, savedPath: null }),
-      setArrival: (endpoint) => set({ arrival: endpoint, savedPath: null }),
+      // A route belongs to its pair of airports; changing either end starts the enroute part over.
+      setDeparture: (endpoint) =>
+        set((state) => ({
+          departure: endpoint,
+          ...(endpoint?.icao !== state.departure?.icao
+            ? { routeText: '', cruiseAltitudeFt: null, result: null }
+            : {}),
+          savedPath: null,
+        })),
+      setArrival: (endpoint) =>
+        set((state) => ({
+          arrival: endpoint,
+          ...(endpoint?.icao !== state.arrival?.icao
+            ? { routeText: '', cruiseAltitudeFt: null, result: null }
+            : {}),
+          savedPath: null,
+        })),
       setRunway: (end, runway, runwayEnd) =>
         set((state) => {
           const endpoint = state[end];
@@ -105,7 +121,10 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           if (!endpoint) return {};
           return { [end]: { ...endpoint, [kind]: choice }, savedPath: null };
         }),
-      setResolvedProcedures: (parts) => set({ procedures: parts }),
+      setResolvedProcedures: (parts) => {
+        set({ procedures: parts });
+        if (get().isOpen && get().result) get().showOnMap();
+      },
       swapEndpoints: () =>
         set((state) => ({
           departure: state.arrival
@@ -114,6 +133,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           arrival: state.departure
             ? { ...state.departure, sid: undefined, star: undefined, approach: undefined }
             : null,
+          // "A UL620 B" read backwards is still A and B joined by UL620.
+          routeText: tokenizeRoute(state.routeText).reverse().join(' '),
           procedures: {},
           savedPath: null,
         })),
@@ -143,6 +164,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           });
           if (request !== resolveRequest) return;
           set(result ? { status: 'ready', result } : { status: 'error', result: null });
+          // The map is the preview: every successful resolve redraws while the panel is open.
+          if (result && get().isOpen) get().showOnMap();
         } catch (err) {
           if (request !== resolveRequest) return;
           logger.flight.error('Route resolution failed', err);
@@ -214,12 +237,11 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       },
 
       saveToXPlane: async () => {
-        const { departure, arrival } = get();
-        const composed = get().composed();
-        if (!composed || !departure || !arrival) return null;
+        const { departure, arrival, result, procedures } = get();
+        if (!result || !departure || !arrival) return null;
         const response = await window.flightPlanAPI.saveFms({
           stem: fmsFileStem(departure.icao, arrival.icao),
-          content: serializeFms(composed.plan),
+          content: serializeFms(planForFile(result.plan, procedures)),
         });
         if (!response.success || !response.path) {
           throw new Error(response.error ?? 'save failed');

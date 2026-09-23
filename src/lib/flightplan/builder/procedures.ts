@@ -162,16 +162,50 @@ function join(target: FMSWaypoint[], next: FMSWaypoint[]): void {
   }
 }
 
-/** Departure, SID, enroute, STAR, approach, arrival, with the header naming each procedure. */
-export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlightPlan {
-  const departure = base.waypoints.find((wp) => wp.via === 'ADEP');
-  const arrival = base.waypoints.find((wp) => wp.via === 'ADES');
-  const enroute = trimEnroute(
-    base.waypoints.filter((wp) => wp.via !== 'ADEP' && wp.via !== 'ADES'),
-    procedureExit(parts.sid),
-    procedureEntry(parts.star ?? parts.approach)
-  );
+/** A single runway named by a procedure, "RW25L"; never the "RW25B" both-sides form. */
+function procedureRunway(...procedures: (ResolvedProcedure | undefined)[]): string | undefined {
+  for (const p of procedures) {
+    const rwy = p?.runway?.toUpperCase();
+    if (rwy && /^(RW)?\d{2}[LCR]?$/.test(rwy)) return rwy.replace(/^RW/, '');
+  }
+  return undefined;
+}
 
+function header(base: FMSFlightPlan, parts: ProcedureParts) {
+  return {
+    departure: {
+      ...base.departure,
+      runway: base.departure.runway ?? procedureRunway(parts.sid),
+      sid: parts.sid?.name,
+      sidTransition: parts.sid?.transition ?? undefined,
+    },
+    arrival: {
+      ...base.arrival,
+      // X-Plane needs DESRWY whenever a STAR or approach is named.
+      runway: base.arrival.runway ?? procedureRunway(parts.approach, parts.star),
+      star: parts.star?.name,
+      starTransition: parts.star?.transition ?? undefined,
+      approach: parts.approach?.name,
+      approachTransition: parts.approach?.transition ?? undefined,
+    },
+  };
+}
+
+function splitBase(base: FMSFlightPlan, parts: ProcedureParts) {
+  return {
+    departure: base.waypoints.find((wp) => wp.via === 'ADEP'),
+    arrival: base.waypoints.find((wp) => wp.via === 'ADES'),
+    enroute: trimEnroute(
+      base.waypoints.filter((wp) => wp.via !== 'ADEP' && wp.via !== 'ADES'),
+      procedureExit(parts.sid),
+      procedureEntry(parts.star ?? parts.approach)
+    ),
+  };
+}
+
+/** Departure, SID, enroute, STAR, approach, arrival: the full path the map draws. */
+export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlightPlan {
+  const { departure, arrival, enroute } = splitBase(base, parts);
   const waypoints: FMSWaypoint[] = [];
   if (departure) waypoints.push(departure);
   if (parts.sid) join(waypoints, procedureWaypoints(parts.sid));
@@ -179,23 +213,20 @@ export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlig
   if (parts.star) join(waypoints, procedureWaypoints(parts.star));
   if (parts.approach) join(waypoints, procedureWaypoints(parts.approach));
   if (arrival) waypoints.push(arrival);
+  return { ...base, ...header(base, parts), waypoints };
+}
 
-  return {
-    ...base,
-    departure: {
-      ...base.departure,
-      sid: parts.sid?.name,
-      sidTransition: parts.sid?.transition ?? undefined,
-    },
-    arrival: {
-      ...base.arrival,
-      star: parts.star?.name,
-      starTransition: parts.star?.transition ?? undefined,
-      approach: parts.approach?.name,
-      approachTransition: parts.approach?.transition ?? undefined,
-    },
-    waypoints,
-  };
+/**
+ * What goes in the .fms file. X-Plane loads the named procedures itself, so the
+ * enroute block holds only the airports and the fixes between the procedures.
+ */
+export function planForFile(base: FMSFlightPlan, parts: ProcedureParts): FMSFlightPlan {
+  const { departure, arrival, enroute } = splitBase(base, parts);
+  const waypoints: FMSWaypoint[] = [];
+  if (departure) waypoints.push(departure);
+  waypoints.push(...enroute);
+  if (arrival) waypoints.push(arrival);
+  return { ...base, ...header(base, parts), waypoints };
 }
 
 /** Every waypoint here came from the database, so the enriched copy for the map is all found. */

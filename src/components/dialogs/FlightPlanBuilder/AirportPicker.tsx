@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronsUpDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -10,6 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { IcaoCode } from '@/components/ui/icao-code';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { PlanEndpoint } from '@/lib/flightplan/builder/types';
 import type { Airport } from '@/lib/xplaneServices/dataService';
@@ -53,17 +53,20 @@ export function AirportPicker({ airports, value, placeholder, onChange }: Airpor
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-10 w-full justify-between px-3 font-normal">
+        <button
+          type="button"
+          className="border-input bg-secondary ring-offset-background focus:ring-ring hover:bg-secondary/80 flex h-9 w-full items-center justify-between rounded-lg border px-3 text-sm transition-colors focus:ring-1 focus:outline-none"
+        >
           {value ? (
             <span className="flex min-w-0 items-baseline gap-2">
-              <span className="font-mono text-sm font-semibold">{value.icao}</span>
+              <IcaoCode className="text-sm">{value.icao}</IcaoCode>
               <span className="text-muted-foreground truncate text-xs">{value.name}</span>
             </span>
           ) : (
             <span className="text-muted-foreground text-sm">{placeholder}</span>
           )}
-          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
-        </Button>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <Command shouldFilter={false}>
@@ -85,7 +88,7 @@ export function AirportPicker({ airports, value, placeholder, onChange }: Airpor
                     setOpen(false);
                   }}
                 >
-                  <span className="mr-2 font-mono text-sm font-semibold">{airport.icao}</span>
+                  <IcaoCode className="mr-2 w-12 shrink-0 text-sm">{airport.icao}</IcaoCode>
                   <span className="text-muted-foreground truncate text-xs">{airport.name}</span>
                 </CommandItem>
               ))}

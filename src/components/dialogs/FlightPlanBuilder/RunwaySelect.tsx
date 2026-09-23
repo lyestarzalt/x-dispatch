@@ -80,7 +80,7 @@ export function RunwaySelect({ icao, value, onChange, className }: RunwaySelectP
       disabled={isLoading}
     >
       <SelectTrigger className={className ?? 'h-9 font-mono'}>
-        <SelectValue />
+        <SelectValue>{value ?? t('planBuilder.anyShort')}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={ANY}>{t('planBuilder.anyRunway')}</SelectItem>

@@ -41,6 +41,16 @@ describe('serializeFms', () => {
     expect(lines).toContain('NUMENR 4');
   });
 
+  it('leaves out STAR and approach when no destination runway is known', () => {
+    const lines = serializeFms({
+      ...plan,
+      arrival: { icao: 'EDDF', star: 'UNOKO1A', approach: 'I25L' },
+    }).split('\n');
+    expect(lines).not.toContain('STAR UNOKO1A');
+    expect(lines).not.toContain('APP I25L');
+    expect(lines).toContain('ADES EDDF');
+  });
+
   it('builds a safe file stem', () => {
     expect(fmsFileStem('eham', 'ed/df', '01')).toBe('EHAMEDDF01');
   });

@@ -21,6 +21,8 @@ function waypointLine(wp: FMSWaypoint): string {
 
 /** X-Plane 11/12 FMS v1100 text. Optional header lines are omitted rather than left blank. */
 export function serializeFms(plan: FMSFlightPlan): string {
+  // The spec makes CYCLE mandatory as line three; the parser copes with a missing one, so it is
+  // only written when known.
   const lines: string[] = ['I', `${FMS_VERSION} Version`];
   if (plan.cycle) lines.push(`CYCLE ${plan.cycle}`);
   lines.push(`ADEP ${plan.departure.icao}`);
@@ -31,10 +33,15 @@ export function serializeFms(plan: FMSFlightPlan): string {
   lines.push(`ADES ${plan.arrival.icao}`);
   const desRwy = runwayField(plan.arrival.runway);
   if (desRwy) lines.push(`DESRWY ${desRwy}`);
-  if (plan.arrival.star) lines.push(`STAR ${plan.arrival.star}`);
-  if (plan.arrival.starTransition) lines.push(`STARTRANS ${plan.arrival.starTransition}`);
-  if (plan.arrival.approach) lines.push(`APP ${plan.arrival.approach}`);
-  if (plan.arrival.approachTransition) lines.push(`APPTRANS ${plan.arrival.approachTransition}`);
+  // X-Plane rejects a STAR or approach without DESRWY, so without a runway they are left out.
+  if (desRwy) {
+    if (plan.arrival.star) lines.push(`STAR ${plan.arrival.star}`);
+    if (plan.arrival.starTransition) lines.push(`STARTRANS ${plan.arrival.starTransition}`);
+    if (plan.arrival.approach) lines.push(`APP ${plan.arrival.approach}`);
+    if (plan.arrival.approachTransition) {
+      lines.push(`APPTRANS ${plan.arrival.approachTransition}`);
+    }
+  }
   lines.push(`NUMENR ${plan.waypoints.length}`);
   for (const wp of plan.waypoints) lines.push(waypointLine(wp));
   return `${lines.join('\n')}\n`;
