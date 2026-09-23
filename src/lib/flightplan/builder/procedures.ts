@@ -82,6 +82,39 @@ function procedureWaypoints(procedure: ResolvedProcedure): FMSWaypoint[] {
   return out;
 }
 
+/** Last drawable fix of a SID: where the enroute part begins. */
+export function procedureExit(procedure: ResolvedProcedure | undefined): FMSWaypoint | undefined {
+  if (!procedure) return undefined;
+  const wps = procedureWaypoints(procedure);
+  return wps[wps.length - 1];
+}
+
+/** First drawable fix of a STAR or approach: where the enroute part ends. */
+export function procedureEntry(procedure: ResolvedProcedure | undefined): FMSWaypoint | undefined {
+  return procedure ? procedureWaypoints(procedure)[0] : undefined;
+}
+
+/**
+ * Enroute fixes before the SID exit or after the STAR entry would double back
+ * over the procedure, so they are dropped when the boundary fix is in the route.
+ */
+function trimEnroute(
+  enroute: FMSWaypoint[],
+  exit: FMSWaypoint | undefined,
+  entry: FMSWaypoint | undefined
+): FMSWaypoint[] {
+  let out = enroute;
+  if (exit) {
+    const i = out.findIndex((wp) => wp.id === exit.id);
+    if (i > 0) out = out.slice(i);
+  }
+  if (entry) {
+    const i = out.findIndex((wp) => wp.id === entry.id);
+    if (i >= 0 && i < out.length - 1) out = out.slice(0, i + 1);
+  }
+  return out;
+}
+
 /** Appends without repeating the fix where two legs meet. */
 function join(target: FMSWaypoint[], next: FMSWaypoint[]): void {
   for (const wp of next) {
@@ -99,7 +132,11 @@ function join(target: FMSWaypoint[], next: FMSWaypoint[]): void {
 export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlightPlan {
   const departure = base.waypoints.find((wp) => wp.via === 'ADEP');
   const arrival = base.waypoints.find((wp) => wp.via === 'ADES');
-  const enroute = base.waypoints.filter((wp) => wp.via !== 'ADEP' && wp.via !== 'ADES');
+  const enroute = trimEnroute(
+    base.waypoints.filter((wp) => wp.via !== 'ADEP' && wp.via !== 'ADES'),
+    procedureExit(parts.sid),
+    procedureEntry(parts.star ?? parts.approach)
+  );
 
   const waypoints: FMSWaypoint[] = [];
   if (departure) waypoints.push(departure);

@@ -10,6 +10,8 @@ import {
   type ProcedureParts,
   composePlan,
   enrichedFromPlan,
+  procedureEntry,
+  procedureExit,
 } from '@/lib/flightplan/builder/procedures';
 import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
 import type {
@@ -88,6 +90,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         set((state) => {
           const endpoint = state[end];
           if (!endpoint) return {};
+          // Same runway, geometry arriving later: keep the procedures.
+          if (runway === endpoint.runway) return { [end]: { ...endpoint, runwayEnd } };
           // A runway change invalidates procedures published for the old one.
           const cleared =
             end === 'departure' ? { sid: undefined } : { star: undefined, approach: undefined };
@@ -146,15 +150,19 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       },
 
       autoRoute: async () => {
-        const { departure, arrival, routeText, cruiseAltitudeFt } = get();
+        const { departure, arrival, routeText, cruiseAltitudeFt, procedures } = get();
         if (!departure || !arrival) return false;
         set({ autoRouting: true });
         try {
+          const exit = procedureExit(procedures.sid);
+          const entry = procedureEntry(procedures.star ?? procedures.approach);
           const result = await window.flightPlanAPI.autoRoute({
             departure,
             arrival,
             routeText,
             cruiseAltitudeFt,
+            routeFrom: exit && { latitude: exit.latitude, longitude: exit.longitude },
+            routeTo: entry && { latitude: entry.latitude, longitude: entry.longitude },
           });
           if (!result) return false;
           set({ routeText: result.routeText, savedPath: null });

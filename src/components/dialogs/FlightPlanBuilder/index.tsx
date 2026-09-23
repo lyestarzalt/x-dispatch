@@ -38,6 +38,7 @@ import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useAirportProcedures } from '@/queries';
+import { useAirportRunways } from '@/queries/useAirportRunways';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RangeRingCategory } from '@/types/layers';
@@ -201,6 +202,20 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     cruiseAltitudeFt,
     resolve,
   ]);
+
+  // A stored draft knows its runway names but not their geometry; fill it in once apt.dat is read.
+  const { data: depRunways } = useAirportRunways(isOpen ? (departure?.icao ?? null) : null);
+  const { data: arrRunways } = useAirportRunways(isOpen ? (arrival?.icao ?? null) : null);
+  useEffect(() => {
+    if (departure?.runway && !departure.runwayEnd) {
+      const end = depRunways?.find((e) => e.name === departure.runway);
+      if (end) setRunway('departure', departure.runway, end);
+    }
+    if (arrival?.runway && !arrival.runwayEnd) {
+      const end = arrRunways?.find((e) => e.name === arrival.runway);
+      if (end) setRunway('arrival', arrival.runway, end);
+    }
+  }, [departure, arrival, depRunways, arrRunways, setRunway]);
 
   // Turn the persisted procedure names back into resolved procedures whenever data or choices change.
   useEffect(() => {

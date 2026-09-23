@@ -1,5 +1,6 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer, webFrame, webUtils } from 'electron';
 import type {
+  AutoRouteRequest,
   AutoRouteResult,
   PlanDraft,
   RouteResolveResult,
@@ -266,7 +267,7 @@ contextBridge.exposeInMainWorld('flightPlanAPI', {
   enrich: (fmsData: import('./types/fms').FMSFlightPlan) =>
     ipcRenderer.invoke('flightplan:enrich', fmsData),
   resolveRoute: (draft: PlanDraft) => ipcRenderer.invoke('flightplan:resolveRoute', draft),
-  autoRoute: (draft: PlanDraft) => ipcRenderer.invoke('flightplan:autoRoute', draft),
+  autoRoute: (request: AutoRouteRequest) => ipcRenderer.invoke('flightplan:autoRoute', request),
   saveFms: (args: { stem: string; content: string }) =>
     ipcRenderer.invoke('flightplan:saveFms', args),
 });
@@ -610,7 +611,7 @@ declare global {
         fmsData: import('./types/fms').FMSFlightPlan
       ) => Promise<import('./types/fms').EnrichedFlightPlan | null>;
       resolveRoute: (draft: PlanDraft) => Promise<RouteResolveResult | null>;
-      autoRoute: (draft: PlanDraft) => Promise<AutoRouteResult | null>;
+      autoRoute: (request: AutoRouteRequest) => Promise<AutoRouteResult | null>;
       saveFms: (args: { stem: string; content: string }) => Promise<SaveFmsResult>;
     };
     simbriefAPI: {

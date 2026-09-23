@@ -62,6 +62,15 @@ export interface RouteResolveResult extends RouteResolution {
   enriched: EnrichedFlightPlan;
 }
 
+/**
+ * The draft plus where the enroute part really starts and ends: the SID exit
+ * and the STAR or approach entry once procedures are chosen, else the airports.
+ */
+export interface AutoRouteRequest extends PlanDraft {
+  routeFrom?: { latitude: number; longitude: number };
+  routeTo?: { latitude: number; longitude: number };
+}
+
 export interface AutoRouteResult {
   /** Route in filing form, ready for the route field: "ARNEM UL620 OSN T180 KEKIX". */
   routeText: string;

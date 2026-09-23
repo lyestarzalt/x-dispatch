@@ -3,14 +3,10 @@
  * Renders the flight plan with proper aviation symbols.
  */
 import * as maplibregl from 'maplibre-gl';
-import { smoothRoutePath } from '@/lib/flightplan/builder/geometry';
 import { routeLinePoints } from '@/lib/flightplan/builder/routeLine';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
 import { safeAddGeoJSONSource } from '../types';
-
-/** Fly-by turn radius for the drawn line; a jet at cruise turns in roughly this. */
-const TURN_RADIUS_NM = 3;
 
 // Layer IDs
 const SOURCE_ID = 'flightplan-route-source';
@@ -198,10 +194,10 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: smoothRoutePath(
-          routeLinePoints(waypoints, fmsData.runwayEnds),
-          TURN_RADIUS_NM
-        ).map((p) => [p.longitude, p.latitude]),
+        coordinates: routeLinePoints(waypoints, fmsData.runwayEnds).map((p) => [
+          p.longitude,
+          p.latitude,
+        ]),
       },
       properties: { stage: '' },
     });

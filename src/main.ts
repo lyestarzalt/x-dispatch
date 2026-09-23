@@ -1259,14 +1259,14 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('flightplan:autoRoute', async (_, draft: unknown) => {
+  ipcMain.handle('flightplan:autoRoute', async (_, request: unknown) => {
     try {
       const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
-      const { departure, arrival, cruiseAltitudeFt } =
-        draft as import('./lib/flightplan/builder/types').PlanDraft;
+      const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo } =
+        request as import('./lib/flightplan/builder/types').AutoRouteRequest;
       if (!departure || !arrival) return null;
       const startedAt = Date.now();
-      const result = autoRoute(departure, arrival, cruiseAltitudeFt);
+      const result = autoRoute(routeFrom ?? departure, routeTo ?? arrival, cruiseAltitudeFt);
       logger.main.info(
         `Auto route ${departure.icao}-${arrival.icao}: ${result ? 'found' : 'none'} in ${Date.now() - startedAt}ms`
       );

@@ -82,6 +82,29 @@ describe('composePlan', () => {
   it('leaves the plan untouched with no procedures', () => {
     expect(composePlan(base, {}).waypoints).toEqual(base.waypoints);
   });
+
+  it('drops enroute fixes that would double back over the SID or STAR', () => {
+    const doubled: FMSFlightPlan = {
+      ...base,
+      waypoints: [
+        base.waypoints[0]!,
+        { type: 3, id: 'SPL', via: 'DRCT', altitude: 0, latitude: 52.33, longitude: 4.75 },
+        base.waypoints[1]!,
+        base.waypoints[2]!,
+        { type: 3, id: 'FFM', via: 'DRCT', altitude: 0, latitude: 50.05, longitude: 8.64 },
+        base.waypoints[3]!,
+      ],
+    };
+    const plan = composePlan(doubled, { sid, star });
+    expect(plan.waypoints.map((w) => w.id)).toEqual([
+      'EHAM',
+      'EH020',
+      'ARNEM',
+      'UNOKO',
+      'ROLIS',
+      'EDDF',
+    ]);
+  });
 });
 
 describe('procedure selection', () => {
