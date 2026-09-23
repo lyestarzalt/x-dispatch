@@ -57,10 +57,39 @@ function fmsType(wp: ResolvedProcedureWaypoint): FMSWaypointType {
 }
 
 /** Constraint altitudes under 1000 are flight levels in CIFP. */
+function toFeet(alt: number): number {
+  return alt < 1000 ? alt * 100 : alt;
+}
+
 function constraintFeet(wp: ResolvedProcedureWaypoint): number {
   const alt = wp.altitude?.altitude1;
-  if (alt === null || alt === undefined) return 0;
-  return alt < 1000 ? alt * 100 : alt;
+  return alt === null || alt === undefined ? 0 : toFeet(alt);
+}
+
+function altitudeText(alt: number): string {
+  return alt < 1000 ? `FL${alt}` : String(alt);
+}
+
+/** Chart shorthand: A is at or above, B at or below, a bare number is at. */
+export function constraintLabel(wp: ResolvedProcedureWaypoint): string {
+  const c = wp.altitude;
+  if (!c || c.altitude1 === null) return '';
+  const a1 = altitudeText(c.altitude1);
+  switch (c.descriptor) {
+    case '+':
+      return `${a1}A`;
+    case '-':
+      return `${a1}B`;
+    case 'B':
+      return c.altitude2 === null ? a1 : `${altitudeText(c.altitude2)}A/${a1}B`;
+    default:
+      return a1;
+  }
+}
+
+/** Published direction of the first turn after take-off, if the SID says. */
+export function sidFirstTurn(sid: ResolvedProcedure | undefined): 'L' | 'R' | undefined {
+  return sid?.waypoints.find((wp) => wp.turnDirection !== null)?.turnDirection ?? undefined;
 }
 
 function procedureWaypoints(procedure: ResolvedProcedure): FMSWaypoint[] {
@@ -77,6 +106,7 @@ function procedureWaypoints(procedure: ResolvedProcedure): FMSWaypoint[] {
       altitude: constraintFeet(wp),
       latitude: wp.latitude,
       longitude: wp.longitude,
+      constraintLabel: constraintLabel(wp),
     });
   }
   return out;
@@ -121,7 +151,11 @@ function join(target: FMSWaypoint[], next: FMSWaypoint[]): void {
     const last = target[target.length - 1];
     if (last && last.id === wp.id && last.via !== 'ADEP') {
       // The procedure's own copy carries the constraint and airway name; keep it.
-      target[target.length - 1] = { ...wp, altitude: wp.altitude || last.altitude };
+      target[target.length - 1] = {
+        ...wp,
+        altitude: wp.altitude || last.altitude,
+        constraintLabel: wp.constraintLabel ?? last.constraintLabel,
+      };
       continue;
     }
     target.push(wp);
@@ -167,12 +201,19 @@ export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlig
 /** Every waypoint here came from the database, so the enriched copy for the map is all found. */
 export function enrichedFromPlan(
   plan: FMSFlightPlan,
-  runwayEnds?: EnrichedFlightPlan['runwayEnds']
+  runwayEnds?: EnrichedFlightPlan['runwayEnds'],
+  firstTurn?: EnrichedFlightPlan['firstTurn']
 ): EnrichedFlightPlan {
   return {
     ...plan,
     runwayEnds,
-    waypoints: plan.waypoints.map((wp) => ({ ...wp, found: true })),
+    firstTurn,
+    // Enroute fixes carry the cruise level for the file; the map shows only published constraints.
+    waypoints: plan.waypoints.map((wp) => ({
+      ...wp,
+      constraintLabel: wp.constraintLabel ?? '',
+      found: true,
+    })),
     resolution: {
       total: plan.waypoints.length,
       found: plan.waypoints.length,

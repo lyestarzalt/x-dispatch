@@ -50,7 +50,8 @@ export function turnOntoFix(
   from: LatLon,
   trackDeg: number,
   fix: LatLon,
-  radiusNm: number
+  radiusNm: number,
+  turn?: 'L' | 'R'
 ): LatLon[] {
   const kx = NM_PER_DEG_LAT * Math.cos((from.latitude * Math.PI) / 180);
   const f = {
@@ -68,7 +69,8 @@ export function turnOntoFix(
   } | null = null;
   let bestLength = Infinity;
 
-  for (const side of [1, -1] as const) {
+  const sides: readonly (1 | -1)[] = turn === 'R' ? [1] : turn === 'L' ? [-1] : [1, -1];
+  for (const side of sides) {
     // Centre sits one radius off the track: to the right for a right turn.
     const center = { x: side * Math.cos(h) * r, y: -side * Math.sin(h) * r };
     const d = Math.hypot(f.x - center.x, f.y - center.y);
@@ -110,7 +112,11 @@ export function turnOntoFix(
   return out;
 }
 
-export function routeLinePoints(waypoints: RoutePoint[], ends?: RunwayEnds): LatLon[] {
+export function routeLinePoints(
+  waypoints: RoutePoint[],
+  ends?: RunwayEnds,
+  firstTurn?: 'L' | 'R'
+): LatLon[] {
   let takeoff: LatLon[] | null = null;
   const core: LatLon[] = [];
   for (const wp of waypoints) {
@@ -127,7 +133,13 @@ export function routeLinePoints(waypoints: RoutePoint[], ends?: RunwayEnds): Lat
   if (core.length === 0) return takeoff;
 
   const climbEnd = takeoff[takeoff.length - 1]!;
-  const arc = turnOntoFix(climbEnd, ends.departure.headingDeg, core[0]!, TERMINAL_TURN_RADIUS_NM);
+  const arc = turnOntoFix(
+    climbEnd,
+    ends.departure.headingDeg,
+    core[0]!,
+    TERMINAL_TURN_RADIUS_NM,
+    firstTurn
+  );
   const head = [...takeoff, ...arc];
   const tail = smoothRoutePath([head[head.length - 1]!, ...core], ENROUTE_TURN_RADIUS_NM);
   return [...head, ...tail.slice(1)];

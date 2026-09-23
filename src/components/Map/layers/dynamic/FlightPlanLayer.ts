@@ -31,11 +31,11 @@ export const FLIGHTPLAN_LAYER_IDS = [
 // Professional aviation chart colors
 const COLORS = {
   routeLine: '#8B5CF6', // Deep violet (like Jeppesen charts)
-  vor: '#2563EB', // Blue
-  ndb: '#7C3AED', // Purple
-  fix: '#374151', // Dark gray
-  airport: '#1F2937', // Charcoal
-  latlon: '#6B7280', // Gray
+  vor: '#60A5FA', // Blue
+  ndb: '#C084FC', // Purple
+  fix: '#E5E7EB', // Light gray, hollow on the dark basemap
+  airport: '#F3F4F6', // Near white
+  latlon: '#9CA3AF', // Gray
   labelText: '#FFFFFF', // White labels
   labelHalo: '#1F2937', // Dark halo
   altitudeText: '#94A3B8', // Muted slate
@@ -50,45 +50,59 @@ const COLORS = {
 // SVG Symbols
 // ============================================================================
 
+// Chart-style symbols: hollow triangle waypoint, hexagon VOR, dotted circle NDB,
+// all drawn at 2x for crisp edges on high-density displays and scaled down by the layer.
+const SYMBOL_PX = 40;
+const HALO = `stroke="${COLORS.labelHalo}" stroke-width="5" stroke-linejoin="round"`;
+
+function symbolSvg(body: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${SYMBOL_PX}" height="${SYMBOL_PX}" viewBox="0 0 40 40">${body}</svg>`;
+}
+
 function createFixSymbol(): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-    <polygon points="12,2 22,20 2,20" fill="${COLORS.fix}" stroke="#000" stroke-width="1"/>
-  </svg>`;
+  const tri = 'points="20,8 31,30 9,30"';
+  return symbolSvg(
+    `<polygon ${tri} fill="none" ${HALO}/>
+     <polygon ${tri} fill="none" stroke="${COLORS.fix}" stroke-width="2.5" stroke-linejoin="round"/>`
+  );
 }
 
 function createAirportSymbol(): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
-    <circle cx="14" cy="14" r="10" fill="none" stroke="${COLORS.airport}" stroke-width="2"/>
-    <circle cx="14" cy="14" r="4" fill="${COLORS.airport}"/>
-    <line x1="14" y1="4" x2="14" y2="24" stroke="${COLORS.airport}" stroke-width="2"/>
-    <line x1="4" y1="14" x2="24" y2="14" stroke="${COLORS.airport}" stroke-width="2"/>
-  </svg>`;
+  return symbolSvg(
+    `<circle cx="20" cy="20" r="12" fill="none" ${HALO}/>
+     <circle cx="20" cy="20" r="12" fill="none" stroke="${COLORS.airport}" stroke-width="2.5"/>
+     <rect x="9" y="17.5" width="22" height="5" rx="1" transform="rotate(-45 20 20)" fill="${COLORS.airport}"/>`
+  );
 }
 
 function createVORSymbol(): string {
-  // Hexagon
   const points = [];
   for (let i = 0; i < 6; i++) {
     const angle = ((i * 60 - 90) * Math.PI) / 180;
-    points.push(`${16 + 12 * Math.cos(angle)},${16 + 12 * Math.sin(angle)}`);
+    points.push(`${20 + 12 * Math.cos(angle)},${20 + 12 * Math.sin(angle)}`);
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-    <polygon points="${points.join(' ')}" fill="none" stroke="${COLORS.vor}" stroke-width="2"/>
-    <circle cx="16" cy="16" r="3" fill="${COLORS.vor}"/>
-  </svg>`;
+  const hex = `points="${points.join(' ')}"`;
+  return symbolSvg(
+    `<polygon ${hex} fill="none" ${HALO}/>
+     <polygon ${hex} fill="none" stroke="${COLORS.vor}" stroke-width="2.5" stroke-linejoin="round"/>
+     <circle cx="20" cy="20" r="2.5" fill="${COLORS.vor}"/>`
+  );
 }
 
 function createNDBSymbol(): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
-    <circle cx="14" cy="14" r="10" fill="none" stroke="${COLORS.ndb}" stroke-width="2" stroke-dasharray="3,2"/>
-    <circle cx="14" cy="14" r="4" fill="${COLORS.ndb}"/>
-  </svg>`;
+  return symbolSvg(
+    `<circle cx="20" cy="20" r="11" fill="none" ${HALO}/>
+     <circle cx="20" cy="20" r="11" fill="none" stroke="${COLORS.ndb}" stroke-width="2.5" stroke-dasharray="2.5,3"/>
+     <circle cx="20" cy="20" r="5" fill="none" stroke="${COLORS.ndb}" stroke-width="2"/>
+     <circle cx="20" cy="20" r="1.8" fill="${COLORS.ndb}"/>`
+  );
 }
 
 function createLatLonSymbol(): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-    <circle cx="10" cy="10" r="6" fill="${COLORS.latlon}" stroke="#000" stroke-width="1"/>
-  </svg>`;
+  return symbolSvg(
+    `<circle cx="20" cy="20" r="6" fill="none" ${HALO}/>
+     <circle cx="20" cy="20" r="6" fill="none" stroke="${COLORS.latlon}" stroke-width="2.5"/>`
+  );
 }
 
 function createBadgeSymbol(text: string, color: string): string {
@@ -132,12 +146,12 @@ function getSymbolId(wp: EnrichedWaypoint): string {
 }
 
 // Load a single image
-function loadImage(map: maplibregl.Map, id: string, svg: string): void {
+function loadImage(map: maplibregl.Map, id: string, svg: string, pixelRatio = 1): void {
   if (map.hasImage(id)) return;
   const img = new Image();
   img.onload = () => {
     if (!map.hasImage(id)) {
-      map.addImage(id, img, { sdf: false });
+      map.addImage(id, img, { sdf: false, pixelRatio });
     }
   };
   img.src = svgToDataUrl(svg);
@@ -160,11 +174,11 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   }
 
   // Load images (async, will appear when ready)
-  loadImage(map, 'fp-fix', createFixSymbol());
-  loadImage(map, 'fp-airport', createAirportSymbol());
-  loadImage(map, 'fp-vor', createVORSymbol());
-  loadImage(map, 'fp-ndb', createNDBSymbol());
-  loadImage(map, 'fp-latlon', createLatLonSymbol());
+  loadImage(map, 'fp-fix', createFixSymbol(), 2);
+  loadImage(map, 'fp-airport', createAirportSymbol(), 2);
+  loadImage(map, 'fp-vor', createVORSymbol(), 2);
+  loadImage(map, 'fp-ndb', createNDBSymbol(), 2);
+  loadImage(map, 'fp-latlon', createLatLonSymbol(), 2);
   loadImage(map, 'fp-tc', createBadgeSymbol('T/C', COLORS.clb));
   loadImage(map, 'fp-td', createBadgeSymbol('T/D', COLORS.dsc));
 
@@ -194,7 +208,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: routeLinePoints(waypoints, fmsData.runwayEnds).map((p) => [
+        coordinates: routeLinePoints(waypoints, fmsData.runwayEnds, fmsData.firstTurn).map((p) => [
           p.longitude,
           p.latitude,
         ]),
@@ -218,7 +232,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     properties: {
       id: wp.id,
       index,
-      altitudeLabel: formatAltitude(wp.altitude),
+      altitudeLabel: wp.constraintLabel ?? formatAltitude(wp.altitude),
       label: buildLabel(wp),
       symbolType: getSymbolId(wp),
     },

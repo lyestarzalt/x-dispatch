@@ -21,6 +21,15 @@ describe('turnOntoFix', () => {
     expect(Math.min(diff, 360 - diff)).toBeLessThan(8);
   });
 
+  it('honours a published turn direction even when the other way is shorter', () => {
+    const from = { latitude: 52, longitude: 4 };
+    // Fix off to the right; a left turn has to go the long way round.
+    const fix = { latitude: 51.8, longitude: 4.4 };
+    const right = turnOntoFix(from, 90, fix, 2, 'R');
+    const left = turnOntoFix(from, 90, fix, 2, 'L');
+    expect(left.length).toBeGreaterThan(right.length + 5);
+  });
+
   it('barely turns for a fix nearly straight ahead', () => {
     const from = { latitude: 52, longitude: 4 };
     const fix = { latitude: 52.02, longitude: 4.5 };

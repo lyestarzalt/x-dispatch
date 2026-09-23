@@ -73,6 +73,8 @@ describe('composePlan', () => {
     ]);
     expect(plan.waypoints[1]?.via).toBe('ARNEM2S');
     expect(plan.waypoints[1]?.altitude).toBe(6000);
+    expect(plan.waypoints[1]?.constraintLabel).toBe('FL60A');
+    expect(plan.waypoints[2]?.constraintLabel).toBe('');
     expect(plan.waypoints[3]?.via).toBe('UNOKO1A');
     expect(plan.departure.sid).toBe('ARNEM2S');
     expect(plan.arrival.star).toBe('UNOKO1A');

@@ -12,6 +12,7 @@ import {
   enrichedFromPlan,
   procedureEntry,
   procedureExit,
+  sidFirstTurn,
 } from '@/lib/flightplan/builder/procedures';
 import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
 import type {
@@ -180,7 +181,10 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         if (!result) return null;
         const plan = composePlan(result.plan, procedures);
         const runwayEnds = { departure: departure?.runwayEnd, arrival: arrival?.runwayEnd };
-        return { plan, enriched: enrichedFromPlan(plan, runwayEnds) };
+        return {
+          plan,
+          enriched: enrichedFromPlan(plan, runwayEnds, sidFirstTurn(procedures.sid)),
+        };
       },
 
       showOnMap: () => {

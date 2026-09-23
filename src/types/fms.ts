@@ -12,6 +12,8 @@ export interface FMSWaypoint {
   altitude: number;
   latitude: number;
   longitude: number;
+  /** Display only, never written to the file: the published constraint, "6000A", "FL100", "3000A/5000B". */
+  constraintLabel?: string;
 }
 
 /** One end of a land runway: its threshold, true heading along the runway and the paved length. */
@@ -114,6 +116,8 @@ export interface EnrichedFlightPlan {
 
   /** Chosen runway ends so the drawn line leaves and joins the actual runway, not the airport datum. */
   runwayEnds?: { departure?: RunwayEnd; arrival?: RunwayEnd };
+  /** Published direction of the first turn after take-off, from the SID. */
+  firstTurn?: 'L' | 'R';
 
   // Resolution summary
   resolution: {
