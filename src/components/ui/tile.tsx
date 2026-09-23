@@ -34,10 +34,10 @@ const Tile = React.forwardRef<HTMLDivElement, TileProps>(
       <div
         ref={ref}
         className={cn(
-          'group relative cursor-pointer rounded-lg border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          'group focus-visible:ring-ring focus-visible:ring-offset-background relative cursor-pointer rounded-lg border transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
           selected
             ? 'border-primary bg-primary/10 text-foreground'
-            : 'border-transparent bg-secondary text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground',
+            : 'bg-secondary text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground border-transparent',
           disabled && 'pointer-events-none cursor-not-allowed opacity-40',
           className
         )}
@@ -49,7 +49,7 @@ const Tile = React.forwardRef<HTMLDivElement, TileProps>(
             type="button"
             onClick={handleSettingsClick}
             className={cn(
-              'absolute bottom-2 right-2 rounded p-1 opacity-0 transition-opacity hover:bg-muted/50 group-hover:opacity-70',
+              'hover:bg-muted/50 absolute right-2 bottom-2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-70',
               selected && 'opacity-70'
             )}
             aria-label="Settings"
@@ -75,7 +75,7 @@ const TileImage = React.forwardRef<HTMLImageElement, TileImageProps>(
       return (
         <div
           className={cn(
-            'flex items-center justify-center bg-muted text-muted-foreground',
+            'bg-muted text-muted-foreground flex items-center justify-center',
             className
           )}
           {...props}
@@ -115,7 +115,7 @@ TileTitle.displayName = 'TileTitle';
 
 const TileDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('truncate text-xs text-muted-foreground', className)} {...props} />
+    <div ref={ref} className={cn('text-muted-foreground truncate text-xs', className)} {...props} />
   )
 );
 TileDescription.displayName = 'TileDescription';

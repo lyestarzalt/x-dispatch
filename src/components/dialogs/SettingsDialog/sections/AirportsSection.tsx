@@ -83,8 +83,8 @@ export default function AirportsSection({ className }: SettingsSectionProps) {
                     onClick={() => requestSelectAirport(row.icao)}
                     className="flex min-w-0 flex-1 items-baseline gap-3 text-left hover:opacity-80"
                   >
-                    <span className="font-mono text-sm font-bold text-info">{row.icao}</span>
-                    <span className="min-w-0 truncate text-sm text-muted-foreground">
+                    <span className="text-info font-mono text-sm font-bold">{row.icao}</span>
+                    <span className="text-muted-foreground min-w-0 truncate text-sm">
                       {row.name ?? t('settings.airports.favorites.notInAirac')}
                     </span>
                   </button>
@@ -92,7 +92,7 @@ export default function AirportsSection({ className }: SettingsSectionProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground/60 hover:text-foreground"
+                      className="text-muted-foreground/60 hover:text-foreground h-8 w-8"
                       onClick={() => setHomeAirport(row.isHome ? null : row.icao)}
                       tooltip={
                         row.isHome
@@ -100,12 +100,12 @@ export default function AirportsSection({ className }: SettingsSectionProps) {
                           : t('settings.airports.actions.setHome')
                       }
                     >
-                      <Home className={cn('h-4 w-4', row.isHome && 'fill-current text-primary')} />
+                      <Home className={cn('h-4 w-4', row.isHome && 'text-primary fill-current')} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive"
+                      className="text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive h-8 w-8"
                       onClick={() => {
                         // For a home-only row (home set but not in favorites), the trash
                         // button clears the home flag instead of removing a non-existent

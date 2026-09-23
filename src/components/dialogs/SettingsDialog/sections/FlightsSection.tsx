@@ -49,7 +49,7 @@ export function FlightsSection() {
           disabled={!flights.landingReport}
           onCheckedChange={(checked) => updateFlights({ landingFlyTo: checked })}
         />
-        <p className="px-3 pt-1 text-xs text-muted-foreground">{t('settings.flights.credit')}</p>
+        <p className="text-muted-foreground px-3 pt-1 text-xs">{t('settings.flights.credit')}</p>
       </SettingsSectionBlock>
 
       <SettingsSectionBlock
@@ -59,9 +59,9 @@ export function FlightsSection() {
         <Button
           variant="ghost"
           onClick={() => void window.flightsAPI.openFolder()}
-          className="h-auto w-full justify-start gap-2 px-3 py-2 text-sm hover:bg-secondary"
+          className="hover:bg-secondary h-auto w-full justify-start gap-2 px-3 py-2 text-sm"
         >
-          <FolderOpen className="h-4 w-4 text-muted-foreground" />
+          <FolderOpen className="text-muted-foreground h-4 w-4" />
           {t('settings.flights.openFolder')}
         </Button>
       </SettingsSectionBlock>

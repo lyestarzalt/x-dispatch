@@ -89,7 +89,7 @@ export function LandingStats({ report, className, columns = 3 }: LandingStatsPro
       {cells.map((cell) => (
         <div key={cell.label} className="min-w-0">
           <dt className="xp-label truncate">{cell.label}</dt>
-          <dd className="truncate font-mono text-sm text-foreground">{cell.value}</dd>
+          <dd className="text-foreground truncate font-mono text-sm">{cell.value}</dd>
         </div>
       ))}
     </dl>

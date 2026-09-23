@@ -111,7 +111,7 @@ function WeightDonut({
       </ChartContainer>
 
       {isOverweight && (
-        <div className="flex items-center gap-1.5 rounded-md bg-destructive/10 px-2.5 py-1 text-sm font-medium text-destructive">
+        <div className="bg-destructive/10 text-destructive flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium">
           <AlertTriangle className="h-3.5 w-3.5" />
           {t('weightBalance.over', {
             amount: formatWeight(totalWeight - maxWeight, weightUnit),
@@ -139,14 +139,14 @@ function WeightDonut({
           value={payloadWeight}
           unit={weightUnit}
         />
-        <div className="border-t border-border pt-1.5">
+        <div className="border-border border-t pt-1.5">
           <div className="flex items-center justify-between font-medium">
             <span>{t('weightBalance.total')}</span>
             <span className={cn('font-mono', isOverweight && 'text-destructive')}>
               {formatWeight(totalWeight, weightUnit)}
             </span>
           </div>
-          <div className="flex items-center justify-between text-muted-foreground">
+          <div className="text-muted-foreground flex items-center justify-between">
             <span>{t('weightBalance.max')}</span>
             <span className="font-mono">{formatWeight(maxWeight, weightUnit)}</span>
           </div>
@@ -219,7 +219,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed left-[50%] top-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+          className="border-border bg-background fixed top-[50%] left-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border shadow-xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
@@ -227,7 +227,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
           </VisuallyHidden.Root>
 
           {/* Header */}
-          <div className="flex h-11 items-center justify-between border-b border-border bg-card px-4">
+          <div className="border-border bg-card flex h-11 items-center justify-between border-b px-4">
             <span className="text-sm font-medium">{t('weightBalance.title')}</span>
             <div className="flex items-center gap-2">
               <ToggleGroup
@@ -240,7 +240,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                     });
                 }}
                 size="sm"
-                className="gap-0 rounded-md border border-border"
+                className="border-border gap-0 rounded-md border"
               >
                 <ToggleGroupItem value="kg" className="h-7 rounded-r-none px-2.5 text-xs">
                   {t('units.kg')}
@@ -259,15 +259,15 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
           <div className="flex min-h-0 gap-0">
             {/* Left: Sliders */}
             <div
-              className="min-w-0 flex-1 space-y-5 overflow-y-auto border-r border-border p-5"
+              className="border-border min-w-0 flex-1 space-y-5 overflow-y-auto border-r p-5"
               style={{ maxHeight: '65vh' }}
             >
               {/* Payload Section */}
               {payloadStations.length > 0 && (
                 <section>
                   <div className="mb-3 flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-success" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <Users className="text-success h-3.5 w-3.5" />
+                    <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                       {t('weightBalance.payload')}
                     </span>
                   </div>
@@ -291,19 +291,19 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
               {/* Fuel Section */}
               <section>
                 <div className="mb-3 flex items-center gap-1.5">
-                  <Fuel className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Fuel className="text-primary h-3.5 w-3.5" />
+                  <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                     {t('weightBalance.fuel')}
                   </span>
                 </div>
 
                 {/* All tanks master control */}
-                <div className="mb-3 rounded-md bg-secondary/60 p-2.5">
+                <div className="bg-secondary/60 mb-3 rounded-md p-2.5">
                   <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="font-medium text-foreground">
+                    <span className="text-foreground font-medium">
                       {t('weightBalance.allTanks')}
                     </span>
-                    <span className="font-mono text-foreground">
+                    <span className="text-foreground font-mono">
                       {t('weightBalance.overallFuelValue', {
                         pct: overallFuelPct,
                         weight: formatWeight(totalFuelLbs, weightUnit),
@@ -364,7 +364,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end border-t border-border bg-card px-4 py-2.5">
+          <div className="border-border bg-card flex justify-end border-t px-4 py-2.5">
             <Button onClick={onClose} size="sm">
               {t('weightBalance.done')}
             </Button>
@@ -400,7 +400,7 @@ function SliderRow({
         <span className="text-muted-foreground">{label}</span>
         <span className="font-mono">
           {formatValue(value)}
-          {formatMax && <span className="ml-1 text-muted-foreground/50">/ {formatMax(max)}</span>}
+          {formatMax && <span className="text-muted-foreground/50 ml-1">/ {formatMax(max)}</span>}
         </span>
       </div>
       <Slider

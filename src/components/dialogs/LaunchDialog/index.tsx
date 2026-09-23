@@ -306,18 +306,18 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-x-8 bottom-8 top-[68px] z-50 flex flex-col rounded-lg border border-border bg-background"
+          className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col rounded-lg border"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
             <DialogTitle>{t('launcher.title')}</DialogTitle>
           </VisuallyHidden.Root>
           {/* Header */}
-          <div className="flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b border-border bg-card px-4">
+          <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">{t('launcher.title')}</span>
               {startPosition && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   {startPosition.airport} · {startPosition.name}
                 </span>
               )}

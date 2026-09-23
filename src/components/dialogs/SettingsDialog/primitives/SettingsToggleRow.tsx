@@ -34,7 +34,7 @@ export function SettingsToggleRow({
         <p id={titleId} className="text-sm font-medium">
           {title}
         </p>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+        {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
       </div>
       <Switch
         aria-labelledby={titleId}

@@ -75,7 +75,7 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         {toolbar}
-        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+        <p className="text-muted-foreground text-sm">{t('common.loading')}</p>
       </div>
     );
   }
@@ -107,8 +107,8 @@ export function LogsSection({ active }: LogsSectionProps) {
       <div className="space-y-6">
         {Header}
         {toolbar}
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
-          <p className="font-mono text-xs text-destructive">{result.message}</p>
+        <div className="border-destructive/30 bg-destructive/5 rounded-lg border p-6">
+          <p className="text-destructive font-mono text-xs">{result.message}</p>
         </div>
       </div>
     );
@@ -123,7 +123,7 @@ export function LogsSection({ active }: LogsSectionProps) {
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         {result.truncated ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {t('settings.logs.truncatedNotice', {
               shownMb: 5,
               totalMb: Math.round(result.fullByteSize / 1_000_000),
@@ -137,7 +137,7 @@ export function LogsSection({ active }: LogsSectionProps) {
 
       <div className="flex flex-col gap-2">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -157,7 +157,7 @@ export function LogsSection({ active }: LogsSectionProps) {
               {t(opt.labelKey)}
             </Button>
           ))}
-          <span className="ml-auto text-xs text-muted-foreground">
+          <span className="text-muted-foreground ml-auto text-xs">
             {t('settings.logs.entryCount', {
               shown: filtered.length,
               total: parsed.entries.length,
@@ -177,7 +177,7 @@ export function LogsSection({ active }: LogsSectionProps) {
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/10 p-3 font-mono text-xs text-muted-foreground">
+            <pre className="border-border bg-muted/10 text-muted-foreground mt-2 max-h-64 overflow-auto rounded-md border p-3 font-mono text-xs break-all whitespace-pre-wrap">
               {parsed.header.join('\n')}
             </pre>
           </CollapsibleContent>
@@ -189,7 +189,7 @@ export function LogsSection({ active }: LogsSectionProps) {
           <SettingsEmptyState message={t('settings.logs.empty.noMatches')} />
         ) : (
           <div className="rounded-lg border">
-            <ul className="divide-y divide-border">
+            <ul className="divide-border divide-y">
               {filtered.map((e) => (
                 <LogRow key={e.lineNumber} entry={e} />
               ))}
@@ -204,14 +204,14 @@ export function LogsSection({ active }: LogsSectionProps) {
 function LogRow({ entry }: { entry: LogEntry }) {
   return (
     <li className="flex items-start gap-3 px-3 py-2">
-      <span className="mt-0.5 shrink-0 font-mono text-xs text-muted-foreground/70">
+      <span className="text-muted-foreground/70 mt-0.5 shrink-0 font-mono text-xs">
         {entry.timestamp}
       </span>
       <Badge className={cn('shrink-0 uppercase', levelChipClass(entry.level))}>{entry.level}</Badge>
       <Badge variant="outline" className="shrink-0 font-mono text-xs">
         {entry.category}
       </Badge>
-      <p className="min-w-0 flex-1 break-words font-mono text-xs text-foreground">
+      <p className="text-foreground min-w-0 flex-1 font-mono text-xs break-words">
         {entry.message}
       </p>
     </li>

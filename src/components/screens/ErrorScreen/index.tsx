@@ -21,11 +21,11 @@ export default function ErrorScreen({
   const { t } = useTranslation();
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-background p-4">
+    <div className="bg-background flex h-full w-full items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-            <AlertCircle className="h-6 w-6 text-destructive" />
+          <div className="bg-destructive/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            <AlertCircle className="text-destructive h-6 w-6" />
           </div>
           <CardTitle className="text-destructive">{title || t('error.title')}</CardTitle>
         </CardHeader>

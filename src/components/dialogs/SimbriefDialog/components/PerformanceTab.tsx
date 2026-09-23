@@ -32,9 +32,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
       {/* V-Speeds Cards */}
       <div className="grid grid-cols-2 gap-4">
         {/* Takeoff Performance */}
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card rounded-lg border p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
               <PlaneTakeoff className="h-3.5 w-3.5" />
               {t('simbriefDialog.header.takeoffWithIcao', { icao: origin.icao_code })}
             </h4>
@@ -74,9 +74,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Flex & Conditions */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <Thermometer className="h-4 w-4 text-warning" />
+                  <Thermometer className="text-warning h-4 w-4" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">
+                    <p className="text-muted-foreground text-[10px] uppercase">
                       {t('simbriefDialog.performance.flexTemp')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -87,9 +87,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Wind className="h-4 w-4 text-primary" />
+                  <Wind className="text-primary h-4 w-4" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">
+                    <p className="text-muted-foreground text-[10px] uppercase">
                       {t('simbriefDialog.performance.wind')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -103,7 +103,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               </div>
 
               {/* Runway Info */}
-              <div className="rounded-md bg-muted/50 p-2">
+              <div className="bg-muted/50 rounded-md p-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     {t('simbriefDialog.performance.flaps')}
@@ -129,16 +129,16 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               </div>
             </div>
           ) : (
-            <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex h-32 items-center justify-center text-sm">
               {t('simbriefDialog.performance.tlrNotAvailable')}
             </div>
           )}
         </div>
 
         {/* Landing Performance */}
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card rounded-lg border p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
               <PlaneLanding className="h-3.5 w-3.5" />
               {t('simbriefDialog.header.landingWithIcao', { icao: destination.icao_code })}
             </h4>
@@ -167,9 +167,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Conditions */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <Gauge className="h-4 w-4 text-violet" />
+                  <Gauge className="text-violet h-4 w-4" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">
+                    <p className="text-muted-foreground text-[10px] uppercase">
                       {t('simbriefDialog.performance.flaps')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -178,9 +178,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Wind className="h-4 w-4 text-primary" />
+                  <Wind className="text-primary h-4 w-4" />
                   <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">
+                    <p className="text-muted-foreground text-[10px] uppercase">
                       {t('simbriefDialog.performance.wind')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -194,7 +194,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               </div>
 
               {/* Landing Distances */}
-              <div className="rounded-md bg-muted/50 p-2">
+              <div className="bg-muted/50 rounded-md p-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     {t('simbriefDialog.performance.ldaDry')}
@@ -236,7 +236,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               </div>
             </div>
           ) : (
-            <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex h-32 items-center justify-center text-sm">
               {t('simbriefDialog.performance.tlrNotAvailable')}
             </div>
           )}
@@ -244,27 +244,27 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
       </div>
 
       {/* Cruise Performance */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bg-card rounded-lg border p-4">
+        <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
           <Gauge className="h-3.5 w-3.5" />
           {t('simbriefDialog.performance.cruise')}
         </h4>
 
         <div className="grid grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] uppercase">
               {t('simbriefDialog.performance.initialFl')}
             </p>
-            <p className="font-mono text-xl font-bold text-primary">{general.initial_altitude}</p>
+            <p className="text-primary font-mono text-xl font-bold">{general.initial_altitude}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] uppercase">
               {t('simbriefDialog.performance.costIndex')}
             </p>
             <p className="font-mono text-xl font-bold">{general.costindex}</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] uppercase">
               {t('simbriefDialog.performance.cruiseMach')}
             </p>
             <p className="font-mono text-xl font-bold">
@@ -272,7 +272,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] uppercase">
               {t('simbriefDialog.performance.cruiseTas')}
             </p>
             <p className="font-mono text-xl font-bold">
@@ -286,7 +286,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
           <>
             <Separator className="my-4" />
             <div>
-              <p className="mb-2 text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground mb-2 text-sm font-medium">
                 {t('simbriefDialog.performance.stepClimbs')}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -307,23 +307,23 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
 
       {/* Transition Altitudes */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('simbriefDialog.performance.transAltOrigin', { icao: origin.icao_code })}
               </p>
               <p className="font-mono text-lg font-bold">
                 {t('simbriefDialog.performance.feet', { value: origin.trans_alt || '—' })}
               </p>
             </div>
-            <PlaneTakeoff className="h-5 w-5 text-muted-foreground" />
+            <PlaneTakeoff className="text-muted-foreground h-5 w-5" />
           </div>
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('simbriefDialog.performance.transLevelDest', { icao: destination.icao_code })}
               </p>
               <p className="font-mono text-lg font-bold">
@@ -332,7 +332,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 })}
               </p>
             </div>
-            <PlaneLanding className="h-5 w-5 text-muted-foreground" />
+            <PlaneLanding className="text-muted-foreground h-5 w-5" />
           </div>
         </div>
       </div>

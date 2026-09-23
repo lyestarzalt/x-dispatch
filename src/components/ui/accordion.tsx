@@ -11,7 +11,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn('border-b border-border', className)}
+    className={cn('border-border border-b', className)}
     {...props}
   />
 ));
@@ -25,13 +25,13 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        'group flex flex-1 items-center gap-2 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-xp-accent-hover',
+        'group text-muted-foreground hover:text-xp-accent-hover flex flex-1 items-center gap-2 py-3 text-xs font-medium tracking-wider uppercase transition-colors',
         className
       )}
       {...props}
     >
-      <Plus className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-xp-accent-hover group-data-[state=open]:hidden" />
-      <Minus className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-xp-accent-hover group-data-[state=open]:block" />
+      <Plus className="text-muted-foreground group-hover:text-xp-accent-hover h-3.5 w-3.5 shrink-0 transition-colors group-data-[state=open]:hidden" />
+      <Minus className="text-muted-foreground group-hover:text-xp-accent-hover hidden h-3.5 w-3.5 shrink-0 transition-colors group-data-[state=open]:block" />
       {children}
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
@@ -44,10 +44,10 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm transition-all"
     {...props}
   >
-    <div className={cn('pb-4 pt-0', className)}>{children}</div>
+    <div className={cn('pt-0 pb-4', className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 
@@ -63,7 +63,7 @@ const TableAccordion = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Root
     ref={ref}
-    className={cn('rounded-lg bg-secondary/50 px-3', className)}
+    className={cn('bg-secondary/50 rounded-lg px-3', className)}
     {...props}
   />
 ));
@@ -75,7 +75,7 @@ const TableAccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn('border-b border-border/50 last:border-b-0', className)}
+    className={cn('border-border/50 border-b last:border-b-0', className)}
     {...props}
   />
 ));
@@ -95,16 +95,16 @@ const TableAccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        'group flex flex-1 items-center gap-2 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-xp-accent-hover',
+        'group text-muted-foreground hover:text-xp-accent-hover flex flex-1 items-center gap-2 py-2.5 text-xs font-medium tracking-wider uppercase transition-colors',
         className
       )}
       {...props}
     >
-      <Plus className="h-3 w-3 shrink-0 text-muted-foreground transition-colors group-hover:text-xp-accent-hover group-data-[state=open]:hidden" />
-      <Minus className="hidden h-3 w-3 shrink-0 text-muted-foreground transition-colors group-hover:text-xp-accent-hover group-data-[state=open]:block" />
+      <Plus className="text-muted-foreground group-hover:text-xp-accent-hover h-3 w-3 shrink-0 transition-colors group-data-[state=open]:hidden" />
+      <Minus className="text-muted-foreground group-hover:text-xp-accent-hover hidden h-3 w-3 shrink-0 transition-colors group-data-[state=open]:block" />
       <span className="flex-1 text-left">{children}</span>
       {count !== undefined && (
-        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
+        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums">
           {count}
         </span>
       )}
@@ -119,10 +119,10 @@ const TableAccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm transition-all"
     {...props}
   >
-    <div className={cn('pb-3 pt-1', className)}>{children}</div>
+    <div className={cn('pt-1 pb-3', className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 TableAccordionContent.displayName = 'TableAccordionContent';

@@ -217,14 +217,14 @@ function PinOptionsPopover({
 
         {/* ── Air start options ── */}
         {isCustomPin && currentMode === 'air' && (
-          <div className="space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-2.5">
+          <div className="border-border/40 bg-muted/20 space-y-2.5 rounded-lg border p-2.5">
             {/* Altitude */}
             <div>
               <div className="flex items-center justify-between">
                 <span className="xp-label">{t('toolbar.pinModes.altitude')}</span>
                 <span className="xp-value">
                   {airAltFt.toLocaleString()}
-                  <span className="ml-0.5 text-xs text-muted-foreground">{t('units.ft')}</span>
+                  <span className="text-muted-foreground ml-0.5 text-xs">{t('units.ft')}</span>
                 </span>
               </div>
               <Slider
@@ -245,7 +245,7 @@ function PinOptionsPopover({
 
         {/* ── Boat start options ── */}
         {isCustomPin && isBoatMode && (
-          <div className="space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-2.5">
+          <div className="border-border/40 bg-muted/20 space-y-2.5 rounded-lg border p-2.5">
             {/* Carrier: deck position OR approach */}
             {currentMode === 'carrier' && (
               <div>
@@ -280,7 +280,7 @@ function PinOptionsPopover({
                   <span className="xp-label">{t('toolbar.pinModes.approach')}</span>
                   <span className="xp-value">
                     {startPosition?.boatApproachNm ?? 1.5}
-                    <span className="ml-0.5 text-xs text-muted-foreground">{t('units.nm')}</span>
+                    <span className="text-muted-foreground ml-0.5 text-xs">{t('units.nm')}</span>
                   </span>
                 </div>
                 <Slider
@@ -297,20 +297,20 @@ function PinOptionsPopover({
         )}
 
         {/* ── Coordinates ── */}
-        <div className="border-t border-border/30 pt-2.5">
+        <div className="border-border/30 border-t pt-2.5">
           {isCustomPin && !editingCoords ? (
             /* Compact read-only display when pin is placed */
             <button
               onClick={() => setEditingCoords(true)}
-              className="flex w-full items-center justify-between rounded px-1 py-1 text-left transition-colors hover:bg-muted/50"
+              className="hover:bg-muted/50 flex w-full items-center justify-between rounded px-1 py-1 text-left transition-colors"
             >
-              <span className="font-mono text-sm text-muted-foreground">
+              <span className="text-muted-foreground font-mono text-sm">
                 {t('toolbar.pinCoords', {
                   lat: startPosition?.latitude.toFixed(4),
                   lon: startPosition?.longitude.toFixed(4),
                 })}
               </span>
-              <Pencil className="h-3 w-3 text-muted-foreground/50" />
+              <Pencil className="text-muted-foreground/50 h-3 w-3" />
             </button>
           ) : (
             /* Editable form — shown when no pin or user clicks edit */
@@ -612,7 +612,7 @@ function Toolbar({
         />
 
         {showResults && filteredAirports.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-border bg-popover">
+          <div className="border-border bg-popover absolute top-full right-0 left-0 z-50 mt-1 overflow-hidden rounded-lg border">
             {filteredAirports.map((airport, index) => (
               <Button
                 key={airport.icao}
@@ -624,7 +624,7 @@ function Toolbar({
                   index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
                 )}
               >
-                <span className="w-16 shrink-0 font-mono font-semibold text-primary">
+                <span className="text-primary w-16 shrink-0 font-mono font-semibold">
                   {airport.icao}
                 </span>
                 <span className="truncate">{airport.name}</span>
@@ -644,7 +644,7 @@ function Toolbar({
       >
         <Package className="h-4 w-4" />
         <span className="text-sm font-medium">{t('toolbar.addons')}</span>
-        <Badge variant="warning" className="px-1.5 py-0.5 text-[10px] uppercase leading-none">
+        <Badge variant="warning" className="px-1.5 py-0.5 text-[10px] leading-none uppercase">
           {t('toolbar.alphaTag')}
         </Badge>
       </Button>
@@ -725,7 +725,7 @@ function Toolbar({
                 >
                   <Layers className="h-4 w-4" />
                   <span className="text-sm font-medium">{t('toolbar.layers')}</span>
-                  {layersActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                  {layersActive && <span className="bg-primary h-2 w-2 rounded-full" />}
                   <ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
@@ -770,7 +770,7 @@ function Toolbar({
               </DropdownMenuCheckboxItem>
 
               {/* Runway surface sub-filter */}
-              <DropdownMenuLabel className="pl-6 text-xs uppercase tracking-wider text-muted-foreground/50">
+              <DropdownMenuLabel className="text-muted-foreground/50 pl-6 text-xs tracking-wider uppercase">
                 {t('airportFilters.runwaySurface')}
               </DropdownMenuLabel>
               {(
@@ -791,7 +791,7 @@ function Toolbar({
               ))}
 
               {/* Country sub-filter */}
-              <DropdownMenuLabel className="pl-6 text-xs uppercase tracking-wider text-muted-foreground/50">
+              <DropdownMenuLabel className="text-muted-foreground/50 pl-6 text-xs tracking-wider uppercase">
                 {t('airportFilters.country')}
               </DropdownMenuLabel>
               <div className="px-1 pb-1">
@@ -861,7 +861,7 @@ function Toolbar({
                 <Button
                   variant="ghost"
                   onClick={resetAirportFilters}
-                  className="h-auto w-full rounded-none px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground h-auto w-full rounded-none px-2 py-1.5 text-sm"
                 >
                   {t('airportFilters.reset')}
                 </Button>
@@ -880,7 +880,7 @@ function Toolbar({
                   onCheckedChange={() => onNavToggle(layer.key)}
                 >
                   <span className="flex-1">{t(layer.labelKey)}</span>
-                  <span className="ml-2 font-mono text-xs text-muted-foreground">
+                  <span className="text-muted-foreground ml-2 font-mono text-xs">
                     {layer.count}
                   </span>
                 </DropdownMenuCheckboxItem>
@@ -1011,7 +1011,7 @@ function Toolbar({
                         style={{ backgroundColor: RANGE_RING_COLORS[cat] }}
                       />
                       <span className="flex-1">{RANGE_RING_LABELS[cat]}</span>
-                      <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      <span className="text-muted-foreground ml-2 font-mono text-xs">
                         {t('toolbar.rangeRingsKts', { speed: RANGE_RING_SPEEDS[cat] })}
                       </span>
                     </DropdownMenuCheckboxItem>
@@ -1109,12 +1109,12 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
   if (frameCount === 0) return null;
 
   return (
-    <div className="flex h-9 items-center gap-0.5 rounded-md border border-primary/50 bg-primary/10 px-1.5 duration-200 animate-in fade-in slide-in-from-left-2">
+    <div className="border-primary/50 bg-primary/10 animate-in fade-in slide-in-from-left-2 flex h-9 items-center gap-0.5 rounded-md border px-1.5 duration-200">
       <Button
         variant="ghost"
         size="icon"
         onClick={stepBack}
-        className="h-6 w-6 text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
+        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground h-6 w-6"
         aria-label="Previous frame"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
@@ -1124,7 +1124,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         variant="ghost"
         size="icon"
         onClick={isPlaying ? pause : play}
-        className="h-6 w-6 text-primary hover:bg-foreground/10 hover:text-xp-cyan-light"
+        className="text-primary hover:bg-foreground/10 hover:text-xp-cyan-light h-6 w-6"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -1134,14 +1134,14 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         variant="ghost"
         size="icon"
         onClick={stepForward}
-        className="h-6 w-6 text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
+        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground h-6 w-6"
         aria-label="Next frame"
       >
         <ChevronRight className="h-3.5 w-3.5" />
       </Button>
 
-      <span className="ml-1 font-mono text-xs tabular-nums text-primary">{timeDisplay}</span>
-      <span className="ml-0.5 mr-1 text-[10px] text-foreground/40">
+      <span className="text-primary ml-1 font-mono text-xs tabular-nums">{timeDisplay}</span>
+      <span className="text-foreground/40 mr-1 ml-0.5 text-[10px]">
         {frameIndex + 1}/{frameCount}
       </span>
     </div>

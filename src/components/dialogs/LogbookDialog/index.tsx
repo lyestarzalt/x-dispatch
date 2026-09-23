@@ -47,16 +47,16 @@ export default function LogbookDialog() {
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-x-6 bottom-6 top-[60px] z-[60] flex flex-col rounded-lg border border-border bg-background shadow-xl"
+          className="border-border bg-background fixed inset-x-6 top-[60px] bottom-6 z-[60] flex flex-col rounded-lg border shadow-xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
             <DialogTitle>{t('logbook.title')}</DialogTitle>
           </VisuallyHidden.Root>
 
-          <div className="flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b border-border bg-card px-4">
+          <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4">
             <div className="flex items-center gap-3">
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <BookOpen className="text-muted-foreground h-4 w-4" />
               <span className="text-sm font-medium">{t('logbook.title')}</span>
               <Tabs value={tab} onValueChange={(v) => setLogbookTab(v as LogbookTab)}>
                 <TabsList className="h-8">
@@ -79,7 +79,7 @@ export default function LogbookDialog() {
                       variant="ghost"
                       size="sm"
                       disabled={flights.length === 0}
-                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive h-7 text-xs"
                     >
                       <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                       {t('logbook.clearAll')}
@@ -119,20 +119,20 @@ export default function LogbookDialog() {
             </div>
           ) : flights.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-12 text-center">
-              <PlaneLanding className="h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">{t('logbook.empty')}</p>
-              <p className="max-w-md text-xs text-muted-foreground/60">{t('logbook.emptyHint')}</p>
+              <PlaneLanding className="text-muted-foreground/40 h-10 w-10" />
+              <p className="text-muted-foreground text-sm">{t('logbook.empty')}</p>
+              <p className="text-muted-foreground/60 max-w-md text-xs">{t('logbook.emptyHint')}</p>
             </div>
           ) : (
             <div className="flex min-h-0 flex-1">
-              <ScrollArea className="w-[380px] flex-shrink-0 border-r border-border/50">
+              <ScrollArea className="border-border/50 w-[380px] flex-shrink-0 border-r">
                 <FlightList flights={flights} selectedId={flightId} onSelect={setLogbookFlight} />
               </ScrollArea>
               <div className="min-w-0 flex-1">
                 {flightId ? (
                   <FlightDetailPanel flightId={flightId} onDeleted={() => setLogbookFlight(null)} />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
                     {t('logbook.selectFlight')}
                   </div>
                 )}

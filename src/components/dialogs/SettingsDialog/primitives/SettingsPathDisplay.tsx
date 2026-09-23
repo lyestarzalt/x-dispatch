@@ -16,7 +16,7 @@ export function SettingsPathDisplay({ path, className }: SettingsPathDisplayProp
     <p
       title={path}
       className={cn(
-        'truncate rounded bg-secondary/50 px-3 py-2 font-mono text-sm text-muted-foreground',
+        'bg-secondary/50 text-muted-foreground truncate rounded px-3 py-2 font-mono text-sm',
         className
       )}
     >

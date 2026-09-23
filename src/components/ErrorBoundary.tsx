@@ -54,21 +54,21 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
       const { t } = this.props;
 
       return (
-        <div className="flex h-full w-full flex-col items-center justify-center gap-6 bg-background p-8">
+        <div className="bg-background flex h-full w-full flex-col items-center justify-center gap-6 p-8">
           <div className="flex flex-col items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-8 w-8 text-destructive" />
+            <div className="bg-destructive/10 flex h-16 w-16 items-center justify-center rounded-full">
+              <AlertCircle className="text-destructive h-8 w-8" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground">{t('errorBoundary.title')}</h1>
-            <p className="max-w-md text-center text-sm text-muted-foreground">
+            <h1 className="text-foreground text-xl font-semibold">{t('errorBoundary.title')}</h1>
+            <p className="text-muted-foreground max-w-md text-center text-sm">
               {t('errorBoundary.description')}
             </p>
             {this.state.error && (
               <details className="mt-2 max-w-lg">
-                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm">
                   {t('errorBoundary.errorDetails')}
                 </summary>
-                <pre className="mt-2 max-h-32 overflow-auto rounded bg-muted p-2 text-xs text-muted-foreground">
+                <pre className="bg-muted text-muted-foreground mt-2 max-h-32 overflow-auto rounded p-2 text-xs">
                   {this.state.error.message}
                   {this.state.error.stack && `\n\n${this.state.error.stack}`}
                 </pre>

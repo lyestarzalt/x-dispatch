@@ -40,7 +40,7 @@ export function FlightDetailPanel({ flightId, onDeleted }: FlightDetailPanelProp
         {isLoading ? (
           <Spinner />
         ) : (
-          <p className="text-sm text-muted-foreground">{t('logbook.selectFlight')}</p>
+          <p className="text-muted-foreground text-sm">{t('logbook.selectFlight')}</p>
         )}
       </div>
     );
@@ -103,10 +103,10 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 font-mono text-2xl font-bold">
               <span>{flight.departure?.icao ?? '----'}</span>
-              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+              <ArrowRight className="text-muted-foreground h-5 w-5" />
               <span>{flight.arrival?.icao ?? '----'}</span>
             </div>
-            <p className="truncate text-sm text-muted-foreground">
+            <p className="text-muted-foreground truncate text-sm">
               {airportNames || t('logbook.unknownAirport')}
             </p>
             <p className="mt-1 text-sm">
@@ -115,7 +115,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
                 <span className="text-muted-foreground"> · {flight.aircraft.livery}</span>
               )}
             </p>
-            <p className="text-xs text-muted-foreground/70">
+            <p className="text-muted-foreground/70 text-xs">
               {formatDateTime(flight.startedAt, i18n.language)}
             </p>
           </div>
@@ -148,7 +148,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
           </Button>
         </div>
 
-        <dl className="grid grid-cols-4 gap-x-4 gap-y-3 rounded-lg border border-border/50 bg-card/60 p-4">
+        <dl className="border-border/50 bg-card/60 grid grid-cols-4 gap-x-4 gap-y-3 rounded-lg border p-4">
           {stats.map((stat) => (
             <div key={stat.label} className="min-w-0">
               <dt className="xp-label truncate">{stat.label}</dt>

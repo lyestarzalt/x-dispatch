@@ -109,10 +109,10 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
 
       {/* Admin banner — flat inline alert */}
       {showAdminBanner && (
-        <div className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning/5 p-3">
-          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+        <div className="border-warning/40 bg-warning/5 flex items-start gap-3 rounded-lg border p-3">
+          <ShieldAlert className="text-warning mt-0.5 h-4 w-4 shrink-0" />
           <div className="space-y-1 text-sm">
-            <p className="font-medium text-foreground">
+            <p className="text-foreground font-medium">
               {t('settings.companionApps.notElevatedTitle')}
             </p>
             <p className="text-muted-foreground">{t('settings.companionApps.notElevatedHint')}</p>
@@ -129,15 +129,15 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
             <li key={tool.id} className="rounded-lg border p-3">
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
-                  <span className="text-sm font-semibold text-foreground">{tool.name}</span>
+                  <span className="text-foreground text-sm font-semibold">{tool.name}</span>
                   <p
-                    className="mt-0.5 truncate font-mono text-xs text-muted-foreground"
+                    className="text-muted-foreground mt-0.5 truncate font-mono text-xs"
                     title={tool.exePath}
                   >
                     {tool.exePath}
                   </p>
                   {(tool.args || tool.delayBeforeXPlaneSec > 0) && (
-                    <p className="mt-0.5 text-xs text-muted-foreground/70">
+                    <p className="text-muted-foreground/70 mt-0.5 text-xs">
                       {tool.args && <span className="font-mono">{tool.args}</span>}
                       {tool.args && tool.delayBeforeXPlaneSec > 0 && ' · '}
                       {tool.delayBeforeXPlaneSec > 0 && (
@@ -188,8 +188,8 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
             return (
               <li key={s.id} className="flex items-center gap-3 rounded-lg border p-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">{s.name}</p>
-                  <p className="text-xs text-muted-foreground/70">{s.description}</p>
+                  <p className="text-foreground text-sm font-medium">{s.name}</p>
+                  <p className="text-muted-foreground/70 text-xs">{s.description}</p>
                 </div>
                 <Button
                   variant="outline"

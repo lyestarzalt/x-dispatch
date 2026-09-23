@@ -79,9 +79,9 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
   };
 
   return (
-    <div className="flex flex-col rounded-lg border bg-card">
+    <div className="bg-card flex flex-col rounded-lg border">
       {/* Header */}
-      <div className="grid grid-cols-[1fr_80px_80px_100px_80px_80px_60px] gap-2 border-b bg-muted/50 px-4 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bg-muted/50 text-muted-foreground grid grid-cols-[1fr_80px_80px_100px_80px_80px_60px] gap-2 border-b px-4 py-2 text-[10px] font-medium tracking-wider uppercase">
         <div>{t('simbriefDialog.navlog.colFix')}</div>
         <div className="text-right">{t('simbriefDialog.navlog.colAltitude')}</div>
         <div className="text-right">{t('simbriefDialog.navlog.colWind')}</div>
@@ -93,7 +93,7 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
 
       {/* Scrollable content */}
       <ScrollArea className="h-[400px]">
-        <div className="divide-y divide-border/50">
+        <div className="divide-border/50 divide-y">
           {processedFixes.map((fix) => (
             <NavlogRow
               key={`${fix.ident}-${fix.index}`}
@@ -114,7 +114,7 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
       </ScrollArea>
 
       {/* Footer summary */}
-      <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-2 text-sm">
+      <div className="bg-muted/30 flex items-center justify-between border-t px-4 py-2 text-sm">
         <span className="text-muted-foreground">
           {t('simbriefDialog.navlog.waypointCount', { count: fixes.length })}
         </span>
@@ -165,7 +165,7 @@ function NavlogRow({
     <div>
       <div
         className={cn(
-          'grid grid-cols-[1fr_80px_80px_100px_80px_80px_60px] gap-2 px-4 py-2 transition-colors hover:bg-muted/30',
+          'hover:bg-muted/30 grid grid-cols-[1fr_80px_80px_100px_80px_80px_60px] gap-2 px-4 py-2 transition-colors',
           (fix.isTopOfClimb || fix.isTopOfDescent) && 'bg-muted/20'
         )}
       >
@@ -188,7 +188,7 @@ function NavlogRow({
               )}
             </div>
             {fix.via_airway && (
-              <span className="text-[10px] text-muted-foreground">{fix.via_airway}</span>
+              <span className="text-muted-foreground text-[10px]">{fix.via_airway}</span>
             )}
           </div>
         </div>
@@ -205,10 +205,10 @@ function NavlogRow({
         {/* Wind */}
         <div className="flex items-center justify-end gap-1">
           <Wind
-            className="h-3 w-3 text-muted-foreground"
+            className="text-muted-foreground h-3 w-3"
             style={{ transform: `rotate(${windDir}deg)` }}
           />
-          <span className="font-mono text-sm text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-sm">
             {windDir.toString().padStart(3, '0')}/{windSpd}
           </span>
         </div>
@@ -218,7 +218,7 @@ function NavlogRow({
           <span className="font-mono text-sm">
             {t('simbriefDialog.navlog.groundSpeedKt', { value: fix.groundspeed })}
           </span>
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-[10px]">
             {t('simbriefDialog.performance.machValue', {
               mach: (parseInt(fix.mach_thousandths, 10) / 1000).toFixed(2),
             })}
@@ -232,7 +232,7 @@ function NavlogRow({
 
         {/* Fuel Remaining */}
         <div className="flex items-center justify-end">
-          <span className="font-mono text-sm text-success">
+          <span className="text-success font-mono text-sm">
             {formatFuel(fix.fuel_plan_onboard)}
           </span>
         </div>
@@ -247,7 +247,7 @@ function NavlogRow({
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="grid grid-cols-4 gap-4 border-t border-dashed bg-muted/20 px-4 py-3 text-sm">
+        <div className="bg-muted/20 grid grid-cols-4 gap-4 border-t border-dashed px-4 py-3 text-sm">
           <div>
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.position')}</p>
             <p className="font-mono">

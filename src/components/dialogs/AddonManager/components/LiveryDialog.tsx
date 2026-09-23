@@ -25,13 +25,13 @@ function LiveryItem({ livery, onDelete, isPending }: LiveryItemProps) {
   const { data: iconSrc } = useAircraftIcon(livery.iconPath);
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2">
+    <div className="border-border bg-card flex items-center gap-3 rounded-md border px-3 py-2">
       {/* Icon preview */}
       {iconSrc ? (
         <img src={iconSrc} alt={livery.displayName} className="h-8 w-8 rounded object-cover" />
       ) : (
-        <div className="flex h-8 w-8 items-center justify-center rounded bg-muted">
-          <Plane className="h-4 w-4 text-muted-foreground/50" />
+        <div className="bg-muted flex h-8 w-8 items-center justify-center rounded">
+          <Plane className="text-muted-foreground/50 h-4 w-4" />
         </div>
       )}
 
@@ -42,7 +42,7 @@ function LiveryItem({ livery, onDelete, isPending }: LiveryItemProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 text-destructive hover:bg-destructive/10"
+        className="text-destructive hover:bg-destructive/10 h-7 w-7"
         onClick={() => onDelete(livery.folderName)}
         disabled={isPending}
       >
@@ -79,7 +79,7 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Spinner className="size-6 text-primary" />
+            <Spinner className="text-primary size-6" />
           </div>
         ) : error ? (
           <Alert variant="destructive">
@@ -89,7 +89,7 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
             </AlertDescription>
           </Alert>
         ) : liveries.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground py-8 text-center text-sm">
             {t('addonManager.liveryDialog.notFound')}
           </p>
         ) : (

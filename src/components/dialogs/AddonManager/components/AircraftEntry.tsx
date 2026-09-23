@@ -31,14 +31,14 @@ export function AircraftEntry({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2',
-        'transition-colors hover:bg-accent',
+        'border-border bg-card flex items-center gap-3 rounded-md border px-3 py-2',
+        'hover:bg-accent transition-colors',
         !aircraft.enabled && 'bg-muted/30 opacity-60',
         aircraft.locked && 'border-warning/50'
       )}
     >
       {/* Icon */}
-      <Plane className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <Plane className="text-muted-foreground h-4 w-4 shrink-0" />
 
       {/* Enable/disable toggle */}
       <Switch
@@ -90,9 +90,9 @@ export function AircraftEntry({
             disabled={disabled}
           >
             {aircraft.locked ? (
-              <Lock className="h-4 w-4 text-warning" />
+              <Lock className="text-warning h-4 w-4" />
             ) : (
-              <Unlock className="h-4 w-4 text-muted-foreground" />
+              <Unlock className="text-muted-foreground h-4 w-4" />
             )}
           </Button>
         </TooltipTrigger>
@@ -112,7 +112,7 @@ export function AircraftEntry({
             className="h-7 w-7"
             onClick={() => onOpenFolder(aircraft.folderName)}
           >
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
+            <FolderOpen className="text-muted-foreground h-4 w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>{t('addonManager.aircraftEntry.openFolder')}</TooltipContent>
@@ -124,7 +124,7 @@ export function AircraftEntry({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-destructive hover:bg-destructive/10"
+            className="text-destructive hover:bg-destructive/10 h-7 w-7"
             onClick={() => onDelete(aircraft.folderName)}
             disabled={disabled || aircraft.locked}
           >

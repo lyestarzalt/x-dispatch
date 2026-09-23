@@ -86,12 +86,12 @@ function GlobalAirportsRow({
         entry.enabled
           ? 'border-primary/30 bg-primary/5'
           : 'border-muted-foreground/20 bg-muted/10 opacity-50',
-        isDragging && 'z-50 border-primary bg-card shadow-xl shadow-primary/10'
+        isDragging && 'border-primary bg-card shadow-primary/10 z-50 shadow-xl'
       )}
     >
       <div
         className={cn(
-          'flex h-7 items-center justify-center rounded-md bg-muted/50 font-mono text-sm font-semibold tabular-nums text-muted-foreground',
+          'bg-muted/50 text-muted-foreground flex h-7 items-center justify-center rounded-md font-mono text-sm font-semibold tabular-nums',
           isDragging && 'bg-primary/20 text-primary'
         )}
         style={{ minWidth: `${positionWidth + 0.5}rem` }}
@@ -105,8 +105,8 @@ function GlobalAirportsRow({
         {...attributes}
         {...listeners}
         className={cn(
-          'h-7 w-7 cursor-grab text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-          isDragging && 'cursor-grabbing text-primary'
+          'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground h-7 w-7 cursor-grab',
+          isDragging && 'text-primary cursor-grabbing'
         )}
         disabled={disabled}
       >
@@ -120,10 +120,10 @@ function GlobalAirportsRow({
         className="scale-90"
       />
 
-      <Globe className="h-4 w-4 text-primary" />
+      <Globe className="text-primary h-4 w-4" />
 
       <div className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-primary">
+        <span className="text-primary block truncate text-sm font-medium">
           {t('addonManager.scenery.globalAirports')}
         </span>
       </div>
@@ -233,12 +233,12 @@ export function SceneryTab() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4">
         <div className="relative">
-          <div className="h-16 w-16 rounded-full border-2 border-primary/20" />
-          <Spinner className="absolute inset-0 m-auto size-8 text-primary" />
+          <div className="border-primary/20 h-16 w-16 rounded-full border-2" />
+          <Spinner className="text-primary absolute inset-0 m-auto size-8" />
         </div>
         <div className="text-center">
           <p className="text-sm font-medium">{t('addonManager.scenery.loading')}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             {t('addonManager.scenery.loadingHint')}
           </p>
         </div>
@@ -269,10 +269,10 @@ export function SceneryTab() {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+      <div className="border-border flex items-center justify-between border-b px-4 py-2.5">
         {/* Left: stats + status */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             {t('addonManager.scenery.tabStats', {
               total: stats.total,
               enabled: stats.enabled,
@@ -280,8 +280,8 @@ export function SceneryTab() {
             })}
           </span>
           {hasUnsavedChanges && (
-            <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
+            <span className="text-warning flex items-center gap-1.5 text-xs font-medium">
+              <span className="bg-warning h-1.5 w-1.5 animate-pulse rounded-full" />
               {t('addonManager.scenery.unsavedChanges')}
             </span>
           )}
@@ -357,7 +357,7 @@ export function SceneryTab() {
               }
             }}
             disabled={isScanning}
-            className="gap-1.5 text-muted-foreground"
+            className="text-muted-foreground gap-1.5"
           >
             <RefreshCw className={cn('h-3.5 w-3.5', isScanning && 'animate-spin')} />
             {t('addonManager.rescan')}
@@ -367,7 +367,7 @@ export function SceneryTab() {
             variant="ghost"
             size="icon"
             onClick={() => setShowBackups(true)}
-            className="h-8 w-8 text-muted-foreground"
+            className="text-muted-foreground h-8 w-8"
             tooltip={t('addonManager.scenery.backupsTitle')}
           >
             <History className="h-4 w-4" />
@@ -376,7 +376,7 @@ export function SceneryTab() {
       </div>
 
       {/* Search bar */}
-      <div className="border-b border-border px-4 py-2">
+      <div className="border-border border-b px-4 py-2">
         <Input
           placeholder={t('common.search')}
           value={searchQuery}
@@ -432,8 +432,8 @@ export function SceneryTab() {
           <div className="max-h-[300px] overflow-y-auto">
             {backups.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <History className="mb-3 h-10 w-10 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">
+                <History className="text-muted-foreground/30 mb-3 h-10 w-10" />
+                <p className="text-muted-foreground text-sm">
                   {t('addonManager.scenery.noBackups')}
                 </p>
               </div>
@@ -442,10 +442,10 @@ export function SceneryTab() {
                 {backups.map((backup, index) => (
                   <div
                     key={backup.path}
-                    className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-3 transition-colors hover:bg-accent"
+                    className="border-border bg-card/50 hover:bg-accent flex items-center justify-between rounded-lg border p-3 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums">
+                      <span className="bg-muted flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium tabular-nums">
                         {index + 1}
                       </span>
                       <span className="text-sm">{new Date(backup.timestamp).toLocaleString()}</span>

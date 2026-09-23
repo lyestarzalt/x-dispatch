@@ -41,22 +41,22 @@ export function AircraftCard({
   return (
     <Card
       className={cn(
-        'overflow-hidden bg-muted/30 transition-all hover:shadow-md',
+        'bg-muted/30 overflow-hidden transition-all hover:shadow-md',
         !aircraft.enabled && 'opacity-60',
-        aircraft.locked && 'ring-1 ring-warning'
+        aircraft.locked && 'ring-warning ring-1'
       )}
     >
       {/* Thumbnail */}
       <div
         className={cn(
-          'flex aspect-video items-center justify-center bg-muted',
+          'bg-muted flex aspect-video items-center justify-center',
           !aircraft.enabled && 'grayscale'
         )}
       >
         {iconSrc ? (
           <img src={iconSrc} alt={aircraft.displayName} className="h-full w-full object-cover" />
         ) : (
-          <Plane className="h-12 w-12 text-muted-foreground/50" />
+          <Plane className="text-muted-foreground/50 h-12 w-12" />
         )}
       </div>
 
@@ -81,7 +81,7 @@ export function AircraftCard({
           {aircraft.hasLiveries && (
             <Badge
               variant="outline"
-              className="cursor-pointer text-xs hover:bg-accent"
+              className="hover:bg-accent cursor-pointer text-xs"
               onClick={() => onOpenLiveries(aircraft.folderName)}
             >
               {t('addonManager.aircraftCard.liveries', { count: aircraft.liveryCount })}
@@ -109,9 +109,9 @@ export function AircraftCard({
                   disabled={disabled}
                 >
                   {aircraft.locked ? (
-                    <Lock className="h-3.5 w-3.5 text-warning" />
+                    <Lock className="text-warning h-3.5 w-3.5" />
                   ) : (
-                    <Unlock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Unlock className="text-muted-foreground h-3.5 w-3.5" />
                   )}
                 </Button>
               </TooltipTrigger>

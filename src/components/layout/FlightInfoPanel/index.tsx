@@ -84,14 +84,14 @@ function FlightInfoPanel() {
     >
       <div
         className={cn(
-          'relative flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/95 shadow-xl backdrop-blur-sm transition-all duration-300',
+          'border-border/40 bg-card/95 relative flex flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm transition-all duration-300',
           isCollapsed ? 'h-44' : 'max-h-[calc(100vh-120px)]'
         )}
       >
         {/* Collapsed state */}
         <div
           className={cn(
-            'absolute inset-0 z-20 flex flex-col items-center bg-card/95 py-5 transition-opacity duration-200',
+            'bg-card/95 absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
             isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
           )}
         >
@@ -104,7 +104,7 @@ function FlightInfoPanel() {
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span
-            className="font-mono text-sm font-bold tracking-wider text-foreground"
+            className="text-foreground font-mono text-sm font-bold tracking-wider"
             style={{ writingMode: 'vertical-rl' }}
           >
             {flightNumber}
@@ -114,7 +114,7 @@ function FlightInfoPanel() {
         {/* Control Buttons */}
         <div
           className={cn(
-            'flex items-center justify-end border-b border-border/30 px-1 py-1',
+            'border-border/30 flex items-center justify-end border-b px-1 py-1',
             isCollapsed && 'opacity-0'
           )}
         >
@@ -122,7 +122,7 @@ function FlightInfoPanel() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground/40 hover:text-foreground"
+              className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
               onClick={openSimbriefDialog}
               tooltip={t('simbrief.openFullBriefing', 'Open full briefing')}
             >
@@ -131,7 +131,7 @@ function FlightInfoPanel() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground/40 hover:text-foreground"
+              className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
               onClick={() => setIsCollapsed(true)}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -139,7 +139,7 @@ function FlightInfoPanel() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive"
+              className="text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive h-7 w-7"
               onClick={clearFlightPlan}
             >
               <X className="h-4 w-4" />
@@ -148,7 +148,7 @@ function FlightInfoPanel() {
         </div>
 
         {/* Header */}
-        <div className={cn('border-b border-border/30 px-4 pb-3 pt-3', isCollapsed && 'opacity-0')}>
+        <div className={cn('border-border/30 border-b px-4 pt-3 pb-3', isCollapsed && 'opacity-0')}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <SimbriefLogo size="xs" className="opacity-70" />
@@ -157,7 +157,7 @@ function FlightInfoPanel() {
               </Badge>
             </div>
             <div className="text-right">
-              <span className="font-mono text-sm text-muted-foreground">
+              <span className="text-muted-foreground font-mono text-sm">
                 {simbriefData.aircraft.icao_code}
               </span>
             </div>
@@ -178,17 +178,17 @@ function FlightInfoPanel() {
               >
                 {simbriefData.origin.icao_code}
               </Button>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-muted-foreground text-[10px]">
                 {t('simbriefDialog.header.runway', { rwy: simbriefData.origin.plan_rwy })}
               </p>
             </div>
             <div className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1">
-                <div className="h-px w-8 bg-gradient-to-r from-transparent to-border" />
-                <Plane className="h-3.5 w-3.5 rotate-90 text-primary" />
-                <div className="h-px w-8 bg-gradient-to-l from-transparent to-border" />
+                <div className="to-border h-px w-8 bg-gradient-to-r from-transparent" />
+                <Plane className="text-primary h-3.5 w-3.5 rotate-90" />
+                <div className="to-border h-px w-8 bg-gradient-to-l from-transparent" />
               </div>
-              <span className="font-mono text-[9px] text-muted-foreground">
+              <span className="text-muted-foreground font-mono text-[9px]">
                 {formatDistance(simbriefData.general.air_distance)}
               </span>
             </div>
@@ -205,7 +205,7 @@ function FlightInfoPanel() {
               >
                 {simbriefData.destination.icao_code}
               </Button>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-muted-foreground text-[10px]">
                 {t('simbriefDialog.header.runway', { rwy: simbriefData.destination.plan_rwy })}
               </p>
             </div>
@@ -265,8 +265,8 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       </div>
 
       {/* Wind */}
-      <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
-        <span className="text-sm text-muted-foreground">{t('flightInfoPanel.avgWind')}</span>
+      <div className="bg-muted/40 flex items-center justify-between rounded-lg px-3 py-2">
+        <span className="text-muted-foreground text-sm">{t('flightInfoPanel.avgWind')}</span>
         <span className="font-mono text-sm font-medium">
           {t('simbriefDialog.performance.windDirSpeed', {
             dir: data.general.avg_wind_dir,
@@ -276,21 +276,21 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       </div>
 
       {/* Fuel Summary */}
-      <div className="rounded-lg bg-muted/40 p-3">
+      <div className="bg-muted/40 rounded-lg p-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">{t('flightInfoPanel.blockFuel')}</span>
           <span className="font-mono font-medium">{formatFuel(data.fuel.plan_ramp, apiUnit)}</span>
         </div>
         <div className="mt-1 flex items-center justify-between text-sm">
           <span className="text-muted-foreground">{t('flightInfoPanel.landing')}</span>
-          <span className="font-mono font-medium text-success">
+          <span className="text-success font-mono font-medium">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </span>
         </div>
       </div>
 
       {/* Weights Summary */}
-      <div className="rounded-lg bg-muted/40 p-3">
+      <div className="bg-muted/40 rounded-lg p-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">{t('simbriefDialog.weights.tow')}</span>
           <span className="font-mono font-medium">
@@ -307,8 +307,8 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 
       {/* Alternate */}
       {data.alternate && (
-        <div className="flex items-center justify-between rounded-lg bg-warning/10 px-3 py-2">
-          <span className="text-sm text-warning/70">{t('flightInfoPanel.alternate')}</span>
+        <div className="bg-warning/10 flex items-center justify-between rounded-lg px-3 py-2">
+          <span className="text-warning/70 text-sm">{t('flightInfoPanel.alternate')}</span>
           <Button
             variant="link"
             onClick={() => useAppStore.getState().requestSelectAirport(data.alternate!.icao_code)}
@@ -326,7 +326,7 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 w-full justify-center text-[10px] text-muted-foreground"
+        className="text-muted-foreground h-7 w-full justify-center text-[10px]"
         onClick={() => window.appAPI.openExternal(data.files.pdf.link)}
       >
         {t('simbriefDialog.viewFullOfp')}
@@ -337,9 +337,9 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-muted/40 p-2 text-center">
+    <div className="bg-muted/40 rounded-lg p-2 text-center">
       <p className="font-mono text-sm font-medium">{value}</p>
-      <p className="text-[9px] text-muted-foreground">{label}</p>
+      <p className="text-muted-foreground text-[9px]">{label}</p>
     </div>
   );
 }
@@ -403,7 +403,7 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               </div>
               <span className="font-mono font-medium">{formatFuel(item.value, apiUnit)}</span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+            <div className="bg-muted h-1.5 overflow-hidden rounded-full">
               <div
                 className={cn('h-full transition-all', item.color)}
                 style={{ width: `${percentage}%` }}
@@ -417,15 +417,15 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
       {/* Totals */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-lg bg-primary/10 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground">{t('flightInfoPanel.blockLabel')}</p>
-          <p className="font-mono text-sm font-bold text-primary">
+        <div className="bg-primary/10 rounded-lg p-3 text-center">
+          <p className="text-muted-foreground text-[10px]">{t('flightInfoPanel.blockLabel')}</p>
+          <p className="text-primary font-mono text-sm font-bold">
             {formatFuel(data.fuel.plan_ramp, apiUnit)}
           </p>
         </div>
-        <div className="rounded-lg bg-success/10 p-3 text-center">
-          <p className="text-[10px] text-muted-foreground">{t('flightInfoPanel.landingLabel')}</p>
-          <p className="font-mono text-sm font-bold text-success">
+        <div className="bg-success/10 rounded-lg p-3 text-center">
+          <p className="text-muted-foreground text-[10px]">{t('flightInfoPanel.landingLabel')}</p>
+          <p className="text-success font-mono text-sm font-bold">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
         </div>
@@ -465,7 +465,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         return (
           <div key={w.label} className="space-y-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-mono font-medium text-muted-foreground">{w.label}</span>
+              <span className="text-muted-foreground font-mono font-medium">{w.label}</span>
               <div>
                 <span
                   className={cn(
@@ -490,7 +490,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                 isWarning && !isCritical && '[&>div]:bg-warning'
               )}
             />
-            <p className="text-right text-[9px] text-muted-foreground">{percentage.toFixed(1)}%</p>
+            <p className="text-muted-foreground text-right text-[9px]">{percentage.toFixed(1)}%</p>
           </div>
         );
       })}
@@ -563,8 +563,8 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
 
       {/* Alternate */}
       {data.alternate && (
-        <div className="rounded-lg bg-warning/10 p-2">
-          <div className="flex items-center gap-2 text-sm text-warning">
+        <div className="bg-warning/10 rounded-lg p-2">
+          <div className="text-warning flex items-center gap-2 text-sm">
             <Route className="h-3 w-3" />
             <span className="font-mono font-medium">{data.alternate.icao_code}</span>
             <span className="text-warning/70">{t('flightInfoPanel.alternate')}</span>
@@ -588,9 +588,9 @@ function WeatherCard({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg bg-muted/40 p-3">
+    <div className="bg-muted/40 rounded-lg p-3">
       <div className="mb-2 flex items-center gap-2">
-        <Icon className="h-3 w-3 text-muted-foreground" />
+        <Icon className="text-muted-foreground h-3 w-3" />
         <span className="font-mono text-sm font-medium">{icao}</span>
       </div>
 
@@ -598,28 +598,28 @@ function WeatherCard({
         <div className="mb-2 grid grid-cols-4 gap-1 text-center">
           <div>
             <p className="font-mono text-[10px] font-medium">{formatWind(metar.wind)}</p>
-            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.wind')}</p>
+            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.wind')}</p>
           </div>
           <div>
             <p className="font-mono text-[10px] font-medium">
               {formatVisibility(metar.visibility, metar.cavok)}
             </p>
-            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.vis')}</p>
+            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.vis')}</p>
           </div>
           <div>
             <p className="font-mono text-[10px] font-medium">
               {t('flightInfoPanel.tempDeg', { value: metar.temperature ?? '—' })}
             </p>
-            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.temp')}</p>
+            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.temp')}</p>
           </div>
           <div>
             <p className="font-mono text-[10px] font-medium">{formatAltimeter(metar.altimeter)}</p>
-            <p className="text-[8px] text-muted-foreground">{t('flightInfoPanel.qnh')}</p>
+            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.qnh')}</p>
           </div>
         </div>
       )}
 
-      <p className="font-mono text-[9px] leading-relaxed text-muted-foreground">
+      <p className="text-muted-foreground font-mono text-[9px] leading-relaxed">
         {rawMetar || t('flightInfoPanel.noMetar')}
       </p>
     </div>

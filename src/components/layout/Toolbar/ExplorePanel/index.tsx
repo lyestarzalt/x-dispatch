@@ -44,15 +44,15 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
     <div
       id="explore-panel"
       className={cn(
-        'absolute bottom-4 left-4 top-16 z-10 transition-all duration-300 ease-out',
+        'absolute top-16 bottom-4 left-4 z-10 transition-all duration-300 ease-out',
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
-      <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/95 shadow-xl backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
         {/* Collapsed state */}
         <div
           className={cn(
-            'absolute inset-0 z-20 flex flex-col items-center bg-card/95 py-5 transition-opacity duration-200',
+            'bg-card/95 absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
             isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
           )}
         >
@@ -65,7 +65,7 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
             <ChevronRight className="h-4 w-4" />
           </Button>
           <span
-            className="text-xs font-medium uppercase tracking-wider text-muted-foreground"
+            className="text-muted-foreground text-xs font-medium tracking-wider uppercase"
             style={{ writingMode: 'vertical-rl' }}
           >
             {t('explore.title')}
@@ -75,14 +75,14 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         {/* Close / Collapse buttons */}
         <div
           className={cn(
-            'absolute right-2 top-2 z-10 flex items-center gap-0.5',
+            'absolute top-2 right-2 z-10 flex items-center gap-0.5',
             isCollapsed && 'pointer-events-none opacity-0'
           )}
         >
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground/40 hover:text-foreground"
+            className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
             onClick={() => setIsCollapsed(true)}
           >
             <ChevronRight className="h-4 w-4 rotate-180" />
@@ -90,7 +90,7 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground/40 hover:text-foreground"
+            className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
             onClick={() => setExploreOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -100,11 +100,11 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         {/* Header */}
         <div
           className={cn(
-            'flex shrink-0 items-center gap-2 border-b border-border/30 px-4 py-3',
+            'border-border/30 flex shrink-0 items-center gap-2 border-b px-4 py-3',
             isCollapsed && 'opacity-0'
           )}
         >
-          <Compass className="h-4 w-4 text-primary" />
+          <Compass className="text-primary h-4 w-4" />
           <span className="text-sm font-medium">{t('explore.title')}</span>
         </div>
 
@@ -116,13 +116,13 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         >
           <TabsList variant="line" className="shrink-0 px-2">
             {TABS.map((tab) => (
-              <TabsTrigger key={tab} value={tab} className="flex-1 text-xs uppercase tracking-wide">
+              <TabsTrigger key={tab} value={tab} className="flex-1 text-xs tracking-wide uppercase">
                 {t(`explore.tabs.${tab}`)}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="flex-1 overflow-x-hidden overflow-y-auto">
             <div className="p-4">
               <TabsContent value="featured" className="mt-0">
                 <FeaturedTab

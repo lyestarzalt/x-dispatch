@@ -49,12 +49,12 @@ export function RateScale({ touchdownRateFpm, rating, compact, className }: Rate
           ))}
         </div>
         <div
-          className="absolute -top-1 h-3.5 w-0.5 -translate-x-1/2 rounded-full bg-foreground shadow-[0_0_0_2px_hsl(var(--card))]"
+          className="bg-foreground absolute -top-1 h-3.5 w-0.5 -translate-x-1/2 rounded-full shadow-[0_0_0_2px_hsl(var(--card))]"
           style={{ left: `${marker}%` }}
         />
       </div>
       {!compact && (
-        <div className="relative mt-1 h-3 font-mono text-[10px] text-muted-foreground">
+        <div className="text-muted-foreground relative mt-1 h-3 font-mono text-[10px]">
           {BANDS.slice(0, -1).map((band) => (
             <span
               key={band.rating}

@@ -112,12 +112,12 @@ export function InstallerTab() {
         {isAnalyzing && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 py-12">
             <div className="relative">
-              <div className="h-16 w-16 rounded-full border-2 border-primary/20" />
-              <Spinner className="absolute inset-0 m-auto size-8 text-primary" />
+              <div className="border-primary/20 h-16 w-16 rounded-full border-2" />
+              <Spinner className="text-primary absolute inset-0 m-auto size-8" />
             </div>
             <div className="text-center">
               <p className="text-sm font-medium">{t('addonManager.installer.analyzing')}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-sm">
                 {t('addonManager.installer.analyzingHint')}
               </p>
             </div>
@@ -143,8 +143,8 @@ export function InstallerTab() {
           <div className="px-4 pb-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
+                <Package className="text-muted-foreground h-4 w-4" />
+                <span className="text-muted-foreground text-sm">
                   {formatSize(detectedItem.estimatedSize)}
                 </span>
               </div>
@@ -153,7 +153,7 @@ export function InstallerTab() {
                 size="sm"
                 onClick={handleClear}
                 disabled={isDisabled}
-                className="gap-2 text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive gap-2"
               >
                 <Trash2 className="h-4 w-4" />
                 {t('addonManager.installer.clear')}
@@ -198,13 +198,13 @@ export function InstallerTab() {
 
             <div className="w-full max-w-sm space-y-3 text-center">
               <div className="flex items-center justify-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="text-primary h-4 w-4" />
                 <span className="text-sm font-medium">
                   {t('addonManager.installer.installing')}
                 </span>
               </div>
               <Progress value={progress.overallPercent} className="h-1.5" />
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="text-muted-foreground truncate text-xs">
                 {progress.currentTaskName}
                 {progress.currentFile && (
                   <span className="mt-0.5 block opacity-70">{progress.currentFile}</span>
@@ -232,27 +232,27 @@ export function InstallerTab() {
                 )}
               >
                 {result.success ? (
-                  <CheckCircle2 className="h-7 w-7 text-success" />
+                  <CheckCircle2 className="text-success h-7 w-7" />
                 ) : (
-                  <XCircle className="h-7 w-7 text-destructive" />
+                  <XCircle className="text-destructive h-7 w-7" />
                 )}
               </div>
 
               {result.success ? (
                 <>
-                  <h3 className="text-lg font-semibold text-success">
+                  <h3 className="text-success text-lg font-semibold">
                     {t('addonManager.installer.successOne')}
                   </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="text-muted-foreground mt-1 text-sm">
                     {t('addonManager.installer.successHint')}
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-semibold text-destructive">
+                  <h3 className="text-destructive text-lg font-semibold">
                     {t('addonManager.installer.installFailed')}
                   </h3>
-                  <p className="mt-2 text-sm text-destructive/80">{result.error}</p>
+                  <p className="text-destructive/80 mt-2 text-sm">{result.error}</p>
                 </>
               )}
 
@@ -280,9 +280,9 @@ export function InstallerTab() {
 
       {/* Install button - sticky at bottom */}
       {hasItem && !isInstalling && !result && (
-        <div className="border-t border-border bg-card/50 p-4">
+        <div className="border-border bg-card/50 border-t p-4">
           <Button
-            className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            className="from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 w-full gap-2 bg-gradient-to-r"
             size="lg"
             onClick={handleInstall}
             disabled={isDisabled}

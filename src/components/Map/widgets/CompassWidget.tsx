@@ -191,8 +191,8 @@ function CompassWidget() {
         <div
           className={cn(
             'mt-2 flex flex-col items-center rounded-md',
-            'border border-border/50 bg-black/30 px-2 py-1',
-            'font-mono text-sm font-bold tabular-nums tracking-wider text-primary',
+            'border-border/50 border bg-black/30 px-2 py-1',
+            'text-primary font-mono text-sm font-bold tracking-wider tabular-nums',
             // When terrain is on, lock the pill to the rose width so the
             // elevation value can swing from sea level to Everest without
             // the panel reflowing. 72px content + 16px padding fits
@@ -202,7 +202,7 @@ function CompassWidget() {
         >
           <span>{headingDisplay}°</span>
           {showElevationRow && (
-            <span className="text-[10px] font-normal tracking-tight text-primary/60">
+            <span className="text-primary/60 text-[10px] font-normal tracking-tight">
               {elevationFt ?? '—'} {t('units.ft')}
             </span>
           )}

@@ -60,16 +60,16 @@ export function StatePanel() {
           <div key={name}>
             <button
               onClick={() => toggleStore(name)}
-              className="flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-sm hover:bg-muted/40"
+              className="hover:bg-muted/40 flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-sm"
             >
               <span className="text-xs">{isExpanded ? '▾' : '▸'}</span>
-              <span className="font-semibold uppercase tracking-wider text-foreground/70">
+              <span className="text-foreground/70 font-semibold tracking-wider uppercase">
                 {name}
               </span>
-              <span className="ml-auto text-muted-foreground/40">{keys.length} keys</span>
+              <span className="text-muted-foreground/40 ml-auto">{keys.length} keys</span>
             </button>
             {isExpanded && (
-              <div className="ml-3 border-l-2 border-border/30 pl-1">
+              <div className="border-border/30 ml-3 border-l-2 pl-1">
                 <JsonTree value={state} />
               </div>
             )}

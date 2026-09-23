@@ -134,10 +134,10 @@ export function BrowserTab() {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar — matches SceneryTab layout */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+      <div className="border-border flex items-center justify-between border-b px-4 py-2.5">
         {/* Left: stats + updates badge */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             {t('addonManager.browser.tabStats', {
               total: totalAddons,
               enabled: totalEnabled,
@@ -175,7 +175,7 @@ export function BrowserTab() {
               }
             }}
             disabled={aircraftFetching || pluginsFetching}
-            className="gap-1.5 text-muted-foreground"
+            className="text-muted-foreground gap-1.5"
           >
             <RefreshCw
               className={`h-3.5 w-3.5 ${aircraftFetching || pluginsFetching ? 'animate-spin' : ''}`}
@@ -196,7 +196,7 @@ export function BrowserTab() {
             {/* Plugins tab first */}
             <TabsTrigger
               value="plugins"
-              className="gap-2 px-4 py-3 data-[state=active]:border-violet data-[state=active]:text-violet"
+              className="data-[state=active]:border-violet data-[state=active]:text-violet gap-2 px-4 py-3"
             >
               <Plug className="h-4 w-4" />
               <span>{t('addonManager.installed.plugins')}</span>
@@ -218,7 +218,7 @@ export function BrowserTab() {
             {/* Aircraft tab second */}
             <TabsTrigger
               value="aircraft"
-              className="gap-2 px-4 py-3 data-[state=active]:border-cat-sky data-[state=active]:text-cat-sky"
+              className="data-[state=active]:border-cat-sky data-[state=active]:text-cat-sky gap-2 px-4 py-3"
             >
               <Plane className="h-4 w-4" />
               <span>{t('addonManager.installed.aircraft')}</span>
@@ -247,8 +247,8 @@ export function BrowserTab() {
         >
           {pluginsLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Spinner className="size-8 text-violet" />
-              <span className="text-sm text-muted-foreground">
+              <Spinner className="text-violet size-8" />
+              <span className="text-muted-foreground text-sm">
                 {t('addonManager.installed.scanningPlugins')}
               </span>
             </div>
@@ -262,7 +262,7 @@ export function BrowserTab() {
               </AlertDescription>
             </Alert>
           ) : filteredPlugins.length === 0 ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground py-12 text-center text-sm">
               {search
                 ? t('addonManager.installed.noMatch', { type: 'plugins' })
                 : t('addonManager.installed.notFound', { type: 'plugins' })}
@@ -298,8 +298,8 @@ export function BrowserTab() {
         >
           {aircraftLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-12">
-              <Spinner className="size-8 text-cat-sky" />
-              <span className="text-sm text-muted-foreground">
+              <Spinner className="text-cat-sky size-8" />
+              <span className="text-muted-foreground text-sm">
                 {t('addonManager.installed.scanningAircraft')}
               </span>
             </div>
@@ -313,7 +313,7 @@ export function BrowserTab() {
               </AlertDescription>
             </Alert>
           ) : filteredAircraft.length === 0 ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground py-12 text-center text-sm">
               {search
                 ? t('addonManager.installed.noMatch', { type: 'aircraft' })
                 : t('addonManager.installed.notFound', { type: 'aircraft' })}

@@ -78,7 +78,7 @@ function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
           </TooltipTrigger>
           {source && (
             <TooltipContent side="left" className="max-w-xs">
-              <p className="break-all font-mono text-xs">{source}</p>
+              <p className="font-mono text-xs break-all">{source}</p>
             </TooltipContent>
           )}
         </Tooltip>
@@ -131,8 +131,8 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         {dataStatus && airportBreakdown && (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="bg-muted/30 rounded-lg border p-3">
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   <Building2 className="h-3.5 w-3.5" />
                   {t('settings.navigation.globalAirports')}
                 </div>
@@ -140,8 +140,8 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   {airportBreakdown.globalAirports.toLocaleString()}
                 </div>
               </div>
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="bg-muted/30 rounded-lg border p-3">
+                <div className="text-muted-foreground flex items-center gap-2 text-xs">
                   <MapPin className="h-3.5 w-3.5" />
                   {t('settings.navigation.customAirports')}
                 </div>
@@ -149,7 +149,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   {airportBreakdown.customScenery.toLocaleString()}
                 </div>
                 {airportBreakdown.customSceneryPacks > 0 && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {t('settings.navigation.fromSceneryPacks', {
                       count: airportBreakdown.customSceneryPacks,
                     })}
@@ -158,7 +158,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs">
+            <div className="bg-muted/50 flex items-center justify-between rounded-lg px-3 py-2 text-xs">
               <span className="text-muted-foreground">
                 {t('settings.navigation.totalAirports')}
               </span>
@@ -184,7 +184,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 : t('settings.navigation.xplaneDefaultLabel')}
             </Badge>
             {globalSource.cycle && (
-              <span className="font-mono text-sm text-muted-foreground">
+              <span className="text-muted-foreground font-mono text-sm">
                 AIRAC {globalSource.cycle}
                 {globalSource.revision && `.${globalSource.revision}`}
               </span>
@@ -213,28 +213,28 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   count={dataStatus.navaids.count}
                   source={dataStatus.navaids.source}
                   sourceType={dataStatus.sources?.navaids.source}
-                  icon={<Radio className="h-4 w-4 text-muted-foreground" />}
+                  icon={<Radio className="text-muted-foreground h-4 w-4" />}
                 />
                 <DataRow
                   label={t('loading.steps.waypoints', 'Waypoints')}
                   count={dataStatus.waypoints.count}
                   source={dataStatus.waypoints.source}
                   sourceType={dataStatus.sources?.waypoints.source}
-                  icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
+                  icon={<Navigation className="text-muted-foreground h-4 w-4" />}
                 />
                 <DataRow
                   label={t('loading.steps.airways', 'Airways')}
                   count={dataStatus.airways.count}
                   source={dataStatus.airways.source}
                   sourceType={dataStatus.sources?.airways.source}
-                  icon={<Route className="h-4 w-4 text-muted-foreground" />}
+                  icon={<Route className="text-muted-foreground h-4 w-4" />}
                 />
                 <DataRow
                   label={t('loading.steps.airspaces', 'Airspaces')}
                   count={dataStatus.airspaces.count}
                   source={dataStatus.airspaces.source}
                   sourceType={dataStatus.sources?.airspaces.source}
-                  icon={<Layers className="h-4 w-4 text-muted-foreground" />}
+                  icon={<Layers className="text-muted-foreground h-4 w-4" />}
                 />
                 {dataStatus.atc && dataStatus.atc.count > 0 && (
                   <DataRow

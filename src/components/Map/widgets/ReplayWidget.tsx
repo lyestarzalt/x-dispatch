@@ -31,7 +31,7 @@ export default function ReplayWidget() {
   };
 
   return (
-    <div className="w-[480px] rounded-xl border border-border/60 bg-background/90 px-4 py-3 shadow-xl backdrop-blur-md">
+    <div className="border-border/60 bg-background/90 w-[480px] rounded-xl border px-4 py-3 shadow-xl backdrop-blur-md">
       <div className="flex items-center gap-2">
         <Button
           size="icon"
@@ -60,13 +60,13 @@ export default function ReplayWidget() {
         >
           <Crosshair className="h-4 w-4" />
         </Button>
-        <div className="flex-1 font-mono text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex-1 font-mono text-xs">
           <span className="text-foreground">{formatClock(elapsed / 1000)}</span>
           {' / '}
           {formatClock(total / 1000)}
         </div>
         {sample && (
-          <div className="flex gap-3 font-mono text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex gap-3 font-mono text-xs">
             <span>
               {Math.round(sample.alt).toLocaleString()} {t('units.ft')}
             </span>

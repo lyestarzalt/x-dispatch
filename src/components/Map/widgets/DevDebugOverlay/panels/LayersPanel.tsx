@@ -71,7 +71,7 @@ function TechnicalToggles() {
           type="checkbox"
           checked={routingNetwork}
           onChange={() => toggleLayer('routingNetwork')}
-          className="h-3 w-3 cursor-pointer accent-primary"
+          className="accent-primary h-3 w-3 cursor-pointer"
         />
       </label>
     </div>
@@ -88,10 +88,10 @@ function InspectorGroup({ group, mapRef }: { group: LayerInspectorGroup; mapRef:
     <div>
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center gap-1.5 text-sm text-muted-foreground/70 hover:text-foreground"
+        className="text-muted-foreground/70 hover:text-foreground flex w-full items-center gap-1.5 text-sm"
       >
         <span className="text-xs">{expanded ? '▾' : '▸'}</span>
-        <span className="font-semibold uppercase tracking-wider">{label}</span>
+        <span className="font-semibold tracking-wider uppercase">{label}</span>
         <span className="ml-auto tabular-nums">
           {group.drawnCount}/{group.totalCount}
         </span>
@@ -144,13 +144,13 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
 
   return (
     <div>
-      <div className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-muted/40">
+      <div className="hover:bg-muted/40 flex items-center gap-1 rounded px-1 py-0.5">
         <OrderBadge order={renderer.drawOrder} />
         <StatusDot status={renderer.status} />
         <span className="min-w-0 flex-1 truncate">{renderer.name}</span>
-        <span className="shrink-0 tabular-nums text-foreground/40">{countStr}</span>
+        <span className="text-foreground/40 shrink-0 tabular-nums">{countStr}</span>
         {stateTag && stateTag !== 'off' && (
-          <span className="shrink-0 rounded bg-muted/60 px-1 text-sm leading-tight text-warning">
+          <span className="bg-muted/60 text-warning shrink-0 rounded px-1 text-sm leading-tight">
             {stateTag}
           </span>
         )}
@@ -180,7 +180,7 @@ function RendererRow({ renderer, mapRef }: { renderer: RendererInfo; mapRef: Map
         </button>
       </div>
       {expanded && (
-        <div className="ml-6 border-l-2 border-primary/30 pl-2">
+        <div className="border-primary/30 ml-6 border-l-2 pl-2">
           {renderer.sublayers.map((s) => (
             <SublayerRow key={s.layerId} sublayer={s} mapRef={mapRef} />
           ))}
@@ -205,7 +205,7 @@ function SublayerRow({ sublayer, mapRef }: { sublayer: SublayerInfo; mapRef: Map
     <div className="flex items-center gap-1 py-0.5 pl-1">
       <OrderBadge order={sublayer.drawOrder} />
       <StatusDot status={sublayer.status} />
-      <span className="min-w-0 flex-1 truncate text-foreground/40">{sublayer.name}</span>
+      <span className="text-foreground/40 min-w-0 flex-1 truncate">{sublayer.name}</span>
       <button
         onClick={handleToggle}
         className={`shrink-0 rounded px-1.5 py-0.5 text-sm font-bold ${

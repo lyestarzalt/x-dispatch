@@ -52,14 +52,14 @@ class SectionErrorBoundaryInner extends Component<
       const { t } = this.props;
       return (
         <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-4">
-          <div className="flex items-center gap-2 text-destructive">
+          <div className="text-destructive flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
             <span className="text-sm font-medium">
               {t('errorBoundary.sectionFailed', { name: this.props.name })}
             </span>
           </div>
           {this.state.error && (
-            <p className="max-w-xs text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground max-w-xs text-center text-sm">
               {this.state.error.message}
             </p>
           )}

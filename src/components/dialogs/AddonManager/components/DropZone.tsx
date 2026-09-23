@@ -86,11 +86,11 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       className={cn(
         'group relative flex h-44 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-all duration-200',
         isDragOver
-          ? 'border-primary bg-primary/5 shadow-xl shadow-primary/10'
-          : 'border-muted-foreground/20 bg-gradient-to-b from-muted/20 to-muted/5',
+          ? 'border-primary bg-primary/5 shadow-primary/10 shadow-xl'
+          : 'border-muted-foreground/20 from-muted/20 to-muted/5 bg-gradient-to-b',
         disabled
           ? 'cursor-not-allowed opacity-50'
-          : 'cursor-pointer hover:border-primary/40 hover:bg-muted/30 hover:shadow-lg'
+          : 'hover:border-primary/40 hover:bg-muted/30 cursor-pointer hover:shadow-lg'
       )}
     >
       {/* Background pattern */}
@@ -109,7 +109,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
         className={cn(
           'relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-200',
           isDragOver
-            ? 'scale-110 bg-primary/20 text-primary'
+            ? 'bg-primary/20 text-primary scale-110'
             : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
         )}
       >
@@ -130,7 +130,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       >
         {t('addonManager.installer.dropZone.title')}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="text-muted-foreground mt-1 text-xs">
         {t('addonManager.installer.dropZone.subtitle')}
       </p>
 

@@ -51,7 +51,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Spinner className="size-6 text-primary" />
+            <Spinner className="text-primary size-6" />
           </div>
         ) : error ? (
           <Alert variant="destructive">
@@ -61,7 +61,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
             </AlertDescription>
           </Alert>
         ) : scripts.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground py-8 text-center text-sm">
             {t('addonManager.scriptsDialog.notFound')}
           </p>
         ) : (
@@ -71,7 +71,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                 <div
                   key={script.fileName}
                   className={cn(
-                    'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2',
+                    'border-border bg-card flex items-center gap-3 rounded-md border px-3 py-2',
                     !script.enabled && 'bg-muted/30 opacity-60'
                   )}
                 >
@@ -86,7 +86,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                   <span className="flex-1 truncate font-mono text-sm">{script.displayName}</span>
 
                   {/* Extension indicator */}
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {script.enabled ? LUA_EXTENSION : DISABLED_EXTENSION}
                   </span>
 
@@ -94,7 +94,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                    className="text-destructive hover:bg-destructive/10 h-7 w-7"
                     onClick={() => handleDelete(script.fileName)}
                     disabled={isPending}
                   >

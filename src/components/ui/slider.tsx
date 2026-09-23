@@ -9,13 +9,13 @@ const Slider = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
-    className={cn('relative flex w-full touch-none select-none items-center', className)}
+    className={cn('relative flex w-full touch-none items-center select-none', className)}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-muted">
-      <SliderPrimitive.Range className="absolute h-full bg-primary" />
+    <SliderPrimitive.Track className="bg-muted relative h-1 w-full grow overflow-hidden rounded-full">
+      <SliderPrimitive.Range className="bg-primary absolute h-full" />
     </SliderPrimitive.Track>
-    <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-foreground shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+    <SliderPrimitive.Thumb className="bg-foreground ring-offset-background focus-visible:ring-ring block h-4 w-4 rounded-full shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50" />
   </SliderPrimitive.Root>
 ));
 Slider.displayName = SliderPrimitive.Root.displayName;
@@ -69,7 +69,7 @@ const LabeledSlider = React.forwardRef<
       <div className={cn('w-full', disabled && 'opacity-50', className)}>
         {/* Top row: Label and Value */}
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="text-muted-foreground text-xs">{label}</span>
           <div className="flex items-center gap-1">
             {showInput ? (
               <Input
@@ -77,12 +77,12 @@ const LabeledSlider = React.forwardRef<
                 value={displayValue}
                 onChange={handleInputChange}
                 disabled={disabled}
-                className="h-6 w-16 border-border bg-secondary px-2 text-right font-mono text-xs"
+                className="border-border bg-secondary h-6 w-16 px-2 text-right font-mono text-xs"
               />
             ) : (
-              <span className="font-mono text-sm text-foreground">{displayValue}</span>
+              <span className="text-foreground font-mono text-sm">{displayValue}</span>
             )}
-            {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
+            {unit && <span className="text-muted-foreground text-xs">{unit}</span>}
           </div>
         </div>
 
@@ -91,20 +91,20 @@ const LabeledSlider = React.forwardRef<
           ref={ref}
           value={value}
           disabled={disabled}
-          className="relative flex w-full touch-none select-none items-center"
+          className="relative flex w-full touch-none items-center select-none"
           {...props}
         >
-          <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-muted">
-            <SliderPrimitive.Range className="absolute h-full bg-primary" />
+          <SliderPrimitive.Track className="bg-muted relative h-1 w-full grow overflow-hidden rounded-full">
+            <SliderPrimitive.Range className="bg-primary absolute h-full" />
           </SliderPrimitive.Track>
-          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-foreground shadow-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+          <SliderPrimitive.Thumb className="bg-foreground ring-offset-background focus-visible:ring-ring block h-4 w-4 rounded-full shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50" />
         </SliderPrimitive.Root>
 
         {/* Bottom row: Min/Max labels */}
         {(minLabel || maxLabel) && (
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground">{minLabel}</span>
-            <span className="text-[10px] text-muted-foreground">{maxLabel}</span>
+            <span className="text-muted-foreground text-[10px]">{minLabel}</span>
+            <span className="text-muted-foreground text-[10px]">{maxLabel}</span>
           </div>
         )}
       </div>

@@ -116,7 +116,7 @@ export function DetectedItemCard({ item }: DetectedItemCardProps) {
   return (
     <div
       className={cn(
-        'group rounded-lg border bg-card/50 transition-all hover:bg-card',
+        'group bg-card/50 hover:bg-card rounded-lg border transition-all',
         hasWarnings ? 'border-warning/30' : 'border-border/50 hover:border-border'
       )}
     >
@@ -134,14 +134,14 @@ export function DetectedItemCard({ item }: DetectedItemCardProps) {
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-foreground" title={item.displayName}>
+          <p className="text-foreground truncate font-medium" title={item.displayName}>
             {item.displayName}
           </p>
           <div className="mt-1.5 flex items-center gap-2">
             <Badge variant={style.badgeVariant} className="text-xs">
               {t(`addonManager.addonTypes.${item.addonType}`)}
             </Badge>
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="text-muted-foreground text-xs tabular-nums">
               {formatSize(item.estimatedSize)}
             </span>
           </div>
@@ -150,7 +150,7 @@ export function DetectedItemCard({ item }: DetectedItemCardProps) {
         {/* Warning indicator */}
         {hasWarnings && (
           <Collapsible open={warningsOpen} onOpenChange={setWarningsOpen}>
-            <CollapsibleTrigger className="flex items-center gap-1 rounded-md px-2 py-1 text-warning transition-colors hover:bg-warning/10">
+            <CollapsibleTrigger className="text-warning hover:bg-warning/10 flex items-center gap-1 rounded-md px-2 py-1 transition-colors">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-xs font-medium">{item.warnings.length}</span>
               <ChevronDown
@@ -165,9 +165,9 @@ export function DetectedItemCard({ item }: DetectedItemCardProps) {
       {hasWarnings && (
         <Collapsible open={warningsOpen} onOpenChange={setWarningsOpen}>
           <CollapsibleContent>
-            <div className="border-t border-warning/20 bg-warning/5 px-3 py-2">
+            <div className="border-warning/20 bg-warning/5 border-t px-3 py-2">
               {item.warnings.map((warning, idx) => (
-                <p key={idx} className="flex items-start gap-2 text-xs text-warning">
+                <p key={idx} className="text-warning flex items-start gap-2 text-xs">
                   <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
                   <span>{warning}</span>
                 </p>

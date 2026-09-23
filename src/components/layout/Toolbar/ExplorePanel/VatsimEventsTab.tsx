@@ -53,22 +53,22 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
               <button
                 key={airport.icao}
                 onClick={() => onSelectAirport(airport.icao)}
-                className="group flex w-full min-w-0 items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
+                className="group hover:bg-muted/50 flex w-full min-w-0 items-center gap-2 rounded px-2 py-1.5 text-left transition-colors"
               >
-                <span className="w-4 font-mono text-xs text-muted-foreground">{index + 1}</span>
-                <span className="shrink-0 font-mono text-sm font-semibold text-info">
+                <span className="text-muted-foreground w-4 font-mono text-xs">{index + 1}</span>
+                <span className="text-info shrink-0 font-mono text-sm font-semibold">
                   {airport.icao}
                 </span>
                 <span className="flex-1" />
                 <span
-                  className="flex items-center gap-1 font-mono text-xs text-success"
+                  className="text-success flex items-center gap-1 font-mono text-xs"
                   title={t('explore.vatsim.departures', 'Departures')}
                 >
                   <PlaneTakeoff className="h-3 w-3" />
                   {airport.departures}
                 </span>
                 <span
-                  className="flex items-center gap-1 font-mono text-xs text-warning"
+                  className="text-warning flex items-center gap-1 font-mono text-xs"
                   title={t('explore.vatsim.arrivals', 'Arrivals')}
                 >
                   <PlaneLanding className="h-3 w-3" />
@@ -85,7 +85,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
         <h4 className="xp-section-heading mb-2">{t('explore.vatsim.events', 'Events')}</h4>
 
         {sortedEvents.length === 0 ? (
-          <p className="py-4 text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground py-4 text-center text-xs">
             {t('explore.vatsim.noEvents', 'No upcoming events')}
           </p>
         ) : (
@@ -100,7 +100,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                   key={event.id}
                   onClick={() => primaryRoute && onSelectAirport(primaryRoute.departure)}
                   disabled={!primaryRoute}
-                  className="block w-full overflow-hidden rounded px-2 py-2 text-left transition-colors hover:bg-muted/50 disabled:opacity-60 disabled:hover:bg-transparent"
+                  className="hover:bg-muted/50 block w-full overflow-hidden rounded px-2 py-2 text-left transition-colors disabled:opacity-60 disabled:hover:bg-transparent"
                 >
                   <div className="flex items-start gap-2">
                     <Badge
@@ -109,13 +109,13 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                     >
                       {status.toUpperCase()}
                     </Badge>
-                    <span className="line-clamp-2 text-sm leading-snug text-foreground">
+                    <span className="text-foreground line-clamp-2 text-sm leading-snug">
                       {event.name}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2 pl-[3.25rem]">
                     {primaryRoute && (
-                      <span className="flex shrink-0 items-center gap-1 font-mono text-xs font-semibold text-info">
+                      <span className="text-info flex shrink-0 items-center gap-1 font-mono text-xs font-semibold">
                         {primaryRoute.departure}
                         <span className="text-muted-foreground/40">
                           {t('explorePanel.vatsimEvents.arrow')}
@@ -123,7 +123,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                         {primaryRoute.arrival}
                       </span>
                     )}
-                    <span className="truncate text-xs text-muted-foreground">{timeInfo}</span>
+                    <span className="text-muted-foreground truncate text-xs">{timeInfo}</span>
                   </div>
                 </button>
               );
@@ -134,7 +134,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
 
       {/* Attribution */}
       <div className="pt-1 text-center">
-        <span className="text-xs text-muted-foreground/50">
+        <span className="text-muted-foreground/50 text-xs">
           {t('explorePanel.vatsimEvents.dataFrom')}{' '}
           <a
             href="https://vatsim.net"

@@ -58,9 +58,9 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
 
   if (targets.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <FolderOutput className="h-4 w-4" />
-        <span className="font-medium text-foreground">
+        <span className="text-foreground font-medium">
           {t('simbrief.export.heading', 'Send to FMS')}
         </span>
         <span>·</span>
@@ -76,9 +76,9 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
 
   if (resolved.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <FolderOutput className="h-4 w-4" />
-        <span className="font-medium text-foreground">
+        <span className="text-foreground font-medium">
           {t('simbrief.export.heading', 'Send to FMS')}
         </span>
         <span>·</span>
@@ -142,8 +142,8 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <FolderOutput className="h-4 w-4 text-muted-foreground" />
+        <div className="text-foreground flex items-center gap-2 text-sm font-medium">
+          <FolderOutput className="text-muted-foreground h-4 w-4" />
           {t('simbrief.export.heading', 'Send to FMS')}
         </div>
         {resolved.length > 1 && (
@@ -167,7 +167,7 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
               {pendingId === entry.id ? (
                 <Spinner />
               ) : (
-                <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                <Send className="text-muted-foreground h-3.5 w-3.5" />
               )}
               <span className="font-medium">{entry.label}</span>
             </Button>

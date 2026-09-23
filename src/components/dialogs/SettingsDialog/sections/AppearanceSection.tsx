@@ -36,7 +36,7 @@ function ZoomSlider({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-muted-foreground">70%</span>
+      <span className="text-muted-foreground text-xs">70%</span>
       <Slider
         value={[display]}
         onValueChange={(v) => {
@@ -55,13 +55,13 @@ function ZoomSlider({
         step={10}
         className="flex-1"
       />
-      <span className="text-xs text-muted-foreground">130%</span>
+      <span className="text-muted-foreground text-xs">130%</span>
       <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
       {persisted !== 100 && (
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs text-muted-foreground"
+          className="text-muted-foreground h-7 text-xs"
           onClick={() => onCommit(1.0)}
         >
           <RotateCcw className="mr-1 h-3 w-3" />
@@ -125,7 +125,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
               onClick={() => setFontSize(size as FontSize)}
               className={
                 appearance.fontSize === size
-                  ? 'ring-1 ring-primary ring-offset-1 ring-offset-background'
+                  ? 'ring-primary ring-offset-background ring-1 ring-offset-1'
                   : undefined
               }
             >
@@ -179,7 +179,7 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           checked={appearance.debugOverlay}
           onCheckedChange={setDebugOverlay}
         />
-        <p className="text-xs text-muted-foreground">{t('settings.about.debugShortcut')}</p>
+        <p className="text-muted-foreground text-xs">{t('settings.about.debugShortcut')}</p>
       </SettingsSectionBlock>
     </div>
   );

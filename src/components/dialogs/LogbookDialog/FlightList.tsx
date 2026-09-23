@@ -54,7 +54,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 font-mono text-sm font-semibold">
           <span>{flight.departure?.icao ?? '----'}</span>
-          <ArrowRight className="h-3 w-3 text-muted-foreground" />
+          <ArrowRight className="text-muted-foreground h-3 w-3" />
           <span>{flight.arrival?.icao ?? '----'}</span>
           {flight.status === 'active' && (
             <Badge variant="success" className="ml-1 px-1.5 py-0 text-[10px]">
@@ -67,7 +67,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
             </Badge>
           )}
         </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
           <Plane className="h-3 w-3" />
           <span className="truncate">{aircraftLabel}</span>
           <span className="text-border">·</span>
@@ -77,7 +77,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
             {Math.round(flight.distanceNm)} {t('units.nm')}
           </span>
         </div>
-        <div className="mt-0.5 text-[11px] text-muted-foreground/60">
+        <div className="text-muted-foreground/60 mt-0.5 text-[11px]">
           {formatDateTime(flight.startedAt, i18n.language)}
         </div>
       </div>
@@ -87,7 +87,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
             <PlaneLanding className="h-3.5 w-3.5" />
             {landing.touchdownRateFpm}
           </div>
-          <span className="text-[10px] uppercase tracking-wide opacity-80">
+          <span className="text-[10px] tracking-wide uppercase opacity-80">
             {t(`landing.rating.${landing.rating}`)}
           </span>
         </div>

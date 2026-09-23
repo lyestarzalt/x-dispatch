@@ -71,7 +71,7 @@ export function AirStartSpeedInput({
         </ToggleGroup>
       </div>
       {!valid && (
-        <p id={`${id}-error`} className="text-xs text-destructive">
+        <p id={`${id}-error`} className="text-destructive text-xs">
           {t('toolbar.pinModes.speedRequired')}
         </p>
       )}

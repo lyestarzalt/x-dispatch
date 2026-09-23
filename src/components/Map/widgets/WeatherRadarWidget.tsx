@@ -55,7 +55,7 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
           variant="ghost"
           size="icon"
           onClick={isPlaying ? pause : play}
-          className="h-7 w-7 text-primary hover:bg-white/10 hover:text-xp-cyan-light"
+          className="text-primary hover:text-xp-cyan-light h-7 w-7 hover:bg-white/10"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -71,8 +71,8 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        <div className="flex items-center gap-1.5 border-l border-border/50 pl-2">
-          <span className="font-mono text-xs font-medium tabular-nums text-primary">
+        <div className="border-border/50 flex items-center gap-1.5 border-l pl-2">
+          <span className="text-primary font-mono text-xs font-medium tabular-nums">
             {timeDisplay}
           </span>
           <span className="text-[10px] text-white/40">

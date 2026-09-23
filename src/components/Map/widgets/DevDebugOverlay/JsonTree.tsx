@@ -86,11 +86,11 @@ function CollapsibleRow({
     <Collapsible>
       <CollapsibleTrigger asChild>
         <button
-          className="group flex w-full items-center gap-1 rounded px-1 py-0.5 text-left text-sm hover:bg-muted/40"
+          className="group hover:bg-muted/40 flex w-full items-center gap-1 rounded px-1 py-0.5 text-left text-sm"
           style={{ paddingLeft: depth * 12 + 4 }}
         >
-          <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/50 transition-transform duration-150 group-data-[state=open]:rotate-90" />
-          <span className="font-medium text-foreground/80">{name}</span>
+          <ChevronRight className="text-muted-foreground/50 h-3 w-3 shrink-0 transition-transform duration-150 group-data-[state=open]:rotate-90" />
+          <span className="text-foreground/80 font-medium">{name}</span>
           <span className={cn('ml-2 truncate text-xs', previewClass)}>{preview}</span>
         </button>
       </CollapsibleTrigger>
@@ -120,7 +120,7 @@ function LeafRow({
       className="flex items-center gap-1 px-1 py-0.5 text-sm"
       style={{ paddingLeft: depth * 12 + 16 }}
     >
-      {name && <span className="font-medium text-foreground/70">{name}</span>}
+      {name && <span className="text-foreground/70 font-medium">{name}</span>}
       {name && <span className="text-muted-foreground/40">:</span>}
       <span className={cn('truncate font-mono text-xs', className)}>{text}</span>
     </div>

@@ -49,7 +49,7 @@ function ToggleRow({
         type="checkbox"
         checked={value}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-3 w-3 cursor-pointer accent-primary"
+        className="accent-primary h-3 w-3 cursor-pointer"
       />
     </label>
   );
