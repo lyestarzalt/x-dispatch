@@ -645,9 +645,6 @@ function Toolbar({
       >
         <Package className="h-4 w-4" />
         <span className="text-sm font-medium">{t('toolbar.addons')}</span>
-        <Badge variant="warning" className="px-1.5 py-0.5 text-[10px] leading-none uppercase">
-          {t('toolbar.alphaTag')}
-        </Badge>
       </Button>
 
       {/* Flight Plan dropdown */}
