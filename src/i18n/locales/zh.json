@@ -1359,6 +1359,7 @@
       "saveOrder": "保存",
       "discardOrder": "放弃",
       "autoSort": "自动排序",
+      "freeReorder": "跨层级移动",
       "backups": "备份 ({{count}})",
       "backupsTitle": "地景备份",
       "backupsDescription": "恢复 scenery_packs.ini 的历史版本",

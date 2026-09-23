@@ -1359,6 +1359,7 @@
       "saveOrder": "Stow",
       "discardOrder": "Toss overboard",
       "autoSort": "Auto-sort the hold",
+      "freeReorder": "Shift cargo between decks",
       "backups": "Backup charts ({{count}})",
       "backupsTitle": "Backup Charts",
       "backupsDescription": "Restore a previous version o' scenery_packs.ini",

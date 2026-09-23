@@ -1363,6 +1363,7 @@
       "saveOrder": "Salva",
       "discardOrder": "Annulla",
       "autoSort": "Ordina automaticamente",
+      "freeReorder": "Sposta tra livelli",
       "backups": "Backup ({{count}})",
       "backupsTitle": "Backup scenari",
       "backupsDescription": "Ripristina una versione precedente di scenery_packs.ini",

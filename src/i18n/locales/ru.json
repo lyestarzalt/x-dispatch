@@ -1359,6 +1359,7 @@
       "saveOrder": "Сохранить",
       "discardOrder": "Отменить",
       "autoSort": "Автосортировка",
+      "freeReorder": "Перемещать между уровнями",
       "backups": "Резервные копии ({{count}})",
       "backupsTitle": "Резервные копии сценариев",
       "backupsDescription": "Восстановить предыдущую версию scenery_packs.ini",

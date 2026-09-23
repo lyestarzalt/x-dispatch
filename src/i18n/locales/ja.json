@@ -1359,6 +1359,7 @@
       "saveOrder": "保存",
       "discardOrder": "破棄",
       "autoSort": "自動ソート",
+      "freeReorder": "階層をまたいで移動",
       "backups": "バックアップ（{{count}}）",
       "backupsTitle": "シーナリーバックアップ",
       "backupsDescription": "scenery_packs.ini の以前のバージョンを復元",

@@ -148,6 +148,7 @@ export function SceneryTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [freeReorder, setFreeReorder] = useState(false);
 
   // Sync local state when remote data changes. We need a local fork so the
   // user can stage reorders/toggles before saving back.
@@ -190,12 +191,11 @@ export function SceneryTab() {
       const oldIndex = localEntries.findIndex((e) => e.folderName === active.id);
       const newIndex = localEntries.findIndex((e) => e.folderName === over.id);
 
-      // Only allow reorder within the same priority tier
+      // By default a pack stays inside its priority tier; free reorder lifts that.
       const oldEntry = localEntries[oldIndex];
       const newEntry = localEntries[newIndex];
-      if (!oldEntry || !newEntry || oldEntry.priority !== newEntry.priority) {
-        return;
-      }
+      if (!oldEntry || !newEntry) return;
+      if (!freeReorder && oldEntry.priority !== newEntry.priority) return;
 
       setLocalEntries(arrayMove(localEntries, oldIndex, newIndex));
       setHasUnsavedChanges(true);
@@ -291,6 +291,15 @@ export function SceneryTab() {
               {t('addonManager.scenery.unsavedChanges')}
             </span>
           )}
+          <label className="text-muted-foreground flex items-center gap-2 text-xs">
+            <Switch
+              checked={freeReorder}
+              onCheckedChange={setFreeReorder}
+              className="scale-75"
+              aria-label={t('addonManager.scenery.freeReorder')}
+            />
+            {t('addonManager.scenery.freeReorder')}
+          </label>
         </div>
 
         {/* Right: actions */}

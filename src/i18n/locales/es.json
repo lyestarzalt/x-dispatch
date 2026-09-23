@@ -1359,6 +1359,7 @@
       "saveOrder": "Guardar",
       "discardOrder": "Descartar",
       "autoSort": "Orden automático",
+      "freeReorder": "Mover entre niveles",
       "backups": "Copias de seguridad ({{count}})",
       "backupsTitle": "Copias de seguridad de escenarios",
       "backupsDescription": "Restaurar una versión anterior de scenery_packs.ini",
