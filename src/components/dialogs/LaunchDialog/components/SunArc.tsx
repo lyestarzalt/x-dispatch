@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import SunCalc from 'suncalc';
+import * as SunCalc from 'suncalc';
 import tzlookup from 'tz-lookup';
 import { Slider } from '@/components/ui/slider';
 import { formatZulu } from '@/lib/utils/format';
@@ -167,7 +167,16 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
     setC(readPalette(document.documentElement));
   }, [theme]);
 
-  const { timezone, sunriseHours, sunsetHours, localTime, zuluTime, dateStr } = useMemo(() => {
+  const {
+    timezone,
+    sunriseHours,
+    sunsetHours,
+    polarDay,
+    polarNight,
+    localTime,
+    zuluTime,
+    dateStr,
+  } = useMemo(() => {
     const tz = tzlookup(latitude, longitude) || 'UTC';
     const today = new Date();
     const times = SunCalc.getTimes(today, latitude, longitude);
@@ -181,15 +190,17 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
 
     return {
       timezone: tz,
-      sunriseHours: getHoursInTimezone(times.sunrise, tz),
-      sunsetHours: getHoursInTimezone(times.sunset, tz),
+      sunriseHours: times.sunrise ? getHoursInTimezone(times.sunrise, tz) : 0,
+      sunsetHours: times.sunset ? getHoursInTimezone(times.sunset, tz) : 24,
+      polarDay: times.alwaysUp === true,
+      polarNight: times.alwaysDown === true,
       localTime: formatHours(timeOfDay),
       zuluTime: formatZulu(timeOfDay),
       dateStr: date,
     };
   }, [latitude, longitude, timeOfDay]);
 
-  const isDay = timeOfDay >= sunriseHours && timeOfDay <= sunsetHours;
+  const isDay = polarDay || (!polarNight && timeOfDay >= sunriseHours && timeOfDay <= sunsetHours);
   // Horizon crosses the curve at sunrise/sunset — shifts with day length
   const dayLength = sunsetHours - sunriseHours;
   const horizY = (0.5 + Math.cos((Math.PI * dayLength) / 24) * -0.26) * H;
@@ -393,13 +404,13 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       <div className="flex items-baseline justify-between">
         <div className="flex items-baseline gap-1.5">
           <span className="font-mono text-lg font-semibold">{localTime}</span>
-          <span className="text-xs text-muted-foreground">{t('sunArc.local')}</span>
+          <span className="text-muted-foreground text-xs">{t('sunArc.local')}</span>
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-[10px]" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
             {statusText}
           </span>
-          <span className="font-mono text-sm text-muted-foreground">{zuluTime}</span>
+          <span className="text-muted-foreground font-mono text-sm">{zuluTime}</span>
         </div>
       </div>
 
@@ -417,7 +428,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       />
 
       {/* Date + timezone */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="text-muted-foreground flex items-center justify-between text-xs">
         <span>{dateStr}</span>
         <span>{timezone.split('/').pop()?.replace('_', ' ')}</span>
       </div>
