@@ -123,7 +123,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           onCheckedChange={handleCrashReportsChange}
           disabled={isLoadingCrashReports}
         />
-        <p className="text-sm text-muted-foreground">{t('settings.about.crashReportsNote')}</p>
+        <p className="text-muted-foreground text-sm">{t('settings.about.crashReportsNote')}</p>
       </div>
     </div>
   );

@@ -105,9 +105,9 @@ export function DatabasePanel() {
   return (
     <div className="-mx-3 -my-2 flex h-[460px] gap-0">
       {/* Sidebar */}
-      <div className="flex w-44 shrink-0 flex-col border-r border-border/30">
+      <div className="border-border/30 flex w-44 shrink-0 flex-col border-r">
         <div className="flex items-center gap-1.5 px-3 py-2">
-          <Database className="h-3.5 w-3.5 text-muted-foreground" />
+          <Database className="text-muted-foreground h-3.5 w-3.5" />
           <span className="xp-section-heading mb-0 border-0 pb-0">Tables</span>
           <Badge variant="outline" className="ml-auto text-xs">
             {totalRows.toLocaleString()}
@@ -130,11 +130,11 @@ export function DatabasePanel() {
                 <ChevronRight
                   className={cn(
                     'h-3 w-3 shrink-0 transition-transform',
-                    selectedTable === table.name && 'rotate-90 text-primary'
+                    selectedTable === table.name && 'text-primary rotate-90'
                   )}
                 />
                 <span className="min-w-0 truncate font-mono text-xs">{table.name}</span>
-                <span className="ml-auto shrink-0 font-mono text-xs text-muted-foreground">
+                <span className="text-muted-foreground ml-auto shrink-0 font-mono text-xs">
                   {table.rowCount.toLocaleString()}
                 </span>
               </button>
@@ -146,7 +146,7 @@ export function DatabasePanel() {
       {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
         {!selectedTable ? (
-          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
             Select a table
           </div>
         ) : (
@@ -154,7 +154,7 @@ export function DatabasePanel() {
             {/* Toolbar */}
             <div className="flex items-center justify-between px-3 py-1.5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-medium text-foreground">
+                <span className="text-foreground font-mono text-sm font-medium">
                   {selectedTable}
                 </span>
                 {selectedInfo && (
@@ -165,7 +165,7 @@ export function DatabasePanel() {
               </div>
               {selectedInfo && (
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {offset + 1}–{Math.min(offset + PAGE_SIZE, selectedInfo.rowCount)}
                   </span>
                   <Button
@@ -196,7 +196,7 @@ export function DatabasePanel() {
 
             {/* Error */}
             {error && (
-              <div className="border-b border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
+              <div className="border-destructive/30 bg-destructive/10 text-destructive border-b px-3 py-1.5 text-xs">
                 {error}
               </div>
             )}
@@ -205,18 +205,18 @@ export function DatabasePanel() {
             <div className="flex-1 overflow-auto">
               {result && result.columns.length > 0 ? (
                 <table className="w-max min-w-full">
-                  <thead className="sticky top-0 z-10 bg-background">
-                    <tr className="border-b border-border">
+                  <thead className="bg-background sticky top-0 z-10">
+                    <tr className="border-border border-b">
                       {result.columns.map((col) => (
                         <th
                           key={col}
-                          className="whitespace-nowrap px-3 py-1.5 text-left text-xs font-medium text-muted-foreground"
+                          className="text-muted-foreground px-3 py-1.5 text-left text-xs font-medium whitespace-nowrap"
                         >
                           {col}
                         </th>
                       ))}
                     </tr>
-                    <tr className="border-b border-border/50 bg-muted/20">
+                    <tr className="border-border/50 bg-muted/20 border-b">
                       {result.columns.map((col) => (
                         <th key={`f-${col}`} className="px-2 py-1">
                           <input
@@ -224,7 +224,7 @@ export function DatabasePanel() {
                             value={filters[col] ?? ''}
                             onChange={(e) => handleFilterChange(col, e.target.value)}
                             placeholder="filter..."
-                            className="w-full min-w-[60px] rounded border border-border/50 bg-background px-1.5 py-0.5 font-mono text-xs font-normal text-foreground placeholder:text-muted-foreground/30 focus:border-primary focus:outline-none"
+                            className="border-border/50 bg-background text-foreground placeholder:text-muted-foreground/30 focus:border-primary w-full min-w-[60px] rounded border px-1.5 py-0.5 font-mono text-xs font-normal focus:outline-none"
                           />
                         </th>
                       ))}
@@ -234,12 +234,12 @@ export function DatabasePanel() {
                     {result.rows.map((row, i) => (
                       <tr
                         key={i}
-                        className="border-b border-border/20 transition-colors hover:bg-muted/30"
+                        className="border-border/20 hover:bg-muted/30 border-b transition-colors"
                       >
                         {row.map((cell, j) => (
                           <td
                             key={j}
-                            className="max-w-[280px] truncate whitespace-nowrap px-3 py-1 font-mono text-xs text-foreground"
+                            className="text-foreground max-w-[280px] truncate px-3 py-1 font-mono text-xs whitespace-nowrap"
                             title={String(cell ?? 'null')}
                           >
                             {cell === null ? (
@@ -255,7 +255,7 @@ export function DatabasePanel() {
                       <tr>
                         <td
                           colSpan={result.columns.length}
-                          className="px-3 py-8 text-center text-sm text-muted-foreground"
+                          className="text-muted-foreground px-3 py-8 text-center text-sm"
                         >
                           No matching rows
                         </td>
@@ -264,7 +264,7 @@ export function DatabasePanel() {
                   </tbody>
                 </table>
               ) : loading ? (
-                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex items-center justify-center py-12 text-sm">
                   Loading...
                 </div>
               ) : null}

@@ -48,7 +48,7 @@ function CustomTooltip({
   if (!point?.ident) return null;
 
   return (
-    <div className="rounded-lg border bg-background px-3 py-2 shadow-xl">
+    <div className="bg-background rounded-lg border px-3 py-2 shadow-xl">
       <div className="mb-1 flex items-center gap-2">
         <span className="font-mono font-semibold">{point.ident}</span>
         {point.isTopOfClimb && (
@@ -146,7 +146,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
   if (data.length < 2) {
     return (
       <div className={className}>
-        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
           {t('simbriefDialog.profile.noData')}
         </div>
       </div>
@@ -272,19 +272,19 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
       {/* Legend */}
       <div className="mt-2 flex items-center justify-center gap-6 text-xs">
         <div className="flex items-center gap-1.5">
-          <div className="h-0.5 w-4 rounded bg-primary" />
+          <div className="bg-primary h-0.5 w-4 rounded" />
           <span className="text-muted-foreground">{t('simbriefDialog.profile.flightPath')}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="h-2 w-4 rounded bg-muted-foreground/30" />
+          <div className="bg-muted-foreground/30 h-2 w-4 rounded" />
           <span className="text-muted-foreground">{t('simbriefDialog.profile.terrain')}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="h-0.5 w-4 rounded border-t-2 border-dashed border-success" />
+          <div className="border-success h-0.5 w-4 rounded border-t-2 border-dashed" />
           <span className="text-muted-foreground">{t('simbriefDialog.profile.tocBadge')}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="h-0.5 w-4 rounded border-t-2 border-dashed border-warning" />
+          <div className="border-warning h-0.5 w-4 rounded border-t-2 border-dashed" />
           <span className="text-muted-foreground">{t('simbriefDialog.profile.todBadge')}</span>
         </div>
         <span className="text-muted-foreground">

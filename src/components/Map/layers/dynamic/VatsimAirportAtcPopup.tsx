@@ -22,12 +22,12 @@ function VatsimAirportAtcPopup({
   );
 
   return (
-    <Card className="w-[360px] overflow-hidden border-border/50 bg-card/95 shadow-2xl">
-      <CardHeader className="border-b border-border/40 bg-background/60 px-4 py-3">
+    <Card className="border-border/50 bg-card/95 w-[360px] overflow-hidden shadow-2xl">
+      <CardHeader className="border-border/40 bg-background/60 border-b px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="font-mono text-sm font-bold text-info">{airport.icao}</div>
-            <div className="truncate text-sm text-foreground">{airport.name}</div>
+            <div className="text-info font-mono text-sm font-bold">{airport.icao}</div>
+            <div className="text-foreground truncate text-sm">{airport.name}</div>
           </div>
           <Badge variant="secondary" className="font-mono text-xs">
             {controllers.length}
@@ -36,7 +36,7 @@ function VatsimAirportAtcPopup({
       </CardHeader>
       <CardContent className="max-h-[320px] space-y-2 overflow-y-auto p-3">
         {rows.map((row) => (
-          <div key={row.id} className="rounded-lg border border-border/40 bg-background/70 p-3">
+          <div key={row.id} className="border-border/40 bg-background/70 rounded-lg border p-3">
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -46,18 +46,18 @@ function VatsimAirportAtcPopup({
                   >
                     {row.badgeLabel}
                   </Badge>
-                  <span className="min-w-0 truncate font-mono text-sm font-semibold text-foreground">
+                  <span className="text-foreground min-w-0 truncate font-mono text-sm font-semibold">
                     {row.callsign}
                   </span>
                 </div>
-                <div className="mt-1 truncate text-sm text-muted-foreground">{row.summary}</div>
+                <div className="text-muted-foreground mt-1 truncate text-sm">{row.summary}</div>
               </div>
               <Badge variant="info" className="font-mono text-xs">
                 {row.frequency}
               </Badge>
             </div>
             {row.detail && (
-              <div className="mt-2 rounded-md border border-border/30 bg-card/80 px-2.5 py-2 font-mono text-xs text-muted-foreground">
+              <div className="border-border/30 bg-card/80 text-muted-foreground mt-2 rounded-md border px-2.5 py-2 font-mono text-xs">
                 {row.detail}
               </div>
             )}

@@ -391,6 +391,18 @@ function createWindow(): BrowserWindow {
 
   window.on('page-title-updated', (e) => e.preventDefault());
 
+  window.webContents.on('console-message', (details) => {
+    if (app.isPackaged && details.level !== 'error' && details.level !== 'warning') return;
+
+    const source = details.sourceId ? ` (${details.sourceId}:${details.lineNumber})` : '';
+    const message = `[Renderer Console] ${details.message}${source}`;
+
+    if (details.level === 'error') logger.error(message);
+    else if (details.level === 'warning') logger.warn(message);
+    else if (details.level === 'debug') logger.debug(message);
+    else logger.info(message);
+  });
+
   if (!app.isPackaged) {
     // titleBarStyle 'hidden' leaves the window without a native menu bar, so the default
     // menu's DevTools accelerators never reach it.

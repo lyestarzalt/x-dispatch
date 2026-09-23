@@ -47,14 +47,14 @@ export function BriefingTab({ data }: BriefingTabProps) {
       <div className="space-y-4">
         {/* SIGMETs Section */}
         {hasSigmets && (
-          <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
+          <div className="border-warning/30 bg-warning/5 rounded-lg border p-4">
             <div className="mb-1 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-warning" />
-              <h4 className="text-sm font-semibold text-warning">
+              <AlertTriangle className="text-warning h-4 w-4" />
+              <h4 className="text-warning text-sm font-semibold">
                 {t('simbrief.briefing.sigmetsTitle', { count: sigmetList.length })}
               </h4>
             </div>
-            <p className="mb-3 text-[11px] text-warning/70">{t('simbrief.briefing.sigmetsDesc')}</p>
+            <p className="text-warning/70 mb-3 text-[11px]">{t('simbrief.briefing.sigmetsDesc')}</p>
             <div className="space-y-2">
               {sigmetList.map((sigmet, i) => (
                 <SigmetCard key={sigmet.id || i} sigmet={sigmet} />
@@ -64,8 +64,8 @@ export function BriefingTab({ data }: BriefingTabProps) {
         )}
 
         {!hasSigmets && (
-          <div className="rounded-lg border bg-card p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="bg-card rounded-lg border p-4">
+            <div className="text-muted-foreground flex items-center gap-2">
               <Cloud className="h-4 w-4" />
               <span className="text-sm">{t('simbrief.briefing.noSigmets')}</span>
             </div>
@@ -74,12 +74,12 @@ export function BriefingTab({ data }: BriefingTabProps) {
 
         {/* FIR Route */}
         {firRoute.length > 0 && (
-          <div className="rounded-lg border bg-card p-4">
-            <h4 className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="bg-card rounded-lg border p-4">
+            <h4 className="text-muted-foreground mb-1 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
               <MapPin className="h-3.5 w-3.5" />
               {t('simbrief.briefing.firTitle')}
             </h4>
-            <p className="mb-2 text-[11px] text-muted-foreground">
+            <p className="text-muted-foreground mb-2 text-[11px]">
               {t('simbrief.briefing.firDesc')}
             </p>
             <div className="flex flex-wrap items-center gap-1">
@@ -89,7 +89,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
                     {fir}
                   </Badge>
                   {i < firRoute.length - 1 && (
-                    <Plane className="mx-1 h-3 w-3 rotate-90 text-muted-foreground" />
+                    <Plane className="text-muted-foreground mx-1 h-3 w-3 rotate-90" />
                   )}
                 </div>
               ))}
@@ -101,16 +101,16 @@ export function BriefingTab({ data }: BriefingTabProps) {
 
         {/* NOTAMs Section */}
         <div>
-          <h4 className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h4 className="text-muted-foreground mb-1 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
             <FileWarning className="h-3.5 w-3.5" />
             {t('simbrief.briefing.notamsTitle')}
           </h4>
-          <p className="mb-3 text-[11px] text-muted-foreground">
+          <p className="text-muted-foreground mb-3 text-[11px]">
             {t('simbrief.briefing.notamsDesc')}
           </p>
 
           {!hasNotams ? (
-            <div className="rounded-lg border bg-card p-4 text-center text-sm text-muted-foreground">
+            <div className="bg-card text-muted-foreground rounded-lg border p-4 text-center text-sm">
               {t('simbrief.briefing.noNotams')}
             </div>
           ) : (
@@ -153,23 +153,23 @@ export function BriefingTab({ data }: BriefingTabProps) {
 
         {/* Transition Altitudes Summary */}
         <Separator />
-        <div className="rounded-lg border bg-card p-4">
-          <h4 className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4">
+          <h4 className="text-muted-foreground mb-1 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
             <Info className="h-3.5 w-3.5" />
             {t('simbrief.briefing.transAltTitle')}
           </h4>
-          <p className="mb-3 text-[11px] text-muted-foreground">
+          <p className="text-muted-foreground mb-3 text-[11px]">
             {t('simbrief.briefing.transAltDesc')}
           </p>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-sm text-muted-foreground">{origin.icao_code}</p>
+              <p className="text-muted-foreground text-sm">{origin.icao_code}</p>
               <p className="font-mono text-sm font-medium">
                 {t('simbriefDialog.briefing.transAltAbbr', { value: origin.trans_alt || '—' })}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{destination.icao_code}</p>
+              <p className="text-muted-foreground text-sm">{destination.icao_code}</p>
               <p className="font-mono text-sm font-medium">
                 {t('simbriefDialog.briefing.transLevelAbbr', {
                   value: destination.trans_level || '—',
@@ -178,7 +178,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
             </div>
             {alternate && (
               <div>
-                <p className="text-sm text-muted-foreground">{alternate.icao_code}</p>
+                <p className="text-muted-foreground text-sm">{alternate.icao_code}</p>
                 <p className="font-mono text-sm font-medium">
                   {t('simbriefDialog.briefing.transLevelAbbr', {
                     value: alternate.trans_level || '—',
@@ -225,7 +225,7 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
       <CollapsibleTrigger className="w-full">
         <div
           className={cn(
-            'flex items-center justify-between rounded-md border p-2 transition-colors hover:bg-muted/20',
+            'hover:bg-muted/20 flex items-center justify-between rounded-md border p-2 transition-colors',
             colorClasses
           )}
         >
@@ -243,9 +243,9 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-1 rounded-md bg-muted/30 p-3 text-sm">
+        <div className="bg-muted/30 mt-1 rounded-md p-3 text-sm">
           <p className="font-mono leading-relaxed">{sigmet.text}</p>
-          <div className="mt-2 flex items-center gap-4 text-[10px] text-muted-foreground">
+          <div className="text-muted-foreground mt-2 flex items-center gap-4 text-[10px]">
             <span>
               {t('simbriefDialog.briefing.sigmetValid', {
                 start: formatSigmetTime(sigmet.start),
@@ -289,9 +289,9 @@ function NotamSection({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="w-full">
-        <div className="flex items-center justify-between rounded-lg border bg-card p-3 transition-colors hover:bg-muted/20">
+        <div className="bg-card hover:bg-muted/20 flex items-center justify-between rounded-lg border p-3 transition-colors">
           <div className="flex items-center gap-3">
-            <Icon className="h-4 w-4 text-muted-foreground" />
+            <Icon className="text-muted-foreground h-4 w-4" />
             <div className="text-left">
               <div className="flex items-center gap-2">
                 <span className="font-mono font-medium">{icao}</span>
@@ -299,7 +299,7 @@ function NotamSection({
                   {label}
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">{name}</p>
+              <p className="text-muted-foreground text-sm">{name}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -314,7 +314,7 @@ function NotamSection({
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="ml-4 mt-2 space-y-2 border-l-2 border-muted pl-4">
+        <div className="border-muted mt-2 ml-4 space-y-2 border-l-2 pl-4">
           {/* Runway NOTAMs first (more important) */}
           {runwayNotams.map((notam, i) => (
             <NotamCard key={notam.notam_id || i} notam={notam} isRunway />
@@ -352,7 +352,7 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
               RUNWAY
             </Badge>
           )}
-          <p className="font-mono leading-relaxed text-foreground/80">
+          <p className="text-foreground/80 font-mono leading-relaxed">
             {isExpanded ? notam.notam_text : previewText}
             {hasMore && !isExpanded && '...'}
           </p>
@@ -370,7 +370,7 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
         </div>
       </div>
       {notam.date_effective && (
-        <p className="mt-1 text-[10px] text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-[10px]">
           {notam.date_expire
             ? t('simbriefDialog.briefing.notamEffectiveRange', {
                 start: formatNotamDate(notam.date_effective),

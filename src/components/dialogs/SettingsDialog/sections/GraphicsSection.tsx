@@ -143,7 +143,7 @@ export function GraphicsSection() {
         <div className="space-y-2 pt-2">
           <div>
             <p className="text-sm font-medium">{t('settings.graphics.airfieldLights')}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {t('settings.graphics.airfieldLightsDesc')}
             </p>
           </div>

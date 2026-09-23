@@ -21,13 +21,13 @@ export function SettingsLinkRow({ label, href, leadingIcon }: SettingsLinkRowPro
     <Button
       variant="ghost"
       onClick={() => void openSettingsExternalLink(href)}
-      className="h-auto w-full justify-between gap-3 px-3 py-2 text-sm hover:bg-secondary"
+      className="hover:bg-secondary h-auto w-full justify-between gap-3 px-3 py-2 text-sm"
     >
       <span className="flex min-w-0 items-center gap-1.5">
         {leadingIcon}
         <span className="truncate">{label}</span>
       </span>
-      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+      <ExternalLink className="text-muted-foreground h-3.5 w-3.5" />
     </Button>
   );
 }

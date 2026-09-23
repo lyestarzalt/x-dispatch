@@ -873,10 +873,12 @@ export default function Map({ airports }: MapProps) {
   return (
     <div className="relative h-full w-full overflow-hidden">
       {/* MapLibre container - fills entire viewport */}
-      <div ref={mapContainerRef} className="absolute inset-0" />
+      <div className="absolute inset-0">
+        <div ref={mapContainerRef} className="h-full w-full" />
+      </div>
 
       {/* Top bar overlay - full width, above sidebar */}
-      <div className="absolute left-4 right-4 top-4 z-30 space-y-2">
+      <div className="absolute top-4 right-4 left-4 z-30 space-y-2">
         <Toolbar
           airports={airports}
           onSelectAirport={selectAirport}

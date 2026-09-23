@@ -22,13 +22,13 @@ const CollapsibleSectionTrigger = React.forwardRef<
   <CollapsiblePrimitive.CollapsibleTrigger
     ref={ref}
     className={cn(
-      'group flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 transition-colors hover:bg-accent/50',
+      'group hover:bg-accent/50 flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 transition-colors',
       className
     )}
     {...props}
   >
-    <ChevronRight className="mr-1.5 h-3 w-3 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-90" />
-    <span className="flex-1 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <ChevronRight className="text-muted-foreground mr-1.5 h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+    <span className="text-muted-foreground flex-1 text-left text-xs font-medium tracking-wider uppercase">
       {children}
     </span>
     {indicator}

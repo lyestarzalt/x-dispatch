@@ -82,16 +82,16 @@ function AirportInfoPanel({
   return (
     <div
       className={cn(
-        'absolute bottom-4 right-4 z-20 transition-all duration-300 ease-out',
+        'absolute right-4 bottom-4 z-20 transition-all duration-300 ease-out',
         showFlightPlanBar ? 'top-28' : 'top-16',
         isCollapsed ? 'w-12' : 'w-80'
       )}
     >
-      <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/95 shadow-xl backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
         {/* Collapsed state */}
         <div
           className={cn(
-            'absolute inset-0 z-20 flex flex-col items-center bg-card/95 py-5 transition-opacity duration-200',
+            'bg-card/95 absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
             isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
           )}
         >
@@ -104,7 +104,7 @@ function AirportInfoPanel({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span
-            className="font-mono text-sm font-bold tracking-wider text-foreground"
+            className="text-foreground font-mono text-sm font-bold tracking-wider"
             style={{ writingMode: 'vertical-rl' }}
           >
             {airport.id}
@@ -116,7 +116,7 @@ function AirportInfoPanel({
           variant="ghost"
           size="icon"
           className={cn(
-            'absolute right-3 top-3 z-10 h-7 w-7 text-muted-foreground/40 hover:text-foreground',
+            'text-muted-foreground/40 hover:text-foreground absolute top-3 right-3 z-10 h-7 w-7',
             isCollapsed && 'pointer-events-none opacity-0'
           )}
           onClick={() => setIsCollapsed(true)}
@@ -125,12 +125,12 @@ function AirportInfoPanel({
         </Button>
 
         {/* Header - Dense pilot info */}
-        <div className="border-b border-border/30 px-4 pb-3 pt-4">
+        <div className="border-border/30 border-b px-4 pt-4 pb-3">
           {/* Row 1: ICAO + Flight Category */}
           <div className="flex items-center justify-between gap-2 pr-8">
             <div className="flex items-baseline gap-2">
-              <h1 className="font-mono text-xl font-bold tracking-tight text-info">{airport.id}</h1>
-              <span className="font-mono text-xs text-muted-foreground">
+              <h1 className="text-info font-mono text-xl font-bold tracking-tight">{airport.id}</h1>
+              <span className="text-muted-foreground font-mono text-xs">
                 {elevation}' {transitionAlt && `TA${transitionAlt}'`}
               </span>
             </div>
@@ -138,7 +138,7 @@ function AirportInfoPanel({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground/60 hover:text-foreground"
+                className="text-muted-foreground/60 hover:text-foreground h-7 w-7"
                 onClick={() => toggleFavoriteAirport(airport.id)}
                 tooltip={
                   favoriteIcaos.includes(airport.id)
@@ -149,14 +149,14 @@ function AirportInfoPanel({
                 <Star
                   className={cn(
                     'h-4 w-4',
-                    favoriteIcaos.includes(airport.id) && 'fill-current text-warning'
+                    favoriteIcaos.includes(airport.id) && 'text-warning fill-current'
                   )}
                 />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground/60 hover:text-foreground"
+                className="text-muted-foreground/60 hover:text-foreground h-7 w-7"
                 onClick={() => setHomeAirport(homeIcao === airport.id ? null : airport.id)}
                 tooltip={
                   homeIcao === airport.id
@@ -165,7 +165,7 @@ function AirportInfoPanel({
                 }
               >
                 <Home
-                  className={cn('h-4 w-4', homeIcao === airport.id && 'fill-current text-primary')}
+                  className={cn('h-4 w-4', homeIcao === airport.id && 'text-primary fill-current')}
                 />
               </Button>
               {flightCategory && (
@@ -189,9 +189,9 @@ function AirportInfoPanel({
 
           {/* Row 2: Airport Name + IATA */}
           <div className="mt-1 flex items-baseline gap-2">
-            <p className="text-sm text-muted-foreground">{airport.name}</p>
+            <p className="text-muted-foreground text-sm">{airport.name}</p>
             {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="text-muted-foreground font-mono text-xs">
                 ({airport.metadata.iata_code})
               </span>
             )}
@@ -199,7 +199,7 @@ function AirportInfoPanel({
 
           {/* Row 3: Location */}
           {(airport.metadata.city || airport.metadata.country) && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {[
                 airport.metadata.city,
                 airport.metadata.state,
@@ -213,9 +213,9 @@ function AirportInfoPanel({
 
         {/* Selected position indicator */}
         {selectedStartPosition && (
-          <div className="flex items-center justify-between border-b border-border/30 bg-cat-emerald/5 px-4 py-2">
-            <span className="text-xs text-cat-emerald/70">{t('airportInfo.tabs.start')}</span>
-            <span className="font-mono text-sm font-medium text-cat-emerald">
+          <div className="border-border/30 bg-cat-emerald/5 flex items-center justify-between border-b px-4 py-2">
+            <span className="text-cat-emerald/70 text-xs">{t('airportInfo.tabs.start')}</span>
+            <span className="text-cat-emerald font-mono text-sm font-medium">
               {selectedStartPosition.name}
             </span>
           </div>

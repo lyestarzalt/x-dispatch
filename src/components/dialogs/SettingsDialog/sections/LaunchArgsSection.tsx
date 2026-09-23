@@ -68,17 +68,17 @@ export default function LaunchArgsSection() {
     <div className="space-y-3">
       <div>
         <h3 className="xp-section-heading">{t('settings.xplane.launchArgs')}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           {t('settings.xplane.launchArgsDescription')}
         </p>
       </div>
 
       {sessionArgs.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground">
+          <p className="text-muted-foreground text-xs font-medium">
             {t('settings.xplane.launchArgsSessionTitle')}
           </p>
-          <p className="text-xs text-muted-foreground/80">
+          <p className="text-muted-foreground/80 text-xs">
             {t('settings.xplane.launchArgsSessionSubtext')}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -126,7 +126,7 @@ export default function LaunchArgsSection() {
                         />
                         <div className="min-w-0 flex-1">
                           <span className="font-mono text-xs">{item.arg}</span>
-                          <p className="truncate text-xs text-muted-foreground">
+                          <p className="text-muted-foreground truncate text-xs">
                             {item.description}
                           </p>
                         </div>
@@ -166,7 +166,7 @@ export default function LaunchArgsSection() {
 
       {customLaunchArgs.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-success">
+          <p className="text-success text-xs font-medium">
             {sessionArgs.length > 0
               ? t('settings.xplane.launchArgsSavedTitle')
               : t('settings.xplane.launchArgsActive', { count: customLaunchArgs.length })}

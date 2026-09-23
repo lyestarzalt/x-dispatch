@@ -84,7 +84,7 @@ export default function StartTab({
 
   if (tabs.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-12 text-center text-sm">
         {t('airportInfo.noStartPositions')}
       </p>
     );
@@ -95,11 +95,11 @@ export default function StartTab({
       {/* View toggle - only show if multiple categories */}
       {tabs.length > 1 && (
         <Tabs value={viewType} onValueChange={handleTabChange}>
-          <TabsList variant="line" className="gap-3 border-border/30">
+          <TabsList variant="line" className="border-border/30 gap-3">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id} className="px-0 text-sm">
                 {t(tab.labelKey)}
-                <span className="ml-1.5 text-muted-foreground/50">{tab.count}</span>
+                <span className="text-muted-foreground/50 ml-1.5">{tab.count}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -109,20 +109,20 @@ export default function StartTab({
       {/* Search input - only show for lists > 8 items */}
       {showSearch && (
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
           <Input
             type="text"
             placeholder={t('airportInfo.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 border-border/50 bg-muted/30 pl-8 pr-8"
+            className="border-border/50 bg-muted/30 h-8 pr-8 pl-8"
           />
           {searchQuery && (
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSearchQuery('')}
-              className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2"
             >
               <X className="h-3.5 w-3.5" />
             </Button>
@@ -240,7 +240,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
 
   if (gates.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-8 text-center text-sm">
         {t('sidebar.noGatesFound')}
       </p>
     );
@@ -248,7 +248,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
 
   if (filteredGates.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-8 text-center text-sm">
         {t('airportInfo.noMatchingGates', { query: searchQuery })}
       </p>
     );
@@ -271,7 +271,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
               'rounded px-2.5 py-2',
               isSelected
                 ? 'bg-cat-emerald/10 text-cat-emerald'
-                : 'cursor-pointer text-foreground/80 hover:bg-muted/50'
+                : 'text-foreground/80 hover:bg-muted/50 cursor-pointer'
             )}
             onClick={() =>
               onSelect?.({
@@ -288,7 +288,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
             <div className="flex items-center justify-between">
               <span className="font-mono text-sm">{gate.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-muted-foreground/50">
+                <span className="text-muted-foreground/50 text-[10px]">
                   {Math.round(gate.heading)}°
                 </span>
                 {isSelected && <Check className="h-3.5 w-3.5" />}
@@ -391,7 +391,7 @@ function RunwayList({
 
   if (runways.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-8 text-center text-sm">
         {t('sidebar.noRunwaysFound')}
       </p>
     );
@@ -399,7 +399,7 @@ function RunwayList({
 
   if (filteredRunways.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-8 text-center text-sm">
         {t('airportInfo.noRunwaysMatching', { query: searchQuery })}
       </p>
     );
@@ -426,12 +426,12 @@ function RunwayList({
             {/* Runway header */}
             <button
               onClick={() => onSelectRunway?.(runway)}
-              className="mb-1.5 flex h-auto w-full items-baseline justify-between rounded px-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="focus-visible:ring-ring focus-visible:ring-offset-background mb-1.5 flex h-auto w-full items-baseline justify-between rounded px-0 text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
-              <span className="font-mono text-sm font-semibold text-foreground">
+              <span className="text-foreground font-mono text-sm font-semibold">
                 {e1.name}/{e2.name}
               </span>
-              <span className="text-[10px] text-muted-foreground/50">
+              <span className="text-muted-foreground/50 text-[10px]">
                 {t('airportInfo.runwayDimensions', {
                   length: lengthFt.toLocaleString(),
                   width: widthFt,
@@ -510,7 +510,7 @@ function RunwayStartOptions({
   const { t } = useTranslation();
 
   return (
-    <div className="mt-2 space-y-2.5 rounded-lg border border-border/40 bg-muted/20 p-3">
+    <div className="border-border/40 bg-muted/20 mt-2 space-y-2.5 rounded-lg border p-3">
       {/* Mode toggle: Threshold / Approach / Tow */}
       <div className="flex items-center gap-1">
         {RUNWAY_START_MODES.map((m) => (
@@ -536,12 +536,12 @@ function RunwayStartOptions({
       {mode === 'approach' && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {t('airportInfo.runway.distance')}
             </span>
-            <span className="font-mono text-sm text-foreground">
+            <span className="text-foreground font-mono text-sm">
               {approachDistance}
-              <span className="ml-0.5 text-xs text-muted-foreground">nm</span>
+              <span className="text-muted-foreground ml-0.5 text-xs">nm</span>
             </span>
           </div>
           <Slider
@@ -604,7 +604,7 @@ function RunwayStartOptions({
             </Button>
           </div>
           {towType === 'tug' && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {t('airportInfo.runway.tugAircraft', 'Tow plane: Cessna 172 SP')}
             </span>
           )}
@@ -641,7 +641,7 @@ function HelipadList({
 
   if (helipads.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-8 text-center text-sm">
         {t('airportInfo.noHelipads')}
       </p>
     );
@@ -649,7 +649,7 @@ function HelipadList({
 
   if (filteredHelipads.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground/60">
+      <p className="text-muted-foreground/60 py-8 text-center text-sm">
         {t('airportInfo.noHelipadsMatching', { query: searchQuery })}
       </p>
     );
@@ -686,7 +686,7 @@ function HelipadList({
           >
             <span className="font-mono text-sm">{helipad.name}</span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground/50">{sizeFt}</span>
+              <span className="text-muted-foreground/50 text-[10px]">{sizeFt}</span>
               {isSelected && <Check className="h-3.5 w-3.5" />}
             </div>
           </Button>

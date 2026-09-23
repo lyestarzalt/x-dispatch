@@ -2,7 +2,7 @@ import type { LayerStatus } from '../layerInspector';
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-0.5 mt-1 text-sm uppercase tracking-wider text-muted-foreground/40 first:mt-0">
+    <div className="text-muted-foreground/40 mt-1 mb-0.5 text-sm tracking-wider uppercase first:mt-0">
       {children}
     </div>
   );
@@ -39,25 +39,25 @@ export function Row({
 export function PathRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-4 py-px" title={value}>
-      <span className="shrink-0 text-muted-foreground/70">{label}</span>
-      <span className="min-w-0 truncate text-foreground">{value}</span>
+      <span className="text-muted-foreground/70 shrink-0">{label}</span>
+      <span className="text-foreground min-w-0 truncate">{value}</span>
     </div>
   );
 }
 
 export function Legend() {
   return (
-    <div className="mt-1.5 flex items-center gap-3 border-t border-border/30 pt-1.5 text-sm text-muted-foreground/40">
+    <div className="border-border/30 text-muted-foreground/40 mt-1.5 flex items-center gap-3 border-t pt-1.5 text-sm">
       <span className="flex items-center gap-1" title="Layer is rendering normally">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
+        <span className="bg-success inline-block h-1.5 w-1.5 rounded-full" />
         drawn
       </span>
       <span className="flex items-center gap-1" title="Hidden, out of zoom range, or loading">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-warning" />
+        <span className="bg-warning inline-block h-1.5 w-1.5 rounded-full" />
         warn
       </span>
       <span className="flex items-center gap-1" title="Empty source or missing source">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
+        <span className="bg-destructive inline-block h-1.5 w-1.5 rounded-full" />
         error
       </span>
     </div>
@@ -78,7 +78,7 @@ export function StatusDot({ status }: { status: LayerStatus }) {
 export function OrderBadge({ order }: { order: number }) {
   return (
     <span
-      className="inline-flex h-4 w-6 shrink-0 items-center justify-center rounded bg-muted/50 text-sm tabular-nums text-foreground/50"
+      className="bg-muted/50 text-foreground/50 inline-flex h-4 w-6 shrink-0 items-center justify-center rounded text-sm tabular-nums"
       title={`Draw order ${order} — lower = behind, higher = on top`}
     >
       {order}

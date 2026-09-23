@@ -91,7 +91,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           className="flex h-full"
         >
           {/* Sidebar Navigation */}
-          <div className="flex w-56 flex-col border-r bg-muted/30">
+          <div className="bg-muted/30 flex w-56 flex-col border-r">
             <div className="p-4">
               <DialogHeader>
                 <DialogTitle className="text-base font-semibold">{t('settings.title')}</DialogTitle>
@@ -110,7 +110,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     className={cn(
                       'w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium',
                       'data-[state=active]:bg-background data-[state=active]:shadow-sm',
-                      'transition-colors hover:bg-background/50'
+                      'hover:bg-background/50 transition-colors'
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -122,7 +122,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             {/* Version Footer */}
             <div className="border-t p-4">
-              <p className="font-mono text-sm text-muted-foreground">{version && `v${version}`}</p>
+              <p className="text-muted-foreground font-mono text-sm">{version && `v${version}`}</p>
             </div>
           </div>
 

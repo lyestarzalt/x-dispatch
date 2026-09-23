@@ -37,29 +37,29 @@ export default function AboutSection({ className }: SettingsSectionProps) {
       <div className="flex flex-col items-center pt-2 text-center">
         <AppLogo size="lg" className="mb-4" />
         <h1 className="xp-detail-heading">X-Dispatch</h1>
-        <p className="mt-1 font-mono text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 font-mono text-sm">
           {version ? `v${version}` : t('common.loading')}
         </p>
         {updateStatus === 'outdated' && update?.latestVersion && (
           <button
             type="button"
             onClick={() => window.appAPI.openExternal(update.url)}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-info/40 bg-info/5 px-2.5 py-1 text-xs text-info transition-colors hover:bg-info/10"
+            className="border-info/40 bg-info/5 text-info hover:bg-info/10 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors"
           >
             <Download className="h-3.5 w-3.5" />
             {t('settings.about.updateAvailable', { version: update.latestVersion })}
           </button>
         )}
         {updateStatus === 'current' && (
-          <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-success">
+          <p className="text-success mt-2 inline-flex items-center gap-1.5 text-xs">
             <CircleCheck className="h-3.5 w-3.5" />
             {t('settings.about.upToDate')}
           </p>
         )}
-        <p className="mt-3 max-w-md text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-3 max-w-md text-sm">
           {t('settings.about.projectNotice')}
         </p>
-        <p className="mt-2 max-w-md text-xs text-muted-foreground">
+        <p className="text-muted-foreground mt-2 max-w-md text-xs">
           {t('settings.about.independenceNotice')}
         </p>
       </div>
@@ -110,14 +110,14 @@ export default function AboutSection({ className }: SettingsSectionProps) {
       {/* Data Storage */}
       <div className="space-y-3">
         <h3 className="xp-section-heading">{t('settings.about.dataStorage')}</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {t('settings.about.dataStorageDescription')}
         </p>
 
         {/* Config Path */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               {t('settings.about.settingsCache')}
             </span>
             <Button
@@ -137,7 +137,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         {/* Log Path */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">{t('settings.about.logFile')}</span>
+            <span className="text-muted-foreground text-sm">{t('settings.about.logFile')}</span>
             <div className="flex gap-1">
               <Button
                 variant="ghost"

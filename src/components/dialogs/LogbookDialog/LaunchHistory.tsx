@@ -142,12 +142,12 @@ export function LaunchHistory() {
   return (
     <div className="flex h-full flex-col">
       {logbook.length > 0 && (
-        <div className="flex flex-shrink-0 items-center justify-end border-b border-border/40 px-4 py-1.5">
+        <div className="border-border/40 flex flex-shrink-0 items-center justify-end border-b px-4 py-1.5">
           <Button
             variant="ghost"
             size="sm"
             onClick={clearLogbook}
-            className="h-7 text-xs text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive h-7 text-xs"
           >
             <Trash2 className="mr-1.5 h-3.5 w-3.5" />
             {t('launcher.logbook.clearAll')}
@@ -157,14 +157,14 @@ export function LaunchHistory() {
       <ScrollArea className="flex-1">
         {logbook.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 p-12 text-center">
-            <History className="h-10 w-10 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">{t('launcher.logbook.empty')}</p>
-            <p className="text-xs text-muted-foreground/60">{t('launcher.logbook.emptyHint')}</p>
+            <History className="text-muted-foreground/40 h-10 w-10" />
+            <p className="text-muted-foreground text-sm">{t('launcher.logbook.empty')}</p>
+            <p className="text-muted-foreground/60 text-xs">{t('launcher.logbook.emptyHint')}</p>
           </div>
         ) : (
           <>
-            <div className="border-b border-border/40 bg-muted/20 px-4 py-2">
-              <p className="text-xs text-muted-foreground">{t('launcher.logbook.shareHint')}</p>
+            <div className="border-border/40 bg-muted/20 border-b px-4 py-2">
+              <p className="text-muted-foreground text-xs">{t('launcher.logbook.shareHint')}</p>
             </div>
             <div className="flex flex-col gap-2 p-4">
               {logbook.map((entry) => (
@@ -207,7 +207,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
   return (
     <button
       type="button"
-      className="group relative flex items-stretch overflow-hidden rounded-xl border border-border/50 bg-card/90 text-left transition-colors hover:border-primary/40"
+      className="group border-border/50 bg-card/90 hover:border-primary/40 relative flex items-stretch overflow-hidden rounded-xl border text-left transition-colors"
       onClick={() => onRestore(entry)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -228,15 +228,15 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
         ) : (
           <Plane className="text-muted-foreground/8 h-12 w-12" />
         )}
-        <div className="absolute inset-y-0 right-0 w-10 bg-gradient-to-r from-transparent to-card/90" />
+        <div className="to-card/90 absolute inset-y-0 right-0 w-10 bg-gradient-to-r from-transparent" />
       </div>
 
       {/* ── Aircraft identity + flight config ─────────────── */}
-      <div className="flex min-w-0 flex-1 flex-col justify-between py-2.5 pl-2 pr-3">
+      <div className="flex min-w-0 flex-1 flex-col justify-between py-2.5 pr-3 pl-2">
         {/* Row 1: Aircraft name + ICAO badge */}
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-semibold text-foreground">
+            <span className="text-foreground truncate text-sm font-semibold">
               {entry.aircraftName}
             </span>
             {entry.aircraftICAO && (
@@ -246,12 +246,12 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
             )}
           </div>
           {entry.livery !== 'Default' && (
-            <span className="block truncate text-xs text-muted-foreground">{entry.livery}</span>
+            <span className="text-muted-foreground block truncate text-xs">{entry.livery}</span>
           )}
         </div>
 
         {/* Row 2: Metadata as icon·value pairs (AircraftPreview dot-separator pattern) */}
-        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
           <WeatherIcon className="h-3 w-3 shrink-0" />
           <span>{getWeatherLabel(entry)}</span>
           <span className="text-border">·</span>
@@ -275,12 +275,12 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       </div>
 
       {/* ── Separator ─────────────────────────────────────── */}
-      <div className="h-auto w-px self-stretch bg-border/30" />
+      <div className="bg-border/30 h-auto w-px self-stretch" />
 
       {/* ── Location ──────────────────────────────────────── */}
-      <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 pb-7 pt-2">
+      <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 pt-2 pb-7">
         {isCustomPosition ? (
-          <span className="font-mono text-sm font-bold leading-tight text-foreground">
+          <span className="text-foreground font-mono text-sm leading-tight font-bold">
             {entry.startPosition.latitude >= 0 ? 'N' : 'S'}
             {Math.abs(entry.startPosition.latitude).toFixed(3)}°{' '}
             {entry.startPosition.longitude >= 0 ? 'E' : 'W'}
@@ -288,15 +288,15 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
           </span>
         ) : (
           <>
-            <span className="font-mono text-lg font-bold leading-none text-foreground">
+            <span className="text-foreground font-mono text-lg leading-none font-bold">
               {entry.airportICAO}
             </span>
             {entry.airportName && (
-              <span className="mt-0.5 max-w-full truncate text-right text-xs text-muted-foreground">
+              <span className="text-muted-foreground mt-0.5 max-w-full truncate text-right text-xs">
                 {entry.airportName}
               </span>
             )}
-            <span className="mt-1 font-mono text-sm font-medium text-primary">
+            <span className="text-primary mt-1 font-mono text-sm font-medium">
               {entry.positionType === 'runway' ? `RWY ${entry.positionName}` : entry.positionName}
             </span>
           </>
@@ -304,13 +304,13 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       </div>
 
       {/* ── Bottom-right cluster: timestamp + actions ─────── */}
-      <div className="absolute bottom-1.5 right-2 z-10 flex items-center gap-1.5">
-        <span className="font-mono text-[10px] text-muted-foreground/40">
+      <div className="absolute right-2 bottom-1.5 z-10 flex items-center gap-1.5">
+        <span className="text-muted-foreground/40 font-mono text-[10px]">
           {formatRelativeTime(entry.launchedAt)}
         </span>
         <button
           type="button"
-          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/60 hover:bg-secondary hover:text-foreground"
+          className="text-muted-foreground/60 hover:bg-secondary hover:text-foreground flex h-5 w-5 items-center justify-center rounded"
           onClick={(e) => {
             e.stopPropagation();
             handleCopyJson();
@@ -323,7 +323,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
         <button
           type="button"
           className={cn(
-            'flex h-5 w-5 items-center justify-center rounded text-muted-foreground/60 transition-opacity hover:bg-destructive/10 hover:text-destructive',
+            'text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive flex h-5 w-5 items-center justify-center rounded transition-opacity',
             hovered ? 'opacity-100' : 'opacity-0'
           )}
           onClick={(e) => {

@@ -103,7 +103,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
       </div>
 
       {observations.length === 0 ? (
-        <p className="py-6 text-center text-xs text-muted-foreground">
+        <p className="text-muted-foreground py-6 text-center text-xs">
           {t('explore.weather.noneNow')}
         </p>
       ) : (
@@ -126,20 +126,20 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                 className={cn(
                   'group flex w-full min-w-0 items-start gap-3 overflow-hidden rounded px-2 py-2 text-left transition-colors',
                   known
-                    ? 'cursor-pointer hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none'
+                    ? 'hover:bg-muted/50 focus-visible:bg-muted/50 cursor-pointer focus-visible:outline-none'
                     : 'cursor-default'
                 )}
               >
-                <span className="mt-px shrink-0 font-mono text-sm font-semibold text-info">
+                <span className="text-info mt-px shrink-0 font-mono text-sm font-semibold">
                   {observation.icao}
                 </span>
 
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-sm font-medium text-foreground">
+                    <span className="text-foreground truncate text-sm font-medium">
                       {airport?.name ?? t('explore.weather.unknownStation')}
                     </span>
-                    <span className="flex shrink-0 items-baseline gap-1.5 font-mono text-xs tabular-nums text-muted-foreground">
+                    <span className="text-muted-foreground flex shrink-0 items-baseline gap-1.5 font-mono text-xs tabular-nums">
                       {observation.ceilingFeet !== null && (
                         <span>{observation.ceilingFeet.toLocaleString()}ft</span>
                       )}
@@ -162,7 +162,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                         G{observation.gustKt}
                       </Badge>
                     )}
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-muted-foreground text-[10px]">
                       {t('explore.weather.minutesAgo', { minutes: observation.ageMinutes })}
                     </span>
                   </div>
@@ -174,7 +174,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                         event.stopPropagation();
                         window.appAPI.openExternal(GATEWAY_URL);
                       }}
-                      className="flex items-center gap-1 text-[10px] text-muted-foreground underline-offset-2 hover:underline"
+                      className="text-muted-foreground flex items-center gap-1 text-[10px] underline-offset-2 hover:underline"
                     >
                       <ExternalLink className="h-2.5 w-2.5" />
                       {t('explore.weather.notInXPlane')}

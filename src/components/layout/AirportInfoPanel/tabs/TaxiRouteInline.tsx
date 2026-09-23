@@ -141,7 +141,7 @@ export default function TaxiRouteInline() {
   const isArrival = direction === 'arrival';
 
   return (
-    <div className="space-y-2 border-t border-border/30 pt-2">
+    <div className="border-border/30 space-y-2 border-t pt-2">
       {/* Direction toggle — only meaningful in network mode. */}
       {isNetwork && (
         <ToggleGroup

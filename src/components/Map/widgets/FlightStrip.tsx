@@ -110,17 +110,17 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
       >
         {/* Status indicator */}
         <div className="flex items-center gap-1.5 px-3 py-2">
-          <div className="h-2 w-2 animate-pulse rounded-full bg-success" />
-          <Plane className="h-3.5 w-3.5 text-primary" />
+          <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
+          <Plane className="text-primary h-3.5 w-3.5" />
           {(planeState?.icaoType || planeState?.tailNumber) && (
             <div
               className="flex flex-col leading-tight"
               title={planeState?.aircraftName || undefined}
             >
-              <span className="font-mono text-xs font-semibold text-foreground">
+              <span className="text-foreground font-mono text-xs font-semibold">
                 {planeState?.icaoType}
               </span>
-              <span className="font-mono text-[10px] text-muted-foreground">
+              <span className="text-muted-foreground font-mono text-[10px]">
                 {planeState?.tailNumber}
               </span>
             </div>
@@ -222,7 +222,7 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 // --- Sub-components ---
 
 function GroupSeparator() {
-  return <div className="h-8 w-px bg-border/50" />;
+  return <div className="bg-border/50 h-8 w-px" />;
 }
 
 interface DataBlockProps {
@@ -235,7 +235,7 @@ interface DataBlockProps {
 function DataBlock({ label, value, unit, valueColor }: DataBlockProps) {
   return (
     <div className="flex flex-col items-center">
-      <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
       <div className="flex items-baseline gap-0.5">
         <span
           className={cn(
@@ -245,7 +245,7 @@ function DataBlock({ label, value, unit, valueColor }: DataBlockProps) {
         >
           {value}
         </span>
-        <span className="text-xs text-muted-foreground">{unit}</span>
+        <span className="text-muted-foreground text-xs">{unit}</span>
       </div>
     </div>
   );

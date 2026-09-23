@@ -32,19 +32,19 @@ export function FloatingPanel({
   return (
     <div
       ref={panelRef}
-      className="fixed z-[60] max-h-[80vh] min-h-[120px] min-w-[280px] select-none resize overflow-auto rounded-lg border border-border/40 bg-background font-mono text-sm text-muted-foreground shadow-2xl"
+      className="border-border/40 bg-background text-muted-foreground fixed z-[60] max-h-[80vh] min-h-[120px] min-w-[280px] resize overflow-auto rounded-lg border font-mono text-sm shadow-2xl select-none"
       style={{ left: pos.x, top: pos.y }}
     >
       <div
         onMouseDown={onMouseDown}
-        className="sticky top-0 z-10 flex cursor-grab items-center justify-between border-b border-border/40 bg-background px-3 py-1 active:cursor-grabbing"
+        className="border-border/40 bg-background sticky top-0 z-10 flex cursor-grab items-center justify-between border-b px-3 py-1 active:cursor-grabbing"
       >
-        <span className="text-sm font-semibold uppercase tracking-wider text-foreground/60">
+        <span className="text-foreground/60 text-sm font-semibold tracking-wider uppercase">
           {label}
         </span>
         <button
           onClick={onClose}
-          className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/40 hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground/40 hover:bg-muted hover:text-foreground flex h-4 w-4 items-center justify-center rounded"
         >
           ×
         </button>

@@ -147,9 +147,9 @@ export function MapStylePicker({
           </Button>
         </div>
         {errorMessage ? (
-          <p className="text-xs text-destructive">{errorMessage}</p>
+          <p className="text-destructive text-xs">{errorMessage}</p>
         ) : (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {t('settings.graphics.customStyleHint', { placeholder: '{z}/{x}/{y}' })}
           </p>
         )}
@@ -183,7 +183,7 @@ function StyleButton({
         title={url}
         className={cn(
           'w-full',
-          active && 'ring-1 ring-primary ring-offset-1 ring-offset-background',
+          active && 'ring-primary ring-offset-background ring-1 ring-offset-1',
           onRemove && 'pr-7'
         )}
       >
@@ -198,7 +198,7 @@ function StyleButton({
           }}
           aria-label={t('settings.graphics.customStyleRemove', { name: label })}
           className={cn(
-            'absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded p-0.5 transition hover:bg-muted hover:text-foreground',
+            'hover:bg-muted hover:text-foreground absolute top-1/2 right-1 z-10 -translate-y-1/2 rounded p-0.5 transition',
             active
               ? 'text-primary-foreground/70 opacity-80 hover:opacity-100'
               : 'text-muted-foreground opacity-60 hover:opacity-100'

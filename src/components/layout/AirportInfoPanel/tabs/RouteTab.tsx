@@ -75,14 +75,14 @@ export default function RouteTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Spinner className="size-5 text-primary" />
+        <Spinner className="text-primary size-5" />
       </div>
     );
   }
 
   if (!procedures || (counts.SID === 0 && counts.STAR === 0 && counts.APP === 0)) {
     return (
-      <p className="py-12 text-center text-sm text-muted-foreground/60">{t('procedures.noData')}</p>
+      <p className="text-muted-foreground/60 py-12 text-center text-sm">{t('procedures.noData')}</p>
     );
   }
 
@@ -90,11 +90,11 @@ export default function RouteTab() {
     <div>
       {/* Type toggle */}
       <Tabs value={activeType} onValueChange={handleTypeChange} className="mb-6">
-        <TabsList variant="line" className="gap-4 border-border/30">
+        <TabsList variant="line" className="border-border/30 gap-4">
           {(['SID', 'STAR', 'APP'] as ProcedureType[]).map((type) => (
             <TabsTrigger key={type} value={type} className="px-0 text-sm">
               {type === 'APP' ? t('airportInfo.routeTab.tabApproach') : type}
-              <span className="ml-2 text-muted-foreground/50">{counts[type]}</span>
+              <span className="text-muted-foreground/50 ml-2">{counts[type]}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -102,7 +102,7 @@ export default function RouteTab() {
 
       {/* Procedure list */}
       {grouped.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground/60">
+        <p className="text-muted-foreground/60 py-8 text-center text-sm">
           {activeType === 'APP'
             ? t('airportInfo.routeTab.noneApproaches')
             : t('airportInfo.routeTab.noneAvailable', { type: `${activeType}s` })}
@@ -150,7 +150,7 @@ export default function RouteTab() {
                   <span className="font-mono text-sm">{proc.name}</span>
                   <div className="flex items-center gap-2">
                     {subtitle && (
-                      <span className="text-xs text-muted-foreground/50">{subtitle}</span>
+                      <span className="text-muted-foreground/50 text-xs">{subtitle}</span>
                     )}
                     {isSelected && <Check className="h-4 w-4" />}
                   </div>
@@ -198,11 +198,11 @@ export default function RouteTab() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm">{group.name}</span>
-                    <span className="text-xs text-muted-foreground/50">{variantLabel}</span>
+                    <span className="text-muted-foreground/50 text-xs">{variantLabel}</span>
                   </div>
                   <ChevronRight
                     className={cn(
-                      'h-4 w-4 text-muted-foreground transition-transform',
+                      'text-muted-foreground h-4 w-4 transition-transform',
                       isExpanded && 'rotate-90'
                     )}
                   />
@@ -210,7 +210,7 @@ export default function RouteTab() {
 
                 {/* Variants: transitions for approaches, runways for SID/STAR */}
                 {isExpanded && (
-                  <div className="ml-4 mt-1 space-y-1 border-l border-border/30 pl-3">
+                  <div className="border-border/30 mt-1 ml-4 space-y-1 border-l pl-3">
                     {group.variants.map((proc, idx) => {
                       const isSelected =
                         selectedProcedure?.name === proc.name &&

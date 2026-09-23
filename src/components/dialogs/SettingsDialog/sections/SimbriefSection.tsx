@@ -66,14 +66,14 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             disabled={!localPilotId || fetchMutation.isPending}
           >
             {fetchMutation.isPending && <Spinner className="mr-2" />}
-            {fetchMutation.isSuccess && <Check className="mr-2 h-4 w-4 text-success" />}
-            {fetchMutation.isError && <X className="mr-2 h-4 w-4 text-destructive" />}
+            {fetchMutation.isSuccess && <Check className="text-success mr-2 h-4 w-4" />}
+            {fetchMutation.isError && <X className="text-destructive mr-2 h-4 w-4" />}
             {t('common.test', 'Test')}
           </Button>
         </div>
 
         {fetchMutation.isSuccess && (
-          <div className="rounded-md bg-success/10 p-3 text-sm text-success">
+          <div className="bg-success/10 text-success rounded-md p-3 text-sm">
             {t('settings.simbrief.testSuccessFull', {
               message: t('settings.simbrief.testSuccess'),
               origin: fetchMutation.data.origin.icao_code,
@@ -84,12 +84,12 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
         )}
 
         {fetchMutation.isError && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
             {fetchMutation.error.message}
           </div>
         )}
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {t(
             'settings.simbrief.pilotIdNote',
             'Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.'

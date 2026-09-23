@@ -39,7 +39,7 @@ function LiveryPreview({
           className="h-full w-full object-contain p-4"
         />
       ) : (
-        <Plane className="h-20 w-20 text-muted-foreground/10" />
+        <Plane className="text-muted-foreground/10 h-20 w-20" />
       )}
     </div>
   );
@@ -69,15 +69,15 @@ function LiveryCard({
         'group h-20 flex-col overflow-hidden border p-0',
         isSelected
           ? 'border-primary bg-primary/5'
-          : 'border-transparent bg-secondary hover:border-border hover:bg-accent'
+          : 'bg-secondary hover:border-border hover:bg-accent border-transparent'
       )}
     >
       <div className="relative flex-1 overflow-hidden">
         {displayImage ? (
           <img src={displayImage} alt={livery.displayName} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted">
-            <Plane className="h-5 w-5 text-muted-foreground/20" />
+          <div className="bg-muted flex h-full w-full items-center justify-center">
+            <Plane className="text-muted-foreground/20 h-5 w-5" />
           </div>
         )}
       </div>
@@ -85,7 +85,7 @@ function LiveryCard({
         <span
           className={cn(
             'block truncate text-center text-sm',
-            isSelected ? 'font-medium text-primary' : 'text-muted-foreground'
+            isSelected ? 'text-primary font-medium' : 'text-muted-foreground'
           )}
         >
           {livery.displayName}
@@ -153,7 +153,7 @@ export function AircraftPreview() {
 
   if (!selectedAircraft) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
         {t('launcher.selectAircraft')}
       </div>
     );
@@ -164,18 +164,18 @@ export function AircraftPreview() {
       {/* Aircraft Preview with Info */}
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Aircraft Info Header */}
-        <div className="flex-shrink-0 bg-gradient-to-b from-background to-transparent px-4 py-3">
+        <div className="from-background flex-shrink-0 bg-gradient-to-b to-transparent px-4 py-3">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold text-foreground">{selectedAircraft.name}</h2>
+                <h2 className="text-foreground text-xl font-semibold">{selectedAircraft.name}</h2>
                 {selectedAircraft.icao && (
                   <Badge variant="secondary" className="font-mono">
                     {selectedAircraft.icao}
                   </Badge>
                 )}
               </div>
-              <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="text-muted-foreground mt-1 flex items-center gap-3 text-sm">
                 <span>{selectedAircraft.manufacturer}</span>
                 {selectedAircraft.emptyWeight > 0 && (
                   <>
@@ -200,7 +200,7 @@ export function AircraftPreview() {
                     <span className="text-border">·</span>
                     <span className="flex items-center gap-1">
                       <Tag className="h-3.5 w-3.5" />
-                      <span className="font-mono font-medium text-primary">
+                      <span className="text-primary font-mono font-medium">
                         {selectedAircraft.tailNumber}
                       </span>
                     </span>
@@ -208,11 +208,11 @@ export function AircraftPreview() {
                 )}
               </div>
             </div>
-            <div className="flex-shrink-0 rounded-lg bg-secondary/80 px-2.5 py-1.5 backdrop-blur-sm">
+            <div className="bg-secondary/80 flex-shrink-0 rounded-lg px-2.5 py-1.5 backdrop-blur-sm">
               <span className="text-sm font-medium">
                 {currentLivery?.displayName ?? t('launcher.liveries.default')}
               </span>
-              <span className="ml-2 text-sm text-muted-foreground">
+              <span className="text-muted-foreground ml-2 text-sm">
                 {currentIndex + 1}/{selectedAircraft.liveries.length}
               </span>
             </div>
@@ -231,7 +231,7 @@ export function AircraftPreview() {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute left-3 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+                className="absolute top-1/2 left-3 h-8 w-8 -translate-y-1/2 rounded-full"
                 onClick={goToPrevious}
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -240,7 +240,7 @@ export function AircraftPreview() {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute right-3 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full"
+                className="absolute top-1/2 right-3 h-8 w-8 -translate-y-1/2 rounded-full"
                 onClick={goToNext}
               >
                 <ArrowRight className="h-4 w-4" />
@@ -252,12 +252,12 @@ export function AircraftPreview() {
       </div>
 
       {/* Livery Selection Grid - Shows 2 rows, scrolls if more */}
-      <div className="flex flex-shrink-0 flex-col bg-card/50">
-        <div className="flex flex-shrink-0 items-center justify-between border-b border-border/30 px-4 py-2">
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bg-card/50 flex flex-shrink-0 flex-col">
+        <div className="border-border/30 flex flex-shrink-0 items-center justify-between border-b px-4 py-2">
+          <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             {t('launcher.liveries.title')}
           </span>
-          <span className="text-sm text-muted-foreground">{selectedAircraft.liveries.length}</span>
+          <span className="text-muted-foreground text-sm">{selectedAircraft.liveries.length}</span>
         </div>
         <ScrollArea
           viewportClassName={LIVERY_VIEWPORT_CLASS}

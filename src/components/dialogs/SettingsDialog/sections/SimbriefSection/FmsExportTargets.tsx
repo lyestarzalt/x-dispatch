@@ -33,10 +33,10 @@ export function FmsExportTargets() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="xp-section-heading flex items-center gap-2">
-            <FolderOutput className="h-4 w-4 text-muted-foreground" />
+            <FolderOutput className="text-muted-foreground h-4 w-4" />
             {t('settings.simbrief.fmsExportTargets.heading', 'FMS export targets')}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             {t(
               'settings.simbrief.fmsExportTargets.description',
               "Drop the SimBrief flight plan into your aircraft's flight-plan folder."
@@ -62,13 +62,13 @@ export function FmsExportTargets() {
             <li key={target.id} className="flex items-center gap-2 rounded-lg border p-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-foreground">{target.label}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-foreground text-sm font-medium">{target.label}</span>
+                  <span className="text-muted-foreground text-xs">
                     {getFmsFormatLabel(target.formatKey)}
                   </span>
                 </div>
                 <div
-                  className="truncate font-mono text-xs text-muted-foreground"
+                  className="text-muted-foreground truncate font-mono text-xs"
                   title={target.folderPath}
                 >
                   {target.folderPath}

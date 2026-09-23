@@ -44,19 +44,19 @@ export function TitleBar() {
 
   return (
     <header
-      className="relative z-[70] flex h-9 w-full shrink-0 select-none items-center gap-2 border-b border-border/40 bg-background text-xs text-muted-foreground"
+      className="border-border/40 bg-background text-muted-foreground relative z-[70] flex h-9 w-full shrink-0 items-center gap-2 border-b text-xs select-none"
       style={{
         ...dragStyle,
         paddingLeft: isMac ? MAC_TRAFFIC_LIGHT_OFFSET : '0.75rem',
         paddingRight: isMac ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
       }}
     >
-      <span className="font-medium tracking-tight text-foreground">X-Dispatch</span>
+      <span className="text-foreground font-medium tracking-tight">X-Dispatch</span>
       {version && <span className="font-mono">{t('titleBar.version', { version })}</span>}
       {installation && (
         <>
           <span className="text-border">·</span>
-          <span className="truncate text-primary">{installation}</span>
+          <span className="text-primary truncate">{installation}</span>
         </>
       )}
       <DebugMenu />
@@ -78,9 +78,9 @@ function DebugMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            'flex items-center gap-1.5 rounded px-2 py-0.5 font-mono text-xs uppercase tracking-wider',
+            'flex items-center gap-1.5 rounded px-2 py-0.5 font-mono text-xs tracking-wider uppercase',
             'text-muted-foreground/70 hover:bg-muted/40 hover:text-foreground',
-            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+            'focus-visible:ring-ring focus-visible:ring-1 focus-visible:outline-none',
             detached.length > 0 && 'text-primary'
           )}
           aria-label="Debug panels (Ctrl+Shift+D to toggle)"
@@ -88,7 +88,7 @@ function DebugMenu() {
           <Bug className="h-3 w-3" />
           <span>{t('titleBar.debug')}</span>
           {detached.length > 0 && (
-            <span className="ml-0.5 rounded bg-primary/20 px-1 text-[10px]">{detached.length}</span>
+            <span className="bg-primary/20 ml-0.5 rounded px-1 text-[10px]">{detached.length}</span>
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
@@ -107,7 +107,7 @@ function DebugMenu() {
                 className={cn('flex items-center justify-between', isOpen && 'text-primary')}
               >
                 <span>{tab.label}</span>
-                {isOpen && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                {isOpen && <span className="bg-primary h-1.5 w-1.5 rounded-full" />}
               </DropdownMenuItem>
             );
           })}

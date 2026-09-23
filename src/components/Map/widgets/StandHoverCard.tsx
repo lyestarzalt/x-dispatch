@@ -25,7 +25,7 @@ export default function StandHoverCard({ hover }: StandHoverCardProps) {
 
   return (
     <div
-      className="pointer-events-none absolute z-30 w-56 rounded-md border border-border bg-background/90 p-2.5 text-xs shadow-lg backdrop-blur"
+      className="border-border bg-background/90 pointer-events-none absolute z-30 w-56 rounded-md border p-2.5 text-xs shadow-lg backdrop-blur"
       style={{ left: hover.x + CURSOR_OFFSET_PX, top: hover.y + CURSOR_OFFSET_PX }}
     >
       <div className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export default function StandHoverCard({ hover }: StandHoverCardProps) {
         />
         <span className="truncate text-sm font-semibold">{hover.name}</span>
       </div>
-      <div className="mt-1 text-muted-foreground">
+      <div className="text-muted-foreground mt-1">
         {t(`stands.operation.${hover.operation}`)}
         {hover.widthCode && wingspan !== undefined && (
           <>
@@ -51,7 +51,7 @@ export default function StandHoverCard({ hover }: StandHoverCardProps) {
             return (
               <span
                 key={code}
-                className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]"
+                className="bg-muted rounded px-1.5 py-0.5 font-mono text-[10px]"
                 title={name}
               >
                 {name ?? code}
@@ -59,13 +59,13 @@ export default function StandHoverCard({ hover }: StandHoverCardProps) {
             );
           })}
           {more > 0 && (
-            <span className="px-1 py-0.5 text-[10px] text-muted-foreground">
+            <span className="text-muted-foreground px-1 py-0.5 text-[10px]">
               {t('stands.moreAirlines', { count: more })}
             </span>
           )}
         </div>
       )}
-      <div className="mt-2 text-[10px] text-muted-foreground">{t('stands.clickToStart')}</div>
+      <div className="text-muted-foreground mt-2 text-[10px]">{t('stands.clickToStart')}</div>
     </div>
   );
 }

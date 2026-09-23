@@ -165,7 +165,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
               )}
             >
               <div className="mb-1 flex items-center gap-2">
-                {isActive && <Check className="h-4 w-4 shrink-0 text-success" />}
+                {isActive && <Check className="text-success h-4 w-4 shrink-0" />}
                 {isEditing ? (
                   <Input
                     value={editName}
@@ -221,7 +221,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive h-7 w-7"
                         onClick={() => handleRemove(install.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -230,7 +230,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                   )}
                 </div>
               </div>
-              <p className="truncate font-mono text-sm text-muted-foreground">{install.path}</p>
+              <p className="text-muted-foreground truncate font-mono text-sm">{install.path}</p>
             </div>
           );
         })}
@@ -238,8 +238,8 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
 
       {/* Pending add: name input + confirm */}
       {pendingPath ? (
-        <div className="space-y-3 rounded-lg border border-primary/50 bg-primary/5 p-4">
-          <p className="truncate font-mono text-sm text-muted-foreground">{pendingPath}</p>
+        <div className="border-primary/50 bg-primary/5 space-y-3 rounded-lg border p-4">
+          <p className="text-muted-foreground truncate font-mono text-sm">{pendingPath}</p>
           <div className="space-y-1.5">
             <Label htmlFor="install-name" className="text-sm">
               {t('settings.xplane.name')} <span className="text-destructive">*</span>
@@ -291,7 +291,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">{t('settings.xplane.closeOnLaunch')}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {t('settings.xplane.closeOnLaunchDescription')}
           </p>
         </div>

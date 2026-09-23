@@ -37,7 +37,7 @@ export function RoutesTab({ selectedRoute, onSelectRoute }: RoutesTabProps) {
             >
               {route.from}
             </span>
-            <span className="text-xs text-muted-foreground/40">
+            <span className="text-muted-foreground/40 text-xs">
               {t('explorePanel.routes.arrow')}
             </span>
             <span

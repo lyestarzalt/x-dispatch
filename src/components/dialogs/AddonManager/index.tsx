@@ -62,7 +62,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          className="fixed inset-x-6 bottom-6 top-[60px] z-50 flex overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
+          className="border-border bg-background fixed inset-x-6 top-[60px] bottom-6 z-50 flex overflow-hidden rounded-xl border shadow-2xl"
           aria-describedby={undefined}
         >
           <VisuallyHidden.Root>
@@ -70,11 +70,11 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
           </VisuallyHidden.Root>
 
           {/* Sidebar Navigation */}
-          <nav className="flex w-56 shrink-0 flex-col border-r border-border bg-card/50">
+          <nav className="border-border bg-card/50 flex w-56 shrink-0 flex-col border-r">
             {/* Sidebar Header */}
-            <div className="flex h-14 items-center gap-3 border-b border-border px-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Package className="h-4 w-4 text-primary" />
+            <div className="border-border flex h-14 items-center gap-3 border-b px-4">
+              <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-lg">
+                <Package className="text-primary h-4 w-4" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold">{t('addonManager.title')}</h2>
@@ -119,7 +119,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                     </div>
                     {/* Active indicator */}
                     {isActive && (
-                      <div className="absolute right-0 h-8 w-0.5 rounded-l-full bg-primary" />
+                      <div className="bg-primary absolute right-0 h-8 w-0.5 rounded-l-full" />
                     )}
                   </Button>
                 );
@@ -127,12 +127,12 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
             </div>
 
             {/* Sidebar Footer */}
-            <div className="border-t border-border p-3">
+            <div className="border-border border-t p-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleOpenXPlaneFolder}
-                className="w-full justify-start gap-2 text-sm text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground w-full justify-start gap-2 text-sm"
               >
                 <FolderOpen className="h-3.5 w-3.5" />
                 {t('addonManager.openXPlaneFolder')}
@@ -143,7 +143,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
           {/* Main Content Area */}
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             {/* Content Header with close button */}
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
+            <div className="border-border flex h-14 shrink-0 items-center justify-between border-b px-6">
               <div>
                 <h3 className="text-base font-medium">
                   {t(NAV_ITEMS.find((i) => i.id === activeTab)?.labelKey || '')}
@@ -153,7 +153,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-8 w-8"
               >
                 <X className="h-4 w-4" />
               </Button>

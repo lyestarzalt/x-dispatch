@@ -47,14 +47,14 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
           <button
             key={airport.icao}
             onClick={() => onSelectAirport(airport.icao)}
-            className="group flex w-full min-w-0 items-start gap-3 overflow-hidden rounded px-2 py-2 text-left transition-colors hover:bg-muted/50"
+            className="group hover:bg-muted/50 flex w-full min-w-0 items-start gap-3 overflow-hidden rounded px-2 py-2 text-left transition-colors"
           >
-            <span className="mt-px shrink-0 font-mono text-sm font-semibold text-info">
+            <span className="text-info mt-px shrink-0 font-mono text-sm font-semibold">
               {airport.icao}
             </span>
             <div className="min-w-0 flex-1 space-y-0.5">
-              <div className="truncate text-sm font-medium text-foreground">{airport.tagline}</div>
-              <div className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+              <div className="text-foreground truncate text-sm font-medium">{airport.tagline}</div>
+              <div className="text-muted-foreground line-clamp-2 text-xs leading-snug">
                 {airport.description}
               </div>
             </div>

@@ -123,7 +123,10 @@ export default function InfoTab() {
     [vatsimData, icao]
   );
   const primaryAtis = atis[0];
-  const atisRunways = primaryAtis ? parseATISRunways(primaryAtis) : [];
+  const atisRunways = useMemo(
+    () => (primaryAtis ? parseATISRunways(primaryAtis) : []),
+    [primaryAtis]
+  );
   const atisLetter = vatsimEnabled && primaryAtis?.atis_code ? primaryAtis.atis_code : null;
   const vatsimRows = useMemo(() => buildAirportAtcRows(controllers, atis), [controllers, atis]);
   const liveTraffic = vatsimEnabled
@@ -228,7 +231,7 @@ export default function InfoTab() {
         <Button
           variant="ghost"
           onClick={() => window.appAPI.openExternal(gatewayUpdate.gatewayUrl)}
-          className="group h-auto w-full gap-3 border border-primary/15 bg-primary/5 p-3 text-left hover:bg-primary/10"
+          className="group border-primary/15 bg-primary/5 hover:bg-primary/10 h-auto w-full gap-3 border p-3 text-left"
         >
           <img
             src={gatewayLogo}
@@ -236,9 +239,9 @@ export default function InfoTab() {
             className="h-5 w-auto shrink-0 opacity-50 transition-opacity group-hover:opacity-70"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-primary">{t('airportInfo.gateway.updateAvailable')}</p>
+            <p className="text-primary text-xs">{t('airportInfo.gateway.updateAvailable')}</p>
             {(gatewayUpdate.artistName || gatewayUpdate.dateApproved) && (
-              <p className="mt-0.5 text-[10px] text-muted-foreground">
+              <p className="text-muted-foreground mt-0.5 text-[10px]">
                 {t('airportInfo.gateway.credit', {
                   artist: gatewayUpdate.artistName,
                   date: gatewayUpdate.dateApproved
@@ -252,7 +255,7 @@ export default function InfoTab() {
               </p>
             )}
           </div>
-          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/30 group-hover:text-primary/60" />
+          <ExternalLink className="text-primary/30 group-hover:text-primary/60 h-3.5 w-3.5 shrink-0" />
         </Button>
       )}
 
@@ -308,7 +311,7 @@ function ConditionsCard({
   const { t } = useTranslation();
   if (!metar && !activeRunway && !liveTraffic) {
     return (
-      <div className="rounded-lg bg-muted/10 p-3 text-center text-sm text-muted-foreground">
+      <div className="bg-muted/10 text-muted-foreground rounded-lg p-3 text-center text-sm">
         {t('airportInfo.noWeather')}
       </div>
     );
@@ -318,16 +321,16 @@ function ConditionsCard({
     <section>
       {showTraffic && (
         <div className="mb-1.5 flex justify-end">
-          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="text-muted-foreground flex items-center gap-2 text-xs">
             <span
-              className="flex items-center gap-1 text-cat-emerald"
+              className="text-cat-emerald flex items-center gap-1"
               aria-label={`${liveTraffic.departures} departures`}
             >
               <PlaneTakeoff className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.departures}</span>
             </span>
             <span
-              className="flex items-center gap-1 text-cat-amber"
+              className="text-cat-amber flex items-center gap-1"
               aria-label={`${liveTraffic.arrivals} arrivals`}
             >
               <PlaneLanding className="h-3 w-3" />
@@ -337,7 +340,7 @@ function ConditionsCard({
         </div>
       )}
       {metar && (
-        <div className="rounded-lg bg-card/40 px-3 py-2.5 text-sm">
+        <div className="bg-card/40 rounded-lg px-3 py-2.5 text-sm">
           <KvRow label={t('airportInfo.conditions.wind')} value={formatWind(metar.wind)} />
           <KvRow
             label={t('airportInfo.conditions.visibility')}
@@ -425,7 +428,7 @@ function RunwaysSection({
     <section>
       <div className="mb-1.5 flex items-baseline justify-between">
         <h4 className="xp-section-heading mb-0 border-b-0">{t('airportInfo.runwaysHeading')}</h4>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {t('airportInfo.runwayCountTotal', { count: runways.length })}
         </span>
       </div>
@@ -490,7 +493,7 @@ function RunwayRow({
     <li
       className={cn(
         'rounded px-2.5 py-1.5',
-        isActive ? 'bg-cat-emerald/10 ring-1 ring-cat-emerald/30' : 'bg-muted/20'
+        isActive ? 'bg-cat-emerald/10 ring-cat-emerald/30 ring-1' : 'bg-muted/20'
       )}
     >
       <Collapsible>
@@ -508,7 +511,7 @@ function RunwayRow({
               <CollapsibleTrigger asChild>
                 <Badge
                   variant="info"
-                  className="group cursor-pointer gap-1 px-1.5 py-0 font-mono uppercase hover:bg-info/30"
+                  className="group hover:bg-info/30 cursor-pointer gap-1 px-1.5 py-0 font-mono uppercase"
                 >
                   <ChevronDown className="h-3 w-3 transition-transform duration-150 group-data-[state=open]:rotate-180" />
                   ILS
@@ -516,14 +519,14 @@ function RunwayRow({
               </CollapsibleTrigger>
             )}
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <span className="font-mono tabular-nums">{length.toLocaleString()}'</span>
             <span className="text-muted-foreground/70">{surface}</span>
           </div>
         </div>
         {hasIls && (
           <CollapsibleContent>
-            <div className="mt-2 space-y-2 border-t border-border/40 pt-2">
+            <div className="border-border/40 mt-2 space-y-2 border-t pt-2">
               {ilsEnds.map(({ endName, ils, gs }) => (
                 <IlsDetail key={endName} endName={endName} ils={ils} gs={gs} />
               ))}
@@ -557,7 +560,7 @@ function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Na
   // KvRows indented under it.
   return (
     <div className="text-sm">
-      <h5 className="mb-0.5 text-xs uppercase tracking-wider text-muted-foreground/70">
+      <h5 className="text-muted-foreground/70 mb-0.5 text-xs tracking-wider uppercase">
         {t('airportInfo.runwayName', { name: endName })}
       </h5>
       <div className="pl-1">
@@ -606,10 +609,10 @@ function FrequenciesSection({
           {t('airportInfo.frequencies', 'Frequencies')}
         </h4>
         {vatsimEnabled && onlineCount > 0 && (
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cat-emerald" />
+          <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <span className="bg-cat-emerald h-1.5 w-1.5 animate-pulse rounded-full" />
             <span>
-              <span className="font-mono tabular-nums text-foreground">{onlineCount}</span>{' '}
+              <span className="text-foreground font-mono tabular-nums">{onlineCount}</span>{' '}
               {t('common.online')}
             </span>
           </span>
@@ -630,7 +633,7 @@ function FrequenciesSection({
           variant="outline"
           size="sm"
           onClick={onToggle}
-          className="mt-2 h-8 w-full justify-center gap-1.5 border-border/60 bg-muted/10 text-xs text-muted-foreground hover:bg-muted/30 hover:text-foreground"
+          className="border-border/60 bg-muted/10 text-muted-foreground hover:bg-muted/30 hover:text-foreground mt-2 h-8 w-full justify-center gap-1.5 text-xs"
         >
           {showAll ? (
             <>
@@ -673,7 +676,7 @@ function FrequencyRow({
         className={cn(
           'h-auto w-full flex-col items-stretch gap-0 rounded-md px-2.5 py-1.5 text-left',
           live
-            ? 'bg-cat-emerald/5 ring-1 ring-cat-emerald/25 hover:bg-cat-emerald/10'
+            ? 'bg-cat-emerald/5 ring-cat-emerald/25 hover:bg-cat-emerald/10 ring-1'
             : 'bg-muted/20 hover:bg-muted/40'
         )}
       >
@@ -681,11 +684,11 @@ function FrequencyRow({
           <div className="flex min-w-0 items-center gap-2">
             {live ? (
               <span className="relative flex h-1.5 w-1.5 shrink-0" aria-label={t('common.online')}>
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cat-emerald/60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cat-emerald" />
+                <span className="bg-cat-emerald/60 absolute inline-flex h-full w-full animate-ping rounded-full" />
+                <span className="bg-cat-emerald relative inline-flex h-1.5 w-1.5 rounded-full" />
               </span>
             ) : (
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/30" />
+              <span className="bg-muted-foreground/30 h-1.5 w-1.5 shrink-0 rounded-full" />
             )}
             <Badge
               variant={live ? row.badgeVariant : 'outline'}
@@ -694,7 +697,7 @@ function FrequencyRow({
               {live?.badgeLabel ?? row.label}
             </Badge>
             {showName && (
-              <span className="truncate text-xs text-muted-foreground/70">{row.staticName}</span>
+              <span className="text-muted-foreground/70 truncate text-xs">{row.staticName}</span>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -708,25 +711,25 @@ function FrequencyRow({
             </span>
             <ChevronDown
               className={cn(
-                'h-3 w-3 shrink-0 text-muted-foreground/60 transition-transform',
+                'text-muted-foreground/60 h-3 w-3 shrink-0 transition-transform',
                 expanded && 'rotate-180'
               )}
             />
           </div>
         </div>
         {live && (
-          <div className="mt-0.5 flex items-center gap-1.5 pl-[1.65rem] text-[11px] text-muted-foreground">
-            <span className="font-mono text-foreground/80">{live.callsign}</span>
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 pl-[1.65rem] text-[11px]">
+            <span className="text-foreground/80 font-mono">{live.callsign}</span>
             <span className="text-muted-foreground/40">·</span>
             <span className="truncate">{live.controllerName}</span>
           </div>
         )}
       </Button>
       {expanded && (
-        <div className="mt-1 space-y-2 rounded-md bg-muted/15 px-2.5 py-2">
+        <div className="bg-muted/15 mt-1 space-y-2 rounded-md px-2.5 py-2">
           <TuneStrip freq={displayFreq} onTuned={onToggle} />
           {hasAtisBody && live?.atisBody && (
-            <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-muted-foreground">
+            <pre className="text-muted-foreground font-mono text-[11px] leading-relaxed whitespace-pre-wrap">
               {live.atisBody}
             </pre>
           )}
@@ -760,7 +763,7 @@ function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
 
   if (!simReachable) {
     return (
-      <p className="text-center font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+      <p className="text-muted-foreground/70 text-center font-mono text-[10px] tracking-wider uppercase">
         {t('airportInfo.tune.simOffline')}
       </p>
     );
@@ -782,7 +785,7 @@ function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
     <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-1.5 gap-y-1">
       {TUNE_SLOTS.map(({ slot, labelKey, toastKey }) => (
         <Fragment key={slot}>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
             {t(labelKey)}
           </span>
           {TUNE_RADIOS.map((radio) => (
@@ -840,14 +843,14 @@ function DetailsSection({
         variant="ghost"
         size="sm"
         onClick={onToggle}
-        className="h-7 w-full justify-start gap-1 px-1 text-xs text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground h-7 w-full justify-start gap-1 px-1 text-xs"
       >
         {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         {t('airportInfo.rawMetar')}
       </Button>
       {expanded && (
-        <div className="mt-1.5 rounded bg-muted/30 p-2">
-          <p className="break-all font-mono text-[10px] leading-relaxed text-muted-foreground">
+        <div className="bg-muted/30 mt-1.5 rounded p-2">
+          <p className="text-muted-foreground font-mono text-[10px] leading-relaxed break-all">
             {rawMetar}
           </p>
         </div>

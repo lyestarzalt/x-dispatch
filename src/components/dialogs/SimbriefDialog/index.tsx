@@ -117,14 +117,14 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-4xl gap-0 overflow-hidden p-0">
         {/* Header with SimBrief branding */}
-        <div className="flex items-center justify-between border-b bg-gradient-to-r from-background via-card to-background px-6 py-4">
+        <div className="from-background via-card to-background flex items-center justify-between border-b bg-gradient-to-r px-6 py-4">
           <div className="flex items-center gap-4">
             <SimbriefLogo size="md" className="opacity-90" />
             <div>
               <DialogTitle className="text-lg font-semibold text-white">
                 {t('simbrief.title', 'Operational Flight Plan')}
               </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
+              <DialogDescription className="text-muted-foreground text-sm">
                 {t('simbrief.description', 'Import your latest dispatch from SimBrief')}
               </DialogDescription>
             </div>
@@ -150,14 +150,14 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
         {/* Not Configured State */}
         {!isConfigured && (
           <div className="flex flex-col items-center justify-center gap-6 py-16">
-            <div className="rounded-full bg-warning/10 p-4">
-              <AlertCircle className="h-12 w-12 text-warning" />
+            <div className="bg-warning/10 rounded-full p-4">
+              <AlertCircle className="text-warning h-12 w-12" />
             </div>
             <div className="space-y-2 text-center">
               <p className="text-lg font-medium">
                 {t('simbrief.notConfigured', 'SimBrief not configured')}
               </p>
-              <p className="max-w-sm text-sm text-muted-foreground">
+              <p className="text-muted-foreground max-w-sm text-sm">
                 {t(
                   'simbrief.configurePilotId',
                   'Configure your Pilot ID in Settings → SimBrief to import flight plans'
@@ -173,25 +173,25 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
             {fetchMutation.isPending ? (
               <>
                 <div className="relative">
-                  <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-                  <div className="relative rounded-full bg-primary/10 p-4">
-                    <Spinner className="size-12 text-primary" />
+                  <div className="bg-primary/20 absolute inset-0 animate-ping rounded-full" />
+                  <div className="bg-primary/10 relative rounded-full p-4">
+                    <Spinner className="text-primary size-12" />
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {t('simbrief.fetching', 'Fetching your latest dispatch...')}
                 </p>
               </>
             ) : fetchMutation.isError ? (
               <>
-                <div className="rounded-full bg-destructive/10 p-4">
-                  <AlertCircle className="h-12 w-12 text-destructive" />
+                <div className="bg-destructive/10 rounded-full p-4">
+                  <AlertCircle className="text-destructive h-12 w-12" />
                 </div>
                 <div className="space-y-2 text-center">
-                  <p className="font-medium text-destructive">
+                  <p className="text-destructive font-medium">
                     {t('simbrief.fetchError', 'Failed to fetch flight plan')}
                   </p>
-                  <p className="text-sm text-muted-foreground">{fetchMutation.error.message}</p>
+                  <p className="text-muted-foreground text-sm">{fetchMutation.error.message}</p>
                 </div>
                 <Button onClick={handleFetch} variant="outline">
                   {t('common.retry', 'Retry')}
@@ -199,12 +199,12 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               </>
             ) : (
               <>
-                <div className="rounded-full bg-primary/10 p-6">
-                  <Plane className="h-16 w-16 text-primary" />
+                <div className="bg-primary/10 rounded-full p-6">
+                  <Plane className="text-primary h-16 w-16" />
                 </div>
                 <div className="space-y-2 text-center">
                   <p className="text-lg font-medium">{t('simbrief.ready', 'Ready to Import')}</p>
-                  <p className="max-w-sm text-sm text-muted-foreground">
+                  <p className="text-muted-foreground max-w-sm text-sm">
                     {t(
                       'simbrief.clickToFetch',
                       'Imports your most recently generated flight plan from SimBrief. Make sure to generate one on simbrief.com first.'
@@ -295,19 +295,19 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
         )}
 
         {ofp && (
-          <div className="border-t bg-card/50 px-6 py-3">
+          <div className="bg-card/50 border-t px-6 py-3">
             <FmsExportSection data={ofp} />
           </div>
         )}
 
-        <DialogFooter className="border-t bg-muted/30 px-6 py-4">
+        <DialogFooter className="bg-muted/30 border-t px-6 py-4">
           <div className="flex w-full items-center justify-between">
             {ofp && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleOpenPDF}
-                className="gap-2 text-sm text-muted-foreground"
+                className="text-muted-foreground gap-2 text-sm"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 {t('simbriefDialog.viewFullOfp')}
@@ -351,7 +351,7 @@ function FlightHeader({
   };
 
   return (
-    <div className="bg-gradient-to-b from-background to-card px-6 py-5">
+    <div className="from-background to-card bg-gradient-to-b px-6 py-5">
       <div className="flex items-start justify-between">
         {/* Route Display */}
         <div className="flex items-center gap-6">
@@ -367,8 +367,8 @@ function FlightHeader({
             >
               {data.origin.icao_code}
             </Button>
-            <p className="mt-0.5 text-sm text-muted-foreground">{data.origin.name}</p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-0.5 text-sm">{data.origin.name}</p>
+            <div className="text-muted-foreground mt-2 flex items-center justify-center gap-1.5 text-sm">
               <PlaneTakeoff className="h-3 w-3" />
               <span>{t('simbriefDialog.header.runway', { rwy: data.origin.plan_rwy })}</span>
             </div>
@@ -377,11 +377,11 @@ function FlightHeader({
           {/* Flight Line */}
           <div className="flex flex-col items-center gap-1">
             <div className="flex items-center gap-2">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent via-border to-border" />
-              <Plane className="h-5 w-5 rotate-90 text-primary" />
-              <div className="h-px w-12 bg-gradient-to-r from-border via-border to-transparent" />
+              <div className="via-border to-border h-px w-12 bg-gradient-to-r from-transparent" />
+              <Plane className="text-primary h-5 w-5 rotate-90" />
+              <div className="from-border via-border h-px w-12 bg-gradient-to-r to-transparent" />
             </div>
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="text-muted-foreground font-mono text-[10px]">
               {formatDistance(data.general.air_distance)}
             </span>
           </div>
@@ -398,8 +398,8 @@ function FlightHeader({
             >
               {data.destination.icao_code}
             </Button>
-            <p className="mt-0.5 text-sm text-muted-foreground">{data.destination.name}</p>
-            <div className="mt-2 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-0.5 text-sm">{data.destination.name}</p>
+            <div className="text-muted-foreground mt-2 flex items-center justify-center gap-1.5 text-sm">
               <PlaneLanding className="h-3 w-3" />
               <span>{t('simbriefDialog.header.runway', { rwy: data.destination.plan_rwy })}</span>
             </div>
@@ -409,12 +409,12 @@ function FlightHeader({
         {/* Flight Info */}
         <div className="text-right">
           <div className="flex items-center justify-end gap-3">
-            <Badge className="bg-primary/20 font-mono text-sm font-bold text-primary hover:bg-primary/20">
+            <Badge className="bg-primary/20 text-primary hover:bg-primary/20 font-mono text-sm font-bold">
               {flightNumber}
             </Badge>
           </div>
           <div className="mt-3 space-y-1 text-sm">
-            <div className="flex items-center justify-end gap-2 text-muted-foreground">
+            <div className="text-muted-foreground flex items-center justify-end gap-2">
               <span>{data.aircraft.icao_code}</span>
               <span className="text-border">|</span>
               <span className="font-mono">
@@ -427,31 +427,31 @@ function FlightHeader({
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="mt-5 flex items-center justify-between rounded-lg bg-card/50 px-4 py-3">
+      <div className="bg-card/50 mt-5 flex items-center justify-between rounded-lg px-4 py-3">
         <StatItem
           icon={Timer}
           label={t('simbriefDialog.stats.ete')}
           value={formatFlightTime(data.times.est_time_enroute)}
         />
-        <Separator orientation="vertical" className="h-8 bg-border" />
+        <Separator orientation="vertical" className="bg-border h-8" />
         <StatItem
           icon={Gauge}
           label={t('simbriefDialog.stats.fl')}
           value={data.general.initial_altitude}
         />
-        <Separator orientation="vertical" className="h-8 bg-border" />
+        <Separator orientation="vertical" className="bg-border h-8" />
         <StatItem
           icon={Wind}
           label={t('simbriefDialog.stats.avgWind')}
           value={`${data.general.avg_wind_dir}°/${data.general.avg_wind_spd}kt`}
         />
-        <Separator orientation="vertical" className="h-8 bg-border" />
+        <Separator orientation="vertical" className="bg-border h-8" />
         <StatItem
           icon={Navigation}
           label={t('simbriefDialog.stats.ci')}
           value={data.general.costindex}
         />
-        <Separator orientation="vertical" className="h-8 bg-border" />
+        <Separator orientation="vertical" className="bg-border h-8" />
         <StatItem icon={Route} label={t('simbriefDialog.stats.airac')} value={data.general.airac} />
       </div>
     </div>
@@ -469,9 +469,9 @@ function StatItem({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="h-4 w-4 text-muted-foreground" />
+      <Icon className="text-muted-foreground h-4 w-4" />
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">{label}</p>
         <p className="font-mono text-sm font-medium text-white">{value}</p>
       </div>
     </div>
@@ -484,9 +484,9 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   return (
     <div className="space-y-4">
       {/* Vertical Profile */}
-      <div className="rounded-lg border bg-card p-4">
+      <div className="bg-card rounded-lg border p-4">
         <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h4 className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             {t('simbriefDialog.flight.verticalProfile')}
           </h4>
           <div className="flex items-center gap-2">
@@ -506,28 +506,28 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       </div>
 
       {/* Route String */}
-      <div className="rounded-lg border bg-card p-4">
+      <div className="bg-card rounded-lg border p-4">
         <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h4 className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             {t('simbriefDialog.flight.route')}
           </h4>
           <Badge variant="outline" className="text-[10px]">
             {t('simbriefDialog.flight.fixesCount', { count: data.navlog.fix.length })}
           </Badge>
         </div>
-        <p className="font-mono text-sm leading-relaxed text-foreground/80">{data.general.route}</p>
+        <p className="text-foreground/80 font-mono text-sm leading-relaxed">{data.general.route}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {/* Fuel Summary */}
-        <div className="rounded-lg border bg-card p-4">
-          <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4">
+          <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
             <Fuel className="h-3.5 w-3.5" />
             {t('simbriefDialog.flight.fuelSummary')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.flight.blockFuel')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -535,7 +535,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.flight.tripFuel')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -544,10 +544,10 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.flight.landingFuel')}
               </span>
-              <span className="font-mono text-sm font-medium text-success">
+              <span className="text-success font-mono text-sm font-medium">
                 {formatFuel(data.fuel.plan_landing, apiUnit)}
               </span>
             </div>
@@ -555,14 +555,14 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         </div>
 
         {/* Weights Summary */}
-        <div className="rounded-lg border bg-card p-4">
-          <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4">
+          <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
             <Scale className="h-3.5 w-3.5" />
             {t('simbriefDialog.flight.weightsSummary')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.weights.zfw')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -570,7 +570,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.weights.tow')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -578,7 +578,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.weights.ldw')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -589,20 +589,20 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
         </div>
 
         {/* Payload */}
-        <div className="rounded-lg border bg-card p-4">
-          <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4">
+          <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
             <Users className="h-3.5 w-3.5" />
             {t('simbriefDialog.flight.payload')}
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.flight.passengers')}
               </span>
               <span className="font-mono text-sm font-medium">{data.weights.pax_count}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.flight.cargo')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -611,7 +611,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {t('simbriefDialog.flight.totalPayload')}
               </span>
               <span className="font-mono text-sm font-medium">
@@ -623,8 +623,8 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
         {/* Alternate */}
         {data.alternate && (
-          <div className="rounded-lg border bg-card p-4">
-            <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="bg-card rounded-lg border p-4">
+            <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
               <PlaneLanding className="h-3.5 w-3.5" />
               {t('simbriefDialog.flight.alternate')}
             </h4>
@@ -632,7 +632,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
               <span className="font-mono text-xl font-bold">{data.alternate.icao_code}</span>
               <div>
                 <p className="text-sm">{data.alternate.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {t('simbriefDialog.header.runway', { rwy: data.alternate.plan_rwy })}
                 </p>
               </div>
@@ -690,8 +690,8 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   return (
     <div className="space-y-4">
       {/* Fuel Breakdown Visual */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bg-card rounded-lg border p-4">
+        <h4 className="text-muted-foreground mb-4 text-xs font-medium tracking-wider uppercase">
           {t('simbriefDialog.fuelTab.breakdown')}
         </h4>
         <div className="space-y-3">
@@ -707,7 +707,7 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                   </div>
                   <span className="font-mono font-medium">{formatFuel(item.value, apiUnit)}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div className="bg-muted h-2 overflow-hidden rounded-full">
                   <div
                     className={cn('h-full transition-all', item.color)}
                     style={{ width: `${Math.max(percentage, 1)}%` }}
@@ -721,27 +721,27 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
       {/* Fuel Totals */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-primary/5 p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="bg-primary/5 rounded-lg border p-4 text-center">
+          <p className="text-muted-foreground text-xs tracking-wider uppercase">
             {t('simbriefDialog.fuelTab.blockFuel')}
           </p>
-          <p className="mt-1 font-mono text-xl font-bold text-primary">
+          <p className="text-primary mt-1 font-mono text-xl font-bold">
             {formatFuel(data.fuel.plan_ramp, apiUnit)}
           </p>
         </div>
-        <div className="rounded-lg border bg-card p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4 text-center">
+          <p className="text-muted-foreground text-xs tracking-wider uppercase">
             {t('simbriefDialog.fuelTab.takeoffFuel')}
           </p>
           <p className="mt-1 font-mono text-xl font-bold">
             {formatFuel(data.fuel.plan_takeoff, apiUnit)}
           </p>
         </div>
-        <div className="rounded-lg border bg-success/5 p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="bg-success/5 rounded-lg border p-4 text-center">
+          <p className="text-muted-foreground text-xs tracking-wider uppercase">
             {t('simbriefDialog.fuelTab.landingFuel')}
           </p>
-          <p className="mt-1 font-mono text-xl font-bold text-success">
+          <p className="text-success mt-1 font-mono text-xl font-bold">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
         </div>
@@ -777,8 +777,8 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   return (
     <div className="space-y-4">
       {/* Weight Gauges */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bg-card rounded-lg border p-4">
+        <h4 className="text-muted-foreground mb-4 text-xs font-medium tracking-wider uppercase">
           {t('simbriefDialog.weightsTab.limits')}
         </h4>
         <div className="space-y-5">
@@ -791,7 +791,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-bold">{w.abbr}</span>
-                    <span className="text-sm text-muted-foreground">{w.label}</span>
+                    <span className="text-muted-foreground text-sm">{w.label}</span>
                   </div>
                   <div className="text-right">
                     <span
@@ -803,7 +803,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                     >
                       {formatWeight(w.est.toString(), apiUnit)}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       {' '}
                       / {formatWeight(w.max.toString(), apiUnit)}
                     </span>
@@ -818,7 +818,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                       isWarning && !isCritical && '[&>div]:bg-warning'
                     )}
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] font-bold text-white">
+                  <span className="absolute top-1/2 right-2 -translate-y-1/2 font-mono text-[10px] font-bold text-white">
                     {percentage.toFixed(1)}%
                   </span>
                 </div>
@@ -830,8 +830,8 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
 
       {/* Weight Breakdown */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-card p-4">
-          <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4">
+          <h4 className="text-muted-foreground mb-3 text-xs font-medium tracking-wider uppercase">
             {t('simbriefDialog.weightsTab.operating')}
           </h4>
           <div className="space-y-2">
@@ -859,8 +859,8 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-4">
-          <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="bg-card rounded-lg border p-4">
+          <h4 className="text-muted-foreground mb-3 text-xs font-medium tracking-wider uppercase">
             {t('simbriefDialog.weightsTab.details')}
           </h4>
           <div className="space-y-2">
@@ -949,14 +949,14 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
       )}
 
       {/* Winds Aloft */}
-      <div className="rounded-lg border bg-card p-4">
-        <h4 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="bg-card rounded-lg border p-4">
+        <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
           <Wind className="h-3.5 w-3.5" />
           {t('simbriefDialog.weather.windsAloft')}
         </h4>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
               <Wind
                 className="h-6 w-6"
                 style={{ transform: `rotate(${parseInt(data.general.avg_wind_dir, 10)}deg)` }}
@@ -966,7 +966,7 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
               <p className="font-mono text-2xl font-bold">
                 {t('simbriefDialog.weather.directionDeg', { deg: data.general.avg_wind_dir })}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {t('simbriefDialog.weather.direction')}
               </p>
             </div>
@@ -976,7 +976,7 @@ function WeatherTab({ data }: { data: SimBriefOFP }) {
             <p className="font-mono text-2xl font-bold">
               {t('simbriefDialog.weather.speedKt', { speed: data.general.avg_wind_spd })}
             </p>
-            <p className="text-xs text-muted-foreground">{t('simbriefDialog.weather.speed')}</p>
+            <p className="text-muted-foreground text-xs">{t('simbriefDialog.weather.speed')}</p>
           </div>
         </div>
       </div>
@@ -1002,9 +1002,9 @@ function MetarCard({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="bg-card rounded-lg border p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h4 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <h4 className="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
           <Icon className="h-3.5 w-3.5" />
           {label ? t('simbriefDialog.weather.icaoWithLabel', { icao, label }) : icao}
         </h4>
@@ -1047,7 +1047,7 @@ function MetarCard({
       {/* Weather conditions */}
       {parsedMetar?.weatherConditions && parsedMetar.weatherConditions.length > 0 && (
         <div className="mb-3 flex items-center gap-2">
-          <Droplets className="h-3.5 w-3.5 text-muted-foreground" />
+          <Droplets className="text-muted-foreground h-3.5 w-3.5" />
           <span className="font-mono text-sm font-medium">
             {formatWeatherConditions(parsedMetar.weatherConditions)}
           </span>
@@ -1055,7 +1055,7 @@ function MetarCard({
       )}
 
       {/* Raw METAR */}
-      <div className="rounded bg-muted/50 p-3">
+      <div className="bg-muted/50 rounded p-3">
         <p className="font-mono text-sm leading-relaxed">
           {rawMetar || t('simbriefDialog.noMetarAvailable')}
         </p>
@@ -1067,7 +1067,7 @@ function MetarCard({
           <Badge variant="outline" className="mb-2 text-[10px]">
             {t('simbriefDialog.weather.taf')}
           </Badge>
-          <div className="rounded bg-muted/50 p-3">
+          <div className="bg-muted/50 rounded p-3">
             <p className="font-mono text-sm leading-relaxed">{taf}</p>
           </div>
         </div>
@@ -1086,10 +1086,10 @@ function MetarItem({
   value: string;
 }) {
   return (
-    <div className="rounded-lg bg-muted/40 p-2 text-center">
-      <Icon className="mx-auto mb-1 h-4 w-4 text-muted-foreground" />
+    <div className="bg-muted/40 rounded-lg p-2 text-center">
+      <Icon className="text-muted-foreground mx-auto mb-1 h-4 w-4" />
       <p className="font-mono text-xs font-medium">{value}</p>
-      <p className="text-[9px] text-muted-foreground">{label}</p>
+      <p className="text-muted-foreground text-[9px]">{label}</p>
     </div>
   );
 }

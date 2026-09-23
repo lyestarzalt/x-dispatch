@@ -59,25 +59,25 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-background p-8">
+    <div className="bg-background flex h-full w-full items-center justify-center p-8">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-8 text-center">
           <AppLogo size="md" className="mx-auto mb-4" />
           <h1 className="xp-page-heading mb-2 text-2xl">{t('setup.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('setup.subtitle')}</p>
+          <p className="text-muted-foreground text-sm">{t('setup.subtitle')}</p>
         </div>
 
         {/* Selected path display */}
         {selectedPath && (
-          <div className="mb-6 rounded-lg border border-success/50 bg-success/10 p-4">
+          <div className="border-success/50 bg-success/10 mb-6 rounded-lg border p-4">
             <div className="mb-1 flex items-center gap-2">
-              <Check className="h-4 w-4 text-success" />
+              <Check className="text-success h-4 w-4" />
               <span className="text-sm font-medium">
                 {selectedPath.split('/').pop() || selectedPath.split('\\').pop()}
               </span>
             </div>
-            <p className="truncate font-mono text-sm text-muted-foreground">{selectedPath}</p>
+            <p className="text-muted-foreground truncate font-mono text-sm">{selectedPath}</p>
           </div>
         )}
 
@@ -115,7 +115,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
         </div>
 
         {/* Version */}
-        <p className="mt-8 text-center font-mono text-sm text-muted-foreground/50">
+        <p className="text-muted-foreground/50 mt-8 text-center font-mono text-sm">
           {version && `v${version}`}
         </p>
       </div>

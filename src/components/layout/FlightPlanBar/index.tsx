@@ -96,13 +96,13 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   if (!showFlightPlanBar || !fmsData) return null;
 
   return (
-    <div className="flex h-10 items-center overflow-hidden rounded-lg border border-border bg-card/95 backdrop-blur-sm">
+    <div className="border-border bg-card/95 flex h-10 items-center overflow-hidden rounded-lg border backdrop-blur-sm">
       {/* Close button — left side for easy access */}
       <Button
         variant="ghost"
         size="icon"
         onClick={clearFlightPlan}
-        className="h-10 w-8 shrink-0 rounded-none border-r border-border text-muted-foreground hover:text-destructive"
+        className="border-border text-muted-foreground hover:text-destructive h-10 w-8 shrink-0 rounded-none border-r"
         aria-label="Clear flight plan"
       >
         <X className="h-4 w-4" />
@@ -113,7 +113,7 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
         variant="ghost"
         size="icon"
         onClick={scrollLeft}
-        className="h-10 w-8 shrink-0 rounded-none border-r border-border text-muted-foreground hover:text-foreground"
+        className="border-border text-muted-foreground hover:text-foreground h-10 w-8 shrink-0 rounded-none border-r"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -121,7 +121,7 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
       {/* Scrollable chips area - drag to scroll */}
       <div
         ref={scrollRef}
-        className="scrollbar-hidden flex flex-1 cursor-grab select-none items-center gap-1.5 overflow-x-auto px-2 py-1.5"
+        className="scrollbar-hidden flex flex-1 cursor-grab items-center gap-1.5 overflow-x-auto px-2 py-1.5 select-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -142,7 +142,7 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
         variant="ghost"
         size="icon"
         onClick={scrollRight}
-        className="h-10 w-8 shrink-0 rounded-none border-l border-border text-muted-foreground hover:text-foreground"
+        className="border-border text-muted-foreground hover:text-foreground h-10 w-8 shrink-0 rounded-none border-l"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
@@ -199,9 +199,9 @@ const WaypointChip = memo(function WaypointChip({ chip, isActive, onClick }: Way
       variant={variant}
       onClick={onClick}
       className={cn(
-        'cursor-pointer gap-1 whitespace-nowrap px-2 py-0.5 text-[11px]',
+        'cursor-pointer gap-1 px-2 py-0.5 text-[11px] whitespace-nowrap',
         'transition-all hover:scale-[1.02] active:scale-[0.98]',
-        isActive && 'ring-1 ring-info ring-offset-1 ring-offset-background'
+        isActive && 'ring-info ring-offset-background ring-1 ring-offset-1'
       )}
     >
       {icon}

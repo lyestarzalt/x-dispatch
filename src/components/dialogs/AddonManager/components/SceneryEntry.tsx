@@ -47,17 +47,17 @@ export function SortableSceneryEntry({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group flex items-center gap-2 rounded-lg border border-border/50 bg-card/50 px-2 py-1.5',
+        'group border-border/50 bg-card/50 flex items-center gap-2 rounded-lg border px-2 py-1.5',
         'transition-all duration-150',
         !entry.enabled && 'bg-muted/20 opacity-50',
-        isDragging && 'z-50 border-primary bg-card shadow-xl shadow-primary/10',
+        isDragging && 'border-primary bg-card shadow-primary/10 z-50 shadow-xl',
         !isDragging && 'hover:border-border hover:bg-card'
       )}
     >
       {/* Position number */}
       <div
         className={cn(
-          'flex h-7 items-center justify-center rounded-md bg-muted/50 font-mono text-sm font-semibold tabular-nums text-muted-foreground',
+          'bg-muted/50 text-muted-foreground flex h-7 items-center justify-center rounded-md font-mono text-sm font-semibold tabular-nums',
           isDragging && 'bg-primary/20 text-primary'
         )}
         style={{ minWidth: `${positionWidth + 0.5}rem` }}
@@ -74,7 +74,7 @@ export function SortableSceneryEntry({
         className={cn(
           'h-7 w-7 cursor-grab',
           'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-          isDragging && 'cursor-grabbing text-primary'
+          isDragging && 'text-primary cursor-grabbing'
         )}
         disabled={disabled}
       >
@@ -116,7 +116,7 @@ export function SortableSceneryEntry({
             className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={() => onOpenFolder(entry.fullPath)}
           >
-            <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+            <FolderOpen className="text-muted-foreground h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left">{t('addonManager.sceneryEntry.openFolder')}</TooltipContent>
@@ -128,7 +128,7 @@ export function SortableSceneryEntry({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+            className="hover:text-destructive h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
             onClick={() => onDelete(entry.folderName)}
             disabled={disabled}
           >

@@ -15,7 +15,7 @@ interface SettingsEmptyStateProps {
 export function SettingsEmptyState({ message, className }: SettingsEmptyStateProps) {
   return (
     <div className={cn('rounded-lg border py-6 text-center', className)}>
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <p className="text-muted-foreground text-sm">{message}</p>
     </div>
   );
 }

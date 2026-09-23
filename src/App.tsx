@@ -118,7 +118,7 @@ function AppContent() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+    <div className="bg-background flex h-screen w-screen flex-col overflow-hidden">
       <TitleBar />
       <div className="min-h-0 flex-1">{content}</div>
     </div>

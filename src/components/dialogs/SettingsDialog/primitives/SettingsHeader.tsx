@@ -28,7 +28,7 @@ export function SettingsHeader({
           <Icon className={iconClassName ?? 'h-5 w-5'} />
           {title}
         </h3>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+        {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
       </div>
       <Separator />
     </>

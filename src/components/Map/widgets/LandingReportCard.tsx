@@ -73,17 +73,17 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
       className={cn(
-        'landing-card-enter z-20 w-[400px] cursor-grab select-none rounded-xl border border-border/50 bg-card/90 shadow-2xl shadow-black/50 backdrop-blur-xl active:cursor-grabbing',
-        isDefault ? 'absolute bottom-4 right-4' : 'fixed'
+        'landing-card-enter border-border/50 bg-card/90 z-20 w-[400px] cursor-grab rounded-xl border shadow-2xl shadow-black/50 backdrop-blur-xl select-none active:cursor-grabbing',
+        isDefault ? 'absolute right-4 bottom-4' : 'fixed'
       )}
       style={!isDefault ? { left: position.x, top: position.y } : undefined}
     >
       <div className="flex items-center gap-2 px-4 pt-3">
         <PlaneLanding className={cn('h-4 w-4', ratingColor)} />
-        <span className="text-xs uppercase tracking-wider text-muted-foreground">
+        <span className="text-muted-foreground text-xs tracking-wider uppercase">
           {t('landing.title')}
         </span>
-        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground/70">
+        <span className="text-muted-foreground/70 min-w-0 flex-1 truncate text-xs">
           {runwayLine(t, report)}
         </span>
         <Button
@@ -99,15 +99,15 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
 
       <div className="px-4 pt-2">
         <div className="flex items-baseline gap-2">
-          <span className={cn('font-mono text-5xl font-black leading-none', ratingColor)}>
+          <span className={cn('font-mono text-5xl leading-none font-black', ratingColor)}>
             {report.touchdownRateFpm}
           </span>
-          <span className="text-sm text-muted-foreground">{t('units.fpm')}</span>
+          <span className="text-muted-foreground text-sm">{t('units.fpm')}</span>
           <Badge variant="outline" className={cn('ml-auto border-current', ratingColor)}>
             {t(`landing.rating.${report.rating}`)}
           </Badge>
         </div>
-        {threshold && <p className="mt-1.5 text-xs text-muted-foreground">{threshold}</p>}
+        {threshold && <p className="text-muted-foreground mt-1.5 text-xs">{threshold}</p>}
         <RateScale
           touchdownRateFpm={report.touchdownRateFpm}
           rating={report.rating}
@@ -117,7 +117,7 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
         <LandingStats report={report} className="mt-4" columns={3} />
       </div>
 
-      <div className="mt-3 flex items-center gap-1 border-t border-border/50 px-2 py-1.5">
+      <div className="border-border/50 mt-3 flex items-center gap-1 border-t px-2 py-1.5">
         <Button size="sm" variant="ghost" onClick={() => onShowOnMap(report.lat, report.lon)}>
           <Crosshair className="mr-1.5 h-3.5 w-3.5" />
           {t('landing.showOnMap')}

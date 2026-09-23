@@ -14,11 +14,11 @@ export function UpdateAvailableToast(): null {
     const { latestVersion, url } = update.data;
     toast.custom(
       (id) => (
-        <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-card p-4 shadow-lg">
-          <Download className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+        <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4 shadow-lg">
+          <Download className="text-primary mt-0.5 h-5 w-5 shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">{t('update.available.title')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-foreground text-sm font-medium">{t('update.available.title')}</p>
+            <p className="text-muted-foreground mt-1 text-sm">
               {t('update.available.description', { version: latestVersion })}
             </p>
             <div className="mt-3 flex items-center gap-2">

@@ -59,17 +59,17 @@ function AircraftListItem({
       }}
       title={`${aircraft.name} - ${aircraft.manufacturer}`}
       className={cn(
-        'group relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        isSelected ? 'bg-primary/10 ring-2 ring-primary' : 'bg-secondary hover:bg-accent'
+        'group focus-visible:ring-primary relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
+        isSelected ? 'bg-primary/10 ring-primary ring-2' : 'bg-secondary hover:bg-accent'
       )}
     >
       {/* Aircraft Thumbnail */}
-      <div className="relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+      <div className="bg-muted relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg">
         {imageUrl ? (
           <img src={imageUrl} alt={aircraft.name} className="h-full w-full object-contain" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <Plane className="h-5 w-5 text-muted-foreground/20" />
+            <Plane className="text-muted-foreground/20 h-5 w-5" />
           </div>
         )}
       </div>
@@ -84,7 +84,7 @@ function AircraftListItem({
         >
           {aircraft.name}
         </div>
-        <div className="truncate text-sm text-muted-foreground">{aircraft.manufacturer}</div>
+        <div className="text-muted-foreground truncate text-sm">{aircraft.manufacturer}</div>
       </div>
 
       {/* Favorite Button */}
@@ -189,7 +189,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   ]);
 
   return (
-    <div className="flex w-[320px] min-w-[280px] shrink-0 flex-col border-r border-border/50 bg-card lg:w-[360px]">
+    <div className="border-border/50 bg-card flex w-[320px] min-w-[280px] shrink-0 flex-col border-r lg:w-[360px]">
       {/* Section Header */}
       <div className="flex-shrink-0 px-3 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.aircraft.title')}</h3>
@@ -228,7 +228,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             value={filterAircraftType}
             onValueChange={(v) => setFilterAircraftType(v as AircraftType)}
           >
-            <SelectTrigger className="h-8 min-w-0 flex-1 rounded-lg bg-secondary text-sm">
+            <SelectTrigger className="bg-secondary h-8 min-w-0 flex-1 rounded-lg text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allTypes')} />
             </SelectTrigger>
             <SelectContent>
@@ -241,7 +241,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             value={filterEngineType}
             onValueChange={(v) => setFilterEngineType(v as EngineType)}
           >
-            <SelectTrigger className="h-8 min-w-0 flex-1 rounded-lg bg-secondary text-sm">
+            <SelectTrigger className="bg-secondary h-8 min-w-0 flex-1 rounded-lg text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allEngines')} />
             </SelectTrigger>
             <SelectContent>
@@ -255,7 +255,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         {/* Filter Dropdowns - Row 2: Category & Manufacturer */}
         <div className="flex gap-2">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="h-8 min-w-0 flex-1 rounded-lg bg-secondary text-sm">
+            <SelectTrigger className="bg-secondary h-8 min-w-0 flex-1 rounded-lg text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allCategories')} />
             </SelectTrigger>
             <SelectContent>
@@ -268,7 +268,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             </SelectContent>
           </Select>
           <Select value={filterManufacturer} onValueChange={setFilterManufacturer}>
-            <SelectTrigger className="h-8 min-w-0 flex-1 rounded-lg bg-secondary text-sm">
+            <SelectTrigger className="bg-secondary h-8 min-w-0 flex-1 rounded-lg text-sm">
               <SelectValue placeholder={t('launcher.aircraft.allManufacturers')} />
             </SelectTrigger>
             <SelectContent>
@@ -283,7 +283,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         </div>
 
         {/* Count */}
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           {t('launcher.aircraft.count', { count: filteredAircraft.length })}
           {showFavoritesOnly &&
             ` · ${t('launcher.aircraft.favorites', { count: favorites.length })}`}
@@ -295,10 +295,10 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
         <div className="space-y-1 p-2">
           {isScanning ? (
             <div className="flex items-center justify-center py-12">
-              <Spinner className="size-6 text-primary" />
+              <Spinner className="text-primary size-6" />
             </div>
           ) : filteredAircraft.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground py-12 text-center text-sm">
               {showFavoritesOnly
                 ? t('launcher.aircraft.noFavorites')
                 : t('launcher.aircraft.noAircraft')}

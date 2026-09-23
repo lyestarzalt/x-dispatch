@@ -190,7 +190,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
     : t('loading.initializing');
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-background px-6">
+    <div className="bg-background flex h-full w-full items-center justify-center px-6">
       <div className="w-full max-w-xl">
         {/* Logo + Title */}
         <div className="mb-7 text-center">
@@ -216,15 +216,15 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between gap-4">
-            <p className="xp-label min-w-0 truncate text-foreground">{currentMessage}</p>
-            <span className="font-mono text-xs tabular-nums text-muted-foreground">
+            <p className="xp-label text-foreground min-w-0 truncate">{currentMessage}</p>
+            <span className="text-muted-foreground font-mono text-xs tabular-nums">
               {Math.floor(displayedProgress)}%
             </span>
           </div>
           <Progress value={displayedProgress} className="h-1.5" />
         </div>
 
-        <div className="divide-y divide-border/50 border-y border-border/50">
+        <div className="divide-border/50 border-border/50 divide-y border-y">
           {steps.map((step) => {
             const Icon = step.icon;
             const detailLabel = step.detail ? getLoadingDetailLabel(step.detail, t) : '';
@@ -248,7 +248,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
                         <span
                           className={cn(
                             'xp-label truncate',
-                            step.status === 'loading' && 'font-medium text-foreground',
+                            step.status === 'loading' && 'text-foreground font-medium',
                             step.status === 'complete' && 'text-foreground',
                             step.status === 'error' && 'text-destructive',
                             step.status === 'pending' && 'text-muted-foreground'
@@ -259,7 +259,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
                       </div>
 
                       {step.status === 'loading' && step.detail && (
-                        <div className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
+                        <div className="text-muted-foreground mt-0.5 truncate font-mono text-xs">
                           {detailLabel}
                           {step.detail.total != null && (
                             <>
@@ -283,12 +283,12 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
                       </span>
                     )}
                     {step.status === 'loading' && <Spinner className="text-primary" />}
-                    {step.status === 'complete' && <Check className="h-4 w-4 text-success" />}
+                    {step.status === 'complete' && <Check className="text-success h-4 w-4" />}
                     {step.status === 'error' && (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
+                      <AlertCircle className="text-destructive h-4 w-4" />
                     )}
                     {step.status === 'pending' && (
-                      <div className="h-2 w-2 rounded-full bg-muted-foreground/25" />
+                      <div className="bg-muted-foreground/25 h-2 w-2 rounded-full" />
                     )}
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               {error}
-              {errorHint && <p className="mt-2 text-xs text-destructive/80">{t(errorHint)}</p>}
+              {errorHint && <p className="text-destructive/80 mt-2 text-xs">{t(errorHint)}</p>}
             </AlertDescription>
           </Alert>
         )}
@@ -323,7 +323,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
         )}
 
         {/* Version */}
-        <p className="mt-8 text-center font-mono text-xs text-muted-foreground/50">
+        <p className="text-muted-foreground/50 mt-8 text-center font-mono text-xs">
           {version && `v${version}`}
         </p>
       </div>
