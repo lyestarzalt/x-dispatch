@@ -26,6 +26,7 @@ import type {
 } from '@/lib/flightplan/builder/types';
 import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FMSFlightPlan, RunwayEnd } from '@/types/fms';
+import type { RangeRingCategory } from '@/types/layers';
 import { useAppStore } from './appStore';
 import { useFlightPlanStore } from './flightPlanStore';
 
@@ -62,6 +63,9 @@ interface PlanBuilderState extends PlanDraft {
   /** Candidate procedure joins let the router pick the SID and STAR along with the route. */
   autoRoute: (joins?: { exits?: RouteJoin[]; entries?: RouteJoin[] }) => Promise<boolean>;
   setAlternate: (endpoint: PlanEndpoint | null) => void;
+  /** Planning class chosen by hand; null follows the aircraft loaded in X-Plane. */
+  aircraftClass: RangeRingCategory | null;
+  setAircraftClass: (cls: RangeRingCategory | null) => void;
   /** Enroute resolution with the chosen procedures stitched in, or null before the first resolve. */
   composed: () => { plan: FMSFlightPlan; enriched: EnrichedFlightPlan } | null;
   /** Pushes the composed plan into the flight plan store so the map draws it. */
@@ -109,6 +113,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           savedPath: null,
         })),
       setAlternate: (endpoint) => set({ alternate: endpoint }),
+      aircraftClass: null,
+      // The cruise cap differs per class, so the suggestion is redone.
+      setAircraftClass: (cls) => set({ aircraftClass: cls, cruiseAltitudeFt: null }),
       setRunway: (end, runway, runwayEnd) =>
         set((state) => {
           const endpoint = state[end];
@@ -296,6 +303,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         departure: state.departure,
         arrival: state.arrival,
         alternate: state.alternate,
+        aircraftClass: state.aircraftClass,
         routeText: state.routeText,
         cruiseAltitudeFt: state.cruiseAltitudeFt,
       }),
