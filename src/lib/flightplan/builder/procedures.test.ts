@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { FMSFlightPlan } from '@/types/fms';
 import type { ResolvedProcedure } from '@/types/navigation';
-import { composePlan, matchProcedure, planForFile, proceduresForRunway } from './procedures';
+import {
+  composePlan,
+  matchProcedure,
+  planForFile,
+  proceduresForRunway,
+  sidFirstTurn,
+  sidInitialClimbNm,
+} from './procedures';
 
 const base: FMSFlightPlan = {
   version: 1100,
@@ -81,13 +88,48 @@ describe('composePlan', () => {
     expect(plan.arrival.starTransition).toBe('UNOKO');
   });
 
+  it('draws only legs that fly to their fix, and reads the initial climb from course legs', () => {
+    // Le Luc GILON1: climb on course to 8.5 DME from LUC, turn left back to LUC, then GILON.
+    const gilon: ResolvedProcedure = {
+      type: 'SID',
+      name: 'GILON1',
+      runway: 'RW09',
+      transition: null,
+      waypoints: [
+        wp('', 0, 0, { pathTerminator: 'CD', distance: 8.5, resolved: false }),
+        wp('LUC', 43.38, 6.39, { fixType: 'V', pathTerminator: 'CF', turnDirection: 'L' }),
+        wp('GILON', 43.44, 6.12),
+        wp('LUC', 43.38, 6.39, { fixType: 'V', pathTerminator: 'FD', distance: 4 }),
+      ],
+    };
+    const plan = composePlan(base, { sid: gilon });
+    // The trailing FD leg only names LUC as its DME source, so LUC is not flown to again.
+    expect(plan.waypoints.map((w) => w.id)).toEqual([
+      'EHAM',
+      'LUC',
+      'GILON',
+      'ARNEM',
+      'UNOKO',
+      'EDDF',
+    ]);
+    expect(sidInitialClimbNm(gilon, 1.5)).toBeCloseTo(7.75, 2);
+    expect(sidInitialClimbNm(sid)).toBeUndefined();
+    expect(sidFirstTurn(gilon)).toBe('L');
+  });
+
   it('leaves the plan untouched with no procedures', () => {
     expect(composePlan(base, {}).waypoints).toEqual(base.waypoints);
   });
 
-  it('writes only airports and enroute fixes to the file, naming the procedures instead', () => {
+  it('leaves procedure fixes out of the file, naming the procedures instead', () => {
     const file = planForFile(base, { sid, star });
-    expect(file.waypoints.map((w) => w.id)).toEqual(['EHAM', 'ARNEM', 'UNOKO', 'EDDF']);
+    // ARNEM is the SID exit and UNOKO the STAR entry; X-Plane adds both when it loads the procedures.
+    expect(file.waypoints.map((w) => w.id)).toEqual(['EHAM', 'EDDF']);
+    expect(planForFile(base, { sid }).waypoints.map((w) => w.id)).toEqual([
+      'EHAM',
+      'UNOKO',
+      'EDDF',
+    ]);
     expect(file.departure.sid).toBe('ARNEM2S');
     expect(file.arrival.star).toBe('UNOKO1A');
     expect(file.arrival.starTransition).toBe('UNOKO');

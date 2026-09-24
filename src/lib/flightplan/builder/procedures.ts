@@ -3,7 +3,11 @@
  * procedures arrive already resolved to coordinates from the nav database.
  */
 import type { EnrichedFlightPlan, FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
-import type { ResolvedProcedure, ResolvedProcedureWaypoint } from '@/types/navigation';
+import type {
+  PathTerminator,
+  ResolvedProcedure,
+  ResolvedProcedureWaypoint,
+} from '@/types/navigation';
 import type { ProcedureChoice, RouteJoin } from './types';
 
 export interface ProcedureParts {
@@ -116,11 +120,87 @@ export function sidFirstTurn(sid: ResolvedProcedure | undefined): 'L' | 'R' | un
   return sid?.waypoints.find((wp) => wp.turnDirection !== null)?.turnDirection ?? undefined;
 }
 
+/**
+ * Leg types that end at their fix. A leg of any other type names its fix as a
+ * reference (the origin of a course, a DME source) and the aircraft does not
+ * fly to it, so drawing it as a point would loop the route back over it.
+ */
+const FLY_TO_TERMINATORS = new Set<PathTerminator>([
+  'IF',
+  'TF',
+  'CF',
+  'DF',
+  'RF',
+  'AF',
+  'HA',
+  'HF',
+  'HM',
+  'PI',
+]);
+
+/** Planning climb gradient for turning course-to-altitude legs into a distance. */
+const CLIMB_FT_PER_NM = 300;
+const MIN_CLIMB_NM = 2;
+const MAX_CLIMB_NM = 20;
+/** Length assumed for an intercept or radial termination leg. */
+const INTERCEPT_NM = 3;
+
+/**
+ * Straight climb after the runway end before the first turn, from the SID's
+ * course legs ahead of its first fly-to fix. A DME distance is measured from a
+ * navaid taken to be on the field, so half the runway is subtracted.
+ */
+export function sidInitialClimbNm(
+  sid: ResolvedProcedure | undefined,
+  runwayLengthNm = 1.5
+): number | undefined {
+  if (!sid) return undefined;
+  let total = 0;
+  let found = false;
+  for (const wp of sid.waypoints) {
+    if (wp.fixType === 'C' || wp.fixType === 'A') continue;
+    if (FLY_TO_TERMINATORS.has(wp.pathTerminator)) break;
+    switch (wp.pathTerminator) {
+      case 'CA':
+      case 'VA':
+      case 'FA': {
+        const alt = wp.altitude?.altitude1;
+        if (alt !== null && alt !== undefined) {
+          total += toFeet(alt) / CLIMB_FT_PER_NM;
+          found = true;
+        }
+        break;
+      }
+      case 'CD':
+      case 'VD':
+      case 'FD':
+      case 'FC':
+        if (wp.distance !== null) {
+          total += Math.max(0, wp.distance - runwayLengthNm / 2);
+          found = true;
+        }
+        break;
+      case 'CI':
+      case 'VI':
+      case 'CR':
+      case 'VR':
+        total += INTERCEPT_NM;
+        found = true;
+        break;
+      default:
+        break;
+    }
+  }
+  if (!found) return undefined;
+  return Math.min(MAX_CLIMB_NM, Math.max(MIN_CLIMB_NM, total));
+}
+
 function procedureWaypoints(procedure: ResolvedProcedure): FMSWaypoint[] {
   const out: FMSWaypoint[] = [];
   for (const wp of procedure.waypoints) {
     // Runway and airport fixes have no place in the enroute list; unresolved legs cannot be drawn.
     if (wp.fixType === 'C' || wp.fixType === 'A') continue;
+    if (!FLY_TO_TERMINATORS.has(wp.pathTerminator)) continue;
     if (!wp.resolved || wp.latitude === undefined || wp.longitude === undefined) continue;
     if (out[out.length - 1]?.id === wp.fixId) continue;
     out.push({
@@ -246,25 +326,37 @@ export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlig
  */
 export function planForFile(base: FMSFlightPlan, parts: ProcedureParts): FMSFlightPlan {
   const { departure, arrival, enroute } = splitBase(base, parts);
+  // The SID exit and STAR entry belong to the procedures X-Plane loads itself, so they
+  // are left out of the enroute block rather than listed twice.
+  const exit = procedureExit(parts.sid);
+  const entry = procedureEntry(parts.star ?? parts.approach);
+  const middle = enroute.filter(
+    (wp, i) =>
+      !(i === 0 && exit && wp.id === exit.id) &&
+      !(i === enroute.length - 1 && entry && wp.id === entry.id)
+  );
   const waypoints: FMSWaypoint[] = [];
   if (departure) waypoints.push(departure);
-  waypoints.push(...enroute);
+  waypoints.push(...middle);
   if (arrival) waypoints.push(arrival);
   return { ...base, ...header(base, parts), waypoints };
+}
+
+export interface DrawingHints {
+  runwayEnds?: EnrichedFlightPlan['runwayEnds'];
+  firstTurn?: EnrichedFlightPlan['firstTurn'];
+  initialClimbNm?: EnrichedFlightPlan['initialClimbNm'];
+  alternate?: EnrichedFlightPlan['alternate'];
 }
 
 /** Every waypoint here came from the database, so the enriched copy for the map is all found. */
 export function enrichedFromPlan(
   plan: FMSFlightPlan,
-  runwayEnds?: EnrichedFlightPlan['runwayEnds'],
-  firstTurn?: EnrichedFlightPlan['firstTurn'],
-  alternate?: EnrichedFlightPlan['alternate']
+  hints: DrawingHints = {}
 ): EnrichedFlightPlan {
   return {
     ...plan,
-    runwayEnds,
-    firstTurn,
-    alternate,
+    ...hints,
     // Enroute fixes carry the cruise level for the file; the map shows only published constraints.
     waypoints: plan.waypoints.map((wp) => ({
       ...wp,

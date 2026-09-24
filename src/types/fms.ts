@@ -118,6 +118,8 @@ export interface EnrichedFlightPlan {
   runwayEnds?: { departure?: RunwayEnd; arrival?: RunwayEnd };
   /** Published direction of the first turn after take-off, from the SID. */
   firstTurn?: 'L' | 'R';
+  /** Straight climb after the runway end before that turn, from the SID's course legs. */
+  initialClimbNm?: number;
 
   // Resolution summary
   resolution: {

@@ -154,6 +154,7 @@
     "useRunway": "使用",
     "profileTitle": "巡航与剖面",
     "cruiseShort": "巡航",
+    "editCruise": "以英尺设置巡航高度",
     "fixesUnit": "个航路点",
     "runway": "跑道",
     "clear": "清空",

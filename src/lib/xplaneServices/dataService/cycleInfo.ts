@@ -200,6 +200,28 @@ function detectFileSource(
   return createDefaultSource(isCustom);
 }
 
+/** Cycle from a nav data header such as "1200 Version - data cycle 2406, build ...". */
+export function parseDataCycleHeader(header: string): string | null {
+  const match = /data cycle\s+(\d{4})/i.exec(header);
+  return match?.[1] ?? null;
+}
+
+function readDefaultDataCycle(xplanePath: string): string | null {
+  const navPath = path.join(xplanePath, XPLANE_PATHS.earthNav);
+  try {
+    const fd = fs.openSync(navPath, 'r');
+    try {
+      const buffer = Buffer.alloc(512);
+      const read = fs.readSync(fd, buffer, 0, buffer.length, 0);
+      return parseDataCycleHeader(buffer.toString('utf-8', 0, read));
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Detect all data sources in the X-Plane installation
  */
@@ -265,7 +287,8 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
     ? detectFileSource(xplanePath, 'Resources/default data/earth_aptmeta.dat', navigraphInfo)
     : null;
 
-  // Determine global source
+  // Determine global source. Stock data still has a cycle, stated in the nav file header,
+  // and the .fms export needs it.
   const hasNavigraph = navigraphInfo !== null && (navaids.isCustomData || waypoints.isCustomData);
   const global: DataSourceInfo = hasNavigraph
     ? {
@@ -277,7 +300,7 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
         isExpired: navigraphInfo?.isExpired || false,
         isCustomData: true,
       }
-    : createDefaultSource(false);
+    : { ...createDefaultSource(false), cycle: readDefaultDataCycle(xplanePath) };
 
   return {
     global,
