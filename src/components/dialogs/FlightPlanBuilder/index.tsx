@@ -23,6 +23,7 @@ import { IcaoCode } from '@/components/ui/icao-code';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   estimateFuelKg,
@@ -59,6 +60,7 @@ import { RunwaySelect } from './RunwaySelect';
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-8 w-full font-mono text-xs';
+const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Wind within this many degrees of a runway heading makes it the suggested one. */
 const WIND_SUGGEST_MIN_KT = 4;
 
@@ -286,6 +288,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const setRouteText = usePlanBuilderStore((s) => s.setRouteText);
   const removeRouteToken = usePlanBuilderStore((s) => s.removeRouteToken);
   const setCruiseAltitude = usePlanBuilderStore((s) => s.setCruiseAltitude);
+  const aircraftClass = usePlanBuilderStore((s) => s.aircraftClass);
+  const setAircraftClass = usePlanBuilderStore((s) => s.setAircraftClass);
   const resolve = usePlanBuilderStore((s) => s.resolve);
   const autoRoute = usePlanBuilderStore((s) => s.autoRoute);
   const saveToXPlane = usePlanBuilderStore((s) => s.saveToXPlane);
@@ -322,7 +326,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     resolve,
   ]);
 
-  const cls = planningClass(aircraftCategory);
+  const cls = aircraftClass ?? planningClass(aircraftCategory);
 
   // Published joins for the router: SID exits and STAR or approach entries for the chosen
   // runways, so it can pick the procedures along with the airways.
@@ -506,7 +510,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               unit={t('planBuilder.nmUnit')}
             />
             <Stat
-              label={t(`planBuilder.class.${cls}`)}
+              label={t('planBuilder.ete')}
               value={ready ? formatMinutes(estimateMinutes(distanceNm, cls)) : '—'}
             />
             <CruiseStat
@@ -519,6 +523,25 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               value={ready ? String(estimateFuelKg(distanceNm, cls)) : '—'}
               unit={t('planBuilder.kgUnit')}
             />
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <Caption>{t('planBuilder.aircraft')}</Caption>
+            <ToggleGroup
+              type="single"
+              size="sm"
+              variant="outline"
+              value={cls}
+              onValueChange={(v) => {
+                if (v) setAircraftClass(v as RangeRingCategory);
+              }}
+            >
+              {CLASSES.map((c) => (
+                <ToggleGroupItem key={c} value={c} className="h-7 px-2.5 text-xs">
+                  {t(`planBuilder.class.${c}`)}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </div>
         </header>
 

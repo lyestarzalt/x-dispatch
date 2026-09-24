@@ -175,6 +175,8 @@
     "distance": "Dystans",
     "nm": "{{value}} NM",
     "class": { "jet": "Odrzutowy", "turboprop": "Turbośmigłowy", "prop": "Tłokowy" },
+    "ete": "Czas",
+    "aircraft": "Samolot",
     "skipped": "Pominięto: {{count}}",
     "issues": {
       "notFound": "Brak w bazie nawigacyjnej",

@@ -175,6 +175,8 @@
     "distance": "距离",
     "nm": "{{value}} NM",
     "class": { "jet": "喷气", "turboprop": "涡桨", "prop": "活塞" },
+    "ete": "时间",
+    "aircraft": "机型",
     "skipped": "已跳过 {{count}} 项",
     "issues": {
       "notFound": "导航数据库中不存在",

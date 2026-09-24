@@ -175,6 +175,8 @@
     "distance": "Distancia",
     "nm": "{{value}} NM",
     "class": { "jet": "Jet", "turboprop": "Turbohélice", "prop": "Pistón" },
+    "ete": "Tiempo",
+    "aircraft": "Aeronave",
     "skipped": "{{count}} omitidos",
     "issues": {
       "notFound": "No está en la base de datos de navegación",

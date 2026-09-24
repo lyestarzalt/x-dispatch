@@ -179,6 +179,8 @@
     "distance": "Distanz",
     "nm": "{{value}} NM",
     "class": { "jet": "Jet", "turboprop": "Turboprop", "prop": "Kolben" },
+    "ete": "Zeit",
+    "aircraft": "Flugzeug",
     "skipped": "{{count}} übersprungen",
     "issues": {
       "notFound": "Nicht in der Navigationsdatenbank",

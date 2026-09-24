@@ -175,6 +175,8 @@
     "distance": "Distance",
     "nm": "{{value}} NM",
     "class": { "jet": "Jet", "turboprop": "Turboprop", "prop": "Piston" },
+    "ete": "Time",
+    "aircraft": "Vessel",
     "skipped": "{{count}} tossed overboard",
     "issues": {
       "notFound": "Not on any chart we carry",

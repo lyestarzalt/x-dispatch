@@ -175,6 +175,8 @@
     "distance": "Distance",
     "nm": "{{value}} NM",
     "class": { "jet": "Jet", "turboprop": "Turboprop", "prop": "Piston" },
+    "ete": "Time",
+    "aircraft": "Aircraft",
     "skipped": "{{count}} skipped",
     "issues": {
       "notFound": "Not in the navigation database",
