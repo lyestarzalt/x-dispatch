@@ -85,6 +85,18 @@ function parseFixType(value: string): FixTypeCode {
 /**
  * Parse path terminator from CIFP field
  */
+const FIXLESS_TERMINATORS = new Set<PathTerminator>([
+  'CA',
+  'CD',
+  'CI',
+  'CR',
+  'VA',
+  'VD',
+  'VI',
+  'VM',
+  'VR',
+]);
+
 function parsePathTerminator(value: string): PathTerminator {
   const trimmed = value.trim().toUpperCase();
   return VALID_PATH_TERMINATORS.includes(trimmed as PathTerminator)
@@ -136,11 +148,13 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
   if (data.length < 11) return null;
 
   const fixId = data[4]?.trim() || '';
-  if (!fixId) return null; // Skip lines without a fix
+  const pathTerminator = parsePathTerminator(data[11] || '');
+  // Course and heading legs (climb to an altitude, fly to a DME distance, intercept) carry
+  // no fix. They are kept, unresolved, so the initial climb can be drawn to length.
+  if (!fixId && !FIXLESS_TERMINATORS.has(pathTerminator)) return null;
 
   const fixRegion = data[5]?.trim() || '';
   const fixType = parseFixType(data[6] || '');
-  const pathTerminator = parsePathTerminator(data[11] || '');
 
   // Parse turn direction from field 9
   const turnDirection = parseTurnDirection(data[9] || '');

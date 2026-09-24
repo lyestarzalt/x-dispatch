@@ -154,6 +154,7 @@
     "useRunway": "使用",
     "profileTitle": "巡航与剖面",
     "cruiseShort": "巡航",
+    "editCruise": "以英尺设置巡航高度",
     "fixesUnit": "个航路点",
     "runway": "跑道",
     "clear": "清空",
@@ -820,6 +821,7 @@
     "rawMetar": "原始 METAR",
     "routeTab": {
       "tabApproach": "进近",
+      "onlyRunway": "仅跑道 {{rwy}}",
       "noneAvailable": "无可用 {{type}}",
       "noneApproaches": "无可用进近",
       "transitionCount_one": "1 个过渡",

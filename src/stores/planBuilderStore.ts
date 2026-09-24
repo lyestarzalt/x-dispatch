@@ -14,6 +14,7 @@ import {
   procedureEntry,
   procedureExit,
   sidFirstTurn,
+  sidInitialClimbNm,
 } from '@/lib/flightplan/builder/procedures';
 import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
 import type {
@@ -219,7 +220,12 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           : undefined;
         return {
           plan,
-          enriched: enrichedFromPlan(plan, runwayEnds, sidFirstTurn(procedures.sid), alt),
+          enriched: enrichedFromPlan(plan, {
+            runwayEnds,
+            firstTurn: sidFirstTurn(procedures.sid),
+            initialClimbNm: sidInitialClimbNm(procedures.sid, departure?.runwayEnd?.lengthNm),
+            alternate: alt,
+          }),
         };
       },
 

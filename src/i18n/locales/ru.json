@@ -154,6 +154,7 @@
     "useRunway": "Выбрать",
     "profileTitle": "Крейсерский полёт и профиль",
     "cruiseShort": "Крейсер",
+    "editCruise": "Задать крейсерскую высоту в футах",
     "fixesUnit": "точек",
     "runway": "ВПП",
     "clear": "Очистить",
@@ -820,6 +821,7 @@
     "rawMetar": "Исходный METAR",
     "routeTab": {
       "tabApproach": "Заход",
+      "onlyRunway": "Только ВПП {{rwy}}",
       "noneAvailable": "Нет {{type}}",
       "noneApproaches": "Нет заходов",
       "transitionCount_one": "1 переход",

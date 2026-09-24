@@ -154,6 +154,7 @@
     "useRunway": "使用",
     "profileTitle": "巡航とプロファイル",
     "cruiseShort": "巡航",
+    "editCruise": "巡航高度をフィートで設定",
     "fixesUnit": "フィックス",
     "runway": "滑走路",
     "clear": "クリア",
@@ -820,6 +821,7 @@
     "rawMetar": "元の METAR",
     "routeTab": {
       "tabApproach": "進入",
+      "onlyRunway": "滑走路 {{rwy}} のみ",
       "noneAvailable": "{{type}} はありません",
       "noneApproaches": "進入方式はありません",
       "transitionCount_one": "トランジション 1",

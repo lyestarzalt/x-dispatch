@@ -158,6 +158,7 @@
     "useRunway": "Usa",
     "profileTitle": "Crociera e profilo",
     "cruiseShort": "Crociera",
+    "editCruise": "Imposta la quota di crociera in piedi",
     "fixesUnit": "punti",
     "runway": "Pista",
     "clear": "Cancella",
@@ -824,6 +825,7 @@
     "rawMetar": "METAR originale",
     "routeTab": {
       "tabApproach": "Avvicin.",
+      "onlyRunway": "Solo pista {{rwy}}",
       "noneAvailable": "Nessun {{type}} disponibile",
       "noneApproaches": "Nessuna procedura di avvicinamento disponibile",
       "transitionCount_one": "1 transizione",

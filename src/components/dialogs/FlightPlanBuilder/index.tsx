@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Eraser,
   Loader2,
+  Pencil,
   PlaneLanding,
   PlaneTakeoff,
   Route,
@@ -19,6 +20,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
@@ -108,6 +110,62 @@ function Stat({ label, value, unit }: { label: string; value: string; unit?: str
         <span className="font-mono text-sm font-semibold tabular-nums">{value}</span>
         {unit && <span className="text-muted-foreground text-[10px]">{unit}</span>}
       </div>
+    </div>
+  );
+}
+
+/** The cruise figure doubles as its own editor: click, type feet, Enter or blur to apply. */
+function CruiseStat({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (feet: number | null) => void;
+}) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const commit = () => {
+    const feet = Number(draft);
+    if (draft.trim() !== '' && Number.isFinite(feet) && feet >= 0) {
+      onChange(Math.round(feet / 100) * 100);
+    }
+    setEditing(false);
+  };
+  return (
+    <div className="flex flex-col">
+      <Caption>{label}</Caption>
+      {editing ? (
+        <Input
+          autoFocus
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value.replace(/\D/g, ''))}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') setEditing(false);
+          }}
+          className="h-6 w-20 px-1.5 font-mono text-sm tabular-nums"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(value === null ? '' : String(value));
+            setEditing(true);
+          }}
+          title={t('planBuilder.editCruise')}
+          className="hover:text-primary flex items-baseline gap-1 text-left font-mono text-sm font-semibold tabular-nums"
+        >
+          {formatLevel(value)}
+          <Pencil className="text-muted-foreground/60 h-3 w-3" />
+        </button>
+      )}
     </div>
   );
 }
@@ -451,7 +509,11 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               label={t(`planBuilder.class.${cls}`)}
               value={ready ? formatMinutes(estimateMinutes(distanceNm, cls)) : '—'}
             />
-            <Stat label={t('planBuilder.cruiseShort')} value={formatLevel(cruiseAltitudeFt)} />
+            <CruiseStat
+              label={t('planBuilder.cruiseShort')}
+              value={cruiseAltitudeFt}
+              onChange={setCruiseAltitude}
+            />
             <Stat
               label={t('planBuilder.fuel')}
               value={ready ? String(estimateFuelKg(distanceNm, cls)) : '—'}

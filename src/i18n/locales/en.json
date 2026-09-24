@@ -154,6 +154,7 @@
     "useRunway": "Use",
     "profileTitle": "Cruise and profile",
     "cruiseShort": "Cruise",
+    "editCruise": "Set cruise altitude in feet",
     "fixesUnit": "fixes",
     "runway": "Runway",
     "clear": "Clear",
@@ -820,6 +821,7 @@
     "rawMetar": "Raw METAR",
     "routeTab": {
       "tabApproach": "Approach",
+      "onlyRunway": "Runway {{rwy}} only",
       "noneAvailable": "No {{type}} available",
       "noneApproaches": "No approaches available",
       "transitionCount_one": "1 transition",

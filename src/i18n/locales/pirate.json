@@ -154,6 +154,7 @@
     "useRunway": "Take it",
     "profileTitle": "Cruise and profile",
     "cruiseShort": "Cruise",
+    "editCruise": "Set yer cruisin' height in feet",
     "fixesUnit": "marks",
     "runway": "Strip",
     "clear": "Scuttle it",
@@ -820,6 +821,7 @@
     "rawMetar": "Raw METAR scroll",
     "routeTab": {
       "tabApproach": "Approach",
+      "onlyRunway": "Strip {{rwy}} only",
       "noneAvailable": "No {{type}} available",
       "noneApproaches": "No approaches available",
       "transitionCount_one": "1 transition",

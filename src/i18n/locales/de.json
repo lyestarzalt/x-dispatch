@@ -158,6 +158,7 @@
     "useRunway": "Übernehmen",
     "profileTitle": "Reiseflug und Profil",
     "cruiseShort": "Reiseflug",
+    "editCruise": "Reiseflughöhe in Fuß festlegen",
     "fixesUnit": "Punkte",
     "runway": "Piste",
     "clear": "Leeren",
@@ -824,6 +825,7 @@
     "rawMetar": "Original-METAR",
     "routeTab": {
       "tabApproach": "Anflug",
+      "onlyRunway": "Nur Piste {{rwy}}",
       "noneAvailable": "Keine {{type}} verfügbar",
       "noneApproaches": "Keine Anflüge verfügbar",
       "transitionCount_one": "1 Transition",

@@ -154,6 +154,7 @@
     "useRunway": "Usar",
     "profileTitle": "Crucero y perfil",
     "cruiseShort": "Crucero",
+    "editCruise": "Fijar altitud de crucero en pies",
     "fixesUnit": "puntos",
     "runway": "Pista",
     "clear": "Borrar",
@@ -820,6 +821,7 @@
     "rawMetar": "METAR sin procesar",
     "routeTab": {
       "tabApproach": "Aprox.",
+      "onlyRunway": "Solo pista {{rwy}}",
       "noneAvailable": "Sin {{type}} disponibles",
       "noneApproaches": "Sin aproximaciones disponibles",
       "transitionCount_one": "1 transición",

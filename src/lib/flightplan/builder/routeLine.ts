@@ -28,10 +28,10 @@ export interface RunwayEnds {
   arrival?: RunwayEnd;
 }
 
-export function takeoffPath(end: RunwayEnd): LatLon[] {
+export function takeoffPath(end: RunwayEnd, climbOutNm = CLIMB_OUT_NM): LatLon[] {
   const threshold = { latitude: end.latitude, longitude: end.longitude };
   const farEnd = destinationPoint(threshold, end.headingDeg, end.lengthNm);
-  return [threshold, farEnd, destinationPoint(farEnd, end.headingDeg, CLIMB_OUT_NM)];
+  return [threshold, farEnd, destinationPoint(farEnd, end.headingDeg, climbOutNm)];
 }
 
 export function finalApproachPath(end: RunwayEnd): LatLon[] {
@@ -115,13 +115,14 @@ export function turnOntoFix(
 export function routeLinePoints(
   waypoints: RoutePoint[],
   ends?: RunwayEnds,
-  firstTurn?: 'L' | 'R'
+  firstTurn?: 'L' | 'R',
+  initialClimbNm?: number
 ): LatLon[] {
   let takeoff: LatLon[] | null = null;
   const core: LatLon[] = [];
   for (const wp of waypoints) {
     if (wp.via === 'ADEP' && ends?.departure) {
-      takeoff = takeoffPath(ends.departure);
+      takeoff = takeoffPath(ends.departure, initialClimbNm ?? CLIMB_OUT_NM);
     } else if (wp.via === 'ADES' && ends?.arrival) {
       core.push(...finalApproachPath(ends.arrival));
     } else {

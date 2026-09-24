@@ -208,10 +208,12 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: routeLinePoints(waypoints, fmsData.runwayEnds, fmsData.firstTurn).map((p) => [
-          p.longitude,
-          p.latitude,
-        ]),
+        coordinates: routeLinePoints(
+          waypoints,
+          fmsData.runwayEnds,
+          fmsData.firstTurn,
+          fmsData.initialClimbNm
+        ).map((p) => [p.longitude, p.latitude]),
       },
       properties: { stage: '' },
     });

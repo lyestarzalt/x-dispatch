@@ -154,6 +154,7 @@
     "useRunway": "Użyj",
     "profileTitle": "Przelot i profil",
     "cruiseShort": "Przelot",
+    "editCruise": "Ustaw wysokość przelotową w stopach",
     "fixesUnit": "punktów",
     "runway": "Pas",
     "clear": "Wyczyść",
@@ -820,6 +821,7 @@
     "rawMetar": "Oryginalny METAR",
     "routeTab": {
       "tabApproach": "Podejście",
+      "onlyRunway": "Tylko pas {{rwy}}",
       "noneAvailable": "Brak dostępnych {{type}}",
       "noneApproaches": "Brak dostępnych podejść",
       "transitionCount_one": "1 transition",
