@@ -412,6 +412,14 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     setCruiseAltitude(suggestCruiseAltitudeFt(distanceNm, cls, isEastbound(departure, arrival)));
   }, [ready, departure, arrival, cruiseAltitudeFt, distanceNm, cls, setCruiseAltitude]);
 
+  // A new class means a new cruise level, and the airways that suit it; route again once it is set.
+  const rerouteAfterCruise = useRef(false);
+  useEffect(() => {
+    if (!rerouteAfterCruise.current || cruiseAltitudeFt === null || autoRouting) return;
+    rerouteAfterCruise.current = false;
+    void autoRoute(joins);
+  }, [cruiseAltitudeFt, autoRouting, autoRoute, joins]);
+
   const handleAutoRoute = async () => {
     const ok = await autoRoute(joins);
     if (!ok) toast.error(t('planBuilder.autoRouteFailed'));
@@ -533,7 +541,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               variant="outline"
               value={cls}
               onValueChange={(v) => {
-                if (v) setAircraftClass(v as RangeRingCategory);
+                if (!v) return;
+                setAircraftClass(v as RangeRingCategory);
+                rerouteAfterCruise.current = true;
               }}
             >
               {CLASSES.map((c) => (
