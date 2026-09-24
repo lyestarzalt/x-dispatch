@@ -825,6 +825,7 @@
     "rawMetar": "Original-METAR",
     "routeTab": {
       "tabApproach": "Anflug",
+      "onlyRunway": "Nur Piste {{rwy}}",
       "noneAvailable": "Keine {{type}} verfügbar",
       "noneApproaches": "Keine Anflüge verfügbar",
       "transitionCount_one": "1 Transition",

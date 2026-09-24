@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Check, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { runwayMatches } from '@/lib/flightplan/builder/procedures';
 import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
 import { useAirportProcedures } from '@/queries';
@@ -36,28 +38,37 @@ export default function RouteTab() {
   const icao = useAppStore((s) => s.selectedICAO);
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
   const selectProcedure = useAppStore((s) => s.selectProcedure);
+  const startPosition = useAppStore((s) => s.startPosition);
 
   const { data: procedures, isLoading } = useAirportProcedures(icao);
   const [activeType, setActiveType] = useState<ProcedureType>('SID');
   const [expandedProcedure, setExpandedProcedure] = useState<string | null>(null);
+  const [onlyStartRunway, setOnlyStartRunway] = useState(true);
+
+  // A runway picked as the start position narrows the list to procedures published for it.
+  const startRunway =
+    startPosition?.type === 'runway' && !startPosition.isHelipad && startPosition.airport === icao
+      ? startPosition.name
+      : undefined;
+  const filterRunway = onlyStartRunway ? startRunway : undefined;
+
+  const lists = useMemo(() => {
+    const keep = (list: Procedure[]) =>
+      filterRunway ? list.filter((p) => runwayMatches(p.runway, filterRunway)) : list;
+    return {
+      SID: keep(procedures?.sids ?? []),
+      STAR: keep(procedures?.stars ?? []),
+      APP: keep(procedures?.approaches ?? []),
+    };
+  }, [procedures, filterRunway]);
 
   const counts = {
-    SID: procedures?.sids.length || 0,
-    STAR: procedures?.stars.length || 0,
-    APP: procedures?.approaches.length || 0,
+    SID: lists.SID.length,
+    STAR: lists.STAR.length,
+    APP: lists.APP.length,
   };
 
-  const grouped = useMemo(() => {
-    if (!procedures) return [];
-    switch (activeType) {
-      case 'SID':
-        return groupProcedures(procedures.sids);
-      case 'STAR':
-        return groupProcedures(procedures.stars);
-      case 'APP':
-        return groupProcedures(procedures.approaches);
-    }
-  }, [procedures, activeType]);
+  const grouped = useMemo(() => groupProcedures(lists[activeType]), [lists, activeType]);
 
   const handleSelect = (proc: Procedure) => {
     const isAlreadySelected =
@@ -80,7 +91,12 @@ export default function RouteTab() {
     );
   }
 
-  if (!procedures || (counts.SID === 0 && counts.STAR === 0 && counts.APP === 0)) {
+  const hasAny =
+    (procedures?.sids.length ?? 0) +
+      (procedures?.stars.length ?? 0) +
+      (procedures?.approaches.length ?? 0) >
+    0;
+  if (!procedures || !hasAny) {
     return (
       <p className="text-muted-foreground/60 py-12 text-center text-sm">{t('procedures.noData')}</p>
     );
@@ -99,6 +115,18 @@ export default function RouteTab() {
           ))}
         </TabsList>
       </Tabs>
+
+      {startRunway && (
+        <label className="text-muted-foreground -mt-3 mb-4 flex items-center gap-2 text-xs">
+          <Switch
+            checked={onlyStartRunway}
+            onCheckedChange={setOnlyStartRunway}
+            className="scale-75"
+            aria-label={t('airportInfo.routeTab.onlyRunway', { rwy: startRunway })}
+          />
+          {t('airportInfo.routeTab.onlyRunway', { rwy: startRunway })}
+        </label>
+      )}
 
       {/* Procedure list */}
       {grouped.length === 0 ? (

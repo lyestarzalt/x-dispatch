@@ -821,6 +821,7 @@
     "rawMetar": "Raw METAR scroll",
     "routeTab": {
       "tabApproach": "Approach",
+      "onlyRunway": "Strip {{rwy}} only",
       "noneAvailable": "No {{type}} available",
       "noneApproaches": "No approaches available",
       "transitionCount_one": "1 transition",

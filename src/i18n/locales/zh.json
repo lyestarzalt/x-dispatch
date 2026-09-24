@@ -821,6 +821,7 @@
     "rawMetar": "原始 METAR",
     "routeTab": {
       "tabApproach": "进近",
+      "onlyRunway": "仅跑道 {{rwy}}",
       "noneAvailable": "无可用 {{type}}",
       "noneApproaches": "无可用进近",
       "transitionCount_one": "1 个过渡",

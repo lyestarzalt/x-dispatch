@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
@@ -137,20 +138,19 @@ function CruiseStat({
     <div className="flex flex-col">
       <Caption>{label}</Caption>
       {editing ? (
-        <input
+        <Input
           autoFocus
-          type="number"
-          step={1000}
-          min={0}
-          max={60000}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => setDraft(e.target.value.replace(/\D/g, ''))}
           onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="border-input bg-secondary h-5 w-20 rounded border px-1 font-mono text-sm tabular-nums focus:outline-none"
+          className="h-6 w-20 px-1.5 font-mono text-sm tabular-nums"
         />
       ) : (
         <button

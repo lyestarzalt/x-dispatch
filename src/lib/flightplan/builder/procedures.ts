@@ -16,7 +16,8 @@ export interface ProcedureParts {
   approach?: ResolvedProcedure;
 }
 
-function runwayMatches(procedureRunway: string | null, runway: string | undefined): boolean {
+/** Whether a procedure published for `procedureRunway` applies to the chosen runway. */
+export function runwayMatches(procedureRunway: string | null, runway: string | undefined): boolean {
   if (!procedureRunway) return true;
   if (!runway) return true;
   const bare = procedureRunway.toUpperCase().replace(/^RW/, '');

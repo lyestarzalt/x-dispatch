@@ -821,6 +821,7 @@
     "rawMetar": "元の METAR",
     "routeTab": {
       "tabApproach": "進入",
+      "onlyRunway": "滑走路 {{rwy}} のみ",
       "noneAvailable": "{{type}} はありません",
       "noneApproaches": "進入方式はありません",
       "transitionCount_one": "トランジション 1",

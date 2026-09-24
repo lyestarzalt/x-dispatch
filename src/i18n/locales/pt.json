@@ -821,6 +821,7 @@
     "rawMetar": "METAR original",
     "routeTab": {
       "tabApproach": "Aproxim.",
+      "onlyRunway": "Só pista {{rwy}}",
       "noneAvailable": "Sem {{type}} disponíveis",
       "noneApproaches": "Sem aproximações disponíveis",
       "transitionCount_one": "1 transição",

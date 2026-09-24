@@ -821,6 +821,7 @@
     "rawMetar": "Исходный METAR",
     "routeTab": {
       "tabApproach": "Заход",
+      "onlyRunway": "Только ВПП {{rwy}}",
       "noneAvailable": "Нет {{type}}",
       "noneApproaches": "Нет заходов",
       "transitionCount_one": "1 переход",
