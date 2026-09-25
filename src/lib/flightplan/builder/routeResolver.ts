@@ -162,6 +162,20 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
       continue;
     }
 
+    // Along an airway the fixes are resolved one after another, so the search follows the
+    // airway and a long one, or an oceanic track, still finds its exit far from the entry.
+    const between =
+      pendingAirway && lastFixId
+        ? walkAirway(pendingAirway.name, lastFixId, lexedToken.text)
+        : null;
+    if (between) {
+      const via = pendingAirway!.name;
+      for (const midId of between) {
+        const mid = resolveIdent(midId, cursor);
+        if (mid) push(mid, via);
+      }
+    }
+
     const point = resolveIdent(lexedToken.text, cursor);
     const token: RouteToken = {
       text: lexedToken.text,
@@ -175,18 +189,12 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
       continue;
     }
 
-    if (pendingAirway && lastFixId) {
-      const via = pendingAirway.name;
-      const between = walkAirway(via, lastFixId, point.id);
+    if (pendingAirway) {
       if (between === null) {
         failAirway('airwayNotJoined');
         push(point, 'DRCT');
       } else {
-        for (const midId of between) {
-          const mid = resolveIdent(midId, cursor);
-          if (mid) push(mid, via);
-        }
-        push(point, via);
+        push(point, pendingAirway.name);
         pendingAirway = null;
       }
       continue;

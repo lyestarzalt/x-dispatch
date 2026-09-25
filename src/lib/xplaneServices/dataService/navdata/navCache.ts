@@ -301,12 +301,13 @@ export function getNavaidNearestById(
 ): { id: string; latitude: number; longitude: number; type: string; region: string } | null {
   const db = getDb();
 
-  // Approximate bounding box (1 degree ≈ 60nm)
+  // Approximate bounding box (1 degree ≈ 60nm); a degree of longitude shrinks with latitude.
   const degBuffer = maxDistNm / 60;
+  const lonBuffer = degBuffer / Math.max(0.2, Math.cos((lat * Math.PI) / 180));
   const minLat = lat - degBuffer;
   const maxLat = lat + degBuffer;
-  const minLon = lon - degBuffer;
-  const maxLon = lon + degBuffer;
+  const minLon = lon - lonBuffer;
+  const maxLon = lon + lonBuffer;
 
   const results = db
     .select({
@@ -371,12 +372,13 @@ export function getNavaidEnrichedById(
 } | null {
   const db = getDb();
 
-  // Approximate bounding box (1 degree ≈ 60nm)
+  // Approximate bounding box (1 degree ≈ 60nm); a degree of longitude shrinks with latitude.
   const degBuffer = maxDistNm / 60;
+  const lonBuffer = degBuffer / Math.max(0.2, Math.cos((lat * Math.PI) / 180));
   const minLat = lat - degBuffer;
   const maxLat = lat + degBuffer;
-  const minLon = lon - degBuffer;
-  const maxLon = lon + degBuffer;
+  const minLon = lon - lonBuffer;
+  const maxLon = lon + lonBuffer;
 
   const results = db
     .select({
@@ -732,12 +734,13 @@ export function getWaypointNearestById(
 ): { id: string; latitude: number; longitude: number; region: string } | null {
   const db = getDb();
 
-  // Approximate bounding box (1 degree ≈ 60nm)
+  // Approximate bounding box (1 degree ≈ 60nm); a degree of longitude shrinks with latitude.
   const degBuffer = maxDistNm / 60;
+  const lonBuffer = degBuffer / Math.max(0.2, Math.cos((lat * Math.PI) / 180));
   const minLat = lat - degBuffer;
   const maxLat = lat + degBuffer;
-  const minLon = lon - degBuffer;
-  const maxLon = lon + degBuffer;
+  const minLon = lon - lonBuffer;
+  const maxLon = lon + lonBuffer;
 
   const results = db
     .select({
