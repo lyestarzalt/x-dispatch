@@ -97,6 +97,18 @@ const FIXLESS_TERMINATORS = new Set<PathTerminator>([
   'VR',
 ]);
 
+const SINGLE_RUNWAY_RE = /^RW\d{2}[LCRB]?$/;
+
+/**
+ * Runway named by a common-route line, kept only while every such line agrees.
+ * "ALL", blanks and disagreements leave the procedure open to any runway.
+ */
+function mergeCommonRunway(current: string | null | undefined, field: string): string | null {
+  const runway = SINGLE_RUNWAY_RE.test(field) ? field : null;
+  if (current === undefined) return runway;
+  return current === runway ? current : null;
+}
+
 function parsePathTerminator(value: string): PathTerminator {
   const trimmed = value.trim().toUpperCase();
   return VALID_PATH_TERMINATORS.includes(trimmed as PathTerminator)
@@ -159,12 +171,12 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
   // Parse turn direction from field 9
   const turnDirection = parseTurnDirection(data[9] || '');
 
-  // Parse course from field 18 (if present)
-  const courseStr = data[18]?.trim() || '';
+  // Fields 18 and 19 are theta and rho to the recommended navaid; the leg's own magnetic
+  // course and route distance (or DME distance for CD, FD, VD legs) follow at 20 and 21.
+  const courseStr = data[20]?.trim() || '';
   const course = courseStr ? parseFloat(courseStr) / 10 : null;
 
-  // Parse distance from field 19 (if present)
-  const distStr = data[19]?.trim() || '';
+  const distStr = data[21]?.trim() || '';
   const distance = distStr ? parseFloat(distStr) / 10 : null;
 
   // Parse altitude - descriptor at index 22, altitude at index 23
@@ -197,6 +209,8 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
 interface ProcedureComponents {
   enrouteTransitions: Map<string, string[]>; // Entry/exit point name -> lines
   commonRoute: string[]; // Shared segment
+  /** Runway the common route is published for, when it names exactly one; undefined until seen. */
+  commonRunway?: string | null;
   runwayTransitions: Map<string, string[]>; // Runway name -> lines
 }
 
@@ -267,6 +281,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         starComponents.set(name, {
           enrouteTransitions: new Map(),
           commonRoute: [],
+          commonRunway: undefined,
           runwayTransitions: new Map(),
         });
       }
@@ -293,6 +308,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
       } else {
         // Common route (type 2, 5, or type 1 with ALL)
         comp.commonRoute.push(line);
+        comp.commonRunway = mergeCommonRunway(comp.commonRunway, runway);
       }
       continue;
     }
@@ -303,6 +319,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         sidComponents.set(name, {
           enrouteTransitions: new Map(),
           commonRoute: [],
+          commonRunway: undefined,
           runwayTransitions: new Map(),
         });
       }
@@ -330,8 +347,10 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
           comp.commonRoute.push(line);
         }
       } else {
-        // Common route (type 2, 3)
+        // Common route (type 2, 3). With no runway transitions the runway field here names
+        // the one runway the whole procedure serves.
         comp.commonRoute.push(line);
+        comp.commonRunway = mergeCommonRunway(comp.commonRunway, runway);
       }
       continue;
     }
@@ -347,7 +366,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         procedures.stars.push({
           type: 'STAR',
           name,
-          runway: null,
+          runway: comp.commonRunway ?? null,
           transition: null,
           waypoints: commonWaypoints,
         });
@@ -382,7 +401,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
           procedures.stars.push({
             type: 'STAR',
             name,
-            runway: null,
+            runway: comp.commonRunway ?? null,
             transition: trans,
             waypoints: combined,
           });
@@ -419,7 +438,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         procedures.sids.push({
           type: 'SID',
           name,
-          runway: null,
+          runway: comp.commonRunway ?? null,
           transition: null,
           waypoints: commonWaypoints,
         });
@@ -454,7 +473,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
           procedures.sids.push({
             type: 'SID',
             name,
-            runway: null,
+            runway: comp.commonRunway ?? null,
             transition: trans,
             waypoints: combined,
           });
