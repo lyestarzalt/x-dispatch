@@ -178,7 +178,11 @@
     "resolving": "Risoluzione della rotta…",
     "distance": "Distanza",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turboelica", "prop": "Pistoni" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turboelica",
+      "prop": "Pistoni"
+    },
     "ete": "Tempo",
     "aircraft": "Aeromobile",
     "skipped": "{{count}} ignorati",
@@ -1838,5 +1842,14 @@
     "speedTooltip": "Cambia la velocità di riproduzione",
     "follow": "Segui l'aereo",
     "stop": "Interrompi il replay"
+  },
+  "navInfo": {
+    "waypoint": "Punto di rotta",
+    "frequency": "Frequenza",
+    "altitude": "Altitudine pianificata",
+    "bearingTrue": "Rilevamento (vero)",
+    "radial": "Radiale",
+    "distance": "Distanza",
+    "noPlane": "Posizione aereo non disponibile"
   }
 }

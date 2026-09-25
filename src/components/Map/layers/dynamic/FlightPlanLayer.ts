@@ -234,6 +234,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     properties: {
       id: wp.id,
       index,
+      navType: wp.type,
+      frequency: wp.frequency ?? 0,
       altitudeLabel: wp.constraintLabel ?? formatAltitude(wp.altitude),
       label: buildLabel(wp),
       symbolType: getSymbolId(wp),

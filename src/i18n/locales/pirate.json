@@ -129,7 +129,11 @@
   "planBuilder": {
     "title": "Chart a Voyage",
     "description": "Pick both harbors, scrawl a route or sail straight, then send it to X-Plane.",
-    "sections": { "airports": "Harbors", "enroute": "Open Sea", "summary": "Cruisin' an' Tally" },
+    "sections": {
+      "airports": "Harbors",
+      "enroute": "Open Sea",
+      "summary": "Cruisin' an' Tally"
+    },
     "sid": "SID",
     "star": "STAR",
     "approach": "Approach",
@@ -174,7 +178,11 @@
     "resolving": "Readin' the charts…",
     "distance": "Distance",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turboprop", "prop": "Piston" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turboprop",
+      "prop": "Piston"
+    },
     "ete": "Time",
     "aircraft": "Vessel",
     "skipped": "{{count}} tossed overboard",
@@ -1834,5 +1842,14 @@
     "speedTooltip": "Change how fast she plays",
     "follow": "Follow the bird",
     "stop": "Stop the replay"
+  },
+  "navInfo": {
+    "waypoint": "Waypoint",
+    "frequency": "Frequency",
+    "altitude": "Planned height",
+    "bearingTrue": "Bearin' (true)",
+    "radial": "Radial",
+    "distance": "Distance",
+    "noPlane": "No ship position"
   }
 }

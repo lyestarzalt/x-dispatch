@@ -90,6 +90,7 @@ import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
 import LandingReportCard from './widgets/LandingReportCard';
+import NavInfoPopup from './widgets/NavInfoPopup';
 import ReplayWidget from './widgets/ReplayWidget';
 import StandHoverCard from './widgets/StandHoverCard';
 
@@ -907,6 +908,7 @@ export default function Map({ airports }: MapProps) {
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard hover={standHover} />
+      <NavInfoPopup mapRef={mapRef} />
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />
