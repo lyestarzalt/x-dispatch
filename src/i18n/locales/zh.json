@@ -201,6 +201,22 @@
     "saveFailed": "无法保存：{{error}}"
   },
   "toolbar": {
+    "clock": {
+      "zulu": "Zulu",
+      "local": "本地",
+      "zuluSuffix": "Z",
+      "localSuffix": "L",
+      "switchToLocal": "点击切换到本地时间",
+      "switchToZulu": "点击切换到Zulu时间",
+      "sourceSim": "模拟器时间",
+      "sourceSystem": "系统时间",
+      "switchToSim": "点击跟随X-Plane时间（太阳和光照同步）",
+      "switchToSystem": "点击使用系统时钟（太阳和光照同步）",
+      "simNotConnected": "X-Plane未连接，显示系统时间",
+      "toggleSource": "切换时钟来源",
+      "badgeSim": "SIM",
+      "badgeSystem": "RT"
+    },
     "searchPlaceholder": "搜索机场...",
     "clearSearch": "清除搜索",
     "addons": "附加组件",

@@ -77,6 +77,7 @@ import {
   RANGE_RING_LABELS,
   RANGE_RING_SPEEDS,
 } from '@/types/layers';
+import { ClockWidget } from './ClockWidget';
 
 type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
 
@@ -582,6 +583,8 @@ function Toolbar({
 
   return (
     <div className="relative flex items-center gap-3">
+      <ClockWidget />
+
       {/* Search */}
       <div ref={containerRef} className="relative">
         <Input

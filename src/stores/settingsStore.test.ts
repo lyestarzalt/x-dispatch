@@ -226,6 +226,41 @@ describe('migrateSettings', () => {
     // Pre-existing fields untouched.
     expect(result.simbrief.pilotId).toBe('1234567');
   });
+  it('adds the toolbar clock mode at v28 and keeps existing appearance choices', () => {
+    const v27Blob = {
+      map: {
+        navDataRadiusNm: 100,
+        vatsimRefreshInterval: 15,
+        mapStyleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        idleOrbitEnabled: false,
+        userMapStyles: [],
+        units: { weight: 'lbs' as const },
+      },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'large' as const, zoomLevel: 1.1, debugOverlay: true },
+      graphics: {
+        approachLightAnimation: true,
+        surfaceDetail: 'high' as const,
+        dynamicSky: true,
+        cityLights: true,
+        followSimTime: false,
+        groundWeather: true,
+        airfieldLights: 'on' as const,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      flights: { recording: true, landingReport: true, landingFlyTo: true },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+    };
+    const result = migrateSettings(v27Blob, 27);
+    expect(result.appearance).toEqual({
+      fontSize: 'large',
+      zoomLevel: 1.1,
+      debugOverlay: true,
+      clockMode: 'zulu',
+    });
+    expect(result.graphics.followSimTime).toBe(false);
+  });
 });
 
 describe('Airport favorites/home actions', () => {
