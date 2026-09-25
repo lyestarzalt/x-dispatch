@@ -33,6 +33,7 @@ const draft = (routeText: string) => ({
   departure: { icao: 'EGXX', latitude: 50, longitude: -8 },
   arrival: { icao: 'CYXX', latitude: 50, longitude: -52 },
   routeText,
+  cruiseAltitudeFt: 36000,
 });
 
 describe('resolveRoute', () => {
