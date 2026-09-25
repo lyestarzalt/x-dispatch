@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { bandAllows, compressPath, legCrossesArea, limitToFeet } from './autoRouter';
+import {
+  bandAllows,
+  compressPath,
+  crossTrackNm,
+  legCrossesArea,
+  limitToFeet,
+  longitudeRanges,
+} from './autoRouter';
 
 vi.mock('@/lib/xplaneServices/dataService/navdata/navCache', () => ({
   getAllAirwaysFromDb: () => [],
@@ -7,6 +14,35 @@ vi.mock('@/lib/xplaneServices/dataService/navdata/navCache', () => ({
   getWaypointsInBounds: () => [],
   getAirspacesInBounds: () => [],
 }));
+vi.mock('@/lib/utils/logger', () => {
+  const noop = new Proxy({}, { get: () => () => {} });
+  return { default: new Proxy({}, { get: () => noop }) };
+});
+
+describe('longitudeRanges', () => {
+  it('pads a span that stays on one side of the antimeridian', () => {
+    expect(longitudeRanges([4.7, -73.8], 5)).toEqual([[-78.8, 9.7]]);
+  });
+
+  it('splits a Pacific crossing into two spans meeting at 180', () => {
+    expect(longitudeRanges([139.8, -118.4], 5)).toEqual([
+      [134.8, 180],
+      [-180, -113.4],
+    ]);
+  });
+});
+
+describe('crossTrackNm', () => {
+  const a = { latitude: 40, longitude: -20 };
+  const b = { latitude: 60, longitude: -20 };
+  it('is zero on the track and grows with the offset', () => {
+    expect(crossTrackNm(a, b, { latitude: 50, longitude: -20 })).toBeLessThan(0.01);
+    // One degree of longitude at 50N is about 38.6 nm.
+    const off = crossTrackNm(a, b, { latitude: 50, longitude: -19 });
+    expect(off).toBeGreaterThan(38);
+    expect(off).toBeLessThan(39);
+  });
+});
 
 describe('compressPath', () => {
   it('keeps entry and exit fixes of each airway and every direct fix', () => {

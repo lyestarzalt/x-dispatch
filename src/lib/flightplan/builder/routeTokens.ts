@@ -4,6 +4,8 @@
  */
 
 const AIRWAY_RE = /^[A-Z]{1,2}\d{1,4}[A-Z]?$/;
+/** North Atlantic organised tracks are filed by designator, NATA to NATZ, like an airway. */
+export const NAT_TRACK_RE = /^NAT[A-Z]$/;
 const DIRECT_TOKENS = new Set(['DCT', 'DRCT', 'DIRECT']);
 /** 5230N01000E, 52N010E, 5230N01000W */
 const LATLON_DDMM_RE = /^(\d{2})(\d{2})?([NS])(\d{3})(\d{2})?([EW])$/;
@@ -59,7 +61,7 @@ export function lexRoute(routeText: string): LexedToken[] {
       continue;
     }
     const prev = out[out.length - 1];
-    if (AIRWAY_RE.test(text) && prev?.kind !== 'airway') {
+    if ((AIRWAY_RE.test(text) || NAT_TRACK_RE.test(text)) && prev?.kind !== 'airway') {
       out.push({ text, kind: 'airway' });
       continue;
     }

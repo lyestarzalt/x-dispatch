@@ -23,7 +23,8 @@ import {
   getWaypointsInBounds,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
-import { type LatLon, greatCircleNm } from './geometry';
+import { type LatLon, bearingDeg, greatCircleNm } from './geometry';
+import { getOceanicTracks } from './oceanicTracks';
 import type { AutoRouteResult, ProcedureChoice, RouteJoin } from './types';
 
 /** Box padding around the endpoints; wide enough to let the route bend round gaps. */
@@ -57,7 +58,22 @@ const MAX_DETOUR_SLACK_NM = 40;
 /** Relaxed pass: direct legs between airway fixes only, a handful of neighbours each. */
 const DIRECT_LEG_NM = 100;
 const DIRECT_NEIGHBOURS = 6;
-const DIRECT_PENALTY = 1.2;
+const DIRECT_PENALTY = 1.35;
+/**
+ * Oceanic pass: fixes with no onward network (coastal exits, half-degree reporting points)
+ * get long direct legs, so a crossing is filed as MALOT 5320N 5330N ... TUDEP while the
+ * continental parts still prefer airways.
+ */
+const OCEANIC_LEG_NM = 700;
+const OCEANIC_NEIGHBOURS = 8;
+const OCEANIC_PENALTY = 1.5;
+/** An organised track at a usable level is cheaper than the same miles flown at random. */
+const TRACK_PREFERENCE = 0.9;
+/** Fixes inside a run of direct legs are dropped while the track stays within this corridor. */
+const STRAIGHT_CORRIDOR_NM = 8;
+const EARTH_RADIUS_NM = 3440.065;
+/** ARINC 424 lat/lon reporting points, "5250N" is 52N 050W and "50E60" 50N 160E. */
+const REPORTING_POINT_RE = /^\d{4}[NSEW]$|^\d{2}[NSEW]\d{2}$/;
 /**
  * Prohibited areas are routed round where the network allows. Restricted areas are
  * crossed by published airways all the time, so they only nudge.
@@ -300,6 +316,24 @@ export function bandAllows(segment: AirwaySegment, cruiseFl: number): boolean {
 interface BuildOptions {
   /** Direct legs between airway fixes, for free route airspace. */
   direct: boolean;
+  /** Long direct legs across gaps with no network at all, for oceanic crossings. */
+  oceanic?: boolean;
+}
+
+/**
+ * Longitude spans to query, padded. A leg whose endpoints are more than 180° apart is
+ * shorter across the antimeridian, so it is covered by two spans that meet at ±180.
+ */
+export function longitudeRanges(lons: number[], padDeg: number): [number, number][] {
+  const min = Math.min(...lons);
+  const max = Math.max(...lons);
+  if (max - min <= 180) return [[min - padDeg, max + padDeg]];
+  const west = Math.max(...lons.filter((l) => l < 0));
+  const east = Math.min(...lons.filter((l) => l >= 0));
+  return [
+    [east - padDeg, 180],
+    [-180, west + padDeg],
+  ];
 }
 
 function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
@@ -313,29 +347,38 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
     Math.min(from.latitude, to.latitude, departure.latitude, arrival.latitude) - padLat;
   const maxLat =
     Math.max(from.latitude, to.latitude, departure.latitude, arrival.latitude) + padLat;
-  const minLon =
-    Math.min(from.longitude, to.longitude, departure.longitude, arrival.longitude) - padLon;
-  const maxLon =
-    Math.max(from.longitude, to.longitude, departure.longitude, arrival.longitude) + padLon;
+  const lonRanges = longitudeRanges(
+    [from.longitude, to.longitude, departure.longitude, arrival.longitude],
+    padLon
+  );
 
   // Airways name fixes by ICAO region. The fix tables keep that code in `areaCode`
   // (waypoints) and `country` (navaids); their `region` column is the ENRT marker.
   const positions = new Map<string, LatLon>();
-  for (const wp of getWaypointsInBounds(minLat, maxLat, minLon, maxLon, FIX_QUERY_LIMIT)) {
-    positions.set(fixKey(wp.id, wp.areaCode), { latitude: wp.latitude, longitude: wp.longitude });
-  }
-  for (const nav of getNavaidsInBounds(
-    minLat,
-    maxLat,
-    minLon,
-    maxLon,
-    AIRWAY_NAVAID_TYPES,
-    FIX_QUERY_LIMIT
-  )) {
-    const key = fixKey(nav.id, nav.country);
-    if (!positions.has(key)) {
-      positions.set(key, { latitude: nav.latitude, longitude: nav.longitude });
+  const airspaceRows: Airspace[] = [];
+  for (const [minLon, maxLon] of lonRanges) {
+    for (const wp of getWaypointsInBounds(minLat, maxLat, minLon, maxLon, FIX_QUERY_LIMIT)) {
+      positions.set(fixKey(wp.id, wp.areaCode), {
+        latitude: wp.latitude,
+        longitude: wp.longitude,
+      });
     }
+    for (const nav of getNavaidsInBounds(
+      minLat,
+      maxLat,
+      minLon,
+      maxLon,
+      AIRWAY_NAVAID_TYPES,
+      FIX_QUERY_LIMIT
+    )) {
+      const key = fixKey(nav.id, nav.country);
+      if (!positions.has(key)) {
+        positions.set(key, { latitude: nav.latitude, longitude: nav.longitude });
+      }
+    }
+    airspaceRows.push(
+      ...getAirspacesInBounds(minLat, maxLat, minLon, maxLon, AIRSPACE_QUERY_LIMIT)
+    );
   }
   if (positions.size === 0) return null;
 
@@ -350,10 +393,7 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
   const cruiseFt = input.cruiseAltitudeFt ?? HIGH_FAMILY_MIN_FT;
   const cruiseFl = Math.round(cruiseFt / 100);
   const preferHigh = cruiseFt >= HIGH_FAMILY_MIN_FT;
-  const avoid = avoidAreasAtLevel(
-    getAirspacesInBounds(minLat, maxLat, minLon, maxLon, AIRSPACE_QUERY_LIMIT),
-    cruiseFt
-  );
+  const avoid = avoidAreasAtLevel(airspaceRows, cruiseFt);
 
   const graph: Graph = { positions, edges: new Map(), terminal };
   for (const s of loadSegments()) {
@@ -379,17 +419,58 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
     }
   }
 
-  if (opts.direct) addDirectLegs(graph);
+  addTrackEdges(graph, cruiseFl);
+  if (opts.direct) addDirectLegs(graph, opts.oceanic === true);
   return graph;
+}
+
+/**
+ * Current NAT tracks as one-way legs named by designator. Named entry and exit fixes
+ * come from the database; lat/lon points carry their own position when the box lacks them.
+ */
+function addTrackEdges(graph: Graph, cruiseFl: number): void {
+  const tracks = getOceanicTracks();
+  if (tracks.length === 0) return;
+  const keyById = new Map<string, string>();
+  for (const key of graph.positions.keys()) {
+    const id = key.split('/')[0]!;
+    if (!keyById.has(id)) keyById.set(id, key);
+  }
+  for (const track of tracks) {
+    const keys = track.points.map((p) => {
+      const known = keyById.get(p.id);
+      if (known) return known;
+      if (Number.isNaN(p.latitude)) return null;
+      const key = fixKey(p.id, 'NAT');
+      graph.positions.set(key, { latitude: p.latitude, longitude: p.longitude });
+      return key;
+    });
+    const inBand =
+      track.levels.length === 0 ||
+      (cruiseFl >= Math.min(...track.levels) && cruiseFl <= Math.max(...track.levels));
+    for (let i = 0; i + 1 < keys.length; i++) {
+      const a = keys[i];
+      const b = keys[i + 1];
+      if (!a || !b) continue;
+      const nm = greatCircleNm(graph.positions.get(a)!, graph.positions.get(b)!);
+      addEdge(graph, a, b, nm * (inBand ? TRACK_PREFERENCE : OUT_OF_BAND_PENALTY), track.name);
+    }
+  }
 }
 
 /**
  * Relaxed pass only: direct legs between fixes that sit on an airway, found
  * through a degree grid. Terminal and approach fixes are not airway nodes, so
- * they never become shortcuts.
+ * they never become shortcuts. The oceanic pass also admits lat/lon reporting
+ * points, and fixes left with few neighbours get long legs to the nearest others.
  */
-function addDirectLegs(graph: Graph): void {
+function addDirectLegs(graph: Graph, oceanic: boolean): void {
   const nodes = [...graph.edges.keys()];
+  if (oceanic) {
+    for (const key of graph.positions.keys()) {
+      if (!graph.edges.has(key) && REPORTING_POINT_RE.test(key.split('/')[0]!)) nodes.push(key);
+    }
+  }
   const cells = new Map<string, string[]>();
   const cellOf = (p: LatLon) => `${Math.floor(p.latitude)}:${Math.floor(p.longitude)}`;
   for (const key of nodes) {
@@ -397,6 +478,7 @@ function addDirectLegs(graph: Graph): void {
     if (!cells.has(c)) cells.set(c, []);
     cells.get(c)!.push(key);
   }
+  const sparse: string[] = [];
   for (const key of nodes) {
     const p = graph.positions.get(key)!;
     const lat = Math.floor(p.latitude);
@@ -414,6 +496,23 @@ function addDirectLegs(graph: Graph): void {
     near.sort((x, y) => x.nm - y.nm);
     for (const n of near.slice(0, DIRECT_NEIGHBOURS)) {
       addEdge(graph, key, n.key, n.nm * DIRECT_PENALTY, null);
+    }
+    if (near.length < DIRECT_NEIGHBOURS) sparse.push(key);
+  }
+  if (!oceanic) return;
+
+  for (const key of sparse) {
+    const p = graph.positions.get(key)!;
+    const far: { key: string; nm: number }[] = [];
+    for (const other of nodes) {
+      if (other === key) continue;
+      const nm = greatCircleNm(p, graph.positions.get(other)!);
+      if (nm > DIRECT_LEG_NM && nm <= OCEANIC_LEG_NM) far.push({ key: other, nm });
+    }
+    far.sort((x, y) => x.nm - y.nm);
+    for (const n of far.slice(0, OCEANIC_NEIGHBOURS)) {
+      addEdge(graph, key, n.key, n.nm * OCEANIC_PENALTY, null);
+      addEdge(graph, n.key, key, n.nm * OCEANIC_PENALTY, null);
     }
   }
 }
@@ -517,7 +616,9 @@ function search(graph: Graph, from: LatLon, to: LatLon): SearchResult | null {
     const arrivedBy = cameFrom.get(current.key)?.airway ?? null;
     for (const edge of graph.edges.get(current.key) ?? []) {
       if (closed.has(edge.to)) continue;
-      const changes = arrivedBy !== null && edge.airway !== null && edge.airway !== arrivedBy;
+      // Leaving or joining an airway counts as a change too, so a route does not hop on
+      // and off the network fix by fix.
+      const changes = current.key !== START && edge.airway !== arrivedBy;
       const terminal = graph.terminal.has(edge.to) ? TERMINAL_PENALTY : 1;
       const tentative = g + edge.weight * terminal + (changes ? AIRWAY_CHANGE_PENALTY_NM : 0);
       if (tentative >= (best.get(edge.to) ?? Infinity)) continue;
@@ -547,11 +648,66 @@ function search(graph: Graph, from: LatLon, to: LatLon): SearchResult | null {
   return { chain, distanceNm };
 }
 
-function toResult(found: SearchResult, joinNodes: Map<string, RouteJoin>): AutoRouteResult {
+/** Perpendicular distance of p from the great circle through a and b, in nautical miles. */
+export function crossTrackNm(a: LatLon, b: LatLon, p: LatLon): number {
+  const d13 = greatCircleNm(a, p) / EARTH_RADIUS_NM;
+  const t13 = (bearingDeg(a, p) * Math.PI) / 180;
+  const t12 = (bearingDeg(a, b) * Math.PI) / 180;
+  return Math.abs(Math.asin(Math.sin(d13) * Math.sin(t13 - t12))) * EARTH_RADIUS_NM;
+}
+
+/**
+ * A run of direct legs is filed with as few fixes as keep the track within a small
+ * corridor of the searched path (Douglas-Peucker): DCT is valid between any two points,
+ * so the intermediate fixes only add noise. Join fixes and airway fixes are kept.
+ */
+function straightenDirects(
+  chain: SearchResult['chain'],
+  positions: Map<string, LatLon>,
+  keep: Set<string>
+): SearchResult['chain'] {
+  const keepIndex = new Set<number>();
+  chain.forEach((node, i) => {
+    const onAirway = node.arrivedBy !== null || chain[i + 1]?.arrivedBy != null;
+    if (i === 0 || i === chain.length - 1 || onAirway || keep.has(node.key)) keepIndex.add(i);
+  });
+  const simplify = (lo: number, hi: number) => {
+    if (hi - lo < 2) return;
+    const a = positions.get(chain[lo]!.key);
+    const b = positions.get(chain[hi]!.key);
+    if (!a || !b) {
+      for (let i = lo + 1; i < hi; i++) keepIndex.add(i);
+      return;
+    }
+    let worst = -1;
+    let worstNm = 0;
+    for (let i = lo + 1; i < hi; i++) {
+      const p = positions.get(chain[i]!.key);
+      const nm = p ? crossTrackNm(a, b, p) : Infinity;
+      if (nm > worstNm) {
+        worstNm = nm;
+        worst = i;
+      }
+    }
+    if (worstNm <= STRAIGHT_CORRIDOR_NM) return;
+    keepIndex.add(worst);
+    simplify(lo, worst);
+    simplify(worst, hi);
+  };
+  const anchors = [...keepIndex].sort((x, y) => x - y);
+  for (let k = 0; k + 1 < anchors.length; k++) simplify(anchors[k]!, anchors[k + 1]!);
+  return chain.filter((_, i) => keepIndex.has(i));
+}
+
+function toResult(
+  found: SearchResult,
+  graph: Graph,
+  joinNodes: Map<string, RouteJoin>
+): AutoRouteResult {
   let sid: ProcedureChoice | undefined;
   let star: ProcedureChoice | undefined;
   const steps: RouteStep[] = [];
-  const chain = found.chain;
+  const chain = straightenDirects(found.chain, graph.positions, new Set(joinNodes.keys()));
   for (let i = 0; i < chain.length; i++) {
     const node = chain[i]!;
     const join = joinNodes.get(node.key);
@@ -583,7 +739,7 @@ export function autoRoute(input: AutoRouteInput): AutoRouteResult | null {
     if (graph && graph.edges.size > 0) {
       const joins = connectEndpoints(graph, input);
       const found = search(graph, input.from, input.to);
-      result = found ? toResult(found, joins) : null;
+      result = found ? toResult(found, graph, joins) : null;
     }
     input.trace?.(
       `${name}: ${result ? `${Math.round(result.distanceNm)} nm, ${result.routeText}` : 'none'} (${Date.now() - started}ms)`
@@ -596,7 +752,16 @@ export function autoRoute(input: AutoRouteInput): AutoRouteResult | null {
   const airways = run('airways', { direct: false });
   if (airways && airways.distanceNm <= limitNm) return airways;
   const withDirect = run('airways and direct legs', { direct: true });
-  if (!airways) return withDirect;
-  if (!withDirect) return airways;
-  return withDirect.distanceNm < airways.distanceNm ? withDirect : airways;
+  let best = shorter(airways, withDirect);
+  // Nothing, or only a long way round: let long legs bridge the gaps in the network.
+  if (!best || best.distanceNm > limitNm) {
+    best = shorter(best, run('oceanic', { direct: true, oceanic: true }));
+  }
+  return best;
+}
+
+function shorter(a: AutoRouteResult | null, b: AutoRouteResult | null): AutoRouteResult | null {
+  if (!a) return b;
+  if (!b) return a;
+  return b.distanceNm < a.distanceNm ? b : a;
 }

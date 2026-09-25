@@ -1246,6 +1246,8 @@ function registerIpcHandlers() {
     try {
       const { resolveRoute } = await import('./lib/flightplan/builder/routeResolver');
       const { enrichFlightPlan } = await import('./lib/flightplan/fmsResolver');
+      const { refreshOceanicTracks } = await import('./lib/flightplan/builder/oceanicTracks');
+      await refreshOceanicTracks();
       const cycle = dataManager.getDataSources()?.global?.cycle ?? undefined;
       const resolution = resolveRoute(
         draft as import('./lib/flightplan/builder/types').PlanDraft,
@@ -1262,6 +1264,8 @@ function registerIpcHandlers() {
   ipcMain.handle('flightplan:autoRoute', async (_, request: unknown) => {
     try {
       const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
+      const { refreshOceanicTracks } = await import('./lib/flightplan/builder/oceanicTracks');
+      await refreshOceanicTracks();
       const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo, exits, entries } =
         request as import('./lib/flightplan/builder/types').AutoRouteRequest;
       if (!departure || !arrival) return null;
