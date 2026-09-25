@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Crosshair, Plane } from 'lucide-react';
+import { ChevronRight, Crosshair, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
@@ -126,7 +126,7 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
               className="flex flex-col leading-tight"
               title={planeState?.aircraftName || undefined}
             >
-              <span className="text-foreground font-mono text-xs font-semibold">
+              <span className="text-foreground font-mono text-[11px] font-medium">
                 {planeState?.icaoType}
               </span>
               <span className="text-muted-foreground font-mono text-[10px]">
@@ -138,84 +138,73 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
         <GroupSeparator />
 
-        {/* Speeds group */}
-        <div className="flex items-center gap-3 px-3 py-1.5">
-          <DataBlock
-            label={t('flightStrip.ias')}
-            value={formatValue(planeState?.indicatedAirspeed)}
-            unit={t('units.kt')}
-            valueColor={PRIMARY_COLOR_CLASS}
-            target={formatTarget(
-              planeState?.apAirspeedIsMach ? formatMach : formatValue,
-              planeState?.apAirspeed
-            )}
-          />
-          <DataBlock
-            label={t('flightStrip.gs')}
-            value={formatValue(planeState?.groundspeed)}
-            unit={t('units.kt')}
-            valueColor={PRIMARY_COLOR_CLASS}
-          />
-          <DataBlock
-            label={t('flightStrip.mach')}
-            value={formatMach(planeState?.mach)}
-            unit=""
-            valueColor={PRIMARY_COLOR_CLASS}
-          />
-        </div>
+        {/* Data groups — single row, larger gap between groups */}
+        <div className="flex items-center gap-5 px-4 py-1.5">
+          <div className="flex items-center gap-3">
+            <DataBlock
+              label={t('flightStrip.ias')}
+              value={formatValue(planeState?.indicatedAirspeed)}
+              unit={t('units.kt')}
+              valueColor={PRIMARY_COLOR_CLASS}
+              target={formatTarget(
+                planeState?.apAirspeedIsMach ? formatMach : formatValue,
+                planeState?.apAirspeed
+              )}
+            />
+            <DataBlock
+              label={t('flightStrip.gs')}
+              value={formatValue(planeState?.groundspeed)}
+              unit={t('units.kt')}
+            />
+            <DataBlock label={t('flightStrip.mach')} value={formatMach(planeState?.mach)} unit="" />
+          </div>
 
-        <GroupSeparator />
+          <div className="flex items-center gap-3">
+            <DataBlock
+              label={t('flightStrip.alt')}
+              value={formatValue(planeState?.altitudeMSL)}
+              unit={t('units.ft')}
+              valueColor={PRIMARY_COLOR_CLASS}
+              target={formatTarget(formatValue, planeState?.apAltitude)}
+            />
+            <DataBlock
+              label={t('flightStrip.agl')}
+              value={formatValue(planeState?.altitudeAGL)}
+              unit={t('units.ft')}
+              valueColor={getAGLColor(planeState?.altitudeAGL)}
+            />
+            <DataBlock
+              label={t('flightStrip.vs')}
+              value={formatVS(planeState?.verticalSpeed)}
+              unit={t('units.fpm')}
+              valueColor={getVSColor(planeState?.verticalSpeed)}
+              target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
+            />
+          </div>
 
-        {/* Altitudes group */}
-        <div className="flex items-center gap-3 px-3 py-1.5">
-          <DataBlock
-            label={t('flightStrip.alt')}
-            value={formatValue(planeState?.altitudeMSL)}
-            unit={t('units.ft')}
-            target={formatTarget(formatValue, planeState?.apAltitude)}
-          />
-          <DataBlock
-            label={t('flightStrip.agl')}
-            value={formatValue(planeState?.altitudeAGL)}
-            unit={t('units.ft')}
-            valueColor={getAGLColor(planeState?.altitudeAGL)}
-          />
-          <DataBlock
-            label={t('flightStrip.vs')}
-            value={formatVS(planeState?.verticalSpeed)}
-            unit={t('units.fpm')}
-            valueColor={getVSColor(planeState?.verticalSpeed)}
-            target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
-          />
-        </div>
+          <div className="flex items-center gap-3">
+            <DataBlock
+              label={t('flightStrip.hdg')}
+              value={formatHeading(planeState?.heading)}
+              unit="°"
+              valueColor={PRIMARY_COLOR_CLASS}
+              target={formatTarget(formatHeading, planeState?.apHeading)}
+            />
+            <DataBlock
+              label={t('flightStrip.crs')}
+              value={formatHeading(planeState?.nav1Course)}
+              unit="°"
+            />
+          </div>
 
-        <GroupSeparator />
-
-        {/* Navigation group */}
-        <div className="flex items-center gap-3 px-3 py-1.5">
-          <DataBlock
-            label={t('flightStrip.hdg')}
-            value={formatHeading(planeState?.heading)}
-            unit="°"
-            target={formatTarget(formatHeading, planeState?.apHeading)}
-          />
-          <DataBlock
-            label={t('flightStrip.crs')}
-            value={formatHeading(planeState?.nav1Course)}
-            unit="°"
-          />
-        </div>
-
-        <GroupSeparator />
-
-        {/* Environment group */}
-        <div className="flex items-center gap-3 px-3 py-1.5">
-          <DataBlock
-            label={t('flightStrip.wind')}
-            value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-            unit={t('units.kt')}
-          />
-          <DataBlock label={t('flightStrip.oat')} value={formatOAT(planeState?.oat)} unit="°C" />
+          <div className="flex items-center gap-3">
+            <DataBlock
+              label={t('flightStrip.wind')}
+              value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
+              unit={t('units.kt')}
+            />
+            <DataBlock label={t('flightStrip.oat')} value={formatOAT(planeState?.oat)} unit="°C" />
+          </div>
         </div>
 
         <GroupSeparator />
@@ -256,26 +245,28 @@ interface DataBlockProps {
 }
 
 function DataBlock({ label, value, unit, valueColor, target }: DataBlockProps) {
-  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center">
-      <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
+      <span className="text-muted-foreground/70 text-[10px] tracking-wider uppercase">{label}</span>
       <div className="flex items-baseline gap-0.5">
         <span
           className={cn(
-            'font-mono text-sm font-medium tabular-nums',
+            'font-mono text-base font-medium tabular-nums',
             valueColor || 'text-foreground'
           )}
         >
           {value}
         </span>
-        <span className="text-muted-foreground text-xs">{unit}</span>
+        <span className="text-muted-foreground text-[10px]">{unit}</span>
       </div>
-      {target !== undefined && (
-        <span className="text-info font-mono text-[10px] leading-tight tabular-nums">
-          {t('flightStrip.sel')} {target}
-        </span>
-      )}
+      <div className="min-h-3">
+        {target !== undefined && (
+          <span className="text-info/70 flex items-center gap-0.5 font-mono text-[9px] leading-tight tabular-nums">
+            <ChevronRight className="h-2.5 w-2.5" />
+            {target}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
