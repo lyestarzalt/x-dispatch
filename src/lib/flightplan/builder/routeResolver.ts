@@ -10,7 +10,9 @@ import {
   getWaypointNearestById,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
+import type { AirwaySegment } from '@/types/navigation';
 import { type LatLon, pathDistanceNm } from './geometry';
+import { isTrackName, trackSegments } from './oceanicTracks';
 import { type LexedToken, lexRoute, stripEndpoints } from './routeTokens';
 import type { PlanDraft, RouteResolution, RouteToken } from './types';
 
@@ -41,9 +43,14 @@ function resolveIdent(ident: string, near: LatLon): ResolvedPoint | null {
   return ident.length <= 3 ? (asNavaid() ?? asFix()) : (asFix() ?? asNavaid());
 }
 
+/** Published airways from the database; NAT tracks from the current track message. */
+function airwaySegments(name: string): AirwaySegment[] {
+  return isTrackName(name) ? trackSegments(name) : getAirwaysByName(name);
+}
+
 /** Fix ids strictly between `from` and `to` along the airway, or null when they are not joined. */
 function walkAirway(name: string, from: string, to: string): string[] | null {
-  const segments = getAirwaysByName(name);
+  const segments = airwaySegments(name);
   if (segments.length === 0) return null;
   const adjacency = new Map<string, Set<string>>();
   const link = (a: string, b: string) => {
@@ -134,7 +141,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     if (lexedToken.kind === 'airway') {
       const token: RouteToken = { text: lexedToken.text, kind: 'airway', status: 'ok' };
       tokens.push(token);
-      if (getAirwaysByName(lexedToken.text).length === 0) {
+      if (airwaySegments(lexedToken.text).length === 0) {
         // Not an airway after all: some fixes carry digits. Try it as a point.
         const point = resolveIdent(lexedToken.text, cursor);
         if (point) {

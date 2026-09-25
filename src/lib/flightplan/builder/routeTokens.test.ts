@@ -34,3 +34,10 @@ describe('routeTokens', () => {
     expect(stripEndpoints(tokens, 'eham', 'EDDF').map((t) => t.text)).toEqual(['SUGOL']);
   });
 });
+
+describe('lexRoute NAT tracks', () => {
+  it('treats a NAT designator as an airway between its entry and exit fixes', () => {
+    const kinds = lexRoute('MIMKU DCT GOMUP NATC CUDDY').map((t) => t.kind);
+    expect(kinds).toEqual(['ident', 'direct', 'ident', 'airway', 'ident']);
+  });
+});
