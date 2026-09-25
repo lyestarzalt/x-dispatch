@@ -64,7 +64,6 @@ import {
   useVatsimSectorSync,
   useVatsimSync,
 } from './hooks';
-import { useNavInfoClicks } from './hooks/useNavInfoClicks';
 import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
 import { useSimTraffic } from './hooks/useSimTraffic';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
@@ -551,8 +550,6 @@ export default function Map({ airports }: MapProps) {
       applyAirportTheme(map, getBasemapTheme(mapStyleUrl));
     });
   }, [mapStyleUrl, mapRef]);
-
-  useNavInfoClicks(mapRef);
 
   // Debug mode click handler
   const handleFeatureClick = useCallback(
