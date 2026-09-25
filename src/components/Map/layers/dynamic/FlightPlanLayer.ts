@@ -6,6 +6,7 @@ import * as maplibregl from 'maplibre-gl';
 import { routeLinePoints } from '@/lib/flightplan/builder/routeLine';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
+import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
 
 // Layer IDs
@@ -333,7 +334,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: {
       'text-field': ['get', 'label'],
       'text-font': ['Open Sans Bold'],
-      'text-size': 11,
+      'text-size': zoomScaledTextSize(11),
       'text-offset': [0, -1.8],
       'text-anchor': 'bottom',
       'text-allow-overlap': true,
@@ -355,7 +356,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: {
       'text-field': ['get', 'altitudeLabel'],
       'text-font': ['Open Sans Semibold'],
-      'text-size': 10,
+      'text-size': zoomScaledTextSize(10),
       'text-offset': [0, 1.5],
       'text-anchor': 'top',
       'text-allow-overlap': true,
@@ -422,7 +423,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
         'icon-size': 0.8,
         'text-field': ['get', 'icao'],
         'text-font': ['Open Sans Bold'],
-        'text-size': 11,
+        'text-size': zoomScaledTextSize(11),
         'text-offset': [0, -1.8],
         'text-anchor': 'bottom',
         'icon-allow-overlap': true,
