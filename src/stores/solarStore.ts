@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { type GeoPoint, subsolarPoint } from '@/lib/map/solar/solarPosition';
+import type { ClockSource } from '@/lib/utils/clock';
 
-export type SolarClockSource = 'system' | 'sim';
+/** Same source the toolbar clock shows, so the sun and the readout agree. */
+export type SolarClockSource = ClockSource;
 
 interface SolarState {
   /** Instant the map is lit for, epoch milliseconds. */

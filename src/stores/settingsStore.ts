@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
+import type { ClockMode } from '@/lib/utils/clock';
 import type { WeightUnit } from '@/lib/utils/format';
 
 export type FontSize = 'small' | 'medium' | 'large';
@@ -81,6 +82,8 @@ export interface AppearanceSettings {
   /** Zoom factor for the entire UI (0.7–1.3, default 1.0) */
   zoomLevel: number;
   debugOverlay: boolean;
+  /** Toolbar clock readout: Zulu (UTC) or the machine's local time. */
+  clockMode: ClockMode;
 }
 
 export type SurfaceDetail = 'low' | 'medium' | 'high';
@@ -157,6 +160,7 @@ interface SettingsState {
   setFontSize: (size: FontSize) => void;
   setZoomLevel: (level: number) => void;
   setDebugOverlay: (enabled: boolean) => void;
+  setClockMode: (mode: ClockMode) => void;
   resetToDefaults: () => void;
 }
 
@@ -180,6 +184,7 @@ const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   fontSize: 'medium',
   zoomLevel: 1.0,
   debugOverlay: false,
+  clockMode: 'zulu',
 };
 
 function applyZoomLevel(level: number) {
@@ -372,6 +377,9 @@ export const useSettingsStore = create<SettingsState>()(
       setDebugOverlay: (enabled: boolean) =>
         set((state) => ({ appearance: { ...state.appearance, debugOverlay: enabled } })),
 
+      setClockMode: (mode: ClockMode) =>
+        set((state) => ({ appearance: { ...state.appearance, clockMode: mode } })),
+
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
         applyZoomLevel(DEFAULT_APPEARANCE_SETTINGS.zoomLevel);
@@ -389,7 +397,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 27,
+      version: 28,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -539,6 +547,10 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
 
   if (version < 27) {
     state = { ...state, graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics } };
+  }
+  if (version < 28) {
+    // Toolbar clock: Zulu / local readout preference.
+    state = { ...state, appearance: { ...DEFAULT_APPEARANCE_SETTINGS, ...state.appearance } };
   }
 
   return state as SettingsState;

@@ -201,6 +201,22 @@
     "saveFailed": "Не удалось сохранить: {{error}}"
   },
   "toolbar": {
+    "clock": {
+      "zulu": "Zulu",
+      "local": "Местное",
+      "zuluSuffix": "Z",
+      "localSuffix": "L",
+      "switchToLocal": "Нажмите для местного времени",
+      "switchToZulu": "Нажмите для времени Zulu",
+      "sourceSim": "Время симулятора",
+      "sourceSystem": "Системное время",
+      "switchToSim": "Нажмите, чтобы следовать времени X-Plane (солнце и освещение тоже)",
+      "switchToSystem": "Нажмите, чтобы использовать системные часы (солнце и освещение тоже)",
+      "simNotConnected": "X-Plane не подключён, показано системное время",
+      "toggleSource": "Сменить источник времени",
+      "badgeSim": "SIM",
+      "badgeSystem": "RT"
+    },
     "searchPlaceholder": "Поиск аэропортов...",
     "clearSearch": "Очистить поиск",
     "addons": "Дополнения",

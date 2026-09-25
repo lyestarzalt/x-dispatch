@@ -38,6 +38,7 @@ export {
 } from './dynamic/PlaneLayer';
 export {
   addProcedureRouteLayer,
+  type PlanFix,
   removeProcedureRouteLayer,
   type RouteWaypoint,
 } from './dynamic/ProcedureRouteLayer';

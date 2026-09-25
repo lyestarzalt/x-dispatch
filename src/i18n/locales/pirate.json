@@ -201,6 +201,22 @@
     "saveFailed": "Couldn't stow it: {{error}}"
   },
   "toolbar": {
+    "clock": {
+      "zulu": "Zulu",
+      "local": "Local",
+      "zuluSuffix": "Z",
+      "localSuffix": "L",
+      "switchToLocal": "Click t' switch t' local time, matey",
+      "switchToZulu": "Click t' switch t' Zulu time, matey",
+      "sourceSim": "Simulator time",
+      "sourceSystem": "Ship's clock",
+      "switchToSim": "Click t' follow X-Plane time (sun an' lanterns follow too)",
+      "switchToSystem": "Click t' use yer ship's clock (sun an' lanterns follow too)",
+      "simNotConnected": "X-Plane be not aboard, showin' ship's clock",
+      "toggleSource": "Swap clock source",
+      "badgeSim": "SIM",
+      "badgeSystem": "RT"
+    },
     "searchPlaceholder": "Search fer airports...",
     "clearSearch": "Clear the hunt",
     "addons": "Extra Gear",

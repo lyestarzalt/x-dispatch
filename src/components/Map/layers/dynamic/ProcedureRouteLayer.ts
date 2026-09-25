@@ -49,6 +49,50 @@ export interface RouteData {
   transitionAlt?: number;
 }
 
+/** A fix the loaded flight plan already draws (symbol + label) on the map. */
+export interface PlanFix {
+  id: string;
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * Two labels for one fix (≈ 0.005° ≈ 500 m). The flight plan layer and this
+ * layer both label their waypoints at slightly different offsets, so a fix
+ * shared by the plan and the selected procedure showed up twice, staggered.
+ */
+const SAME_FIX_DEG = 0.005;
+
+/**
+ * Drop procedure waypoints the flight plan layer already renders, so a fix
+ * shared by both is drawn (symbol + label) once. The route line is built
+ * from the full list; only the point features are filtered. Unresolved
+ * waypoints are kept so they still surface in red.
+ */
+export function omitFlightPlanWaypoints(
+  waypoints: RouteWaypoint[],
+  planFixes: PlanFix[]
+): RouteWaypoint[] {
+  if (planFixes.length === 0) return waypoints;
+  const byId = new Map<string, PlanFix[]>();
+  for (const fix of planFixes) {
+    const key = fix.id.toUpperCase();
+    const list = byId.get(key);
+    if (list) list.push(fix);
+    else byId.set(key, [fix]);
+  }
+  return waypoints.filter((wp) => {
+    if (wp.latitude === undefined || wp.longitude === undefined) return true;
+    const candidates = byId.get(wp.fixId.toUpperCase());
+    if (!candidates) return true;
+    return !candidates.some(
+      (fix) =>
+        Math.abs(fix.latitude - wp.latitude!) <= SAME_FIX_DEG &&
+        Math.abs(fix.longitude - wp.longitude!) <= SAME_FIX_DEG
+    );
+  });
+}
+
 // ============================================================================
 // Layer IDs
 // ============================================================================
@@ -327,10 +371,18 @@ function createWaypointGeoJSON(
 // Layer Management
 // ============================================================================
 
+export interface AddProcedureRouteOptions {
+  /** Fixes the flight plan layer already renders; skipped here (default none). */
+  planFixes?: PlanFix[];
+  /** Fly the camera to the procedure once added (default true). */
+  fitBounds?: boolean;
+}
+
 export function addProcedureRouteLayer(
   map: maplibregl.Map,
   route: RouteData,
-  waypointCoords?: Map<string, { lat: number; lon: number }>
+  waypointCoords?: Map<string, { lat: number; lon: number }>,
+  { planFixes = [], fitBounds = true }: AddProcedureRouteOptions = {}
 ): void {
   if (!map.getStyle()) return;
 
@@ -352,7 +404,10 @@ export function addProcedureRouteLayer(
   });
 
   const routeGeoJSON = createRouteGeoJSON(resolvedWaypoints);
-  const waypointGeoJSON = createWaypointGeoJSON(resolvedWaypoints, route.type);
+  const waypointGeoJSON = createWaypointGeoJSON(
+    omitFlightPlanWaypoints(resolvedWaypoints, planFixes),
+    route.type
+  );
 
   if (routeGeoJSON.features.length === 0) {
     return;
@@ -467,6 +522,7 @@ export function addProcedureRouteLayer(
   });
 
   // Fit map to route
+  if (!fitBounds) return;
   const bounds = new maplibregl.LngLatBounds();
   resolvedWaypoints
     .filter((wp) => wp.latitude !== undefined && wp.longitude !== undefined)

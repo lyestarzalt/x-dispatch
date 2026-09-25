@@ -201,6 +201,22 @@
     "saveFailed": "保存できませんでした: {{error}}"
   },
   "toolbar": {
+    "clock": {
+      "zulu": "Zulu",
+      "local": "ローカル",
+      "zuluSuffix": "Z",
+      "localSuffix": "L",
+      "switchToLocal": "クリックでローカル時刻に切替",
+      "switchToZulu": "クリックでZulu時刻に切替",
+      "sourceSim": "シミュレーター時刻",
+      "sourceSystem": "システム時刻",
+      "switchToSim": "クリックでX-Plane時刻に追従（太陽と照明も追従）",
+      "switchToSystem": "クリックでシステム時計を使用（太陽と照明も追従）",
+      "simNotConnected": "X-Plane未接続、システム時刻を表示中",
+      "toggleSource": "時計のソースを切替",
+      "badgeSim": "SIM",
+      "badgeSystem": "RT"
+    },
     "searchPlaceholder": "空港を検索...",
     "clearSearch": "検索をクリア",
     "addons": "アドオン",

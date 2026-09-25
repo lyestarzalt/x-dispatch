@@ -201,6 +201,22 @@
     "saveFailed": "Não foi possível salvar: {{error}}"
   },
   "toolbar": {
+    "clock": {
+      "zulu": "Zulu",
+      "local": "Local",
+      "zuluSuffix": "Z",
+      "localSuffix": "L",
+      "switchToLocal": "Clique para mudar para hora local",
+      "switchToZulu": "Clique para mudar para hora Zulu",
+      "sourceSim": "Hora do simulador",
+      "sourceSystem": "Hora do sistema",
+      "switchToSim": "Clique para seguir a hora do X-Plane (sol e iluminação também)",
+      "switchToSystem": "Clique para usar o relógio do sistema (sol e iluminação também)",
+      "simNotConnected": "X-Plane não conectado, mostrando hora do sistema",
+      "toggleSource": "Alternar fonte do relógio",
+      "badgeSim": "SIM",
+      "badgeSystem": "RT"
+    },
     "searchPlaceholder": "Pesquisar aeroportos...",
     "clearSearch": "Limpar pesquisa",
     "addons": "Add-ons",
