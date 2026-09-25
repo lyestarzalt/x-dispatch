@@ -1844,5 +1844,14 @@
     "speedTooltip": "更改播放速度",
     "follow": "跟随飞机",
     "stop": "停止回放"
+  },
+  "navInfo": {
+    "waypoint": "航路点",
+    "frequency": "频率",
+    "altitude": "计划高度",
+    "bearingTrue": "方位（真）",
+    "radial": "径向线",
+    "distance": "距离",
+    "noPlane": "无飞机位置"
   }
 }

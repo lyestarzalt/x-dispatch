@@ -19,6 +19,19 @@ export interface FeatureDebugInfo {
   rawData?: string;
 }
 
+/** A navaid or flight plan waypoint the user clicked on the map. */
+export interface NavInfoSelection {
+  id: string;
+  name?: string;
+  /** Badge text: navaid type such as VOR-DME, or WPT for a plain fix. */
+  kind: string;
+  frequency?: string;
+  /** Planned altitude or constraint of a flight plan waypoint. */
+  altitudeLabel?: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface CursorElevation {
   /**
    * True when the map has terrain set (mercator + user toggle on). Callers
@@ -84,6 +97,7 @@ interface MapState {
   cursorElevation: CursorElevation;
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
+  navInfo: NavInfoSelection | null;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;
   /** X-Plane's own AI and plugin traffic from the TCAS target table. */
@@ -116,6 +130,7 @@ interface MapState {
   setCursorElevation: (elevation: CursorElevation) => void;
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
+  setNavInfo: (info: NavInfoSelection | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setIvaoEnabled: (enabled: boolean) => void;
   setSimTrafficEnabled: (enabled: boolean) => void;
@@ -153,6 +168,7 @@ export const useMapStore = create<MapState>()(
       cursorElevation: { supported: false, valueM: null },
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
+      navInfo: null as NavInfoSelection | null,
       vatsimEnabled: false,
       simTrafficEnabled: false,
       ivaoEnabled: false,
@@ -228,6 +244,7 @@ export const useMapStore = create<MapState>()(
         ),
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
+      setNavInfo: (info) => set({ navInfo: info }),
       setVatsimEnabled: (enabled) =>
         set((state) => ({
           vatsimEnabled: enabled,

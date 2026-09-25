@@ -1844,5 +1844,14 @@
     "speedTooltip": "Change how fast she plays",
     "follow": "Follow the bird",
     "stop": "Stop the replay"
+  },
+  "navInfo": {
+    "waypoint": "Waypoint",
+    "frequency": "Frequency",
+    "altitude": "Planned height",
+    "bearingTrue": "Bearin' (true)",
+    "radial": "Radial",
+    "distance": "Distance",
+    "noPlane": "No ship position"
   }
 }

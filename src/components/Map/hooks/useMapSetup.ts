@@ -13,6 +13,7 @@ import {
   setupAirportsLayer,
   updateAirportFavoriteFlags,
 } from '../layers/world/AirportsLayer';
+import { setupNavInfoClicks } from '../navInfo';
 import { captureBasemapSnapshot, setup3DTerrain, setupGlobeProjection } from '../utils/globeUtils';
 import { runWhenStyleIsReady } from './styleReadiness';
 
@@ -231,6 +232,7 @@ export function useMapSetup({
         onAirportClickRef.current(icao, coords)
       );
       setupVatsimPopup(vatsimPopupRef);
+      setupNavInfoClicks(map);
       setupMapEvents(
         map,
         (zoom: number) => setCurrentZoomRef.current(zoom),

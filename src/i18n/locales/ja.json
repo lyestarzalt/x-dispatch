@@ -1844,5 +1844,14 @@
     "speedTooltip": "再生速度を変更",
     "follow": "機体を追従",
     "stop": "リプレイを停止"
+  },
+  "navInfo": {
+    "waypoint": "ウェイポイント",
+    "frequency": "周波数",
+    "altitude": "計画高度",
+    "bearingTrue": "方位（真方位）",
+    "radial": "ラジアル",
+    "distance": "距離",
+    "noPlane": "機体位置なし"
   }
 }

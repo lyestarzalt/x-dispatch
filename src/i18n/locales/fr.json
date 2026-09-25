@@ -1844,5 +1844,14 @@
     "speedTooltip": "Changer la vitesse de lecture",
     "follow": "Suivre l'avion",
     "stop": "Arrêter la relecture"
+  },
+  "navInfo": {
+    "waypoint": "Point de route",
+    "frequency": "Fréquence",
+    "altitude": "Altitude prévue",
+    "bearingTrue": "Relèvement (vrai)",
+    "radial": "Radial",
+    "distance": "Distance",
+    "noPlane": "Position avion inconnue"
   }
 }

@@ -1844,5 +1844,14 @@
     "speedTooltip": "Change playback speed",
     "follow": "Follow the aircraft",
     "stop": "Stop replay"
+  },
+  "navInfo": {
+    "waypoint": "Waypoint",
+    "frequency": "Frequency",
+    "altitude": "Planned altitude",
+    "bearingTrue": "Bearing (true)",
+    "radial": "Radial",
+    "distance": "Distance",
+    "noPlane": "No aircraft position"
   }
 }

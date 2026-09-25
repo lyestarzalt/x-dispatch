@@ -1844,5 +1844,14 @@
     "speedTooltip": "Zmień prędkość odtwarzania",
     "follow": "Śledź samolot",
     "stop": "Zatrzymaj odtwarzanie"
+  },
+  "navInfo": {
+    "waypoint": "Punkt trasy",
+    "frequency": "Częstotliwość",
+    "altitude": "Planowana wysokość",
+    "bearingTrue": "Namiar (rzeczywisty)",
+    "radial": "Radial",
+    "distance": "Odległość",
+    "noPlane": "Brak pozycji samolotu"
   }
 }
