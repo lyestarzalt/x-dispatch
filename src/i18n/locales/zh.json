@@ -939,6 +939,8 @@
     "agl": "离地高度",
     "vs": "垂直速度",
     "hdg": "航向",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",
