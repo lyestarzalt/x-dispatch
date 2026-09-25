@@ -745,8 +745,13 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         <footer className="border-border/30 flex items-center justify-between gap-2 border-t px-4 py-3">
           <div className="min-w-0">
             {savedPath && (
-              <Badge variant="success" className="max-w-[12rem] truncate font-mono text-[10px]">
-                {savedPath}
+              <Badge
+                variant="success"
+                className="max-w-[12rem] gap-1 truncate font-mono text-[10px]"
+                title={savedPath}
+              >
+                <CheckCircle2 className="h-3 w-3 shrink-0" />
+                {savedPath.split(/[\\/]/).pop()}
               </Badge>
             )}
           </div>

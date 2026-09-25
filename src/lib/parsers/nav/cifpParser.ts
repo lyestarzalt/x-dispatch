@@ -97,6 +97,18 @@ const FIXLESS_TERMINATORS = new Set<PathTerminator>([
   'VR',
 ]);
 
+const SINGLE_RUNWAY_RE = /^RW\d{2}[LCRB]?$/;
+
+/**
+ * Runway named by a common-route line, kept only while every such line agrees.
+ * "ALL", blanks and disagreements leave the procedure open to any runway.
+ */
+function mergeCommonRunway(current: string | null | undefined, field: string): string | null {
+  const runway = SINGLE_RUNWAY_RE.test(field) ? field : null;
+  if (current === undefined) return runway;
+  return current === runway ? current : null;
+}
+
 function parsePathTerminator(value: string): PathTerminator {
   const trimmed = value.trim().toUpperCase();
   return VALID_PATH_TERMINATORS.includes(trimmed as PathTerminator)
@@ -159,12 +171,12 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
   // Parse turn direction from field 9
   const turnDirection = parseTurnDirection(data[9] || '');
 
-  // Parse course from field 18 (if present)
-  const courseStr = data[18]?.trim() || '';
+  // Fields 18 and 19 are theta and rho to the recommended navaid; the leg's own magnetic
+  // course and route distance (or DME distance for CD, FD, VD legs) follow at 20 and 21.
+  const courseStr = data[20]?.trim() || '';
   const course = courseStr ? parseFloat(courseStr) / 10 : null;
 
-  // Parse distance from field 19 (if present)
-  const distStr = data[19]?.trim() || '';
+  const distStr = data[21]?.trim() || '';
   const distance = distStr ? parseFloat(distStr) / 10 : null;
 
   // Parse altitude - descriptor at index 22, altitude at index 23
@@ -189,15 +201,66 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
   };
 }
 
-/**
- * Component storage for SID/STAR procedures
- * STARs: enroute transitions (type 4) + common (type 5/2) + runway transitions (type 6/1)
- * SIDs: runway transitions (type 1/2) + common (type 3) + enroute transitions (type 4/5/6)
- */
 interface ProcedureComponents {
   enrouteTransitions: Map<string, string[]>; // Entry/exit point name -> lines
   commonRoute: string[]; // Shared segment
+  /** Runway the common route is published for, when it names exactly one; undefined until seen. */
+  commonRunway?: string | null;
   runwayTransitions: Map<string, string[]>; // Runway name -> lines
+}
+
+type Segment = 'runway' | 'common' | 'enroute';
+
+/** ARINC 424 5.7 route types: conventional 1-3, RNAV 4-6, FMS F/M/S, vector T/V, engine-out 0. */
+const SID_SEGMENTS: Record<string, Segment | undefined> = {
+  '0': 'common',
+  '1': 'runway',
+  '2': 'common',
+  '3': 'enroute',
+  '4': 'runway',
+  '5': 'common',
+  '6': 'enroute',
+  F: 'runway',
+  M: 'common',
+  S: 'enroute',
+  T: 'runway',
+  V: 'enroute',
+};
+
+/** STAR order is reversed: 1/4/7/F enroute, 2/5/8/M common, 3/6/9/S runway. */
+const STAR_SEGMENTS: Record<string, Segment | undefined> = {
+  '1': 'enroute',
+  '2': 'common',
+  '3': 'runway',
+  '4': 'enroute',
+  '5': 'common',
+  '6': 'runway',
+  '7': 'enroute',
+  '8': 'common',
+  '9': 'runway',
+  F: 'enroute',
+  M: 'common',
+  S: 'runway',
+};
+
+function addComponentLine(
+  comp: ProcedureComponents,
+  segment: Segment | undefined,
+  field: string,
+  line: string
+): void {
+  // The transition field is a runway or a fix name; blank or "ALL" means the leg is shared.
+  const shared = !field || field === 'ALL';
+  if (segment === 'runway' && !shared) {
+    if (!comp.runwayTransitions.has(field)) comp.runwayTransitions.set(field, []);
+    comp.runwayTransitions.get(field)!.push(line);
+  } else if (segment === 'enroute' && !shared) {
+    if (!comp.enrouteTransitions.has(field)) comp.enrouteTransitions.set(field, []);
+    comp.enrouteTransitions.get(field)!.push(line);
+  } else {
+    comp.commonRoute.push(line);
+    comp.commonRunway = mergeCommonRunway(comp.commonRunway, field);
+  }
 }
 
 /**
@@ -267,33 +330,11 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         starComponents.set(name, {
           enrouteTransitions: new Map(),
           commonRoute: [],
+          commonRunway: undefined,
           runwayTransitions: new Map(),
         });
       }
-      const comp = starComponents.get(name)!;
-
-      // STAR route types:
-      // 1 = Runway transition (specific runway)
-      // 2 = Common route (runway = "ALL" or specific)
-      // 4 = Enroute transition (runway field = transition name like INYOE)
-      // 5 = Common route (runway field empty or runway-specific)
-      // 6 = Runway transition (runway field = RW28B etc)
-      if (routeType === '4') {
-        // Enroute transition - runway field is transition name
-        if (!comp.enrouteTransitions.has(runway)) {
-          comp.enrouteTransitions.set(runway, []);
-        }
-        comp.enrouteTransitions.get(runway)!.push(line);
-      } else if (routeType === '6' || (routeType === '1' && runway && runway !== 'ALL')) {
-        // Runway transition
-        if (!comp.runwayTransitions.has(runway)) {
-          comp.runwayTransitions.set(runway, []);
-        }
-        comp.runwayTransitions.get(runway)!.push(line);
-      } else {
-        // Common route (type 2, 5, or type 1 with ALL)
-        comp.commonRoute.push(line);
-      }
+      addComponentLine(starComponents.get(name)!, STAR_SEGMENTS[routeType], runway, line);
       continue;
     }
 
@@ -303,181 +344,20 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         sidComponents.set(name, {
           enrouteTransitions: new Map(),
           commonRoute: [],
+          commonRunway: undefined,
           runwayTransitions: new Map(),
         });
       }
-      const comp = sidComponents.get(name)!;
-
-      // SID route types:
-      // 1 = Runway transition (runway field = RW28L etc)
-      // 2 = Common route (runway = "ALL")
-      // 3 = Common route
-      // 4, 5, 6 = Enroute transition (runway field = transition name)
-      if (routeType === '1' && runway && runway !== 'ALL') {
-        // Runway transition
-        if (!comp.runwayTransitions.has(runway)) {
-          comp.runwayTransitions.set(runway, []);
-        }
-        comp.runwayTransitions.get(runway)!.push(line);
-      } else if (routeType === '4' || routeType === '5' || routeType === '6') {
-        // Enroute transition - runway field is transition name
-        if (runway && runway !== 'ALL') {
-          if (!comp.enrouteTransitions.has(runway)) {
-            comp.enrouteTransitions.set(runway, []);
-          }
-          comp.enrouteTransitions.get(runway)!.push(line);
-        } else {
-          comp.commonRoute.push(line);
-        }
-      } else {
-        // Common route (type 2, 3)
-        comp.commonRoute.push(line);
-      }
+      addComponentLine(sidComponents.get(name)!, SID_SEGMENTS[routeType], runway, line);
       continue;
     }
   }
 
-  // Process STARs - combine: enroute + common + runway
   for (const [name, comp] of starComponents) {
-    const commonWaypoints = parseWaypointsFromLines(comp.commonRoute);
-
-    // If no enroute transitions and no runway transitions, just use common
-    if (comp.enrouteTransitions.size === 0 && comp.runwayTransitions.size === 0) {
-      if (commonWaypoints.length > 0) {
-        procedures.stars.push({
-          type: 'STAR',
-          name,
-          runway: null,
-          transition: null,
-          waypoints: commonWaypoints,
-        });
-      }
-      continue;
-    }
-
-    // If only runway transitions (no enroute), create one per runway
-    if (comp.enrouteTransitions.size === 0) {
-      for (const [rwy, rwyLines] of comp.runwayTransitions) {
-        const rwyWaypoints = parseWaypointsFromLines(rwyLines);
-        const combined = combineWaypoints(commonWaypoints, rwyWaypoints);
-        if (combined.length > 0) {
-          procedures.stars.push({
-            type: 'STAR',
-            name,
-            runway: rwy.replace(/^RW/, ''),
-            transition: null,
-            waypoints: combined,
-          });
-        }
-      }
-      continue;
-    }
-
-    // If only enroute transitions (no runway), create one per enroute
-    if (comp.runwayTransitions.size === 0) {
-      for (const [trans, transLines] of comp.enrouteTransitions) {
-        const transWaypoints = parseWaypointsFromLines(transLines);
-        const combined = combineWaypoints(transWaypoints, commonWaypoints);
-        if (combined.length > 0) {
-          procedures.stars.push({
-            type: 'STAR',
-            name,
-            runway: null,
-            transition: trans,
-            waypoints: combined,
-          });
-        }
-      }
-      continue;
-    }
-
-    // Both enroute and runway transitions exist
-    // Create one procedure per enroute transition (simpler UI)
-    // Each includes: enroute + common (runway transitions shown separately)
-    for (const [trans, transLines] of comp.enrouteTransitions) {
-      const transWaypoints = parseWaypointsFromLines(transLines);
-      const combined = combineWaypoints(transWaypoints, commonWaypoints);
-      if (combined.length > 0) {
-        procedures.stars.push({
-          type: 'STAR',
-          name,
-          runway: null,
-          transition: trans,
-          waypoints: combined,
-        });
-      }
-    }
+    procedures.stars.push(...assembleProcedures('STAR', name, comp));
   }
-
-  // Process SIDs - combine: runway + common + enroute
   for (const [name, comp] of sidComponents) {
-    const commonWaypoints = parseWaypointsFromLines(comp.commonRoute);
-
-    // If no runway transitions and no enroute transitions, just use common
-    if (comp.runwayTransitions.size === 0 && comp.enrouteTransitions.size === 0) {
-      if (commonWaypoints.length > 0) {
-        procedures.sids.push({
-          type: 'SID',
-          name,
-          runway: null,
-          transition: null,
-          waypoints: commonWaypoints,
-        });
-      }
-      continue;
-    }
-
-    // If only runway transitions (no enroute), create one per runway
-    if (comp.enrouteTransitions.size === 0) {
-      for (const [rwy, rwyLines] of comp.runwayTransitions) {
-        const rwyWaypoints = parseWaypointsFromLines(rwyLines);
-        const combined = combineWaypoints(rwyWaypoints, commonWaypoints);
-        if (combined.length > 0) {
-          procedures.sids.push({
-            type: 'SID',
-            name,
-            runway: rwy.replace(/^RW/, ''),
-            transition: null,
-            waypoints: combined,
-          });
-        }
-      }
-      continue;
-    }
-
-    // If only enroute transitions (no runway), create one per enroute
-    if (comp.runwayTransitions.size === 0) {
-      for (const [trans, transLines] of comp.enrouteTransitions) {
-        const transWaypoints = parseWaypointsFromLines(transLines);
-        const combined = combineWaypoints(commonWaypoints, transWaypoints);
-        if (combined.length > 0) {
-          procedures.sids.push({
-            type: 'SID',
-            name,
-            runway: null,
-            transition: trans,
-            waypoints: combined,
-          });
-        }
-      }
-      continue;
-    }
-
-    // Both runway and enroute transitions exist
-    // Create one procedure per runway (simpler UI)
-    for (const [rwy, rwyLines] of comp.runwayTransitions) {
-      const rwyWaypoints = parseWaypointsFromLines(rwyLines);
-      const combined = combineWaypoints(rwyWaypoints, commonWaypoints);
-      if (combined.length > 0) {
-        procedures.sids.push({
-          type: 'SID',
-          name,
-          runway: rwy.replace(/^RW/, ''),
-          transition: null,
-          waypoints: combined,
-        });
-      }
-    }
+    procedures.sids.push(...assembleProcedures('SID', name, comp));
   }
 
   // Process approaches - combine transitions with final approach
@@ -512,6 +392,36 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
   }
 
   return procedures;
+}
+
+/**
+ * One procedure per runway and enroute transition pairing. A SID runs runway leg, common route,
+ * then transition; a STAR runs the other way round. A procedure with no transitions of a kind
+ * yields a single variant, whose runway comes from the common route when it names one.
+ */
+function assembleProcedures(
+  type: 'SID' | 'STAR',
+  name: string,
+  comp: ProcedureComponents
+): Procedure[] {
+  const common = parseWaypointsFromLines(comp.commonRoute);
+  const none: [string | null, string[]][] = [[null, []]];
+  const runways = comp.runwayTransitions.size ? [...comp.runwayTransitions] : none;
+  const transitions = comp.enrouteTransitions.size ? [...comp.enrouteTransitions] : none;
+  const out: Procedure[] = [];
+  for (const [rwy, rwyLines] of runways) {
+    const rwyWaypoints = parseWaypointsFromLines(rwyLines);
+    const runway = (rwy ?? comp.commonRunway ?? null)?.replace(/^RW/, '') ?? null;
+    for (const [transition, transLines] of transitions) {
+      const transWaypoints = parseWaypointsFromLines(transLines);
+      const waypoints =
+        type === 'SID'
+          ? combineWaypoints(combineWaypoints(rwyWaypoints, common), transWaypoints)
+          : combineWaypoints(combineWaypoints(transWaypoints, common), rwyWaypoints);
+      if (waypoints.length > 0) out.push({ type, name, runway, transition, waypoints });
+    }
+  }
+  return out;
 }
 
 /**
