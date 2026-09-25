@@ -6,6 +6,7 @@ import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
+import { zoomScaledTextSize } from '../labelSize';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
 // ============================================================================
@@ -319,7 +320,7 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
       layout: {
         'text-field': ['concat', ['get', 'id'], '\n', ['get', 'freqDisplay']],
         'text-font': ['Open Sans Bold'],
-        'text-size': 10,
+        'text-size': zoomScaledTextSize(10),
         'text-offset': [0, 2],
         'text-anchor': 'top',
         'text-allow-overlap': false,
@@ -327,7 +328,7 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
       paint: {
         'text-color': ['get', 'color'],
         'text-halo-color': '#000000',
-        'text-halo-width': 1.5,
+        'text-halo-width': 2,
       },
     });
   }

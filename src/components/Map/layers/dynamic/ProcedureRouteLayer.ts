@@ -13,6 +13,7 @@ import * as maplibregl from 'maplibre-gl';
 import { createHoldingPattern, createProcedureTurn, interpolateRFArc } from '@/lib/utils/geomath';
 import type { LonLat } from '@/types/geo';
 import type { AltitudeConstraint, TurnDirection } from '@/types/navigation';
+import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
 
 // ============================================================================
@@ -431,7 +432,7 @@ export function addProcedureRouteLayer(
     layout: {
       'text-field': ['get', 'fullLabel'],
       'text-font': ['Open Sans Bold'],
-      'text-size': 11,
+      'text-size': zoomScaledTextSize(11),
       'text-offset': [0, -1.2],
       'text-anchor': 'bottom',
       'text-allow-overlap': false,
@@ -452,7 +453,7 @@ export function addProcedureRouteLayer(
     layout: {
       'text-field': ['get', 'constraintLabel'],
       'text-font': ['Open Sans Bold'],
-      'text-size': 10,
+      'text-size': zoomScaledTextSize(10),
       'text-offset': [0, 1.2],
       'text-anchor': 'top',
       'text-allow-overlap': true,
