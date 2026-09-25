@@ -178,7 +178,11 @@
     "resolving": "Route wird aufgelöst…",
     "distance": "Distanz",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turboprop", "prop": "Kolben" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turboprop",
+      "prop": "Kolben"
+    },
     "ete": "Zeit",
     "aircraft": "Flugzeug",
     "skipped": "{{count}} übersprungen",
@@ -1838,5 +1842,14 @@
     "speedTooltip": "Wiedergabegeschwindigkeit ändern",
     "follow": "Dem Flugzeug folgen",
     "stop": "Wiedergabe beenden"
+  },
+  "navInfo": {
+    "waypoint": "Wegpunkt",
+    "frequency": "Frequenz",
+    "altitude": "Geplante Höhe",
+    "bearingTrue": "Peilung (rechtweisend)",
+    "radial": "Radial",
+    "distance": "Entfernung",
+    "noPlane": "Keine Flugzeugposition"
   }
 }

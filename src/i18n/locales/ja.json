@@ -129,7 +129,11 @@
   "planBuilder": {
     "title": "フライトを計画",
     "description": "出発地と到着地を選び、ルートを入力するか直行にして、X-Planeへ送ります。",
-    "sections": { "airports": "空港", "enroute": "エンルート", "summary": "巡航と概要" },
+    "sections": {
+      "airports": "空港",
+      "enroute": "エンルート",
+      "summary": "巡航と概要"
+    },
     "sid": "SID",
     "star": "STAR",
     "approach": "アプローチ",
@@ -174,7 +178,11 @@
     "resolving": "ルートを解決中…",
     "distance": "距離",
     "nm": "{{value}} NM",
-    "class": { "jet": "ジェット", "turboprop": "ターボプロップ", "prop": "ピストン" },
+    "class": {
+      "jet": "ジェット",
+      "turboprop": "ターボプロップ",
+      "prop": "ピストン"
+    },
     "ete": "時間",
     "aircraft": "機種",
     "skipped": "{{count}} 件スキップ",
@@ -1834,5 +1842,14 @@
     "speedTooltip": "再生速度を変更",
     "follow": "機体を追従",
     "stop": "リプレイを停止"
+  },
+  "navInfo": {
+    "waypoint": "ウェイポイント",
+    "frequency": "周波数",
+    "altitude": "計画高度",
+    "bearingTrue": "方位（真方位）",
+    "radial": "ラジアル",
+    "distance": "距離",
+    "noPlane": "機体位置なし"
   }
 }
