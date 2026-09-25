@@ -129,7 +129,11 @@
   "planBuilder": {
     "title": "Planificar un vuelo",
     "description": "Elige origen y destino, escribe una ruta o vuela directo y envíalo a X-Plane.",
-    "sections": { "airports": "Aeropuertos", "enroute": "En ruta", "summary": "Crucero y resumen" },
+    "sections": {
+      "airports": "Aeropuertos",
+      "enroute": "En ruta",
+      "summary": "Crucero y resumen"
+    },
     "sid": "SID",
     "star": "STAR",
     "approach": "Aproximación",
@@ -174,7 +178,11 @@
     "resolving": "Resolviendo ruta…",
     "distance": "Distancia",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turbohélice", "prop": "Pistón" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turbohélice",
+      "prop": "Pistón"
+    },
     "ete": "Tiempo",
     "aircraft": "Aeronave",
     "skipped": "{{count}} omitidos",
@@ -1834,5 +1842,14 @@
     "speedTooltip": "Cambiar la velocidad de reproducción",
     "follow": "Seguir al avión",
     "stop": "Detener la repetición"
+  },
+  "navInfo": {
+    "waypoint": "Punto de ruta",
+    "frequency": "Frecuencia",
+    "altitude": "Altitud planificada",
+    "bearingTrue": "Rumbo (verdadero)",
+    "radial": "Radial",
+    "distance": "Distancia",
+    "noPlane": "Sin posición de la aeronave"
   }
 }

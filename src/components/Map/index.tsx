@@ -64,6 +64,7 @@ import {
   useVatsimSectorSync,
   useVatsimSync,
 } from './hooks';
+import { useNavInfoClicks } from './hooks/useNavInfoClicks';
 import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
 import { useSimTraffic } from './hooks/useSimTraffic';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
@@ -90,6 +91,7 @@ import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
 import LandingReportCard from './widgets/LandingReportCard';
+import NavInfoPopup from './widgets/NavInfoPopup';
 import ReplayWidget from './widgets/ReplayWidget';
 import StandHoverCard from './widgets/StandHoverCard';
 
@@ -550,6 +552,8 @@ export default function Map({ airports }: MapProps) {
     });
   }, [mapStyleUrl, mapRef]);
 
+  useNavInfoClicks(mapRef);
+
   // Debug mode click handler
   const handleFeatureClick = useCallback(
     (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
@@ -907,6 +911,7 @@ export default function Map({ airports }: MapProps) {
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard hover={standHover} />
+      <NavInfoPopup mapRef={mapRef} />
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />
