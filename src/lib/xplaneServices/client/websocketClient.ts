@@ -59,6 +59,12 @@ const STATE_DATAREF_NAMES = [
   'sim/cockpit2/switches/navigation_lights_on',
   'sim/cockpit2/switches/beacon_on',
   'sim/cockpit2/switches/strobe_lights_on',
+  'sim/cockpit2/autopilot/heading_dial_deg_mag_pilot',
+  'sim/cockpit2/autopilot/altitude_dial_ft',
+  'sim/cockpit2/autopilot/airspeed_dial_kts_mach',
+  'sim/cockpit2/autopilot/airspeed_is_mach',
+  'sim/cockpit2/autopilot/vvi_dial_fpm',
+  'sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot',
 ];
 
 /** Byte-array datarefs, base64 on the wire, decoded into plane state strings. */
@@ -68,10 +74,14 @@ const TEXT_DATAREF_MAPPING: Record<string, 'icaoType' | 'aircraftName' | 'tailNu
   'sim/aircraft/view/acf_tailnum': 'tailNumber',
 };
 
-const SWITCH_DATAREF_MAPPING: Record<string, 'navLightsOn' | 'beaconOn' | 'strobesOn'> = {
+const SWITCH_DATAREF_MAPPING: Record<
+  string,
+  'navLightsOn' | 'beaconOn' | 'strobesOn' | 'apAirspeedIsMach'
+> = {
   'sim/cockpit2/switches/navigation_lights_on': 'navLightsOn',
   'sim/cockpit2/switches/beacon_on': 'beaconOn',
   'sim/cockpit2/switches/strobe_lights_on': 'strobesOn',
+  'sim/cockpit2/autopilot/airspeed_is_mach': 'apAirspeedIsMach',
 };
 
 function decodeText(base64: string): string {
@@ -139,6 +149,11 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/flightmodel/position/phi': 'roll',
   'sim/flightmodel2/misc/gforce_normal': 'gForceNormal',
   'sim/flightmodel/weight/m_fuel_total': 'fuelKg',
+  'sim/cockpit2/autopilot/heading_dial_deg_mag_pilot': 'apHeading',
+  'sim/cockpit2/autopilot/altitude_dial_ft': 'apAltitude',
+  'sim/cockpit2/autopilot/airspeed_dial_kts_mach': 'apAirspeed',
+  'sim/cockpit2/autopilot/vvi_dial_fpm': 'apVerticalSpeed',
+  'sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot': 'nav1Course',
 };
 
 type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';

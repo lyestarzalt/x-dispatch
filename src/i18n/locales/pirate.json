@@ -939,6 +939,8 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",
