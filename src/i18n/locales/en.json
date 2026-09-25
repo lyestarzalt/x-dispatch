@@ -129,7 +129,11 @@
   "planBuilder": {
     "title": "Plan a flight",
     "description": "Pick both ends, type a route or fly direct, then send it to X-Plane.",
-    "sections": { "airports": "Airports", "enroute": "Enroute", "summary": "Cruise and summary" },
+    "sections": {
+      "airports": "Airports",
+      "enroute": "Enroute",
+      "summary": "Cruise and summary"
+    },
     "sid": "SID",
     "star": "STAR",
     "approach": "Approach",
@@ -174,7 +178,11 @@
     "resolving": "Resolving route…",
     "distance": "Distance",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turboprop", "prop": "Piston" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turboprop",
+      "prop": "Piston"
+    },
     "ete": "Time",
     "aircraft": "Aircraft",
     "skipped": "{{count}} skipped",
@@ -931,6 +939,8 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",

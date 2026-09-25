@@ -129,7 +129,11 @@
   "planBuilder": {
     "title": "Zaplanuj lot",
     "description": "Wybierz oba lotniska, wpisz trasę lub leć bezpośrednio, a potem wyślij do X-Plane.",
-    "sections": { "airports": "Lotniska", "enroute": "Trasa", "summary": "Przelot i podsumowanie" },
+    "sections": {
+      "airports": "Lotniska",
+      "enroute": "Trasa",
+      "summary": "Przelot i podsumowanie"
+    },
     "sid": "SID",
     "star": "STAR",
     "approach": "Podejście",
@@ -174,7 +178,11 @@
     "resolving": "Rozwiązywanie trasy…",
     "distance": "Dystans",
     "nm": "{{value}} NM",
-    "class": { "jet": "Odrzutowy", "turboprop": "Turbośmigłowy", "prop": "Tłokowy" },
+    "class": {
+      "jet": "Odrzutowy",
+      "turboprop": "Turbośmigłowy",
+      "prop": "Tłokowy"
+    },
     "ete": "Czas",
     "aircraft": "Samolot",
     "skipped": "Pominięto: {{count}}",
@@ -931,6 +939,8 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",

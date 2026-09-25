@@ -178,7 +178,11 @@
     "resolving": "Risoluzione della rotta…",
     "distance": "Distanza",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turboelica", "prop": "Pistoni" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turboelica",
+      "prop": "Pistoni"
+    },
     "ete": "Tempo",
     "aircraft": "Aeromobile",
     "skipped": "{{count}} ignorati",
@@ -935,6 +939,8 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",

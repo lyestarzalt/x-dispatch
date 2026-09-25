@@ -43,10 +43,15 @@ export interface PlaneState extends Coordinates {
   gForceNormal: number;
   gForceAxial: number;
   gForceSide: number;
-  apAltitude: number;
-  apHeading: number;
-  apAirspeed: number;
-  apVerticalSpeed: number;
+  /** Autopilot dial settings. Absent until the first sample arrives. */
+  apAltitude?: number;
+  apHeading?: number;
+  /** Knots, or Mach when apAirspeedIsMach is set. */
+  apAirspeed?: number;
+  apAirspeedIsMach?: boolean;
+  apVerticalSpeed?: number;
+  /** NAV1 OBS course, degrees magnetic. */
+  nav1Course?: number;
   aircraftCategory: AircraftCategory | null;
   /** Simulator clock: seconds since midnight UTC. Absent until the first sample arrives. */
   simZuluTimeSec?: number;

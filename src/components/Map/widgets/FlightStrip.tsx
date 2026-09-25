@@ -44,6 +44,15 @@ function formatWind(dir: number | undefined, speed: number | undefined): string 
   return `${String(d).padStart(3, '0')}/${s}`;
 }
 
+/** Autopilot dial value in the same format as the live reading; empty until a sample arrives. */
+function formatTarget(
+  format: (value: number | undefined) => string,
+  value: number | undefined
+): string | undefined {
+  if (value === undefined || isNaN(value)) return undefined;
+  return format(value);
+}
+
 function formatOAT(oat: number | undefined): string {
   if (oat === undefined || isNaN(oat)) return '---';
   return Math.round(oat).toString();
@@ -136,6 +145,10 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
             value={formatValue(planeState?.indicatedAirspeed)}
             unit={t('units.kt')}
             valueColor={PRIMARY_COLOR_CLASS}
+            target={formatTarget(
+              planeState?.apAirspeedIsMach ? formatMach : formatValue,
+              planeState?.apAirspeed
+            )}
           />
           <DataBlock
             label={t('flightStrip.gs')}
@@ -159,6 +172,7 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
             label={t('flightStrip.alt')}
             value={formatValue(planeState?.altitudeMSL)}
             unit={t('units.ft')}
+            target={formatTarget(formatValue, planeState?.apAltitude)}
           />
           <DataBlock
             label={t('flightStrip.agl')}
@@ -171,16 +185,23 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
             value={formatVS(planeState?.verticalSpeed)}
             unit={t('units.fpm')}
             valueColor={getVSColor(planeState?.verticalSpeed)}
+            target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
           />
         </div>
 
         <GroupSeparator />
 
         {/* Navigation group */}
-        <div className="px-3 py-1.5">
+        <div className="flex items-center gap-3 px-3 py-1.5">
           <DataBlock
             label={t('flightStrip.hdg')}
             value={formatHeading(planeState?.heading)}
+            unit="°"
+            target={formatTarget(formatHeading, planeState?.apHeading)}
+          />
+          <DataBlock
+            label={t('flightStrip.crs')}
+            value={formatHeading(planeState?.nav1Course)}
             unit="°"
           />
         </div>
@@ -230,9 +251,12 @@ interface DataBlockProps {
   value: string;
   unit: string;
   valueColor?: string;
+  /** Selected (autopilot dial) value shown under the live reading for a quick comparison. */
+  target?: string;
 }
 
-function DataBlock({ label, value, unit, valueColor }: DataBlockProps) {
+function DataBlock({ label, value, unit, valueColor, target }: DataBlockProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center">
       <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
@@ -247,6 +271,11 @@ function DataBlock({ label, value, unit, valueColor }: DataBlockProps) {
         </span>
         <span className="text-muted-foreground text-xs">{unit}</span>
       </div>
+      {target !== undefined && (
+        <span className="text-info font-mono text-[10px] leading-tight tabular-nums">
+          {t('flightStrip.sel')} {target}
+        </span>
+      )}
     </div>
   );
 }

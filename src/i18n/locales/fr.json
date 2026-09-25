@@ -178,7 +178,11 @@
     "resolving": "Résolution de la route…",
     "distance": "Distance",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jet", "turboprop": "Turbopropulseur", "prop": "Piston" },
+    "class": {
+      "jet": "Jet",
+      "turboprop": "Turbopropulseur",
+      "prop": "Piston"
+    },
     "ete": "Temps",
     "aircraft": "Appareil",
     "skipped": "{{count}} ignorés",
@@ -935,6 +939,8 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",

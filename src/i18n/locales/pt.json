@@ -129,7 +129,11 @@
   "planBuilder": {
     "title": "Planejar um voo",
     "description": "Escolha origem e destino, digite uma rota ou voe direto e envie ao X-Plane.",
-    "sections": { "airports": "Aeroportos", "enroute": "Em rota", "summary": "Cruzeiro e resumo" },
+    "sections": {
+      "airports": "Aeroportos",
+      "enroute": "Em rota",
+      "summary": "Cruzeiro e resumo"
+    },
     "sid": "SID",
     "star": "STAR",
     "approach": "Aproximação",
@@ -174,7 +178,11 @@
     "resolving": "Resolvendo rota…",
     "distance": "Distância",
     "nm": "{{value}} NM",
-    "class": { "jet": "Jato", "turboprop": "Turboélice", "prop": "Pistão" },
+    "class": {
+      "jet": "Jato",
+      "turboprop": "Turboélice",
+      "prop": "Pistão"
+    },
     "ete": "Tempo",
     "aircraft": "Aeronave",
     "skipped": "{{count}} ignorados",
@@ -931,6 +939,8 @@
     "agl": "AGL",
     "vs": "VS",
     "hdg": "HDG",
+    "crs": "CRS",
+    "sel": "SEL",
     "mach": "MACH",
     "wind": "WIND",
     "oat": "OAT",
