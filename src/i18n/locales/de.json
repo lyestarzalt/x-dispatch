@@ -1341,7 +1341,7 @@
       "supportedTypes": "Flugzeuge, Plugins, Szenerien, Bemalungen und mehr",
       "installMore": "Weitere Add-ons installieren",
       "clear": "Alle löschen",
-      "successSceneryHint": "Starte X-Plane einmal, damit es die neue Szenerie in scenery_packs.ini einträgt; X-Dispatch ändert diese Datei nicht"
+      "successSceneryHint": "Starte X-Plane einmal, damit es die neue Szenerie in scenery_packs.ini einträgt. X-Dispatch ändert diese Datei nur auf deine ausdrückliche Anweisung."
     },
     "browser": {
       "searchPlaceholder": "Suchen...",

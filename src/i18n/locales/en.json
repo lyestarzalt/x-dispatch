@@ -1341,7 +1341,7 @@
       "supportedTypes": "Aircraft, plugins, scenery, liveries, and more",
       "installMore": "Install more add-ons",
       "clear": "Clear all",
-      "successSceneryHint": "Start X-Plane once so it adds the new scenery to scenery_packs.ini; X-Dispatch does not edit that file for you"
+      "successSceneryHint": "Start X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only changes that file when you explicitly ask it to."
     },
     "browser": {
       "searchPlaceholder": "Search...",

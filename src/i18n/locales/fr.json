@@ -1341,7 +1341,7 @@
       "supportedTypes": "Avions, plugins, scènes, livrées et plus",
       "installMore": "Installer d'autres extensions",
       "clear": "Tout effacer",
-      "successSceneryHint": "Lancez X-Plane une fois pour qu'il ajoute la nouvelle scène à scenery_packs.ini ; X-Dispatch ne modifie pas ce fichier"
+      "successSceneryHint": "Lancez X-Plane une fois pour qu'il ajoute la nouvelle scène à scenery_packs.ini. X-Dispatch ne modifie ce fichier que sur votre demande explicite."
     },
     "browser": {
       "searchPlaceholder": "Rechercher...",

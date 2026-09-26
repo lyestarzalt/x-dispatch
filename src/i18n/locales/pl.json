@@ -1341,7 +1341,7 @@
       "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i inne",
       "installMore": "Zainstaluj więcej dodatków",
       "clear": "Wyczyść wszystko",
-      "successSceneryHint": "Uruchom X-Plane raz, aby dodał nową scenerię do scenery_packs.ini; X-Dispatch nie edytuje tego pliku"
+      "successSceneryHint": "Uruchom X-Plane raz, aby dodał nową scenerię do scenery_packs.ini. X-Dispatch zmienia ten plik tylko na Twoje wyraźne polecenie."
     },
     "browser": {
       "searchPlaceholder": "Szukaj...",

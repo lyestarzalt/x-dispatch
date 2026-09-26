@@ -1341,7 +1341,7 @@
       "supportedTypes": "Aeronaves, plugins, escenarios, libreas y más",
       "installMore": "Instalar más complementos",
       "clear": "Limpiar todo",
-      "successSceneryHint": "Inicia X-Plane una vez para que añada el nuevo escenario a scenery_packs.ini; X-Dispatch no edita ese archivo"
+      "successSceneryHint": "Inicia X-Plane una vez para que añada el nuevo escenario a scenery_packs.ini. X-Dispatch solo modifica ese archivo cuando se lo pides expresamente."
     },
     "browser": {
       "searchPlaceholder": "Buscar...",

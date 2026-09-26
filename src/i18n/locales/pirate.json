@@ -1341,7 +1341,7 @@
       "supportedTypes": "Aircraft, plugins, scenery, liveries, an' more",
       "installMore": "Bring aboard more addons",
       "clear": "Clear cargo",
-      "successSceneryHint": "Run X-Plane once so it adds the new scenery to scenery_packs.ini; X-Dispatch keeps its hands off that file"
+      "successSceneryHint": "Run X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only touches that file when ye give the order."
     },
     "browser": {
       "searchPlaceholder": "Search fer...",

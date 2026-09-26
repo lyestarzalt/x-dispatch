@@ -1341,7 +1341,7 @@
       "supportedTypes": "Самолёты, плагины, сценарии, ливреи и другое",
       "installMore": "Установить ещё дополнения",
       "clear": "Очистить всё",
-      "successSceneryHint": "Запустите X-Plane один раз, чтобы он добавил новую сценарий в scenery_packs.ini; X-Dispatch не редактирует этот файл"
+      "successSceneryHint": "Запустите X-Plane один раз, чтобы он добавил новую сценарий в scenery_packs.ini. X-Dispatch меняет этот файл только по вашей явной команде."
     },
     "browser": {
       "searchPlaceholder": "Поиск...",

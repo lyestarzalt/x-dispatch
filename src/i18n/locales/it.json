@@ -1341,7 +1341,7 @@
       "supportedTypes": "Aerei, plugin, scenari, livree e altro",
       "installMore": "Installa altri add-on",
       "clear": "Cancella tutto",
-      "successSceneryHint": "Avvia X-Plane una volta perché aggiunga il nuovo scenario a scenery_packs.ini; X-Dispatch non modifica quel file"
+      "successSceneryHint": "Avvia X-Plane una volta perché aggiunga il nuovo scenario a scenery_packs.ini. X-Dispatch modifica quel file solo su tua richiesta esplicita."
     },
     "browser": {
       "searchPlaceholder": "Cerca...",
