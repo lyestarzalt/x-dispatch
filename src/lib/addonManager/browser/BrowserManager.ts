@@ -13,7 +13,6 @@ import { scanAircraft } from './scanners/aircraftScanner';
 import { scanLiveries } from './scanners/liveryScanner';
 import { scanLuaScripts } from './scanners/luaScriptScanner';
 import { scanPlugins } from './scanners/pluginScanner';
-import { setCfgDisabled } from './version/cfgSync';
 import { checkUpdates } from './version/updateChecker';
 
 export class BrowserManager {
@@ -39,12 +38,7 @@ export class BrowserManager {
         error: { code: 'TOGGLE_FAILED', path: folderName, reason: 'Item is locked' },
       };
     }
-    const result = toggleAircraft(this.xplanePath, folderName);
-    if (result.ok) {
-      // Sync disabled state to skunkcrafts_updater.cfg
-      setCfgDisabled(this.xplanePath, 'aircraft', folderName, !result.value);
-    }
-    return result;
+    return toggleAircraft(this.xplanePath, folderName);
   }
 
   deleteAircraft(folderName: string): Result<void, BrowserError> {
@@ -75,12 +69,7 @@ export class BrowserManager {
         error: { code: 'TOGGLE_FAILED', path: folderName, reason: 'Item is locked' },
       };
     }
-    const result = togglePlugin(this.xplanePath, folderName);
-    if (result.ok) {
-      // Sync disabled state to skunkcrafts_updater.cfg
-      setCfgDisabled(this.xplanePath, 'plugins', folderName, !result.value);
-    }
-    return result;
+    return togglePlugin(this.xplanePath, folderName);
   }
 
   deletePlugin(folderName: string): Result<void, BrowserError> {
