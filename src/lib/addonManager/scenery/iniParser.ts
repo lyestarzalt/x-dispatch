@@ -70,7 +70,7 @@ export function parseSceneryPacksIni(
       entries.push({
         folderName: GLOBAL_AIRPORTS_MARKER,
         fullPath: '',
-        enabled: true,
+        enabled,
         isGlobalAirports: true,
         originalLine: line,
       });

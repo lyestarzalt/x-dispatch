@@ -157,7 +157,12 @@ class XPlaneLauncher {
 
       // Same FlightInit schema as REST API, but NO { data: ... } wrapper for CLI
       const flightJson = payload;
-      const jsonPath = path.join(os.tmpdir(), 'x-dispatch-flight.json');
+      // A Steam X-Plane installed as a Flatpak or Snap on Linux runs in a sandbox that
+      // cannot see the host temp folder, so the file goes next to the sim there.
+      const jsonDir =
+        process.platform === 'linux' ? path.join(this.xplanePath, 'Output') : os.tmpdir();
+      fs.mkdirSync(jsonDir, { recursive: true });
+      const jsonPath = path.join(jsonDir, 'x-dispatch-flight.json');
       fs.writeFileSync(jsonPath, JSON.stringify(flightJson, null, 2), 'utf-8');
       logger.launcher.info(`Flight JSON written to: ${jsonPath}`);
       logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
