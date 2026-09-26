@@ -1340,7 +1340,8 @@
       "emptyState": "Arraste ficheiros para instalar",
       "supportedTypes": "Aeronaves, plugins, cenários, pinturas e mais",
       "installMore": "Instalar mais add-ons",
-      "clear": "Limpar tudo"
+      "clear": "Limpar tudo",
+      "successSceneryHint": "Inicie o X-Plane uma vez para que ele adicione o novo cenário ao scenery_packs.ini. O X-Dispatch só altera esse arquivo quando você pede explicitamente."
     },
     "browser": {
       "searchPlaceholder": "Pesquisar...",

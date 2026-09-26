@@ -31,6 +31,8 @@ export function InstallerTab() {
   const [detectedItem, setDetectedItem] = useState<DetectedItem | null>(null);
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const [result, setResult] = useState<InstallResult | null>(null);
+  // X-Plane registers new scenery in scenery_packs.ini itself; the app never edits that file.
+  const [installedScenery, setInstalledScenery] = useState(false);
 
   const analyzeMutation = useInstallerAnalyze();
   const installMutation = useInstallerInstall();
@@ -73,6 +75,9 @@ export function InstallerTab() {
       setProgress(null);
       setResult(null);
       const installResults = await installMutation.mutateAsync([detectedItem]);
+      setInstalledScenery(
+        detectedItem.addonType === 'Scenery' || detectedItem.addonType === 'SceneryLibrary'
+      );
       setResult(installResults[0] || null);
       setProgress(null);
       // Clear item after successful install
@@ -246,6 +251,11 @@ export function InstallerTab() {
                   <p className="text-muted-foreground mt-1 text-sm">
                     {t('addonManager.installer.successHint')}
                   </p>
+                  {installedScenery && (
+                    <p className="text-warning mt-2 text-sm">
+                      {t('addonManager.installer.successSceneryHint')}
+                    </p>
+                  )}
                 </>
               ) : (
                 <>

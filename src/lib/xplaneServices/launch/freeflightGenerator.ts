@@ -295,31 +295,6 @@ export function generateFreeflightPrf(config: LaunchConfig, xplanePath?: string)
 }
 
 /**
- * Write Freeflight.prf to X-Plane preferences folder
- */
-export function writeFreeflightPrf(xplanePath: string, content: string): boolean {
-  try {
-    const prefsDir = path.join(xplanePath, 'Output', 'preferences');
-    const prfPath = path.join(prefsDir, 'Freeflight.prf');
-
-    if (!fs.existsSync(prefsDir)) {
-      fs.mkdirSync(prefsDir, { recursive: true });
-    }
-
-    if (fs.existsSync(prfPath)) {
-      const backupPath = path.join(prefsDir, 'Freeflight.prf.backup');
-      fs.copyFileSync(prfPath, backupPath);
-    }
-
-    fs.writeFileSync(prfPath, content, 'utf-8');
-    return true;
-  } catch (err) {
-    logger.launcher.error('Failed to write Freeflight.prf', err);
-    return false;
-  }
-}
-
-/**
  * Calculate fuel tank weights from percentage
  */
 export function calculateFuelWeights(
