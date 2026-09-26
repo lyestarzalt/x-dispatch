@@ -1,22 +1,48 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v2.0.1 - 2026-09-26
+
+### Bug Fixes
+
+- **addons:** Installing scenery no longer edits scenery_packs.ini; ask the user to start X-Plane once by @lyestarzalt([87b5b07](https://github.com/lyestarzalt/x-dispatch/commit/87b5b07dcf101fccfe76f3a5f1f80bcc427ddcd5))
+- **addons:** Stop writing the Skunkcrafts updater disabled flag when toggling add-ons by @lyestarzalt([9da72eb](https://github.com/lyestarzalt/x-dispatch/commit/9da72eb88369c9e27e76cd48e8a1b6d97ae3ed8c))
+- **addons:** Keep a disabled global airports entry disabled; write the Linux launch file next to the sim by @lyestarzalt([14345f4](https://github.com/lyestarzalt/x-dispatch/commit/14345f4dc94305b076cd713fad024b05fc0a2ceb))
+- **launch:** Use the sim's Output folder on Linux only when it exists, no folder creation by @lyestarzalt([c5bf9cc](https://github.com/lyestarzalt/x-dispatch/commit/c5bf9cc95511626a777466a66b50dd4d1d9319e7))
+
+### Documentation
+
+- Update CHANGELOG.md for v2.0.0 by @lyestarzalt([f8eff51](https://github.com/lyestarzalt/x-dispatch/commit/f8eff512217543b4ab4b8876e5fac090d68b6b93))
+
+### Miscellaneous
+
+- **launch:** Drop the unused Freeflight.prf writer by @lyestarzalt([c1cc468](https://github.com/lyestarzalt/x-dispatch/commit/c1cc4689d08b4a2a7b448233a67ee0845c87f716))
+
+### CI/CD
+
+- Dispatchable Discord release announcement by @lyestarzalt([f8e00bc](https://github.com/lyestarzalt/x-dispatch/commit/f8e00bc0d3150fe3278ee13b4b60c86d9fd42563))
+- Release pushes through the X-Dispatch app token and checks push access before building by @lyestarzalt([0597e9e](https://github.com/lyestarzalt/x-dispatch/commit/0597e9eae1488dcc1bd99facbef70cfd06fd57f5))
+
+### Release
+
+- 2.0.1 by @github-actions[bot]([2be94c0](https://github.com/lyestarzalt/x-dispatch/commit/2be94c0682c9394bf16405cbf4aeb4017e758c73))
+
 
 ## v2.0.0 - 2026-09-26
 
 ### Features
 
-- **simbrief:** Let a format pin the filename an addon requires by @marcellogentile([3e94191](https://github.com/lyestarzalt/x-dispatch/commit/3e9419129114818853248e7cc0b55fe9a3ce29c1))
-- **map:** Add ground routing network debug layer by @lyestarzalt([76a1a45](https://github.com/lyestarzalt/x-dispatch/commit/76a1a45d6855164cddff77d1af57fc87a0a3d270))
+- **simbrief:** Let a format pin the filename an addon requires by @marcellogentile in [#128](https://github.com/lyestarzalt/x-dispatch/pull/128)([3e94191](https://github.com/lyestarzalt/x-dispatch/commit/3e9419129114818853248e7cc0b55fe9a3ce29c1))
+- **map:** Add ground routing network debug layer by @lyestarzalt in [#135](https://github.com/lyestarzalt/x-dispatch/pull/135)([76a1a45](https://github.com/lyestarzalt/x-dispatch/commit/76a1a45d6855164cddff77d1af57fc87a0a3d270))
 - **map:** Light the globe from the sun and add night city lights (#143) by @lyestarzalt([020e4b6](https://github.com/lyestarzalt/x-dispatch/commit/020e4b615ad75d6221eacbf56c0e5509f9df36e6))
 - Flight recorder with trail, landing report, replay and logbook (#145) by @lyestarzalt([d4d805b](https://github.com/lyestarzalt/x-dispatch/commit/d4d805b649e476b28b577b0a19cb2b8424ddb3cc))
+- **map:** Stands with identity by @lyestarzalt([b3e0216](https://github.com/lyestarzalt/x-dispatch/commit/b3e02161dc3860c2e9f31e7951ceabaced0d718a))
+- **map:** Ground weather from METAR on the overlay canvas by @lyestarzalt([927d23e](https://github.com/lyestarzalt/x-dispatch/commit/927d23e193eeed0f94dd6da1d1887bfcebf49ada))
+- **map:** Tune ground weather effects and expose the toggle in layers by @lyestarzalt([8ce969f](https://github.com/lyestarzalt/x-dispatch/commit/8ce969f575ecc9d00f036a8629b33286924ec126))
 - **map:** Airfield lighting scene from apt.dat light codes by @lyestarzalt([ffb7b2f](https://github.com/lyestarzalt/x-dispatch/commit/ffb7b2fcf307dd191b3c15cc7852a04a7b910755))
 - **map:** Drop amber hold bar fixtures and keep approach lights as plain points by @lyestarzalt([322e65b](https://github.com/lyestarzalt/x-dispatch/commit/322e65b56c5ce3d2fcba7b84a07c24bd18c8b135))
 - **map:** Drop lead-on lights and light the airfield by default by @lyestarzalt([c317649](https://github.com/lyestarzalt/x-dispatch/commit/c317649b119f8f8c6cd78297bb0b100e41d43018))
-- **map:** Ground weather from METAR on the overlay canvas by @lyestarzalt([927d23e](https://github.com/lyestarzalt/x-dispatch/commit/927d23e193eeed0f94dd6da1d1887bfcebf49ada))
-- **map:** Tune ground weather effects and expose the toggle in layers by @lyestarzalt([8ce969f](https://github.com/lyestarzalt/x-dispatch/commit/8ce969f575ecc9d00f036a8629b33286924ec126))
 - **map:** Airfield lights checkbox in the layers overlays menu by @lyestarzalt([fe1b57a](https://github.com/lyestarzalt/x-dispatch/commit/fe1b57a5f14f45a810354f13d55ed03680a20998))
-- **map:** Stands with identity by @lyestarzalt([b3e0216](https://github.com/lyestarzalt/x-dispatch/commit/b3e02161dc3860c2e9f31e7951ceabaced0d718a))
 - **explore:** Add a live weather tab by @lyestarzalt([37370fd](https://github.com/lyestarzalt/x-dispatch/commit/37370fd30365c5bf3f91210d5685061eb6af880c))
 - **traffic:** Stream X-Plane TCAS targets and show them as a Sim Traffic layer by @lyestarzalt([2e01208](https://github.com/lyestarzalt/x-dispatch/commit/2e01208d08a7e3f21e06cba0f1b917e9efa3fea0))
 - **traffic:** Glide markers between snapshots by @lyestarzalt([239cc29](https://github.com/lyestarzalt/x-dispatch/commit/239cc29130daf9c463c0c6b28bb64bfe8b09041b))
@@ -33,9 +59,9 @@ All notable changes to this project will be documented in this file.
 - **airport:** Filter procedures to the start runway, shadcn input for cruise altitude by @lyestarzalt([6031797](https://github.com/lyestarzalt/x-dispatch/commit/6031797bebc05c2236c71ff01f144e09a4993531))
 - **flightplan:** Aircraft class selector in the planner header by @lyestarzalt([577202f](https://github.com/lyestarzalt/x-dispatch/commit/577202fc985092c5bd5a8ecce8c564ec123166d2))
 - **flightplan:** Route again when the aircraft class changes by @lyestarzalt([f11d36e](https://github.com/lyestarzalt/x-dispatch/commit/f11d36e0a4aea02f32a0306daacfbaff263ebae7))
-- **flightstrip:** Autopilot targets and NAV1 course by @lyestarzalt([530bc9d](https://github.com/lyestarzalt/x-dispatch/commit/530bc9d7fc2d4ff0ecd1376ad3ca00e03c6051fa))
-- **map:** Navaid and waypoint info card with bearing and distance from the aircraft by @lyestarzalt([d7154a7](https://github.com/lyestarzalt/x-dispatch/commit/d7154a75458aabe4b8fdd1e10160265056201099))
 - **map:** Zoom-scaled navaid and waypoint labels by @lyestarzalt([8eba493](https://github.com/lyestarzalt/x-dispatch/commit/8eba493d536615c213246ace0ffe41fb7b2deec3))
+- **map:** Navaid and waypoint info card with bearing and distance from the aircraft by @lyestarzalt([d7154a7](https://github.com/lyestarzalt/x-dispatch/commit/d7154a75458aabe4b8fdd1e10160265056201099))
+- **flightstrip:** Autopilot targets and NAV1 course by @lyestarzalt([530bc9d](https://github.com/lyestarzalt/x-dispatch/commit/530bc9d7fc2d4ff0ecd1376ad3ca00e03c6051fa))
 - **toolbar:** Clock widget with Zulu/local and sim/system source by @lyestarzalt([c7d7b01](https://github.com/lyestarzalt/x-dispatch/commit/c7d7b01b4beb9f4e6eeb59b92a4d82c90e80c5bc))
 - **flightplan:** Oceanic routing with NAT tracks, antimeridian wrap and direct-leg simplification by @lyestarzalt([0f507e4](https://github.com/lyestarzalt/x-dispatch/commit/0f507e41e4a473a41e83343911550d3844fb7a5d))
 - **map:** Solid flight pictogram for stand markers by @lyestarzalt([5d52568](https://github.com/lyestarzalt/x-dispatch/commit/5d52568c7fa822b6abd3f671879b7eca14e4d14f))
@@ -47,15 +73,15 @@ All notable changes to this project will be documented in this file.
 - **log:** Parse Windows CRLF Log.txt correctly by @lyestarzalt([a39ead0](https://github.com/lyestarzalt/x-dispatch/commit/a39ead066c9cc5deb21273a5a3d762104c33d91e))
 - **scripts:** Make the drizzle migration check work on Windows by @lyestarzalt([a358898](https://github.com/lyestarzalt/x-dispatch/commit/a3588987965183effe85085006766fd017799e9c))
 - **sentry:** Ignore transient QUIC network errors by @lyestarzalt([1e79995](https://github.com/lyestarzalt/x-dispatch/commit/1e79995aea0a95c450d7e78ecc9b15b1dba173dc))
-- **sentry:** Fingerprint process-gone events by what actually died by @lyestarzalt([235180b](https://github.com/lyestarzalt/x-dispatch/commit/235180b5e8372ed46cd6a1b533aaf400482fdfe1))
-- **sentry:** Drop disk-full reports in beforeSend by @lyestarzalt([10b68ac](https://github.com/lyestarzalt/x-dispatch/commit/10b68ac94211574dce48edd47b4299cbf42da356))
-- **launcher:** Classify launch failures instead of leaking raw errnos by @lyestarzalt([f7ee32d](https://github.com/lyestarzalt/x-dispatch/commit/f7ee32da4d1dd7cd87e06a7b0a36ba8d387565e2))
-- **tile-cache:** Write the manifest atomically and retry on file locks by @lyestarzalt([617b0c0](https://github.com/lyestarzalt/x-dispatch/commit/617b0c0747f913be61b9612b30ab65e314c78e49))
+- **sentry:** Fingerprint process-gone events by what actually died by @lyestarzalt in [#130](https://github.com/lyestarzalt/x-dispatch/pull/130)([235180b](https://github.com/lyestarzalt/x-dispatch/commit/235180b5e8372ed46cd6a1b533aaf400482fdfe1))
+- **sentry:** Drop disk-full reports in beforeSend by @lyestarzalt in [#131](https://github.com/lyestarzalt/x-dispatch/pull/131)([10b68ac](https://github.com/lyestarzalt/x-dispatch/commit/10b68ac94211574dce48edd47b4299cbf42da356))
+- **launcher:** Classify launch failures instead of leaking raw errnos by @lyestarzalt in [#133](https://github.com/lyestarzalt/x-dispatch/pull/133)([f7ee32d](https://github.com/lyestarzalt/x-dispatch/commit/f7ee32da4d1dd7cd87e06a7b0a36ba8d387565e2))
+- **tile-cache:** Write the manifest atomically and retry on file locks by @lyestarzalt in [#132](https://github.com/lyestarzalt/x-dispatch/pull/132)([617b0c0](https://github.com/lyestarzalt/x-dispatch/commit/617b0c0747f913be61b9612b30ab65e314c78e49))
 - **simbrief:** Keep the file extension on FMS links with a --TAG suffix by @marcellogentile([7c0e00b](https://github.com/lyestarzalt/x-dispatch/commit/7c0e00bbd019a54670b67161d4afc6e7508f80d3))
-- **companion-apps:** Explain why .bat and .cmd cannot be launched by @lyestarzalt([7ffff96](https://github.com/lyestarzalt/x-dispatch/commit/7ffff9649a615acf70ac71487e2137c004efec44))
+- **companion-apps:** Explain why .bat and .cmd cannot be launched by @lyestarzalt in [#134](https://github.com/lyestarzalt/x-dispatch/pull/134)([7ffff96](https://github.com/lyestarzalt/x-dispatch/commit/7ffff9649a615acf70ac71487e2137c004efec44))
 - **map:** Clear mapRef on teardown so dead-map guards actually fire by @lyestarzalt([6492c4f](https://github.com/lyestarzalt/x-dispatch/commit/6492c4f678011274f29aceccbf77a7f987cd3bf5))
-- **map:** Disable day/night layer until nightlayer supports maplibre v6 by @lyestarzalt([0bed477](https://github.com/lyestarzalt/x-dispatch/commit/0bed47732611af6548d2c3b1190afb69731c788e))
-- **dialogs:** Seed defaultPath for file pickers (#139) by @lyestarzalt([3590288](https://github.com/lyestarzalt/x-dispatch/commit/35902887873cc14520e057a101c91a97046ea75d))
+- **map:** Disable day/night layer until nightlayer supports maplibre v6 by @lyestarzalt in [#137](https://github.com/lyestarzalt/x-dispatch/pull/137)([0bed477](https://github.com/lyestarzalt/x-dispatch/commit/0bed47732611af6548d2c3b1190afb69731c788e))
+- **dialogs:** Seed defaultPath for file pickers (#139) by @lyestarzalt in [#139](https://github.com/lyestarzalt/x-dispatch/pull/139)([3590288](https://github.com/lyestarzalt/x-dispatch/commit/35902887873cc14520e057a101c91a97046ea75d))
 - **main:** Restore DevTools access in dev builds by @lyestarzalt([dc107df](https://github.com/lyestarzalt/x-dispatch/commit/dc107df9e45bac6bd944d7683153bbaa8e41a304))
 - **ui:** Keep the title bar visible above full-screen dialogs by @lyestarzalt([c84aa6d](https://github.com/lyestarzalt/x-dispatch/commit/c84aa6df0601e7248829a905823d4adeed49f67e))
 - **map:** Restyle the landing card as a strip in the flight strip's design by @lyestarzalt([adfbafb](https://github.com/lyestarzalt/x-dispatch/commit/adfbafbcc5616821b63fbc2424e0bfb5d92cdf23))
@@ -89,14 +115,14 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- **map:** Stop idle repaints and per-frame UI re-renders (#140) by @lyestarzalt([fe351f5](https://github.com/lyestarzalt/x-dispatch/commit/fe351f504b48e45123d98fdf51de5fdce02b5bd0))
-- **airport:** Draw taxiways from the pavement source and fix pavement rings (#142) by @lyestarzalt([4db96b3](https://github.com/lyestarzalt/x-dispatch/commit/4db96b3c2678d6314bba2f696a6b9f122a4dcada))
+- **map:** Stop idle repaints and per-frame UI re-renders (#140) by @lyestarzalt in [#140](https://github.com/lyestarzalt/x-dispatch/pull/140)([fe351f5](https://github.com/lyestarzalt/x-dispatch/commit/fe351f504b48e45123d98fdf51de5fdce02b5bd0))
+- **airport:** Draw taxiways from the pavement source and fix pavement rings (#142) by @lyestarzalt in [#142](https://github.com/lyestarzalt/x-dispatch/pull/142)([4db96b3](https://github.com/lyestarzalt/x-dispatch/commit/4db96b3c2678d6314bba2f696a6b9f122a4dcada))
 - **map:** Draw airfield fixtures as circle pairs and wake strobes only on flash edges by @lyestarzalt([822eb19](https://github.com/lyestarzalt/x-dispatch/commit/822eb1990baa4757c7b5626cbbc7d118fac635b9))
 - **map:** Approach light rabbit paints only on change with sprite glows by @lyestarzalt([83a0232](https://github.com/lyestarzalt/x-dispatch/commit/83a023293d93ab8aec952ce3e537c0ae9ea8aec7))
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.9.2 by @github-actions[bot](<[3238d81](https://github.com/lyestarzalt/x-dispatch/commit/3238d81b1430a7074e4f400cdb39e8e1f34f7710)>)
+- Update CHANGELOG.md for v1.9.2 by @github-actions[bot]([3238d81](https://github.com/lyestarzalt/x-dispatch/commit/3238d81b1430a7074e4f400cdb39e8e1f34f7710))
 - Remove duplicate v1.9.2 changelog header by @lyestarzalt([f78c83c](https://github.com/lyestarzalt/x-dispatch/commit/f78c83cb90495572e494707c1ba02acfe517089c))
 - **readme:** Add flight recording, landing detection, and night city lights features by @lyestarzalt([00dd898](https://github.com/lyestarzalt/x-dispatch/commit/00dd898b22941499c58717e1140a36283b5d9577))
 
@@ -107,10 +133,10 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous
 
 - **test:** Stub platform in the isElevated cache tests by @lyestarzalt([e9c23e0](https://github.com/lyestarzalt/x-dispatch/commit/e9c23e05776299edad597ed788a667e322fbab90))
-- Normalize line endings to LF via .gitattributes by @lyestarzalt([12df726](https://github.com/lyestarzalt/x-dispatch/commit/12df726289e8c81cb575ad3a70114e4535e803cc))
+- Normalize line endings to LF via .gitattributes by @lyestarzalt in [#129](https://github.com/lyestarzalt/x-dispatch/pull/129)([12df726](https://github.com/lyestarzalt/x-dispatch/commit/12df726289e8c81cb575ad3a70114e4535e803cc))
 - **deps:** Upgrade maplibre-gl to v6.10.0 by @lyestarzalt([84566e8](https://github.com/lyestarzalt/x-dispatch/commit/84566e8b369f351076d1756d173d50b7fbe84492))
-- **deps:** Dependency refresh and Electron 44 (#138) by @lyestarzalt([c38d1d8](https://github.com/lyestarzalt/x-dispatch/commit/c38d1d88b2f2e204355a7b183a4adb6f6c31fa9c))
-- **deps:** Upgrade vite to v8 (#141) by @lyestarzalt([8df8592](https://github.com/lyestarzalt/x-dispatch/commit/8df8592ac6713fda2da8c7235686e10653f29264))
+- **deps:** Dependency refresh and Electron 44 (#138) by @lyestarzalt in [#138](https://github.com/lyestarzalt/x-dispatch/pull/138)([c38d1d8](https://github.com/lyestarzalt/x-dispatch/commit/c38d1d88b2f2e204355a7b183a4adb6f6c31fa9c))
+- **deps:** Upgrade vite to v8 (#141) by @lyestarzalt in [#141](https://github.com/lyestarzalt/x-dispatch/pull/141)([8df8592](https://github.com/lyestarzalt/x-dispatch/commit/8df8592ac6713fda2da8c7235686e10653f29264))
 - Update dependencies by @lyestarzalt([1ccdf72](https://github.com/lyestarzalt/x-dispatch/commit/1ccdf72dd6693105b050a49a21f68756a2c753a0))
 - Forward renderer console logs by @lyestarzalt([2449437](https://github.com/lyestarzalt/x-dispatch/commit/24494378cb88d8d56b138376c0fecb5602325c87))
 - Migrate Vitest config to ESM by @lyestarzalt([f0f522c](https://github.com/lyestarzalt/x-dispatch/commit/f0f522c63a1d264737e40dcba4b3335b27974a3d))
@@ -129,12 +155,17 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 2.0.0 by @github-actions[bot](<[dc20036](https://github.com/lyestarzalt/x-dispatch/commit/dc20036c8e1b2b4d914f149fd2b224ed6d0acc2b)>)
+- 2.0.0 by @github-actions[bot]([dc20036](https://github.com/lyestarzalt/x-dispatch/commit/dc20036c8e1b2b4d914f149fd2b224ed6d0acc2b))
 
-# Changelog
+### Test
 
-All notable changes to this project will be documented in this file.
+- **flightplan:** Give the resolver draft a cruise altitude by @lyestarzalt([2b997e0](https://github.com/lyestarzalt/x-dispatch/commit/2b997e082700e579b0c4ed711c74777bf4380d9f))
 
+
+
+### New Contributors
+
+- @marcellogentile made their first contribution in [#128](https://github.com/lyestarzalt/x-dispatch/pull/128)
 ## v1.9.2 - 2026-06-23
 
 ### Bug Fixes
@@ -144,7 +175,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.9.1 by @github-actions[bot](<[976d355](https://github.com/lyestarzalt/x-dispatch/commit/976d355b899bf15b4590bec3c193288db6d5f1b1)>)
+- Update CHANGELOG.md for v1.9.1 by @github-actions[bot]([976d355](https://github.com/lyestarzalt/x-dispatch/commit/976d355b899bf15b4590bec3c193288db6d5f1b1))
 - Point README links to x-dispatch.app by @lyestarzalt([3838cb3](https://github.com/lyestarzalt/x-dispatch/commit/3838cb3a743492179f3296b19c9edcb4794128e3))
 - Trim README and add requirements line by @lyestarzalt([c329304](https://github.com/lyestarzalt/x-dispatch/commit/c329304912beec3b0a1417b725051b1a8eed06c2))
 
@@ -155,7 +186,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.9.2 by @github-actions[bot](<[0fe794d](https://github.com/lyestarzalt/x-dispatch/commit/0fe794d19138a204304920372139f7cac16a98e3)>)
+- 1.9.2 by @github-actions[bot]([0fe794d](https://github.com/lyestarzalt/x-dispatch/commit/0fe794d19138a204304920372139f7cac16a98e3))
+
 
 ## v1.9.1 - 2026-05-27
 
@@ -177,7 +209,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.9.0 by @github-actions[bot](<[e31cedc](https://github.com/lyestarzalt/x-dispatch/commit/e31cedcde0b62acf2b585fbe3929c2f22d60bf67)>)
+- Update CHANGELOG.md for v1.9.0 by @github-actions[bot]([e31cedc](https://github.com/lyestarzalt/x-dispatch/commit/e31cedcde0b62acf2b585fbe3929c2f22d60bf67))
 - Backfill v1.9.0 changelog with rc.3 content by @lyestarzalt([efb3992](https://github.com/lyestarzalt/x-dispatch/commit/efb3992cff0c0b9f5267b8490b2df5ebdffdd576))
 - Refresh screenshots by @lyestarzalt([102f642](https://github.com/lyestarzalt/x-dispatch/commit/102f642bdf6ac623ba6f30400cc54c8d5dd14183))
 - Replace stale track-plane.png with refreshed flight-tracking.png by @lyestarzalt([e4ccfb2](https://github.com/lyestarzalt/x-dispatch/commit/e4ccfb2f3bd83428e7eedd274daeeb04790baa3c))
@@ -190,12 +222,13 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.9.1 by @github-actions[bot](<[5ab286a](https://github.com/lyestarzalt/x-dispatch/commit/5ab286ae4dc45c6c54f035ff3d023c7d81cc2037)>)
+- 1.9.1 by @github-actions[bot]([5ab286a](https://github.com/lyestarzalt/x-dispatch/commit/5ab286ae4dc45c6c54f035ff3d023c7d81cc2037))
 
 ### Tweak
 
 - **map:** Airport feature layers pop earlier when zooming in by @lyestarzalt([329c5d4](https://github.com/lyestarzalt/x-dispatch/commit/329c5d4fe7480d97d9f330bf284be39afe3b65cc))
 - **map:** Walk back airport zoom tiers by 1 by @lyestarzalt([9547e95](https://github.com/lyestarzalt/x-dispatch/commit/9547e95e0bd1db57c0a28bc0939383834f62f086))
+
 
 ## v1.9.0 - 2026-05-21
 
@@ -215,7 +248,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.3 by @github-actions[bot](<[461cbf7](https://github.com/lyestarzalt/x-dispatch/commit/461cbf73eee610f68f723d96d6c67af8aed465da)>)
+- Update CHANGELOG.md for v1.8.3 by @github-actions[bot]([461cbf7](https://github.com/lyestarzalt/x-dispatch/commit/461cbf73eee610f68f723d96d6c67af8aed465da))
 
 ### CI/CD
 
@@ -224,7 +257,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.9.0 by @github-actions[bot](<[e5363e3](https://github.com/lyestarzalt/x-dispatch/commit/e5363e359897608e161af39caa28a41170a3a0e6)>)
+- 1.9.0 by @github-actions[bot]([e5363e3](https://github.com/lyestarzalt/x-dispatch/commit/e5363e359897608e161af39caa28a41170a3a0e6))
+
 
 ## v1.8.3 - 2026-05-16
 
@@ -260,7 +294,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.2 by @github-actions[bot](<[259dfd7](https://github.com/lyestarzalt/x-dispatch/commit/259dfd7248bd604aa8384584a5c0463510010a34)>)
+- Update CHANGELOG.md for v1.8.2 by @github-actions[bot]([259dfd7](https://github.com/lyestarzalt/x-dispatch/commit/259dfd7248bd604aa8384584a5c0463510010a34))
 - Update CI badge by @lyestarzalt([7c3606e](https://github.com/lyestarzalt/x-dispatch/commit/7c3606e1911b8783064f16872a9e6971b7232b7d))
 
 ### Miscellaneous
@@ -274,7 +308,7 @@ All notable changes to this project will be documented in this file.
 - **deps:** Bump @vitejs/plugin-react 4 -> 5 by @lyestarzalt([ad25c23](https://github.com/lyestarzalt/x-dispatch/commit/ad25c235cf0595bcc203880b4a58ffc2ca66c24d))
 - **deps:** Bump electron 40 -> 42 by @lyestarzalt([76e3132](https://github.com/lyestarzalt/x-dispatch/commit/76e3132d9fdef14a98489b1d517be00479f9612c))
 - **deps:** Bump lucide-react 0.474 -> 1.16 by @lyestarzalt([8d024c4](https://github.com/lyestarzalt/x-dispatch/commit/8d024c4025a1d2ba8a40b2a7c9449679aa44dd16))
-- **deps:** Bump three, eslint plugins, @types/\*, and dev tools by @lyestarzalt([bc8d6b8](https://github.com/lyestarzalt/x-dispatch/commit/bc8d6b86645f54528359851d20dc403f1fc4fba6))
+- **deps:** Bump three, eslint plugins, @types/*, and dev tools by @lyestarzalt([bc8d6b8](https://github.com/lyestarzalt/x-dispatch/commit/bc8d6b86645f54528359851d20dc403f1fc4fba6))
 - **deps:** Bump vite 6 -> 7 by @lyestarzalt([0e8b5f6](https://github.com/lyestarzalt/x-dispatch/commit/0e8b5f6c0bbd5dd40bec78ae81dbebedbfa442d9))
 - **ci:** Split dependabot into minors-batch + per-major PRs by @lyestarzalt([a2d069c](https://github.com/lyestarzalt/x-dispatch/commit/a2d069c1c00d92fd031201419c71b281484a8357))
 - **ci:** Annotate dependabot ignores with pin reasons by @lyestarzalt([e616ccf](https://github.com/lyestarzalt/x-dispatch/commit/e616ccf4a7b0d66602c1fa68c7e7a644311b2971))
@@ -285,12 +319,13 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.8.3 by @github-actions[bot](<[58a00f7](https://github.com/lyestarzalt/x-dispatch/commit/58a00f7425c1e07ad981aa8dd3167b75c143aae8)>)
+- 1.8.3 by @github-actions[bot]([58a00f7](https://github.com/lyestarzalt/x-dispatch/commit/58a00f7425c1e07ad981aa8dd3167b75c143aae8))
 
 ### I18n
 
 - Polish pirate locale by @lyestarzalt([2e6132e](https://github.com/lyestarzalt/x-dispatch/commit/2e6132e639a4b49077883ef544e66c9a49b76987))
 - Enforce no-literal-string lint and translate 10 locales by @lyestarzalt([7518da1](https://github.com/lyestarzalt/x-dispatch/commit/7518da1cbc2be2eef9dedc9f8ca5e36a5d61bb5a))
+
 
 ## v1.8.2 - 2026-05-11
 
@@ -303,11 +338,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.1 by @github-actions[bot](<[f0761d6](https://github.com/lyestarzalt/x-dispatch/commit/f0761d675eac101aa3c9c1de18db1d0690746b64)>)
+- Update CHANGELOG.md for v1.8.1 by @github-actions[bot]([f0761d6](https://github.com/lyestarzalt/x-dispatch/commit/f0761d675eac101aa3c9c1de18db1d0690746b64))
 
 ### Release
 
-- 1.8.2 by @github-actions[bot](<[581a3ff](https://github.com/lyestarzalt/x-dispatch/commit/581a3fff95f37980071b51ee31ef977672a12796)>)
+- 1.8.2 by @github-actions[bot]([581a3ff](https://github.com/lyestarzalt/x-dispatch/commit/581a3fff95f37980071b51ee31ef977672a12796))
+
 
 ## v1.8.1 - 2026-05-11
 
@@ -321,11 +357,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.8.0 by @github-actions[bot](<[e0dcba6](https://github.com/lyestarzalt/x-dispatch/commit/e0dcba6390db378d44a05801bb97fda69286287d)>)
+- Update CHANGELOG.md for v1.8.0 by @github-actions[bot]([e0dcba6](https://github.com/lyestarzalt/x-dispatch/commit/e0dcba6390db378d44a05801bb97fda69286287d))
 
 ### Release
 
-- 1.8.1 by @github-actions[bot](<[17f9a6e](https://github.com/lyestarzalt/x-dispatch/commit/17f9a6e8dc0cb6819bbbbb63f34f7d4ffc289800)>)
+- 1.8.1 by @github-actions[bot]([17f9a6e](https://github.com/lyestarzalt/x-dispatch/commit/17f9a6e8dc0cb6819bbbbb63f34f7d4ffc289800))
+
 
 ## v1.8.0 - 2026-05-10
 
@@ -402,7 +439,7 @@ All notable changes to this project will be documented in this file.
 - **settings:** Consolidate map render settings under Graphics by @lyestarzalt([51af780](https://github.com/lyestarzalt/x-dispatch/commit/51af780281b99d857630eb593e9c695aac4737a7))
 - **map:** Extract setupAirportsLayer to layers/world/ by @lyestarzalt([51ed4ee](https://github.com/lyestarzalt/x-dispatch/commit/51ed4ee1f5092a9b24daf927189a87465a14a315))
 - **explore:** Tighten Featured + VATSIM tab hierarchy by @lyestarzalt([9085652](https://github.com/lyestarzalt/x-dispatch/commit/9085652962ec2cea4e63ba52aaf08a59c3809f7b))
-- **logger:** Replace stray console.\* with scoped logger by @lyestarzalt([b2a3193](https://github.com/lyestarzalt/x-dispatch/commit/b2a319380626837fb2bc7d2c10e86b9836a0eca6))
+- **logger:** Replace stray console.* with scoped logger by @lyestarzalt([b2a3193](https://github.com/lyestarzalt/x-dispatch/commit/b2a319380626837fb2bc7d2c10e86b9836a0eca6))
 - **flight-init:** Consolidate JSON builder into flightInit/ folder by @lyestarzalt([1afc5cc](https://github.com/lyestarzalt/x-dispatch/commit/1afc5ccd0d61d22a6431144bae59d54f779107bf))
 - **flight-init:** One section helper per JSON field, builder is one expression by @lyestarzalt([11aa051](https://github.com/lyestarzalt/x-dispatch/commit/11aa051355e0725c0f15280ee1805e0a7138b314))
 - **launch:** Dedupe a string literal, neaten a few comments by @lyestarzalt([541b696](https://github.com/lyestarzalt/x-dispatch/commit/541b69655940526da30cbc34bc5bc9679c3a1463))
@@ -416,7 +453,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.7.0 by @github-actions[bot](<[512f9b9](https://github.com/lyestarzalt/x-dispatch/commit/512f9b982536b8945c52a2bd9f59dded79694ffd)>)
+- Update CHANGELOG.md for v1.7.0 by @github-actions[bot]([512f9b9](https://github.com/lyestarzalt/x-dispatch/commit/512f9b982536b8945c52a2bd9f59dded79694ffd))
 - **readme:** Mention X-Plane free demo for users without X-Plane by @lyestarzalt([d74bd93](https://github.com/lyestarzalt/x-dispatch/commit/d74bd9323c73c4bc356ff16abeee96ccf7e2d07c))
 - **manual:** Add CLI flags reference and link from README by @lyestarzalt([734594b](https://github.com/lyestarzalt/x-dispatch/commit/734594bcabcbd9f13ba059a4b34cca80555590e7))
 - Refresh contributor workflow by @lyestarzalt([212c228](https://github.com/lyestarzalt/x-dispatch/commit/212c228e223925790338c620141cb3158eec5ec2))
@@ -439,14 +476,14 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.8.0 by @github-actions[bot](<[40de745](https://github.com/lyestarzalt/x-dispatch/commit/40de745380aad4e83f06891f00ba1547469d20b1)>)
+- 1.8.0 by @github-actions[bot]([40de745](https://github.com/lyestarzalt/x-dispatch/commit/40de745380aad4e83f06891f00ba1547469d20b1))
 
 ### I18n
 
 - **graphics:** Fully translate the consolidated Graphics section by @lyestarzalt([f8b67da](https://github.com/lyestarzalt/x-dispatch/commit/f8b67da2d1fea441ce63c16c6e59f9fba8155c33))
 - **companion-apps:** Add settings.companionApps namespace by @lyestarzalt([57e7b21](https://github.com/lyestarzalt/x-dispatch/commit/57e7b21d94fba6dbfb5bbc99d9209e44cb863f6d))
 - **companion-apps:** Translate namespace into 9 locales + pirate by @lyestarzalt([f8420ea](https://github.com/lyestarzalt/x-dispatch/commit/f8420ea1d7fe07c2568a912dec20285dadb2783e))
-- **xp-log:** Add settings.logs.\* and logs.patterns namespace (en only) by @lyestarzalt([ebf1a13](https://github.com/lyestarzalt/x-dispatch/commit/ebf1a1385e761ce48f5c003fe0cf5de6c63578a7))
+- **xp-log:** Add settings.logs.* and logs.patterns namespace (en only) by @lyestarzalt([ebf1a13](https://github.com/lyestarzalt/x-dispatch/commit/ebf1a1385e761ce48f5c003fe0cf5de6c63578a7))
 - **xp-log:** Translate logs namespace into 10 locales by @lyestarzalt([b17b82a](https://github.com/lyestarzalt/x-dispatch/commit/b17b82a71dd363b0ab29db03589a153f22bcced2))
 - **simbrief:** Translate FMS export namespace into 9 locales + pirate by @lyestarzalt([aa9e36e](https://github.com/lyestarzalt/x-dispatch/commit/aa9e36eb67bfcdc964f782cb78e9356c13b1900f))
 - **companion-apps:** Translate elevation + error keys into 9 locales + pirate by @lyestarzalt([95eb583](https://github.com/lyestarzalt/x-dispatch/commit/95eb5837f5f99b301076b960aa4892a8eb36a127))
@@ -463,17 +500,18 @@ All notable changes to this project will be documented in this file.
 - **utils:** Cover no-target branch in resolveLnkSync by @lyestarzalt([d58063a](https://github.com/lyestarzalt/x-dispatch/commit/d58063a4eaefee4624ea021f0d187ade89cbafcb))
 - **scenery:** Regression test for POSIX symlink path by @lyestarzalt([085b402](https://github.com/lyestarzalt/x-dispatch/commit/085b4021d117bc3fcb9897f0a87af477cf3c8135))
 
+
+
 ### New Contributors
 
 - @ made their first contribution
-
 ## v1.7.0 - 2026-04-26
 
 ### Features
 
 - **parser:** Enrich taxi network parsing with full apt.dat 1200 spec by @lyestarzalt([59dd67a](https://github.com/lyestarzalt/x-dispatch/commit/59dd67accac701caddfb5241bfdca42154d7c003))
-- **taxi-graph:** Add graph library with A\* pathfinding by @lyestarzalt([ede4932](https://github.com/lyestarzalt/x-dispatch/commit/ede4932befd922250e43ae80d3a472c7576bc8d1))
-- **taxi-route:** Add network mode with A\* pathfinding to store by @lyestarzalt([7438563](https://github.com/lyestarzalt/x-dispatch/commit/743856374a924b86c3df2078e58a5bea63df5af5))
+- **taxi-graph:** Add graph library with A* pathfinding by @lyestarzalt([ede4932](https://github.com/lyestarzalt/x-dispatch/commit/ede4932befd922250e43ae80d3a472c7576bc8d1))
+- **taxi-route:** Add network mode with A* pathfinding to store by @lyestarzalt([7438563](https://github.com/lyestarzalt/x-dispatch/commit/743856374a924b86c3df2078e58a5bea63df5af5))
 - **taxi-route:** Add FTG export and IPC for route file writing by @lyestarzalt([c750cbd](https://github.com/lyestarzalt/x-dispatch/commit/c750cbd93b2299a7cffb263d5feab92599c8faaf))
 - **taxi-route:** Network-aware rendering and UI with FTG export by @lyestarzalt([d3b64af](https://github.com/lyestarzalt/x-dispatch/commit/d3b64affe1024c378712609f05d356243fed5ba5))
 - **taxi-route:** Redesign UX — gate→runway dropdown with auto-route by @lyestarzalt([90411bc](https://github.com/lyestarzalt/x-dispatch/commit/90411bcaa2e45dba1448b5439d342e79d7dea331))
@@ -528,14 +566,14 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.6.1 by @github-actions[bot](<[50633a9](https://github.com/lyestarzalt/x-dispatch/commit/50633a91922e949e27f44cd786aedfcfb1d458ba)>)
+- Update CHANGELOG.md for v1.6.1 by @github-actions[bot]([50633a9](https://github.com/lyestarzalt/x-dispatch/commit/50633a91922e949e27f44cd786aedfcfb1d458ba))
 - **map:** Document airport switching fix — why safeRemove is bypassed by @lyestarzalt([2e44470](https://github.com/lyestarzalt/x-dispatch/commit/2e44470ac7214cd26e34b6eff3ae797e9be3355d))
 - Add donation section to README by @lyestarzalt([e1b4153](https://github.com/lyestarzalt/x-dispatch/commit/e1b41532e3b3fd552cf2e6dbbf56edc97fc1e944))
 - Trim README, link to project page for full details by @lyestarzalt([6cd8f28](https://github.com/lyestarzalt/x-dispatch/commit/6cd8f289a07d8d3681c03243736b10961b1666f8))
 
 ### Miscellaneous
 
-- **map:** Expose map instance on window.\_\_map in dev mode by @lyestarzalt([9563b21](https://github.com/lyestarzalt/x-dispatch/commit/9563b218ff84cbdee63c5437c30eb21cf3026bda))
+- **map:** Expose map instance on window.__map in dev mode by @lyestarzalt([9563b21](https://github.com/lyestarzalt/x-dispatch/commit/9563b218ff84cbdee63c5437c30eb21cf3026bda))
 - Add .agents/ to gitignore by @lyestarzalt([75bc612](https://github.com/lyestarzalt/x-dispatch/commit/75bc6124ab1abfc1031aef17fc9ccb32c16c23cf))
 - Add vitest with config and test scripts by @lyestarzalt([a8ba2b1](https://github.com/lyestarzalt/x-dispatch/commit/a8ba2b10c33eef0865063eb607b4b48a639c4b81))
 - Remove one-time fixture extraction script by @lyestarzalt([e27b4f2](https://github.com/lyestarzalt/x-dispatch/commit/e27b4f24c491d3bb6638aa64aceb3c12408986f0))
@@ -544,7 +582,7 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.7.0 by @github-actions[bot](<[b0c10b6](https://github.com/lyestarzalt/x-dispatch/commit/b0c10b6db33f64c0600d6bcf6b93a2c716fd0f00)>)
+- 1.7.0 by @github-actions[bot]([b0c10b6](https://github.com/lyestarzalt/x-dispatch/commit/b0c10b6db33f64c0600d6bcf6b93a2c716fd0f00))
 
 ### Test
 
@@ -561,6 +599,7 @@ All notable changes to this project will be documented in this file.
 - Add 10 more airport fixtures covering heliports, seaplanes, and grass strips by @lyestarzalt([f1b5ffb](https://github.com/lyestarzalt/x-dispatch/commit/f1b5ffb8a45a76d06949e9cc669eb731c2e4a476))
 - **parsers:** Add structural fingerprint regression tests for 15 airports by @lyestarzalt([6ed08ca](https://github.com/lyestarzalt/x-dispatch/commit/6ed08caf2c7a3edafe0cffcc1a63d99b6d904749))
 - **parsers:** Add bezier, runway geometry, and path parser unit tests by @lyestarzalt([de9f1e6](https://github.com/lyestarzalt/x-dispatch/commit/de9f1e6566f5771d87dcac30a53d1eaa38abce6e))
+
 
 ## v1.6.1 - 2026-04-16
 
@@ -602,7 +641,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.6.0 by @github-actions[bot](<[eaeff41](https://github.com/lyestarzalt/x-dispatch/commit/eaeff41d85603a3d09f3affb1d812fb986e06ae2)>)
+- Update CHANGELOG.md for v1.6.0 by @github-actions[bot]([eaeff41](https://github.com/lyestarzalt/x-dispatch/commit/eaeff41d85603a3d09f3affb1d812fb986e06ae2))
 - Update README with recent features and expanded dev section by @lyestarzalt([7f3340c](https://github.com/lyestarzalt/x-dispatch/commit/7f3340cbdcdb5b30e4c02b1c80c4e9e74bed8536))
 - Fix X-Plane version, show 3D terrain screenshot, trim dev section by @lyestarzalt([cad5be7](https://github.com/lyestarzalt/x-dispatch/commit/cad5be718581039f20ca8eb7ce6c542fadfc6493))
 - Add hits badge to README by @lyestarzalt([eda737f](https://github.com/lyestarzalt/x-dispatch/commit/eda737fda854c1cfa4317853f8a8eb92c82d125d))
@@ -617,13 +656,14 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.6.1 by @github-actions[bot](<[3fafbe0](https://github.com/lyestarzalt/x-dispatch/commit/3fafbe003ba79a1d4a66a276e2ac14962534c17b)>)
+- 1.6.1 by @github-actions[bot]([3fafbe0](https://github.com/lyestarzalt/x-dispatch/commit/3fafbe003ba79a1d4a66a276e2ac14962534c17b))
+
+
 
 ### New Contributors
 
 - @Pwoodlock made their first contribution
 - @necromeo made their first contribution
-
 ## v1.6.0 - 2026-03-24
 
 ### Features
@@ -649,7 +689,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.5 by @github-actions[bot](<[030dcab](https://github.com/lyestarzalt/x-dispatch/commit/030dcabc4504199ac0dc238d4db413f863dbfaf4)>)
+- Update CHANGELOG.md for v1.5.5 by @github-actions[bot]([030dcab](https://github.com/lyestarzalt/x-dispatch/commit/030dcabc4504199ac0dc238d4db413f863dbfaf4))
 
 ### Miscellaneous
 
@@ -659,13 +699,14 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.6.0 by @github-actions[bot](<[249c754](https://github.com/lyestarzalt/x-dispatch/commit/249c75485ce682f6870600b491ea0a454a454adc)>)
+- 1.6.0 by @github-actions[bot]([249c754](https://github.com/lyestarzalt/x-dispatch/commit/249c75485ce682f6870600b491ea0a454a454adc))
+
 
 ## v1.5.5 - 2026-03-22
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.4 by @github-actions[bot](<[7ad9e76](https://github.com/lyestarzalt/x-dispatch/commit/7ad9e76b0205d157557c3e20ebe81a0c44899f9b)>)
+- Update CHANGELOG.md for v1.5.4 by @github-actions[bot]([7ad9e76](https://github.com/lyestarzalt/x-dispatch/commit/7ad9e76b0205d157557c3e20ebe81a0c44899f9b))
 
 ### CI/CD
 
@@ -674,7 +715,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.5.5 by @github-actions[bot](<[7511556](https://github.com/lyestarzalt/x-dispatch/commit/7511556ca4c0ea4e762cd578a8da669e0f1f7117)>)
+- 1.5.5 by @github-actions[bot]([7511556](https://github.com/lyestarzalt/x-dispatch/commit/7511556ca4c0ea4e762cd578a8da669e0f1f7117))
+
 
 ## v1.5.4 - 2026-03-22
 
@@ -717,12 +759,13 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.3 by @github-actions[bot](<[71a35f6](https://github.com/lyestarzalt/x-dispatch/commit/71a35f642d38cc74a7678bdca1eeba6714ca048e)>)
+- Update CHANGELOG.md for v1.5.3 by @github-actions[bot]([71a35f6](https://github.com/lyestarzalt/x-dispatch/commit/71a35f642d38cc74a7678bdca1eeba6714ca048e))
 - Update README screenshots and add fuel, weather, terrain views by @lyestarzalt([b1ba519](https://github.com/lyestarzalt/x-dispatch/commit/b1ba51934346b39c6b4e102f801c1aaa879c4b34))
 
 ### Release
 
-- 1.5.4 by @github-actions[bot](<[e7e5ed0](https://github.com/lyestarzalt/x-dispatch/commit/e7e5ed09a8d4df7f133cacd53f3b87221b985f42)>)
+- 1.5.4 by @github-actions[bot]([e7e5ed0](https://github.com/lyestarzalt/x-dispatch/commit/e7e5ed09a8d4df7f133cacd53f3b87221b985f42))
+
 
 ## v1.5.3 - 2026-03-18
 
@@ -748,12 +791,13 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.2 by @github-actions[bot](<[cd1fcac](https://github.com/lyestarzalt/x-dispatch/commit/cd1fcac84f3302548cc0115878cd59cba8314a92)>)
+- Update CHANGELOG.md for v1.5.2 by @github-actions[bot]([cd1fcac](https://github.com/lyestarzalt/x-dispatch/commit/cd1fcac84f3302548cc0115878cd59cba8314a92))
 - Rewrite README with complete feature inventory by @lyestarzalt([618796d](https://github.com/lyestarzalt/x-dispatch/commit/618796dadb1b5fa70efb760d2449fb2851b0ca4b))
 
 ### Release
 
-- 1.5.3 by @github-actions[bot](<[55cf32a](https://github.com/lyestarzalt/x-dispatch/commit/55cf32a363de8a0b64a8232ba7b52a5ec14aa983)>)
+- 1.5.3 by @github-actions[bot]([55cf32a](https://github.com/lyestarzalt/x-dispatch/commit/55cf32a363de8a0b64a8232ba7b52a5ec14aa983))
+
 
 ## v1.5.2 - 2026-03-16
 
@@ -770,11 +814,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.1 by @github-actions[bot](<[567e58f](https://github.com/lyestarzalt/x-dispatch/commit/567e58f5d95fb80b2f25ba0b21d504c2465a0329)>)
+- Update CHANGELOG.md for v1.5.1 by @github-actions[bot]([567e58f](https://github.com/lyestarzalt/x-dispatch/commit/567e58f5d95fb80b2f25ba0b21d504c2465a0329))
 
 ### Release
 
-- 1.5.2 by @github-actions[bot](<[c0cb905](https://github.com/lyestarzalt/x-dispatch/commit/c0cb905f55ff40ef5ac84f7d8ba96ae563ca115f)>)
+- 1.5.2 by @github-actions[bot]([c0cb905](https://github.com/lyestarzalt/x-dispatch/commit/c0cb905f55ff40ef5ac84f7d8ba96ae563ca115f))
+
 
 ## v1.5.1 - 2026-03-15
 
@@ -803,7 +848,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.5.0 by @github-actions[bot](<[d3f585f](https://github.com/lyestarzalt/x-dispatch/commit/d3f585fed037c3de693df689714c037ae1077a5b)>)
+- Update CHANGELOG.md for v1.5.0 by @github-actions[bot]([d3f585f](https://github.com/lyestarzalt/x-dispatch/commit/d3f585fed037c3de693df689714c037ae1077a5b))
 - Update Discord invite link by @lyestarzalt([22e14ff](https://github.com/lyestarzalt/x-dispatch/commit/22e14ff9fd0b136c45377adf0f0b3a35db5236c4))
 
 ### Miscellaneous
@@ -812,11 +857,12 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.5.1 by @github-actions[bot](<[ba7c9ae](https://github.com/lyestarzalt/x-dispatch/commit/ba7c9ae0541412f7f1287698131af9d5e28af204)>)
+- 1.5.1 by @github-actions[bot]([ba7c9ae](https://github.com/lyestarzalt/x-dispatch/commit/ba7c9ae0541412f7f1287698131af9d5e28af204))
 
 ### Wip
 
 - **ils:** Scaffold 3D glide slope visualization (disabled) by @lyestarzalt([b028548](https://github.com/lyestarzalt/x-dispatch/commit/b0285486fb39bf0d895537c2c89582aac75562f4))
+
 
 ## v1.5.0 - 2026-03-12
 
@@ -838,7 +884,7 @@ All notable changes to this project will be documented in this file.
 
 - **ui:** Add forwardRef to Badge component by @lyestarzalt([2f1f4cf](https://github.com/lyestarzalt/x-dispatch/commit/2f1f4cf773c86cdc0bf09f6c7d299682d6df7793))
 - **ui:** Correct ref types and add missing forwardRef in shadcn components by @lyestarzalt([b29b9fb](https://github.com/lyestarzalt/x-dispatch/commit/b29b9fbc2b6314425cbc5080e05c65192888cff4))
-- **launcher:** Derive fuel tank ratios from \_cgpt capacity for third-party helicopters by @lyestarzalt([568afaf](https://github.com/lyestarzalt/x-dispatch/commit/568afaf95d9d629625c764127e9ac951f730f734))
+- **launcher:** Derive fuel tank ratios from _cgpt capacity for third-party helicopters by @lyestarzalt([568afaf](https://github.com/lyestarzalt/x-dispatch/commit/568afaf95d9d629625c764127e9ac951f730f734))
 - **launcher:** Skip --version on Windows Steam to avoid launch dialog by @lyestarzalt([1223c8f](https://github.com/lyestarzalt/x-dispatch/commit/1223c8f1bba39a8156a4ff45afdee249c9efe6f2))
 - **launcher:** Correct fuel tank count for third-party aircraft by @lyestarzalt([993d7c9](https://github.com/lyestarzalt/x-dispatch/commit/993d7c92d70c5390a8ece4c4c105f0a3636e6c70))
 - **launcher:** Improve fuel parsing and add payload fallback for third-party aircraft by @lyestarzalt([d833981](https://github.com/lyestarzalt/x-dispatch/commit/d833981e35161ee95708f565b50446f17fe4f199))
@@ -860,7 +906,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.4.1 by @github-actions[bot](<[9d2d105](https://github.com/lyestarzalt/x-dispatch/commit/9d2d1059c439e66586daabe3126b9340914d6dea)>)
+- Update CHANGELOG.md for v1.4.1 by @github-actions[bot]([9d2d105](https://github.com/lyestarzalt/x-dispatch/commit/9d2d1059c439e66586daabe3126b9340914d6dea))
 
 ### Miscellaneous
 
@@ -868,7 +914,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.5.0 by @github-actions[bot](<[7ab9b2c](https://github.com/lyestarzalt/x-dispatch/commit/7ab9b2c93e41599824cee0de7a14b24407efcc28)>)
+- 1.5.0 by @github-actions[bot]([7ab9b2c](https://github.com/lyestarzalt/x-dispatch/commit/7ab9b2c93e41599824cee0de7a14b24407efcc28))
+
 
 ## v1.4.1 - 2026-03-06
 
@@ -891,7 +938,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.4.0 by @github-actions[bot](<[d926081](https://github.com/lyestarzalt/x-dispatch/commit/d92608148a45b1ba467b0d9257c0f376fe23cbb2)>)
+- Update CHANGELOG.md for v1.4.0 by @github-actions[bot]([d926081](https://github.com/lyestarzalt/x-dispatch/commit/d92608148a45b1ba467b0d9257c0f376fe23cbb2))
 
 ### Miscellaneous
 
@@ -900,7 +947,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.4.1 by @github-actions[bot](<[3374b10](https://github.com/lyestarzalt/x-dispatch/commit/3374b101f88c45fb0bdb230e0a6844b7dec57e50)>)
+- 1.4.1 by @github-actions[bot]([3374b10](https://github.com/lyestarzalt/x-dispatch/commit/3374b101f88c45fb0bdb230e0a6844b7dec57e50))
+
 
 ## v1.4.0 - 2026-03-03
 
@@ -921,11 +969,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.3.2 by @github-actions[bot](<[e423c01](https://github.com/lyestarzalt/x-dispatch/commit/e423c017d4c2c7dc781241b549fd83ea9042d217)>)
+- Update CHANGELOG.md for v1.3.2 by @github-actions[bot]([e423c01](https://github.com/lyestarzalt/x-dispatch/commit/e423c017d4c2c7dc781241b549fd83ea9042d217))
 
 ### Release
 
-- 1.4.0 by @github-actions[bot](<[6232e9c](https://github.com/lyestarzalt/x-dispatch/commit/6232e9c1098cd828699a1a70b68f7d156b31a463)>)
+- 1.4.0 by @github-actions[bot]([6232e9c](https://github.com/lyestarzalt/x-dispatch/commit/6232e9c1098cd828699a1a70b68f7d156b31a463))
+
 
 ## v1.3.2 - 2026-03-03
 
@@ -948,7 +997,7 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.3.1 by @github-actions[bot](<[ca96d0c](https://github.com/lyestarzalt/x-dispatch/commit/ca96d0c2220590d4ee1b8267d036a63973102f23)>)
+- Update CHANGELOG.md for v1.3.1 by @github-actions[bot]([ca96d0c](https://github.com/lyestarzalt/x-dispatch/commit/ca96d0c2220590d4ee1b8267d036a63973102f23))
 
 ### Miscellaneous
 
@@ -958,7 +1007,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.3.2 by @github-actions[bot](<[82bc52b](https://github.com/lyestarzalt/x-dispatch/commit/82bc52b5fa63cc93fdc30caa9c782721e9251fcb)>)
+- 1.3.2 by @github-actions[bot]([82bc52b](https://github.com/lyestarzalt/x-dispatch/commit/82bc52b5fa63cc93fdc30caa9c782721e9251fcb))
+
 
 ## v1.3.1 - 2026-03-01
 
@@ -974,11 +1024,12 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.3.0 by @github-actions[bot](<[5ba61e0](https://github.com/lyestarzalt/x-dispatch/commit/5ba61e0f79793be546d41b3693d7b6faac746fd2)>)
+- Update CHANGELOG.md for v1.3.0 by @github-actions[bot]([5ba61e0](https://github.com/lyestarzalt/x-dispatch/commit/5ba61e0f79793be546d41b3693d7b6faac746fd2))
 
 ### Release
 
-- 1.3.1 by @github-actions[bot](<[ed300d0](https://github.com/lyestarzalt/x-dispatch/commit/ed300d01db28e9f786fc6339f922888e4b05a5ef)>)
+- 1.3.1 by @github-actions[bot]([ed300d0](https://github.com/lyestarzalt/x-dispatch/commit/ed300d01db28e9f786fc6339f922888e4b05a5ef))
+
 
 ## v1.3.0 - 2026-03-01
 
@@ -1004,14 +1055,15 @@ All notable changes to this project will be documented in this file.
 
 ### Documentation
 
-- Update CHANGELOG.md for v1.2.1 by @github-actions[bot](<[420b945](https://github.com/lyestarzalt/x-dispatch/commit/420b9456597033318ad7a8bb7f6c8faa41e70ce6)>)
+- Update CHANGELOG.md for v1.2.1 by @github-actions[bot]([420b945](https://github.com/lyestarzalt/x-dispatch/commit/420b9456597033318ad7a8bb7f6c8faa41e70ce6))
 - Add Ko-fi donation badge and link by @lyestarzalt([b0cce0f](https://github.com/lyestarzalt/x-dispatch/commit/b0cce0f87117511220fb756394b784f4a6ab5d8b))
 - Move macOS install notice below intro section by @lyestarzalt([fd944ae](https://github.com/lyestarzalt/x-dispatch/commit/fd944aefb44539083450f84ea61e28ec38a1d588))
 - Update X-Plane requirement to 12.4+ by @lyestarzalt([8ef8830](https://github.com/lyestarzalt/x-dispatch/commit/8ef8830e2f66382c7b622ab02b2f3e52e409f138))
 
 ### Release
 
-- 1.3.0 by @github-actions[bot](<[109b094](https://github.com/lyestarzalt/x-dispatch/commit/109b09471fa7aa84867bdcffdeba65fa65e88696)>)
+- 1.3.0 by @github-actions[bot]([109b094](https://github.com/lyestarzalt/x-dispatch/commit/109b09471fa7aa84867bdcffdeba65fa65e88696))
+
 
 ## v1.2.1 - 2026-02-28
 
@@ -1039,7 +1091,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.2.1 by @github-actions[bot](<[1583ea1](https://github.com/lyestarzalt/x-dispatch/commit/1583ea1b2533ba42394bd13283a27836bffb3770)>)
+- 1.2.1 by @github-actions[bot]([1583ea1](https://github.com/lyestarzalt/x-dispatch/commit/1583ea1b2533ba42394bd13283a27836bffb3770))
+
 
 ## v1.2.0 - 2026-02-28
 
@@ -1058,7 +1111,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.2.0 by @github-actions[bot](<[89c4ac4](https://github.com/lyestarzalt/x-dispatch/commit/89c4ac405cd89bc3be9e6fdd8ae54473a308152b)>)
+- 1.2.0 by @github-actions[bot]([89c4ac4](https://github.com/lyestarzalt/x-dispatch/commit/89c4ac405cd89bc3be9e6fdd8ae54473a308152b))
+
 
 ## v1.1.0 - 2026-02-27
 
@@ -1129,7 +1183,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.1.0 by @github-actions[bot](<[2658ee0](https://github.com/lyestarzalt/x-dispatch/commit/2658ee0919b90b0e15dc91199487e358df444d49)>)
+- 1.1.0 by @github-actions[bot]([2658ee0](https://github.com/lyestarzalt/x-dispatch/commit/2658ee0919b90b0e15dc91199487e358df444d49))
+
 
 ## v1.0.0 - 2026-02-24
 
@@ -1194,7 +1249,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 1.0.0 by @github-actions[bot](<[bb630f9](https://github.com/lyestarzalt/x-dispatch/commit/bb630f993e6ac39f2d1d6258db38aebc0ebe2b0d)>)
+- 1.0.0 by @github-actions[bot]([bb630f9](https://github.com/lyestarzalt/x-dispatch/commit/bb630f993e6ac39f2d1d6258db38aebc0ebe2b0d))
+
 
 ## v0.9.4 - 2026-02-19
 
@@ -1204,7 +1260,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.4 by @github-actions[bot](<[06dc2a7](https://github.com/lyestarzalt/x-dispatch/commit/06dc2a75d0c8b4d9bdabf7d7170c47d0b7021adb)>)
+- 0.9.4 by @github-actions[bot]([06dc2a7](https://github.com/lyestarzalt/x-dispatch/commit/06dc2a75d0c8b4d9bdabf7d7170c47d0b7021adb))
+
 
 ## v0.9.3 - 2026-02-19
 
@@ -1229,7 +1286,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.3 by @github-actions[bot](<[ceb8111](https://github.com/lyestarzalt/x-dispatch/commit/ceb8111f032d3b8ba47266da424c8e457cf67dff)>)
+- 0.9.3 by @github-actions[bot]([ceb8111](https://github.com/lyestarzalt/x-dispatch/commit/ceb8111f032d3b8ba47266da424c8e457cf67dff))
+
 
 ## v0.9.2 - 2026-02-19
 
@@ -1239,7 +1297,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.2 by @github-actions[bot](<[273f536](https://github.com/lyestarzalt/x-dispatch/commit/273f53617d9d7b89ee01fabec1fccf2e63d16fd6)>)
+- 0.9.2 by @github-actions[bot]([273f536](https://github.com/lyestarzalt/x-dispatch/commit/273f53617d9d7b89ee01fabec1fccf2e63d16fd6))
+
 
 ## v0.9.1 - 2026-02-18
 
@@ -1249,7 +1308,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.1 by @github-actions[bot](<[6cb7933](https://github.com/lyestarzalt/x-dispatch/commit/6cb7933e70f06fecc0f013d7e886e5d7c538817f)>)
+- 0.9.1 by @github-actions[bot]([6cb7933](https://github.com/lyestarzalt/x-dispatch/commit/6cb7933e70f06fecc0f013d7e886e5d7c538817f))
+
 
 ## v0.9.0 - 2026-02-13
 
@@ -1259,13 +1319,15 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.9.0 by @github-actions[bot](<[f9b56f2](https://github.com/lyestarzalt/x-dispatch/commit/f9b56f2efb7b3c2f9086bfb68805ac94850ec49f)>)
+- 0.9.0 by @github-actions[bot]([f9b56f2](https://github.com/lyestarzalt/x-dispatch/commit/f9b56f2efb7b3c2f9086bfb68805ac94850ec49f))
+
 
 ## v0.8.0 - 2026-02-08
 
 ### Release
 
-- 0.8.0 by @github-actions[bot](<[05b3bf9](https://github.com/lyestarzalt/x-dispatch/commit/05b3bf96b62a3b85526e26c60b2791da898dddb9)>)
+- 0.8.0 by @github-actions[bot]([05b3bf9](https://github.com/lyestarzalt/x-dispatch/commit/05b3bf96b62a3b85526e26c60b2791da898dddb9))
+
 
 ## v0.7.0 - 2026-02-07
 
@@ -1315,18 +1377,20 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.7.0 by @github-actions[bot](<[b780a9c](https://github.com/lyestarzalt/x-dispatch/commit/b780a9c8f4ba87356cad743e22d8632c503cc091)>)
+- 0.7.0 by @github-actions[bot]([b780a9c](https://github.com/lyestarzalt/x-dispatch/commit/b780a9c8f4ba87356cad743e22d8632c503cc091))
+
 
 ## v0.6.1 - 2026-02-03
 
 ### Miscellaneous
 
 - Fix repo URLs and add macOS install note (#10) by @lyestarzalt([55ea3f1](https://github.com/lyestarzalt/x-dispatch/commit/55ea3f1d70c5cb407ae13754580dbfa59b6dad59))
-- **ui:** Shadcn components, semantic colors, Map refactor & compass redesign (#11) by @lyestarzalt([3620f16](https://github.com/lyestarzalt/x-dispatch/commit/3620f16bb6634aaa464b1728209e88f299d61380))
+- **ui:** Shadcn components, semantic colors, Map refactor & compass redesign  (#11) by @lyestarzalt([3620f16](https://github.com/lyestarzalt/x-dispatch/commit/3620f16bb6634aaa464b1728209e88f299d61380))
 
 ### Release
 
-- 0.6.1 by @github-actions[bot](<[e5e4a88](https://github.com/lyestarzalt/x-dispatch/commit/e5e4a889ee3927359465fe7d8fa50f99e2c98258)>)
+- 0.6.1 by @github-actions[bot]([e5e4a88](https://github.com/lyestarzalt/x-dispatch/commit/e5e4a889ee3927359465fe7d8fa50f99e2c98258))
+
 
 ## v0.6.0 - 2026-02-02
 
@@ -1340,7 +1404,8 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.6.0 by @github-actions[bot](<[311de60](https://github.com/lyestarzalt/x-dispatch/commit/311de6047a0884b349d79e6470c01f59404785bf)>)
+- 0.6.0 by @github-actions[bot]([311de60](https://github.com/lyestarzalt/x-dispatch/commit/311de6047a0884b349d79e6470c01f59404785bf))
+
 
 ## v0.5.3 - 2026-02-02
 
@@ -1358,11 +1423,12 @@ All notable changes to this project will be documented in this file.
 
 ### Release
 
-- 0.5.3 by @github-actions[bot](<[96c4719](https://github.com/lyestarzalt/x-dispatch/commit/96c4719ad92934c6a7b8ea93e83770b9208564e3)>)
+- 0.5.3 by @github-actions[bot]([96c4719](https://github.com/lyestarzalt/x-dispatch/commit/96c4719ad92934c6a7b8ea93e83770b9208564e3))
+
+
 
 ### New Contributors
 
 - @github-actions[bot] made their first contribution
 - @lyestarzalt made their first contribution
-
 <!-- generated by git-cliff -->
