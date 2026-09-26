@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { aircraftStudio } from '@/lib/utils/aircraftStudio';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -57,7 +58,9 @@ function AircraftListItem({
           onSelect();
         }
       }}
-      title={`${aircraft.name} - ${aircraft.manufacturer}`}
+      title={[aircraft.name, aircraft.studio.trim(), aircraft.author.trim()]
+        .filter(Boolean)
+        .join(' · ')}
       className={cn(
         'group focus-visible:ring-primary relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
         isSelected ? 'bg-primary/10 ring-primary ring-2' : 'bg-secondary hover:bg-accent'
@@ -84,7 +87,12 @@ function AircraftListItem({
         >
           {aircraft.name}
         </div>
-        <div className="text-muted-foreground truncate text-sm">{aircraft.manufacturer}</div>
+        <div className="text-muted-foreground truncate text-sm">
+          {aircraft.manufacturer}
+          {aircraftStudio(aircraft) && (
+            <span className="text-foreground/70"> · {aircraftStudio(aircraft)}</span>
+          )}
+        </div>
       </div>
 
       {/* Favorite Button */}
