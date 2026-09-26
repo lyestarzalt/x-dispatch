@@ -1,0 +1,50 @@
+name: Notify Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to announce (e.g. v2.0.0)
+        required: true
+        type: string
+
+jobs:
+  notify:
+    name: Announce ${{ inputs.tag }} on Discord
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read release notes
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          # The notes above the first rule, capped to what a Discord embed accepts.
+          gh release view "$TAG" --repo "${{ github.repository }}" --json body -q .body \
+            | awk '/^---$/ { exit } { print }' \
+            | head -c 3000 > notes.md
+          {
+            echo 'content<<NOTES_EOF'
+            cat notes.md
+            echo
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send Discord notification
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          embed-title: 'X-Dispatch ${{ inputs.tag }} Released'
+          embed-url: 'https://github.com/${{ github.repository }}/releases/tag/${{ inputs.tag }}'
+          embed-description: |
+            ${{ steps.notes.outputs.content }}
+
+            **Downloads:**
+            - [:apple: macOS (Apple Silicon)](https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/X-Dispatch-${{ steps.notes.outputs.version }}-mac-apple-silicon.dmg)
+            - [:apple: macOS (Intel)](https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/X-Dispatch-${{ steps.notes.outputs.version }}-mac-intel.dmg)
+            - [:window: Windows](https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/X-Dispatch-${{ steps.notes.outputs.version }}-windows-x64.exe)
+            - [:penguin: Linux x64](https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/X-Dispatch-${{ steps.notes.outputs.version }}-linux-x64.AppImage)
+            - [:penguin: Linux ARM64](https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag }}/X-Dispatch-${{ steps.notes.outputs.version }}-linux-arm64.AppImage)
+          embed-color: 3447003
