@@ -13,12 +13,14 @@ const BACKOFF_INITIAL_MS = 1000;
 const BACKOFF_MAX_MS = 5_000;
 const BACKOFF_MULTIPLIER = 2;
 
-// Keepalive constants
+// Keepalive constants. X-Plane answers pings from its sim thread, so a scenery load or a
+// heavy menu can hold a pong for many seconds on a link that is perfectly fine.
 const PING_INTERVAL_MS = 10_000;
-const PONG_TIMEOUT_MS = 5_000;
+const PONG_TIMEOUT_MS = 20_000;
 
-// Grace period before clearing state after disconnect
-const GRACE_PERIOD_MS = 5_000;
+// Grace period before clearing state after disconnect; long enough to ride out a stall
+// and a reconnect without the tracker vanishing from the map.
+const GRACE_PERIOD_MS = 30_000;
 
 const METERS_TO_FEET = 3.28084;
 const MPS_TO_KNOTS = 1.94384;
@@ -380,6 +382,11 @@ export class XPlaneWebSocketClient {
       });
 
       this.ws.on('message', (data: WebSocket.Data) => {
+        // Data arriving proves the link is alive whether or not the pong made it.
+        if (this.pongTimeout) {
+          clearTimeout(this.pongTimeout);
+          this.pongTimeout = null;
+        }
         try {
           const msg = JSON.parse(data.toString());
           if (msg.type === 'dataref_update_values') {
@@ -409,7 +416,7 @@ export class XPlaneWebSocketClient {
 
         this.forgetResolvedDatarefs();
         this.state = 'RECONNECTING';
-        logger.tracker.debug(`WebSocket disconnected, reconnecting in ${this.backoffMs}ms`);
+        logger.tracker.info(`WebSocket disconnected, reconnecting in ${this.backoffMs}ms`);
         this.startGraceTimer();
         this.scheduleReconnect();
       });
@@ -443,7 +450,7 @@ export class XPlaneWebSocketClient {
 
       // Start pong timeout — if no pong within 5s, connection is dead
       this.pongTimeout = setTimeout(() => {
-        logger.tracker.debug('Pong timeout — terminating dead connection');
+        logger.tracker.info('No pong or data for 20 s, terminating the connection');
         this.ws?.terminate();
       }, PONG_TIMEOUT_MS);
     }, PING_INTERVAL_MS);
