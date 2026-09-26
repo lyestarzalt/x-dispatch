@@ -1340,7 +1340,8 @@
       "emptyState": "拖放附加组件压缩包进行安装",
       "supportedTypes": "飞机、插件、地景、涂装等",
       "installMore": "安装更多附加组件",
-      "clear": "全部清除"
+      "clear": "全部清除",
+      "successSceneryHint": "请启动一次 X-Plane，让它把新地景加入 scenery_packs.ini；X-Dispatch 不会修改该文件"
     },
     "browser": {
       "searchPlaceholder": "搜索...",

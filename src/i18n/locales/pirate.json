@@ -1340,7 +1340,8 @@
       "emptyState": "Drop addon archives ta install",
       "supportedTypes": "Aircraft, plugins, scenery, liveries, an' more",
       "installMore": "Bring aboard more addons",
-      "clear": "Clear cargo"
+      "clear": "Clear cargo",
+      "successSceneryHint": "Run X-Plane once so it adds the new scenery to scenery_packs.ini; X-Dispatch keeps its hands off that file"
     },
     "browser": {
       "searchPlaceholder": "Search fer...",

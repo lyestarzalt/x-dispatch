@@ -1340,7 +1340,8 @@
       "emptyState": "Trascina archivi da installare",
       "supportedTypes": "Aerei, plugin, scenari, livree e altro",
       "installMore": "Installa altri add-on",
-      "clear": "Cancella tutto"
+      "clear": "Cancella tutto",
+      "successSceneryHint": "Avvia X-Plane una volta perché aggiunga il nuovo scenario a scenery_packs.ini; X-Dispatch non modifica quel file"
     },
     "browser": {
       "searchPlaceholder": "Cerca...",

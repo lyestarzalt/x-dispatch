@@ -1340,7 +1340,8 @@
       "emptyState": "インストールするアーカイブをドロップ",
       "supportedTypes": "機体、プラグイン、シーナリー、リバリーなど",
       "installMore": "他のアドオンをインストール",
-      "clear": "すべてクリア"
+      "clear": "すべてクリア",
+      "successSceneryHint": "新しいシーナリーを scenery_packs.ini に登録するため、X-Plane を一度起動してください。X-Dispatch はこのファイルを編集しません"
     },
     "browser": {
       "searchPlaceholder": "検索...",

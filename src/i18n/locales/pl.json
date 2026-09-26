@@ -1340,7 +1340,8 @@
       "emptyState": "Upuść archiwa do zainstalowania",
       "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i inne",
       "installMore": "Zainstaluj więcej dodatków",
-      "clear": "Wyczyść wszystko"
+      "clear": "Wyczyść wszystko",
+      "successSceneryHint": "Uruchom X-Plane raz, aby dodał nową scenerię do scenery_packs.ini; X-Dispatch nie edytuje tego pliku"
     },
     "browser": {
       "searchPlaceholder": "Szukaj...",

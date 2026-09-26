@@ -258,9 +258,6 @@ export class InstallerManager {
         }
       }
 
-      // Post-install actions
-      await this.postInstall(task);
-
       // Cleanup temp if it still exists
       if (fs.existsSync(tempDir)) {
         fs.rmSync(tempDir, { recursive: true, force: true });
@@ -367,57 +364,5 @@ export class InstallerManager {
         fs.copyFileSync(srcPath, dstPath);
       }
     }
-  }
-
-  /**
-   * Post-installation actions
-   */
-  private async postInstall(task: InstallTask): Promise<void> {
-    // Update scenery_packs.ini for scenery types
-    if (task.addonType === 'Scenery' || task.addonType === 'SceneryLibrary') {
-      await this.addToSceneryPacks(task.displayName);
-    }
-  }
-
-  /**
-   * Add scenery to scenery_packs.ini
-   */
-  private async addToSceneryPacks(sceneryName: string): Promise<void> {
-    const iniPath = path.join(this.xplanePath, 'Custom Scenery', 'scenery_packs.ini');
-
-    // Read existing content
-    let content: string;
-    if (fs.existsSync(iniPath)) {
-      content = fs.readFileSync(iniPath, 'utf-8');
-    } else {
-      content = 'I\n1000 Version\nSCENERY\n\n';
-    }
-
-    const entry = `SCENERY_PACK Custom Scenery/${sceneryName}/`;
-
-    // Check if already exists
-    if (content.includes(entry)) {
-      return;
-    }
-
-    // Add after the SCENERY header
-    const lines = content.split('\n');
-    const sceneryIndex = lines.findIndex((l) => l.trim() === 'SCENERY');
-
-    if (sceneryIndex >= 0) {
-      // Insert after SCENERY line (and any blank line after it)
-      let insertIndex = sceneryIndex + 1;
-      let nextLine = lines[insertIndex];
-      while (insertIndex < lines.length && nextLine !== undefined && nextLine.trim() === '') {
-        insertIndex++;
-        nextLine = lines[insertIndex];
-      }
-      lines.splice(insertIndex, 0, entry);
-    } else {
-      // Append at end
-      lines.push(entry);
-    }
-
-    fs.writeFileSync(iniPath, lines.join('\n'));
   }
 }
