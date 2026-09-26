@@ -34,24 +34,18 @@ type GateType = keyof typeof GATE_TYPES;
 
 // SVG icons for each gate type (top-down silhouettes, 48x48 viewbox)
 const GATE_ICONS: Record<string, string> = {
-  // Commercial airliner - swept wings, twin engines
+  // The standard airport "flight" pictogram, the shape people know from signage.
+  // Airliner, wide-body and cargo share it; the ring tint and size tell them apart.
   'gate-airliner': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-    <path fill="white" d="M24 4c-1.1 0-2 .9-2 2v12l-14 8v3l14-4v10l-4 3v2l6-2 6 2v-2l-4-3V25l14 4v-3l-14-8V6c0-1.1-.9-2-2-2z"/>
+    <path fill="white" transform="scale(2)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
   </svg>`,
 
-  // Wide-body airliner - long fuselage, four engines
   'gate-widebody': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-    <path fill="white" d="M24 2c-1.4 0-2.5 1.1-2.5 2.5V16L4 26v3.5l17.5-5v11l-5.5 4v2.5l8-2 8 2V39.5l-5.5-4v-11l17.5 5V26L26.5 16V4.5C26.5 3.1 25.4 2 24 2z"/>
-    <rect fill="white" x="13" y="24" width="3" height="6" rx="1" opacity="0.7"/>
-    <rect fill="white" x="18" y="21" width="3" height="6" rx="1" opacity="0.7"/>
-    <rect fill="white" x="27" y="21" width="3" height="6" rx="1" opacity="0.7"/>
-    <rect fill="white" x="32" y="24" width="3" height="6" rx="1" opacity="0.7"/>
+    <path fill="white" transform="scale(2)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
   </svg>`,
 
-  // Cargo freighter - wider body, box indicator
   'gate-cargo': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-    <path fill="white" d="M24 4c-1.5 0-2.5.9-2.5 2v10l-14 9v4l14-4v8l-4 3v3l6.5-2 6.5 2v-3l-4-3v-8l14 4v-4l-14-9V6c0-1.1-1-2-2.5-2z"/>
-    <rect fill="white" x="20" y="18" width="8" height="6" rx="1" opacity="0.6"/>
+    <path fill="white" transform="scale(2)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
   </svg>`,
 
   // General aviation - high-wing single prop (Cessna style)
@@ -239,11 +233,11 @@ export class GateLayer extends BaseLayerRenderer {
           ['linear'],
           ['zoom'],
           minZoom,
-          ['*', ['get', 'iconScale'], 0.2],
+          ['*', ['get', 'iconScale'], 0.24],
           minZoom + 2,
-          ['*', ['get', 'iconScale'], 0.4],
+          ['*', ['get', 'iconScale'], 0.46],
           19,
-          ['*', ['get', 'iconScale'], 0.6],
+          ['*', ['get', 'iconScale'], 0.68],
         ],
         'icon-rotate': ['get', 'heading'],
         'icon-rotation-alignment': 'map',
@@ -285,13 +279,11 @@ export class GateLayer extends BaseLayerRenderer {
 
   private loadGateIcons(map: maplibregl.Map): void {
     for (const [iconName, svgContent] of Object.entries(GATE_ICONS)) {
-      if (map.hasImage(iconName)) continue;
-
       const img = new Image(48, 48);
       img.onload = () => {
-        if (!map.hasImage(iconName)) {
-          map.addImage(iconName, img, { sdf: true });
-        }
+        // The map keeps images across airports; replace in place so an updated glyph shows.
+        if (map.hasImage(iconName)) map.updateImage(iconName, img);
+        else map.addImage(iconName, img, { sdf: true });
       };
       img.onerror = () => {
         window.appAPI.log.warn(`[GateLayer] Failed to load ${iconName} SVG`);
