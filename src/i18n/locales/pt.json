@@ -1109,7 +1109,8 @@
       "fuel": "Combustível",
       "summary": "Resumo",
       "departure": "Partida",
-      "livery": "Pintura"
+      "livery": "Pintura",
+      "conditions": "Condições"
     },
     "startState": {
       "ready": "Pronto",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Não foi possível copiar o JSON de arranque",
       "shareHint": "Problema com um voo? Clique no ícone de copiar para partilhar os detalhes com o programador no GitHub ou Discord."
     },
-    "weightFuelLabel": "Peso e combustível"
+    "weightFuelLabel": "Peso e combustível",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m até o pôr do sol",
+      "untilSunrise": "{{h}}h {{m}}m até o nascer do sol"
+    }
   },
   "addonManager": {
     "title": "Gestor de add-ons",

@@ -11,15 +11,17 @@ interface SunArcProps {
   latitude: number;
   longitude: number;
   onTimeChange: (time: number) => void;
+  /** Arc and slider only, drawn over the parent's own sky; the parent shows the readout. */
+  bare?: boolean;
 }
 
-function formatHours(hours: number): string {
+export function formatHours(hours: number): string {
   const h = Math.floor(((hours % 24) + 24) % 24);
   const m = Math.floor((((hours % 1) + 1) % 1) * 60);
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-function getHoursInTimezone(date: Date, timezone: string): number {
+export function getHoursInTimezone(date: Date, timezone: string): number {
   const str = date.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
@@ -74,7 +76,7 @@ function readPalette(el: HTMLElement) {
 type Palette = ReturnType<typeof readPalette>;
 
 const W = 420;
-const H = 200;
+const H = 160;
 
 function curveY(hour: number, rise: number, set: number): number {
   const noon = (rise + set) / 2;
@@ -154,7 +156,7 @@ function Stars({ opacity, C }: { opacity: number; C: Palette }) {
   );
 }
 
-export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcProps) {
+export function SunArc({ timeOfDay, latitude, longitude, onTimeChange, bare }: SunArcProps) {
   const { t } = useTranslation();
   // CSS vars cascade from :root, so reading from documentElement matches what
   // any descendant would resolve to. Re-read on theme switch.
@@ -296,7 +298,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
           </defs>
 
           {/* Sky fill */}
-          <rect width={W} height={H} fill="url(#sun-skyGrad)" />
+          {!bare && <rect width={W} height={H} fill="url(#sun-skyGrad)" />}
 
           {/* Stars at night */}
           <Stars opacity={nightOp} C={C} />
@@ -401,18 +403,20 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       </div>
 
       {/* Time readout */}
-      <div className="flex items-baseline justify-between">
-        <div className="flex items-baseline gap-1.5">
-          <span className="font-mono text-lg font-semibold">{localTime}</span>
-          <span className="text-muted-foreground text-xs">{t('sunArc.local')}</span>
+      {!bare && (
+        <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono text-lg font-semibold">{localTime}</span>
+            <span className="text-muted-foreground text-xs">{t('sunArc.local')}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[10px]" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
+              {statusText}
+            </span>
+            <span className="text-muted-foreground font-mono text-sm">{zuluTime}</span>
+          </div>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-[10px]" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
-            {statusText}
-          </span>
-          <span className="text-muted-foreground font-mono text-sm">{zuluTime}</span>
-        </div>
-      </div>
+      )}
 
       {/* Radix Slider */}
       <Slider
@@ -428,10 +432,12 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange }: SunArcP
       />
 
       {/* Date + timezone */}
-      <div className="text-muted-foreground flex items-center justify-between text-xs">
-        <span>{dateStr}</span>
-        <span>{timezone.split('/').pop()?.replace('_', ' ')}</span>
-      </div>
+      {!bare && (
+        <div className="text-muted-foreground flex items-center justify-between text-xs">
+          <span>{dateStr}</span>
+          <span>{timezone.split('/').pop()?.replace('_', ' ')}</span>
+        </div>
+      )}
     </div>
   );
 }

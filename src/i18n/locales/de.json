@@ -1109,7 +1109,8 @@
       "fuel": "Treibstoff",
       "summary": "Zusammenfassung",
       "departure": "Abflug",
-      "livery": "Bemalung"
+      "livery": "Bemalung",
+      "conditions": "Bedingungen"
     },
     "startState": {
       "ready": "Bereit",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Start-JSON konnte nicht kopiert werden",
       "shareHint": "Probleme mit einem Flug? Klicken Sie auf das Kopier-Symbol, um die Details mit dem Entwickler auf GitHub oder Discord zu teilen."
     },
-    "weightFuelLabel": "Gewicht & Treibstoff"
+    "weightFuelLabel": "Gewicht & Treibstoff",
+    "conditions": {
+      "untilSunset": "{{h}} Std {{m}} Min bis Sonnenuntergang",
+      "untilSunrise": "{{h}} Std {{m}} Min bis Sonnenaufgang"
+    }
   },
   "addonManager": {
     "title": "Add-on-Manager",

@@ -1109,7 +1109,8 @@
       "fuel": "燃料",
       "summary": "概要",
       "departure": "出発",
-      "livery": "塗装"
+      "livery": "塗装",
+      "conditions": "コンディション"
     },
     "startState": {
       "ready": "準備完了",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "起動 JSON をコピーできませんでした",
       "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を GitHub または Discord で開発者と共有してください。"
     },
-    "weightFuelLabel": "重量と燃料"
+    "weightFuelLabel": "重量と燃料",
+    "conditions": {
+      "untilSunset": "日没まで{{h}}時間{{m}}分",
+      "untilSunrise": "日の出まで{{h}}時間{{m}}分"
+    }
   },
   "addonManager": {
     "title": "アドオンマネージャー",
