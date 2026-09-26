@@ -2,6 +2,139 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.0.0 - 2026-09-26
+
+### Features
+
+- **simbrief:** Let a format pin the filename an addon requires by @marcellogentile([3e94191](https://github.com/lyestarzalt/x-dispatch/commit/3e9419129114818853248e7cc0b55fe9a3ce29c1))
+- **map:** Add ground routing network debug layer by @lyestarzalt([76a1a45](https://github.com/lyestarzalt/x-dispatch/commit/76a1a45d6855164cddff77d1af57fc87a0a3d270))
+- **map:** Light the globe from the sun and add night city lights (#143) by @lyestarzalt([020e4b6](https://github.com/lyestarzalt/x-dispatch/commit/020e4b615ad75d6221eacbf56c0e5509f9df36e6))
+- Flight recorder with trail, landing report, replay and logbook (#145) by @lyestarzalt([d4d805b](https://github.com/lyestarzalt/x-dispatch/commit/d4d805b649e476b28b577b0a19cb2b8424ddb3cc))
+- **map:** Airfield lighting scene from apt.dat light codes by @lyestarzalt([ffb7b2f](https://github.com/lyestarzalt/x-dispatch/commit/ffb7b2fcf307dd191b3c15cc7852a04a7b910755))
+- **map:** Drop amber hold bar fixtures and keep approach lights as plain points by @lyestarzalt([322e65b](https://github.com/lyestarzalt/x-dispatch/commit/322e65b56c5ce3d2fcba7b84a07c24bd18c8b135))
+- **map:** Drop lead-on lights and light the airfield by default by @lyestarzalt([c317649](https://github.com/lyestarzalt/x-dispatch/commit/c317649b119f8f8c6cd78297bb0b100e41d43018))
+- **map:** Ground weather from METAR on the overlay canvas by @lyestarzalt([927d23e](https://github.com/lyestarzalt/x-dispatch/commit/927d23e193eeed0f94dd6da1d1887bfcebf49ada))
+- **map:** Tune ground weather effects and expose the toggle in layers by @lyestarzalt([8ce969f](https://github.com/lyestarzalt/x-dispatch/commit/8ce969f575ecc9d00f036a8629b33286924ec126))
+- **map:** Airfield lights checkbox in the layers overlays menu by @lyestarzalt([fe1b57a](https://github.com/lyestarzalt/x-dispatch/commit/fe1b57a5f14f45a810354f13d55ed03680a20998))
+- **map:** Stands with identity by @lyestarzalt([b3e0216](https://github.com/lyestarzalt/x-dispatch/commit/b3e02161dc3860c2e9f31e7951ceabaced0d718a))
+- **explore:** Add a live weather tab by @lyestarzalt([37370fd](https://github.com/lyestarzalt/x-dispatch/commit/37370fd30365c5bf3f91210d5685061eb6af880c))
+- **traffic:** Stream X-Plane TCAS targets and show them as a Sim Traffic layer by @lyestarzalt([2e01208](https://github.com/lyestarzalt/x-dispatch/commit/2e01208d08a7e3f21e06cba0f1b917e9efa3fea0))
+- **traffic:** Glide markers between snapshots by @lyestarzalt([239cc29](https://github.com/lyestarzalt/x-dispatch/commit/239cc29130daf9c463c0c6b28bb64bfe8b09041b))
+- **map:** Own aircraft as a true-size silhouette with shadow, label and lights by @lyestarzalt([a91760b](https://github.com/lyestarzalt/x-dispatch/commit/a91760b16b9e5dce4327810b791eaef3f08e0dd7))
+- **map:** Keep the own aircraft readable when zoomed out by @lyestarzalt([e65b907](https://github.com/lyestarzalt/x-dispatch/commit/e65b9077b6f476b1e4926a917a2dce7c387d840b))
+- **flightplan:** Plan builder MVP by @lyestarzalt([1f30ee4](https://github.com/lyestarzalt/x-dispatch/commit/1f30ee4d215d4f5476bb9e76b950fa95fad04bc9))
+- **flightplan:** Auto route, apt.dat runways, procedures, smooth turns, redesigned builder by @lyestarzalt([1a76bfd](https://github.com/lyestarzalt/x-dispatch/commit/1a76bfd65f9aa81b9db46cd199c9d9b33fcc7bf6))
+- **flightplan:** Alpha tag, cleaner builder, runway-anchored route line, shared airway names by @lyestarzalt([7e22d25](https://github.com/lyestarzalt/x-dispatch/commit/7e22d25800aa272eef156f459e252d9638be8875))
+- **flightplan:** Fly the departure like a real one, roll, climb, tangent turn onto the first fix by @lyestarzalt([49322d0](https://github.com/lyestarzalt/x-dispatch/commit/49322d0b11102fe6dc1672942d69699da8c35146))
+- **flightplan:** Chart symbols, published altitude constraints and SID turn direction on the map by @lyestarzalt([c4f36e4](https://github.com/lyestarzalt/x-dispatch/commit/c4f36e4a1cdb91388956837b4e16e90bfbac20f0))
+- **flightplan:** Docked live planner panel, spec-correct FMS export, wind runway hint by @lyestarzalt([3e7c3e7](https://github.com/lyestarzalt/x-dispatch/commit/3e7c3e70bc4135ae1f188aae4fa1a3acdca9c27e))
+- **flightplan:** Level bands, procedure joins, terminal and airspace rules, FRA direct legs, alternate and fuel by @lyestarzalt([fb266bc](https://github.com/lyestarzalt/x-dispatch/commit/fb266bc0b2023d21d3aa2ff3d5d5e55cebbaf5e5))
+- **addons:** Switch to move scenery packs across priority tiers by @lyestarzalt([4379700](https://github.com/lyestarzalt/x-dispatch/commit/43797007ab4cf867a5fcab55a7b10ce0efe2cce7))
+- **airport:** Filter procedures to the start runway, shadcn input for cruise altitude by @lyestarzalt([6031797](https://github.com/lyestarzalt/x-dispatch/commit/6031797bebc05c2236c71ff01f144e09a4993531))
+- **flightplan:** Aircraft class selector in the planner header by @lyestarzalt([577202f](https://github.com/lyestarzalt/x-dispatch/commit/577202fc985092c5bd5a8ecce8c564ec123166d2))
+- **flightplan:** Route again when the aircraft class changes by @lyestarzalt([f11d36e](https://github.com/lyestarzalt/x-dispatch/commit/f11d36e0a4aea02f32a0306daacfbaff263ebae7))
+- **flightstrip:** Autopilot targets and NAV1 course by @lyestarzalt([530bc9d](https://github.com/lyestarzalt/x-dispatch/commit/530bc9d7fc2d4ff0ecd1376ad3ca00e03c6051fa))
+- **map:** Navaid and waypoint info card with bearing and distance from the aircraft by @lyestarzalt([d7154a7](https://github.com/lyestarzalt/x-dispatch/commit/d7154a75458aabe4b8fdd1e10160265056201099))
+- **map:** Zoom-scaled navaid and waypoint labels by @lyestarzalt([8eba493](https://github.com/lyestarzalt/x-dispatch/commit/8eba493d536615c213246ace0ffe41fb7b2deec3))
+- **toolbar:** Clock widget with Zulu/local and sim/system source by @lyestarzalt([c7d7b01](https://github.com/lyestarzalt/x-dispatch/commit/c7d7b01b4beb9f4e6eeb59b92a4d82c90e80c5bc))
+- **flightplan:** Oceanic routing with NAT tracks, antimeridian wrap and direct-leg simplification by @lyestarzalt([0f507e4](https://github.com/lyestarzalt/x-dispatch/commit/0f507e41e4a473a41e83343911550d3844fb7a5d))
+- **map:** Solid flight pictogram for stand markers by @lyestarzalt([5d52568](https://github.com/lyestarzalt/x-dispatch/commit/5d52568c7fa822b6abd3f671879b7eca14e4d14f))
+- **launcher:** Conditions card and loading gauge in the flight setup panel by @lyestarzalt([e5cc609](https://github.com/lyestarzalt/x-dispatch/commit/e5cc609d50198e0d1508c4df8f71bec168f7065e))
+- **launcher:** Show the add-on studio in the aircraft list by @lyestarzalt([b4c38b5](https://github.com/lyestarzalt/x-dispatch/commit/b4c38b5f6089b2dbe1f245e7d4c432274a8b6904))
+
+### Bug Fixes
+
+- **log:** Parse Windows CRLF Log.txt correctly by @lyestarzalt([a39ead0](https://github.com/lyestarzalt/x-dispatch/commit/a39ead066c9cc5deb21273a5a3d762104c33d91e))
+- **scripts:** Make the drizzle migration check work on Windows by @lyestarzalt([a358898](https://github.com/lyestarzalt/x-dispatch/commit/a3588987965183effe85085006766fd017799e9c))
+- **sentry:** Ignore transient QUIC network errors by @lyestarzalt([1e79995](https://github.com/lyestarzalt/x-dispatch/commit/1e79995aea0a95c450d7e78ecc9b15b1dba173dc))
+- **sentry:** Fingerprint process-gone events by what actually died by @lyestarzalt([235180b](https://github.com/lyestarzalt/x-dispatch/commit/235180b5e8372ed46cd6a1b533aaf400482fdfe1))
+- **sentry:** Drop disk-full reports in beforeSend by @lyestarzalt([10b68ac](https://github.com/lyestarzalt/x-dispatch/commit/10b68ac94211574dce48edd47b4299cbf42da356))
+- **launcher:** Classify launch failures instead of leaking raw errnos by @lyestarzalt([f7ee32d](https://github.com/lyestarzalt/x-dispatch/commit/f7ee32da4d1dd7cd87e06a7b0a36ba8d387565e2))
+- **tile-cache:** Write the manifest atomically and retry on file locks by @lyestarzalt([617b0c0](https://github.com/lyestarzalt/x-dispatch/commit/617b0c0747f913be61b9612b30ab65e314c78e49))
+- **simbrief:** Keep the file extension on FMS links with a --TAG suffix by @marcellogentile([7c0e00b](https://github.com/lyestarzalt/x-dispatch/commit/7c0e00bbd019a54670b67161d4afc6e7508f80d3))
+- **companion-apps:** Explain why .bat and .cmd cannot be launched by @lyestarzalt([7ffff96](https://github.com/lyestarzalt/x-dispatch/commit/7ffff9649a615acf70ac71487e2137c004efec44))
+- **map:** Clear mapRef on teardown so dead-map guards actually fire by @lyestarzalt([6492c4f](https://github.com/lyestarzalt/x-dispatch/commit/6492c4f678011274f29aceccbf77a7f987cd3bf5))
+- **map:** Disable day/night layer until nightlayer supports maplibre v6 by @lyestarzalt([0bed477](https://github.com/lyestarzalt/x-dispatch/commit/0bed47732611af6548d2c3b1190afb69731c788e))
+- **dialogs:** Seed defaultPath for file pickers (#139) by @lyestarzalt([3590288](https://github.com/lyestarzalt/x-dispatch/commit/35902887873cc14520e057a101c91a97046ea75d))
+- **main:** Restore DevTools access in dev builds by @lyestarzalt([dc107df](https://github.com/lyestarzalt/x-dispatch/commit/dc107df9e45bac6bd944d7683153bbaa8e41a304))
+- **ui:** Keep the title bar visible above full-screen dialogs by @lyestarzalt([c84aa6d](https://github.com/lyestarzalt/x-dispatch/commit/c84aa6df0601e7248829a905823d4adeed49f67e))
+- **map:** Restyle the landing card as a strip in the flight strip's design by @lyestarzalt([adfbafb](https://github.com/lyestarzalt/x-dispatch/commit/adfbafbcc5616821b63fbc2424e0bfb5d92cdf23))
+- **flights:** Keep flights across stream restarts, movable landing card, clipboard image copy by @lyestarzalt([27511f2](https://github.com/lyestarzalt/x-dispatch/commit/27511f269fd6ea91121f044b6785af5c786bbea2))
+- **ui:** Show alert dialogs above full-screen dialogs by @lyestarzalt([504e6cf](https://github.com/lyestarzalt/x-dispatch/commit/504e6cfe474946d863930390f730a5823b6bd626))
+- **map:** Load the maplibre worker in packaged builds by @lyestarzalt([01b4c7a](https://github.com/lyestarzalt/x-dispatch/commit/01b4c7a98881e6e66b79d662073d46442d73a1e7))
+- **map:** Keep zoom at the top of the fixture radius expression by @lyestarzalt([a52eb64](https://github.com/lyestarzalt/x-dispatch/commit/a52eb64dca037c651b74d73ad0961fd5a8cb48bd))
+- **xplane:** Reconnect within seconds and re-resolve dataref ids after a restart by @lyestarzalt([d9a5898](https://github.com/lyestarzalt/x-dispatch/commit/d9a589884a2cfd1e6b69054a20d438a99fafd310))
+- **map:** Blank ground weather while the camera moves by @lyestarzalt([850b1f4](https://github.com/lyestarzalt/x-dispatch/commit/850b1f415097642793145f2fec4d41d9a5c09410))
+- **map:** Draw snow and fog on a clean canvas by @lyestarzalt([3f8f390](https://github.com/lyestarzalt/x-dispatch/commit/3f8f390890ec726e8d4cbe3f66a0718d40a269d7))
+- **map:** Remove ground-weather overlays when disabled by @lyestarzalt([4fdb458](https://github.com/lyestarzalt/x-dispatch/commit/4fdb458b3e2b6d193f4c579ab062f2748679cad4))
+- **launcher:** Use explicit speed for custom air starts by @lyestarzalt([ea61e39](https://github.com/lyestarzalt/x-dispatch/commit/ea61e39cd9bb99c7d33d402ac128215c3f65b676))
+- **launcher:** Count flight dates from January 1 as day zero by @lyestarzalt([384ad25](https://github.com/lyestarzalt/x-dispatch/commit/384ad25ba7e9c27299e9b8d58df2fe69dcc6db5e))
+- **launcher:** Reject invalid flight payloads before sending to X-Plane by @lyestarzalt([58b19fd](https://github.com/lyestarzalt/x-dispatch/commit/58b19fda74cb3c541f6be8788a42f36380c008de))
+- **launcher:** Check X-Plane's flight result before reporting success by @lyestarzalt([dcaead3](https://github.com/lyestarzalt/x-dispatch/commit/dcaead37f722080f74a9c789cb490aa1929700e6))
+- Migrate Tailwind PostCSS setup by @lyestarzalt([4de1fff](https://github.com/lyestarzalt/x-dispatch/commit/4de1fff9c1334d8489ace564f16b2b7ef67be134))
+- Preserve MapLibre container height by @lyestarzalt([c4b3ad2](https://github.com/lyestarzalt/x-dispatch/commit/c4b3ad230082edb9bbc42cf8c3e67e8b2542a0f2))
+- Migrate solar calculations to SunCalc 2 by @lyestarzalt([1780b68](https://github.com/lyestarzalt/x-dispatch/commit/1780b684733b1ce2d4f18b6768c1e832334cee46))
+- Stabilize parsed ATIS runways by @lyestarzalt([1d68628](https://github.com/lyestarzalt/x-dispatch/commit/1d686288ac000f8eaae3a4c3915ed5fb57ecb2c7))
+- Keep tooltips clear of the title bar by @lyestarzalt([fe6bc54](https://github.com/lyestarzalt/x-dispatch/commit/fe6bc54c3357f77214cc475159367366a5b17516))
+- **flightplan:** Put fly-by arc centre on the right side of the corner by @lyestarzalt([2331351](https://github.com/lyestarzalt/x-dispatch/commit/2331351cc224100d70925179075cdbf5990f4f0f))
+- **addons:** Drop the alpha badge and add discard for a pending scenery order by @lyestarzalt([81e5a1d](https://github.com/lyestarzalt/x-dispatch/commit/81e5a1d77ee5df42fb15834a54168a6495a37a96))
+- **flightplan:** Draw procedure legs by type, keep procedure fixes out of NUMENR, always write CYCLE by @lyestarzalt([4994c5b](https://github.com/lyestarzalt/x-dispatch/commit/4994c5b22fafcaa4d96d674d3119ede7432e50d4))
+- **procedures:** Keep the runway of single-runway SIDs and STARs, read leg course and distance from the right columns by @lyestarzalt([02ac709](https://github.com/lyestarzalt/x-dispatch/commit/02ac709d447af3a4753ab0ef8407444fb9c1eea8))
+- **procedures:** Read CIFP route types per ARINC 424 and emit one variant per runway and transition by @lyestarzalt([3fde314](https://github.com/lyestarzalt/x-dispatch/commit/3fde314f680f0a99a39b16bd806b882db9249bc4))
+- **map:** Register navaid click handling on every map instance by @lyestarzalt([5bbe452](https://github.com/lyestarzalt/x-dispatch/commit/5bbe452eb8b75a3ebe8eff0354cc141d56890530))
+- **flight-strip:** Declutter tracking strip layout by @lyestarzalt([96d7ea1](https://github.com/lyestarzalt/x-dispatch/commit/96d7ea1caf0447e6c2e6cdb8ffb4a6e23ed015e6))
+- **map:** Stop labelling a fix twice when a procedure overlaps the flight plan by @lyestarzalt([3b81c06](https://github.com/lyestarzalt/x-dispatch/commit/3b81c06abc0b3b4c01f4bff8e75a5cac76fa5122))
+- **flightplan:** Resolve long airways and NAT tracks fix by fix, scale ident lookup by latitude by @lyestarzalt([1d4d6ef](https://github.com/lyestarzalt/x-dispatch/commit/1d4d6efae7caf360f0b039553db3d6b2d018bab9))
+- **tracker:** Ride out X-Plane stalls without dropping the link by @lyestarzalt([d8816f2](https://github.com/lyestarzalt/x-dispatch/commit/d8816f2f0674a5e543e7719b47b02be896d8fc2d))
+
+### Performance
+
+- **map:** Stop idle repaints and per-frame UI re-renders (#140) by @lyestarzalt([fe351f5](https://github.com/lyestarzalt/x-dispatch/commit/fe351f504b48e45123d98fdf51de5fdce02b5bd0))
+- **airport:** Draw taxiways from the pavement source and fix pavement rings (#142) by @lyestarzalt([4db96b3](https://github.com/lyestarzalt/x-dispatch/commit/4db96b3c2678d6314bba2f696a6b9f122a4dcada))
+- **map:** Draw airfield fixtures as circle pairs and wake strobes only on flash edges by @lyestarzalt([822eb19](https://github.com/lyestarzalt/x-dispatch/commit/822eb1990baa4757c7b5626cbbc7d118fac635b9))
+- **map:** Approach light rabbit paints only on change with sprite glows by @lyestarzalt([83a0232](https://github.com/lyestarzalt/x-dispatch/commit/83a023293d93ab8aec952ce3e537c0ae9ea8aec7))
+
+### Documentation
+
+- Update CHANGELOG.md for v1.9.2 by @github-actions[bot](<[3238d81](https://github.com/lyestarzalt/x-dispatch/commit/3238d81b1430a7074e4f400cdb39e8e1f34f7710)>)
+- Remove duplicate v1.9.2 changelog header by @lyestarzalt([f78c83c](https://github.com/lyestarzalt/x-dispatch/commit/f78c83cb90495572e494707c1ba02acfe517089c))
+- **readme:** Add flight recording, landing detection, and night city lights features by @lyestarzalt([00dd898](https://github.com/lyestarzalt/x-dispatch/commit/00dd898b22941499c58717e1140a36283b5d9577))
+
+### Styling
+
+- Apply updated Prettier formatting by @lyestarzalt([7e35b52](https://github.com/lyestarzalt/x-dispatch/commit/7e35b5237d2b2b68ff6f57fbac9fbf44c8ccf3ef))
+
+### Miscellaneous
+
+- **test:** Stub platform in the isElevated cache tests by @lyestarzalt([e9c23e0](https://github.com/lyestarzalt/x-dispatch/commit/e9c23e05776299edad597ed788a667e322fbab90))
+- Normalize line endings to LF via .gitattributes by @lyestarzalt([12df726](https://github.com/lyestarzalt/x-dispatch/commit/12df726289e8c81cb575ad3a70114e4535e803cc))
+- **deps:** Upgrade maplibre-gl to v6.10.0 by @lyestarzalt([84566e8](https://github.com/lyestarzalt/x-dispatch/commit/84566e8b369f351076d1756d173d50b7fbe84492))
+- **deps:** Dependency refresh and Electron 44 (#138) by @lyestarzalt([c38d1d8](https://github.com/lyestarzalt/x-dispatch/commit/c38d1d88b2f2e204355a7b183a4adb6f6c31fa9c))
+- **deps:** Upgrade vite to v8 (#141) by @lyestarzalt([8df8592](https://github.com/lyestarzalt/x-dispatch/commit/8df8592ac6713fda2da8c7235686e10653f29264))
+- Update dependencies by @lyestarzalt([1ccdf72](https://github.com/lyestarzalt/x-dispatch/commit/1ccdf72dd6693105b050a49a21f68756a2c753a0))
+- Forward renderer console logs by @lyestarzalt([2449437](https://github.com/lyestarzalt/x-dispatch/commit/24494378cb88d8d56b138376c0fecb5602325c87))
+- Migrate Vitest config to ESM by @lyestarzalt([f0f522c](https://github.com/lyestarzalt/x-dispatch/commit/f0f522c63a1d264737e40dcba4b3335b27974a3d))
+- Enforce formatting in pre-commit hook by @lyestarzalt([54e8359](https://github.com/lyestarzalt/x-dispatch/commit/54e83596453b5ec1fc3ae80afd69ec9d8dd37490))
+
+### CI/CD
+
+- Gate version commit on successful builds by @lyestarzalt([414ac0b](https://github.com/lyestarzalt/x-dispatch/commit/414ac0b7531993df2a4568212102e54b12ac72c0))
+- Remove one-off v1.9.2 re-release workflow by @lyestarzalt([1d4f74a](https://github.com/lyestarzalt/x-dispatch/commit/1d4f74af447a58a0f682e952343b4ffef710fa12))
+- Pin windows runner to windows-2022 for rc and rebuild by @lyestarzalt([e4e8177](https://github.com/lyestarzalt/x-dispatch/commit/e4e817794aff32a68e0a3a35faa6915caec22b4e))
+- Add throwaway windows build smoke test by @lyestarzalt([3e0936d](https://github.com/lyestarzalt/x-dispatch/commit/3e0936db8495e2707af5ad12c178ab2a2f738902))
+- Remove throwaway windows build smoke test by @lyestarzalt([42395d2](https://github.com/lyestarzalt/x-dispatch/commit/42395d2314ae77b7eb982fa09edb55f3ada73a7a))
+- Fix rc release download links by @lyestarzalt([597900e](https://github.com/lyestarzalt/x-dispatch/commit/597900ee020880c7473751c172fb67f556d1b6b0))
+- Mint the website sync token from a github app by @lyestarzalt([f66bcb4](https://github.com/lyestarzalt/x-dispatch/commit/f66bcb45b4f0f8e753c8f3065f2d1ff15016ecea))
+- Drop narrating comment from the sync token step by @lyestarzalt([73e2144](https://github.com/lyestarzalt/x-dispatch/commit/73e214491ac4e8a1a28f0be3cd431ed0bbedf62a))
+
+### Release
+
+- 2.0.0 by @github-actions[bot](<[dc20036](https://github.com/lyestarzalt/x-dispatch/commit/dc20036c8e1b2b4d914f149fd2b224ed6d0acc2b)>)
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
 ## v1.9.2 - 2026-06-23
 
 ### Bug Fixes
@@ -1231,4 +1364,5 @@ All notable changes to this project will be documented in this file.
 
 - @github-actions[bot] made their first contribution
 - @lyestarzalt made their first contribution
+
 <!-- generated by git-cliff -->
