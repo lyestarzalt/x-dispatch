@@ -1109,7 +1109,8 @@
       "fuel": "Fuel",
       "summary": "Summary",
       "departure": "Departure",
-      "livery": "Livery"
+      "livery": "Livery",
+      "conditions": "Conditions"
     },
     "startState": {
       "ready": "Ready",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Couldn't copy launch JSON",
       "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on GitHub or Discord."
     },
-    "weightFuelLabel": "Weight & Fuel"
+    "weightFuelLabel": "Weight & Fuel",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m until sunset",
+      "untilSunrise": "{{h}}h {{m}}m until sunrise"
+    }
   },
   "addonManager": {
     "title": "Add-on Manager",

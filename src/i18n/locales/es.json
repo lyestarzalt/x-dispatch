@@ -1109,7 +1109,8 @@
       "fuel": "Combustible",
       "summary": "Resumen",
       "departure": "Salida",
-      "livery": "Librea"
+      "livery": "Librea",
+      "conditions": "Condiciones"
     },
     "startState": {
       "ready": "Listo",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "No se pudo copiar el JSON de inicio",
       "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en GitHub o Discord."
     },
-    "weightFuelLabel": "Peso y combustible"
+    "weightFuelLabel": "Peso y combustible",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m hasta el atardecer",
+      "untilSunrise": "{{h}}h {{m}}m hasta el amanecer"
+    }
   },
   "addonManager": {
     "title": "Gestor de complementos",

@@ -1109,7 +1109,8 @@
       "fuel": "Paliwo",
       "summary": "Podsumowanie",
       "departure": "Odlot",
-      "livery": "Malowanie"
+      "livery": "Malowanie",
+      "conditions": "Warunki"
     },
     "startState": {
       "ready": "Gotowy",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Nie udało się skopiować JSON uruchomienia",
       "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na GitHubie lub Discordzie."
     },
-    "weightFuelLabel": "Masa i paliwo"
+    "weightFuelLabel": "Masa i paliwo",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m do zachodu słońca",
+      "untilSunrise": "{{h}}h {{m}}m do wschodu słońca"
+    }
   },
   "addonManager": {
     "title": "Menedżer dodatków",

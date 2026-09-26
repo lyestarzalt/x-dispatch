@@ -1,22 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ChevronRight,
-  Clock,
-  Cloud,
-  CloudFog,
-  CloudLightning,
-  CloudRain,
-  CloudSnow,
-  CloudSun,
-  Globe,
-  Power,
-  PowerOff,
-  Radio,
-  Settings2,
-  Sun,
-  Weight,
-} from 'lucide-react';
+import { ChevronRight, Power, PowerOff, Weight } from 'lucide-react';
 import tzLookup from 'tz-lookup';
 import { AirStartSpeedInput } from '@/components/AirStartSpeedInput';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -32,9 +16,8 @@ import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '../types';
-import { WEATHER_OPTIONS } from '../types';
 import { getWeatherSummary } from '../weatherTypes';
-import { SunArc } from './SunArc';
+import { ConditionsCard } from './ConditionsCard';
 import { WeatherDialog } from './WeatherDialog';
 import { WeightBalanceDialog } from './WeightBalanceDialog';
 
@@ -45,15 +28,9 @@ interface FlightConfigProps {
   aircraftList: Aircraft[];
 }
 
-const WEATHER_ICONS: Record<string, typeof Sun> = {
-  real: Globe,
-  clear: Sun,
-  cloudy: CloudSun,
-  rainy: CloudRain,
-  stormy: CloudLightning,
-  snowy: CloudSnow,
-  foggy: CloudFog,
-};
+/** Choice buttons: a visible border and shadow so they read as pressable, primary when on. */
+const CHOICE =
+  'border-border/60 bg-secondary/40 border shadow-sm hover:border-border hover:bg-secondary hover:text-foreground data-[state=on]:border-primary data-[state=on]:bg-primary/15 data-[state=on]:text-primary';
 
 function getTimezoneOffset(timezone: string): string {
   try {
@@ -159,7 +136,15 @@ export function FlightConfig({
       const airportHours = parseInt(airportTimeStr.split(':')[0] ?? '0', 10);
       const isDay = airportHours >= 6 && airportHours < 18;
 
-      return { airportTimeStr, airportDateStr, utcTimeStr, offset, isDay };
+      const hours = airportHours + parseInt(airportTimeStr.split(':')[1] ?? '0', 10) / 60;
+      return {
+        hours,
+        timeStr: airportTimeStr,
+        dateStr: airportDateStr,
+        utcStr: utcTimeStr,
+        offset,
+        isDay,
+      };
     } catch {
       return null;
     }
@@ -179,9 +164,6 @@ export function FlightConfig({
     };
   }, [selectedAircraft, tankPercentages, payloadWeights]);
 
-  const weightPct = selectedAircraft?.maxWeight
-    ? Math.min(100, (totalWeight / selectedAircraft.maxWeight) * 100)
-    : 0;
   const isOverweight = selectedAircraft ? totalWeight > selectedAircraft.maxWeight : false;
 
   // Derive weather toggle value
@@ -193,110 +175,27 @@ export function FlightConfig({
         : 'custom';
 
   return (
-    <div className="border-border/50 bg-card flex w-72 min-w-[260px] shrink-0 flex-col border-l lg:w-80">
+    <div className="border-border/50 bg-card flex w-[22rem] min-w-[320px] shrink-0 flex-col border-l lg:w-[24rem]">
       <div className="flex-shrink-0 px-4 py-3">
         <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-auto px-4 pb-4">
-        {/* ── Time of Day ────────────────────────────────── */}
-        <section className="space-y-2">
-          <Label className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4" />
-            {t('launcher.config.timeOfDay')}
-          </Label>
-
-          <ToggleGroup
-            type="single"
-            variant="subtle"
-            value={useRealWorldTime ? 'live' : 'set'}
-            onValueChange={(v) => {
-              if (v) setUseRealWorldTime(v === 'live');
-            }}
-            className="grid grid-cols-2 gap-1.5"
-          >
-            <ToggleGroupItem value="live" className="h-auto gap-1.5 px-2 py-2 text-sm">
-              <Radio className="h-4 w-4" />
-              <span>{t('launcher.time.live')}</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="set" className="h-auto gap-1.5 px-2 py-2 text-sm">
-              <Clock className="h-4 w-4" />
-              <span>{t('launcher.time.set')}</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-
-          {useRealWorldTime && airportTimeInfo && (
-            <div className="text-foreground text-center font-mono text-lg">
-              {airportTimeInfo.airportTimeStr}
-              <span className="text-muted-foreground ml-2 text-xs">{airportTimeInfo.offset}</span>
-            </div>
-          )}
-
-          {!useRealWorldTime && airportCoords && (
-            <SunArc
-              timeOfDay={timeOfDay}
-              latitude={airportCoords.latitude}
-              longitude={airportCoords.longitude}
-              onTimeChange={setTimeOfDay}
-            />
-          )}
-        </section>
-
-        {/* ── Weather ────────────────────────────────────── */}
-        <section className="space-y-2">
-          <Label className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Cloud className="h-4 w-4" />
-            {t('launcher.config.weather')}
-          </Label>
-
-          <ToggleGroup
-            type="single"
-            variant="subtle"
-            value={weatherValue}
-            onValueChange={(v) => {
-              if (!v) return;
-              if (v === 'custom') {
-                setWeatherDialogOpen(true);
-              } else {
-                setWeatherPreset(v);
-              }
-            }}
-            className="grid grid-cols-4 gap-1.5"
-          >
-            {WEATHER_OPTIONS.map((weather) => {
-              const Icon = WEATHER_ICONS[weather] || Cloud;
-              return (
-                <ToggleGroupItem
-                  key={weather}
-                  value={weather}
-                  className="h-auto min-w-0 flex-col gap-1 px-1 py-2 text-xs"
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="w-full truncate text-center">
-                    {t(`launcher.weather.${weather}`)}
-                  </span>
-                </ToggleGroupItem>
-              );
-            })}
-            <ToggleGroupItem
-              value="custom"
-              onClick={() => setWeatherDialogOpen(true)}
-              className="h-auto min-w-0 flex-col gap-1 px-1 py-2 text-xs"
-            >
-              <Settings2 className="h-4 w-4 shrink-0" />
-              <span className="w-full truncate text-center">
-                {t('launcher.weatherModal.custom')}
-              </span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-
-          {/* Summary line when customized */}
-          {weatherConfig.mode === 'custom' && (
-            <span className="text-muted-foreground block font-mono text-xs">
-              {getWeatherSummary(weatherConfig)}
-            </span>
-          )}
-        </section>
+      <div className="flex-1 space-y-4 overflow-auto px-4 pt-1 pb-4">
+        <ConditionsCard
+          coords={airportCoords}
+          timeOfDay={timeOfDay}
+          live={airportTimeInfo}
+          useRealWorldTime={useRealWorldTime}
+          onModeChange={setUseRealWorldTime}
+          onTimeChange={setTimeOfDay}
+          weatherValue={weatherValue}
+          onWeatherChange={(v) => {
+            if (v === 'custom') setWeatherDialogOpen(true);
+            else setWeatherPreset(v);
+          }}
+          customSummary={weatherConfig.mode === 'custom' ? getWeatherSummary(weatherConfig) : null}
+          metarIcao={startPosition?.airport ?? selectedAirportData?.id ?? null}
+        />
 
         {/* ── Weight & Fuel ──────────────────────────────── */}
         <section className="space-y-2">
@@ -318,42 +217,51 @@ export function FlightConfig({
           </div>
           {selectedAircraft && (
             <>
-              {/* Weight bar */}
-              <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+              {/* Loading gauge: empty, payload and fuel stacked against the maximum weight */}
+              <div className="bg-muted flex h-2.5 w-full overflow-hidden rounded-full">
                 <div
-                  className={cn(
-                    'h-full rounded-full transition-all',
-                    isOverweight ? 'bg-destructive' : 'bg-primary'
-                  )}
-                  style={{ width: `${weightPct}%` }}
+                  className="bg-muted-foreground/40 h-full"
+                  style={{
+                    width: `${(selectedAircraft.emptyWeight / selectedAircraft.maxWeight) * 100}%`,
+                  }}
+                />
+                <div
+                  className="bg-success h-full"
+                  style={{ width: `${(totalPayloadLbs / selectedAircraft.maxWeight) * 100}%` }}
+                />
+                <div
+                  className={cn('h-full', isOverweight ? 'bg-destructive' : 'bg-primary')}
+                  style={{ width: `${(totalFuelLbs / selectedAircraft.maxWeight) * 100}%` }}
                 />
               </div>
-              {/* Numbers */}
               <div className="flex items-baseline justify-between">
                 <span
                   className={cn(
-                    'font-mono text-sm font-medium',
+                    'font-mono text-xl font-semibold tabular-nums',
                     isOverweight ? 'text-destructive' : 'text-foreground'
                   )}
                 >
                   {formatWeight(totalWeight, weightUnit)}
                 </span>
                 <span className="text-muted-foreground font-mono text-xs">
-                  / {formatWeight(selectedAircraft.maxWeight, weightUnit)}
+                  {t('launcher.aircraft.maxWeight')}{' '}
+                  {formatWeight(selectedAircraft.maxWeight, weightUnit)}
                 </span>
               </div>
-              {/* Fuel + Payload breakdown */}
               <div className="text-muted-foreground flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1">
                   <span className="bg-primary inline-block h-1.5 w-1.5 rounded-full" />
-                  {formatWeight(totalFuelLbs, weightUnit)}
+                  {t('launcher.config.fuel')} {formatWeight(totalFuelLbs, weightUnit)}
                 </span>
-                {totalPayloadLbs > 0 && (
-                  <span className="flex items-center gap-1">
-                    <span className="bg-success inline-block h-1.5 w-1.5 rounded-full" />
-                    {formatWeight(totalPayloadLbs, weightUnit)}
-                  </span>
-                )}
+                <span className="flex items-center gap-1">
+                  <span className="bg-success inline-block h-1.5 w-1.5 rounded-full" />
+                  {t('weightBalance.payload')} {formatWeight(totalPayloadLbs, weightUnit)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="bg-muted-foreground/40 inline-block h-1.5 w-1.5 rounded-full" />
+                  {t('launcher.aircraft.emptyWeight')}{' '}
+                  {formatWeight(selectedAircraft.emptyWeight, weightUnit)}
+                </span>
               </div>
             </>
           )}
@@ -367,18 +275,23 @@ export function FlightConfig({
           </Label>
           <ToggleGroup
             type="single"
-            variant="subtle"
             value={coldAndDark ? 'cold' : 'ready'}
             onValueChange={(v) => {
               if (v) setColdAndDark(v === 'cold');
             }}
             className="grid grid-cols-2 gap-1.5"
           >
-            <ToggleGroupItem value="ready" className="h-auto gap-1.5 px-2 py-2 text-sm">
+            <ToggleGroupItem
+              value="ready"
+              className={cn('h-auto gap-1.5 px-2 py-2 text-sm', CHOICE)}
+            >
               <Power className="h-4 w-4" />
               <span>{t('launcher.startState.ready')}</span>
             </ToggleGroupItem>
-            <ToggleGroupItem value="cold" className="h-auto gap-1.5 px-2 py-2 text-sm">
+            <ToggleGroupItem
+              value="cold"
+              className={cn('h-auto gap-1.5 px-2 py-2 text-sm', CHOICE)}
+            >
               <PowerOff className="h-4 w-4" />
               <span>{t('launcher.startState.cold')}</span>
             </ToggleGroupItem>

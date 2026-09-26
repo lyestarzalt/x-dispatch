@@ -1109,7 +1109,8 @@
       "fuel": "Топливо",
       "summary": "Сводка",
       "departure": "Вылет",
-      "livery": "Ливрея"
+      "livery": "Ливрея",
+      "conditions": "Условия"
     },
     "startState": {
       "ready": "Готов",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Не удалось скопировать JSON запуска",
       "shareHint": "Проблема с полётом? Нажмите на значок копирования, чтобы поделиться деталями с разработчиком в GitHub или Discord."
     },
-    "weightFuelLabel": "Масса и топливо"
+    "weightFuelLabel": "Масса и топливо",
+    "conditions": {
+      "untilSunset": "{{h}}ч {{m}}м до заката",
+      "untilSunrise": "{{h}}ч {{m}}м до рассвета"
+    }
   },
   "addonManager": {
     "title": "Менеджер дополнений",

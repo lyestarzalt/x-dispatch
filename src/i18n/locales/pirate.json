@@ -1109,7 +1109,8 @@
       "fuel": "Fuel Stores",
       "summary": "Voyage Summary",
       "departure": "Departure Berth",
-      "livery": "Paint Scheme"
+      "livery": "Paint Scheme",
+      "conditions": "Conditions"
     },
     "startState": {
       "ready": "Ready fer departure",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Couldn't pilfer the launch JSON, blast it",
       "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on GitHub or Discord."
     },
-    "weightFuelLabel": "Heft & Grog"
+    "weightFuelLabel": "Heft & Grog",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m till sundown",
+      "untilSunrise": "{{h}}h {{m}}m till sunup"
+    }
   },
   "addonManager": {
     "title": "Addon Quartermaster",

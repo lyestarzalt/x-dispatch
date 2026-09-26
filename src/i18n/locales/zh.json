@@ -1109,7 +1109,8 @@
       "fuel": "燃油",
       "summary": "摘要",
       "departure": "出发",
-      "livery": "涂装"
+      "livery": "涂装",
+      "conditions": "条件"
     },
     "startState": {
       "ready": "就绪",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "无法复制启动 JSON",
       "shareHint": "飞行遇到问题？点击复制图标，把详细信息发给 GitHub 或 Discord 上的开发者。"
     },
-    "weightFuelLabel": "重量与燃油"
+    "weightFuelLabel": "重量与燃油",
+    "conditions": {
+      "untilSunset": "距日落 {{h}} 小时 {{m}} 分",
+      "untilSunrise": "距日出 {{h}} 小时 {{m}} 分"
+    }
   },
   "addonManager": {
     "title": "附加组件管理器",

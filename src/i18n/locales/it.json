@@ -1109,7 +1109,8 @@
       "fuel": "Carburante",
       "summary": "Riepilogo",
       "departure": "Partenza",
-      "livery": "Livrea"
+      "livery": "Livrea",
+      "conditions": "Condizioni"
     },
     "startState": {
       "ready": "Pronto",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Impossibile copiare il JSON di avvio",
       "shareHint": "Problemi con un volo? Fai clic sull'icona di copia per condividere i dettagli con lo sviluppatore su GitHub o Discord."
     },
-    "weightFuelLabel": "Peso e carburante"
+    "weightFuelLabel": "Peso e carburante",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m al tramonto",
+      "untilSunrise": "{{h}}h {{m}}m all'alba"
+    }
   },
   "addonManager": {
     "title": "Gestore add-on",

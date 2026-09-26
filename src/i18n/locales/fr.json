@@ -1109,7 +1109,8 @@
       "fuel": "Carburant",
       "summary": "Résumé",
       "departure": "Départ",
-      "livery": "Livrée"
+      "livery": "Livrée",
+      "conditions": "Conditions"
     },
     "startState": {
       "ready": "Prêt",
@@ -1272,7 +1273,11 @@
       "copyJsonError": "Impossible de copier le JSON de lancement",
       "shareHint": "Un problème avec un vol ? Cliquez sur l'icône de copie pour partager les détails avec le développeur sur GitHub ou Discord."
     },
-    "weightFuelLabel": "Masse & carburant"
+    "weightFuelLabel": "Masse & carburant",
+    "conditions": {
+      "untilSunset": "{{h}}h {{m}}m avant le coucher du soleil",
+      "untilSunrise": "{{h}}h {{m}}m avant le lever du soleil"
+    }
   },
   "addonManager": {
     "title": "Gestionnaire d'extensions",
