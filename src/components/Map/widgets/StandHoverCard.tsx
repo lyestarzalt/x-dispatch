@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, useMotionValue, useSpring } from 'motion/react';
+import type { StandHover } from '@/lib/airports/standIdentity';
 import { STAND_TINT, WIDTH_CODE_WINGSPAN_M, airlineName } from '@/lib/airports/standIdentity';
+import { cursorFollowSpring, quickFade } from '@/lib/motionPresets';
 import { useStandHoverStore } from '@/stores/standHoverStore';
 
 const MAX_AIRLINES = 6;
@@ -8,18 +12,36 @@ const SEPARATOR = ' · ';
 
 /** Small card following the cursor over a stand with its size, operator and airlines. */
 export default function StandHoverCard() {
-  const { t } = useTranslation();
   const hover = useStandHoverStore((s) => s.hover);
   if (!hover) return null;
+  return <Card hover={hover} />;
+}
+
+function Card({ hover }: { hover: StandHover }) {
+  const { t } = useTranslation();
+
+  // Position lives in MotionValues: the spring runs on Motion's frameloop and
+  // writes a compositor transform, so cursor moves never touch layout.
+  const targetX = useMotionValue(hover.x + CURSOR_OFFSET_PX);
+  const targetY = useMotionValue(hover.y + CURSOR_OFFSET_PX);
+  const x = useSpring(targetX, cursorFollowSpring);
+  const y = useSpring(targetY, cursorFollowSpring);
+  useEffect(() => {
+    targetX.set(hover.x + CURSOR_OFFSET_PX);
+    targetY.set(hover.y + CURSOR_OFFSET_PX);
+  }, [hover.x, hover.y, targetX, targetY]);
 
   const wingspan = hover.widthCode ? WIDTH_CODE_WINGSPAN_M[hover.widthCode] : undefined;
   const airlines = hover.airlines.slice(0, MAX_AIRLINES);
   const more = hover.airlines.length - airlines.length;
 
   return (
-    <div
-      className="border-border bg-background/90 pointer-events-none absolute z-30 w-56 rounded-md border p-2.5 text-xs shadow-lg backdrop-blur"
-      style={{ left: hover.x + CURSOR_OFFSET_PX, top: hover.y + CURSOR_OFFSET_PX }}
+    <motion.div
+      className="border-border bg-background/90 pointer-events-none absolute top-0 left-0 z-30 w-56 rounded-md border p-2.5 text-xs shadow-lg backdrop-blur"
+      style={{ x, y }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={quickFade}
     >
       <div className="flex items-center gap-2">
         <span
@@ -59,6 +81,6 @@ export default function StandHoverCard() {
         </div>
       )}
       <div className="text-muted-foreground mt-2 text-[10px]">{t('stands.clickToStart')}</div>
-    </div>
+    </motion.div>
   );
 }

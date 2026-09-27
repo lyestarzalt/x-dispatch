@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Crosshair, Plane } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
+import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
@@ -88,8 +90,6 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
   const followPlane = useMapStore((s) => s.followPlane);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } = useStripDrag();
 
-  if (!connected) return null;
-
   const handleCenter = () => {
     if (hasDragged.current) return;
     onCenterPlane();
@@ -98,134 +98,154 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
   const isDefault = position === null;
 
   return (
-    <div
-      ref={stripRef}
-      className={cn(
-        'z-20 select-none',
-        isDefault && 'absolute bottom-4 left-1/2 -translate-x-1/2',
-        !isDefault && 'fixed'
-      )}
-      style={!isDefault ? { left: position.x, top: position.y } : undefined}
-      onMouseDown={handleMouseDown}
-      onDoubleClick={handleDoubleClick}
-    >
-      <div
-        className={cn(
-          'flex items-center rounded-xl border',
-          'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
-          'backdrop-blur-xl',
-          'cursor-grab active:cursor-grabbing'
-        )}
-      >
-        {/* Status indicator */}
-        <div className="flex items-center gap-1.5 px-3 py-2">
-          <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
-          <Plane className="text-primary h-3.5 w-3.5" />
-          {(planeState?.icaoType || planeState?.tailNumber) && (
-            <div
-              className="flex flex-col leading-tight"
-              title={planeState?.aircraftName || undefined}
-            >
-              <span className="text-foreground font-mono text-[11px] font-medium">
-                {planeState?.icaoType}
-              </span>
-              <span className="text-muted-foreground font-mono text-[10px]">
-                {planeState?.tailNumber}
-              </span>
-            </div>
+    <AnimatePresence>
+      {connected && (
+        <motion.div
+          ref={stripRef}
+          className={cn(
+            'z-20 select-none',
+            isDefault && 'absolute bottom-4 left-1/2',
+            !isDefault && 'fixed'
           )}
-        </div>
-
-        <GroupSeparator />
-
-        {/* Data groups — single row, larger gap between groups */}
-        <div className="flex items-center gap-5 px-4 py-1.5">
-          <div className="flex items-center gap-3">
-            <DataBlock
-              label={t('flightStrip.ias')}
-              value={formatValue(planeState?.indicatedAirspeed)}
-              unit={t('units.kt')}
-              valueColor={PRIMARY_COLOR_CLASS}
-              target={formatTarget(
-                planeState?.apAirspeedIsMach ? formatMach : formatValue,
-                planeState?.apAirspeed
-              )}
-            />
-            <DataBlock
-              label={t('flightStrip.gs')}
-              value={formatValue(planeState?.groundspeed)}
-              unit={t('units.kt')}
-            />
-            <DataBlock label={t('flightStrip.mach')} value={formatMach(planeState?.mach)} unit="" />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <DataBlock
-              label={t('flightStrip.alt')}
-              value={formatValue(planeState?.altitudeMSL)}
-              unit={t('units.ft')}
-              valueColor={PRIMARY_COLOR_CLASS}
-              target={formatTarget(formatValue, planeState?.apAltitude)}
-            />
-            <DataBlock
-              label={t('flightStrip.agl')}
-              value={formatValue(planeState?.altitudeAGL)}
-              unit={t('units.ft')}
-              valueColor={getAGLColor(planeState?.altitudeAGL)}
-            />
-            <DataBlock
-              label={t('flightStrip.vs')}
-              value={formatVS(planeState?.verticalSpeed)}
-              unit={t('units.fpm')}
-              valueColor={getVSColor(planeState?.verticalSpeed)}
-              target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <DataBlock
-              label={t('flightStrip.hdg')}
-              value={formatHeading(planeState?.heading)}
-              unit="°"
-              valueColor={PRIMARY_COLOR_CLASS}
-              target={formatTarget(formatHeading, planeState?.apHeading)}
-            />
-            <DataBlock
-              label={t('flightStrip.crs')}
-              value={formatHeading(planeState?.nav1Course)}
-              unit="°"
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <DataBlock
-              label={t('flightStrip.wind')}
-              value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-              unit={t('units.kt')}
-            />
-            <DataBlock label={t('flightStrip.oat')} value={formatOAT(planeState?.oat)} unit="°C" />
-          </div>
-        </div>
-
-        <GroupSeparator />
-
-        {/* Center / Follow button */}
-        <div className="px-1.5 py-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCenter}
-            className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
-            tooltip={
-              followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
-            }
+          style={{
+            // Centering stays a plain style transform so dragging never animates it.
+            x: isDefault ? '-50%' : 0,
+            ...(!isDefault ? { left: position.x, top: position.y } : undefined),
+          }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8, transition: exitEase }}
+          transition={panelSpring}
+          onMouseDown={handleMouseDown}
+          onDoubleClick={handleDoubleClick}
+        >
+          <div
+            className={cn(
+              'flex items-center rounded-xl border',
+              'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
+              'backdrop-blur-xl',
+              'cursor-grab active:cursor-grabbing'
+            )}
           >
-            <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
-            {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
-          </Button>
-        </div>
-      </div>
-    </div>
+            {/* Status indicator */}
+            <div className="flex items-center gap-1.5 px-3 py-2">
+              <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
+              <Plane className="text-primary h-3.5 w-3.5" />
+              {(planeState?.icaoType || planeState?.tailNumber) && (
+                <div
+                  className="flex flex-col leading-tight"
+                  title={planeState?.aircraftName || undefined}
+                >
+                  <span className="text-foreground font-mono text-[11px] font-medium">
+                    {planeState?.icaoType}
+                  </span>
+                  <span className="text-muted-foreground font-mono text-[10px]">
+                    {planeState?.tailNumber}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <GroupSeparator />
+
+            {/* Data groups — single row, larger gap between groups */}
+            <div className="flex items-center gap-5 px-4 py-1.5">
+              <div className="flex items-center gap-3">
+                <DataBlock
+                  label={t('flightStrip.ias')}
+                  value={formatValue(planeState?.indicatedAirspeed)}
+                  unit={t('units.kt')}
+                  valueColor={PRIMARY_COLOR_CLASS}
+                  target={formatTarget(
+                    planeState?.apAirspeedIsMach ? formatMach : formatValue,
+                    planeState?.apAirspeed
+                  )}
+                />
+                <DataBlock
+                  label={t('flightStrip.gs')}
+                  value={formatValue(planeState?.groundspeed)}
+                  unit={t('units.kt')}
+                />
+                <DataBlock
+                  label={t('flightStrip.mach')}
+                  value={formatMach(planeState?.mach)}
+                  unit=""
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DataBlock
+                  label={t('flightStrip.alt')}
+                  value={formatValue(planeState?.altitudeMSL)}
+                  unit={t('units.ft')}
+                  valueColor={PRIMARY_COLOR_CLASS}
+                  target={formatTarget(formatValue, planeState?.apAltitude)}
+                />
+                <DataBlock
+                  label={t('flightStrip.agl')}
+                  value={formatValue(planeState?.altitudeAGL)}
+                  unit={t('units.ft')}
+                  valueColor={getAGLColor(planeState?.altitudeAGL)}
+                />
+                <DataBlock
+                  label={t('flightStrip.vs')}
+                  value={formatVS(planeState?.verticalSpeed)}
+                  unit={t('units.fpm')}
+                  valueColor={getVSColor(planeState?.verticalSpeed)}
+                  target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DataBlock
+                  label={t('flightStrip.hdg')}
+                  value={formatHeading(planeState?.heading)}
+                  unit="°"
+                  valueColor={PRIMARY_COLOR_CLASS}
+                  target={formatTarget(formatHeading, planeState?.apHeading)}
+                />
+                <DataBlock
+                  label={t('flightStrip.crs')}
+                  value={formatHeading(planeState?.nav1Course)}
+                  unit="°"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DataBlock
+                  label={t('flightStrip.wind')}
+                  value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
+                  unit={t('units.kt')}
+                />
+                <DataBlock
+                  label={t('flightStrip.oat')}
+                  value={formatOAT(planeState?.oat)}
+                  unit="°C"
+                />
+              </div>
+            </div>
+
+            <GroupSeparator />
+
+            {/* Center / Follow button */}
+            <div className="px-1.5 py-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCenter}
+                className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
+                tooltip={
+                  followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
+                }
+              >
+                <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -261,10 +281,18 @@ function DataBlock({ label, value, unit, valueColor, target }: DataBlockProps) {
       </div>
       <div className="min-h-3">
         {target !== undefined && (
-          <span className="text-info/70 flex items-center gap-0.5 font-mono text-[9px] leading-tight tabular-nums">
+          // Keyed by value: animates only when the autopilot dial changes,
+          // never on the 10 Hz live updates.
+          <motion.span
+            key={target}
+            initial={{ opacity: 0, y: -3 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={quickFade}
+            className="text-info/70 flex items-center gap-0.5 font-mono text-[9px] leading-tight tabular-nums"
+          >
             <ChevronRight className="h-2.5 w-2.5" />
             {target}
-          </span>
+          </motion.span>
         )}
       </div>
     </div>

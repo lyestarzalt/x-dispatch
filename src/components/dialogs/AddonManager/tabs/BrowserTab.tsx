@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Check, Plane, Plug, RefreshCw, Search } from 'lucide-react';
+import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { quickFade } from '@/lib/motionPresets';
 import {
   useAircraftDelete,
   useAircraftList,
@@ -268,26 +270,33 @@ export function BrowserTab() {
                 : t('addonManager.installed.notFound', { type: 'plugins' })}
             </p>
           ) : (
-            <ScrollArea className="h-full">
-              <div className="flex flex-col gap-2 p-4">
-                {filteredPlugins.map((plugin) => (
-                  <PluginEntry
-                    key={plugin.folderName}
-                    plugin={plugin}
-                    onToggle={(name) => pluginToggle.mutate(name)}
-                    onDelete={handleDeletePlugin}
-                    onLock={(name) => pluginLock.mutate(name)}
-                    onOpenFolder={handleOpenPluginFolder}
-                    onOpenScripts={
-                      plugin.folderName.toLowerCase() === 'flywithlua'
-                        ? () => setScriptsOpen(true)
-                        : undefined
-                    }
-                    disabled={isPluginPending}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
+            <motion.div
+              className="h-full"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={quickFade}
+            >
+              <ScrollArea className="h-full">
+                <div className="flex flex-col gap-2 p-4">
+                  {filteredPlugins.map((plugin) => (
+                    <PluginEntry
+                      key={plugin.folderName}
+                      plugin={plugin}
+                      onToggle={(name) => pluginToggle.mutate(name)}
+                      onDelete={handleDeletePlugin}
+                      onLock={(name) => pluginLock.mutate(name)}
+                      onOpenFolder={handleOpenPluginFolder}
+                      onOpenScripts={
+                        plugin.folderName.toLowerCase() === 'flywithlua'
+                          ? () => setScriptsOpen(true)
+                          : undefined
+                      }
+                      disabled={isPluginPending}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </motion.div>
           )}
         </TabsContent>
 
@@ -319,28 +328,35 @@ export function BrowserTab() {
                 : t('addonManager.installed.notFound', { type: 'aircraft' })}
             </p>
           ) : (
-            <ScrollArea className="h-full">
-              <div className="grid grid-cols-2 gap-3 p-4 lg:grid-cols-3">
-                {filteredAircraft.map((ac) => (
-                  <AircraftCard
-                    key={ac.folderName}
-                    aircraft={ac}
-                    onToggle={(name) => aircraftToggle.mutate(name)}
-                    onDelete={handleDeleteAircraft}
-                    onLock={(name) => aircraftLock.mutate(name)}
-                    onOpenFolder={handleOpenAircraftFolder}
-                    onOpenLiveries={(name) =>
-                      setLiveryDialog({
-                        open: true,
-                        folder: name,
-                        name: ac.displayName,
-                      })
-                    }
-                    disabled={isAircraftPending}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
+            <motion.div
+              className="h-full"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={quickFade}
+            >
+              <ScrollArea className="h-full">
+                <div className="grid grid-cols-2 gap-3 p-4 lg:grid-cols-3">
+                  {filteredAircraft.map((ac) => (
+                    <AircraftCard
+                      key={ac.folderName}
+                      aircraft={ac}
+                      onToggle={(name) => aircraftToggle.mutate(name)}
+                      onDelete={handleDeleteAircraft}
+                      onLock={(name) => aircraftLock.mutate(name)}
+                      onOpenFolder={handleOpenAircraftFolder}
+                      onOpenLiveries={(name) =>
+                        setLiveryDialog({
+                          open: true,
+                          folder: name,
+                          name: ac.displayName,
+                        })
+                      }
+                      disabled={isAircraftPending}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            </motion.div>
           )}
         </TabsContent>
       </Tabs>

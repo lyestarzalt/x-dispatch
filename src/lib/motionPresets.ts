@@ -22,3 +22,6 @@ export const quickFade: Transition = { duration: 0.14, ease: 'easeOut' };
 
 /** Sliding selection indicators (sidebar nav, segmented controls). */
 export const indicatorSpring: Transition = { type: 'spring', duration: 0.35, bounce: 0.15 };
+
+/** Cursor followers (useSpring options): tight tracking with a hint of lag. */
+export const cursorFollowSpring = { stiffness: 550, damping: 42 } as const;
