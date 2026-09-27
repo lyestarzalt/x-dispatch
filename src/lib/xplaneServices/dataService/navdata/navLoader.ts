@@ -121,7 +121,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
   // Store in database
   const insertStart = Date.now();
   clearNavaids();
-  insertNavaids(data);
+  await insertNavaids(data);
   const insertTime = Date.now() - insertStart;
 
   // Update file metadata
@@ -197,7 +197,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
   // Store in database
   const insertStart = Date.now();
   clearWaypoints();
-  insertWaypoints(data);
+  await insertWaypoints(data);
   const insertTime = Date.now() - insertStart;
 
   // Update file metadata
@@ -260,7 +260,7 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
   // Store in database
   const insertStart = Date.now();
   clearAirways();
-  insertAirways(data);
+  await insertAirways(data);
   const insertTime = Date.now() - insertStart;
 
   // Update file metadata
@@ -329,7 +329,7 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
   // Store in database
   const insertStart = Date.now();
   clearAirspaces();
-  insertAirspaces(data);
+  await insertAirspaces(data);
   const insertTime = Date.now() - insertStart;
 
   // Update file metadata

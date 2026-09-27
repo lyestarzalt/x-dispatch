@@ -123,8 +123,8 @@ export async function syncAirportCache(
   onProgress?.({ phase: 'inserting' });
   const insertStart = Date.now();
   clearAirports();
-  insertAirports(Array.from(globalResult.airports.values()));
-  insertCustomAirports(Array.from(customResult.airports.values()));
+  await insertAirports(Array.from(globalResult.airports.values()));
+  await insertCustomAirports(Array.from(customResult.airports.values()));
   const insertTime = Date.now() - insertStart;
   logger.data.info(`Batch inserted ${allAirports.size} airports in ${insertTime}ms`);
 
@@ -237,7 +237,7 @@ export async function resyncCustomScenery(
 
   // Replace custom airports in DB
   clearCustomAirports();
-  insertCustomAirports(Array.from(customResult.airports.values()));
+  await insertCustomAirports(Array.from(customResult.airports.values()));
 
   // Update file metadata for custom scenery files only
   const customFiles = getCustomSceneryFileInfos(xplanePath);

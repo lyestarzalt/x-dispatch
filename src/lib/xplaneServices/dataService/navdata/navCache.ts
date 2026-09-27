@@ -7,6 +7,7 @@ import { count, eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, saveDb, waypoints } from '@/lib/db';
 import logger from '@/lib/utils/logger';
+import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type { Coordinates } from '@/types/geo';
 import type {
   Airspace,
@@ -177,7 +178,7 @@ export function clearNavaids(): void {
 /**
  * Batch insert navaids into database
  */
-export function insertNavaids(navaidList: Navaid[]): void {
+export async function insertNavaids(navaidList: Navaid[]): Promise<void> {
   const db = getDb();
 
   const navaidArray = navaidList.map((n) => ({
@@ -203,9 +204,11 @@ export function insertNavaids(navaidList: Navaid[]): void {
     approachPerformance: n.approachPerformance,
   }));
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < navaidArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = navaidArray.slice(i, i + CHUNK_SIZE);
     db.insert(navaids).values(chunk).run();
   }
@@ -649,7 +652,7 @@ export function clearWaypoints(): void {
 /**
  * Batch insert waypoints into database
  */
-export function insertWaypoints(waypointList: Waypoint[]): void {
+export async function insertWaypoints(waypointList: Waypoint[]): Promise<void> {
   const db = getDb();
 
   const waypointArray = waypointList.map((w) => ({
@@ -661,9 +664,11 @@ export function insertWaypoints(waypointList: Waypoint[]): void {
     description: w.description,
   }));
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < waypointArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = waypointArray.slice(i, i + CHUNK_SIZE);
     db.insert(waypoints).values(chunk).run();
   }
@@ -833,7 +838,7 @@ export function clearAirways(): void {
 /**
  * Batch insert airways into database
  */
-export function insertAirways(airwayList: AirwaySegment[]): void {
+export async function insertAirways(airwayList: AirwaySegment[]): Promise<void> {
   const db = getDb();
 
   const airwayArray = airwayList.map((a) => ({
@@ -850,9 +855,11 @@ export function insertAirways(airwayList: AirwaySegment[]): void {
     direction: a.direction,
   }));
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < airwayArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airwayArray.slice(i, i + CHUNK_SIZE);
     db.insert(airways).values(chunk).run();
   }
@@ -956,7 +963,7 @@ function calculateAirspaceBounds(
  * Batch insert airspaces into database
  * Calculates and stores bounding box for efficient spatial queries
  */
-export function insertAirspaces(airspaceList: Airspace[]): void {
+export async function insertAirspaces(airspaceList: Airspace[]): Promise<void> {
   const db = getDb();
 
   const airspaceArray = airspaceList.map((a) => {
@@ -974,9 +981,11 @@ export function insertAirspaces(airspaceList: Airspace[]): void {
     };
   });
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 500;
   for (let i = 0; i < airspaceArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airspaceArray.slice(i, i + CHUNK_SIZE);
     db.insert(airspaces).values(chunk).run();
   }

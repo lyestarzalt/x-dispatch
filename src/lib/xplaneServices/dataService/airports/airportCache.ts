@@ -7,6 +7,7 @@ import { count, like } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airports, airportsCustom, aptFileMeta, getDb, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
+import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type {
   Airport,
   AirportSourceBreakdown,
@@ -152,7 +153,7 @@ export function clearCustomAirports(): void {
 /**
  * Batch insert airports into database
  */
-export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
+export async function insertAirports(airportEntries: ParsedAirportEntry[]): Promise<void> {
   const db = getDb();
 
   const airportArray = airportEntries.map((a) => ({
@@ -179,9 +180,11 @@ export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
     guiLabel: a.guiLabel,
   }));
 
-  // Batch insert in chunks of 500
+  // Batch insert in chunks of 500, yielding between them so the main
+  // process stays responsive during a bulk load.
   const CHUNK_SIZE = 500;
   for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airportArray.slice(i, i + CHUNK_SIZE);
     db.insert(airports).values(chunk).run();
   }
@@ -190,7 +193,7 @@ export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
 /**
  * Batch insert custom scenery airports into the custom table
  */
-export function insertCustomAirports(airportEntries: ParsedAirportEntry[]): void {
+export async function insertCustomAirports(airportEntries: ParsedAirportEntry[]): Promise<void> {
   const db = getDb();
 
   const airportArray = airportEntries.map((a) => ({
@@ -219,6 +222,7 @@ export function insertCustomAirports(airportEntries: ParsedAirportEntry[]): void
 
   const CHUNK_SIZE = 500;
   for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airportArray.slice(i, i + CHUNK_SIZE);
     db.insert(airportsCustom).values(chunk).run();
   }
