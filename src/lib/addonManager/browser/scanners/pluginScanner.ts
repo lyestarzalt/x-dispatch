@@ -3,11 +3,11 @@ import * as path from 'path';
 import type { PluginInfo } from '../../core/types';
 import { detectVersion, findUpdaterCfg, findVersionFiles } from '../version/detector';
 
-function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isDirEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
   if (entry.isDirectory()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+      return (await fs.promises.stat(path.join(parentPath, entry.name))).isDirectory();
     } catch {
       return false;
     }
@@ -15,11 +15,11 @@ function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
   return false;
 }
 
-function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isFileEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
   if (entry.isFile()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+      return (await fs.promises.stat(path.join(parentPath, entry.name))).isFile();
     } catch {
       return false;
     }
@@ -31,8 +31,9 @@ const MAX_XPL_SEARCH_DEPTH = 3;
 
 /**
  * Scan Resources/plugins/ for installed plugins.
+ * Async so a rescan never blocks the main process.
  */
-export function scanPlugins(xplanePath: string): PluginInfo[] {
+export async function scanPlugins(xplanePath: string): Promise<PluginInfo[]> {
   const pluginsDir = path.join(xplanePath, 'Resources', 'plugins');
   if (!fs.existsSync(pluginsDir)) return [];
 
@@ -40,16 +41,16 @@ export function scanPlugins(xplanePath: string): PluginInfo[] {
 
   let entries: fs.Dirent[];
   try {
-    entries = fs.readdirSync(pluginsDir, { withFileTypes: true });
+    entries = await fs.promises.readdir(pluginsDir, { withFileTypes: true });
   } catch {
     return [];
   }
 
   for (const entry of entries) {
-    if (!isDirEntry(entry, pluginsDir) || entry.name.startsWith('.')) continue;
+    if (!(await isDirEntry(entry, pluginsDir)) || entry.name.startsWith('.')) continue;
 
     const pluginPath = path.join(pluginsDir, entry.name);
-    const info = scanSinglePluginFolder(pluginPath, entry.name);
+    const info = await scanSinglePluginFolder(pluginPath, entry.name);
     if (info) results.push(info);
   }
 
@@ -62,8 +63,11 @@ export function scanPlugins(xplanePath: string): PluginInfo[] {
 /**
  * Scan a single plugin folder.
  */
-function scanSinglePluginFolder(pluginPath: string, folderName: string): PluginInfo | undefined {
-  const { xplFiles, xfmpFiles } = findXplFiles(pluginPath, MAX_XPL_SEARCH_DEPTH);
+async function scanSinglePluginFolder(
+  pluginPath: string,
+  folderName: string
+): Promise<PluginInfo | undefined> {
+  const { xplFiles, xfmpFiles } = await findXplFiles(pluginPath, MAX_XPL_SEARCH_DEPTH);
 
   if (xplFiles.length === 0 && xfmpFiles.length === 0) return undefined;
 
@@ -72,29 +76,30 @@ function scanSinglePluginFolder(pluginPath: string, folderName: string): PluginI
   const platform = detectPlatform(allFiles);
 
   // Version detection
-  const updaterCfg = findUpdaterCfg(pluginPath);
-  const versionFiles = findVersionFiles(pluginPath);
-  const versionData = detectVersion(updaterCfg, versionFiles);
+  const updaterCfg = await findUpdaterCfg(pluginPath);
+  const versionFiles = await findVersionFiles(pluginPath);
+  const versionData = await detectVersion(updaterCfg, versionFiles);
 
   // FlyWithLua special case
   let hasScripts = false;
   let scriptCount = 0;
   if (folderName.toLowerCase() === 'flywithlua') {
     const scriptsDir = path.join(pluginPath, 'Scripts');
-    if (fs.existsSync(scriptsDir)) {
-      try {
-        const scripts = fs
-          .readdirSync(scriptsDir, { withFileTypes: true })
-          .filter(
-            (e) =>
-              isFileEntry(e, scriptsDir) &&
-              ['.lua', '.xfml'].includes(path.extname(e.name).toLowerCase())
-          );
-        hasScripts = scripts.length > 0;
-        scriptCount = scripts.length;
-      } catch {
-        // Ignore
+    try {
+      const scriptEntries = await fs.promises.readdir(scriptsDir, { withFileTypes: true });
+      let count = 0;
+      for (const e of scriptEntries) {
+        if (
+          (await isFileEntry(e, scriptsDir)) &&
+          ['.lua', '.xfml'].includes(path.extname(e.name).toLowerCase())
+        ) {
+          count++;
+        }
       }
+      hasScripts = count > 0;
+      scriptCount = count;
+    } catch {
+      // Ignore (or no Scripts folder)
     }
   }
 
@@ -118,16 +123,19 @@ function scanSinglePluginFolder(pluginPath: string, folderName: string): PluginI
 /**
  * Find .xpl and .xfmp files recursively up to maxDepth.
  */
-function findXplFiles(dir: string, maxDepth: number): { xplFiles: string[]; xfmpFiles: string[] } {
+async function findXplFiles(
+  dir: string,
+  maxDepth: number
+): Promise<{ xplFiles: string[]; xfmpFiles: string[] }> {
   const xplFiles: string[] = [];
   const xfmpFiles: string[] = [];
 
-  function walk(currentDir: string, depth: number): void {
+  async function walk(currentDir: string, depth: number): Promise<void> {
     if (depth > maxDepth) return;
 
     let entries: fs.Dirent[];
     try {
-      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+      entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
     } catch {
       return;
     }
@@ -136,18 +144,18 @@ function findXplFiles(dir: string, maxDepth: number): { xplFiles: string[]; xfmp
       const fullPath = path.join(currentDir, entry.name);
       const relativePath = path.relative(dir, fullPath);
 
-      if (isFileEntry(entry, currentDir)) {
+      if (await isFileEntry(entry, currentDir)) {
         const ext = path.extname(entry.name).toLowerCase();
         if (ext === '.xpl') xplFiles.push(relativePath);
         if (ext === '.xfmp') xfmpFiles.push(relativePath);
       }
-      if (isDirEntry(entry, currentDir)) {
-        walk(fullPath, depth + 1);
+      if (await isDirEntry(entry, currentDir)) {
+        await walk(fullPath, depth + 1);
       }
     }
   }
 
-  walk(dir, 0);
+  await walk(dir, 0);
   return { xplFiles, xfmpFiles };
 }
 

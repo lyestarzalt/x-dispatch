@@ -1671,7 +1671,8 @@ function registerIpcHandlers() {
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
   registerFlightRecorderIPC({
-    getAllAirports: () => dataManager.getAllAirports(),
+    getAirportsInBounds: (minLat, maxLat, minLon, maxLon) =>
+      dataManager.getAirportsInBounds(minLat, maxLat, minLon, maxLon),
     getAirportData: (icao) => dataManager.getAirportData(icao),
     getDataref: async (name) => {
       const { getXPlaneService } = await getXPlaneModule();

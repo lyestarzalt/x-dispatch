@@ -6,19 +6,19 @@ import type { VersionData } from '../../core/types';
  * Read version from skunkcrafts_updater.cfg or version files.
  * Priority: skunkcrafts_updater.cfg > version files > digit parsing
  */
-export function detectVersion(
+export async function detectVersion(
   updaterCfgPath: string | undefined,
   versionFilePaths: string[]
-): VersionData | undefined {
+): Promise<VersionData | undefined> {
   // Priority 1: skunkcrafts_updater.cfg
-  if (updaterCfgPath && fs.existsSync(updaterCfgPath)) {
-    const result = parseSkunkCraftsCfg(updaterCfgPath);
+  if (updaterCfgPath) {
+    const result = await parseSkunkCraftsCfg(updaterCfgPath);
     if (result) return result;
   }
 
   // Priority 2: Version files
   for (const filePath of versionFilePaths) {
-    const result = parseVersionFile(filePath);
+    const result = await parseVersionFile(filePath);
     if (result) return result;
   }
 
@@ -31,9 +31,9 @@ export function detectVersion(
  * module|https://example.com/updates
  * disabled|false
  */
-function parseSkunkCraftsCfg(cfgPath: string): VersionData | undefined {
+async function parseSkunkCraftsCfg(cfgPath: string): Promise<VersionData | undefined> {
   try {
-    const content = fs.readFileSync(cfgPath, 'utf-8');
+    const content = await fs.promises.readFile(cfgPath, 'utf-8');
     let version: string | undefined;
     let updateUrl: string | undefined;
     let cfgDisabled: boolean | undefined;
@@ -63,9 +63,9 @@ function parseSkunkCraftsCfg(cfgPath: string): VersionData | undefined {
 /**
  * Parse version from a generic version file.
  */
-function parseVersionFile(filePath: string): VersionData | undefined {
+async function parseVersionFile(filePath: string): Promise<VersionData | undefined> {
   try {
-    const content = fs.readFileSync(filePath, 'utf-8').trim();
+    const content = (await fs.promises.readFile(filePath, 'utf-8')).trim();
 
     // Try semver-like pattern: 1.2.3, 1.2.3-beta, etc.
     const semverMatch = content.match(/(\d+\.\d+[.\d]*\S*)/);
@@ -111,19 +111,24 @@ function parseDigitVersion(input: string): string | undefined {
 /**
  * Find skunkcrafts_updater.cfg in a folder.
  */
-export function findUpdaterCfg(folderPath: string): string | undefined {
+export async function findUpdaterCfg(folderPath: string): Promise<string | undefined> {
   const cfgPath = path.join(folderPath, 'skunkcrafts_updater.cfg');
-  return fs.existsSync(cfgPath) ? cfgPath : undefined;
+  try {
+    await fs.promises.access(cfgPath);
+    return cfgPath;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
  * Find version files in a folder.
  */
-export function findVersionFiles(folderPath: string): string[] {
+export async function findVersionFiles(folderPath: string): Promise<string[]> {
   const versionFiles: string[] = [];
 
   try {
-    const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+    const entries = await fs.promises.readdir(folderPath, { withFileTypes: true });
     for (const entry of entries) {
       if (!entry.isFile()) continue;
       const lower = entry.name.toLowerCase();

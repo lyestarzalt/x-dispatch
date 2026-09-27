@@ -4,11 +4,11 @@ import * as path from 'path';
 import type { AircraftInfo } from '../../core/types';
 import { detectVersion, findUpdaterCfg, findVersionFiles } from '../version/detector';
 
-function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isDirEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
   if (entry.isDirectory()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+      return (await fs.promises.stat(path.join(parentPath, entry.name))).isDirectory();
     } catch {
       return false;
     }
@@ -16,11 +16,11 @@ function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
   return false;
 }
 
-function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isFileEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
   if (entry.isFile()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+      return (await fs.promises.stat(path.join(parentPath, entry.name))).isFile();
     } catch {
       return false;
     }
@@ -33,42 +33,43 @@ const MAX_SCAN_DEPTH = 3;
 /**
  * Scan Aircraft/ folder for installed aircraft.
  * Returns aircraft in alphabetical order by displayName.
+ * Async so a rescan never blocks the main process.
  */
-export function scanAircraft(xplanePath: string): AircraftInfo[] {
+export async function scanAircraft(xplanePath: string): Promise<AircraftInfo[]> {
   const aircraftDir = path.join(xplanePath, 'Aircraft');
   if (!fs.existsSync(aircraftDir)) return [];
 
   const results: AircraftInfo[] = [];
 
-  function scanLevel(dir: string, depth: number): void {
+  async function scanLevel(dir: string, depth: number): Promise<void> {
     if (depth > MAX_SCAN_DEPTH) return;
 
     let entries: fs.Dirent[];
     try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
+      entries = await fs.promises.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
 
     const subdirs: string[] = [];
     for (const entry of entries) {
-      if (isDirEntry(entry, dir) && !entry.name.startsWith('.')) {
+      if ((await isDirEntry(entry, dir)) && !entry.name.startsWith('.')) {
         subdirs.push(path.join(dir, entry.name));
       }
     }
 
     for (const subdir of subdirs) {
-      const aircraft = scanSingleAircraftFolder(subdir, aircraftDir);
+      const aircraft = await scanSingleAircraftFolder(subdir, aircraftDir);
       if (aircraft) {
         results.push(aircraft);
       } else {
         // Not an aircraft folder, go deeper
-        scanLevel(subdir, depth + 1);
+        await scanLevel(subdir, depth + 1);
       }
     }
   }
 
-  scanLevel(aircraftDir, 0);
+  await scanLevel(aircraftDir, 0);
 
   // Sort alphabetically by displayName
   return results.sort((a, b) =>
@@ -80,10 +81,13 @@ export function scanAircraft(xplanePath: string): AircraftInfo[] {
  * Scan a single folder to check if it's an aircraft.
  * Returns AircraftInfo if .acf or .xfma found, undefined otherwise.
  */
-function scanSingleAircraftFolder(folderPath: string, basePath: string): AircraftInfo | undefined {
+async function scanSingleAircraftFolder(
+  folderPath: string,
+  basePath: string
+): Promise<AircraftInfo | undefined> {
   let entries: fs.Dirent[];
   try {
-    entries = fs.readdirSync(folderPath, { withFileTypes: true });
+    entries = await fs.promises.readdir(folderPath, { withFileTypes: true });
   } catch {
     return undefined;
   }
@@ -97,7 +101,7 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
   for (const entry of entries) {
     const lower = entry.name.toLowerCase();
 
-    if (isFileEntry(entry, folderPath)) {
+    if (await isFileEntry(entry, folderPath)) {
       const ext = path.extname(lower);
       if (ext === '.acf' && !acfFile) {
         acfFile = entry.name;
@@ -112,13 +116,16 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
       }
     }
 
-    if (isDirEntry(entry, folderPath) && lower === 'liveries') {
+    if ((await isDirEntry(entry, folderPath)) && lower === 'liveries') {
       hasLiveries = true;
       const liveriesPath = path.join(folderPath, entry.name);
       try {
-        liveryCount = fs
-          .readdirSync(liveriesPath, { withFileTypes: true })
-          .filter((e) => isDirEntry(e, liveriesPath)).length;
+        const liveryEntries = await fs.promises.readdir(liveriesPath, { withFileTypes: true });
+        let count = 0;
+        for (const e of liveryEntries) {
+          if (await isDirEntry(e, liveriesPath)) count++;
+        }
+        liveryCount = count;
       } catch {
         liveryCount = 0;
       }
@@ -134,9 +141,9 @@ function scanSingleAircraftFolder(folderPath: string, basePath: string): Aircraf
   const displayName = path.basename(folderPath);
 
   // Detect version
-  const updaterCfg = findUpdaterCfg(folderPath);
-  const versionFiles = findVersionFiles(folderPath);
-  const versionData = detectVersion(updaterCfg, versionFiles);
+  const updaterCfg = await findUpdaterCfg(folderPath);
+  const versionFiles = await findVersionFiles(folderPath);
+  const versionData = await detectVersion(updaterCfg, versionFiles);
 
   return {
     folderName,

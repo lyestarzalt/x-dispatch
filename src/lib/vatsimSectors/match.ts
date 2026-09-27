@@ -34,7 +34,14 @@ function getCallsignPostfix(callsign: string): string {
   return parts.at(-1) ?? '';
 }
 
+// Rebuilt only when the airport list itself changes; the lookup is requested
+// on every VATSIM refresh over a list of tens of thousands of airports.
+const airportLookupCache = new WeakMap<Airport[], AirportLookup>();
+
 function buildAirportLookup(airports: Airport[]): AirportLookup {
+  const cached = airportLookupCache.get(airports);
+  if (cached) return cached;
+
   const byIcao = new Map<string, string>();
   const byIata = new Map<string, string>();
 
@@ -48,7 +55,9 @@ function buildAirportLookup(airports: Airport[]): AirportLookup {
     }
   }
 
-  return { byIcao, byIata };
+  const lookup = { byIcao, byIata };
+  airportLookupCache.set(airports, lookup);
+  return lookup;
 }
 
 function resolveAirportIcao(prefix: string, lookup?: AirportLookup): string | null {

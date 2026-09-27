@@ -216,7 +216,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return { ok: true, value: manager.scanAircraft() };
+    return { ok: true, value: await manager.scanAircraft() };
   });
 
   ipcMain.handle('addon:browser:toggleAircraft', async (_event, folderName: unknown) => {
@@ -278,7 +278,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return { ok: true, value: manager.scanPlugins() };
+    return { ok: true, value: await manager.scanPlugins() };
   });
 
   ipcMain.handle('addon:browser:togglePlugin', async (_event, folderName: unknown) => {

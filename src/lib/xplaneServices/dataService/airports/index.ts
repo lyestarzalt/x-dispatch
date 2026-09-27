@@ -262,4 +262,9 @@ export async function resyncCustomScenery(
 // Re-exports for convenience
 // ============================================================================
 
-export { getAirportBreakdown, getAirportCount, getDistinctCountries } from './airportCache';
+export {
+  getAirportBreakdown,
+  getAirportCount,
+  getAirportsInBounds,
+  getDistinctCountries,
+} from './airportCache';

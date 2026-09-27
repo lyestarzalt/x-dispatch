@@ -7,6 +7,7 @@ import {
   getAirportAtcBadgeImageId,
   getAirportAtcBadgeOptions,
 } from './VatsimAirportAtcLayer';
+import { renderVatsimAirportAtcPopup } from './VatsimAirportAtcPopup';
 
 const airports = [
   {
@@ -165,7 +166,9 @@ describe('buildAirportAtcFeatureCollection', () => {
       [27, -22],
     ]);
 
-    const popup = result.popupMap.get('EGLL') ?? '';
+    const entry = result.popupMap.get('EGLL');
+    expect(entry).toBeDefined();
+    const popup = renderVatsimAirportAtcPopup(entry!.airport, entry!.controllers);
     expect(popup).toContain('London Heathrow');
     expect(popup).toContain('EGLL_APP');
     expect(popup).toContain('Heathrow Delivery');

@@ -3,7 +3,7 @@
  * SQLite caching for parsed airport data.
  * Tracks file modification times to invalidate cache when apt.dat files change.
  */
-import { count, like } from 'drizzle-orm';
+import { and, count, gte, like, lte } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airports, airportsCustom, aptFileMeta, getDb, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
@@ -333,6 +333,57 @@ export function getAirportCount(): number {
   const db = getDb();
   const result = db.select({ count: count() }).from(airports).get();
   return result?.count || 0;
+}
+
+/**
+ * Get airports inside a lat/lon bounding box, custom scenery overriding
+ * global on the same ICAO. Callers that need "airports near a point" use
+ * this instead of loading the whole airports table into memory.
+ */
+export function getAirportsInBounds(
+  minLat: number,
+  maxLat: number,
+  minLon: number,
+  maxLon: number
+): Array<{ icao: string; name: string; lat: number; lon: number }> {
+  const db = getDb();
+
+  const globalResults = db
+    .select({ icao: airports.icao, name: airports.name, lat: airports.lat, lon: airports.lon })
+    .from(airports)
+    .where(
+      and(
+        gte(airports.lat, minLat),
+        lte(airports.lat, maxLat),
+        gte(airports.lon, minLon),
+        lte(airports.lon, maxLon)
+      )
+    )
+    .all();
+
+  const customResults = db
+    .select({
+      icao: airportsCustom.icao,
+      name: airportsCustom.name,
+      lat: airportsCustom.lat,
+      lon: airportsCustom.lon,
+    })
+    .from(airportsCustom)
+    .where(
+      and(
+        gte(airportsCustom.lat, minLat),
+        lte(airportsCustom.lat, maxLat),
+        gte(airportsCustom.lon, minLon),
+        lte(airportsCustom.lon, maxLon)
+      )
+    )
+    .all();
+
+  const merged = new Map(globalResults.map((r) => [r.icao, r]));
+  for (const r of customResults) {
+    merged.set(r.icao, r);
+  }
+  return [...merged.values()];
 }
 
 /**
