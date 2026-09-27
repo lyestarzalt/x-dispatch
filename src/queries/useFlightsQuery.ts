@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import i18n from 'i18next';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -64,6 +65,17 @@ export function useFlightRecorderStream(): void {
     });
     const unsubscribe = window.flightsAPI.onEvent((event) => {
       applyEvent(event);
+      if (event.type === 'landing' && document.hidden) {
+        // The user is in the sim or the app is minimized: surface the report
+        // through the OS so the moment isn't missed.
+        const rate = event.report.touchdownRateFpm;
+        const rating = i18n.t(`landing.rating.${event.report.rating}`);
+        const notification = new Notification(i18n.t('landing.title'), {
+          body: `${rate} ${i18n.t('units.fpm')} · ${rating}`,
+          silent: true,
+        });
+        notification.onclick = () => window.focus();
+      }
       if (event.type !== 'track' && event.type !== 'phase') {
         void queryClient.invalidateQueries({ queryKey: flightKeys.all });
       }

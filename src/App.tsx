@@ -131,7 +131,8 @@ function App() {
     <ErrorBoundary>
       <QueryProvider>
         <MotionConfig reducedMotion="user">
-          <TooltipProvider>
+          {/* Native tooltip cadence: a beat before the first one, instant between neighbors */}
+          <TooltipProvider delayDuration={500} skipDelayDuration={300}>
             <AppContent />
             <UpdateAvailableToast />
             <Toaster position="bottom-center" />

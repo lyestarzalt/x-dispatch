@@ -63,7 +63,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogPanel
-        className="border-border bg-background fixed inset-x-6 top-[60px] bottom-6 z-50 flex overflow-hidden rounded-xl border shadow-2xl"
+        className="border-border bg-background fixed inset-x-6 top-[60px] bottom-6 z-50 flex overflow-hidden rounded-lg border shadow-2xl"
         aria-describedby={undefined}
       >
         <VisuallyHidden.Root>
@@ -71,7 +71,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
         </VisuallyHidden.Root>
 
         {/* Sidebar Navigation */}
-        <nav className="border-border bg-card/50 flex w-56 shrink-0 flex-col border-r">
+        <nav className="border-border bg-card/50 flex w-56 shrink-0 flex-col border-r select-none">
           {/* Sidebar Header */}
           <div className="border-border flex h-14 items-center gap-3 border-b px-4">
             <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-lg">

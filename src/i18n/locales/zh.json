@@ -5,6 +5,8 @@
     "close": "关闭",
     "save": "保存",
     "delete": "删除",
+    "enable": "启用",
+    "disable": "禁用",
     "edit": "编辑",
     "test": "测试",
     "loading": "加载中...",

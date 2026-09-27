@@ -34,7 +34,7 @@ const Tile = React.forwardRef<HTMLDivElement, TileProps>(
       <div
         ref={ref}
         className={cn(
-          'group focus-visible:ring-ring focus-visible:ring-offset-background relative cursor-pointer rounded-lg border transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+          'group focus-visible:ring-ring focus-visible:ring-offset-background relative rounded-lg border transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
           selected
             ? 'border-primary bg-primary/10 text-foreground'
             : 'bg-secondary text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground border-transparent',

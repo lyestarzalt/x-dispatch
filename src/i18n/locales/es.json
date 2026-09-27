@@ -5,6 +5,8 @@
     "close": "Cerrar",
     "save": "Guardar",
     "delete": "Eliminar",
+    "enable": "Activar",
+    "disable": "Desactivar",
     "edit": "Editar",
     "test": "Probar",
     "loading": "Cargando...",

@@ -90,7 +90,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
           : 'border-muted-foreground/20 from-muted/20 to-muted/5 bg-gradient-to-b',
         disabled
           ? 'cursor-not-allowed opacity-50'
-          : 'hover:border-primary/40 hover:bg-muted/30 cursor-pointer hover:shadow-lg'
+          : 'hover:border-primary/40 hover:bg-muted/30 hover:shadow-lg'
       )}
     >
       {/* Background pattern */}

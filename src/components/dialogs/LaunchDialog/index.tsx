@@ -310,7 +310,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           <DialogTitle>{t('launcher.title')}</DialogTitle>
         </VisuallyHidden.Root>
         {/* Header */}
-        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4">
+        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4 select-none">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium">{t('launcher.title')}</span>
             {startPosition && (

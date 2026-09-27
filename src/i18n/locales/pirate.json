@@ -5,6 +5,8 @@
     "close": "Batten Down",
     "save": "Stow",
     "delete": "Scuttle",
+    "enable": "Hoist",
+    "disable": "Strike",
     "edit": "Refit",
     "test": "Sea Trial",
     "loading": "Loadin'...",

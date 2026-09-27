@@ -1,9 +1,16 @@
 // src/components/dialogs/AddonManager/components/AircraftCard.tsx
 import { useTranslation } from 'react-i18next';
-import { FolderOpen, Lock, MoreVertical, Plane, Trash2, Unlock } from 'lucide-react';
+import { FolderOpen, Lock, MoreVertical, Plane, Power, Trash2, Unlock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,119 +46,170 @@ export function AircraftCard({
   const { data: iconSrc } = useAircraftIcon(aircraft.iconPath);
 
   return (
-    <Card
-      className={cn(
-        'bg-muted/30 overflow-hidden transition-all hover:shadow-md',
-        !aircraft.enabled && 'opacity-60',
-        aircraft.locked && 'ring-warning ring-1'
-      )}
-    >
-      {/* Thumbnail */}
-      <div
-        className={cn(
-          'bg-muted flex aspect-video items-center justify-center',
-          !aircraft.enabled && 'grayscale'
-        )}
-      >
-        {iconSrc ? (
-          <img src={iconSrc} alt={aircraft.displayName} className="h-full w-full object-cover" />
-        ) : (
-          <Plane className="text-muted-foreground/50 h-12 w-12" />
-        )}
-      </div>
-
-      <CardContent className="p-3">
-        {/* Name */}
-        <h3 className="truncate text-sm font-medium" title={aircraft.displayName}>
-          {aircraft.displayName}
-        </h3>
-
-        {/* Badges row */}
-        <div className="mt-1 flex flex-wrap gap-1">
-          {aircraft.version && (
-            <Badge variant={aircraft.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
-              {aircraft.hasUpdate && aircraft.latestVersion
-                ? t('addonManager.browser.versionUpdate', {
-                    current: aircraft.version,
-                    latest: aircraft.latestVersion,
-                  })
-                : t('addonManager.browser.version', { version: aircraft.version })}
-            </Badge>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <Card
+          className={cn(
+            'bg-muted/30 overflow-hidden transition-all hover:shadow-md',
+            !aircraft.enabled && 'opacity-60',
+            aircraft.locked && 'ring-warning ring-1'
           )}
-          {aircraft.hasLiveries && (
-            <Badge
-              variant="outline"
-              className="hover:bg-accent cursor-pointer text-xs"
-              onClick={() => onOpenLiveries(aircraft.folderName)}
-            >
-              {t('addonManager.aircraftCard.liveries', { count: aircraft.liveryCount })}
-            </Badge>
-          )}
-        </div>
-
-        {/* Actions row */}
-        <div className="mt-3 flex items-center justify-between">
-          <Switch
-            checked={aircraft.enabled}
-            onCheckedChange={() => onToggle(aircraft.folderName)}
-            disabled={disabled || aircraft.locked}
-          />
-
-          <div className="flex items-center gap-1">
-            {/* Lock */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => onLock(aircraft.folderName)}
-                  disabled={disabled}
-                >
-                  {aircraft.locked ? (
-                    <Lock className="text-warning h-3.5 w-3.5" />
-                  ) : (
-                    <Unlock className="text-muted-foreground h-3.5 w-3.5" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {aircraft.locked
-                  ? t('addonManager.aircraftCard.unlock')
-                  : t('addonManager.aircraftCard.lock')}
-              </TooltipContent>
-            </Tooltip>
-
-            {/* More menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
-                  <MoreVertical className="h-3.5 w-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {aircraft.hasLiveries && (
-                  <DropdownMenuItem onClick={() => onOpenLiveries(aircraft.folderName)}>
-                    {t('addonManager.aircraftCard.viewLiveries', { count: aircraft.liveryCount })}
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => onOpenFolder(aircraft.folderName)}>
-                  <FolderOpen className="mr-2 h-4 w-4" />
-                  {t('addonManager.aircraftCard.openFolder')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete(aircraft.folderName)}
-                  disabled={disabled || aircraft.locked}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t('common.delete')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        >
+          {/* Thumbnail */}
+          <div
+            className={cn(
+              'bg-muted flex aspect-video items-center justify-center',
+              !aircraft.enabled && 'grayscale'
+            )}
+          >
+            {iconSrc ? (
+              <img
+                src={iconSrc}
+                alt={aircraft.displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Plane className="text-muted-foreground/50 h-12 w-12" />
+            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          <CardContent className="p-3">
+            {/* Name */}
+            <h3 className="truncate text-sm font-medium" title={aircraft.displayName}>
+              {aircraft.displayName}
+            </h3>
+
+            {/* Badges row */}
+            <div className="mt-1 flex flex-wrap gap-1">
+              {aircraft.version && (
+                <Badge
+                  variant={aircraft.hasUpdate ? 'destructive' : 'secondary'}
+                  className="text-sm"
+                >
+                  {aircraft.hasUpdate && aircraft.latestVersion
+                    ? t('addonManager.browser.versionUpdate', {
+                        current: aircraft.version,
+                        latest: aircraft.latestVersion,
+                      })
+                    : t('addonManager.browser.version', { version: aircraft.version })}
+                </Badge>
+              )}
+              {aircraft.hasLiveries && (
+                <Badge
+                  variant="outline"
+                  className="hover:bg-accent text-xs"
+                  onClick={() => onOpenLiveries(aircraft.folderName)}
+                >
+                  {t('addonManager.aircraftCard.liveries', { count: aircraft.liveryCount })}
+                </Badge>
+              )}
+            </div>
+
+            {/* Actions row */}
+            <div className="mt-3 flex items-center justify-between">
+              <Switch
+                checked={aircraft.enabled}
+                onCheckedChange={() => onToggle(aircraft.folderName)}
+                disabled={disabled || aircraft.locked}
+              />
+
+              <div className="flex items-center gap-1">
+                {/* Lock */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => onLock(aircraft.folderName)}
+                      disabled={disabled}
+                    >
+                      {aircraft.locked ? (
+                        <Lock className="text-warning h-3.5 w-3.5" />
+                      ) : (
+                        <Unlock className="text-muted-foreground h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {aircraft.locked
+                      ? t('addonManager.aircraftCard.unlock')
+                      : t('addonManager.aircraftCard.lock')}
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* More menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <MoreVertical className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {aircraft.hasLiveries && (
+                      <DropdownMenuItem onClick={() => onOpenLiveries(aircraft.folderName)}>
+                        {t('addonManager.aircraftCard.viewLiveries', {
+                          count: aircraft.liveryCount,
+                        })}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => onOpenFolder(aircraft.folderName)}>
+                      <FolderOpen className="mr-2 h-4 w-4" />
+                      {t('addonManager.aircraftCard.openFolder')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete(aircraft.folderName)}
+                      disabled={disabled || aircraft.locked}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {t('common.delete')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem
+          onSelect={() => onToggle(aircraft.folderName)}
+          disabled={disabled || aircraft.locked}
+        >
+          <Power className="mr-2 h-3.5 w-3.5" />
+          {aircraft.enabled ? t('common.disable') : t('common.enable')}
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => onLock(aircraft.folderName)} disabled={disabled}>
+          {aircraft.locked ? (
+            <Unlock className="mr-2 h-3.5 w-3.5" />
+          ) : (
+            <Lock className="mr-2 h-3.5 w-3.5" />
+          )}
+          {aircraft.locked
+            ? t('addonManager.aircraftCard.unlock')
+            : t('addonManager.aircraftCard.lock')}
+        </ContextMenuItem>
+        {aircraft.hasLiveries && (
+          <ContextMenuItem onSelect={() => onOpenLiveries(aircraft.folderName)}>
+            <Plane className="mr-2 h-3.5 w-3.5" />
+            {t('addonManager.aircraftCard.viewLiveries', { count: aircraft.liveryCount })}
+          </ContextMenuItem>
+        )}
+        <ContextMenuItem onSelect={() => onOpenFolder(aircraft.folderName)}>
+          <FolderOpen className="mr-2 h-3.5 w-3.5" />
+          {t('addonManager.aircraftCard.openFolder')}
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onSelect={() => onDelete(aircraft.folderName)}
+          disabled={disabled || aircraft.locked}
+          className="text-destructive focus:text-destructive"
+        >
+          <Trash2 className="mr-2 h-3.5 w-3.5" />
+          {t('common.delete')}
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

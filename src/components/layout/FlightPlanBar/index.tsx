@@ -199,7 +199,7 @@ const WaypointChip = memo(function WaypointChip({ chip, isActive, onClick }: Way
       variant={variant}
       onClick={onClick}
       className={cn(
-        'cursor-pointer gap-1 px-2 py-0.5 text-[11px] whitespace-nowrap',
+        'gap-1 px-2 py-0.5 text-[11px] whitespace-nowrap',
         'transition-all hover:scale-[1.02] active:scale-[0.98]',
         isActive && 'ring-info ring-offset-background ring-1 ring-offset-1'
       )}

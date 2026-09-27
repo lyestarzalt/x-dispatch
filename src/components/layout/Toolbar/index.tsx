@@ -591,7 +591,7 @@ function Toolbar({
     rangeRingsEnabled;
 
   return (
-    <div className="relative flex items-center gap-3">
+    <div className="relative flex items-center gap-3 select-none">
       <ClockWidget />
 
       {/* Search */}

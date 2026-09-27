@@ -22,7 +22,7 @@ const CollapsibleSectionTrigger = React.forwardRef<
   <CollapsiblePrimitive.CollapsibleTrigger
     ref={ref}
     className={cn(
-      'group hover:bg-accent/50 flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 transition-colors',
+      'group hover:bg-accent/50 flex w-full items-center rounded-sm px-2 py-1.5 transition-colors',
       className
     )}
     {...props}

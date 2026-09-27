@@ -97,8 +97,20 @@ export function useSceneryToggle() {
       }
       return result.value;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
+    // Optimistic: flip the switch immediately, roll back if the write fails.
+    onMutate: async (folderName) => {
+      await queryClient.cancelQueries({ queryKey: addonKeys.sceneryList });
+      const previous = queryClient.getQueryData<SceneryEntry[]>(addonKeys.sceneryList);
+      queryClient.setQueryData<SceneryEntry[]>(addonKeys.sceneryList, (list) =>
+        list?.map((e) => (e.folderName === folderName ? { ...e, enabled: !e.enabled } : e))
+      );
+      return { previous };
+    },
+    onError: (_err, _folderName, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(addonKeys.sceneryList, ctx.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
     },
   });
 }
@@ -223,9 +235,20 @@ export function useAircraftToggle() {
       if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
       return result.value;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
-      queryClient.invalidateQueries({ queryKey: launchKeys.aircraftList });
+    onMutate: async (folderName) => {
+      await queryClient.cancelQueries({ queryKey: addonKeys.aircraft });
+      const previous = queryClient.getQueryData<AircraftInfo[]>(addonKeys.aircraft);
+      queryClient.setQueryData<AircraftInfo[]>(addonKeys.aircraft, (list) =>
+        list?.map((a) => (a.folderName === folderName ? { ...a, enabled: !a.enabled } : a))
+      );
+      return { previous };
+    },
+    onError: (_err, _folderName, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(addonKeys.aircraft, ctx.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: addonKeys.aircraft });
+      void queryClient.invalidateQueries({ queryKey: launchKeys.aircraftList });
     },
   });
 }
@@ -295,7 +318,20 @@ export function usePluginToggle() {
       if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
       return result.value;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.plugins }),
+    onMutate: async (folderName) => {
+      await queryClient.cancelQueries({ queryKey: addonKeys.plugins });
+      const previous = queryClient.getQueryData<PluginInfo[]>(addonKeys.plugins);
+      queryClient.setQueryData<PluginInfo[]>(addonKeys.plugins, (list) =>
+        list?.map((p) => (p.folderName === folderName ? { ...p, enabled: !p.enabled } : p))
+      );
+      return { previous };
+    },
+    onError: (_err, _folderName, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(addonKeys.plugins, ctx.previous);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: addonKeys.plugins });
+    },
   });
 }
 

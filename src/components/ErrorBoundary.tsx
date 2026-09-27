@@ -65,7 +65,7 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
             </p>
             {this.state.error && (
               <details className="mt-2 max-w-lg">
-                <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm">
+                <summary className="text-muted-foreground hover:text-foreground text-sm">
                   {t('errorBoundary.errorDetails')}
                 </summary>
                 <pre className="bg-muted text-muted-foreground mt-2 max-h-32 overflow-auto rounded p-2 text-xs">

@@ -5,6 +5,8 @@
     "close": "Close",
     "save": "Save",
     "delete": "Delete",
+    "enable": "Enable",
+    "disable": "Disable",
     "edit": "Edit",
     "test": "Test",
     "loading": "Loading...",

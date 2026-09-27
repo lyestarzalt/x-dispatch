@@ -65,7 +65,7 @@ function AircraftListItem({
         .filter(Boolean)
         .join(' · ')}
       className={cn(
-        'group focus-visible:ring-primary relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
+        'group focus-visible:ring-primary relative flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
         isSelected ? 'bg-primary/10' : 'bg-secondary hover:bg-accent'
       )}
     >

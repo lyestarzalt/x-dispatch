@@ -5,6 +5,8 @@
     "close": "閉じる",
     "save": "保存",
     "delete": "削除",
+    "enable": "有効にする",
+    "disable": "無効にする",
     "edit": "編集",
     "test": "テスト",
     "loading": "読み込み中...",
