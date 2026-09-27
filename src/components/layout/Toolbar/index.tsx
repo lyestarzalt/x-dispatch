@@ -30,6 +30,7 @@ import {
   Wind,
   X,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { AirStartSpeedInput } from '@/components/AirStartSpeedInput';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
@@ -60,6 +61,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
+import { quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useDistinctCountries, useNavDataCounts } from '@/queries';
@@ -589,7 +591,7 @@ function Toolbar({
     rangeRingsEnabled;
 
   return (
-    <div className="relative flex items-center gap-3">
+    <div className="relative flex items-center gap-3 select-none">
       <ClockWidget />
 
       {/* Search */}
@@ -624,7 +626,12 @@ function Toolbar({
         />
 
         {showResults && filteredAirports.length > 0 && (
-          <div className="border-border bg-popover absolute top-full right-0 left-0 z-50 mt-1 overflow-hidden rounded-lg border">
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={quickFade}
+            className="border-border bg-popover absolute top-full right-0 left-0 z-50 mt-1 overflow-hidden rounded-lg border"
+          >
             {filteredAirports.map((airport, index) => (
               <Button
                 key={airport.icao}
@@ -642,7 +649,7 @@ function Toolbar({
                 <span className="truncate">{airport.name}</span>
               </Button>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 

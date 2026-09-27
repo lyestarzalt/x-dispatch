@@ -1,14 +1,34 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMapStore } from '@/stores/mapStore';
 import type { Coordinates } from '@/types/geo';
+import type { RangeRingCategory } from '@/types/layers';
 import { RANGE_RING_COLORS, RANGE_RING_LABELS, RANGE_RING_SPEEDS } from '@/types/layers';
-import { addRangeRingsLayer, removeRangeRingsLayer } from '../layers';
+import { addRangeRingsLayer, removeRangeRingsLayer, updateRangeRingsData } from '../layers';
 import type { RangeRingsConfig } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseRangeRingsSyncOptions {
   mapRef: MapRef;
   navDataLocation: Coordinates | null;
+}
+
+function buildConfig(
+  centerLat: number,
+  centerLon: number,
+  durationHours: number,
+  categoryIds: RangeRingCategory[]
+): RangeRingsConfig {
+  return {
+    centerLat,
+    centerLon,
+    durationHours,
+    categories: categoryIds.map((id) => ({
+      id,
+      color: RANGE_RING_COLORS[id],
+      speed: RANGE_RING_SPEEDS[id],
+      label: RANGE_RING_LABELS[id],
+    })),
+  };
 }
 
 export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSyncOptions): void {
@@ -20,34 +40,23 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
   // Use primitive values so airport switches always trigger recalculation
   const centerLat = navDataLocation?.latitude ?? null;
   const centerLon = navDataLocation?.longitude ?? null;
+  const categoriesKey = rangeRingsCategories.join(',');
 
-  const config = useMemo<RangeRingsConfig | null>(() => {
-    if (
-      !rangeRingsEnabled ||
-      centerLat === null ||
-      centerLon === null ||
-      rangeRingsCategories.length === 0
-    )
-      return null;
+  const durationRef = useRef(rangeRingsDuration);
+  const appliedDurationRef = useRef<number | null>(null);
+  useEffect(() => {
+    durationRef.current = rangeRingsDuration;
+  }, [rangeRingsDuration]);
 
-    return {
-      centerLat,
-      centerLon,
-      durationHours: rangeRingsDuration,
-      categories: rangeRingsCategories.map((id) => ({
-        id,
-        color: RANGE_RING_COLORS[id],
-        speed: RANGE_RING_SPEEDS[id],
-        label: RANGE_RING_LABELS[id],
-      })),
-    };
-  }, [rangeRingsEnabled, rangeRingsDuration, rangeRingsCategories, centerLat, centerLon]);
-
+  // Structural changes (enable, airport, categories) rebuild the layers and
+  // replay the entrance sweep.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    if (!config) {
+    const active =
+      rangeRingsEnabled && centerLat !== null && centerLon !== null && categoriesKey !== '';
+    if (!active) {
       removeRangeRingsLayer(map);
       return;
     }
@@ -55,7 +64,17 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
     const addLayer = () => {
       if (!mapRef.current) return;
       try {
-        addRangeRingsLayer(map, config, setRangeRingsDuration);
+        appliedDurationRef.current = durationRef.current;
+        addRangeRingsLayer(
+          map,
+          buildConfig(
+            centerLat,
+            centerLon,
+            durationRef.current,
+            categoriesKey.split(',') as RangeRingCategory[]
+          ),
+          setRangeRingsDuration
+        );
       } catch (err) {
         window.appAPI?.log?.error?.('Failed to add range rings layer', err);
       }
@@ -74,5 +93,25 @@ export function useRangeRingsSync({ mapRef, navDataLocation }: UseRangeRingsSync
     return () => {
       removeRangeRingsLayer(map);
     };
-  }, [mapRef, config, setRangeRingsDuration]);
+  }, [mapRef, rangeRingsEnabled, centerLat, centerLon, categoriesKey, setRangeRingsDuration]);
+
+  // Duration-only changes (drag resize) refresh the data in place: no layer
+  // teardown, no flicker, drag listeners stay attached.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (appliedDurationRef.current === rangeRingsDuration) return;
+    if (!rangeRingsEnabled || centerLat === null || centerLon === null || categoriesKey === '')
+      return;
+    appliedDurationRef.current = rangeRingsDuration;
+    updateRangeRingsData(
+      map,
+      buildConfig(
+        centerLat,
+        centerLon,
+        rangeRingsDuration,
+        categoriesKey.split(',') as RangeRingCategory[]
+      )
+    );
+  }, [mapRef, rangeRingsDuration, rangeRingsEnabled, centerLat, centerLon, categoriesKey]);
 }

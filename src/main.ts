@@ -416,7 +416,10 @@ function createWindow(): BrowserWindow {
       }
     });
 
+    // Only while DevTools are open — the native popup would otherwise steal
+    // focus from the app's own context menus on every right-click.
     window.webContents.on('context-menu', (_event, params) => {
+      if (!window.webContents.isDevToolsOpened()) return;
       Menu.buildFromTemplate([
         {
           label: 'Inspect element',

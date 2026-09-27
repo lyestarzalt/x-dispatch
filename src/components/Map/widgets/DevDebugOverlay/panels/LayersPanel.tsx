@@ -63,7 +63,7 @@ function TechnicalToggles() {
     <div>
       <SectionLabel>Technical</SectionLabel>
       <label
-        className="flex cursor-pointer items-center justify-between gap-4 py-px"
+        className="flex items-center justify-between gap-4 py-px"
         title="Raw ground routing network: taxi nodes/edges (1201/1202) and service roads (1206)"
       >
         <span className="text-muted-foreground/70">Routing network</span>
@@ -71,7 +71,7 @@ function TechnicalToggles() {
           type="checkbox"
           checked={routingNetwork}
           onChange={() => toggleLayer('routingNetwork')}
-          className="accent-primary h-3 w-3 cursor-pointer"
+          className="accent-primary h-3 w-3"
         />
       </label>
     </div>

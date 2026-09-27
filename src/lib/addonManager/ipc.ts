@@ -597,22 +597,27 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       const manager = new InstallerManager(xplanePath);
       const { BrowserWindow } = await import('electron');
 
-      const result = await manager.install(tasks as never[], {
-        onProgress: (progress) => {
-          // Send progress to all windows
-          BrowserWindow.getAllWindows().forEach((win) => {
-            win.webContents.send('addon:installer:progress', progress);
-          });
-        },
-      });
+      try {
+        const result = await manager.install(tasks as never[], {
+          onProgress: (progress) => {
+            // Send progress to all windows, mirrored on the taskbar icon
+            BrowserWindow.getAllWindows().forEach((win) => {
+              win.webContents.send('addon:installer:progress', progress);
+              win.setProgressBar(progress.overallPercent / 100);
+            });
+          },
+        });
 
-      if (result.ok) {
-        const succeeded = result.value.filter((r) => r.success).length;
-        const failed = result.value.filter((r) => !r.success).length;
-        logger.addon.info(`Installation complete: ${succeeded} succeeded, ${failed} failed`);
+        if (result.ok) {
+          const succeeded = result.value.filter((r) => r.success).length;
+          const failed = result.value.filter((r) => !r.success).length;
+          logger.addon.info(`Installation complete: ${succeeded} succeeded, ${failed} failed`);
+        }
+
+        return result;
+      } finally {
+        BrowserWindow.getAllWindows().forEach((win) => win.setProgressBar(-1));
       }
-
-      return result;
     } catch (e) {
       logger.addon.error(`Installation failed: ${e}`);
       return { ok: false, error: { code: 'INSTALL_FAILED', path: '', reason: String(e) } };

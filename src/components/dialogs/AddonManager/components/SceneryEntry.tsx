@@ -3,8 +3,15 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FolderOpen, GripVertical, Trash2 } from 'lucide-react';
+import { FolderOpen, GripVertical, Power, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
@@ -46,100 +53,123 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
   const positionWidth = Math.max(2, String(totalCount).length);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        'group border-border/50 bg-card/50 flex items-center gap-2 rounded-lg border px-2 py-1.5',
-        'transition-all duration-150',
-        !entry.enabled && 'bg-muted/20 opacity-50',
-        isDragging && 'border-primary bg-card shadow-primary/10 z-50 shadow-xl',
-        !isDragging && 'hover:border-border hover:bg-card'
-      )}
-    >
-      {/* Position number */}
-      <div
-        className={cn(
-          'bg-muted/50 text-muted-foreground flex h-7 items-center justify-center rounded-md font-mono text-sm font-semibold tabular-nums',
-          isDragging && 'bg-primary/20 text-primary'
-        )}
-        style={{ minWidth: `${positionWidth + 0.5}rem` }}
-      >
-        {position}
-      </div>
-
-      {/* Drag handle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        {...attributes}
-        {...listeners}
-        className={cn(
-          'h-7 w-7 cursor-grab',
-          'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-          isDragging && 'text-primary cursor-grabbing'
-        )}
-        disabled={disabled}
-      >
-        <GripVertical className="h-4 w-4" />
-      </Button>
-
-      {/* Enable/disable toggle */}
-      <div className="flex items-center">
-        <Switch
-          checked={entry.enabled}
-          onCheckedChange={() => onToggle(entry.folderName)}
-          disabled={disabled}
-          className="scale-90"
-        />
-      </div>
-
-      {/* Priority badge */}
-      <PriorityBadge priority={entry.priority} />
-
-      {/* Folder name */}
-      <div className="min-w-0 flex-1">
-        <span
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          ref={setNodeRef}
+          style={style}
           className={cn(
-            'block truncate font-mono text-sm',
-            entry.enabled ? 'text-foreground' : 'text-muted-foreground'
+            'group border-border/50 bg-card/50 flex items-center gap-2 rounded-lg border px-2 py-1.5',
+            'transition-all duration-150',
+            !entry.enabled && 'bg-muted/20 opacity-50',
+            isDragging && 'border-primary bg-card shadow-primary/10 z-50 shadow-xl',
+            !isDragging && 'hover:border-border hover:bg-card'
           )}
-          title={entry.folderName}
         >
-          {entry.folderName}
-        </span>
-      </div>
-
-      {/* Open folder button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
-            onClick={() => onOpenFolder(entry.fullPath)}
+          {/* Position number */}
+          <div
+            className={cn(
+              'bg-muted/50 text-muted-foreground flex h-7 items-center justify-center rounded-md font-mono text-sm font-semibold tabular-nums',
+              isDragging && 'bg-primary/20 text-primary'
+            )}
+            style={{ minWidth: `${positionWidth + 0.5}rem` }}
           >
-            <FolderOpen className="text-muted-foreground h-3.5 w-3.5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">{t('addonManager.sceneryEntry.openFolder')}</TooltipContent>
-      </Tooltip>
+            {position}
+          </div>
 
-      {/* Delete button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
+          {/* Drag handle */}
           <Button
             variant="ghost"
             size="icon"
-            className="hover:text-destructive h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
-            onClick={() => onDelete(entry.folderName)}
+            {...attributes}
+            {...listeners}
+            className={cn(
+              'h-7 w-7 cursor-grab',
+              'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
+              isDragging && 'text-primary cursor-grabbing'
+            )}
             disabled={disabled}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <GripVertical className="h-4 w-4" />
           </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">{t('addonManager.sceneryEntry.delete')}</TooltipContent>
-      </Tooltip>
-    </div>
+
+          {/* Enable/disable toggle */}
+          <div className="flex items-center">
+            <Switch
+              checked={entry.enabled}
+              onCheckedChange={() => onToggle(entry.folderName)}
+              disabled={disabled}
+              className="scale-90"
+            />
+          </div>
+
+          {/* Priority badge */}
+          <PriorityBadge priority={entry.priority} />
+
+          {/* Folder name */}
+          <div className="min-w-0 flex-1">
+            <span
+              className={cn(
+                'block truncate font-mono text-sm',
+                entry.enabled ? 'text-foreground' : 'text-muted-foreground'
+              )}
+              title={entry.folderName}
+            >
+              {entry.folderName}
+            </span>
+          </div>
+
+          {/* Open folder button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={() => onOpenFolder(entry.fullPath)}
+              >
+                <FolderOpen className="text-muted-foreground h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">{t('addonManager.sceneryEntry.openFolder')}</TooltipContent>
+          </Tooltip>
+
+          {/* Delete button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:text-destructive h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={() => onDelete(entry.folderName)}
+                disabled={disabled}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">{t('addonManager.sceneryEntry.delete')}</TooltipContent>
+          </Tooltip>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onSelect={() => onToggle(entry.folderName)} disabled={disabled}>
+          <Power className="mr-2 h-3.5 w-3.5" />
+          {entry.enabled ? t('common.disable') : t('common.enable')}
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => onOpenFolder(entry.fullPath)}>
+          <FolderOpen className="mr-2 h-3.5 w-3.5" />
+          {t('addonManager.sceneryEntry.openFolder')}
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onSelect={() => onDelete(entry.folderName)}
+          disabled={disabled}
+          className="text-destructive focus:text-destructive"
+        >
+          <Trash2 className="mr-2 h-3.5 w-3.5" />
+          {t('addonManager.sceneryEntry.delete')}
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 });

@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { MotionConfig } from 'motion/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
@@ -129,11 +130,14 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryProvider>
-        <TooltipProvider>
-          <AppContent />
-          <UpdateAvailableToast />
-          <Toaster position="bottom-center" />
-        </TooltipProvider>
+        <MotionConfig reducedMotion="user">
+          {/* Native tooltip cadence: a beat before the first one, instant between neighbors */}
+          <TooltipProvider delayDuration={500} skipDelayDuration={300}>
+            <AppContent />
+            <UpdateAvailableToast />
+            <Toaster position="bottom-center" />
+          </TooltipProvider>
+        </MotionConfig>
       </QueryProvider>
     </ErrorBoundary>
   );

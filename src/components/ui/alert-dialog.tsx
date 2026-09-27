@@ -1,9 +1,40 @@
 import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
+import { AnimatePresence, motion } from 'motion/react';
 import { buttonVariants } from '@/components/ui/button';
+import { exitEase, overlayFade, panelSpring } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 
-const AlertDialog = AlertDialogPrimitive.Root;
+// Same open-state mirroring as dialog.tsx: Motion needs it for exit animations.
+const AlertDialogOpenContext = React.createContext(false);
+
+function AlertDialog({
+  open,
+  defaultOpen,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false);
+  const isOpen = open ?? uncontrolledOpen;
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      setUncontrolledOpen(next);
+      onOpenChange?.(next);
+    },
+    [onOpenChange]
+  );
+  return (
+    <AlertDialogOpenContext.Provider value={isOpen}>
+      <AlertDialogPrimitive.Root
+        open={open}
+        defaultOpen={defaultOpen}
+        onOpenChange={handleOpenChange}
+        {...props}
+      />
+    </AlertDialogOpenContext.Provider>
+  );
+}
+
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
@@ -11,40 +42,54 @@ const AlertDialogOverlay = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm',
-      className
-    )}
-    {...props}
-  />
+  <AlertDialogPrimitive.Overlay ref={ref} forceMount asChild {...props}>
+    <motion.div
+      className={cn('fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm', className)}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: exitEase }}
+      transition={overlayFade}
+    />
+  </AlertDialogPrimitive.Overlay>
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <AlertDialogPortal>
-    <AlertDialogOverlay />
-    <AlertDialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        'border-border bg-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-[100] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border p-6 duration-200 sm:rounded-lg',
-        className
+>(({ className, children, ...props }, ref) => {
+  const open = React.useContext(AlertDialogOpenContext);
+  return (
+    <AnimatePresence>
+      {open && (
+        <AlertDialogPortal forceMount>
+          <AlertDialogOverlay />
+          <AlertDialogPrimitive.Content ref={ref} forceMount asChild {...props}>
+            <motion.div
+              className={cn(
+                'border-border bg-popover fixed top-[50%] left-[50%] z-[100] grid w-full max-w-lg gap-4 border p-6 sm:rounded-lg',
+                className
+              )}
+              initial={{ opacity: 0, scale: 0.97, x: '-50%', y: '-48%' }}
+              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, scale: 0.98, x: '-50%', y: '-50%', transition: exitEase }}
+              transition={panelSpring}
+            >
+              {children}
+            </motion.div>
+          </AlertDialogPrimitive.Content>
+        </AlertDialogPortal>
       )}
-      {...props}
-    />
-  </AlertDialogPortal>
-));
+    </AnimatePresence>
+  );
+});
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
 const AlertDialogHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)}
+      className={cn('flex flex-col space-y-1.5 text-center select-none sm:text-left', className)}
       {...props}
     />
   )

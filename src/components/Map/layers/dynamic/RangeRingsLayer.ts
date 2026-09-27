@@ -29,6 +29,7 @@ const RING_LINE_LAYER_ID = 'range-rings-line';
 const RING_GLOW_LAYER_ID = 'range-rings-glow';
 const RING_HITBOX_LAYER_ID = 'range-rings-hitbox';
 const RING_LABEL_LAYER_ID = 'range-rings-labels';
+const RING_TICKS_LAYER_ID = 'range-rings-ticks';
 const RING_SOURCE_ID = 'range-rings-source';
 
 export const RANGE_RINGS_LAYER_IDS = [
@@ -36,7 +37,10 @@ export const RANGE_RINGS_LAYER_IDS = [
   RING_GLOW_LAYER_ID,
   RING_HITBOX_LAYER_ID,
   RING_LABEL_LAYER_ID,
+  RING_TICKS_LAYER_ID,
 ];
+
+const ENTRANCE_MS = 450;
 
 // ============================================================================
 // Geometry
@@ -57,10 +61,56 @@ function generateCircleCoords(
   return coords;
 }
 
-function createRingsGeoJSON(config: RangeRingsConfig): GeoJSON.FeatureCollection {
+function formatDuration(hours: number): string {
+  const totalMin = Math.round(hours * 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m}m`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+/**
+ * Bearing ticks on the outermost ring, every 30° with longer cardinal marks,
+ * so the rings double as a compass rose.
+ */
+function createBearingTicks(
+  lat: number,
+  lon: number,
+  radiusNm: number,
+  color: string
+): GeoJSON.Feature[] {
+  const radiusMeters = nauticalMilesToMeters(radiusNm) as number;
   const features: GeoJSON.Feature[] = [];
+  for (let bearing = 0; bearing < 360; bearing += 30) {
+    const isCardinal = bearing % 90 === 0;
+    const innerFraction = isCardinal ? 0.92 : 0.955;
+    features.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          destinationPoint(lat, lon, radiusMeters * innerFraction, bearing),
+          destinationPoint(lat, lon, radiusMeters, bearing),
+        ],
+      },
+      properties: { tick: true, color, cardinal: isCardinal },
+    });
+  }
+  return features;
+}
+
+/** `scale` shrinks the radii during the entrance sweep; labels/ticks only at 1. */
+function createRingsGeoJSON(config: RangeRingsConfig, scale = 1): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
+  let maxRadiusNm = 0;
+  let outerColor = '';
   for (const cat of config.categories) {
-    const radiusNm = cat.speed * config.durationHours;
+    const radiusNm = cat.speed * config.durationHours * scale;
+    if (radiusNm > maxRadiusNm) {
+      maxRadiusNm = radiusNm;
+      outerColor = cat.color;
+    }
+    const displayNm = Math.round((cat.speed * config.durationHours) / 5) * 5;
     features.push({
       type: 'Feature',
       geometry: {
@@ -69,9 +119,14 @@ function createRingsGeoJSON(config: RangeRingsConfig): GeoJSON.FeatureCollection
       },
       properties: {
         color: cat.color,
-        label: `${cat.label} · ${Math.round(radiusNm)}nm · ${config.durationHours}h`,
+        label: `${cat.label} · ${displayNm} nm · ${formatDuration(config.durationHours)}`,
       },
     });
+  }
+  if (scale === 1 && maxRadiusNm > 0) {
+    features.push(
+      ...createBearingTicks(config.centerLat, config.centerLon, maxRadiusNm, outerColor)
+    );
   }
   return { type: 'FeatureCollection', features };
 }
@@ -143,7 +198,8 @@ function setupRingDrag(
         lngLat.lng
       ) as number;
       const distNm = distMeters / METERS_PER_NM;
-      const hours = Math.max(0.5, Math.round((distNm / maxSpeed) * 10) / 10);
+      // Snap to 15-minute steps, the granularity fuel planning talks in
+      const hours = Math.max(0.5, Math.round((distNm / maxSpeed) * 4) / 4);
 
       const source = map.getSource(RING_SOURCE_ID) as maplibregl.GeoJSONSource;
       if (source) {
@@ -172,10 +228,7 @@ function setupRingDrag(
         lngLat.lat,
         lngLat.lng
       ) as number;
-      const finalHours = Math.max(
-        0.5,
-        Math.round((finalDist / METERS_PER_NM / maxSpeed) * 10) / 10
-      );
+      const finalHours = Math.max(0.5, Math.round((finalDist / METERS_PER_NM / maxSpeed) * 4) / 4);
       onDurationChange(finalHours);
     };
 
@@ -224,8 +277,64 @@ function teardownRingDrag(): void {
 }
 
 // ============================================================================
+// Entrance sweep
+// ============================================================================
+
+let entranceFrame: number | null = null;
+
+function cancelEntrance(): void {
+  if (entranceFrame !== null && typeof cancelAnimationFrame === 'function') {
+    cancelAnimationFrame(entranceFrame);
+  }
+  entranceFrame = null;
+}
+
+function finishEntrance(map: maplibregl.Map, config: RangeRingsConfig): void {
+  entranceFrame = null;
+  const source = map.getSource(RING_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+  if (source) source.setData(createRingsGeoJSON(config));
+  if (map.getLayer(RING_LABEL_LAYER_ID)) {
+    map.setPaintProperty(RING_LABEL_LAYER_ID, 'text-opacity', 0.8);
+  }
+  if (map.getLayer(RING_TICKS_LAYER_ID)) {
+    map.setPaintProperty(RING_TICKS_LAYER_ID, 'line-opacity', 0.35);
+  }
+}
+
+/** Rings sweep out from the airport; labels and ticks fade in once settled. */
+function runEntrance(map: maplibregl.Map, config: RangeRingsConfig): void {
+  cancelEntrance();
+  const reducedMotion =
+    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (typeof requestAnimationFrame !== 'function' || reducedMotion) {
+    finishEntrance(map, config);
+    return;
+  }
+
+  const start = performance.now();
+  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+  const tick = (now: number) => {
+    const source = map.getSource(RING_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (!source) {
+      entranceFrame = null;
+      return;
+    }
+    const t = Math.min(1, (now - start) / ENTRANCE_MS);
+    if (t >= 1) {
+      finishEntrance(map, config);
+      return;
+    }
+    source.setData(createRingsGeoJSON(config, 0.2 + 0.8 * easeOutCubic(t)));
+    entranceFrame = requestAnimationFrame(tick);
+  };
+  entranceFrame = requestAnimationFrame(tick);
+}
+
+// ============================================================================
 // Public API
 // ============================================================================
+
+const NOT_TICK_FILTER: maplibregl.FilterSpecification = ['!', ['has', 'tick']];
 
 export function addRangeRingsLayer(
   map: maplibregl.Map,
@@ -237,13 +346,14 @@ export function addRangeRingsLayer(
   removeRangeRingsLayer(map);
   if (config.categories.length === 0) return;
 
-  safeAddGeoJSONSource(map, RING_SOURCE_ID, createRingsGeoJSON(config));
+  safeAddGeoJSONSource(map, RING_SOURCE_ID, createRingsGeoJSON(config, 0.2));
 
   // Glow layer — hidden by default, shown on hover
   map.addLayer({
     id: RING_GLOW_LAYER_ID,
     type: 'line',
     source: RING_SOURCE_ID,
+    filter: NOT_TICK_FILTER,
     paint: {
       'line-color': ['get', 'color'],
       'line-width': 8,
@@ -257,6 +367,7 @@ export function addRangeRingsLayer(
     id: RING_LINE_LAYER_ID,
     type: 'line',
     source: RING_SOURCE_ID,
+    filter: NOT_TICK_FILTER,
     paint: {
       'line-color': ['get', 'color'],
       'line-width': 1.2,
@@ -265,11 +376,26 @@ export function addRangeRingsLayer(
     },
   });
 
+  // Bearing ticks on the outer ring — solid, faded in after the sweep
+  map.addLayer({
+    id: RING_TICKS_LAYER_ID,
+    type: 'line',
+    source: RING_SOURCE_ID,
+    filter: ['has', 'tick'],
+    paint: {
+      'line-color': ['get', 'color'],
+      'line-width': ['case', ['get', 'cardinal'], 1.6, 1],
+      'line-opacity': 0,
+      'line-opacity-transition': { duration: 300 },
+    },
+  });
+
   // Invisible fat hitbox for easy grabbing (20px wide, fully transparent)
   map.addLayer({
     id: RING_HITBOX_LAYER_ID,
     type: 'line',
     source: RING_SOURCE_ID,
+    filter: NOT_TICK_FILTER,
     paint: {
       'line-color': '#000000',
       'line-width': 20,
@@ -282,6 +408,7 @@ export function addRangeRingsLayer(
     id: RING_LABEL_LAYER_ID,
     type: 'symbol',
     source: RING_SOURCE_ID,
+    filter: NOT_TICK_FILTER,
     layout: {
       'symbol-placement': 'line',
       'symbol-spacing': 400,
@@ -295,35 +422,39 @@ export function addRangeRingsLayer(
       'text-color': ['get', 'color'],
       'text-halo-color': 'rgba(0, 0, 0, 0.8)',
       'text-halo-width': 1.5,
-      'text-opacity': 0.8,
+      'text-opacity': 0,
+      'text-opacity-transition': { duration: 300 },
     },
   });
 
   // Interactive drag on ring lines
   setupRingDrag(map, config, onDurationChange);
+
+  runEntrance(map, config);
+}
+
+/**
+ * Refresh ring radii in place (duration changes). Keeps the layers and drag
+ * listeners, so there is no flicker after a resize drag.
+ */
+export function updateRangeRingsData(map: maplibregl.Map, config: RangeRingsConfig): void {
+  const source = map.getSource(RING_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+  if (!source) return;
+  cancelEntrance();
+  source.setData(createRingsGeoJSON(config));
 }
 
 export function removeRangeRingsLayer(map: maplibregl.Map): void {
   teardownRingDrag();
+  cancelEntrance();
   try {
     if (map.getLayer(RING_HITBOX_LAYER_ID)) map.removeLayer(RING_HITBOX_LAYER_ID);
     if (map.getLayer(RING_LABEL_LAYER_ID)) map.removeLayer(RING_LABEL_LAYER_ID);
+    if (map.getLayer(RING_TICKS_LAYER_ID)) map.removeLayer(RING_TICKS_LAYER_ID);
     if (map.getLayer(RING_LINE_LAYER_ID)) map.removeLayer(RING_LINE_LAYER_ID);
     if (map.getLayer(RING_GLOW_LAYER_ID)) map.removeLayer(RING_GLOW_LAYER_ID);
     if (map.getSource(RING_SOURCE_ID)) map.removeSource(RING_SOURCE_ID);
   } catch {
     // Silently ignore if map is in a bad state
-  }
-}
-
-export function updateRangeRings(
-  map: maplibregl.Map,
-  config: RangeRingsConfig | null,
-  onDurationChange?: (hours: number) => void
-): void {
-  if (!config || config.categories.length === 0) {
-    removeRangeRingsLayer(map);
-  } else {
-    addRangeRingsLayer(map, config, onDurationChange);
   }
 }

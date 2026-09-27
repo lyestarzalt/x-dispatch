@@ -43,13 +43,13 @@ function ToggleRow({
   tip?: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 py-px" title={tip}>
+    <label className="flex items-center justify-between gap-4 py-px" title={tip}>
       <span className="text-muted-foreground/70">{label}</span>
       <input
         type="checkbox"
         checked={value}
         onChange={(e) => onChange(e.target.checked)}
-        className="accent-primary h-3 w-3 cursor-pointer"
+        className="accent-primary h-3 w-3"
       />
     </label>
   );

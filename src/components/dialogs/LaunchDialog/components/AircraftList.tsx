@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Plane, Search, Star } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { quickFade } from '@/lib/motionPresets';
 import { aircraftStudio } from '@/lib/utils/aircraftStudio';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
@@ -63,14 +65,29 @@ function AircraftListItem({
         .filter(Boolean)
         .join(' · ')}
       className={cn(
-        'group focus-visible:ring-primary relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
-        isSelected ? 'bg-primary/10 ring-primary ring-2' : 'bg-secondary hover:bg-accent'
+        'group focus-visible:ring-primary relative flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition-all focus-visible:ring-2 focus-visible:outline-none',
+        isSelected ? 'bg-primary/10' : 'bg-secondary hover:bg-accent'
       )}
     >
+      {isSelected && (
+        <motion.div
+          initial={{ opacity: 0, scale: 1.015 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={quickFade}
+          className="ring-primary pointer-events-none absolute inset-0 rounded-lg ring-2"
+        />
+      )}
       {/* Aircraft Thumbnail */}
       <div className="bg-muted relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg">
         {imageUrl ? (
-          <img src={imageUrl} alt={aircraft.name} className="h-full w-full object-contain" />
+          <motion.img
+            src={imageUrl}
+            alt={aircraft.name}
+            className="h-full w-full object-contain"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={quickFade}
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Plane className="text-muted-foreground/20 h-5 w-5" />

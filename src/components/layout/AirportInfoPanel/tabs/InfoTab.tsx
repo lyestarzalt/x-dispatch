@@ -511,7 +511,7 @@ function RunwayRow({
               <CollapsibleTrigger asChild>
                 <Badge
                   variant="info"
-                  className="group hover:bg-info/30 cursor-pointer gap-1 px-1.5 py-0 font-mono uppercase"
+                  className="group hover:bg-info/30 gap-1 px-1.5 py-0 font-mono uppercase"
                 >
                   <ChevronDown className="h-3 w-3 transition-transform duration-150 group-data-[state=open]:rotate-180" />
                   ILS

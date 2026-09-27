@@ -126,7 +126,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                 className={cn(
                   'group flex w-full min-w-0 items-start gap-3 overflow-hidden rounded px-2 py-2 text-left transition-colors',
                   known
-                    ? 'hover:bg-muted/50 focus-visible:bg-muted/50 cursor-pointer focus-visible:outline-none'
+                    ? 'hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none'
                     : 'cursor-default'
                 )}
               >

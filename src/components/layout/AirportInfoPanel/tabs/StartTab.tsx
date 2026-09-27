@@ -271,7 +271,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
               'rounded px-2.5 py-2',
               isSelected
                 ? 'bg-cat-emerald/10 text-cat-emerald'
-                : 'text-foreground/80 hover:bg-muted/50 cursor-pointer'
+                : 'text-foreground/80 hover:bg-muted/50'
             )}
             onClick={() =>
               onSelect?.({

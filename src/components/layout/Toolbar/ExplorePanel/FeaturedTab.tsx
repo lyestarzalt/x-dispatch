@@ -34,7 +34,7 @@ export function FeaturedTab({ category, onCategoryChange, onSelectAirport }: Fea
           <Badge
             key={cat}
             variant={category === cat ? CATEGORY_VARIANTS[cat] : 'secondary'}
-            className="cursor-pointer text-xs"
+            className="text-xs"
             onClick={() => onCategoryChange(cat as FeaturedCategory | 'all')}
           >
             {cat === 'all' ? t('explore.featured.all') : t(`explore.featured.${cat}`)}

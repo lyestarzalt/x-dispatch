@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
   ArrowUpDown,
@@ -15,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -164,128 +163,125 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogPrimitive.Content
-          className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col overflow-hidden rounded-lg border shadow-xl"
-          aria-describedby={undefined}
-        >
-          <VisuallyHidden.Root>
-            <DialogTitle>{t('launcher.weatherDialog.title')}</DialogTitle>
-          </VisuallyHidden.Root>
+      <DialogPanel
+        className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col overflow-hidden rounded-lg border shadow-xl"
+        aria-describedby={undefined}
+      >
+        <VisuallyHidden.Root>
+          <DialogTitle>{t('launcher.weatherDialog.title')}</DialogTitle>
+        </VisuallyHidden.Root>
 
-          {/* Header */}
-          <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between border-b px-4">
-            <span className="text-sm font-medium">{t('launcher.weatherDialog.title')}</span>
-            <div className="flex items-center gap-2">
-              {!isReal && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddCloud}
-                    disabled={custom.clouds.length >= 3}
-                    className="h-7 gap-1.5 text-xs"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    {t('launcher.weatherDialog.addCloud')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddWind}
-                    disabled={custom.wind.length >= 13}
-                    className="h-7 gap-1.5 text-xs"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    {t('launcher.weatherDialog.addWind')}
-                  </Button>
-                </>
-              )}
-              <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Body — 3 panel layout */}
-          <div className="flex min-h-0 flex-1">
-            {/* LEFT — Layer Properties */}
-            <div
-              className={cn(
-                'border-border w-[280px] shrink-0 overflow-y-auto border-r p-4',
-                isReal && 'pointer-events-none opacity-40'
-              )}
-            >
-              <SectionHeader text={t('launcher.weatherDialog.layerProperties')} />
-              {(() => {
-                if (validSelection?.kind === 'cloud') {
-                  const cloudLayer = custom.clouds[validSelection.index];
-                  if (cloudLayer) {
-                    return (
-                      <CloudLayerProperties
-                        index={validSelection.index}
-                        layer={cloudLayer}
-                        onUpdate={(data) => updateCloudLayer(validSelection.index, data)}
-                        onRemove={() => handleRemoveCloud(validSelection.index)}
-                      />
-                    );
-                  }
-                }
-                if (validSelection?.kind === 'wind') {
-                  const windLayer = custom.wind[validSelection.index];
-                  if (windLayer) {
-                    return (
-                      <WindLayerProperties
-                        index={validSelection.index}
-                        layer={windLayer}
-                        onUpdate={(data) => updateWindLayer(validSelection.index, data)}
-                        onRemove={() => handleRemoveWind(validSelection.index)}
-                      />
-                    );
-                  }
-                }
-                return null;
-              })() ?? (
-                <p className="text-muted-foreground mt-8 text-center text-sm">
-                  {t('launcher.weatherDialog.emptyHint')}
-                </p>
-              )}
-            </div>
-
-            {/* CENTER — Altitude Diagram */}
-            <div
-              className={cn(
-                'flex min-w-0 flex-1 flex-col p-2',
-                isReal && 'pointer-events-none opacity-40'
-              )}
-            >
-              <AltitudeDiagram
-                clouds={custom.clouds}
-                wind={custom.wind}
-                airportElevationFt={airportElevationFt}
-                selectedLayer={validSelection}
-                onSelectLayer={setSelectedLayer}
-                onUpdateCloud={(i, data) => updateCloudLayer(i, data)}
-                onUpdateWind={(i, data) => updateWindLayer(i, data)}
-                disabled={isReal}
-              />
-            </div>
-
-            {/* RIGHT — Atmospheric + Environment */}
-            <div className="border-border w-[320px] shrink-0 overflow-y-auto border-l p-4">
-              <AtmosphericPanel custom={custom} isReal={isReal} onUpdate={updateCustomWeather} />
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-border bg-card flex flex-shrink-0 justify-end border-t px-4 py-2.5">
-            <Button onClick={onClose} size="sm">
-              {t('launcher.weatherDialog.done')}
+        {/* Header */}
+        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between border-b px-4">
+          <span className="text-sm font-medium">{t('launcher.weatherDialog.title')}</span>
+          <div className="flex items-center gap-2">
+            {!isReal && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddCloud}
+                  disabled={custom.clouds.length >= 3}
+                  className="h-7 gap-1.5 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {t('launcher.weatherDialog.addCloud')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddWind}
+                  disabled={custom.wind.length >= 13}
+                  className="h-7 gap-1.5 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {t('launcher.weatherDialog.addWind')}
+                </Button>
+              </>
+            )}
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+              <X className="h-3.5 w-3.5" />
             </Button>
           </div>
-        </DialogPrimitive.Content>
-      </DialogPortal>
+        </div>
+
+        {/* Body — 3 panel layout */}
+        <div className="flex min-h-0 flex-1">
+          {/* LEFT — Layer Properties */}
+          <div
+            className={cn(
+              'border-border w-[280px] shrink-0 overflow-y-auto border-r p-4',
+              isReal && 'pointer-events-none opacity-40'
+            )}
+          >
+            <SectionHeader text={t('launcher.weatherDialog.layerProperties')} />
+            {(() => {
+              if (validSelection?.kind === 'cloud') {
+                const cloudLayer = custom.clouds[validSelection.index];
+                if (cloudLayer) {
+                  return (
+                    <CloudLayerProperties
+                      index={validSelection.index}
+                      layer={cloudLayer}
+                      onUpdate={(data) => updateCloudLayer(validSelection.index, data)}
+                      onRemove={() => handleRemoveCloud(validSelection.index)}
+                    />
+                  );
+                }
+              }
+              if (validSelection?.kind === 'wind') {
+                const windLayer = custom.wind[validSelection.index];
+                if (windLayer) {
+                  return (
+                    <WindLayerProperties
+                      index={validSelection.index}
+                      layer={windLayer}
+                      onUpdate={(data) => updateWindLayer(validSelection.index, data)}
+                      onRemove={() => handleRemoveWind(validSelection.index)}
+                    />
+                  );
+                }
+              }
+              return null;
+            })() ?? (
+              <p className="text-muted-foreground mt-8 text-center text-sm">
+                {t('launcher.weatherDialog.emptyHint')}
+              </p>
+            )}
+          </div>
+
+          {/* CENTER — Altitude Diagram */}
+          <div
+            className={cn(
+              'flex min-w-0 flex-1 flex-col p-2',
+              isReal && 'pointer-events-none opacity-40'
+            )}
+          >
+            <AltitudeDiagram
+              clouds={custom.clouds}
+              wind={custom.wind}
+              airportElevationFt={airportElevationFt}
+              selectedLayer={validSelection}
+              onSelectLayer={setSelectedLayer}
+              onUpdateCloud={(i, data) => updateCloudLayer(i, data)}
+              onUpdateWind={(i, data) => updateWindLayer(i, data)}
+              disabled={isReal}
+            />
+          </div>
+
+          {/* RIGHT — Atmospheric + Environment */}
+          <div className="border-border w-[320px] shrink-0 overflow-y-auto border-l p-4">
+            <AtmosphericPanel custom={custom} isReal={isReal} onUpdate={updateCustomWeather} />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-border bg-card flex flex-shrink-0 justify-end border-t px-4 py-2.5">
+          <Button onClick={onClose} size="sm">
+            {t('launcher.weatherDialog.done')}
+          </Button>
+        </div>
+      </DialogPanel>
     </Dialog>
   );
 }

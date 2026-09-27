@@ -169,7 +169,12 @@ describe('migrateSettings', () => {
       airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
     };
     const result = migrateSettings(v25Blob, 25);
-    expect(result.flights).toEqual({ recording: true, landingReport: true, landingFlyTo: true });
+    expect(result.flights).toEqual({
+      recording: true,
+      landingReport: true,
+      landingFlyTo: true,
+      landingNotification: true,
+    });
     expect(result.graphics.dynamicSky).toBe(false);
     expect(result.launcher.closeOnLaunch).toBe(true);
   });

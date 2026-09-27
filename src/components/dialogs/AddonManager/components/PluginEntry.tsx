@@ -1,8 +1,15 @@
 // src/components/dialogs/AddonManager/components/PluginEntry.tsx
 import { useTranslation } from 'react-i18next';
-import { Code, FolderOpen, Lock, Plug, Trash2, Unlock } from 'lucide-react';
+import { Code, FolderOpen, Lock, Plug, Power, Trash2, Unlock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PluginInfo } from '@/lib/addonManager/core/types';
@@ -39,116 +46,158 @@ export function PluginEntry({
   const isFlyWithLua = plugin.folderName.toLowerCase() === 'flywithlua';
 
   return (
-    <div
-      className={cn(
-        'border-border bg-card flex items-center gap-3 rounded-md border px-3 py-2',
-        'hover:bg-accent transition-colors',
-        !plugin.enabled && 'bg-muted/30 opacity-60',
-        plugin.locked && 'border-warning/50'
-      )}
-    >
-      {/* Icon */}
-      <Plug className="text-muted-foreground h-4 w-4 shrink-0" />
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          className={cn(
+            'border-border bg-card flex items-center gap-3 rounded-md border px-3 py-2',
+            'hover:bg-accent transition-colors',
+            !plugin.enabled && 'bg-muted/30 opacity-60',
+            plugin.locked && 'border-warning/50'
+          )}
+        >
+          {/* Icon */}
+          <Plug className="text-muted-foreground h-4 w-4 shrink-0" />
 
-      {/* Enable/disable toggle */}
-      <Switch
-        checked={plugin.enabled}
-        onCheckedChange={() => onToggle(plugin.folderName)}
-        disabled={disabled || plugin.locked}
-      />
+          {/* Enable/disable toggle */}
+          <Switch
+            checked={plugin.enabled}
+            onCheckedChange={() => onToggle(plugin.folderName)}
+            disabled={disabled || plugin.locked}
+          />
 
-      {/* Plugin name */}
-      <span className="flex-1 truncate font-mono text-sm">{plugin.displayName}</span>
+          {/* Plugin name */}
+          <span className="flex-1 truncate font-mono text-sm">{plugin.displayName}</span>
 
-      {/* Platform badge */}
-      <Badge variant="outline" className="text-sm">
-        {PLATFORM_LABELS[plugin.platform]}
-      </Badge>
+          {/* Platform badge */}
+          <Badge variant="outline" className="text-sm">
+            {PLATFORM_LABELS[plugin.platform]}
+          </Badge>
 
-      {/* Version badge */}
-      {plugin.version && (
-        <Badge variant={plugin.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
-          {plugin.hasUpdate && plugin.latestVersion
-            ? t('addonManager.browser.versionUpdate', {
-                current: plugin.version,
-                latest: plugin.latestVersion,
-              })
-            : t('addonManager.browser.version', { version: plugin.version })}
-        </Badge>
-      )}
+          {/* Version badge */}
+          {plugin.version && (
+            <Badge variant={plugin.hasUpdate ? 'destructive' : 'secondary'} className="text-sm">
+              {plugin.hasUpdate && plugin.latestVersion
+                ? t('addonManager.browser.versionUpdate', {
+                    current: plugin.version,
+                    latest: plugin.latestVersion,
+                  })
+                : t('addonManager.browser.version', { version: plugin.version })}
+            </Badge>
+          )}
 
-      {/* Scripts button (FlyWithLua only) */}
-      {isFlyWithLua && plugin.hasScripts && onOpenScripts && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 px-2 text-sm"
-              onClick={onOpenScripts}
-            >
-              <Code className="h-3.5 w-3.5" />
-              {t('addonManager.pluginEntry.scripts', { count: plugin.scriptCount })}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t('addonManager.pluginEntry.manageScripts')}</TooltipContent>
-        </Tooltip>
-      )}
+          {/* Scripts button (FlyWithLua only) */}
+          {isFlyWithLua && plugin.hasScripts && onOpenScripts && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-sm"
+                  onClick={onOpenScripts}
+                >
+                  <Code className="h-3.5 w-3.5" />
+                  {t('addonManager.pluginEntry.scripts', { count: plugin.scriptCount })}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('addonManager.pluginEntry.manageScripts')}</TooltipContent>
+            </Tooltip>
+          )}
 
-      {/* Lock button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => onLock(plugin.folderName)}
-            disabled={disabled}
-          >
-            {plugin.locked ? (
-              <Lock className="text-warning h-4 w-4" />
-            ) : (
-              <Unlock className="text-muted-foreground h-4 w-4" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
+          {/* Lock button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => onLock(plugin.folderName)}
+                disabled={disabled}
+              >
+                {plugin.locked ? (
+                  <Lock className="text-warning h-4 w-4" />
+                ) : (
+                  <Unlock className="text-muted-foreground h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {plugin.locked
+                ? t('addonManager.pluginEntry.unlock')
+                : t('addonManager.pluginEntry.lock')}
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Open folder button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => onOpenFolder(plugin.folderName)}
+              >
+                <FolderOpen className="text-muted-foreground h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('addonManager.pluginEntry.openFolder')}</TooltipContent>
+          </Tooltip>
+
+          {/* Delete button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:bg-destructive/10 h-7 w-7"
+                onClick={() => onDelete(plugin.folderName)}
+                disabled={disabled || plugin.locked}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('addonManager.pluginEntry.deletePlugin')}</TooltipContent>
+          </Tooltip>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem
+          onSelect={() => onToggle(plugin.folderName)}
+          disabled={disabled || plugin.locked}
+        >
+          <Power className="mr-2 h-3.5 w-3.5" />
+          {plugin.enabled ? t('common.disable') : t('common.enable')}
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => onLock(plugin.folderName)} disabled={disabled}>
+          {plugin.locked ? (
+            <Unlock className="mr-2 h-3.5 w-3.5" />
+          ) : (
+            <Lock className="mr-2 h-3.5 w-3.5" />
+          )}
           {plugin.locked
             ? t('addonManager.pluginEntry.unlock')
             : t('addonManager.pluginEntry.lock')}
-        </TooltipContent>
-      </Tooltip>
-
-      {/* Open folder button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => onOpenFolder(plugin.folderName)}
-          >
-            <FolderOpen className="text-muted-foreground h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t('addonManager.pluginEntry.openFolder')}</TooltipContent>
-      </Tooltip>
-
-      {/* Delete button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive hover:bg-destructive/10 h-7 w-7"
-            onClick={() => onDelete(plugin.folderName)}
-            disabled={disabled || plugin.locked}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t('addonManager.pluginEntry.deletePlugin')}</TooltipContent>
-      </Tooltip>
-    </div>
+        </ContextMenuItem>
+        {isFlyWithLua && plugin.hasScripts && onOpenScripts && (
+          <ContextMenuItem onSelect={onOpenScripts}>
+            <Code className="mr-2 h-3.5 w-3.5" />
+            {t('addonManager.pluginEntry.manageScripts')}
+          </ContextMenuItem>
+        )}
+        <ContextMenuItem onSelect={() => onOpenFolder(plugin.folderName)}>
+          <FolderOpen className="mr-2 h-3.5 w-3.5" />
+          {t('addonManager.pluginEntry.openFolder')}
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onSelect={() => onDelete(plugin.folderName)}
+          disabled={disabled || plugin.locked}
+          className="text-destructive focus:text-destructive"
+        >
+          <Trash2 className="mr-2 h-3.5 w-3.5" />
+          {t('addonManager.pluginEntry.deletePlugin')}
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
