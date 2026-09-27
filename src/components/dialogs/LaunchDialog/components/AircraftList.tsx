@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Plane, Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -146,11 +147,13 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
     return Array.from(set).sort();
   }, [aircraftList]);
 
+  const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
+
   const filteredAircraft = useMemo(() => {
     let result = aircraftList;
 
     if (showFavoritesOnly) {
-      result = result.filter((ac) => favorites.includes(ac.path));
+      result = result.filter((ac) => favoriteSet.has(ac.path));
     }
 
     if (searchQuery) {
@@ -179,9 +182,9 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
       result = result.filter((ac) => getEngineType(ac) === filterEngineType);
     }
 
-    return result.sort((a, b) => {
-      const aFav = favorites.includes(a.path);
-      const bFav = favorites.includes(b.path);
+    return [...result].sort((a, b) => {
+      const aFav = favoriteSet.has(a.path);
+      const bFav = favoriteSet.has(b.path);
       if (aFav !== bFav) return aFav ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
@@ -192,9 +195,29 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
     filterCategory,
     filterAircraftType,
     filterEngineType,
-    favorites,
+    favoriteSet,
     showFavoritesOnly,
   ]);
+
+  // Virtualized list: only visible rows mount, so a large hangar doesn't
+  // render (and image-load) hundreds of cards at once. Radix ScrollArea keeps
+  // the actual scroller in its viewport element.
+  const scrollRootRef = useRef<HTMLDivElement>(null);
+  const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setScrollEl(
+      scrollRootRef.current?.querySelector<HTMLElement>('[data-radix-scroll-area-viewport]') ?? null
+    );
+  }, []);
+
+  const ROW_HEIGHT = 68; // 64px card + 4px gap
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns a mutable instance by design; it re-renders via its own subscription
+  const rowVirtualizer = useVirtualizer({
+    count: filteredAircraft.length,
+    getScrollElement: () => scrollEl,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 8,
+  });
 
   return (
     <div className="border-border/50 bg-card flex w-[320px] min-w-[280px] shrink-0 flex-col border-r lg:w-[360px]">
@@ -299,8 +322,8 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
       </div>
 
       {/* Aircraft List */}
-      <ScrollArea className="flex-1">
-        <div className="space-y-1 p-2">
+      <ScrollArea ref={scrollRootRef} className="flex-1">
+        <div className="p-2">
           {isScanning ? (
             <div className="flex items-center justify-center py-12">
               <Spinner className="text-primary size-6" />
@@ -312,16 +335,26 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
                 : t('launcher.aircraft.noAircraft')}
             </div>
           ) : (
-            filteredAircraft.map((ac) => (
-              <AircraftListItem
-                key={ac.path}
-                aircraft={ac}
-                isSelected={selectedAircraft?.path === ac.path}
-                isFavorite={favorites.includes(ac.path)}
-                onSelect={() => selectAircraft(ac)}
-                onToggleFavorite={() => toggleFavorite(ac.path)}
-              />
-            ))
+            <div className="relative" style={{ height: rowVirtualizer.getTotalSize() }}>
+              {rowVirtualizer.getVirtualItems().map((row) => {
+                const ac = filteredAircraft[row.index]!;
+                return (
+                  <div
+                    key={ac.path}
+                    className="absolute inset-x-0 top-0 pb-1"
+                    style={{ height: row.size, transform: `translateY(${row.start}px)` }}
+                  >
+                    <AircraftListItem
+                      aircraft={ac}
+                      isSelected={selectedAircraft?.path === ac.path}
+                      isFavorite={favoriteSet.has(ac.path)}
+                      onSelect={() => selectAircraft(ac)}
+                      onToggleFavorite={() => toggleFavorite(ac.path)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </ScrollArea>
