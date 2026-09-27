@@ -1,6 +1,42 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## v2.1.0 - 2026-09-27
+
+### Features
+
+- **ui:** Motion-driven dialog and landing card animations by @lyestarzalt([30e6ddc](https://github.com/lyestarzalt/x-dispatch/commit/30e6ddc3af8ffcddb5b342450cf87dbe41a7460e))
+- **ui:** Tab crossfade, sliding nav indicator, search dropdown entrance by @lyestarzalt([eff8cfd](https://github.com/lyestarzalt/x-dispatch/commit/eff8cfd1f94767dcd2bb31e7f3822082f74211cf))
+- **ui:** Batch 3 micro-animations by @lyestarzalt([146194a](https://github.com/lyestarzalt/x-dispatch/commit/146194ad601f054ca28943410774c6acd4e67410))
+- **ux:** Native desktop feel pass by @lyestarzalt([8253e7d](https://github.com/lyestarzalt/x-dispatch/commit/8253e7d805ba5bbd96d39305fd85685bf5c1d12f))
+- **ui:** Readable flight strip, landing notification setting by @lyestarzalt([acc1d64](https://github.com/lyestarzalt/x-dispatch/commit/acc1d64ed8a6fde3afb8d950e34870a400f11596))
+- **ui:** Minimal attitude indicator in the flight strip by @lyestarzalt([c453ad3](https://github.com/lyestarzalt/x-dispatch/commit/c453ad30cd62fb1013ecfde0644f5dfe8847439f))
+- **map:** Range rings polish by @lyestarzalt([c7768b2](https://github.com/lyestarzalt/x-dispatch/commit/c7768b2ac8732a537ac313e7faed55f831dd3149))
+
+### Performance
+
+- **data:** Coalesce database saves and query counts with SQL count() by @lyestarzalt([c77a87d](https://github.com/lyestarzalt/x-dispatch/commit/c77a87d28b4965bbb0131b2d85d22ba4e36742c2))
+- **main:** Async filesystem work in scenery, installer, launcher and images by @lyestarzalt([11b329b](https://github.com/lyestarzalt/x-dispatch/commit/11b329b549643fcb2a30c65fcabddac8c7412f5c))
+- **map:** Skip redundant layer moves, uploads and per-frame store writes by @lyestarzalt([7b156ca](https://github.com/lyestarzalt/x-dispatch/commit/7b156ca373e118ad00734a941517fe15bf9eb7c2))
+- **data:** Debounce database saves so a load session lands one write by @lyestarzalt([782e3f3](https://github.com/lyestarzalt/x-dispatch/commit/782e3f35a7b0ed5f22429b1f8636727bd170d557))
+- **data:** Yield between bulk insert chunks to keep main process responsive by @lyestarzalt([7dcd023](https://github.com/lyestarzalt/x-dispatch/commit/7dcd02347903c52070d01ef5d3e8cf4a7f0b0bbd))
+- **main,map:** Async addon scans, bbox airport lookup, memoized ATC badges by @lyestarzalt([f36e666](https://github.com/lyestarzalt/x-dispatch/commit/f36e6668c228ea1655276273add9cbe572473bfb))
+- **ui:** Virtualize launcher aircraft list, memoize scenery rows by @lyestarzalt([59848f9](https://github.com/lyestarzalt/x-dispatch/commit/59848f9eebd08accf7e8d10c54321ef39c901a47))
+
+### Documentation
+
+- Update CHANGELOG.md for v2.0.1 by @github-actions[bot]([182bd99](https://github.com/lyestarzalt/x-dispatch/commit/182bd997b9f3a49b2b241653598f1d1fa36fb9db))
+
+### Release
+
+- 2.1.0 by @github-actions[bot]([955a925](https://github.com/lyestarzalt/x-dispatch/commit/955a9251dc91b00bf602520797ac3bde642e0064))
+
+### Test
+
+- Await async bulk inserts by @lyestarzalt([6fd9b1f](https://github.com/lyestarzalt/x-dispatch/commit/6fd9b1f3712da68a4b2d866f655810942363162c))
+- Landing notification default in settings migration by @lyestarzalt([ae28b1c](https://github.com/lyestarzalt/x-dispatch/commit/ae28b1c0de14ea82223a8ef231d34211647cd127))
+
+
 ## v2.0.1 - 2026-09-26
 
 ### Bug Fixes
