@@ -168,11 +168,14 @@ export function getSqlite(): SqlJsDatabase | null {
   return sqlite;
 }
 
-// Saves are coalesced: several loaders finishing back to back (navaids,
-// waypoints, airways, airspaces, airports) used to each serialize and write
-// the entire database, which runs to hundreds of MB. The DB is a rebuildable
-// cache, so deferring the write briefly costs nothing on a crash.
-const SAVE_COALESCE_MS = 2000;
+// Saves are debounced: several loaders finishing over a load session
+// (navaids, waypoints, airways, airspaces, airports) used to each serialize
+// and write the entire database, which runs to hundreds of MB. Each save
+// request pushes the timer back, so one write lands after the last loader —
+// the window must outlast the gaps between them. The DB is a rebuildable
+// cache, so deferring the write costs nothing on a crash, and quit flushes
+// synchronously regardless.
+const SAVE_COALESCE_MS = 5000;
 let saveTimer: NodeJS.Timeout | null = null;
 let saveInFlight = false;
 let saveQueued = false;
@@ -218,7 +221,7 @@ async function writeDbToDisk(): Promise<void> {
 
 export function saveDb(): void {
   if (!sqlite || !dbPath) return;
-  if (saveTimer) return;
+  if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     saveTimer = null;
     void writeDbToDisk();
