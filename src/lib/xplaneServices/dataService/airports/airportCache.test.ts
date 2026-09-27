@@ -184,19 +184,19 @@ describe('airportCache pipeline', () => {
 
   // ---- insertAirports + getAirportCount ----
 
-  it('inserts airports and returns correct count', () => {
-    insertAirports(SAMPLE_ENTRIES);
+  it('inserts airports and returns correct count', async () => {
+    await insertAirports(SAMPLE_ENTRIES);
     expect(getAirportCount()).toBe(SAMPLE_ENTRIES.length);
   });
 
-  it('returns zero count when no airports have been inserted', () => {
+  it('returns zero count when no airports have been inserted', async () => {
     expect(getAirportCount()).toBe(0);
   });
 
   // ---- getAllAirportsFromDb ----
 
-  it('getAllAirportsFromDb returns all inserted airports', () => {
-    insertAirports(SAMPLE_ENTRIES);
+  it('getAllAirportsFromDb returns all inserted airports', async () => {
+    await insertAirports(SAMPLE_ENTRIES);
     const all = getAllAirportsFromDb();
     expect(all).toHaveLength(SAMPLE_ENTRIES.length);
 
@@ -204,8 +204,8 @@ describe('airportCache pipeline', () => {
     expect(icaos).toEqual(['EGLL', 'KJFK', 'KLAX', 'LFPG', 'OTHH']);
   });
 
-  it('getAllAirportsFromDb preserves IATA codes needed for short VATSIM callsigns', () => {
-    insertAirports([SAMPLE_ENTRIES[0]!]);
+  it('getAllAirportsFromDb preserves IATA codes needed for short VATSIM callsigns', async () => {
+    await insertAirports([SAMPLE_ENTRIES[0]!]);
 
     const all = getAllAirportsFromDb();
 
@@ -213,20 +213,20 @@ describe('airportCache pipeline', () => {
     expect(all[0]?.iataCode).toBe('JFK');
   });
 
-  it('getAllAirportsFromDb returns empty array when table is empty', () => {
+  it('getAllAirportsFromDb returns empty array when table is empty', async () => {
     expect(getAllAirportsFromDb()).toEqual([]);
   });
 
   // ---- coordinate round-trip ----
 
-  it('coordinates survive the insert/query round-trip within float tolerance', () => {
+  it('coordinates survive the insert/query round-trip within float tolerance', async () => {
     const entry = makeEntry({
       icao: 'KJFK',
       name: 'John F Kennedy Intl',
       lat: 40.639925,
       lon: -73.778694,
     });
-    insertAirports([entry]);
+    await insertAirports([entry]);
 
     const all = getAllAirportsFromDb();
     const kjfk = all.find((a) => a.icao === 'KJFK');
@@ -237,13 +237,13 @@ describe('airportCache pipeline', () => {
 
   // ---- Airport type mapping ----
 
-  it('preserves airport type (land/seaplane/heliport) through the round-trip', () => {
+  it('preserves airport type (land/seaplane/heliport) through the round-trip', async () => {
     const entries = [
       makeEntry({ icao: 'TEST', type: 'land', lat: 10, lon: 10 }),
       makeEntry({ icao: 'TSEA', type: 'seaplane', lat: 20, lon: 20 }),
       makeEntry({ icao: 'THEL', type: 'heliport', lat: 30, lon: 30 }),
     ];
-    insertAirports(entries);
+    await insertAirports(entries);
 
     const all = getAllAirportsFromDb();
     const byIcao = Object.fromEntries(all.map((a) => [a.icao, a]));
@@ -255,28 +255,28 @@ describe('airportCache pipeline', () => {
 
   // ---- surfaceType derivation ----
 
-  it('derives surfaceType paved for primarySurfaceType=2 (concrete)', () => {
-    insertAirports([makeEntry({ icao: 'PAVED', primarySurfaceType: 2, lat: 1, lon: 1 })]);
+  it('derives surfaceType paved for primarySurfaceType=2 (concrete)', async () => {
+    await insertAirports([makeEntry({ icao: 'PAVED', primarySurfaceType: 2, lat: 1, lon: 1 })]);
     const all = getAllAirportsFromDb();
     expect(all[0]?.surfaceType).toBe('paved');
   });
 
-  it('derives surfaceType unpaved for primarySurfaceType=3 (turf)', () => {
-    insertAirports([makeEntry({ icao: 'UNVPD', primarySurfaceType: 3, lat: 1, lon: 1 })]);
+  it('derives surfaceType unpaved for primarySurfaceType=3 (turf)', async () => {
+    await insertAirports([makeEntry({ icao: 'UNVPD', primarySurfaceType: 3, lat: 1, lon: 1 })]);
     const all = getAllAirportsFromDb();
     expect(all[0]?.surfaceType).toBe('unpaved');
   });
 
-  it('derives surfaceType water for primarySurfaceType=13', () => {
-    insertAirports([makeEntry({ icao: 'WATER', primarySurfaceType: 13, lat: 1, lon: 1 })]);
+  it('derives surfaceType water for primarySurfaceType=13', async () => {
+    await insertAirports([makeEntry({ icao: 'WATER', primarySurfaceType: 13, lat: 1, lon: 1 })]);
     const all = getAllAirportsFromDb();
     expect(all[0]?.surfaceType).toBe('water');
   });
 
   // ---- clearAirports ----
 
-  it('clearAirports removes all entries', () => {
-    insertAirports(SAMPLE_ENTRIES);
+  it('clearAirports removes all entries', async () => {
+    await insertAirports(SAMPLE_ENTRIES);
     expect(getAirportCount()).toBe(SAMPLE_ENTRIES.length);
 
     clearAirports();
@@ -284,24 +284,24 @@ describe('airportCache pipeline', () => {
     expect(getAllAirportsFromDb()).toEqual([]);
   });
 
-  it('clearAirports is idempotent on an already-empty table', () => {
+  it('clearAirports is idempotent on an already-empty table', async () => {
     clearAirports();
     expect(getAirportCount()).toBe(0);
   });
 
   // ---- chunked inserts ----
 
-  it('handles batch insert of more than 500 airports in one call', () => {
+  it('handles batch insert of more than 500 airports in one call', async () => {
     const large = Array.from({ length: 650 }, (_, i) =>
       makeEntry({ icao: `A${String(i).padStart(4, '0')}`, lat: i * 0.01, lon: i * 0.01 })
     );
-    insertAirports(large);
+    await insertAirports(large);
     expect(getAirportCount()).toBe(650);
   });
 
   // ---- persistDatabase (saveDb no-op mock) ----
 
-  it('persistDatabase does not throw', () => {
+  it('persistDatabase does not throw', async () => {
     expect(() => persistDatabase()).not.toThrow();
   });
 });
@@ -321,7 +321,7 @@ describe('custom scenery airports', () => {
 
   // ---- insertCustomAirports ----
 
-  it('insertCustomAirports inserts into the custom table and airports are queryable', () => {
+  it('insertCustomAirports inserts into the custom table and airports are queryable', async () => {
     const customKJFK = makeEntry({
       icao: 'KJFK',
       name: 'KJFK Custom Scenery',
@@ -329,7 +329,7 @@ describe('custom scenery airports', () => {
       lon: -73.778694,
     });
 
-    insertCustomAirports([customKJFK]);
+    await insertCustomAirports([customKJFK]);
 
     const all = getAllAirportsFromDb();
     expect(all).toHaveLength(1);
@@ -339,7 +339,7 @@ describe('custom scenery airports', () => {
 
   // ---- clearCustomAirports ----
 
-  it('clearCustomAirports removes custom airports but leaves global airports intact', () => {
+  it('clearCustomAirports removes custom airports but leaves global airports intact', async () => {
     const globalEntry = makeEntry({
       icao: 'EGLL',
       name: 'London Heathrow',
@@ -353,8 +353,8 @@ describe('custom scenery airports', () => {
       lon: -73.778694,
     });
 
-    insertAirports([globalEntry]);
-    insertCustomAirports([customEntry]);
+    await insertAirports([globalEntry]);
+    await insertCustomAirports([customEntry]);
 
     expect(getAllAirportsFromDb()).toHaveLength(2);
 
@@ -367,7 +367,7 @@ describe('custom scenery airports', () => {
 
   // ---- Override behavior ----
 
-  it('custom airport overrides global airport with the same ICAO', () => {
+  it('custom airport overrides global airport with the same ICAO', async () => {
     const globalKJFK = makeEntry({
       icao: 'KJFK',
       name: 'John F Kennedy Intl',
@@ -381,8 +381,8 @@ describe('custom scenery airports', () => {
       lon: -73.781,
     });
 
-    insertAirports([globalKJFK]);
-    insertCustomAirports([customKJFK]);
+    await insertAirports([globalKJFK]);
+    await insertCustomAirports([customKJFK]);
 
     const all = getAllAirportsFromDb();
     // Only one KJFK should appear
@@ -395,7 +395,7 @@ describe('custom scenery airports', () => {
 
   // ---- Custom-only airport ----
 
-  it('custom-only airport (no global counterpart) appears in getAllAirportsFromDb', () => {
+  it('custom-only airport (no global counterpart) appears in getAllAirportsFromDb', async () => {
     const customOnly = makeEntry({
       icao: 'ZZZZ',
       name: 'Custom Only Airport',
@@ -403,7 +403,7 @@ describe('custom scenery airports', () => {
       lon: 20,
     });
 
-    insertCustomAirports([customOnly]);
+    await insertCustomAirports([customOnly]);
 
     const all = getAllAirportsFromDb();
     expect(all).toHaveLength(1);
@@ -413,15 +413,15 @@ describe('custom scenery airports', () => {
 
   // ---- Count behavior ----
 
-  it('getAirportCount reflects only global airports (custom table is separate)', () => {
+  it('getAirportCount reflects only global airports (custom table is separate)', async () => {
     const globalEntries = [
       makeEntry({ icao: 'EGLL', lat: 51.4775, lon: -0.4614 }),
       makeEntry({ icao: 'LFPG', lat: 49.0097, lon: 2.5478 }),
     ];
     const customEntry = makeEntry({ icao: 'KJFK', lat: 40.639925, lon: -73.778694 });
 
-    insertAirports(globalEntries);
-    insertCustomAirports([customEntry]);
+    await insertAirports(globalEntries);
+    await insertCustomAirports([customEntry]);
 
     // getAirportCount counts only the global airports table
     expect(getAirportCount()).toBe(2);
@@ -444,7 +444,7 @@ describe('detectAptFileChanges cache invalidation', () => {
     closeTestDb();
   });
 
-  it('indicates rescan needed when no cached meta exists', () => {
+  it('indicates rescan needed when no cached meta exists', async () => {
     const currentFiles = [{ path: '/xplane/apt.dat', mtime: 1000 }];
     const result = detectAptFileChanges(currentFiles);
 
@@ -454,7 +454,7 @@ describe('detectAptFileChanges cache invalidation', () => {
     expect(result.deletedFiles).toHaveLength(0);
   });
 
-  it('indicates no rescan needed when cached mtime matches current mtime', () => {
+  it('indicates no rescan needed when cached mtime matches current mtime', async () => {
     // Seed the database with matching metadata
     updateStoredFileMeta(
       [{ path: '/xplane/apt.dat', mtime: 1000 }],
@@ -470,7 +470,7 @@ describe('detectAptFileChanges cache invalidation', () => {
     expect(result.deletedFiles).toHaveLength(0);
   });
 
-  it('indicates rescan needed when cached mtime differs from current mtime', () => {
+  it('indicates rescan needed when cached mtime differs from current mtime', async () => {
     // Seed with an older mtime
     updateStoredFileMeta(
       [{ path: '/xplane/apt.dat', mtime: 999 }],
@@ -486,7 +486,7 @@ describe('detectAptFileChanges cache invalidation', () => {
     expect(result.deletedFiles).toHaveLength(0);
   });
 
-  it('indicates rescan needed when a new file appears that is not in cache', () => {
+  it('indicates rescan needed when a new file appears that is not in cache', async () => {
     // Seed with only one file
     updateStoredFileMeta(
       [{ path: '/xplane/global/apt.dat', mtime: 500 }],
@@ -506,7 +506,7 @@ describe('detectAptFileChanges cache invalidation', () => {
     expect(result.deletedFiles).toHaveLength(0);
   });
 
-  it('indicates rescan needed when a cached file has been deleted', () => {
+  it('indicates rescan needed when a cached file has been deleted', async () => {
     // Seed with two files
     updateStoredFileMeta(
       [
@@ -550,7 +550,7 @@ describe('updateStoredFileMeta — duplicate path tolerance (regression for v1.8
     closeTestDb();
   });
 
-  it('does not throw on a file list containing duplicate paths', () => {
+  it('does not throw on a file list containing duplicate paths', async () => {
     const files = [
       { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
       { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 }, // same path, identical mtime
@@ -560,7 +560,7 @@ describe('updateStoredFileMeta — duplicate path tolerance (regression for v1.8
     expect(() => updateStoredFileMeta(files, counts)).not.toThrow();
   });
 
-  it('persists exactly one row per unique path when the input has duplicates', () => {
+  it('persists exactly one row per unique path when the input has duplicates', async () => {
     const files = [
       { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
       { path: '/xplane/custom/KLAX/apt.dat', mtime: 100 },
@@ -586,7 +586,7 @@ describe('updateStoredFileMeta — duplicate path tolerance (regression for v1.8
     expect(result.deletedFiles).toEqual([]);
   });
 
-  it('keeps the last mtime when the same path appears with different mtimes', () => {
+  it('keeps the last mtime when the same path appears with different mtimes', async () => {
     // If a future producer hands us conflicting mtimes for the same path,
     // we want last-write-wins behavior rather than a hard failure.
     const files = [

@@ -133,8 +133,8 @@ describe('navCache spatial queries', () => {
   });
 
   describe('getNavaidsInBounds', () => {
-    beforeEach(() => {
-      insertNavaids([
+    beforeEach(async () => {
+      await insertNavaids([
         makeNavaid({ id: 'INS', latitude: 10, longitude: 10, type: 'VOR' }),
         makeNavaid({ id: 'EDG', latitude: 12, longitude: 10, type: 'VOR' }),
         makeNavaid({ id: 'OUT', latitude: 20, longitude: 20, type: 'VOR' }),
@@ -143,86 +143,86 @@ describe('navCache spatial queries', () => {
       ]);
     });
 
-    it('returns navaids inside the bounding box', () => {
+    it('returns navaids inside the bounding box', async () => {
       const result = getNavaidsInBounds(9, 13, 9, 13);
       const ids = result.map((n) => n.id).sort();
       expect(ids).toEqual(['EDG', 'ILS1', 'INS', 'NDB1']);
     });
 
-    it('excludes navaids outside the bounding box', () => {
+    it('excludes navaids outside the bounding box', async () => {
       const result = getNavaidsInBounds(9, 13, 9, 13);
       expect(result.find((n) => n.id === 'OUT')).toBeUndefined();
     });
 
-    it('treats bbox edges as inclusive (BETWEEN semantics)', () => {
+    it('treats bbox edges as inclusive (BETWEEN semantics)', async () => {
       // EDG is at exactly (12, 10) — query top edge at lat=12 should include it
       const result = getNavaidsInBounds(11, 12, 9, 11);
       expect(result.find((n) => n.id === 'EDG')).toBeDefined();
     });
 
-    it('filters by type when types array is provided', () => {
+    it('filters by type when types array is provided', async () => {
       const result = getNavaidsInBounds(9, 13, 9, 13, ['NDB']);
       expect(result).toHaveLength(1);
       expect(result[0]!.id).toBe('NDB1');
     });
 
-    it('includes multiple types when several are provided', () => {
+    it('includes multiple types when several are provided', async () => {
       const result = getNavaidsInBounds(9, 13, 9, 13, ['NDB', 'LOC']);
       const ids = result.map((n) => n.id).sort();
       expect(ids).toEqual(['ILS1', 'NDB1']);
     });
 
-    it('respects the limit parameter', () => {
+    it('respects the limit parameter', async () => {
       const result = getNavaidsInBounds(9, 13, 9, 13, undefined, 2);
       expect(result).toHaveLength(2);
     });
 
-    it('returns empty when bbox contains no navaids', () => {
+    it('returns empty when bbox contains no navaids', async () => {
       const result = getNavaidsInBounds(50, 60, 50, 60);
       expect(result).toEqual([]);
     });
 
-    it('returns empty when types filter matches nothing', () => {
+    it('returns empty when types filter matches nothing', async () => {
       const result = getNavaidsInBounds(9, 13, 9, 13, ['DME']);
       expect(result).toEqual([]);
     });
   });
 
   describe('getWaypointsInBounds', () => {
-    beforeEach(() => {
-      insertWaypoints([
+    beforeEach(async () => {
+      await insertWaypoints([
         makeWaypoint({ id: 'INS', latitude: 5, longitude: 5 }),
         makeWaypoint({ id: 'EDG', latitude: 6, longitude: 6 }),
         makeWaypoint({ id: 'OUT', latitude: 50, longitude: 50 }),
       ]);
     });
 
-    it('returns waypoints inside the bounding box', () => {
+    it('returns waypoints inside the bounding box', async () => {
       const result = getWaypointsInBounds(4, 7, 4, 7);
       const ids = result.map((w) => w.id).sort();
       expect(ids).toEqual(['EDG', 'INS']);
     });
 
-    it('excludes waypoints outside the bounding box', () => {
+    it('excludes waypoints outside the bounding box', async () => {
       const result = getWaypointsInBounds(4, 7, 4, 7);
       expect(result.find((w) => w.id === 'OUT')).toBeUndefined();
     });
 
-    it('respects the limit parameter', () => {
+    it('respects the limit parameter', async () => {
       const result = getWaypointsInBounds(0, 100, 0, 100, 1);
       expect(result).toHaveLength(1);
     });
 
-    it('returns empty when no waypoints fall in the bbox', () => {
+    it('returns empty when no waypoints fall in the bbox', async () => {
       const result = getWaypointsInBounds(80, 90, 80, 90);
       expect(result).toEqual([]);
     });
   });
 
   describe('getAirspacesInBounds', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       // Insert four airspaces at distinct locations.
-      insertAirspaces([
+      await insertAirspaces([
         squareAirspace('CONTAINED', 10, 10, 0.5), // small airspace inside query
         squareAirspace('OVERLAPS', 9.5, 9.5, 1), // partially overlaps query
         squareAirspace('CONTAINS_QUERY', 10, 10, 100), // huge airspace covering query
@@ -230,32 +230,32 @@ describe('navCache spatial queries', () => {
       ]);
     });
 
-    it('returns airspaces whose bbox is fully inside the query bbox', () => {
+    it('returns airspaces whose bbox is fully inside the query bbox', async () => {
       const result = getAirspacesInBounds(9, 11, 9, 11);
       expect(result.find((a) => a.name === 'CONTAINED')).toBeDefined();
     });
 
-    it('returns airspaces partially overlapping the query bbox', () => {
+    it('returns airspaces partially overlapping the query bbox', async () => {
       const result = getAirspacesInBounds(9, 11, 9, 11);
       expect(result.find((a) => a.name === 'OVERLAPS')).toBeDefined();
     });
 
-    it('returns airspaces that fully contain the query bbox', () => {
+    it('returns airspaces that fully contain the query bbox', async () => {
       const result = getAirspacesInBounds(9.9, 10.1, 9.9, 10.1);
       expect(result.find((a) => a.name === 'CONTAINS_QUERY')).toBeDefined();
     });
 
-    it('excludes airspaces with no spatial overlap', () => {
+    it('excludes airspaces with no spatial overlap', async () => {
       const result = getAirspacesInBounds(9, 11, 9, 11);
       expect(result.find((a) => a.name === 'FAR')).toBeUndefined();
     });
 
-    it('respects the limit parameter', () => {
+    it('respects the limit parameter', async () => {
       const result = getAirspacesInBounds(-90, 90, -180, 180, 2);
       expect(result.length).toBeLessThanOrEqual(2);
     });
 
-    it('parses coordinates JSON back into a [lon, lat] array', () => {
+    it('parses coordinates JSON back into a [lon, lat] array', async () => {
       const result = getAirspacesInBounds(9, 11, 9, 11);
       const contained = result.find((a) => a.name === 'CONTAINED');
       expect(Array.isArray(contained?.coordinates)).toBe(true);
@@ -266,27 +266,27 @@ describe('navCache spatial queries', () => {
   });
 
   describe('getAirspacesNearPoint', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       // Place airspaces at known offsets from a reference point.
       // 1 degree lat ≈ 60 nm.
-      insertAirspaces([
+      await insertAirspaces([
         squareAirspace('NEAR_30NM', 10.5, 10, 0.1), // ~30nm north of (10, 10)
         squareAirspace('NEAR_60NM', 11, 10, 0.1), // ~60nm north of (10, 10)
         squareAirspace('FAR_300NM', 15, 10, 0.1), // ~300nm north of (10, 10)
       ]);
     });
 
-    it('finds airspaces within a small radius', () => {
+    it('finds airspaces within a small radius', async () => {
       const result = getAirspacesNearPoint(10, 10, 50);
       expect(result.find((a) => a.name === 'NEAR_30NM')).toBeDefined();
     });
 
-    it('excludes airspaces clearly beyond the radius', () => {
+    it('excludes airspaces clearly beyond the radius', async () => {
       const result = getAirspacesNearPoint(10, 10, 100);
       expect(result.find((a) => a.name === 'FAR_300NM')).toBeUndefined();
     });
 
-    it('expands the radius and finds more airspaces', () => {
+    it('expands the radius and finds more airspaces', async () => {
       const small = getAirspacesNearPoint(10, 10, 40);
       const big = getAirspacesNearPoint(10, 10, 80);
       expect(big.length).toBeGreaterThanOrEqual(small.length);
@@ -294,8 +294,8 @@ describe('navCache spatial queries', () => {
   });
 
   describe('getNavaidNearestById', () => {
-    beforeEach(() => {
-      insertNavaids([
+    beforeEach(async () => {
+      await insertNavaids([
         // Two navaids share the id 'DUPL' at different locations
         makeNavaid({ id: 'DUPL', latitude: 10.0, longitude: 10.0, type: 'VOR', region: 'AA' }),
         makeNavaid({ id: 'DUPL', latitude: 10.5, longitude: 10.0, type: 'VOR', region: 'BB' }),
@@ -303,66 +303,66 @@ describe('navCache spatial queries', () => {
       ]);
     });
 
-    it('returns the navaid by id when within range', () => {
+    it('returns the navaid by id when within range', async () => {
       const result = getNavaidNearestById('SOLO', 20.0, 20.0, 10);
       expect(result?.id).toBe('SOLO');
     });
 
-    it('returns null when no navaid with that id exists', () => {
+    it('returns null when no navaid with that id exists', async () => {
       const result = getNavaidNearestById('NOPE', 10, 10, 100);
       expect(result).toBeNull();
     });
 
-    it('returns null when the navaid exists but is beyond max distance', () => {
+    it('returns null when the navaid exists but is beyond max distance', async () => {
       // SOLO is at (20, 20); search from (10, 10) with maxDist = 1nm
       const result = getNavaidNearestById('SOLO', 10, 10, 1);
       expect(result).toBeNull();
     });
 
-    it('picks the nearest when multiple navaids share the id', () => {
+    it('picks the nearest when multiple navaids share the id', async () => {
       // Both DUPLs are within bbox; (10.0, 10.0) is closer to query (10.0, 10.0)
       const result = getNavaidNearestById('DUPL', 10.0, 10.0, 60);
       expect(result?.region).toBe('AA');
       expect(result?.latitude).toBeCloseTo(10.0, 4);
     });
 
-    it('matches id case-insensitively (input is uppercased)', () => {
+    it('matches id case-insensitively (input is uppercased)', async () => {
       const result = getNavaidNearestById('solo', 20.0, 20.0, 10);
       expect(result?.id).toBe('SOLO');
     });
   });
 
   describe('getWaypointNearestById', () => {
-    beforeEach(() => {
-      insertWaypoints([
+    beforeEach(async () => {
+      await insertWaypoints([
         makeWaypoint({ id: 'DUPW', latitude: 5.0, longitude: 5.0, region: 'AA' }),
         makeWaypoint({ id: 'DUPW', latitude: 5.5, longitude: 5.0, region: 'BB' }),
         makeWaypoint({ id: 'SOLO', latitude: 30.0, longitude: 30.0 }),
       ]);
     });
 
-    it('returns the waypoint by id when within range', () => {
+    it('returns the waypoint by id when within range', async () => {
       const result = getWaypointNearestById('SOLO', 30.0, 30.0, 10);
       expect(result?.id).toBe('SOLO');
     });
 
-    it('returns null when no waypoint with that id exists', () => {
+    it('returns null when no waypoint with that id exists', async () => {
       const result = getWaypointNearestById('MISSING', 5, 5, 100);
       expect(result).toBeNull();
     });
 
-    it('returns null when the waypoint exists but is beyond max distance', () => {
+    it('returns null when the waypoint exists but is beyond max distance', async () => {
       const result = getWaypointNearestById('SOLO', 5, 5, 1);
       expect(result).toBeNull();
     });
 
-    it('picks the nearest when multiple waypoints share the id', () => {
+    it('picks the nearest when multiple waypoints share the id', async () => {
       const result = getWaypointNearestById('DUPW', 5.0, 5.0, 60);
       expect(result?.region).toBe('AA');
       expect(result?.latitude).toBeCloseTo(5.0, 4);
     });
 
-    it('matches id case-insensitively', () => {
+    it('matches id case-insensitively', async () => {
       const result = getWaypointNearestById('solo', 30.0, 30.0, 10);
       expect(result?.id).toBe('SOLO');
     });
