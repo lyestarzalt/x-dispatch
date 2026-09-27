@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
@@ -303,57 +302,54 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogPrimitive.Content
-          className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col rounded-lg border"
-          aria-describedby={undefined}
-        >
-          <VisuallyHidden.Root>
-            <DialogTitle>{t('launcher.title')}</DialogTitle>
-          </VisuallyHidden.Root>
-          {/* Header */}
-          <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">{t('launcher.title')}</span>
-              {startPosition && (
-                <span className="text-muted-foreground text-sm">
-                  {startPosition.airport} · {startPosition.name}
-                </span>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8"
-              tooltip={t('common.close')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+      <DialogPanel
+        className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col rounded-lg border"
+        aria-describedby={undefined}
+      >
+        <VisuallyHidden.Root>
+          <DialogTitle>{t('launcher.title')}</DialogTitle>
+        </VisuallyHidden.Root>
+        {/* Header */}
+        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium">{t('launcher.title')}</span>
+            {startPosition && (
+              <span className="text-muted-foreground text-sm">
+                {startPosition.airport} · {startPosition.name}
+              </span>
+            )}
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8"
+            tooltip={t('common.close')}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-          {/* Main content */}
-          <div className="flex min-h-0 flex-1">
-            <SectionErrorBoundary name="Aircraft List">
-              <AircraftList aircraftList={aircraftList} isScanning={isScanning} />
-            </SectionErrorBoundary>
+        {/* Main content */}
+        <div className="flex min-h-0 flex-1">
+          <SectionErrorBoundary name="Aircraft List">
+            <AircraftList aircraftList={aircraftList} isScanning={isScanning} />
+          </SectionErrorBoundary>
 
-            <SectionErrorBoundary name="Aircraft Preview">
-              <AircraftPreview />
-            </SectionErrorBoundary>
+          <SectionErrorBoundary name="Aircraft Preview">
+            <AircraftPreview />
+          </SectionErrorBoundary>
 
-            <SectionErrorBoundary name="Flight Config">
-              <FlightConfig
-                startPosition={startPosition}
-                isXPlaneRunning={isXPlaneRunning}
-                onLaunch={handleLaunch}
-                aircraftList={aircraftList}
-              />
-            </SectionErrorBoundary>
-          </div>
-        </DialogPrimitive.Content>
-      </DialogPortal>
+          <SectionErrorBoundary name="Flight Config">
+            <FlightConfig
+              startPosition={startPosition}
+              isXPlaneRunning={isXPlaneRunning}
+              onLaunch={handleLaunch}
+              aircraftList={aircraftList}
+            />
+          </SectionErrorBoundary>
+        </div>
+      </DialogPanel>
     </Dialog>
   );
 }

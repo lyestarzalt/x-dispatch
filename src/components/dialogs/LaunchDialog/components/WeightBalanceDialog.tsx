@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { AlertTriangle, Fuel, Users, X } from 'lucide-react';
 import { Pie, PieChart, Label as PieLabel } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
-import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatWeight } from '@/lib/utils/format';
@@ -216,161 +215,157 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPortal>
-        <DialogOverlay />
-        <DialogPrimitive.Content
-          className="border-border bg-background fixed top-[50%] left-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden rounded-lg border shadow-xl"
-          aria-describedby={undefined}
-        >
-          <VisuallyHidden.Root>
-            <DialogTitle>{t('weightBalance.title')}</DialogTitle>
-          </VisuallyHidden.Root>
+      <DialogPanel
+        centered
+        className="border-border bg-background fixed top-[50%] left-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-lg border shadow-xl"
+        aria-describedby={undefined}
+      >
+        <VisuallyHidden.Root>
+          <DialogTitle>{t('weightBalance.title')}</DialogTitle>
+        </VisuallyHidden.Root>
 
-          {/* Header */}
-          <div className="border-border bg-card flex h-11 items-center justify-between border-b px-4">
-            <span className="text-sm font-medium">{t('weightBalance.title')}</span>
-            <div className="flex items-center gap-2">
-              <ToggleGroup
-                type="single"
-                value={weightUnit}
-                onValueChange={(value) => {
-                  if (value)
-                    updateMapSettings({
-                      units: { ...mapSettings.units, weight: value as WeightUnit },
-                    });
-                }}
-                size="sm"
-                className="border-border gap-0 rounded-md border"
-              >
-                <ToggleGroupItem value="kg" className="h-7 rounded-r-none px-2.5 text-xs">
-                  {t('units.kg')}
-                </ToggleGroupItem>
-                <ToggleGroupItem value="lbs" className="h-7 rounded-l-none px-2.5 text-xs">
-                  {t('units.lbs')}
-                </ToggleGroupItem>
-              </ToggleGroup>
-              <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Body */}
-          <div className="flex min-h-0 gap-0">
-            {/* Left: Sliders */}
-            <div
-              className="border-border min-w-0 flex-1 space-y-5 overflow-y-auto border-r p-5"
-              style={{ maxHeight: '65vh' }}
+        {/* Header */}
+        <div className="border-border bg-card flex h-11 items-center justify-between border-b px-4">
+          <span className="text-sm font-medium">{t('weightBalance.title')}</span>
+          <div className="flex items-center gap-2">
+            <ToggleGroup
+              type="single"
+              value={weightUnit}
+              onValueChange={(value) => {
+                if (value)
+                  updateMapSettings({
+                    units: { ...mapSettings.units, weight: value as WeightUnit },
+                  });
+              }}
+              size="sm"
+              className="border-border gap-0 rounded-md border"
             >
-              {/* Payload Section */}
-              {payloadStations.length > 0 && (
-                <section>
-                  <div className="mb-3 flex items-center gap-1.5">
-                    <Users className="text-success h-3.5 w-3.5" />
-                    <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                      {t('weightBalance.payload')}
-                    </span>
-                  </div>
-                  <div className="space-y-3">
-                    {payloadStations.map((station, i) => (
-                      <SliderRow
-                        key={i}
-                        label={station.name}
-                        value={payloadWeights[i] ?? 0}
-                        max={station.maxWeight}
-                        step={Math.max(1, Math.round(station.maxWeight / 100))}
-                        onChange={(v) => setPayloadWeight(i, v)}
-                        formatValue={(v) => formatWeight(v, weightUnit)}
-                        formatMax={(v) => formatWeight(v, weightUnit)}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Fuel Section */}
-              <section>
-                <div className="mb-3 flex items-center gap-1.5">
-                  <Fuel className="text-primary h-3.5 w-3.5" />
-                  <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                    {t('weightBalance.fuel')}
-                  </span>
-                </div>
-
-                {/* All tanks master control */}
-                <div className="bg-secondary/60 mb-3 rounded-md p-2.5">
-                  <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="text-foreground font-medium">
-                      {t('weightBalance.allTanks')}
-                    </span>
-                    <span className="text-foreground font-mono">
-                      {t('weightBalance.overallFuelValue', {
-                        pct: overallFuelPct,
-                        weight: formatWeight(totalFuelLbs, weightUnit),
-                      })}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[overallFuelPct]}
-                    onValueChange={(v) => {
-                      const val = v[0];
-                      if (val === undefined) return;
-                      setAllTanksPercentage(val);
-                    }}
-                    min={0}
-                    max={100}
-                    step={1}
-                  />
-                </div>
-
-                {/* Per-tank sliders */}
-                <div className="space-y-3">
-                  {tankNames.map((name, i) => {
-                    const cap = tankCapacities[i] ?? 0;
-                    const pct = tankPercentages[i] ?? 0;
-                    const weightLbs = (cap * pct) / 100;
-
-                    return (
-                      <SliderRow
-                        key={i}
-                        label={name}
-                        value={pct}
-                        max={100}
-                        step={1}
-                        onChange={(v) => setTankPercentage(i, v)}
-                        formatValue={(v) =>
-                          t('weightBalance.tankValue', {
-                            pct: Math.round(v),
-                            weight: formatWeight(weightLbs, weightUnit),
-                          })
-                        }
-                      />
-                    );
-                  })}
-                </div>
-              </section>
-            </div>
-
-            {/* Right: Weight Donut */}
-            <div className="flex w-60 shrink-0 flex-col items-center justify-center p-5">
-              <WeightDonut
-                emptyWeight={selectedAircraft.emptyWeight}
-                payloadWeight={totalPayloadLbs}
-                fuelWeight={totalFuelLbs}
-                maxWeight={selectedAircraft.maxWeight}
-                weightUnit={weightUnit}
-              />
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-border bg-card flex justify-end border-t px-4 py-2.5">
-            <Button onClick={onClose} size="sm">
-              {t('weightBalance.done')}
+              <ToggleGroupItem value="kg" className="h-7 rounded-r-none px-2.5 text-xs">
+                {t('units.kg')}
+              </ToggleGroupItem>
+              <ToggleGroupItem value="lbs" className="h-7 rounded-l-none px-2.5 text-xs">
+                {t('units.lbs')}
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+              <X className="h-3.5 w-3.5" />
             </Button>
           </div>
-        </DialogPrimitive.Content>
-      </DialogPortal>
+        </div>
+
+        {/* Body */}
+        <div className="flex min-h-0 gap-0">
+          {/* Left: Sliders */}
+          <div
+            className="border-border min-w-0 flex-1 space-y-5 overflow-y-auto border-r p-5"
+            style={{ maxHeight: '65vh' }}
+          >
+            {/* Payload Section */}
+            {payloadStations.length > 0 && (
+              <section>
+                <div className="mb-3 flex items-center gap-1.5">
+                  <Users className="text-success h-3.5 w-3.5" />
+                  <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                    {t('weightBalance.payload')}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {payloadStations.map((station, i) => (
+                    <SliderRow
+                      key={i}
+                      label={station.name}
+                      value={payloadWeights[i] ?? 0}
+                      max={station.maxWeight}
+                      step={Math.max(1, Math.round(station.maxWeight / 100))}
+                      onChange={(v) => setPayloadWeight(i, v)}
+                      formatValue={(v) => formatWeight(v, weightUnit)}
+                      formatMax={(v) => formatWeight(v, weightUnit)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Fuel Section */}
+            <section>
+              <div className="mb-3 flex items-center gap-1.5">
+                <Fuel className="text-primary h-3.5 w-3.5" />
+                <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  {t('weightBalance.fuel')}
+                </span>
+              </div>
+
+              {/* All tanks master control */}
+              <div className="bg-secondary/60 mb-3 rounded-md p-2.5">
+                <div className="mb-1.5 flex items-center justify-between text-sm">
+                  <span className="text-foreground font-medium">{t('weightBalance.allTanks')}</span>
+                  <span className="text-foreground font-mono">
+                    {t('weightBalance.overallFuelValue', {
+                      pct: overallFuelPct,
+                      weight: formatWeight(totalFuelLbs, weightUnit),
+                    })}
+                  </span>
+                </div>
+                <Slider
+                  value={[overallFuelPct]}
+                  onValueChange={(v) => {
+                    const val = v[0];
+                    if (val === undefined) return;
+                    setAllTanksPercentage(val);
+                  }}
+                  min={0}
+                  max={100}
+                  step={1}
+                />
+              </div>
+
+              {/* Per-tank sliders */}
+              <div className="space-y-3">
+                {tankNames.map((name, i) => {
+                  const cap = tankCapacities[i] ?? 0;
+                  const pct = tankPercentages[i] ?? 0;
+                  const weightLbs = (cap * pct) / 100;
+
+                  return (
+                    <SliderRow
+                      key={i}
+                      label={name}
+                      value={pct}
+                      max={100}
+                      step={1}
+                      onChange={(v) => setTankPercentage(i, v)}
+                      formatValue={(v) =>
+                        t('weightBalance.tankValue', {
+                          pct: Math.round(v),
+                          weight: formatWeight(weightLbs, weightUnit),
+                        })
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+
+          {/* Right: Weight Donut */}
+          <div className="flex w-60 shrink-0 flex-col items-center justify-center p-5">
+            <WeightDonut
+              emptyWeight={selectedAircraft.emptyWeight}
+              payloadWeight={totalPayloadLbs}
+              fuelWeight={totalFuelLbs}
+              maxWeight={selectedAircraft.maxWeight}
+              weightUnit={weightUnit}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-border bg-card flex justify-end border-t px-4 py-2.5">
+          <Button onClick={onClose} size="sm">
+            {t('weightBalance.done')}
+          </Button>
+        </div>
+      </DialogPanel>
     </Dialog>
   );
 }
