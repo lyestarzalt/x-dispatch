@@ -1875,6 +1875,7 @@
     "waypoint": "Punkt trasy",
     "frequency": "Częstotliwość",
     "altitude": "Planowana wysokość",
+    "elevation": "Wysokość",
     "bearingTrue": "Namiar (rzeczywisty)",
     "radial": "Radial",
     "distance": "Odległość",

@@ -1875,6 +1875,7 @@
     "waypoint": "Точка маршрута",
     "frequency": "Частота",
     "altitude": "Плановая высота",
+    "elevation": "Высота",
     "bearingTrue": "Пеленг (истинный)",
     "radial": "Радиал",
     "distance": "Расстояние",

@@ -1875,6 +1875,7 @@
     "waypoint": "航路点",
     "frequency": "频率",
     "altitude": "计划高度",
+    "elevation": "海拔",
     "bearingTrue": "方位（真）",
     "radial": "径向线",
     "distance": "距离",
