@@ -96,36 +96,36 @@ describe('navCache pipeline', () => {
   // ---- Navaids ----
 
   describe('navaids', () => {
-    it('inserts parsed navaids and returns the correct count', () => {
+    it('inserts parsed navaids and returns the correct count', async () => {
       const content = readFixture('earth_nav-sample.dat');
       const result = parseNavaids(content);
       expect(result.data.length).toBeGreaterThan(0);
 
-      insertNavaids(result.data);
+      await insertNavaids(result.data);
       expect(getNavaidCount()).toBe(result.data.length);
     });
 
-    it('returns zero count when no navaids have been inserted', () => {
+    it('returns zero count when no navaids have been inserted', async () => {
       expect(getNavaidCount()).toBe(0);
     });
 
-    it('getAllNavaidsFromDb returns all inserted navaids', () => {
+    it('getAllNavaidsFromDb returns all inserted navaids', async () => {
       const content = readFixture('earth_nav-sample.dat');
       const { data: parsed } = parseNavaids(content);
-      insertNavaids(parsed);
+      await insertNavaids(parsed);
 
       const all = getAllNavaidsFromDb();
       expect(all).toHaveLength(parsed.length);
     });
 
-    it('getAllNavaidsFromDb returns empty array when table is empty', () => {
+    it('getAllNavaidsFromDb returns empty array when table is empty', async () => {
       expect(getAllNavaidsFromDb()).toEqual([]);
     });
 
-    it('navaid coordinates survive the insert/query round-trip within float tolerance', () => {
+    it('navaid coordinates survive the insert/query round-trip within float tolerance', async () => {
       const content = readFixture('earth_nav-sample.dat');
       const { data: parsed } = parseNavaids(content);
-      insertNavaids(parsed);
+      await insertNavaids(parsed);
 
       const first = parsed[0];
       expect(first).toBeDefined();
@@ -137,10 +137,10 @@ describe('navCache pipeline', () => {
       expect(found!.longitude).toBeCloseTo(first!.longitude, 4);
     });
 
-    it('clearNavaids removes all entries', () => {
+    it('clearNavaids removes all entries', async () => {
       const content = readFixture('earth_nav-sample.dat');
       const { data: parsed } = parseNavaids(content);
-      insertNavaids(parsed);
+      await insertNavaids(parsed);
       expect(getNavaidCount()).toBeGreaterThan(0);
 
       clearNavaids();
@@ -148,7 +148,7 @@ describe('navCache pipeline', () => {
       expect(getAllNavaidsFromDb()).toEqual([]);
     });
 
-    it('clearNavaids is idempotent on an already-empty table', () => {
+    it('clearNavaids is idempotent on an already-empty table', async () => {
       clearNavaids();
       expect(getNavaidCount()).toBe(0);
     });
@@ -157,36 +157,36 @@ describe('navCache pipeline', () => {
   // ---- Waypoints ----
 
   describe('waypoints', () => {
-    it('inserts parsed waypoints and returns the correct count', () => {
+    it('inserts parsed waypoints and returns the correct count', async () => {
       const content = readFixture('earth_fix-sample.dat');
       const result = parseWaypoints(content);
       expect(result.data.length).toBeGreaterThan(0);
 
-      insertWaypoints(result.data);
+      await insertWaypoints(result.data);
       expect(getWaypointCount()).toBe(result.data.length);
     });
 
-    it('returns zero count when no waypoints have been inserted', () => {
+    it('returns zero count when no waypoints have been inserted', async () => {
       expect(getWaypointCount()).toBe(0);
     });
 
-    it('getAllWaypointsFromDb returns all inserted waypoints', () => {
+    it('getAllWaypointsFromDb returns all inserted waypoints', async () => {
       const content = readFixture('earth_fix-sample.dat');
       const { data: parsed } = parseWaypoints(content);
-      insertWaypoints(parsed);
+      await insertWaypoints(parsed);
 
       const all = getAllWaypointsFromDb();
       expect(all).toHaveLength(parsed.length);
     });
 
-    it('getAllWaypointsFromDb returns empty array when table is empty', () => {
+    it('getAllWaypointsFromDb returns empty array when table is empty', async () => {
       expect(getAllWaypointsFromDb()).toEqual([]);
     });
 
-    it('waypoint coordinates survive the insert/query round-trip within float tolerance', () => {
+    it('waypoint coordinates survive the insert/query round-trip within float tolerance', async () => {
       const content = readFixture('earth_fix-sample.dat');
       const { data: parsed } = parseWaypoints(content);
-      insertWaypoints(parsed);
+      await insertWaypoints(parsed);
 
       const first = parsed[0];
       expect(first).toBeDefined();
@@ -198,10 +198,10 @@ describe('navCache pipeline', () => {
       expect(found!.longitude).toBeCloseTo(first!.longitude, 4);
     });
 
-    it('clearWaypoints removes all entries', () => {
+    it('clearWaypoints removes all entries', async () => {
       const content = readFixture('earth_fix-sample.dat');
       const { data: parsed } = parseWaypoints(content);
-      insertWaypoints(parsed);
+      await insertWaypoints(parsed);
       expect(getWaypointCount()).toBeGreaterThan(0);
 
       clearWaypoints();
@@ -209,7 +209,7 @@ describe('navCache pipeline', () => {
       expect(getAllWaypointsFromDb()).toEqual([]);
     });
 
-    it('clearWaypoints is idempotent on an already-empty table', () => {
+    it('clearWaypoints is idempotent on an already-empty table', async () => {
       clearWaypoints();
       expect(getWaypointCount()).toBe(0);
     });
@@ -218,36 +218,36 @@ describe('navCache pipeline', () => {
   // ---- Airways ----
 
   describe('airways', () => {
-    it('inserts parsed airways and returns the correct count', () => {
+    it('inserts parsed airways and returns the correct count', async () => {
       const content = readFixture('earth_awy-sample.dat');
       const result = parseAirways(content);
       expect(result.data.length).toBeGreaterThan(0);
 
-      insertAirways(result.data);
+      await insertAirways(result.data);
       expect(getAirwayCount()).toBe(result.data.length);
     });
 
-    it('returns zero count when no airways have been inserted', () => {
+    it('returns zero count when no airways have been inserted', async () => {
       expect(getAirwayCount()).toBe(0);
     });
 
-    it('getAllAirwaysFromDb returns all inserted airways', () => {
+    it('getAllAirwaysFromDb returns all inserted airways', async () => {
       const content = readFixture('earth_awy-sample.dat');
       const { data: parsed } = parseAirways(content);
-      insertAirways(parsed);
+      await insertAirways(parsed);
 
       const all = getAllAirwaysFromDb();
       expect(all).toHaveLength(parsed.length);
     });
 
-    it('getAllAirwaysFromDb returns empty array when table is empty', () => {
+    it('getAllAirwaysFromDb returns empty array when table is empty', async () => {
       expect(getAllAirwaysFromDb()).toEqual([]);
     });
 
-    it('airway name and fix data survive the insert/query round-trip', () => {
+    it('airway name and fix data survive the insert/query round-trip', async () => {
       const content = readFixture('earth_awy-sample.dat');
       const { data: parsed } = parseAirways(content);
-      insertAirways(parsed);
+      await insertAirways(parsed);
 
       const first = parsed[0]!;
       const all = getAllAirwaysFromDb();
@@ -261,10 +261,10 @@ describe('navCache pipeline', () => {
       expect(found!.toFix).toBe(first.toFix);
     });
 
-    it('clearAirways removes all entries', () => {
+    it('clearAirways removes all entries', async () => {
       const content = readFixture('earth_awy-sample.dat');
       const { data: parsed } = parseAirways(content);
-      insertAirways(parsed);
+      await insertAirways(parsed);
       expect(getAirwayCount()).toBeGreaterThan(0);
 
       clearAirways();
@@ -272,7 +272,7 @@ describe('navCache pipeline', () => {
       expect(getAllAirwaysFromDb()).toEqual([]);
     });
 
-    it('clearAirways is idempotent on an already-empty table', () => {
+    it('clearAirways is idempotent on an already-empty table', async () => {
       clearAirways();
       expect(getAirwayCount()).toBe(0);
     });
@@ -280,7 +280,7 @@ describe('navCache pipeline', () => {
 
   // ---- persistNavDatabase (saveDb no-op mock) ----
 
-  it('persistNavDatabase does not throw', () => {
+  it('persistNavDatabase does not throw', async () => {
     expect(() => persistNavDatabase()).not.toThrow();
   });
 });
@@ -328,7 +328,7 @@ describe('checkNavCacheValidity cache invalidation', () => {
     closeTestDb();
   });
 
-  it('indicates reload needed when no cached entry exists', () => {
+  it('indicates reload needed when no cached entry exists', async () => {
     // Empty database — no nav_file_meta rows
     const result = checkNavCacheValidity(FIXTURE_NAV, 'navaids');
 
@@ -336,7 +336,7 @@ describe('checkNavCacheValidity cache invalidation', () => {
     expect(result.reason).toMatch(/no cached/i);
   });
 
-  it('indicates no reload needed when mtime matches and source type matches', () => {
+  it('indicates no reload needed when mtime matches and source type matches', async () => {
     // Read the real mtime of the fixture file
     const actualMtime = Math.floor(fs.statSync(FIXTURE_NAV).mtimeMs);
 
@@ -353,7 +353,7 @@ describe('checkNavCacheValidity cache invalidation', () => {
     expect(result.needsReload).toBe(false);
   });
 
-  it('indicates reload needed when mtime changes', () => {
+  it('indicates reload needed when mtime changes', async () => {
     // Seed with an outdated mtime (1 ms before the real mtime)
     const actualMtime = Math.floor(fs.statSync(FIXTURE_NAV).mtimeMs);
     const staleMtime = actualMtime - 1;
@@ -371,7 +371,7 @@ describe('checkNavCacheValidity cache invalidation', () => {
     expect(result.reason).toMatch(/modified/i);
   });
 
-  it('indicates reload needed when source type changes from xplane-default to navigraph', () => {
+  it('indicates reload needed when source type changes from xplane-default to navigraph', async () => {
     const xplanePath = '/xplane/Resources/default data/earth_nav.dat';
     const navigraphPath = '/xplane/Custom Data/earth_nav.dat';
 
@@ -390,7 +390,7 @@ describe('checkNavCacheValidity cache invalidation', () => {
     expect(result.reason).toMatch(/source changed/i);
   });
 
-  it('indicates reload needed when source type changes from navigraph to xplane-default', () => {
+  it('indicates reload needed when source type changes from navigraph to xplane-default', async () => {
     const navigraphPath = '/xplane/Custom Data/earth_nav.dat';
     const xplanePath = '/xplane/Resources/default data/earth_nav.dat';
 

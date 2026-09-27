@@ -1,4 +1,5 @@
 // src/components/dialogs/AddonManager/components/SceneryEntry.tsx
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -20,7 +21,9 @@ interface SortableSceneryEntryProps {
   disabled: boolean;
 }
 
-export function SortableSceneryEntry({
+// Memoized: the tab re-renders on every keystroke in the search box and on
+// every mutation flag flip, and scenery lists run to hundreds of rows.
+export const SortableSceneryEntry = memo(function SortableSceneryEntry({
   entry,
   position,
   totalCount,
@@ -139,4 +142,4 @@ export function SortableSceneryEntry({
       </Tooltip>
     </div>
   );
-}
+});

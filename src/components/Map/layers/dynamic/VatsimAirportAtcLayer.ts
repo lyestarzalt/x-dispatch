@@ -2,7 +2,7 @@ import * as maplibregl from 'maplibre-gl';
 import { buildAirportAtcSummaries } from '@/lib/vatsimSectors/match';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { VatsimData } from '@/types/vatsim';
-import { safeAddGeoJSONSource } from '../types';
+import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
 import { renderVatsimAirportAtcPopup } from './VatsimAirportAtcPopup';
 import { type PillImageOptions, ensurePillImage } from './badgeImages';
 
@@ -34,8 +34,17 @@ const BADGE_STYLES: Record<
   A: { backgroundColor: '#39280f', borderColor: '#fbbf24', textColor: '#fef3c7' },
 };
 
-const popupSummaryCache = new WeakMap<maplibregl.Map, Map<string, string>>();
+/** Popup content is rendered on click, not per refresh — this holds the data. */
+export type AirportAtcPopupEntry = {
+  airport: Airport;
+  controllers: Parameters<typeof renderVatsimAirportAtcPopup>[1];
+};
+
+const popupSummaryCache = new WeakMap<maplibregl.Map, Map<string, AirportAtcPopupEntry>>();
 const clickHandlerSetup = new WeakSet<maplibregl.Map>();
+/** Badge signature of the last upload, so the periodic VATSIM refresh skips
+ * the setData when no airport's staffing changed. */
+const badgeUploadMemo = new WeakMap<maplibregl.Map, string>();
 
 export const AIRPORT_ATC_ICON_SIZE: maplibregl.DataDrivenPropertyValueSpecification<number> = [
   'interpolate',
@@ -73,6 +82,18 @@ export function getAirportAtcBadgeOptions(letter: AirportBadgeLetter): PillImage
   };
 }
 
+// The airport list changes rarely (startup, scenery resync) while this layer
+// refreshes on every VATSIM poll — key the ICAO lookup on array identity.
+const airportByIcaoCache = new WeakMap<Airport[], Map<string, Airport>>();
+function getAirportByIcao(airports: Airport[]): Map<string, Airport> {
+  let map = airportByIcaoCache.get(airports);
+  if (!map) {
+    map = new Map(airports.map((airport) => [airport.icao.toUpperCase(), airport]));
+    airportByIcaoCache.set(airports, map);
+  }
+  return map;
+}
+
 function ensureAirportBadgeImages(map: maplibregl.Map): void {
   (Object.keys(BADGE_STYLES) as AirportBadgeLetter[]).forEach((badgeLetter) => {
     ensurePillImage(
@@ -89,11 +110,11 @@ export function buildAirportAtcFeatureCollection(
   vatsimData: VatsimData | undefined
 ): {
   collection: AirportAtcFeatureCollection;
-  popupMap: Map<string, string>;
+  popupMap: Map<string, AirportAtcPopupEntry>;
 } {
-  const airportByIcao = new Map(airports.map((airport) => [airport.icao.toUpperCase(), airport]));
+  const airportByIcao = getAirportByIcao(airports);
   const summaries = buildAirportAtcSummaries(vatsimData, airports);
-  const popupMap = new Map<string, string>();
+  const popupMap = new Map<string, AirportAtcPopupEntry>();
 
   const features = summaries.flatMap((summary) => {
     const airport = airportByIcao.get(summary.icao);
@@ -101,7 +122,7 @@ export function buildAirportAtcFeatureCollection(
       return [];
     }
 
-    popupMap.set(summary.icao, renderVatsimAirportAtcPopup(airport, summary.controllers));
+    popupMap.set(summary.icao, { airport, controllers: summary.controllers });
 
     return summary.badges.map((badge, index) => {
       return {
@@ -133,7 +154,20 @@ export function updateVatsimAirportAtcLayer(
   vatsimData: VatsimData | undefined
 ): void {
   const { collection, popupMap } = buildAirportAtcFeatureCollection(airports, vatsimData);
+  // Popup data always refreshes (ATIS text changes without moving a badge)…
   popupSummaryCache.set(map, popupMap);
+
+  // …but the badge upload is skipped when no airport's staffing changed.
+  const uploadKey = collection.features.map((f) => f.properties.id).join('|');
+  if (
+    badgeUploadMemo.get(map) === uploadKey &&
+    map.getSource(SOURCE_ID) &&
+    map.getLayer(BADGE_LAYER_ID)
+  ) {
+    return;
+  }
+  badgeUploadMemo.set(map, uploadKey);
+
   safeAddGeoJSONSource(map, SOURCE_ID, collection);
   ensureAirportBadgeImages(map);
 
@@ -154,12 +188,13 @@ export function updateVatsimAirportAtcLayer(
 }
 
 export function removeVatsimAirportAtcLayer(map: maplibregl.Map): void {
+  badgeUploadMemo.delete(map);
   if (map.getLayer(BADGE_LAYER_ID)) map.removeLayer(BADGE_LAYER_ID);
   if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
 }
 
 export function bringVatsimAirportAtcLayersToTop(map: maplibregl.Map): void {
-  if (map.getLayer(BADGE_LAYER_ID)) map.moveLayer(BADGE_LAYER_ID);
+  moveLayersToTop(map, [BADGE_LAYER_ID]);
 }
 
 function handlePopupOpen(
@@ -168,14 +203,14 @@ function handlePopupOpen(
   popup: maplibregl.Popup
 ): void {
   const icao = String(feature.properties?.icao ?? '');
-  const html = popupSummaryCache.get(map)?.get(icao);
-  if (!html || feature.geometry.type !== 'Point') {
+  const entry = popupSummaryCache.get(map)?.get(icao);
+  if (!entry || feature.geometry.type !== 'Point') {
     return;
   }
 
   popup
     .setLngLat(feature.geometry.coordinates as [number, number])
-    .setHTML(html)
+    .setHTML(renderVatsimAirportAtcPopup(entry.airport, entry.controllers))
     .addTo(map);
 }
 

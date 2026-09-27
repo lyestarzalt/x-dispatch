@@ -23,8 +23,17 @@ export function useCursorElevation(mapRef: MapRef): void {
     const map = mapRef.current;
     if (!map) return;
 
-    const publish = useMapStore.getState().setCursorElevation;
+    const setCursorElevation = useMapStore.getState().setCursorElevation;
     let cursorPixel: { x: number; y: number } | null = null;
+
+    // recompute runs per mousemove and per map frame — skip the store write
+    // (which fans out through the persist middleware) when nothing changed.
+    let last = useMapStore.getState().cursorElevation;
+    const publish = (next: { supported: boolean; valueM: number | null }) => {
+      if (next.supported === last.supported && next.valueM === last.valueM) return;
+      last = next;
+      setCursorElevation(next);
+    };
 
     const recompute = () => {
       const supported = map.getTerrain() != null;

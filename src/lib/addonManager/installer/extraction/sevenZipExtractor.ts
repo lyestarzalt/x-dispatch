@@ -117,16 +117,18 @@ export async function extractSevenZip(
       });
 
       extractStream.on('end', () => {
-        // If internalRoot is specified, we need to move files from the extracted subfolder
-        if (internalRoot) {
-          const sourceDir = path.join(targetDir, internalRoot.replace(/\/$/, ''));
-          if (fs.existsSync(sourceDir)) {
-            // Move contents up
-            moveContentsUp(sourceDir, targetDir);
+        void (async () => {
+          // If internalRoot is specified, we need to move files from the extracted subfolder
+          if (internalRoot) {
+            const sourceDir = path.join(targetDir, internalRoot.replace(/\/$/, ''));
+            if (fs.existsSync(sourceDir)) {
+              // Move contents up
+              await moveContentsUp(sourceDir, targetDir);
+            }
           }
-        }
 
-        resolve(ok({ stats, extractedFiles }));
+          resolve(ok({ stats, extractedFiles }));
+        })();
       });
 
       extractStream.on('error', (extractErr: Error) => {
@@ -147,8 +149,8 @@ export async function extractSevenZip(
 /**
  * Move contents from a subdirectory up to the parent
  */
-function moveContentsUp(sourceDir: string, targetDir: string): void {
-  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
+async function moveContentsUp(sourceDir: string, targetDir: string): Promise<void> {
+  const entries = await fs.promises.readdir(sourceDir, { withFileTypes: true });
 
   for (const entry of entries) {
     const srcPath = path.join(sourceDir, entry.name);
@@ -156,15 +158,14 @@ function moveContentsUp(sourceDir: string, targetDir: string): void {
 
     if (srcPath === targetDir) continue; // Skip if same as target
 
-    if (entry.isDirectory()) {
-      // Recursively copy directory
-      fs.cpSync(srcPath, dstPath, { recursive: true });
-    } else {
-      // Copy file
-      fs.copyFileSync(srcPath, dstPath);
+    try {
+      // Same volume, so a rename moves multi-GB folders without copying
+      await fs.promises.rename(srcPath, dstPath);
+    } catch {
+      await fs.promises.cp(srcPath, dstPath, { recursive: true, force: true });
     }
   }
 
   // Remove the source directory
-  fs.rmSync(sourceDir, { recursive: true, force: true });
+  await fs.promises.rm(sourceDir, { recursive: true, force: true });
 }

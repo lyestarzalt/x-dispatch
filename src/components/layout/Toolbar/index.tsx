@@ -471,36 +471,43 @@ function Toolbar({
     [airportFilters.surfaceTypes, setAirportFilters]
   );
 
+  // Uppercase once per airport list, not once per airport per keystroke —
+  // the list holds tens of thousands of entries.
+  const searchIndex = useMemo(
+    () =>
+      airports.map((airport) => ({
+        airport,
+        icao: airport.icao.toUpperCase(),
+        name: airport.name.toUpperCase(),
+      })),
+    [airports]
+  );
+
   const filteredAirports = useMemo(() => {
     const query = searchQuery.trim().toUpperCase();
     if (query.length < 2) return [];
 
-    const matches = airports.filter(
-      (a) => a.icao.toUpperCase().includes(query) || a.name.toUpperCase().includes(query)
-    );
+    const matches = searchIndex.filter((e) => e.icao.includes(query) || e.name.includes(query));
 
     matches.sort((a, b) => {
-      const aIcao = a.icao.toUpperCase();
-      const bIcao = b.icao.toUpperCase();
+      if (a.icao === query && b.icao !== query) return -1;
+      if (b.icao === query && a.icao !== query) return 1;
 
-      if (aIcao === query && bIcao !== query) return -1;
-      if (bIcao === query && aIcao !== query) return 1;
-
-      const aStartsWith = aIcao.startsWith(query);
-      const bStartsWith = bIcao.startsWith(query);
+      const aStartsWith = a.icao.startsWith(query);
+      const bStartsWith = b.icao.startsWith(query);
       if (aStartsWith && !bStartsWith) return -1;
       if (bStartsWith && !aStartsWith) return 1;
 
-      const aIcaoContains = aIcao.includes(query);
-      const bIcaoContains = bIcao.includes(query);
+      const aIcaoContains = a.icao.includes(query);
+      const bIcaoContains = b.icao.includes(query);
       if (aIcaoContains && !bIcaoContains) return -1;
       if (bIcaoContains && !aIcaoContains) return 1;
 
       return 0;
     });
 
-    return matches.slice(0, 8);
-  }, [airports, searchQuery]);
+    return matches.slice(0, 8).map((e) => e.airport);
+  }, [searchIndex, searchQuery]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);

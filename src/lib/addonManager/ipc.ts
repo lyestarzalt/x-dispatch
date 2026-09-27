@@ -77,8 +77,9 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
     const manager = new SceneryManager(xplanePath);
 
-    // Get current entries
-    const analyzeResult = await manager.analyze();
+    // Get current entries. The INI write only needs names, paths and enabled
+    // flags, so skip the folder classification scan.
+    const analyzeResult = await manager.analyze({ classify: false });
     if (!analyzeResult.ok) {
       return analyzeResult;
     }
@@ -215,7 +216,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return { ok: true, value: manager.scanAircraft() };
+    return { ok: true, value: await manager.scanAircraft() };
   });
 
   ipcMain.handle('addon:browser:toggleAircraft', async (_event, folderName: unknown) => {
@@ -277,7 +278,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
     const appDataPath = app.getPath('userData');
     const manager = new BrowserManager(xplanePath, appDataPath);
-    return { ok: true, value: manager.scanPlugins() };
+    return { ok: true, value: await manager.scanPlugins() };
   });
 
   ipcMain.handle('addon:browser:togglePlugin', async (_event, folderName: unknown) => {
@@ -472,8 +473,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
 
     try {
-      if (!fs.existsSync(resolvedPath)) return null;
-      const buffer = fs.readFileSync(resolvedPath);
+      const buffer = await fs.promises.readFile(resolvedPath);
       const base64 = buffer.toString('base64');
       return `data:image/png;base64,${base64}`;
     } catch {

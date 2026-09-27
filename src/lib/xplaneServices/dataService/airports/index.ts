@@ -26,6 +26,7 @@ import {
   getAirportBreakdown,
   getAirportCount,
   getAllAirportsFromDb,
+  getCustomAirportCount,
   getStoredAirportCountEstimate,
   getStoredFileMeta,
   insertAirports,
@@ -122,8 +123,8 @@ export async function syncAirportCache(
   onProgress?.({ phase: 'inserting' });
   const insertStart = Date.now();
   clearAirports();
-  insertAirports(Array.from(globalResult.airports.values()));
-  insertCustomAirports(Array.from(customResult.airports.values()));
+  await insertAirports(Array.from(globalResult.airports.values()));
+  await insertCustomAirports(Array.from(customResult.airports.values()));
   const insertTime = Date.now() - insertStart;
   logger.data.info(`Batch inserted ${allAirports.size} airports in ${insertTime}ms`);
 
@@ -229,14 +230,14 @@ export async function resyncCustomScenery(
   const startTime = Date.now();
 
   // Get current custom airport count
-  const beforeCount = getAllAirportsFromDb().filter((a) => a.isCustom).length;
+  const beforeCount = getCustomAirportCount();
 
   // Re-parse all custom scenery apt.dat files
   const customResult = await loadCustomSceneryAirports(xplanePath);
 
   // Replace custom airports in DB
   clearCustomAirports();
-  insertCustomAirports(Array.from(customResult.airports.values()));
+  await insertCustomAirports(Array.from(customResult.airports.values()));
 
   // Update file metadata for custom scenery files only
   const customFiles = getCustomSceneryFileInfos(xplanePath);
@@ -261,4 +262,9 @@ export async function resyncCustomScenery(
 // Re-exports for convenience
 // ============================================================================
 
-export { getAirportBreakdown, getDistinctCountries } from './airportCache';
+export {
+  getAirportBreakdown,
+  getAirportCount,
+  getAirportsInBounds,
+  getDistinctCountries,
+} from './airportCache';

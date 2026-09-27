@@ -3,10 +3,11 @@
  * SQLite caching for parsed airport data.
  * Tracks file modification times to invalidate cache when apt.dat files change.
  */
-import { count, like } from 'drizzle-orm';
+import { and, count, gte, like, lte } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airports, airportsCustom, aptFileMeta, getDb, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
+import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type {
   Airport,
   AirportSourceBreakdown,
@@ -152,7 +153,7 @@ export function clearCustomAirports(): void {
 /**
  * Batch insert airports into database
  */
-export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
+export async function insertAirports(airportEntries: ParsedAirportEntry[]): Promise<void> {
   const db = getDb();
 
   const airportArray = airportEntries.map((a) => ({
@@ -179,9 +180,11 @@ export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
     guiLabel: a.guiLabel,
   }));
 
-  // Batch insert in chunks of 500
+  // Batch insert in chunks of 500, yielding between them so the main
+  // process stays responsive during a bulk load.
   const CHUNK_SIZE = 500;
   for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airportArray.slice(i, i + CHUNK_SIZE);
     db.insert(airports).values(chunk).run();
   }
@@ -190,7 +193,7 @@ export function insertAirports(airportEntries: ParsedAirportEntry[]): void {
 /**
  * Batch insert custom scenery airports into the custom table
  */
-export function insertCustomAirports(airportEntries: ParsedAirportEntry[]): void {
+export async function insertCustomAirports(airportEntries: ParsedAirportEntry[]): Promise<void> {
   const db = getDb();
 
   const airportArray = airportEntries.map((a) => ({
@@ -219,6 +222,7 @@ export function insertCustomAirports(airportEntries: ParsedAirportEntry[]): void
 
   const CHUNK_SIZE = 500;
   for (let i = 0; i < airportArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airportArray.slice(i, i + CHUNK_SIZE);
     db.insert(airportsCustom).values(chunk).run();
   }
@@ -328,6 +332,66 @@ export function getDistinctCountries(): string[] {
 export function getAirportCount(): number {
   const db = getDb();
   const result = db.select({ count: count() }).from(airports).get();
+  return result?.count || 0;
+}
+
+/**
+ * Get airports inside a lat/lon bounding box, custom scenery overriding
+ * global on the same ICAO. Callers that need "airports near a point" use
+ * this instead of loading the whole airports table into memory.
+ */
+export function getAirportsInBounds(
+  minLat: number,
+  maxLat: number,
+  minLon: number,
+  maxLon: number
+): Array<{ icao: string; name: string; lat: number; lon: number }> {
+  const db = getDb();
+
+  const globalResults = db
+    .select({ icao: airports.icao, name: airports.name, lat: airports.lat, lon: airports.lon })
+    .from(airports)
+    .where(
+      and(
+        gte(airports.lat, minLat),
+        lte(airports.lat, maxLat),
+        gte(airports.lon, minLon),
+        lte(airports.lon, maxLon)
+      )
+    )
+    .all();
+
+  const customResults = db
+    .select({
+      icao: airportsCustom.icao,
+      name: airportsCustom.name,
+      lat: airportsCustom.lat,
+      lon: airportsCustom.lon,
+    })
+    .from(airportsCustom)
+    .where(
+      and(
+        gte(airportsCustom.lat, minLat),
+        lte(airportsCustom.lat, maxLat),
+        gte(airportsCustom.lon, minLon),
+        lte(airportsCustom.lon, maxLon)
+      )
+    )
+    .all();
+
+  const merged = new Map(globalResults.map((r) => [r.icao, r]));
+  for (const r of customResults) {
+    merged.set(r.icao, r);
+  }
+  return [...merged.values()];
+}
+
+/**
+ * Get custom scenery airport count from database
+ */
+export function getCustomAirportCount(): number {
+  const db = getDb();
+  const result = db.select({ count: count() }).from(airportsCustom).get();
   return result?.count || 0;
 }
 

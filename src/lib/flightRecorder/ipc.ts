@@ -7,7 +7,13 @@ import { FlightStore } from './flightStore';
 import type { AirportRunways } from './runwayMatch';
 
 export interface FlightRecorderIpcDeps {
-  getAllAirports: () => Array<{ icao: string; name: string; lat: number; lon: number }>;
+  /** Airports inside a lat/lon box — a database query, not a full-table load. */
+  getAirportsInBounds: (
+    minLat: number,
+    maxLat: number,
+    minLon: number,
+    maxLon: number
+  ) => Array<{ icao: string; name: string; lat: number; lon: number }>;
   getAirportData: (icao: string) => { data: string } | null;
   getDataref: (name: string) => Promise<number | number[] | string | null>;
   attachSink: (sink: {
@@ -55,8 +61,7 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
     const dLat = radiusM * DEG_PER_M_LAT;
     const dLon = dLat / Math.max(0.2, Math.cos((lat * Math.PI) / 180));
     return deps
-      .getAllAirports()
-      .filter((a) => Math.abs(a.lat - lat) <= dLat && Math.abs(a.lon - lon) <= dLon)
+      .getAirportsInBounds(lat - dLat, lat + dLat, lon - dLon, lon + dLon)
       .map((a) => ({
         ...a,
         d2: (a.lat - lat) ** 2 + ((a.lon - lon) * Math.cos((lat * Math.PI) / 180)) ** 2,

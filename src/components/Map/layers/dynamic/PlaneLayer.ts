@@ -2,7 +2,7 @@ import * as maplibregl from 'maplibre-gl';
 import type { StyleImageInterface } from 'maplibre-gl';
 import { useSolarStore } from '@/stores/solarStore';
 import type { PlanePosition } from '@/types/xplane';
-import { safeAddGeoJSONSource } from '../types';
+import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
 import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
 
 const SOURCE_ID = 'player-plane-source';
@@ -373,9 +373,9 @@ export function updatePlaneLayer(
 export function bringPlaneLayerToTop(map: maplibregl.Map | null | undefined): void {
   if (!map) return;
   try {
-    for (const id of ALL_LAYER_IDS) {
-      if (map.getLayer(id)) map.moveLayer(id);
-    }
+    // Runs on every position snapshot, so it must no-op when already on top —
+    // an unconditional moveLayer would force label placement 10x a second.
+    moveLayersToTop(map, ALL_LAYER_IDS);
   } catch {
     // Map might be in invalid state
   }

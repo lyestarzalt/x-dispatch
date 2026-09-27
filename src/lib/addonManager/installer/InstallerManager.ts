@@ -203,7 +203,7 @@ export class InstallerManager {
 
     try {
       // Create temp directory
-      fs.mkdirSync(tempDir, { recursive: true });
+      await fs.promises.mkdir(tempDir, { recursive: true });
 
       // Extract to temp directory
       const extractResult = await extractArchive({
@@ -229,28 +229,28 @@ export class InstallerManager {
         // Backup if needed
         await this.backupBeforeClean(task);
         // Remove existing
-        fs.rmSync(task.targetPath, { recursive: true, force: true });
+        await fs.promises.rm(task.targetPath, { recursive: true, force: true });
       }
 
       // Move/merge to target
-      fs.mkdirSync(path.dirname(task.targetPath), { recursive: true });
+      await fs.promises.mkdir(path.dirname(task.targetPath), { recursive: true });
 
       if (task.installMode === 'overwrite' && task.conflictExists) {
         // Merge files
-        this.copyMerge(tempDir, task.targetPath);
+        await this.copyMerge(tempDir, task.targetPath);
       } else {
         // Fresh install or clean install - just rename
         if (fs.existsSync(task.targetPath)) {
           // Merge if target exists (shouldn't happen for clean, but be safe)
-          this.copyMerge(tempDir, task.targetPath);
+          await this.copyMerge(tempDir, task.targetPath);
         } else {
           try {
-            fs.renameSync(tempDir, task.targetPath);
+            await fs.promises.rename(tempDir, task.targetPath);
           } catch (err: unknown) {
             // EXDEV: rename fails across different drives (e.g., temp on C:, X-Plane on D:)
             if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
-              fs.cpSync(tempDir, task.targetPath, { recursive: true });
-              fs.rmSync(tempDir, { recursive: true, force: true });
+              await fs.promises.cp(tempDir, task.targetPath, { recursive: true });
+              await fs.promises.rm(tempDir, { recursive: true, force: true });
             } else {
               throw err;
             }
@@ -259,9 +259,7 @@ export class InstallerManager {
       }
 
       // Cleanup temp if it still exists
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
 
       return {
         taskId: task.id,
@@ -271,9 +269,7 @@ export class InstallerManager {
     } catch (e) {
       logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
       // Cleanup temp on failure
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
+      await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
 
       return {
         taskId: task.id,
@@ -295,20 +291,20 @@ export class InstallerManager {
       const liveriesDir = path.join(task.targetPath, 'liveries');
       if (fs.existsSync(liveriesDir)) {
         const backupLiveries = path.join(backupDir, 'liveries');
-        fs.mkdirSync(backupLiveries, { recursive: true });
-        fs.cpSync(liveriesDir, backupLiveries, { recursive: true });
+        await fs.promises.mkdir(backupLiveries, { recursive: true });
+        await fs.promises.cp(liveriesDir, backupLiveries, { recursive: true });
       }
     }
 
     if (task.backupOptions.configFiles && task.backupOptions.configPatterns.length > 0) {
       for (const pattern of task.backupOptions.configPatterns) {
         // Simple glob matching for common patterns
-        const files = this.findMatchingFiles(task.targetPath, pattern);
+        const files = await this.findMatchingFiles(task.targetPath, pattern);
         for (const file of files) {
           const relativePath = path.relative(task.targetPath, file);
           const backupPath = path.join(backupDir, relativePath);
-          fs.mkdirSync(path.dirname(backupPath), { recursive: true });
-          fs.copyFileSync(file, backupPath);
+          await fs.promises.mkdir(path.dirname(backupPath), { recursive: true });
+          await fs.promises.copyFile(file, backupPath);
         }
       }
     }
@@ -323,46 +319,34 @@ export class InstallerManager {
   /**
    * Find files matching a simple glob pattern
    */
-  private findMatchingFiles(dir: string, pattern: string): string[] {
+  private async findMatchingFiles(dir: string, pattern: string): Promise<string[]> {
     const results: string[] = [];
     if (!fs.existsSync(dir)) return results;
 
     const regex = new RegExp('^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i');
 
-    const walk = (currentDir: string) => {
-      const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    const walk = async (currentDir: string): Promise<void> => {
+      const entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
       for (const entry of entries) {
         const fullPath = path.join(currentDir, entry.name);
         if (entry.isDirectory()) {
-          walk(fullPath);
+          await walk(fullPath);
         } else if (regex.test(entry.name)) {
           results.push(fullPath);
         }
       }
     };
 
-    walk(dir);
+    await walk(dir);
     return results;
   }
 
   /**
    * Copy source into dest, merging directories
    */
-  private copyMerge(src: string, dst: string): void {
+  private async copyMerge(src: string, dst: string): Promise<void> {
     if (!fs.existsSync(src)) return;
-
-    fs.mkdirSync(dst, { recursive: true });
-    const entries = fs.readdirSync(src, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const srcPath = path.join(src, entry.name);
-      const dstPath = path.join(dst, entry.name);
-
-      if (entry.isDirectory()) {
-        this.copyMerge(srcPath, dstPath);
-      } else {
-        fs.copyFileSync(srcPath, dstPath);
-      }
-    }
+    await fs.promises.mkdir(dst, { recursive: true });
+    await fs.promises.cp(src, dst, { recursive: true, force: true });
   }
 }

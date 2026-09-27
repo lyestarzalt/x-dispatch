@@ -111,46 +111,49 @@ function buildTraversed(hour: number, rise: number, set: number): string {
   return pts.join(' ');
 }
 
-/* Twinkling stars — only rendered at night */
+/* Twinkling stars — only rendered at night. The twinkle is a declarative SVG
+ * animation: the old requestAnimationFrame + setState loop re-rendered React
+ * on every display frame while the dialog showed a night arc. */
 function Stars({ opacity, C }: { opacity: number; C: Palette }) {
   // Lazy useState initializer runs once on mount; impure code is allowed here.
   const [stars] = useState(() =>
-    Array.from({ length: 15 }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H * 0.45 + H * 0.02,
-      r: Math.random() * 1 + 0.3,
-      phase: Math.random() * Math.PI * 2,
-      speed: Math.random() * 0.5 + 0.3,
-      base: Math.random() * 0.25 + 0.4,
-    }))
+    Array.from({ length: 15 }, () => {
+      const phase = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 0.5 + 0.3;
+      const base = Math.random() * 0.25 + 0.4;
+      // Matches the old sine twinkle at its 60 fps timing: time advanced
+      // 0.018 per frame, so ω = speed * 1.08 rad/s.
+      const dur = (2 * Math.PI) / (1.08 * speed);
+      return {
+        x: Math.random() * W,
+        y: Math.random() * H * 0.45 + H * 0.02,
+        r: Math.random() * 1 + 0.3,
+        mid: clamp(base, 0.06, 0.8),
+        hi: clamp(base + 0.3, 0.06, 0.8),
+        lo: clamp(base - 0.3, 0.06, 0.8),
+        dur,
+        begin: -(phase / (Math.PI * 2)) * dur,
+      };
+    })
   );
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    if (opacity < 0.05) return;
-    let raf: number;
-    const loop = () => {
-      setTick((t) => t + 1);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [opacity]);
 
   if (opacity < 0.05) return null;
-  const time = tick * 0.018;
 
   return (
     <g opacity={opacity}>
       {stars.map((s, i) => (
-        <circle
-          key={i}
-          cx={s.x}
-          cy={s.y}
-          r={s.r}
-          fill={C.cyanGlow}
-          opacity={clamp(s.base + Math.sin(time * s.speed + s.phase) * 0.3, 0.06, 0.8)}
-        />
+        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill={C.cyanGlow} opacity={s.mid}>
+          <animate
+            attributeName="opacity"
+            values={`${s.mid};${s.hi};${s.mid};${s.lo};${s.mid}`}
+            keyTimes="0;0.25;0.5;0.75;1"
+            calcMode="spline"
+            keySplines="0.36 0 0.64 1;0.36 0 0.64 1;0.36 0 0.64 1;0.36 0 0.64 1"
+            dur={`${s.dur.toFixed(2)}s`}
+            begin={`${s.begin.toFixed(2)}s`}
+            repeatCount="indefinite"
+          />
+        </circle>
       ))}
     </g>
   );

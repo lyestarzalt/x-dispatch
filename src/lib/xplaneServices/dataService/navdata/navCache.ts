@@ -3,10 +3,11 @@
  * SQLite caching for parsed navigation data (navaids, waypoints, airways, airspaces).
  * Tracks file modification times to invalidate cache when data files change.
  */
-import { eq, sql } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, saveDb, waypoints } from '@/lib/db';
 import logger from '@/lib/utils/logger';
+import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type { Coordinates } from '@/types/geo';
 import type {
   Airspace,
@@ -177,7 +178,7 @@ export function clearNavaids(): void {
 /**
  * Batch insert navaids into database
  */
-export function insertNavaids(navaidList: Navaid[]): void {
+export async function insertNavaids(navaidList: Navaid[]): Promise<void> {
   const db = getDb();
 
   const navaidArray = navaidList.map((n) => ({
@@ -203,9 +204,11 @@ export function insertNavaids(navaidList: Navaid[]): void {
     approachPerformance: n.approachPerformance,
   }));
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < navaidArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = navaidArray.slice(i, i + CHUNK_SIZE);
     db.insert(navaids).values(chunk).run();
   }
@@ -247,8 +250,8 @@ export function getAllNavaidsFromDb(): Navaid[] {
  */
 export function getNavaidCount(): number {
   const db = getDb();
-  const results = db.select().from(navaids).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(navaids).get();
+  return result?.count ?? 0;
 }
 
 // ============================================================================
@@ -621,11 +624,15 @@ export function searchWaypointsDb(query: string, limit: number = 20): Waypoint[]
  */
 export function getNavaidCountsByType(): Record<string, number> {
   const db = getDb();
-  const results = db.select({ type: navaids.type }).from(navaids).all();
+  const results = db
+    .select({ type: navaids.type, count: count() })
+    .from(navaids)
+    .groupBy(navaids.type)
+    .all();
 
   const counts: Record<string, number> = {};
   for (const r of results) {
-    counts[r.type] = (counts[r.type] || 0) + 1;
+    counts[r.type] = r.count;
   }
   return counts;
 }
@@ -645,7 +652,7 @@ export function clearWaypoints(): void {
 /**
  * Batch insert waypoints into database
  */
-export function insertWaypoints(waypointList: Waypoint[]): void {
+export async function insertWaypoints(waypointList: Waypoint[]): Promise<void> {
   const db = getDb();
 
   const waypointArray = waypointList.map((w) => ({
@@ -657,9 +664,11 @@ export function insertWaypoints(waypointList: Waypoint[]): void {
     description: w.description,
   }));
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < waypointArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = waypointArray.slice(i, i + CHUNK_SIZE);
     db.insert(waypoints).values(chunk).run();
   }
@@ -687,8 +696,8 @@ export function getAllWaypointsFromDb(): Waypoint[] {
  */
 export function getWaypointCount(): number {
   const db = getDb();
-  const results = db.select().from(waypoints).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(waypoints).get();
+  return result?.count ?? 0;
 }
 
 // ============================================================================
@@ -829,7 +838,7 @@ export function clearAirways(): void {
 /**
  * Batch insert airways into database
  */
-export function insertAirways(airwayList: AirwaySegment[]): void {
+export async function insertAirways(airwayList: AirwaySegment[]): Promise<void> {
   const db = getDb();
 
   const airwayArray = airwayList.map((a) => ({
@@ -846,9 +855,11 @@ export function insertAirways(airwayList: AirwaySegment[]): void {
     direction: a.direction,
   }));
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 1000;
   for (let i = 0; i < airwayArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airwayArray.slice(i, i + CHUNK_SIZE);
     db.insert(airways).values(chunk).run();
   }
@@ -881,8 +892,8 @@ export function getAllAirwaysFromDb(): AirwaySegment[] {
  */
 export function getAirwayCount(): number {
   const db = getDb();
-  const results = db.select().from(airways).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(airways).get();
+  return result?.count ?? 0;
 }
 
 /**
@@ -952,7 +963,7 @@ function calculateAirspaceBounds(
  * Batch insert airspaces into database
  * Calculates and stores bounding box for efficient spatial queries
  */
-export function insertAirspaces(airspaceList: Airspace[]): void {
+export async function insertAirspaces(airspaceList: Airspace[]): Promise<void> {
   const db = getDb();
 
   const airspaceArray = airspaceList.map((a) => {
@@ -970,9 +981,11 @@ export function insertAirspaces(airspaceList: Airspace[]): void {
     };
   });
 
-  // Batch insert in chunks
+  // Batch insert in chunks, yielding between them so the main process
+  // stays responsive during a bulk load.
   const CHUNK_SIZE = 500;
   for (let i = 0; i < airspaceArray.length; i += CHUNK_SIZE) {
+    if (i > 0) await yieldToEventLoop();
     const chunk = airspaceArray.slice(i, i + CHUNK_SIZE);
     db.insert(airspaces).values(chunk).run();
   }
@@ -999,8 +1012,8 @@ export function getAllAirspacesFromDb(): Airspace[] {
  */
 export function getAirspaceCount(): number {
   const db = getDb();
-  const results = db.select().from(airspaces).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(airspaces).get();
+  return result?.count ?? 0;
 }
 
 /**

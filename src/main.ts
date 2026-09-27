@@ -1427,7 +1427,7 @@ function registerIpcHandlers() {
     if (!xplanePath) return { success: false, error: 'X-Plane path not configured', aircraft: [] };
     try {
       const { getLauncher } = await getLauncherModule();
-      const aircraft = getLauncher(xplanePath).scanAircraft();
+      const aircraft = await getLauncher(xplanePath).scanAircraft();
       return { success: true, aircraft };
     } catch (error) {
       logger.launcher.error('Failed to scan aircraft', error);
@@ -1512,8 +1512,7 @@ function registerIpcHandlers() {
 
     try {
       const fs = await import('fs');
-      if (!fs.existsSync(resolved)) return null;
-      const data = fs.readFileSync(resolved);
+      const data = await fs.promises.readFile(resolved);
       return `data:image/${ext.slice(1)};base64,${data.toString('base64')}`;
     } catch {
       return null;
@@ -1672,7 +1671,8 @@ function registerIpcHandlers() {
   registerAddonManagerIPC(() => dataManager.getXPlanePath());
   registerCompanionAppsIPC(() => mainWindow);
   registerFlightRecorderIPC({
-    getAllAirports: () => dataManager.getAllAirports(),
+    getAirportsInBounds: (minLat, maxLat, minLon, maxLon) =>
+      dataManager.getAirportsInBounds(minLat, maxLat, minLon, maxLon),
     getAirportData: (icao) => dataManager.getAirportData(icao),
     getDataref: async (name) => {
       const { getXPlaneService } = await getXPlaneModule();

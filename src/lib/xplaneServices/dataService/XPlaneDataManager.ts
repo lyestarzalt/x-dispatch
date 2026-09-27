@@ -25,8 +25,9 @@ import type {
 } from '@/types/navigation';
 import {
   getAirportBreakdown,
+  getAirportCount,
+  getAirportsInBounds,
   getAllAirports as getAllAirportsFromDb,
-  getCustomSceneryAptFiles,
   getDistinctCountries as getDistinctCountriesFromDb,
   hasAptFileChanges,
   syncAirportCache,
@@ -345,14 +346,14 @@ export class XPlaneDataManager {
     const result = await loadAirspaces(xplanePath);
     // Airspaces are stored in SQLite, queried directly (consistent with navaids/waypoints)
     this.loadStatus.airspaces = result.loaded;
-    logger.data.info(`Loaded ${result.data.length} airspaces to SQLite`);
+    logger.data.info(`Loaded ${result.count} airspaces to SQLite`);
   }
 
   private async loadAirwaysInternal(xplanePath: string): Promise<void> {
     const result = await loadAirways(xplanePath);
     // Airways are stored in SQLite, queried on-demand for flight plans
     this.loadStatus.airways = result.loaded;
-    logger.data.info(`Loaded ${result.data.length} airways to SQLite`);
+    logger.data.info(`Loaded ${result.count} airways to SQLite`);
   }
 
   private async loadATCDataInternal(xplanePath: string): Promise<void> {
@@ -441,6 +442,18 @@ export class XPlaneDataManager {
    */
   getAllAirports(): Airport[] {
     return getAllAirportsFromDb();
+  }
+
+  /**
+   * Get airports inside a lat/lon bounding box (database query)
+   */
+  getAirportsInBounds(
+    minLat: number,
+    maxLat: number,
+    minLon: number,
+    maxLon: number
+  ): Array<{ icao: string; name: string; lat: number; lon: number }> {
+    return getAirportsInBounds(minLat, maxLat, minLon, maxLon);
   }
 
   /**
@@ -1027,9 +1040,7 @@ export class XPlaneDataManager {
     // LoadingScreen from skipping rebuild when cache is stale
     if (this.loadStatus.airports) {
       try {
-        const db = getDb();
-        const countResult = db.select({ count: airports.icao }).from(airports).all();
-        airportCount = countResult.length;
+        airportCount = getAirportCount();
       } catch {
         // Database not initialized yet
       }
@@ -1037,10 +1048,12 @@ export class XPlaneDataManager {
 
     const xp = this.xplanePath;
 
-    // Build airport source description
+    // Build airport source description. The pack count comes from the last
+    // sync's breakdown rather than a disk scan — status is polled often and
+    // must stay cheap.
     let airportSource: string | null = null;
     if (xp) {
-      const customCount = getCustomSceneryAptFiles(xp).length;
+      const customCount = this.airportSourceCounts.customSceneryPacks;
       const globalPath = getAptDataPath(xp);
       if (customCount > 0) {
         airportSource = `${globalPath} + ${customCount} Custom Scenery`;

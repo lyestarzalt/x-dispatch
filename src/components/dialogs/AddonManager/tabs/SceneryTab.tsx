@@ -1,5 +1,5 @@
 // src/components/dialogs/AddonManager/tabs/SceneryTab.tsx
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -180,9 +180,14 @@ export function SceneryTab() {
     })
   );
 
-  const handleOpenFolder = (fullPath: string) => {
+  // Stable references so the memoized rows only re-render when their own
+  // entry, position or disabled state changes.
+  const { mutate: toggleMutate } = toggleMutation;
+  const handleToggle = useCallback((name: string) => toggleMutate(name), [toggleMutate]);
+  const handleDeleteRequest = useCallback((name: string) => setDeleteTarget(name), []);
+  const handleOpenFolder = useCallback((fullPath: string) => {
     window.appAPI.openPath(fullPath);
-  };
+  }, []);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -437,9 +442,9 @@ export function SceneryTab() {
                     entry={entry}
                     position={index + 1}
                     totalCount={stats.total}
-                    onToggle={(name) => toggleMutation.mutate(name)}
+                    onToggle={handleToggle}
                     onOpenFolder={handleOpenFolder}
-                    onDelete={(name) => setDeleteTarget(name)}
+                    onDelete={handleDeleteRequest}
                     disabled={isPending}
                   />
                 )

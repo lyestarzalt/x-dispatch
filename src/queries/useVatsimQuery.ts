@@ -36,8 +36,8 @@ async function fetchVatsimData(): Promise<VatsimData> {
 }
 
 export function useVatsimQuery(enabled: boolean = false) {
-  const { map: mapSettings } = useSettingsStore();
-  const refreshInterval = mapSettings.vatsimRefreshInterval * 1000;
+  const vatsimRefreshInterval = useSettingsStore((s) => s.map.vatsimRefreshInterval);
+  const refreshInterval = vatsimRefreshInterval * 1000;
 
   return useQuery({
     queryKey: vatsimKeys.data,

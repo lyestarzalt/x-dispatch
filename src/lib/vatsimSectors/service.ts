@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import logger from '@/lib/utils/logger';
-import type { VatsimSectorQueryResult } from '@/types/vatsimSectors';
+import type { VatsimSectorDataset, VatsimSectorQueryResult } from '@/types/vatsimSectors';
 import {
   clearVatsimSectorCache,
   getVatsimSectorPaths,
@@ -16,6 +16,28 @@ const STALE_MS = 24 * 60 * 60 * 1000;
 
 let refreshPromise: Promise<VatsimSectorQueryResult> | null = null;
 const updateListeners = new Set<() => void>();
+
+// The normalized dataset runs to double-digit MB and is requested on every
+// map mount, so the parsed object stays in memory and is invalidated by the
+// file's mtime instead of being re-read and re-parsed per request.
+let datasetCache: { mtimeMs: number; dataset: VatsimSectorDataset } | null = null;
+
+function loadDataset(): VatsimSectorDataset | null {
+  const { normalizedPath } = getVatsimSectorPaths();
+  let mtimeMs: number;
+  try {
+    mtimeMs = fs.statSync(normalizedPath).mtimeMs;
+  } catch {
+    datasetCache = null;
+    return null;
+  }
+  if (datasetCache && datasetCache.mtimeMs === mtimeMs) {
+    return datasetCache.dataset;
+  }
+  const dataset = readNormalizedDataset();
+  datasetCache = dataset ? { mtimeMs, dataset } : null;
+  return dataset;
+}
 
 function notifyUpdated(): void {
   for (const listener of updateListeners) {
@@ -49,6 +71,11 @@ async function refreshInternal(): Promise<VatsimSectorQueryResult> {
   fs.writeFileSync(paths.vatspyBoundariesPath, vatspy.boundaries);
   fs.writeFileSync(paths.simawarePath, simaware.rawText);
   writeNormalizedDataset(dataset);
+  try {
+    datasetCache = { mtimeMs: fs.statSync(paths.normalizedPath).mtimeMs, dataset };
+  } catch {
+    datasetCache = null;
+  }
   writeVatsimSectorManifest({
     vatspyVersion: vatspy.version,
     simawareVersion: simaware.version,
@@ -71,7 +98,7 @@ export async function refreshVatsimSectorData(): Promise<VatsimSectorQueryResult
       .catch((error) => {
         logger.main.error('VATSIM sector refresh failed', error);
 
-        const dataset = readNormalizedDataset();
+        const dataset = loadDataset();
         const builtAt = new Date().toISOString();
         const previous = readVatsimSectorManifest();
         const lastError = error instanceof Error ? error.message : String(error);
@@ -101,7 +128,7 @@ export async function refreshVatsimSectorData(): Promise<VatsimSectorQueryResult
 
 export async function getVatsimSectorData(): Promise<VatsimSectorQueryResult> {
   const manifest = readVatsimSectorManifest();
-  const dataset = readNormalizedDataset();
+  const dataset = loadDataset();
 
   if (!dataset || !manifest) {
     return refreshVatsimSectorData();
@@ -121,8 +148,7 @@ export async function getVatsimSectorStatus(): Promise<VatsimSectorQueryResult['
   }
 
   const manifest = readVatsimSectorManifest();
-  const dataset = readNormalizedDataset();
-  if (!manifest || !dataset) {
+  if (!manifest || !fs.existsSync(getVatsimSectorPaths().normalizedPath)) {
     return 'empty';
   }
 
@@ -131,6 +157,7 @@ export async function getVatsimSectorStatus(): Promise<VatsimSectorQueryResult['
 
 export function clearVatsimSectorData(): { success: boolean } {
   clearVatsimSectorCache();
+  datasetCache = null;
   notifyUpdated();
   return { success: true };
 }

@@ -17,6 +17,37 @@ import { classifyScenery } from './classifier';
 import { scanSceneryFolder } from './folderScanner';
 import { backupSceneryPacksIni, parseSceneryPacksIni, writeSceneryPacksIni } from './iniParser';
 
+/** Folder scans are I/O bound; a small pool keeps a large Custom Scenery
+ * rescan fast without flooding the libuv threadpool. */
+const SCAN_CONCURRENCY = 8;
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (let i = next++; i < items.length; i = next++) {
+      results[i] = await fn(items[i]!);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+interface AnalyzeOptions {
+  /**
+   * When false, folders are not scanned or classified — entries carry a
+   * default classification. Mutations that only rewrite the INI (toggle,
+   * delete, saveOrder) use this: the INI writer needs folder name, enabled
+   * flag and scenery path, and the renderer refetches a fully classified
+   * list right after anyway.
+   */
+  classify?: boolean;
+}
+
 export class SceneryManager {
   private readonly customSceneryPath: string;
   private readonly iniPath: string;
@@ -33,15 +64,20 @@ export class SceneryManager {
    * Returns entries in INI file order (preserves user's custom order).
    * Use sort() explicitly if you want priority-based ordering.
    */
-  async analyze(): Promise<Result<SceneryEntry[], SceneryError>> {
+  async analyze(options?: AnalyzeOptions): Promise<Result<SceneryEntry[], SceneryError>> {
+    const classify = options?.classify ?? true;
+
     // Parse INI
     const parseResult = parseSceneryPacksIni(this.iniPath, this.customSceneryPath);
     if (!parseResult.ok) {
       return parseResult;
     }
 
-    // Process all INI entries including *GLOBAL_AIRPORTS*
-    const entries: SceneryEntry[] = [];
+    // Collect all INI entries including *GLOBAL_AIRPORTS*, then scan the
+    // folders through a small worker pool — one pack at a time was fine when
+    // the scan was synchronous, but async scans overlap their disk I/O.
+    const slots: (SceneryEntry | null)[] = [];
+    const pendingEntries: { iniEntry: ParsedIniEntry; slot: number; index: number }[] = [];
     const staleNames = new Set<string>();
 
     for (let i = 0; i < parseResult.value.length; i++) {
@@ -50,7 +86,7 @@ export class SceneryManager {
 
       // Include *GLOBAL_AIRPORTS* as a special entry
       if (iniEntry.isGlobalAirports) {
-        entries.push({
+        slots.push({
           folderName: '*GLOBAL_AIRPORTS*',
           fullPath: '',
           enabled: iniEntry.enabled,
@@ -70,8 +106,8 @@ export class SceneryManager {
         }
         continue;
       }
-      const entry = this.processEntry(iniEntry, i);
-      entries.push(entry);
+      pendingEntries.push({ iniEntry, slot: slots.length, index: i });
+      slots.push(null);
     }
 
     // Detect folders in Custom Scenery/ that aren't in the INI yet
@@ -96,7 +132,8 @@ export class SceneryManager {
               isGlobalAirports: false,
               originalLine: '',
             };
-            entries.push(this.processEntry(iniEntry, entries.length));
+            pendingEntries.push({ iniEntry, slot: slots.length, index: slots.length });
+            slots.push(null);
             // Track so a same-named .lnk later in the walk doesn't re-add.
             knownFolders.add(dirEntry.name);
             continue;
@@ -140,7 +177,8 @@ export class SceneryManager {
               isGlobalAirports: false,
               originalLine: '',
             };
-            entries.push(this.processEntry(iniEntry, entries.length));
+            pendingEntries.push({ iniEntry, slot: slots.length, index: slots.length });
+            slots.push(null);
           }
         }
       }
@@ -148,35 +186,51 @@ export class SceneryManager {
       // Non-critical — new folders will be picked up by X-Plane on next launch
     }
 
+    const processed = await mapWithConcurrency(pendingEntries, SCAN_CONCURRENCY, (item) =>
+      this.processEntry(item.iniEntry, item.index, classify)
+    );
+    processed.forEach((entry, i) => {
+      slots[pendingEntries[i]!.slot] = entry;
+    });
+
     // Return in INI file order (analyze is read-only — never writes to the INI)
-    return ok(entries);
+    return ok(slots.filter((e): e is SceneryEntry => e !== null));
   }
 
   /**
    * Process a single INI entry: scan folder, classify.
    * Note: DefaultAirport tier is ONLY for *GLOBAL_AIRPORTS* marker, not real folders.
    */
-  private processEntry(iniEntry: ParsedIniEntry, index: number): SceneryEntry {
-    // If the INI references a .lnk file directly, resolve to its target
-    // before classifying. The displayed folderName stays as the .lnk name
-    // because that's what scenery_packs.ini knows about.
-    let scanPath = iniEntry.fullPath;
-    try {
-      if (
-        iniEntry.fullPath.toLowerCase().endsWith('.lnk') &&
-        fs.statSync(iniEntry.fullPath).isFile()
-      ) {
-        const resolved = resolveLnkSync(iniEntry.fullPath);
-        if (resolved.ok && fs.existsSync(resolved.targetPath)) {
-          scanPath = resolved.targetPath;
+  private async processEntry(
+    iniEntry: ParsedIniEntry,
+    index: number,
+    classify = true
+  ): Promise<SceneryEntry> {
+    let classification = createDefaultClassification();
+
+    if (classify) {
+      // If the INI references a .lnk file directly, resolve to its target
+      // before classifying. The displayed folderName stays as the .lnk name
+      // because that's what scenery_packs.ini knows about.
+      let scanPath = iniEntry.fullPath;
+      try {
+        if (
+          iniEntry.fullPath.toLowerCase().endsWith('.lnk') &&
+          fs.statSync(iniEntry.fullPath).isFile()
+        ) {
+          const resolved = resolveLnkSync(iniEntry.fullPath);
+          if (resolved.ok && fs.existsSync(resolved.targetPath)) {
+            scanPath = resolved.targetPath;
+          }
         }
+      } catch {
+        // Fall through with the original path — classification will likely
+        // come back empty, which is fine.
       }
-    } catch {
-      // Fall through with the original path — classification will likely
-      // come back empty, which is fine.
+
+      classification = await scanSceneryFolder(scanPath);
     }
 
-    const classification = scanSceneryFolder(scanPath);
     const priority = classifyScenery(iniEntry.folderName, classification);
 
     return {
@@ -235,7 +289,7 @@ export class SceneryManager {
    * Toggle enabled/disabled for a single entry.
    */
   async toggle(folderName: string): Promise<Result<SceneryEntry, SceneryError>> {
-    const analyzeResult = await this.analyze();
+    const analyzeResult = await this.analyze({ classify: false });
     if (!analyzeResult.ok) {
       return analyzeResult;
     }
@@ -265,7 +319,7 @@ export class SceneryManager {
    * Returns whether the path was a symlink.
    */
   async deleteScenery(folderName: string): Promise<Result<{ wasSymlink: boolean }, SceneryError>> {
-    const analyzeResult = await this.analyze();
+    const analyzeResult = await this.analyze({ classify: false });
     if (!analyzeResult.ok) {
       return analyzeResult;
     }
@@ -278,13 +332,13 @@ export class SceneryManager {
     }
 
     try {
-      const stat = fs.lstatSync(entry.fullPath);
+      const stat = await fs.promises.lstat(entry.fullPath);
       const wasSymlink = stat.isSymbolicLink();
 
       if (wasSymlink) {
-        fs.unlinkSync(entry.fullPath);
+        await fs.promises.unlink(entry.fullPath);
       } else {
-        fs.rmSync(entry.fullPath, { recursive: true, force: true });
+        await fs.promises.rm(entry.fullPath, { recursive: true, force: true });
       }
 
       // Remove deleted entry from INI

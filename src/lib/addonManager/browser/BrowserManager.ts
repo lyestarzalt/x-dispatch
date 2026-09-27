@@ -26,8 +26,8 @@ export class BrowserManager {
 
   // ===== AIRCRAFT =====
 
-  scanAircraft(): AircraftInfo[] {
-    const aircraft = scanAircraft(this.xplanePath);
+  async scanAircraft(): Promise<AircraftInfo[]> {
+    const aircraft = await scanAircraft(this.xplanePath);
     return applyLockState(this.appDataPath, 'aircraft', aircraft);
   }
 
@@ -57,8 +57,8 @@ export class BrowserManager {
 
   // ===== PLUGINS =====
 
-  scanPlugins(): PluginInfo[] {
-    const plugins = scanPlugins(this.xplanePath);
+  async scanPlugins(): Promise<PluginInfo[]> {
+    const plugins = await scanPlugins(this.xplanePath);
     return applyLockState(this.appDataPath, 'plugins', plugins);
   }
 

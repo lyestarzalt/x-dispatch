@@ -4,6 +4,7 @@ import { useMapStore } from '@/stores/mapStore';
 import type { TrafficSnapshot, TrafficTarget } from '@/types/traffic';
 import {
   ensureSimTrafficLayer,
+  hasSimTrafficLayer,
   removeSimTrafficLayer,
   setSimTrafficData,
 } from '../layers/dynamic/SimTrafficLayer';
@@ -11,8 +12,6 @@ import {
 type MapRef = React.MutableRefObject<maplibregl.Map | null>;
 
 const FRAME_MS = 1000 / 30;
-/** Never draw further ahead than this past the newest snapshot, so a stalled feed freezes instead of flying off. */
-const MAX_EXTRAPOLATION_MS = 700;
 
 function lerpHeading(a: number, b: number, t: number): number {
   const delta = ((b - a + 540) % 360) - 180;
@@ -71,14 +70,17 @@ export function useSimTraffic(mapRef: MapRef): void {
       // Display lags one snapshot interval so there is always a segment to glide along.
       const lag = prev ? next.at - prev.at : 0;
       const displayMs = Date.now() - lag;
-      if (displayMs - next.at > MAX_EXTRAPOLATION_MS) {
+      // Past the newest snapshot (or nothing to glide) the drawn frame stops
+      // changing: draw it once and stop the loop. The next snapshot restarts
+      // it, so an idle or empty feed costs one setData per snapshot, not a
+      // 30 fps loop that re-uploads identical data.
+      if (!prev || next.targets.length === 0 || displayMs >= next.at) {
         setSimTrafficData(map, next.targets);
         return;
       }
       if (nowMs - lastFrameMs >= FRAME_MS) {
         lastFrameMs = nowMs;
-        const targets = prev ? interpolate(prev, next, displayMs) : next.targets;
-        setSimTrafficData(map, targets);
+        setSimTrafficData(map, interpolate(prev, next, displayMs));
       }
       frame = requestAnimationFrame(tick);
     };
@@ -99,11 +101,22 @@ export function useSimTraffic(mapRef: MapRef): void {
       if (!cancelled) start();
     };
 
+    const seenIcaoTypes = new Set<string>();
     const unsubscribe = window.xplaneServiceAPI.onTrafficUpdate((snapshot) => {
       prev = next;
       next = snapshot;
-      // New types may need their silhouette fetched; the layer mounts on the first call.
-      void mount(snapshot);
+      // Mount only when the layer is missing (first call, style reload) or a
+      // new type needs its silhouette fetched — not on every snapshot.
+      let hasNewType = false;
+      for (const t of snapshot.targets) {
+        if (t.icaoType && !seenIcaoTypes.has(t.icaoType)) {
+          seenIcaoTypes.add(t.icaoType);
+          hasNewType = true;
+        }
+      }
+      if (hasNewType || !hasSimTrafficLayer(map)) {
+        void mount(snapshot);
+      }
       start();
     });
     void window.xplaneServiceAPI.setTrafficEnabled(true);
