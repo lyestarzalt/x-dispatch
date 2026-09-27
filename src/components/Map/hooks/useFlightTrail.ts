@@ -102,8 +102,20 @@ export function useFlightTrail({ mapRef, enabled, flyToLanding }: UseFlightTrail
 
     const unsubscribe = useFlightRecorderStore.subscribe((state, prev) => {
       if (state.replay !== prev.replay) {
-        resetHistory();
-        render();
+        // Playback ticks replace the replay object 10x a second but only move
+        // the cursor — the track and landings stay referentially identical, so
+        // the (potentially thousands of segments) trail needs no rebuild. The
+        // replay aircraft itself is drawn by useFlightReplay.
+        const sameTrail =
+          state.replay !== null &&
+          prev.replay !== null &&
+          state.replay.flightId === prev.replay.flightId &&
+          state.replay.track === prev.replay.track &&
+          state.replay.landings === prev.replay.landings;
+        if (!sameTrail) {
+          resetHistory();
+          render();
+        }
         return;
       }
       if (state.replay) return;

@@ -78,6 +78,29 @@ export function safeAddGeoJSONSource(
 }
 
 /**
+ * Move layers to the top of the style, skipping the calls entirely when they
+ * already sit there in the given order.
+ *
+ * MapLibre's `moveLayer` sets `_layerOrderChanged` unconditionally — even for
+ * a layer that is already last — and that flag forces a full symbol placement
+ * pass over every symbol layer on the next frame. Callers that re-assert
+ * z-order on live data (the own-aircraft layer does it per position snapshot)
+ * must therefore no-op when the order is already correct.
+ */
+export function moveLayersToTop(map: maplibregl.Map, layerIds: readonly string[]): void {
+  const present = layerIds.filter((id) => map.getLayer(id));
+  if (present.length === 0) return;
+
+  const order = map.getLayersOrder();
+  const tail = order.slice(-present.length);
+  if (present.every((id, i) => tail[i] === id)) return;
+
+  for (const id of present) {
+    map.moveLayer(id);
+  }
+}
+
+/**
  * Helper to set visibility on multiple layers
  */
 export function setLayersVisibility(

@@ -32,6 +32,11 @@ function toGeoJSON(targets: TrafficTarget[]): GeoJSON.FeatureCollection {
   };
 }
 
+/** True once the layer's source is mounted on the current style. */
+export function hasSimTrafficLayer(map: maplibregl.Map): boolean {
+  return !!map.getStyle() && !!map.getSource(SOURCE_ID);
+}
+
 /** Cheap per-frame update; no-op until the layer has been mounted. */
 export function setSimTrafficData(map: maplibregl.Map, targets: TrafficTarget[]): boolean {
   if (!map.getStyle()) return false;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
@@ -12,7 +12,6 @@ import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
-import type { StandHover } from '@/lib/airports/standIdentity';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
@@ -27,6 +26,7 @@ import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
 import { planePositionFrom, usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useStandHoverStore } from '@/stores/standHoverStore';
 import type { ParsedAirport } from '@/types/apt';
 import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
@@ -243,8 +243,10 @@ export default function Map({ airports }: MapProps) {
     selectedICAORef.current = selectedICAO;
   }, [selectedICAO]);
 
-  // Airport interactions (gates, runway ends, helipads)
-  const [standHover, setStandHover] = useState<StandHover | null>(null);
+  // Airport interactions (gates, runway ends, helipads). Stand hover updates
+  // per mousemove, so it goes through its own store — only StandHoverCard
+  // re-renders, not this component.
+  const setStandHover = useStandHoverStore((s) => s.setHover);
   const { selectGateAsStart, selectRunwayEndAsStart, selectHelipadAsStart, navigateToRunway } =
     useAirportInteractions({
       mapRef,
@@ -907,7 +909,7 @@ export default function Map({ airports }: MapProps) {
         <ReplayWidget />
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
-      <StandHoverCard hover={standHover} />
+      <StandHoverCard />
       <NavInfoPopup mapRef={mapRef} />
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}

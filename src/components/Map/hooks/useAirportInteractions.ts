@@ -83,7 +83,8 @@ export function useAirportInteractions({
   const selectedGateId = useRef<number | null>(null);
   const selectedRunwayEndId = useRef<number | null>(null);
 
-  const { setStartPosition, startPosition } = useAppStore();
+  const setStartPosition = useAppStore((s) => s.setStartPosition);
+  const startPosition = useAppStore((s) => s.startPosition);
 
   const selectedAirportDataRef = useRef<ParsedAirport | null>(null);
   const startPositionRef = useRef(startPosition);

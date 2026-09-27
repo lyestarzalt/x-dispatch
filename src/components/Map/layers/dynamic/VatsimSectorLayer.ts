@@ -2,7 +2,7 @@ import * as maplibregl from 'maplibre-gl';
 import { buildActiveFirMatches, buildActiveTraconMatches } from '@/lib/vatsimSectors/match';
 import type { VatsimController } from '@/types/vatsim';
 import type { VatsimSectorDataset } from '@/types/vatsimSectors';
-import { safeAddGeoJSONSource } from '../types';
+import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
 import { ensurePillImage } from './badgeImages';
 
 type SectorFeatureProperties = {
@@ -161,19 +161,20 @@ function toLabelFeature(args: {
 
 export function buildSectorFeatureCollections(
   dataset: VatsimSectorDataset,
-  controllers: VatsimController[]
+  controllers: VatsimController[],
+  precomputed?: { activeSectorIds: Set<string>; activeTraconIds: Set<string> }
 ): {
   inactive: SectorFeatureCollection;
   active: SectorFeatureCollection;
   tracon: SectorFeatureCollection;
   labels: SectorLabelFeatureCollection;
 } {
-  const activeSectorIds = new Set(
-    buildActiveFirMatches(dataset, controllers).map((match) => match.sectorId)
-  );
-  const activeTraconIds = new Set(
-    buildActiveTraconMatches(dataset, controllers).map((match) => match.traconId)
-  );
+  const activeSectorIds =
+    precomputed?.activeSectorIds ??
+    new Set(buildActiveFirMatches(dataset, controllers).map((match) => match.sectorId));
+  const activeTraconIds =
+    precomputed?.activeTraconIds ??
+    new Set(buildActiveTraconMatches(dataset, controllers).map((match) => match.traconId));
 
   const activeFirs = dataset.firs.filter((fir) => activeSectorIds.has(fir.id));
   const inactiveFirs = dataset.firs.filter((fir) => !activeSectorIds.has(fir.id));
@@ -243,12 +244,43 @@ function ensureSectorLabelImages(
   }
 }
 
+/** Last uploaded state per map, so the periodic VATSIM refresh only re-uploads
+ * the (world-sized) polygon sets when the active controller set or the
+ * dataset itself actually changed. */
+const sectorUploadMemo = new WeakMap<maplibregl.Map, string>();
+
 export function updateVatsimSectorLayer(
   map: maplibregl.Map,
   dataset: VatsimSectorDataset,
   controllers: VatsimController[]
 ): void {
-  const collections = buildSectorFeatureCollections(dataset, controllers);
+  const activeSectorIds = new Set(
+    buildActiveFirMatches(dataset, controllers).map((match) => match.sectorId)
+  );
+  const activeTraconIds = new Set(
+    buildActiveTraconMatches(dataset, controllers).map((match) => match.traconId)
+  );
+
+  const uploadKey = [
+    dataset.version.builtAt,
+    [...activeSectorIds].sort().join(','),
+    [...activeTraconIds].sort().join(','),
+  ].join('|');
+
+  // Skip the rebuild when nothing changed since the last upload and the
+  // sources/layers are still mounted (a style reload removes them).
+  if (
+    sectorUploadMemo.get(map) === uploadKey &&
+    map.getSource(INACTIVE_SOURCE_ID) &&
+    map.getLayer(LABEL_LAYER_ID)
+  ) {
+    return;
+  }
+
+  const collections = buildSectorFeatureCollections(dataset, controllers, {
+    activeSectorIds,
+    activeTraconIds,
+  });
 
   safeAddGeoJSONSource(map, INACTIVE_SOURCE_ID, collections.inactive);
   safeAddGeoJSONSource(map, ACTIVE_SOURCE_ID, collections.active);
@@ -321,9 +353,12 @@ export function updateVatsimSectorLayer(
       },
     });
   }
+
+  sectorUploadMemo.set(map, uploadKey);
 }
 
 export function removeVatsimSectorLayer(map: maplibregl.Map): void {
+  sectorUploadMemo.delete(map);
   if (map.getLayer(LABEL_LAYER_ID)) map.removeLayer(LABEL_LAYER_ID);
   if (map.getLayer(TRACON_OUTLINE_LAYER_ID)) map.removeLayer(TRACON_OUTLINE_LAYER_ID);
   if (map.getLayer(TRACON_FILL_LAYER_ID)) map.removeLayer(TRACON_FILL_LAYER_ID);
@@ -337,11 +372,13 @@ export function removeVatsimSectorLayer(map: maplibregl.Map): void {
 }
 
 export function bringVatsimSectorLayersToTop(map: maplibregl.Map): void {
-  if (map.getLayer(INACTIVE_LAYER_ID)) map.moveLayer(INACTIVE_LAYER_ID);
-  if (map.getLayer(ACTIVE_LAYER_ID)) map.moveLayer(ACTIVE_LAYER_ID);
-  if (map.getLayer(TRACON_FILL_LAYER_ID)) map.moveLayer(TRACON_FILL_LAYER_ID);
-  if (map.getLayer(TRACON_OUTLINE_LAYER_ID)) map.moveLayer(TRACON_OUTLINE_LAYER_ID);
-  if (map.getLayer(LABEL_LAYER_ID)) map.moveLayer(LABEL_LAYER_ID);
+  moveLayersToTop(map, [
+    INACTIVE_LAYER_ID,
+    ACTIVE_LAYER_ID,
+    TRACON_FILL_LAYER_ID,
+    TRACON_OUTLINE_LAYER_ID,
+    LABEL_LAYER_ID,
+  ]);
 }
 
 export const VATSIM_SECTOR_LAYER_IDS = [

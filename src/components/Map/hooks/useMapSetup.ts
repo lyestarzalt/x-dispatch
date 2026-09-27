@@ -119,7 +119,11 @@ export function useMapSetup({
   const homeIcao = useSettingsStore((s) => s.airports.homeIcao);
   const favoriteIcaoSet = useMemo(() => new Set(favoriteIcaos), [favoriteIcaos]);
 
-  const { setCurrentZoom, setMapBearing } = useMapStore();
+  // Select the two stable actions rather than the whole store — a whole-store
+  // subscription re-renders the Map host on every transient write (cursor
+  // elevation publishes per mousemove).
+  const setCurrentZoom = useMapStore((s) => s.setCurrentZoom);
+  const setMapBearing = useMapStore((s) => s.setMapBearing);
 
   const setCurrentZoomRef = useRef(setCurrentZoom);
   const setMapBearingRef = useRef(setMapBearing);

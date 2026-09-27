@@ -1,22 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import {
-  STAND_TINT,
-  type StandHover,
-  WIDTH_CODE_WINGSPAN_M,
-  airlineName,
-} from '@/lib/airports/standIdentity';
+import { STAND_TINT, WIDTH_CODE_WINGSPAN_M, airlineName } from '@/lib/airports/standIdentity';
+import { useStandHoverStore } from '@/stores/standHoverStore';
 
 const MAX_AIRLINES = 6;
 const CURSOR_OFFSET_PX = 14;
 const SEPARATOR = ' · ';
 
-interface StandHoverCardProps {
-  hover: StandHover | null;
-}
-
 /** Small card following the cursor over a stand with its size, operator and airlines. */
-export default function StandHoverCard({ hover }: StandHoverCardProps) {
+export default function StandHoverCard() {
   const { t } = useTranslation();
+  const hover = useStandHoverStore((s) => s.hover);
   if (!hover) return null;
 
   const wingspan = hover.widthCode ? WIDTH_CODE_WINGSPAN_M[hover.widthCode] : undefined;

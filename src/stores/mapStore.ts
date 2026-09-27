@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { FeaturedCategory } from '@/types/featured';
 import {
   AirwaysMode,
@@ -157,6 +157,29 @@ interface MapState {
   setTerrain3dEnabled: (enabled: boolean) => void;
 }
 
+// zustand's persist middleware calls setItem after EVERY store write, even
+// when the persisted slice is untouched. This store also carries per-frame
+// transient state (cursor elevation, bearing, zoom), so without this guard a
+// mousemove or rotate frame pays a synchronous localStorage write. Skipping
+// identical payloads keeps disk writes to actual persisted-field changes.
+let lastWritten: string | null = null;
+const dedupedLocalStorage = {
+  getItem: (name: string): string | null => {
+    const value = localStorage.getItem(name);
+    lastWritten = value;
+    return value;
+  },
+  setItem: (name: string, value: string): void => {
+    if (value === lastWritten) return;
+    lastWritten = value;
+    localStorage.setItem(name, value);
+  },
+  removeItem: (name: string): void => {
+    lastWritten = null;
+    localStorage.removeItem(name);
+  },
+};
+
 export const useMapStore = create<MapState>()(
   persist(
     (set) => ({
@@ -302,6 +325,7 @@ export const useMapStore = create<MapState>()(
     {
       name: 'xplane-viz-map',
       version: 14,
+      storage: createJSONStorage(() => dedupedLocalStorage),
       partialize: (state) => ({
         landingCardPosition: state.landingCardPosition,
         flightTrailEnabled: state.flightTrailEnabled,
