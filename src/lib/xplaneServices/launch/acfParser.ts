@@ -3,11 +3,15 @@ import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import type { Aircraft, Livery } from '@/types/aircraft';
 
-function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
+/** Parallel .acf reads; the files are large, so a small pool overlaps disk
+ * I/O without holding many multi-MB strings in memory at once. */
+const PARSE_CONCURRENCY = 4;
+
+async function isDirEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
   if (entry.isDirectory()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
+      return (await fs.promises.stat(path.join(parentPath, entry.name))).isDirectory();
     } catch {
       return false;
     }
@@ -15,16 +19,41 @@ function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
   return false;
 }
 
-function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
+async function isFileEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
   if (entry.isFile()) return true;
   if (entry.isSymbolicLink()) {
     try {
-      return fs.statSync(path.join(parentPath, entry.name)).isFile();
+      return (await fs.promises.stat(path.join(parentPath, entry.name))).isFile();
     } catch {
       return false;
     }
   }
   return false;
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (let i = next++; i < items.length; i = next++) {
+      results[i] = await fn(items[i]!);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 /** Safely read a numeric property, returning 0 if missing or NaN */
@@ -48,17 +77,19 @@ function strProp(props: Record<string, string>, key: string, fallback: string): 
   return props[key] ?? fallback;
 }
 
-function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
+async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircraft | null> {
   try {
-    const content = fs.readFileSync(acfPath, 'utf-8');
-    const lines = content.split('\n');
-
+    const content = await fs.promises.readFile(acfPath, 'utf-8');
     const props: Record<string, string> = {};
 
-    for (let line of lines) {
-      line = line.trimEnd(); // Handle CRLF line endings
-      // Parse both `P acf/` and `P _cgpt/` properties
-      if (line.startsWith('P acf/') || line.startsWith('P _cgpt/')) {
+    // Walk the file line by line without materializing a lines array — .acf
+    // files run to several MB and only the `P acf/`/`P _cgpt/` lines matter.
+    let lineStart = 0;
+    while (lineStart < content.length) {
+      let lineEnd = content.indexOf('\n', lineStart);
+      if (lineEnd === -1) lineEnd = content.length;
+      if (content.startsWith('P acf/', lineStart) || content.startsWith('P _cgpt/', lineStart)) {
+        const line = content.slice(lineStart, lineEnd).trimEnd(); // Handle CRLF line endings
         const match = line.match(/^P ([^\s]+)\s+(.*)$/);
         if (match) {
           const key = match[1];
@@ -68,6 +99,7 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
           }
         }
       }
+      lineStart = lineEnd + 1;
     }
 
     // Get relative path from X-Plane root
@@ -75,11 +107,11 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
 
     const acfDir = path.dirname(acfPath);
     const acfBasename = path.basename(acfPath, '.acf');
-    const previewImage = findPreviewImage(acfDir, acfBasename);
-    const thumbnailImage = findThumbnailImage(acfDir, acfBasename);
+    const previewImage = await findPreviewImage(acfDir, acfBasename);
+    const thumbnailImage = await findThumbnailImage(acfDir, acfBasename);
 
     // Find liveries
-    const liveries = scanLiveries(acfDir);
+    const liveries = await scanLiveries(acfDir);
 
     // Parse fuel tank names and ratios
     //
@@ -205,33 +237,29 @@ function parseAcfFile(acfPath: string, xplanePath: string): Aircraft | null {
 }
 
 /**
- * Scan the Aircraft directory for all .acf files
+ * Scan the Aircraft directory for all .acf files.
+ * Async so a large hangar rescan never blocks the main process.
  */
-export function scanAircraftDirectory(xplanePath: string): Aircraft[] {
+export async function scanAircraftDirectory(xplanePath: string): Promise<Aircraft[]> {
   const startTime = Date.now();
   const aircraftDir = path.join(xplanePath, 'Aircraft');
-  const aircraft: Aircraft[] = [];
 
   logger.launcher.info(`Scanning aircraft directory: ${aircraftDir}`);
 
-  if (!fs.existsSync(aircraftDir)) {
+  if (!(await fileExists(aircraftDir))) {
     logger.launcher.warn(`Aircraft directory not found: ${aircraftDir}`);
-    return aircraft;
+    return [];
   }
 
   // Recursively find all .acf files
-  const acfFiles = findAcfFiles(aircraftDir);
+  const acfFiles = await findAcfFiles(aircraftDir);
   logger.launcher.info(`Found ${acfFiles.length} .acf files`);
 
-  let parseErrors = 0;
-  for (const acfFile of acfFiles) {
-    const parsed = parseAcfFile(acfFile, xplanePath);
-    if (parsed) {
-      aircraft.push(parsed);
-    } else {
-      parseErrors++;
-    }
-  }
+  const parsed = await mapWithConcurrency(acfFiles, PARSE_CONCURRENCY, (acfFile) =>
+    parseAcfFile(acfFile, xplanePath)
+  );
+  const aircraft = parsed.filter((a): a is Aircraft => a !== null);
+  const parseErrors = parsed.length - aircraft.length;
 
   // Sort by manufacturer, then by name
   aircraft.sort((a, b) => {
@@ -264,22 +292,22 @@ export function scanAircraftDirectory(xplanePath: string): Aircraft[] {
 /**
  * Recursively find all .acf files in a directory
  */
-function findAcfFiles(dir: string): string[] {
+async function findAcfFiles(dir: string): Promise<string[]> {
   const results: string[] = [];
 
   try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
 
-      if (isDirEntry(entry, dir)) {
+      if (await isDirEntry(entry, dir)) {
         // Skip hidden directories and common non-aircraft folders
         if (!entry.name.startsWith('.') && entry.name !== 'liveries') {
-          results.push(...findAcfFiles(fullPath));
+          results.push(...(await findAcfFiles(fullPath)));
         }
       } else if (
-        isFileEntry(entry, dir) &&
+        (await isFileEntry(entry, dir)) &&
         entry.name.endsWith('.acf') &&
         !entry.name.endsWith('_AI.acf')
       ) {
@@ -293,7 +321,7 @@ function findAcfFiles(dir: string): string[] {
   return results;
 }
 
-function findPreviewImage(acfDir: string, acfBasename: string): string | null {
+async function findPreviewImage(acfDir: string, acfBasename: string): Promise<string | null> {
   // Try common naming patterns
   const patterns = [
     `${acfBasename}_icon11.png`,
@@ -304,7 +332,7 @@ function findPreviewImage(acfDir: string, acfBasename: string): string | null {
 
   for (const pattern of patterns) {
     const imagePath = path.join(acfDir, pattern);
-    if (fs.existsSync(imagePath)) {
+    if (await fileExists(imagePath)) {
       return imagePath;
     }
   }
@@ -312,7 +340,7 @@ function findPreviewImage(acfDir: string, acfBasename: string): string | null {
   return null;
 }
 
-function findThumbnailImage(acfDir: string, acfBasename: string): string | null {
+async function findThumbnailImage(acfDir: string, acfBasename: string): Promise<string | null> {
   const patterns = [
     `${acfBasename}_icon11_thumb.png`,
     `${acfBasename}_thumb.png`,
@@ -322,7 +350,7 @@ function findThumbnailImage(acfDir: string, acfBasename: string): string | null 
 
   for (const pattern of patterns) {
     const imagePath = path.join(acfDir, pattern);
-    if (fs.existsSync(imagePath)) {
+    if (await fileExists(imagePath)) {
       return imagePath;
     }
   }
@@ -330,7 +358,7 @@ function findThumbnailImage(acfDir: string, acfBasename: string): string | null 
   return null;
 }
 
-function scanLiveries(acfDir: string): Livery[] {
+async function scanLiveries(acfDir: string): Promise<Livery[]> {
   const liveriesDir = path.join(acfDir, 'liveries');
   const liveries: Livery[] = [];
 
@@ -341,17 +369,13 @@ function scanLiveries(acfDir: string): Livery[] {
     previewImage: null,
   });
 
-  if (!fs.existsSync(liveriesDir)) {
-    return liveries;
-  }
-
   try {
-    const entries = fs.readdirSync(liveriesDir, { withFileTypes: true });
+    const entries = await fs.promises.readdir(liveriesDir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (isDirEntry(entry, liveriesDir) && !entry.name.startsWith('.')) {
+      if ((await isDirEntry(entry, liveriesDir)) && !entry.name.startsWith('.')) {
         const liveryPath = path.join(liveriesDir, entry.name);
-        const previewImage = findLiveryPreview(liveryPath);
+        const previewImage = await findLiveryPreview(liveryPath);
 
         liveries.push({
           name: entry.name,
@@ -361,15 +385,15 @@ function scanLiveries(acfDir: string): Livery[] {
       }
     }
   } catch {
-    // Skip liveries that can't be read
+    // Skip liveries that can't be read (or none exist)
   }
 
   return liveries;
 }
 
-function findLiveryPreview(liveryDir: string): string | null {
+async function findLiveryPreview(liveryDir: string): Promise<string | null> {
   try {
-    const entries = fs.readdirSync(liveryDir);
+    const entries = await fs.promises.readdir(liveryDir);
 
     // Look for icon11.png or similar
     for (const entry of entries) {

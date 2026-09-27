@@ -110,13 +110,13 @@ class XPlaneLauncher {
     this.xplanePath = xplanePath;
   }
 
-  scanAircraft(): Aircraft[] {
-    this.aircraftCache = scanAircraftDirectory(this.xplanePath);
+  async scanAircraft(): Promise<Aircraft[]> {
+    this.aircraftCache = await scanAircraftDirectory(this.xplanePath);
     logger.launcher.info(`Scanned ${this.aircraftCache.length} aircraft`);
     return this.aircraftCache;
   }
 
-  getAircraft(): Aircraft[] {
+  async getAircraft(): Promise<Aircraft[]> {
     if (this.aircraftCache === null) {
       return this.scanAircraft();
     }

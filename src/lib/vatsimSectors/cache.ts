@@ -50,7 +50,9 @@ export function readNormalizedDataset(baseDir?: string): VatsimSectorDataset | n
 
 export function writeNormalizedDataset(dataset: VatsimSectorDataset, baseDir?: string): void {
   ensureCacheDir(baseDir);
-  fs.writeFileSync(getVatsimSectorPaths(baseDir).normalizedPath, JSON.stringify(dataset, null, 2));
+  // Compact JSON: this file runs to double-digit MB and is only read back by
+  // the app, so pretty-printing just inflates parse and write time.
+  fs.writeFileSync(getVatsimSectorPaths(baseDir).normalizedPath, JSON.stringify(dataset));
 }
 
 export function clearVatsimSectorCache(baseDir?: string): void {
