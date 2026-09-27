@@ -148,6 +148,15 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
             <GroupSeparator />
 
+            {planeState?.pitch !== undefined && planeState?.roll !== undefined && (
+              <>
+                <div className="flex items-center px-2.5 py-1">
+                  <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />
+                </div>
+                <GroupSeparator />
+              </>
+            )}
+
             {/* Five columns: the values you fly with are large, related
                 secondary readings sit underneath in a muted line. */}
             <div className="flex items-center gap-4 px-4 py-1.5">
@@ -237,6 +246,72 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
 function GroupSeparator() {
   return <div className="bg-border/50 my-1 w-px self-stretch" />;
+}
+
+// --- Mini attitude indicator ---
+
+const ADI_RADIUS = 19;
+const ADI_PX_PER_DEG = 0.8;
+const ADI_MAX_PITCH_DEG = 18;
+const ADI_MAX_ROLL_DEG = 75;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Minimal artificial horizon. Samples arrive at 10 Hz; a short linear CSS
+ * transition on the transform glides between them, so it stays smooth with
+ * no per-frame JS.
+ */
+function MiniAttitude({ pitch, roll }: { pitch: number | undefined; roll: number | undefined }) {
+  if (pitch === undefined || roll === undefined || isNaN(pitch) || isNaN(roll)) return null;
+
+  const pitchPx = clamp(pitch, -ADI_MAX_PITCH_DEG, ADI_MAX_PITCH_DEG) * ADI_PX_PER_DEG;
+  const rollDeg = clamp(roll, -ADI_MAX_ROLL_DEG, ADI_MAX_ROLL_DEG);
+
+  return (
+    <svg
+      width={ADI_RADIUS * 2 + 2}
+      height={ADI_RADIUS * 2 + 2}
+      viewBox="-20 -20 40 40"
+      className="shrink-0"
+      aria-hidden
+    >
+      <defs>
+        <clipPath id="flight-strip-adi-clip">
+          <circle r={ADI_RADIUS} />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#flight-strip-adi-clip)">
+        <g
+          style={{
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
+            // rotate first so the pitch offset moves perpendicular to the horizon
+            transform: `rotate(${-rollDeg}deg) translateY(${pitchPx}px)`,
+            transition: 'transform 120ms linear',
+          }}
+        >
+          <rect x={-60} y={-100} width={120} height={100} fill="#39597e" />
+          <rect x={-60} y={0} width={120} height={100} fill="#6b4a2b" />
+          <rect x={-60} y={-0.5} width={120} height={1} fill="#e7e5e4" />
+          <rect x={-7} y={-8.3} width={14} height={0.6} fill="#e7e5e4" opacity={0.55} />
+          <rect x={-7} y={7.7} width={14} height={0.6} fill="#e7e5e4" opacity={0.55} />
+        </g>
+      </g>
+      {/* fixed miniature aircraft */}
+      <path
+        d="M -9 0 L -3.5 0 L -1.8 2.4 L 0 0 L 1.8 2.4 L 3.5 0 L 9 0"
+        fill="none"
+        stroke="#fbbf24"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle r={ADI_RADIUS} fill="none" strokeWidth={1} className="stroke-border" />
+    </svg>
+  );
 }
 
 interface DataColumnProps {
