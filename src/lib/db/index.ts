@@ -109,7 +109,7 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
   // The DB is a cache — safe to delete and rebuild from X-Plane files.
   let data: Buffer | undefined;
   if (fs.existsSync(dbPath)) {
-    data = fs.readFileSync(dbPath);
+    data = await fs.promises.readFile(dbPath);
   }
 
   try {
@@ -168,24 +168,82 @@ export function getSqlite(): SqlJsDatabase | null {
   return sqlite;
 }
 
+// Saves are coalesced: several loaders finishing back to back (navaids,
+// waypoints, airways, airspaces, airports) used to each serialize and write
+// the entire database, which runs to hundreds of MB. The DB is a rebuildable
+// cache, so deferring the write briefly costs nothing on a crash.
+const SAVE_COALESCE_MS = 2000;
+let saveTimer: NodeJS.Timeout | null = null;
+let saveInFlight = false;
+let saveQueued = false;
+
+function exportDbBuffer(): Buffer | null {
+  if (!sqlite || !dbPath) return null;
+  return Buffer.from(sqlite.export());
+}
+
+async function writeDbToDisk(): Promise<void> {
+  if (saveInFlight) {
+    saveQueued = true;
+    return;
+  }
+  saveInFlight = true;
+  try {
+    const buffer = exportDbBuffer();
+    if (!buffer) return;
+    const dir = path.dirname(dbPath);
+    await fs.promises.mkdir(dir, { recursive: true });
+    // Write to a sibling temp file and rename so a crash mid-write never
+    // leaves a truncated database behind.
+    const tmpPath = `${dbPath}.tmp`;
+    await fs.promises.writeFile(tmpPath, buffer);
+    try {
+      await fs.promises.rename(tmpPath, dbPath);
+    } catch {
+      // Rename over a locked file can fail on Windows — fall back to in-place
+      await fs.promises.writeFile(dbPath, buffer);
+      await fs.promises.rm(tmpPath, { force: true });
+    }
+    logger.data.info('Database saved to disk');
+  } catch (err) {
+    logger.data.warn(`Database save failed: ${err}`);
+  } finally {
+    saveInFlight = false;
+    if (saveQueued) {
+      saveQueued = false;
+      void writeDbToDisk();
+    }
+  }
+}
+
 export function saveDb(): void {
   if (!sqlite || !dbPath) return;
+  if (saveTimer) return;
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    void writeDbToDisk();
+  }, SAVE_COALESCE_MS);
+}
 
-  const data = sqlite.export();
-  const buffer = Buffer.from(data);
-
+/** Synchronous final write for shutdown, after which deferred saves are moot. */
+function flushDbSync(): void {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+  const buffer = exportDbBuffer();
+  if (!buffer) return;
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-
   fs.writeFileSync(dbPath, buffer);
   logger.data.info('Database saved to disk');
 }
 
 export function closeDb(): void {
   if (sqlite) {
-    saveDb();
+    flushDbSync();
     sqlite.close();
     sqlite = null;
     db = null;

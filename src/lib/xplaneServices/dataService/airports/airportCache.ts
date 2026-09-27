@@ -331,6 +331,15 @@ export function getAirportCount(): number {
   return result?.count || 0;
 }
 
+/**
+ * Get custom scenery airport count from database
+ */
+export function getCustomAirportCount(): number {
+  const db = getDb();
+  const result = db.select({ count: count() }).from(airportsCustom).get();
+  return result?.count || 0;
+}
+
 // ============================================================================
 // Source Breakdown Operations
 // ============================================================================

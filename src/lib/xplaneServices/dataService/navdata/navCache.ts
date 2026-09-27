@@ -3,7 +3,7 @@
  * SQLite caching for parsed navigation data (navaids, waypoints, airways, airspaces).
  * Tracks file modification times to invalidate cache when data files change.
  */
-import { eq, sql } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, saveDb, waypoints } from '@/lib/db';
 import logger from '@/lib/utils/logger';
@@ -247,8 +247,8 @@ export function getAllNavaidsFromDb(): Navaid[] {
  */
 export function getNavaidCount(): number {
   const db = getDb();
-  const results = db.select().from(navaids).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(navaids).get();
+  return result?.count ?? 0;
 }
 
 // ============================================================================
@@ -621,11 +621,15 @@ export function searchWaypointsDb(query: string, limit: number = 20): Waypoint[]
  */
 export function getNavaidCountsByType(): Record<string, number> {
   const db = getDb();
-  const results = db.select({ type: navaids.type }).from(navaids).all();
+  const results = db
+    .select({ type: navaids.type, count: count() })
+    .from(navaids)
+    .groupBy(navaids.type)
+    .all();
 
   const counts: Record<string, number> = {};
   for (const r of results) {
-    counts[r.type] = (counts[r.type] || 0) + 1;
+    counts[r.type] = r.count;
   }
   return counts;
 }
@@ -687,8 +691,8 @@ export function getAllWaypointsFromDb(): Waypoint[] {
  */
 export function getWaypointCount(): number {
   const db = getDb();
-  const results = db.select().from(waypoints).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(waypoints).get();
+  return result?.count ?? 0;
 }
 
 // ============================================================================
@@ -881,8 +885,8 @@ export function getAllAirwaysFromDb(): AirwaySegment[] {
  */
 export function getAirwayCount(): number {
   const db = getDb();
-  const results = db.select().from(airways).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(airways).get();
+  return result?.count ?? 0;
 }
 
 /**
@@ -999,8 +1003,8 @@ export function getAllAirspacesFromDb(): Airspace[] {
  */
 export function getAirspaceCount(): number {
   const db = getDb();
-  const results = db.select().from(airspaces).all();
-  return results.length;
+  const result = db.select({ count: count() }).from(airspaces).get();
+  return result?.count ?? 0;
 }
 
 /**

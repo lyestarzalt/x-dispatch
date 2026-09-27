@@ -26,6 +26,7 @@ import {
   getAirportBreakdown,
   getAirportCount,
   getAllAirportsFromDb,
+  getCustomAirportCount,
   getStoredAirportCountEstimate,
   getStoredFileMeta,
   insertAirports,
@@ -229,7 +230,7 @@ export async function resyncCustomScenery(
   const startTime = Date.now();
 
   // Get current custom airport count
-  const beforeCount = getAllAirportsFromDb().filter((a) => a.isCustom).length;
+  const beforeCount = getCustomAirportCount();
 
   // Re-parse all custom scenery apt.dat files
   const customResult = await loadCustomSceneryAirports(xplanePath);
@@ -261,4 +262,4 @@ export async function resyncCustomScenery(
 // Re-exports for convenience
 // ============================================================================
 
-export { getAirportBreakdown, getDistinctCountries } from './airportCache';
+export { getAirportBreakdown, getAirportCount, getDistinctCountries } from './airportCache';

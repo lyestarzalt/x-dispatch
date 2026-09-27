@@ -47,10 +47,6 @@ import {
   detectSourceType,
   getAirspaceCount,
   getAirwayCount,
-  getAllAirspacesFromDb,
-  getAllAirwaysFromDb,
-  getAllNavaidsFromDb,
-  getAllWaypointsFromDb,
   getNavaidCount,
   getWaypointCount,
   insertAirspaces,
@@ -67,6 +63,9 @@ import {
 
 export interface NavLoadResult<T> {
   data: T;
+  /** Number of records now in the cache. On a cache hit `data` stays empty —
+   * the tables are queried from SQLite on demand — so counts come from here. */
+  count: number;
   loaded: boolean;
   source: string | null;
   fromCache: boolean;
@@ -84,7 +83,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
 
   if (!fs.existsSync(navPath)) {
     logger.data.warn(`earth_nav.dat not found: ${navPath}`);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
   // Check cache validity
@@ -93,9 +92,10 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
 
   if (!cacheCheck.needsReload) {
     const count = getNavaidCount();
-    logger.data.info(`Navaids cache valid (${sourceType}), loaded ${count} from database`);
+    logger.data.info(`Navaids cache valid (${sourceType}), ${count} in database`);
     return {
-      data: getAllNavaidsFromDb(),
+      data: [],
+      count,
       loaded: true,
       source: navPath,
       fromCache: true,
@@ -144,7 +144,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
     `Loaded ${stats.parsed} navaids in ${elapsed}ms (insert: ${insertTime}ms) - ${typeBreakdown}`
   );
 
-  return { data, loaded: true, source: navPath, fromCache: false };
+  return { data, count: data.length, loaded: true, source: navPath, fromCache: false };
 }
 
 // ============================================================================
@@ -159,7 +159,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
 
   if (!fs.existsSync(fixPath)) {
     logger.data.warn(`earth_fix.dat not found: ${fixPath}`);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
   // Check cache validity
@@ -168,9 +168,10 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
 
   if (!cacheCheck.needsReload) {
     const count = getWaypointCount();
-    logger.data.info(`Waypoints cache valid (${sourceType}), loaded ${count} from database`);
+    logger.data.info(`Waypoints cache valid (${sourceType}), ${count} in database`);
     return {
-      data: getAllWaypointsFromDb(),
+      data: [],
+      count,
       loaded: true,
       source: fixPath,
       fromCache: true,
@@ -206,7 +207,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
   const elapsed = Date.now() - startTime;
   logger.data.info(`Loaded ${stats.parsed} waypoints in ${elapsed}ms (insert: ${insertTime}ms)`);
 
-  return { data, loaded: true, source: fixPath, fromCache: false };
+  return { data, count: data.length, loaded: true, source: fixPath, fromCache: false };
 }
 
 // ============================================================================
@@ -221,7 +222,7 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
 
   if (!fs.existsSync(awyPath)) {
     logger.data.warn(`earth_awy.dat not found: ${awyPath}`);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
   // Check cache validity
@@ -230,9 +231,10 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
 
   if (!cacheCheck.needsReload) {
     const count = getAirwayCount();
-    logger.data.info(`Airways cache valid (${sourceType}), loaded ${count} from database`);
+    logger.data.info(`Airways cache valid (${sourceType}), ${count} in database`);
     return {
-      data: getAllAirwaysFromDb(),
+      data: [],
+      count,
       loaded: true,
       source: awyPath,
       fromCache: true,
@@ -270,7 +272,7 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
     `Loaded ${stats.parsed} airway segments in ${elapsed}ms (insert: ${insertTime}ms)`
   );
 
-  return { data, loaded: true, source: awyPath, fromCache: false };
+  return { data, count: data.length, loaded: true, source: awyPath, fromCache: false };
 }
 
 // ============================================================================
@@ -285,7 +287,7 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
 
   if (!fs.existsSync(airspacePath)) {
     logger.data.warn(`airspace.txt not found: ${airspacePath}`);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
   // Check cache validity
@@ -296,9 +298,10 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
     const count = getAirspaceCount();
     // Safety check: if cache says valid but table is empty, force reload
     if (count > 0) {
-      logger.data.info(`Airspaces cache valid (${sourceType}), loaded ${count} from database`);
+      logger.data.info(`Airspaces cache valid (${sourceType}), ${count} in database`);
       return {
-        data: getAllAirspacesFromDb(),
+        data: [],
+        count,
         loaded: true,
         source: airspacePath,
         fromCache: true,
@@ -336,7 +339,7 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
   const elapsed = Date.now() - startTime;
   logger.data.info(`Loaded ${stats.parsed} airspaces in ${elapsed}ms (insert: ${insertTime}ms)`);
 
-  return { data, loaded: true, source: airspacePath, fromCache: false };
+  return { data, count: data.length, loaded: true, source: airspacePath, fromCache: false };
 }
 
 // ============================================================================
@@ -352,7 +355,7 @@ export async function loadATCData(xplanePath: string): Promise<NavLoadResult<ATC
 
   if (!atcPath) {
     logger.data.debug('ATC data file not found (Navigraph-only feature)');
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
   try {
@@ -362,10 +365,10 @@ export async function loadATCData(xplanePath: string): Promise<NavLoadResult<ATC
       logger.data.warn(`ATC: ${errors.length} errors, ${stats.skipped} skipped`);
     }
     logger.data.info(`Loaded ${stats.parsed} ATC controllers in ${stats.timeMs}ms`);
-    return { data, loaded: true, source: atcPath, fromCache: false };
+    return { data, count: data.length, loaded: true, source: atcPath, fromCache: false };
   } catch (error) {
     logger.data.warn('Failed to load ATC data:', error);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 }
 
@@ -379,7 +382,7 @@ export async function loadHoldingPatterns(
 
   if (!fs.existsSync(holdPath)) {
     logger.data.debug(`earth_hold.dat not found: ${holdPath}`);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
   try {
@@ -389,10 +392,10 @@ export async function loadHoldingPatterns(
       logger.data.warn(`Holdings: ${errors.length} errors, ${stats.skipped} skipped`);
     }
     logger.data.info(`Loaded ${stats.parsed} holding patterns in ${stats.timeMs}ms`);
-    return { data, loaded: true, source: holdPath, fromCache: false };
+    return { data, count: data.length, loaded: true, source: holdPath, fromCache: false };
   } catch (error) {
     logger.data.warn('Failed to load holding patterns:', error);
-    return { data: [], loaded: false, source: null, fromCache: false };
+    return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 }
 
@@ -406,7 +409,7 @@ export async function loadAirportMetadata(
 
   if (!fs.existsSync(aptMetaPath)) {
     logger.data.debug(`earth_aptmeta.dat not found: ${aptMetaPath}`);
-    return { data: new Map(), loaded: false, source: null, fromCache: false };
+    return { data: new Map(), count: 0, loaded: false, source: null, fromCache: false };
   }
 
   try {
@@ -416,9 +419,9 @@ export async function loadAirportMetadata(
       logger.data.warn(`Airport metadata: ${errors.length} errors, ${stats.skipped} skipped`);
     }
     logger.data.info(`Loaded ${stats.parsed} airport metadata entries in ${stats.timeMs}ms`);
-    return { data, loaded: true, source: aptMetaPath, fromCache: false };
+    return { data, count: data.size, loaded: true, source: aptMetaPath, fromCache: false };
   } catch (error) {
     logger.data.warn('Failed to load airport metadata:', error);
-    return { data: new Map(), loaded: false, source: null, fromCache: false };
+    return { data: new Map(), count: 0, loaded: false, source: null, fromCache: false };
   }
 }
