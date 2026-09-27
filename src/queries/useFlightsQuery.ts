@@ -65,7 +65,11 @@ export function useFlightRecorderStream(): void {
     });
     const unsubscribe = window.flightsAPI.onEvent((event) => {
       applyEvent(event);
-      if (event.type === 'landing' && document.hidden) {
+      if (
+        event.type === 'landing' &&
+        document.hidden &&
+        useSettingsStore.getState().flights.landingNotification
+      ) {
         // The user is in the sim or the app is minimized: surface the report
         // through the OS so the moment isn't missed.
         const rate = event.report.touchdownRateFpm;

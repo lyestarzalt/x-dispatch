@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Crosshair, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -31,7 +32,7 @@ function formatVS(vs: number | undefined): string {
   if (vs === undefined || isNaN(vs)) return '---';
   const rounded = Math.round(vs / 100) * 100;
   if (rounded === 0) return '0';
-  return rounded > 0 ? `+${rounded}` : `${rounded}`;
+  return rounded > 0 ? `+${formatValue(rounded)}` : formatValue(rounded);
 }
 
 function formatMach(mach: number | undefined): string {
@@ -70,9 +71,8 @@ function getVSColor(vs: number | undefined): string {
   return 'text-muted-foreground';
 }
 
-function getAGLColor(agl: number | undefined): string {
-  if (agl === undefined || isNaN(agl)) return 'text-foreground';
-  return agl < 500 ? 'text-warning' : 'text-foreground';
+function isLowAGL(agl: number | undefined): boolean {
+  return agl !== undefined && !isNaN(agl) && agl < 500;
 }
 
 function useStripDrag() {
@@ -148,81 +148,65 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
             <GroupSeparator />
 
-            {/* Data groups — single row, larger gap between groups */}
-            <div className="flex items-center gap-5 px-4 py-1.5">
-              <div className="flex items-center gap-3">
-                <DataBlock
-                  label={t('flightStrip.ias')}
-                  value={formatValue(planeState?.indicatedAirspeed)}
-                  unit={t('units.kt')}
-                  valueColor={PRIMARY_COLOR_CLASS}
-                  target={formatTarget(
-                    planeState?.apAirspeedIsMach ? formatMach : formatValue,
-                    planeState?.apAirspeed
-                  )}
-                />
-                <DataBlock
-                  label={t('flightStrip.gs')}
-                  value={formatValue(planeState?.groundspeed)}
-                  unit={t('units.kt')}
-                />
-                <DataBlock
-                  label={t('flightStrip.mach')}
-                  value={formatMach(planeState?.mach)}
-                  unit=""
-                />
-              </div>
+            {/* Five columns: the values you fly with are large, related
+                secondary readings sit underneath in a muted line. */}
+            <div className="flex items-center gap-4 px-4 py-1.5">
+              <DataColumn
+                label={t('flightStrip.ias')}
+                target={formatTarget(
+                  planeState?.apAirspeedIsMach ? formatMach : formatValue,
+                  planeState?.apAirspeed
+                )}
+                value={formatValue(planeState?.indicatedAirspeed)}
+                unit={t('units.kt')}
+                valueColor={PRIMARY_COLOR_CLASS}
+                secondary={`${t('flightStrip.gs')} ${formatValue(planeState?.groundspeed)} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
+              />
 
-              <div className="flex items-center gap-3">
-                <DataBlock
-                  label={t('flightStrip.alt')}
-                  value={formatValue(planeState?.altitudeMSL)}
-                  unit={t('units.ft')}
-                  valueColor={PRIMARY_COLOR_CLASS}
-                  target={formatTarget(formatValue, planeState?.apAltitude)}
-                />
-                <DataBlock
-                  label={t('flightStrip.agl')}
-                  value={formatValue(planeState?.altitudeAGL)}
-                  unit={t('units.ft')}
-                  valueColor={getAGLColor(planeState?.altitudeAGL)}
-                />
-                <DataBlock
-                  label={t('flightStrip.vs')}
-                  value={formatVS(planeState?.verticalSpeed)}
-                  unit={t('units.fpm')}
-                  valueColor={getVSColor(planeState?.verticalSpeed)}
-                  target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
-                />
-              </div>
+              <GroupSeparator />
 
-              <div className="flex items-center gap-3">
-                <DataBlock
-                  label={t('flightStrip.hdg')}
-                  value={formatHeading(planeState?.heading)}
-                  unit="°"
-                  valueColor={PRIMARY_COLOR_CLASS}
-                  target={formatTarget(formatHeading, planeState?.apHeading)}
-                />
-                <DataBlock
-                  label={t('flightStrip.crs')}
-                  value={formatHeading(planeState?.nav1Course)}
-                  unit="°"
-                />
-              </div>
+              <DataColumn
+                label={t('flightStrip.alt')}
+                target={formatTarget(formatValue, planeState?.apAltitude)}
+                value={formatValue(planeState?.altitudeMSL)}
+                unit={t('units.ft')}
+                valueColor={PRIMARY_COLOR_CLASS}
+                secondary={
+                  <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
+                    {t('flightStrip.agl')} {formatValue(planeState?.altitudeAGL)}
+                  </span>
+                }
+              />
 
-              <div className="flex items-center gap-3">
-                <DataBlock
-                  label={t('flightStrip.wind')}
-                  value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-                  unit={t('units.kt')}
-                />
-                <DataBlock
-                  label={t('flightStrip.oat')}
-                  value={formatOAT(planeState?.oat)}
-                  unit="°C"
-                />
-              </div>
+              <GroupSeparator />
+
+              <DataColumn
+                label={t('flightStrip.vs')}
+                target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
+                value={formatVS(planeState?.verticalSpeed)}
+                unit={t('units.fpm')}
+                valueColor={getVSColor(planeState?.verticalSpeed)}
+              />
+
+              <GroupSeparator />
+
+              <DataColumn
+                label={t('flightStrip.hdg')}
+                target={formatTarget(formatHeading, planeState?.apHeading)}
+                value={formatHeading(planeState?.heading)}
+                unit="°"
+                valueColor={PRIMARY_COLOR_CLASS}
+                secondary={`${t('flightStrip.crs')} ${formatHeading(planeState?.nav1Course)}°`}
+              />
+
+              <GroupSeparator />
+
+              <DataColumn
+                label={t('flightStrip.wind')}
+                value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
+                unit={t('units.kt')}
+                secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
+              />
             </div>
 
             <GroupSeparator />
@@ -252,34 +236,25 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 // --- Sub-components ---
 
 function GroupSeparator() {
-  return <div className="bg-border/50 h-8 w-px" />;
+  return <div className="bg-border/50 my-1 w-px self-stretch" />;
 }
 
-interface DataBlockProps {
+interface DataColumnProps {
   label: string;
   value: string;
   unit: string;
   valueColor?: string;
-  /** Selected (autopilot dial) value shown under the live reading for a quick comparison. */
+  /** Selected (autopilot dial) value, shown next to the label as a bug. */
   target?: string;
+  /** Related smaller reading rendered under the value. */
+  secondary?: ReactNode;
 }
 
-function DataBlock({ label, value, unit, valueColor, target }: DataBlockProps) {
+function DataColumn({ label, value, unit, valueColor, target, secondary }: DataColumnProps) {
   return (
-    <div className="flex flex-col items-center">
-      <span className="text-muted-foreground/70 text-[10px] tracking-wider uppercase">{label}</span>
-      <div className="flex items-baseline gap-0.5">
-        <span
-          className={cn(
-            'font-mono text-base font-medium tabular-nums',
-            valueColor || 'text-foreground'
-          )}
-        >
-          {value}
-        </span>
-        <span className="text-muted-foreground text-[10px]">{unit}</span>
-      </div>
-      <div className="min-h-3">
+    <div className="flex min-w-0 flex-col">
+      <div className="flex h-3.5 items-center gap-1.5 text-[10px] tracking-wider uppercase">
+        <span className="text-muted-foreground font-medium">{label}</span>
         {target !== undefined && (
           // Keyed by value: animates only when the autopilot dial changes,
           // never on the 10 Hz live updates.
@@ -288,12 +263,26 @@ function DataBlock({ label, value, unit, valueColor, target }: DataBlockProps) {
             initial={{ opacity: 0, y: -3 }}
             animate={{ opacity: 1, y: 0 }}
             transition={quickFade}
-            className="text-info/70 flex items-center gap-0.5 font-mono text-[9px] leading-tight tabular-nums"
+            className="text-info flex items-center font-mono normal-case tabular-nums"
           >
             <ChevronRight className="h-2.5 w-2.5" />
             {target}
           </motion.span>
         )}
+      </div>
+      <div className="flex items-baseline gap-1">
+        <span
+          className={cn(
+            'font-mono text-lg leading-6 font-semibold tabular-nums',
+            valueColor || 'text-foreground'
+          )}
+        >
+          {value}
+        </span>
+        <span className="text-muted-foreground text-[10px]">{unit}</span>
+      </div>
+      <div className="text-muted-foreground h-3.5 font-mono text-[11px] leading-tight tabular-nums">
+        {secondary}
       </div>
     </div>
   );

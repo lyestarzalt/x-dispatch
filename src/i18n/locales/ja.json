@@ -734,6 +734,8 @@
       "landingReportDesc": "接地時の降下率、最大 G、フレアの評価、滑走路上の位置が着陸直後にマップに表示されます。",
       "landingFlyTo": "接地点にズーム",
       "landingFlyToDesc": "着陸レポートが表示されたときにカメラを滑走路へ移動します。",
+      "landingNotification": "着陸通知",
+      "landingNotificationDesc": "アプリが非表示のときに着陸をシステム通知で知らせます",
       "credit": "評価の区分は Dan Berry 氏の LandingRate for FlyWithLua に合わせているため、数値を見慣れたものと比較できます。",
       "storage": "保存先",
       "storageDesc": "フライトは X-Dispatch のデータフォルダーにファイルとして保存されます。",

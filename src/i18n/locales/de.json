@@ -734,6 +734,8 @@
       "landingReportDesc": "Sinkrate beim Aufsetzen, maximale g-Last, Abfangbewertung und Position auf der Bahn erscheinen direkt nach der Landung.",
       "landingFlyTo": "Zum Aufsetzpunkt zoomen",
       "landingFlyToDesc": "Die Kamera zur Landebahn bewegen, wenn der Landebericht erscheint.",
+      "landingNotification": "Landebenachrichtigung",
+      "landingNotificationDesc": "Systembenachrichtigung bei einer Landung, während die App verdeckt ist",
       "credit": "Die Bewertungsstufen folgen LandingRate for FlyWithLua von Dan Berry, damit die Zahlen vergleichbar bleiben.",
       "storage": "Speicherort",
       "storageDesc": "Flüge werden als Dateien im Datenordner von X-Dispatch gespeichert.",

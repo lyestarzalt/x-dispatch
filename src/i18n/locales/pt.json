@@ -734,6 +734,8 @@
       "landingReportDesc": "Razão de descida no toque, g máximo, qualidade do arredondamento e posição na pista aparecem no mapa logo após o pouso.",
       "landingFlyTo": "Aproximar no ponto de toque",
       "landingFlyToDesc": "Mover a câmera para a pista quando o relatório de pouso aparecer.",
+      "landingNotification": "Notificação de pouso",
+      "landingNotificationDesc": "Notificar pelo sistema ao pousar enquanto o aplicativo está oculto",
       "credit": "As faixas de avaliação seguem o LandingRate for FlyWithLua de Dan Berry, para que os números sejam comparáveis.",
       "storage": "Armazenamento",
       "storageDesc": "Os voos são guardados como arquivos na pasta de dados do X-Dispatch.",

@@ -734,6 +734,8 @@
       "landingReportDesc": "Sink rate at touchdown, top g, flare grade an' where ye hit the runway show on the chart right after ye land.",
       "landingFlyTo": "Zoom to the touchdown",
       "landingFlyToDesc": "Swing the spyglass to the runway when the landin' report shows.",
+      "landingNotification": "Landin' hail",
+      "landingNotificationDesc": "Hail ye through the ship's bell when ye make landfall while the app be below deck",
       "credit": "Ratin' bands follow LandingRate for FlyWithLua by Dan Berry, so the numbers match what ye know.",
       "storage": "Stowage",
       "storageDesc": "Voyages be stowed as files in the X-Dispatch data hold.",

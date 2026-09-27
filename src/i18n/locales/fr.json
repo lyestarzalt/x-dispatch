@@ -734,6 +734,8 @@
       "landingReportDesc": "Taux de descente au toucher, g maximal, qualité de l'arrondi et position sur la piste apparaissent sur la carte juste après l'atterrissage.",
       "landingFlyTo": "Zoomer sur le point de toucher",
       "landingFlyToDesc": "Déplacer la caméra vers la piste quand le rapport d'atterrissage apparaît.",
+      "landingNotification": "Notification d'atterrissage",
+      "landingNotificationDesc": "Notification système lors d'un atterrissage quand l'application est masquée",
       "credit": "Les paliers de notation suivent LandingRate for FlyWithLua de Dan Berry, pour que les chiffres restent comparables.",
       "storage": "Stockage",
       "storageDesc": "Les vols sont stockés sous forme de fichiers dans le dossier de données de X-Dispatch.",

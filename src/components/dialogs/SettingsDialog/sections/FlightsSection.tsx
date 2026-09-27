@@ -49,6 +49,12 @@ export function FlightsSection() {
           disabled={!flights.landingReport}
           onCheckedChange={(checked) => updateFlights({ landingFlyTo: checked })}
         />
+        <SettingsToggleRow
+          title={t('settings.flights.landingNotification')}
+          description={t('settings.flights.landingNotificationDesc')}
+          checked={flights.landingNotification}
+          onCheckedChange={(checked) => updateFlights({ landingNotification: checked })}
+        />
         <p className="text-muted-foreground px-3 pt-1 text-xs">{t('settings.flights.credit')}</p>
       </SettingsSectionBlock>
 

@@ -112,6 +112,8 @@ export interface FlightsSettings {
   landingReport: boolean;
   /** Move the camera to the touchdown point when the card appears. */
   landingFlyTo: boolean;
+  /** OS notification for a landing while the app window is hidden. */
+  landingNotification: boolean;
 }
 
 export interface LauncherSettings {
@@ -210,6 +212,7 @@ const DEFAULT_FLIGHTS_SETTINGS: FlightsSettings = {
   recording: true,
   landingReport: true,
   landingFlyTo: true,
+  landingNotification: true,
 };
 
 const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {

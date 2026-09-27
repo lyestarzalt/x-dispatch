@@ -734,6 +734,8 @@
       "landingReportDesc": "着陆后立即在地图上显示接地下降率、峰值 G、拉平评价和跑道上的位置。",
       "landingFlyTo": "缩放到接地点",
       "landingFlyToDesc": "着陆报告出现时将镜头移到跑道。",
+      "landingNotification": "着陆通知",
+      "landingNotificationDesc": "应用隐藏时通过系统通知提醒着陆",
       "credit": "评级区间沿用 Dan Berry 的 LandingRate for FlyWithLua，数值可与你熟悉的结果直接比较。",
       "storage": "存储",
       "storageDesc": "飞行以文件形式保存在 X-Dispatch 数据文件夹中。",
