@@ -13,6 +13,7 @@ function makeMapMock() {
     getSource: (id: string) => (sources.has(id) ? ({ setData: vi.fn() } as object) : undefined),
     addLayer: (spec: { id: string }) => layers.add(spec.id),
     addSource: (id: string) => sources.add(id),
+    setPaintProperty: vi.fn(),
     removeLayer: (id: string) => layers.delete(id),
     removeSource: (id: string) => sources.delete(id),
     on: vi.fn(),

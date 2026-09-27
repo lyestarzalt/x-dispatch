@@ -69,7 +69,7 @@ export {
 export {
   addRangeRingsLayer,
   removeRangeRingsLayer,
-  updateRangeRings,
+  updateRangeRingsData,
   RANGE_RINGS_LAYER_IDS,
 } from './dynamic/RangeRingsLayer';
 export type { RangeRingsConfig } from './dynamic/RangeRingsLayer';
