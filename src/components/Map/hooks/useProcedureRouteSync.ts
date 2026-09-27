@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import {
@@ -22,15 +22,12 @@ interface UseProcedureRouteSyncOptions {
 export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions): void {
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
-  // Only a new selection moves the camera; a flight plan change re-renders in place.
-  const lastFittedRef = useRef<typeof selectedProcedure>(null);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     if (!selectedProcedure) {
-      lastFittedRef.current = null;
       removeProcedureRouteLayer(map);
       return;
     }
@@ -66,9 +63,8 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
             })),
           },
           undefined,
-          { planFixes, fitBounds: selectedProcedure !== lastFittedRef.current }
+          { planFixes }
         );
-        lastFittedRef.current = selectedProcedure;
       } catch (err) {
         window.appAPI?.log?.error?.('Failed to add procedure route layer', err);
       }
