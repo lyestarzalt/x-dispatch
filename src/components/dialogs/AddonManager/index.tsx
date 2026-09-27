@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { FolderOpen, Layers, Package, PackagePlus, X } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
+import { indicatorSpring, quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import { BrowserTab } from './tabs/BrowserTab';
 import { InstallerTab } from './tabs/InstallerTab';
@@ -23,6 +25,8 @@ interface NavItem {
   descKey: string;
   icon: React.ElementType;
 }
+
+const NAV_INDICATOR_ID = 'addon-nav-indicator';
 
 const NAV_ITEMS: NavItem[] = [
   {
@@ -116,7 +120,11 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                   </div>
                   {/* Active indicator */}
                   {isActive && (
-                    <div className="bg-primary absolute right-0 h-8 w-0.5 rounded-l-full" />
+                    <motion.div
+                      layoutId={NAV_INDICATOR_ID}
+                      transition={indicatorSpring}
+                      className="bg-primary absolute right-0 h-8 w-0.5 rounded-l-full"
+                    />
                   )}
                 </Button>
               );
@@ -158,9 +166,17 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
 
           {/* Tab Content */}
           <div className="flex-1 overflow-hidden">
-            {activeTab === 'scenery' && <SceneryTab />}
-            {activeTab === 'installed' && <BrowserTab />}
-            {activeTab === 'installer' && <InstallerTab />}
+            <motion.div
+              key={activeTab}
+              className="h-full"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={quickFade}
+            >
+              {activeTab === 'scenery' && <SceneryTab />}
+              {activeTab === 'installed' && <BrowserTab />}
+              {activeTab === 'installer' && <InstallerTab />}
+            </motion.div>
           </div>
         </div>
       </DialogPanel>

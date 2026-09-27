@@ -16,3 +16,9 @@ export const exitEase: Transition = { duration: 0.13, ease: 'easeIn' };
 
 /** Celebration surfaces (landing card) get a touch of bounce. */
 export const cardSpring: Transition = { type: 'spring', duration: 0.55, bounce: 0.3 };
+
+/** Enter-only micro transitions: tab switches, dropdowns, list reveals. */
+export const quickFade: Transition = { duration: 0.14, ease: 'easeOut' };
+
+/** Sliding selection indicators (sidebar nav, segmented controls). */
+export const indicatorSpring: Transition = { type: 'spring', duration: 0.35, bounce: 0.15 };
