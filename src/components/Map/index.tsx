@@ -442,23 +442,25 @@ export default function Map({ airports }: MapProps) {
   // Flight plan state
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
-  // Flight plan layer sync — always fit bounds when fmsData changes
-  const prevFmsDataRef = useRef<typeof fmsData>(null);
+  const planFileName = useFlightPlanStore((s) => s.fileName);
+  // Only a different plan moves the camera. The builder republishes the same plan on every
+  // SID, STAR, runway or route edit under an unchanged name, and the view has to stay put.
+  const fittedPlanRef = useRef<string | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     if (fmsData) {
       addFlightPlanLayer(map, fmsData);
-      // Fit bounds when plan changes (new plan loaded or replaced)
-      if (fmsData !== prevFmsDataRef.current) {
+      if (planFileName !== fittedPlanRef.current) {
         fitMapToFlightPlan(map, fmsData);
+        fittedPlanRef.current = planFileName;
       }
     } else {
       removeFlightPlanLayer(map);
+      fittedPlanRef.current = null;
     }
-    prevFmsDataRef.current = fmsData;
-  }, [mapRef, fmsData]);
+  }, [mapRef, fmsData, planFileName]);
 
   // Fly to selected waypoint
   useEffect(() => {

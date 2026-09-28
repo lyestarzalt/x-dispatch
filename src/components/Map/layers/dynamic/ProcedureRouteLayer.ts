@@ -374,15 +374,13 @@ function createWaypointGeoJSON(
 export interface AddProcedureRouteOptions {
   /** Fixes the flight plan layer already renders; skipped here (default none). */
   planFixes?: PlanFix[];
-  /** Fly the camera to the procedure once added (default true). */
-  fitBounds?: boolean;
 }
 
 export function addProcedureRouteLayer(
   map: maplibregl.Map,
   route: RouteData,
   waypointCoords?: Map<string, { lat: number; lon: number }>,
-  { planFixes = [], fitBounds = true }: AddProcedureRouteOptions = {}
+  { planFixes = [] }: AddProcedureRouteOptions = {}
 ): void {
   if (!map.getStyle()) return;
 
@@ -520,19 +518,6 @@ export function addProcedureRouteLayer(
       'text-halo-width': 2,
     },
   });
-
-  // Fit map to route
-  if (!fitBounds) return;
-  const bounds = new maplibregl.LngLatBounds();
-  resolvedWaypoints
-    .filter((wp) => wp.latitude !== undefined && wp.longitude !== undefined)
-    .forEach((wp) => {
-      bounds.extend([wp.longitude!, wp.latitude!]);
-    });
-
-  if (!bounds.isEmpty()) {
-    map.fitBounds(bounds, { padding: 100, duration: 1000 });
-  }
 }
 
 export function removeProcedureRouteLayer(map: maplibregl.Map): void {
