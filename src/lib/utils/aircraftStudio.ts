@@ -9,3 +9,9 @@ export function aircraftStudio(aircraft: Pick<Aircraft, 'studio' | 'manufacturer
   if (!studio || studio.toLowerCase() === aircraft.manufacturer.toLowerCase()) return '';
   return studio;
 }
+
+/** "4.05.35" becomes "v4.05.35"; an existing v prefix is kept as is. */
+export function aircraftVersionLabel(aircraft: Pick<Aircraft, 'version'>): string {
+  if (!aircraft.version) return '';
+  return /^v/i.test(aircraft.version) ? aircraft.version : `v${aircraft.version}`;
+}

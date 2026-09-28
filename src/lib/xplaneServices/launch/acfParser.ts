@@ -77,6 +77,46 @@ function strProp(props: Record<string, string>, key: string, fallback: string): 
   return props[key] ?? fallback;
 }
 
+/** Accepts "4.05.35", "v1.2", "4.05rc1"; rejects prose and oversized strings. */
+const VERSION_PATTERN = /^v?\d+(\.\d+)*[a-z0-9.-]{0,10}$/i;
+
+/**
+ * Version from a version*.txt next to the .acf; add-on updaters write either
+ * version.txt or a per-model file like version-777.txt. The .acf's own
+ * acf/_version is coarser or free text and stock aircraft omit it entirely,
+ * so a file wins when both exist.
+ */
+async function readVersionFile(acfDir: string): Promise<string | null> {
+  let candidates: string[];
+  try {
+    const entries = await fs.promises.readdir(acfDir);
+    candidates = entries
+      .filter((name) => /^version[a-z0-9 _-]*\.txt$/i.test(name))
+      .sort((a, b) => a.length - b.length || a.localeCompare(b));
+  } catch {
+    return null;
+  }
+
+  for (const name of candidates) {
+    try {
+      const filePath = path.join(acfDir, name);
+      const stat = await fs.promises.stat(filePath);
+      if (stat.size === 0 || stat.size > 256) continue;
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      const firstLine = (content.split('\n', 1)[0] ?? '').trim();
+      if (VERSION_PATTERN.test(firstLine)) return firstLine;
+    } catch {
+      // Try the next candidate
+    }
+  }
+  return null;
+}
+
+function versionFromAcf(props: Record<string, string>): string {
+  const raw = (props['acf/_version'] ?? '').replace(/^ver(sion)?\.?\s*/i, '').trim();
+  return VERSION_PATTERN.test(raw) ? raw : '';
+}
+
 async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircraft | null> {
   try {
     const content = await fs.promises.readFile(acfPath, 'utf-8');
@@ -210,6 +250,7 @@ async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircra
       manufacturer: strProp(props, 'acf/_manufacturer', 'Unknown'),
       studio: strProp(props, 'acf/_studio', ''),
       author: strProp(props, 'acf/_author', ''),
+      version: (await readVersionFile(acfDir)) ?? versionFromAcf(props),
       tailNumber: strProp(props, 'acf/_tailnum', ''),
       // Weights (lbs)
       emptyWeight: numProp(props, 'acf/_m_empty'),

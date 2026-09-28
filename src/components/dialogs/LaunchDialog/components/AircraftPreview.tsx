@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Fuel, Plane, Scale, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { aircraftStudio } from '@/lib/utils/aircraftStudio';
+import { aircraftStudio, aircraftVersionLabel } from '@/lib/utils/aircraftStudio';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
@@ -181,6 +181,11 @@ export function AircraftPreview() {
                 {aircraftStudio(selectedAircraft) && (
                   <span className="text-foreground/80" title={selectedAircraft.author}>
                     {aircraftStudio(selectedAircraft)}
+                  </span>
+                )}
+                {aircraftVersionLabel(selectedAircraft) && (
+                  <span className="font-mono text-xs">
+                    {aircraftVersionLabel(selectedAircraft)}
                   </span>
                 )}
                 {selectedAircraft.emptyWeight > 0 && (

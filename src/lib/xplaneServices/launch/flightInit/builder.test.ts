@@ -29,6 +29,7 @@ function makeAircraft(overrides: Partial<Aircraft> & { path: string }): Aircraft
     manufacturer: '',
     studio: '',
     author: '',
+    version: '',
     tailNumber: '',
     emptyWeight: 1000,
     maxWeight: 2000,
