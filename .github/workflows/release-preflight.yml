@@ -1,0 +1,135 @@
+name: Release Preflight
+
+# Dry-run of everything the release workflow depends on, with no side
+# effects: token minting, push permission, notes generation (including the
+# collapsed commit list), release-create permission and the website/Discord
+# integrations. Run it before dispatching Release.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  preflight:
+    name: Preflight checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint release token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.X_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
+
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Push permission (dry run)
+        run: |
+          git push --dry-run origin HEAD:main
+          echo "- :white_check_mark: App token can push to main" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compute next version (no git mutation)
+        id: compute
+        run: |
+          NEW=$(npm version patch --no-git-tag-version)
+          echo "tag=$NEW" >> "$GITHUB_OUTPUT"
+          git checkout -- package.json package-lock.json
+          echo "- :white_check_mark: Version compute works (next patch would be $NEW)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate release notes
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.compute.outputs.tag }} --strip header --unreleased
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OUTPUT: release-notes.md
+
+      - name: Build commit details and footer (same logic as Release)
+        run: |
+          TAG="${{ steps.compute.outputs.tag }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+
+          {
+            echo ""
+            echo "<details>"
+            echo "<summary>All changes</summary>"
+            echo ""
+            tail -n +2 release-notes.md | sed 's/^### /#### /'
+            echo ""
+            echo "</details>"
+          } > commit-details.md
+          cat commit-details.md >> release-notes.md
+
+          if [ -n "$PREV_TAG" ]; then
+            {
+              echo ""
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
+            } >> release-notes.md
+          fi
+
+          {
+            echo "- :white_check_mark: Release notes generated"
+            echo ""
+            echo "### Notes preview for $TAG"
+            echo ""
+            cat release-notes.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Release create permission (draft, deleted right away)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NAME="preflight-draft-${{ github.run_id }}"
+          gh release create "$NAME" --draft --title "Release preflight check" --notes "Created and deleted by release-preflight.yml"
+          gh release delete "$NAME" --yes
+          echo "- :white_check_mark: Can create releases (checked with a draft)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Mint website sync token
+        id: site-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.X_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
+          owner: lyestarzalt
+          repositories: x-dispatch.app
+
+      - name: Website sync reachable
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.site-token.outputs.token }}
+        run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "- :warning: Website sync token could not be minted" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if gh workflow view sync-release.yml --repo lyestarzalt/x-dispatch.app > /dev/null; then
+            echo "- :white_check_mark: Website sync workflow reachable" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- :warning: Website sync workflow not reachable" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Discord webhook secret present
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -n "$WEBHOOK" ]; then
+            echo "- :white_check_mark: Discord webhook secret is set" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- :warning: Discord webhook secret is missing, release announcement would be skipped" >> "$GITHUB_STEP_SUMMARY"
+          fi

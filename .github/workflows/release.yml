@@ -205,8 +205,34 @@ jobs:
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for ${{ needs.compute-version.outputs.tag }}"
           git push
 
-      - name: Add footer to release notes
+      - name: Add commit details and footer to release notes
         run: |
+          TAG="${{ needs.compute-version.outputs.tag }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
+
+          # Collapsed copy of the generated commit list. The section above it
+          # gets rewritten into plain-language notes after publishing (the
+          # website shows that part), this copy keeps the commit and PR links.
+          # Headings are demoted to #### so the website's section parser only
+          # matches the plain-language part.
+          {
+            echo ""
+            echo "<details>"
+            echo "<summary>All changes</summary>"
+            echo ""
+            tail -n +2 release-notes.md | sed 's/^### /#### /'
+            echo ""
+            echo "</details>"
+          } > commit-details.md
+          cat commit-details.md >> release-notes.md
+
+          if [ -n "$PREV_TAG" ]; then
+            {
+              echo ""
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
+            } >> release-notes.md
+          fi
+
           cat >> release-notes.md << 'EOF'
 
           ---

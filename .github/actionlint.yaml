@@ -1,0 +1,4 @@
+# actionlint's built-in runner list lags GitHub's; labels here are known good.
+self-hosted-runner:
+  labels:
+    - macos-15-intel
