@@ -33,6 +33,8 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 ## Screenshots
 
+![Flight Plan Builder](screenshots/flight-planner.png)
+![Ground Weather](screenshots/ground-weather.gif)
 ![Airport Detail](screenshots/airport-detail.png)
 ![Flight Setup](screenshots/flight-setup.png)
 
@@ -60,6 +62,8 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 ## What it does
 
 - **Airport map** — 35,000+ airports on a 3D globe with terrain and contour lines. Runways, taxiways, gates, helipads, markings, lights. Custom scenery detection. Sun-lit globe with real night city lights.
+- **Flight plan builder (alpha)** — Build a route on the map with airways, procedures and fuel estimates, then save it straight to X-Plane.
+- **Ground weather** — Wind streaks that follow the live METAR's speed and direction, plus rain, snow and fog depiction over the airport.
 - **Flight setup** — Pick your aircraft, livery, starting position, fuel, payload, weather. Launch X-Plane directly or relocate mid-flight.
 - **Taxi routing** — Select a gate and runway, get a shortest-path taxi route. Drag to reroute through different taxiways.
 - **Flight recording** — Automatic flight recording with trail visualization, landing detection, replay mode, and flight logbook with landing statistics.
