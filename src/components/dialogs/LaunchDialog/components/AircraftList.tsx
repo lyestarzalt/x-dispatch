@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { quickFade } from '@/lib/motionPresets';
-import { aircraftStudio } from '@/lib/utils/aircraftStudio';
+import { aircraftStudio, aircraftVersionLabel } from '@/lib/utils/aircraftStudio';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -109,6 +109,9 @@ function AircraftListItem({
           {aircraft.manufacturer}
           {aircraftStudio(aircraft) && (
             <span className="text-foreground/70"> · {aircraftStudio(aircraft)}</span>
+          )}
+          {aircraftVersionLabel(aircraft) && (
+            <span className="text-muted-foreground/70"> · {aircraftVersionLabel(aircraft)}</span>
           )}
         </div>
       </div>

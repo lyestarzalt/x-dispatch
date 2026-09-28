@@ -16,6 +16,8 @@ export interface Aircraft {
   manufacturer: string;
   studio: string;
   author: string;
+  /** Add-on version, from version.txt next to the .acf or acf/_version; empty when unknown */
+  version: string;
   tailNumber: string;
   emptyWeight: number;
   maxWeight: number;

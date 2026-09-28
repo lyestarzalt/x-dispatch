@@ -77,6 +77,31 @@ function strProp(props: Record<string, string>, key: string, fallback: string): 
   return props[key] ?? fallback;
 }
 
+/** Accepts "4.05.35", "v1.2", "4.05rc1"; rejects prose and oversized strings. */
+const VERSION_PATTERN = /^v?\d+(\.\d+)*[a-z0-9.-]{0,10}$/i;
+
+/**
+ * Version from <aircraft dir>/version.txt, the convention Zibo-family updaters
+ * use. The .acf's own acf/_version is coarser (Zibo: "ver 4.05" vs "4.05.35")
+ * and stock aircraft omit it entirely, so the file wins when both exist.
+ */
+async function readVersionFile(acfDir: string): Promise<string | null> {
+  try {
+    const stat = await fs.promises.stat(path.join(acfDir, 'version.txt'));
+    if (stat.size === 0 || stat.size > 256) return null;
+    const content = await fs.promises.readFile(path.join(acfDir, 'version.txt'), 'utf-8');
+    const firstLine = (content.split('\n', 1)[0] ?? '').trim();
+    return VERSION_PATTERN.test(firstLine) ? firstLine : null;
+  } catch {
+    return null;
+  }
+}
+
+function versionFromAcf(props: Record<string, string>): string {
+  const raw = (props['acf/_version'] ?? '').replace(/^ver(sion)?\.?\s*/i, '').trim();
+  return VERSION_PATTERN.test(raw) ? raw : '';
+}
+
 async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircraft | null> {
   try {
     const content = await fs.promises.readFile(acfPath, 'utf-8');
@@ -210,6 +235,7 @@ async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircra
       manufacturer: strProp(props, 'acf/_manufacturer', 'Unknown'),
       studio: strProp(props, 'acf/_studio', ''),
       author: strProp(props, 'acf/_author', ''),
+      version: (await readVersionFile(acfDir)) ?? versionFromAcf(props),
       tailNumber: strProp(props, 'acf/_tailnum', ''),
       // Weights (lbs)
       emptyWeight: numProp(props, 'acf/_m_empty'),
