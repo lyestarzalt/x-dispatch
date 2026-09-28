@@ -3,8 +3,9 @@
  *
  * Focus areas:
  *  - AIRAC calendar math (cycle id → effective/expiration dates)
- *  - Navigraph installs identified by the real cycle.json shape (no dates)
- *  - Custom Data without cycle.json (convert424toxplane output) reported as
+ *  - the provider comes from the earth_nav.dat header free text, never from
+ *    cycle.json (XPNavData ships one with the exact same shape as Navigraph)
+ *  - Custom Data without any known provider (convert424toxplane output) is
  *    'custom' with the cycle read from the file header
  *  - Stock installs report the cycle from the default nav file header
  */
@@ -12,7 +13,12 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { detectAllDataSources, getAiracCycleDates, parseDataCycleHeader } from './cycleInfo';
+import {
+  detectAllDataSources,
+  getAiracCycleDates,
+  parseDataCycleHeader,
+  parseProviderFromHeader,
+} from './cycleInfo';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -20,8 +26,12 @@ import { detectAllDataSources, getAiracCycleDates, parseDataCycleHeader } from '
 
 let TEMP_ROOT: string;
 
-const NAV_HEADER = (cycle: string) =>
-  `I\n1200 Version - data cycle ${cycle}, build 20260826, metadata NavXP1200. Copyright\n`;
+// Header shapes as the providers actually ship them
+const NAVIGRAPH_BRAND = 'Copyright (c) 2025 Navigraph, Datasource Jeppesen';
+const XPNAVDATA_BRAND = 'XPNavData - 2610';
+
+const NAV_HEADER = (cycle: string, brand = 'Copyright') =>
+  `I\n1200 Version - data cycle ${cycle}, build 20260826, metadata NavXP1200. ${brand}\n`;
 
 function makeStockInstall(cycle = '2406'): string {
   const root = fs.mkdtempSync(path.join(TEMP_ROOT, 'install-'));
@@ -34,10 +44,10 @@ function makeStockInstall(cycle = '2406'): string {
   return root;
 }
 
-function addCustomData(root: string, cycle: string) {
+function addCustomData(root: string, cycle: string, brand?: string) {
   const customData = path.join(root, 'Custom Data');
   fs.mkdirSync(path.join(customData, 'CIFP'), { recursive: true });
-  fs.writeFileSync(path.join(customData, 'earth_nav.dat'), NAV_HEADER(cycle));
+  fs.writeFileSync(path.join(customData, 'earth_nav.dat'), NAV_HEADER(cycle, brand));
   fs.writeFileSync(path.join(customData, 'earth_fix.dat'), 'fix');
   fs.writeFileSync(path.join(customData, 'earth_awy.dat'), 'awy');
 }
@@ -116,15 +126,24 @@ describe('getAiracCycleDates', () => {
   });
 });
 
+describe('parseProviderFromHeader', () => {
+  it('names known providers from the header free text', () => {
+    expect(parseProviderFromHeader(NAV_HEADER('2609', NAVIGRAPH_BRAND))).toBe('Navigraph');
+    expect(parseProviderFromHeader(NAV_HEADER('2610', XPNAVDATA_BRAND))).toBe('XPNavData');
+    expect(parseProviderFromHeader(NAV_HEADER('2609'))).toBeNull();
+  });
+});
+
 describe('detectAllDataSources', () => {
-  it('reports a Navigraph install from the real cycle.json shape', () => {
+  it('reports a Navigraph install from its branded header plus cycle.json', () => {
     const root = makeStockInstall('2406');
-    addCustomData(root, '2609');
+    addCustomData(root, '2609', NAVIGRAPH_BRAND);
     addCycleJson(root, '{"cycle":"2609","revision":"1","name":"X-Plane 12"}');
 
     const sources = detectAllDataSources(root);
 
     expect(sources.global.source).toBe('navigraph');
+    expect(sources.global.provider).toBe('Navigraph');
     expect(sources.global.cycle).toBe('2609');
     expect(sources.global.revision).toBe('1');
     expect(sources.global.isCustomData).toBe(true);
@@ -135,6 +154,20 @@ describe('detectAllDataSources', () => {
     expect(sources.procedures.source).toBe('navigraph');
   });
 
+  it('reports XPNavData as custom with its provider name, despite the Navigraph-shaped cycle.json', () => {
+    const root = makeStockInstall('2406');
+    addCustomData(root, '2610', XPNAVDATA_BRAND);
+    addCycleJson(root, '{"cycle":"2610","revision":"1","name":"X-Plane 12"}');
+
+    const sources = detectAllDataSources(root);
+
+    expect(sources.global.source).toBe('custom');
+    expect(sources.global.provider).toBe('XPNavData');
+    expect(sources.global.cycle).toBe('2610');
+    expect(sources.global.revision).toBe('1');
+    expect(sources.navaids.provider).toBe('XPNavData');
+  });
+
   it('reports converted custom data (no cycle.json) with the header cycle', () => {
     const root = makeStockInstall('2406');
     addCustomData(root, '2609');
@@ -142,6 +175,7 @@ describe('detectAllDataSources', () => {
     const sources = detectAllDataSources(root);
 
     expect(sources.global.source).toBe('custom');
+    expect(sources.global.provider).toBeNull();
     expect(sources.global.cycle).toBe('2609');
     expect(sources.global.isCustomData).toBe(true);
     expect(sources.global.effectiveDate?.toISOString()).toBe('2026-09-03T00:00:00.000Z');
@@ -187,7 +221,7 @@ describe('detectAllDataSources', () => {
   it('flags an expired custom cycle', () => {
     const root = makeStockInstall('2406');
     // Cycle 2501 expired 20 Feb 2025 — long past for any realistic test run.
-    addCustomData(root, '2501');
+    addCustomData(root, '2501', NAVIGRAPH_BRAND);
     addCycleJson(root, '{"cycle":"2501","revision":"1","name":"X-Plane 12"}');
 
     const sources = detectAllDataSources(root);

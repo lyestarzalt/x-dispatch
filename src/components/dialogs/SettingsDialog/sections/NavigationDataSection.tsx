@@ -25,10 +25,17 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 import { useLoadingStatus } from '@/queries';
+import navigraphLogo from '../../../../../assets/navigraph-small.png';
+import xpnavdataLogo from '../../../../../assets/xpnavdata-icon.png';
 import { SettingsHeader, SettingsSectionBlock } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
 type SourceType = 'navigraph' | 'custom' | 'xplane-default' | 'custom-scenery' | 'unknown';
+
+const PROVIDER_LOGOS: Record<string, string> = {
+  Navigraph: navigraphLogo,
+  XPNavData: xpnavdataLogo,
+};
 type SettingsDataLoadStatus = NonNullable<
   Awaited<ReturnType<typeof window.appAPI.getLoadingStatus>>['status']
 >;
@@ -40,6 +47,8 @@ interface DataRowProps {
   count: number;
   source: string | null;
   sourceType?: SourceType;
+  /** Provider name from the nav data header; wins over the generic label */
+  provider?: string | null;
   icon?: React.ReactNode;
 }
 
@@ -49,16 +58,16 @@ function getSourceLabelKey(sourceType: SourceType | undefined, source: string | 
   if (sourceType === 'xplane-default') return 'settings.navigation.xplaneDefaultLabel';
   if (sourceType === 'custom-scenery') return 'settings.navigation.customAirportLabel';
   // Fallback: detect from path. Custom Data without a known provider gets the
-  // generic label — only cycle.json identifies Navigraph.
+  // generic label — the provider name comes from the nav data header.
   if (source?.includes('Custom Data')) return 'settings.navigation.customDataLabel';
   if (source?.includes('Custom Scenery')) return 'settings.navigation.customAirportLabel';
   if (source?.includes('default data')) return 'settings.navigation.xplaneDefaultLabel';
   return 'settings.navigation.defaultLabel';
 }
 
-function DataRow({ label, count, source, sourceType, icon }: DataRowProps) {
+function DataRow({ label, count, source, sourceType, provider, icon }: DataRowProps) {
   const { t } = useTranslation();
-  const displaySource = t(getSourceLabelKey(sourceType, source));
+  const displaySource = provider ?? t(getSourceLabelKey(sourceType, source));
 
   return (
     <TableRow>
@@ -179,7 +188,16 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
       >
         {globalSource && (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{t(getSourceLabelKey(globalSource.source, null))}</Badge>
+            <Badge variant="secondary" className="flex items-center gap-1.5">
+              {globalSource.provider && PROVIDER_LOGOS[globalSource.provider] && (
+                <img
+                  src={PROVIDER_LOGOS[globalSource.provider]}
+                  alt=""
+                  className="h-3.5 w-3.5 rounded-[3px] object-contain"
+                />
+              )}
+              {globalSource.provider ?? t(getSourceLabelKey(globalSource.source, null))}
+            </Badge>
             {globalSource.cycle && (
               <span className="text-muted-foreground font-mono text-sm">
                 AIRAC {globalSource.cycle}
@@ -231,6 +249,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   count={dataStatus.navaids.count}
                   source={dataStatus.navaids.source}
                   sourceType={dataStatus.sources?.navaids.source}
+                  provider={dataStatus.sources?.navaids.provider}
                   icon={<Radio className="text-muted-foreground h-4 w-4" />}
                 />
                 <DataRow
@@ -238,6 +257,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   count={dataStatus.waypoints.count}
                   source={dataStatus.waypoints.source}
                   sourceType={dataStatus.sources?.waypoints.source}
+                  provider={dataStatus.sources?.waypoints.provider}
                   icon={<Navigation className="text-muted-foreground h-4 w-4" />}
                 />
                 <DataRow
@@ -245,6 +265,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   count={dataStatus.airways.count}
                   source={dataStatus.airways.source}
                   sourceType={dataStatus.sources?.airways.source}
+                  provider={dataStatus.sources?.airways.provider}
                   icon={<Route className="text-muted-foreground h-4 w-4" />}
                 />
                 <DataRow
@@ -252,6 +273,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                   count={dataStatus.airspaces.count}
                   source={dataStatus.airspaces.source}
                   sourceType={dataStatus.sources?.airspaces.source}
+                  provider={dataStatus.sources?.airspaces.provider}
                   icon={<Layers className="text-muted-foreground h-4 w-4" />}
                 />
                 {dataStatus.atc && dataStatus.atc.count > 0 && (
@@ -260,6 +282,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                     count={dataStatus.atc.count}
                     source={dataStatus.atc.source}
                     sourceType={NAVIGRAPH_SOURCE}
+                    provider={dataStatus.sources?.atc?.provider}
                   />
                 )}
                 {dataStatus.holds && dataStatus.holds.count > 0 && (
@@ -268,6 +291,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                     count={dataStatus.holds.count}
                     source={dataStatus.holds.source}
                     sourceType={dataStatus.sources?.holds?.source}
+                    provider={dataStatus.sources?.holds?.provider}
                   />
                 )}
                 {dataStatus.aptMeta && dataStatus.aptMeta.count > 0 && (
@@ -276,6 +300,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                     count={dataStatus.aptMeta.count}
                     source={dataStatus.aptMeta.source}
                     sourceType={dataStatus.sources?.aptMeta?.source}
+                    provider={dataStatus.sources?.aptMeta?.provider}
                   />
                 )}
               </TableBody>
