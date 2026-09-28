@@ -106,6 +106,9 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: bash scripts/publish-r2.sh check
 
+      - name: Public downloads reachable from CI
+        run: bash scripts/check-r2-public.sh
+
       - name: Mint website sync token
         id: site-token
         continue-on-error: true

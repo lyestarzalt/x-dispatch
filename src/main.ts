@@ -474,33 +474,16 @@ type UpdateCheckResult = {
 
 const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
-const GITHUB_RELEASES_LATEST_URL =
-  'https://api.github.com/repos/lyestarzalt/x-dispatch/releases/latest';
 const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
 
 async function fetchLatestStableTag(): Promise<string | null> {
-  const r2 = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
-  if (r2.data && !r2.error) {
-    try {
-      const payload = JSON.parse(r2.data) as { tag?: string; channel?: string };
-      if (payload.tag && payload.channel === 'stable') return payload.tag;
-    } catch (err) {
-      logger.main.warn(`Update check: latest.json parse failed: ${(err as Error).message}`);
-    }
-  }
-
-  const github = await proxyFetch(GITHUB_RELEASES_LATEST_URL, { timeoutMs: 8_000 });
-  if (!github.data || github.error) return null;
+  const result = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
+  if (!result.data || result.error) return null;
   try {
-    const payload = JSON.parse(github.data) as {
-      tag_name?: string;
-      draft?: boolean;
-      prerelease?: boolean;
-    };
-    if (payload.draft || payload.prerelease || !payload.tag_name) return null;
-    return payload.tag_name;
+    const payload = JSON.parse(result.data) as { tag?: string; channel?: string };
+    return payload.tag && payload.channel === 'stable' ? payload.tag : null;
   } catch (err) {
-    logger.main.warn(`Update check: GitHub response parse failed: ${(err as Error).message}`);
+    logger.main.warn(`Update check: latest.json parse failed: ${(err as Error).message}`);
     return null;
   }
 }
