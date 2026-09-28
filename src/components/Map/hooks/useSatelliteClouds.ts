@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
 import * as maplibregl from 'maplibre-gl';
-import {
-  GIBS_MAX_ZOOM,
-  GIBS_TILE_SIZE,
-  composeCloudTile,
-  gibsTileUrl,
-  satellitesForTile,
-} from '@/lib/satelliteClouds/cloudTiles';
+import { GIBS_MAX_ZOOM, GIBS_TILE_SIZE } from '@/lib/satelliteClouds/cloudTiles';
+import type { CloudWorkerResponse } from '@/lib/satelliteClouds/cloudTiles.worker';
 import logger from '@/lib/utils/loggerRenderer';
 import { safeRemove } from '../layers/types';
 import { ensureLayerBelow } from '../layers/world/layerOrder';
@@ -21,21 +16,66 @@ const CLOUD_OPACITY = 0.85;
 const REFRESH_INTERVAL = 10 * 60 * 1000;
 const NO_LAYERS: ReadonlySet<string> = new Set();
 
-async function fetchPixels(url: string, signal: AbortSignal): Promise<Uint8ClampedArray | null> {
-  try {
-    const resp = await fetch(url, { signal });
-    if (!resp.ok) return null;
-    const bitmap = await createImageBitmap(await resp.blob());
-    const canvas = new OffscreenCanvas(GIBS_TILE_SIZE, GIBS_TILE_SIZE);
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return null;
-    ctx.drawImage(bitmap, 0, 0, GIBS_TILE_SIZE, GIBS_TILE_SIZE);
-    bitmap.close();
-    return ctx.getImageData(0, 0, GIBS_TILE_SIZE, GIBS_TILE_SIZE).data;
-  } catch (err) {
-    if (!signal.aborted) logger.weather.warn('Satellite cloud tile failed:', url, err);
-    return null;
-  }
+/**
+ * All fetching, decoding and pixel work runs in a dedicated worker; the map
+ * thread only forwards tile coordinates and receives transferred ImageBitmaps,
+ * so tile loads never eat into the frame budget.
+ */
+let tileWorker: Worker | null = null;
+let nextRequestId = 0;
+const pendingTiles = new Map<
+  number,
+  { resolve: (bitmap: ImageBitmap) => void; reject: (err: Error) => void }
+>();
+
+function getTileWorker(): Worker {
+  if (tileWorker) return tileWorker;
+  tileWorker = new Worker(
+    new URL('../../../lib/satelliteClouds/cloudTiles.worker.ts', import.meta.url),
+    { type: 'module' }
+  );
+  tileWorker.onmessage = (event: MessageEvent<CloudWorkerResponse>) => {
+    const { id, bitmap, error } = event.data;
+    const pending = pendingTiles.get(id);
+    if (!pending) {
+      bitmap?.close();
+      return;
+    }
+    pendingTiles.delete(id);
+    if (bitmap) pending.resolve(bitmap);
+    else pending.reject(new Error(error ?? 'Satellite cloud tile failed'));
+  };
+  tileWorker.onerror = (event) => {
+    logger.weather.warn('Satellite cloud worker error:', event.message);
+    for (const pending of pendingTiles.values()) {
+      pending.reject(new Error(event.message || 'Satellite cloud worker error'));
+    }
+    pendingTiles.clear();
+  };
+  return tileWorker;
+}
+
+function composeTileInWorker(
+  z: number,
+  x: number,
+  y: number,
+  signal: AbortSignal
+): Promise<ImageBitmap> {
+  const worker = getTileWorker();
+  const id = nextRequestId++;
+  return new Promise((resolve, reject) => {
+    pendingTiles.set(id, { resolve, reject });
+    worker.postMessage({ type: 'tile', id, z, x, y });
+    signal.addEventListener(
+      'abort',
+      () => {
+        if (!pendingTiles.delete(id)) return;
+        worker.postMessage({ type: 'abort', id });
+        reject(new DOMException('Tile request aborted', 'AbortError'));
+      },
+      { once: true }
+    );
+  });
 }
 
 let protocolRegistered = false;
@@ -46,17 +86,7 @@ function registerProtocol() {
   // URL shape: sat-clouds://{version}/{z}/{x}/{y}; the version only busts MapLibre's tile cache.
   maplibregl.addProtocol(PROTOCOL, async (params, abortController) => {
     const [z = 0, x = 0, y = 0] = params.url.split('/').slice(-3).map(Number);
-    const satellites = satellitesForTile(z, x);
-    const sources = await Promise.all(
-      satellites.map((sat) => fetchPixels(gibsTileUrl(sat.layer, z, x, y), abortController.signal))
-    );
-    const pixels = composeCloudTile(z, x, satellites, sources);
-    const image = new ImageData(
-      pixels as Uint8ClampedArray<ArrayBuffer>,
-      GIBS_TILE_SIZE,
-      GIBS_TILE_SIZE
-    );
-    return { data: await createImageBitmap(image) };
+    return { data: await composeTileInWorker(z, x, y, abortController.signal) };
   });
 }
 

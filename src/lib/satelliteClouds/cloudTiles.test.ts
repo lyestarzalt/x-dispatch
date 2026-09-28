@@ -80,6 +80,22 @@ describe('composeCloudTile', () => {
     expect(out[4 + 3]).toBe(0);
   });
 
+  it('decodes EUMETView style_01 colours into cloud alpha', () => {
+    const meteosat = satellitesForTile(3, 4).filter((s) => s.source === 'eumetview');
+    expect(meteosat.map((s) => s.layer)).toEqual(['mtg_fd:ir105_hrfi']);
+    const cold = composeCloudTile(3, 4, meteosat, [solidTile(0x41, 0x34, 0xa8)], SIZE);
+    expect([cold[0], cold[1], cold[2], cold[3]]).toEqual([255, 255, 255, 255]);
+    const warm = composeCloudTile(3, 4, meteosat, [solidTile(0x0a, 0x0a, 0x0a)], SIZE);
+    expect(warm[3]).toBe(0);
+  });
+
+  it('fades cloud out toward the satellite disk edge', () => {
+    const edgeSats = satellitesForTile(3, 3);
+    const out = composeCloudTile(3, 3, edgeSats, [solidTile(255, 0, 0)], SIZE);
+    expect(out[3]).toBe(255);
+    expect(out[(SIZE - 1) * 4 + 3]).toBe(0);
+  });
+
   it('leaves no-data and failed tiles transparent', () => {
     expect(composeCloudTile(3, 6, sats, [solidTile(0, 0, 0, 0)], SIZE)[3]).toBe(0);
     expect(composeCloudTile(3, 6, sats, [null], SIZE)[3]).toBe(0);

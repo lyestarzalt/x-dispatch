@@ -1879,9 +1879,9 @@ app.whenReady().then(async () => {
           "default-src 'self'; " +
             "script-src 'self' 'unsafe-inline'; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; " +
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov;" +
+            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int;" +
             "font-src 'self' data: https://fonts.gstatic.com; " +
-            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov; " +
+            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int; " +
             "worker-src 'self' blob:;",
         ],
       },
