@@ -1875,6 +1875,7 @@
     "waypoint": "Punto de ruta",
     "frequency": "Frecuencia",
     "altitude": "Altitud planificada",
+    "elevation": "Elevación",
     "bearingTrue": "Rumbo (verdadero)",
     "radial": "Radial",
     "distance": "Distancia",
