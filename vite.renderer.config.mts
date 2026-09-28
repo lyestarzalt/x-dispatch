@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig } from 'vite';
-import pkg from './package.json';
-import { pluginExposeRenderer } from './vite.base.config';
+import pkg from './package.json' with { type: 'json' };
+import { pluginExposeRenderer } from './vite.base.config.mts';
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -22,18 +22,12 @@ export default defineConfig((env) => {
       target: 'es2022',
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: 'es2022',
-      },
       // maplibre-gl v6 is ESM-only and loads its worker as a real URL
       // (dist/maplibre-gl-worker.mjs) instead of a blob. Vite's dep
       // pre-bundler rewrites the entry but does not emit that sibling
       // chunk into .vite/deps, so the worker 404s at runtime. Excluding
       // it lets the package resolve its own worker from node_modules.
       exclude: ['maplibre-gl'],
-    },
-    esbuild: {
-      target: 'es2022',
     },
     worker: {
       format: 'es',
@@ -55,8 +49,8 @@ export default defineConfig((env) => {
     resolve: {
       preserveSymlinks: true,
       alias: {
-        '@': path.resolve(__dirname, './src'),
-        '@assets': path.resolve(__dirname, './assets'),
+        '@': path.resolve(import.meta.dirname, './src'),
+        '@assets': path.resolve(import.meta.dirname, './assets'),
       },
     },
     clearScreen: false,
