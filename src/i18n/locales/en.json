@@ -278,6 +278,7 @@
       "cat_deck": "Deck"
     },
     "weather": "Weather",
+    "satelliteClouds": "Satellite Clouds",
     "cityLights": "City Lights",
     "groundWeather": "Ground Weather",
     "simTraffic": "Sim Traffic",

@@ -278,6 +278,7 @@
       "cat_deck": "Pokład"
     },
     "weather": "Pogoda",
+    "satelliteClouds": "Chmury satelitarne",
     "cityLights": "Światła miast",
     "groundWeather": "Pogoda przy ziemi",
     "simTraffic": "Ruch z symulatora",

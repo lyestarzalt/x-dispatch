@@ -278,6 +278,7 @@
       "cat_deck": "Палуба"
     },
     "weather": "Погода",
+    "satelliteClouds": "Спутниковая облачность",
     "cityLights": "Огни городов",
     "groundWeather": "Погода у земли",
     "simTraffic": "Трафик симулятора",

@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Cloud,
   CloudDownload,
   CloudRain,
   Compass,
@@ -408,6 +409,8 @@ function Toolbar({
   const setSimTrafficEnabled = useMapStore((s) => s.setSimTrafficEnabled);
   const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
+  const cloudLayerEnabled = useMapStore((s) => s.cloudLayerEnabled);
+  const setCloudLayerEnabled = useMapStore((s) => s.setCloudLayerEnabled);
   const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
   const setFlightTrailEnabled = useMapStore((s) => s.setFlightTrailEnabled);
   const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
@@ -586,6 +589,7 @@ function Toolbar({
     filtersActive ||
     totalNavItems > 0 ||
     weatherRadarEnabled ||
+    cloudLayerEnabled ||
     vatsimEnabled ||
     ivaoEnabled ||
     rangeRingsEnabled;
@@ -917,6 +921,13 @@ function Toolbar({
               >
                 <CloudRain className="mr-2 h-4 w-4" />
                 {t('toolbar.weather')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={cloudLayerEnabled}
+                onCheckedChange={() => setCloudLayerEnabled(!cloudLayerEnabled)}
+              >
+                <Cloud className="mr-2 h-4 w-4" />
+                {t('toolbar.satelliteClouds')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={dynamicSkyEnabled}

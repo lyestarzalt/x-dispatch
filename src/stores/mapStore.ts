@@ -108,6 +108,7 @@ interface MapState {
   /** When true, map follows plane position and heading */
   followPlane: boolean;
   weatherRadarEnabled: boolean;
+  cloudLayerEnabled: boolean;
   /** Draw the recorded track behind the aircraft. */
   flightTrailEnabled: boolean;
   explore: ExploreState;
@@ -139,6 +140,7 @@ interface MapState {
   setShowPlaneTracker: (enabled: boolean) => void;
   setFollowPlane: (enabled: boolean) => void;
   setWeatherRadarEnabled: (enabled: boolean) => void;
+  setCloudLayerEnabled: (enabled: boolean) => void;
   setFlightTrailEnabled: (enabled: boolean) => void;
   resetLayerVisibility: () => void;
   setAirportFilters: (filters: Partial<AirportFilterState>) => void;
@@ -200,6 +202,7 @@ export const useMapStore = create<MapState>()(
       showPlaneTracker: false,
       followPlane: false,
       weatherRadarEnabled: false,
+      cloudLayerEnabled: false,
       flightTrailEnabled: true,
       explore: {
         isOpen: false,
@@ -284,6 +287,7 @@ export const useMapStore = create<MapState>()(
       setShowPlaneTracker: (enabled) => set({ showPlaneTracker: enabled }),
       setFollowPlane: (enabled) => set({ followPlane: enabled }),
       setWeatherRadarEnabled: (enabled) => set({ weatherRadarEnabled: enabled }),
+      setCloudLayerEnabled: (enabled) => set({ cloudLayerEnabled: enabled }),
       setFlightTrailEnabled: (enabled) => set({ flightTrailEnabled: enabled }),
       resetLayerVisibility: () =>
         set({

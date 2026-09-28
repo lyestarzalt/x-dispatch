@@ -278,6 +278,7 @@
       "cat_deck": "Pont"
     },
     "weather": "Météo",
+    "satelliteClouds": "Nuages satellite",
     "cityLights": "Lumières des villes",
     "groundWeather": "Météo au sol",
     "simTraffic": "Trafic du simulateur",

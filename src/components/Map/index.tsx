@@ -65,6 +65,7 @@ import {
   useVatsimSync,
 } from './hooks';
 import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
+import { useSatelliteClouds } from './hooks/useSatelliteClouds';
 import { useSimTraffic } from './hooks/useSimTraffic';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
 import {
@@ -130,6 +131,7 @@ export default function Map({ airports }: MapProps) {
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const setWeatherRadarEnabled = useMapStore((s) => s.setWeatherRadarEnabled);
+  const cloudLayerEnabled = useMapStore((s) => s.cloudLayerEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
   const showPlaneTracker = useMapStore((s) => s.showPlaneTracker);
@@ -403,6 +405,7 @@ export default function Map({ airports }: MapProps) {
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
+  useSatelliteClouds(mapRef, cloudLayerEnabled);
 
   // Sun-driven scene: one clock feeds the sky lighting and the city lights.
   // Each hook subscribes to the solar store directly, so a tick never

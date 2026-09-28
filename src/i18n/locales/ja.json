@@ -278,6 +278,7 @@
       "cat_deck": "デッキ"
     },
     "weather": "天気",
+    "satelliteClouds": "衛星雲画像",
     "cityLights": "都市の灯り",
     "groundWeather": "地上の天気",
     "simTraffic": "シム内トラフィック",
