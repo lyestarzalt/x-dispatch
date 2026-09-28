@@ -12,6 +12,21 @@ describe('navInfoFromFeature', () => {
     expect(info).toMatchObject({ id: 'DIA', kind: 'VOR-DME', frequency: '114.40 MHz' });
   });
 
+  it('carries the navaid station elevation', () => {
+    const info = navInfoFromFeature(
+      'nav-navaids',
+      { id: 'DIA', type: 'VOR-DME', freqDisplay: '114.40', elevation: 35 },
+      0,
+      0
+    );
+    expect(info?.elevationFt).toBe(35);
+  });
+
+  it('leaves elevation out when the feature has none', () => {
+    const info = navInfoFromFeature('nav-navaids', { id: 'DIA', type: 'VOR-DME' }, 0, 0);
+    expect(info?.elevationFt).toBeUndefined();
+  });
+
   it('keeps kHz for an NDB', () => {
     const info = navInfoFromFeature(
       'nav-navaids',

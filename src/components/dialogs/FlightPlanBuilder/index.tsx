@@ -742,19 +742,17 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </div>
         </ScrollArea>
 
-        <footer className="border-border/30 flex items-center justify-between gap-2 border-t px-4 py-3">
-          <div className="min-w-0">
-            {savedPath && (
-              <Badge
-                variant="success"
-                className="max-w-[12rem] gap-1 truncate font-mono text-[10px]"
-                title={savedPath}
-              >
-                <CheckCircle2 className="h-3 w-3 shrink-0" />
-                {savedPath.split(/[\\/]/).pop()}
-              </Badge>
-            )}
-          </div>
+        <footer className="border-border/30 flex flex-col items-end gap-2 border-t px-4 py-3">
+          {savedPath && (
+            <Badge
+              variant="success"
+              className="max-w-full min-w-0 gap-1 font-mono text-[10px]"
+              title={savedPath}
+            >
+              <CheckCircle2 className="h-3 w-3 shrink-0" />
+              <span className="truncate">{savedPath.split(/[\\/]/).pop()}</span>
+            </Badge>
+          )}
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={startAtDeparture} disabled={!departure}>
               <PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" />

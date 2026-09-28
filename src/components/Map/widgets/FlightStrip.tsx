@@ -28,6 +28,11 @@ function formatHeading(heading: number | undefined): string {
   return normalized.toFixed(0).padStart(3, '0');
 }
 
+function formatNavFrequency(freq: number | undefined): string {
+  if (freq === undefined || isNaN(freq) || freq <= 0) return '---.--';
+  return (freq / 100).toFixed(2);
+}
+
 function formatVS(vs: number | undefined): string {
   if (vs === undefined || isNaN(vs)) return '---';
   const rounded = Math.round(vs / 100) * 100;
@@ -205,7 +210,7 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
                 value={formatHeading(planeState?.heading)}
                 unit="°"
                 valueColor={PRIMARY_COLOR_CLASS}
-                secondary={`${t('flightStrip.crs')} ${formatHeading(planeState?.nav1Course)}°`}
+                secondary={`${t('flightStrip.crs')} ${formatHeading(planeState?.nav1Course)}° · ${t('flightStrip.nav1')} ${formatNavFrequency(planeState?.nav1Frequency)}`}
               />
 
               <GroupSeparator />
