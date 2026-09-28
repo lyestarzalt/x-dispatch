@@ -8,6 +8,10 @@
  * redrawn as white with an alpha that rises as the cloud tops get colder, so
  * the basemap shows through clear sky. The satellites are merged per pixel,
  * each longitude taking the satellite whose sub-point is nearest.
+ *
+ * Known limits: source imagery stops at zoom 6; infrared cannot separate fog
+ * or low warm cloud from the ground, and cold winter ground can read as thin
+ * cloud; clouds render pure white, which is hard to see on light basemaps.
  */
 import { IR_COLORMAP } from './irColormap';
 
@@ -34,6 +38,9 @@ export const GEO_SATELLITES: readonly GeoSatellite[] = [
   { layer: 'GOES-East_ABI_Band13_Clean_Infrared', subLon: -75.2, source: 'gibs' },
   { layer: 'GOES-West_ABI_Band13_Clean_Infrared', subLon: -137.2, source: 'gibs' },
   { layer: 'Himawari_AHI_Band13_Clean_Infrared', subLon: 140.7, source: 'gibs' },
+  // Meteosat IODC (msg_iodc:ir108, 45.5°E) is deliberately absent: its mosaic
+  // uses a different, uncalibrated value scaling (decoded temps never go below
+  // about -22°C), so 70–90°E relies on the MTG/Himawari edge fades instead.
   { layer: 'mtg_fd:ir105_hrfi', subLon: 0, source: 'eumetview' },
 ];
 

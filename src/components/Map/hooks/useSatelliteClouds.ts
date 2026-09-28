@@ -12,6 +12,9 @@ const PROTOCOL = 'sat-clouds';
 const SOURCE_ID = 'satellite-clouds-source';
 const LAYER_ID = 'satellite-clouds-layer';
 const CLOUD_OPACITY = 0.85;
+/** Fade out before airport detail appears at z11+, so clouds never cover it. */
+const FADE_START_ZOOM = 8;
+const HIDE_ZOOM = 10;
 /** GIBS publishes a new geostationary frame every 10 minutes. */
 const REFRESH_INTERVAL = 10 * 60 * 1000;
 const NO_LAYERS: ReadonlySet<string> = new Set();
@@ -111,7 +114,19 @@ function ensureCloudLayer(map: maplibregl.Map, version: number) {
       id: LAYER_ID,
       type: 'raster',
       source: SOURCE_ID,
-      paint: { 'raster-opacity': CLOUD_OPACITY, 'raster-fade-duration': 0 },
+      maxzoom: HIDE_ZOOM,
+      paint: {
+        'raster-opacity': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          FADE_START_ZOOM,
+          CLOUD_OPACITY,
+          HIDE_ZOOM,
+          0,
+        ],
+        'raster-fade-duration': 0,
+      },
     },
     NO_LAYERS
   );
