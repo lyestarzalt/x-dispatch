@@ -13,13 +13,15 @@ const PUBLISH_STEP_MS = 60_000;
  * system clock. Samples every second but publishes only
  * when the clock moved by a minute or the source changed, so a paused sim
  * or a slow real-time crawl costs subscribers nothing. Jumps (time set in
- * the sim, reconnects) publish within a second.
+ * the sim, reconnects) publish within a second. A preview time set on the
+ * store holds the clock still until it is cleared.
  */
 export function useSolarClock(): void {
   useEffect(() => {
     const tick = () => {
-      const candidate = readClock();
       const current = useSolarStore.getState();
+      if (current.previewMs !== null) return;
+      const candidate = readClock();
       const moved = Math.abs(candidate.timeMs - current.timeMs) >= PUBLISH_STEP_MS;
       if (moved || candidate.source !== current.source) {
         current.setClock(candidate.timeMs, candidate.source);

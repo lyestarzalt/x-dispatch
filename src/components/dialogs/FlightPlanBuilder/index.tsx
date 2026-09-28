@@ -54,6 +54,7 @@ import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
 import type { AircraftCategory } from '@/types/xplane';
 import { AirportPicker, toEndpoint } from './AirportPicker';
+import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
 import { RunwaySelect } from './RunwaySelect';
 
@@ -403,6 +404,19 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const fixCount = tokens.filter((tk) => tk.status === 'ok' && tk.kind !== 'airway').length;
   const airwayCount = tokens.filter((tk) => tk.status === 'ok' && tk.kind === 'airway').length;
   const ready = status === 'ready' && result !== null;
+
+  // Departure, resolved en-route fixes and arrival, so the light band follows
+  // the filed route rather than the great circle between the airports.
+  const lightRoutePoints = useMemo(() => {
+    if (!departure || !arrival) return [];
+    const fixes = (result?.enriched.waypoints ?? []).filter(
+      (w) => w.found && Number.isFinite(w.latitude) && Number.isFinite(w.longitude)
+    );
+    return [departure, ...fixes, arrival].map((p) => ({
+      latitude: p.latitude,
+      longitude: p.longitude,
+    }));
+  }, [departure, arrival, result]);
   const hasEndpoints = !!departure && !!arrival;
   const resolving = hasEndpoints && (status === 'resolving' || !result);
 
@@ -739,6 +753,15 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                 <p className="text-muted-foreground text-[11px]">{t('planBuilder.liveHint')}</p>
               </Card>
             </Section>
+
+            {isOpen && ready && departure && arrival && (
+              <LightSection
+                departure={departure}
+                arrival={arrival}
+                routePoints={lightRoutePoints}
+                eteMinutes={estimateMinutes(distanceNm, cls)}
+              />
+            )}
           </div>
         </ScrollArea>
 

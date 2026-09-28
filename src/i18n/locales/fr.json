@@ -134,7 +134,8 @@
     "sections": {
       "airports": "Aéroports",
       "enroute": "En route",
-      "summary": "Croisière et résumé"
+      "summary": "Croisière et résumé",
+      "light": "Jour"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "Afficher sur la carte",
     "save": "Enregistrer dans X-Plane",
     "saved": "Enregistré dans {{path}}",
-    "saveFailed": "Enregistrement impossible : {{error}}"
+    "saveFailed": "Enregistrement impossible : {{error}}",
+    "light": {
+      "phase": {
+        "day": "Jour",
+        "twilight": "Crépuscule",
+        "night": "Nuit"
+      },
+      "takeoff": "Décollage",
+      "now": "Maintenant",
+      "planFor": "Planifier pour",
+      "goal": {
+        "daylight": "Plein jour",
+        "night": "Nuit",
+        "dawnDeparture": "Décollage au lever du soleil",
+        "duskDeparture": "Décollage au coucher du soleil",
+        "dawnArrival": "Atterrissage au lever du soleil",
+        "duskArrival": "Atterrissage au coucher du soleil"
+      },
+      "tomorrow": "Demain",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {

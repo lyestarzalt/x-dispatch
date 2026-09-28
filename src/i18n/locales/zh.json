@@ -134,7 +134,8 @@
     "sections": {
       "airports": "机场",
       "enroute": "航路",
-      "summary": "巡航与摘要"
+      "summary": "巡航与摘要",
+      "light": "光照"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "在地图上显示",
     "save": "保存到 X-Plane",
     "saved": "已保存到 {{path}}",
-    "saveFailed": "无法保存：{{error}}"
+    "saveFailed": "无法保存：{{error}}",
+    "light": {
+      "phase": {
+        "day": "白昼",
+        "twilight": "晨昏",
+        "night": "夜"
+      },
+      "takeoff": "起飞",
+      "now": "现在",
+      "planFor": "规划目标",
+      "goal": {
+        "daylight": "全程白天",
+        "night": "全程夜间",
+        "dawnDeparture": "日出起飞",
+        "duskDeparture": "日落起飞",
+        "dawnArrival": "日出降落",
+        "duskArrival": "日落降落"
+      },
+      "tomorrow": "明天",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {

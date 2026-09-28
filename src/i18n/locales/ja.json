@@ -134,7 +134,8 @@
     "sections": {
       "airports": "空港",
       "enroute": "エンルート",
-      "summary": "巡航と概要"
+      "summary": "巡航と概要",
+      "light": "日照"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "地図に表示",
     "save": "X-Planeに保存",
     "saved": "{{path}} に保存しました",
-    "saveFailed": "保存できませんでした: {{error}}"
+    "saveFailed": "保存できませんでした: {{error}}",
+    "light": {
+      "phase": {
+        "day": "昼",
+        "twilight": "薄明",
+        "night": "夜"
+      },
+      "takeoff": "離陸",
+      "now": "現在",
+      "planFor": "計画目標",
+      "goal": {
+        "daylight": "昼間飛行",
+        "night": "夜間飛行",
+        "dawnDeparture": "日の出に離陸",
+        "duskDeparture": "日没に離陸",
+        "dawnArrival": "日の出に着陸",
+        "duskArrival": "日没に着陸"
+      },
+      "tomorrow": "明日",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {
