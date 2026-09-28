@@ -664,9 +664,12 @@
       "clearCache": "Cache leeren & neu laden",
       "clearingCache": "Wird geleert...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "Benutzerdefinierte Daten",
       "xplaneDefaultLabel": "X-Plane-Standard",
       "customAirportLabel": "Benutzerdefinierter Flughafen",
       "defaultLabel": "Standard",
+      "airacExpired": "Abgelaufen",
+      "airacExpiredTooltip": "Dieser AIRAC-Zyklus endete am {{date}}. Navigationsdaten aktualisieren, um auf dem neuesten Stand zu bleiben.",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live-Flugverkehr aus dem VATSIM-Netzwerk",

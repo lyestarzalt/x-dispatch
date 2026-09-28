@@ -664,9 +664,12 @@
       "clearCache": "Wyczyść pamięć podręczną i przeładuj",
       "clearingCache": "Czyszczenie...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "Dane niestandardowe",
       "xplaneDefaultLabel": "Domyślne X-Plane",
       "customAirportLabel": "Lotnisko niestandardowe",
       "defaultLabel": "Domyślne",
+      "airacExpired": "Wygasły",
+      "airacExpiredTooltip": "Ten cykl AIRAC zakończył się {{date}}. Zaktualizuj dane nawigacyjne, aby zachować aktualność.",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Ruch lotniczy na żywo z sieci VATSIM",

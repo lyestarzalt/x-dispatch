@@ -664,9 +664,12 @@
       "clearCache": "Cancella cache e ricarica",
       "clearingCache": "Cancellazione...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "Dati personalizzati",
       "xplaneDefaultLabel": "Predefinito di X-Plane",
       "customAirportLabel": "Aeroporto personalizzato",
       "defaultLabel": "Predefinito",
+      "airacExpired": "Scaduto",
+      "airacExpiredTooltip": "Questo ciclo AIRAC è terminato il {{date}}. Aggiorna i dati di navigazione per rimanere aggiornato.",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Traffico aereo in tempo reale dalla rete VATSIM",

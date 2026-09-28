@@ -1,16 +1,25 @@
 /**
- * Navigraph/X-Plane cycle info detection and parsing
- * Detects whether nav data comes from Navigraph or X-Plane default
+ * Nav data source and AIRAC cycle detection.
+ *
+ * Sources, in priority order (mirrors how X-Plane itself layers data):
+ *  - 'navigraph':      Custom Data/ files identified by Navigraph's cycle.json
+ *  - 'custom':         Custom Data/ files without cycle.json (e.g. output of
+ *                      Laminar's convert424toxplane tool)
+ *  - 'xplane-default': Resources/default data/ only
+ *
+ * Cycle validity dates are computed from the AIRAC calendar rather than read
+ * from provider files: cycle.json carries no dates, and Navigraph's
+ * cycle_info.txt states it must not be parsed by third-party tools.
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { XPLANE_PATHS } from './paths';
+import { XPLANE_PATHS, getNavDataPath } from './paths';
 
-export type DataSourceType = 'navigraph' | 'xplane-default' | 'unknown';
+export type DataSourceType = 'navigraph' | 'custom' | 'xplane-default' | 'unknown';
 
 export interface DataSourceInfo {
   source: DataSourceType;
-  cycle: string | null; // "2601"
+  cycle: string | null; // "2609"
   revision: string | null; // "1"
   effectiveDate: Date | null;
   expirationDate: Date | null;
@@ -19,7 +28,7 @@ export interface DataSourceInfo {
 }
 
 export interface NavDataSources {
-  global: DataSourceInfo; // Overall source (Navigraph or default)
+  global: DataSourceInfo; // Overall source (Navigraph, custom or default)
   navaids: DataSourceInfo;
   waypoints: DataSourceInfo;
   airways: DataSourceInfo;
@@ -30,174 +39,96 @@ export interface NavDataSources {
   aptMeta: DataSourceInfo | null;
 }
 
+// ============================================================================
+// AIRAC calendar
+// ============================================================================
+
+/** AIRAC 2501 effective date. Cycles run exactly 28 days from this anchor. */
+const AIRAC_EPOCH_UTC = Date.UTC(2025, 0, 23);
+const CYCLE_MS = 28 * 24 * 60 * 60 * 1000;
+
+export interface AiracCycleDates {
+  effectiveDate: Date;
+  expirationDate: Date;
+}
+
 /**
- * Navigraph cycle.json structure
+ * Compute the effective/expiration dates of an AIRAC cycle ("2609") from the
+ * 28-day AIRAC calendar. Returns null for malformed cycle identifiers or
+ * ordinals that don't exist in the given year (most years have 13 cycles,
+ * some 14).
+ */
+export function getAiracCycleDates(cycle: string | null): AiracCycleDates | null {
+  if (!cycle || !/^\d{4}$/.test(cycle)) return null;
+
+  const year = 2000 + parseInt(cycle.slice(0, 2), 10);
+  const ordinal = parseInt(cycle.slice(2, 4), 10);
+  if (ordinal < 1 || ordinal > 14) return null;
+
+  // Find the first cycle whose effective date falls in the target year,
+  // starting from a step count guaranteed to be at or before it.
+  let step = Math.floor((Date.UTC(year, 0, 1) - AIRAC_EPOCH_UTC) / CYCLE_MS) - 1;
+  while (new Date(AIRAC_EPOCH_UTC + step * CYCLE_MS).getUTCFullYear() < year) {
+    step++;
+  }
+
+  const effectiveMs = AIRAC_EPOCH_UTC + (step + ordinal - 1) * CYCLE_MS;
+  const effectiveDate = new Date(effectiveMs);
+  if (effectiveDate.getUTCFullYear() !== year) return null;
+
+  return { effectiveDate, expirationDate: new Date(effectiveMs + CYCLE_MS) };
+}
+
+function buildCycleValidity(cycle: string | null): {
+  effectiveDate: Date | null;
+  expirationDate: Date | null;
+  isExpired: boolean;
+} {
+  const dates = getAiracCycleDates(cycle);
+  if (!dates) {
+    return { effectiveDate: null, expirationDate: null, isExpired: false };
+  }
+  return {
+    effectiveDate: dates.effectiveDate,
+    expirationDate: dates.expirationDate,
+    isExpired: new Date() > dates.expirationDate,
+  };
+}
+
+// ============================================================================
+// Provider detection
+// ============================================================================
+
+/**
+ * Navigraph cycle.json: {"cycle":"2609","revision":"1","name":"X-Plane 12"}
  */
 interface NavigraphCycleJson {
-  cycle: string;
-  revision: string;
-  validFrom: string;
-  validTo: string;
+  cycle?: unknown;
+  revision?: unknown;
 }
 
-/**
- * Parse Navigraph cycle.json file
- */
 function parseNavigraphCycle(xplanePath: string): DataSourceInfo | null {
-  const cycleJsonPath = path.join(xplanePath, 'Custom Data', 'cycle.json');
+  const cycleJsonPath = path.join(xplanePath, XPLANE_PATHS.cycleJson);
 
-  if (!fs.existsSync(cycleJsonPath)) {
-    return null;
-  }
-
+  let data: NavigraphCycleJson;
   try {
-    const content = fs.readFileSync(cycleJsonPath, 'utf-8');
-    const data: NavigraphCycleJson = JSON.parse(content);
-
-    const effectiveDate = new Date(data.validFrom);
-    const expirationDate = new Date(data.validTo);
-    const now = new Date();
-
-    return {
-      source: 'navigraph',
-      cycle: data.cycle,
-      revision: data.revision,
-      effectiveDate,
-      expirationDate,
-      isExpired: now > expirationDate,
-      isCustomData: true,
-    };
+    data = JSON.parse(fs.readFileSync(cycleJsonPath, 'utf-8'));
   } catch {
     return null;
   }
-}
 
-/**
- * Parse cycle_info.txt file (fallback for older formats)
- * Format example:
- * AIRAC cycle    : 2601
- * Revision       : 1
- * Valid (from/to): 22JAN26 - 19FEB26
- */
-function parseCycleInfoTxt(xplanePath: string): Partial<DataSourceInfo> | null {
-  const cycleInfoPath = path.join(xplanePath, 'Custom Data', 'cycle_info.txt');
+  const cycle = typeof data.cycle === 'string' && /^\d{4}$/.test(data.cycle) ? data.cycle : null;
+  if (!cycle) return null;
 
-  if (!fs.existsSync(cycleInfoPath)) {
-    return null;
-  }
+  const revision = typeof data.revision === 'string' ? data.revision : null;
 
-  try {
-    const content = fs.readFileSync(cycleInfoPath, 'utf-8');
-    const result: Partial<DataSourceInfo> = {
-      source: 'navigraph',
-      isCustomData: true,
-    };
-
-    const lines = content.split('\n');
-    for (const line of lines) {
-      const cycleMatch = line.match(/AIRAC cycle\s*:\s*(\d+)/i);
-      if (cycleMatch) {
-        result.cycle = cycleMatch[1];
-      }
-
-      const revisionMatch = line.match(/Revision\s*:\s*(\d+)/i);
-      if (revisionMatch) {
-        result.revision = revisionMatch[1];
-      }
-
-      const dateMatch = line.match(
-        /Valid.*?:\s*(\d{1,2}[A-Z]{3}\d{2})\s*-\s*(\d{1,2}[A-Z]{3}\d{2})/i
-      );
-      if (dateMatch) {
-        const [, fromStr, toStr] = dateMatch;
-        if (fromStr && toStr) {
-          result.effectiveDate = parseAiracDate(fromStr);
-          result.expirationDate = parseAiracDate(toStr);
-          if (result.expirationDate) {
-            result.isExpired = new Date() > result.expirationDate;
-          }
-        }
-      }
-    }
-
-    return result;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Parse AIRAC date format (e.g., "22JAN26")
- */
-function parseAiracDate(dateStr: string): Date | null {
-  const months: Record<string, number> = {
-    JAN: 0,
-    FEB: 1,
-    MAR: 2,
-    APR: 3,
-    MAY: 4,
-    JUN: 5,
-    JUL: 6,
-    AUG: 7,
-    SEP: 8,
-    OCT: 9,
-    NOV: 10,
-    DEC: 11,
-  };
-
-  const match = dateStr.match(/(\d{1,2})([A-Z]{3})(\d{2})/i);
-  if (!match) return null;
-
-  const [, dayStr, monthStr, yearStr] = match;
-  if (!dayStr || !monthStr || !yearStr) return null;
-
-  const day = parseInt(dayStr, 10);
-  const month = months[monthStr.toUpperCase()];
-  const year = 2000 + parseInt(yearStr, 10);
-
-  if (month === undefined || isNaN(day) || isNaN(year)) return null;
-
-  return new Date(year, month, day);
-}
-
-/**
- * Create default X-Plane data source info
- */
-function createDefaultSource(isCustom: boolean): DataSourceInfo {
   return {
-    source: isCustom ? 'unknown' : 'xplane-default',
-    cycle: null,
-    revision: null,
-    effectiveDate: null,
-    expirationDate: null,
-    isExpired: false,
-    isCustomData: isCustom,
+    source: 'navigraph',
+    cycle,
+    revision,
+    ...buildCycleValidity(cycle),
+    isCustomData: true,
   };
-}
-
-/**
- * Check if a specific file exists in Custom Data
- */
-function checkCustomDataExists(xplanePath: string, relativePath: string): boolean {
-  const customPath = relativePath.replace('Resources/default data', 'Custom Data');
-  return fs.existsSync(path.join(xplanePath, customPath));
-}
-
-/**
- * Detect the data source for a specific file type
- */
-function detectFileSource(
-  xplanePath: string,
-  relativePath: string,
-  navigraphInfo: DataSourceInfo | null
-): DataSourceInfo {
-  const isCustom = checkCustomDataExists(xplanePath, relativePath);
-
-  if (isCustom && navigraphInfo) {
-    return { ...navigraphInfo };
-  }
-
-  return createDefaultSource(isCustom);
 }
 
 /** Cycle from a nav data header such as "1200 Version - data cycle 2406, build ...". */
@@ -206,8 +137,7 @@ export function parseDataCycleHeader(header: string): string | null {
   return match?.[1] ?? null;
 }
 
-function readDefaultDataCycle(xplanePath: string): string | null {
-  const navPath = path.join(xplanePath, XPLANE_PATHS.earthNav);
+function readDataCycle(navPath: string): string | null {
   try {
     const fd = fs.openSync(navPath, 'r');
     try {
@@ -223,56 +153,92 @@ function readDefaultDataCycle(xplanePath: string): string | null {
 }
 
 /**
+ * Cycle info for Custom Data files that carry no cycle.json, read from the
+ * custom earth_nav.dat header (XPNAV-format files state their cycle there).
+ */
+function buildCustomSource(xplanePath: string): DataSourceInfo {
+  const cycle = readDataCycle(path.join(xplanePath, XPLANE_PATHS.customNav));
+  return {
+    source: 'custom',
+    cycle,
+    revision: null,
+    ...buildCycleValidity(cycle),
+    isCustomData: true,
+  };
+}
+
+function createDefaultSource(isCustom: boolean): DataSourceInfo {
+  return {
+    source: isCustom ? 'custom' : 'xplane-default',
+    cycle: null,
+    revision: null,
+    effectiveDate: null,
+    expirationDate: null,
+    isExpired: false,
+    isCustomData: isCustom,
+  };
+}
+
+function checkCustomDataExists(xplanePath: string, relativePath: string): boolean {
+  const customPath = relativePath.replace('Resources/default data', 'Custom Data');
+  return fs.existsSync(path.join(xplanePath, customPath));
+}
+
+/**
+ * Detect the data source for a specific file: files present in Custom Data
+ * belong to the active custom layer (Navigraph or converted), everything else
+ * is stock.
+ */
+function detectFileSource(
+  xplanePath: string,
+  relativePath: string,
+  customInfo: DataSourceInfo | null
+): DataSourceInfo {
+  const isCustom = checkCustomDataExists(xplanePath, relativePath);
+
+  if (isCustom && customInfo) {
+    return { ...customInfo };
+  }
+
+  return createDefaultSource(isCustom);
+}
+
+// ============================================================================
+// Detection entry point
+// ============================================================================
+
+/**
  * Detect all data sources in the X-Plane installation
  */
 export function detectAllDataSources(xplanePath: string): NavDataSources {
-  // First, try to parse Navigraph cycle info
-  let navigraphInfo = parseNavigraphCycle(xplanePath);
+  const customNavExists = checkCustomDataExists(xplanePath, XPLANE_PATHS.earthNav);
+  const customFixExists = checkCustomDataExists(xplanePath, XPLANE_PATHS.earthFix);
+  const hasCustomLayer = customNavExists || customFixExists;
 
-  // Fallback to cycle_info.txt
-  if (!navigraphInfo) {
-    const txtInfo = parseCycleInfoTxt(xplanePath);
-    if (txtInfo && txtInfo.source === 'navigraph') {
-      navigraphInfo = {
-        source: 'navigraph',
-        cycle: txtInfo.cycle || null,
-        revision: txtInfo.revision || null,
-        effectiveDate: txtInfo.effectiveDate || null,
-        expirationDate: txtInfo.expirationDate || null,
-        isExpired: txtInfo.isExpired || false,
-        isCustomData: true,
-      };
-    }
+  // Identify the custom layer: Navigraph when cycle.json is present,
+  // otherwise a generic custom install (convert424toxplane, Aerosoft, ...).
+  let customInfo: DataSourceInfo | null = null;
+  if (hasCustomLayer) {
+    customInfo = parseNavigraphCycle(xplanePath) ?? buildCustomSource(xplanePath);
   }
 
-  // Detect each data source
-  const navaids = detectFileSource(xplanePath, XPLANE_PATHS.earthNav, navigraphInfo);
-  const waypoints = detectFileSource(xplanePath, XPLANE_PATHS.earthFix, navigraphInfo);
-  const airways = detectFileSource(xplanePath, XPLANE_PATHS.earthAwy, navigraphInfo);
-  const airspaces = detectFileSource(xplanePath, XPLANE_PATHS.airspaces, navigraphInfo);
+  const navaids = detectFileSource(xplanePath, XPLANE_PATHS.earthNav, customInfo);
+  const waypoints = detectFileSource(xplanePath, XPLANE_PATHS.earthFix, customInfo);
+  const airways = detectFileSource(xplanePath, XPLANE_PATHS.earthAwy, customInfo);
+  const airspaces = detectFileSource(xplanePath, XPLANE_PATHS.airspaces, customInfo);
 
-  // Check for CIFP custom data
-  const cifpCustomExists = fs.existsSync(path.join(xplanePath, 'Custom Data', 'CIFP'));
+  const cifpCustomExists = fs.existsSync(path.join(xplanePath, XPLANE_PATHS.customCifp));
   const procedures =
-    cifpCustomExists && navigraphInfo
-      ? { ...navigraphInfo }
-      : createDefaultSource(cifpCustomExists);
+    cifpCustomExists && customInfo ? { ...customInfo } : createDefaultSource(cifpCustomExists);
 
-  // Check for optional Navigraph-only files
-  const atcPath = path.join(
-    xplanePath,
-    'Custom Data',
-    '1200 atc data',
-    'Earth nav data',
-    'atc.dat'
-  );
-  const atc = fs.existsSync(atcPath) && navigraphInfo ? { ...navigraphInfo } : null;
+  const atcExists = fs.existsSync(path.join(xplanePath, XPLANE_PATHS.atcData));
+  const atc = atcExists && customInfo ? { ...customInfo } : null;
 
   const holdPath = path.join(xplanePath, 'Custom Data', 'earth_hold.dat');
   const defaultHoldPath = path.join(xplanePath, 'Resources', 'default data', 'earth_hold.dat');
   const holdsExist = fs.existsSync(holdPath) || fs.existsSync(defaultHoldPath);
   const holds = holdsExist
-    ? detectFileSource(xplanePath, 'Resources/default data/earth_hold.dat', navigraphInfo)
+    ? detectFileSource(xplanePath, XPLANE_PATHS.earthHold, customInfo)
     : null;
 
   const aptMetaPath = path.join(xplanePath, 'Custom Data', 'earth_aptmeta.dat');
@@ -284,23 +250,19 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
   );
   const aptMetaExists = fs.existsSync(aptMetaPath) || fs.existsSync(defaultAptMetaPath);
   const aptMeta = aptMetaExists
-    ? detectFileSource(xplanePath, 'Resources/default data/earth_aptmeta.dat', navigraphInfo)
+    ? detectFileSource(xplanePath, XPLANE_PATHS.earthAptMeta, customInfo)
     : null;
 
-  // Determine global source. Stock data still has a cycle, stated in the nav file header,
-  // and the .fms export needs it.
-  const hasNavigraph = navigraphInfo !== null && (navaids.isCustomData || waypoints.isCustomData);
-  const global: DataSourceInfo = hasNavigraph
-    ? {
-        source: 'navigraph',
-        cycle: navigraphInfo?.cycle || null,
-        revision: navigraphInfo?.revision || null,
-        effectiveDate: navigraphInfo?.effectiveDate || null,
-        expirationDate: navigraphInfo?.expirationDate || null,
-        isExpired: navigraphInfo?.isExpired || false,
-        isCustomData: true,
-      }
-    : { ...createDefaultSource(false), cycle: readDefaultDataCycle(xplanePath) };
+  // Global source: the custom layer when its core files are in play, else
+  // stock data with the cycle read from the resolved nav file header (stock
+  // data still has a cycle, and the .fms export needs it).
+  let global: DataSourceInfo;
+  if (customInfo && (navaids.isCustomData || waypoints.isCustomData)) {
+    global = { ...customInfo };
+  } else {
+    const cycle = readDataCycle(getNavDataPath(xplanePath));
+    global = { ...createDefaultSource(false), cycle };
+  }
 
   return {
     global,

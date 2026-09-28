@@ -664,9 +664,12 @@
       "clearCache": "Clear Cache & Rechart",
       "clearingCache": "Clearin'...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "Custom charts",
       "xplaneDefaultLabel": "X-Plane default",
       "customAirportLabel": "Custom airfield",
       "defaultLabel": "Default",
+      "airacExpired": "Expired",
+      "airacExpiredTooltip": "This AIRAC cycle ended on {{date}}. Fetch yerself fresh charts ta stay current, matey.",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Live traffic from the VATSIM network",

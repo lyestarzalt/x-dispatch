@@ -664,9 +664,12 @@
       "clearCache": "清除缓存并重新加载",
       "clearingCache": "正在清除...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "自定义数据",
       "xplaneDefaultLabel": "X-Plane 默认",
       "customAirportLabel": "自定义机场",
       "defaultLabel": "默认",
+      "airacExpired": "已过期",
+      "airacExpiredTooltip": "此 AIRAC 周期已于 {{date}} 结束。请更新导航数据以保持最新。",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "来自 VATSIM 网络的实时空中交通",
