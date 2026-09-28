@@ -99,6 +99,13 @@ jobs:
           gh release delete "$NAME" --yes
           echo "- :white_check_mark: Can create releases (checked with a draft)" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: R2 bucket reachable
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/publish-r2.sh check
+
       - name: Mint website sync token
         id: site-token
         continue-on-error: true
@@ -118,10 +125,12 @@ jobs:
             echo "- :warning: Website sync token could not be minted" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          if gh workflow view sync-release.yml --repo lyestarzalt/x-dispatch.app > /dev/null; then
-            echo "- :white_check_mark: Website sync workflow reachable" >> "$GITHUB_STEP_SUMMARY"
-          else
+          if ! WORKFLOW=$(gh workflow view sync-release.yml --repo lyestarzalt/x-dispatch.app --yaml); then
             echo "- :warning: Website sync workflow not reachable" >> "$GITHUB_STEP_SUMMARY"
+          elif ! grep -qE '^\s+source:' <<< "$WORKFLOW"; then
+            echo "- :warning: Website sync workflow has no \`source\` input, it cannot read releases from R2 yet" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- :white_check_mark: Website sync workflow reachable and reads R2" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Discord webhook secret present

@@ -1,0 +1,60 @@
+name: Release Sync Notes
+
+# Run after editing a release body on GitHub: copies the notes to R2 and
+# refreshes the website catalog from there.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag whose notes changed (e.g. v2.2.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync notes for ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read release body
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: gh release view "$TAG" --json body --jq .body > release-notes.md
+
+      - name: Update notes on R2
+        id: r2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/publish-r2.sh notes "${{ inputs.tag }}" release-notes.md
+
+      - name: Mint website sync token
+        id: site-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.X_DISPATCH_APP_ID }}
+          private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
+          owner: lyestarzalt
+          repositories: x-dispatch.app
+
+      - name: Sync website catalog
+        env:
+          GH_TOKEN: ${{ steps.site-token.outputs.token }}
+          TAG: ${{ inputs.tag }}
+          CHANNEL: ${{ steps.r2.outputs.channel }}
+        run: |
+          gh workflow run sync-release.yml \
+            --repo lyestarzalt/x-dispatch.app \
+            -f source_repo="${{ github.repository }}" \
+            -f channel="$CHANNEL" \
+            -f source="r2" \
+            -f tag="$TAG"
+          echo "- :white_check_mark: Website sync dispatched for \`$TAG\` ($CHANNEL)" >> "$GITHUB_STEP_SUMMARY"

@@ -252,6 +252,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Publish release to R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/publish-r2.sh release stable "${{ needs.compute-version.outputs.tag }}" release-assets release-notes.md
+
       - name: Mint website sync token
         id: site-token
         continue-on-error: true
@@ -278,6 +285,7 @@ jobs:
             --repo lyestarzalt/x-dispatch.app \
             -f source_repo="${{ github.repository }}" \
             -f channel="stable" \
+            -f source="r2" \
             -f tag="$TAG"; then
             echo "::warning title=Website sync failed::Dispatch of sync-release.yml failed. The website still points at the previous release."
             echo "- :warning: Website sync **failed** for \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
@@ -295,14 +303,14 @@ jobs:
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: "X-Dispatch ${{ needs.compute-version.outputs.tag }} Released"
-          embed-url: "https://github.com/${{ github.repository }}/releases/tag/${{ needs.compute-version.outputs.tag }}"
+          embed-url: "https://x-dispatch.app/changelog/"
           embed-description: |
             ${{ env.NOTES }}
 
             **Downloads:**
-            - [:apple: macOS (Apple Silicon)](https://github.com/${{ github.repository }}/releases/download/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-mac-apple-silicon.dmg)
-            - [:apple: macOS (Intel)](https://github.com/${{ github.repository }}/releases/download/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-mac-intel.dmg)
-            - [:window: Windows](https://github.com/${{ github.repository }}/releases/download/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-windows-x64.exe)
-            - [:penguin: Linux x64](https://github.com/${{ github.repository }}/releases/download/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-linux-x64.AppImage)
-            - [:penguin: Linux ARM64](https://github.com/${{ github.repository }}/releases/download/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-linux-arm64.AppImage)
+            - [:apple: macOS (Apple Silicon)](https://dl.x-dispatch.app/releases/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-mac-apple-silicon.dmg)
+            - [:apple: macOS (Intel)](https://dl.x-dispatch.app/releases/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-mac-intel.dmg)
+            - [:window: Windows](https://dl.x-dispatch.app/releases/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-windows-x64.exe)
+            - [:penguin: Linux x64](https://dl.x-dispatch.app/releases/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-linux-x64.AppImage)
+            - [:penguin: Linux ARM64](https://dl.x-dispatch.app/releases/${{ needs.compute-version.outputs.tag }}/X-Dispatch-${{ needs.compute-version.outputs.version }}-linux-arm64.AppImage)
           embed-color: 3447003

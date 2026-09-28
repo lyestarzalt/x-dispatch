@@ -15,7 +15,7 @@ import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import path from 'path';
-import { updateElectronApp } from 'update-electron-app';
+import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
@@ -472,37 +472,52 @@ type UpdateCheckResult = {
   url: string;
 };
 
+const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
+const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
 const GITHUB_RELEASES_LATEST_URL =
   'https://api.github.com/repos/lyestarzalt/x-dispatch/releases/latest';
 const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
 
-async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
-  const result = await proxyFetch(GITHUB_RELEASES_LATEST_URL, { timeoutMs: 8_000 });
-  if (!result.data || result.error) {
-    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+async function fetchLatestStableTag(): Promise<string | null> {
+  const r2 = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
+  if (r2.data && !r2.error) {
+    try {
+      const payload = JSON.parse(r2.data) as { tag?: string; channel?: string };
+      if (payload.tag && payload.channel === 'stable') return payload.tag;
+    } catch (err) {
+      logger.main.warn(`Update check: latest.json parse failed: ${(err as Error).message}`);
+    }
   }
+
+  const github = await proxyFetch(GITHUB_RELEASES_LATEST_URL, { timeoutMs: 8_000 });
+  if (!github.data || github.error) return null;
   try {
-    const payload = JSON.parse(result.data) as {
+    const payload = JSON.parse(github.data) as {
       tag_name?: string;
       draft?: boolean;
       prerelease?: boolean;
     };
-    if (payload.draft || payload.prerelease || !payload.tag_name) {
-      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
-    }
-    const latest = payload.tag_name.replace(/^v/, '');
-    const current = app.getVersion();
-    const shouldNotify =
-      isNewerVersion(current, latest) && app.isPackaged && process.platform !== 'win32';
-    return {
-      latestVersion: latest,
-      available: shouldNotify,
-      url: DOWNLOAD_PAGE_URL,
-    };
+    if (payload.draft || payload.prerelease || !payload.tag_name) return null;
+    return payload.tag_name;
   } catch (err) {
-    logger.main.warn(`Update check JSON parse failed: ${(err as Error).message}`);
+    logger.main.warn(`Update check: GitHub response parse failed: ${(err as Error).message}`);
+    return null;
+  }
+}
+
+async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
+  const tag = await fetchLatestStableTag();
+  if (!tag) {
     return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
   }
+  const latest = tag.replace(/^v/, '');
+  const shouldNotify =
+    isNewerVersion(app.getVersion(), latest) && app.isPackaged && process.platform !== 'win32';
+  return {
+    latestVersion: latest,
+    available: shouldNotify,
+    url: DOWNLOAD_PAGE_URL,
+  };
 }
 
 function registerIpcHandlers() {
@@ -1770,6 +1785,10 @@ app.whenReady().then(async () => {
   if (app.isPackaged && process.platform === 'win32') {
     try {
       updateElectronApp({
+        updateSource: {
+          type: UpdateSourceType.StaticStorage,
+          baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
+        },
         updateInterval: '10 minutes',
         notifyUser: true,
         logger: {

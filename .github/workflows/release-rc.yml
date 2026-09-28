@@ -194,7 +194,7 @@ jobs:
       - name: Compose download links
         id: links
         run: |
-          BASE="https://github.com/${{ github.repository }}/releases/download/${{ needs.resolve.outputs.tag }}"
+          BASE="https://dl.x-dispatch.app/releases/${{ needs.resolve.outputs.tag }}"
           VERSION="${{ needs.resolve.outputs.rc_version }}"
           EOF_MARKER=$(openssl rand -hex 16)
           {
@@ -240,6 +240,13 @@ jobs:
             --prerelease \
             --target "${{ github.sha }}"
 
+      - name: Publish release to R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/publish-r2.sh release rc "${{ needs.resolve.outputs.tag }}" release-assets release-notes.md
+
       - name: Mint website sync token
         id: site-token
         continue-on-error: true
@@ -266,6 +273,7 @@ jobs:
             --repo lyestarzalt/x-dispatch.app \
             -f source_repo="${{ github.repository }}" \
             -f channel="rc" \
+            -f source="r2" \
             -f tag="$TAG"; then
             echo "::warning title=Website sync failed::Dispatch of sync-release.yml failed. The website still points at the previous release."
             echo "- :warning: Website sync **failed** for \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
@@ -278,7 +286,7 @@ jobs:
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: "X-Dispatch v${{ needs.resolve.outputs.rc_version }} — Release Candidate"
-          embed-url: "https://github.com/${{ github.repository }}/releases/tag/${{ needs.resolve.outputs.tag }}"
+          embed-url: "https://x-dispatch.app/changelog/"
           embed-description: |
             A new release candidate is available for testing.
 
