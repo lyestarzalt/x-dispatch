@@ -25,6 +25,10 @@ jobs:
         uses: docker://rhysd/actionlint:1.7.7
         with:
           args: -color
+        env:
+          # Keep info-level notes (SC2086 style nits in working release
+          # scripts) out of the gate; warnings and errors still fail.
+          SHELLCHECK_OPTS: --severity=warning
 
   check:
     name: Check
