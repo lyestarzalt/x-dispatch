@@ -35,7 +35,7 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 
 ![Flight Plan Builder](screenshots/flight-planner.png)
 
-Plan a route right on the map: pick departure and arrival, type a route or let auto route find one, choose SID, STAR and approach. Wind suggests the favored runway, an alternate is picked for you, and you get distance, time and fuel estimates as you edit. Save straight to X-Plane as .fms and start at the departure gate.
+Build a route on the map with airways, procedures and fuel estimates, then save it straight to X-Plane.
 
 ## Screenshots
 
