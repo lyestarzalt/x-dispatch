@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { fmsFileStem, serializeFms } from '@/lib/flightplan/builder/fmsWriter';
+import { builtProcedurePaths } from '@/lib/flightplan/builder/legGeometry';
 import {
   type ProcedureParts,
   composePlan,
@@ -231,6 +232,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             runwayEnds,
             firstTurn: sidFirstTurn(procedures.sid),
             initialClimbNm: sidInitialClimbNm(procedures.sid, departure?.runwayEnd?.lengthNm),
+            procedurePaths: builtProcedurePaths(procedures, departure?.runwayEnd),
             alternate: alt,
           }),
         };

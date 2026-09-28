@@ -31,7 +31,17 @@ export interface RunwayEnds {
 export function takeoffPath(end: RunwayEnd, climbOutNm = CLIMB_OUT_NM): LatLon[] {
   const threshold = { latitude: end.latitude, longitude: end.longitude };
   const farEnd = destinationPoint(threshold, end.headingDeg, end.lengthNm);
+  if (climbOutNm < 0.1) return [threshold, farEnd];
   return [threshold, farEnd, destinationPoint(farEnd, end.headingDeg, climbOutNm)];
+}
+
+/** Distance flown along `headingDeg` from `from` before `to` is abeam; negative when behind. */
+function alongTrackNm(from: LatLon, headingDeg: number, to: LatLon): number {
+  const kx = NM_PER_DEG_LAT * Math.cos((from.latitude * Math.PI) / 180);
+  const dx = (to.longitude - from.longitude) * kx;
+  const dy = (to.latitude - from.latitude) * NM_PER_DEG_LAT;
+  const h = (headingDeg * Math.PI) / 180;
+  return dx * Math.sin(h) + dy * Math.cos(h);
 }
 
 export function finalApproachPath(end: RunwayEnd): LatLon[] {
@@ -112,36 +122,115 @@ export function turnOntoFix(
   return out;
 }
 
+/** Pre-built leg geometry to draw in place of the fixes that carry its via name. */
+export interface ProcedurePathHint {
+  via: string;
+  path: LatLon[];
+}
+
+/** Straight climb, clamped so a first fix ahead is not overflown, then the turn onto it. */
+function departureHead(
+  end: RunwayEnd,
+  target: LatLon | undefined,
+  firstTurn?: 'L' | 'R',
+  initialClimbNm?: number
+): LatLon[] {
+  let climb = initialClimbNm ?? CLIMB_OUT_NM;
+  if (target) {
+    // A first fix near the field can sit short of the climb-out; stop the straight
+    // segment a turn radius before it rather than fly past and circle back. A fix
+    // behind the runway is a published turn-back and keeps the full climb.
+    const farEnd = destinationPoint(
+      { latitude: end.latitude, longitude: end.longitude },
+      end.headingDeg,
+      end.lengthNm
+    );
+    const along = alongTrackNm(farEnd, end.headingDeg, target);
+    if (along > 0) climb = Math.min(climb, Math.max(0, along - TERMINAL_TURN_RADIUS_NM));
+  }
+  const takeoff = takeoffPath(end, climb);
+  if (!target) return takeoff;
+  const climbEnd = takeoff[takeoff.length - 1]!;
+  const arc = turnOntoFix(climbEnd, end.headingDeg, target, TERMINAL_TURN_RADIUS_NM, firstTurn);
+  return [...takeoff, ...arc];
+}
+
+function appendDeduped(line: LatLon[], points: LatLon[]): void {
+  for (const p of points) {
+    const last = line[line.length - 1];
+    if (
+      last &&
+      Math.abs(last.latitude - p.latitude) < 1e-7 &&
+      Math.abs(last.longitude - p.longitude) < 1e-7
+    ) {
+      continue;
+    }
+    line.push(p);
+  }
+}
+
 export function routeLinePoints(
   waypoints: RoutePoint[],
   ends?: RunwayEnds,
   firstTurn?: 'L' | 'R',
-  initialClimbNm?: number
+  initialClimbNm?: number,
+  procedurePaths?: ProcedurePathHint[]
 ): LatLon[] {
-  let takeoff: LatLon[] | null = null;
-  const core: LatLon[] = [];
+  // Runs of fixes covered by pre-built leg geometry are drawn as that geometry;
+  // everything else is raw points that get fly-by smoothing.
+  interface Piece {
+    fixed: boolean;
+    pts: LatLon[];
+  }
+  const pathByVia = new Map((procedurePaths ?? []).map((p) => [p.via, p.path]));
+  const pieces: Piece[] = [];
+  const used = new Set<string>();
+  let departs = false;
   for (const wp of waypoints) {
     if (wp.via === 'ADEP' && ends?.departure) {
-      takeoff = takeoffPath(ends.departure, initialClimbNm ?? CLIMB_OUT_NM);
-    } else if (wp.via === 'ADES' && ends?.arrival) {
-      core.push(...finalApproachPath(ends.arrival));
-    } else {
-      core.push({ latitude: wp.latitude, longitude: wp.longitude });
+      departs = true;
+      continue;
     }
+    const path = wp.via ? pathByVia.get(wp.via) : undefined;
+    if (path && path.length > 1) {
+      if (!used.has(wp.via!)) {
+        used.add(wp.via!);
+        pieces.push({ fixed: true, pts: path });
+      }
+      continue;
+    }
+    const pts =
+      wp.via === 'ADES' && ends?.arrival
+        ? finalApproachPath(ends.arrival)
+        : [{ latitude: wp.latitude, longitude: wp.longitude }];
+    const last = pieces[pieces.length - 1];
+    if (last && !last.fixed) last.pts.push(...pts);
+    else pieces.push({ fixed: false, pts: [...pts] });
   }
 
-  if (!takeoff || !ends?.departure) return smoothRoutePath(core, ENROUTE_TURN_RADIUS_NM);
-  if (core.length === 0) return takeoff;
-
-  const climbEnd = takeoff[takeoff.length - 1]!;
-  const arc = turnOntoFix(
-    climbEnd,
-    ends.departure.headingDeg,
-    core[0]!,
-    TERMINAL_TURN_RADIUS_NM,
-    firstTurn
-  );
-  const head = [...takeoff, ...arc];
-  const tail = smoothRoutePath([head[head.length - 1]!, ...core], ENROUTE_TURN_RADIUS_NM);
-  return [...head, ...tail.slice(1)];
+  const line: LatLon[] = [];
+  if (departs && ends?.departure) {
+    if (pieces[0]?.fixed) {
+      // The SID geometry starts at the runway far end; only the roll is added.
+      line.push({ latitude: ends.departure.latitude, longitude: ends.departure.longitude });
+    } else {
+      appendDeduped(
+        line,
+        departureHead(ends.departure, pieces[0]?.pts[0], firstTurn, initialClimbNm)
+      );
+    }
+  }
+  for (let i = 0; i < pieces.length; i++) {
+    const piece = pieces[i]!;
+    if (piece.fixed) {
+      appendDeduped(line, piece.pts);
+      continue;
+    }
+    const prev = line[line.length - 1];
+    const nextFixed = pieces[i + 1]?.fixed ? pieces[i + 1]!.pts[0] : undefined;
+    const input = [...(prev ? [prev] : []), ...piece.pts, ...(nextFixed ? [nextFixed] : [])];
+    const smoothed = smoothRoutePath(input, ENROUTE_TURN_RADIUS_NM);
+    appendDeduped(line, smoothed.slice(prev ? 1 : 0, nextFixed ? smoothed.length - 1 : undefined));
+  }
+  return line;
 }

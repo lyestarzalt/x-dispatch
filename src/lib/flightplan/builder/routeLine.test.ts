@@ -73,6 +73,27 @@ describe('routeLinePoints', () => {
     }
   });
 
+  it('draws pre-built procedure geometry in place of its fixes', () => {
+    const sidPath = [
+      { latitude: 52.005, longitude: 4.03 },
+      { latitude: 52.01, longitude: 4.1 },
+      { latitude: 52.05, longitude: 4.2 },
+    ];
+    const wps = [
+      { via: 'ADEP', latitude: 52.01, longitude: 4.01 },
+      { via: 'WOOD1S', latitude: 52.01, longitude: 4.1 },
+      { via: 'WOOD1S', latitude: 52.05, longitude: 4.2 },
+      { via: 'UL620', latitude: 52.2, longitude: 4.8 },
+    ];
+    const line = routeLinePoints(wps, { departure: RWY_09 }, undefined, undefined, [
+      { via: 'WOOD1S', path: sidPath },
+    ]);
+    // Threshold, then the path verbatim, then the enroute fix.
+    expect(line[0]).toEqual({ latitude: 52, longitude: 4 });
+    expect(line.slice(1, 4)).toEqual(sidPath);
+    expect(line[line.length - 1]).toEqual({ latitude: 52.2, longitude: 4.8 });
+  });
+
   it('joins a straight final onto the arrival threshold', () => {
     const wps = [
       { via: 'FIX', latitude: 50.5, longitude: 7 },
