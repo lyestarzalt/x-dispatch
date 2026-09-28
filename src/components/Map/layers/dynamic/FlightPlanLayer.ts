@@ -213,7 +213,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
           waypoints,
           fmsData.runwayEnds,
           fmsData.firstTurn,
-          fmsData.initialClimbNm
+          fmsData.initialClimbNm,
+          fmsData.procedurePaths
         ).map((p) => [p.longitude, p.latitude]),
       },
       properties: { stage: '' },

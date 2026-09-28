@@ -120,6 +120,8 @@ export interface EnrichedFlightPlan {
   firstTurn?: 'L' | 'R';
   /** Straight climb after the runway end before that turn, from the SID's course legs. */
   initialClimbNm?: number;
+  /** Leg-by-leg geometry per chosen procedure, drawn in place of its fixes. */
+  procedurePaths?: { via: string; path: { latitude: number; longitude: number }[] }[];
 
   // Resolution summary
   resolution: {

@@ -50,7 +50,9 @@ const sid: ResolvedProcedure = {
   transition: null,
   waypoints: [
     wp('RW36L', 52.31, 4.76, { fixType: 'C' }),
-    wp('EH020', 52.2, 5.0, { altitude: { descriptor: '+', altitude1: 60, altitude2: null } }),
+    wp('EH020', 52.2, 5.0, {
+      altitude: { descriptor: '+', altitude1: 6000, altitude2: null, isFlightLevel: true },
+    }),
     wp('ARNEM', 51.98, 5.79),
   ],
 };
@@ -115,6 +117,22 @@ describe('composePlan', () => {
     expect(sidInitialClimbNm(gilon, 1.5)).toBeCloseTo(7.75, 2);
     expect(sidInitialClimbNm(sid)).toBeUndefined();
     expect(sidFirstTurn(gilon)).toBe('L');
+  });
+
+  it('ignores a turn direction published on a leg after the first fix', () => {
+    // EHEH WOOD1S: straight ahead to EH597, then a right turn at it. Forcing that
+    // R onto the initial turn wrapped the line most of the way around the circle.
+    const wood: ResolvedProcedure = {
+      type: 'SID',
+      name: 'WOOD1S',
+      runway: 'RW21',
+      transition: null,
+      waypoints: [
+        wp('EH597', 51.435, 5.358, { pathTerminator: 'CF' }),
+        wp('EH598', 51.48, 5.31, { pathTerminator: 'CF', turnDirection: 'R' }),
+      ],
+    };
+    expect(sidFirstTurn(wood)).toBeUndefined();
   });
 
   it('leaves the plan untouched with no procedures', () => {

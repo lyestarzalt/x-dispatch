@@ -61,32 +61,27 @@ function fmsType(wp: ResolvedProcedureWaypoint): FMSWaypointType {
   return 11;
 }
 
-/** Constraint altitudes under 1000 are flight levels in CIFP. */
-function toFeet(alt: number): number {
-  return alt < 1000 ? alt * 100 : alt;
-}
-
 function constraintFeet(wp: ResolvedProcedureWaypoint): number {
-  const alt = wp.altitude?.altitude1;
-  return alt === null || alt === undefined ? 0 : toFeet(alt);
+  return wp.altitude?.altitude1 ?? 0;
 }
 
-function altitudeText(alt: number): string {
-  return alt < 1000 ? `FL${alt}` : String(alt);
+function altitudeText(alt: number, isFlightLevel: boolean): string {
+  return isFlightLevel ? `FL${Math.round(alt / 100)}` : String(alt);
 }
 
 /** Chart shorthand: A is at or above, B at or below, a bare number is at. */
 export function constraintLabel(wp: ResolvedProcedureWaypoint): string {
   const c = wp.altitude;
   if (!c || c.altitude1 === null) return '';
-  const a1 = altitudeText(c.altitude1);
+  const fl = c.isFlightLevel ?? false;
+  const a1 = altitudeText(c.altitude1, fl);
   switch (c.descriptor) {
     case '+':
       return `${a1}A`;
     case '-':
       return `${a1}B`;
     case 'B':
-      return c.altitude2 === null ? a1 : `${altitudeText(c.altitude2)}A/${a1}B`;
+      return c.altitude2 === null ? a1 : `${altitudeText(c.altitude2, fl)}A/${a1}B`;
     default:
       return a1;
   }
@@ -116,9 +111,26 @@ export function procedureJoins(
   return [...seen.values()];
 }
 
-/** Published direction of the first turn after take-off, if the SID says. */
+/**
+ * Published direction of the first turn after take-off, if the SID says. Only
+ * legs up to the first drawable fix count: a turn published on a later leg
+ * belongs to that leg, and forcing it onto the initial turn can wrap the line
+ * most of the way around the turn circle.
+ */
 export function sidFirstTurn(sid: ResolvedProcedure | undefined): 'L' | 'R' | undefined {
-  return sid?.waypoints.find((wp) => wp.turnDirection !== null)?.turnDirection ?? undefined;
+  if (!sid) return undefined;
+  for (const wp of sid.waypoints) {
+    if (wp.turnDirection !== null) return wp.turnDirection;
+    if (
+      wp.fixType !== 'C' &&
+      wp.fixType !== 'A' &&
+      FLY_TO_TERMINATORS.has(wp.pathTerminator) &&
+      wp.resolved
+    ) {
+      return undefined;
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -167,7 +179,7 @@ export function sidInitialClimbNm(
       case 'FA': {
         const alt = wp.altitude?.altitude1;
         if (alt !== null && alt !== undefined) {
-          total += toFeet(alt) / CLIMB_FT_PER_NM;
+          total += alt / CLIMB_FT_PER_NM;
           found = true;
         }
         break;
@@ -347,6 +359,7 @@ export interface DrawingHints {
   runwayEnds?: EnrichedFlightPlan['runwayEnds'];
   firstTurn?: EnrichedFlightPlan['firstTurn'];
   initialClimbNm?: EnrichedFlightPlan['initialClimbNm'];
+  procedurePaths?: EnrichedFlightPlan['procedurePaths'];
   alternate?: EnrichedFlightPlan['alternate'];
 }
 
