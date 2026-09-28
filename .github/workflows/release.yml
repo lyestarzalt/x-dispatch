@@ -213,12 +213,14 @@ jobs:
           # Collapsed copy of the generated commit list. The section above it
           # gets rewritten into plain-language notes after publishing (the
           # website shows that part), this copy keeps the commit and PR links.
+          # Headings are demoted to #### so the website's section parser only
+          # matches the plain-language part.
           {
             echo ""
             echo "<details>"
             echo "<summary>All changes</summary>"
             echo ""
-            tail -n +2 release-notes.md
+            tail -n +2 release-notes.md | sed 's/^### /#### /'
             echo ""
             echo "</details>"
           } > commit-details.md
