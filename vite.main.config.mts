@@ -2,8 +2,8 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig, mergeConfig } from 'vite';
-import pkg from './package.json';
-import { external, getBuildConfig, getBuildDefine, pluginHotRestart } from './vite.base.config';
+import pkg from './package.json' with { type: 'json' };
+import { external, getBuildConfig, getBuildDefine, pluginHotRestart } from './vite.base.config.mts';
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -41,7 +41,7 @@ export default defineConfig((env) => {
       // Load the Node.js entry.
       mainFields: ['module', 'jsnext:main', 'jsnext'],
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(import.meta.dirname, './src'),
       },
     },
   };

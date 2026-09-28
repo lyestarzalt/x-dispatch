@@ -1,9 +1,26 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
-import type { ConfigEnv, UserConfig } from 'vite';
+import type { ConfigEnv, Plugin, UserConfig } from 'vite';
 import { defineConfig, mergeConfig } from 'vite';
-import pkg from './package.json';
-import { external, getBuildConfig, pluginHotRestart } from './vite.base.config';
+import pkg from './package.json' with { type: 'json' };
+import { external, getBuildConfig, pluginHotRestart } from './vite.base.config.mts';
+
+// @electron-forge/plugin-vite merges `inlineDynamicImports: true` into the
+// preload output; rolldown deprecated that option in favor of
+// `codeSplitting: false`, so swap it after the merge to keep the single-file
+// output without the startup warning.
+function pluginSingleChunkOutput(): Plugin {
+  return {
+    name: 'x-dispatch:single-chunk-output',
+    config(config) {
+      const output = config.build?.rollupOptions?.output;
+      for (const o of Array.isArray(output) ? output : output ? [output] : []) {
+        delete (o as Record<string, unknown>).inlineDynamicImports;
+        (o as Record<string, unknown>).codeSplitting = false;
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -18,8 +35,6 @@ export default defineConfig((env) => {
         input: forgeConfigSelf.entry!,
         output: {
           format: 'cjs',
-          // It should not be split chunks.
-          codeSplitting: false,
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
           assetFileNames: '[name].[ext]',
@@ -28,6 +43,7 @@ export default defineConfig((env) => {
       sourcemap: 'hidden',
     },
     plugins: [
+      pluginSingleChunkOutput(),
       pluginHotRestart('reload'),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -42,7 +58,7 @@ export default defineConfig((env) => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(import.meta.dirname, './src'),
       },
     },
   };
