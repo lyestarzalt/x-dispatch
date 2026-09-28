@@ -9,7 +9,6 @@ import { useAppVersion, useConfigPath, useLogPath, useUpdateCheck } from '@/quer
 import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
-const GITHUB_REPO = 'https://github.com/lyestarzalt/x-dispatch';
 const PROJECT_WEBSITE = 'https://x-dispatch.app/';
 const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
@@ -97,7 +96,6 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           <h3 className="xp-section-heading">{t('settings.about.links')}</h3>
           <div className="space-y-1">
             <SettingsLinkRow label={t('settings.about.website')} href={PROJECT_WEBSITE} />
-            <SettingsLinkRow label={t('settings.about.sourceCode')} href={GITHUB_REPO} />
             <SettingsLinkRow
               label={t('settings.about.supportProject')}
               href={KOFI_URL}
