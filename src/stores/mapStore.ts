@@ -28,6 +28,8 @@ export interface NavInfoSelection {
   frequency?: string;
   /** Planned altitude or constraint of a flight plan waypoint. */
   altitudeLabel?: string;
+  /** Station elevation of a navaid, feet MSL. */
+  elevationFt?: number;
   latitude: number;
   longitude: number;
 }
