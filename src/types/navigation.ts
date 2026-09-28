@@ -277,8 +277,10 @@ export type AltitudeDescriptor =
  */
 export interface AltitudeConstraint {
   descriptor: AltitudeDescriptor;
-  altitude1: number | null; // Primary altitude (ft or FL)
-  altitude2: number | null; // Secondary altitude (for 'B' between constraint)
+  altitude1: number | null; // Primary altitude, always feet
+  altitude2: number | null; // Secondary altitude (for 'B' between constraint), always feet
+  /** The source encoded a flight level ("FL060"), shown as FL60 on charts. */
+  isFlightLevel?: boolean;
 }
 
 /**

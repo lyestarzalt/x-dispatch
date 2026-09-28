@@ -140,15 +140,19 @@ function parseTurnDirection(value: string): TurnDirection | null {
  * Parse altitude constraint from CIFP fields
  */
 function parseAltitude(descriptor: string, alt1Str: string): AltitudeConstraint | null {
-  if (!alt1Str || alt1Str.trim() === '') return null;
+  const raw = alt1Str.trim();
+  if (!raw) return null;
 
-  const alt1 = parseInt(alt1Str, 10);
-  if (isNaN(alt1)) return null;
+  // Altitudes are feet ("00500") or an explicit flight level ("FL060").
+  const isFlightLevel = raw.startsWith('FL');
+  const value = parseInt(isFlightLevel ? raw.slice(2) : raw, 10);
+  if (isNaN(value)) return null;
 
   return {
     descriptor: parseAltitudeDescriptor(descriptor),
-    altitude1: alt1,
+    altitude1: isFlightLevel ? value * 100 : value,
     altitude2: null,
+    isFlightLevel,
   };
 }
 

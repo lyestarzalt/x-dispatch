@@ -163,9 +163,8 @@ function formatAltitudeConstraint(alt: AltitudeConstraint | null | undefined): s
   const alt1 = alt.altitude1;
   const alt2 = alt.altitude2;
 
-  // Format altitude (FL for >= 18000, otherwise feet)
   const formatAlt = (a: number): string => {
-    if (a >= 18000) {
+    if (alt.isFlightLevel || a >= 18000) {
       return `FL${Math.round(a / 100)}`;
     }
     return `${a}'`;
