@@ -278,6 +278,7 @@
       "cat_deck": "甲板"
     },
     "weather": "天气",
+    "satelliteClouds": "卫星云图",
     "cityLights": "城市灯光",
     "groundWeather": "地面天气",
     "simTraffic": "模拟器交通",

@@ -278,6 +278,7 @@
       "cat_deck": "Cubierta"
     },
     "weather": "Meteorología",
+    "satelliteClouds": "Nubes por satélite",
     "cityLights": "Luces de ciudades",
     "groundWeather": "Clima en tierra",
     "simTraffic": "Tráfico del simulador",

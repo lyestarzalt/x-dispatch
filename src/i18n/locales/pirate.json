@@ -278,6 +278,7 @@
       "cat_deck": "The Deck"
     },
     "weather": "Skies",
+    "satelliteClouds": "Clouds from the Heavens",
     "cityLights": "Town Lanterns",
     "groundWeather": "Weather on Deck",
     "simTraffic": "Sim Fleet",

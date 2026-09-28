@@ -278,6 +278,7 @@
       "cat_deck": "Deck"
     },
     "weather": "Wetter",
+    "satelliteClouds": "Satellitenwolken",
     "cityLights": "Stadtlichter",
     "groundWeather": "Bodenwetter",
     "simTraffic": "Sim-Verkehr",
