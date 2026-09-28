@@ -45,7 +45,12 @@ MUTABLE="public, max-age=60, must-revalidate"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-s3() { aws s3 --endpoint-url "$ENDPOINT" --only-show-errors "$@"; }
+s3() {
+  local cmd="$1"
+  shift
+  [ "$cmd" = "cp" ] && set -- --only-show-errors "$@"
+  aws s3 "$cmd" --endpoint-url "$ENDPOINT" "$@"
+}
 
 put() {
   local src="$1" key="$2" cache="$3" type="${4:-}"
