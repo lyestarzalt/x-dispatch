@@ -67,6 +67,7 @@ const STATE_DATAREF_NAMES = [
   'sim/cockpit2/autopilot/airspeed_is_mach',
   'sim/cockpit2/autopilot/vvi_dial_fpm',
   'sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot',
+  'sim/cockpit2/radios/actuators/nav1_frequency_hz',
 ];
 
 /** Byte-array datarefs, base64 on the wire, decoded into plane state strings. */
@@ -156,6 +157,7 @@ const DATAREF_MAPPING: Record<string, keyof PlaneState> = {
   'sim/cockpit2/autopilot/airspeed_dial_kts_mach': 'apAirspeed',
   'sim/cockpit2/autopilot/vvi_dial_fpm': 'apVerticalSpeed',
   'sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot': 'nav1Course',
+  'sim/cockpit2/radios/actuators/nav1_frequency_hz': 'nav1Frequency',
 };
 
 type WsState = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';

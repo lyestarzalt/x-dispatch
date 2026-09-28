@@ -52,6 +52,8 @@ export interface PlaneState extends Coordinates {
   apVerticalSpeed?: number;
   /** NAV1 OBS course, degrees magnetic. */
   nav1Course?: number;
+  /** NAV1 active frequency in tens of kHz, so 11030 is 110.30 MHz. */
+  nav1Frequency?: number;
   aircraftCategory: AircraftCategory | null;
   /** Simulator clock: seconds since midnight UTC. Absent until the first sample arrives. */
   simZuluTimeSec?: number;
