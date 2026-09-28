@@ -2,14 +2,18 @@
  * Nav data source and AIRAC cycle detection.
  *
  * Sources, in priority order (mirrors how X-Plane itself layers data):
- *  - 'navigraph':      Custom Data/ files identified by Navigraph's cycle.json
- *  - 'custom':         Custom Data/ files without cycle.json (e.g. output of
- *                      Laminar's convert424toxplane tool)
+ *  - 'navigraph':      Custom Data/ whose earth_nav.dat header names Navigraph
+ *  - 'custom':         any other Custom Data/ (XPNavData, convert424toxplane
+ *                      output, ...), with the provider name from the header
+ *                      when it is a known one
  *  - 'xplane-default': Resources/default data/ only
  *
- * Cycle validity dates are computed from the AIRAC calendar rather than read
- * from provider files: cycle.json carries no dates, and Navigraph's
- * cycle_info.txt states it must not be parsed by third-party tools.
+ * The provider is identified from the nav file header's free text, not from
+ * cycle.json: XPNavData ships a cycle.json with the exact same shape as
+ * Navigraph's, so that file only tells us the cycle and revision. Cycle
+ * validity dates are computed from the AIRAC calendar rather than read from
+ * provider files: cycle.json carries no dates, and Navigraph's cycle_info.txt
+ * states it must not be parsed by third-party tools.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -19,6 +23,8 @@ export type DataSourceType = 'navigraph' | 'custom' | 'xplane-default' | 'unknow
 
 export interface DataSourceInfo {
   source: DataSourceType;
+  /** Display name from the nav header ("Navigraph", "XPNavData"), null if unknown */
+  provider: string | null;
   cycle: string | null; // "2609"
   revision: string | null; // "1"
   effectiveDate: Date | null;
@@ -100,17 +106,18 @@ function buildCycleValidity(cycle: string | null): {
 // ============================================================================
 
 /**
- * Navigraph cycle.json: {"cycle":"2609","revision":"1","name":"X-Plane 12"}
+ * cycle.json, shipped by Navigraph and XPNavData alike:
+ * {"cycle":"2610","revision":"1","name":"X-Plane 12"}
  */
-interface NavigraphCycleJson {
+interface CycleJson {
   cycle?: unknown;
   revision?: unknown;
 }
 
-function parseNavigraphCycle(xplanePath: string): DataSourceInfo | null {
+function parseCycleJson(xplanePath: string): { cycle: string; revision: string | null } | null {
   const cycleJsonPath = path.join(xplanePath, XPLANE_PATHS.cycleJson);
 
-  let data: NavigraphCycleJson;
+  let data: CycleJson;
   try {
     data = JSON.parse(fs.readFileSync(cycleJsonPath, 'utf-8'));
   } catch {
@@ -120,15 +127,7 @@ function parseNavigraphCycle(xplanePath: string): DataSourceInfo | null {
   const cycle = typeof data.cycle === 'string' && /^\d{4}$/.test(data.cycle) ? data.cycle : null;
   if (!cycle) return null;
 
-  const revision = typeof data.revision === 'string' ? data.revision : null;
-
-  return {
-    source: 'navigraph',
-    cycle,
-    revision,
-    ...buildCycleValidity(cycle),
-    isCustomData: true,
-  };
+  return { cycle, revision: typeof data.revision === 'string' ? data.revision : null };
 }
 
 /** Cycle from a nav data header such as "1200 Version - data cycle 2406, build ...". */
@@ -137,31 +136,53 @@ export function parseDataCycleHeader(header: string): string | null {
   return match?.[1] ?? null;
 }
 
-function readDataCycle(navPath: string): string | null {
+/**
+ * Providers we can name from the header's free text. Verified samples:
+ *   Navigraph: "... metadata NavXP1200. Copyright (c) 2025 Navigraph, Datasource Jeppesen"
+ *   XPNavData: "... metadata NavXP1200. KEYVAN HAVACILIK / APPEED XPNavData - 2610"
+ */
+const KNOWN_PROVIDERS: Array<{ pattern: RegExp; name: string }> = [
+  { pattern: /navigraph/i, name: 'Navigraph' },
+  { pattern: /xpnavdata/i, name: 'XPNavData' },
+];
+
+export function parseProviderFromHeader(header: string): string | null {
+  for (const provider of KNOWN_PROVIDERS) {
+    if (provider.pattern.test(header)) return provider.name;
+  }
+  return null;
+}
+
+function readNavHeader(navPath: string): { cycle: string | null; provider: string | null } {
   try {
     const fd = fs.openSync(navPath, 'r');
     try {
       const buffer = Buffer.alloc(512);
       const read = fs.readSync(fd, buffer, 0, buffer.length, 0);
-      return parseDataCycleHeader(buffer.toString('utf-8', 0, read));
+      const header = buffer.toString('utf-8', 0, read);
+      return { cycle: parseDataCycleHeader(header), provider: parseProviderFromHeader(header) };
     } finally {
       fs.closeSync(fd);
     }
   } catch {
-    return null;
+    return { cycle: null, provider: null };
   }
 }
 
 /**
- * Cycle info for Custom Data files that carry no cycle.json, read from the
- * custom earth_nav.dat header (XPNAV-format files state their cycle there).
+ * Identity of the Custom Data layer: provider from the earth_nav.dat header,
+ * cycle and revision from cycle.json when present, else from the header.
  */
-function buildCustomSource(xplanePath: string): DataSourceInfo {
-  const cycle = readDataCycle(path.join(xplanePath, XPLANE_PATHS.customNav));
+function buildCustomLayerInfo(xplanePath: string): DataSourceInfo {
+  const header = readNavHeader(path.join(xplanePath, XPLANE_PATHS.customNav));
+  const cycleJson = parseCycleJson(xplanePath);
+  const cycle = cycleJson?.cycle ?? header.cycle;
+
   return {
-    source: 'custom',
+    source: header.provider === 'Navigraph' ? 'navigraph' : 'custom',
+    provider: header.provider,
     cycle,
-    revision: null,
+    revision: cycleJson?.revision ?? null,
     ...buildCycleValidity(cycle),
     isCustomData: true,
   };
@@ -170,6 +191,7 @@ function buildCustomSource(xplanePath: string): DataSourceInfo {
 function createDefaultSource(isCustom: boolean): DataSourceInfo {
   return {
     source: isCustom ? 'custom' : 'xplane-default',
+    provider: null,
     cycle: null,
     revision: null,
     effectiveDate: null,
@@ -215,12 +237,9 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
   const customFixExists = checkCustomDataExists(xplanePath, XPLANE_PATHS.earthFix);
   const hasCustomLayer = customNavExists || customFixExists;
 
-  // Identify the custom layer: Navigraph when cycle.json is present,
-  // otherwise a generic custom install (convert424toxplane, Aerosoft, ...).
-  let customInfo: DataSourceInfo | null = null;
-  if (hasCustomLayer) {
-    customInfo = parseNavigraphCycle(xplanePath) ?? buildCustomSource(xplanePath);
-  }
+  const customInfo: DataSourceInfo | null = hasCustomLayer
+    ? buildCustomLayerInfo(xplanePath)
+    : null;
 
   const navaids = detectFileSource(xplanePath, XPLANE_PATHS.earthNav, customInfo);
   const waypoints = detectFileSource(xplanePath, XPLANE_PATHS.earthFix, customInfo);
@@ -260,7 +279,7 @@ export function detectAllDataSources(xplanePath: string): NavDataSources {
   if (customInfo && (navaids.isCustomData || waypoints.isCustomData)) {
     global = { ...customInfo };
   } else {
-    const cycle = readDataCycle(getNavDataPath(xplanePath));
+    const cycle = readNavHeader(getNavDataPath(xplanePath)).cycle;
     global = { ...createDefaultSource(false), cycle };
   }
 
