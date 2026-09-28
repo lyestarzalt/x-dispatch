@@ -28,7 +28,7 @@ import { useLoadingStatus } from '@/queries';
 import { SettingsHeader, SettingsSectionBlock } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
-type SourceType = 'navigraph' | 'xplane-default' | 'custom-scenery' | 'unknown';
+type SourceType = 'navigraph' | 'custom' | 'xplane-default' | 'custom-scenery' | 'unknown';
 type SettingsDataLoadStatus = NonNullable<
   Awaited<ReturnType<typeof window.appAPI.getLoadingStatus>>['status']
 >;
@@ -45,10 +45,12 @@ interface DataRowProps {
 
 function getSourceLabelKey(sourceType: SourceType | undefined, source: string | null): string {
   if (sourceType === 'navigraph') return 'settings.navigation.navigraphLabel';
+  if (sourceType === 'custom') return 'settings.navigation.customDataLabel';
   if (sourceType === 'xplane-default') return 'settings.navigation.xplaneDefaultLabel';
   if (sourceType === 'custom-scenery') return 'settings.navigation.customAirportLabel';
-  // Fallback: detect from path
-  if (source?.includes('Custom Data')) return 'settings.navigation.navigraphLabel';
+  // Fallback: detect from path. Custom Data without a known provider gets the
+  // generic label — only cycle.json identifies Navigraph.
+  if (source?.includes('Custom Data')) return 'settings.navigation.customDataLabel';
   if (source?.includes('Custom Scenery')) return 'settings.navigation.customAirportLabel';
   if (source?.includes('default data')) return 'settings.navigation.xplaneDefaultLabel';
   return 'settings.navigation.defaultLabel';
@@ -94,7 +96,6 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
   const [isClearing, setIsClearing] = useState(false);
 
   const globalSource = dataStatus?.sources?.global;
-  const isNavigraph = globalSource?.source === 'navigraph';
   const airportBreakdown = dataStatus?.airports?.breakdown;
 
   const handleClearCache = async () => {
@@ -178,16 +179,33 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
       >
         {globalSource && (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              {isNavigraph
-                ? t('settings.navigation.navigraphLabel')
-                : t('settings.navigation.xplaneDefaultLabel')}
-            </Badge>
+            <Badge variant="secondary">{t(getSourceLabelKey(globalSource.source, null))}</Badge>
             {globalSource.cycle && (
               <span className="text-muted-foreground font-mono text-sm">
                 AIRAC {globalSource.cycle}
                 {globalSource.revision && `.${globalSource.revision}`}
               </span>
+            )}
+            {globalSource.isExpired && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="outline"
+                    className="cursor-help border-amber-500/50 font-normal text-amber-600 dark:text-amber-400"
+                  >
+                    {t('settings.navigation.airacExpired')}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p className="text-xs">
+                    {t('settings.navigation.airacExpiredTooltip', {
+                      date: globalSource.expirationDate
+                        ? new Date(globalSource.expirationDate).toLocaleDateString()
+                        : '',
+                    })}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         )}

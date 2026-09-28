@@ -664,9 +664,12 @@
       "clearCache": "Очистить кэш и перезагрузить",
       "clearingCache": "Очистка...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "Пользовательские данные",
       "xplaneDefaultLabel": "Стандартные данные X-Plane",
       "customAirportLabel": "Пользовательский аэропорт",
       "defaultLabel": "По умолчанию",
+      "airacExpired": "Истёк",
+      "airacExpiredTooltip": "Этот цикл AIRAC закончился {{date}}. Обновите навигационные данные, чтобы оставаться в актуальном состоянии.",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "Воздушное движение в реальном времени из сети VATSIM",

@@ -664,9 +664,12 @@
       "clearCache": "キャッシュをクリアして再読み込み",
       "clearingCache": "クリア中...",
       "navigraphLabel": "Navigraph",
+      "customDataLabel": "カスタムデータ",
       "xplaneDefaultLabel": "X-Plane 標準",
       "customAirportLabel": "カスタム空港",
       "defaultLabel": "標準",
+      "airacExpired": "期限切れ",
+      "airacExpiredTooltip": "この AIRAC サイクルは {{date}} に終了しました。最新の状態を保つにはナビゲーションデータを更新してください。",
       "vatsim": {
         "title": "VATSIM",
         "sectionDescription": "VATSIM ネットワークのライブ航空交通",
