@@ -1876,6 +1876,7 @@
     "waypoint": "ウェイポイント",
     "frequency": "周波数",
     "altitude": "計画高度",
+    "elevation": "標高",
     "bearingTrue": "方位（真方位）",
     "radial": "ラジアル",
     "distance": "距離",

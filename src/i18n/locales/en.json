@@ -1876,6 +1876,7 @@
     "waypoint": "Waypoint",
     "frequency": "Frequency",
     "altitude": "Planned altitude",
+    "elevation": "Elevation",
     "bearingTrue": "Bearing (true)",
     "radial": "Radial",
     "distance": "Distance",

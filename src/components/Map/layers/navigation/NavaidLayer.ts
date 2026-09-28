@@ -233,6 +233,7 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
           type: navaid.type,
           frequency: navaid.frequency,
           freqDisplay: formatFrequency(navaid),
+          elevation: navaid.elevation,
           symbolType: `navaid-${getSymbolType(navaid)}`,
           color: getNavaidColor(navaid),
         },

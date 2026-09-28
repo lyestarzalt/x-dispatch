@@ -42,11 +42,13 @@ export function navInfoFromFeature(
   if (layerId === 'nav-navaids') {
     const type = String(props.type ?? '');
     const freq = String(props.freqDisplay ?? '');
+    const elevation = Number(props.elevation);
     return {
       id,
       name: typeof props.name === 'string' ? props.name : undefined,
       kind: type,
       frequency: type === 'NDB' ? freq : `${freq} MHz`,
+      elevationFt: Number.isFinite(elevation) ? elevation : undefined,
       latitude,
       longitude,
     };

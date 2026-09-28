@@ -1876,6 +1876,7 @@
     "waypoint": "Punto di rotta",
     "frequency": "Frequenza",
     "altitude": "Altitudine pianificata",
+    "elevation": "Elevazione",
     "bearingTrue": "Rilevamento (vero)",
     "radial": "Radiale",
     "distance": "Distanza",
