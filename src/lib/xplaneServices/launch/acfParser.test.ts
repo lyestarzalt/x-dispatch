@@ -2,11 +2,11 @@
  * Tests for the aircraft scanner's add-on version detection.
  *
  * Focus areas:
- *  - version.txt next to the .acf wins over acf/_version (Zibo: file carries
+ *  - a version*.txt next to the .acf wins over acf/_version (the file carries
  *    the full "4.05.35", the .acf only "ver 4.05")
  *  - acf/_version is the fallback, with its "ver " prefix stripped
  *  - stock aircraft with neither source report an empty version
- *  - junk version.txt contents (prose, oversized files) are rejected
+ *  - junk version*.txt contents (prose, free text, oversized files) are rejected
  */
 import * as fs from 'fs';
 import * as os from 'os';
@@ -85,6 +85,21 @@ describe('aircraft version detection', () => {
 
   it('rejects an oversized version.txt', async () => {
     makeAircraft('Big', ['P acf/_name Big'], '1.0\n' + 'x'.repeat(500));
+
+    const [aircraft] = await scanAircraftDirectory(TEMP_ROOT);
+    expect(aircraft?.version).toBe('');
+  });
+
+  it('reads per-model version files like version-777.txt', async () => {
+    const dir = makeAircraft('B772', ['P acf/_name Boeing 777', 'P acf/_version For X-Plane 11']);
+    fs.writeFileSync(path.join(dir, 'version-777.txt'), '020523\n');
+
+    const [aircraft] = await scanAircraftDirectory(TEMP_ROOT);
+    expect(aircraft?.version).toBe('020523');
+  });
+
+  it('rejects free-text acf/_version values', async () => {
+    makeAircraft('B772', ['P acf/_name Boeing 777', 'P acf/_version For X-Plane 11']);
 
     const [aircraft] = await scanAircraftDirectory(TEMP_ROOT);
     expect(aircraft?.version).toBe('');

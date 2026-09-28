@@ -81,20 +81,35 @@ function strProp(props: Record<string, string>, key: string, fallback: string): 
 const VERSION_PATTERN = /^v?\d+(\.\d+)*[a-z0-9.-]{0,10}$/i;
 
 /**
- * Version from <aircraft dir>/version.txt, the convention Zibo-family updaters
- * use. The .acf's own acf/_version is coarser (Zibo: "ver 4.05" vs "4.05.35")
- * and stock aircraft omit it entirely, so the file wins when both exist.
+ * Version from a version*.txt next to the .acf; add-on updaters write either
+ * version.txt or a per-model file like version-777.txt. The .acf's own
+ * acf/_version is coarser or free text and stock aircraft omit it entirely,
+ * so a file wins when both exist.
  */
 async function readVersionFile(acfDir: string): Promise<string | null> {
+  let candidates: string[];
   try {
-    const stat = await fs.promises.stat(path.join(acfDir, 'version.txt'));
-    if (stat.size === 0 || stat.size > 256) return null;
-    const content = await fs.promises.readFile(path.join(acfDir, 'version.txt'), 'utf-8');
-    const firstLine = (content.split('\n', 1)[0] ?? '').trim();
-    return VERSION_PATTERN.test(firstLine) ? firstLine : null;
+    const entries = await fs.promises.readdir(acfDir);
+    candidates = entries
+      .filter((name) => /^version[a-z0-9 _-]*\.txt$/i.test(name))
+      .sort((a, b) => a.length - b.length || a.localeCompare(b));
   } catch {
     return null;
   }
+
+  for (const name of candidates) {
+    try {
+      const filePath = path.join(acfDir, name);
+      const stat = await fs.promises.stat(filePath);
+      if (stat.size === 0 || stat.size > 256) continue;
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      const firstLine = (content.split('\n', 1)[0] ?? '').trim();
+      if (VERSION_PATTERN.test(firstLine)) return firstLine;
+    } catch {
+      // Try the next candidate
+    }
+  }
+  return null;
 }
 
 function versionFromAcf(props: Record<string, string>): string {
