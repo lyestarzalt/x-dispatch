@@ -11,7 +11,14 @@ interface SolarState {
   source: SolarClockSource;
   /** Where the sun is overhead at `timeMs`. Derived once per tick. */
   subsolar: GeoPoint;
+  /**
+   * A time the user is previewing (the plan builder's takeoff time). While
+   * set it replaces the live clock as `timeMs`; null hands the map back to
+   * the clock on its next tick.
+   */
+  previewMs: number | null;
   setClock: (timeMs: number, source: SolarClockSource) => void;
+  setPreview: (timeMs: number | null) => void;
 }
 
 /**
@@ -25,6 +32,13 @@ export const useSolarStore = create<SolarState>()((set) => {
     timeMs: now,
     source: 'system',
     subsolar: subsolarPoint(now),
+    previewMs: null,
     setClock: (timeMs, source) => set({ timeMs, source, subsolar: subsolarPoint(timeMs) }),
+    setPreview: (timeMs) =>
+      set(
+        timeMs === null
+          ? { previewMs: null }
+          : { previewMs: timeMs, timeMs, subsolar: subsolarPoint(timeMs) }
+      ),
   };
 });

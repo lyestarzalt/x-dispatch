@@ -134,7 +134,8 @@
     "sections": {
       "airports": "Flughäfen",
       "enroute": "Streckenflug",
-      "summary": "Reiseflug und Übersicht"
+      "summary": "Reiseflug und Übersicht",
+      "light": "Licht"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "Auf Karte zeigen",
     "save": "In X-Plane speichern",
     "saved": "Gespeichert unter {{path}}",
-    "saveFailed": "Speichern fehlgeschlagen: {{error}}"
+    "saveFailed": "Speichern fehlgeschlagen: {{error}}",
+    "light": {
+      "phase": {
+        "day": "Tag",
+        "twilight": "Dämmerung",
+        "night": "Nacht"
+      },
+      "takeoff": "Start",
+      "now": "Jetzt",
+      "planFor": "Planen für",
+      "goal": {
+        "daylight": "Tageslicht",
+        "night": "Nacht",
+        "dawnDeparture": "Start bei Sonnenaufgang",
+        "duskDeparture": "Start bei Sonnenuntergang",
+        "dawnArrival": "Landung bei Sonnenaufgang",
+        "duskArrival": "Landung bei Sonnenuntergang"
+      },
+      "tomorrow": "Morgen",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {

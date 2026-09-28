@@ -134,7 +134,8 @@
     "sections": {
       "airports": "Harbors",
       "enroute": "Open Sea",
-      "summary": "Cruisin' an' Tally"
+      "summary": "Cruisin' an' Tally",
+      "light": "Sunlight"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "Show on the chart",
     "save": "Stow in X-Plane",
     "saved": "Stowed at {{path}}",
-    "saveFailed": "Couldn't stow it: {{error}}"
+    "saveFailed": "Couldn't stow it: {{error}}",
+    "light": {
+      "phase": {
+        "day": "Day",
+        "twilight": "Gloamin'",
+        "night": "Black Night"
+      },
+      "takeoff": "Weigh anchor",
+      "now": "Now",
+      "planFor": "Plan fer",
+      "goal": {
+        "daylight": "Daylight",
+        "night": "Black night",
+        "dawnDeparture": "Weigh anchor at sunrise",
+        "duskDeparture": "Weigh anchor at sunset",
+        "dawnArrival": "Make port at sunrise",
+        "duskArrival": "Make port at sunset"
+      },
+      "tomorrow": "On the morrow",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {

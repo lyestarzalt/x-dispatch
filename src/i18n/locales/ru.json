@@ -134,7 +134,8 @@
     "sections": {
       "airports": "Аэропорты",
       "enroute": "Маршрут",
-      "summary": "Крейсер и сводка"
+      "summary": "Крейсер и сводка",
+      "light": "Свет"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "Показать на карте",
     "save": "Сохранить в X-Plane",
     "saved": "Сохранено в {{path}}",
-    "saveFailed": "Не удалось сохранить: {{error}}"
+    "saveFailed": "Не удалось сохранить: {{error}}",
+    "light": {
+      "phase": {
+        "day": "День",
+        "twilight": "Сумерки",
+        "night": "Ночь"
+      },
+      "takeoff": "Взлёт",
+      "now": "Сейчас",
+      "planFor": "Планировать",
+      "goal": {
+        "daylight": "Дневной полёт",
+        "night": "Ночной полёт",
+        "dawnDeparture": "Взлёт на восходе",
+        "duskDeparture": "Взлёт на закате",
+        "dawnArrival": "Посадка на восходе",
+        "duskArrival": "Посадка на закате"
+      },
+      "tomorrow": "Завтра",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {

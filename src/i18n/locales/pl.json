@@ -134,7 +134,8 @@
     "sections": {
       "airports": "Lotniska",
       "enroute": "Trasa",
-      "summary": "Przelot i podsumowanie"
+      "summary": "Przelot i podsumowanie",
+      "light": "Światło"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "Pokaż na mapie",
     "save": "Zapisz w X-Plane",
     "saved": "Zapisano w {{path}}",
-    "saveFailed": "Nie udało się zapisać: {{error}}"
+    "saveFailed": "Nie udało się zapisać: {{error}}",
+    "light": {
+      "phase": {
+        "day": "Dzień",
+        "twilight": "Zmierzch",
+        "night": "Noc"
+      },
+      "takeoff": "Start",
+      "now": "Teraz",
+      "planFor": "Planuj na",
+      "goal": {
+        "daylight": "Lot dzienny",
+        "night": "Lot nocny",
+        "dawnDeparture": "Start o wschodzie słońca",
+        "duskDeparture": "Start o zachodzie słońca",
+        "dawnArrival": "Lądowanie o wschodzie słońca",
+        "duskArrival": "Lądowanie o zachodzie słońca"
+      },
+      "tomorrow": "Jutro",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {

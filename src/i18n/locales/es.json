@@ -134,7 +134,8 @@
     "sections": {
       "airports": "Aeropuertos",
       "enroute": "En ruta",
-      "summary": "Crucero y resumen"
+      "summary": "Crucero y resumen",
+      "light": "Luz"
     },
     "sid": "SID",
     "star": "STAR",
@@ -200,7 +201,27 @@
     "showOnMap": "Mostrar en el mapa",
     "save": "Guardar en X-Plane",
     "saved": "Guardado en {{path}}",
-    "saveFailed": "No se pudo guardar: {{error}}"
+    "saveFailed": "No se pudo guardar: {{error}}",
+    "light": {
+      "phase": {
+        "day": "Día",
+        "twilight": "Crepúsculo",
+        "night": "Noche"
+      },
+      "takeoff": "Despegue",
+      "now": "Ahora",
+      "planFor": "Planificar para",
+      "goal": {
+        "daylight": "Luz diurna",
+        "night": "Noche",
+        "dawnDeparture": "Despegue al amanecer",
+        "duskDeparture": "Despegue al atardecer",
+        "dawnArrival": "Aterrizaje al amanecer",
+        "duskArrival": "Aterrizaje al atardecer"
+      },
+      "tomorrow": "Mañana",
+      "scrubLabel": "{{time}}Z · {{phase}}"
+    }
   },
   "toolbar": {
     "clock": {
