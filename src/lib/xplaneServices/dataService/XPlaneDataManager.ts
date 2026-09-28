@@ -49,6 +49,8 @@ import {
   loadWaypoints,
 } from './navdata';
 import {
+  type NavDataType,
+  checkNavCacheValidity,
   clearAllNavData,
   createSqlCoordResolver,
   getAirspaceCount,
@@ -163,30 +165,77 @@ export class XPlaneDataManager {
       logger.data.info('Airport cache stale — will rebuild via loading screen');
     }
 
-    const navaidCount = getNavaidCount();
-    if (navaidCount > 0) {
-      this.loadStatus.navaids = true;
-    }
+    // Only trust cached nav data if the resolved source file still matches
+    // what was indexed (path, mtime, source). Installing or updating
+    // Navigraph/custom data changes the resolved path or mtime; leaving the
+    // flag false makes LoadingScreen trigger a real reload.
+    const navChecks: Array<{
+      dataType: NavDataType;
+      flag: 'navaids' | 'waypoints' | 'airspaces' | 'airways';
+      resolvePath: (xp: string) => string;
+      getCount: () => number;
+    }> = [
+      {
+        dataType: 'navaids',
+        flag: 'navaids',
+        resolvePath: getNavDataPath,
+        getCount: getNavaidCount,
+      },
+      {
+        dataType: 'waypoints',
+        flag: 'waypoints',
+        resolvePath: getFixDataPath,
+        getCount: getWaypointCount,
+      },
+      {
+        dataType: 'airspaces',
+        flag: 'airspaces',
+        resolvePath: getAirspaceDataPath,
+        getCount: getAirspaceCount,
+      },
+      {
+        dataType: 'airways',
+        flag: 'airways',
+        resolvePath: getAirwayDataPath,
+        getCount: getAirwayCount,
+      },
+    ];
 
-    const waypointCount = getWaypointCount();
-    if (waypointCount > 0) {
-      this.loadStatus.waypoints = true;
-    }
+    const counts: Record<string, number> = {};
+    let anyNavStale = false;
+    for (const check of navChecks) {
+      counts[check.flag] = check.getCount();
+      if (counts[check.flag] === 0) continue;
 
-    const airspaceCount = getAirspaceCount();
-    if (airspaceCount > 0) {
-      this.loadStatus.airspaces = true;
-    }
+      if (xplanePath) {
+        const cacheCheck = checkNavCacheValidity(check.resolvePath(xplanePath), check.dataType);
+        if (cacheCheck.needsReload) {
+          anyNavStale = true;
+          logger.data.info(
+            `${check.dataType} cache stale (${cacheCheck.reason}) — will reload via loading screen`
+          );
+          continue;
+        }
+      }
 
-    const airwayCount = getAirwayCount();
-    if (airwayCount > 0) {
-      this.loadStatus.airways = true;
+      this.loadStatus[check.flag] = true;
     }
 
     logger.data.info(
-      `Cache init: ${aptFilesChanged ? 'STALE' : 'valid'}, ${airportCount} airports, ` +
-        `${navaidCount} navaids, ${waypointCount} waypoints, ${airspaceCount} airspaces, ${airwayCount} airways`
+      `Cache init: ${aptFilesChanged || anyNavStale ? 'STALE' : 'valid'}, ${airportCount} airports, ` +
+        `${counts.navaids} navaids, ${counts.waypoints} waypoints, ${counts.airspaces} airspaces, ${counts.airways} airways`
     );
+
+    // ATC, holdings and airport metadata are parsed fresh each session (no
+    // SQLite cache). When every cache above is valid the loading screen skips
+    // startLoading entirely, so load them here in the background.
+    if (xplanePath && !aptFilesChanged && !anyNavStale) {
+      void Promise.allSettled([
+        this.loadATCDataInternal(xplanePath),
+        this.loadHoldingPatternsInternal(xplanePath),
+        this.loadAirportMetadataInternal(xplanePath),
+      ]);
+    }
   }
 
   /**
@@ -1077,25 +1126,28 @@ export class XPlaneDataManager {
         source: airportSource,
         breakdown: this.airportSourceCounts,
       },
+      // Counts are only reported once verified loaded — same reasoning as
+      // airports above: a stale cache must not let LoadingScreen skip the
+      // rebuild.
       navaids: {
         loaded: this.loadStatus.navaids,
-        count: dbReady ? getNavaidCount() : 0,
-        byType: dbReady ? this.getNavaidCountsByType() : {},
+        count: dbReady && this.loadStatus.navaids ? getNavaidCount() : 0,
+        byType: dbReady && this.loadStatus.navaids ? this.getNavaidCountsByType() : {},
         source: xp ? getNavDataPath(xp) : null,
       },
       waypoints: {
         loaded: this.loadStatus.waypoints,
-        count: dbReady ? getWaypointCount() : 0,
+        count: dbReady && this.loadStatus.waypoints ? getWaypointCount() : 0,
         source: xp ? getFixDataPath(xp) : null,
       },
       airspaces: {
         loaded: this.loadStatus.airspaces,
-        count: dbReady ? getAirspaceCount() : 0,
+        count: dbReady && this.loadStatus.airspaces ? getAirspaceCount() : 0,
         source: xp ? getAirspaceDataPath(xp) : null,
       },
       airways: {
         loaded: this.loadStatus.airways,
-        count: dbReady ? getAirwayCount() : 0,
+        count: dbReady && this.loadStatus.airways ? getAirwayCount() : 0,
         source: xp ? getAirwayDataPath(xp) : null,
       },
       atc: this.loadStatus.atc
