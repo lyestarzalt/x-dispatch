@@ -31,6 +31,12 @@
 
 All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, gates, and markings rendered from X-Plane's apt.dat. Set up your flight, import from SimBrief, and launch X-Plane directly.
 
+## Flight plan builder
+
+![Flight Plan Builder](screenshots/flight-planner.png)
+
+Plan a route right on the map: pick departure and arrival, type a route or let auto route find one, choose SID, STAR and approach. Wind suggests the favored runway, an alternate is picked for you, and you get distance, time and fuel estimates as you edit. Save straight to X-Plane as .fms and start at the departure gate.
+
 ## Screenshots
 
 ![Airport Detail](screenshots/airport-detail.png)
@@ -60,6 +66,8 @@ All 35,000+ X-Plane airports on a 3D globe. Click one to see runways, taxiways, 
 ## What it does
 
 - **Airport map** — 35,000+ airports on a 3D globe with terrain and contour lines. Runways, taxiways, gates, helipads, markings, lights. Custom scenery detection. Sun-lit globe with real night city lights.
+- **Flight plan builder** — Routes with airways and procedures, auto route between airports, wind-favored runways, fuel and time estimates, daylight planning. Saves to X-Plane as .fms.
+- **Ground weather** — Wind streaks, rain, snow and fog over the airport, driven by its live METAR. [See it in motion](https://x-dispatch.app/videos/ground-weather.mp4).
 - **Flight setup** — Pick your aircraft, livery, starting position, fuel, payload, weather. Launch X-Plane directly or relocate mid-flight.
 - **Taxi routing** — Select a gate and runway, get a shortest-path taxi route. Drag to reroute through different taxiways.
 - **Flight recording** — Automatic flight recording with trail visualization, landing detection, replay mode, and flight logbook with landing statistics.
