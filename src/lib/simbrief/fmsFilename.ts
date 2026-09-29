@@ -1,25 +1,39 @@
-/**
- * Derives the on-disk filename for an FMS export from the OFP and the download link.
- *
- * The stem comes from the OFP itself, not from SimBrief's per-format `name` (a human
- * label like "X-Plane 11/12") nor from the raw `link` (which can include CDN path
- * segments). The extension comes from the link, which is authoritative for each format
- * (.fms, .flp, .rte, ...).
- */
 import type { SimBriefOFP } from '@/types/simbrief';
 
 /**
- * SimBrief appends a `--TAG` disambiguator to any download link that reuses another
- * format's generated file (e.g. `xml/CYULKIAD_XML_123.xml--ZBO`), which puts the tag
- * after the extension. Strip it before reading the extension, or formats such as `zbo`
- * produce a file with no extension at all.
+ * Add-ons that load one hard-coded file instead of scanning the FMS folder.
+ * Their export must use exactly this name or the add-on never sees it.
  */
-const REUSE_TAG = /--[A-Za-z0-9]+$/;
+const REQUIRED_NAMES: Readonly<Record<string, string>> = {
+  // Zibo 737 only reads Output/FMS plans/b738x.xml.
+  zbo: 'b738x.xml',
+};
 
-export function buildFmsFilename(data: SimBriefOFP, link: string): string {
-  const sanitize = (s: string) => s.replace(/[^A-Za-z0-9]/g, '');
-  const orig = sanitize(data.origin.icao_code);
-  const dest = sanitize(data.destination.icao_code);
-  const ext = link.replace(REUSE_TAG, '').match(/\.[A-Za-z0-9]+$/)?.[0] ?? '';
-  return `${orig}_${dest}${ext}`;
+function icaoPart(code: string): string {
+  return code.replace(/[^a-z0-9]/gi, '');
+}
+
+/**
+ * Extension of the file behind a SimBrief download link, e.g. ".fms".
+ * SimBrief marks a link that reuses another format's file with a "--XYZ" suffix
+ * after the extension (`plan.xml--ZBO`), so everything from "--" on is ignored.
+ */
+function linkExtension(link: string): string {
+  const lastSegment = link.split(/[?#]/)[0]?.split('/').pop() ?? '';
+  const fileName = lastSegment.split('--')[0] ?? '';
+  const dot = fileName.lastIndexOf('.');
+  if (dot <= 0) return '';
+  const extension = fileName.slice(dot);
+  return /^\.[a-z0-9]+$/i.test(extension) ? extension : '';
+}
+
+/**
+ * On-disk name for one FMS export: the add-on's required name when it has one,
+ * otherwise `ORIG_DEST` from the OFP plus the extension of the downloaded file.
+ */
+export function fmsExportFilename(formatKey: string, ofp: SimBriefOFP, link: string): string {
+  const required = REQUIRED_NAMES[formatKey];
+  if (required) return required;
+  const route = `${icaoPart(ofp.origin.icao_code)}_${icaoPart(ofp.destination.icao_code)}`;
+  return route + linkExtension(link);
 }
