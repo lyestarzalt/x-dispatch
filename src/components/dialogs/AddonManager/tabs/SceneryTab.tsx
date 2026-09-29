@@ -46,6 +46,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import {
   useScenarySaveOrder,
   useSceneryBackups,
@@ -229,7 +230,10 @@ export function SceneryTab() {
       await deleteMutation.mutateAsync(deleteTarget);
       toast.success(t('addonManager.scenery.deleted', { name: deleteTarget }));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('addonManager.scenery.deleteFailed'));
+      toastError(
+        'addon_manager',
+        err instanceof Error ? err.message : t('addonManager.scenery.deleteFailed')
+      );
     }
     setDeleteTarget(null);
   };

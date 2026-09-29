@@ -6,8 +6,10 @@ import { toast } from 'sonner';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
+import { launchChoices } from '@/lib/analytics/launchChoices';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
+import { toastError } from '@/lib/utils/toastError';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
   buildFlightInit,
@@ -206,7 +208,10 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       }
 
       for (const f of failures) {
-        toast.error(t('settings.companionApps.spawnError', { name: f.name, error: f.error }));
+        toastError(
+          'companion_apps',
+          t('settings.companionApps.spawnError', { name: f.name, error: f.error })
+        );
       }
 
       const reportLaunch = (mode: 'cold_start' | 'change_flight', success: boolean) =>
@@ -218,6 +223,17 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           start_type: startPosition.type,
           success,
           companion_apps_launched: autoLaunchTools.length - failures.length,
+          ...launchChoices({
+            weatherConfig,
+            tankPercentages,
+            payloadWeights,
+            useRealWorldTime,
+            coldAndDark,
+            livery: selectedLivery,
+            aircraftPath: selectedAircraft.path,
+            favoriteAircraft: useLaunchStore.getState().favorites.includes(selectedAircraft.path),
+            startPosition,
+          }),
         });
 
       if (autoLaunchTools.length > 0) {

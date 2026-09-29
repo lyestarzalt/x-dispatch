@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
+import { trackEvent } from '@/queries';
 import { useMapStore } from '@/stores/mapStore';
 import { FeaturedTab } from './FeaturedTab';
 import { RoutesTab } from './RoutesTab';
@@ -31,11 +32,12 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
     (icao: string) => {
       const airport = airports.find((a) => a.icao === icao);
       if (airport) {
+        trackEvent('explore_item_selected', { tab: explore.activeTab });
         onSelectAirport(airport);
         setExploreOpen(false);
       }
     },
-    [airports, onSelectAirport, setExploreOpen]
+    [airports, explore.activeTab, onSelectAirport, setExploreOpen]
   );
 
   if (!explore.isOpen) return null;

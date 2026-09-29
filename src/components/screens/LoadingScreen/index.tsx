@@ -28,7 +28,8 @@ interface LoadingStep {
 }
 
 interface LoadingScreenProps {
-  onComplete: () => void;
+  /** `fromCache` is false when the X-Plane data had to be parsed again. */
+  onComplete: (fromCache: boolean) => void;
   onConfigurePath?: () => void;
 }
 
@@ -53,6 +54,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
   // Use refs to avoid stale closure issues
   const onCompleteRef = useRef(onComplete);
+  const parsedRef = useRef(false);
   const hasStartedRef = useRef(false);
   const stepsRef = useRef(steps);
   const tRef = useRef(t);
@@ -71,6 +73,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
       if (progress.phase) {
         setPhase(progress.phase);
+        if (progress.phase === 'loading') parsedRef.current = true;
       }
 
       if (progress.status === 'error') {
@@ -81,7 +84,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
       if (progress.step === 'complete') {
         setDisplayedProgress((prev) => clampDisplayedProgress(prev, 100, true));
-        onCompleteRef.current();
+        onCompleteRef.current(!parsedRef.current);
         return;
       }
 
@@ -147,7 +150,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
           dataStatus?.airspaces?.count > 0 &&
           dataStatus?.airways?.count > 0
         ) {
-          onCompleteRef.current();
+          onCompleteRef.current(!parsedRef.current);
           return;
         }
 
@@ -155,7 +158,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
         // If loading returned success with status, data was loaded
         if (result.success && (result.status?.airports?.count ?? 0) > 0) {
-          onCompleteRef.current();
+          onCompleteRef.current(!parsedRef.current);
           return;
         }
 

@@ -3,11 +3,13 @@ import {
   ClipboardItem,
   Menu,
   app,
+  autoUpdater,
   clipboard,
   dialog,
   globalShortcut,
   ipcMain,
   net,
+  screen,
   session,
   shell,
 } from 'electron';
@@ -17,6 +19,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
+import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import type { AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
@@ -1784,6 +1787,20 @@ app.on('open-url', (event, url) => {
   handleDeepLink(url);
 });
 
+/** One snapshot per launch of the window size and display scaling, as buckets. */
+function reportDisplay(win: BrowserWindow): void {
+  win.once('ready-to-show', () => {
+    if (win.isDestroyed()) return;
+    const bounds = win.getBounds();
+    analytics.track('display', {
+      window_width: widthBucket(bounds.width),
+      scale: scaleBucket(screen.getDisplayMatching(bounds).scaleFactor),
+      maximized: win.isMaximized(),
+      fullscreen: win.isFullScreen(),
+    });
+  });
+}
+
 app.whenReady().then(async () => {
   // Environment snapshot for production support
   logStartupEnvironment(shouldInitSentry);
@@ -1806,6 +1823,9 @@ app.whenReady().then(async () => {
           error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
         },
       });
+      // update-electron-app drives Electron's autoUpdater; listen for analytics only.
+      autoUpdater.on('update-available', () => analytics.track('update_found', { method: 'auto' }));
+      autoUpdater.on('update-downloaded', () => analytics.track('update_downloaded', {}));
       logger.main.info('Auto-updater initialized');
     } catch (err) {
       logger.main.error('Failed to initialize auto-updater', err);
@@ -1920,10 +1940,12 @@ app.whenReady().then(async () => {
 
   registerIpcHandlers();
   mainWindow = createWindow();
+  reportDisplay(mainWindow);
 
   // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
   mainWindow.on('focus', () => {
     globalShortcut.register('CommandOrControl+F', () => {
+      analytics.track('shortcut_used', { shortcut: 'focus_search' });
       // The shortcut handler can outlive its registration window briefly
       // during teardown; optional chaining catches the null case, but a
       // destroyed-but-still-truthy `mainWindow` would still throw on

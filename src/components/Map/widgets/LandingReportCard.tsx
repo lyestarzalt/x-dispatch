@@ -16,6 +16,7 @@ import { RATING_TEXT_CLASS } from '@/lib/flightRecorder/format';
 import { copyLandingCard } from '@/lib/flightRecorder/landingCardImage';
 import { cardSpring, exitEase } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import { useMapStore } from '@/stores/mapStore';
@@ -82,7 +83,7 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
     if (!report) return;
     const ok = await copyLandingCard(report, landingCardLabels(t, report));
     if (ok) toast.success(t('logbook.imageCopied'));
-    else toast.error(t('logbook.imageCopyFailed'));
+    else toastError('landing_report', t('logbook.imageCopyFailed'));
   };
 
   return (

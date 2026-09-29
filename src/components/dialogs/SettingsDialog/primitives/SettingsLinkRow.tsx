@@ -6,6 +6,8 @@ interface SettingsLinkRowProps {
   label: React.ReactNode;
   href: string;
   leadingIcon?: React.ReactNode;
+  /** Runs before the link opens, e.g. to record a donate click. */
+  onOpen?: () => void;
 }
 
 /**
@@ -16,11 +18,14 @@ interface SettingsLinkRowProps {
  * if the row needs an extra visual cue. Trailing `<ExternalLink>` is
  * always rendered — never override or remove it.
  */
-export function SettingsLinkRow({ label, href, leadingIcon }: SettingsLinkRowProps) {
+export function SettingsLinkRow({ label, href, leadingIcon, onOpen }: SettingsLinkRowProps) {
   return (
     <Button
       variant="ghost"
-      onClick={() => void openSettingsExternalLink(href)}
+      onClick={() => {
+        onOpen?.();
+        void openSettingsExternalLink(href);
+      }}
       className="hover:bg-secondary h-auto w-full justify-between gap-3 px-3 py-2 text-sm"
     >
       <span className="flex min-w-0 items-center gap-1.5">

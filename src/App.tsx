@@ -13,8 +13,9 @@ import { Toaster } from './components/ui/sonner';
 import { FullScreenSpinner } from './components/ui/spinner';
 import { TooltipProvider } from './components/ui/tooltip';
 import './i18n';
+import { startupBucket } from './lib/analytics/buckets';
 import type { Airport } from './lib/xplaneServices/dataService';
-import { QueryProvider } from './queries';
+import { QueryProvider, trackEvent } from './queries';
 import { useAppStore } from './stores/appStore';
 import { initializeFontSize, useSettingsStore } from './stores/settingsStore';
 import { initializeTheme } from './stores/themeStore';
@@ -29,6 +30,10 @@ function AppContent() {
   const [airports, setAirports] = useState<Airport[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Startup time is only meaningful when no setup screen waited on the user.
+  const setupShownRef = useRef(false);
+  const startupReportedRef = useRef(false);
+
   useEffect(() => {
     async function checkSetup() {
       try {
@@ -36,9 +41,11 @@ function AppContent() {
         if (isComplete) {
           setAppState('loading');
         } else {
+          setupShownRef.current = true;
           setAppState('setup');
         }
       } catch {
+        setupShownRef.current = true;
         setAppState('setup');
       }
     }
@@ -49,11 +56,18 @@ function AppContent() {
     setAppState('loading');
   }, []);
 
-  const handleLoadingComplete = useCallback(async () => {
+  const handleLoadingComplete = useCallback(async (fromCache: boolean) => {
     try {
       const data = await window.airportAPI.getAirports();
       setAirports(data);
       setAppState('ready');
+      if (!setupShownRef.current && !startupReportedRef.current) {
+        startupReportedRef.current = true;
+        trackEvent('app_ready', {
+          startup: startupBucket(performance.now()),
+          from_cache: fromCache,
+        });
+      }
     } catch (err) {
       window.appAPI.log.error('Failed to fetch airports after loading', err);
       setLoadError((err as Error).message);
@@ -62,6 +76,7 @@ function AppContent() {
   }, []);
 
   const handleConfigurePath = useCallback(() => {
+    setupShownRef.current = true;
     setAppState('setup');
   }, []);
 
