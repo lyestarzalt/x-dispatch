@@ -162,6 +162,7 @@ jobs:
         id: changelog_safe
         env:
           FULL_CHANGELOG: ${{ steps.changelog.outputs.content }}
+          TAG: ${{ needs.resolve.outputs.tag }}
         run: |
           # Description budget is 4096 chars total — leave headroom for the
           # downloads list (~700), header, warning footer, and the
@@ -171,7 +172,7 @@ jobs:
           if [ ${#FULL_CHANGELOG} -gt $MAX_LEN ]; then
             CHANGELOG="${FULL_CHANGELOG:0:$MAX_LEN}…
 
-          [Full changelog](https://x-dispatch.app/changelog/)"
+          [Full notes](https://dl.x-dispatch.app/releases/$TAG/notes.md)"
           else
             CHANGELOG="$FULL_CHANGELOG"
           fi
@@ -250,46 +251,12 @@ jobs:
       - name: Verify public downloads
         run: bash scripts/check-r2-public.sh
 
-      - name: Mint website sync token
-        id: site-token
-        continue-on-error: true
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.X_DISPATCH_APP_ID }}
-          private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
-          owner: lyestarzalt
-          repositories: x-dispatch.app
-
-      - name: Sync website RC catalog
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ steps.site-token.outputs.token }}
-          TAG: ${{ needs.resolve.outputs.tag }}
-        run: |
-          set -euo pipefail
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::warning title=Website sync skipped::No token for x-dispatch.app. The website still points at the previous release."
-            echo "- :warning: Website sync **skipped** for \`$TAG\` (no token)" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          if ! gh workflow run sync-release.yml \
-            --repo lyestarzalt/x-dispatch.app \
-            -f source_repo="${{ github.repository }}" \
-            -f channel="rc" \
-            -f source="r2" \
-            -f tag="$TAG"; then
-            echo "::warning title=Website sync failed::Dispatch of sync-release.yml failed. The website still points at the previous release."
-            echo "- :warning: Website sync **failed** for \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          echo "- :white_check_mark: Website sync dispatched for \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Send Discord notification
         uses: tsickert/discord-webhook@v7.0.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           embed-title: "X-Dispatch v${{ needs.resolve.outputs.rc_version }} — Release Candidate"
-          embed-url: "https://x-dispatch.app/changelog/"
+          embed-url: "https://dl.x-dispatch.app/releases/${{ needs.resolve.outputs.tag }}/notes.md"
           embed-description: |
             A new release candidate is available for testing.
 

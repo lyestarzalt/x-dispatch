@@ -6,6 +6,10 @@
 #   publish-r2.sh assets  <tag> <assets-dir>                            add or replace rebuilt assets
 #   publish-r2.sh notes   <tag> <notes-file>                            replace the notes
 #   publish-r2.sh check                                                 verify credentials, no writes
+#   publish-r2.sh prune                                                 delete builds the pointers no longer need
+#
+# R2 keeps the current and previous stable (KEEP_STABLE, default 2), the current RC,
+# and only the Windows packages RELEASES lists. \`release\` prunes after it moves a pointer.
 #
 # Bucket layout:
 #   releases/<tag>/<asset>          installers and Squirrel packages
@@ -18,6 +22,42 @@
 # Pointers are written after the files they reference, so a client never sees a
 # version whose files are not uploaded yet.
 set -euo pipefail
+
+# Reads release tags on stdin and prints the ones to delete. A channel whose
+# pointer tag is empty is left alone.
+prune_plan() {
+  local stable_tag="$1" rc_tag="$2" keep="${KEEP_STABLE:-2}" tags others t keep_list=" "
+  tags="$(cat)"
+  if [ -n "$stable_tag" ]; then
+    others=""
+    [ "$keep" -gt 1 ] && others="$(printf '%s\n' "$tags" | { grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true; } \
+      | { grep -vxF "$stable_tag" || true; } | sort -rV | head -n "$((keep - 1))")"
+    keep_list+="$stable_tag $(echo $others) "
+  fi
+  [ -n "$rc_tag" ] && keep_list+="$rc_tag "
+  while IFS= read -r t; do
+    [ -n "$t" ] || continue
+    case "$t" in
+      *-*) [ -n "$rc_tag" ] || continue ;;
+      *) [ -n "$stable_tag" ] || continue ;;
+    esac
+    [[ "$keep_list" == *" $t "* ]] || echo "$t"
+  done <<< "$tags"
+}
+
+# Reads Windows package names on stdin and prints the ones RELEASES does not list.
+feed_prune_plan() {
+  local releases="$1" name
+  while IFS= read -r name; do
+    [ -n "$name" ] || continue
+    awk '{ print $2 }' "$releases" | grep -qxF "$name" || echo "$name"
+  done
+}
+
+case "${1:-}" in
+  prune-plan) prune_plan "${2:-}" "${3:-}"; exit 0 ;;
+  feed-prune-plan) feed_prune_plan "$2"; exit 0 ;;
+esac
 
 BUCKET="${R2_BUCKET:-x-dispatch-downloads}"
 PUBLIC_BASE="${R2_PUBLIC_BASE:-https://dl.x-dispatch.app}"
@@ -165,6 +205,7 @@ cmd_release() {
     [ "$channel" = "stable" ] && publish_feed "$dir"
     put "$WORK/manifest.json" "$(pointer_key "$channel")" "$MUTABLE" "application/json"
     summary "- :white_check_mark: Published \`$tag\` to R2 ($(pointer_key "$channel"))"
+    cmd_prune
   else
     summary "- :white_check_mark: Archived \`$tag\` to R2"
   fi
@@ -206,6 +247,29 @@ cmd_notes() {
   summary "- :white_check_mark: Updated \`$tag\` notes on R2"
 }
 
+pointer_tag() {
+  fetch "$1" "$WORK/$1" && jq -r '.tag // empty' "$WORK/$1" || true
+}
+
+cmd_prune() {
+  local stable_tag rc_tag tag name
+  stable_tag="$(pointer_tag latest.json)"
+  rc_tag="$(pointer_tag latest-rc.json)"
+
+  while IFS= read -r tag; do
+    s3 rm "s3://$BUCKET/releases/$tag/" --recursive --only-show-errors
+    summary "- :wastebasket: Removed \`$tag\` from R2"
+  done < <(s3 ls "s3://$BUCKET/releases/" | awk '$1 == "PRE" { sub("/$", "", $2); print $2 }' \
+    | prune_plan "$stable_tag" "$rc_tag")
+
+  fetch "win32/x64/RELEASES" "$WORK/RELEASES" || return 0
+  while IFS= read -r name; do
+    s3 rm "s3://$BUCKET/win32/x64/$name" --only-show-errors
+    summary "- :wastebasket: Removed \`win32/x64/$name\` from R2"
+  done < <(s3 ls "s3://$BUCKET/win32/x64/" | awk '$4 ~ /\.nupkg$/ { print $4 }' \
+    | feed_prune_plan "$WORK/RELEASES")
+}
+
 cmd_check() {
   s3 ls "s3://$BUCKET/" > /dev/null
   summary "- :white_check_mark: R2 credentials can reach \`$BUCKET\`"
@@ -216,5 +280,6 @@ case "${1:-}" in
   assets) cmd_assets "$2" "$3" ;;
   notes) cmd_notes "$2" "$3" ;;
   check) cmd_check ;;
-  *) echo "Usage: publish-r2.sh release|archive|assets|notes|check ..." >&2; exit 2 ;;
+  prune) cmd_prune ;;
+  *) echo "Usage: publish-r2.sh release|archive|assets|notes|check|prune ..." >&2; exit 2 ;;
 esac
