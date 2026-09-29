@@ -1920,5 +1920,12 @@
       "accept": "利用データを共有",
       "decline": "共有しない"
     }
+  },
+  "supportPrompt": {
+    "title": "X-Dispatch を楽しんでいますか？",
+    "description": "寄付は継続的な開発と新機能を支えます。",
+    "donate": "プロジェクトを支援",
+    "notNow": "今はしない",
+    "dontShowAgain": "今後表示しない"
   }
 }

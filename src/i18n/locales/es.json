@@ -1920,5 +1920,12 @@
       "accept": "Compartir datos de uso",
       "decline": "No, gracias"
     }
+  },
+  "supportPrompt": {
+    "title": "¿Te gusta X-Dispatch?",
+    "description": "Las donaciones apoyan el desarrollo y las nuevas funciones.",
+    "donate": "Apoyar el proyecto",
+    "notNow": "Ahora no",
+    "dontShowAgain": "No volver a mostrar"
   }
 }
