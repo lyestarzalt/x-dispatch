@@ -485,7 +485,7 @@
       "description": "Flight dispatch an' airport visualization fer X-Plane",
       "updateAvailable": "New booty available — v{{version}}",
       "upToDate": "Yer ship be shipshape",
-      "projectNotice": "A passion-fueled project fer the X-Plane crew, shared free o' charge and built in the open.",
+      "projectNotice": "A passion-fueled project fer the X-Plane crew, shared free o' charge.",
       "credits": "Crew Credits",
       "developer": "Shipwright",
       "license": "Ship's papers",

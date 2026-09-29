@@ -485,7 +485,7 @@
       "description": "Dispatch de vol et visualisation d'aéroports pour X-Plane",
       "updateAvailable": "Mise à jour disponible — v{{version}}",
       "upToDate": "Vous êtes à jour",
-      "projectNotice": "Un projet personnel pour la communauté X-Plane, proposé gratuitement et développé ouvertement.",
+      "projectNotice": "Un projet personnel pour la communauté X-Plane, proposé gratuitement.",
       "credits": "Crédits",
       "developer": "Développeur",
       "license": "Licence",

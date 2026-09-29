@@ -485,7 +485,7 @@
       "description": "X-Plane 飞行签派和机场可视化",
       "updateAvailable": "有可用更新 — v{{version}}",
       "upToDate": "已是最新版本",
-      "projectNotice": "这是为 X-Plane 社区打造的开源免费项目。",
+      "projectNotice": "这是为 X-Plane 社区打造的免费项目。",
       "credits": "制作人员",
       "developer": "开发者",
       "license": "许可证",

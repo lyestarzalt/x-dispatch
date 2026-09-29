@@ -485,7 +485,7 @@
       "description": "X-Plane 向けフライトディスパッチと空港表示",
       "updateAvailable": "アップデートが利用可能 — v{{version}}",
       "upToDate": "最新版です",
-      "projectNotice": "X-Plane コミュニティ向けに作られた、無料でオープンなプロジェクトです。",
+      "projectNotice": "X-Plane コミュニティ向けに作られた、無料のプロジェクトです。",
       "credits": "クレジット",
       "developer": "開発者",
       "license": "ライセンス",

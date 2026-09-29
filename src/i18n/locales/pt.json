@@ -485,7 +485,7 @@
       "description": "Despacho de voos e visualização de aeroportos para X-Plane",
       "updateAvailable": "Atualização disponível — v{{version}}",
       "upToDate": "Está atualizado",
-      "projectNotice": "Um projeto pessoal feito para a comunidade X-Plane, disponibilizado gratuitamente e desenvolvido de forma aberta.",
+      "projectNotice": "Um projeto pessoal feito para a comunidade X-Plane, disponibilizado gratuitamente.",
       "credits": "Créditos",
       "developer": "Programador",
       "license": "Licença",

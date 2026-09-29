@@ -485,7 +485,7 @@
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
       "updateAvailable": "Update verfügbar — v{{version}}",
       "upToDate": "Sie sind auf dem neuesten Stand",
-      "projectNotice": "Ein Herzensprojekt für die X-Plane-Community, kostenlos bereitgestellt und offen entwickelt.",
+      "projectNotice": "Ein Herzensprojekt für die X-Plane-Community, kostenlos bereitgestellt.",
       "credits": "Danksagungen",
       "developer": "Entwickler",
       "license": "Lizenz",

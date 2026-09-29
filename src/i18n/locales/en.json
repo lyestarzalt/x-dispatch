@@ -485,7 +485,7 @@
       "description": "Flight dispatch and airport visualization for X-Plane",
       "updateAvailable": "Update available — v{{version}}",
       "upToDate": "You're up to date",
-      "projectNotice": "A passion project built for the X-Plane community, shared free of charge and developed in the open.",
+      "projectNotice": "A passion project built for the X-Plane community, shared free of charge.",
       "credits": "Credits",
       "developer": "Developer",
       "license": "License",
