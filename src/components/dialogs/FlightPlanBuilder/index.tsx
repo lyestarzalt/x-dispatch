@@ -43,7 +43,7 @@ import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { cn } from '@/lib/utils/helpers';
 import { formatWind } from '@/lib/utils/metar';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { useAirportProcedures } from '@/queries';
+import { useAirportProcedures, useTrackFeatureOpened } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -269,6 +269,7 @@ interface FlightPlanBuilderProps {
 export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
+  useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
   const departure = usePlanBuilderStore((s) => s.departure);
   const arrival = usePlanBuilderStore((s) => s.arrival);

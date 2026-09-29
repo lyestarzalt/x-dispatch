@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils/helpers';
+import { useAnalyticsConsent, useSetAnalyticsConsent } from '@/queries';
 import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
@@ -31,6 +32,9 @@ export default function SupportSection({ className }: SettingsSectionProps) {
       setIsLoadingCrashReports(false);
     });
   }, []);
+
+  const analyticsConsent = useAnalyticsConsent();
+  const setAnalyticsConsent = useSetAnalyticsConsent();
 
   const handleCrashReportsChange = async (enabled: boolean) => {
     setSendCrashReports(enabled);
@@ -124,6 +128,13 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           disabled={isLoadingCrashReports}
         />
         <p className="text-muted-foreground text-sm">{t('settings.about.crashReportsNote')}</p>
+        <SettingsToggleRow
+          title={t('settings.support.usageData')}
+          description={t('settings.support.usageDataDescription')}
+          checked={analyticsConsent.data?.consent === 'granted'}
+          onCheckedChange={(enabled) => setAnalyticsConsent.mutate(enabled)}
+          disabled={analyticsConsent.isLoading || setAnalyticsConsent.isPending}
+        />
       </div>
     </div>
   );

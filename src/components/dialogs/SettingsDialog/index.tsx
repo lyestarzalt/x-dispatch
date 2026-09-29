@@ -25,6 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
+import { useTrackFeatureOpened } from '@/queries';
 import {
   AboutSection,
   AirportsSection,
@@ -78,6 +79,7 @@ const TABS: TabConfig[] = [
 ];
 
 export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
+  useTrackFeatureOpened('settings', open);
   const { t } = useTranslation();
   const { data: version } = useAppVersion();
   const [activeTab, setActiveTab] = useState<TabId>('xplane');

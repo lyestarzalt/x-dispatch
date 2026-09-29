@@ -452,7 +452,9 @@
       "sendError": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie.",
       "community": "Społeczność",
       "discord": "Discord",
-      "privacy": "Prywatność"
+      "privacy": "Prywatność",
+      "usageData": "Udostępniaj anonimowe dane o użytkowaniu",
+      "usageDataDescription": "Używane funkcje, wersja aplikacji i system. Działa od razu."
     },
     "simbrief": {
       "description": "Importuj plany lotu z SimBrief",
@@ -1905,5 +1907,18 @@
     "radial": "Radial",
     "distance": "Odległość",
     "noPlane": "Brak pozycji samolotu"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Pomóż ulepszyć X-Dispatch",
+      "description": "Udostępniaj anonimowe dane o użytkowaniu, abyśmy wiedzieli, z których funkcji korzystasz i na czym się skupić. Domyślnie wyłączone – możesz to zmienić w każdej chwili w Ustawienia → Wsparcie.",
+      "collectedTitle": "Co jest udostępniane",
+      "collected": "Wersja aplikacji, system operacyjny, język, wersja X-Plane, długość sesji i otwierane główne ekrany.",
+      "notCollectedTitle": "Nigdy nie udostępniane",
+      "notCollected": "Twój adres IP, ścieżki plików, identyfikator SimBrief ani nic, co wpisujesz.",
+      "privacyLink": "Polityka prywatności",
+      "accept": "Udostępniaj dane",
+      "decline": "Nie, dziękuję"
+    }
   }
 }

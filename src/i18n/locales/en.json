@@ -452,7 +452,9 @@
       "sendError": "Failed to send report. Please try again.",
       "community": "Community",
       "discord": "Discord",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "usageData": "Share anonymous usage data",
+      "usageDataDescription": "Which features are used, app version and OS. Takes effect immediately."
     },
     "simbrief": {
       "description": "Import flight plans from SimBrief",
@@ -1905,5 +1907,18 @@
     "radial": "Radial",
     "distance": "Distance",
     "noPlane": "No aircraft position"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Help improve X-Dispatch",
+      "description": "Share anonymous usage data so we can see which features are used and where to focus. It stays off unless you turn it on, and you can change it any time in Settings → Support.",
+      "collectedTitle": "What's shared",
+      "collected": "App version, operating system, language, X-Plane version, session length and which main screens you open.",
+      "notCollectedTitle": "Never shared",
+      "notCollected": "Your IP address, file paths, SimBrief ID or anything you type.",
+      "privacyLink": "Privacy policy",
+      "accept": "Share usage data",
+      "decline": "No thanks"
+    }
   }
 }

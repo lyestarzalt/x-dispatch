@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTrackFeatureOpened } from '@/queries';
 import { useClearFlights, useFlightsQuery } from '@/queries/useFlightsQuery';
 import { type LogbookTab, useAppStore } from '@/stores/appStore';
 import { FlightDetailPanel } from './FlightDetailPanel';
@@ -26,6 +27,7 @@ import { LaunchHistory } from './LaunchHistory';
 export default function LogbookDialog() {
   const { t } = useTranslation();
   const open = useAppStore((s) => s.logbook.open);
+  useTrackFeatureOpened('logbook', open);
   const tab = useAppStore((s) => s.logbook.tab);
   const flightId = useAppStore((s) => s.logbook.flightId);
   const setLogbookTab = useAppStore((s) => s.setLogbookTab);

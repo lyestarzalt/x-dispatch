@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { indicatorSpring, quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
+import { useTrackFeatureOpened } from '@/queries';
 import { BrowserTab } from './tabs/BrowserTab';
 import { InstallerTab } from './tabs/InstallerTab';
 import { SceneryTab } from './tabs/SceneryTab';
@@ -50,6 +51,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export function AddonManager({ open, onClose }: AddonManagerProps) {
+  useTrackFeatureOpened('addon_manager', open);
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabValue>('installed');
 

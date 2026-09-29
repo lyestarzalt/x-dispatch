@@ -16,7 +16,13 @@ import {
   resolveLaunchTime,
 } from '@/lib/xplaneServices/launch/flightInit';
 import { validateNewFlight } from '@/lib/xplaneServices/launch/flightInit/schema';
-import { useAircraftList, useStartFlight, useWeatherPresets, useXPlaneStatus } from '@/queries';
+import {
+  useAircraftList,
+  useStartFlight,
+  useTrackFeatureOpened,
+  useWeatherPresets,
+  useXPlaneStatus,
+} from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import { useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -67,6 +73,7 @@ function launchErrorMessage(
 }
 
 export default function LaunchPanel({ open, onClose, startPosition }: LaunchPanelProps) {
+  useTrackFeatureOpened('launch', open);
   const { t } = useTranslation();
 
   // Check if X-Plane is already running

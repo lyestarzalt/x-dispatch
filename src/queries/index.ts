@@ -71,4 +71,5 @@ export { useDistinctCountries } from './useDistinctCountries';
 export { useXplaneLogQuery, xplaneLogKeys, type XPLogReadResult } from './useXplaneLogQuery';
 
 // Update check hook
+export { useAnalyticsConsent, useSetAnalyticsConsent, useTrackFeatureOpened } from './useAnalytics';
 export { useUpdateCheck, type UpdateCheckResult } from './useUpdateCheck';

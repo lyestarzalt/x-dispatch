@@ -25,6 +25,10 @@ interface XPlaneConfig {
   installations?: XPlaneInstallation[];
   /** ID of the currently active installation */
   activeInstallationId?: string;
+  /** Usage analytics consent; absent until the user answers the first-launch prompt */
+  analyticsConsent?: 'granted' | 'denied';
+  /** Random anonymous install ID, only present while analytics consent is granted */
+  analyticsInstallId?: string;
 }
 
 const CONFIG_VERSION = 1;
@@ -107,6 +111,10 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       xplaneIsSteam: config.xplaneIsSteam ?? existing?.xplaneIsSteam,
       installations: config.installations ?? existing?.installations,
       activeInstallationId: config.activeInstallationId ?? existing?.activeInstallationId,
+      analyticsConsent: config.analyticsConsent ?? existing?.analyticsConsent,
+      // `in` check so withdrawing consent can delete the ID (undefined drops it from JSON).
+      analyticsInstallId:
+        'analyticsInstallId' in config ? config.analyticsInstallId : existing?.analyticsInstallId,
     };
 
     fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
@@ -161,6 +169,29 @@ export function getSendCrashReports(): boolean {
  */
 export function setSendCrashReports(enabled: boolean): boolean {
   return saveConfig({ sendCrashReports: enabled });
+}
+
+export function getAnalyticsConsent(): 'granted' | 'denied' | null {
+  return loadConfig()?.analyticsConsent ?? null;
+}
+
+/**
+ * Stores the user's analytics choice. Granting creates the anonymous install ID
+ * if missing; denying deletes it so a later opt-in starts as a new install.
+ */
+export function setAnalyticsConsent(granted: boolean): boolean {
+  if (!granted) {
+    return saveConfig({ analyticsConsent: 'denied', analyticsInstallId: undefined });
+  }
+  const installId = loadConfig()?.analyticsInstallId ?? crypto.randomUUID();
+  return saveConfig({ analyticsConsent: 'granted', analyticsInstallId: installId });
+}
+
+/** The anonymous install ID, or null unless consent is granted. */
+export function getAnalyticsInstallId(): string | null {
+  const config = loadConfig();
+  if (config?.analyticsConsent !== 'granted') return null;
+  return config.analyticsInstallId ?? null;
 }
 
 /**

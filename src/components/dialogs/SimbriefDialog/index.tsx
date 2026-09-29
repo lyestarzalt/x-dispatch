@@ -48,6 +48,7 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
+import { useTrackFeatureOpened } from '@/queries';
 import {
   formatDistance,
   formatFlightTime,
@@ -78,6 +79,7 @@ interface SimbriefDialogProps {
 }
 
 export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
+  useTrackFeatureOpened('simbrief', open);
   const { t } = useTranslation();
   const { simbrief } = useSettingsStore();
   const { loadFromSimbrief } = useFlightPlanStore();

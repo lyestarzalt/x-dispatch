@@ -3,6 +3,7 @@ import {
   ClipboardItem,
   Menu,
   app,
+  autoUpdater,
   clipboard,
   dialog,
   globalShortcut,
@@ -17,6 +18,8 @@ import * as fs from 'fs';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
+import type { AnalyticsConsentState } from './lib/analytics/events';
+import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb } from './lib/db';
@@ -56,11 +59,13 @@ import {
   addInstallation,
   getActiveInstallation,
   getActiveInstallationName,
+  getAnalyticsConsent,
   getInstallations,
   getSendCrashReports,
   removeInstallation,
   renameInstallation,
   setActiveInstallation,
+  setAnalyticsConsent,
   setSendCrashReports,
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
@@ -205,6 +210,12 @@ let dataManager: ReturnType<typeof getXPlaneDataManager>;
 let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
 const sessionStartTime = Date.now();
+const analytics = initMainAnalytics();
+let analyticsFlushed = false;
+// Never delay a Squirrel quitAndInstall; the update restart wins over the last analytics batch.
+autoUpdater.on('before-quit-for-update', () => {
+  analyticsFlushed = true;
+});
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
 
@@ -582,6 +593,21 @@ function registerIpcHandlers() {
       return { success: false, error: 'Invalid URL format' };
     }
   });
+  ipcMain.handle('analytics:getConsent', (): AnalyticsConsentState => {
+    const consent = getAnalyticsConsent();
+    // E2E runs never see the prompt, so it can't block automated UI flows.
+    return { consent, shouldPrompt: consent === null && !process.env.E2E_USER_DATA_DIR };
+  });
+  ipcMain.handle('analytics:setConsent', (_, granted: unknown) => {
+    if (typeof granted !== 'boolean') return false;
+    const success = setAnalyticsConsent(granted);
+    if (success) {
+      logger.main.info(`Usage analytics ${granted ? 'enabled' : 'disabled'} by user`);
+      analytics.onConsentChanged(granted);
+    }
+    return success;
+  });
+  ipcMain.on('analytics:trackFeature', (_, feature: unknown) => analytics.trackFeature(feature));
   ipcMain.handle('app:getSendCrashReports', () => getSendCrashReports());
   ipcMain.handle('app:setSendCrashReports', (_, enabled: boolean) => {
     const success = setSendCrashReports(enabled);
@@ -1764,6 +1790,7 @@ app.on('open-url', (event, url) => {
 app.whenReady().then(async () => {
   // Environment snapshot for production support
   logStartupEnvironment(shouldInitSentry);
+  analytics.startSession();
 
   if (app.isPackaged && process.platform === 'win32') {
     try {
@@ -1929,7 +1956,18 @@ app.on('window-all-closed', () => {
   // On macOS, keep DB open since app stays running
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', (event) => {
+  // Hold the quit once so session_ended and queued events flush (bounded by a 3s timeout).
+  if (!analyticsFlushed) {
+    analyticsFlushed = true;
+    event.preventDefault();
+    analytics
+      .shutdown()
+      .catch((err) => logger.main.warn(`Analytics shutdown failed: ${(err as Error).message}`))
+      .finally(() => app.quit());
+    return;
+  }
+
   // Session summary
   const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000 / 60);
   logger.main.info('════════════════════════════════════════════════════════════════');

@@ -452,7 +452,9 @@
       "sendError": "Échec de l'envoi du rapport. Veuillez réessayer.",
       "community": "Communauté",
       "discord": "Discord",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité",
+      "usageData": "Partager des données d'utilisation anonymes",
+      "usageDataDescription": "Fonctionnalités utilisées, version de l'app et système. Effet immédiat."
     },
     "simbrief": {
       "description": "Importer des plans de vol depuis SimBrief",
@@ -1905,5 +1907,18 @@
     "radial": "Radial",
     "distance": "Distance",
     "noPlane": "Position avion inconnue"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Aidez à améliorer X-Dispatch",
+      "description": "Partagez des données d'utilisation anonymes pour que nous sachions quelles fonctionnalités sont utilisées et où concentrer nos efforts. Désactivé sauf si vous l'activez ; modifiable à tout moment dans Paramètres → Support.",
+      "collectedTitle": "Ce qui est partagé",
+      "collected": "Version de l'app, système d'exploitation, langue, version de X-Plane, durée de session et écrans principaux ouverts.",
+      "notCollectedTitle": "Jamais partagé",
+      "notCollected": "Votre adresse IP, vos chemins de fichiers, votre identifiant SimBrief ou ce que vous saisissez.",
+      "privacyLink": "Politique de confidentialité",
+      "accept": "Partager les données",
+      "decline": "Non merci"
+    }
   }
 }

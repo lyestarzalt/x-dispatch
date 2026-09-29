@@ -452,7 +452,9 @@
       "sendError": "Blast. Yer report hit rough seas. Try again.",
       "community": "Crew",
       "discord": "Discord",
-      "privacy": "Privacy charter"
+      "privacy": "Privacy charter",
+      "usageData": "Share anonymous usage data",
+      "usageDataDescription": "Which features be used, app version and OS. Takes effect at once."
     },
     "simbrief": {
       "description": "Import voyage plans from SimBrief",
@@ -1905,5 +1907,18 @@
     "radial": "Radial",
     "distance": "Distance",
     "noPlane": "No ship position"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Help make X-Dispatch shipshape",
+      "description": "Share anonymous usage data so we know which parts o' the ship be used and where to put the crew to work. It stays furled unless ye hoist it, and ye can change yer mind any time in Settings → Support.",
+      "collectedTitle": "What be shared",
+      "collected": "App version, operatin' system, tongue, X-Plane version, how long ye sail and which main decks ye visit.",
+      "notCollectedTitle": "Never shared",
+      "notCollected": "Yer IP address, file paths, SimBrief ID or anythin' ye type.",
+      "privacyLink": "Privacy articles",
+      "accept": "Share usage data",
+      "decline": "Nay, thanks"
+    }
   }
 }

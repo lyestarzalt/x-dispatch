@@ -452,7 +452,9 @@
       "sendError": "レポートの送信に失敗しました。もう一度お試しください。",
       "community": "コミュニティ",
       "discord": "Discord",
-      "privacy": "プライバシー"
+      "privacy": "プライバシー",
+      "usageData": "匿名の利用データを共有",
+      "usageDataDescription": "使われた機能、アプリのバージョン、OS。すぐに反映されます。"
     },
     "simbrief": {
       "description": "SimBrief からフライトプランをインポート",
@@ -1905,5 +1907,18 @@
     "radial": "ラジアル",
     "distance": "距離",
     "noPlane": "機体位置なし"
+  },
+  "analytics": {
+    "consent": {
+      "title": "X-Dispatch の改善にご協力ください",
+      "description": "匿名の利用データを共有いただくと、どの機能が使われているか把握し、開発の優先度を決められます。オンにしない限り無効で、設定 → サポートでいつでも変更できます。",
+      "collectedTitle": "共有される情報",
+      "collected": "アプリのバージョン、OS、言語、X-Plane のバージョン、セッション時間、開いた主な画面。",
+      "notCollectedTitle": "共有されない情報",
+      "notCollected": "IP アドレス、ファイルパス、SimBrief ID、入力した内容。",
+      "privacyLink": "プライバシーポリシー",
+      "accept": "利用データを共有",
+      "decline": "共有しない"
+    }
   }
 }

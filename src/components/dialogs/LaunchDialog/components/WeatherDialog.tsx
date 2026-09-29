@@ -26,6 +26,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
+import { useTrackFeatureOpened } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
 import type {
   CloudLayer,
@@ -109,6 +110,7 @@ const TERRAIN_INTENSITIES: TerrainIntensity[] = ['light', 'medium', 'heavy'];
 // ─── Main Dialog ────────────────────────────────────────────────────────────
 
 export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: WeatherDialogProps) {
+  useTrackFeatureOpened('weather', open);
   const { t } = useTranslation();
   const weatherConfig = useLaunchStore((s) => s.weatherConfig);
   const updateCustomWeather = useLaunchStore((s) => s.updateCustomWeather);
