@@ -57,8 +57,8 @@ export function initMainAnalytics(): Analytics {
         flushAt: 20,
         flushInterval: 60_000,
         requestTimeout: REQUEST_TIMEOUT_MS,
-        // Country lookup happens server-side; the project discards the IP itself.
-        disableGeoip: false,
+        // No server-side IP geolocation; country comes from the OS region instead.
+        disableGeoip: true,
       }),
     baseProperties: () => ({
       $app_version: app.getVersion(),
@@ -66,6 +66,8 @@ export function initMainAnalytics(): Analytics {
       $os_version: process.getSystemVersion(),
       arch: process.arch,
       locale: app.getLocale(),
+      // Region from the OS settings (e.g. "FR"), not an IP lookup; empty when unknown.
+      country: app.getLocaleCountryCode() || null,
       xplane_version: getStoredXPlaneVersion()?.version ?? null,
     }),
   });

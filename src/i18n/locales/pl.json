@@ -1913,7 +1913,7 @@
       "title": "Pomóż ulepszyć X-Dispatch",
       "description": "Udostępniaj anonimowe dane o użytkowaniu, abyśmy wiedzieli, z których funkcji korzystasz i na czym się skupić. Domyślnie wyłączone – możesz to zmienić w każdej chwili w Ustawienia → Wsparcie.",
       "collectedTitle": "Co jest udostępniane",
-      "collected": "Wersja aplikacji, system operacyjny, język, wersja X-Plane, długość sesji i otwierane główne ekrany.",
+      "collected": "Wersja aplikacji, system operacyjny, język i region, wersja X-Plane, długość sesji i otwierane główne ekrany.",
       "notCollectedTitle": "Nigdy nie udostępniane",
       "notCollected": "Twój adres IP, ścieżki plików, identyfikator SimBrief ani nic, co wpisujesz.",
       "privacyLink": "Polityka prywatności",

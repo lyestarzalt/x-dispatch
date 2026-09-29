@@ -1913,7 +1913,7 @@
       "title": "Aidez à améliorer X-Dispatch",
       "description": "Partagez des données d'utilisation anonymes pour que nous sachions quelles fonctionnalités sont utilisées et où concentrer nos efforts. Désactivé sauf si vous l'activez ; modifiable à tout moment dans Paramètres → Support.",
       "collectedTitle": "Ce qui est partagé",
-      "collected": "Version de l'app, système d'exploitation, langue, version de X-Plane, durée de session et écrans principaux ouverts.",
+      "collected": "Version de l'app, système d'exploitation, langue et région, version de X-Plane, durée de session et écrans principaux ouverts.",
       "notCollectedTitle": "Jamais partagé",
       "notCollected": "Votre adresse IP, vos chemins de fichiers, votre identifiant SimBrief ou ce que vous saisissez.",
       "privacyLink": "Politique de confidentialité",

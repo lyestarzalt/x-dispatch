@@ -1913,7 +1913,7 @@
       "title": "X-Dispatch の改善にご協力ください",
       "description": "匿名の利用データを共有いただくと、どの機能が使われているか把握し、開発の優先度を決められます。オンにしない限り無効で、設定 → サポートでいつでも変更できます。",
       "collectedTitle": "共有される情報",
-      "collected": "アプリのバージョン、OS、言語、X-Plane のバージョン、セッション時間、開いた主な画面。",
+      "collected": "アプリのバージョン、OS、言語と地域、X-Plane のバージョン、セッション時間、開いた主な画面。",
       "notCollectedTitle": "共有されない情報",
       "notCollected": "IP アドレス、ファイルパス、SimBrief ID、入力した内容。",
       "privacyLink": "プライバシーポリシー",

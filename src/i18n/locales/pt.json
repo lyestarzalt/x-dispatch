@@ -1913,7 +1913,7 @@
       "title": "Ajude a melhorar o X-Dispatch",
       "description": "Partilhe dados de utilização anónimos para sabermos que funcionalidades são usadas e onde focar. Fica desligado a menos que o ative, e pode alterar a qualquer momento em Definições → Suporte.",
       "collectedTitle": "O que é partilhado",
-      "collected": "Versão da app, sistema operativo, idioma, versão do X-Plane, duração da sessão e ecrãs principais que abre.",
+      "collected": "Versão da app, sistema operativo, idioma e região, versão do X-Plane, duração da sessão e ecrãs principais que abre.",
       "notCollectedTitle": "Nunca partilhado",
       "notCollected": "O seu endereço IP, caminhos de ficheiros, ID do SimBrief ou qualquer coisa que escreva.",
       "privacyLink": "Política de privacidade",

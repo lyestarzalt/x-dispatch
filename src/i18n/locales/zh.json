@@ -1913,7 +1913,7 @@
       "title": "帮助改进 X-Dispatch",
       "description": "共享匿名使用数据，让我们了解哪些功能被使用、应把精力放在哪里。除非你开启，否则保持关闭，可随时在 设置 → 支持 中更改。",
       "collectedTitle": "共享的内容",
-      "collected": "应用版本、操作系统、语言、X-Plane 版本、会话时长以及你打开的主要界面。",
+      "collected": "应用版本、操作系统、语言和地区、X-Plane 版本、会话时长以及你打开的主要界面。",
       "notCollectedTitle": "绝不共享",
       "notCollected": "你的 IP 地址、文件路径、SimBrief ID 或你输入的任何内容。",
       "privacyLink": "隐私政策",
