@@ -1,7 +1,8 @@
 name: Release Sync Notes
 
-# Run after editing the draft release body on GitHub: copies the notes to R2 and
-# refreshes the website catalog from there.
+# Run after editing the draft release body on GitHub: copies the notes to R2 and,
+# for stable releases, refreshes the website catalog from there. Release
+# candidates never reach the website.
 
 on:
   workflow_dispatch:
@@ -38,6 +39,7 @@ jobs:
 
       - name: Mint website sync token
         id: site-token
+        if: steps.r2.outputs.channel == 'stable'
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.X_DISPATCH_APP_ID }}
@@ -46,6 +48,7 @@ jobs:
           repositories: x-dispatch.app
 
       - name: Sync website catalog
+        if: steps.r2.outputs.channel == 'stable'
         env:
           GH_TOKEN: ${{ steps.site-token.outputs.token }}
           TAG: ${{ inputs.tag }}
