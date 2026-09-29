@@ -11,6 +11,13 @@ on:
           - patch
           - minor
           - major
+      legacy_github_assets:
+        description: >-
+          Also publish installers and the Windows update feed on GitHub, so
+          installs older than 2.2 (which only check GitHub) can update
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -252,6 +259,33 @@ jobs:
 
       - name: Verify public downloads
         run: bash scripts/check-r2-public.sh
+
+      # Bridge for installs older than 2.2: Windows updates through
+      # update.electronjs.org and macOS/Linux read releases/latest, both of which
+      # only see published GitHub releases with assets. Assets go up before the
+      # draft is published so the feed never points at a release without files.
+      - name: Publish GitHub release for legacy updaters
+        if: inputs.legacy_github_assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.compute-version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=()
+          for f in release-assets/*; do
+            case "$(basename "$f")" in
+              sha256sums.txt | notes.md | manifest.json) ;;
+              *) files+=("$f") ;;
+            esac
+          done
+          if [ ! -f release-assets/RELEASES ]; then
+            echo "::error title=Missing Squirrel feed::RELEASES not found; legacy Windows installs could not update."
+            exit 1
+          fi
+          gh release upload "$TAG" "${files[@]}" --clobber
+          gh release edit "$TAG" --draft=false --latest
+          echo "- :white_check_mark: Published \`$TAG\` on GitHub for pre-2.2 updaters (${#files[@]} files)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Mint website sync token
         id: site-token
