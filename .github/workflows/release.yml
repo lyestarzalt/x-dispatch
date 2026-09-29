@@ -262,9 +262,10 @@ jobs:
 
       # Bridge for installs older than 2.2. Windows updates through
       # update.electronjs.org and macOS/Linux read releases/latest, both of which
-      # only see published GitHub releases. Only the Squirrel update files go up:
-      # installers stay on the website, and the macOS/Linux update notice already
-      # opens x-dispatch.app/download.
+      # only see published GitHub releases. update.electronjs.org only treats a
+      # release as having a Windows build when it holds a .exe, so the Windows
+      # installer goes up with the Squirrel files; the macOS/Linux installers stay
+      # website-only (their update notice opens x-dispatch.app/download).
       - name: Publish GitHub release for legacy updaters
         if: inputs.legacy_github_assets
         env:
@@ -274,14 +275,15 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
           packages=(release-assets/*.nupkg)
-          if [ ! -f release-assets/RELEASES ] || [ ${#packages[@]} -eq 0 ]; then
-            echo "::error title=Missing Squirrel feed::RELEASES or .nupkg not found; legacy Windows installs could not update."
+          installers=(release-assets/*-windows-x64.exe)
+          if [ ! -f release-assets/RELEASES ] || [ ${#packages[@]} -eq 0 ] || [ ${#installers[@]} -eq 0 ]; then
+            echo "::error title=Missing Windows files::RELEASES, .nupkg or the Windows .exe not found; legacy Windows installs could not update."
             exit 1
           fi
           # Upload before publishing so the feed never points at a release without files.
-          gh release upload "$TAG" release-assets/RELEASES "${packages[@]}" --clobber
+          gh release upload "$TAG" release-assets/RELEASES "${packages[@]}" "${installers[@]}" --clobber
           gh release edit "$TAG" --draft=false --latest
-          echo "- :white_check_mark: Published \`$TAG\` on GitHub with the Windows update feed only" >> "$GITHUB_STEP_SUMMARY"
+          echo "- :white_check_mark: Published \`$TAG\` on GitHub with the Windows update files" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Mint website sync token
         id: site-token
