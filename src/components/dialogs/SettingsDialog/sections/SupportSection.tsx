@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils/helpers';
 import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
-const GITHUB_ISSUES = 'https://github.com/lyestarzalt/x-dispatch/issues';
+const SUPPORT_PAGE = 'https://x-dispatch.app/support/';
 const DISCORD_INVITE = 'https://discord.gg/76UYpxXWW7';
 
 export default function SupportSection({ className }: SettingsSectionProps) {
@@ -103,7 +103,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
       <div className="space-y-3">
         <h3 className="xp-section-heading">{t('settings.support.community')}</h3>
         <div className="space-y-1">
-          <SettingsLinkRow label={t('settings.about.reportIssue')} href={GITHUB_ISSUES} />
+          <SettingsLinkRow label={t('settings.about.reportIssue')} href={SUPPORT_PAGE} />
           <SettingsLinkRow label={t('settings.support.discord')} href={DISCORD_INVITE} />
           <SettingsLinkRow
             label={t('settings.about.supportProject')}

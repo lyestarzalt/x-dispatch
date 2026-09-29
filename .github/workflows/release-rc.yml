@@ -141,7 +141,6 @@ jobs:
           mkdir -p release-assets
           find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
           test "$(find release-assets -type f | wc -l | tr -d ' ')" = "5"
-          (cd release-assets && sha256sum X-Dispatch-* > sha256sums.txt)
           echo "Collected RC release assets:"
           ls -la release-assets/
 
@@ -169,17 +168,10 @@ jobs:
           # truncation marker itself.
           MAX_LEN=3000
 
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
-          if [ -n "$LAST_TAG" ]; then
-            COMPARE_URL="https://github.com/${{ github.repository }}/compare/${LAST_TAG}...${{ github.sha }}"
-          else
-            COMPARE_URL="https://github.com/${{ github.repository }}/commits/${{ github.sha }}"
-          fi
-
           if [ ${#FULL_CHANGELOG} -gt $MAX_LEN ]; then
             CHANGELOG="${FULL_CHANGELOG:0:$MAX_LEN}…
 
-          [Full changelog](${COMPARE_URL})"
+          [Full changelog](https://x-dispatch.app/changelog/)"
           else
             CHANGELOG="$FULL_CHANGELOG"
           fi
@@ -227,18 +219,26 @@ jobs:
             echo "> :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator."
           } > release-notes.md
 
-      - name: Create GitHub prerelease
+      # Installers ship from R2 only. The draft is never public and holds the
+      # notes that release-sync-notes.yml copies to R2 after editing. A draft
+      # does not create its tag, so the tag is made first: the Discord
+      # changelog counts commits from the previous RC tag.
+      - name: Tag RC and create draft GitHub release (notes only)
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.resolve.outputs.tag }}
         run: |
           set -euo pipefail
           gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
-          gh release create "$TAG" release-assets/* \
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$TAG" 2>/dev/null || true
+          gh api "repos/${{ github.repository }}/git/refs" \
+            -f ref="refs/tags/$TAG" -f sha="${{ github.sha }}" > /dev/null
+          gh release create "$TAG" \
             --title "X-Dispatch $TAG — Release Candidate" \
             --notes-file release-notes.md \
+            --draft \
             --prerelease \
-            --target "${{ github.sha }}"
+            --verify-tag
 
       - name: Publish release to R2
         env:

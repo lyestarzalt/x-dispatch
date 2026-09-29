@@ -485,7 +485,7 @@
       "description": "Planowanie lotów i wizualizacja lotnisk dla X-Plane",
       "updateAvailable": "Dostępna aktualizacja — v{{version}}",
       "upToDate": "Masz najnowszą wersję",
-      "projectNotice": "Darmowy, otwarcie rozwijany projekt dla społeczności X-Plane.",
+      "projectNotice": "Darmowy projekt dla społeczności X-Plane.",
       "credits": "Twórcy",
       "developer": "Twórca",
       "license": "Licencja",
@@ -512,7 +512,7 @@
       "toggleDebug": "Przełącz",
       "debugShortcut": "Możesz też użyć Ctrl+Shift+D (Cmd+Shift+D na Macu)",
       "developerName": "Lyes Tarzalt",
-      "licenseValue": "GPL-3.0-only",
+      "licenseValue": "Własnościowa",
       "specialThanksName": "Gilles",
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
@@ -1298,9 +1298,9 @@
       "coldAndDark": "Cold and dark",
       "ready": "Gotowy",
       "copyJson": "Kopiuj JSON uruchomienia",
-      "copyJsonToast": "JSON uruchomienia skopiowany. Wklej go na GitHubie lub Discordzie, jeśli wystąpił problem z tym lotem.",
+      "copyJsonToast": "JSON uruchomienia skopiowany. Wklej go na Discordzie, jeśli wystąpił problem z tym lotem.",
       "copyJsonError": "Nie udało się skopiować JSON uruchomienia",
-      "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na GitHubie lub Discordzie."
+      "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na Discordzie."
     },
     "weightFuelLabel": "Masa i paliwo",
     "conditions": {

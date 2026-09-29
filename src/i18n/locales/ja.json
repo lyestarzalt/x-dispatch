@@ -485,7 +485,7 @@
       "description": "X-Plane 向けフライトディスパッチと空港表示",
       "updateAvailable": "アップデートが利用可能 — v{{version}}",
       "upToDate": "最新版です",
-      "projectNotice": "X-Plane コミュニティ向けに作られた、無料でオープンなプロジェクトです。",
+      "projectNotice": "X-Plane コミュニティ向けに作られた、無料のプロジェクトです。",
       "credits": "クレジット",
       "developer": "開発者",
       "license": "ライセンス",
@@ -512,7 +512,7 @@
       "toggleDebug": "切り替え",
       "debugShortcut": "Ctrl+Shift+D（MacではCmd+Shift+D）も使用できます",
       "developerName": "Lyes Tarzalt",
-      "licenseValue": "GPL-3.0-only",
+      "licenseValue": "プロプライエタリ",
       "specialThanksName": "Gilles",
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
@@ -1298,9 +1298,9 @@
       "coldAndDark": "コールド＆ダーク",
       "ready": "準備完了",
       "copyJson": "起動 JSON をコピー",
-      "copyJsonToast": "起動 JSON をコピーしました。このフライトで問題があった場合は、GitHub または Discord に貼り付けてください。",
+      "copyJsonToast": "起動 JSON をコピーしました。このフライトで問題があった場合は、Discord に貼り付けてください。",
       "copyJsonError": "起動 JSON をコピーできませんでした",
-      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を GitHub または Discord で開発者と共有してください。"
+      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を Discord で開発者と共有してください。"
     },
     "weightFuelLabel": "重量と燃料",
     "conditions": {

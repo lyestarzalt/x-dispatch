@@ -485,7 +485,7 @@
       "description": "Flight dispatch and airport visualization for X-Plane",
       "updateAvailable": "Update available — v{{version}}",
       "upToDate": "You're up to date",
-      "projectNotice": "A passion project built for the X-Plane community, shared free of charge and developed in the open.",
+      "projectNotice": "A passion project built for the X-Plane community, shared free of charge.",
       "credits": "Credits",
       "developer": "Developer",
       "license": "License",
@@ -512,7 +512,7 @@
       "toggleDebug": "Toggle",
       "debugShortcut": "You can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)",
       "developerName": "Lyes Tarzalt",
-      "licenseValue": "GPL-3.0-only",
+      "licenseValue": "Proprietary",
       "specialThanksName": "Gilles",
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
@@ -1298,9 +1298,9 @@
       "coldAndDark": "Cold & Dark",
       "ready": "Ready",
       "copyJson": "Copy launch JSON",
-      "copyJsonToast": "Launch JSON copied. Paste it on GitHub or Discord if you hit a problem with this flight.",
+      "copyJsonToast": "Launch JSON copied. Paste it on Discord if you hit a problem with this flight.",
       "copyJsonError": "Couldn't copy launch JSON",
-      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on GitHub or Discord."
+      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on Discord."
     },
     "weightFuelLabel": "Weight & Fuel",
     "conditions": {

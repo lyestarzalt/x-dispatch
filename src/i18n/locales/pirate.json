@@ -485,7 +485,7 @@
       "description": "Flight dispatch an' airport visualization fer X-Plane",
       "updateAvailable": "New booty available — v{{version}}",
       "upToDate": "Yer ship be shipshape",
-      "projectNotice": "A passion-fueled project fer the X-Plane crew, shared free o' charge and built in the open.",
+      "projectNotice": "A passion-fueled project fer the X-Plane crew, shared free o' charge.",
       "credits": "Crew Credits",
       "developer": "Shipwright",
       "license": "Ship's papers",
@@ -512,7 +512,7 @@
       "toggleDebug": "Toggle Spyglass",
       "debugShortcut": "Ye can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)",
       "developerName": "Lyes Tarzalt",
-      "licenseValue": "GPL-3.0-only",
+      "licenseValue": "Proprietary",
       "specialThanksName": "Gilles",
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
@@ -1298,9 +1298,9 @@
       "coldAndDark": "Cold 'n dark",
       "ready": "Ready fer flight",
       "copyJson": "Plunder yer launch JSON",
-      "copyJsonToast": "Launch JSON pilfered. Paste it on GitHub or Discord if ye hit trouble with this voyage.",
+      "copyJsonToast": "Launch JSON pilfered. Paste it on Discord if ye hit trouble with this voyage.",
       "copyJsonError": "Couldn't pilfer the launch JSON, blast it",
-      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on GitHub or Discord."
+      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on Discord."
     },
     "weightFuelLabel": "Heft & Grog",
     "conditions": {

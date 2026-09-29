@@ -8,8 +8,8 @@ body = """
 - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{% if commit.breaking %}[**breaking**] {% endif %}\
 {{ commit.message | upper_first }}\
 {% if commit.remote.username %} by @{{ commit.remote.username }}{%- endif %}\
-{% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }}){%- endif %}\
- ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}))\
+{% if commit.remote.pr_number %} in #{{ commit.remote.pr_number }}{%- endif %}\
+ ({{ commit.id | truncate(length=7, end="") }})\
 {% endfor %}
 {% endfor %}
 
@@ -17,7 +17,7 @@ body = """
 ### New Contributors
 {% for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}
 - @{{ contributor.username }} made their first contribution\
-{% if contributor.pr_number %} in [#{{ contributor.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ contributor.pr_number }}){%- endif %}
+{% if contributor.pr_number %} in #{{ contributor.pr_number }}{%- endif %}
 {%- endfor %}
 {% endif %}
 """
@@ -45,7 +45,4 @@ commit_parsers = [
   { message = "^chore", group = "<!-- 6 -->Miscellaneous" },
   { message = "^ci", group = "<!-- 7 -->CI/CD" },
   { message = "^release", group = "<!-- 8 -->Release" },
-]
-link_parsers = [
-  { pattern = "#(\\d+)", href = "https://github.com/lyestarzalt/x-dispatch/issues/$1" },
 ]

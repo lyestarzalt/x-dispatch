@@ -9,7 +9,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -86,21 +86,6 @@ jobs:
           mkdir -p release-assets
           find out/make -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
           ls -la release-assets/
-
-      - name: Upload to existing release
-        if: success()
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ inputs.tag }}
-        run: |
-          shopt -s nullglob
-          files=(release-assets/*)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "No assets to upload"
-            exit 1
-          fi
-          gh release upload "$TAG" "${files[@]}" --clobber
 
       - name: Keep assets for R2
         if: success()

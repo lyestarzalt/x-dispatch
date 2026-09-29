@@ -463,7 +463,7 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
-// `latestVersion` is populated whenever the GitHub fetch + parse succeeds, so the
+// `latestVersion` is populated whenever the update manifest fetch + parse succeeds, so the
 // About section can display it even when there's no update.
 // `available` means "should trigger the update toast" — gated on isPackaged + non-Windows.
 type UpdateCheckResult = {
@@ -511,7 +511,7 @@ function registerIpcHandlers() {
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
   ipcMain.handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
-    // Dev builds skip the network call entirely to avoid hammering GitHub during HMR.
+    // Dev builds skip the network call entirely to avoid hammering dl.x-dispatch.app during HMR.
     // Production always fetches: the About section needs latestVersion even when
     // Windows users get their real update via update-electron-app (no toast for them).
     if (!app.isPackaged) {

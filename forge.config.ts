@@ -2,12 +2,12 @@ import { MakerDMG } from '@electron-forge/maker-dmg';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
-import { PublisherGithub } from '@electron-forge/publisher-github';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { MakerAppImage } from '@reforged/maker-appimage';
-import { cp, mkdir, rename } from 'node:fs/promises';
+import { cp, mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { buildThirdPartyLicenses } from './src/lib/build/thirdPartyLicenses';
 
 function getPlatformLabel(platform: string, arch: string): string {
   if (platform === 'win32') return `windows-${arch}`;
@@ -49,15 +49,6 @@ const config: ForgeConfig = {
         categories: ['Utility', 'Game'],
         mimeType: ['x-scheme-handler/xdispatch'],
       },
-    }),
-  ],
-  publishers: [
-    new PublisherGithub({
-      repository: {
-        owner: 'lyestarzalt',
-        name: 'x-dispatch',
-      },
-      draft: true,
     }),
   ],
   plugins: [
@@ -150,6 +141,11 @@ const config: ForgeConfig = {
         recursive: true,
         preserveTimestamps: true,
       });
+
+      await writeFile(
+        path.resolve(buildPath, 'THIRD_PARTY_LICENSES.txt'),
+        buildThirdPartyLicenses(__dirname)
+      );
     },
   },
 };
