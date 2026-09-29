@@ -69,6 +69,9 @@ pointer_key() { [ "$1" = "rc" ] && echo "latest-rc.json" || echo "latest.json"; 
 
 is_package() { case "$1" in RELEASES | *.nupkg) return 0 ;; *) return 1 ;; esac; }
 
+# Written by this script from the manifest; copies in the assets dir are ignored.
+is_generated() { case "$1" in sha256sums.txt | notes.md | manifest.json) return 0 ;; *) return 1 ;; esac; }
+
 # Prints one JSON object per downloadable file in the directory.
 describe_files() {
   local dir="$1" tag="$2" f name
@@ -76,6 +79,7 @@ describe_files() {
     [ -f "$f" ] || continue
     name="$(basename "$f")"
     is_package "$name" && continue
+    is_generated "$name" && continue
     jq -n \
       --arg name "$name" \
       --argjson size "$(wc -c < "$f" | tr -d ' ')" \
@@ -89,6 +93,7 @@ upload_assets() {
   local dir="$1" tag="$2" f
   for f in "$dir"/*; do
     [ -f "$f" ] || continue
+    is_generated "$(basename "$f")" && continue
     put "$f" "releases/$tag/$(basename "$f")" "$ASSET_CACHE"
   done
 }
