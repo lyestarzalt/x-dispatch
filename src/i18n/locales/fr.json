@@ -512,7 +512,7 @@
       "toggleDebug": "Activer/Désactiver",
       "debugShortcut": "Vous pouvez aussi utiliser Ctrl+Shift+D (Cmd+Shift+D sur Mac)",
       "developerName": "Lyes Tarzalt",
-      "licenseValue": "GPL-3.0-only",
+      "licenseValue": "Propriétaire",
       "specialThanksName": "Gilles",
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
@@ -1298,9 +1298,9 @@
       "coldAndDark": "Froid et éteint",
       "ready": "Prêt",
       "copyJson": "Copier le JSON de lancement",
-      "copyJsonToast": "JSON de lancement copié. Collez-le sur GitHub ou Discord si vous avez rencontré un problème avec ce vol.",
+      "copyJsonToast": "JSON de lancement copié. Collez-le sur Discord si vous avez rencontré un problème avec ce vol.",
       "copyJsonError": "Impossible de copier le JSON de lancement",
-      "shareHint": "Un problème avec un vol ? Cliquez sur l'icône de copie pour partager les détails avec le développeur sur GitHub ou Discord."
+      "shareHint": "Un problème avec un vol ? Cliquez sur l'icône de copie pour partager les détails avec le développeur sur Discord."
     },
     "weightFuelLabel": "Masse & carburant",
     "conditions": {

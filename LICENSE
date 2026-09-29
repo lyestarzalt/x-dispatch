@@ -1,0 +1,14 @@
+Copyright © 2026 Lyes Tarzalt. All rights reserved.
+
+This software and its source code are proprietary. No part of it may be
+copied, modified, distributed, sold, sublicensed or used to create derivative
+works without prior written permission from the copyright holder.
+
+Official builds are available free of charge at https://x-dispatch.app.
+Using an official build does not grant any rights to the source code.
+
+Third-party components keep their own licenses. The aircraft shapes in
+public/aircraft-shapes/ are by RexKramer1 and licensed under GPL-3.0; see
+public/aircraft-shapes/README.md.
+
+Contact: hello@x-dispatch.app

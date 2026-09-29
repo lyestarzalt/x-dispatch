@@ -38,7 +38,7 @@ NOTES
   "Session args (from CLI)" while X-Dispatch is running.
 
 DOCS
-  https://github.com/lyestarzalt/x-dispatch
+  https://x-dispatch.app
 `;
 }
 

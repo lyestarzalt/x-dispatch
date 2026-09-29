@@ -5,7 +5,7 @@
 If you discover a security vulnerability, please report it privately:
 
 1. **Do NOT open a public issue**
-2. Email: [lyes.trzlt@gmail.com] or use GitHub's private vulnerability reporting
+2. Email: hello@x-dispatch.app
 3. Include details about the vulnerability and steps to reproduce
 
 You can expect:

@@ -512,7 +512,7 @@
       "toggleDebug": "Activar/Desactivar",
       "debugShortcut": "También puedes usar Ctrl+Shift+D (Cmd+Shift+D en Mac)",
       "developerName": "Lyes Tarzalt",
-      "licenseValue": "GPL-3.0-only",
+      "licenseValue": "Propietaria",
       "specialThanksName": "Gilles",
       "specialThanksHandle": "(enjxp / simtwk3)"
     },
@@ -1298,9 +1298,9 @@
       "coldAndDark": "Frío y oscuro",
       "ready": "Listo",
       "copyJson": "Copiar JSON de inicio",
-      "copyJsonToast": "JSON de inicio copiado. Pégalo en GitHub o Discord si tuviste un problema con este vuelo.",
+      "copyJsonToast": "JSON de inicio copiado. Pégalo en Discord si tuviste un problema con este vuelo.",
       "copyJsonError": "No se pudo copiar el JSON de inicio",
-      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en GitHub o Discord."
+      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en Discord."
     },
     "weightFuelLabel": "Peso y combustible",
     "conditions": {

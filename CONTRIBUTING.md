@@ -1,17 +1,16 @@
-# Contributing to X-Dispatch
+# Development Guide
 
-Thanks for your interest in contributing. This guide covers the contributor workflow this repo actually expects, not just the bare minimum to get it running.
+Internal guide for working on X-Dispatch. X-Dispatch is proprietary (see [LICENSE](LICENSE)); outside contributions are not accepted.
 
 ## Before You Start
 
 - Use Node.js 24+ and npm.
 - X-Plane 12.4+ is only required for simulator-facing work and manual integration testing.
 - Read [README.md](README.md) for user-facing setup, then review the existing code patterns before introducing new structure or abstractions.
-- Check for an existing issue before you start. If there is no issue for the bug, feature, or refactor you want to work on, open one first and outline the scope of the change.
 
 ## Development Setup
 
-1. Fork and clone the repository
+1. Clone the repository
 2. Use Node.js 24+
 3. Install dependencies: `npm install`
 4. Start development: `npm start`
@@ -55,20 +54,12 @@ Use these commit types: `feat`, `fix`, `refactor`, `chore`, `docs`.
 
 ## Pull Request Process
 
-1. Open or link an issue that describes the bug, feature, or scope of the change
-2. Create a fresh feature branch from the latest `main`
-3. Make your changes with clear commit messages
-4. Run `npm run check` and any relevant tests (`npm run test:run`, `npm run test:e2e` when applicable)
-5. Add screenshots for UI changes and manual validation notes for X-Plane-facing changes
-6. Open a PR with a clear description of changes
-7. Link the related issue in the PR
+1. Create a fresh feature branch from the latest `main`
+2. Make your changes with clear commit messages
+3. Run `npm run check` and any relevant tests (`npm run test:run`, `npm run test:e2e` when applicable)
+4. Add screenshots for UI changes and manual validation notes for X-Plane-facing changes
+5. Open a PR with a clear description of changes
 
 ## Reporting Issues
 
-- Use the issue templates for bugs and feature requests
-- Include reproduction steps for bugs
-- Check existing issues before creating duplicates
-
-## Questions?
-
-Open a discussion or issue if you need help getting started.
+Users report problems on [Discord](https://discord.gg/76UYpxXWW7), through the in-app feedback form, or at hello@x-dispatch.app.

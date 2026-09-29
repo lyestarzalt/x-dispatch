@@ -6,11 +6,7 @@
   "author": {
     "name": "Lyes Tarzalt"
   },
-  "license": "GPL-3.0-only",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lyestarzalt/x-dispatch"
-  },
+  "license": "UNLICENSED",
   "homepage": "https://x-dispatch.app/",
   "keywords": [
     "x-plane",
@@ -36,7 +32,6 @@
     "start:fresh": "electron-forge start -- --reset-cache",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "publish": "electron-forge publish",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
@@ -63,7 +58,6 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
     "@electron-forge/plugin-fuses": "^7.11.2",
     "@electron-forge/plugin-vite": "^7.11.2",
-    "@electron-forge/publisher-github": "^7.11.2",
     "@electron/fuses": "^1.8.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
