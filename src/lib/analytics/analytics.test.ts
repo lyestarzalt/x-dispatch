@@ -53,22 +53,22 @@ describe('createAnalytics', () => {
   it('sends nothing and creates no client without consent', () => {
     const { analytics, createClient } = setup({ installId: null });
     analytics.startSession();
-    analytics.trackFeature('launch');
+    analytics.track('feature_opened', { feature: 'launch' });
     expect(createClient).not.toHaveBeenCalled();
   });
 
   it('sends nothing in dev/E2E builds even with consent', () => {
     const { analytics, createClient } = setup({ enabled: false });
     analytics.startSession();
-    analytics.trackFeature('launch');
+    analytics.track('feature_opened', { feature: 'launch' });
     expect(createClient).not.toHaveBeenCalled();
   });
 
   it('tracks allowlisted features and drops anything else', () => {
     const { analytics, events } = setup();
-    analytics.trackFeature('logbook');
-    analytics.trackFeature('secret_panel');
-    analytics.trackFeature({ feature: 'launch' });
+    analytics.track('feature_opened', { feature: 'logbook' });
+    analytics.track('feature_opened', { feature: 'secret_panel' });
+    analytics.track({ feature: 'launch' });
     expect(events().map((e) => [e.event, e.properties.feature])).toEqual([
       ['feature_opened', 'logbook'],
     ]);
@@ -87,7 +87,7 @@ describe('createAnalytics', () => {
     analytics.startSession();
     setInstallId(null);
     analytics.onConsentChanged(false);
-    analytics.trackFeature('launch');
+    analytics.track('feature_opened', { feature: 'launch' });
     analytics.endSession();
     expect(events().map((e) => e.event)).toEqual(['app_started']);
     expect(client.shutdown).toHaveBeenCalledTimes(1);

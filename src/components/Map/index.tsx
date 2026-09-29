@@ -16,7 +16,12 @@ import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
 import { Airport } from '@/lib/xplaneServices/dataService';
-import { useFlightRecorderStream, usePlaneStateStream, useVatsimSectorQuery } from '@/queries';
+import {
+  useFlightRecorderStream,
+  usePlaneStateStream,
+  useUsageTracking,
+  useVatsimSectorQuery,
+} from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useNavDataQuery } from '@/queries/useNavDataQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -111,6 +116,7 @@ const CLICKABLE_LAYERS = [
 ];
 
 export default function Map({ airports }: MapProps) {
+  useUsageTracking();
   const selectedICAO = useAppStore((s) => s.selectedICAO);
   const selectedAirportData = useAppStore((s) => s.selectedAirportData);
   const showSidebar = useAppStore((s) => s.showSidebar);

@@ -1,4 +1,4 @@
-import { isAnalyticsFeature } from './events';
+import { sanitizeEvent } from './events';
 
 type PropertyValue = string | number | boolean | null;
 type Properties = Record<string, PropertyValue>;
@@ -89,9 +89,10 @@ export function createAnalytics(deps: AnalyticsDeps) {
   return {
     startSession,
 
-    trackFeature(feature: unknown): void {
-      if (!isAnalyticsFeature(feature)) return;
-      capture('feature_opened', { feature });
+    /** Validates against the allowlist; anything unknown or malformed is dropped. */
+    track(event: unknown, properties?: unknown): void {
+      const sanitized = sanitizeEvent(event, properties);
+      if (sanitized) capture(sanitized.event, sanitized.properties);
     },
 
     /** Called after the stored consent changes. */

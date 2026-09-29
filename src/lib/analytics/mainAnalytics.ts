@@ -48,7 +48,10 @@ function osName(): string {
 }
 
 export function initMainAnalytics(): Analytics {
-  const enabled = app.isPackaged && !process.env.E2E_USER_DATA_DIR;
+  // XD_ANALYTICS_DEV=1 lets a dev build send, tagged is_dev so it can be filtered out.
+  const devOverride = process.env.XD_ANALYTICS_DEV === '1';
+  const enabled = (app.isPackaged || devOverride) && !process.env.E2E_USER_DATA_DIR;
+  if (devOverride && !app.isPackaged) logger.main.info('Usage analytics: dev sending enabled');
   return createAnalytics({
     enabled,
     getInstallId: getAnalyticsInstallId,
@@ -66,6 +69,7 @@ export function initMainAnalytics(): Analytics {
         disableGeoip: true,
       }),
     baseProperties: () => ({
+      is_dev: !app.isPackaged,
       $app_version: app.getVersion(),
       $os: osName(),
       $os_version: process.getSystemVersion(),

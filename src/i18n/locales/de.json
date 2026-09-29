@@ -1913,9 +1913,9 @@
       "title": "Hilf mit, X-Dispatch zu verbessern",
       "description": "Teile anonyme Nutzungsdaten, damit wir sehen, welche Funktionen genutzt werden und worauf wir uns konzentrieren sollten. Standardmäßig aus – du kannst es jederzeit unter Einstellungen → Support ändern.",
       "collectedTitle": "Was geteilt wird",
-      "collected": "App-Version, Betriebssystem, Sprache und Region, X-Plane-Version, Sitzungsdauer und welche Hauptansichten du öffnest.",
+      "collected": "App-Version, Betriebssystem, Sprache und Region, X-Plane-Version, Sitzungsdauer, welche Ansichten, Kartenebenen und Einstellungsseiten du nutzt, deine App-Einstellungen (Design, Kartenstil, Einheiten), gewählte Flughäfen, geflogene Flugzeugtypen und welche bekannten Begleit-Apps du nutzt.",
       "notCollectedTitle": "Nie geteilt",
-      "notCollected": "Deine IP-Adresse, Dateipfade, SimBrief-ID oder alles, was du eingibst.",
+      "notCollected": "Deine IP-Adresse, Dateipfade, Namen von Begleit-Apps, SimBrief-ID oder alles, was du eingibst.",
       "privacyLink": "Datenschutzerklärung",
       "accept": "Nutzungsdaten teilen",
       "decline": "Nein, danke"

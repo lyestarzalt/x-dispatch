@@ -17,6 +17,7 @@ import {
 } from '@/lib/xplaneServices/launch/flightInit';
 import { validateNewFlight } from '@/lib/xplaneServices/launch/flightInit/schema';
 import {
+  trackEvent,
   useAircraftList,
   useStartFlight,
   useTrackFeatureOpened,
@@ -208,6 +209,17 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         toast.error(t('settings.companionApps.spawnError', { name: f.name, error: f.error }));
       }
 
+      const reportLaunch = (mode: 'cold_start' | 'change_flight', success: boolean) =>
+        trackEvent('flight_launched', {
+          mode,
+          airport: startPosition.airport,
+          aircraft_type: selectedAircraft.icao || null,
+          helicopter: selectedAircraft.isHelicopter,
+          start_type: startPosition.type,
+          success,
+          companion_apps_launched: autoLaunchTools.length - failures.length,
+        });
+
       if (autoLaunchTools.length > 0) {
         const failedIds = new Set(failures.map((f) => f.id));
         const launchedNames = autoLaunchTools
@@ -264,6 +276,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         // X-Plane running → send via REST API
         try {
           await startFlightMutation.mutateAsync(flightConfig);
+          reportLaunch('change_flight', true);
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           // NOTE: intentionally NOT clearing `startPosition` here —
           // the user wants to come back to the app and see their gate
@@ -278,12 +291,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to change flight';
           window.appAPI.log.error('X-Plane flight change failed', err);
+          reportLaunch('change_flight', false);
           setLaunchError(errorMessage);
         }
       } else {
         // X-Plane not running → cold launch with the FlightInit payload
         const customLaunchArgs = useSettingsStore.getState().launcher.customLaunchArgs;
         const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
+        reportLaunch('cold_start', result.success);
         if (result.success) {
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           // NOTE: see the matching note in the `isXPlaneRunning` branch —

@@ -1,5 +1,9 @@
 import { IpcRendererEvent, contextBridge, ipcRenderer, webFrame, webUtils } from 'electron';
-import type { AnalyticsConsentState, AnalyticsFeature } from './lib/analytics/events';
+import type {
+  AnalyticsConsentState,
+  AnalyticsEventName,
+  AnalyticsEventProps,
+} from './lib/analytics/events';
 import type {
   AutoRouteRequest,
   AutoRouteResult,
@@ -402,7 +406,8 @@ contextBridge.exposeInMainWorld('debugAPI', {
 contextBridge.exposeInMainWorld('analyticsAPI', {
   getConsent: () => ipcRenderer.invoke('analytics:getConsent'),
   setConsent: (granted: boolean) => ipcRenderer.invoke('analytics:setConsent', granted),
-  trackFeature: (feature: AnalyticsFeature) => ipcRenderer.send('analytics:trackFeature', feature),
+  track: (event: string, properties?: Record<string, unknown>) =>
+    ipcRenderer.send('analytics:track', event, properties),
 });
 
 contextBridge.exposeInMainWorld('companionAppsAPI', {
@@ -446,7 +451,7 @@ declare global {
     analyticsAPI: {
       getConsent: () => Promise<AnalyticsConsentState>;
       setConsent: (granted: boolean) => Promise<boolean>;
-      trackFeature: (feature: AnalyticsFeature) => void;
+      track: <E extends AnalyticsEventName>(event: E, properties: AnalyticsEventProps<E>) => void;
     };
     appAPI: {
       platform: NodeJS.Platform;

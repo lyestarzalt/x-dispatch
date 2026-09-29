@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AnalyticsFeature } from '@/lib/analytics/events';
+import type {
+  AnalyticsEventName,
+  AnalyticsEventProps,
+  AnalyticsFeature,
+} from '@/lib/analytics/events';
 
 const analyticsKeys = {
   consent: ['analytics', 'consent'] as const,
@@ -22,9 +26,17 @@ export function useSetAnalyticsConsent() {
   });
 }
 
-/** Records one `feature_opened` event each time `open` turns true. Consent is enforced in main. */
+/** Fire-and-forget. Consent and the allowlist are enforced in the main process. */
+export function trackEvent<E extends AnalyticsEventName>(
+  event: E,
+  properties: AnalyticsEventProps<E>
+): void {
+  window.analyticsAPI.track(event, properties);
+}
+
+/** Records one `feature_opened` event each time `open` turns true. */
 export function useTrackFeatureOpened(feature: AnalyticsFeature, open: boolean) {
   useEffect(() => {
-    if (open) window.analyticsAPI.trackFeature(feature);
+    if (open) trackEvent('feature_opened', { feature });
   }, [feature, open]);
 }

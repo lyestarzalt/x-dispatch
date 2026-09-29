@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { SimBriefOFP } from '@/types/simbrief';
+import { trackEvent } from './useAnalytics';
 
 export const simbriefKeys = {
   all: ['simbrief'] as const,
@@ -61,6 +62,7 @@ export function useSimbriefFetch() {
     mutationFn: fetchSimbrief,
     onSuccess: (data, pilotId) => {
       queryClient.setQueryData(simbriefKeys.latest(pilotId), data);
+      trackEvent('simbrief_imported', {});
     },
   });
 }
@@ -73,6 +75,9 @@ export function useDownloadFmsFile() {
   return useMutation({
     mutationFn: (args: { url: string; targetDir: string; filename: string }) =>
       window.simbriefAPI.downloadFmsFile(args),
+    onSuccess: (result) => {
+      if (result.success) trackEvent('fms_exported', {});
+    },
   });
 }
 

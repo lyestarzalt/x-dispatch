@@ -25,7 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
-import { useTrackFeatureOpened } from '@/queries';
+import { trackEvent, useTrackFeatureOpened } from '@/queries';
 import {
   AboutSection,
   AirportsSection,
@@ -84,14 +84,15 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { data: version } = useAppVersion();
   const [activeTab, setActiveTab] = useState<TabId>('xplane');
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as TabId);
+    trackEvent('settings_tab_opened', { tab: value as TabId });
+  };
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="h-[85vh] max-w-4xl gap-0 overflow-hidden p-0">
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as TabId)}
-          className="flex h-full"
-        >
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex h-full">
           {/* Sidebar Navigation */}
           <div className="bg-muted/30 flex w-56 flex-col border-r">
             <div className="p-4">

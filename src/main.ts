@@ -601,7 +601,10 @@ function registerIpcHandlers() {
     }
     return success;
   });
-  ipcMain.on('analytics:trackFeature', (_, feature: unknown) => analytics.trackFeature(feature));
+  // Renderer input is untrusted: track() validates it against the allowlist.
+  ipcMain.on('analytics:track', (_, event: unknown, properties: unknown) =>
+    analytics.track(event, properties)
+  );
   ipcMain.handle('app:getSendCrashReports', () => getSendCrashReports());
   ipcMain.handle('app:setSendCrashReports', (_, enabled: boolean) => {
     const success = setSendCrashReports(enabled);

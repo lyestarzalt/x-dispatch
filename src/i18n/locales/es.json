@@ -1913,9 +1913,9 @@
       "title": "Ayuda a mejorar X-Dispatch",
       "description": "Comparte datos de uso anónimos para que sepamos qué funciones se usan y en qué centrarnos. Está desactivado salvo que lo actives y puedes cambiarlo cuando quieras en Ajustes → Soporte.",
       "collectedTitle": "Qué se comparte",
-      "collected": "Versión de la app, sistema operativo, idioma y región, versión de X-Plane, duración de la sesión y qué pantallas principales abres.",
+      "collected": "Versión de la app, sistema operativo, idioma y región, versión de X-Plane, duración de la sesión, qué pantallas, capas del mapa y pestañas de ajustes usas, tus ajustes (tema, estilo de mapa, unidades), aeropuertos que seleccionas, tipos de avión que vuelas y qué apps complementarias conocidas usas.",
       "notCollectedTitle": "Nunca se comparte",
-      "notCollected": "Tu dirección IP, rutas de archivos, ID de SimBrief ni nada de lo que escribas.",
+      "notCollected": "Tu dirección IP, rutas de archivos, nombres de apps complementarias, ID de SimBrief ni nada de lo que escribas.",
       "privacyLink": "Política de privacidad",
       "accept": "Compartir datos de uso",
       "decline": "No, gracias"
