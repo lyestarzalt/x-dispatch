@@ -14,6 +14,7 @@ export const ANALYTICS_FEATURES = [
   'simbrief',
   'settings',
   'weather',
+  'weight_balance',
 ] as const;
 
 /** Map layers and overlays, reported when switched on. */
@@ -37,6 +38,62 @@ export const ANALYTICS_LAYERS = [
 ] as const;
 
 export const ANALYTICS_WIDGETS = ['explore', 'nav_info', 'replay', 'landing_report'] as const;
+
+export const ANALYTICS_DONATE_SOURCES = [
+  'support_prompt',
+  'settings_about',
+  'settings_support',
+] as const;
+
+/** Start detail: runway/ramp as-is, helipad, final approach, glider tow, or a custom pin mode. */
+export const ANALYTICS_START_VARIANTS = [
+  'standard',
+  'helipad',
+  'approach',
+  'tow_tug',
+  'tow_winch',
+  'ground',
+  'air',
+  'carrier',
+  'frigate',
+] as const;
+
+export const ANALYTICS_STARTUP_BUCKETS = ['under_2s', '2_5s', '5_10s', 'over_10s'] as const;
+export const ANALYTICS_WIDTH_BUCKETS = [
+  'under_1280',
+  '1280_1599',
+  '1600_1919',
+  '1920_2559',
+  '2560_plus',
+] as const;
+export const ANALYTICS_SCALE_BUCKETS = ['1', '1.25', '1.5', '1.75', '2', 'other'] as const;
+export const ANALYTICS_SHORTCUTS = ['focus_search'] as const;
+
+/** Where an error toast was shown; the message itself is never sent. */
+export const ANALYTICS_ERROR_AREAS = [
+  'taxi_route',
+  'radio_tune',
+  'landing_report',
+  'flight_plan',
+  'support_report',
+  'companion_apps',
+  'logs',
+  'logbook',
+  'fms_export',
+  'addon_manager',
+] as const;
+
+export const ANALYTICS_EXPLORE_TABS = ['featured', 'routes', 'vatsim', 'weather'] as const;
+
+/** Built-in weather presets (WEATHER_OPTIONS without "real"). */
+export const ANALYTICS_WEATHER_PRESETS = [
+  'clear',
+  'cloudy',
+  'rainy',
+  'stormy',
+  'snowy',
+  'foggy',
+] as const;
 
 export const ANALYTICS_SETTINGS_TABS = [
   'xplane',
@@ -78,21 +135,31 @@ export const ANALYTICS_LANGUAGES = [
 export type AnalyticsFeature = (typeof ANALYTICS_FEATURES)[number];
 export type AnalyticsLayer = (typeof ANALYTICS_LAYERS)[number];
 export type AnalyticsWidget = (typeof ANALYTICS_WIDGETS)[number];
+export type AnalyticsStartVariant = (typeof ANALYTICS_START_VARIANTS)[number];
+export type AnalyticsStartupBucket = (typeof ANALYTICS_STARTUP_BUCKETS)[number];
+export type AnalyticsWidthBucket = (typeof ANALYTICS_WIDTH_BUCKETS)[number];
+export type AnalyticsScaleBucket = (typeof ANALYTICS_SCALE_BUCKETS)[number];
+export type AnalyticsErrorArea = (typeof ANALYTICS_ERROR_AREAS)[number];
+export type AnalyticsExploreTab = (typeof ANALYTICS_EXPLORE_TABS)[number];
+export type AnalyticsWeatherPreset = (typeof ANALYTICS_WEATHER_PRESETS)[number];
 
 /** Airport idents and aircraft type designators: 2-7 uppercase letters/digits, e.g. EGLL, A320. */
 const CODE_PATTERN = /^[A-Z0-9]{2,7}$/;
 
 type Rule =
-  | { kind: 'enum'; values: readonly string[] }
+  | { kind: 'enum'; values: readonly string[]; optional?: boolean }
   | { kind: 'code'; optional?: boolean }
   | { kind: 'boolean' }
   | { kind: 'count' };
 
 const oneOf = (values: readonly string[]): Rule => ({ kind: 'enum', values });
+const optionalOneOf = (values: readonly string[]) =>
+  ({ kind: 'enum', values, optional: true }) as const;
 
 const EVENT_SCHEMA = {
   feature_opened: { feature: oneOf(ANALYTICS_FEATURES) },
   layer_enabled: { layer: oneOf(ANALYTICS_LAYERS) },
+  layer_disabled: { layer: oneOf(ANALYTICS_LAYERS) },
   widget_opened: { widget: oneOf(ANALYTICS_WIDGETS) },
   airport_selected: { airport: { kind: 'code' } },
   flight_launched: {
@@ -100,10 +167,49 @@ const EVENT_SCHEMA = {
     airport: { kind: 'code' },
     aircraft_type: { kind: 'code', optional: true },
     helicopter: { kind: 'boolean' },
-    start_type: oneOf(['runway', 'ramp']),
+    start_type: oneOf(['runway', 'ramp', 'custom']),
+    start_variant: oneOf(ANALYTICS_START_VARIANTS),
     success: { kind: 'boolean' },
     companion_apps_launched: { kind: 'count' },
+    // Setup choices: modes and "changed from default" flags only, never the values.
+    weather_mode: oneOf(['real', 'preset', 'custom']),
+    weather_preset: optionalOneOf(ANALYTICS_WEATHER_PRESETS),
+    cloud_layers: { kind: 'count' },
+    wind_layers: { kind: 'count' },
+    fuel_custom: { kind: 'boolean' },
+    payload_custom: { kind: 'boolean' },
+    time_mode: oneOf(['real_world', 'custom']),
+    cold_and_dark: { kind: 'boolean' },
+    livery_default: { kind: 'boolean' },
+    /** Built-in Laminar Research aircraft vs an add-on; never the aircraft name or path. */
+    aircraft_default: { kind: 'boolean' },
+    aircraft_favorite: { kind: 'boolean' },
   },
+  /** Where the Ko-fi link was clicked. */
+  donate_clicked: { source: oneOf(ANALYTICS_DONATE_SOURCES) },
+  /** The support toast shown after a few launches. */
+  support_prompt_shown: {},
+  support_prompt_dismissed: { forever: { kind: 'boolean' } },
+  /** An update was found: installed in the background (Windows) or offered as a notice. */
+  update_found: { method: oneOf(['auto', 'notice']) },
+  /** Windows: the update finished downloading and will install on restart. */
+  update_downloaded: {},
+  /** macOS/Linux: the update notice's download button was clicked. */
+  update_notice_clicked: {},
+  /** Once per launch: how long until the map was ready, and whether data came from the cache. */
+  app_ready: { startup: oneOf(ANALYTICS_STARTUP_BUCKETS), from_cache: { kind: 'boolean' } },
+  /** Once per launch: window size and display scaling, as buckets. */
+  display: {
+    window_width: oneOf(ANALYTICS_WIDTH_BUCKETS),
+    scale: oneOf(ANALYTICS_SCALE_BUCKETS),
+    maximized: { kind: 'boolean' },
+    fullscreen: { kind: 'boolean' },
+  },
+  shortcut_used: { shortcut: oneOf(ANALYTICS_SHORTCUTS) },
+  error_shown: { area: oneOf(ANALYTICS_ERROR_AREAS) },
+  explore_tab_opened: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
+  /** An airport, route or event picked in Explore; the tab only, never what was picked. */
+  explore_item_selected: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
   simbrief_imported: {},
   fms_exported: {},
   settings_tab_opened: { tab: oneOf(ANALYTICS_SETTINGS_TABS) },
@@ -133,15 +239,17 @@ const EVENT_SCHEMA = {
 
 export type AnalyticsEventName = keyof typeof EVENT_SCHEMA;
 
-type PropValue<R> = R extends { kind: 'enum'; values: readonly (infer V)[] }
-  ? V
-  : R extends { kind: 'boolean' }
-    ? boolean
-    : R extends { kind: 'count' }
-      ? number
-      : R extends { optional: true }
-        ? string | null
-        : string;
+type PropValue<R> = R extends { kind: 'enum'; values: readonly (infer V)[]; optional: true }
+  ? V | null
+  : R extends { kind: 'enum'; values: readonly (infer V)[] }
+    ? V
+    : R extends { kind: 'boolean' }
+      ? boolean
+      : R extends { kind: 'count' }
+        ? number
+        : R extends { optional: true }
+          ? string | null
+          : string;
 
 export type AnalyticsEventProps<E extends AnalyticsEventName> = {
   -readonly [K in keyof (typeof EVENT_SCHEMA)[E]]: PropValue<(typeof EVENT_SCHEMA)[E][K]>;
@@ -158,6 +266,9 @@ function checkValue(
 ): { ok: boolean; value: string | number | boolean | null } {
   switch (rule.kind) {
     case 'enum':
+      if (rule.optional && (value === null || value === undefined)) {
+        return { ok: true, value: null };
+      }
       return {
         ok: typeof value === 'string' && rule.values.includes(value),
         value: value as string,

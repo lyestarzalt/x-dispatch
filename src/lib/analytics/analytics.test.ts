@@ -119,6 +119,23 @@ describe('createAnalytics', () => {
     expect(pending()).toBeNull();
   });
 
+  it('reports an update when the previous session ran an older version', () => {
+    const { analytics, events } = setup({
+      pending: { durationSeconds: 60, endedAt: '2026-09-28T10:00:00.000Z', appVersion: '2.1.0' },
+    });
+    analytics.startSession();
+    expect(events().map((e) => e.event)).toEqual(['app_started', 'app_updated', 'session_ended']);
+    expect(events()[1]).toMatchObject({ properties: { from_version: '2.1.0' } });
+  });
+
+  it('does not report an update when the version is unchanged', () => {
+    const { analytics, events } = setup({
+      pending: { durationSeconds: 60, endedAt: '2026-09-28T10:00:00.000Z', appVersion: '2.2.0' },
+    });
+    analytics.startSession();
+    expect(events().map((e) => e.event)).not.toContain('app_updated');
+  });
+
   it('keeps nothing when the session ends without consent', () => {
     const { analytics, pending, setInstallId } = setup();
     analytics.startSession();

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { fmsExportFilename } from '@/lib/simbrief/fmsFilename';
+import { toastError } from '@/lib/utils/toastError';
 import { useDownloadFmsFile } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { SimBriefOFP } from '@/types/simbrief';
@@ -108,7 +109,8 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
         );
         return true;
       }
-      toast.error(
+      toastError(
+        'fms_export',
         t('simbrief.export.failure', "Couldn't export {{label}}: {{reason}}", {
           label: entry.label,
           reason: result.error,

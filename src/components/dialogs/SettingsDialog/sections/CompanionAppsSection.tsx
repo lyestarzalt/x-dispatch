@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Boxes, Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import type { SpawnErrorCode } from '@/lib/companionApps/spawn';
 import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import { useElevationQuery } from '@/queries/useElevationQuery';
 import { type CompanionApp, useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { SettingsEmptyState, SettingsHeader } from '../primitives';
@@ -84,7 +84,8 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
     });
     if (!result.success) {
       const code = result.code as SpawnErrorCode | undefined;
-      toast.error(
+      toastError(
+        'companion_apps',
         t('settings.companionApps.spawnError', {
           name: tool.name,
           error: t(errorKeyFor(code), {

@@ -21,6 +21,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
+import { toastError } from '@/lib/utils/toastError';
 import { useAppStore } from '@/stores/appStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
@@ -111,7 +112,7 @@ export default function TaxiRouteInline() {
         t('airportInfo.taxiRoute.exportSuccess', 'Route exported for Follow the Greens')
       );
     } else {
-      toast.error(result.error ?? t('common.error', 'Error'));
+      toastError('taxi_route', result.error ?? t('common.error', 'Error'));
     }
   };
 

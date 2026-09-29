@@ -2,8 +2,10 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUpdateCheck } from '@/queries';
+import { trackEvent, useUpdateCheck } from '@/queries';
 import { Button } from './ui/button';
+
+const trackNoticeClick = () => trackEvent('update_notice_clicked', {});
 
 export function UpdateAvailableToast(): null {
   const { t } = useTranslation();
@@ -12,6 +14,7 @@ export function UpdateAvailableToast(): null {
   useEffect(() => {
     if (!update.data?.available || !update.data.latestVersion) return;
     const { latestVersion, url } = update.data;
+    trackEvent('update_found', { method: 'notice' });
     toast.custom(
       (id) => (
         <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4 shadow-lg">
@@ -27,6 +30,7 @@ export function UpdateAvailableToast(): null {
                 variant="outline"
                 className="gap-1.5"
                 onClick={() => {
+                  trackNoticeClick();
                   window.appAPI.openExternal(url);
                   toast.dismiss(id);
                 }}

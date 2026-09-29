@@ -1,12 +1,12 @@
 import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, RefreshCcw, ScrollText, Search } from 'lucide-react';
-import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import { type LogEntry, type LogLevel, parseLog } from '@/lib/xplaneServices/log/parseLog';
 import { useXplaneLogQuery } from '@/queries';
 import { SettingsEmptyState, SettingsHeader, SettingsSectionBlock } from '../primitives';
@@ -45,7 +45,7 @@ export function LogsSection({ active }: LogsSectionProps) {
           : r.reason === 'no-path'
             ? t('settings.logs.empty.noPath')
             : (r.message ?? t('settings.logs.openFailed'));
-      toast.error(msg);
+      toastError('logs', msg);
     }
   };
 

@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatWeight } from '@/lib/utils/format';
 import type { WeightUnit } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
+import { useTrackFeatureOpened } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -180,6 +181,7 @@ function WeightRow({
 // ─── Dialog ──────────────────────────────────────────────────────────────────
 
 export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps) {
+  useTrackFeatureOpened('weight_balance', open);
   const { t } = useTranslation();
   const weightUnit = useSettingsStore((s) => s.map.units.weight);
   const mapSettings = useSettingsStore((s) => s.map);

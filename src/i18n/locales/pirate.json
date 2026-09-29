@@ -1913,7 +1913,7 @@
       "title": "Help make X-Dispatch shipshape",
       "description": "Share anonymous usage data so we know which parts o' the ship be used and where to put the crew to work. It stays furled unless ye hoist it, and ye can change yer mind any time in Settings → Support.",
       "collectedTitle": "What be shared",
-      "collected": "App version, OS, tongue an' home waters, X-Plane version, how long ye sail, which decks, map layers an' settings tabs ye use, yer settings (theme, map style, units), ports ye pick, ships ye fly an' which known companion apps ye carry.",
+      "collected": "Which features, settings an' flight options ye use, how the app sails (startup time, window size, errors), plus app an' X-Plane version, OS an' home waters.",
       "notCollectedTitle": "Never shared",
       "notCollected": "Yer IP address, file paths, companion app names, SimBrief ID or anythin' ye type.",
       "privacyLink": "Privacy articles",

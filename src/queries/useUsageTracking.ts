@@ -87,7 +87,8 @@ function sendPreferences() {
 }
 
 /**
- * Reports how the map is used: layers and widgets as they are switched on,
+ * Reports how the map is used: layers as they are switched on and off, widgets
+ * and Explore tabs as they are opened,
  * airports as they are selected, and one preferences snapshot per session.
  * Mounted once by the map; events are dropped in main unless consent is granted.
  */
@@ -102,9 +103,20 @@ export function useUsageTracking() {
     const unsubMap = useMapStore.subscribe((next, prev) => {
       for (const [layer, isOn] of LAYER_STATE) {
         if (isOn(next) && !isOn(prev)) trackEvent('layer_enabled', { layer });
+        if (!isOn(next) && isOn(prev)) trackEvent('layer_disabled', { layer });
       }
       for (const [widget, isOpen] of MAP_WIDGET_STATE) {
         if (isOpen(next) && !isOpen(prev)) trackEvent('widget_opened', { widget });
+      }
+      const explore = next.explore;
+      if (
+        explore.isOpen &&
+        (!prev.explore.isOpen || explore.activeTab !== prev.explore.activeTab)
+      ) {
+        trackEvent('explore_tab_opened', { tab: explore.activeTab });
+      }
+      if (explore.selectedRoute && explore.selectedRoute !== prev.explore.selectedRoute) {
+        trackEvent('explore_item_selected', { tab: 'routes' });
       }
     });
     const unsubApp = useAppStore.subscribe((next, prev) => {

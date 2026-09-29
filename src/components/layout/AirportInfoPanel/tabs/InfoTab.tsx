@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
 import { useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
@@ -775,7 +776,7 @@ function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
       toast.success(t(toastKey, { radio, freq }));
       onTuned();
     } else {
-      toast.error(t('airportInfo.tune.toast.failed', { radio }), {
+      toastError('radio_tune', t('airportInfo.tune.toast.failed', { radio }), {
         description: result.error,
       });
     }

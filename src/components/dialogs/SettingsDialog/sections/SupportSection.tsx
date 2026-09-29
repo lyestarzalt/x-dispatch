@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils/helpers';
-import { useAnalyticsConsent, useSetAnalyticsConsent } from '@/queries';
+import { toastError } from '@/lib/utils/toastError';
+import { trackEvent, useAnalyticsConsent, useSetAnalyticsConsent } from '@/queries';
 import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
+const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_support' });
 const SUPPORT_PAGE = 'https://x-dispatch.app/support/';
 const DISCORD_INVITE = 'https://discord.gg/76UYpxXWW7';
 
@@ -53,7 +55,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
       setMessage('');
       setEmail('');
     } catch {
-      toast.error(t('settings.support.sendError'));
+      toastError('support_report', t('settings.support.sendError'));
     } finally {
       setIsSending(false);
     }
@@ -113,6 +115,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
             label={t('settings.about.supportProject')}
             href="https://ko-fi.com/A0A21V3IZZ"
             leadingIcon={<Heart className="h-3.5 w-3.5 text-red-400" />}
+            onOpen={trackDonateClick}
           />
         </div>
       </div>

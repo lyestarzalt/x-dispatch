@@ -71,6 +71,10 @@ export function createAnalytics(deps: AnalyticsDeps) {
     sessionStartedAt = now();
     capture('app_started');
     const previous = deps.takePendingSession();
+    // Works for every update path: the Windows auto-updater and manual installs alike.
+    if (previous && previous.appVersion !== deps.appVersion()) {
+      capture('app_updated', { from_version: previous.appVersion });
+    }
     if (previous) {
       capture(
         'session_ended',

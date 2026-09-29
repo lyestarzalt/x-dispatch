@@ -5,10 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { isNewerVersion } from '@/lib/utils/versionCompare';
-import { useAppVersion, useConfigPath, useLogPath, useUpdateCheck } from '@/queries';
+import { trackEvent, useAppVersion, useConfigPath, useLogPath, useUpdateCheck } from '@/queries';
 import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
+const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_about' });
 const PROJECT_WEBSITE = 'https://x-dispatch.app/';
 const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
@@ -100,6 +101,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               label={t('settings.about.supportProject')}
               href={KOFI_URL}
               leadingIcon={<Heart className="h-3.5 w-3.5 text-red-400" />}
+              onOpen={trackDonateClick}
             />
           </div>
         </div>

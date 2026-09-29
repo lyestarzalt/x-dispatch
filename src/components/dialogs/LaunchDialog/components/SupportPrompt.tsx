@@ -1,6 +1,7 @@
 import { ExternalLink, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { trackEvent } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -23,6 +24,7 @@ export function showSupportToastIfEligible(): void {
 
   // Small delay so the launch dialog closes first
   setTimeout(() => {
+    trackEvent('support_prompt_shown', {});
     toast.custom(
       (id) => (
         <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4 shadow-lg">
@@ -38,6 +40,7 @@ export function showSupportToastIfEligible(): void {
                 variant="outline"
                 className="gap-1.5"
                 onClick={() => {
+                  trackEvent('donate_clicked', { source: 'support_prompt' });
                   window.open(KOFI_URL, '_blank');
                   dismiss();
                   toast.dismiss(id);
@@ -50,7 +53,10 @@ export function showSupportToastIfEligible(): void {
                 size="sm"
                 variant="ghost"
                 className="text-muted-foreground"
-                onClick={() => toast.dismiss(id)}
+                onClick={() => {
+                  trackEvent('support_prompt_dismissed', { forever: false });
+                  toast.dismiss(id);
+                }}
               >
                 Not now
               </Button>
@@ -59,6 +65,7 @@ export function showSupportToastIfEligible(): void {
                 variant="ghost"
                 className="text-muted-foreground/60"
                 onClick={() => {
+                  trackEvent('support_prompt_dismissed', { forever: true });
                   dismiss();
                   toast.dismiss(id);
                 }}

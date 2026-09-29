@@ -1913,7 +1913,7 @@
       "title": "Help improve X-Dispatch",
       "description": "Share anonymous usage data so we can see which features are used and where to focus. It stays off unless you turn it on, and you can change it any time in Settings → Support.",
       "collectedTitle": "What's shared",
-      "collected": "App version, OS, language and region, X-Plane version, session length, which screens, map layers and settings tabs you use, your app settings (theme, map style, units), airports you select, aircraft types you fly and which known companion apps you use.",
+      "collected": "Which features, settings and flight options you use, how the app runs (startup time, window size, errors), plus app and X-Plane version, OS and region.",
       "notCollectedTitle": "Never shared",
       "notCollected": "Your IP address, file paths, companion app names, SimBrief ID or anything you type.",
       "privacyLink": "Privacy policy",

@@ -17,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { formatDateTime, formatDuration } from '@/lib/flightRecorder/format';
 import { copyLandingCard } from '@/lib/flightRecorder/landingCardImage';
+import { toastError } from '@/lib/utils/toastError';
 import { useDeleteFlight, useFlightDetailQuery } from '@/queries/useFlightsQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
@@ -70,7 +71,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
     if (!landing) return;
     const ok = await copyLandingCard(landing, landingCardLabels(t, landing));
     if (ok) toast.success(t('logbook.imageCopied'));
-    else toast.error(t('logbook.imageCopyFailed'));
+    else toastError('logbook', t('logbook.imageCopyFailed'));
   };
 
   const stats: Array<{ label: string; value: string }> = [
