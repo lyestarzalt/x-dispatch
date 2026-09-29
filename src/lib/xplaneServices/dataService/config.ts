@@ -29,6 +29,8 @@ interface XPlaneConfig {
   analyticsConsent?: 'granted' | 'denied';
   /** Random anonymous install ID, only present while analytics consent is granted */
   analyticsInstallId?: string;
+  /** Session that ended at the last quit, sent as `session_ended` on the next launch */
+  analyticsPendingSession?: { durationSeconds: number; endedAt: string; appVersion: string };
 }
 
 const CONFIG_VERSION = 1;
@@ -115,6 +117,10 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       // `in` check so withdrawing consent can delete the ID (undefined drops it from JSON).
       analyticsInstallId:
         'analyticsInstallId' in config ? config.analyticsInstallId : existing?.analyticsInstallId,
+      analyticsPendingSession:
+        'analyticsPendingSession' in config
+          ? config.analyticsPendingSession
+          : existing?.analyticsPendingSession,
     };
 
     fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
@@ -181,10 +187,28 @@ export function getAnalyticsConsent(): 'granted' | 'denied' | null {
  */
 export function setAnalyticsConsent(granted: boolean): boolean {
   if (!granted) {
-    return saveConfig({ analyticsConsent: 'denied', analyticsInstallId: undefined });
+    return saveConfig({
+      analyticsConsent: 'denied',
+      analyticsInstallId: undefined,
+      analyticsPendingSession: undefined,
+    });
   }
   const installId = loadConfig()?.analyticsInstallId ?? crypto.randomUUID();
   return saveConfig({ analyticsConsent: 'granted', analyticsInstallId: installId });
+}
+
+export type AnalyticsPendingSession = NonNullable<XPlaneConfig['analyticsPendingSession']>;
+
+/** Returns and clears the session saved at the last quit. */
+export function takeAnalyticsPendingSession(): AnalyticsPendingSession | null {
+  const pending = loadConfig()?.analyticsPendingSession ?? null;
+  if (pending) saveConfig({ analyticsPendingSession: undefined });
+  return pending;
+}
+
+/** Synchronous write, so it is safe during `before-quit`. */
+export function saveAnalyticsPendingSession(session: AnalyticsPendingSession): void {
+  saveConfig({ analyticsPendingSession: session });
 }
 
 /** The anonymous install ID, or null unless consent is granted. */

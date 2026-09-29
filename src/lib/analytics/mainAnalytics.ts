@@ -4,6 +4,8 @@ import logger from '../utils/logger';
 import {
   getAnalyticsInstallId,
   getStoredXPlaneVersion,
+  saveAnalyticsPendingSession,
+  takeAnalyticsPendingSession,
 } from '../xplaneServices/dataService/config';
 import { type Analytics, createAnalytics } from './analytics';
 
@@ -50,6 +52,9 @@ export function initMainAnalytics(): Analytics {
   return createAnalytics({
     enabled,
     getInstallId: getAnalyticsInstallId,
+    takePendingSession: takeAnalyticsPendingSession,
+    savePendingSession: saveAnalyticsPendingSession,
+    appVersion: () => app.getVersion(),
     createClient: () =>
       new PostHog(POSTHOG_PROJECT_KEY, {
         host: POSTHOG_HOST,

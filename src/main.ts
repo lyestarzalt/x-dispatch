@@ -3,7 +3,6 @@ import {
   ClipboardItem,
   Menu,
   app,
-  autoUpdater,
   clipboard,
   dialog,
   globalShortcut,
@@ -211,11 +210,6 @@ let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
 const sessionStartTime = Date.now();
 const analytics = initMainAnalytics();
-let analyticsFlushed = false;
-// Never delay a Squirrel quitAndInstall; the update restart wins over the last analytics batch.
-autoUpdater.on('before-quit-for-update', () => {
-  analyticsFlushed = true;
-});
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
 
@@ -1956,17 +1950,9 @@ app.on('window-all-closed', () => {
   // On macOS, keep DB open since app stays running
 });
 
-app.on('before-quit', (event) => {
-  // Hold the quit once so session_ended and queued events flush (bounded by a 3s timeout).
-  if (!analyticsFlushed) {
-    analyticsFlushed = true;
-    event.preventDefault();
-    analytics
-      .shutdown()
-      .catch((err) => logger.main.warn(`Analytics shutdown failed: ${(err as Error).message}`))
-      .finally(() => app.quit());
-    return;
-  }
+app.on('before-quit', () => {
+  // Synchronous: stores the session length for the next launch and never delays quitting.
+  analytics.endSession();
 
   // Session summary
   const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000 / 60);

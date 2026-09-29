@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { type AnalyticsClient, createAnalytics } from './analytics';
+import { type AnalyticsClient, type PendingSession, createAnalytics } from './analytics';
 
-function setup(opts: { enabled?: boolean; installId?: string | null } = {}) {
+function setup(
+  opts: { enabled?: boolean; installId?: string | null; pending?: PendingSession } = {}
+) {
   let installId: string | null = opts.installId === undefined ? 'install-1' : opts.installId;
   let time = 1_000_000;
   const client: AnalyticsClient = {
@@ -9,7 +11,15 @@ function setup(opts: { enabled?: boolean; installId?: string | null } = {}) {
     shutdown: vi.fn().mockResolvedValue(undefined),
   };
   const createClient = vi.fn(() => client);
+  let pending: PendingSession | null = opts.pending ?? null;
   const analytics = createAnalytics({
+    takePendingSession: () => {
+      const p = pending;
+      pending = null;
+      return p;
+    },
+    savePendingSession: (session) => (pending = session),
+    appVersion: () => '2.2.0',
     enabled: opts.enabled ?? true,
     getInstallId: () => installId,
     createClient,
@@ -22,6 +32,7 @@ function setup(opts: { enabled?: boolean; installId?: string | null } = {}) {
     createClient,
     setInstallId: (id: string | null) => (installId = id),
     advance: (ms: number) => (time += ms),
+    pending: () => pending,
     events: () => vi.mocked(client.capture).mock.calls.map(([m]) => m),
   };
 }
@@ -71,26 +82,48 @@ describe('createAnalytics', () => {
     expect(events().map((e) => [e.event, e.distinctId])).toEqual([['app_started', 'install-2']]);
   });
 
-  it('stops immediately when consent is withdrawn', async () => {
+  it('stops immediately when consent is withdrawn', () => {
     const { analytics, client, events, setInstallId } = setup();
     analytics.startSession();
     setInstallId(null);
     analytics.onConsentChanged(false);
     analytics.trackFeature('launch');
-    await analytics.shutdown();
+    analytics.endSession();
     expect(events().map((e) => e.event)).toEqual(['app_started']);
     expect(client.shutdown).toHaveBeenCalledTimes(1);
   });
 
-  it('reports session length on shutdown and flushes', async () => {
-    const { analytics, client, events, advance } = setup();
+  it('saves the session length at quit without sending', () => {
+    const { analytics, events, advance, pending } = setup();
     analytics.startSession();
     advance(125_400);
-    await analytics.shutdown();
+    analytics.endSession();
+    expect(events().map((e) => e.event)).toEqual(['app_started']);
+    expect(pending()).toEqual({
+      durationSeconds: 125,
+      endedAt: new Date(1_125_400).toISOString(),
+      appVersion: '2.2.0',
+    });
+  });
+
+  it('reports the previous session on the next launch with its original time', () => {
+    const { analytics, events, pending } = setup({
+      pending: { durationSeconds: 600, endedAt: '2026-09-28T10:00:00.000Z', appVersion: '2.1.0' },
+    });
+    analytics.startSession();
     expect(events().at(-1)).toMatchObject({
       event: 'session_ended',
-      properties: { duration_seconds: 125 },
+      properties: { duration_seconds: 600, $app_version: '2.1.0' },
+      timestamp: new Date('2026-09-28T10:00:00.000Z'),
     });
-    expect(client.shutdown).toHaveBeenCalledWith(3_000);
+    expect(pending()).toBeNull();
+  });
+
+  it('keeps nothing when the session ends without consent', () => {
+    const { analytics, pending, setInstallId } = setup();
+    analytics.startSession();
+    setInstallId(null);
+    analytics.endSession();
+    expect(pending()).toBeNull();
   });
 });
