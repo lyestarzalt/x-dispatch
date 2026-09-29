@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import { ExternalLink, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,16 +25,16 @@ export function showSupportToastIfEligible(): void {
 
   // Small delay so the launch dialog closes first
   setTimeout(() => {
+    // Not a component, so no useTranslation; read the current language at show time.
+    const t = i18n.t.bind(i18n);
     trackEvent('support_prompt_shown', {});
     toast.custom(
       (id) => (
         <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4 shadow-lg">
           <Heart className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
           <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">Enjoying X-Dispatch?</p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Donations support ongoing development and new features.
-            </p>
+            <p className="text-foreground text-sm font-medium">{t('supportPrompt.title')}</p>
+            <p className="text-muted-foreground mt-1 text-sm">{t('supportPrompt.description')}</p>
             <div className="mt-3 flex items-center gap-2">
               <Button
                 size="sm"
@@ -46,7 +47,7 @@ export function showSupportToastIfEligible(): void {
                   toast.dismiss(id);
                 }}
               >
-                Support this project
+                {t('supportPrompt.donate')}
                 <ExternalLink className="h-3 w-3" />
               </Button>
               <Button
@@ -58,7 +59,7 @@ export function showSupportToastIfEligible(): void {
                   toast.dismiss(id);
                 }}
               >
-                Not now
+                {t('supportPrompt.notNow')}
               </Button>
               <Button
                 size="sm"
@@ -70,7 +71,7 @@ export function showSupportToastIfEligible(): void {
                   toast.dismiss(id);
                 }}
               >
-                Don't show again
+                {t('supportPrompt.dontShowAgain')}
               </Button>
             </div>
           </div>

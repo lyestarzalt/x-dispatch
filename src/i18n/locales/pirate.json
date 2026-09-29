@@ -1920,5 +1920,12 @@
       "accept": "Share usage data",
       "decline": "Nay, thanks"
     }
+  },
+  "supportPrompt": {
+    "title": "Enjoyin' X-Dispatch, matey?",
+    "description": "Doubloons keep the ship sailin' an' new features comin'.",
+    "donate": "Support this crew",
+    "notNow": "Not now",
+    "dontShowAgain": "Don't show again"
   }
 }

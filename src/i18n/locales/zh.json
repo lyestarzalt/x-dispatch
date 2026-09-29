@@ -1920,5 +1920,12 @@
       "accept": "共享使用数据",
       "decline": "不用了"
     }
+  },
+  "supportPrompt": {
+    "title": "喜欢 X-Dispatch 吗？",
+    "description": "捐助将支持持续开发和新功能。",
+    "donate": "支持这个项目",
+    "notNow": "以后再说",
+    "dontShowAgain": "不再显示"
   }
 }
