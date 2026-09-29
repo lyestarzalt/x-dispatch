@@ -207,12 +207,9 @@ jobs:
 
       - name: Add commit details and footer to release notes
         run: |
-          TAG="${{ needs.compute-version.outputs.tag }}"
-          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
-
           # Collapsed copy of the generated commit list. The section above it
           # gets rewritten into plain-language notes after publishing (the
-          # website shows that part), this copy keeps the commit and PR links.
+          # website shows that part), this copy keeps the PR numbers and commits.
           # Headings are demoted to #### so the website's section parser only
           # matches the plain-language part.
           {
@@ -226,31 +223,25 @@ jobs:
           } > commit-details.md
           cat commit-details.md >> release-notes.md
 
-          if [ -n "$PREV_TAG" ]; then
-            {
-              echo ""
-              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
-            } >> release-notes.md
-          fi
-
           cat >> release-notes.md << 'EOF'
 
           ---
-
-          If you find this useful, consider giving it a :star:, it helps others discover the project.
 
           > :apple: **macOS (Sequoia/Tahoe):** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run: `xattr -rd com.apple.quarantine /Applications/X-Dispatch.app`
 
           > :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator.
           EOF
 
-      - name: Create GitHub release
-        run: |
-          # Delete any leftover draft/release from a failed previous run
-          gh release delete ${{ needs.compute-version.outputs.tag }} --yes 2>/dev/null || true
-          gh release create ${{ needs.compute-version.outputs.tag }} release-assets/* --title "${{ needs.compute-version.outputs.tag }}" --notes-file release-notes.md
+      # Installers ship from R2 only. The draft is never public and holds the
+      # notes that release-sync-notes.yml copies to R2 after editing.
+      - name: Create draft GitHub release (notes only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.compute-version.outputs.tag }}
+        run: |
+          # Delete any leftover draft/release from a failed previous run
+          gh release delete "$TAG" --yes 2>/dev/null || true
+          gh release create "$TAG" --draft --verify-tag --title "$TAG" --notes-file release-notes.md
 
       - name: Publish release to R2
         env:

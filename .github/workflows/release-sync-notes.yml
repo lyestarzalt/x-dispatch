@@ -1,6 +1,6 @@
 name: Release Sync Notes
 
-# Run after editing a release body on GitHub: copies the notes to R2 and
+# Run after editing the draft release body on GitHub: copies the notes to R2 and
 # refreshes the website catalog from there.
 
 on:

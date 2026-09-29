@@ -62,7 +62,6 @@ jobs:
       - name: Build commit details and footer (same logic as Release)
         run: |
           TAG="${{ steps.compute.outputs.tag }}"
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
 
           {
             echo ""
@@ -74,13 +73,6 @@ jobs:
             echo "</details>"
           } > commit-details.md
           cat commit-details.md >> release-notes.md
-
-          if [ -n "$PREV_TAG" ]; then
-            {
-              echo ""
-              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
-            } >> release-notes.md
-          fi
 
           {
             echo "- :white_check_mark: Release notes generated"
