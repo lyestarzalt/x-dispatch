@@ -171,6 +171,7 @@
     "motion": "^13.4.4",
     "node-7z": "^3.0.0",
     "node-unrar-js": "^2.0.2",
+    "posthog-node": "^5.54.1",
     "react-i18next": "^17.0.15",
     "recharts": "^3.10.1",
     "sonner": "^2.0.8",

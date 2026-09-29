@@ -5,6 +5,7 @@ import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
+import { AnalyticsConsentDialog } from './components/dialogs/AnalyticsConsentDialog';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
@@ -114,6 +115,7 @@ function AppContent() {
     content = (
       <SectionErrorBoundary name="Map">
         <Map airports={airports} />
+        <AnalyticsConsentDialog />
       </SectionErrorBoundary>
     );
   }
