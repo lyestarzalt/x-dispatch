@@ -1772,7 +1772,8 @@ app.whenReady().then(async () => {
           type: UpdateSourceType.StaticStorage,
           baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
         },
-        updateInterval: '10 minutes',
+        // Also checks once at startup; frequent polling only adds load on the download host.
+        updateInterval: '4 hours',
         notifyUser: true,
         logger: {
           log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
