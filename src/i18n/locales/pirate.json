@@ -294,6 +294,7 @@
     "rangeRings": "Range Circles",
     "enabled": "Hoisted",
     "loadPlan": "Load .fms Voyage",
+    "loadPlanFailed": "This chart be unreadable, matey. Make sure 'tis an X-Plane .fms file.",
     "navigationLayers": "Chart Layers",
     "tooltips": {
       "flightPlan": "Load or import a voyage plan",

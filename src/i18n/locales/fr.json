@@ -294,6 +294,7 @@
     "rangeRings": "Anneaux de distance",
     "enabled": "Activé",
     "loadPlan": "Charger .fms",
+    "loadPlanFailed": "Impossible de lire ce plan de vol. Vérifiez qu'il s'agit d'un fichier .fms X-Plane.",
     "navigationLayers": "Couches de navigation",
     "tooltips": {
       "flightPlan": "Charger ou importer un plan de vol",

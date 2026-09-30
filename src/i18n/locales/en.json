@@ -294,6 +294,7 @@
     "rangeRings": "Range Rings",
     "enabled": "Enabled",
     "loadPlan": "Load .fms File",
+    "loadPlanFailed": "Couldn't read this flight plan. Make sure it's an X-Plane .fms file.",
     "navigationLayers": "Navigation Layers",
     "tooltips": {
       "flightPlan": "Load or import a flight plan",

@@ -64,8 +64,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { useDistinctCountries, useNavDataCounts } from '@/queries';
+import { trackEvent, useDistinctCountries, useNavDataCounts } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -527,24 +528,45 @@ function Toolbar({
     return matches.slice(0, 8).map((e) => e.airport);
   }, [searchIndex, searchQuery]);
 
+  // Each search is reported once: when a result is picked, or when it is left by
+  // clicking away, Escape or the clear button (found: false = a search that failed).
+  const searchPendingRef = useRef(false);
+  const searchFoundRef = useRef(false);
+  useEffect(() => {
+    searchFoundRef.current = filteredAirports.length > 0;
+  }, [filteredAirports]);
+  const reportSearch = useCallback((picked: boolean) => {
+    if (!searchPendingRef.current) return;
+    searchPendingRef.current = false;
+    trackEvent('search_used', { found: picked || searchFoundRef.current, picked });
+  }, []);
+
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setSelectedIndex(0);
     setShowResults(query.trim().length >= 2);
+    searchPendingRef.current = query.trim().length >= 2;
   }, []);
 
   const handleSelect = useCallback(
     (airport: Airport) => {
+      reportSearch(true);
       setShowResults(false);
       setSearchQuery('');
       onSelectAirport(airport);
       inputRef.current?.blur();
     },
-    [onSelectAirport]
+    [onSelectAirport, reportSearch]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (showResults && e.key === 'Escape') {
+        reportSearch(false);
+        setShowResults(false);
+        inputRef.current?.blur();
+        return;
+      }
       if (!showResults || filteredAirports.length === 0) return;
 
       if (e.key === 'ArrowDown') {
@@ -557,23 +579,21 @@ function Toolbar({
         e.preventDefault();
         const selected = filteredAirports[selectedIndex];
         if (selected) handleSelect(selected);
-      } else if (e.key === 'Escape') {
-        setShowResults(false);
-        inputRef.current?.blur();
       }
     },
-    [showResults, filteredAirports, selectedIndex, handleSelect]
+    [showResults, filteredAirports, selectedIndex, handleSelect, reportSearch]
   );
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        reportSearch(false);
         setShowResults(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [reportSearch]);
 
   // Ctrl+F / Cmd+F focuses the search input
   useEffect(() => {
@@ -585,10 +605,11 @@ function Toolbar({
 
   const handleLoadFlightPlan = useCallback(async () => {
     const result = await window.flightPlanAPI.openFile();
-    if (result) {
-      await loadFMSFile(result.content, result.fileName);
-    }
-  }, [loadFMSFile]);
+    if (!result) return;
+    const loaded = await loadFMSFile(result.content, result.fileName);
+    trackEvent('flight_plan_file_loaded', { success: loaded });
+    if (!loaded) toastError('flight_plan', t('toolbar.loadPlanFailed'));
+  }, [loadFMSFile, t]);
 
   const totalNavItems = navDataCounts.navaids + navDataCounts.ils + navDataCounts.airspaces;
 
@@ -629,6 +650,7 @@ function Toolbar({
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => {
+                  reportSearch(false);
                   setSearchQuery('');
                   setShowResults(false);
                 }}
@@ -641,6 +663,12 @@ function Toolbar({
             )
           }
         />
+
+        {showResults && filteredAirports.length === 0 && (
+          <div className="border-border bg-popover text-muted-foreground absolute top-full right-0 left-0 z-50 mt-1 rounded-lg border px-3 py-2 text-sm">
+            {t('common.noResults')}
+          </div>
+        )}
 
         {showResults && filteredAirports.length > 0 && (
           <motion.div

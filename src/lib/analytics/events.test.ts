@@ -171,3 +171,19 @@ describe('session events', () => {
     expect(sanitizeEvent('xplane_connected', {})).not.toBeNull();
   });
 });
+
+describe('search, flight plan file and add-on install events', () => {
+  it('accepts the outcome of each', () => {
+    expect(sanitizeEvent('search_used', { found: false, picked: false })).not.toBeNull();
+    expect(sanitizeEvent('flight_plan_file_loaded', { success: false })).not.toBeNull();
+    expect(sanitizeEvent('addon_detected', { result: 'unrecognized' })).not.toBeNull();
+    expect(
+      sanitizeEvent('addon_installed', { type: 'scenery_library', success: true })
+    ).not.toBeNull();
+  });
+
+  it('never accepts a typed query, file name or add-on name', () => {
+    expect(sanitizeEvent('addon_installed', { type: 'Toliss A321', success: true })).toBeNull();
+    expect(sanitizeEvent('addon_detected', { result: 'EGLL_scenery.zip' })).toBeNull();
+  });
+});

@@ -294,6 +294,7 @@
     "rangeRings": "Pierścienie zasięgu",
     "enabled": "Włączone",
     "loadPlan": "Wczytaj .fms",
+    "loadPlanFailed": "Nie udało się odczytać tego planu lotu. Upewnij się, że to plik .fms X-Plane.",
     "navigationLayers": "Warstwy nawigacyjne",
     "tooltips": {
       "flightPlan": "Wczytaj lub importuj plan lotu",
