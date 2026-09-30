@@ -104,13 +104,16 @@ const CATAPULT_POSITIONS = [
 
 function PinOptionsPopover({
   isCustomPin,
+  open,
+  onOpenChange,
   onSubmit,
 }: {
   isCustomPin: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSubmit: (lat: number, lon: number) => void;
 }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
   const [editingCoords, setEditingCoords] = useState(false);
@@ -134,21 +137,24 @@ function PinOptionsPopover({
     if (!isCoordValid) return;
     onSubmit(parsedLat, parsedLon);
     setEditingCoords(false);
-    setOpen(false);
+    onOpenChange(false);
     setLat('');
     setLon('');
   };
 
+  // The toolbar also opens this right after a pin drop, so reset on close, not on open.
   const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen) {
-      setEditingCoords(false);
-      const pos = useAppStore.getState().startPosition;
-      if (pos?.type === 'custom' && pos.latitude != null && pos.longitude != null) {
-        setLat(pos.latitude.toFixed(4));
-        setLon(pos.longitude.toFixed(4));
-      }
+    if (!nextOpen) setEditingCoords(false);
+    onOpenChange(nextOpen);
+  };
+
+  const editCoords = () => {
+    const pos = useAppStore.getState().startPosition;
+    if (pos?.type === 'custom' && pos.latitude != null && pos.longitude != null) {
+      setLat(pos.latitude.toFixed(4));
+      setLon(pos.longitude.toFixed(4));
     }
-    setOpen(nextOpen);
+    setEditingCoords(true);
   };
 
   const updatePos = (fields: Partial<typeof startPosition>) => {
@@ -306,7 +312,7 @@ function PinOptionsPopover({
           {isCustomPin && !editingCoords ? (
             /* Compact read-only display when pin is placed */
             <button
-              onClick={() => setEditingCoords(true)}
+              onClick={editCoords}
               className="hover:bg-muted/50 flex w-full items-center justify-between rounded px-1 py-1 text-left transition-colors"
             >
               <span className="text-muted-foreground font-mono text-sm">
@@ -397,6 +403,13 @@ function Toolbar({
   const selectedAirportData = useAppStore((s) => s.selectedAirportData);
   const hasStartPosition = useAppStore((s) => !!s.startPosition);
   const isCustomPin = useAppStore((s) => s.startPosition?.type === 'custom');
+  // Opening the start modes on every drop shows that a pin can also start in the air or on a ship.
+  // The same button removes a placed pin, which closes them instead.
+  const [pinOptionsOpen, setPinOptionsOpen] = useState(false);
+  const handlePinDrop = () => {
+    onPinDrop();
+    setPinOptionsOpen(!isCustomPin);
+  };
   const setShowSettings = useAppStore((s) => s.setShowSettings);
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
   const openLogbook = useAppStore((s) => s.openLogbook);
@@ -1059,7 +1072,7 @@ function Toolbar({
         <div className="flex">
           <Button
             variant="outline"
-            onClick={onPinDrop}
+            onClick={handlePinDrop}
             className={cn(
               'h-9 gap-2 rounded-r-none border-r-0 px-3',
               isCustomPin && 'border-success/50 text-success'
@@ -1069,7 +1082,12 @@ function Toolbar({
             <MapPin className="h-4 w-4" />
             <span className="min-w-0 truncate text-sm font-medium">{t('toolbar.pin')}</span>
           </Button>
-          <PinOptionsPopover isCustomPin={isCustomPin} onSubmit={onPinDropAtCoordinates} />
+          <PinOptionsPopover
+            isCustomPin={isCustomPin}
+            open={pinOptionsOpen}
+            onOpenChange={setPinOptionsOpen}
+            onSubmit={onPinDropAtCoordinates}
+          />
         </div>
 
         {/* Launch */}
