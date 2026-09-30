@@ -11,7 +11,8 @@ import { type Analytics, createAnalytics } from './analytics';
 
 // Public, write-only project key (safe to ship in client apps). EU Cloud project "X-Dispatch".
 const POSTHOG_PROJECT_KEY = 'phc_tEuHKzTy9eGVsKpKHpxZoL72GaodRbfYfSVG7HVeijM4';
-const POSTHOG_HOST = 'https://eu.i.posthog.com';
+// PostHog managed reverse proxy on our own subdomain (DNS-level blockers list posthog.com).
+const POSTHOG_HOST = 'https://e.x-dispatch.app';
 const REQUEST_TIMEOUT_MS = 10_000;
 
 type PostHogFetch = NonNullable<PostHogOptions['fetch']>;
