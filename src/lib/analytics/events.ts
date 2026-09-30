@@ -263,6 +263,8 @@ const EVENT_SCHEMA = {
   update_notice_clicked: {},
   /** Once per launch: how long until the map was ready, and whether data came from the cache. */
   app_ready: { startup: oneOf(ANALYTICS_STARTUP_BUCKETS), from_cache: { kind: 'boolean' } },
+  /** Once per session, the first time X-Plane connects: the app is used alongside the sim. */
+  xplane_connected: {},
   /** Once per launch: window size and display scaling, as buckets. */
   display: {
     window_width: oneOf(ANALYTICS_WIDTH_BUCKETS),

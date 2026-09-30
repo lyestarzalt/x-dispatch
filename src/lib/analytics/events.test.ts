@@ -165,3 +165,9 @@ describe('airport and route events', () => {
     expect(sanitizeEvent('taxi_route_built', { method: 'A, B, K' })).toBeNull();
   });
 });
+
+describe('session events', () => {
+  it('accepts X-Plane connecting during a session', () => {
+    expect(sanitizeEvent('xplane_connected', {})).not.toBeNull();
+  });
+});
