@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { WEATHER_OPTIONS } from '@/components/dialogs/LaunchDialog/types';
 import { ANALYTICS_WEATHER_PRESETS, sanitizeEvent } from './events';
-import { type LaunchSetup, launchChoices } from './launchChoices';
+import { type LaunchSetup, launchChoices, launchErrorCode } from './launchChoices';
 
 const defaults: LaunchSetup = {
   weatherConfig: { mode: 'real', preset: 'real', custom: { clouds: [], wind: [{}] } },
@@ -122,5 +122,40 @@ describe('launchChoices', () => {
       ...launchChoices({ ...defaults, startPosition: { type: 'custom', customStartMode: 'air' } }),
     };
     expect(sanitizeEvent('flight_launched', launch)).not.toBeNull();
+  });
+});
+
+describe('launchErrorCode', () => {
+  it('reports the launcher code in lowercase, never the message', () => {
+    expect(launchErrorCode('NEEDS_ADMIN')).toBe('needs_admin');
+    expect(launchErrorCode('EXE_NOT_FOUND')).toBe('exe_not_found');
+  });
+
+  it('falls back to unknown when the launcher gave no code', () => {
+    expect(launchErrorCode(undefined)).toBe('unknown');
+  });
+
+  it('produces values the flight_launched allowlist accepts', () => {
+    const launch = {
+      mode: 'cold_start',
+      airport: 'EGLL',
+      aircraft_type: 'A320',
+      helicopter: false,
+      start_type: 'ramp',
+      success: false,
+      companion_apps_launched: 0,
+      ...launchChoices(defaults),
+    };
+    expect(
+      sanitizeEvent('flight_launched', { ...launch, error_code: launchErrorCode('ACCESS_BLOCKED') })
+        ?.properties.error_code
+    ).toBe('access_blocked');
+    expect(
+      sanitizeEvent('flight_launched', { ...launch, success: true, error_code: null })?.properties
+        .error_code
+    ).toBeNull();
+    expect(
+      sanitizeEvent('flight_launched', { ...launch, error_code: 'EACCES: denied' })
+    ).toBeNull();
   });
 });

@@ -1,6 +1,12 @@
+import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import type { StartPosition } from '@/types/position';
-import type { AnalyticsEventProps, AnalyticsStartVariant, AnalyticsWeatherPreset } from './events';
-import { ANALYTICS_WEATHER_PRESETS } from './events';
+import type {
+  AnalyticsEventProps,
+  AnalyticsLaunchError,
+  AnalyticsStartVariant,
+  AnalyticsWeatherPreset,
+} from './events';
+import { ANALYTICS_LAUNCH_ERRORS, ANALYTICS_WEATHER_PRESETS } from './events';
 
 /** Launch dialog defaults: every tank at 50%, every payload station empty. */
 const DEFAULT_TANK_PERCENT = 50;
@@ -74,4 +80,14 @@ export function launchChoices(setup: LaunchSetup): LaunchChoices {
     aircraft_favorite: setup.favoriteAircraft,
     start_variant: startVariant(setup.startPosition),
   };
+}
+
+/** The launcher's error code as reported, e.g. NEEDS_ADMIN → needs_admin. */
+export function launchErrorCode(
+  code: LaunchErrorCode | 'CHANGE_FLIGHT_FAILED' | undefined
+): AnalyticsLaunchError {
+  const reported = code?.toLowerCase();
+  return (ANALYTICS_LAUNCH_ERRORS as readonly string[]).includes(reported ?? '')
+    ? (reported as AnalyticsLaunchError)
+    : 'unknown';
 }

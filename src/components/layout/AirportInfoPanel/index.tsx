@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatAirportCountry } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
+import { trackEvent } from '@/queries/useAnalytics';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -59,6 +60,10 @@ function AirportInfoPanel({
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('info');
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as TabId);
+    trackEvent('airport_tab_opened', { tab: value as TabId });
+  };
 
   // Auto-switch to Start tab when user clicks a gate/runway on the map
   const prevPositionRef = useRef(selectedStartPosition);
@@ -224,7 +229,7 @@ function AirportInfoPanel({
         {/* Tab Navigation + Content */}
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as TabId)}
+          onValueChange={handleTabChange}
           className="flex min-h-0 flex-1 flex-col"
         >
           <TabsList variant="line" className="border-border/30">

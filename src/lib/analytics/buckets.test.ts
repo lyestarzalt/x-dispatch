@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scaleBucket, startupBucket, widthBucket } from './buckets';
+import { dialogTimeBucket, scaleBucket, startupBucket, widthBucket } from './buckets';
 import { sanitizeEvent } from './events';
 
 describe('analytics buckets', () => {
@@ -26,6 +26,13 @@ describe('analytics buckets', () => {
     expect(scaleBucket(1.1)).toBe('other');
   });
 
+  it('buckets how long a dialog stayed open', () => {
+    expect(dialogTimeBucket(4_000)).toBe('under_10s');
+    expect(dialogTimeBucket(10_000)).toBe('10_60s');
+    expect(dialogTimeBucket(90_000)).toBe('1_5m');
+    expect(dialogTimeBucket(600_000)).toBe('over_5m');
+  });
+
   it('produces values the event allowlist accepts', () => {
     expect(
       sanitizeEvent('app_ready', { startup: startupBucket(3_000), from_cache: true })
@@ -41,5 +48,12 @@ describe('analytics buckets', () => {
     expect(sanitizeEvent('shortcut_used', { shortcut: 'focus_search' })).not.toBeNull();
     expect(sanitizeEvent('error_shown', { area: 'fms_export' })).not.toBeNull();
     expect(sanitizeEvent('error_shown', { area: 'Could not save file' })).toBeNull();
+    expect(
+      sanitizeEvent('launch_abandoned', {
+        aircraft_selected: true,
+        launch_failed: false,
+        time_open: dialogTimeBucket(45_000),
+      })
+    ).not.toBeNull();
   });
 });

@@ -34,6 +34,7 @@ describe('sanitizeEvent', () => {
       helicopter: false,
       start_type: 'ramp',
       success: true,
+      error_code: null,
       companion_apps_launched: 1,
       weather_mode: 'preset',
       weather_preset: 'stormy',
@@ -56,6 +57,7 @@ describe('sanitizeEvent', () => {
       helicopter: false,
       start_type: 'ramp',
       success: true,
+      error_code: null,
       companion_apps_launched: 1,
       weather_mode: 'preset',
       weather_preset: 'stormy',
@@ -131,5 +133,35 @@ describe('classifyCompanionApp', () => {
     expect(classifyCompanionApp('/Applications/Little Navmap.app')).toBe('little_navmap');
     expect(classifyCompanionApp('/opt/XPlaneMapEnhancement/xplane-map-enhancement')).toBe('xpme');
     expect(classifyCompanionApp('C:\\Users\\jane.doe\\tools\\my-script.bat')).toBe('other');
+  });
+});
+
+describe('airport and route events', () => {
+  it('accepts the airport panel, taxi route and flight plan actions', () => {
+    expect(sanitizeEvent('airport_tab_opened', { tab: 'proc' })).not.toBeNull();
+    expect(
+      sanitizeEvent('start_position_selected', { start_type: 'ramp', helipad: false })
+    ).not.toBeNull();
+    expect(sanitizeEvent('procedure_selected', { type: 'star' })).not.toBeNull();
+    expect(sanitizeEvent('frequency_tuned', {})).not.toBeNull();
+    expect(sanitizeEvent('taxi_route_built', { method: 'auto' })).not.toBeNull();
+    expect(sanitizeEvent('taxi_route_auto_failed', {})).not.toBeNull();
+    expect(sanitizeEvent('taxi_route_exported', {})).not.toBeNull();
+    expect(sanitizeEvent('flight_plan_auto_routed', { success: false })).not.toBeNull();
+    expect(sanitizeEvent('flight_plan_saved', {})).not.toBeNull();
+    expect(
+      sanitizeEvent('explore_filter_selected', { tab: 'featured', filter: 'scenic' })
+    ).not.toBeNull();
+    expect(
+      sanitizeEvent('explore_filter_selected', { tab: 'weather', filter: 'fog' })
+    ).not.toBeNull();
+  });
+
+  it('never accepts a gate or procedure name in place of its type', () => {
+    expect(
+      sanitizeEvent('start_position_selected', { start_type: 'A12', helipad: false })
+    ).toBeNull();
+    expect(sanitizeEvent('procedure_selected', { type: 'LAM3A' })).toBeNull();
+    expect(sanitizeEvent('taxi_route_built', { method: 'A, B, K' })).toBeNull();
   });
 });

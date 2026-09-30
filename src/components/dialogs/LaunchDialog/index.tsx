@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
-import { launchChoices } from '@/lib/analytics/launchChoices';
+import { dialogTimeBucket } from '@/lib/analytics/buckets';
+import { launchChoices, launchErrorCode } from '@/lib/analytics/launchChoices';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { toastError } from '@/lib/utils/toastError';
@@ -104,6 +105,23 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const hydrateAircraft = useLaunchStore((s) => s.hydrateAircraft);
   const setIsLaunching = useLaunchStore((s) => s.setIsLaunching);
   const setLaunchError = useLaunchStore((s) => s.setLaunchError);
+
+  // One visit to the dialog, reported as launch_abandoned when it closes without a flight.
+  const visitRef = useRef<{ openedAt: number; launched: boolean; failed: boolean } | null>(null);
+  useEffect(() => {
+    if (open) {
+      visitRef.current = { openedAt: performance.now(), launched: false, failed: false };
+      return;
+    }
+    const visit = visitRef.current;
+    visitRef.current = null;
+    if (!visit || visit.launched) return;
+    trackEvent('launch_abandoned', {
+      aircraft_selected: useLaunchStore.getState().selectedAircraft !== null,
+      launch_failed: visit.failed,
+      time_open: dialogTimeBucket(performance.now() - visit.openedAt),
+    });
+  }, [open]);
 
   // Reset transient UI state when dialog closes
   useEffect(() => {
@@ -214,7 +232,15 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         );
       }
 
-      const reportLaunch = (mode: 'cold_start' | 'change_flight', success: boolean) =>
+      const reportLaunch = (
+        mode: 'cold_start' | 'change_flight',
+        success: boolean,
+        code?: LaunchErrorCode | 'CHANGE_FLIGHT_FAILED'
+      ) => {
+        if (visitRef.current) {
+          if (success) visitRef.current.launched = true;
+          else visitRef.current.failed = true;
+        }
         trackEvent('flight_launched', {
           mode,
           airport: startPosition.airport,
@@ -222,6 +248,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           helicopter: selectedAircraft.isHelicopter,
           start_type: startPosition.type,
           success,
+          error_code: success ? null : launchErrorCode(code),
           companion_apps_launched: autoLaunchTools.length - failures.length,
           ...launchChoices({
             weatherConfig,
@@ -235,6 +262,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             startPosition,
           }),
         });
+      };
 
       if (autoLaunchTools.length > 0) {
         const failedIds = new Set(failures.map((f) => f.id));
@@ -307,14 +335,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to change flight';
           window.appAPI.log.error('X-Plane flight change failed', err);
-          reportLaunch('change_flight', false);
+          reportLaunch('change_flight', false, 'CHANGE_FLIGHT_FAILED');
           setLaunchError(errorMessage);
         }
       } else {
         // X-Plane not running → cold launch with the FlightInit payload
         const customLaunchArgs = useSettingsStore.getState().launcher.customLaunchArgs;
         const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
-        reportLaunch('cold_start', result.success);
+        reportLaunch('cold_start', result.success, result.code);
         if (result.success) {
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           // NOTE: see the matching note in the `isXPlaneRunning` branch —
@@ -332,6 +360,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       }
     } catch (err) {
       window.appAPI.log.error('X-Plane launch error', err);
+      if (visitRef.current) visitRef.current.failed = true;
       setLaunchError((err as Error).message);
     } finally {
       setIsLaunching(false);

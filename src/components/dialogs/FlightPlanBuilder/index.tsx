@@ -44,7 +44,7 @@ import { cn } from '@/lib/utils/helpers';
 import { formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { useAirportProcedures, useTrackFeatureOpened } from '@/queries';
+import { trackEvent, useAirportProcedures, useTrackFeatureOpened } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -438,6 +438,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
   const handleAutoRoute = async () => {
     const ok = await autoRoute(joins);
+    trackEvent('flight_plan_auto_routed', { success: ok });
     if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
   };
 
@@ -445,7 +446,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     setSaving(true);
     try {
       const path = await saveToXPlane();
-      if (path) toast.success(t('planBuilder.saved', { path }));
+      if (path) {
+        trackEvent('flight_plan_saved', {});
+        toast.success(t('planBuilder.saved', { path }));
+      }
     } catch (err) {
       toastError('flight_plan', t('planBuilder.saveFailed', { error: (err as Error).message }));
     } finally {

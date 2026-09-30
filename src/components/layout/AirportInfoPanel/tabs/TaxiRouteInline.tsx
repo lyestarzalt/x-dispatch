@@ -22,6 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
 import { toastError } from '@/lib/utils/toastError';
+import { trackEvent } from '@/queries/useAnalytics';
 import { useAppStore } from '@/stores/appStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
@@ -78,6 +79,8 @@ export default function TaxiRouteInline() {
     if (!graph || !startPosition) return;
     const rwyEnd = runwayEnds.find((r) => r.name === runwayName);
     if (!rwyEnd) return;
+    // A found route replaces autoRouteResult; an unchanged one means no path to this runway.
+    const previousResult = useTaxiRouteStore.getState().autoRouteResult;
 
     if (direction === 'departure') {
       computeAutoRoute(
@@ -102,12 +105,16 @@ export default function TaxiRouteInline() {
         runwayName
       );
     }
+    if (useTaxiRouteStore.getState().autoRouteResult === previousResult) {
+      trackEvent('taxi_route_auto_failed', {});
+    }
   };
 
   const handleExport = async () => {
     const result = await writeFtgRoute();
     if (!result) return;
     if (result.success) {
+      trackEvent('taxi_route_exported', {});
       toast.success(
         t('airportInfo.taxiRoute.exportSuccess', 'Route exported for Follow the Greens')
       );
