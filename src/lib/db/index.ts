@@ -90,6 +90,49 @@ function deleteStaleDb(fingerprint: string): void {
   }
 }
 
+/**
+ * Drops the in-memory database without writing it back, deletes the cache files
+ * and relaunches; the next launch rebuilds everything from X-Plane's files.
+ */
+function discardDbAndRelaunch(): void {
+  sqlite = null;
+  db = null;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = null;
+  try {
+    if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+  } catch {
+    try {
+      fs.renameSync(dbPath, `${dbPath}.old-${Date.now()}`);
+    } catch {
+      /* give up on cleanup */
+    }
+  }
+  try {
+    if (fs.existsSync(dbPath + '.version')) fs.unlinkSync(dbPath + '.version');
+  } catch {
+    /* non-critical */
+  }
+  app.relaunch();
+  app.exit(0);
+}
+
+const CORRUPTION_PATTERN =
+  /database disk image is malformed|file is not a database|SQLITE_CORRUPT/i;
+
+/**
+ * Recovers from a corrupt cache found after startup: a file with an intact
+ * header opens and migrates, then every launch fails on its first query
+ * (Sentry X-DISPATCH-3E). Returns false, doing nothing, for any other error.
+ */
+export function recoverFromCorruption(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  if (!dbPath || !CORRUPTION_PATTERN.test(message)) return false;
+  logger.data.warn(`Database is corrupt, deleting and restarting: ${message}`);
+  discardDbAndRelaunch();
+  return true;
+}
+
 export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
   if (db) return db;
 
@@ -118,28 +161,7 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
     migrate(db, { migrationsFolder });
   } catch (err) {
     logger.data.warn(`Database open/migrate failed, deleting and restarting: ${err}`);
-    sqlite = null;
-    db = null;
-
-    // Delete the corrupt/stale DB so the next launch starts fresh
-    try {
-      if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-    } catch {
-      try {
-        fs.renameSync(dbPath, `${dbPath}.old-${Date.now()}`);
-      } catch {
-        /* give up on cleanup */
-      }
-    }
-    try {
-      if (fs.existsSync(dbPath + '.version')) fs.unlinkSync(dbPath + '.version');
-    } catch {
-      /* non-critical */
-    }
-
-    // Relaunch the app — it will boot clean with no DB file
-    app.relaunch();
-    app.exit(0);
+    discardDbAndRelaunch();
     throw err; // unreachable, but satisfies return type
   }
 

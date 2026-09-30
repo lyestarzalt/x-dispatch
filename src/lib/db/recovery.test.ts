@@ -214,6 +214,52 @@ describe('DB integrity & recovery', () => {
       expect(fs.existsSync(versionFilePath())).toBe(false);
     });
 
+    it('recovers when the file opens but its pages are corrupt ("database disk image is malformed")', async () => {
+      // Sentry X-DISPATCH-3E: the header was intact, so open + migrate passed and
+      // every launch then failed on the first query.
+      const mod = await freshInit();
+      const fingerprint = fs.readFileSync(versionFilePath(), 'utf-8').trim();
+      const sqlite = mod.getSqlite()!;
+      sqlite.run('CREATE TABLE filler (id INTEGER PRIMARY KEY, body TEXT)');
+      for (let i = 0; i < 2000; i++)
+        sqlite.run('INSERT INTO filler (body) VALUES (?)', ['x'.repeat(200)]);
+      mod.closeDb();
+
+      // Scribble over the filler table's data pages (written last, at the end of the
+      // file) so the schema pages stay readable and open + migrate still succeed.
+      const bytes = fs.readFileSync(dbFilePath());
+      const pageSize = bytes.readUInt16BE(16);
+      bytes.fill(0xff, bytes.length - pageSize * 20, bytes.length - pageSize * 2);
+      fs.writeFileSync(dbFilePath(), bytes);
+      fs.writeFileSync(versionFilePath(), fingerprint);
+
+      vi.resetModules();
+      const { initDb, getSqlite, recoverFromCorruption } = await import('@/lib/db');
+      await initDb();
+
+      let queryError: unknown;
+      try {
+        getSqlite()!.exec('SELECT count(*), max(length(body)) FROM filler');
+      } catch (err) {
+        queryError = err;
+      }
+      expect(String(queryError)).toMatch(/malformed/);
+
+      expect(recoverFromCorruption(queryError)).toBe(true);
+      expect(relaunchSpy).toHaveBeenCalledTimes(1);
+      expect(exitSpy).toHaveBeenCalledWith(0);
+      expect(fs.existsSync(dbFilePath())).toBe(false);
+      expect(fs.existsSync(versionFilePath())).toBe(false);
+    });
+
+    it('ignores errors that are not database corruption', async () => {
+      const mod = await freshInit();
+      expect(mod.recoverFromCorruption(new Error('network down'))).toBe(false);
+      expect(relaunchSpy).not.toHaveBeenCalled();
+      expect(fs.existsSync(versionFilePath())).toBe(true);
+      mod.closeDb();
+    });
+
     it('still initialises cleanly when only the db file was removed (.version remains)', async () => {
       // Edge case: db disappears (manual delete, antivirus quarantine, etc.)
       // but the .version file remains. Init should treat it as a first-launch

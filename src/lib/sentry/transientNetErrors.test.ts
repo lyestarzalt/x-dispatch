@@ -15,6 +15,9 @@ describe('TRANSIENT_NET_ERROR_PATTERN', () => {
     'net::ERR_PROXY_CONNECTION_FAILED',
     'net::ERR_QUIC_PROTOCOL_ERROR',
     'net::ERR_QUIC_HANDSHAKE_FAILED',
+    'net::ERR_CONNECTION_CLOSED',
+    'net::ERR_NETWORK_ACCESS_DENIED',
+    'net::ERR_NETWORK_IO_SUSPENDED',
   ])('matches transient code %s', (msg) => {
     expect(TRANSIENT_NET_ERROR_PATTERN.test(msg)).toBe(true);
   });

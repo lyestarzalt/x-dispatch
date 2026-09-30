@@ -73,8 +73,12 @@ export function registerTileCacheHandler(): void {
       // Cache closed during shutdown or fetch failed — passthrough to origin
       try {
         return await net.fetch(originalUrl);
-      } catch {
-        logger.main.error(`Tile cache fetch failed: ${originalUrl}`, err);
+      } catch (fetchErr) {
+        // A tile the user's network can't reach is never a defect: the map skips it.
+        // Warn with the message only; an Error argument would be forwarded to Sentry.
+        logger.main.warn(
+          `Tile fetch failed: ${originalUrl} (${(fetchErr as Error).message ?? err})`
+        );
         return new Response(null, { status: 502, statusText: 'Tile fetch failed' });
       }
     }
