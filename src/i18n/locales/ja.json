@@ -294,6 +294,7 @@
     "rangeRings": "距離環",
     "enabled": "有効",
     "loadPlan": ".fms ファイルを読み込み",
+    "loadPlanFailed": "このフライトプランを読み込めませんでした。X-Plane の .fms ファイルか確認してください。",
     "navigationLayers": "ナビゲーションレイヤー",
     "tooltips": {
       "flightPlan": "フライトプランを読み込みまたはインポート",

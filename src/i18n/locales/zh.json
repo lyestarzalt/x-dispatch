@@ -294,6 +294,7 @@
     "rangeRings": "距离环",
     "enabled": "已启用",
     "loadPlan": "加载 .fms 文件",
+    "loadPlanFailed": "无法读取此飞行计划。请确认它是 X-Plane 的 .fms 文件。",
     "navigationLayers": "导航图层",
     "tooltips": {
       "flightPlan": "加载或导入飞行计划",

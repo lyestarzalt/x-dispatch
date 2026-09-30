@@ -260,6 +260,26 @@ jobs:
       - name: Verify public downloads
         run: bash scripts/check-r2-public.sh
 
+      # Marks the release on every PostHog chart. Never fails a release: skipped
+      # without the key, and a PostHog outage only loses the marker.
+      - name: Mark release in PostHog
+        continue-on-error: true
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          TAG: ${{ needs.compute-version.outputs.tag }}
+        run: |
+          if [ -z "$POSTHOG_PERSONAL_API_KEY" ]; then
+            echo "POSTHOG_PERSONAL_API_KEY not set, skipping"
+            exit 0
+          fi
+          jq -n --arg tag "$TAG" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{content: $tag, date_marker: $at, scope: "project"}' |
+            curl -fsS --max-time 15 -X POST \
+              "https://eu.posthog.com/api/projects/287775/annotations/" \
+              -H "Authorization: Bearer $POSTHOG_PERSONAL_API_KEY" \
+              -H "Content-Type: application/json" \
+              --data @- -o /dev/null
+
       # Bridge for installs older than 2.2. Windows updates through
       # update.electronjs.org and macOS/Linux read releases/latest, both of which
       # only see published GitHub releases. update.electronjs.org only treats a

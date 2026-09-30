@@ -294,6 +294,7 @@
     "rangeRings": "Entfernungsringe",
     "enabled": "Aktiviert",
     "loadPlan": ".fms-Datei laden",
+    "loadPlanFailed": "Dieser Flugplan konnte nicht gelesen werden. Es muss eine X-Plane-.fms-Datei sein.",
     "navigationLayers": "Navigationsebenen",
     "tooltips": {
       "flightPlan": "Flugplan laden oder importieren",

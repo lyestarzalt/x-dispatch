@@ -18,7 +18,11 @@ import { trackEvent, useAnalyticsConsent } from './useAnalytics';
 
 type MapState = ReturnType<typeof useMapStore.getState>;
 
-/** Map state that counts as "switched on" for each tracked layer. */
+/**
+ * Map state that counts as "switched on" for each tracked layer. The plane
+ * tracker is left out: the app switches it on when X-Plane connects, so only
+ * its button reports it.
+ */
 const LAYER_STATE: ReadonlyArray<[AnalyticsLayer, (s: MapState) => boolean]> = [
   ['vatsim', (s) => s.vatsimEnabled],
   ['ivao', (s) => s.ivaoEnabled],
@@ -29,7 +33,6 @@ const LAYER_STATE: ReadonlyArray<[AnalyticsLayer, (s: MapState) => boolean]> = [
   ['range_rings', (s) => s.rangeRingsEnabled],
   ['terrain_3d', (s) => s.terrain3dEnabled],
   ['terrain_shading', (s) => s.terrainShadingEnabled],
-  ['plane_tracker', (s) => s.showPlaneTracker],
   ['follow_plane', (s) => s.followPlane],
   ['night_mode', (s) => s.isNightMode],
   ['navaids', (s) => s.navVisibility.navaids],

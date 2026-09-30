@@ -17,6 +17,7 @@ import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import {
+  trackEvent,
   useFlightRecorderStream,
   usePlaneStateStream,
   useUsageTracking,
@@ -301,13 +302,14 @@ export default function Map({ airports }: MapProps) {
   useFlightRecorderStream();
   const isXPlaneConnected = usePlaneStore((s) => s.connected);
 
-  // Auto-enable plane tracker ONCE when X-Plane WebSocket first connects
+  // Auto-enable plane tracker ONCE when X-Plane WebSocket first connects. Reported as
+  // xplane_connected, not as the user switching the tracker on.
   const hasAutoEnabledRef = useRef(false);
   useEffect(() => {
-    if (isXPlaneConnected && !showPlaneTracker && !hasAutoEnabledRef.current) {
-      hasAutoEnabledRef.current = true;
-      setShowPlaneTracker(true);
-    }
+    if (!isXPlaneConnected || hasAutoEnabledRef.current) return;
+    hasAutoEnabledRef.current = true;
+    trackEvent('xplane_connected', {});
+    if (!showPlaneTracker) setShowPlaneTracker(true);
   }, [isXPlaneConnected, showPlaneTracker, setShowPlaneTracker]);
 
   // Plane layer sync - push each snapshot straight to the map layer
@@ -792,8 +794,10 @@ export default function Map({ airports }: MapProps) {
     if (showPlaneTracker) {
       setShowPlaneTracker(false);
       if (mapRef.current) removePlaneLayer(mapRef.current);
+      trackEvent('layer_disabled', { layer: 'plane_tracker' });
     } else {
       setShowPlaneTracker(true);
+      trackEvent('layer_enabled', { layer: 'plane_tracker' });
     }
   }, [mapRef, showPlaneTracker, setShowPlaneTracker]);
 

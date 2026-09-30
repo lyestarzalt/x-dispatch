@@ -83,6 +83,17 @@ export const ANALYTICS_LAUNCH_ERRORS = [
 ] as const;
 export const ANALYTICS_DIALOG_TIME_BUCKETS = ['under_10s', '10_60s', '1_5m', 'over_5m'] as const;
 
+/** Add-on types the installer recognises. */
+export const ANALYTICS_ADDON_TYPES = [
+  'aircraft',
+  'scenery_library',
+  'scenery',
+  'navdata',
+  'plugin',
+  'livery',
+  'lua_script',
+] as const;
+
 /** Where an error toast was shown; the message itself is never sent. */
 export const ANALYTICS_ERROR_AREAS = [
   'taxi_route',
@@ -169,6 +180,7 @@ export type AnalyticsFeature = (typeof ANALYTICS_FEATURES)[number];
 export type AnalyticsLayer = (typeof ANALYTICS_LAYERS)[number];
 export type AnalyticsWidget = (typeof ANALYTICS_WIDGETS)[number];
 export type AnalyticsStartVariant = (typeof ANALYTICS_START_VARIANTS)[number];
+export type AnalyticsAddonType = (typeof ANALYTICS_ADDON_TYPES)[number];
 export type AnalyticsLaunchError = (typeof ANALYTICS_LAUNCH_ERRORS)[number];
 export type AnalyticsDialogTimeBucket = (typeof ANALYTICS_DIALOG_TIME_BUCKETS)[number];
 export type AnalyticsStartupBucket = (typeof ANALYTICS_STARTUP_BUCKETS)[number];
@@ -250,6 +262,13 @@ const EVENT_SCHEMA = {
   flight_plan_auto_routed: { success: { kind: 'boolean' } },
   /** Flight plan builder: plan saved to X-Plane. */
   flight_plan_saved: {},
+  /** An airport search, once: a result was picked, or the field was left without one. */
+  search_used: { found: { kind: 'boolean' }, picked: { kind: 'boolean' } },
+  /** A .fms file opened from the Flight Plan menu, and whether it could be read. */
+  flight_plan_file_loaded: { success: { kind: 'boolean' } },
+  /** A file dropped on the add-on installer: recognised, not recognised, or failed to read. */
+  addon_detected: { result: oneOf(['recognized', 'unrecognized', 'error']) },
+  addon_installed: { type: oneOf(ANALYTICS_ADDON_TYPES), success: { kind: 'boolean' } },
   /** Where the Ko-fi link was clicked. */
   donate_clicked: { source: oneOf(ANALYTICS_DONATE_SOURCES) },
   /** The support toast shown after a few launches. */
@@ -263,6 +282,8 @@ const EVENT_SCHEMA = {
   update_notice_clicked: {},
   /** Once per launch: how long until the map was ready, and whether data came from the cache. */
   app_ready: { startup: oneOf(ANALYTICS_STARTUP_BUCKETS), from_cache: { kind: 'boolean' } },
+  /** Once per session, the first time X-Plane connects: the app is used alongside the sim. */
+  xplane_connected: {},
   /** Once per launch: window size and display scaling, as buckets. */
   display: {
     window_width: oneOf(ANALYTICS_WIDTH_BUCKETS),

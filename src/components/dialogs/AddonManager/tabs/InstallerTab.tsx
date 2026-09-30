@@ -20,8 +20,10 @@ import type {
   InstallProgress,
   InstallResult,
 } from '@/lib/addonManager/installer/types';
+import { addonTypeId } from '@/lib/analytics/addons';
 import { cn } from '@/lib/utils/helpers';
 import { useInstallerAnalyze, useInstallerInstall } from '@/queries/useAddonManager';
+import { trackEvent } from '@/queries/useAnalytics';
 import { DetectedItemCard } from '../components/DetectedItemCard';
 import { DropZone } from '../components/DropZone';
 
@@ -64,8 +66,10 @@ export function InstallerTab() {
       const items = await analyzeMutation.mutateAsync([firstPath]);
       // Only use the first detected item
       setDetectedItem(items[0] || null);
+      trackEvent('addon_detected', { result: items[0] ? 'recognized' : 'unrecognized' });
     } catch {
       // Error handled by mutation state
+      trackEvent('addon_detected', { result: 'error' });
     }
   };
 
@@ -75,6 +79,10 @@ export function InstallerTab() {
       setProgress(null);
       setResult(null);
       const installResults = await installMutation.mutateAsync([detectedItem]);
+      trackEvent('addon_installed', {
+        type: addonTypeId(detectedItem.addonType),
+        success: installResults[0]?.success ?? false,
+      });
       setInstalledScenery(
         detectedItem.addonType === 'Scenery' || detectedItem.addonType === 'SceneryLibrary'
       );
@@ -85,6 +93,7 @@ export function InstallerTab() {
         setDetectedItem(null);
       }
     } catch {
+      trackEvent('addon_installed', { type: addonTypeId(detectedItem.addonType), success: false });
       setProgress(null);
     }
   };
