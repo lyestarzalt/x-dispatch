@@ -6,11 +6,13 @@ import {
   type AnalyticsLayer,
   type AnalyticsWidget,
 } from '@/lib/analytics/events';
+import { builtTaxiRoute, isNewStartPosition } from '@/lib/analytics/mapActions';
 import { useAppStore } from '@/stores/appStore';
 import { useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import { useMapStore } from '@/stores/mapStore';
 import { MAP_STYLE_PRESETS, useSettingsStore } from '@/stores/settingsStore';
+import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { trackEvent, useAnalyticsConsent } from './useAnalytics';
 
@@ -88,8 +90,8 @@ function sendPreferences() {
 
 /**
  * Reports how the map is used: layers as they are switched on and off, widgets
- * and Explore tabs as they are opened,
- * airports as they are selected, and one preferences snapshot per session.
+ * and Explore tabs as they are opened, airports and start positions as they are
+ * picked, taxi routes once they are built, and one preferences snapshot per session.
  * Mounted once by the map; events are dropped in main unless consent is granted.
  */
 export function useUsageTracking() {
@@ -115,6 +117,12 @@ export function useUsageTracking() {
       ) {
         trackEvent('explore_tab_opened', { tab: explore.activeTab });
       }
+      if (explore.featuredCategory !== prev.explore.featuredCategory) {
+        trackEvent('explore_filter_selected', {
+          tab: 'featured',
+          filter: explore.featuredCategory,
+        });
+      }
       if (explore.selectedRoute && explore.selectedRoute !== prev.explore.selectedRoute) {
         trackEvent('explore_item_selected', { tab: 'routes' });
       }
@@ -123,6 +131,17 @@ export function useUsageTracking() {
       if (next.selectedICAO && next.selectedICAO !== prev.selectedICAO) {
         trackEvent('airport_selected', { airport: next.selectedICAO });
       }
+      const start = next.startPosition;
+      if (start && isNewStartPosition(start, prev.startPosition)) {
+        trackEvent('start_position_selected', {
+          start_type: start.type,
+          helipad: start.isHelipad ?? false,
+        });
+      }
+    });
+    const unsubTaxiRoute = useTaxiRouteStore.subscribe((next, prev) => {
+      const method = builtTaxiRoute(next, prev);
+      if (method) trackEvent('taxi_route_built', { method });
     });
     const unsubRecorder = useFlightRecorderStore.subscribe((next, prev) => {
       if (next.replay && !prev.replay) trackEvent('widget_opened', { widget: 'replay' });
@@ -131,6 +150,7 @@ export function useUsageTracking() {
     return () => {
       unsubMap();
       unsubApp();
+      unsubTaxiRoute();
       unsubRecorder();
     };
   }, []);

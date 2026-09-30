@@ -1,4 +1,9 @@
-import type { AnalyticsScaleBucket, AnalyticsStartupBucket, AnalyticsWidthBucket } from './events';
+import type {
+  AnalyticsDialogTimeBucket,
+  AnalyticsScaleBucket,
+  AnalyticsStartupBucket,
+  AnalyticsWidthBucket,
+} from './events';
 
 /** Time from window load to the map being ready. */
 export function startupBucket(ms: number): AnalyticsStartupBucket {
@@ -23,4 +28,12 @@ const SCALE_STEPS: readonly AnalyticsScaleBucket[] = ['1', '1.25', '1.5', '1.75'
 export function scaleBucket(factor: number): AnalyticsScaleBucket {
   const step = SCALE_STEPS.find((s) => Math.abs(Number(s) - factor) < 0.01);
   return step ?? 'other';
+}
+
+/** How long a dialog stayed open. */
+export function dialogTimeBucket(ms: number): AnalyticsDialogTimeBucket {
+  if (ms < 10_000) return 'under_10s';
+  if (ms < 60_000) return '10_60s';
+  if (ms < 300_000) return '1_5m';
+  return 'over_5m';
 }

@@ -12,7 +12,7 @@ import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
-import { useNavDataQuery } from '@/queries';
+import { trackEvent, useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import {
@@ -774,6 +774,7 @@ function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
     const result = await tune.mutateAsync({ radio, slot, freq });
     if (result.success) {
       toast.success(t(toastKey, { radio, freq }));
+      trackEvent('frequency_tuned', {});
       onTuned();
     } else {
       toastError('radio_tune', t('airportInfo.tune.toast.failed', { radio }), {

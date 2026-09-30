@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { runwayMatches } from '@/lib/flightplan/builder/procedures';
 import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
-import { useAirportProcedures } from '@/queries';
+import { trackEvent, useAirportProcedures } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 
 type ProcedureType = 'SID' | 'STAR' | 'APP';
@@ -76,6 +76,11 @@ export default function RouteTab() {
       selectedProcedure?.transition === proc.transition &&
       selectedProcedure?.runway === proc.runway;
     selectProcedure(isAlreadySelected ? null : (proc as Parameters<typeof selectProcedure>[0]));
+    if (!isAlreadySelected) {
+      trackEvent('procedure_selected', {
+        type: activeType === 'SID' ? 'sid' : activeType === 'STAR' ? 'star' : 'app',
+      });
+    }
   };
 
   const handleTypeChange = (value: string) => {

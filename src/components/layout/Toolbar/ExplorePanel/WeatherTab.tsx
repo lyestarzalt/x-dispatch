@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/helpers';
 import type { WeatherCategory } from '@/lib/weatherScan/parseMetarFeed';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { WEATHER_CATEGORIES, filterByCategory, useWeatherScanQuery } from '@/queries';
+import { WEATHER_CATEGORIES, filterByCategory, trackEvent, useWeatherScanQuery } from '@/queries';
 
 const GATEWAY_URL = 'https://gateway.x-plane.com';
 
@@ -43,6 +43,10 @@ interface WeatherTabProps {
 export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
   const { t } = useTranslation();
   const [category, setCategory] = useState<WeatherCategory>('snow');
+  const selectCategory = (key: WeatherCategory) => {
+    setCategory(key);
+    trackEvent('explore_filter_selected', { tab: 'weather', filter: key });
+  };
   const { data, isLoading, isError } = useWeatherScanQuery();
 
   const airportsByIcao = useMemo(() => {
@@ -86,7 +90,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
           return (
             <button
               key={key}
-              onClick={() => setCategory(key)}
+              onClick={() => selectCategory(key)}
               className={cn(
                 'flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition-colors',
                 category === key
