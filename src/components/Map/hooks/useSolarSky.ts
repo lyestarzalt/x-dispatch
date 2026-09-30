@@ -35,16 +35,20 @@ const DEFAULT_LIGHT: maplibregl.LightSpecification = {
 };
 
 /**
- * The daylit half of the atmosphere adds a bright haze. Over a dark basemap
- * that reads as daylight; over a light one it bleaches the map, so light
- * basemaps get a thinner atmosphere.
+ * The daylit half of the atmosphere adds a bright haze. At full strength it
+ * washes a dark basemap out to pale blue and bleaches a light one, so both
+ * get a thinner atmosphere; satellite imagery keeps the full one.
  */
+const DARK_BASEMAP_SKY: maplibregl.SkySpecification = {
+  'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 5, 0.6, 7, 0],
+};
 const LIGHT_BASEMAP_SKY: maplibregl.SkySpecification = {
   'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.45, 5, 0.45, 7, 0],
 };
 
 function atmosphereForBasemap(): maplibregl.SkySpecification {
   const theme = getBasemapTheme(useSettingsStore.getState().map.mapStyleUrl);
+  if (theme === 'dark') return DARK_BASEMAP_SKY;
   return theme === 'light' || theme === 'custom' ? LIGHT_BASEMAP_SKY : BASE_SKY;
 }
 
