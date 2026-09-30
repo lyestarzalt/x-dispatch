@@ -15,6 +15,9 @@
  * ERR_QUIC_PROTOCOL_ERROR events, every one of them already handled and
  * recovered from.
  *
+ * NETWORK_ACCESS_DENIED is a local firewall or OS policy and NETWORK_IO_SUSPENDED
+ * is the machine going to sleep mid-request; neither describes the origin.
+ *
  * Deliberately NOT matched (still reaches Sentry):
  *   - net::ERR_CERT_*           — cert chain / pinning issues, possible MITM
  *   - net::ERR_BAD_SSL_*        — TLS handshake bugs
@@ -25,4 +28,4 @@
  * Codes from Chromium `net/base/net_error_list.h`.
  */
 export const TRANSIENT_NET_ERROR_PATTERN =
-  /^net::ERR_(INTERNET_DISCONNECTED|NETWORK_CHANGED|NAME_NOT_RESOLVED|CONNECTION_(REFUSED|RESET|ABORTED|TIMED_OUT)|TIMED_OUT|ADDRESS_UNREACHABLE|PROXY_CONNECTION_FAILED|QUIC_(PROTOCOL_ERROR|HANDSHAKE_FAILED))$/;
+  /^net::ERR_(INTERNET_DISCONNECTED|NETWORK_CHANGED|NAME_NOT_RESOLVED|CONNECTION_(REFUSED|RESET|ABORTED|TIMED_OUT|CLOSED)|NETWORK_(ACCESS_DENIED|IO_SUSPENDED)|TIMED_OUT|ADDRESS_UNREACHABLE|PROXY_CONNECTION_FAILED|QUIC_(PROTOCOL_ERROR|HANDSHAKE_FAILED))$/;
