@@ -24,7 +24,7 @@ import type { AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
-import { getDbPath, getSqlite, initDb } from './lib/db';
+import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
@@ -143,9 +143,12 @@ app.name = 'X-Dispatch';
 
 process.on('uncaughtExceptionMonitor', (error) => {
   logger.main.error('Uncaught exception in main process', error);
+  recoverFromCorruption(error);
 });
 
 process.on('unhandledRejection', (reason) => {
+  // A corrupt cache would fail every launch; rebuild it instead.
+  if (recoverFromCorruption(reason)) return;
   logger.main.error(
     'Unhandled promise rejection in main process',
     reason instanceof Error ? reason : new Error(String(reason))
