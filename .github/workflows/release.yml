@@ -47,6 +47,11 @@ jobs:
       - name: Preflight push (fail before any build)
         run: git push --dry-run origin HEAD:main
 
+      # The notes pilots read come from "## [Unreleased]" in CHANGELOG.md, never
+      # from commit messages; stop before building when they have not been written.
+      - name: Check release notes (fail before any build)
+        run: bash scripts/release-notes.sh check CHANGELOG.md
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -185,8 +190,8 @@ jobs:
           echo "Collected assets:"
           ls -la release-assets/
 
-      - name: Generate release notes
-        id: changelog
+      # Commit list for the collapsed "All changes" section on GitHub only.
+      - name: List commits
         uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
@@ -194,41 +199,42 @@ jobs:
         env:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OUTPUT: release-notes.md
+          OUTPUT: commits.md
 
-      - name: Update CHANGELOG.md
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --tag ${{ needs.compute-version.outputs.tag }}
+      # The Unreleased notes in CHANGELOG.md go to Discord, the update notice and
+      # the website (the commit list stays on the GitHub release), then move
+      # into this version's section with a fresh Unreleased above it.
+      - name: Write release notes
+        id: notes
         env:
-          GITHUB_REPO: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OUTPUT: CHANGELOG.md
-
-      - name: Commit CHANGELOG.md
+          TAG: ${{ needs.compute-version.outputs.tag }}
+          VERSION: ${{ needs.compute-version.outputs.version }}
         run: |
+          set -euo pipefail
+          bash scripts/release-notes.sh print CHANGELOG.md > user-notes.md
+          {
+            echo "user<<NOTES_EOF"
+            cat user-notes.md
+            echo "NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          bash scripts/release-notes.sh release "$VERSION" "$(date -u +%Y-%m-%d)" CHANGELOG.md
           git add CHANGELOG.md
-          git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for ${{ needs.compute-version.outputs.tag }}"
+          git commit -m "docs: release notes for $TAG"
           git push
 
-      - name: Add commit details and footer to release notes
-        run: |
-          # Collapsed copy of the generated commit list. The section above it
-          # gets rewritten into plain-language notes after publishing (the
-          # website shows that part), this copy keeps the PR numbers and commits.
-          # Headings are demoted to #### so the website's section parser only
-          # matches the plain-language part.
+          # Headings in the commit list are demoted to #### so the website's
+          # section parser only reads the notes above it.
           {
+            cat user-notes.md
             echo ""
             echo "<details>"
             echo "<summary>All changes</summary>"
             echo ""
-            tail -n +2 release-notes.md | sed 's/^### /#### /'
+            tail -n +2 commits.md | sed 's/^### /#### /'
             echo ""
             echo "</details>"
-          } > commit-details.md
-          cat commit-details.md >> release-notes.md
+          } > release-notes.md
 
           cat >> release-notes.md << 'EOF'
 
@@ -342,7 +348,7 @@ jobs:
       - name: Send Discord notification
         continue-on-error: true
         env:
-          NOTES: ${{ steps.changelog.outputs.content }}
+          NOTES: ${{ steps.notes.outputs.user }}
           TAG: ${{ needs.compute-version.outputs.tag }}
           REPO: ${{ github.repository }}
         uses: tsickert/discord-webhook@v7.0.0
