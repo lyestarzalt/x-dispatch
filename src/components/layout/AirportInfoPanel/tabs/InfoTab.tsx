@@ -7,8 +7,9 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useUnits } from '@/hooks/useUnits';
 import { formatFrequency } from '@/lib/utils/format';
-import { runwayLengthFeet } from '@/lib/utils/geomath';
+import { type NauticalMiles, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
@@ -459,7 +460,8 @@ function RunwayRow({
   gsByEnd: Map<string, Navaid>;
   activeEndNames: Set<string>;
 }) {
-  const length = Math.round(runwayLengthFeet(runway.ends[0], runway.ends[1]));
+  const units = useUnits();
+  const lengthDisplay = units.altitude(runwayLengthFeet(runway.ends[0], runway.ends[1]));
   // Use an em-dash for missing surface metadata so the row stays scannable
   // without drawing attention to "Unknown" data.
   const surface = SURFACE_NAMES[runway.surface_type] ?? '—';
@@ -521,7 +523,7 @@ function RunwayRow({
             )}
           </div>
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <span className="font-mono tabular-nums">{length.toLocaleString()}'</span>
+            <span className="font-mono tabular-nums">{lengthDisplay}</span>
             <span className="text-muted-foreground/70">{surface}</span>
           </div>
         </div>
@@ -541,6 +543,7 @@ function RunwayRow({
 
 function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Navaid }) {
   const { t } = useTranslation();
+  const units = useUnits();
   // Navaid frequencies are stored as Hz*100 (e.g. 10950 → 109.50 MHz). Same
   // formatting convention as ILSLayer / NavaidLayer use elsewhere.
   const freq = `${(ils.frequency / 100).toFixed(2)}`;
@@ -555,7 +558,10 @@ function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Na
   const rawGs = gs?.glidepathAngle;
   const gsAngle = rawGs !== undefined && rawGs < 0.5 ? rawGs * 100 : rawGs;
   const gsStr = gsAngle !== undefined ? `${gsAngle.toFixed(1)}°` : '—';
-  const rangeStr = ils.range > 0 ? t('airportInfo.ils.rangeNm', { value: ils.range }) : '—';
+  const rangeStr =
+    ils.range > 0
+      ? t('airportInfo.ils.rangeNm', { value: units.distance(ils.range as NauticalMiles) })
+      : '—';
   // Flat block, no inner card — the runway-row container already provides
   // the surface. CDU-page feel: uppercase header with its natural underline,
   // KvRows indented under it.

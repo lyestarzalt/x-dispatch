@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { formatElevationFt, formatHeading } from './CompassWidget';
+import { formatCursorElevation, formatHeading } from './CompassWidget';
+
+const t = (key: string) => ({ 'units.ft': 'ft', 'units.m': 'm' })[key] ?? key;
 
 describe('formatHeading', () => {
   it('pads small bearings to three digits', () => {
@@ -29,23 +31,28 @@ describe('formatHeading', () => {
   });
 });
 
-describe('formatElevationFt', () => {
-  it('converts metres to feet, rounded', () => {
-    // 1594 m × 3.28084 ≈ 5,229.66 → 5,230 ft
-    expect(formatElevationFt(1594)).toBe('5,230');
+describe('formatCursorElevation', () => {
+  it('shows feet when the altitude preference is ft (single pill, no mixed display)', () => {
+    // 1594 m -> ~5,230 ft
+    expect(formatCursorElevation(1594, 'ft', t)).toBe('5,230 ft');
+  });
+
+  it('shows meters when the altitude preference is m, not feet', () => {
+    expect(formatCursorElevation(1594, 'm', t)).toBe('1,594 m');
   });
 
   it('formats sea level as 0', () => {
-    expect(formatElevationFt(0)).toBe('0');
+    expect(formatCursorElevation(0, 'ft', t)).toBe('0 ft');
   });
 
   it('handles negative elevations (Dead Sea / Death Valley)', () => {
     // -413 m × 3.28084 ≈ -1,354.99 → -1,355 ft
-    expect(formatElevationFt(-413)).toBe('-1,355');
+    expect(formatCursorElevation(-413, 'ft', t)).toBe('-1,355 ft');
   });
 
   it('uses locale thousands separator for high peaks (Everest fits)', () => {
-    // 8848.86 m × 3.28084 ≈ 29,031.69 → 29,032 ft
-    expect(formatElevationFt(8848.86)).toBe('29,032');
+    // 8848.86 m × 3.28084 ≈ 29,031.69 → 29,032 ft; matches the CLAUDE.md
+    // TODO's "9,197 ft" example shape (comma-grouped, single unit).
+    expect(formatCursorElevation(8848.86, 'ft', t)).toBe('29,032 ft');
   });
 });

@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { Gauge, PlaneLanding, PlaneTakeoff, Thermometer, Wind } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useUnits } from '@/hooks/useUnits';
+import { type Feet, metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import type { Knots } from '@/lib/utils/units';
 import type { SimBriefOFP } from '@/types/simbrief';
 
 interface PerformanceTabProps {
@@ -11,6 +14,7 @@ interface PerformanceTabProps {
 
 export function PerformanceTab({ data }: PerformanceTabProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const { tlr, general, origin, destination } = data;
 
   // Get the planned runway data from TLR
@@ -51,20 +55,17 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               <div className="grid grid-cols-3 gap-2">
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.v1')}
-                  value={takeoffRunway.speeds_v1}
-                  unit={t('units.kt')}
+                  value={units.speed(Number(takeoffRunway.speeds_v1) as Knots)}
                   color="warning"
                 />
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.vr')}
-                  value={takeoffRunway.speeds_vr}
-                  unit={t('units.kt')}
+                  value={units.speed(Number(takeoffRunway.speeds_vr) as Knots)}
                   color="success"
                 />
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.v2')}
-                  value={takeoffRunway.speeds_v2}
-                  unit={t('units.kt')}
+                  value={units.speed(Number(takeoffRunway.speeds_v2) as Knots)}
                   color="primary"
                 />
               </div>
@@ -95,7 +96,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     <p className="font-mono text-sm font-bold">
                       {t('simbriefDialog.performance.windDirSpeed', {
                         dir: takeoffConditions?.wind_direction ?? '',
-                        speed: takeoffConditions?.wind_speed ?? '',
+                        speed: takeoffConditions?.wind_speed
+                          ? units.speed(Number(takeoffConditions.wind_speed) as Knots)
+                          : '',
                       })}
                     </p>
                   </div>
@@ -121,9 +124,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     {t('simbriefDialog.performance.rwyLength')}
                   </span>
                   <span className="font-mono font-medium">
-                    {t('simbriefDialog.performance.meters', {
-                      value: parseInt(takeoffRunway.length, 10).toLocaleString(),
-                    })}
+                    {units.altitude(metersToFeet(parseInt(takeoffRunway.length, 10)))}
                   </span>
                 </div>
               </div>
@@ -155,8 +156,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               <div className="flex justify-center">
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.vref')}
-                  value={tlr.landing.distance_dry.speeds_vref}
-                  unit={t('units.kt')}
+                  value={units.speed(Number(tlr.landing.distance_dry.speeds_vref) as Knots)}
                   color="violet"
                   large
                 />
@@ -186,7 +186,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     <p className="font-mono text-sm font-bold">
                       {t('simbriefDialog.performance.windDirSpeed', {
                         dir: landingConditions?.wind_direction ?? '',
-                        speed: landingConditions?.wind_speed ?? '',
+                        speed: landingConditions?.wind_speed
+                          ? units.speed(Number(landingConditions.wind_speed) as Knots)
+                          : '',
                       })}
                     </p>
                   </div>
@@ -200,12 +202,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     {t('simbriefDialog.performance.ldaDry')}
                   </span>
                   <span className="font-mono font-medium">
-                    {t('simbriefDialog.performance.meters', {
-                      value: parseInt(
-                        tlr.landing.distance_dry.factored_distance,
-                        10
-                      ).toLocaleString(),
-                    })}
+                    {units.altitude(
+                      metersToFeet(parseInt(tlr.landing.distance_dry.factored_distance, 10))
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -213,12 +212,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     {t('simbriefDialog.performance.ldaWet')}
                   </span>
                   <span className="font-mono font-medium">
-                    {t('simbriefDialog.performance.meters', {
-                      value: parseInt(
-                        tlr.landing.distance_wet.factored_distance,
-                        10
-                      ).toLocaleString(),
-                    })}
+                    {units.altitude(
+                      metersToFeet(parseInt(tlr.landing.distance_wet.factored_distance, 10))
+                    )}
                   </span>
                 </div>
                 {landingRunway && (
@@ -227,9 +223,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                       {t('simbriefDialog.performance.rwyLength')}
                     </span>
                     <span className="font-mono font-medium">
-                      {t('simbriefDialog.performance.meters', {
-                        value: parseInt(landingRunway.length, 10).toLocaleString(),
-                      })}
+                      {units.altitude(metersToFeet(parseInt(landingRunway.length, 10)))}
                     </span>
                   </div>
                 )}
@@ -276,7 +270,9 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {t('simbriefDialog.performance.cruiseTas')}
             </p>
             <p className="font-mono text-xl font-bold">
-              {t('simbriefDialog.performance.tasKt', { tas: general.cruise_tas })}
+              {t('simbriefDialog.performance.tasKt', {
+                tas: units.speed(Number(general.cruise_tas) as Knots),
+              })}
             </p>
           </div>
         </div>
@@ -314,7 +310,11 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 {t('simbriefDialog.performance.transAltOrigin', { icao: origin.icao_code })}
               </p>
               <p className="font-mono text-lg font-bold">
-                {t('simbriefDialog.performance.feet', { value: origin.trans_alt || '—' })}
+                {origin.trans_alt
+                  ? t('simbriefDialog.performance.feet', {
+                      value: units.altitude(Number(origin.trans_alt) as Feet),
+                    })
+                  : '—'}
               </p>
             </div>
             <PlaneTakeoff className="text-muted-foreground h-5 w-5" />
@@ -344,13 +344,11 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
 function SpeedBox({
   label,
   value,
-  unit,
   color,
   large,
 }: {
   label: string;
   value: string;
-  unit: string;
   color: 'warning' | 'success' | 'primary' | 'violet';
   large?: boolean;
 }) {
@@ -366,10 +364,7 @@ function SpeedBox({
       className={cn('rounded-lg border p-2 text-center', colorClasses[color], large && 'px-6 py-3')}
     >
       <p className="text-[10px] font-medium uppercase opacity-80">{label}</p>
-      <p className={cn('font-mono font-bold', large ? 'text-2xl' : 'text-lg')}>
-        {value || '—'}
-        <span className="ml-0.5 text-xs font-normal opacity-60">{unit}</span>
-      </p>
+      <p className={cn('font-mono font-bold', large ? 'text-2xl' : 'text-lg')}>{value || '—'}</p>
     </div>
   );
 }

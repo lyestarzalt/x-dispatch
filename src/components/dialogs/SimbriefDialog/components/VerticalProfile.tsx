@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
+import { useUnits } from '@/hooks/useUnits';
+import type { Feet, NauticalMiles } from '@/lib/utils/geomath';
 import type { SimBriefFix } from '@/types/simbrief';
 
 interface VerticalProfileProps {
@@ -22,6 +24,12 @@ interface ProfileDataPoint {
   isTopOfDescent: boolean;
 }
 
+// Chart data/axes stay feet/nm-native for now — the domain math (maxAltitude
+// rounding to the nearest 10,000, the FL>=10000 threshold) is tied to feet.
+// Only the tooltip and legend (read-only text, not axis scaling) respect the
+// unit system. Full unit-aware axis scaling is in scope for R4 (vertical
+// profile) per docs/2026-10-02-lnm-takeaways.md, which may replace this
+// component's chart entirely.
 const chartConfig = {
   altitude: {
     label: 'Altitude',
@@ -41,6 +49,7 @@ function CustomTooltip({
   payload?: Array<{ payload: ProfileDataPoint }>;
 }) {
   const { t } = useTranslation();
+  const units = useUnits();
   if (!active || !payload?.length) return null;
   const entry = payload[0];
   if (!entry) return null;
@@ -67,22 +76,18 @@ function CustomTooltip({
         <span className="text-right font-mono">
           {point.altitude >= 10000
             ? `FL${Math.round(point.altitude / 100)}`
-            : t('simbriefDialog.profile.altitudeFt', { value: point.altitude.toLocaleString() })}
+            : units.altitude(point.altitude as Feet)}
         </span>
         <span className="text-muted-foreground">{t('simbriefDialog.profile.distance')}</span>
         <span className="text-right font-mono">
-          {t('simbriefDialog.profile.distanceNm', { value: point.distance })}
+          {units.distance(point.distance as NauticalMiles)}
         </span>
         <span className="text-muted-foreground">{t('simbriefDialog.profile.wind')}</span>
         <span className="text-right font-mono">{point.wind}</span>
         <span className="text-muted-foreground">OAT</span>
         <span className="text-right font-mono">{point.oat}</span>
         <span className="text-muted-foreground">{t('simbriefDialog.profile.terrain')}</span>
-        <span className="text-right font-mono">
-          {t('simbriefDialog.profile.altitudeFt', {
-            value: point.groundHeight.toLocaleString(),
-          })}
-        </span>
+        <span className="text-right font-mono">{units.altitude(point.groundHeight as Feet)}</span>
       </div>
     </div>
   );
@@ -90,6 +95,7 @@ function CustomTooltip({
 
 export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const { data, tocDistance, todDistance, maxAltitude } = useMemo(() => {
     if (!fixes || fixes.length < 2) {
       return { data: [], tocDistance: null, todDistance: null, maxAltitude: 40000 };
@@ -289,9 +295,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
         </div>
         <span className="text-muted-foreground">
           {t('simbriefDialog.profile.total')}{' '}
-          <span className="font-mono">
-            {t('simbriefDialog.profile.distanceNm', { value: totalDistance })}
-          </span>
+          <span className="font-mono">{units.distance(totalDistance as NauticalMiles)}</span>
         </span>
       </div>
     </div>

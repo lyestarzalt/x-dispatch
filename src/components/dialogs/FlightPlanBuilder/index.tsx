@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useUnits } from '@/hooks/useUnits';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   estimateFuelKg,
@@ -40,6 +41,8 @@ import {
   proceduresForRunway,
 } from '@/lib/flightplan/builder/procedures';
 import type { RouteToken } from '@/lib/flightplan/builder/types';
+import { kgToLbs } from '@/lib/utils/format';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
@@ -269,6 +272,7 @@ interface FlightPlanBuilderProps {
 
 export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
   useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
@@ -534,8 +538,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           <div className="mt-3 grid grid-cols-4 gap-3">
             <Stat
               label={t('planBuilder.distance')}
-              value={ready ? String(Math.round(distanceNm)) : '—'}
-              unit={t('planBuilder.nmUnit')}
+              value={ready ? units.distance(distanceNm as NauticalMiles) : '—'}
             />
             <Stat
               label={t('planBuilder.ete')}
@@ -548,8 +551,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             />
             <Stat
               label={t('planBuilder.fuel')}
-              value={ready ? String(estimateFuelKg(distanceNm, cls)) : '—'}
-              unit={t('planBuilder.kgUnit')}
+              value={ready ? units.weight(kgToLbs(estimateFuelKg(distanceNm, cls))) : '—'}
             />
           </div>
 
@@ -689,7 +691,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                       label={
                         alternate
                           ? t('planBuilder.alternateAt', {
-                              nm: Math.round(greatCircleNm(arrival, alternate)),
+                              value: units.distance(
+                                greatCircleNm(arrival, alternate) as NauticalMiles
+                              ),
                             })
                           : t('planBuilder.alternate')
                       }

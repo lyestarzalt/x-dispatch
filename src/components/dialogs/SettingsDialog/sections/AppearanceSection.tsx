@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Palette, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -12,7 +11,6 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { changeLanguage, languages } from '@/i18n';
-import type { WeightUnit } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
 import type { FontSize } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -74,14 +72,7 @@ function ZoomSlider({
 
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
-  const {
-    map: mapSettings,
-    updateMapSettings,
-    appearance,
-    setFontSize,
-    setZoomLevel,
-    setDebugOverlay,
-  } = useSettingsStore();
+  const { appearance, setFontSize, setZoomLevel, setDebugOverlay } = useSettingsStore();
 
   const handleLanguageChange = (langCode: string) => {
     changeLanguage(langCode);
@@ -145,30 +136,6 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           onCommit={setZoomLevel}
           resetLabel={t('settings.appearance.zoomReset')}
         />
-      </SettingsSectionBlock>
-
-      {/* Units */}
-      <SettingsSectionBlock
-        title={t('settings.appearance.units')}
-        description={t('settings.appearance.unitsDescription')}
-      >
-        <div className="flex items-center justify-between">
-          <Label className="text-sm">{t('settings.appearance.weightUnit')}</Label>
-          <Select
-            value={mapSettings.units.weight}
-            onValueChange={(value: WeightUnit) =>
-              updateMapSettings({ units: { ...mapSettings.units, weight: value } })
-            }
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lbs">{t('settings.appearance.lbs')}</SelectItem>
-              <SelectItem value="kg">{t('settings.appearance.kg')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </SettingsSectionBlock>
 
       {/* Developer Tools */}

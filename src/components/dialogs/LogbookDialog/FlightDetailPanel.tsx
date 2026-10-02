@@ -15,9 +15,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
+import { useUnits } from '@/hooks/useUnits';
 import { formatDateTime, formatDuration } from '@/lib/flightRecorder/format';
 import { copyLandingCard } from '@/lib/flightRecorder/landingCardImage';
+import { kgToLbs } from '@/lib/utils/format';
+import type { Feet, NauticalMiles } from '@/lib/utils/geomath';
 import { toastError } from '@/lib/utils/toastError';
+import type { Knots } from '@/lib/utils/units';
 import { useDeleteFlight, useFlightDetailQuery } from '@/queries/useFlightsQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
@@ -52,6 +56,7 @@ export function FlightDetailPanel({ flightId, onDeleted }: FlightDetailPanelProp
 
 function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDeleted: () => void }) {
   const { t, i18n } = useTranslation();
+  const units = useUnits();
   const deleteFlight = useDeleteFlight();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const landing = flight.landing;
@@ -77,15 +82,15 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
   const stats: Array<{ label: string; value: string }> = [
     { label: t('logbook.blockTime'), value: formatDuration(flight.blockTimeSec) },
     { label: t('logbook.airTime'), value: formatDuration(flight.airTimeSec) },
-    { label: t('logbook.distance'), value: `${Math.round(flight.distanceNm)} ${t('units.nm')}` },
+    { label: t('logbook.distance'), value: units.distance(flight.distanceNm as NauticalMiles) },
     {
       label: t('logbook.maxAltitude'),
-      value: `${flight.maxAltFt.toLocaleString(i18n.language)} ${t('units.ft')}`,
+      value: units.altitude(flight.maxAltFt as Feet),
     },
-    { label: t('logbook.maxSpeed'), value: `${flight.maxGroundspeedKt} ${t('units.kt')}` },
+    { label: t('logbook.maxSpeed'), value: units.speed(flight.maxGroundspeedKt as Knots) },
     {
       label: t('logbook.fuelBurned'),
-      value: fuelBurned === null ? '—' : `${Math.round(fuelBurned)} ${t('units.kg')}`,
+      value: fuelBurned === null ? '—' : units.weight(kgToLbs(fuelBurned)),
     },
     { label: t('logbook.landings'), value: String(flight.landingCount) },
     { label: t('logbook.points'), value: flight.pointCount.toLocaleString(i18n.language) },

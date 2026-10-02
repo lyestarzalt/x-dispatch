@@ -5,7 +5,8 @@ import { X } from 'lucide-react';
 import * as maplibregl from 'maplibre-gl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { calculateBearing, distanceNm } from '@/lib/utils/geomath';
+import { useUnits } from '@/hooks/useUnits';
+import { type Feet, calculateBearing, distanceNm } from '@/lib/utils/geomath';
 import { type NavInfoSelection, useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 
@@ -53,6 +54,7 @@ function formatDeg(deg: number): string {
 
 function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () => void }) {
   const { t } = useTranslation();
+  const units = useUnits();
   const plane = usePlaneStore((s) => s.state);
 
   const bearing = plane
@@ -84,20 +86,13 @@ function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () =>
         {info.frequency && <Row label={t('navInfo.frequency')} value={info.frequency} />}
         {info.altitudeLabel && <Row label={t('navInfo.altitude')} value={info.altitudeLabel} />}
         {info.elevationFt !== undefined && (
-          <Row
-            label={t('navInfo.elevation')}
-            value={`${Math.round(info.elevationFt).toLocaleString()} ${t('units.ft')}`}
-          />
+          <Row label={t('navInfo.elevation')} value={units.altitude(info.elevationFt as Feet)} />
         )}
         {bearing !== null && distance !== null ? (
           <>
             <Row label={t('navInfo.bearingTrue')} value={formatDeg(bearing)} accent />
             {isNavaid && <Row label={t('navInfo.radial')} value={formatDeg(bearing + 180)} />}
-            <Row
-              label={t('navInfo.distance')}
-              value={`${distance < 10 ? distance.toFixed(1) : Math.round(distance)} ${t('units.nm')}`}
-              accent
-            />
+            <Row label={t('navInfo.distance')} value={units.distance(distance)} accent />
           </>
         ) : (
           <div className="text-muted-foreground col-span-2">{t('navInfo.noPlane')}</div>

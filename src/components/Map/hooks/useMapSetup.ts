@@ -3,6 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import '@/lib/map/maplibreWorker';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
+import type { DistanceUnit } from '@/lib/utils/units';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
@@ -24,6 +25,13 @@ import { runWhenStyleIsReady } from './styleReadiness';
 // After destruction, all method calls become safe no-ops.
 
 const DESTROYED_MAPS = new WeakSet<maplibregl.Map>();
+
+/** Our DistanceUnit -> MapLibre ScaleControl's unit option. */
+function distanceUnitToScaleUnit(unit: DistanceUnit): 'imperial' | 'metric' | 'nautical' {
+  if (unit === 'nm') return 'nautical';
+  if (unit === 'mi') return 'imperial';
+  return 'metric';
+}
 
 function createSafeMapProxy(map: maplibregl.Map): maplibregl.Map {
   const handler: ProxyHandler<maplibregl.Map> = {
@@ -109,6 +117,11 @@ export function useMapSetup({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const airportPopupRef = useRef<maplibregl.Popup | null>(null);
   const vatsimPopupRef = useRef<maplibregl.Popup | null>(null);
+  const scaleControlRef = useRef<maplibregl.ScaleControl | null>(null);
+
+  // Per the unit system (CLAUDE.md "unit display" rule): the scale bar
+  // follows the user's distance preference instead of a hardcoded unit.
+  const distanceUnit = useSettingsStore((s) => s.map.units.distance);
 
   const onAirportClickRef = useRef(onAirportClick);
 
@@ -196,7 +209,12 @@ export function useMapSetup({
       (window as unknown as Record<string, unknown>).__map = map;
     }
 
-    map.addControl(new maplibregl.ScaleControl({ maxWidth: 200, unit: 'metric' }), 'bottom-left');
+    const scaleControl = new maplibregl.ScaleControl({
+      maxWidth: 200,
+      unit: distanceUnitToScaleUnit(distanceUnit),
+    });
+    map.addControl(scaleControl, 'bottom-left');
+    scaleControlRef.current = scaleControl;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-left');
     const cleanupIlsOverlayAttach = runWhenStyleIsReady(map, () => {
       ilsLayer.attachTo(map);
@@ -259,11 +277,20 @@ export function useMapSetup({
       // dead map whose getters return undefined. Clear the ref so those
       // guards actually fire.
       if (mapRef.current === map) mapRef.current = null;
+      scaleControlRef.current = null;
     };
     // Note: mapStyleUrl changes are handled by Map/index.tsx style change handler
-    // to preserve map state. Only recreate map when airports change.
+    // to preserve map state. Only recreate map when airports change. distanceUnit
+    // isn't a dep either — the effect below keeps an existing control's unit in
+    // sync without recreating the whole map.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [airports]);
+
+  // Keep the scale bar's unit in sync with the user's distance preference.
+  // MapLibre's ScaleControl supports changing this on an existing instance.
+  useEffect(() => {
+    scaleControlRef.current?.setUnit(distanceUnitToScaleUnit(distanceUnit));
+  }, [distanceUnit]);
 
   // Live-refresh the starred-airport markers when the user toggles a
   // favourite or sets a home in any other component. No-op until the map

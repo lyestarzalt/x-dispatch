@@ -1,9 +1,10 @@
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { type AltitudeUnit, type Translate, formatAltitude } from '@/lib/utils/units';
 import { useMapStore } from '@/stores/mapStore';
-
-const METERS_TO_FEET = 3.28084;
+import { useSettingsStore } from '@/stores/settingsStore';
 
 /**
  * Map MapLibre's signed bearing (-180..180) to a 3-digit aviation heading
@@ -15,11 +16,12 @@ export function formatHeading(mapBearing: number): string {
 }
 
 /**
- * Convert metres to feet, round, and format with the locale's thousands
- * separator. Exported for unit tests.
+ * Format the cursor elevation (sourced in metres) in the user's altitude
+ * preference — single pill, never both units at once. Exported for unit
+ * tests. See the CLAUDE.md "Cursor elevation widget" TODO this closes.
  */
-export function formatElevationFt(meters: number): string {
-  return Math.round(meters * METERS_TO_FEET).toLocaleString();
+export function formatCursorElevation(meters: number, unit: AltitudeUnit, t: Translate): string {
+  return formatAltitude(metersToFeet(meters), unit, t);
 }
 
 // Constants
@@ -114,14 +116,15 @@ function CompassWidget() {
   const { t } = useTranslation();
   const mapBearing = useMapStore((s) => s.mapBearing);
   const cursorElevation = useMapStore((s) => s.cursorElevation);
+  const altitudeUnit = useSettingsStore((s) => s.map.units.altitude);
 
   const headingDisplay = useMemo(() => formatHeading(mapBearing), [mapBearing]);
 
   const showElevationRow = cursorElevation.supported;
-  const elevationFt = useMemo(() => {
+  const elevationDisplay = useMemo(() => {
     const m = cursorElevation.valueM;
-    return m == null ? null : formatElevationFt(m);
-  }, [cursorElevation.valueM]);
+    return m == null ? null : formatCursorElevation(m, altitudeUnit, t);
+  }, [cursorElevation.valueM, altitudeUnit, t]);
 
   return (
     <div className="absolute bottom-10 left-12 z-10" role="region" aria-label="Compass heading">
@@ -203,7 +206,7 @@ function CompassWidget() {
           <span>{headingDisplay}°</span>
           {showElevationRow && (
             <span className="text-primary/60 text-[10px] font-normal tracking-tight">
-              {elevationFt ?? '—'} {t('units.ft')}
+              {elevationDisplay ?? '—'}
             </span>
           )}
         </div>

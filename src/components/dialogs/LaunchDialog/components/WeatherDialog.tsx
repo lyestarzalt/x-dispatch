@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useUnits } from '@/hooks/useUnits';
+import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useTrackFeatureOpened } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -346,6 +348,7 @@ function CloudLayerProperties({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
+  const units = useUnits();
   const category = getCoverageCategory(layer.cover);
 
   return (
@@ -400,7 +403,7 @@ function CloudLayerProperties({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('launcher.weatherDialog.tops')}</span>
             <span className="text-foreground font-mono">
-              {t('launcher.weatherDialog.ftMsl', { value: layer.tops_ft.toLocaleString() })}
+              {t('launcher.weatherDialog.ftMsl', { value: units.altitude(layer.tops_ft as Feet) })}
             </span>
           </div>
           <Slider
@@ -421,7 +424,7 @@ function CloudLayerProperties({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('launcher.weatherDialog.bases')}</span>
             <span className="text-foreground font-mono">
-              {t('launcher.weatherDialog.ftMsl', { value: layer.base_ft.toLocaleString() })}
+              {t('launcher.weatherDialog.ftMsl', { value: units.altitude(layer.base_ft as Feet) })}
             </span>
           </div>
           <Slider
@@ -465,6 +468,7 @@ function WindLayerProperties({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
+  const units = useUnits();
 
   return (
     <div className="flex h-full flex-col">
@@ -473,7 +477,9 @@ function WindLayerProperties({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t('launcher.weatherDialog.altitude')}</span>
             <span className="text-foreground font-mono">
-              {t('launcher.weatherDialog.ftMsl', { value: layer.altitude_ft.toLocaleString() })}
+              {t('launcher.weatherDialog.ftMsl', {
+                value: units.altitude(layer.altitude_ft as Feet),
+              })}
             </span>
           </div>
           <Slider

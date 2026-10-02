@@ -202,6 +202,9 @@ export default tseslint.config(
               /^(monotone|linear|step|basis|cardinal|natural)$/,
               // unit abbreviations — same in every locale
               /^(km|nm|nmi|SM|mi|m|cm|mm|ft|in|kt|kts|fpm|mph|kph|psi|hPa|inHg|°C|°F|°|m\/s)$/,
+              // unit-system discriminant values (settingsStore.map.units.* / CoordinateFormat) —
+              // internal identifiers passed as ToggleGroupItem `value`, not displayed text
+              /^(kmh|lbs|kg|ms|decimal|dms|dm)$/,
               // brand / proper nouns allowed inline
               'SimBrief',
               'X-Dispatch',
