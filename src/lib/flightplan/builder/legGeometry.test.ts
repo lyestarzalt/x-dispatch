@@ -6,6 +6,8 @@ import type { ResolvedProcedureWaypoint } from '@/types/navigation';
 import { bearingDeg, destinationPoint, greatCircleNm, pathDistanceNm } from './geometry';
 import { builtProcedurePaths, procedureGeometry, procedurePath } from './legGeometry';
 
+const norm180 = (deg: number): number => (((deg % 360) + 540) % 360) - 180;
+
 const wp = (over: Partial<ResolvedProcedureWaypoint>): ResolvedProcedureWaypoint => ({
   fixId: 'FIX',
   fixRegion: 'EH',
@@ -109,14 +111,93 @@ describe('procedurePath', () => {
     ];
     const start = { position: { latitude: 51.44, longitude: 5.36 }, trackDeg: 212 };
     const path = procedurePath(legs, { start });
-    // 3000 ft at 600 ft/nm (LNM's gradient, ours was 300 - half real): five miles straight.
+    // 3000 ft at 600 ft/nm (LNM's gradient, ours was 300 - half real): five miles straight,
+    // on the published course exactly (LNM flies legTrueCourse(), never the previous track).
     expect(greatCircleNm(start.position, path[0]!)).toBeCloseTo(5, 0);
-    expect(bearingDeg(start.position, path[0]!)).toBeCloseTo(212, 0);
+    expect(bearingDeg(start.position, path[0]!)).toBeCloseTo(
+      magneticToTrue(210 as Degrees, start.position.latitude, start.position.longitude),
+      0
+    );
     // The published left turn is kept even though the fix lies to the right.
     const exitTrack = bearingDeg(path[1]!, path[2]!);
     const turned = ((exitTrack - 212 + 540) % 360) - 180;
     expect(turned).toBeLessThan(0);
     expect(path[path.length - 1]!.longitude).toBeCloseTo(5.45, 3);
+  });
+
+  it('draws fix-to-fix legs as straight lines with no synthetic fly-by arc (LNM paints leg.line as is)', () => {
+    // LNM's paintProcedureSegment: a TF/CF/DF leg without a published turn direction is one
+    // straight line from the previous leg's end to the fix. No turn radius is ever invented.
+    const path = procedurePath([
+      wp({ fixId: 'A', latitude: 52, longitude: 5 }),
+      wp({ fixId: 'B', latitude: 52, longitude: 5.3 }),
+      wp({ fixId: 'C', latitude: 51.8, longitude: 5.3 }),
+    ]);
+    expect(path).toEqual([
+      { latitude: 52, longitude: 5 },
+      { latitude: 52, longitude: 5.3 },
+      { latitude: 51.8, longitude: 5.3 },
+    ]);
+  });
+
+  it('marks a published turn with a small sub-NM hint, not a wide arc swinging past the fix', () => {
+    // EHAM I36C SUGOL transition, real coordinates: SUGOL -> SPL (the VOR on the field) -> AM280
+    // with a published right turn at SPL. LNM's paintProcedureTurn leaves 0.5 NM for a small
+    // bezier at the fix and then runs straight; a 2 NM-radius tangent arc swung 2 NM east over
+    // the airport before heading south-west, which is the loop that showed on the map.
+    const SUGOL = { latitude: 52.525511111, longitude: 3.96735 };
+    const SPL = { latitude: 52.332138889, longitude: 4.749888889 };
+    const AM280 = { latitude: 52.24775, longitude: 4.59625 };
+    const path = procedurePath([
+      wp({ fixId: 'SUGOL', pathTerminator: 'IF', ...SUGOL }),
+      wp({ fixId: 'SPL', ...SPL }),
+      wp({ fixId: 'AM280', turnDirection: 'R', ...AM280 }),
+    ]);
+    const splIndex = path.findIndex(
+      (p) =>
+        Math.abs(p.latitude - SPL.latitude) < 1e-6 && Math.abs(p.longitude - SPL.longitude) < 1e-6
+    );
+    expect(splIndex).toBeGreaterThan(0);
+    const after = path.slice(splIndex);
+    // The hint stays within a mile of the fix, and the whole leg is barely longer than direct.
+    for (const p of after)
+      expect(greatCircleNm(SPL, p)).toBeLessThan(greatCircleNm(SPL, AM280) + 0.01);
+    expect(Math.max(...after.slice(1, -1).map((p) => greatCircleNm(SPL, p)))).toBeLessThan(1);
+    expect(pathDistanceNm(after)).toBeLessThan(greatCircleNm(SPL, AM280) + 0.6);
+    // It still bends to the right of the inbound track, as published.
+    const inbound = bearingDeg(SUGOL, SPL);
+    const first = bearingDeg(SPL, after[1]!);
+    expect(((first - inbound + 540) % 360) - 180).toBeGreaterThan(0);
+  });
+
+  it('measures the first SID climb from the runway elevation, unclamped (LNM: altDiff / 600)', () => {
+    const legs = [
+      wp({
+        fixId: '',
+        pathTerminator: 'CA',
+        course: 212,
+        resolved: false,
+        altitude: { descriptor: '+', altitude1: 9000, altitude2: null },
+      }),
+    ];
+    const start = { position: { latitude: 51.44, longitude: 5.36 }, trackDeg: 212 };
+    // 9000 ft from a 1200 ft runway is 7800 ft, 13 NM at 600 ft/NM.
+    const path = procedurePath(legs, { start, runwayElevationFt: 1200 });
+    expect(greatCircleNm(start.position, path[0]!)).toBeCloseTo(13, 1);
+    // Without the elevation the full altitude counts, and nothing caps it at 20 NM.
+    const legsHigh = [
+      wp({
+        fixId: '',
+        pathTerminator: 'CA',
+        course: 212,
+        resolved: false,
+        altitude: { descriptor: '+', altitude1: 15000, altitude2: null },
+      }),
+    ];
+    expect(greatCircleNm(start.position, procedurePath(legsHigh, { start })[0]!)).toBeCloseTo(
+      25,
+      1
+    );
   });
 
   it('starts a STAR at its first fix with no synthetic entry', () => {
@@ -185,7 +266,7 @@ describe('procedurePath', () => {
     const legs = [
       wp({
         fixId: '',
-        pathTerminator: 'FD',
+        pathTerminator: 'CD',
         course: null,
         distance: 25,
         recNavaid: 'NAV',
@@ -197,6 +278,185 @@ describe('procedurePath', () => {
     const path = procedurePath(legs, { start: { position: start, trackDeg: 0 } });
     const target = path[path.length - 1]!;
     expect(greatCircleNm(navaid, target)).toBeCloseTo(25, 1);
+  });
+
+  it('runs an FD leg from its own fix along its course to the DME ring (LNM: start = fixPos)', () => {
+    // The previous leg ended 20 NM south of the navaid, but the FD leg is anchored on its own
+    // fix 10 NM south of it; the ring crossing is computed along the course from that fix.
+    const navaid = { latitude: 40, longitude: -80 };
+    const prevEnd = destinationPoint(navaid, 180, 20);
+    const fix = destinationPoint(navaid, 180, 10);
+    const legs = [
+      wp({
+        fixId: 'FIXA',
+        pathTerminator: 'FD',
+        course: trueToMagnetic(0 as Degrees, fix.latitude, fix.longitude),
+        distance: 25,
+        recNavaid: 'NAV',
+        recNavaidRegion: 'ZZ',
+        recNavaidLatitude: navaid.latitude,
+        recNavaidLongitude: navaid.longitude,
+        ...fix,
+      }),
+    ];
+    const path = procedurePath(legs, { start: { position: prevEnd, trackDeg: 0 } });
+    const target = path[path.length - 1]!;
+    expect(greatCircleNm(navaid, target)).toBeCloseTo(25, 1);
+    expect(target.latitude).toBeGreaterThan(navaid.latitude); // crossed north of the station
+  });
+
+  it('draws nothing for a CD leg whose DME ring cannot be located (LNM leaves the leg line invalid)', () => {
+    const legs = [
+      wp({ fixId: '', pathTerminator: 'CD', course: null, distance: 5, resolved: false }),
+    ];
+    const path = procedurePath(legs, {
+      start: { position: { latitude: 40, longitude: -80 }, trackDeg: 0 },
+    });
+    expect(path).toEqual([]);
+  });
+
+  it('runs an FC leg from its fix for the published distance along the published course', () => {
+    const fix = { latitude: 40, longitude: -80 };
+    const legs = [
+      wp({
+        fixId: 'FIXA',
+        pathTerminator: 'FC',
+        course: trueToMagnetic(90 as Degrees, fix.latitude, fix.longitude),
+        distance: 5,
+        ...fix,
+      }),
+    ];
+    const path = procedurePath(legs);
+    expect(path).toHaveLength(2);
+    expect(path[0]).toEqual(fix);
+    expect(greatCircleNm(fix, path[1]!)).toBeCloseTo(5, 1);
+    expect(bearingDeg(fix, path[1]!)).toBeCloseTo(90, 0);
+  });
+
+  it('joins a CF leg from far off its course by a 45-degree intercept onto the course, not a direct line to the fix', () => {
+    // LNM's COURSE_TO_FIX block: when the previous position is more than 1 NM off the leg's
+    // inbound course line, it intersects a 45-degree radial from there with the course and
+    // draws previous -> intercept -> fix.
+    const prevStart = { latitude: 40, longitude: -80.5 };
+    const prevEnd = { latitude: 40, longitude: -80 };
+    const fix = { latitude: 41, longitude: -79 };
+    const legs = [
+      wp({ fixId: 'P', pathTerminator: 'IF', ...prevStart }),
+      wp({ fixId: 'Q', ...prevEnd }),
+      wp({
+        fixId: 'F',
+        pathTerminator: 'CF',
+        course: trueToMagnetic(360 as Degrees, fix.latitude, fix.longitude),
+        distance: 20,
+        ...fix,
+      }),
+    ];
+    const path = procedurePath(legs);
+    expect(path).toHaveLength(4);
+    const intercept = path[2]!;
+    // On the course line through the fix, short of it, reached on a 45-degree cut.
+    expect(Math.abs(crossTrackStatus(intercept, fix, 180 as Degrees).crossTrackNm)).toBeLessThan(
+      0.1
+    );
+    expect(intercept.latitude).toBeLessThan(fix.latitude);
+    expect(intercept.latitude).toBeGreaterThan(fix.latitude - 20 / 60);
+    expect(bearingDeg(prevEnd, intercept)).toBeCloseTo(45, 0);
+  });
+
+  it('draws a course reversal onto a CF leg as a bow to the start of its course, not an intercept', () => {
+    // Heading east, then a CF leg with a westbound course to a fix behind: LNM treats anything
+    // over 150 degrees as a reversal, flies to the start of the course (fix + distance back)
+    // and the painter connects the gap with a smooth bezier bow when a turn is published.
+    const prevStart = { latitude: 40, longitude: -80.5 };
+    const prevEnd = { latitude: 40, longitude: -80 };
+    const fix = { latitude: 40.1, longitude: -80.5 };
+    const legs = [
+      wp({ fixId: 'P', pathTerminator: 'IF', ...prevStart }),
+      wp({ fixId: 'Q', ...prevEnd }),
+      wp({
+        fixId: 'F',
+        pathTerminator: 'CF',
+        turnDirection: 'L',
+        course: trueToMagnetic(270 as Degrees, fix.latitude, fix.longitude),
+        distance: 10,
+        ...fix,
+      }),
+    ];
+    const path = procedurePath(legs);
+    expect(path[path.length - 1]).toEqual(fix);
+    const afterQ = path.slice(1);
+    expect(afterQ.length).toBeGreaterThan(5); // the bow is sampled, not a single corner
+    for (let i = 1; i < afterQ.length - 1; i++) {
+      const a = bearingDeg(afterQ[i - 1]!, afterQ[i]!);
+      const b = bearingDeg(afterQ[i]!, afterQ[i + 1]!);
+      expect(Math.abs(((b - a + 540) % 360) - 180)).toBeLessThan(70);
+    }
+    // Reaches the start of the course line (10 NM east of the fix) before running in to the fix.
+    const courseStart = destinationPoint(fix, 90, 10);
+    expect(Math.min(...afterQ.map((p) => greatCircleNm(courseStart, p)))).toBeLessThan(1.2);
+  });
+
+  it('offsets a CR leg with a published turn 2 NM to the side before intercepting (LNM parallel line)', () => {
+    // Like the plain CR case (station 6 NM to the right of the track this time, so the shifted
+    // crossing still clears LNM's 1.5 NM minimum), but with a left turn published: LNM intersects
+    // from a course line shifted 2 NM to the right (where a left turn onto course would leave the
+    // aircraft) and starts the leg there.
+    const start = { latitude: 40, longitude: -80 };
+    const onTrack = destinationPoint(start, 100, 15);
+    const navaid = destinationPoint(onTrack, 190, 6);
+    const theta = trueToMagnetic(
+      bearingDeg(navaid, onTrack) as Degrees,
+      navaid.latitude,
+      navaid.longitude
+    );
+    const legs = [
+      wp({
+        fixId: '',
+        pathTerminator: 'CR',
+        turnDirection: 'L',
+        course: null,
+        theta,
+        recNavaid: 'NAV',
+        recNavaidRegion: 'ZZ',
+        recNavaidLatitude: navaid.latitude,
+        recNavaidLongitude: navaid.longitude,
+      }),
+    ];
+    const path = procedurePath(legs, { start: { position: start, trackDeg: 100 } });
+    const target = path[path.length - 1]!;
+    // Still on the radial, but 2 NM right of the original track line.
+    expect(
+      Math.abs(norm180(bearingDeg(navaid, target) - bearingDeg(navaid, onTrack)))
+    ).toBeLessThan(1.5);
+    expect(crossTrackStatus(target, start, 100 as Degrees).crossTrackNm).toBeCloseTo(2, 0);
+  });
+
+  it('enters an AF arc by a straight stub out to the DME ring when the previous leg ended off it', () => {
+    // LNM: if the entry position is more than 0.5 NM off the published rho, the arc starts at
+    // the point on the ring in the direction of that position (correctedArc) and a straight
+    // line leads there.
+    const navaid = { latitude: 40, longitude: -80 };
+    const radiusNm = 15;
+    const start = destinationPoint(navaid, 0, 12); // 3 NM inside the ring, due north
+    const fix = destinationPoint(navaid, 90, radiusNm);
+    const legs = [
+      wp({
+        fixId: 'ARC2',
+        pathTerminator: 'AF',
+        turnDirection: 'R',
+        recNavaid: 'NAV',
+        recNavaidRegion: 'ZZ',
+        recNavaidLatitude: navaid.latitude,
+        recNavaidLongitude: navaid.longitude,
+        rho: radiusNm,
+        ...fix,
+      }),
+    ];
+    const path = procedurePath(legs, { start: { position: start, trackDeg: 90 } });
+    const entry = path[0]!;
+    expect(greatCircleNm(navaid, entry)).toBeCloseTo(radiusNm, 1);
+    expect(bearingDeg(navaid, entry)).toBeCloseTo(0, 0);
+    for (const p of path) expect(greatCircleNm(navaid, p)).toBeCloseTo(radiusNm, 1);
   });
 
   it("intercepts the next leg's real published course for a CI leg, not a fixed-length guess", () => {
@@ -491,6 +751,71 @@ describe('procedureGeometry overlays', () => {
     expect(flown).toBeLessThan(direct * 3);
   });
 
+  it('sizes a hold like LNM: 3.5 NM of leg per minute, turn radius a quarter of the leg', () => {
+    const fix = { latitude: 40, longitude: -80 };
+    const legs = [
+      wp({
+        fixId: 'HOLD',
+        pathTerminator: 'HM',
+        course: trueToMagnetic(360 as Degrees, fix.latitude, fix.longitude),
+        turnDirection: 'R',
+        holdTimeMin: 1,
+        ...fix,
+      }),
+    ];
+    const { overlays } = procedureGeometry(legs);
+    const points = overlays[0]!.points;
+    // Straight legs 3.5 NM, turn radius 0.875 NM: the apex of the far turn sits a radius past
+    // the leg end and a radius to the side, about 4.5 NM from the fix.
+    const apex = (legNm: number) => Math.hypot(legNm * 1.25, legNm / 4);
+    expect(Math.max(...points.map((p) => greatCircleNm(fix, p)))).toBeCloseTo(apex(3.5), 1);
+    // Published distance is used when there is no time.
+    const byDistance = procedureGeometry([wp({ ...legs[0]!, holdTimeMin: null, distance: 6 })]);
+    expect(
+      Math.max(...byDistance.overlays[0]!.points.map((p) => greatCircleNm(fix, p)))
+    ).toBeCloseTo(apex(6), 1);
+  });
+
+  it('shapes a procedure turn like LNM: 45-degree outbound, 3 NM straight, 180-degree turn, return', () => {
+    // LNM processLegs + paintProcedureTurnWithText: from the fix along course-45 (left turn)
+    // for max(distance - 3.5, 1) NM, then 3 NM parallel to the published course, a 180-degree
+    // turn of 1.5 NM diameter towards the turn side, and a return leg 0.8 x 3 NM back.
+    const fix = { latitude: 40, longitude: -80 };
+    const outboundTrue = 180;
+    const legs = [
+      wp({
+        fixId: 'PT',
+        pathTerminator: 'PI',
+        course: trueToMagnetic(outboundTrue as Degrees, fix.latitude, fix.longitude),
+        turnDirection: 'L',
+        distance: 10,
+        ...fix,
+      }),
+    ];
+    const { path, overlays } = procedureGeometry(legs);
+    const pts = overlays[0]!.points;
+    expect(pts[0]).toEqual(fix);
+    const p1 = pts[1]!;
+    expect(greatCircleNm(fix, p1)).toBeCloseTo(6.5, 1);
+    expect(bearingDeg(fix, p1)).toBeCloseTo(outboundTrue - 45, 0);
+    const p2 = pts[2]!;
+    expect(greatCircleNm(p1, p2)).toBeCloseTo(3, 1);
+    expect(bearingDeg(p1, p2)).toBeCloseTo(outboundTrue, 0);
+    // The arc ends 1.5 NM to the left of p2, every sample 0.75 NM from the arc centre.
+    const arcEnd = destinationPoint(p2, outboundTrue - 90, 1.5);
+    const centre = destinationPoint(p2, outboundTrue - 90, 0.75);
+    const arcEndIndex = pts.findIndex((p) => greatCircleNm(p, arcEnd) < 0.05);
+    expect(arcEndIndex).toBeGreaterThan(3);
+    for (const p of pts.slice(3, arcEndIndex + 1)) {
+      expect(greatCircleNm(centre, p)).toBeCloseTo(0.75, 1);
+    }
+    const ret = pts[pts.length - 1]!;
+    expect(bearingDeg(arcEnd, ret)).toBeCloseTo(outboundTrue - 180, 0);
+    expect(greatCircleNm(arcEnd, ret)).toBeCloseTo(2.4, 1);
+    // The drawn leg itself runs fix -> turn point, and the next leg picks up 1.5 NM past it.
+    expect(path).toEqual([fix, p1]);
+  });
+
   it('produces a procedure-turn overlay anchored at the real fix for a PI leg', () => {
     const fix = { latitude: 40, longitude: -80 };
     const legs = [
@@ -518,7 +843,28 @@ describe('builtProcedurePaths', () => {
       RW21
     );
     expect(hints).toHaveLength(1);
+    // The runway elevation reaches the climb math.
+    const climb = [
+      wp({
+        fixId: '',
+        pathTerminator: 'CA',
+        course: 212,
+        resolved: false,
+        altitude: { descriptor: '+', altitude1: 3000, altitude2: null },
+      }),
+    ];
+    const low = builtProcedurePaths(
+      { sid: { type: 'SID', name: 'X', runway: 'RW21', transition: null, waypoints: climb } },
+      { ...RW21, elevationFt: 0 }
+    )[0]!.path;
+    const high = builtProcedurePaths(
+      { sid: { type: 'SID', name: 'X', runway: 'RW21', transition: null, waypoints: climb } },
+      { ...RW21, elevationFt: 1800 }
+    )[0]!.path;
+    expect(greatCircleNm(low[0]!, low[1]!)).toBeCloseTo(5, 1);
+    expect(greatCircleNm(high[0]!, high[1]!)).toBeCloseTo(2, 1);
     expect(hints[0]!.via).toBe('WOOD1S');
+    expect(hints[0]!.kind).toBe('sid');
     // Starts at the far end of the runway, about its length from the threshold.
     expect(greatCircleNm(RW21, hints[0]!.path[0]!)).toBeCloseTo(1.35, 1);
   });

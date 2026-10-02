@@ -23,6 +23,8 @@ export interface RunwayEnd {
   longitude: number;
   headingDeg: number;
   lengthNm: number;
+  /** Airport elevation from the apt.dat header, for climb-gradient math off the runway. */
+  elevationFt?: number;
 }
 
 export interface FMSFlightPlan {
@@ -125,6 +127,8 @@ export interface EnrichedFlightPlan {
     via: string;
     path: { latitude: number; longitude: number }[];
     missedPath?: { latitude: number; longitude: number }[];
+    /** Which procedure the path belongs to. An approach ends on the runway: no line to the airport. */
+    kind?: 'sid' | 'star' | 'approach';
   }[];
 
   // Resolution summary

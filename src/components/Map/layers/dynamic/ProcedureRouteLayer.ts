@@ -19,6 +19,12 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
+import {
+  ROUTE_KIND_COLORS,
+  ROUTE_LINE_OPACITY,
+  ROUTE_LINE_WIDTH,
+  procedureKind,
+} from './routeStyle';
 
 // ============================================================================
 // Types
@@ -91,7 +97,6 @@ export function omitFlightPlanWaypoints<T extends FixPosition>(
 // ============================================================================
 
 const ROUTE_LAYER_ID = 'procedure-route';
-const ROUTE_CASING_LAYER_ID = 'procedure-route-casing';
 const MISSED_ROUTE_LAYER_ID = 'procedure-route-missed';
 const ROUTE_SOURCE_ID = 'procedure-route-source';
 const WAYPOINT_LAYER_ID = 'procedure-waypoints';
@@ -112,8 +117,6 @@ const LEG_LABEL_SOURCE_ID = 'procedure-leg-labels-source';
  * procedures: a single consistent line style, not a different neon color per leg's role.
  */
 const COLORS = {
-  line: '#8B5CF6', // --violet design token ("Purple - procedures")
-  casing: '#000000',
   waypoint: '#717880', // --muted-foreground design token
   waypointStroke: '#000000',
   label: '#ffffff',
@@ -121,8 +124,6 @@ const COLORS = {
 
 // Line widths
 const LINE_WIDTH = {
-  route: 4, // Main route line
-  casing: 6, // Dark casing for contrast
   waypointRadius: 3.5, // Smaller waypoints
   waypointStroke: 1.5,
 };
@@ -343,6 +344,7 @@ export function addProcedureRouteLayer(
     };
   });
 
+  const lineColor = ROUTE_KIND_COLORS[procedureKind(route.type)];
   const routeGeoJSON = createRouteGeoJSON(resolvedWaypoints);
   const waypointGeoJSON = createWaypointGeoJSON(
     omitFlightPlanWaypoints(resolvedWaypoints, planFixes),
@@ -359,24 +361,6 @@ export function addProcedureRouteLayer(
   safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
   safeAddGeoJSONSource(map, LEG_LABEL_SOURCE_ID, legLabelGeoJSON);
 
-  // Route casing (dark outline for contrast on satellite) - missed approach excluded, it gets
-  // its own dashed layer below instead.
-  map.addLayer({
-    id: ROUTE_CASING_LAYER_ID,
-    type: 'line',
-    source: ROUTE_SOURCE_ID,
-    filter: ['!=', ['get', 'missed'], true],
-    layout: {
-      'line-cap': 'round',
-      'line-join': 'round',
-    },
-    paint: {
-      'line-color': COLORS.casing,
-      'line-width': LINE_WIDTH.casing,
-      'line-opacity': 0.8,
-    },
-  });
-
   // Main route line (solid, no dashes)
   map.addLayer({
     id: ROUTE_LAYER_ID,
@@ -388,9 +372,9 @@ export function addProcedureRouteLayer(
       'line-join': 'round',
     },
     paint: {
-      'line-color': COLORS.line,
-      'line-width': LINE_WIDTH.route,
-      'line-opacity': 1,
+      'line-color': lineColor,
+      'line-width': ROUTE_LINE_WIDTH,
+      'line-opacity': ROUTE_LINE_OPACITY,
     },
   });
 
@@ -405,9 +389,9 @@ export function addProcedureRouteLayer(
       'line-join': 'round',
     },
     paint: {
-      'line-color': COLORS.line,
-      'line-width': LINE_WIDTH.route,
-      'line-opacity': 0.7,
+      'line-color': lineColor,
+      'line-width': ROUTE_LINE_WIDTH,
+      'line-opacity': 0.5,
       'line-dasharray': [2, 2],
     },
   });
@@ -512,7 +496,6 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
     WAYPOINT_LAYER_ID,
     ROUTE_LAYER_ID,
     MISSED_ROUTE_LAYER_ID,
-    ROUTE_CASING_LAYER_ID,
   ];
   const sources = [WAYPOINT_SOURCE_ID, ROUTE_SOURCE_ID, LEG_LABEL_SOURCE_ID];
 
@@ -533,7 +516,6 @@ export function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolea
     WAYPOINT_LAYER_ID,
     ROUTE_LAYER_ID,
     MISSED_ROUTE_LAYER_ID,
-    ROUTE_CASING_LAYER_ID,
   ];
 
   for (const layerId of layers) {
@@ -544,7 +526,6 @@ export function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolea
 }
 
 export const PROCEDURE_ROUTE_LAYER_IDS = [
-  ROUTE_CASING_LAYER_ID,
   ROUTE_LAYER_ID,
   MISSED_ROUTE_LAYER_ID,
   WAYPOINT_LAYER_ID,

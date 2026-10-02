@@ -2,18 +2,39 @@
  * Flight Plan Route Layer
  * Renders the flight plan with proper aviation symbols.
  */
+import i18n from 'i18next';
 import * as maplibregl from 'maplibre-gl';
-import { routeLinePoints } from '@/lib/flightplan/builder/routeLine';
+import { buildUnitFormatters } from '@/hooks/useUnits';
+import { bearingDeg, greatCircleNm } from '@/lib/flightplan/builder/geometry';
+import { routeLineSegments } from '@/lib/flightplan/builder/routeLine';
+import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
+import {
+  ROUTE_CASING_WIDTH,
+  ROUTE_KIND_COLORS,
+  ROUTE_LINE_OPACITY,
+  ROUTE_LINE_WIDTH,
+  kindColorExpression,
+  legChipImageId,
+  loadRouteLabelImages,
+  waypointBadgeId,
+} from './routeStyle';
 
 // Layer IDs
 const SOURCE_ID = 'flightplan-route-source';
 const WAYPOINT_SOURCE_ID = 'flightplan-waypoints-source';
+const CASING_ID = 'flightplan-route-casing';
 const LINE_ID = 'flightplan-route-line';
 const MISSED_LINE_ID = 'flightplan-missed-approach-line';
+const LEG_LABEL_SOURCE_ID = 'flightplan-leg-labels-source';
+const AIRWAY_CHIPS_ID = 'flightplan-airway-chips';
+const LEG_LABELS_ID = 'flightplan-leg-labels';
+const PROCEDURE_NAME_SOURCE_ID = 'flightplan-procedure-names-source';
+const PROCEDURE_NAMES_ID = 'flightplan-procedure-names';
 const WAYPOINTS_ID = 'flightplan-waypoints';
 const LABELS_ID = 'flightplan-labels';
 const ALTITUDE_LABELS_ID = 'flightplan-altitude-labels';
@@ -22,8 +43,12 @@ const ALTERNATE_LINE_ID = 'flightplan-alternate-line';
 const ALTERNATE_LABEL_ID = 'flightplan-alternate-label';
 
 export const FLIGHTPLAN_LAYER_IDS = [
+  CASING_ID,
   LINE_ID,
   MISSED_LINE_ID,
+  AIRWAY_CHIPS_ID,
+  LEG_LABELS_ID,
+  PROCEDURE_NAMES_ID,
   WAYPOINTS_ID,
   LABELS_ID,
   ALTITUDE_LABELS_ID,
@@ -33,7 +58,7 @@ export const FLIGHTPLAN_LAYER_IDS = [
 
 // Professional aviation chart colors
 const COLORS = {
-  routeLine: '#8B5CF6', // Deep violet (like Jeppesen charts)
+  routeLine: ROUTE_KIND_COLORS.enroute,
   vor: '#60A5FA', // Blue
   ndb: '#C084FC', // Purple
   fix: '#E5E7EB', // Light gray, hollow on the dark basemap
@@ -133,6 +158,147 @@ function buildLabel(wp: EnrichedWaypoint): string {
   return wp.id;
 }
 
+type ProcedurePathInfo = { via: string; kind?: 'sid' | 'star' | 'approach'; path: LatLon[] };
+type LatLon = { latitude: number; longitude: number };
+
+const mercatorY = (lat: number): number => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
+const latFromMercatorY = (y: number): number =>
+  ((2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180) / Math.PI;
+
+/**
+ * Where a leg's text goes and how it is turned: the midpoint of the leg as MapLibre draws it (a
+ * straight line in Mercator) and the clockwise rotation that lays text along that line, flipped
+ * where needed so it never reads upside down.
+ */
+export function legLabelPlacement(
+  a: LatLon,
+  b: LatLon
+): { lon: number; lat: number; rotate: number } {
+  const ya = mercatorY(a.latitude);
+  const yb = mercatorY(b.latitude);
+  // Both axes in radians of Web Mercator, so the angle is the one on screen.
+  const dx = ((b.longitude - a.longitude) * Math.PI) / 180;
+  const dy = yb - ya;
+  // Screen angle of the line, clockwise from north, then rotated so text runs along it.
+  const screenBearing = ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360;
+  let rotate = screenBearing - 90;
+  if (screenBearing >= 180) rotate = screenBearing - 270; // west/southbound: keep the text upright
+  return {
+    lon: (a.longitude + b.longitude) / 2,
+    lat: latFromMercatorY((ya + yb) / 2),
+    rotate: ((rotate + 180) % 360) - 180,
+  };
+}
+
+const NOT_AN_AIRWAY = new Set(['', 'DRCT', 'ADEP', 'ADES']);
+
+/**
+ * One label point per enroute leg at the leg's midpoint, turned to lie along it: the airway
+ * name (shown zoomed out, once per run of legs on the same airway, on the longest of them) and
+ * "46.0 NM 085°M" (shown zoomed in). Distance and course are the great-circle values between
+ * the fixes. Procedure legs carry their procedure's name instead (see
+ * `createProcedureNameGeoJSON`), and the leg from the approach runway to the airport is skipped
+ * because no line is drawn there.
+ */
+export function createLegLabelGeoJSON(
+  waypoints: EnrichedWaypoint[],
+  procedurePaths?: ProcedurePathInfo[]
+): GeoJSON.FeatureCollection {
+  const units = buildUnitFormatters(useSettingsStore.getState().map.units, i18n.t.bind(i18n));
+  const procedureVias = new Set((procedurePaths ?? []).map((p) => p.via));
+  const flysApproach = (procedurePaths ?? []).some((p) => p.kind === 'approach');
+
+  interface Leg {
+    a: LatLon;
+    b: LatLon;
+    distanceNm: number;
+    airway: string;
+    label: string;
+    showAirway: boolean;
+  }
+  const legs: Leg[] = [];
+  for (let i = 1; i < waypoints.length; i++) {
+    const from = waypoints[i - 1]!;
+    const to = waypoints[i]!;
+    if (to.via === 'ADES' && flysApproach) continue;
+    if (procedureVias.has(to.via)) continue;
+    const a = { latitude: from.latitude, longitude: from.longitude };
+    const b = { latitude: to.latitude, longitude: to.longitude };
+    const distanceNm = greatCircleNm(a, b);
+    if (distanceNm < 0.05) continue;
+    const label = [
+      units.distance(distanceNm as NauticalMiles),
+      units.course(bearingDeg(a, b) as Degrees, a.latitude, a.longitude),
+    ].join(' ');
+    legs.push({
+      a,
+      b,
+      distanceNm,
+      airway: NOT_AN_AIRWAY.has(to.via) ? '' : to.via,
+      label,
+      showAirway: false,
+    });
+  }
+  // One airway chip per run of consecutive legs on the same airway, on the longest leg.
+  for (let i = 0; i < legs.length;) {
+    const airway = legs[i]!.airway;
+    let j = i;
+    let longest = i;
+    while (j < legs.length && legs[j]!.airway === airway) {
+      if (legs[j]!.distanceNm > legs[longest]!.distanceNm) longest = j;
+      j++;
+    }
+    if (airway !== '') legs[longest]!.showAirway = true;
+    i = j;
+  }
+
+  const features: GeoJSON.Feature[] = legs.map((leg) => {
+    const { lon, lat, rotate } = legLabelPlacement(leg.a, leg.b);
+    return {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [lon, lat] },
+      properties: {
+        label: leg.label,
+        airway: leg.airway,
+        showAirway: leg.showAirway,
+        rotate,
+        chip: legChipImageId('enroute'),
+      },
+    };
+  });
+  return { type: 'FeatureCollection', features };
+}
+
+/**
+ * The procedure's name in a chip of its colour, one per SID/STAR/approach, laid along the
+ * longest straight stretch of its drawn path (the midpoint and rotation of that segment).
+ */
+export function createProcedureNameGeoJSON(
+  procedurePaths: ProcedurePathInfo[]
+): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
+  for (const proc of procedurePaths) {
+    if (proc.path.length < 2) continue;
+    let best = 0;
+    for (let i = 1; i < proc.path.length; i++) {
+      if (
+        greatCircleNm(proc.path[i - 1]!, proc.path[i]!) >
+        greatCircleNm(proc.path[best]!, proc.path[best + 1]!)
+      ) {
+        best = i - 1;
+      }
+    }
+    const kind = proc.kind ?? 'enroute';
+    const { lon, lat, rotate } = legLabelPlacement(proc.path[best]!, proc.path[best + 1]!);
+    features.push({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [lon, lat] },
+      properties: { name: proc.via, kind, rotate, chip: legChipImageId(kind) },
+    });
+  }
+  return { type: 'FeatureCollection', features };
+}
+
 function getSymbolId(wp: EnrichedWaypoint): string {
   switch (wp.type) {
     case 1:
@@ -184,6 +350,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   loadImage(map, 'fp-latlon', createLatLonSymbol(), 2);
   loadImage(map, 'fp-tc', createBadgeSymbol('T/C', COLORS.clb));
   loadImage(map, 'fp-td', createBadgeSymbol('T/D', COLORS.dsc));
+  loadRouteLabelImages(map);
 
   // Route line GeoJSON — per-segment LineStrings with stage property
   const hasStages = waypoints.some((wp) => wp.stage);
@@ -207,20 +374,22 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       });
     }
   } else {
-    routeFeatures.push({
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: routeLinePoints(
-          waypoints,
-          fmsData.runwayEnds,
-          fmsData.firstTurn,
-          fmsData.initialClimbNm,
-          fmsData.procedurePaths
-        ).map((p) => [p.longitude, p.latitude]),
-      },
-      properties: { stage: '' },
-    });
+    const segments = routeLineSegments(
+      waypoints,
+      fmsData.runwayEnds,
+      fmsData.initialClimbNm,
+      fmsData.procedurePaths
+    );
+    for (const seg of segments) {
+      routeFeatures.push({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: seg.points.map((p) => [p.longitude, p.latitude]),
+        },
+        properties: { stage: '', kind: seg.kind, via: seg.via ?? '' },
+      });
+    }
   }
 
   // Missed-approach segments, kept out of the main (solid) route line and drawn dashed - they
@@ -233,7 +402,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
         type: 'LineString',
         coordinates: proc.missedPath.map((p) => [p.longitude, p.latitude]),
       },
-      properties: { stage: '', missed: true },
+      properties: { stage: '', kind: 'missed', missed: true },
     });
   }
 
@@ -256,6 +425,14 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       frequency: wp.frequency ?? 0,
       altitudeLabel: wp.constraintLabel ?? formatAltitude(wp.altitude),
       label: buildLabel(wp),
+      badge: waypointBadgeId(wp.via, fmsData.procedurePaths),
+      // Airports win collisions, then airway joins and navaids, then plain fixes.
+      sortKey:
+        wp.via === 'ADEP' || wp.via === 'ADES'
+          ? 0
+          : wp.via !== 'DRCT' || wp.type === 2 || wp.type === 3
+            ? 1
+            : 2,
       symbolType: getSymbolId(wp),
     },
   }));
@@ -307,8 +484,33 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   // Add sources
   safeAddGeoJSONSource(map, SOURCE_ID, routeGeoJSON);
   safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
+  safeAddGeoJSONSource(
+    map,
+    LEG_LABEL_SOURCE_ID,
+    createLegLabelGeoJSON(waypoints, fmsData.procedurePaths ?? [])
+  );
+  safeAddGeoJSONSource(
+    map,
+    PROCEDURE_NAME_SOURCE_ID,
+    createProcedureNameGeoJSON(fmsData.procedurePaths ?? [])
+  );
 
-  // Route line — phase-colored via match expression
+  // Thin dark outline under the line so it reads over satellite imagery.
+  map.addLayer({
+    id: CASING_ID,
+    type: 'line',
+    source: SOURCE_ID,
+    filter: ['!=', ['get', 'missed'], true],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': '#000000',
+      'line-width': ROUTE_CASING_WIDTH,
+      'line-opacity': 0.45,
+    },
+  });
+
+  // Route line: thick and translucent, one colour per leg kind (SID / STAR / approach / enroute),
+  // or per flight phase when the plan carries SimBrief stages.
   map.addLayer({
     id: LINE_ID,
     type: 'line',
@@ -325,10 +527,10 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
         COLORS.crz,
         'DSC',
         COLORS.dsc,
-        COLORS.routeLine,
+        kindColorExpression(),
       ],
-      'line-width': ['interpolate', ['linear'], ['zoom'], 4, 3, 8, 5, 12, 6],
-      'line-opacity': 0.9,
+      'line-width': ROUTE_LINE_WIDTH,
+      'line-opacity': ROUTE_LINE_OPACITY,
     },
   });
 
@@ -340,14 +542,67 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     filter: ['==', ['get', 'missed'], true],
     layout: { 'line-cap': 'butt', 'line-join': 'round' },
     paint: {
-      'line-color': COLORS.routeLine,
-      'line-width': ['interpolate', ['linear'], ['zoom'], 4, 3, 8, 5, 12, 6],
-      'line-opacity': 0.6,
+      'line-color': ROUTE_KIND_COLORS.missed,
+      'line-width': ROUTE_LINE_WIDTH,
+      'line-opacity': 0.5,
       'line-dasharray': [2, 2],
     },
   });
 
-  // Waypoint symbols
+  // Text embedded in the line: a chip in a darker shade of the line colour, sized to its text,
+  // at the leg's midpoint and turned along the leg (one per leg - a line placement would repeat
+  // per map tile). Chips collide with each other and with waypoint labels, so they thin out as
+  // the map zooms out. Zoomed out only airway names show; zoomed in, distance and course.
+  const chipLayout = {
+    'text-font': ['Open Sans Semibold'],
+    'text-size': zoomScaledTextSize(9),
+    'text-anchor': 'center',
+    'text-rotate': ['get', 'rotate'],
+    'text-rotation-alignment': 'map',
+    'text-allow-overlap': false,
+    'text-ignore-placement': false,
+    'icon-image': ['get', 'chip'],
+    'icon-text-fit': 'both',
+    'icon-text-fit-padding': [1, 4, 1, 4],
+    'icon-rotate': ['get', 'rotate'],
+    'icon-rotation-alignment': 'map',
+    'icon-allow-overlap': false,
+    'icon-ignore-placement': false,
+  } satisfies maplibregl.SymbolLayerSpecification['layout'];
+  map.addLayer({
+    id: AIRWAY_CHIPS_ID,
+    type: 'symbol',
+    source: LEG_LABEL_SOURCE_ID,
+    minzoom: 4,
+    maxzoom: 8,
+    filter: ['==', ['get', 'showAirway'], true],
+    layout: { ...chipLayout, 'text-field': ['get', 'airway'] },
+    paint: { 'text-color': COLORS.labelText },
+  });
+  map.addLayer({
+    id: LEG_LABELS_ID,
+    type: 'symbol',
+    source: LEG_LABEL_SOURCE_ID,
+    minzoom: 8,
+    layout: { ...chipLayout, 'text-field': ['get', 'label'] },
+    paint: { 'text-color': COLORS.labelText },
+  });
+
+  // Procedure names in a chip of their line's colour, on the longest straight stretch of the line.
+  map.addLayer({
+    id: PROCEDURE_NAMES_ID,
+    type: 'symbol',
+    source: PROCEDURE_NAME_SOURCE_ID,
+    layout: {
+      ...chipLayout,
+      'text-field': ['get', 'name'],
+      'text-font': ['Open Sans Bold'],
+      'text-letter-spacing': 0.05,
+    },
+    paint: { 'text-color': COLORS.labelText },
+  });
+
+  // Waypoint symbols: always drawn, even where they pile up near the airports.
   map.addLayer({
     id: WAYPOINTS_ID,
     type: 'symbol',
@@ -360,7 +615,9 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     },
   });
 
-  // Waypoint labels - clean white text
+  // Waypoint labels: a box beside the symbol (never on it or on the line), horizontal, in the
+  // colour of what the fix belongs to. MapLibre picks the side that is free; a label that still
+  // collides is hidden, but its symbol above stays. Airports win, then airway joins and navaids.
   map.addLayer({
     id: LABELS_ID,
     type: 'symbol',
@@ -369,16 +626,31 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: {
       'text-field': ['get', 'label'],
       'text-font': ['Open Sans Bold'],
-      'text-size': zoomScaledTextSize(11),
-      'text-offset': [0, -1.8],
-      'text-anchor': 'bottom',
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
+      'text-size': zoomScaledTextSize(10),
+      'text-letter-spacing': 0.1,
+      'text-variable-anchor': [
+        'top-right',
+        'right',
+        'bottom-right',
+        'top-left',
+        'left',
+        'bottom-left',
+        'top',
+        'bottom',
+      ],
+      'text-radial-offset': 1.1,
+      'text-justify': 'auto',
+      'symbol-sort-key': ['get', 'sortKey'],
+      'text-allow-overlap': false,
+      'text-ignore-placement': false,
+      'icon-image': ['get', 'badge'],
+      'icon-text-fit': 'both',
+      'icon-text-fit-padding': [1, 4, 1, 4],
+      'icon-allow-overlap': false,
+      'icon-ignore-placement': false,
     },
     paint: {
       'text-color': COLORS.labelText,
-      'text-halo-color': COLORS.labelHalo,
-      'text-halo-width': 2,
     },
   });
 
@@ -388,14 +660,15 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     type: 'symbol',
     source: WAYPOINT_SOURCE_ID,
     filter: ['!=', ['get', 'altitudeLabel'], ''],
+    minzoom: 7,
     layout: {
       'text-field': ['get', 'altitudeLabel'],
       'text-font': ['Open Sans Semibold'],
-      'text-size': zoomScaledTextSize(10),
-      'text-offset': [0, 1.5],
+      'text-size': zoomScaledTextSize(9),
+      'text-offset': [0, 1.4],
       'text-anchor': 'top',
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
+      'text-allow-overlap': false,
+      'text-ignore-placement': false,
     },
     paint: {
       'text-color': COLORS.altitudeText,
@@ -482,10 +755,20 @@ export function removeFlightPlanLayer(map: maplibregl.Map): void {
     ALTITUDE_LABELS_ID,
     LABELS_ID,
     WAYPOINTS_ID,
+    LEG_LABELS_ID,
+    AIRWAY_CHIPS_ID,
+    PROCEDURE_NAMES_ID,
     LINE_ID,
     MISSED_LINE_ID,
+    CASING_ID,
   ];
-  const sources = [ALTERNATE_SOURCE_ID, WAYPOINT_SOURCE_ID, SOURCE_ID];
+  const sources = [
+    ALTERNATE_SOURCE_ID,
+    WAYPOINT_SOURCE_ID,
+    LEG_LABEL_SOURCE_ID,
+    PROCEDURE_NAME_SOURCE_ID,
+    SOURCE_ID,
+  ];
 
   for (const id of layers) {
     if (map.getLayer(id)) map.removeLayer(id);

@@ -6,6 +6,7 @@
 import type { RunwayEnd } from '@/types/fms';
 import { bearingDeg, greatCircleNm } from './geometry';
 
+const AIRPORT_HEADER_ROW = '1';
 const LAND_RUNWAY_ROW = '100';
 const END_ONE_INDEX = 8;
 const END_TWO_INDEX = 17;
@@ -26,8 +27,14 @@ function readEnd(
 
 export function runwayEndsFromApt(aptText: string): RunwayEnd[] {
   const ends = new Map<string, RunwayEnd>();
+  let elevationFt: number | undefined;
   for (const rawLine of aptText.split(/\r?\n/)) {
     const line = rawLine.trim();
+    if (line.startsWith(`${AIRPORT_HEADER_ROW} `)) {
+      const elevation = Number(line.split(/\s+/)[1]);
+      if (Number.isFinite(elevation)) elevationFt = elevation;
+      continue;
+    }
     if (!line.startsWith(`${LAND_RUNWAY_ROW} `)) continue;
     const tokens = line.split(/\s+/);
     const one = readEnd(tokens, END_ONE_INDEX);
@@ -36,8 +43,20 @@ export function runwayEndsFromApt(aptText: string): RunwayEnd[] {
     const a = { latitude: one.lat, longitude: one.lon };
     const b = { latitude: two.lat, longitude: two.lon };
     const lengthNm = greatCircleNm(a, b);
-    ends.set(one.name, { name: one.name, ...a, headingDeg: bearingDeg(a, b), lengthNm });
-    ends.set(two.name, { name: two.name, ...b, headingDeg: bearingDeg(b, a), lengthNm });
+    ends.set(one.name, {
+      name: one.name,
+      ...a,
+      headingDeg: bearingDeg(a, b),
+      lengthNm,
+      elevationFt,
+    });
+    ends.set(two.name, {
+      name: two.name,
+      ...b,
+      headingDeg: bearingDeg(b, a),
+      lengthNm,
+      elevationFt,
+    });
   }
   return [...ends.values()].sort(
     (x, y) => parseInt(x.name, 10) - parseInt(y.name, 10) || x.name.localeCompare(y.name)
