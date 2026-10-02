@@ -204,11 +204,24 @@ function resolveWaypoint(
 ): ResolvedProcedureWaypoint {
   const coords = resolver(wp.fixId, wp.fixRegion, wp.fixType);
 
+  // recNavaid/centerFix are navaid idents (AF arc station, RF arc center) - 'V' routes the
+  // resolver to its navaid-first lookup, which still falls back to waypoints if not found.
+  const recNavaidCoords = wp.recNavaid
+    ? resolver(wp.recNavaid, wp.recNavaidRegion ?? '', 'V')
+    : null;
+  const centerFixCoords = wp.centerFix
+    ? resolver(wp.centerFix, wp.centerFixRegion ?? '', 'V')
+    : null;
+
   return {
     ...wp,
     latitude: coords?.latitude,
     longitude: coords?.longitude,
     resolved: coords !== null,
+    recNavaidLatitude: recNavaidCoords?.latitude,
+    recNavaidLongitude: recNavaidCoords?.longitude,
+    centerFixLatitude: centerFixCoords?.latitude,
+    centerFixLongitude: centerFixCoords?.longitude,
   };
 }
 

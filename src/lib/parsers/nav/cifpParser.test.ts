@@ -45,6 +45,76 @@ STAR:020,2,PWL2,ALL,LOVES,K6,E,A,E   , ,   ,TF, , , , , ,      ,    ,    ,    , 
 const variants = (list: { name: string; runway: string | null; transition: string | null }[]) =>
   list.map((p) => `${p.name}/${p.runway ?? '-'}/${p.transition ?? '-'}`).sort();
 
+// Real CIFP lines (X-Plane 12 Custom Data/CIFP), verified field-by-field against atools'
+// ProcedureFieldIndex enum (src/fs/xp/xpcifpreader.cpp) - the authoritative field map Little
+// Navmap's own backend uses. Kept as single-line fixtures for the fields they each exercise.
+
+// LFMN D22LB (Nice VOR/DME 22L): AF leg off AZR DME (recNavaid/theta/rho = arc radius),
+// transitioning onto an HM hold-in-lieu-of-PT with a speed-at-or-below restriction.
+const LFMN_AF_LEG =
+  'APPCH:040,A,D22LB,MUS,D099T,LF,P,C,E   ,L,   ,AF, ,AZR,LF,D, ,      ,0990,0200,1450,    ,+,04000,     ,     ,-,200,    ,   , , , , , ,0, ,S;';
+const LFMN_HM_LEG =
+  'APPCH:070,D,D22LB, ,NERAS,LF,E,A,EE H,R,   ,HM, , , , , ,      ,    ,    ,2960,0050, ,03000,     ,     ,-,230,    ,   , , , , , ,0, ,S;';
+
+// RJTT R23 (Haneda RNP transition TTRF1): RF constant-radius arc with its own center fix,
+// vertical path angle and a tight 0.3 NM RNP.
+const RJTT_RF_LEG =
+  'APPCH:023,R,R23, ,TT303,RJ,P,C,E   ,L,302,RF, , , , , ,003100,    ,    ,    ,0070, ,01496,     ,     ,-,165,-300,   ,TTRF1,RJ,P,C, ,B,P,S;';
+
+// KSUN NDMA (Sun Valley NDB/DME-A): PI procedure turn referencing the LKT navaid.
+const KSUN_PI_LEG =
+  'APPCH:030,A,NDMA,KINZE,HLE,K1,D,B,E  A,L,   ,PI, ,LKT,K1,D, ,      ,1709,1017,2000,0100,+,08100,     ,     , ,   ,    ,   , , , , , ,0, ,C;';
+
+/**
+ * Build a synthetic CIFP data line from field overrides, indexed exactly like atools'
+ * ProcedureFieldIndex (shifted down by 1, since we split off the TYPE: prefix separately).
+ * Defaults to a minimal TF leg to AZELE/ZZ so only the overridden fields vary.
+ */
+function buildLine(overrides: Record<number, string>): string {
+  const fields: string[] = [
+    '010', // 0 seq
+    '2', // 1 route type
+    'TEST1', // 2 name
+    'RW09', // 3 runway/trans
+    'AZELE', // 4 fix
+    'ZZ', // 5 fix region
+    'E', // 6 fix type
+    'A', // 7 sub code
+    'E', // 8 desc code
+    '', // 9 turn direction
+    '', // 10 RNP
+    'TF', // 11 path terminator
+    '', // 12 TDV
+    '', // 13 recd navaid
+    '', // 14 recd navaid region
+    '', // 15 recd sec code
+    '', // 16 recd sub code
+    '', // 17 arc radius
+    '', // 18 theta
+    '', // 19 rho
+    '', // 20 mag course
+    '', // 21 route dist / hold dist-time
+    '', // 22 alt descriptor
+    '', // 23 altitude1
+    '', // 24 altitude2
+    '', // 25 trans alt
+    '', // 26 speed descriptor
+    '', // 27 speed limit
+    '', // 28 vertical angle
+    '', // 29 unknown
+    '', // 30 center fix
+    '', // 31 center fix region
+    '', // 32 center sec code
+    '', // 33 center sub code
+    '', // 34 multi code
+    '', // 35 gnss/fms indicator
+    '', // 36 route qual 1
+    '', // 37 route qual 2
+  ];
+  for (const [idx, value] of Object.entries(overrides)) fields[Number(idx)] = value;
+  return `SID:${fields.join(',')};`;
+}
+
 describe('parseCIFP', () => {
   it('keeps the runway of a single-runway SID so it can be filtered', () => {
     const { sids } = parseCIFP(LFMC, 'LFMC');
@@ -84,5 +154,80 @@ describe('parseCIFP', () => {
     expect(rw31.waypoints.map((w) => w.fixId)).toEqual(['', 'DEEZZ', 'HEERO', 'CANDR']);
     expect(variants(stars)).toEqual(['PWL2/-/ALB']);
     expect(stars[0]?.waypoints.map((w) => w.fixId)).toEqual(['ALB', 'PWL', 'LOVES']);
+  });
+
+  it('reads speed from SPEED_LIMIT, not the TRANS_ALT field at the same old offset', () => {
+    // OTHH's BUND2C leg has TRANS_ALT=13000 at data[25] and no real speed constraint - the old
+    // code misread data[25] as `speed`, which would have produced 13000 kt.
+    const { sids } = parseCIFP(OTHH, 'OTHH');
+    const leg = sids.find((s) => s.name === 'BUND2C')!.waypoints[0]!;
+    expect(leg.speed).toBeNull();
+
+    const { approaches: rf } = parseCIFP(`\n${RJTT_RF_LEG}\n`, 'RJTT');
+    expect(rf[0]?.waypoints[0]).toMatchObject({ speed: 165, speedDescriptor: '-' });
+  });
+
+  it('parses altitude2 for a between ("B") constraint', () => {
+    const line = buildLine({ 11: 'TF', 22: 'B', 23: '04000', 24: '06000' });
+    const { sids } = parseCIFP(`\n${line}\n`, 'TEST');
+    expect(sids[0]?.waypoints[0]?.altitude).toMatchObject({
+      descriptor: 'B',
+      altitude1: 4000,
+      altitude2: 6000,
+    });
+  });
+
+  it('parses the RTE_DIST_HOLD_DIST_TIME field as distance when there is no T prefix', () => {
+    const { approaches } = parseCIFP(`\n${LFMN_HM_LEG}\n`, 'LFMN');
+    expect(approaches[0]?.waypoints[0]).toMatchObject({
+      pathTerminator: 'HM',
+      distance: 5,
+      holdTimeMin: null,
+    });
+  });
+
+  it('parses the RTE_DIST_HOLD_DIST_TIME field as minutes when T-prefixed, instead of NaN', () => {
+    const line = buildLine({ 11: 'HM', 20: '0900', 21: 'T010' });
+    const { sids } = parseCIFP(`\n${line}\n`, 'TEST');
+    expect(sids[0]?.waypoints[0]).toMatchObject({ distance: null, holdTimeMin: 1 });
+  });
+
+  it('parses recommended navaid, theta and rho for a DME arc (AF) leg', () => {
+    const { approaches } = parseCIFP(`\n${LFMN_AF_LEG}\n`, 'LFMN');
+    expect(approaches[0]?.waypoints[0]).toMatchObject({
+      pathTerminator: 'AF',
+      recNavaid: 'AZR',
+      recNavaidRegion: 'LF',
+      theta: 99,
+      rho: 20,
+    });
+  });
+
+  it('parses arc radius, center fix, vertical angle and RNP for an RF leg', () => {
+    const { approaches } = parseCIFP(`\n${RJTT_RF_LEG}\n`, 'RJTT');
+    expect(approaches[0]?.waypoints[0]).toMatchObject({
+      pathTerminator: 'RF',
+      arcRadius: 31,
+      centerFix: 'TTRF1',
+      centerFixRegion: 'RJ',
+      verticalAngle: -3,
+      rnp: 0.3,
+    });
+  });
+
+  it('leaves center fix null on a non-RF leg, even though the file reuses that column for a TAA reference', () => {
+    // OTHH's CF leg has "OTHH,OT,P,A" sitting in the CENTER_FIX_OR_TAA_PT columns - that's an
+    // airport reference, not a real arc center, and atools itself only treats this column as a
+    // center fix for RF legs (procedurewriter.cpp's `pathTerm == "RF"` branch).
+    const { sids } = parseCIFP(OTHH, 'OTHH');
+    const leg = sids.find((s) => s.name === 'BUND2C')!.waypoints[0]!;
+    expect(leg.pathTerminator).toBe('CF');
+    expect(leg.centerFix).toBeNull();
+  });
+
+  it('parses recommended navaid, theta and rho for a procedure-turn (PI) leg', () => {
+    const { approaches } = parseCIFP(`\n${KSUN_PI_LEG}\n`, 'KSUN');
+    const pi = approaches[0]?.waypoints.find((w) => w.pathTerminator === 'PI');
+    expect(pi).toMatchObject({ recNavaid: 'LKT', recNavaidRegion: 'K1', theta: 170.9, rho: 101.7 });
   });
 });

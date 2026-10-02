@@ -11,6 +11,7 @@ import type {
   Procedure,
   ProcedureType,
   ProcedureWaypoint,
+  SpeedDescriptor,
   TurnDirection,
 } from '@/types/navigation';
 
@@ -24,6 +25,7 @@ export type {
   Procedure,
   ProcedureType,
   ProcedureWaypoint,
+  SpeedDescriptor,
   TurnDirection,
 } from '@/types/navigation';
 
@@ -56,6 +58,7 @@ const VALID_PATH_TERMINATORS: PathTerminator[] = [
 ];
 const VALID_ALTITUDE_DESCRIPTORS: AltitudeDescriptor[] = ['+', '-', '@', 'B'];
 const VALID_TURN_DIRECTIONS: TurnDirection[] = ['L', 'R'];
+const VALID_SPEED_DESCRIPTORS: SpeedDescriptor[] = ['+', '-'];
 
 /**
  * Parse a CIFP line into type and data fields
@@ -137,23 +140,58 @@ function parseTurnDirection(value: string): TurnDirection | null {
 }
 
 /**
- * Parse altitude constraint from CIFP fields
+ * Parse speed descriptor (blank means "at", not encoded as its own value)
  */
-function parseAltitude(descriptor: string, alt1Str: string): AltitudeConstraint | null {
-  const raw = alt1Str.trim();
-  if (!raw) return null;
+function parseSpeedDescriptor(value: string): SpeedDescriptor | null {
+  const trimmed = value.trim();
+  return VALID_SPEED_DESCRIPTORS.includes(trimmed as SpeedDescriptor)
+    ? (trimmed as SpeedDescriptor)
+    : null;
+}
 
-  // Altitudes are feet ("00500") or an explicit flight level ("FL060").
+/** A feet value, or an explicit flight level ("FL060") converted to feet. */
+function parseFeetField(raw: string): number | null {
   const isFlightLevel = raw.startsWith('FL');
   const value = parseInt(isFlightLevel ? raw.slice(2) : raw, 10);
   if (isNaN(value)) return null;
+  return isFlightLevel ? value * 100 : value;
+}
+
+/**
+ * Parse altitude constraint from CIFP fields
+ */
+function parseAltitude(
+  descriptor: string,
+  alt1Str: string,
+  alt2Str: string
+): AltitudeConstraint | null {
+  const raw = alt1Str.trim();
+  if (!raw) return null;
+
+  const isFlightLevel = raw.startsWith('FL');
+  const value = parseFeetField(raw);
+  if (value === null) return null;
+
+  const raw2 = alt2Str.trim();
 
   return {
     descriptor: parseAltitudeDescriptor(descriptor),
-    altitude1: isFlightLevel ? value * 100 : value,
-    altitude2: null,
+    altitude1: value,
+    altitude2: raw2 ? parseFeetField(raw2) : null,
     isFlightLevel,
   };
+}
+
+/**
+ * ARINC 424 RNP field: two mantissa digits plus a power-of-ten exponent digit. "990" is 99.0 NM
+ * (exponent 0); "013" is 0.001 NM (01 x 10^-3).
+ */
+function parseRnp(value: string): number | null {
+  const raw = value.trim();
+  if (!raw) return null;
+  const exponent = raw.charAt(2);
+  if (!exponent || exponent === '0') return parseFloat(raw) / 10;
+  return parseFloat(raw.slice(0, 2)) * Math.pow(10, -Number(exponent));
 }
 
 /**
@@ -174,23 +212,59 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
 
   // Parse turn direction from field 9
   const turnDirection = parseTurnDirection(data[9] || '');
+  const rnp = parseRnp(data[10] || '');
 
-  // Fields 18 and 19 are theta and rho to the recommended navaid; the leg's own magnetic
-  // course and route distance (or DME distance for CD, FD, VD legs) follow at 20 and 21.
+  // Recommended navaid for the leg (AF arc station, CF/CI/CR/PI reference) - fields 13/14.
+  const recNavaid = data[13]?.trim() || null;
+  const recNavaidRegion = data[14]?.trim() || null;
+
+  // Arc radius (RF legs only) - field 17.
+  const arcRadiusStr = data[17]?.trim() || '';
+  const arcRadius = arcRadiusStr ? parseFloat(arcRadiusStr) / 100 : null;
+
+  // Theta/rho from the recommended navaid - fields 18/19. For AF legs rho *is* the arc radius.
+  const thetaStr = data[18]?.trim() || '';
+  const theta = thetaStr ? parseFloat(thetaStr) / 10 : null;
+  const rhoStr = data[19]?.trim() || '';
+  const rho = rhoStr ? parseFloat(rhoStr) / 10 : null;
+
+  // The leg's own magnetic course - field 20.
   const courseStr = data[20]?.trim() || '';
   const course = courseStr ? parseFloat(courseStr) / 10 : null;
 
-  const distStr = data[21]?.trim() || '';
-  const distance = distStr ? parseFloat(distStr) / 10 : null;
+  // Field 21 is dual-purpose (ARINC 424 RTE_DIST_HOLD_DIST_TIME): a "T"-prefixed value is
+  // hold/route time in minutes/10, otherwise it's route distance in NM/10.
+  const distTimeStr = data[21]?.trim() || '';
+  let distance: number | null = null;
+  let holdTimeMin: number | null = null;
+  if (distTimeStr.toUpperCase().startsWith('T')) {
+    const minutes = parseFloat(distTimeStr.slice(1));
+    holdTimeMin = isNaN(minutes) ? null : minutes / 10;
+  } else if (distTimeStr) {
+    const nm = parseFloat(distTimeStr);
+    distance = isNaN(nm) ? null : nm / 10;
+  }
 
-  // Parse altitude - descriptor at index 22, altitude at index 23
+  // Altitude - descriptor at 22, primary altitude at 23, secondary (for "B" between) at 24.
   const altDescriptor = data[22]?.trim() || '';
   const alt1Str = data[23]?.trim() || '';
-  const altitude = parseAltitude(altDescriptor, alt1Str);
+  const alt2Str = data[24]?.trim() || '';
+  const altitude = parseAltitude(altDescriptor, alt1Str, alt2Str);
 
-  // Parse speed from field 25 (if present)
-  const speedStr = data[25]?.trim() || '';
+  // Speed descriptor at 26, the actual speed constraint at 27 (field 25 is TRANS_ALT, unrelated).
+  const speedDescriptor = parseSpeedDescriptor(data[26] || '');
+  const speedStr = data[27]?.trim() || '';
   const speed = speedStr ? parseInt(speedStr, 10) : null;
+
+  // Vertical path angle (tenths of a degree, negative = descent) - field 28.
+  const verticalAngleStr = data[28]?.trim() || '';
+  const verticalAngle = verticalAngleStr ? parseFloat(verticalAngleStr) / 100 : null;
+
+  // Fields 30/31 double as an arc/hold center fix (RF legs) and an unrelated TAA reference point
+  // on every other leg type - only trust them as a center for RF, matching atools' own
+  // `pathTerm == 'RF'` gate in procedurewriter.cpp.
+  const centerFix = pathTerminator === 'RF' ? data[30]?.trim() || null : null;
+  const centerFixRegion = pathTerminator === 'RF' ? data[31]?.trim() || null : null;
 
   return {
     fixId,
@@ -201,7 +275,18 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
     distance,
     altitude,
     speed,
+    speedDescriptor,
     turnDirection,
+    recNavaid,
+    recNavaidRegion,
+    theta,
+    rho,
+    arcRadius,
+    centerFix,
+    centerFixRegion,
+    verticalAngle,
+    rnp,
+    holdTimeMin,
   };
 }
 
