@@ -483,6 +483,7 @@ export function removeFlightPlanLayer(map: maplibregl.Map): void {
     LABELS_ID,
     WAYPOINTS_ID,
     LINE_ID,
+    MISSED_LINE_ID,
   ];
   const sources = [ALTERNATE_SOURCE_ID, WAYPOINT_SOURCE_ID, SOURCE_ID];
 
