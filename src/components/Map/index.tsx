@@ -58,6 +58,7 @@ import {
   useGroundWeather,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useIvaoSync,
+  useMapContextMenu,
   useMapSetup,
   useNavLayerSync,
   usePinDrop,
@@ -102,6 +103,7 @@ import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
 import LandingReportCard from './widgets/LandingReportCard';
+import MapContextMenu from './widgets/MapContextMenu';
 import NavInfoPopup from './widgets/NavInfoPopup';
 import ReplayWidget from './widgets/ReplayWidget';
 import StandHoverCard from './widgets/StandHoverCard';
@@ -415,6 +417,12 @@ export default function Map({ airports }: MapProps) {
   // Pin-drop custom start location
   const { placeAtCenter: handlePinDrop, placeAtCoordinates: handlePinDropAtCoordinates } =
     usePinDrop({ mapRef });
+  const handleStartHere = useCallback(
+    (lat: number, lon: number) => {
+      void handlePinDropAtCoordinates(lat, lon, { fly: false });
+    },
+    [handlePinDropAtCoordinates]
+  );
 
   // Weather radar overlay
   const weatherRadarControls = useWeatherRadar(mapRef, weatherRadarEnabled);
@@ -448,6 +456,7 @@ export default function Map({ airports }: MapProps) {
   // Cursor-following terrain elevation, published to the map store for the
   // compass widget.
   useCursorElevation(mapRef);
+  useMapContextMenu(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -950,6 +959,7 @@ export default function Map({ airports }: MapProps) {
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard />
       <NavInfoPopup mapRef={mapRef} />
+      <MapContextMenu mapRef={mapRef} onStartHere={handleStartHere} />
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />

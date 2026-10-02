@@ -1929,6 +1929,13 @@
     "distance": "Distance",
     "noPlane": "No ship position"
   },
+  "mapContextMenu": {
+    "startHere": "Set sail from here",
+    "copyCoordinates": "Copy the bearings",
+    "coordinatesCopied": "Bearings copied, arr!",
+    "centerHere": "Steer the chart here",
+    "elevation": "Height o' land {{value}}"
+  },
   "analytics": {
     "consent": {
       "title": "Help make X-Dispatch shipshape",

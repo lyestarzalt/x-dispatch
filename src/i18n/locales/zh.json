@@ -1929,6 +1929,13 @@
     "distance": "距离",
     "noPlane": "无飞机位置"
   },
+  "mapContextMenu": {
+    "startHere": "从此处开始",
+    "copyCoordinates": "复制坐标",
+    "coordinatesCopied": "坐标已复制",
+    "centerHere": "将地图居中于此",
+    "elevation": "海拔 {{value}}"
+  },
   "analytics": {
     "consent": {
       "title": "帮助改进 X-Dispatch",

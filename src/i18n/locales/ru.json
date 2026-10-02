@@ -1929,6 +1929,13 @@
     "distance": "Расстояние",
     "noPlane": "Нет позиции самолёта"
   },
+  "mapContextMenu": {
+    "startHere": "Начать здесь",
+    "copyCoordinates": "Копировать координаты",
+    "coordinatesCopied": "Координаты скопированы",
+    "centerHere": "Центрировать карту здесь",
+    "elevation": "Высота {{value}}"
+  },
   "analytics": {
     "consent": {
       "title": "Помогите улучшить X-Dispatch",

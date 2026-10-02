@@ -19,6 +19,17 @@ export interface FeatureDebugInfo {
   rawData?: string;
 }
 
+/** The spot the user right-clicked on the map, while its menu is open. */
+export interface MapContextPoint {
+  longitude: number;
+  latitude: number;
+  /** Screen pixel inside the map container, where the menu anchors. */
+  x: number;
+  y: number;
+  /** Terrain elevation in metres at the point, null when terrain is off. */
+  elevationM: number | null;
+}
+
 /** A navaid or flight plan waypoint the user clicked on the map. */
 export interface NavInfoSelection {
   id: string;
@@ -100,6 +111,7 @@ interface MapState {
   debugEnabled: boolean;
   selectedFeature: FeatureDebugInfo | null;
   navInfo: NavInfoSelection | null;
+  contextMenuPoint: MapContextPoint | null;
   vatsimEnabled: boolean;
   ivaoEnabled: boolean;
   /** X-Plane's own AI and plugin traffic from the TCAS target table. */
@@ -145,6 +157,7 @@ interface MapState {
   setDebugEnabled: (enabled: boolean) => void;
   setSelectedFeature: (feature: FeatureDebugInfo | null) => void;
   setNavInfo: (info: NavInfoSelection | null) => void;
+  setContextMenuPoint: (point: MapContextPoint | null) => void;
   setVatsimEnabled: (enabled: boolean) => void;
   setIvaoEnabled: (enabled: boolean) => void;
   setSimTrafficEnabled: (enabled: boolean) => void;
@@ -217,6 +230,7 @@ export const useMapStore = create<MapState>()(
       debugEnabled: false,
       selectedFeature: null as FeatureDebugInfo | null,
       navInfo: null as NavInfoSelection | null,
+      contextMenuPoint: null as MapContextPoint | null,
       vatsimEnabled: false,
       simTrafficEnabled: false,
       ivaoEnabled: false,
@@ -302,6 +316,7 @@ export const useMapStore = create<MapState>()(
       setDebugEnabled: (enabled) => set({ debugEnabled: enabled }),
       setSelectedFeature: (feature) => set({ selectedFeature: feature }),
       setNavInfo: (info) => set({ navInfo: info }),
+      setContextMenuPoint: (point) => set({ contextMenuPoint: point }),
       setVatsimEnabled: (enabled) =>
         set((state) => ({
           vatsimEnabled: enabled,

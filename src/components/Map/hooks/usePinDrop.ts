@@ -456,9 +456,10 @@ export function usePinDrop({ mapRef }: UsePinDropOptions) {
     showHandleAt(map, center.lng, center.lat, heading);
   }, [mapRef, showHandleAt]);
 
-  // Place pin at specific coordinates and fly to them
+  // Place pin at specific coordinates; flies to them unless the caller is already
+  // looking at the spot (the map's right-click menu).
   const placeAtCoordinates = useCallback(
-    async (lat: number, lon: number) => {
+    async (lat: number, lon: number, { fly = true }: { fly?: boolean } = {}) => {
       const map = mapRef.current;
       if (!map) return;
 
@@ -476,6 +477,7 @@ export function usePinDrop({ mapRef }: UsePinDropOptions) {
       setStartPositionFromPin(lon, lat, heading);
       showHandleAt(map, lon, lat, heading);
 
+      if (!fly) return;
       map.flyTo({
         center: [lon, lat],
         zoom: Math.max(map.getZoom(), 14),

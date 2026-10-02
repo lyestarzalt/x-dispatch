@@ -1929,6 +1929,13 @@
     "distance": "距離",
     "noPlane": "機体位置なし"
   },
+  "mapContextMenu": {
+    "startHere": "ここから開始",
+    "copyCoordinates": "座標をコピー",
+    "coordinatesCopied": "座標をコピーしました",
+    "centerHere": "ここを中心に表示",
+    "elevation": "標高 {{value}}"
+  },
   "analytics": {
     "consent": {
       "title": "X-Dispatch の改善にご協力ください",

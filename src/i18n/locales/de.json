@@ -1929,6 +1929,13 @@
     "distance": "Entfernung",
     "noPlane": "Keine Flugzeugposition"
   },
+  "mapContextMenu": {
+    "startHere": "Hier starten",
+    "copyCoordinates": "Koordinaten kopieren",
+    "coordinatesCopied": "Koordinaten kopiert",
+    "centerHere": "Karte hier zentrieren",
+    "elevation": "Höhe {{value}}"
+  },
   "analytics": {
     "consent": {
       "title": "Hilf mit, X-Dispatch zu verbessern",
