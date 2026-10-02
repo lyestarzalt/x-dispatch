@@ -8,6 +8,9 @@ export {
   type TurnDirection,
 } from './arcs';
 
+// Re-export course-intersection primitives
+export { crossTrackStatus, intersectRadials, lineCircleIntersection } from './intersections';
+
 type Brand<Base, Label extends string> = Base & { readonly __brand: Label };
 
 export type Degrees = Brand<number, 'degrees'>;
