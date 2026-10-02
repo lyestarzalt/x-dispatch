@@ -1948,5 +1948,26 @@
     "donate": "Support this project",
     "notNow": "Not now",
     "dontShowAgain": "Don't show again"
+  },
+  "profile": {
+    "title": "Vertical profile",
+    "show": "Show vertical profile",
+    "hide": "Hide vertical profile",
+    "noData": "No profile data available",
+    "noCruise": "Set a cruise altitude to see the profile",
+    "tooShort": "The plan is too short for a profile",
+    "cruiseTooLow": "The cruise altitude is too low",
+    "cruiseNotReached": "Cruise altitude is not reached on this plan",
+    "loadingTerrain": "Loading terrain...",
+    "altitude": "Altitude",
+    "distance": "Distance",
+    "terrain": "Terrain",
+    "wind": "Wind",
+    "flightPath": "Flight path",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min safe",
+    "legSafe": "Leg safe",
+    "total": "Total"
   }
 }

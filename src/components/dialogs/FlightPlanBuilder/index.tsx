@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Eraser,
   Loader2,
+  Mountain,
   Pencil,
   PlaneLanding,
   PlaneTakeoff,
@@ -33,6 +34,7 @@ import {
   isEastbound,
   suggestCruiseAltitudeFt,
 } from '@/lib/flightplan/builder/geometry';
+import { planningClass } from '@/lib/flightplan/builder/planningClass';
 import {
   matchProcedure,
   procedureEntry,
@@ -52,12 +54,12 @@ import { trackEvent, useAirportProcedures, useTrackFeatureOpened } from '@/queri
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
-import type { AircraftCategory } from '@/types/xplane';
 import { AirportPicker, toEndpoint } from './AirportPicker';
 import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
@@ -69,20 +71,6 @@ const FIELD_CLASS = 'h-8 w-full font-mono text-xs';
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Wind within this many degrees of a runway heading makes it the suggested one. */
 const WIND_SUGGEST_MIN_KT = 4;
-
-function planningClass(category: AircraftCategory | null | undefined): RangeRingCategory {
-  switch (category) {
-    case 'ga':
-    case 'glider':
-    case 'ultralight':
-    case 'seaplane':
-    case 'helicopter':
-    case 'vtol':
-      return 'prop';
-    default:
-      return 'jet';
-  }
-}
 
 function formatMinutes(minutes: number): string {
   const h = Math.floor(minutes / 60);
@@ -301,6 +289,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const resolve = usePlanBuilderStore((s) => s.resolve);
   const autoRoute = usePlanBuilderStore((s) => s.autoRoute);
   const saveToXPlane = usePlanBuilderStore((s) => s.saveToXPlane);
+  const profileStripOpen = useMapStore((s) => s.profileStripOpen);
+  const setProfileStripOpen = useMapStore((s) => s.setProfileStripOpen);
   const startAtDeparture = usePlanBuilderStore((s) => s.startAtDeparture);
   const aircraftCategory = usePlaneStore((s) => s.state?.aircraftCategory);
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
@@ -841,6 +831,17 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             </Badge>
           )}
           <div className="flex gap-2">
+            <Button
+              variant={profileStripOpen ? 'secondary' : 'outline'}
+              size="sm"
+              className="w-8 px-0"
+              onClick={() => setProfileStripOpen(!profileStripOpen)}
+              disabled={!ready}
+              aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
+              title={profileStripOpen ? t('profile.hide') : t('profile.show')}
+            >
+              <Mountain className="h-3.5 w-3.5" />
+            </Button>
             <Button variant="outline" size="sm" onClick={startAtDeparture} disabled={!departure}>
               <PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" />
               {t('planBuilder.setStart')}

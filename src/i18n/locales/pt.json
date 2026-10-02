@@ -1948,5 +1948,26 @@
     "donate": "Apoiar o projeto",
     "notNow": "Agora não",
     "dontShowAgain": "Não mostrar novamente"
+  },
+  "profile": {
+    "title": "Perfil vertical",
+    "show": "Mostrar perfil vertical",
+    "hide": "Ocultar perfil vertical",
+    "noData": "Sem dados de perfil",
+    "noCruise": "Defina uma altitude de cruzeiro para ver o perfil",
+    "tooShort": "O plano é curto demais para um perfil",
+    "cruiseTooLow": "A altitude de cruzeiro é baixa demais",
+    "cruiseNotReached": "A altitude de cruzeiro não é atingida neste plano",
+    "loadingTerrain": "Carregando terreno...",
+    "altitude": "Altitude",
+    "distance": "Distância",
+    "terrain": "Terreno",
+    "wind": "Vento",
+    "flightPath": "Trajetória",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Mín. segura",
+    "legSafe": "Segura por perna",
+    "total": "Total"
   }
 }

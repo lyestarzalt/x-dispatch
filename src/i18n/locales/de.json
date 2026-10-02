@@ -1948,5 +1948,26 @@
     "donate": "Projekt unterstützen",
     "notNow": "Jetzt nicht",
     "dontShowAgain": "Nicht mehr anzeigen"
+  },
+  "profile": {
+    "title": "Vertikalprofil",
+    "show": "Vertikalprofil anzeigen",
+    "hide": "Vertikalprofil ausblenden",
+    "noData": "Keine Profildaten verfügbar",
+    "noCruise": "Reiseflughöhe setzen, um das Profil zu sehen",
+    "tooShort": "Der Plan ist zu kurz für ein Profil",
+    "cruiseTooLow": "Die Reiseflughöhe ist zu niedrig",
+    "cruiseNotReached": "Die Reiseflughöhe wird auf diesem Plan nicht erreicht",
+    "loadingTerrain": "Gelände wird geladen...",
+    "altitude": "Höhe",
+    "distance": "Entfernung",
+    "terrain": "Gelände",
+    "wind": "Wind",
+    "flightPath": "Flugweg",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min. sicher",
+    "legSafe": "Sichere Höhe Leg",
+    "total": "Gesamt"
   }
 }

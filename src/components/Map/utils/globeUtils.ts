@@ -13,7 +13,7 @@ const TERRAIN_SOURCE_ID = 'terrain-dem';
 const HILLSHADE_SOURCE_ID = 'terrain-hillshade-dem';
 // Use tile-cache:// scheme for contour worker fetches — bypasses Electron CSP
 // (blob workers don't inherit CSP from onHeadersReceived)
-const TERRAIN_TILES_CACHE_URL = 'tile-cache://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
+export const TERRAIN_TILES_CACHE_URL = 'tile-cache://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
 const TERRAIN_DEM_MAXZOOM = 10;
 // Contour thresholds start at this zoom; requesting contour tiles below it
 // only produces empty tiles after a DEM fetch.
@@ -26,7 +26,8 @@ const CONTOUR_LABEL_LAYER_ID = 'terrain-contour-labels';
 // Singleton — register contour protocol only once
 let contourDemSource: InstanceType<typeof mlcontour.DemSource> | null = null;
 
-function getContourDemSource(): InstanceType<typeof mlcontour.DemSource> {
+/** The shared decoded-DEM source the terrain layers read from; also used to sample route terrain. */
+export function getContourDemSource(): InstanceType<typeof mlcontour.DemSource> {
   if (!contourDemSource) {
     contourDemSource = new mlcontour.DemSource({
       url: TERRAIN_TILES_CACHE_URL,

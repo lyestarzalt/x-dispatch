@@ -1948,5 +1948,26 @@
     "donate": "プロジェクトを支援",
     "notNow": "今はしない",
     "dontShowAgain": "今後表示しない"
+  },
+  "profile": {
+    "title": "垂直プロファイル",
+    "show": "垂直プロファイルを表示",
+    "hide": "垂直プロファイルを非表示",
+    "noData": "プロファイルデータがありません",
+    "noCruise": "巡航高度を設定するとプロファイルが表示されます",
+    "tooShort": "プランが短すぎてプロファイルを作成できません",
+    "cruiseTooLow": "巡航高度が低すぎます",
+    "cruiseNotReached": "このプランでは巡航高度に到達しません",
+    "loadingTerrain": "地形を読み込み中...",
+    "altitude": "高度",
+    "distance": "距離",
+    "terrain": "地形",
+    "wind": "風",
+    "flightPath": "飛行経路",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "最低安全高度",
+    "legSafe": "レグ安全高度",
+    "total": "合計"
   }
 }

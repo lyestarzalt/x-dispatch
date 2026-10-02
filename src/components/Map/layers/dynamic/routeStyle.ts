@@ -109,15 +109,15 @@ export function waypointBadgeId(
   return labelBadgeImageId(proc?.kind ?? 'enroute');
 }
 
-// The badge is drawn at 2x (64 x 40 px) and stretched to fit its text: the middle 24 px stretch
-// horizontally, the middle 16 px vertically, and the text sits inside the content box, which
-// leaves 2 px (1 css px) of padding - the layer adds the rest, so there is one knob for it.
+// The badge is drawn at 2x (64 x 40 px) with 6 px corners and stretched to fit its text. Only
+// the corners stay fixed (3 css px), everything else stretches, so the shape is a clean rounded
+// rectangle at any size and angle. The content box leaves 1 css px; the layer adds the rest.
 const PILL_W = 64;
 const PILL_H = 40;
 const PILL_IMAGE_OPTIONS = {
   pixelRatio: 2,
-  stretchX: [[20, 44]] as [number, number][],
-  stretchY: [[12, 28]] as [number, number][],
+  stretchX: [[6, 58]] as [number, number][],
+  stretchY: [[6, 34]] as [number, number][],
   content: [2, 2, 62, 38] as [number, number, number, number],
 };
 
@@ -143,7 +143,7 @@ export function loadRouteLabelImages(map: maplibregl.Map): void {
     loadStretchImage(
       map,
       legChipImageId(kind),
-      badgeSvg(darken(ROUTE_KIND_COLORS[kind], 0.3), 20, 1)
+      badgeSvg(darken(ROUTE_KIND_COLORS[kind], 0.3), 6, 1)
     );
   }
 }

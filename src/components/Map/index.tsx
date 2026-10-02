@@ -9,12 +9,15 @@ import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import AirportInfoPanel from '@/components/layout/AirportInfoPanel';
 import FlightInfoPanel from '@/components/layout/FlightInfoPanel';
 import FlightPlanBar from '@/components/layout/FlightPlanBar';
+import ProfileStrip from '@/components/layout/ProfileStrip';
 import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
+import { useRouteTerrain } from '@/hooks/useRouteProfile';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
+import { cn } from '@/lib/utils/helpers';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import {
   trackEvent,
@@ -71,6 +74,8 @@ import {
   useVatsimSync,
 } from './hooks';
 import { useOwnAircraftLights } from './hooks/useOwnAircraftLights';
+import { useProfileControl } from './hooks/useProfileControl';
+import { useProfileHoverSync } from './hooks/useProfileHoverSync';
 import { useSatelliteClouds } from './hooks/useSatelliteClouds';
 import { useSimTraffic } from './hooks/useSimTraffic';
 import { useWeatherRadar } from './hooks/useWeatherRadar';
@@ -452,6 +457,8 @@ export default function Map({ airports }: MapProps) {
 
   // Flight plan state
   const fmsData = useFlightPlanStore((s) => s.fmsData);
+  const profileStripOpen = useMapStore((s) => s.profileStripOpen);
+  const profileStripPosition = useMapStore((s) => s.profileStripPosition);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const planFileName = useFlightPlanStore((s) => s.fileName);
   // Only a different plan moves the camera. The builder republishes the same plan on every
@@ -803,6 +810,12 @@ export default function Map({ airports }: MapProps) {
 
   // Track button (bottom-left map control)
   useTrackControl({ mapRef, onToggle: handleTogglePlaneTracker, isConnected: isXPlaneConnected });
+  // Vertical profile show/hide button, next to it
+  useProfileControl(mapRef);
+  // The ball on the map that follows the cursor on the vertical profile
+  useProfileHoverSync(mapRef);
+  // Start fetching terrain under the plan as soon as there is one, so the profile opens ready
+  useRouteTerrain();
 
   // Track programmatic map movements to avoid disabling follow mode
   const isProgrammaticMoveRef = useRef(false);
@@ -919,8 +932,19 @@ export default function Map({ airports }: MapProps) {
 
       {showPlaneTracker && <FlightStrip onCenterPlane={handleCenterPlane} />}
 
-      {/* Replay transport above the flight strip; the landing card floats bottom-right and is draggable */}
-      <div className="absolute bottom-24 left-1/2 z-20 -translate-x-1/2">
+      {/* Vertical profile of the loaded plan: along the bottom edge by default, draggable */}
+      <ProfileStrip airports={airports} />
+
+      {/* Replay transport above the flight strip (and above the profile strip when it is open); the
+          landing card floats bottom-right and is draggable */}
+      <div
+        className={cn(
+          'absolute left-1/2 z-20 -translate-x-1/2',
+          profileStripOpen && fmsData && profileStripPosition === null
+            ? 'bottom-[15.5rem]'
+            : 'bottom-24'
+        )}
+      >
         <ReplayWidget />
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}

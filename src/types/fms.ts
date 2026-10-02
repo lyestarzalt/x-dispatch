@@ -1,3 +1,5 @@
+import type { AltitudeConstraint } from './navigation';
+
 /**
  * X-Plane FMS Flight Plan Types
  * Supports FMS v1100 format
@@ -14,6 +16,8 @@ export interface FMSWaypoint {
   longitude: number;
   /** Display only, never written to the file: the published constraint, "6000A", "FL100", "3000A/5000B". */
   constraintLabel?: string;
+  /** Display only: the same constraint in structured form, for the vertical profile. */
+  constraint?: AltitudeConstraint;
 }
 
 /** One end of a land runway: its threshold, true heading along the runway and the paved length. */

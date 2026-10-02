@@ -1948,5 +1948,26 @@
     "donate": "Support this crew",
     "notNow": "Not now",
     "dontShowAgain": "Don't show again"
+  },
+  "profile": {
+    "title": "Vertical profile",
+    "show": "Show th' vertical profile",
+    "hide": "Hide th' vertical profile",
+    "noData": "No profile charts aboard",
+    "noCruise": "Set a cruise altitude t' see th' profile",
+    "tooShort": "Th' plan be too short fer a profile",
+    "cruiseTooLow": "Th' cruise altitude be too low",
+    "cruiseNotReached": "Ye never reach cruise altitude on this plan",
+    "loadingTerrain": "Soundin' th' land...",
+    "altitude": "Altitude",
+    "distance": "Distance",
+    "terrain": "Land",
+    "wind": "Wind",
+    "flightPath": "Course",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min safe",
+    "legSafe": "Leg safe",
+    "total": "Total"
   }
 }

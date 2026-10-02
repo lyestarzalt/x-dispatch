@@ -1948,5 +1948,26 @@
     "donate": "Sostieni il progetto",
     "notNow": "Non ora",
     "dontShowAgain": "Non mostrare più"
+  },
+  "profile": {
+    "title": "Profilo verticale",
+    "show": "Mostra profilo verticale",
+    "hide": "Nascondi profilo verticale",
+    "noData": "Nessun dato di profilo",
+    "noCruise": "Imposta una quota di crociera per vedere il profilo",
+    "tooShort": "Il piano è troppo corto per un profilo",
+    "cruiseTooLow": "La quota di crociera è troppo bassa",
+    "cruiseNotReached": "La quota di crociera non viene raggiunta su questo piano",
+    "loadingTerrain": "Caricamento terreno...",
+    "altitude": "Quota",
+    "distance": "Distanza",
+    "terrain": "Terreno",
+    "wind": "Vento",
+    "flightPath": "Traiettoria",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min. sicura",
+    "legSafe": "Sicura per tratta",
+    "total": "Totale"
   }
 }

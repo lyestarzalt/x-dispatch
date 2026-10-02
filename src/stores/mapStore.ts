@@ -118,6 +118,17 @@ interface MapState {
   rangeRingsCategories: RangeRingCategory[];
   flightStripPosition: { x: number; y: number } | null;
   landingCardPosition: { x: number; y: number } | null;
+  /** Whether the vertical profile strip is shown under the map while a plan is loaded. */
+  profileStripOpen: boolean;
+  /** Where the user dragged the profile strip; null means its default place along the bottom. */
+  profileStripPosition: { x: number; y: number } | null;
+  /** The route position under the cursor on the vertical profile, mirrored on the map. */
+  profileHover: {
+    latitude: number;
+    longitude: number;
+    altitudeFt: number | null;
+    headingDeg: number;
+  } | null;
   terrainShadingEnabled: boolean;
   terrain3dEnabled: boolean;
 
@@ -157,6 +168,16 @@ interface MapState {
   setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setLandingCardPosition: (pos: { x: number; y: number } | null) => void;
+  setProfileStripOpen: (open: boolean) => void;
+  setProfileStripPosition: (pos: { x: number; y: number } | null) => void;
+  setProfileHover: (
+    hover: {
+      latitude: number;
+      longitude: number;
+      altitudeFt: number | null;
+      headingDeg: number;
+    } | null
+  ) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
   setTerrain3dEnabled: (enabled: boolean) => void;
 }
@@ -222,6 +243,14 @@ export const useMapStore = create<MapState>()(
       rangeRingsCategories: ['jet', 'turboprop', 'prop'] as RangeRingCategory[],
       flightStripPosition: null as { x: number; y: number } | null,
       landingCardPosition: null as { x: number; y: number } | null,
+      profileStripOpen: true,
+      profileStripPosition: null as { x: number; y: number } | null,
+      profileHover: null as {
+        latitude: number;
+        longitude: number;
+        altitudeFt: number | null;
+        headingDeg: number;
+      } | null,
       terrainShadingEnabled: true,
       terrain3dEnabled: true,
 
@@ -325,15 +354,20 @@ export const useMapStore = create<MapState>()(
         set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setLandingCardPosition: (pos) => set({ landingCardPosition: pos }),
+      setProfileStripOpen: (open) => set({ profileStripOpen: open }),
+      setProfileStripPosition: (pos) => set({ profileStripPosition: pos }),
+      setProfileHover: (hover) => set({ profileHover: hover }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 14,
+      version: 16,
       storage: createJSONStorage(() => dedupedLocalStorage),
       partialize: (state) => ({
         landingCardPosition: state.landingCardPosition,
+        profileStripOpen: state.profileStripOpen,
+        profileStripPosition: state.profileStripPosition,
         flightTrailEnabled: state.flightTrailEnabled,
         simTrafficEnabled: state.simTrafficEnabled,
         layerVisibility: state.layerVisibility,
@@ -425,6 +459,14 @@ export const useMapStore = create<MapState>()(
         }
         if (version < 14) {
           if (state.landingCardPosition === undefined) state.landingCardPosition = null;
+        }
+        // v15: the vertical profile strip, shown by default
+        if (version < 15) {
+          if (state.profileStripOpen === undefined) state.profileStripOpen = true;
+        }
+        // v16: the profile strip can be dragged; null is its default place
+        if (version < 16) {
+          if (state.profileStripPosition === undefined) state.profileStripPosition = null;
         }
         return state;
       },

@@ -1948,5 +1948,26 @@
     "donate": "Wesprzyj projekt",
     "notNow": "Nie teraz",
     "dontShowAgain": "Nie pokazuj ponownie"
+  },
+  "profile": {
+    "title": "Profil pionowy",
+    "show": "Pokaż profil pionowy",
+    "hide": "Ukryj profil pionowy",
+    "noData": "Brak danych profilu",
+    "noCruise": "Ustaw wysokość przelotową, aby zobaczyć profil",
+    "tooShort": "Plan jest za krótki na profil",
+    "cruiseTooLow": "Wysokość przelotowa jest za niska",
+    "cruiseNotReached": "Wysokość przelotowa nie jest osiągana w tym planie",
+    "loadingTerrain": "Wczytywanie terenu...",
+    "altitude": "Wysokość",
+    "distance": "Odległość",
+    "terrain": "Teren",
+    "wind": "Wiatr",
+    "flightPath": "Tor lotu",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min. bezpieczna",
+    "legSafe": "Bezpieczna na odcinku",
+    "total": "Razem"
   }
 }

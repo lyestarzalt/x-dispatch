@@ -1,9 +1,20 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
-import { ChevronLeft, ChevronRight, MapPin, Navigation, Radio, Star, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import {
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Mountain,
+  Navigation,
+  Radio,
+  Star,
+  X,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useMapStore } from '@/stores/mapStore';
 import type { FlightPlanChip } from '@/types/fms';
 
 // Minimum pixels moved to consider it a drag (not a click)
@@ -15,7 +26,10 @@ interface FlightPlanBarProps {
 
 function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
+  const profileStripOpen = useMapStore((s) => s.profileStripOpen);
+  const setProfileStripOpen = useMapStore((s) => s.setProfileStripOpen);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
   const clearFlightPlan = useFlightPlanStore((s) => s.clearFlightPlan);
@@ -145,6 +159,21 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
         className="border-border text-muted-foreground hover:text-foreground h-10 w-8 shrink-0 rounded-none border-l"
       >
         <ChevronRight className="h-4 w-4" />
+      </Button>
+
+      {/* Vertical profile strip toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setProfileStripOpen(!profileStripOpen)}
+        className={cn(
+          'border-border h-10 w-8 shrink-0 rounded-none border-l',
+          profileStripOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+        )}
+        aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
+        title={profileStripOpen ? t('profile.hide') : t('profile.show')}
+      >
+        <Mountain className="h-4 w-4" />
       </Button>
     </div>
   );

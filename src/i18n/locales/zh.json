@@ -1948,5 +1948,26 @@
     "donate": "支持这个项目",
     "notNow": "以后再说",
     "dontShowAgain": "不再显示"
+  },
+  "profile": {
+    "title": "垂直剖面",
+    "show": "显示垂直剖面",
+    "hide": "隐藏垂直剖面",
+    "noData": "没有剖面数据",
+    "noCruise": "设置巡航高度以查看剖面",
+    "tooShort": "计划太短，无法生成剖面",
+    "cruiseTooLow": "巡航高度过低",
+    "cruiseNotReached": "此计划无法到达巡航高度",
+    "loadingTerrain": "正在加载地形...",
+    "altitude": "高度",
+    "distance": "距离",
+    "terrain": "地形",
+    "wind": "风",
+    "flightPath": "航迹",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "最低安全高度",
+    "legSafe": "航段安全高度",
+    "total": "总计"
   }
 }

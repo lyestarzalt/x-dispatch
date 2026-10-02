@@ -225,6 +225,7 @@ function procedureWaypoints(procedure: ResolvedProcedure): FMSWaypoint[] {
       latitude: wp.latitude,
       longitude: wp.longitude,
       constraintLabel: constraintLabel(wp),
+      constraint: wp.altitude ?? undefined,
     });
   }
   return out;
@@ -273,6 +274,7 @@ function join(target: FMSWaypoint[], next: FMSWaypoint[]): void {
         ...wp,
         altitude: wp.altitude || last.altitude,
         constraintLabel: wp.constraintLabel ?? last.constraintLabel,
+        constraint: wp.constraint ?? last.constraint,
       };
       continue;
     }

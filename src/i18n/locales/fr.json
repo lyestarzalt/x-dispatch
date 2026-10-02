@@ -1948,5 +1948,26 @@
     "donate": "Soutenir le projet",
     "notNow": "Pas maintenant",
     "dontShowAgain": "Ne plus afficher"
+  },
+  "profile": {
+    "title": "Profil vertical",
+    "show": "Afficher le profil vertical",
+    "hide": "Masquer le profil vertical",
+    "noData": "Aucune donnée de profil",
+    "noCruise": "Définissez une altitude de croisière pour voir le profil",
+    "tooShort": "Le plan est trop court pour un profil",
+    "cruiseTooLow": "L'altitude de croisière est trop basse",
+    "cruiseNotReached": "L'altitude de croisière n'est pas atteinte sur ce plan",
+    "loadingTerrain": "Chargement du relief...",
+    "altitude": "Altitude",
+    "distance": "Distance",
+    "terrain": "Relief",
+    "wind": "Vent",
+    "flightPath": "Trajectoire",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min. sûre",
+    "legSafe": "Sûre par segment",
+    "total": "Total"
   }
 }
