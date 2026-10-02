@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useUnits } from '@/hooks/useUnits';
+import { trackEvent } from '@/queries/useAnalytics';
 import { useMapStore } from '@/stores/mapStore';
 import { useMeasureStore } from '@/stores/measureStore';
 import { buildContextPointLabels } from './contextPointLabels';
@@ -45,22 +46,26 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
 
   const handleCopy = useCallback(async () => {
     if (!labels) return;
+    trackEvent('context_menu_used', { action: 'copy_coordinates' });
     await window.appAPI.clipboardWrite(labels.coordinates);
     toast.success(t('mapContextMenu.coordinatesCopied'));
   }, [labels, t]);
 
   const handleCenter = useCallback(() => {
     if (!point) return;
+    trackEvent('context_menu_used', { action: 'center_map' });
     mapRef.current?.easeTo({ center: [point.longitude, point.latitude] });
   }, [mapRef, point]);
 
   const handleStartHere = useCallback(() => {
     if (!point) return;
+    trackEvent('context_menu_used', { action: 'start_here' });
     onStartHere(point.latitude, point.longitude);
   }, [onStartHere, point]);
 
   const handleMeasure = useCallback(() => {
     if (!point) return;
+    trackEvent('context_menu_used', { action: 'measure' });
     useMeasureStore
       .getState()
       .start({ latitude: point.latitude, longitude: point.longitude }, point.snap);

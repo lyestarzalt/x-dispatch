@@ -79,6 +79,7 @@ export default function RouteTab() {
     if (!isAlreadySelected) {
       trackEvent('procedure_selected', {
         type: activeType === 'SID' ? 'sid' : activeType === 'STAR' ? 'star' : 'app',
+        source: 'manual',
       });
     }
   };

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { type TaxiRouteSnapshot, builtTaxiRoute, isNewStartPosition } from './mapActions';
+import {
+  type PlanProcedureSnapshot,
+  type TaxiRouteSnapshot,
+  builtTaxiRoute,
+  isNewStartPosition,
+  pickedProcedures,
+} from './mapActions';
 
 const gate = { airport: 'EGLL', type: 'ramp' as const, latitude: 51.47, longitude: -0.45 };
 const emptyRoute: TaxiRouteSnapshot = {
@@ -41,5 +47,33 @@ describe('builtTaxiRoute', () => {
     const built = { ...emptyRoute, networkNodeIds: [1, 2] };
     expect(builtTaxiRoute({ ...built, networkNodeIds: [1, 2, 3] }, built)).toBeNull();
     expect(builtTaxiRoute({ ...emptyRoute, networkNodeIds: [1] }, emptyRoute)).toBeNull();
+  });
+});
+
+describe('pickedProcedures', () => {
+  const sid = { name: 'ABC1A' };
+  const star = { name: 'XYZ2B' };
+  const none: PlanProcedureSnapshot = { departure: {}, arrival: {}, autoRouting: false };
+
+  it('reports each newly chosen procedure as a manual pick', () => {
+    const next = { departure: { sid }, arrival: { star }, autoRouting: false };
+    expect(pickedProcedures(next, none)).toEqual([
+      { type: 'sid', source: 'manual' },
+      { type: 'star', source: 'manual' },
+    ]);
+  });
+
+  it('marks picks made while auto-routing as automatic', () => {
+    const next = { departure: { sid }, arrival: {}, autoRouting: true };
+    expect(pickedProcedures(next, none)).toEqual([{ type: 'sid', source: 'auto' }]);
+  });
+
+  it('ignores unchanged choices, clears and missing endpoints', () => {
+    const chosen = { departure: { sid }, arrival: { approach: star }, autoRouting: false };
+    expect(pickedProcedures(chosen, chosen)).toEqual([]);
+    expect(pickedProcedures(none, chosen)).toEqual([]);
+    expect(pickedProcedures({ departure: null, arrival: null, autoRouting: false }, none)).toEqual(
+      []
+    );
   });
 });
