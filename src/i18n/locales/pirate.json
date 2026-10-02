@@ -1934,7 +1934,12 @@
     "copyCoordinates": "Copy the bearings",
     "coordinatesCopied": "Bearings copied, arr!",
     "centerHere": "Steer the chart here",
-    "elevation": "Height o' land {{value}}"
+    "elevation": "Height o' land {{value}}",
+    "measureFromHere": "Measure from this spot",
+    "deleteMeasurement": "Scrap the measurin' line",
+    "removePoint": "Toss this point",
+    "measureTotal": "All told {{value}}",
+    "clearMeasurement": "Wipe the measurin’ line"
   },
   "analytics": {
     "consent": {

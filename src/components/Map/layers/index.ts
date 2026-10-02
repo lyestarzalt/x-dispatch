@@ -44,6 +44,14 @@ export {
 } from './dynamic/ProcedureRouteLayer';
 export { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from './dynamic/RouteLineLayer';
 export {
+  addMeasureLayer,
+  removeMeasureLayer,
+  updateMeasureLine,
+  MEASURE_HITBOX_LAYER_ID,
+  MEASURE_VERTEX_HITBOX_LAYER_ID,
+  MEASURE_LAYER_IDS,
+} from './dynamic/MeasureLayer';
+export {
   bringVatsimLayersToTop,
   removeVatsimPilotLayer,
   setupVatsimClickHandler,

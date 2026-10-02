@@ -1934,7 +1934,12 @@
     "copyCoordinates": "复制坐标",
     "coordinatesCopied": "坐标已复制",
     "centerHere": "将地图居中于此",
-    "elevation": "海拔 {{value}}"
+    "elevation": "海拔 {{value}}",
+    "measureFromHere": "从此处测量",
+    "deleteMeasurement": "删除测量",
+    "removePoint": "移除点",
+    "measureTotal": "总计 {{value}}",
+    "clearMeasurement": "清除测量"
   },
   "analytics": {
     "consent": {

@@ -1934,7 +1934,12 @@
     "copyCoordinates": "Copia coordinate",
     "coordinatesCopied": "Coordinate copiate",
     "centerHere": "Centra la mappa qui",
-    "elevation": "Elevazione {{value}}"
+    "elevation": "Elevazione {{value}}",
+    "measureFromHere": "Misura da qui",
+    "deleteMeasurement": "Elimina misurazione",
+    "removePoint": "Rimuovi punto",
+    "measureTotal": "Totale {{value}}",
+    "clearMeasurement": "Cancella misurazione"
   },
   "analytics": {
     "consent": {

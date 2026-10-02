@@ -1934,7 +1934,12 @@
     "copyCoordinates": "Копировать координаты",
     "coordinatesCopied": "Координаты скопированы",
     "centerHere": "Центрировать карту здесь",
-    "elevation": "Высота {{value}}"
+    "elevation": "Высота {{value}}",
+    "measureFromHere": "Измерить отсюда",
+    "deleteMeasurement": "Удалить измерение",
+    "removePoint": "Удалить точку",
+    "measureTotal": "Итого {{value}}",
+    "clearMeasurement": "Очистить измерение"
   },
   "analytics": {
     "consent": {

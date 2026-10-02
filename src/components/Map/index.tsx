@@ -60,6 +60,7 @@ import {
   useIvaoSync,
   useMapContextMenu,
   useMapSetup,
+  useMeasureTool,
   useNavLayerSync,
   usePinDrop,
   useProcedureRouteSync,
@@ -104,6 +105,7 @@ import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
 import LandingReportCard from './widgets/LandingReportCard';
 import MapContextMenu from './widgets/MapContextMenu';
+import MeasureLabel from './widgets/MeasureLabel';
 import NavInfoPopup from './widgets/NavInfoPopup';
 import ReplayWidget from './widgets/ReplayWidget';
 import StandHoverCard from './widgets/StandHoverCard';
@@ -457,6 +459,7 @@ export default function Map({ airports }: MapProps) {
   // compass widget.
   useCursorElevation(mapRef);
   useMapContextMenu(mapRef);
+  useMeasureTool(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
   useAirportFilters(mapRef);
@@ -960,6 +963,7 @@ export default function Map({ airports }: MapProps) {
       <StandHoverCard />
       <NavInfoPopup mapRef={mapRef} />
       <MapContextMenu mapRef={mapRef} onStartHere={handleStartHere} />
+      <MeasureLabel mapRef={mapRef} />
 
       {/* Flight Info Panel - shows SimBrief data when loaded */}
       <FlightInfoPanel />

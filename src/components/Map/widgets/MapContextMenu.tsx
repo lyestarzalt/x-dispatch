@@ -1,6 +1,6 @@
 import { type RefObject, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, Crosshair, MapPin } from 'lucide-react';
+import { Copy, Crosshair, MapPin, Ruler, Trash2 } from 'lucide-react';
 import type * as maplibregl from 'maplibre-gl';
 import { toast } from 'sonner';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useUnits } from '@/hooks/useUnits';
 import { useMapStore } from '@/stores/mapStore';
+import { useMeasureStore } from '@/stores/measureStore';
 import { buildContextPointLabels } from './contextPointLabels';
 
 interface MapContextMenuProps {
@@ -58,6 +59,23 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
     onStartHere(point.latitude, point.longitude);
   }, [onStartHere, point]);
 
+  const handleMeasure = useCallback(() => {
+    if (!point) return;
+    useMeasureStore
+      .getState()
+      .start({ latitude: point.latitude, longitude: point.longitude }, point.snap);
+  }, [point]);
+
+  const handleDeleteMeasurement = useCallback(() => {
+    useMeasureStore.getState().clear();
+  }, []);
+
+  const measurePointCount = useMeasureStore((s) => s.line?.points.length ?? 0);
+  const handleRemovePoint = useCallback(() => {
+    if (point?.measureVertexIndex != null)
+      useMeasureStore.getState().removePoint(point.measureVertexIndex);
+  }, [point]);
+
   if (!point || !labels) return null;
 
   return (
@@ -87,6 +105,22 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
           <Copy />
           {t('mapContextMenu.copyCoordinates')}
         </DropdownMenuItem>
+        <DropdownMenuItem onSelect={handleMeasure}>
+          <Ruler />
+          {t('mapContextMenu.measureFromHere')}
+        </DropdownMenuItem>
+        {point.measureVertexIndex !== null && measurePointCount > 2 && (
+          <DropdownMenuItem onSelect={handleRemovePoint}>
+            <Trash2 />
+            {t('mapContextMenu.removePoint')}
+          </DropdownMenuItem>
+        )}
+        {point.onMeasureLine && (
+          <DropdownMenuItem onSelect={handleDeleteMeasurement}>
+            <Trash2 />
+            {t('mapContextMenu.deleteMeasurement')}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleCenter}>
           <Crosshair />

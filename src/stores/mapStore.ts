@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import type { MeasureSnap } from '@/lib/measure/measureLabel';
 import type { FeaturedCategory } from '@/types/featured';
 import {
   AirwaysMode,
@@ -28,6 +29,12 @@ export interface MapContextPoint {
   y: number;
   /** Terrain elevation in metres at the point, null when terrain is off. */
   elevationM: number | null;
+  /** Navaid, plan waypoint or airport under the cursor; the point is moved onto it. */
+  snap: MeasureSnap | null;
+  /** The right-click landed on the measurement line. */
+  onMeasureLine: boolean;
+  /** Index of the measurement vertex under the cursor, when any. */
+  measureVertexIndex: number | null;
 }
 
 /** A navaid or flight plan waypoint the user clicked on the map. */
