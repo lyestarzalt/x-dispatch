@@ -200,8 +200,11 @@ describe('procedurePath', () => {
   });
 
   it("intercepts the next leg's real published course for a CI leg, not a fixed-length guess", () => {
+    // The fix sits south of the eastbound track, so its 200-degree inbound course (approached
+    // from the north-north-east) crosses the track *short* of the fix - a genuine intercept,
+    // not an overshoot that would rightly be clipped to the fix itself.
     const start = { latitude: 40, longitude: -80 };
-    const nextFix = { latitude: 40.2, longitude: -79.5 };
+    const nextFix = { latitude: 39.8, longitude: -79.5 };
     const legs = [
       wp({ fixId: '', pathTerminator: 'CI', course: null }),
       wp({
@@ -213,10 +216,15 @@ describe('procedurePath', () => {
       }),
     ];
     const path = procedurePath(legs, { start: { position: start, trackDeg: 90 } });
-    const interceptPoint = path[0]!;
     const nextCourseTrue = magneticToTrue(200 as Degrees, nextFix.latitude, nextFix.longitude);
-    const status = crossTrackStatus(interceptPoint, nextFix, nextCourseTrue);
-    expect(Math.abs(status.crossTrackNm)).toBeLessThan(0.1);
+    // The intercept point sits on the next leg's course line (and isn't the fix itself). It's
+    // preceded by the turn arc onto it, so locate it by that property rather than by index.
+    const onNextCourse = path.filter(
+      (p) =>
+        greatCircleNm(p, nextFix) > 0.01 &&
+        Math.abs(crossTrackStatus(p, nextFix, nextCourseTrue).crossTrackNm) < 0.1
+    );
+    expect(onNextCourse.length).toBeGreaterThan(0);
   });
 
   it('intercepts the real published radial from the recommended navaid for a CR leg', () => {
@@ -314,6 +322,74 @@ describe('procedureGeometry missed approach split', () => {
     // The missed path bridges from that same point, then continues.
     expect(missedPath[0]).toEqual(fix);
     expect(missedPath.length).toBeGreaterThan(1);
+  });
+});
+
+describe('procedureGeometry course-leg intercepts', () => {
+  it('never doubles back on itself: the intercept is computed from the leg start, not from the end of a turn arc', () => {
+    // DAAG I23 ZEM missed approach, real coordinates, with RW23 resolved to its real threshold.
+    // The CA climb ends ~0.15 NM from ALR; the CI course (313) crosses ALR's 343 radial just
+    // ahead of ALR. Computing that crossing from the end of a 2 NM-radius turn arc instead (which
+    // has already swung 2.5 NM west, past the radial) put the crossing *behind* ALR, clipped it
+    // back to ALR, and drew a ~150 degree reversal - the "bow" on the map. LNM intersects from
+    // the previous leg's end point; so do we now.
+    // The full published chain (ZEM transition through the missed approach), not just the tail:
+    // the exact inbound track into RW23 decides whether the CI crossing lands on ALR's radial
+    // ahead of ALR (a genuine intercept the following FM leg must *continue from*) or gets
+    // clipped to ALR itself - both have to come out without a reversal.
+    const ZEM = { latitude: 36.795, longitude: 3.570833333 };
+    const CI23 = { latitude: 36.8017, longitude: 3.39725 };
+    const FI23 = { latitude: 36.781575, longitude: 3.364141667 };
+    const RW23 = { latitude: 36.7129725, longitude: 3.2515459 };
+    const ALR = { latitude: 36.690997222, longitude: 3.215480556 };
+    const legs = [
+      wp({ fixId: 'ZEM', pathTerminator: 'IF', latitude: ZEM.latitude, longitude: ZEM.longitude }),
+      wp({
+        fixId: 'CI23',
+        pathTerminator: 'CF',
+        course: 271,
+        latitude: CI23.latitude,
+        longitude: CI23.longitude,
+      }),
+      wp({
+        fixId: 'FI23',
+        pathTerminator: 'CF',
+        course: 231,
+        latitude: FI23.latitude,
+        longitude: FI23.longitude,
+      }),
+      wp({
+        fixId: 'RW23',
+        pathTerminator: 'CF',
+        course: 231,
+        latitude: RW23.latitude,
+        longitude: RW23.longitude,
+      }),
+      wp({
+        fixId: '',
+        pathTerminator: 'CA',
+        course: 231.0,
+        altitude: { descriptor: '+', altitude1: 660, altitude2: null },
+        isMissedApproach: true,
+      }),
+      wp({ fixId: '', pathTerminator: 'CI', course: 313.0, isMissedApproach: true }),
+      wp({
+        fixId: 'ALR',
+        pathTerminator: 'FM',
+        course: 343.0,
+        latitude: ALR.latitude,
+        longitude: ALR.longitude,
+        isMissedApproach: true,
+      }),
+    ];
+    const { missedPath } = procedureGeometry(legs);
+    expect(missedPath.length).toBeGreaterThan(2);
+    for (let i = 2; i < missedPath.length; i++) {
+      const a = bearingDeg(missedPath[i - 2]!, missedPath[i - 1]!);
+      const b = bearingDeg(missedPath[i - 1]!, missedPath[i]!);
+      const turn = Math.abs(((((b - a) % 360) + 540) % 360) - 180);
+      expect(turn).toBeLessThan(120);
+    }
   });
 });
 

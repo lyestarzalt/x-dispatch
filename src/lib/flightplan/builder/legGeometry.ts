@@ -110,9 +110,14 @@ function headingToFly(state: PathState, courseTrue: number | null): number {
   return Math.abs(norm180(courseTrue - state.trackDeg)) < 5 ? state.trackDeg : courseTrue;
 }
 
-function altitudeLegNm(wp: ResolvedProcedureWaypoint): number | undefined {
+/**
+ * Length of an altitude-terminated leg. LNM only does the climb-gradient math for a SID's first
+ * leg off the runway; every other CA/VA/FA - missed-approach climbs included - is a flat 2 NM
+ * (procedurequery.cpp, COURSE_TO_ALTITUDE branch). Same here.
+ */
+function altitudeLegNm(wp: ResolvedProcedureWaypoint, firstDepartureLeg: boolean): number {
   const alt = wp.altitude?.altitude1;
-  if (alt === null || alt === undefined) return undefined;
+  if (!firstDepartureLeg || alt === null || alt === undefined) return MIN_LEG_NM;
   return Math.min(MAX_LEG_NM, Math.max(MIN_LEG_NM, alt / CLIMB_FT_PER_NM));
 }
 
@@ -275,6 +280,22 @@ export function procedureGeometry(
     state = { position: end, trackDeg: heading };
   };
 
+  /**
+   * Reach a computed termination point (an intercept, a radial crossing, a DME ring crossing):
+   * turn onto it from the current track with the same robust tangent arc fix arrivals use, then
+   * run straight to it. The target itself is always computed from the leg's *start* position -
+   * LNM intersects from the previous leg's end point and treats the turn as cosmetic. Computing
+   * it from the end of a turn arc instead let the arc carry past the line being intercepted,
+   * putting the crossing behind the aircraft and drawing a reversal back to it.
+   */
+  const arriveAtTarget = (target: LatLon, trackAfterDeg: number) => {
+    if (!state) return;
+    const arc = turnOntoFixRobust(state.position, state.trackDeg, target, TURN_RADIUS_NM);
+    append(arc);
+    append([target]);
+    state = { position: target, trackDeg: trackAfterDeg };
+  };
+
   for (let i = 0; i < waypoints.length; i++) {
     const wp = waypoints[i]!;
     if (wp.fixType === 'C' || wp.fixType === 'A') continue;
@@ -319,17 +340,14 @@ export function procedureGeometry(
     const courseTrue = trueCourse(wp.course, state.position);
 
     if (TO_ALTITUDE.has(term)) {
-      const lengthNm = altitudeLegNm(wp);
-      if (lengthNm === undefined) continue;
-      flyHeading(courseTrue ?? state.trackDeg, lengthNm);
+      const firstDepartureLeg = options.start !== undefined && out.length === 0;
+      flyHeading(courseTrue ?? state.trackDeg, altitudeLegNm(wp, firstDepartureLeg));
       continue;
     }
 
     if (TO_DISTANCE.has(term)) {
       const heading = headingToFly(state, courseTrue);
-      const arc = turnOntoHeading(state, heading, undefined);
-      append(arc);
-      const from = arc[arc.length - 1] ?? state.position;
+      const from = state.position;
       const center = recNavaidPosition(wp);
       const radiusNm = wp.distance ?? wp.rho;
       let target: LatLon | null = null;
@@ -347,16 +365,13 @@ export function procedureGeometry(
         if (fallbackNm === undefined) continue;
         target = destinationPoint(from, heading, fallbackNm);
       }
-      append([target]);
-      state = { position: target, trackDeg: heading };
+      arriveAtTarget(target, heading);
       continue;
     }
 
     if (TO_RADIAL.has(term)) {
       const heading = headingToFly(state, courseTrue);
-      const arc = turnOntoHeading(state, heading, undefined);
-      append(arc);
-      const from = arc[arc.length - 1] ?? state.position;
+      const from = state.position;
 
       const navaid = recNavaidPosition(wp);
       const radialTrue = navaid ? trueCourse(wp.theta, navaid) : null;
@@ -371,16 +386,13 @@ export function procedureGeometry(
         }
       }
 
-      append([target ?? from]);
-      state = { position: target ?? from, trackDeg: heading };
+      if (target) arriveAtTarget(target, heading);
       continue;
     }
 
     if (TO_INTERCEPT.has(term)) {
       const heading = headingToFly(state, courseTrue);
-      const arc = turnOntoHeading(state, heading, undefined);
-      append(arc);
-      const from = arc[arc.length - 1] ?? state.position;
+      const from = state.position;
 
       const nextIndex = waypoints.findIndex((w, idx) => idx > i && w.resolved && w.course !== null);
       const next = nextIndex >= 0 ? waypoints[nextIndex] : undefined;
@@ -389,28 +401,35 @@ export function procedureGeometry(
           ? { latitude: next.latitude, longitude: next.longitude }
           : null;
       const nextCourseTrue = next && nextAnchor ? trueCourse(next.course, nextAnchor) : null;
+      // The ray to intersect must point from the anchor toward where the leg is actually flown.
+      // A departure-anchored leg (FM/VM) is flown *away* from its fix along its course; an
+      // arrival-anchored leg (TF/CF/...) is flown *into* its fix, so the line to meet is the
+      // inbound course extended back out from the fix - the reciprocal. (A crossing behind a
+      // ray's start is correctly rejected as divergent, so the direction matters.)
+      const nextRayDeg =
+        next && nextCourseTrue !== null
+          ? ARRIVAL_ANCHORED.has(next.pathTerminator)
+            ? norm360(nextCourseTrue + 180)
+            : norm360(nextCourseTrue)
+          : null;
 
       let target: LatLon | null = null;
-      if (nextAnchor && nextCourseTrue !== null) {
-        target = intersectRadials(
-          from,
-          heading as Degrees,
-          nextAnchor,
-          norm360(nextCourseTrue) as Degrees
-        );
+      if (nextAnchor && nextRayDeg !== null) {
+        target = intersectRadials(from, heading as Degrees, nextAnchor, nextRayDeg as Degrees);
       }
 
       let resultTrackDeg = heading;
       let consumedNextIndex = -1;
 
-      if (target && nextAnchor && nextCourseTrue !== null && next) {
+      if (target && nextAnchor && nextCourseTrue !== null && nextRayDeg !== null && next) {
         // Re-clip the raw crossing to the next leg's own segment, the way atools'
         // processCourseInterceptLegs does, instead of drawing wherever the two infinite
         // courses happen to cross (which can overshoot far past the next leg entirely).
-        const status = crossTrackStatus(target, nextAnchor, norm360(nextCourseTrue) as Degrees);
+        const status = crossTrackStatus(target, nextAnchor, nextRayDeg as Degrees);
         if (ARRIVAL_ANCHORED.has(next.pathTerminator)) {
-          // The fix is the leg's far end; only clip an intersection that overshoots past it.
-          if (status.alongTrackNm > 0) target = nextAnchor;
+          // Along the reciprocal ray, positive is the approach side (a genuine intercept short
+          // of the fix); negative is past the fix - an overshoot, clipped to the fix itself.
+          if (status.alongTrackNm < 0) target = nextAnchor;
         } else if (DEPARTURE_ANCHORED.has(next.pathTerminator)) {
           // The fix is the leg's near end; the valid zone is [0, its own length] ahead of it.
           const bound = next.distance ?? FALLBACK_LEG_NM;
@@ -429,8 +448,7 @@ export function procedureGeometry(
 
       if (!target) target = destinationPoint(from, heading, FALLBACK_LEG_NM);
 
-      append([target]);
-      state = { position: target, trackDeg: resultTrackDeg };
+      arriveAtTarget(target, resultTrackDeg);
       if (consumedNextIndex >= 0) i = consumedNextIndex;
       continue;
     }
@@ -446,7 +464,15 @@ export function procedureGeometry(
       const anchorCourseTrue = trueCourse(wp.course, anchor) ?? state.trackDeg;
       const lengthNm = wp.distance ?? FALLBACK_LEG_NM;
       const end = destinationPoint(anchor, anchorCourseTrue, lengthNm);
-      append([anchor, end]);
+      // If the preceding CI/VI already put us on this course ahead of the fix, the leg starts
+      // from that intercept point (LNM: `next->line.setPos1(intersect)`) rather than jumping
+      // back to the fix and drawing the same stretch twice.
+      const onCourse = crossTrackStatus(state.position, anchor, anchorCourseTrue as Degrees);
+      const alreadyOnCourse =
+        Math.abs(onCourse.crossTrackNm) < 0.1 &&
+        onCourse.alongTrackNm >= 0 &&
+        onCourse.alongTrackNm <= lengthNm;
+      append(alreadyOnCourse ? [end] : [anchor, end]);
       state = { position: end, trackDeg: anchorCourseTrue };
       continue;
     }
