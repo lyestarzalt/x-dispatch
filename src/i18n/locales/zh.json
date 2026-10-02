@@ -43,7 +43,9 @@
     "s": "秒",
     "kg": "公斤",
     "lbs": "磅",
-    "fpm": "英尺/分"
+    "fpm": "英尺/分",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "北",
@@ -608,6 +610,12 @@
         "decimal": "十进制度数",
         "dms": "度分秒",
         "dm": "度和十进制分"
+      },
+      "course": "航向",
+      "courseModes": {
+        "magnetic": "磁航向",
+        "true": "真航向",
+        "both": "两者"
       }
     },
     "graphics": {
@@ -1916,7 +1924,7 @@
     "frequency": "频率",
     "altitude": "计划高度",
     "elevation": "海拔",
-    "bearingTrue": "方位（真）",
+    "bearing": "方位",
     "radial": "径向线",
     "distance": "距离",
     "noPlane": "无飞机位置"

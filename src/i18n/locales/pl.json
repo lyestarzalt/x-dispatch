@@ -43,7 +43,9 @@
     "s": "s",
     "kg": "kg",
     "lbs": "lbs",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "N",
@@ -608,6 +610,12 @@
         "decimal": "Stopnie dziesiętne",
         "dms": "Stopnie, minuty, sekundy",
         "dm": "Stopnie, minuty dziesiętne"
+      },
+      "course": "Kurs",
+      "courseModes": {
+        "magnetic": "Magnetyczny",
+        "true": "Rzeczywisty",
+        "both": "Oba"
       }
     },
     "graphics": {
@@ -1916,7 +1924,7 @@
     "frequency": "Częstotliwość",
     "altitude": "Planowana wysokość",
     "elevation": "Wysokość",
-    "bearingTrue": "Namiar (rzeczywisty)",
+    "bearing": "Namiar",
     "radial": "Radial",
     "distance": "Odległość",
     "noPlane": "Brak pozycji samolotu"

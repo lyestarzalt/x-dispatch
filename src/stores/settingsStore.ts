@@ -7,6 +7,7 @@ import type { WeightUnit } from '@/lib/utils/format';
 import type {
   AltitudeUnit,
   CoordinateFormat,
+  CourseMode,
   DistanceUnit,
   SpeedUnit,
   VerticalSpeedUnit,
@@ -70,6 +71,7 @@ export interface MapSettings {
     verticalSpeed: VerticalSpeedUnit;
     weight: WeightUnit;
     coordinates: CoordinateFormat;
+    course: CourseMode;
   };
 }
 
@@ -191,6 +193,7 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
     verticalSpeed: 'fpm',
     weight: 'lbs',
     coordinates: 'decimal',
+    course: 'magnetic',
   },
 };
 
@@ -417,7 +420,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 29,
+      version: 30,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -588,8 +591,19 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
           verticalSpeed: 'fpm',
           weight: state.map!.units.weight,
           coordinates: 'decimal',
+          // Not set until the next step — forward-referenced only so this object
+          // literal satisfies MapSettings['units'] (which requires `course`).
+          // Any pre-v30 blob gets a real value from the v30 step immediately below.
+          course: state.map!.units.course,
         },
       },
+    };
+  }
+  if (version < 30) {
+    // Course display preference: magnetic / true / both (R2, magnetic model).
+    state = {
+      ...state,
+      map: { ...state.map!, units: { ...state.map!.units, course: 'magnetic' } },
     };
   }
 

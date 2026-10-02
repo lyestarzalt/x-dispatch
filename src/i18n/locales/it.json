@@ -43,7 +43,9 @@
     "s": "s",
     "kg": "kg",
     "lbs": "lbs",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "N",
@@ -608,6 +610,12 @@
         "decimal": "Gradi decimali",
         "dms": "Gradi, minuti, secondi",
         "dm": "Gradi, minuti decimali"
+      },
+      "course": "Prua",
+      "courseModes": {
+        "magnetic": "Magnetica",
+        "true": "Vera",
+        "both": "Entrambe"
       }
     },
     "graphics": {
@@ -1916,7 +1924,7 @@
     "frequency": "Frequenza",
     "altitude": "Altitudine pianificata",
     "elevation": "Elevazione",
-    "bearingTrue": "Rilevamento (vero)",
+    "bearing": "Rilevamento",
     "radial": "Radiale",
     "distance": "Distanza",
     "noPlane": "Posizione aereo non disponibile"

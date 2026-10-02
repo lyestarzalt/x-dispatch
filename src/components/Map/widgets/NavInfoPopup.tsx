@@ -6,7 +6,7 @@ import * as maplibregl from 'maplibre-gl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUnits } from '@/hooks/useUnits';
-import { type Feet, calculateBearing, distanceNm } from '@/lib/utils/geomath';
+import { type Degrees, type Feet, calculateBearing, distanceNm } from '@/lib/utils/geomath';
 import { type NavInfoSelection, useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 
@@ -48,10 +48,6 @@ export default function NavInfoPopup({ mapRef }: NavInfoPopupProps) {
   return createPortal(<NavInfoCard info={info} onClose={() => setNavInfo(null)} />, container);
 }
 
-function formatDeg(deg: number): string {
-  return `${String(Math.round(deg) % 360).padStart(3, '0')}°`;
-}
-
 function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () => void }) {
   const { t } = useTranslation();
   const units = useUnits();
@@ -90,8 +86,21 @@ function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () =>
         )}
         {bearing !== null && distance !== null ? (
           <>
-            <Row label={t('navInfo.bearingTrue')} value={formatDeg(bearing)} accent />
-            {isNavaid && <Row label={t('navInfo.radial')} value={formatDeg(bearing + 180)} />}
+            <Row
+              label={t('navInfo.bearing')}
+              value={units.course(bearing, info.latitude, info.longitude)}
+              accent
+            />
+            {isNavaid && (
+              <Row
+                label={t('navInfo.radial')}
+                value={units.course(
+                  ((bearing + 180) % 360) as Degrees,
+                  info.latitude,
+                  info.longitude
+                )}
+              />
+            )}
             <Row label={t('navInfo.distance')} value={units.distance(distance)} accent />
           </>
         ) : (

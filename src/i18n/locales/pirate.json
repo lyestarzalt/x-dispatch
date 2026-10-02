@@ -43,7 +43,9 @@
     "s": "s",
     "kg": "kg",
     "lbs": "doubloons",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "N",
@@ -608,6 +610,12 @@
         "decimal": "Decimal Degrees",
         "dms": "Degrees, Minutes, Seconds",
         "dm": "Degrees an' Decimal Minutes"
+      },
+      "course": "Heading",
+      "courseModes": {
+        "magnetic": "Compass",
+        "true": "True North",
+        "both": "Both"
       }
     },
     "graphics": {
@@ -1916,7 +1924,7 @@
     "frequency": "Frequency",
     "altitude": "Planned height",
     "elevation": "Height",
-    "bearingTrue": "Bearin' (true)",
+    "bearing": "Bearin'",
     "radial": "Radial",
     "distance": "Distance",
     "noPlane": "No ship position"

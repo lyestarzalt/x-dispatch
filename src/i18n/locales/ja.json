@@ -43,7 +43,9 @@
     "s": "s",
     "kg": "kg",
     "lbs": "lbs",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "北",
@@ -608,6 +610,12 @@
         "decimal": "10進度",
         "dms": "度分秒",
         "dm": "度・10進分"
+      },
+      "course": "コース",
+      "courseModes": {
+        "magnetic": "磁方位",
+        "true": "真方位",
+        "both": "両方"
       }
     },
     "graphics": {
@@ -1916,7 +1924,7 @@
     "frequency": "周波数",
     "altitude": "計画高度",
     "elevation": "標高",
-    "bearingTrue": "方位（真方位）",
+    "bearing": "方位",
     "radial": "ラジアル",
     "distance": "距離",
     "noPlane": "機体位置なし"

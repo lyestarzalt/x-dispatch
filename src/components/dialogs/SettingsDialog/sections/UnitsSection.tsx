@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils/helpers';
 import type {
   AltitudeUnit,
   CoordinateFormat,
+  CourseMode,
   DistanceUnit,
   SpeedUnit,
   VerticalSpeedUnit,
@@ -123,6 +124,17 @@ export default function UnitsSection({ className }: SettingsSectionProps) {
           { value: 'decimal', label: t('settings.units.coordinateFormats.decimal') },
           { value: 'dms', label: t('settings.units.coordinateFormats.dms') },
           { value: 'dm', label: t('settings.units.coordinateFormats.dm') },
+        ]}
+      />
+
+      <UnitPickerRow<CourseMode>
+        title={t('settings.units.course')}
+        value={units.course}
+        onChange={(course) => update({ course })}
+        options={[
+          { value: 'magnetic', label: t('settings.units.courseModes.magnetic') },
+          { value: 'true', label: t('settings.units.courseModes.true') },
+          { value: 'both', label: t('settings.units.courseModes.both') },
         ]}
       />
     </div>

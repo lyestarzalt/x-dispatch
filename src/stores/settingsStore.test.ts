@@ -298,6 +298,49 @@ describe('migrateSettings', () => {
       verticalSpeed: 'fpm',
       weight: 'kg', // preserved, not reset to the default 'lbs'
       coordinates: 'decimal',
+      course: 'magnetic', // cascaded forward from the v30 step in the same call
+    });
+  });
+
+  it('adds the course preference at v30, preserving the other five unit preferences', () => {
+    const v29Blob = {
+      map: {
+        navDataRadiusNm: 100,
+        vatsimRefreshInterval: 15,
+        mapStyleUrl: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        userMapStyles: [],
+        idleOrbitEnabled: false,
+        units: {
+          distance: 'km' as const, // user had already switched these
+          altitude: 'm' as const,
+          speed: 'kmh' as const,
+          verticalSpeed: 'ms' as const,
+          weight: 'kg' as const,
+          coordinates: 'dms' as const,
+        },
+      },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: {
+        fontSize: 'medium' as const,
+        zoomLevel: 1.0,
+        debugOverlay: false,
+        clockMode: 'zulu' as const,
+      },
+      graphics: {},
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      flights: { recording: true, landingReport: true, landingFlyTo: true },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+    };
+    const result = migrateSettings(v29Blob, 29);
+    expect(result.map.units).toEqual({
+      distance: 'km',
+      altitude: 'm',
+      speed: 'kmh',
+      verticalSpeed: 'ms',
+      weight: 'kg',
+      coordinates: 'dms',
+      course: 'magnetic',
     });
   });
 });

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useUnits } from '@/hooks/useUnits';
 import { formatFrequency } from '@/lib/utils/format';
-import { type NauticalMiles, runwayLengthFeet } from '@/lib/utils/geomath';
+import { type Degrees, type NauticalMiles, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
@@ -550,8 +550,13 @@ function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Na
   // Localizer heading lives on `bearing`; some records carry it on `course`
   // instead, fall back so we don't show an em-dash for those.
   const heading = ils.bearing ?? ils.course;
+  // ils.magneticVariation is decoded straight from the earth_nav.dat ILS
+  // record (navaidParser.ts) — the station's own published variation, more
+  // accurate for this specific course than a live WMM lookup would be.
   const headingStr =
-    heading !== undefined ? `${String(Math.round(heading)).padStart(3, '0')}°` : '—';
+    heading !== undefined
+      ? units.courseWithVariation(heading as Degrees, ils.magneticVariation)
+      : '—';
   // Glide-slope angle comes from a separate GS Navaid record (joined by
   // associatedRunway). Old parser builds stored the angle ÷100 (e.g. 0.03
   // instead of 3.0); same workaround as ILSLayer.ts uses.

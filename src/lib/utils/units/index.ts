@@ -6,3 +6,4 @@ export * from './speed';
 export * from './verticalSpeed';
 export * from './weight';
 export * from './coordinates';
+export * from './course';
