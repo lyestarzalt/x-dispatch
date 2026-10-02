@@ -9,8 +9,13 @@
  * - Speed constraints displayed at waypoints
  * - Different styling for departure vs arrival vs approach
  */
+import i18n from 'i18next';
 import * as maplibregl from 'maplibre-gl';
+import { buildUnitFormatters } from '@/hooks/useUnits';
 import { procedureGeometry } from '@/lib/flightplan/builder/legGeometry';
+import { magneticToTrue } from '@/lib/magvar';
+import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
@@ -93,52 +98,32 @@ const WAYPOINT_LAYER_ID = 'procedure-waypoints';
 const WAYPOINT_SOURCE_ID = 'procedure-waypoints-source';
 const LABEL_LAYER_ID = 'procedure-waypoint-labels';
 const CONSTRAINT_LAYER_ID = 'procedure-constraints';
+const LEG_LABEL_LAYER_ID = 'procedure-leg-labels';
+const LEG_LABEL_SOURCE_ID = 'procedure-leg-labels-source';
 
 // ============================================================================
-// Aviation Chart Color Palette
+// Chart Color Palette
 // ============================================================================
 
+/**
+ * One shared style for every procedure type (SID/STAR/approach), not a color per type - matching
+ * both the `--violet` "procedures" design token this app already uses for the flight-plan route
+ * line (`FlightPlanLayer.ts`'s `COLORS.routeLine`) and how reference charting tools draw
+ * procedures: a single consistent line style, not a different neon color per leg's role.
+ */
 const COLORS = {
-  // High contrast colors - visible on both dark and light backgrounds
-  SID: {
-    line: '#00ffff', // Cyan
-    casing: '#000000',
-    waypoint: '#00ffff',
-    waypointStroke: '#000000',
-    label: '#ffffff',
-    constraint: '#ffff00',
-  },
-  STAR: {
-    line: '#00ff00', // Lime green
-    casing: '#000000',
-    waypoint: '#00ff00',
-    waypointStroke: '#000000',
-    label: '#ffffff',
-    constraint: '#ffff00',
-  },
-  APPROACH: {
-    line: '#ffff00', // Yellow - highest visibility
-    casing: '#000000',
-    waypoint: '#ffff00',
-    waypointStroke: '#000000',
-    label: '#ffffff',
-    constraint: '#ffff00',
-  },
-  ROUTE: {
-    line: '#ff66ff', // Pink
-    casing: '#000000',
-    waypoint: '#ff66ff',
-    waypointStroke: '#000000',
-    label: '#ffffff',
-    constraint: '#ffff00',
-  },
+  line: '#8B5CF6', // --violet design token ("Purple - procedures")
+  casing: '#000000',
+  waypoint: '#717880', // --muted-foreground design token
+  waypointStroke: '#000000',
+  label: '#ffffff',
 };
 
 // Line widths
 const LINE_WIDTH = {
-  route: 5, // Main route line
-  casing: 8, // Dark casing for contrast
-  waypointRadius: 4, // Smaller waypoints
+  route: 4, // Main route line
+  casing: 6, // Dark casing for contrast
+  waypointRadius: 3.5, // Smaller waypoints
   waypointStroke: 1.5,
 };
 
@@ -287,6 +272,43 @@ function createWaypointGeoJSON(
   };
 }
 
+/**
+ * Distance + course labels at the midpoint of each leg between two resolved fixes, matching
+ * reference charting tools (e.g. "9.9NM / 227°M" on the line itself, not just at the waypoints).
+ * Each leg's own published distance/course are used, not the resolved-position geometry, so a
+ * label still appears even where the drawn arc/intercept differs slightly from the straight line.
+ */
+export function createLegLabelGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
+  const units = buildUnitFormatters(useSettingsStore.getState().map.units, i18n.t.bind(i18n));
+  const features: GeoJSON.Feature[] = [];
+
+  let prev: RouteWaypoint | null = null;
+  for (const wp of waypoints) {
+    if (wp.latitude === undefined || wp.longitude === undefined) continue;
+    if (prev) {
+      const parts: string[] = [];
+      if (wp.distance !== null) parts.push(units.distance(wp.distance as NauticalMiles));
+      if (wp.course !== null) {
+        const courseTrue = magneticToTrue(wp.course as Degrees, wp.latitude, wp.longitude);
+        parts.push(units.course(courseTrue, wp.latitude, wp.longitude));
+      }
+      if (parts.length > 0) {
+        features.push({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [(prev.longitude! + wp.longitude) / 2, (prev.latitude! + wp.latitude) / 2],
+          },
+          properties: { label: parts.join(' / ') },
+        });
+      }
+    }
+    prev = wp;
+  }
+
+  return { type: 'FeatureCollection', features };
+}
+
 // ============================================================================
 // Layer Management
 // ============================================================================
@@ -326,16 +348,16 @@ export function addProcedureRouteLayer(
     omitFlightPlanWaypoints(resolvedWaypoints, planFixes),
     route.type
   );
+  const legLabelGeoJSON = createLegLabelGeoJSON(resolvedWaypoints);
 
   if (routeGeoJSON.features.length === 0) {
     return;
   }
 
-  const colors = COLORS[route.type];
-
   // Add sources
   safeAddGeoJSONSource(map, ROUTE_SOURCE_ID, routeGeoJSON);
   safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
+  safeAddGeoJSONSource(map, LEG_LABEL_SOURCE_ID, legLabelGeoJSON);
 
   // Route casing (dark outline for contrast on satellite) - missed approach excluded, it gets
   // its own dashed layer below instead.
@@ -349,7 +371,7 @@ export function addProcedureRouteLayer(
       'line-join': 'round',
     },
     paint: {
-      'line-color': colors.casing,
+      'line-color': COLORS.casing,
       'line-width': LINE_WIDTH.casing,
       'line-opacity': 0.8,
     },
@@ -366,7 +388,7 @@ export function addProcedureRouteLayer(
       'line-join': 'round',
     },
     paint: {
-      'line-color': colors.line,
+      'line-color': COLORS.line,
       'line-width': LINE_WIDTH.route,
       'line-opacity': 1,
     },
@@ -383,7 +405,7 @@ export function addProcedureRouteLayer(
       'line-join': 'round',
     },
     paint: {
-      'line-color': colors.line,
+      'line-color': COLORS.line,
       'line-width': LINE_WIDTH.route,
       'line-opacity': 0.7,
       'line-dasharray': [2, 2],
@@ -399,7 +421,7 @@ export function addProcedureRouteLayer(
       'circle-color': [
         'case',
         ['get', 'resolved'],
-        colors.waypoint,
+        COLORS.waypoint,
         '#ff3333', // Red for unresolved waypoints
       ],
       'circle-radius': [
@@ -412,7 +434,7 @@ export function addProcedureRouteLayer(
       'circle-stroke-color': [
         'case',
         ['get', 'resolved'],
-        colors.waypointStroke,
+        COLORS.waypointStroke,
         '#ffffff', // White stroke for unresolved (contrast)
       ],
     },
@@ -459,12 +481,32 @@ export function addProcedureRouteLayer(
       'text-halo-width': 2,
     },
   });
+
+  // Distance/course labels at each leg's midpoint, muted so they read as reference, not a
+  // competing label - matches how reference charting tools annotate each segment directly.
+  map.addLayer({
+    id: LEG_LABEL_LAYER_ID,
+    type: 'symbol',
+    source: LEG_LABEL_SOURCE_ID,
+    layout: {
+      'text-field': ['get', 'label'],
+      'text-font': ['Open Sans Regular'],
+      'text-size': zoomScaledTextSize(9),
+      'text-allow-overlap': false,
+    },
+    paint: {
+      'text-color': COLORS.waypoint,
+      'text-halo-color': '#000000',
+      'text-halo-width': 1.5,
+    },
+  });
 }
 
 export function removeProcedureRouteLayer(map: maplibregl.Map): void {
   if (!map.getStyle()) return;
 
   const layers = [
+    LEG_LABEL_LAYER_ID,
     CONSTRAINT_LAYER_ID,
     LABEL_LAYER_ID,
     WAYPOINT_LAYER_ID,
@@ -472,7 +514,7 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
     MISSED_ROUTE_LAYER_ID,
     ROUTE_CASING_LAYER_ID,
   ];
-  const sources = [WAYPOINT_SOURCE_ID, ROUTE_SOURCE_ID];
+  const sources = [WAYPOINT_SOURCE_ID, ROUTE_SOURCE_ID, LEG_LABEL_SOURCE_ID];
 
   for (const layerId of layers) {
     if (map.getLayer(layerId)) map.removeLayer(layerId);
@@ -485,6 +527,7 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
 export function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolean): void {
   const visibility = visible ? 'visible' : 'none';
   const layers = [
+    LEG_LABEL_LAYER_ID,
     CONSTRAINT_LAYER_ID,
     LABEL_LAYER_ID,
     WAYPOINT_LAYER_ID,
@@ -507,4 +550,5 @@ export const PROCEDURE_ROUTE_LAYER_IDS = [
   WAYPOINT_LAYER_ID,
   LABEL_LAYER_ID,
   CONSTRAINT_LAYER_ID,
+  LEG_LABEL_LAYER_ID,
 ];
