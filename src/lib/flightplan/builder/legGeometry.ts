@@ -203,6 +203,9 @@ export interface ProcedurePathOptions {
 
 export interface ProcedurePathResult {
   path: LatLon[];
+  /** The missed-approach portion, kept separate so it can be drawn distinctly (e.g. dashed) - it
+   * repeats `path`'s last point first, so the two connect with no visual gap. */
+  missedPath: LatLon[];
   overlays: ProcedureOverlay[];
 }
 
@@ -215,12 +218,18 @@ export function procedureGeometry(
   options: ProcedurePathOptions = {}
 ): ProcedurePathResult {
   const out: LatLon[] = [];
+  const missedOut: LatLon[] = [];
   const overlays: ProcedureOverlay[] = [];
   let state: PathState | null = options.start ?? null;
+  let currentIsMissed = false;
 
   const append = (points: LatLon[]) => {
+    const target = currentIsMissed ? missedOut : out;
+    if (currentIsMissed && target.length === 0 && out.length > 0) {
+      target.push(out[out.length - 1]!); // bridge the gap so the dashed segment connects
+    }
     for (const p of points) {
-      const last = out[out.length - 1];
+      const last = target[target.length - 1];
       if (
         last &&
         Math.abs(last.latitude - p.latitude) < 1e-7 &&
@@ -228,7 +237,7 @@ export function procedureGeometry(
       ) {
         continue;
       }
-      out.push(p);
+      target.push(p);
     }
   };
 
@@ -280,6 +289,7 @@ export function procedureGeometry(
   for (let i = 0; i < waypoints.length; i++) {
     const wp = waypoints[i]!;
     if (wp.fixType === 'C' || wp.fixType === 'A') continue;
+    currentIsMissed = wp.isMissedApproach;
     const term = wp.pathTerminator;
 
     // Real constant-radius arcs, falling back to a plain turn onto the fix when the center or
@@ -453,7 +463,7 @@ export function procedureGeometry(
     }
   }
 
-  return { path: out, overlays };
+  return { path: out, missedPath: missedOut, overlays };
 }
 
 /** `procedureGeometry`'s flattened path only - the shape most callers want. */
@@ -468,6 +478,8 @@ export interface ProcedurePathHint {
   /** The `via` name the plan's waypoints carry for this procedure. */
   via: string;
   path: LatLon[];
+  /** The missed-approach portion, if any - drawn distinctly from `path`, not spliced into it. */
+  missedPath: LatLon[];
   overlays: ProcedureOverlay[];
 }
 
@@ -480,16 +492,18 @@ export function builtProcedurePaths(
   if (parts.sid && departureEnd) {
     const threshold = { latitude: departureEnd.latitude, longitude: departureEnd.longitude };
     const farEnd = destinationPoint(threshold, departureEnd.headingDeg, departureEnd.lengthNm);
-    const { path, overlays } = procedureGeometry(parts.sid.waypoints, {
+    const { path, missedPath, overlays } = procedureGeometry(parts.sid.waypoints, {
       start: { position: farEnd, trackDeg: departureEnd.headingDeg },
       dmeOffsetNm: departureEnd.lengthNm / 2,
     });
-    if (path.length > 0) out.push({ via: parts.sid.name, path: [farEnd, ...path], overlays });
+    if (path.length > 0) {
+      out.push({ via: parts.sid.name, path: [farEnd, ...path], missedPath, overlays });
+    }
   }
   for (const p of [parts.star, parts.approach]) {
     if (!p) continue;
-    const { path, overlays } = procedureGeometry(p.waypoints);
-    if (path.length > 1) out.push({ via: p.name, path, overlays });
+    const { path, missedPath, overlays } = procedureGeometry(p.waypoints);
+    if (path.length > 1) out.push({ via: p.name, path, missedPath, overlays });
   }
   return out;
 }

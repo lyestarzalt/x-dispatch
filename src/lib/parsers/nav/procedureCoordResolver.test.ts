@@ -26,6 +26,7 @@ const baseWaypoint: ProcedureWaypoint = {
   verticalAngle: null,
   rnp: null,
   holdTimeMin: null,
+  isMissedApproach: false,
 };
 
 const navaid = (id: string, region: string, latitude: number, longitude: number): Navaid => ({

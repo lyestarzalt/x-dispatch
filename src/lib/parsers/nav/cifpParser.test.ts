@@ -65,6 +65,19 @@ const RJTT_RF_LEG =
 const KSUN_PI_LEG =
   'APPCH:030,A,NDMA,KINZE,HLE,K1,D,B,E  A,L,   ,PI, ,LKT,K1,D, ,      ,1709,1017,2000,0100,+,08100,     ,     , ,   ,    ,   , , , , , ,0, ,C;';
 
+// DAAG I23 ZEM (Algiers ILS Z 23): ZEM transition into the common final approach, whose missed
+// approach (CA/CI/FM-ALR after RW23) is flagged only by DESC_CODE's 3rd character, not route type.
+const DAAG_I23_ZEM = `
+APPCH:010,A,I23,ZEM,ZEM,DA,D, ,V  H, ,   ,IF, , , , , ,      ,    ,    ,    ,    ,+,FL050,     ,     , ,   ,    ,   , , , , , ,0,D,S;
+APPCH:020,A,I23,ZEM,CI23,DA,P,C,EE B, ,   ,CF, ,AG,DA,P,I,      ,0508,0109,2710,0084,+,02300,     ,     , ,   ,    ,   , , , , , ,0,D,S;
+APPCH:010,I,I23, ,CI23,DA,P,C,E  I, ,   ,IF, ,AG,DA,P,I,      ,0508,0109,    ,    ,J,02300,02300,     , ,   ,    ,   , , , , , ,0,D,S;
+APPCH:020,I,I23, ,FI23,DA,P,C,E  F, ,   ,CF, ,AG,DA,P,I,      ,0508,0089,2310,0020,H,02300,02300,     , ,   ,-300,   ,ZEM,DA,D, , ,0,D,S;
+APPCH:030,I,I23, ,RW23,DA,P,G,G  M, ,   ,CF, ,AG,DA,P,I,      ,0508,0021,2310,0068, ,00131,     ,     , ,   ,-300,   , , , , , ,0,D,S;
+APPCH:040,I,I23, , , , , ,  M , ,   ,CA, , , , , ,      ,    ,    ,2310,    ,+,00660,     ,     , ,   ,    ,   , , , , , ,0,D,S;
+APPCH:050,I,I23, , , , , ,    , ,   ,CI, , , , , ,      ,    ,    ,3130,    , ,     ,     ,     ,-,190,    ,   , , , , , ,0,D,S;
+APPCH:060,I,I23, ,ALR,DA,D, ,VE  , ,   ,FM, ,ALR,DA,D, ,      ,0000,0000,3430,    , ,02470,     ,     , ,   ,    ,   , , , , , ,0,D,S;
+`;
+
 /**
  * Build a synthetic CIFP data line from field overrides, indexed exactly like atools'
  * ProcedureFieldIndex (shifted down by 1, since we split off the TYPE: prefix separately).
@@ -229,5 +242,24 @@ describe('parseCIFP', () => {
     const { approaches } = parseCIFP(`\n${KSUN_PI_LEG}\n`, 'KSUN');
     const pi = approaches[0]?.waypoints.find((w) => w.pathTerminator === 'PI');
     expect(pi).toMatchObject({ recNavaid: 'LKT', recNavaidRegion: 'K1', theta: 170.9, rho: 101.7 });
+  });
+
+  it('flags every leg from the Missed Approach Point onward as the missed approach', () => {
+    // DAAG I23 ZEM: real procedure whose missed-approach legs (CA/CI/FM after RW23) are not
+    // distinguished by route type - the only signal is DESC_CODE's 3rd character ('M'), checked
+    // against atools' own `waypointDescr.at(2) == 'M'` (procedurewriter.cpp), which sets it once
+    // it's seen and leaves it set for every later leg in the same procedure.
+    const { approaches } = parseCIFP(`\n${DAAG_I23_ZEM}\n`, 'DAAG');
+    const byFix = approaches[0]!.waypoints;
+    const flags = byFix.map((w) => [w.fixId || w.pathTerminator, w.isMissedApproach] as const);
+    expect(flags).toEqual([
+      ['ZEM', false],
+      ['CI23', false],
+      ['FI23', false],
+      ['RW23', false],
+      ['CA', true],
+      ['CI', true],
+      ['ALR', true],
+    ]);
   });
 });

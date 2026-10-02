@@ -48,6 +48,7 @@ const wp = (
   verticalAngle: null,
   rnp: null,
   holdTimeMin: null,
+  isMissedApproach: false,
   latitude: lat,
   longitude: lon,
   resolved: true,

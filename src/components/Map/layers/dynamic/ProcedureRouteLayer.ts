@@ -87,6 +87,7 @@ export function omitFlightPlanWaypoints<T extends FixPosition>(
 
 const ROUTE_LAYER_ID = 'procedure-route';
 const ROUTE_CASING_LAYER_ID = 'procedure-route-casing';
+const MISSED_ROUTE_LAYER_ID = 'procedure-route-missed';
 const ROUTE_SOURCE_ID = 'procedure-route-source';
 const WAYPOINT_LAYER_ID = 'procedure-waypoints';
 const WAYPOINT_SOURCE_ID = 'procedure-waypoints-source';
@@ -191,20 +192,33 @@ function formatSpeedConstraint(speed: number | null | undefined): string {
  */
 function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
   const features: GeoJSON.Feature[] = [];
-  const { path, overlays } = procedureGeometry(waypoints);
+  const { path, missedPath, overlays } = procedureGeometry(waypoints);
 
-  if (path.length < 2) {
+  if (path.length < 2 && missedPath.length < 2) {
     return { type: 'FeatureCollection', features: [] };
   }
 
-  features.push({
-    type: 'Feature',
-    geometry: {
-      type: 'LineString',
-      coordinates: path.map((p): [number, number] => [p.longitude, p.latitude]),
-    },
-    properties: { type: 'route' },
-  });
+  if (path.length >= 2) {
+    features.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: path.map((p): [number, number] => [p.longitude, p.latitude]),
+      },
+      properties: { type: 'route' },
+    });
+  }
+
+  if (missedPath.length >= 2) {
+    features.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: missedPath.map((p): [number, number] => [p.longitude, p.latitude]),
+      },
+      properties: { type: 'route', missed: true },
+    });
+  }
 
   for (const overlay of overlays) {
     features.push({
@@ -323,11 +337,13 @@ export function addProcedureRouteLayer(
   safeAddGeoJSONSource(map, ROUTE_SOURCE_ID, routeGeoJSON);
   safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
 
-  // Route casing (dark outline for contrast on satellite)
+  // Route casing (dark outline for contrast on satellite) - missed approach excluded, it gets
+  // its own dashed layer below instead.
   map.addLayer({
     id: ROUTE_CASING_LAYER_ID,
     type: 'line',
     source: ROUTE_SOURCE_ID,
+    filter: ['!=', ['get', 'missed'], true],
     layout: {
       'line-cap': 'round',
       'line-join': 'round',
@@ -344,6 +360,7 @@ export function addProcedureRouteLayer(
     id: ROUTE_LAYER_ID,
     type: 'line',
     source: ROUTE_SOURCE_ID,
+    filter: ['!=', ['get', 'missed'], true],
     layout: {
       'line-cap': 'round',
       'line-join': 'round',
@@ -352,6 +369,24 @@ export function addProcedureRouteLayer(
       'line-color': colors.line,
       'line-width': LINE_WIDTH.route,
       'line-opacity': 1,
+    },
+  });
+
+  // Missed-approach segment - dashed, dimmer, reference only.
+  map.addLayer({
+    id: MISSED_ROUTE_LAYER_ID,
+    type: 'line',
+    source: ROUTE_SOURCE_ID,
+    filter: ['==', ['get', 'missed'], true],
+    layout: {
+      'line-cap': 'butt',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': colors.line,
+      'line-width': LINE_WIDTH.route,
+      'line-opacity': 0.7,
+      'line-dasharray': [2, 2],
     },
   });
 
@@ -434,6 +469,7 @@ export function removeProcedureRouteLayer(map: maplibregl.Map): void {
     LABEL_LAYER_ID,
     WAYPOINT_LAYER_ID,
     ROUTE_LAYER_ID,
+    MISSED_ROUTE_LAYER_ID,
     ROUTE_CASING_LAYER_ID,
   ];
   const sources = [WAYPOINT_SOURCE_ID, ROUTE_SOURCE_ID];
@@ -453,6 +489,7 @@ export function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolea
     LABEL_LAYER_ID,
     WAYPOINT_LAYER_ID,
     ROUTE_LAYER_ID,
+    MISSED_ROUTE_LAYER_ID,
     ROUTE_CASING_LAYER_ID,
   ];
 
@@ -466,6 +503,7 @@ export function setProcedureRouteVisibility(map: maplibregl.Map, visible: boolea
 export const PROCEDURE_ROUTE_LAYER_IDS = [
   ROUTE_CASING_LAYER_ID,
   ROUTE_LAYER_ID,
+  MISSED_ROUTE_LAYER_ID,
   WAYPOINT_LAYER_ID,
   LABEL_LAYER_ID,
   CONSTRAINT_LAYER_ID,

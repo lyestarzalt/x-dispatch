@@ -13,6 +13,7 @@ import { safeAddGeoJSONSource } from '../types';
 const SOURCE_ID = 'flightplan-route-source';
 const WAYPOINT_SOURCE_ID = 'flightplan-waypoints-source';
 const LINE_ID = 'flightplan-route-line';
+const MISSED_LINE_ID = 'flightplan-missed-approach-line';
 const WAYPOINTS_ID = 'flightplan-waypoints';
 const LABELS_ID = 'flightplan-labels';
 const ALTITUDE_LABELS_ID = 'flightplan-altitude-labels';
@@ -22,6 +23,7 @@ const ALTERNATE_LABEL_ID = 'flightplan-alternate-label';
 
 export const FLIGHTPLAN_LAYER_IDS = [
   LINE_ID,
+  MISSED_LINE_ID,
   WAYPOINTS_ID,
   LABELS_ID,
   ALTITUDE_LABELS_ID,
@@ -221,6 +223,20 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     });
   }
 
+  // Missed-approach segments, kept out of the main (solid) route line and drawn dashed - they
+  // aren't part of the filed route, just reference for what happens on a go-around.
+  for (const proc of fmsData.procedurePaths ?? []) {
+    if (!proc.missedPath || proc.missedPath.length < 2) continue;
+    routeFeatures.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: proc.missedPath.map((p) => [p.longitude, p.latitude]),
+      },
+      properties: { stage: '', missed: true },
+    });
+  }
+
   const routeGeoJSON: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
     features: routeFeatures,
@@ -297,6 +313,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     id: LINE_ID,
     type: 'line',
     source: SOURCE_ID,
+    filter: ['!=', ['get', 'missed'], true],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
       'line-color': [
@@ -312,6 +329,21 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       ],
       'line-width': ['interpolate', ['linear'], ['zoom'], 4, 3, 8, 5, 12, 6],
       'line-opacity': 0.9,
+    },
+  });
+
+  // Missed-approach line — same geometry source, dashed and dimmer so it reads as reference-only.
+  map.addLayer({
+    id: MISSED_LINE_ID,
+    type: 'line',
+    source: SOURCE_ID,
+    filter: ['==', ['get', 'missed'], true],
+    layout: { 'line-cap': 'butt', 'line-join': 'round' },
+    paint: {
+      'line-color': COLORS.routeLine,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 4, 3, 8, 5, 12, 6],
+      'line-opacity': 0.6,
+      'line-dasharray': [2, 2],
     },
   });
 

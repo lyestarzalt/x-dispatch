@@ -27,6 +27,7 @@ const wp = (over: Partial<ResolvedProcedureWaypoint>): ResolvedProcedureWaypoint
   verticalAngle: null,
   rnp: null,
   holdTimeMin: null,
+  isMissedApproach: false,
   latitude: 0,
   longitude: 0,
   resolved: true,
@@ -293,6 +294,26 @@ describe('procedurePath', () => {
     const flown = pathDistanceNm([start.position, ...path]);
     const direct = greatCircleNm(start.position, fmEnd);
     expect(flown).toBeLessThan(direct * 1.5);
+  });
+});
+
+describe('procedureGeometry missed approach split', () => {
+  it('keeps missed-approach legs out of the main path, in a separate missedPath that bridges from where it left off', () => {
+    const fix = { latitude: 36.78157, longitude: 3.36414 };
+    const legs = [
+      wp({ fixId: 'FI23', pathTerminator: 'TF', latitude: fix.latitude, longitude: fix.longitude }),
+      wp({ fixId: '', pathTerminator: 'CA', course: 231.0, isMissedApproach: true }),
+      wp({ fixId: '', pathTerminator: 'CI', course: 313.0, isMissedApproach: true }),
+    ];
+    const { path, missedPath } = procedureGeometry(legs, {
+      start: { position: fix, trackDeg: 231 },
+    });
+
+    // The main path has exactly the non-missed leg's fix - nothing from the missed legs leaked in.
+    expect(path).toEqual([fix]);
+    // The missed path bridges from that same point, then continues.
+    expect(missedPath[0]).toEqual(fix);
+    expect(missedPath.length).toBeGreaterThan(1);
   });
 });
 

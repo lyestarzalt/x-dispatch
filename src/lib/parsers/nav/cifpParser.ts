@@ -71,10 +71,20 @@ function parseCIFPLine(line: string): { type: string; data: string[] } | null {
   const type = line.substring(0, colonIdx).trim();
   const rest = line.substring(colonIdx + 1);
 
-  // Split by comma, handling potential whitespace
-  const data = rest.split(',').map((s) => s.trim());
+  // Deliberately not trimmed per-field: DESC_CODE's character position matters (see
+  // `hasMapFlag`), and every other field already trims itself at its own use site.
+  const data = rest.split(',');
 
   return { type, data };
+}
+
+/**
+ * The Missed Approach Point flag: DESC_CODE (field 8, untrimmed) has 'M' as its 3rd character.
+ * Matches atools' own check (`waypointDescr.at(2) == 'M'`, procedurewriter.cpp) exactly - trimming
+ * the field first would lose the character's position.
+ */
+function hasMapFlag(descCode: string | undefined): boolean {
+  return (descCode ?? '').charAt(2) === 'M';
 }
 
 /**
@@ -287,6 +297,8 @@ function parseWaypoint(data: string[]): ProcedureWaypoint | null {
     verticalAngle,
     rnp,
     holdTimeMin,
+    // Set by parseWaypointsFromLines, which knows the leg's sequence relative to the MAP.
+    isMissedApproach: false,
   };
 }
 
@@ -536,7 +548,7 @@ function combineWaypoints(
  * Parse waypoints from CIFP lines, sorted by sequence number
  */
 function parseWaypointsFromLines(lines: string[]): ProcedureWaypoint[] {
-  const waypointsWithSeq: Array<{ seq: number; wp: ProcedureWaypoint }> = [];
+  const waypointsWithSeq: Array<{ seq: number; wp: ProcedureWaypoint; mapFlag: boolean }> = [];
 
   for (const line of lines) {
     const parsed = parseCIFPLine(line);
@@ -547,11 +559,19 @@ function parseWaypointsFromLines(lines: string[]): ProcedureWaypoint[] {
 
     const wp = parseWaypoint(parsed.data);
     if (wp) {
-      waypointsWithSeq.push({ seq, wp });
+      waypointsWithSeq.push({ seq, wp, mapFlag: hasMapFlag(parsed.data[8]) });
     }
   }
 
   waypointsWithSeq.sort((a, b) => a.seq - b.seq);
+
+  // The Missed Approach Point flag, once seen, applies to every later leg in this line group.
+  let missed = false;
+  for (const item of waypointsWithSeq) {
+    if (item.mapFlag) missed = true;
+    item.wp.isMissedApproach = missed;
+  }
+
   return waypointsWithSeq.map((item) => item.wp);
 }
 

@@ -330,6 +330,12 @@ export interface ProcedureWaypoint {
   rnp: number | null;
   /** Hold/route leg time, minutes (ARINC 424 "T"-prefixed RTE_DIST_HOLD_DIST_TIME encoding). */
   holdTimeMin: number | null;
+  /**
+   * This leg is part of the missed approach. Not a route-type distinction - the file flags only
+   * the Missed Approach Point itself (DESC_CODE's 3rd character, 'M'); every later leg in the
+   * same procedure inherits it forward during parsing.
+   */
+  isMissedApproach: boolean;
 }
 
 /**
