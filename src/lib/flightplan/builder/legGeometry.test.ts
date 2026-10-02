@@ -274,6 +274,44 @@ describe('procedureGeometry overlays', () => {
     }
   });
 
+  it('turns the short way between two close fixes instead of looping almost a full circle', () => {
+    // DAAG I23 ZEM approach, real coordinates: CI23 -> FI23 is only ~2 NM, needing a ~40 degree
+    // left turn. The left-turn circle at the default 2 NM radius has FI23 inside it (no tangent
+    // solution), so only the wrong-direction right turn produces a result there - a valid but
+    // ~330 degree sweep. A 1 NM radius fits the correct left turn in a clean ~60 degree sweep;
+    // the fallback must prefer that, not stop at the first (looping) non-empty result.
+    const ZEM = { latitude: 36.795, longitude: 3.570833333 };
+    const CI23 = { latitude: 36.8017, longitude: 3.39725 };
+    const FI23 = { latitude: 36.781575, longitude: 3.364141667 };
+    const legs = [
+      wp({ fixId: 'ZEM', pathTerminator: 'IF', latitude: ZEM.latitude, longitude: ZEM.longitude }),
+      wp({
+        fixId: 'CI23',
+        pathTerminator: 'CF',
+        course: 271.0,
+        latitude: CI23.latitude,
+        longitude: CI23.longitude,
+      }),
+      wp({
+        fixId: 'FI23',
+        pathTerminator: 'CF',
+        course: 231.0,
+        latitude: FI23.latitude,
+        longitude: FI23.longitude,
+      }),
+    ];
+    const path = procedurePath(legs);
+    const direct = greatCircleNm(CI23, FI23);
+    // A real turn adds a little distance over direct; a near-full-circle loop would add many
+    // times the direct distance.
+    const ci23Index = path.findIndex(
+      (p) =>
+        Math.abs(p.latitude - CI23.latitude) < 1e-6 && Math.abs(p.longitude - CI23.longitude) < 1e-6
+    );
+    const flown = pathDistanceNm(path.slice(ci23Index));
+    expect(flown).toBeLessThan(direct * 2);
+  });
+
   it('produces a procedure-turn overlay anchored at the real fix for a PI leg', () => {
     const fix = { latitude: 40, longitude: -80 };
     const legs = [
