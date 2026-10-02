@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { magneticToTrue } from '@/lib/magvar';
+import { magneticToTrue, trueToMagnetic } from '@/lib/magvar';
 import type { Degrees } from '@/lib/utils/geomath';
 import { crossTrackStatus } from '@/lib/utils/geomath';
 import type { ResolvedProcedureWaypoint } from '@/types/navigation';
@@ -219,17 +219,25 @@ describe('procedurePath', () => {
   });
 
   it('intercepts the real published radial from the recommended navaid for a CR leg', () => {
-    // The navaid sits exactly on the flown track, 15 NM ahead; a non-parallel radial through it
-    // can only cross that track at the navaid itself - a clean, verifiable non-degenerate case
-    // (heading 090/270 is the great-circle's own latitude apex and must be avoided).
+    // A point 15 NM ahead on the flown track (heading 100 - 090/270 is the great-circle's own
+    // latitude apex and must be avoided), with the navaid offset 3 NM to the side of it. The
+    // navaid's own radial aimed back at that point crosses the track there, 3 NM from the
+    // navaid - comfortably inside atools' accepted 1.5-200 NM intercept-distance window.
     const start = { latitude: 40, longitude: -80 };
-    const navaid = destinationPoint(start, 100, 15);
+    const onTrack = destinationPoint(start, 100, 15);
+    const navaid = destinationPoint(onTrack, 190, 3);
+    const radialTrueToOnTrack = bearingDeg(navaid, onTrack);
+    const thetaMagnetic = trueToMagnetic(
+      radialTrueToOnTrack as Degrees,
+      navaid.latitude,
+      navaid.longitude
+    );
     const legs = [
       wp({
         fixId: '',
         pathTerminator: 'CR',
         course: null,
-        theta: 30,
+        theta: thetaMagnetic,
         recNavaid: 'NAV',
         recNavaidRegion: 'ZZ',
         recNavaidLatitude: navaid.latitude,
@@ -238,8 +246,8 @@ describe('procedurePath', () => {
     ];
     const path = procedurePath(legs, { start: { position: start, trackDeg: 100 } });
     const target = path[path.length - 1]!;
-    expect(target.latitude).toBeCloseTo(navaid.latitude, 2);
-    expect(target.longitude).toBeCloseTo(navaid.longitude, 2);
+    expect(target.latitude).toBeCloseTo(onTrack.latitude, 2);
+    expect(target.longitude).toBeCloseTo(onTrack.longitude, 2);
   });
 
   it('draws a course line for FM/VM instead of dropping the leg entirely', () => {
@@ -247,6 +255,44 @@ describe('procedurePath', () => {
     const legs = [wp({ fixId: '', pathTerminator: 'FM', course: null })];
     const path = procedurePath(legs, { start: { position: start, trackDeg: 90 } });
     expect(path.length).toBeGreaterThan(0);
+  });
+
+  it("clips a CI intercept to the next (FM) leg's own endpoint instead of overshooting to the raw course crossing", () => {
+    // DAAG's ILS Z 23 missed approach, real coordinates: the CI leg's course crosses the FM
+    // leg's published radial from ALR about 10 NM past ALR, but the FM leg itself only runs 3 NM
+    // (no published distance -> atools' hardcoded fallback) from ALR along that radial. atools
+    // clips the CI leg to the FM leg's own far end instead of drawing the full ~8 NM overshoot
+    // to the raw crossing point - and the FM leg itself then contributes nothing further (it's
+    // already been reached).
+    const ALR = { latitude: 36.690997222, longitude: 3.215480556 };
+    const legs = [
+      wp({ fixId: '', pathTerminator: 'CI', course: 313.0, speedDescriptor: '-', speed: 190 }),
+      wp({
+        fixId: 'ALR',
+        fixType: 'D',
+        pathTerminator: 'FM',
+        recNavaid: 'ALR',
+        recNavaidRegion: 'DA',
+        course: 343.0,
+        altitude: { descriptor: '+', altitude1: 2470, altitude2: null },
+        latitude: ALR.latitude,
+        longitude: ALR.longitude,
+      }),
+    ];
+    const start = { position: { latitude: 36.76301, longitude: 3.27615 }, trackDeg: 231 };
+    const path = procedurePath(legs, { start });
+
+    const fmCourseTrue = magneticToTrue(343 as Degrees, ALR.latitude, ALR.longitude);
+    const fmEnd = destinationPoint(ALR, fmCourseTrue, 3);
+    const last = path[path.length - 1]!;
+    expect(last.latitude).toBeCloseTo(fmEnd.latitude, 2);
+    expect(last.longitude).toBeCloseTo(fmEnd.longitude, 2);
+
+    // The flown distance should be in the ballpark of start -> FM's own end (~8 NM), nowhere
+    // near the ~10+ NM raw intersection the unclipped math would have overshot to.
+    const flown = pathDistanceNm([start.position, ...path]);
+    const direct = greatCircleNm(start.position, fmEnd);
+    expect(flown).toBeLessThan(direct * 1.5);
   });
 });
 

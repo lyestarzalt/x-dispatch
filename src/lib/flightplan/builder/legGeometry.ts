@@ -66,6 +66,19 @@ const MANUAL_TERMINATION = new Set<PathTerminator>(['FM', 'VM']);
 /** Legs that fly to their fix, then loop there (procedure turn or hold). */
 const LOOPS_AT_FIX = new Set<PathTerminator>(['PI', 'HA', 'HF', 'HM']);
 
+/**
+ * How a CI/VI intercept's raw (unbounded) crossing point gets clipped against the leg it
+ * intercepts - mirrors atools' `processCourseInterceptLegs` (littlenavmap, procedurequery.cpp):
+ * it re-clips the geometric intersection to the next leg's own segment bounds rather than
+ * drawing the full, possibly-overshooting crossing point.
+ *
+ * Arrival-anchored: the leg's own fix is its *far* end (arrived at from behind) - only clip an
+ * intersection that overshoots past it.
+ */
+const ARRIVAL_ANCHORED = new Set<PathTerminator>(['IF', 'TF', 'CF', 'DF', 'RF', 'AF']);
+/** Departure-anchored: the leg's own fix is its *near* end (flown away from) for a bounded length. */
+const DEPARTURE_ANCHORED = new Set<PathTerminator>(['FM', 'VM']);
+
 interface PathState {
   position: LatLon;
   trackDeg: number;
@@ -340,55 +353,102 @@ export function procedureGeometry(
       continue;
     }
 
-    if (TO_INTERCEPT.has(term) || TO_RADIAL.has(term)) {
+    if (TO_RADIAL.has(term)) {
       const heading = headingToFly(state, courseTrue);
       const arc = turnOntoHeading(state, heading, undefined);
       append(arc);
       const from = arc[arc.length - 1] ?? state.position;
+
+      const navaid = recNavaidPosition(wp);
+      const radialTrue = navaid ? trueCourse(wp.theta, navaid) : null;
       let target: LatLon | null = null;
+      if (navaid && radialTrue !== null) {
+        target = intersectRadials(from, heading as Degrees, navaid, norm360(radialTrue) as Degrees);
+        // atools only accepts a CR/VR crossing 1.5-200 NM from the navaid; outside that it holds
+        // the current position rather than drawing a guessed stub.
+        if (target) {
+          const distFromNavaid = greatCircleNm(navaid, target);
+          if (distFromNavaid < 1.5 || distFromNavaid > 200) target = null;
+        }
+      }
 
-      if (TO_INTERCEPT.has(term)) {
-        const next = waypoints.slice(i + 1).find((w) => w.resolved && w.course !== null);
-        if (next && next.latitude !== undefined && next.longitude !== undefined) {
-          const nextFix = { latitude: next.latitude, longitude: next.longitude };
-          const nextCourseTrue = trueCourse(next.course, nextFix);
-          if (nextCourseTrue !== null) {
-            target = intersectRadials(
-              from,
-              heading as Degrees,
-              nextFix,
-              norm360(nextCourseTrue) as Degrees
-            );
+      append([target ?? from]);
+      state = { position: target ?? from, trackDeg: heading };
+      continue;
+    }
+
+    if (TO_INTERCEPT.has(term)) {
+      const heading = headingToFly(state, courseTrue);
+      const arc = turnOntoHeading(state, heading, undefined);
+      append(arc);
+      const from = arc[arc.length - 1] ?? state.position;
+
+      const nextIndex = waypoints.findIndex((w, idx) => idx > i && w.resolved && w.course !== null);
+      const next = nextIndex >= 0 ? waypoints[nextIndex] : undefined;
+      const nextAnchor =
+        next && next.latitude !== undefined && next.longitude !== undefined
+          ? { latitude: next.latitude, longitude: next.longitude }
+          : null;
+      const nextCourseTrue = next && nextAnchor ? trueCourse(next.course, nextAnchor) : null;
+
+      let target: LatLon | null = null;
+      if (nextAnchor && nextCourseTrue !== null) {
+        target = intersectRadials(
+          from,
+          heading as Degrees,
+          nextAnchor,
+          norm360(nextCourseTrue) as Degrees
+        );
+      }
+
+      let resultTrackDeg = heading;
+      let consumedNextIndex = -1;
+
+      if (target && nextAnchor && nextCourseTrue !== null && next) {
+        // Re-clip the raw crossing to the next leg's own segment, the way atools'
+        // processCourseInterceptLegs does, instead of drawing wherever the two infinite
+        // courses happen to cross (which can overshoot far past the next leg entirely).
+        const status = crossTrackStatus(target, nextAnchor, norm360(nextCourseTrue) as Degrees);
+        if (ARRIVAL_ANCHORED.has(next.pathTerminator)) {
+          // The fix is the leg's far end; only clip an intersection that overshoots past it.
+          if (status.alongTrackNm > 0) target = nextAnchor;
+        } else if (DEPARTURE_ANCHORED.has(next.pathTerminator)) {
+          // The fix is the leg's near end; the valid zone is [0, its own length] ahead of it.
+          const bound = next.distance ?? FALLBACK_LEG_NM;
+          if (status.alongTrackNm < 0) {
+            target = nextAnchor;
+          } else if (status.alongTrackNm > bound) {
+            target = destinationPoint(nextAnchor, nextCourseTrue, bound);
+            consumedNextIndex = nextIndex; // this leg's own length is already fully drawn
           }
+          resultTrackDeg = nextCourseTrue;
         }
-      } else {
-        const navaid = recNavaidPosition(wp);
-        const radialTrue = navaid ? trueCourse(wp.theta, navaid) : null;
-        if (navaid && radialTrue !== null) {
-          target = intersectRadials(
-            from,
-            heading as Degrees,
-            navaid,
-            norm360(radialTrue) as Degrees
-          );
-        }
+      } else if (nextAnchor) {
+        // No crossing found - atools falls back to a straight line to where the next leg starts.
+        target = nextAnchor;
       }
 
-      if (!target || greatCircleNm(from, target) > MAX_INTERCEPT_NM) {
-        target = destinationPoint(from, heading, FALLBACK_LEG_NM);
-      } else {
-        // The found intersection must lie ahead of the current course, not behind it.
-        const status = crossTrackStatus(target, from, heading as Degrees);
-        if (status.alongTrackNm < 0) target = destinationPoint(from, heading, FALLBACK_LEG_NM);
-      }
+      if (!target) target = destinationPoint(from, heading, FALLBACK_LEG_NM);
 
       append([target]);
-      state = { position: target, trackDeg: heading };
+      state = { position: target, trackDeg: resultTrackDeg };
+      if (consumedNextIndex >= 0) i = consumedNextIndex;
       continue;
     }
 
     if (MANUAL_TERMINATION.has(term)) {
-      flyHeading(courseTrue ?? state.trackDeg, FALLBACK_LEG_NM);
+      // FM/VM always departs from its own fix along its own course (atools uses leg.fixPos
+      // unconditionally), not a continuation of wherever the previous leg's drawing ended -
+      // a preceding CI/VI is what's responsible for bridging that gap, via the clipping above.
+      const anchor =
+        wp.latitude !== undefined && wp.longitude !== undefined
+          ? { latitude: wp.latitude, longitude: wp.longitude }
+          : state.position;
+      const anchorCourseTrue = trueCourse(wp.course, anchor) ?? state.trackDeg;
+      const lengthNm = wp.distance ?? FALLBACK_LEG_NM;
+      const end = destinationPoint(anchor, anchorCourseTrue, lengthNm);
+      append([anchor, end]);
+      state = { position: end, trackDeg: anchorCourseTrue };
       continue;
     }
   }
