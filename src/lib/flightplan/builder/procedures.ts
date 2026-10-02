@@ -21,6 +21,7 @@ export function runwayMatches(procedureRunway: string | null, runway: string | u
   if (!procedureRunway) return true;
   if (!runway) return true;
   const bare = procedureRunway.toUpperCase().replace(/^RW/, '');
+  if (bare === 'ALL') return true;
   // "RW25B" in CIFP means both 25L and 25R.
   if (bare.endsWith('B')) return runway.startsWith(bare.slice(0, -1));
   return bare === runway.toUpperCase();
@@ -386,4 +387,88 @@ export function enrichedFromPlan(
       cycleMatch: true,
     },
   };
+}
+
+/** The runway an approach is published for, read from its CIFP ident ("I36C" -> "36C"). */
+export function approachRunway(name: string): string | undefined {
+  return /^[A-Z](\d{2}[LCR]?)/.exec(name.toUpperCase())?.[1];
+}
+
+/** Preference between approach types for the same runway: precision first. */
+const APPROACH_TYPE_ORDER = ['I', 'L', 'R', 'D', 'V', 'N'];
+function approachPriority(name: string): number {
+  const index = APPROACH_TYPE_ORDER.indexOf(name.charAt(0).toUpperCase());
+  return index === -1 ? APPROACH_TYPE_ORDER.length : index;
+}
+
+export interface ProcedureSuggestionInput {
+  sids: ResolvedProcedure[];
+  stars: ResolvedProcedure[];
+  approaches: ResolvedProcedure[];
+  departureRunway?: string;
+  arrivalRunway?: string;
+  /** First and last enroute fixes of the resolved route (airports excluded). */
+  firstEnrouteFixId?: string;
+  lastEnrouteFixId?: string;
+  /** An already chosen STAR; its exit decides the approach transition. */
+  star?: ResolvedProcedure;
+}
+
+export interface ProcedureSuggestions {
+  sid?: ProcedureChoice;
+  star?: ProcedureChoice;
+  approach?: ProcedureChoice;
+}
+
+const toChoice = (p: ResolvedProcedure): ProcedureChoice => ({
+  name: p.name,
+  transition: p.transition ?? null,
+});
+
+/** Base variants (no transition) first, then by name, so a plain SID beats a same-exit transition. */
+const byBaseThenName = (a: ResolvedProcedure, b: ResolvedProcedure): number =>
+  Number(a.transition !== null) - Number(b.transition !== null) || a.name.localeCompare(b.name);
+
+/**
+ * What a dispatcher would pick given the runways and the route: the SID (and transition) for
+ * the departure runway that exits where the route starts, the STAR that enters where the route
+ * ends, and the best published approach for the arrival runway, taking the transition the STAR
+ * hands over to. Anything without a clean match is left undefined rather than guessed.
+ */
+export function suggestProcedures(input: ProcedureSuggestionInput): ProcedureSuggestions {
+  const out: ProcedureSuggestions = {};
+
+  if (input.departureRunway && input.firstEnrouteFixId) {
+    const sid = proceduresForRunway(input.sids, input.departureRunway)
+      .filter((p) => procedureExit(p)?.id === input.firstEnrouteFixId)
+      .sort(byBaseThenName)[0];
+    if (sid) out.sid = toChoice(sid);
+  }
+
+  let star = input.star;
+  if (input.arrivalRunway && input.lastEnrouteFixId && !star) {
+    star = proceduresForRunway(input.stars, input.arrivalRunway)
+      .filter((p) => procedureEntry(p)?.id === input.lastEnrouteFixId)
+      .sort(byBaseThenName)[0];
+    if (star) out.star = toChoice(star);
+  }
+
+  if (input.arrivalRunway) {
+    const runway = input.arrivalRunway.toUpperCase();
+    const forRunway = input.approaches.filter((a) => approachRunway(a.name) === runway);
+    const bestName = [...new Set(forRunway.map((a) => a.name))].sort(
+      (a, b) => approachPriority(a) - approachPriority(b) || a.localeCompare(b)
+    )[0];
+    if (bestName) {
+      const variants = forRunway.filter((a) => a.name === bestName);
+      const handover = procedureExit(star)?.id ?? input.lastEnrouteFixId;
+      const approach =
+        (handover && variants.find((a) => a.transition && procedureEntry(a)?.id === handover)) ||
+        variants.find((a) => !a.transition) ||
+        variants[0];
+      if (approach) out.approach = toChoice(approach);
+    }
+  }
+
+  return out;
 }

@@ -39,6 +39,7 @@ import {
   procedureExit,
   procedureJoins,
   proceduresForRunway,
+  suggestProcedures,
 } from '@/lib/flightplan/builder/procedures';
 import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { kgToLbs } from '@/lib/utils/format';
@@ -380,6 +381,59 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
       if (end) setRunway('arrival', arrival.runway, end);
     }
   }, [departure, arrival, depRunways, arrRunways, setRunway]);
+
+  // Pick procedures the way a dispatcher would, once per runway/route combination: the SID that
+  // exits where the route starts, the STAR that enters where it ends, and the best approach for
+  // the runway. Only empty slots are filled, so a choice (or a deliberate "none") stays put until
+  // the runway or the route changes.
+  const suggestedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isOpen || depLoading || arrLoading) return;
+    const enroute =
+      result?.plan.waypoints.filter((w) => w.via !== 'ADEP' && w.via !== 'ADES') ?? [];
+    const firstEnrouteFixId = enroute[0]?.id;
+    const lastEnrouteFixId = enroute[enroute.length - 1]?.id;
+    const key = [
+      departure?.icao,
+      departure?.runway,
+      arrival?.icao,
+      arrival?.runway,
+      firstEnrouteFixId,
+      lastEnrouteFixId,
+    ].join('|');
+    if (suggestedFor.current === key) return;
+    suggestedFor.current = key;
+    const suggestion = suggestProcedures({
+      sids,
+      stars,
+      approaches,
+      departureRunway: departure?.runway,
+      arrivalRunway: arrival?.runway,
+      firstEnrouteFixId,
+      lastEnrouteFixId,
+      star: matchProcedure(stars, arrival?.star, arrival?.runway),
+    });
+    if (departure?.runway && !departure.sid && suggestion.sid) {
+      setProcedureChoice('sid', suggestion.sid);
+    }
+    if (arrival?.runway && !arrival.star && suggestion.star) {
+      setProcedureChoice('star', suggestion.star);
+    }
+    if (arrival?.runway && !arrival.approach && suggestion.approach) {
+      setProcedureChoice('approach', suggestion.approach);
+    }
+  }, [
+    isOpen,
+    depLoading,
+    arrLoading,
+    result,
+    departure,
+    arrival,
+    sids,
+    stars,
+    approaches,
+    setProcedureChoice,
+  ]);
 
   // Turn the persisted procedure names back into resolved procedures whenever data or choices change.
   useEffect(() => {

@@ -8,6 +8,7 @@ import {
   proceduresForRunway,
   sidFirstTurn,
   sidInitialClimbNm,
+  suggestProcedures,
 } from './procedures';
 
 const base: FMSFlightPlan = {
@@ -219,5 +220,103 @@ describe('procedure selection', () => {
     const picked = matchProcedure(variants, { name: 'ARNEM2S', transition: null }, '18C');
     expect(picked?.runway).toBe('18C');
     expect(matchProcedure(variants, undefined, '18C')).toBeUndefined();
+  });
+});
+
+describe('suggestProcedures', () => {
+  const proc = (
+    type: ResolvedProcedure['type'],
+    name: string,
+    runway: string | null,
+    transition: string | null,
+    fixes: string[]
+  ): ResolvedProcedure => ({
+    type,
+    name,
+    runway,
+    transition,
+    waypoints: fixes.map((id, i) => wp(id, 52 + i * 0.1, 4 + i * 0.1)),
+  });
+  const sids = [
+    proc('SID', 'MODM1J', 'RW27R', null, ['EH001', 'MODMI']),
+    proc('SID', 'MODM1J', 'RW27R', 'REDFA', ['EH001', 'MODMI', 'REDFA']),
+    proc('SID', 'ULKA1J', 'RW27R', null, ['EH002', 'ULKAV']),
+    proc('SID', 'MODM1F', 'RW09L', null, ['EH003', 'MODMI']),
+  ];
+  const stars = [
+    proc('STAR', 'MOLI2A', null, null, ['MOLIX', 'SUGOL']),
+    proc('STAR', 'MOLI2A', null, 'LUTEX', ['LUTEX', 'MOLIX', 'SUGOL']),
+    proc('STAR', 'ARTI2A', 'ALL', null, ['ARTIP', 'SPL']),
+  ];
+  const approaches = [
+    proc('APPROACH', 'R36C', null, null, ['OLGAX', 'AM632']),
+    proc('APPROACH', 'I36C', null, null, ['OLGAX', 'AM632']),
+    proc('APPROACH', 'I36C', null, 'SUGOL', ['SUGOL', 'SPL', 'OLGAX', 'AM632']),
+    proc('APPROACH', 'I36C', null, 'ARTIP', ['ARTIP', 'SPL', 'OLGAX', 'AM632']),
+    proc('APPROACH', 'I18R', null, null, ['NIRSI', 'AM100']),
+  ];
+
+  it('picks the SID for the runway whose exit is where the route starts, transition included', () => {
+    const s = suggestProcedures({
+      sids,
+      stars: [],
+      approaches: [],
+      departureRunway: '27R',
+      firstEnrouteFixId: 'REDFA',
+    });
+    expect(s.sid).toEqual({ name: 'MODM1J', transition: 'REDFA' });
+    expect(
+      suggestProcedures({
+        sids,
+        stars: [],
+        approaches: [],
+        departureRunway: '27R',
+        firstEnrouteFixId: 'MODMI',
+      }).sid
+    ).toEqual({ name: 'MODM1J', transition: null });
+  });
+
+  it('suggests no SID when the route does not start at a published exit for that runway', () => {
+    const s = suggestProcedures({
+      sids,
+      stars: [],
+      approaches: [],
+      departureRunway: '09L',
+      firstEnrouteFixId: 'REDFA',
+    });
+    expect(s.sid).toBeUndefined();
+  });
+
+  it('picks the STAR whose entry is where the route ends', () => {
+    const s = suggestProcedures({
+      sids: [],
+      stars,
+      approaches: [],
+      arrivalRunway: '36C',
+      lastEnrouteFixId: 'LUTEX',
+    });
+    expect(s.star).toEqual({ name: 'MOLI2A', transition: 'LUTEX' });
+  });
+
+  it('picks the best approach for the runway (ILS over RNAV) with the transition the STAR hands over to', () => {
+    const s = suggestProcedures({
+      sids: [],
+      stars,
+      approaches,
+      arrivalRunway: '36C',
+      lastEnrouteFixId: 'MOLIX',
+    });
+    expect(s.star).toEqual({ name: 'MOLI2A', transition: null });
+    // MOLI2A ends at SUGOL, so the SUGOL transition of the ILS is the one to fly.
+    expect(s.approach).toEqual({ name: 'I36C', transition: 'SUGOL' });
+  });
+
+  it('falls back to the plain approach when no transition joins the route, and to nothing for an unknown runway', () => {
+    const s = suggestProcedures({ sids: [], stars: [], approaches, arrivalRunway: '36C' });
+    expect(s.approach).toEqual({ name: 'I36C', transition: null });
+    expect(
+      suggestProcedures({ sids: [], stars: [], approaches, arrivalRunway: '27' }).approach
+    ).toBeUndefined();
+    expect(suggestProcedures({ sids: [], stars: [], approaches }).approach).toBeUndefined();
   });
 });
