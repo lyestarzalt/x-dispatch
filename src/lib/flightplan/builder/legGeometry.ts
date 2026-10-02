@@ -27,7 +27,7 @@ import type {
   ResolvedProcedureWaypoint,
 } from '@/types/navigation';
 import { type LatLon, bearingDeg, destinationPoint, greatCircleNm } from './geometry';
-import { turnOntoFix } from './routeLine';
+import { turnOntoFixRobust } from './routeLine';
 
 /** Turn radius inside a terminal procedure, at climb speed. */
 const TURN_RADIUS_NM = 2;
@@ -40,9 +40,6 @@ const FALLBACK_LEG_NM = 3;
 /** A computed intercept/radial/DME crossing further than this from its leg's start is untrustworthy. */
 const MAX_INTERCEPT_NM = 150;
 const ARC_STEP_DEG = 10;
-/** A turn-onto-fix sweeping more than this (180°) isn't a real turn - a smaller radius fits
- * the correct direction's circle instead; see `arriveAtFix`. */
-const MAX_REASONABLE_TURN_STEPS = Math.ceil(180 / ARC_STEP_DEG);
 /** Assumed holding speed when a hold publishes leg *time* but not leg *distance*. */
 const HOLD_SPEED_KT = 180;
 const DEFAULT_HOLD_LEG_NM = 1;
@@ -253,21 +250,13 @@ export function procedureGeometry(
       state = { position: fix, trackDeg: bearingDeg(state.position, fix) };
       return;
     }
-    // turnOntoFix tries both turn directions and keeps whichever circle fits; when the fix sits
-    // inside the correct-direction circle at the default radius (a close fix needing a sizeable
-    // turn), only the wrong-direction circle may produce a result there - a "valid" but
-    // near-full-circle sweep. Prefer the first radius that gives a real turn (<=180 degrees);
-    // only fall back to a bigger sweep if no radius gives one.
-    let arc: LatLon[] = [];
-    for (const r of [TURN_RADIUS_NM, TURN_RADIUS_NM / 2, TURN_RADIUS_NM / 4]) {
-      const candidate = turnOntoFix(state.position, state.trackDeg, fix, r, turn ?? undefined);
-      if (candidate.length === 0) continue;
-      if (candidate.length <= MAX_REASONABLE_TURN_STEPS) {
-        arc = candidate;
-        break;
-      }
-      if (arc.length === 0) arc = candidate;
-    }
+    const arc = turnOntoFixRobust(
+      state.position,
+      state.trackDeg,
+      fix,
+      TURN_RADIUS_NM,
+      turn ?? undefined
+    );
     append(arc);
     append([fix]);
     const before = arc[arc.length - 1] ?? state.position;

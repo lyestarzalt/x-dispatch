@@ -122,6 +122,39 @@ export function turnOntoFix(
   return out;
 }
 
+/** A turn sweeping more than this (180°) isn't a real turn - a smaller radius fits instead. */
+const MAX_REASONABLE_TURN_STEPS = Math.ceil(Math.PI / ARC_STEP_RAD);
+
+/**
+ * `turnOntoFix`, tried at progressively tighter radii starting from `maxRadiusNm`. turnOntoFix
+ * tries both turn directions and keeps whichever circle fits; when the fix sits inside the
+ * correct-direction circle at a given radius (a close fix needing a sizeable turn), only the
+ * wrong-direction circle may produce a result there - a valid but near-full-circle sweep.
+ * Prefers the first radius giving a real turn (<=180 degrees), falling back to a bigger sweep
+ * only if no radius gives one. Keeps halving down to a small floor rather than stopping after a
+ * couple of fixed steps - some published legs run under 1 NM and need a correspondingly tighter
+ * radius before any clean solution exists at all.
+ */
+export function turnOntoFixRobust(
+  from: LatLon,
+  trackDeg: number,
+  fix: LatLon,
+  maxRadiusNm: number,
+  turn?: 'L' | 'R'
+): LatLon[] {
+  let arc: LatLon[] = [];
+  for (let r = maxRadiusNm; r >= 0.02; r /= 2) {
+    const candidate = turnOntoFix(from, trackDeg, fix, r, turn);
+    if (candidate.length === 0) continue;
+    if (candidate.length <= MAX_REASONABLE_TURN_STEPS) {
+      arc = candidate;
+      break;
+    }
+    if (arc.length === 0) arc = candidate;
+  }
+  return arc;
+}
+
 /** Pre-built leg geometry to draw in place of the fixes that carry its via name. */
 export interface ProcedurePathHint {
   via: string;
@@ -151,7 +184,13 @@ function departureHead(
   const takeoff = takeoffPath(end, climb);
   if (!target) return takeoff;
   const climbEnd = takeoff[takeoff.length - 1]!;
-  const arc = turnOntoFix(climbEnd, end.headingDeg, target, TERMINAL_TURN_RADIUS_NM, firstTurn);
+  const arc = turnOntoFixRobust(
+    climbEnd,
+    end.headingDeg,
+    target,
+    TERMINAL_TURN_RADIUS_NM,
+    firstTurn
+  );
   return [...takeoff, ...arc];
 }
 

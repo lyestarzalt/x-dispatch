@@ -379,6 +379,42 @@ describe('procedureGeometry overlays', () => {
     expect(flown).toBeLessThan(direct * 2);
   });
 
+  it('turns the short way on a sub-1-NM leg, where even a 0.5 NM radius is still too big', () => {
+    // DAAG I27 ZEM approach, real coordinates: D090J -> CF27 is only 0.63 NM, needing a turn
+    // onto a course nearly 45 degrees off the inbound track. Even the smallest of the old fixed
+    // radii (2, 1, 0.5 NM) has the fix sitting inside the correct-direction circle; only a
+    // sub-0.3 NM radius finds a clean short turn instead of the wrong-direction ~330 degree one.
+    const ZEM = { latitude: 36.795, longitude: 3.570833333 };
+    const D090J = { latitude: 36.686027778, longitude: 3.41635 };
+    const CF27 = { latitude: 36.686361111, longitude: 3.403302778 };
+    const legs = [
+      wp({ fixId: 'ZEM', pathTerminator: 'IF', latitude: ZEM.latitude, longitude: ZEM.longitude }),
+      wp({
+        fixId: 'D090J',
+        pathTerminator: 'CF',
+        course: 227.0,
+        latitude: D090J.latitude,
+        longitude: D090J.longitude,
+      }),
+      wp({
+        fixId: 'CF27',
+        pathTerminator: 'CF',
+        course: 270.0,
+        latitude: CF27.latitude,
+        longitude: CF27.longitude,
+      }),
+    ];
+    const path = procedurePath(legs);
+    const direct = greatCircleNm(D090J, CF27);
+    const d090jIndex = path.findIndex(
+      (p) =>
+        Math.abs(p.latitude - D090J.latitude) < 1e-6 &&
+        Math.abs(p.longitude - D090J.longitude) < 1e-6
+    );
+    const flown = pathDistanceNm(path.slice(d090jIndex));
+    expect(flown).toBeLessThan(direct * 3);
+  });
+
   it('produces a procedure-turn overlay anchored at the real fix for a PI leg', () => {
     const fix = { latitude: 40, longitude: -80 };
     const legs = [
