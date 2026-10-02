@@ -10,9 +10,8 @@
  * - Different styling for departure vs arrival vs approach
  */
 import * as maplibregl from 'maplibre-gl';
-import { createHoldingPattern, createProcedureTurn, interpolateRFArc } from '@/lib/utils/geomath';
-import type { LonLat } from '@/types/geo';
-import type { AltitudeConstraint, TurnDirection } from '@/types/navigation';
+import { procedureGeometry } from '@/lib/flightplan/builder/legGeometry';
+import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
 
@@ -20,26 +19,8 @@ import { safeAddGeoJSONSource } from '../types';
 // Types
 // ============================================================================
 
-export interface RouteWaypoint {
-  fixId: string;
-  latitude?: number;
-  longitude?: number;
-  resolved?: boolean;
-  /** Altitude constraint */
-  altitude?: AltitudeConstraint | null;
-  /** Speed constraint in knots */
-  speed?: number | null;
-  /** Is this a flyover waypoint? */
-  flyover?: boolean;
-  /** Path terminator type */
-  pathTerminator?: string;
-  /** Course/bearing in degrees (used for RF, HA/HF/HM, PI legs) */
-  course?: number | null;
-  /** Distance in nautical miles (used for RF radius, hold leg length) */
-  distance?: number | null;
-  /** Turn direction for arcs and holds */
-  turnDirection?: TurnDirection | null;
-}
+/** A procedure waypoint plus whether it's flown flyover (chart styling only). */
+export type RouteWaypoint = ResolvedProcedureWaypoint & { flyover?: boolean };
 
 export interface RouteData {
   type: 'SID' | 'STAR' | 'APPROACH' | 'ROUTE';
@@ -63,16 +44,23 @@ export interface PlanFix {
  */
 const SAME_FIX_DEG = 0.005;
 
+/** The only shape {@link omitFlightPlanWaypoints} actually needs. */
+interface FixPosition {
+  fixId: string;
+  latitude?: number;
+  longitude?: number;
+}
+
 /**
  * Drop procedure waypoints the flight plan layer already renders, so a fix
  * shared by both is drawn (symbol + label) once. The route line is built
  * from the full list; only the point features are filtered. Unresolved
  * waypoints are kept so they still surface in red.
  */
-export function omitFlightPlanWaypoints(
-  waypoints: RouteWaypoint[],
+export function omitFlightPlanWaypoints<T extends FixPosition>(
+  waypoints: T[],
   planFixes: PlanFix[]
-): RouteWaypoint[] {
+): T[] {
   if (planFixes.length === 0) return waypoints;
   const byId = new Map<string, PlanFix[]>();
   for (const fix of planFixes) {
@@ -197,119 +185,38 @@ function formatSpeedConstraint(speed: number | null | undefined): string {
 // ============================================================================
 
 /**
- * Create route GeoJSON with path-terminator-aware geometry
- * Handles RF arcs, holding patterns, and procedure turns
+ * Create route GeoJSON with path-terminator-aware geometry, via the same engine the flight-plan
+ * line uses (`procedureGeometry`) - real RF/AF arcs, real DME/intercept crossings for fixless
+ * legs (previously silently dropped here), and holding/procedure-turn overlays.
  */
 function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
   const features: GeoJSON.Feature[] = [];
-  const validWaypoints = waypoints.filter(
-    (wp) => wp.latitude !== undefined && wp.longitude !== undefined && wp.resolved !== false
-  );
+  const { path, overlays } = procedureGeometry(waypoints);
 
-  if (validWaypoints.length < 2) {
+  if (path.length < 2) {
     return { type: 'FeatureCollection', features: [] };
   }
 
-  const allCoordinates: LonLat[] = [];
+  features.push({
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: path.map((p): [number, number] => [p.longitude, p.latitude]),
+    },
+    properties: { type: 'route' },
+  });
 
-  for (let i = 0; i < validWaypoints.length; i++) {
-    const wp = validWaypoints[i];
-    if (!wp) continue;
-    const currentPos: LonLat = [wp.longitude!, wp.latitude!];
-
-    if (i === 0) {
-      allCoordinates.push(currentPos);
-      continue;
-    }
-
-    const prevWp = validWaypoints[i - 1];
-    if (!prevWp) continue;
-    const prevPos: LonLat = [prevWp.longitude!, prevWp.latitude!];
-
-    switch (wp.pathTerminator) {
-      case 'RF':
-        // Constant radius arc (Radius to Fix)
-        if (wp.course != null && wp.distance != null && wp.turnDirection) {
-          try {
-            const arcPoints = interpolateRFArc(
-              prevPos,
-              currentPos,
-              wp.course,
-              wp.distance,
-              wp.turnDirection
-            );
-            // Skip first point (duplicate of prevPos)
-            allCoordinates.push(...arcPoints.slice(1));
-          } catch {
-            // Fallback to straight line if arc calculation fails
-            allCoordinates.push(currentPos);
-          }
-        } else {
-          // Missing arc parameters, fall back to straight line
-          allCoordinates.push(currentPos);
-        }
-        break;
-
-      case 'HA':
-      case 'HF':
-      case 'HM':
-        // Holding pattern - add as separate feature (racetrack shape)
-        if (wp.course != null && wp.turnDirection) {
-          try {
-            const holdPattern = createHoldingPattern(
-              currentPos,
-              wp.course,
-              wp.distance ?? 1.0,
-              wp.turnDirection
-            );
-            features.push({
-              type: 'Feature',
-              geometry: { type: 'LineString', coordinates: holdPattern },
-              properties: { type: 'holding', fixId: wp.fixId },
-            });
-          } catch {
-            // Ignore holding pattern rendering errors
-          }
-        }
-        // Still add the waypoint position to the main route
-        allCoordinates.push(currentPos);
-        break;
-
-      case 'PI':
-        // Procedure turn (45/180 pattern) - add as separate feature
-        if (wp.course != null && wp.turnDirection) {
-          try {
-            const ptGeom = createProcedureTurn(
-              prevPos,
-              wp.course,
-              wp.turnDirection,
-              wp.distance ?? 2.0
-            );
-            features.push({
-              type: 'Feature',
-              geometry: { type: 'LineString', coordinates: ptGeom },
-              properties: { type: 'procedure_turn', fixId: wp.fixId },
-            });
-          } catch {
-            // Ignore procedure turn rendering errors
-          }
-        }
-        allCoordinates.push(currentPos);
-        break;
-
-      default:
-        // TF, DF, CF, IF, FA, CA, VA, etc. - straight line to waypoint
-        allCoordinates.push(currentPos);
-        break;
-    }
-  }
-
-  // Main route line (insert as first feature)
-  if (allCoordinates.length >= 2) {
-    features.unshift({
+  for (const overlay of overlays) {
+    features.push({
       type: 'Feature',
-      geometry: { type: 'LineString', coordinates: allCoordinates },
-      properties: { type: 'route' },
+      geometry: {
+        type: 'LineString',
+        coordinates: overlay.points.map((p): [number, number] => [p.longitude, p.latitude]),
+      },
+      properties: {
+        type: overlay.kind === 'holding' ? 'holding' : 'procedure_turn',
+        fixId: overlay.fixId,
+      },
     });
   }
 

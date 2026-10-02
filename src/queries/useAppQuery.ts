@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { AirportProcedures } from '@/lib/parsers/nav/cifpParser';
-import type { ATCController } from '@/types/navigation';
+import type { ATCController, ResolvedAirportProcedures } from '@/types/navigation';
 
 export const appKeys = {
   all: ['app'] as const,
@@ -87,7 +86,7 @@ export function useATCControllers(icao: string | null) {
 export function useAirportProcedures(icao: string | null) {
   return useQuery({
     queryKey: appKeys.procedures(icao ?? ''),
-    queryFn: (): Promise<AirportProcedures | null> => {
+    queryFn: (): Promise<ResolvedAirportProcedures | null> => {
       if (!icao) return Promise.resolve(null);
       return window.navAPI.getAirportProcedures(icao);
     },

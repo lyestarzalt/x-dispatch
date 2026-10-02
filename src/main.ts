@@ -26,7 +26,6 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
-import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
@@ -73,6 +72,7 @@ import {
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { LaunchResult } from './lib/xplaneServices/launch';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
+import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
@@ -1131,16 +1131,19 @@ function registerIpcHandlers() {
     return dataManager.searchNavaids(query, Math.min(Math.max(1, limit), 100));
   });
 
-  ipcMain.handle('nav:getAirportProcedures', (_, icao: string): AirportProcedures | null => {
-    if (!isValidICAO(icao)) return null;
-    const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
-    if (procedures) {
-      logger.main.info(
-        `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
-      );
+  ipcMain.handle(
+    'nav:getAirportProcedures',
+    (_, icao: string): ResolvedAirportProcedures | null => {
+      if (!isValidICAO(icao)) return null;
+      const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
+      if (procedures) {
+        logger.main.info(
+          `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
+        );
+      }
+      return procedures;
     }
-    return procedures;
-  });
+  );
 
   // New navigation data handlers
   ipcMain.handle('nav:getDataSources', () => dataManager.getDataSources());

@@ -23,6 +23,33 @@ describe('intersectRadials', () => {
     const result = intersectRadials(a, 90 as Degrees, a, 180 as Degrees);
     expect(result).toBeNull();
   });
+
+  it("finds the intersection even when it sits almost exactly at the second course's own start point", () => {
+    // A point placed exactly on the first course, 15 NM ahead; a second, non-parallel course
+    // through that same point should intersect right there, not get rejected by floating-point
+    // noise around the degenerate sin(alpha) ~= 0 boundary.
+    const start = point(40, -80);
+    const onCourse = (() => {
+      // 15 NM along bearing 100 from start, via the same great-circle math as destinationPoint.
+      const R = 3440.065;
+      const φ1 = (40 * Math.PI) / 180;
+      const λ1 = (-80 * Math.PI) / 180;
+      const θ = (100 * Math.PI) / 180;
+      const δ = 15 / R;
+      const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
+      const λ2 =
+        λ1 +
+        Math.atan2(
+          Math.sin(θ) * Math.sin(δ) * Math.cos(φ1),
+          Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2)
+        );
+      return point((φ2 * 180) / Math.PI, (λ2 * 180) / Math.PI);
+    })();
+    const result = intersectRadials(start, 100 as Degrees, onCourse, 30 as Degrees);
+    expect(result).not.toBeNull();
+    expect(result!.latitude).toBeCloseTo(onCourse.latitude, 3);
+    expect(result!.longitude).toBeCloseTo(onCourse.longitude, 3);
+  });
 });
 
 describe('lineCircleIntersection', () => {

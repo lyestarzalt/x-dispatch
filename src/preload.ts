@@ -11,7 +11,6 @@ import type {
   RouteResolveResult,
   SaveFmsResult,
 } from './lib/flightplan/builder/types';
-import type { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from './lib/xplaneServices/dataService/cycleInfo';
@@ -39,6 +38,7 @@ import type {
   PathValidation,
 } from './types/ipc';
 import type { IvaoData } from './types/ivao';
+import type { ResolvedAirportProcedures } from './types/navigation';
 import type {
   ATCController,
   AirportMetadata,
@@ -571,7 +571,7 @@ declare global {
       getApproachNavaidsByRunway: (airportIcao: string, runway: string) => Promise<Navaid[]>;
       // Search and procedures
       searchNavaids: (query: string, limit?: number) => Promise<NavSearchResult[]>;
-      getAirportProcedures: (icao: string) => Promise<AirportProcedures | null>;
+      getAirportProcedures: (icao: string) => Promise<ResolvedAirportProcedures | null>;
       // New data queries
       getDataSources: () => Promise<NavDataSources | null>;
       getATCByFacility: (facilityId: string) => Promise<ATCController | null>;

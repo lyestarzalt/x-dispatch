@@ -63,9 +63,18 @@ export function intersectRadials(
 
   const α1 = normalizeSigned(θ13 - θ12);
   const α2 = normalizeSigned(θ21 - θ23);
+  const sinα1 = Math.sin(α1);
+  const sinα2 = Math.sin(α2);
 
-  if (Math.sin(α1) === 0 && Math.sin(α2) === 0) return null; // infinite intersections
-  if (Math.sin(α1) * Math.sin(α2) < 0) return null; // courses diverge, no forward crossing
+  // sin(α) near zero means the other course's start point sits (almost) exactly on this one -
+  // a legitimate case, not a divergence, but one where the general formula below is ill-
+  // conditioned (several terms divide by a near-zero sin(α)). Handled directly instead: when
+  // from2 lies on course 1, from2 *is* the intersection, and symmetrically for from1 on course 2.
+  const EPS = 1e-9;
+  if (Math.abs(sinα1) < EPS && Math.abs(sinα2) < EPS) return null; // infinite intersections
+  if (Math.abs(sinα1) < EPS) return { latitude: from2.latitude, longitude: from2.longitude };
+  if (Math.abs(sinα2) < EPS) return { latitude: from1.latitude, longitude: from1.longitude };
+  if (sinα1 * sinα2 < 0) return null; // courses diverge, no forward crossing
 
   const α3 = Math.acos(
     clamp(-Math.cos(α1) * Math.cos(α2) + Math.sin(α1) * Math.sin(α2) * Math.cos(δ12))

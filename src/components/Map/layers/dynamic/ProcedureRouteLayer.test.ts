@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { type RouteWaypoint, omitFlightPlanWaypoints } from './ProcedureRouteLayer';
+import { omitFlightPlanWaypoints } from './ProcedureRouteLayer';
 
-const gilon: RouteWaypoint = { fixId: 'GILON', latitude: 43.91, longitude: 5.42 };
-const luc: RouteWaypoint = { fixId: 'LUC', latitude: 43.62, longitude: 6.12 };
-const unresolved: RouteWaypoint = { fixId: 'NOWHR' };
+const gilon = { fixId: 'GILON', latitude: 43.91, longitude: 5.42 };
+const luc = { fixId: 'LUC', latitude: 43.62, longitude: 6.12 };
+const unresolved = { fixId: 'NOWHR' };
 
 describe('omitFlightPlanWaypoints', () => {
   it('returns every waypoint when the flight plan has no fixes', () => {
