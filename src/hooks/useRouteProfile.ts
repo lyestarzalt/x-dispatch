@@ -6,7 +6,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import mlcontour from 'maplibre-contour';
-import { TERRAIN_TILES_CACHE_URL, getContourDemSource } from '@/components/Map/utils/globeUtils';
+import { getContourDemSource, getTerrainTilesCacheUrl } from '@/components/Map/utils/globeUtils';
 import type { LatLon } from '@/lib/flightplan/builder/geometry';
 import { greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { planningClass } from '@/lib/flightplan/builder/planningClass';
@@ -46,7 +46,8 @@ function terrainZoomFor(totalNm: number): number {
 
 /** Fetch and decode one terrain tile on this thread, bypassing the shared DEM worker. */
 async function fetchDemTileDirect(z: number, x: number, y: number): Promise<DemTileLike> {
-  const url = TERRAIN_TILES_CACHE_URL.replace('{z}', String(z))
+  const url = getTerrainTilesCacheUrl()
+    .replace('{z}', String(z))
     .replace('{x}', String(x))
     .replace('{y}', String(y));
   const response = await fetch(url);

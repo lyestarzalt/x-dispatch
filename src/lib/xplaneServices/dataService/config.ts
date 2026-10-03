@@ -30,8 +30,23 @@ interface XPlaneConfig {
   /** Random anonymous install ID, only present while analytics consent is granted */
   analyticsInstallId?: string;
   /** Session that ended at the last quit, sent as `session_ended` on the next launch */
-  analyticsPendingSession?: { durationSeconds: number; endedAt: string; appVersion: string };
+  analyticsPendingSession?: {
+    durationSeconds: number;
+    endedAt: string;
+    appVersion: string;
+    tabletClientsPeak?: number;
+  };
+  /** Tablet access: the LAN server that serves the UI to other devices */
+  remoteAccess?: RemoteAccessConfig;
 }
+
+export interface RemoteAccessConfig {
+  enabled: boolean;
+  port: number;
+  token: string;
+}
+
+export const DEFAULT_REMOTE_PORT = 8480;
 
 const CONFIG_VERSION = 1;
 const CONFIG_FILENAME = 'config.json';
@@ -121,6 +136,7 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
         'analyticsPendingSession' in config
           ? config.analyticsPendingSession
           : existing?.analyticsPendingSession,
+      remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
     };
 
     fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
@@ -295,4 +311,24 @@ export function setActiveInstallation(id: string): boolean {
     xplaneIsSteam: undefined,
   });
   return true;
+}
+
+export function newRemoteToken(): string {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+export function getRemoteAccessConfig(): RemoteAccessConfig {
+  const stored = loadConfig()?.remoteAccess;
+  return {
+    enabled: stored?.enabled ?? false,
+    port: stored?.port ?? DEFAULT_REMOTE_PORT,
+    token: stored?.token ?? '',
+  };
+}
+
+export function setRemoteAccessConfig(patch: Partial<RemoteAccessConfig>): RemoteAccessConfig {
+  const next = { ...getRemoteAccessConfig(), ...patch };
+  if (!next.token) next.token = newRemoteToken();
+  saveConfig({ remoteAccess: next });
+  return next;
 }

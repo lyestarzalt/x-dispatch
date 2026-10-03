@@ -1,6 +1,7 @@
 import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, RefreshCcw, ScrollText, Search } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -63,10 +64,12 @@ export function LogsSection({ active }: LogsSectionProps) {
         <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
         {t('settings.logs.refresh')}
       </Button>
-      <Button variant="outline" size="sm" onClick={handleOpenExternal}>
-        <ExternalLink className="mr-2 h-3.5 w-3.5" />
-        {t('settings.logs.openExternal')}
-      </Button>
+      <DesktopOnly>
+        <Button variant="outline" size="sm" onClick={handleOpenExternal}>
+          <ExternalLink className="mr-2 h-3.5 w-3.5" />
+          {t('settings.logs.openExternal')}
+        </Button>
+      </DesktopOnly>
     </div>
   );
 

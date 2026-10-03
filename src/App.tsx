@@ -6,6 +6,7 @@ import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import { AnalyticsConsentDialog } from './components/dialogs/AnalyticsConsentDialog';
+import { RemoteConnectionBanner } from './components/remote/RemoteConnectionBanner';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
 import SetupScreen from './components/screens/SetupScreen';
@@ -153,6 +154,7 @@ function App() {
             <AppContent />
             <UpdateAvailableToast />
             <Toaster position="bottom-center" />
+            <RemoteConnectionBanner />
           </TooltipProvider>
         </MotionConfig>
       </QueryProvider>

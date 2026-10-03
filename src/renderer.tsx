@@ -1,5 +1,3 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
 import '@fontsource/roboto-mono/400.css';
 import '@fontsource/roboto-mono/500.css';
 // Bundled typefaces: nothing is fetched from a font CDN at runtime.
@@ -7,42 +5,30 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import * as Sentry from '@sentry/electron/renderer';
-import { init as reactInit } from '@sentry/react';
-import { initSentryContext } from '@/lib/sentry/sentryContext';
-import { TRANSIENT_NET_ERROR_PATTERN } from '@/lib/sentry/transientNetErrors';
-import App from './App';
 import './index.css';
 
-// Initialize app - check crash reports setting first
-(async () => {
-  try {
-    // Packaged builds load index.html over file://, so the protocol can't tell
-    // dev from production; a check for app:// kept Sentry off in every release.
-    const sendCrashReports = await window.appAPI.getSendCrashReports();
-    if (!import.meta.env.DEV && sendCrashReports) {
-      Sentry.init(
-        {
-          dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
-          release: `x-dispatch@${await window.appAPI.getVersion()}`,
-          integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-          ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
-          tracesSampleRate: 1.0,
-          // The free plan holds 50 replays a month: keep them for sessions with an error.
-          replaysSessionSampleRate: 0,
-          replaysOnErrorSampleRate: 1.0,
-        },
-        reactInit
-      );
-      initSentryContext();
-    }
-  } catch {
-    // Config not available yet (first run), skip Sentry
+// In a browser on another device (tablet access) there is no preload: install
+// window.*API over a WebSocket first. The dynamic import keeps every app module
+// from evaluating before the bridge exists.
+if (!('appAPI' in window)) {
+  const { installRemoteBridge } = await import('./lib/bridge/browser/installRemoteBridge');
+  installRemoteBridge();
+}
+try {
+  const { bootstrap } = await import('./bootstrap');
+  void bootstrap();
+} catch (err) {
+  // Nothing has rendered yet, so a failed import would leave a blank page.
+  // Content blockers are the usual cause on a tablet: they filter module URLs
+  // that contain words like "analytics". Say so instead of showing nothing.
+  const root = document.getElementById('root');
+  if (root) {
+    root.innerHTML =
+      '<div style="font-family:system-ui;padding:2rem;max-width:40rem">' +
+      '<h1 style="font-size:1.25rem">X-Dispatch could not load</h1>' +
+      '<p>A browser extension such as an ad or content blocker may have blocked part of the app. ' +
+      'Turn it off for this address and reload.</p>' +
+      `<pre style="white-space:pre-wrap;opacity:.7">${String((err as Error).message ?? err)}</pre></div>`;
   }
-
-  ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-})();
+  throw err;
+}

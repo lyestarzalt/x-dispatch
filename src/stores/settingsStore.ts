@@ -12,6 +12,7 @@ import type {
   SpeedUnit,
   VerticalSpeedUnit,
 } from '@/lib/utils/units';
+import { uuid } from '@/lib/utils/uuid';
 
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -302,10 +303,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
 
       addFmsExportTarget: (target) => {
-        const id =
-          typeof crypto !== 'undefined' && 'randomUUID' in crypto
-            ? crypto.randomUUID()
-            : `fms-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const id = uuid();
         set((state) => ({
           simbrief: {
             ...state.simbrief,

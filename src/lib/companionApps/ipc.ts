@@ -1,5 +1,6 @@
-import { type BrowserWindow, dialog, ipcMain } from 'electron';
+import { type BrowserWindow, dialog } from 'electron';
 import path from 'path';
+import { handle } from '@/lib/remote/handlerRegistry';
 import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
 import { type SpawnInput, type SpawnResult, launchCompanionApp } from './spawn';
@@ -7,16 +8,16 @@ import { type SpawnInput, type SpawnResult, launchCompanionApp } from './spawn';
 export function registerCompanionAppsIPC(getMainWindow: () => BrowserWindow | null): void {
   let lastBrowsedDir: string | null = null;
 
-  ipcMain.handle('companion-apps:launch', async (_, input: SpawnInput): Promise<SpawnResult> => {
+  handle('companion-apps:launch', async (_, input: SpawnInput): Promise<SpawnResult> => {
     logger.main.info(`companion-apps:launch ${input.exePath}`);
     return launchCompanionApp(input);
   });
 
-  ipcMain.handle('companion-apps:isElevated', async (): Promise<boolean> => {
+  handle('companion-apps:isElevated', async (): Promise<boolean> => {
     return isElevated();
   });
 
-  ipcMain.handle(
+  handle(
     'companion-apps:browseForExe',
     async (_, currentExePath?: string): Promise<string | null> => {
       const win = getMainWindow();

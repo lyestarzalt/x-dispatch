@@ -10,6 +10,7 @@ import {
   Info,
   ScrollText,
 } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -147,16 +148,18 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             <span className="text-muted-foreground text-sm">
               {t('settings.about.settingsCache')}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1.5 px-2"
-              onClick={() => window.appAPI.openConfigFolder()}
-              disabled={!configPath}
-            >
-              <FolderOpen className="h-3.5 w-3.5" />
-              {t('settings.about.openDataFolder')}
-            </Button>
+            <DesktopOnly>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1.5 px-2"
+                onClick={() => window.appAPI.openConfigFolder()}
+                disabled={!configPath}
+              >
+                <FolderOpen className="h-3.5 w-3.5" />
+                {t('settings.about.openDataFolder')}
+              </Button>
+            </DesktopOnly>
           </div>
           {configPath && <SettingsPathDisplay path={configPath} />}
         </div>
@@ -166,26 +169,30 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-sm">{t('settings.about.logFile')}</span>
             <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1.5 px-2"
-                onClick={() => window.appAPI.openLogFile()}
-                disabled={!logPath}
-              >
-                <FileText className="h-3.5 w-3.5" />
-                {t('settings.about.openLog')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2"
-                onClick={() => window.appAPI.openLogFolder()}
-                disabled={!logPath}
-                tooltip={t('settings.about.openLogFolder')}
-              >
-                <FolderOpen className="h-3.5 w-3.5" />
-              </Button>
+              <DesktopOnly>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 px-2"
+                  onClick={() => window.appAPI.openLogFile()}
+                  disabled={!logPath}
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  {t('settings.about.openLog')}
+                </Button>
+              </DesktopOnly>
+              <DesktopOnly>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => window.appAPI.openLogFolder()}
+                  disabled={!logPath}
+                  tooltip={t('settings.about.openLogFolder')}
+                >
+                  <FolderOpen className="h-3.5 w-3.5" />
+                </Button>
+              </DesktopOnly>
             </div>
           </div>
           {logPath && <SettingsPathDisplay path={logPath} />}

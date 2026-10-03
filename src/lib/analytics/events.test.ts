@@ -227,3 +227,20 @@ describe('search, flight plan file and add-on install events', () => {
     expect(sanitizeEvent('preferences', { ...prefs, distance_unit: 'furlongs' })).toBeNull();
   });
 });
+
+describe('tablet access events', () => {
+  it('accepts the tablet settings tab and the tablet events', () => {
+    expect(sanitizeEvent('settings_tab_opened', { tab: 'tablet' })).toEqual({
+      event: 'settings_tab_opened',
+      properties: { tab: 'tablet' },
+    });
+    expect(sanitizeEvent('tablet_access_toggled', { enabled: true })).toEqual({
+      event: 'tablet_access_toggled',
+      properties: { enabled: true },
+    });
+    expect(sanitizeEvent('tablet_connected', { devices: 2 })).toEqual({
+      event: 'tablet_connected',
+      properties: { devices: 2 },
+    });
+  });
+});

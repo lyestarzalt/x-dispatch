@@ -5,6 +5,7 @@ import {
   CITY_LIGHTS_BASEMAP_LAYER_IDS,
   CITY_LIGHTS_PLACE_LAYER_IDS,
 } from '@/lib/map/solar/cityLightsStyle';
+import { toTileCacheUrl } from '@/lib/map/tileCacheUrl';
 import { useMapStore } from '@/stores/mapStore';
 import { lowestOf } from '../layers/world/layerOrder';
 import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './preserveCustomStyle';
@@ -13,7 +14,8 @@ const TERRAIN_SOURCE_ID = 'terrain-dem';
 const HILLSHADE_SOURCE_ID = 'terrain-hillshade-dem';
 // Use tile-cache:// scheme for contour worker fetches — bypasses Electron CSP
 // (blob workers don't inherit CSP from onHeadersReceived)
-export const TERRAIN_TILES_CACHE_URL = 'tile-cache://tiles.mapterhorn.com/{z}/{x}/{y}.webp';
+export const getTerrainTilesCacheUrl = () =>
+  toTileCacheUrl('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp');
 const TERRAIN_DEM_MAXZOOM = 10;
 // Contour thresholds start at this zoom; requesting contour tiles below it
 // only produces empty tiles after a DEM fetch.
@@ -30,7 +32,7 @@ let contourDemSource: InstanceType<typeof mlcontour.DemSource> | null = null;
 export function getContourDemSource(): InstanceType<typeof mlcontour.DemSource> {
   if (!contourDemSource) {
     contourDemSource = new mlcontour.DemSource({
-      url: TERRAIN_TILES_CACHE_URL,
+      url: getTerrainTilesCacheUrl(),
       encoding: 'terrarium',
       maxzoom: TERRAIN_DEM_MAXZOOM,
     });

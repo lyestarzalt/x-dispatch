@@ -11,6 +11,7 @@ import { launchChoices, launchErrorCode } from '@/lib/analytics/launchChoices';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { toastError } from '@/lib/utils/toastError';
+import { uuid } from '@/lib/utils/uuid';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
   buildFlightInit,
@@ -293,7 +294,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       });
 
       const logbookEntry = {
-        id: crypto.randomUUID(),
+        id: uuid(),
         launchedAt: new Date().toISOString(),
         airportICAO: startPosition.airport,
         airportName: useAppStore.getState().selectedAirportData?.name ?? '',

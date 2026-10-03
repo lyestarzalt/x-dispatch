@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import type { MapStyleUrlError } from '@/lib/map/tileUrlToStyle';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import { cn } from '@/lib/utils/helpers';
+import { uuid } from '@/lib/utils/uuid';
 import type { MapStyle } from '@/stores/settingsStore';
 import { MAP_STYLE_PRESETS } from '@/stores/settingsStore';
 
@@ -67,10 +68,7 @@ export function MapStylePicker({
       return;
     }
     const style: MapStyle = {
-      id:
-        typeof crypto !== 'undefined' && 'randomUUID' in crypto
-          ? `user-${crypto.randomUUID()}`
-          : `user-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: `user-${uuid()}`,
       name: deriveStyleNameFromUrl(url, t('settings.graphics.customStyleFallbackName')),
       url,
     };

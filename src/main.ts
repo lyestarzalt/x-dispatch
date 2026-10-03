@@ -7,7 +7,6 @@ import {
   clipboard,
   dialog,
   globalShortcut,
-  ipcMain,
   net,
   screen,
   session,
@@ -26,6 +25,8 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
+import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
+import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
@@ -36,6 +37,7 @@ import {
   registerTileCacheHandler,
   registerTileCacheScheme,
 } from './lib/tileCache';
+import { fetchCachedTile } from './lib/tileCache/fetchTile';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -233,9 +235,14 @@ async function getLauncherModule() {
   return launcherModule;
 }
 
+/** One stream subscription per UI: a desktop window or a tablet. */
+function streamSubscriberId(event: { sender: { id: string | number } }): string {
+  return typeof event.sender.id === 'string' ? event.sender.id : `webcontents:${event.sender.id}`;
+}
+
 function sendLoadingProgress(progress: LoadingProgress) {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('loading-progress', progress);
+    broadcast('loading-progress', progress);
   }
 }
 
@@ -516,12 +523,12 @@ async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
 
 function registerIpcHandlers() {
   onVatsimSectorDataUpdated(() => {
-    mainWindow?.webContents.send('vatsim-sectors:updated');
+    broadcast('vatsim-sectors:updated');
   });
 
-  ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
-  ipcMain.handle('app:getVersion', () => app.getVersion());
-  ipcMain.handle('app:getThirdPartyNotices', async () => {
+  handle('app:isSetupComplete', () => isSetupComplete());
+  handle('app:getVersion', () => app.getVersion());
+  handle('app:getThirdPartyNotices', async () => {
     // Generated at build time by scripts/generate-third-party-notices.mjs into assets/licenses.
     const file = app.isPackaged
       ? path.join(process.resourcesPath, 'assets', 'licenses', 'third-party-notices.json')
@@ -533,7 +540,7 @@ function registerIpcHandlers() {
       return { entries: [] };
     }
   });
-  ipcMain.handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
+  handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
     // Dev builds skip the network call entirely to avoid hammering dl.x-dispatch.app during HMR.
     // Production always fetches: the About section needs latestVersion even when
     // Windows users get their real update via update-electron-app (no toast for them).
@@ -542,8 +549,8 @@ function registerIpcHandlers() {
     }
     return checkForUpdateAvailable();
   });
-  ipcMain.handle('app:getCliFlags', () => getCliFlags());
-  ipcMain.handle('app:getProcessMemory', () => {
+  handle('app:getCliFlags', () => getCliFlags());
+  handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();
     return {
       rss: mem.rss,
@@ -551,31 +558,31 @@ function registerIpcHandlers() {
       heapTotal: mem.heapTotal,
     };
   });
-  ipcMain.handle('app:getLogPath', () => getLogPath());
-  ipcMain.handle('app:openLogFile', () => {
+  handle('app:getLogPath', () => getLogPath());
+  handle('app:openLogFile', () => {
     const logPath = getLogPath();
     shell.openPath(logPath);
   });
-  ipcMain.handle('app:openLogFolder', () => {
+  handle('app:openLogFolder', () => {
     const logPath = getLogPath();
     shell.showItemInFolder(logPath);
   });
-  ipcMain.handle('app:getConfigPath', () => app.getPath('userData'));
-  ipcMain.handle('app:openConfigFolder', () => {
+  handle('app:getConfigPath', () => app.getPath('userData'));
+  handle('app:openConfigFolder', () => {
     shell.openPath(app.getPath('userData'));
   });
-  ipcMain.handle('app:openPath', (_, p: string) => {
+  handle('app:openPath', (_, p: string) => {
     // Security: Validate path
     if (typeof p !== 'string' || p.includes('..') || p.length > 1000) {
       return;
     }
     shell.openPath(p);
   });
-  ipcMain.handle('app:clipboardWrite', async (_, text: string) => {
+  handle('app:clipboardWrite', async (_, text: string) => {
     if (typeof text !== 'string') return;
     await clipboard.writeText(text);
   });
-  ipcMain.handle('app:clipboardWriteImage', async (_, dataUrl: string) => {
+  handle('app:clipboardWriteImage', async (_, dataUrl: string) => {
     const prefix = 'data:image/png;base64,';
     if (typeof dataUrl !== 'string' || !dataUrl.startsWith(prefix)) return false;
     const bytes = Buffer.from(dataUrl.slice(prefix.length), 'base64');
@@ -589,7 +596,7 @@ function registerIpcHandlers() {
       return false;
     }
   });
-  ipcMain.handle('app:openExternal', (_, url: string) => {
+  handle('app:openExternal', (_, url: string) => {
     // Security: Only allow http/https URLs
     if (typeof url !== 'string' || url.length > 2000) {
       return { success: false, error: 'Invalid URL' };
@@ -605,12 +612,12 @@ function registerIpcHandlers() {
       return { success: false, error: 'Invalid URL format' };
     }
   });
-  ipcMain.handle('analytics:getConsent', (): AnalyticsConsentState => {
+  handle('analytics:getConsent', (): AnalyticsConsentState => {
     const consent = getAnalyticsConsent();
     // E2E runs never see the prompt, so it can't block automated UI flows.
     return { consent, shouldPrompt: consent === null && !process.env.E2E_USER_DATA_DIR };
   });
-  ipcMain.handle('analytics:setConsent', (_, granted: unknown) => {
+  handle('analytics:setConsent', (_, granted: unknown) => {
     if (typeof granted !== 'boolean') return false;
     const success = setAnalyticsConsent(granted);
     if (success) {
@@ -620,35 +627,37 @@ function registerIpcHandlers() {
     return success;
   });
   // Renderer input is untrusted: track() validates it against the allowlist.
-  ipcMain.on('analytics:track', (_, event: unknown, properties: unknown) =>
-    analytics.track(event, properties)
+  on('analytics:track', (event, name: unknown, properties: unknown) =>
+    analytics.track(name, properties, {
+      remote: (event as { remote?: boolean }).remote === true,
+    })
   );
-  ipcMain.handle('app:getSendCrashReports', () => getSendCrashReports());
-  ipcMain.handle('app:setSendCrashReports', (_, enabled: boolean) => {
+  handle('app:getSendCrashReports', () => getSendCrashReports());
+  handle('app:setSendCrashReports', (_, enabled: boolean) => {
     const success = setSendCrashReports(enabled);
     if (success) {
       logger.main.info(`Crash reporting ${enabled ? 'enabled' : 'disabled'} by user`);
     }
     return success;
   });
-  ipcMain.handle('app:getLoadingStatus', () => ({
+  handle('app:getLoadingStatus', () => ({
     xplanePath: dataManager.getXPlanePath(),
     status: dataManager.getStatus(),
   }));
 
-  ipcMain.handle('app:getXPlaneVersion', () => dataManager.getXPlaneVersion());
+  handle('app:getXPlaneVersion', () => dataManager.getXPlaneVersion());
 
-  ipcMain.handle('app:clearCache', () => {
+  handle('app:clearCache', () => {
     logger.main.info('Clearing cache via IPC');
     dataManager.clearCache();
     getTileCache().clear();
     return { success: true };
   });
 
-  ipcMain.handle('app:getTileCacheStats', () => getTileCache().getStats());
+  handle('app:getTileCacheStats', () => getTileCache().getStats());
 
   // Debug: DB inspection (table list + paginated rows)
-  ipcMain.handle('debug:dbTables', () => {
+  handle('debug:dbTables', () => {
     const db = getSqlite();
     if (!db) return [];
     const result = db.exec(
@@ -668,7 +677,7 @@ function registerIpcHandlers() {
     });
   });
 
-  ipcMain.handle('debug:dbQuery', (_, table: string, limit: number, offset: number) => {
+  handle('debug:dbQuery', (_, table: string, limit: number, offset: number) => {
     const db = getSqlite();
     if (!db) return { columns: [], rows: [] };
     // Validate table name to prevent SQL injection
@@ -686,7 +695,7 @@ function registerIpcHandlers() {
     };
   });
 
-  ipcMain.handle('debug:dbExec', (_, sql: string) => {
+  handle('debug:dbExec', (_, sql: string) => {
     const db = getSqlite();
     if (!db) return { columns: [], rows: [], error: 'No database' };
     try {
@@ -717,7 +726,7 @@ function registerIpcHandlers() {
     return undefined;
   }
 
-  ipcMain.handle('app:startLoading', async () => {
+  handle('app:startLoading', async () => {
     if (isLoading) {
       return { success: false, error: 'Loading already in progress' };
     }
@@ -780,8 +789,8 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplane:getPath', () => dataManager.getXPlanePath());
-  ipcMain.handle('xplane:setPath', (_, p: string) => {
+  handle('xplane:getPath', () => dataManager.getXPlanePath());
+  handle('xplane:setPath', (_, p: string) => {
     // Security: Validate path parameter
     if (typeof p !== 'string' || p.length === 0 || p.length > 1000) {
       logger.security.warn(`Invalid X-Plane path parameter: ${typeof p}`);
@@ -796,7 +805,7 @@ function registerIpcHandlers() {
   });
 
   // Change X-Plane path and reload with clean state
-  ipcMain.handle('xplane:changePath', (_, p: string) => {
+  handle('xplane:changePath', (_, p: string) => {
     // Security: Validate path parameter
     if (typeof p !== 'string' || p.length === 0 || p.length > 1000) {
       logger.security.warn(`Invalid X-Plane path parameter: ${typeof p}`);
@@ -830,9 +839,9 @@ function registerIpcHandlers() {
     return { success: true, errors: [] };
   });
 
-  ipcMain.handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
-  ipcMain.handle('xplane:detectInstallations', () => dataManager.detectInstallations());
-  ipcMain.handle('xplane:browseForPath', async () => {
+  handle('xplane:validatePath', (_, p: string) => dataManager.validatePath(p));
+  handle('xplane:detectInstallations', () => dataManager.detectInstallations());
+  handle('xplane:browseForPath', async () => {
     logger.main.info('browseForPath: called');
 
     const configuredPath = dataManager.getXPlanePath();
@@ -876,9 +885,9 @@ function registerIpcHandlers() {
   });
 
   // --- Multi-installation management ---
-  ipcMain.handle('xplane:getInstallations', () => getInstallations());
-  ipcMain.handle('xplane:getActiveInstallation', () => getActiveInstallation());
-  ipcMain.handle('xplane:addInstallation', (_, name: string, installPath: string) => {
+  handle('xplane:getInstallations', () => getInstallations());
+  handle('xplane:getActiveInstallation', () => getActiveInstallation());
+  handle('xplane:addInstallation', (_, name: string, installPath: string) => {
     if (typeof name !== 'string' || name.length === 0 || name.length > 100) {
       throw new Error('Invalid installation name');
     }
@@ -892,11 +901,11 @@ function registerIpcHandlers() {
     const installation = addInstallation(name, installPath);
     return { success: true, installation };
   });
-  ipcMain.handle('xplane:removeInstallation', (_, id: string) => {
+  handle('xplane:removeInstallation', (_, id: string) => {
     if (typeof id !== 'string') throw new Error('Invalid id');
     return removeInstallation(id);
   });
-  ipcMain.handle('xplane:renameInstallation', (_, id: string, name: string) => {
+  handle('xplane:renameInstallation', (_, id: string, name: string) => {
     if (
       typeof id !== 'string' ||
       typeof name !== 'string' ||
@@ -907,7 +916,7 @@ function registerIpcHandlers() {
     }
     return renameInstallation(id, name);
   });
-  ipcMain.handle('xplane:switchInstallation', (_, id: string) => {
+  handle('xplane:switchInstallation', (_, id: string) => {
     if (typeof id !== 'string') throw new Error('Invalid id');
     const success = setActiveInstallation(id);
     if (!success) return false;
@@ -922,16 +931,16 @@ function registerIpcHandlers() {
     return true;
   });
 
-  ipcMain.handle('get-airports', () => dataManager.getAllAirports());
-  ipcMain.handle('data:getDistinctCountries', () => dataManager.getDistinctCountries());
+  handle('get-airports', () => dataManager.getAllAirports());
+  handle('data:getDistinctCountries', () => dataManager.getDistinctCountries());
 
-  ipcMain.handle('airport:resync-custom', async () => {
+  handle('airport:resync-custom', async () => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return { synced: false, count: 0, diff: 0 };
     try {
       const result = await resyncCustomScenery(xplanePath);
       if (result.diff !== 0) {
-        mainWindow?.webContents.send('airports-updated');
+        broadcast('airports-updated');
       }
       return { synced: true, ...result };
     } catch (err) {
@@ -939,48 +948,48 @@ function registerIpcHandlers() {
       return { synced: false, count: 0, diff: 0 };
     }
   });
-  ipcMain.handle('get-airport-data', (_, icao: string) => {
+  handle('get-airport-data', (_, icao: string) => {
     if (!isValidICAO(icao)) throw new Error('Invalid ICAO code');
     logger.main.info(`[User] Airport selected: ${icao.toUpperCase()}`);
     return dataManager.getAirportData(icao.toUpperCase());
   });
 
-  ipcMain.handle('fetch-metar', async (_, icao: string) => {
+  handle('fetch-metar', async (_, icao: string) => {
     if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
     return proxyFetch(
       `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao.toUpperCase())}&format=raw`
     );
   });
 
-  ipcMain.handle('fetch-taf', async (_, icao: string) => {
+  handle('fetch-taf', async (_, icao: string) => {
     if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
     return proxyFetch(
       `https://aviationweather.gov/api/data/taf?ids=${encodeURIComponent(icao.toUpperCase())}&format=raw`
     );
   });
 
-  ipcMain.handle('fetch-gateway-releases', async () => {
+  handle('fetch-gateway-releases', async () => {
     return proxyFetch('https://gateway.x-plane.com/apiv1/releases');
   });
 
-  ipcMain.handle('fetch-gateway-release-packs', async (_, version: string) => {
+  handle('fetch-gateway-release-packs', async (_, version: string) => {
     if (!/^\d+\.\d+(\.\d+)?$/.test(version)) return { data: null, error: 'Invalid version format' };
     return proxyFetch(`https://gateway.x-plane.com/apiv1/release/${encodeURIComponent(version)}`);
   });
 
-  ipcMain.handle('fetch-gateway-airport', async (_, icao: string) => {
+  handle('fetch-gateway-airport', async (_, icao: string) => {
     if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
     return proxyFetch(
       `https://gateway.x-plane.com/apiv1/airport/${encodeURIComponent(icao.toUpperCase())}`
     );
   });
 
-  ipcMain.handle('fetch-gateway-scenery', async (_, sceneryId: number) => {
+  handle('fetch-gateway-scenery', async (_, sceneryId: number) => {
     if (!isValidSceneryId(sceneryId)) return { data: null, error: 'Invalid scenery ID' };
     return proxyFetch(`https://gateway.x-plane.com/apiv1/scenery/${sceneryId}`);
   });
 
-  ipcMain.handle('fetch-vatsim-data', async () => {
+  handle('fetch-vatsim-data', async () => {
     const result = await proxyFetch('https://data.vatsim.net/v3/vatsim-data.json');
     if (result.data) {
       try {
@@ -992,7 +1001,7 @@ function registerIpcHandlers() {
     return result;
   });
 
-  ipcMain.handle('fetch-ivao-data', async () => {
+  handle('fetch-ivao-data', async () => {
     const result = await proxyFetch('https://api.ivao.aero/v2/tracker/whazzup');
     if (result.data) {
       try {
@@ -1004,7 +1013,7 @@ function registerIpcHandlers() {
     return result;
   });
 
-  ipcMain.handle('fetch-vatsim-metar', async (_, icao: string) => {
+  handle('fetch-vatsim-metar', async (_, icao: string) => {
     if (!isValidICAO(icao)) return { data: null, error: 'Invalid ICAO code' };
     const result = await proxyFetch(
       `https://metar.vatsim.net/${encodeURIComponent(icao.toUpperCase())}`
@@ -1012,11 +1021,11 @@ function registerIpcHandlers() {
     return result;
   });
 
-  ipcMain.handle('fetch-vatsim-metars-all', async () => {
+  handle('fetch-vatsim-metars-all', async () => {
     return proxyFetch('https://metar.vatsim.net/metar.php?id=all');
   });
 
-  ipcMain.handle('fetch-vatsim-events', async () => {
+  handle('fetch-vatsim-events', async () => {
     const result = await proxyFetch('https://my.vatsim.net/api/v2/events/latest');
     if (result.data) {
       try {
@@ -1028,23 +1037,23 @@ function registerIpcHandlers() {
     return result;
   });
 
-  ipcMain.handle('vatsim-sectors:getData', async () => {
+  handle('vatsim-sectors:getData', async () => {
     return getVatsimSectorData();
   });
 
-  ipcMain.handle('vatsim-sectors:getStatus', async () => {
+  handle('vatsim-sectors:getStatus', async () => {
     return getVatsimSectorStatus();
   });
 
-  ipcMain.handle('vatsim-sectors:refresh', async () => {
+  handle('vatsim-sectors:refresh', async () => {
     return refreshVatsimSectorData();
   });
 
-  ipcMain.handle('vatsim-sectors:clearCache', () => {
+  handle('vatsim-sectors:clearCache', () => {
     return clearVatsimSectorData();
   });
 
-  ipcMain.handle('nav:loadDatabase', async (_, xplanePath?: string) => {
+  handle('nav:loadDatabase', async (_, xplanePath?: string) => {
     try {
       const status = await dataManager.loadAll(xplanePath || undefined);
       return { success: true, status };
@@ -1054,142 +1063,136 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('nav:getStatus', () => dataManager.getStatus());
+  handle('nav:getStatus', () => dataManager.getStatus());
 
-  ipcMain.handle('nav:getVORsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getVORsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getVORsInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getNDBsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getNDBsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getNDBsInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getDMEsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getDMEsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getDMEsInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getILSInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getILSInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getILSInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getGlideSlopesInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getGlideSlopesInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getGlideSlopesInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getMarkersInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getMarkersInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getMarkersInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle(
-    'nav:getILSComponentsInRadius',
-    (_, lat: number, lon: number, radiusNm: number) => {
-      const c = validateCoordinates(lat, lon, radiusNm);
-      if (isInvalidCoords(c)) throw new Error(c.error);
-      return dataManager.getILSComponentsInRadius(c.lat, c.lon, c.radius);
-    }
-  );
+  handle('nav:getILSComponentsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+    const c = validateCoordinates(lat, lon, radiusNm);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getILSComponentsInRadius(c.lat, c.lon, c.radius);
+  });
 
-  ipcMain.handle('nav:getApproachAidsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getApproachAidsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getApproachAidsInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getApproachNavaidsByAirport', (_, airportIcao: string) => {
+  handle('nav:getApproachNavaidsByAirport', (_, airportIcao: string) => {
     if (!isValidICAO(airportIcao)) throw new Error('Invalid ICAO code');
     return dataManager.getApproachNavaidsByAirport(airportIcao.toUpperCase());
   });
 
-  ipcMain.handle('nav:getApproachNavaidsByRunway', (_, airportIcao: string, runway: string) => {
+  handle('nav:getApproachNavaidsByRunway', (_, airportIcao: string, runway: string) => {
     if (!isValidICAO(airportIcao)) throw new Error('Invalid ICAO code');
     if (!isValidRunway(runway)) throw new Error('Invalid runway identifier');
     return dataManager.getApproachNavaidsByRunway(airportIcao.toUpperCase(), runway.toUpperCase());
   });
 
-  ipcMain.handle('nav:getWaypointsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getWaypointsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getWaypointsInRadius(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getAirspacesNearPoint', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getAirspacesNearPoint', (_, lat: number, lon: number, radiusNm: number) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getAirspacesNearPoint(c.lat, c.lon, c.radius);
   });
 
-  ipcMain.handle('nav:getAllAirspaces', () => dataManager.getAllAirspaces());
+  handle('nav:getAllAirspaces', () => dataManager.getAllAirspaces());
 
   // Airways are queried by name for flight plans (no more global display)
-  ipcMain.handle('nav:getAirwaySegments', (_, airwayName: string) => {
+  handle('nav:getAirwaySegments', (_, airwayName: string) => {
     if (!airwayName || typeof airwayName !== 'string' || airwayName.length > 10) return [];
     return dataManager.getAirwaySegments(airwayName.toUpperCase());
   });
 
-  ipcMain.handle('nav:searchNavaids', (_, query: string, limit = 20) => {
+  handle('nav:searchNavaids', (_, query: string, limit = 20) => {
     if (!isValidSearchQuery(query)) return [];
     return dataManager.searchNavaids(query, Math.min(Math.max(1, limit), 100));
   });
 
-  ipcMain.handle(
-    'nav:getAirportProcedures',
-    (_, icao: string): ResolvedAirportProcedures | null => {
-      if (!isValidICAO(icao)) return null;
-      const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
-      if (procedures) {
-        logger.main.info(
-          `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
-        );
-      }
-      return procedures;
+  handle('nav:getAirportProcedures', (_, icao: string): ResolvedAirportProcedures | null => {
+    if (!isValidICAO(icao)) return null;
+    const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
+    if (procedures) {
+      logger.main.info(
+        `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
+      );
     }
-  );
+    return procedures;
+  });
 
   // New navigation data handlers
-  ipcMain.handle('nav:getDataSources', () => dataManager.getDataSources());
+  handle('nav:getDataSources', () => dataManager.getDataSources());
 
-  ipcMain.handle('nav:getATCByFacility', (_, facilityId: string) => {
+  handle('nav:getATCByFacility', (_, facilityId: string) => {
     if (!facilityId || typeof facilityId !== 'string') return null;
     return dataManager.getATCByFacility(facilityId);
   });
 
-  ipcMain.handle('nav:getAllATCControllers', () => dataManager.getAllATCControllers());
+  handle('nav:getAllATCControllers', () => dataManager.getAllATCControllers());
 
-  ipcMain.handle('nav:getHoldingPatterns', (_, fixId: string) => {
+  handle('nav:getHoldingPatterns', (_, fixId: string) => {
     if (!fixId || typeof fixId !== 'string') return [];
     return dataManager.getHoldingPatternsForFix(fixId);
   });
 
-  ipcMain.handle('nav:getAirportMetadata', (_, icao: string) => {
+  handle('nav:getAirportMetadata', (_, icao: string) => {
     if (!isValidICAO(icao)) return null;
     return dataManager.getAirportMetadata(icao.toUpperCase());
   });
 
-  ipcMain.handle('nav:getTransitionAltitude', (_, icao: string) => {
+  handle('nav:getTransitionAltitude', (_, icao: string) => {
     if (!isValidICAO(icao)) return null;
     return dataManager.getTransitionAltitude(icao.toUpperCase());
   });
 
   // Bulk data retrieval for map layers (with coordinates resolved)
-  ipcMain.handle('nav:getAllHoldingPatterns', () => dataManager.getAllHoldingPatternsWithCoords());
+  handle('nav:getAllHoldingPatterns', () => dataManager.getAllHoldingPatternsWithCoords());
 
   // ==========================================================================
   // Bounds-based queries (SQLite direct - more efficient for large datasets)
   // ==========================================================================
 
-  ipcMain.handle(
+  handle(
     'nav:getNavaidsInBounds',
     (
       _,
@@ -1204,14 +1207,14 @@ function registerIpcHandlers() {
     }
   );
 
-  ipcMain.handle(
+  handle(
     'nav:getWaypointsInBounds',
     (_, minLat: number, maxLat: number, minLon: number, maxLon: number, limit?: number) => {
       return dataManager.getWaypointsInBoundsSql(minLat, maxLat, minLon, maxLon, limit);
     }
   );
 
-  ipcMain.handle(
+  handle(
     'nav:resolveWaypointCoords',
     (_, waypointId: string, region?: string, airportLat?: number, airportLon?: number) => {
       if (!waypointId || typeof waypointId !== 'string') return null;
@@ -1219,7 +1222,7 @@ function registerIpcHandlers() {
     }
   );
 
-  ipcMain.handle(
+  handle(
     'nav:resolveNavaidCoords',
     (_, navaidId: string, region?: string, airportLat?: number, airportLon?: number) => {
       if (!navaidId || typeof navaidId !== 'string') return null;
@@ -1227,18 +1230,12 @@ function registerIpcHandlers() {
     }
   );
 
-  ipcMain.on('log:error', (_, msg: string, args: unknown[]) =>
-    logger.error(`[Renderer] ${msg}`, ...args)
-  );
-  ipcMain.on('log:warn', (_, msg: string, args: unknown[]) =>
-    logger.warn(`[Renderer] ${msg}`, ...args)
-  );
-  ipcMain.on('log:info', (_, msg: string, args: unknown[]) =>
-    logger.info(`[Renderer] ${msg}`, ...args)
-  );
+  on('log:error', (_, msg: string, args: unknown[]) => logger.error(`[Renderer] ${msg}`, ...args));
+  on('log:warn', (_, msg: string, args: unknown[]) => logger.warn(`[Renderer] ${msg}`, ...args));
+  on('log:info', (_, msg: string, args: unknown[]) => logger.info(`[Renderer] ${msg}`, ...args));
 
   // Flight plan file handling
-  ipcMain.handle('flightplan:openFile', async () => {
+  handle('flightplan:openFile', async () => {
     const xplanePath = dataManager.getXPlanePath();
     const defaultPath = xplanePath ? path.join(xplanePath, 'Output', 'FMS plans') : undefined;
 
@@ -1275,7 +1272,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('flightplan:enrich', async (_, fmsData: unknown) => {
+  handle('flightplan:enrich', async (_, fmsData: unknown) => {
     try {
       // Lazy import to avoid loading at startup
       const { enrichFlightPlan } = await import('./lib/flightplan/fmsResolver');
@@ -1287,7 +1284,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('flightplan:resolveRoute', async (_, draft: unknown) => {
+  handle('flightplan:resolveRoute', async (_, draft: unknown) => {
     try {
       const { resolveRoute } = await import('./lib/flightplan/builder/routeResolver');
       const { enrichFlightPlan } = await import('./lib/flightplan/fmsResolver');
@@ -1306,7 +1303,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('flightplan:autoRoute', async (_, request: unknown) => {
+  handle('flightplan:autoRoute', async (_, request: unknown) => {
     try {
       const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
       const { refreshOceanicTracks } = await import('./lib/flightplan/builder/oceanicTracks');
@@ -1335,7 +1332,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('flightplan:saveFms', async (_, args: { stem?: unknown; content?: unknown }) => {
+  handle('flightplan:saveFms', async (_, args: { stem?: unknown; content?: unknown }) => {
     const stem = typeof args?.stem === 'string' ? args.stem.replace(/[^A-Za-z0-9_-]/g, '') : '';
     const content = typeof args?.content === 'string' ? args.content : '';
     if (!stem || !content || content.length > 1_000_000) {
@@ -1358,7 +1355,7 @@ function registerIpcHandlers() {
   });
 
   // SimBrief API
-  ipcMain.handle('simbrief:fetchLatest', async (_, pilotId: string) => {
+  handle('simbrief:fetchLatest', async (_, pilotId: string) => {
     // Validate pilot ID
     if (!pilotId || typeof pilotId !== 'string') {
       return { success: false, error: 'Invalid pilot ID' };
@@ -1400,7 +1397,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle(
+  handle(
     'simbrief:downloadFmsFile',
     async (_, args: { url: string; targetDir: string; filename: string }) => {
       const validated = validateDownloadArgs(args ?? {});
@@ -1443,31 +1440,28 @@ function registerIpcHandlers() {
     }
   );
 
-  ipcMain.handle(
-    'app:pickDirectory',
-    async (_, opts?: { title?: string; defaultPath?: string }) => {
-      const dialogOptions: Electron.OpenDialogOptions = {
-        properties: ['openDirectory', 'createDirectory'],
-        title: opts?.title ?? 'Select folder',
-        defaultPath: opts?.defaultPath,
-      };
+  handle('app:pickDirectory', async (_, opts?: { title?: string; defaultPath?: string }) => {
+    const dialogOptions: Electron.OpenDialogOptions = {
+      properties: ['openDirectory', 'createDirectory'],
+      title: opts?.title ?? 'Select folder',
+      defaultPath: opts?.defaultPath,
+    };
 
-      try {
-        const result =
-          mainWindow && !mainWindow.isDestroyed()
-            ? await dialog.showOpenDialog(mainWindow, dialogOptions)
-            : await dialog.showOpenDialog(dialogOptions);
+    try {
+      const result =
+        mainWindow && !mainWindow.isDestroyed()
+          ? await dialog.showOpenDialog(mainWindow, dialogOptions)
+          : await dialog.showOpenDialog(dialogOptions);
 
-        if (result.canceled || result.filePaths.length === 0) return null;
-        return result.filePaths[0]!;
-      } catch (err) {
-        logger.main.error('app:pickDirectory failed', err);
-        return null;
-      }
+      if (result.canceled || result.filePaths.length === 0) return null;
+      return result.filePaths[0]!;
+    } catch (err) {
+      logger.main.error('app:pickDirectory failed', err);
+      return null;
     }
-  );
+  });
 
-  ipcMain.handle('launcher:scanAircraft', async () => {
+  handle('launcher:scanAircraft', async () => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return { success: false, error: 'X-Plane path not configured', aircraft: [] };
     try {
@@ -1480,7 +1474,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('launcher:getAircraft', async () => {
+  handle('launcher:getAircraft', async () => {
     const xplanePath = dataManager.getXPlanePath();
     if (!xplanePath) return [];
     try {
@@ -1492,12 +1486,12 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('launcher:getWeatherPresets', async () => {
+  handle('launcher:getWeatherPresets', async () => {
     const { WEATHER_PRESETS } = await getLauncherModule();
     return WEATHER_PRESETS;
   });
 
-  ipcMain.handle(
+  handle(
     'launcher:launch',
     async (_, payload: unknown, extraArgs?: string[]): Promise<LaunchResult> => {
       const xplanePath = dataManager.getXPlanePath();
@@ -1535,7 +1529,7 @@ function registerIpcHandlers() {
     }
   );
 
-  ipcMain.handle('launcher:getAircraftImage', async (_, imagePath: string) => {
+  handle('launcher:getAircraftImage', async (_, imagePath: string) => {
     if (!imagePath || typeof imagePath !== 'string') return null;
 
     const xplanePath = dataManager.getXPlanePath();
@@ -1566,7 +1560,7 @@ function registerIpcHandlers() {
 
   // X-Plane API handlers (REST + WebSocket)
   // REST goes through main process to avoid CORS issues with localhost
-  ipcMain.handle('xplaneService:isAPIAvailable', async () => {
+  handle('xplaneService:isAPIAvailable', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
       return getXPlaneService().isAPIAvailable();
@@ -1576,7 +1570,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:getCapabilities', async () => {
+  handle('xplaneService:getCapabilities', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
       return getXPlaneService().getCapabilities();
@@ -1586,7 +1580,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:startFlight', async (_, payload) => {
+  handle('xplaneService:startFlight', async (_, payload) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
       return getXPlaneService().startFlight(payload);
@@ -1596,7 +1590,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:getDataref', async (_, datarefName: string) => {
+  handle('xplaneService:getDataref', async (_, datarefName: string) => {
     if (!datarefName || typeof datarefName !== 'string') return null;
     try {
       const { getXPlaneService } = await getXPlaneModule();
@@ -1606,59 +1600,48 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle(
-    'xplaneService:setDataref',
-    async (_, datarefName: string, value: number | number[]) => {
-      if (!datarefName || typeof datarefName !== 'string') {
-        return { success: false, error: 'Invalid dataref name' };
-      }
-      try {
-        const { getXPlaneService } = await getXPlaneModule();
-        return getXPlaneService().setDataref(datarefName, value);
-      } catch (error) {
-        logger.main.error('Failed to set X-Plane dataref', error);
-        return { success: false, error: (error as Error).message };
-      }
+  handle('xplaneService:setDataref', async (_, datarefName: string, value: number | number[]) => {
+    if (!datarefName || typeof datarefName !== 'string') {
+      return { success: false, error: 'Invalid dataref name' };
     }
-  );
-
-  ipcMain.handle(
-    'xplaneService:activateCommand',
-    async (_, commandName: string, duration: number = 0) => {
-      if (!commandName || typeof commandName !== 'string') {
-        return { success: false, error: 'Invalid command name' };
-      }
-      try {
-        const { getXPlaneService } = await getXPlaneModule();
-        return getXPlaneService().activateCommand(commandName, duration);
-      } catch (error) {
-        logger.main.error('Failed to activate X-Plane command', error);
-        return { success: false, error: (error as Error).message };
-      }
-    }
-  );
-
-  // WebSocket streaming
-  ipcMain.handle('xplaneService:startStateStream', async (event) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      getXPlaneService().startStateStream(
-        (state: PlaneState) => {
-          if (!event.sender.isDestroyed()) {
-            event.sender.send('xplaneService:stateUpdate', state);
-          }
+      return getXPlaneService().setDataref(datarefName, value);
+    } catch (error) {
+      logger.main.error('Failed to set X-Plane dataref', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  handle('xplaneService:activateCommand', async (_, commandName: string, duration: number = 0) => {
+    if (!commandName || typeof commandName !== 'string') {
+      return { success: false, error: 'Invalid command name' };
+    }
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().activateCommand(commandName, duration);
+    } catch (error) {
+      logger.main.error('Failed to activate X-Plane command', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  // WebSocket streaming
+  handle('xplaneService:startStateStream', async (event) => {
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      const sender = event.sender;
+      getXPlaneService().startStateStream(streamSubscriberId(event), {
+        onUpdate: (state: PlaneState) => {
+          if (!sender.isDestroyed()) sender.send('xplaneService:stateUpdate', state);
         },
-        (connected: boolean) => {
-          if (!event.sender.isDestroyed()) {
-            event.sender.send('xplaneService:connectionChange', connected);
-          }
+        onConnectionChange: (connected: boolean) => {
+          if (!sender.isDestroyed()) sender.send('xplaneService:connectionChange', connected);
         },
-        () => {
-          if (!event.sender.isDestroyed()) {
-            event.sender.send('xplaneService:stateClear');
-          }
-        }
-      );
+        onStateClear: () => {
+          if (!sender.isDestroyed()) sender.send('xplaneService:stateClear');
+        },
+      });
       return { success: true };
     } catch (error) {
       logger.main.error('Failed to start X-Plane state stream', error);
@@ -1666,14 +1649,17 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:setTrafficEnabled', async (event, enabled: boolean) => {
+  handle('xplaneService:setTrafficEnabled', async (event, enabled: boolean) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      getXPlaneService().setTrafficEnabled(enabled === true, (snapshot) => {
-        if (!event.sender.isDestroyed()) {
-          event.sender.send('xplaneService:trafficUpdate', snapshot);
+      const sender = event.sender;
+      getXPlaneService().setTrafficEnabled(
+        streamSubscriberId(event),
+        enabled === true,
+        (snapshot) => {
+          if (!sender.isDestroyed()) sender.send('xplaneService:trafficUpdate', snapshot);
         }
-      });
+      );
       return { success: true };
     } catch (error) {
       logger.main.error('Failed to toggle X-Plane traffic stream', error);
@@ -1681,10 +1667,10 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:stopStateStream', async () => {
+  handle('xplaneService:stopStateStream', async (event) => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
-      getXPlaneService().stopStateStream();
+      getXPlaneService().stopStateStream(streamSubscriberId(event));
       return { success: true };
     } catch (error) {
       logger.main.error('Failed to stop X-Plane state stream', error);
@@ -1692,7 +1678,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:forceReconnect', async () => {
+  handle('xplaneService:forceReconnect', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
       getXPlaneService().forceReconnect();
@@ -1703,7 +1689,7 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle('xplaneService:isStreamConnected', async () => {
+  handle('xplaneService:isStreamConnected', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
       return getXPlaneService().isStreamConnected();
@@ -1729,7 +1715,7 @@ function registerIpcHandlers() {
   });
   registerXPlaneLogIPC(() => dataManager.getXPlanePath());
 
-  ipcMain.handle('taxi:writeRoute', async (_, json: string) => {
+  handle('taxi:writeRoute', async (_, json: string) => {
     try {
       const xplanePath = dataManager.getXPlanePath();
       if (!xplanePath) {
@@ -1777,7 +1763,7 @@ function handleDeepLink(url: string): void {
   // xdispatch://airport/LFMN → host="airport", pathname="/LFMN"
   if (parsed.host === 'airport' && parsed.pathname.length > 1) {
     const icao = parsed.pathname.slice(1).toUpperCase();
-    mainWindow?.webContents.send('deep-link', { type: 'airport', icao });
+    broadcast('deep-link', { type: 'airport', icao });
   }
 }
 
@@ -1957,6 +1943,20 @@ app.whenReady().then(async () => {
   registerTileCacheHandler();
 
   registerIpcHandlers();
+  initRemoteAccess({
+    rendererDir: path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`),
+    devServerUrl: MAIN_WINDOW_VITE_DEV_SERVER_URL || undefined,
+    fetchTile: fetchCachedTile,
+    onClientDisconnected: (clientId) => {
+      void getXPlaneModule().then(({ getXPlaneService }) =>
+        getXPlaneService().unsubscribe(clientId)
+      );
+    },
+    analytics: {
+      track: (event, props) => analytics.track(event, props),
+      recordTabletClients: (count) => analytics.recordTabletClients(count),
+    },
+  });
   mainWindow = createWindow();
   reportDisplay(mainWindow);
 
@@ -1969,7 +1969,7 @@ app.whenReady().then(async () => {
       // destroyed-but-still-truthy `mainWindow` would still throw on
       // `.webContents.send()`. Sentry X-DISPATCH-E.
       if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('focus-search');
+        broadcast('focus-search');
       }
     });
   });
@@ -1996,6 +1996,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   // Synchronous: stores the session length for the next launch and never delays quitting.
   analytics.endSession();
+  void stopRemoteAccess();
 
   // Session summary
   const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000 / 60);
