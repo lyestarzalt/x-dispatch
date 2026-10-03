@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { uuid } from '@/lib/utils/uuid';
 
 export interface CompanionApp {
   id: string;
@@ -24,7 +25,7 @@ export const useCompanionAppsStore = create<CompanionAppsState>()(
       tools: [],
       addTool: (input) =>
         set((s) => ({
-          tools: [...s.tools, { id: crypto.randomUUID(), ...input }],
+          tools: [...s.tools, { id: uuid(), ...input }],
         })),
       updateTool: (id, patch) =>
         set((s) => ({

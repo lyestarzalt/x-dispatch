@@ -10,3 +10,4 @@ export { default as SupportSection } from './SupportSection';
 export { CompanionAppsSection } from './CompanionAppsSection';
 export { LogsSection } from './LogsSection';
 export { FlightsSection } from './FlightsSection';
+export { TabletAccessSection } from './TabletAccessSection';

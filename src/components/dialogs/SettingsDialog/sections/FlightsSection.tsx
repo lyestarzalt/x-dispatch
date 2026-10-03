@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { FolderOpen, PlaneLanding } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -62,14 +63,16 @@ export function FlightsSection() {
         title={t('settings.flights.storage')}
         description={t('settings.flights.storageDesc')}
       >
-        <Button
-          variant="ghost"
-          onClick={() => void window.flightsAPI.openFolder()}
-          className="hover:bg-secondary h-auto w-full justify-start gap-2 px-3 py-2 text-sm"
-        >
-          <FolderOpen className="text-muted-foreground h-4 w-4" />
-          {t('settings.flights.openFolder')}
-        </Button>
+        <DesktopOnly className="flex w-full">
+          <Button
+            variant="ghost"
+            onClick={() => void window.flightsAPI.openFolder()}
+            className="hover:bg-secondary h-auto w-full justify-start gap-2 px-3 py-2 text-sm"
+          >
+            <FolderOpen className="text-muted-foreground h-4 w-4" />
+            {t('settings.flights.openFolder')}
+          </Button>
+        </DesktopOnly>
       </SettingsSectionBlock>
     </div>
   );

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { trackEvent, useAnalyticsConsent, useSetAnalyticsConsent } from '@/queries';
@@ -26,6 +27,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
 
   // Crash reports setting (persisted in main process config)
   const [sendCrashReports, setSendCrashReports] = useState(false);
+  const isRemoteClient = useIsRemoteClient();
   const [isLoadingCrashReports, setIsLoadingCrashReports] = useState(true);
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           description={t('settings.about.crashReportsDescription')}
           checked={sendCrashReports}
           onCheckedChange={handleCrashReportsChange}
-          disabled={isLoadingCrashReports}
+          disabled={isRemoteClient || isLoadingCrashReports}
         />
         <p className="text-muted-foreground text-sm">{t('settings.about.crashReportsNote')}</p>
         <SettingsToggleRow

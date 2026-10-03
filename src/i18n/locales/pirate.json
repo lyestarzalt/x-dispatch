@@ -425,7 +425,8 @@
       "about": "Ship's Log",
       "companionApps": "Companion Mateys",
       "logs": "X-Plane Cap'n's Logs",
-      "flights": "Voyages"
+      "flights": "Voyages",
+      "tablet": "Tablet access"
     },
     "airports": {
       "title": "Ports of Call",
@@ -792,6 +793,29 @@
       "storage": "Stowage",
       "storageDesc": "Voyages be stowed as files in the X-Dispatch data hold.",
       "openFolder": "Open the voyages hold"
+    },
+    "tablet": {
+      "title": "Tablet access",
+      "description": "Open X-Dispatch in a browser on a tablet on the same Wi-Fi. Your computer keeps doing the work; the tablet is a second screen.",
+      "accessSection": "Access",
+      "firewallNote": "Windows will ask to allow X-Dispatch through the firewall the first time you turn this on. Allow it for private networks.",
+      "enable": "Allow tablet access",
+      "enableDesc": "Starts a local server on your network. Off by default; devices need the QR code to connect.",
+      "port": "Port",
+      "portDesc": "Change it if another program already uses this port ({{min}}–{{max}}). Devices need to scan again.",
+      "portInvalid": "Enter a number between {{min}} and {{max}}.",
+      "startError": "The server could not start: {{error}}",
+      "pairSection": "Pair a device",
+      "pairDesc": "Scan the code with the tablet camera, or type the address in its browser.",
+      "otherAddresses": "Also reachable at {{addresses}}",
+      "copyLink": "Copy link",
+      "copied": "Link copied",
+      "resetPairing": "Reset pairing",
+      "resetPairingConfirm": "Every connected device is disconnected and needs to scan the new code.",
+      "noNetwork": "No network address found. Connect this computer to Wi-Fi or Ethernet.",
+      "devicesSection": "Connected devices",
+      "noDevices": "No device connected",
+      "disconnectAll": "Disconnect all"
     }
   },
   "sidebar": {
@@ -1993,5 +2017,10 @@
     "count_one": "{{count}} part",
     "count_other": "{{count}} parts",
     "noResults": "No part matches yer search"
+  },
+  "tablet": {
+    "desktopOnly": "Available in X-Dispatch on your computer",
+    "reconnecting": "Connection to X-Dispatch lost. Reconnecting…",
+    "pairingReset": "Pairing was reset. Scan the QR code in X-Dispatch again."
   }
 }

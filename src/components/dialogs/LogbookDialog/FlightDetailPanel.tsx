@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Copy, Map as MapIcon, Play, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -143,15 +144,17 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
             </Button>
           )}
           <div className="flex-1" />
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-destructive hover:text-destructive"
-            onClick={() => setConfirmDelete(true)}
-          >
-            <Trash2 className="mr-1.5 h-4 w-4" />
-            {t('logbook.delete')}
-          </Button>
+          <DesktopOnly>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              {t('logbook.delete')}
+            </Button>
+          </DesktopOnly>
         </div>
 
         <dl className="border-border/50 bg-card/60 grid grid-cols-4 gap-x-4 gap-y-3 rounded-lg border p-4">

@@ -1,6 +1,6 @@
-import { net, protocol } from 'electron';
+import { protocol } from 'electron';
 import logger from '@/lib/utils/logger';
-import { getTileCache } from './index';
+import { fetchCachedTile } from './fetchTile';
 
 /**
  * Register the tile-cache:// scheme as privileged.
@@ -31,57 +31,12 @@ export function registerTileCacheScheme(): void {
 export function registerTileCacheHandler(): void {
   protocol.handle('tile-cache', async (request) => {
     // Reconstruct original HTTPS URL: tile-cache://host/path → https://host/path
-    const originalUrl = request.url.replace('tile-cache://', 'https://');
-
-    try {
-      const cache = getTileCache();
-
-      // Try cache first
-      const cached = await cache.get(originalUrl);
-      if (cached) {
-        return new Response(new Uint8Array(cached.data), {
-          status: 200,
-          headers: {
-            'Content-Type': cached.contentType,
-            'X-Tile-Cache': 'HIT',
-          },
-        });
-      }
-
-      // Cache miss — fetch from origin
-      const response = await net.fetch(originalUrl);
-
-      if (!response.ok) {
-        return new Response(null, { status: response.status, statusText: response.statusText });
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const contentType = response.headers.get('content-type') || 'application/octet-stream';
-
-      // Store in cache
-      cache.put(originalUrl, buffer, contentType);
-
-      return new Response(new Uint8Array(buffer), {
-        status: 200,
-        headers: {
-          'Content-Type': contentType,
-          'X-Tile-Cache': 'MISS',
-        },
-      });
-    } catch (err) {
-      // Cache closed during shutdown or fetch failed — passthrough to origin
-      try {
-        return await net.fetch(originalUrl);
-      } catch (fetchErr) {
-        // A tile the user's network can't reach is never a defect: the map skips it.
-        // Warn with the message only; an Error argument would be forwarded to Sentry.
-        logger.main.warn(
-          `Tile fetch failed: ${originalUrl} (${(fetchErr as Error).message ?? err})`
-        );
-        return new Response(null, { status: 502, statusText: 'Tile fetch failed' });
-      }
-    }
+    const tile = await fetchCachedTile(request.url.replace('tile-cache://', 'https://'));
+    if (!tile.body) return new Response(null, { status: tile.status });
+    return new Response(new Uint8Array(tile.body), {
+      status: 200,
+      headers: { 'Content-Type': tile.contentType, 'X-Tile-Cache': tile.cacheHit ? 'HIT' : 'MISS' },
+    });
   });
 
   logger.main.info('Tile cache protocol handler registered');

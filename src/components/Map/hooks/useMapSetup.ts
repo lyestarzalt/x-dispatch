@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import '@/lib/map/maplibreWorker';
+import { toTileCacheUrl } from '@/lib/map/tileCacheUrl';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import type { DistanceUnit } from '@/lib/utils/units';
 import { Airport } from '@/lib/xplaneServices/dataService';
@@ -195,7 +196,7 @@ export function useMapSetup({
             url.includes('arcgisonline.com') ||
             url.includes('rainviewer.com'))
         ) {
-          return { url: url.replace('https://', 'tile-cache://') };
+          return { url: toTileCacheUrl(url) };
         }
         return { url };
       },

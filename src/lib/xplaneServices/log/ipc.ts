@@ -1,7 +1,8 @@
-import { ipcMain, shell } from 'electron';
+import { shell } from 'electron';
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { handle } from '@/lib/remote/handlerRegistry';
 import logger from '@/lib/utils/logger';
 
 const TAIL_BYTES = 5_000_000;
@@ -76,6 +77,6 @@ export async function openXPlaneLogExternally(
 }
 
 export function registerXPlaneLogIPC(getXPlanePath: () => string | null): void {
-  ipcMain.handle('xp-log:read', () => readXPlaneLog(getXPlanePath()));
-  ipcMain.handle('xp-log:openExternal', () => openXPlaneLogExternally(getXPlanePath()));
+  handle('xp-log:read', () => readXPlaneLog(getXPlanePath()));
+  handle('xp-log:openExternal', () => openXPlaneLogExternally(getXPlanePath()));
 }

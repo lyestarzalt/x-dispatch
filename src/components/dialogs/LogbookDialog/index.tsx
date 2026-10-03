@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { BookOpen, History, PlaneLanding, Trash2, X } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -74,15 +75,17 @@ export default function LogbookDialog() {
             {tab === 'flights' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={flights.length === 0}
-                    className="text-destructive hover:text-destructive h-7 text-xs"
-                  >
-                    <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                    {t('logbook.clearAll')}
-                  </Button>
+                  <DesktopOnly>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={flights.length === 0}
+                      className="text-destructive hover:text-destructive h-7 text-xs"
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      {t('logbook.clearAll')}
+                    </Button>
+                  </DesktopOnly>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>

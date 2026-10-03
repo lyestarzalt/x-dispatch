@@ -164,6 +164,7 @@ export const ANALYTICS_SETTINGS_TABS = [
   'airports',
   'simbrief',
   'companion-apps',
+  'tablet',
   'logs',
   'support',
   'about',
@@ -322,6 +323,10 @@ const EVENT_SCHEMA = {
   simbrief_imported: {},
   fms_exported: {},
   settings_tab_opened: { tab: oneOf(ANALYTICS_SETTINGS_TABS) },
+  /** Tablet access turned on or off in Settings. */
+  tablet_access_toggled: { enabled: { kind: 'boolean' } },
+  /** A device opened the UI over the network; `devices` is how many are connected now. */
+  tablet_connected: { devices: { kind: 'count' } },
   /** One per configured companion app at session start, by known tool id only. */
   companion_app_configured: {
     app: oneOf(ANALYTICS_COMPANION_APPS),

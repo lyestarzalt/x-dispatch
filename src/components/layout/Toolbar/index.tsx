@@ -38,6 +38,7 @@ import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters
 import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRadar';
 import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +62,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
@@ -396,6 +398,7 @@ function Toolbar({
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [addonManagerOpen, setAddonManagerOpen] = useState(false);
+  const isRemoteClient = useIsRemoteClient();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -699,15 +702,17 @@ function Toolbar({
       </div>
 
       {/* Addon Manager */}
-      <Button
-        variant="outline"
-        onClick={() => setAddonManagerOpen(true)}
-        className="h-9 gap-2 px-3"
-        tooltip={t('toolbar.tooltips.addons')}
-      >
-        <Package className="h-4 w-4" />
-        <span className="text-sm font-medium">{t('toolbar.addons')}</span>
-      </Button>
+      <DesktopOnly>
+        <Button
+          variant="outline"
+          onClick={() => setAddonManagerOpen(true)}
+          className="h-9 gap-2 px-3"
+          tooltip={t('toolbar.tooltips.addons')}
+        >
+          <Package className="h-4 w-4" />
+          <span className="text-sm font-medium">{t('toolbar.addons')}</span>
+        </Button>
+      </DesktopOnly>
 
       {/* Flight Plan dropdown */}
       <Tooltip>
@@ -737,6 +742,7 @@ function Toolbar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleLoadFlightPlan}
+              disabled={isRemoteClient}
               className={cn(fmsData && !simbriefData && 'text-info')}
             >
               <FileUp className="mr-2 h-4 w-4" />

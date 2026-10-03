@@ -1,5 +1,6 @@
-import { BrowserWindow, app, ipcMain, shell } from 'electron';
+import { app, shell } from 'electron';
 import * as path from 'path';
+import { broadcast, handle } from '@/lib/remote/handlerRegistry';
 import logger from '@/lib/utils/logger';
 import type { AircraftHint, FlightAirport, FlightRecorderEvent } from '@/types/flightRecorder';
 import { FlightRecorder } from './FlightRecorder';
@@ -125,9 +126,7 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
   };
 
   const emit = (event: FlightRecorderEvent) => {
-    for (const win of BrowserWindow.getAllWindows()) {
-      if (!win.isDestroyed()) win.webContents.send('flights:event', event);
-    }
+    broadcast('flights:event', event);
   };
 
   const recorder = new FlightRecorder({
@@ -147,26 +146,26 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
     onConnectionChange: (connected) => recorder.onConnectionChange(connected),
   });
 
-  ipcMain.handle('flights:list', () => store.list());
-  ipcMain.handle('flights:get', async (_, id: string) => {
+  handle('flights:list', () => store.list());
+  handle('flights:get', async (_, id: string) => {
     await store.flush(id);
     return store.get(id);
   });
-  ipcMain.handle('flights:delete', (_, id: string) => store.delete(id));
-  ipcMain.handle('flights:clear', async () => {
+  handle('flights:delete', (_, id: string) => store.delete(id));
+  handle('flights:clear', async () => {
     await store.clear();
     // The flight being recorded keeps going; give it a fresh file to append to.
     const live = recorder.liveState().flight;
     if (live) store.create(live);
   });
-  ipcMain.handle('flights:liveState', () => recorder.liveState());
-  ipcMain.handle('flights:setAircraftHint', (_, hint: AircraftHint | null) => {
+  handle('flights:liveState', () => recorder.liveState());
+  handle('flights:setAircraftHint', (_, hint: AircraftHint | null) => {
     recorder.setAircraftHint(hint);
   });
-  ipcMain.handle('flights:setEnabled', (_, enabled: boolean) => {
+  handle('flights:setEnabled', (_, enabled: boolean) => {
     recorder.setEnabled(enabled);
   });
-  ipcMain.handle('flights:openFolder', () => shell.openPath(store.directory));
+  handle('flights:openFolder', () => shell.openPath(store.directory));
 
   return recorder;
 }

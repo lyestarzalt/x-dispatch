@@ -144,3 +144,31 @@ describe('createAnalytics', () => {
     expect(pending()).toBeNull();
   });
 });
+
+describe('tablet access', () => {
+  it('marks events that came from a tablet and leaves desktop events unmarked', () => {
+    const { analytics, events } = setup();
+    analytics.startSession();
+    analytics.track('feature_opened', { feature: 'logbook' });
+    analytics.track('feature_opened', { feature: 'logbook' }, { remote: true });
+    const opened = events().filter((e) => e.event === 'feature_opened');
+    expect(opened[0]?.properties.remote).toBe(false);
+    expect(opened[1]?.properties.remote).toBe(true);
+  });
+
+  it('reports the peak number of tablets with the session summary', () => {
+    const first = setup();
+    first.analytics.startSession();
+    first.analytics.recordTabletClients(1);
+    first.analytics.recordTabletClients(3);
+    first.analytics.recordTabletClients(0);
+    first.advance(60_000);
+    first.analytics.endSession();
+    expect(first.pending()?.tabletClientsPeak).toBe(3);
+
+    const next = setup({ pending: first.pending()! });
+    next.analytics.startSession();
+    const ended = next.events().find((e) => e.event === 'session_ended');
+    expect(ended?.properties.tablet_clients).toBe(3);
+  });
+});

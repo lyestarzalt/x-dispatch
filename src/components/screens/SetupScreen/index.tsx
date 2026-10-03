@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronRight, FolderOpen } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -90,15 +91,17 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
 
         {/* Actions */}
         <div className="space-y-3">
-          <Button
-            variant="outline"
-            onClick={handleBrowse}
-            disabled={loading}
-            className="w-full gap-2"
-          >
-            {loading && !selectedPath ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
-            {selectedPath ? t('setup.changeFolder') : t('setup.selectFolder')}
-          </Button>
+          <DesktopOnly className="flex w-full">
+            <Button
+              variant="outline"
+              onClick={handleBrowse}
+              disabled={loading}
+              className="w-full gap-2"
+            >
+              {loading && !selectedPath ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
+              {selectedPath ? t('setup.changeFolder') : t('setup.selectFolder')}
+            </Button>
+          </DesktopOnly>
 
           {selectedPath && (
             <Button onClick={handleContinue} disabled={loading} className="w-full gap-2">

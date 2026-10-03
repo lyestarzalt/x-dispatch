@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Route,
 } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -318,17 +319,19 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
         )}
         icon={RefreshCw}
       >
-        <Button
-          variant="outline"
-          onClick={handleClearCache}
-          disabled={isClearing}
-          className="gap-2"
-        >
-          {isClearing ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
-          {isClearing
-            ? t('settings.navigation.clearingCache', 'Clearing...')
-            : t('settings.navigation.clearCache', 'Clear Cache & Reload')}
-        </Button>
+        <DesktopOnly>
+          <Button
+            variant="outline"
+            onClick={handleClearCache}
+            disabled={isClearing}
+            className="gap-2"
+          >
+            {isClearing ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
+            {isClearing
+              ? t('settings.navigation.clearingCache', 'Clearing...')
+              : t('settings.navigation.clearCache', 'Clear Cache & Reload')}
+          </Button>
+        </DesktopOnly>
       </SettingsSectionBlock>
     </div>
   );

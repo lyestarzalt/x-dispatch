@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FolderOpen } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -97,9 +98,11 @@ export function CompanionAppEditDialog({
                 onChange={(e) => setExePath(e.target.value)}
                 className="flex-1 font-mono text-xs"
               />
-              <Button type="button" variant="outline" size="icon" onClick={browseExe}>
-                <FolderOpen className="h-4 w-4" />
-              </Button>
+              <DesktopOnly>
+                <Button type="button" variant="outline" size="icon" onClick={browseExe}>
+                  <FolderOpen className="h-4 w-4" />
+                </Button>
+              </DesktopOnly>
             </div>
           </div>
 

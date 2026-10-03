@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Folder } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -142,10 +143,12 @@ export function EditFmsTargetDialog({
                 placeholder={t('settings.simbrief.fmsExportTargets.folderPlaceholder')}
                 className="font-mono text-xs"
               />
-              <Button type="button" variant="outline" onClick={handlePickFolder}>
-                <Folder className="mr-2 h-4 w-4" />
-                {t('common.browse', 'Browse')}
-              </Button>
+              <DesktopOnly>
+                <Button type="button" variant="outline" onClick={handlePickFolder}>
+                  <Folder className="mr-2 h-4 w-4" />
+                  {t('common.browse', 'Browse')}
+                </Button>
+              </DesktopOnly>
             </div>
           </div>
         </div>

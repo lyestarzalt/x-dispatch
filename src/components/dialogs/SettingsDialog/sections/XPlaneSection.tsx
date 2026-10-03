@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Check, FolderOpen, Pencil, Plane, Trash2 } from 'lucide-react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -195,37 +196,43 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                 )}
                 <div className="ml-auto flex items-center gap-1">
                   {!isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => {
-                        setEditingId(install.id);
-                        setEditName(install.name);
-                      }}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                  {!isActive && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => handleSwitch(install.id)}
-                        disabled={loading}
-                      >
-                        {t('settings.xplane.switch')}
-                      </Button>
+                    <DesktopOnly>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive h-7 w-7"
-                        onClick={() => handleRemove(install.id)}
+                        className="h-7 w-7"
+                        onClick={() => {
+                          setEditingId(install.id);
+                          setEditName(install.name);
+                        }}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
+                    </DesktopOnly>
+                  )}
+                  {!isActive && (
+                    <>
+                      <DesktopOnly>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => handleSwitch(install.id)}
+                          disabled={loading}
+                        >
+                          {t('settings.xplane.switch')}
+                        </Button>
+                      </DesktopOnly>
+                      <DesktopOnly>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive h-7 w-7"
+                          onClick={() => handleRemove(install.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </DesktopOnly>
                     </>
                   )}
                 </div>
@@ -281,10 +288,12 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
           </div>
         </div>
       ) : (
-        <Button variant="outline" onClick={handleBrowse} disabled={loading} className="gap-2">
-          {loading ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
-          {t('settings.xplane.addInstallation')}
-        </Button>
+        <DesktopOnly>
+          <Button variant="outline" onClick={handleBrowse} disabled={loading} className="gap-2">
+            {loading ? <Spinner /> : <FolderOpen className="h-4 w-4" />}
+            {t('settings.xplane.addInstallation')}
+          </Button>
+        </DesktopOnly>
       )}
 
       {/* Launch Behavior */}
