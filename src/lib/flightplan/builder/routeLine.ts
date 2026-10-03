@@ -1,23 +1,15 @@
 /**
- * The line the map draws for a plan, built the way a departure is actually
- * flown: roll down the runway, climb straight ahead, then one turn of fixed
- * radius that ends tangent to the direct leg for the first fix. Between fixes
- * the turns are fly-by arcs; the arrival joins a straight final onto the
- * threshold. Without a runway the airport datum stands in, as before.
+ * The line the map draws for a plan, built the way Little Navmap draws its route:
+ * straight legs between fixes, with pre-built procedure geometry spliced in where
+ * a SID/STAR/approach is chosen. Without procedures LNM's "custom" legs stand in:
+ * roll down the runway and run straight out for a few miles, and join a short
+ * straight final onto the arrival threshold. No fly-by arcs are ever invented.
  */
 import type { RunwayEnd } from '@/types/fms';
-import { type LatLon, destinationPoint, smoothRoutePath } from './geometry';
+import { type LatLon, destinationPoint } from './geometry';
 
-/** Straight-ahead climb after the runway end before the first turn. */
-const CLIMB_OUT_NM = 2;
-/** Length of the straight final onto the threshold. */
-const FINAL_NM = 6;
-/** Turn radius after take-off, at climb speed. */
-const TERMINAL_TURN_RADIUS_NM = 2;
-/** Fly-by radius between enroute fixes. */
-const ENROUTE_TURN_RADIUS_NM = 3;
-const ARC_STEP_RAD = (10 * Math.PI) / 180;
-const NM_PER_DEG_LAT = 60;
+/** LNM's custom departure/approach leg length when no procedure is chosen. */
+const CUSTOM_LEG_NM = 3;
 
 interface RoutePoint extends LatLon {
   via?: string;
@@ -28,131 +20,38 @@ export interface RunwayEnds {
   arrival?: RunwayEnd;
 }
 
-export function takeoffPath(end: RunwayEnd, climbOutNm = CLIMB_OUT_NM): LatLon[] {
+/** Threshold, runway end, then `climbOutNm` straight ahead (LNM: CUSTOM_DEP_RUNWAY + CUSTOM_DEP_END). */
+export function takeoffPath(end: RunwayEnd, climbOutNm = CUSTOM_LEG_NM): LatLon[] {
   const threshold = { latitude: end.latitude, longitude: end.longitude };
   const farEnd = destinationPoint(threshold, end.headingDeg, end.lengthNm);
   if (climbOutNm < 0.1) return [threshold, farEnd];
   return [threshold, farEnd, destinationPoint(farEnd, end.headingDeg, climbOutNm)];
 }
 
-/** Distance flown along `headingDeg` from `from` before `to` is abeam; negative when behind. */
-function alongTrackNm(from: LatLon, headingDeg: number, to: LatLon): number {
-  const kx = NM_PER_DEG_LAT * Math.cos((from.latitude * Math.PI) / 180);
-  const dx = (to.longitude - from.longitude) * kx;
-  const dy = (to.latitude - from.latitude) * NM_PER_DEG_LAT;
-  const h = (headingDeg * Math.PI) / 180;
-  return dx * Math.sin(h) + dy * Math.cos(h);
-}
-
-export function finalApproachPath(end: RunwayEnd): LatLon[] {
+/** A straight final onto the threshold (LNM: CUSTOM_APP_START + CUSTOM_APP_RUNWAY). */
+export function finalApproachPath(end: RunwayEnd, finalNm = CUSTOM_LEG_NM): LatLon[] {
   const threshold = { latitude: end.latitude, longitude: end.longitude };
   const reciprocal = (end.headingDeg + 180) % 360;
-  return [destinationPoint(threshold, reciprocal, FINAL_NM), threshold];
-}
-
-/**
- * Arc from `from`, flying `trackDeg`, onto the tangent that leads straight to
- * `fix`. Tries both turn directions and keeps the shorter path. Empty when the
- * fix is inside both turn circles, in which case going direct is the best we
- * can draw.
- */
-export function turnOntoFix(
-  from: LatLon,
-  trackDeg: number,
-  fix: LatLon,
-  radiusNm: number,
-  turn?: 'L' | 'R'
-): LatLon[] {
-  const kx = NM_PER_DEG_LAT * Math.cos((from.latitude * Math.PI) / 180);
-  const f = {
-    x: (fix.longitude - from.longitude) * kx,
-    y: (fix.latitude - from.latitude) * NM_PER_DEG_LAT,
-  };
-  const h = (trackDeg * Math.PI) / 180;
-  const r = radiusNm;
-
-  let best: {
-    side: 1 | -1;
-    center: { x: number; y: number };
-    theta0: number;
-    sweep: number;
-  } | null = null;
-  let bestLength = Infinity;
-
-  const sides: readonly (1 | -1)[] = turn === 'R' ? [1] : turn === 'L' ? [-1] : [1, -1];
-  for (const side of sides) {
-    // Centre sits one radius off the track: to the right for a right turn.
-    const center = { x: side * Math.cos(h) * r, y: -side * Math.sin(h) * r };
-    const d = Math.hypot(f.x - center.x, f.y - center.y);
-    if (d <= r) continue;
-    const alpha = Math.atan2(f.y - center.y, f.x - center.x);
-    const delta = Math.acos(r / d);
-    const theta0 = Math.atan2(-center.y, -center.x);
-    for (const theta of [alpha + delta, alpha - delta]) {
-      const t = { x: center.x + r * Math.cos(theta), y: center.y + r * Math.sin(theta) };
-      // Velocity on the circle at theta, clockwise for a right turn.
-      const vel =
-        side === 1
-          ? { x: Math.sin(theta), y: -Math.cos(theta) }
-          : { x: -Math.sin(theta), y: Math.cos(theta) };
-      const toFix = { x: f.x - t.x, y: f.y - t.y };
-      if (vel.x * toFix.x + vel.y * toFix.y <= 0) continue;
-      const raw = side === 1 ? theta0 - theta : theta - theta0;
-      const sweep = ((raw % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-      const length = sweep * r + Math.hypot(toFix.x, toFix.y);
-      if (length < bestLength) {
-        bestLength = length;
-        best = { side, center, theta0, sweep };
-      }
-    }
-  }
-  if (!best) return [];
-
-  const steps = Math.max(2, Math.ceil(best.sweep / ARC_STEP_RAD));
-  const out: LatLon[] = [];
-  for (let i = 1; i <= steps; i++) {
-    const ang = best.theta0 - (best.side * best.sweep * i) / steps;
-    const x = best.center.x + r * Math.cos(ang);
-    const y = best.center.y + r * Math.sin(ang);
-    out.push({
-      latitude: from.latitude + y / NM_PER_DEG_LAT,
-      longitude: from.longitude + x / kx,
-    });
-  }
-  return out;
+  return [destinationPoint(threshold, reciprocal, finalNm), threshold];
 }
 
 /** Pre-built leg geometry to draw in place of the fixes that carry its via name. */
 export interface ProcedurePathHint {
   via: string;
   path: LatLon[];
+  /** Which procedure it is. An approach ends on the runway; no line is drawn back to the airport. */
+  kind?: 'sid' | 'star' | 'approach';
 }
 
-/** Straight climb, clamped so a first fix ahead is not overflown, then the turn onto it. */
-function departureHead(
-  end: RunwayEnd,
-  target: LatLon | undefined,
-  firstTurn?: 'L' | 'R',
-  initialClimbNm?: number
-): LatLon[] {
-  let climb = initialClimbNm ?? CLIMB_OUT_NM;
-  if (target) {
-    // A first fix near the field can sit short of the climb-out; stop the straight
-    // segment a turn radius before it rather than fly past and circle back. A fix
-    // behind the runway is a published turn-back and keeps the full climb.
-    const farEnd = destinationPoint(
-      { latitude: end.latitude, longitude: end.longitude },
-      end.headingDeg,
-      end.lengthNm
-    );
-    const along = alongTrackNm(farEnd, end.headingDeg, target);
-    if (along > 0) climb = Math.min(climb, Math.max(0, along - TERMINAL_TURN_RADIUS_NM));
-  }
-  const takeoff = takeoffPath(end, climb);
-  if (!target) return takeoff;
-  const climbEnd = takeoff[takeoff.length - 1]!;
-  const arc = turnOntoFix(climbEnd, end.headingDeg, target, TERMINAL_TURN_RADIUS_NM, firstTurn);
-  return [...takeoff, ...arc];
+/** What a stretch of the drawn line is, for colouring and labelling. */
+export type RouteLegKind = 'enroute' | 'sid' | 'star' | 'approach' | 'missed';
+
+export interface RouteLineSegment {
+  kind: RouteLegKind;
+  /** The procedure name for SID/STAR/approach segments. */
+  via?: string;
+  /** Starts where the previous segment ended, so segments draw as one continuous line. */
+  points: LatLon[];
 }
 
 function appendDeduped(line: LatLon[], points: LatLon[]): void {
@@ -169,68 +68,91 @@ function appendDeduped(line: LatLon[], points: LatLon[]): void {
   }
 }
 
-export function routeLinePoints(
+/**
+ * The drawn line as consecutive segments, each tagged with what it is. Pre-built procedure
+ * geometry becomes its own segment; everything between is plain enroute. Segments share their
+ * boundary point so they render as one unbroken line.
+ */
+export function routeLineSegments(
   waypoints: RoutePoint[],
   ends?: RunwayEnds,
-  firstTurn?: 'L' | 'R',
   initialClimbNm?: number,
   procedurePaths?: ProcedurePathHint[]
-): LatLon[] {
-  // Runs of fixes covered by pre-built leg geometry are drawn as that geometry;
-  // everything else is raw points that get fly-by smoothing.
-  interface Piece {
-    fixed: boolean;
-    pts: LatLon[];
-  }
-  const pathByVia = new Map((procedurePaths ?? []).map((p) => [p.via, p.path]));
-  const pieces: Piece[] = [];
+): RouteLineSegment[] {
+  const hintByVia = new Map((procedurePaths ?? []).map((p) => [p.via, p]));
+  const flysApproach = (procedurePaths ?? []).some(
+    (p) => p.kind === 'approach' && p.path.length > 1
+  );
+  const segments: RouteLineSegment[] = [];
   const used = new Set<string>();
   let departs = false;
+  let started = false;
+
+  const lastPoint = (): LatLon | undefined => {
+    const seg = segments[segments.length - 1];
+    return seg?.points[seg.points.length - 1];
+  };
+  const push = (kind: RouteLegKind, points: LatLon[], via?: string) => {
+    const current = segments[segments.length - 1];
+    if (current && current.kind === kind && current.via === via) {
+      appendDeduped(current.points, points);
+      return;
+    }
+    const prev = lastPoint();
+    const seg: RouteLineSegment = { kind, via, points: prev ? [prev] : [] };
+    appendDeduped(seg.points, points);
+    segments.push(seg);
+  };
+
   for (const wp of waypoints) {
     if (wp.via === 'ADEP' && ends?.departure) {
       departs = true;
       continue;
     }
-    const path = wp.via ? pathByVia.get(wp.via) : undefined;
-    if (path && path.length > 1) {
+    // The approach geometry already ends on the runway: nothing is drawn from there back to
+    // the airport datum (LNM: "Do not draw a line from runway end to airport center").
+    if (wp.via === 'ADES' && flysApproach) continue;
+    const hint = wp.via ? hintByVia.get(wp.via) : undefined;
+    if (hint && hint.path.length > 1) {
       if (!used.has(wp.via!)) {
         used.add(wp.via!);
-        pieces.push({ fixed: true, pts: path });
+        const kind: RouteLegKind = hint.kind ?? 'enroute';
+        if (departs && !started && ends?.departure) {
+          // The SID geometry starts at the runway far end; only the roll is added, as part of it.
+          push(
+            kind,
+            [{ latitude: ends.departure.latitude, longitude: ends.departure.longitude }],
+            wp.via
+          );
+        }
+        push(kind, hint.path, wp.via);
+        started = true;
       }
       continue;
     }
+    if (departs && !started && ends?.departure) {
+      push('enroute', takeoffPath(ends.departure, initialClimbNm));
+    }
+    started = true;
     const pts =
       wp.via === 'ADES' && ends?.arrival
         ? finalApproachPath(ends.arrival)
         : [{ latitude: wp.latitude, longitude: wp.longitude }];
-    const last = pieces[pieces.length - 1];
-    if (last && !last.fixed) last.pts.push(...pts);
-    else pieces.push({ fixed: false, pts: [...pts] });
+    push('enroute', pts);
   }
+  return segments.filter((s) => s.points.length > 1 || segments.length === 1);
+}
 
+/** The whole drawn line as one point list. */
+export function routeLinePoints(
+  waypoints: RoutePoint[],
+  ends?: RunwayEnds,
+  initialClimbNm?: number,
+  procedurePaths?: ProcedurePathHint[]
+): LatLon[] {
   const line: LatLon[] = [];
-  if (departs && ends?.departure) {
-    if (pieces[0]?.fixed) {
-      // The SID geometry starts at the runway far end; only the roll is added.
-      line.push({ latitude: ends.departure.latitude, longitude: ends.departure.longitude });
-    } else {
-      appendDeduped(
-        line,
-        departureHead(ends.departure, pieces[0]?.pts[0], firstTurn, initialClimbNm)
-      );
-    }
-  }
-  for (let i = 0; i < pieces.length; i++) {
-    const piece = pieces[i]!;
-    if (piece.fixed) {
-      appendDeduped(line, piece.pts);
-      continue;
-    }
-    const prev = line[line.length - 1];
-    const nextFixed = pieces[i + 1]?.fixed ? pieces[i + 1]!.pts[0] : undefined;
-    const input = [...(prev ? [prev] : []), ...piece.pts, ...(nextFixed ? [nextFixed] : [])];
-    const smoothed = smoothRoutePath(input, ENROUTE_TURN_RADIUS_NM);
-    appendDeduped(line, smoothed.slice(prev ? 1 : 0, nextFixed ? smoothed.length - 1 : undefined));
+  for (const seg of routeLineSegments(waypoints, ends, initialClimbNm, procedurePaths)) {
+    appendDeduped(line, seg.points);
   }
   return line;
 }

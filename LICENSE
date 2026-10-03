@@ -1,14 +1,32 @@
-Copyright © 2026 Lyes Tarzalt. All rights reserved.
+X-Dispatch
+Copyright (c) 2026 Lyes Tarzalt. All rights reserved.
 
-This software and its source code are proprietary. No part of it may be
-copied, modified, distributed, sold, sublicensed or used to create derivative
-works without prior written permission from the copyright holder.
+This software and its source code are proprietary. The source code is made
+available for reference only.
 
-Official builds are available free of charge at https://x-dispatch.app.
-Using an official build does not grant any rights to the source code.
+No right is granted beyond reference. You may not redistribute the source
+code or any binary built from it, modified or not; use any part of it in
+another product or service; or sell, rent, sublicense, host or otherwise make
+the software or any of its features available to third parties, with or
+without charge.
 
-Third-party components keep their own licenses. The aircraft shapes in
-public/aircraft-shapes/ are by RexKramer1 and licensed under GPL-3.0; see
-public/aircraft-shapes/README.md.
+By submitting a contribution you grant the copyright holder a perpetual,
+worldwide, royalty-free right to use, modify, distribute and relicense it
+under any terms.
+
+Official builds are distributed free of charge at https://x-dispatch.app.
+They check for updates and, with your consent, send crash reports and
+anonymous usage statistics; see https://x-dispatch.app/privacy/.
+
+Third-party components are subject to their own licenses; see
+THIRD-PARTY-NOTICES. The aircraft shapes in public/aircraft-shapes/ are by
+RexKramer1 under the GNU GPL v3; see public/aircraft-shapes/README.md.
+
+X-Dispatch is for flight simulation only and must not be used for real-world
+aviation or navigation.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
 
 Contact: hello@x-dispatch.app

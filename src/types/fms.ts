@@ -1,3 +1,5 @@
+import type { AltitudeConstraint } from './navigation';
+
 /**
  * X-Plane FMS Flight Plan Types
  * Supports FMS v1100 format
@@ -14,6 +16,8 @@ export interface FMSWaypoint {
   longitude: number;
   /** Display only, never written to the file: the published constraint, "6000A", "FL100", "3000A/5000B". */
   constraintLabel?: string;
+  /** Display only: the same constraint in structured form, for the vertical profile. */
+  constraint?: AltitudeConstraint;
 }
 
 /** One end of a land runway: its threshold, true heading along the runway and the paved length. */
@@ -23,6 +27,8 @@ export interface RunwayEnd {
   longitude: number;
   headingDeg: number;
   lengthNm: number;
+  /** Airport elevation from the apt.dat header, for climb-gradient math off the runway. */
+  elevationFt?: number;
 }
 
 export interface FMSFlightPlan {
@@ -121,7 +127,13 @@ export interface EnrichedFlightPlan {
   /** Straight climb after the runway end before that turn, from the SID's course legs. */
   initialClimbNm?: number;
   /** Leg-by-leg geometry per chosen procedure, drawn in place of its fixes. */
-  procedurePaths?: { via: string; path: { latitude: number; longitude: number }[] }[];
+  procedurePaths?: {
+    via: string;
+    path: { latitude: number; longitude: number }[];
+    missedPath?: { latitude: number; longitude: number }[];
+    /** Which procedure the path belongs to. An approach ends on the runway: no line to the airport. */
+    kind?: 'sid' | 'star' | 'approach';
+  }[];
 
   // Resolution summary
   resolution: {

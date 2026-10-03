@@ -33,3 +33,28 @@ export function builtTaxiRoute(
   if (next.mode === 'freehand') return 'freehand';
   return next.autoRouteResult ? 'auto' : 'click';
 }
+
+export interface PlanProcedureSnapshot {
+  departure: { sid?: unknown } | null;
+  arrival: { star?: unknown; approach?: unknown } | null;
+  autoRouting: boolean;
+}
+
+export interface ProcedurePick {
+  type: 'sid' | 'star' | 'app';
+  source: 'manual' | 'auto';
+}
+
+/** Procedures newly chosen in the plan builder; picks made while auto-routing count as automatic. */
+export function pickedProcedures(
+  next: PlanProcedureSnapshot,
+  prev: PlanProcedureSnapshot
+): ProcedurePick[] {
+  const source = next.autoRouting ? 'auto' : 'manual';
+  const picks: ProcedurePick[] = [];
+  const changed = (a: unknown, b: unknown) => a !== undefined && a !== b;
+  if (changed(next.departure?.sid, prev.departure?.sid)) picks.push({ type: 'sid', source });
+  if (changed(next.arrival?.star, prev.arrival?.star)) picks.push({ type: 'star', source });
+  if (changed(next.arrival?.approach, prev.arrival?.approach)) picks.push({ type: 'app', source });
+  return picks;
+}

@@ -5,7 +5,8 @@ import { X } from 'lucide-react';
 import * as maplibregl from 'maplibre-gl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { calculateBearing, distanceNm } from '@/lib/utils/geomath';
+import { useUnits } from '@/hooks/useUnits';
+import { type Degrees, type Feet, calculateBearing, distanceNm } from '@/lib/utils/geomath';
 import { type NavInfoSelection, useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 
@@ -47,12 +48,9 @@ export default function NavInfoPopup({ mapRef }: NavInfoPopupProps) {
   return createPortal(<NavInfoCard info={info} onClose={() => setNavInfo(null)} />, container);
 }
 
-function formatDeg(deg: number): string {
-  return `${String(Math.round(deg) % 360).padStart(3, '0')}°`;
-}
-
 function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () => void }) {
   const { t } = useTranslation();
+  const units = useUnits();
   const plane = usePlaneStore((s) => s.state);
 
   const bearing = plane
@@ -84,20 +82,26 @@ function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () =>
         {info.frequency && <Row label={t('navInfo.frequency')} value={info.frequency} />}
         {info.altitudeLabel && <Row label={t('navInfo.altitude')} value={info.altitudeLabel} />}
         {info.elevationFt !== undefined && (
-          <Row
-            label={t('navInfo.elevation')}
-            value={`${Math.round(info.elevationFt).toLocaleString()} ${t('units.ft')}`}
-          />
+          <Row label={t('navInfo.elevation')} value={units.altitude(info.elevationFt as Feet)} />
         )}
         {bearing !== null && distance !== null ? (
           <>
-            <Row label={t('navInfo.bearingTrue')} value={formatDeg(bearing)} accent />
-            {isNavaid && <Row label={t('navInfo.radial')} value={formatDeg(bearing + 180)} />}
             <Row
-              label={t('navInfo.distance')}
-              value={`${distance < 10 ? distance.toFixed(1) : Math.round(distance)} ${t('units.nm')}`}
+              label={t('navInfo.bearing')}
+              value={units.course(bearing, info.latitude, info.longitude)}
               accent
             />
+            {isNavaid && (
+              <Row
+                label={t('navInfo.radial')}
+                value={units.course(
+                  ((bearing + 180) % 360) as Degrees,
+                  info.latitude,
+                  info.longitude
+                )}
+              />
+            )}
+            <Row label={t('navInfo.distance')} value={units.distance(distance)} accent />
           </>
         ) : (
           <div className="text-muted-foreground col-span-2">{t('navInfo.noPlane')}</div>

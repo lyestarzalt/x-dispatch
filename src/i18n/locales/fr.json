@@ -33,13 +33,19 @@
     "ft": "ft",
     "m": "m",
     "nm": "nm",
+    "km": "km",
+    "mi": "mi",
     "kt": "kt",
     "kts": "kt",
+    "kmh": "km/h",
+    "mph": "mph",
     "ms": "m/s",
     "s": "s",
     "kg": "kg",
     "lbs": "lbs",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "N",
@@ -142,7 +148,6 @@
     "approach": "Approche",
     "noProcedure": "Aucune",
     "routeHint": "Voies aériennes et points tels que déposés. La route auto trouve le chemin le plus court par voies aériennes.",
-    "nmUnit": "NM",
     "removeToken": "Retirer {{token}}",
     "departure": "Départ",
     "arrival": "Arrivée",
@@ -152,10 +157,9 @@
     "anyRunway": "Toute piste",
     "anyShort": "Toute",
     "alternate": "Dégagement",
-    "alternateAt": "Dégagement · {{nm}} NM",
+    "alternateAt": "Dégagement · {{value}}",
     "noAlternate": "Aucun dégagement",
     "fuel": "Carburant bloc",
-    "kgUnit": "kg",
     "liveHint": "La carte se redessine pendant l'édition.",
     "windSuggest": "Vent {{wind}} favorise la {{runway}}",
     "useRunway": "Utiliser",
@@ -411,6 +415,7 @@
       "addons": "Extensions",
       "data": "Données Nav",
       "appearance": "Apparence",
+      "units": "Unités",
       "graphics": "Graphismes",
       "airports": "Aéroports",
       "simbrief": "SimBrief",
@@ -517,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Propriétaire",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "Réservé à la simulation de vol. N'utilisez jamais X-Dispatch pour l'aviation ou la navigation réelle ; ses données peuvent être incomplètes, inexactes ou périmées.",
+      "thirdParty": "Licences tierces"
     },
     "xplane": {
       "title": "Installation X-Plane",
@@ -581,11 +588,6 @@
       "customStyleHint": "Collez une URL de style MapLibre (ex. https://tiles.openfreemap.org/styles/liberty) ou un motif d'URL de tuiles raster (ex. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
       "advanced": "Avancé",
       "language": "Langue",
-      "units": "Unités",
-      "unitsDescription": "Configurez les unités d'affichage pour les mesures",
-      "weightUnit": "Poids",
-      "lbs": "Livres (lbs)",
-      "kg": "Kilogrammes (kg)",
       "fontSize": "Taille de police",
       "fontSizeDescription": "Ajuster la taille du texte de l'interface",
       "fontSizeSmall": "Petit",
@@ -596,6 +598,29 @@
       "zoomLevel": "Zoom de l'interface",
       "zoomLevelDescription": "Agrandir ou réduire l'ensemble de l'interface",
       "zoomReset": "Réinitialiser"
+    },
+    "units": {
+      "title": "Unités",
+      "description": "Choisissez comment la distance, l'altitude, la vitesse et les autres mesures sont affichées.",
+      "measurements": "Mesures",
+      "navigation": "Navigation",
+      "distance": "Distance",
+      "altitude": "Altitude",
+      "speed": "Vitesse",
+      "verticalSpeed": "Vitesse verticale",
+      "weight": "Poids",
+      "coordinates": "Coordonnées",
+      "coordinateFormats": {
+        "decimal": "Degrés décimaux",
+        "dms": "Degrés, minutes, secondes",
+        "dm": "Degrés, minutes décimales"
+      },
+      "course": "Cap",
+      "courseModes": {
+        "magnetic": "Magnétique",
+        "true": "Vrai",
+        "both": "Les deux"
+      }
     },
     "graphics": {
       "title": "Graphismes",
@@ -873,7 +898,7 @@
       "glideslope": "Plan de descente",
       "range": "Portée",
       "ident": "Indicatif",
-      "rangeNm": "{{value}} NM"
+      "rangeNm": "{{value}}"
     },
     "rawMetar": "METAR original",
     "routeTab": {
@@ -945,7 +970,7 @@
       "approach": "Approche",
       "tow": "Remorquage",
       "distance": "Distance",
-      "approachNm": "finale à {{distance}} NM",
+      "approachNm": "finale à {{distance}}",
       "winch": "Treuil",
       "tug": "Remorqueur",
       "tugAircraft": "Avion remorqueur : Cessna 172 SP",
@@ -1220,7 +1245,7 @@
       "cloudCoverage": "Couverture nuageuse",
       "tops": "Sommets",
       "bases": "Bases",
-      "ftMsl": "{{value}} ft MSL",
+      "ftMsl": "{{value}} MSL",
       "deleteCloud": "Supprimer la couche nuageuse {{n}}",
       "cloudTypes": {
         "cirrus": "Cirrus",
@@ -1684,7 +1709,7 @@
       "notamLabelDeparture": "Départ",
       "notamLabelArrival": "Arrivée",
       "notamLabelAlternate": "Dégagement",
-      "transAltAbbr": "TA: {{value}} ft",
+      "transAltAbbr": "TA: {{value}}",
       "transLevelAbbr": "TL: FL{{value}}",
       "sigmetValid": "Valide : {{start}} - {{end}}",
       "sigmetFir": "FIR : {{name}}",
@@ -1703,11 +1728,10 @@
       "colEta": "ETA",
       "colFuelRem": "Carb. restant",
       "waypointCount": "{{count}} points",
-      "groundSpeedKt": "{{value}} kt",
       "position": "Position",
       "temperature": "Température",
       "windComponent": "Composante vent",
-      "windCompValue": "{{value}} kt {{tag}}",
+      "windCompValue": "{{value}} {{tag}}",
       "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
       "headwind": "(vent de face)",
       "tailwind": "(vent arrière)",
@@ -1728,8 +1752,8 @@
       "tocBadge": "T/C",
       "todBadge": "T/D",
       "total": "Total :",
-      "distanceNm": "{{value}} NM",
-      "altitudeFt": "{{value}} ft"
+      "distanceNm": "{{value}}",
+      "altitudeFt": "{{value}}"
     },
     "performance": {
       "vspeeds": {
@@ -1744,8 +1768,8 @@
       "flaps": "Volets",
       "thrust": "Poussée",
       "rwyLength": "Long. piste",
-      "meters": "{{value}} m",
-      "feet": "{{value}} ft",
+      "meters": "{{value}}",
+      "feet": "{{value}}",
       "tlrNotAvailable": "Données TLR indisponibles",
       "ldaDry": "LDA (sèche)",
       "ldaWet": "LDA (mouillée)",
@@ -1755,14 +1779,14 @@
       "cruiseMach": "Mach croisière",
       "machValue": "M{{mach}}",
       "cruiseTas": "TAS croisière",
-      "tasKt": "{{tas}} kt",
+      "tasKt": "{{tas}}",
       "stepClimbs": "Montées par paliers",
       "stepFallback": "Palier {{n}}",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
       "transAltOrigin": "{{icao}} Alt. de transition",
       "transLevelDest": "{{icao}} Niveau de transition",
       "flightLevel": "FL{{value}}",
-      "windDirSpeed": "{{dir}}°/{{speed}} kt"
+      "windDirSpeed": "{{dir}}°/{{speed}}"
     },
     "weather": {
       "alternate": "Dégagement",
@@ -1904,10 +1928,22 @@
     "frequency": "Fréquence",
     "altitude": "Altitude prévue",
     "elevation": "Altitude",
-    "bearingTrue": "Relèvement (vrai)",
+    "bearing": "Relèvement",
     "radial": "Radial",
     "distance": "Distance",
     "noPlane": "Position avion inconnue"
+  },
+  "mapContextMenu": {
+    "startHere": "Démarrer ici",
+    "copyCoordinates": "Copier les coordonnées",
+    "coordinatesCopied": "Coordonnées copiées",
+    "centerHere": "Centrer la carte ici",
+    "elevation": "Altitude {{value}}",
+    "measureFromHere": "Mesurer depuis ici",
+    "deleteMeasurement": "Supprimer la mesure",
+    "removePoint": "Retirer le point",
+    "measureTotal": "Total {{value}}",
+    "clearMeasurement": "Effacer la mesure"
   },
   "analytics": {
     "consent": {
@@ -1928,5 +1964,34 @@
     "donate": "Soutenir le projet",
     "notNow": "Pas maintenant",
     "dontShowAgain": "Ne plus afficher"
+  },
+  "profile": {
+    "title": "Profil vertical",
+    "show": "Afficher le profil vertical",
+    "hide": "Masquer le profil vertical",
+    "noData": "Aucune donnée de profil",
+    "noCruise": "Définissez une altitude de croisière pour voir le profil",
+    "tooShort": "Le plan est trop court pour un profil",
+    "cruiseTooLow": "L'altitude de croisière est trop basse",
+    "cruiseNotReached": "L'altitude de croisière n'est pas atteinte sur ce plan",
+    "loadingTerrain": "Chargement du relief...",
+    "altitude": "Altitude",
+    "distance": "Distance",
+    "terrain": "Relief",
+    "wind": "Vent",
+    "flightPath": "Trajectoire",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min. sûre",
+    "legSafe": "Sûre par segment",
+    "total": "Total"
+  },
+  "thirdPartyNotices": {
+    "title": "Licences tierces",
+    "description": "X-Dispatch inclut ces composants, chacun sous sa propre licence.",
+    "search": "Rechercher par nom ou licence",
+    "count_one": "{{count}} composant",
+    "count_other": "{{count}} composants",
+    "noResults": "Aucun composant ne correspond à la recherche"
   }
 }

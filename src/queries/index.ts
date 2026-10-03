@@ -45,6 +45,7 @@ export {
 // App data hooks
 export {
   useAppVersion,
+  useThirdPartyNotices,
   useXPlanePath,
   useLoadingStatus,
   useAirportMetadata,

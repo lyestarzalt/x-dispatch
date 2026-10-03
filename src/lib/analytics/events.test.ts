@@ -142,7 +142,7 @@ describe('airport and route events', () => {
     expect(
       sanitizeEvent('start_position_selected', { start_type: 'ramp', helipad: false })
     ).not.toBeNull();
-    expect(sanitizeEvent('procedure_selected', { type: 'star' })).not.toBeNull();
+    expect(sanitizeEvent('procedure_selected', { type: 'star', source: 'manual' })).not.toBeNull();
     expect(sanitizeEvent('frequency_tuned', {})).not.toBeNull();
     expect(sanitizeEvent('taxi_route_built', { method: 'auto' })).not.toBeNull();
     expect(sanitizeEvent('taxi_route_auto_failed', {})).not.toBeNull();
@@ -185,5 +185,45 @@ describe('search, flight plan file and add-on install events', () => {
   it('never accepts a typed query, file name or add-on name', () => {
     expect(sanitizeEvent('addon_installed', { type: 'Toliss A321', success: true })).toBeNull();
     expect(sanitizeEvent('addon_detected', { result: 'EGLL_scenery.zip' })).toBeNull();
+  });
+
+  it('accepts right-click menu actions and procedure picks with their source', () => {
+    expect(sanitizeEvent('context_menu_used', { action: 'measure' })).toEqual({
+      event: 'context_menu_used',
+      properties: { action: 'measure' },
+    });
+    expect(sanitizeEvent('context_menu_used', { action: 'open_devtools' })).toBeNull();
+    expect(sanitizeEvent('procedure_selected', { type: 'sid', source: 'auto' })).toEqual({
+      event: 'procedure_selected',
+      properties: { type: 'sid', source: 'auto' },
+    });
+    expect(sanitizeEvent('procedure_selected', { type: 'sid' })).toBeNull();
+  });
+
+  it('reports every unit choice in the preferences snapshot', () => {
+    const prefs = {
+      theme: 'dark',
+      map_style: 'carto-dark',
+      app_language: 'en',
+      weight_unit: 'kg',
+      distance_unit: 'km',
+      altitude_unit: 'm',
+      speed_unit: 'kmh',
+      vertical_speed_unit: 'ms',
+      coordinate_format: 'dms',
+      course_mode: 'both',
+      font_size: 'medium',
+      clock_mode: 'zulu',
+      surface_detail: 'high',
+      dynamic_sky: true,
+      city_lights: false,
+      idle_orbit: false,
+      simbrief_linked: false,
+      fms_export_targets: 0,
+      custom_map_styles: 0,
+      companion_apps: 0,
+    };
+    expect(sanitizeEvent('preferences', prefs)?.properties).toEqual(prefs);
+    expect(sanitizeEvent('preferences', { ...prefs, distance_unit: 'furlongs' })).toBeNull();
   });
 });

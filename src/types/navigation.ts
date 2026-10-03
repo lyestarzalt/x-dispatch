@@ -273,6 +273,13 @@ export type AltitudeDescriptor =
   | 'B'; // Between (altitude1 and altitude2)
 
 /**
+ * Speed constraint descriptor (ARINC 424 5.261) - blank/'@' means "at", not encoded separately.
+ */
+export type SpeedDescriptor =
+  | '+' // At or above
+  | '-'; // At or below
+
+/**
  * Altitude constraint for procedure waypoints
  */
 export interface AltitudeConstraint {
@@ -292,10 +299,43 @@ export interface ProcedureWaypoint {
   fixType: FixTypeCode;
   pathTerminator: PathTerminator;
   course: number | null; // Magnetic course in degrees
-  distance: number | null; // Distance in nautical miles
+  distance: number | null; // Distance in nautical miles (never the hold/route time encoding)
   altitude: AltitudeConstraint | null;
-  speed: number | null; // Speed constraint in knots
+  speed: number | null; // Speed constraint in knots (ARINC 424 SPEED_LIMIT, not TRANS_ALT)
+  speedDescriptor: SpeedDescriptor | null;
   turnDirection: TurnDirection | null;
+  /** Recommended navaid for the leg (AF arc station, CF/CI/CR/PI reference) - ident + region. */
+  recNavaid: string | null;
+  recNavaidRegion: string | null;
+  /** Bearing from the recommended navaid, degrees. For AF legs, the arc's terminating radial. */
+  theta: number | null;
+  /** Distance from the recommended navaid, NM. For AF legs, this *is* the arc radius. */
+  rho: number | null;
+  /**
+   * RF-leg constant radius, NM, straight from the file's ARC_RADIUS field. Unverified scale -
+   * atools itself never reads this field, preferring to derive the radius geometrically from
+   * the resolved center fix distance. Treat as a fallback only, not authoritative.
+   */
+  arcRadius: number | null;
+  /**
+   * Arc/hold center fix - ident + region. Only populated for RF legs (ARINC 424 5.144); the same
+   * file column is reused for an unrelated TAA reference point on other leg types, so it is left
+   * null there to avoid propagating that noise as a fake "center".
+   */
+  centerFix: string | null;
+  centerFixRegion: string | null;
+  /** Vertical path angle, degrees (negative = descent). Populated on RNP/RNAV final legs. */
+  verticalAngle: number | null;
+  /** Required Navigation Performance, NM, when the leg publishes one. */
+  rnp: number | null;
+  /** Hold/route leg time, minutes (ARINC 424 "T"-prefixed RTE_DIST_HOLD_DIST_TIME encoding). */
+  holdTimeMin: number | null;
+  /**
+   * This leg is part of the missed approach. Not a route-type distinction - the file flags only
+   * the Missed Approach Point itself (DESC_CODE's 3rd character, 'M'); every later leg in the
+   * same procedure inherits it forward during parsing.
+   */
+  isMissedApproach: boolean;
 }
 
 /**
@@ -305,6 +345,12 @@ export interface ResolvedProcedureWaypoint extends ProcedureWaypoint {
   latitude?: number;
   longitude?: number;
   resolved: boolean;
+  /** Resolved position of `recNavaid`, when present and found. */
+  recNavaidLatitude?: number;
+  recNavaidLongitude?: number;
+  /** Resolved position of `centerFix`, when present and found. */
+  centerFixLatitude?: number;
+  centerFixLongitude?: number;
 }
 
 /**

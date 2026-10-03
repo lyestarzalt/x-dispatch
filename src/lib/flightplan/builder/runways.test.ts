@@ -27,6 +27,10 @@ describe('runwayEndsFromApt', () => {
     expect(r18.lengthNm).toBeLessThan(2.0);
   });
 
+  it('carries the airport elevation from the header row onto every runway end', () => {
+    for (const end of runwayEndsFromApt(APT)) expect(end.elevationFt).toBe(-11);
+  });
+
   it('returns nothing for an airport without land runways', () => {
     expect(runwayEndsFromApt('1 10 0 0 XXXX Heliport\n102 H1 0 0 0 20 20 1 0 0 0 0')).toEqual([]);
   });

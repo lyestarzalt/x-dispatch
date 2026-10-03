@@ -2,7 +2,8 @@ import * as maplibregl from 'maplibre-gl';
 
 const ICON_SIZE = 48;
 const ICON_PREFIX = 'ac-';
-const FALLBACK_ID = `${ICON_PREFIX}fallback`;
+/** The generic aircraft silhouette, also used as the vertical-profile hover marker. */
+export const FALLBACK_ID = `${ICON_PREFIX}fallback`;
 
 // Family fallback: maps 3-char prefix → preferred available SVG code.
 // Used when the exact ICAO code SVG doesn't exist (e.g. B736 → try B738).

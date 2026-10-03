@@ -33,13 +33,19 @@
     "ft": "фут",
     "m": "м",
     "nm": "NM",
+    "km": "km",
+    "mi": "mi",
     "kt": "уз",
     "kts": "уз",
+    "kmh": "km/h",
+    "mph": "mph",
     "ms": "м/с",
     "s": "с",
     "kg": "кг",
     "lbs": "фунт",
-    "fpm": "фут/мин"
+    "fpm": "фут/мин",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "С",
@@ -142,7 +148,6 @@
     "approach": "Заход",
     "noProcedure": "Нет",
     "routeHint": "Трассы и точки как в плане. Авто-маршрут находит кратчайший путь по трассам.",
-    "nmUnit": "NM",
     "removeToken": "Убрать {{token}}",
     "departure": "Вылет",
     "arrival": "Прилёт",
@@ -152,10 +157,9 @@
     "anyRunway": "Любая ВПП",
     "anyShort": "Любая",
     "alternate": "Запасной аэродром",
-    "alternateAt": "Запасной · {{nm}} NM",
+    "alternateAt": "Запасной · {{value}}",
     "noAlternate": "Без запасного",
     "fuel": "Топливо",
-    "kgUnit": "кг",
     "liveHint": "Карта перерисовывается при редактировании.",
     "windSuggest": "Ветер {{wind}} благоприятен для ВПП {{runway}}",
     "useRunway": "Выбрать",
@@ -411,6 +415,7 @@
       "addons": "Дополнения",
       "data": "Нав. данные",
       "appearance": "Внешний вид",
+      "units": "Единицы",
       "graphics": "Графика",
       "airports": "Аэропорты",
       "simbrief": "SimBrief",
@@ -517,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Проприетарная",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "Только для авиасимуляторов. Никогда не используйте X-Dispatch в реальной авиации или навигации: данные могут быть неполными, неточными или устаревшими.",
+      "thirdParty": "Лицензии сторонних компонентов"
     },
     "xplane": {
       "title": "Установка X-Plane",
@@ -581,11 +588,6 @@
       "customStyleHint": "Вставьте URL стиля MapLibre (например, https://tiles.openfreemap.org/styles/liberty) или шаблон URL растровых тайлов (например, https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
       "advanced": "Дополнительно",
       "language": "Язык",
-      "units": "Единицы",
-      "unitsDescription": "Настройте единицы измерения",
-      "weightUnit": "Вес",
-      "lbs": "Фунты (lbs)",
-      "kg": "Килограммы (кг)",
       "fontSize": "Размер шрифта",
       "fontSizeDescription": "Настройка размера текста интерфейса",
       "fontSizeSmall": "Маленький",
@@ -596,6 +598,29 @@
       "zoomLevel": "Масштаб интерфейса",
       "zoomLevelDescription": "Увеличить или уменьшить весь интерфейс",
       "zoomReset": "Сбросить"
+    },
+    "units": {
+      "title": "Единицы",
+      "description": "Выберите, как отображаются расстояние, высота, скорость и другие измерения.",
+      "measurements": "Измерения",
+      "navigation": "Навигация",
+      "distance": "Расстояние",
+      "altitude": "Высота",
+      "speed": "Скорость",
+      "verticalSpeed": "Вертикальная скорость",
+      "weight": "Вес",
+      "coordinates": "Координаты",
+      "coordinateFormats": {
+        "decimal": "Десятичные градусы",
+        "dms": "Градусы, минуты, секунды",
+        "dm": "Градусы, десятичные минуты"
+      },
+      "course": "Курс",
+      "courseModes": {
+        "magnetic": "Магнитный",
+        "true": "Истинный",
+        "both": "Оба"
+      }
     },
     "graphics": {
       "title": "Графика",
@@ -873,7 +898,7 @@
       "glideslope": "Глиссада",
       "range": "Дальность",
       "ident": "Идент.",
-      "rangeNm": "{{value}} NM"
+      "rangeNm": "{{value}}"
     },
     "rawMetar": "Исходный METAR",
     "routeTab": {
@@ -945,7 +970,7 @@
       "approach": "Заход",
       "tow": "Буксировка",
       "distance": "Расстояние",
-      "approachNm": "финал {{distance}} NM",
+      "approachNm": "финал {{distance}}",
       "winch": "Лебёдка",
       "tug": "Буксировщик",
       "tugAircraft": "Самолёт-буксировщик: Cessna 172 SP",
@@ -1220,7 +1245,7 @@
       "cloudCoverage": "Облачность",
       "tops": "Верхняя граница",
       "bases": "Нижняя граница",
-      "ftMsl": "{{value}} ft MSL",
+      "ftMsl": "{{value}} MSL",
       "deleteCloud": "Удалить слой облаков {{n}}",
       "cloudTypes": {
         "cirrus": "Перистые",
@@ -1684,7 +1709,7 @@
       "notamLabelDeparture": "Вылет",
       "notamLabelArrival": "Прибытие",
       "notamLabelAlternate": "Запасной",
-      "transAltAbbr": "TA: {{value}} ft",
+      "transAltAbbr": "TA: {{value}}",
       "transLevelAbbr": "TL: FL{{value}}",
       "sigmetValid": "Действ.: {{start}} - {{end}}",
       "sigmetFir": "FIR: {{name}}",
@@ -1703,11 +1728,10 @@
       "colEta": "ETA",
       "colFuelRem": "Ост. топлива",
       "waypointCount": "{{count}} точек",
-      "groundSpeedKt": "{{value}} kt",
       "position": "Позиция",
       "temperature": "Температура",
       "windComponent": "Сост. ветра",
-      "windCompValue": "{{value}} kt {{tag}}",
+      "windCompValue": "{{value}} {{tag}}",
       "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
       "headwind": "(встречный)",
       "tailwind": "(попутный)",
@@ -1728,8 +1752,8 @@
       "tocBadge": "T/C",
       "todBadge": "T/D",
       "total": "Итого:",
-      "distanceNm": "{{value}} NM",
-      "altitudeFt": "{{value}} ft"
+      "distanceNm": "{{value}}",
+      "altitudeFt": "{{value}}"
     },
     "performance": {
       "vspeeds": {
@@ -1744,8 +1768,8 @@
       "flaps": "Закрылки",
       "thrust": "Тяга",
       "rwyLength": "Длина ВПП",
-      "meters": "{{value}} м",
-      "feet": "{{value}} ft",
+      "meters": "{{value}}",
+      "feet": "{{value}}",
       "tlrNotAvailable": "Нет данных TLR",
       "ldaDry": "LDA (сухая)",
       "ldaWet": "LDA (мокрая)",
@@ -1755,14 +1779,14 @@
       "cruiseMach": "Крейсерский Mach",
       "machValue": "M{{mach}}",
       "cruiseTas": "Крейсерская TAS",
-      "tasKt": "{{tas}} kt",
+      "tasKt": "{{tas}}",
       "stepClimbs": "Ступенчатый набор",
       "stepFallback": "Ступень {{n}}",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
       "transAltOrigin": "{{icao}}: высота перехода",
       "transLevelDest": "{{icao}}: эшелон перехода",
       "flightLevel": "FL{{value}}",
-      "windDirSpeed": "{{dir}}°/{{speed}} kt"
+      "windDirSpeed": "{{dir}}°/{{speed}}"
     },
     "weather": {
       "alternate": "Запасной",
@@ -1904,10 +1928,22 @@
     "frequency": "Частота",
     "altitude": "Плановая высота",
     "elevation": "Высота",
-    "bearingTrue": "Пеленг (истинный)",
+    "bearing": "Пеленг",
     "radial": "Радиал",
     "distance": "Расстояние",
     "noPlane": "Нет позиции самолёта"
+  },
+  "mapContextMenu": {
+    "startHere": "Начать здесь",
+    "copyCoordinates": "Копировать координаты",
+    "coordinatesCopied": "Координаты скопированы",
+    "centerHere": "Центрировать карту здесь",
+    "elevation": "Высота {{value}}",
+    "measureFromHere": "Измерить отсюда",
+    "deleteMeasurement": "Удалить измерение",
+    "removePoint": "Удалить точку",
+    "measureTotal": "Итого {{value}}",
+    "clearMeasurement": "Очистить измерение"
   },
   "analytics": {
     "consent": {
@@ -1928,5 +1964,34 @@
     "donate": "Поддержать проект",
     "notNow": "Не сейчас",
     "dontShowAgain": "Больше не показывать"
+  },
+  "profile": {
+    "title": "Вертикальный профиль",
+    "show": "Показать вертикальный профиль",
+    "hide": "Скрыть вертикальный профиль",
+    "noData": "Нет данных профиля",
+    "noCruise": "Задайте эшелон полёта, чтобы увидеть профиль",
+    "tooShort": "План слишком короткий для профиля",
+    "cruiseTooLow": "Эшелон полёта слишком низкий",
+    "cruiseNotReached": "Эшелон полёта в этом плане не достигается",
+    "loadingTerrain": "Загрузка рельефа...",
+    "altitude": "Высота",
+    "distance": "Расстояние",
+    "terrain": "Рельеф",
+    "wind": "Ветер",
+    "flightPath": "Траектория",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Мин. безопасная",
+    "legSafe": "Безопасная на участке",
+    "total": "Всего"
+  },
+  "thirdPartyNotices": {
+    "title": "Лицензии сторонних компонентов",
+    "description": "X-Dispatch включает эти компоненты, каждый под собственной лицензией.",
+    "search": "Поиск по названию или лицензии",
+    "count_one": "{{count}} компонент",
+    "count_other": "{{count}} компонента",
+    "noResults": "Ни один компонент не соответствует запросу"
   }
 }

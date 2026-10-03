@@ -4,6 +4,14 @@ import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import type { ClockMode } from '@/lib/utils/clock';
 import type { WeightUnit } from '@/lib/utils/format';
+import type {
+  AltitudeUnit,
+  CoordinateFormat,
+  CourseMode,
+  DistanceUnit,
+  SpeedUnit,
+  VerticalSpeedUnit,
+} from '@/lib/utils/units';
 
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -57,7 +65,13 @@ export interface MapSettings {
   userMapStyles: MapStyle[];
   idleOrbitEnabled: boolean;
   units: {
+    distance: DistanceUnit;
+    altitude: AltitudeUnit;
+    speed: SpeedUnit;
+    verticalSpeed: VerticalSpeedUnit;
     weight: WeightUnit;
+    coordinates: CoordinateFormat;
+    course: CourseMode;
   };
 }
 
@@ -173,7 +187,13 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   userMapStyles: [],
   idleOrbitEnabled: false,
   units: {
+    distance: 'nm',
+    altitude: 'ft',
+    speed: 'kts',
+    verticalSpeed: 'fpm',
     weight: 'lbs',
+    coordinates: 'decimal',
+    course: 'magnetic',
   },
 };
 
@@ -400,7 +420,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 28,
+      version: 30,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -554,6 +574,37 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   if (version < 28) {
     // Toolbar clock: Zulu / local readout preference.
     state = { ...state, appearance: { ...DEFAULT_APPEARANCE_SETTINGS, ...state.appearance } };
+  }
+  if (version < 29) {
+    // Unit system: distance/altitude/speed/verticalSpeed/coordinates preferences.
+    // Defaults match what was hardcoded app-wide before this version, so existing
+    // users see no visual change until they open the new Units settings section.
+    // `weight` is preserved, not reset — it's the one unit preference that already existed.
+    state = {
+      ...state,
+      map: {
+        ...state.map!,
+        units: {
+          distance: 'nm',
+          altitude: 'ft',
+          speed: 'kts',
+          verticalSpeed: 'fpm',
+          weight: state.map!.units.weight,
+          coordinates: 'decimal',
+          // Not set until the next step — forward-referenced only so this object
+          // literal satisfies MapSettings['units'] (which requires `course`).
+          // Any pre-v30 blob gets a real value from the v30 step immediately below.
+          course: state.map!.units.course,
+        },
+      },
+    };
+  }
+  if (version < 30) {
+    // Course display preference: magnetic / true / both (R2, magnetic model).
+    state = {
+      ...state,
+      map: { ...state.map!, units: { ...state.map!.units, course: 'magnetic' } },
+    };
   }
 
   return state as SettingsState;

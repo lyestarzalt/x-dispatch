@@ -33,13 +33,19 @@
     "ft": "英尺",
     "m": "米",
     "nm": "海里",
+    "km": "km",
+    "mi": "mi",
     "kt": "节",
     "kts": "节",
+    "kmh": "km/h",
+    "mph": "mph",
     "ms": "米/秒",
     "s": "秒",
     "kg": "公斤",
     "lbs": "磅",
-    "fpm": "英尺/分"
+    "fpm": "英尺/分",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "北",
@@ -142,7 +148,6 @@
     "approach": "进近",
     "noProcedure": "无",
     "routeHint": "按申报格式输入航路和航路点。自动航路会寻找最短的航路路径。",
-    "nmUnit": "NM",
     "removeToken": "移除 {{token}}",
     "departure": "出发",
     "arrival": "到达",
@@ -152,10 +157,9 @@
     "anyRunway": "任意跑道",
     "anyShort": "任意",
     "alternate": "备降机场",
-    "alternateAt": "备降 · {{nm}} NM",
+    "alternateAt": "备降 · {{value}}",
     "noAlternate": "无备降机场",
     "fuel": "总油量",
-    "kgUnit": "kg",
     "liveHint": "编辑时地图会实时重绘。",
     "windSuggest": "风 {{wind}} 适合跑道 {{runway}}",
     "useRunway": "使用",
@@ -411,6 +415,7 @@
       "addons": "附加组件",
       "data": "导航数据",
       "appearance": "外观",
+      "units": "单位",
       "graphics": "图形",
       "airports": "机场",
       "simbrief": "SimBrief",
@@ -517,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "专有",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "仅供飞行模拟使用。切勿将 X-Dispatch 用于真实航空或导航；其数据可能不完整、不准确或已过时。",
+      "thirdParty": "第三方许可"
     },
     "xplane": {
       "title": "X-Plane 安装",
@@ -581,11 +588,6 @@
       "customStyleHint": "粘贴 MapLibre 样式 URL（例如 https://tiles.openfreemap.org/styles/liberty），或栅格瓦片 URL 模式（例如 https://tile.openstreetmap.org/{z}/{x}/{y}.png）。",
       "advanced": "高级",
       "language": "语言",
-      "units": "单位",
-      "unitsDescription": "配置测量单位",
-      "weightUnit": "重量",
-      "lbs": "磅 (lbs)",
-      "kg": "公斤 (kg)",
       "fontSize": "字体大小",
       "fontSizeDescription": "调整界面文字大小",
       "fontSizeSmall": "小",
@@ -596,6 +598,29 @@
       "zoomLevel": "界面缩放",
       "zoomLevelDescription": "放大或缩小整个界面",
       "zoomReset": "重置"
+    },
+    "units": {
+      "title": "单位",
+      "description": "选择距离、高度、速度和其他测量值的显示方式。",
+      "measurements": "测量",
+      "navigation": "导航",
+      "distance": "距离",
+      "altitude": "高度",
+      "speed": "速度",
+      "verticalSpeed": "垂直速度",
+      "weight": "重量",
+      "coordinates": "坐标",
+      "coordinateFormats": {
+        "decimal": "十进制度数",
+        "dms": "度分秒",
+        "dm": "度和十进制分"
+      },
+      "course": "航向",
+      "courseModes": {
+        "magnetic": "磁航向",
+        "true": "真航向",
+        "both": "两者"
+      }
     },
     "graphics": {
       "title": "图形",
@@ -873,7 +898,7 @@
       "glideslope": "下滑道",
       "range": "范围",
       "ident": "识别码",
-      "rangeNm": "{{value}} NM"
+      "rangeNm": "{{value}}"
     },
     "rawMetar": "原始 METAR",
     "routeTab": {
@@ -945,7 +970,7 @@
       "approach": "进近",
       "tow": "拖曳",
       "distance": "距离",
-      "approachNm": "最后进近 {{distance}} nm",
+      "approachNm": "最后进近 {{distance}}",
       "winch": "绞车",
       "tug": "拖机",
       "tugAircraft": "拖曳飞机：Cessna 172 SP",
@@ -1220,7 +1245,7 @@
       "cloudCoverage": "云覆盖量",
       "tops": "云顶",
       "bases": "云底",
-      "ftMsl": "{{value}} ft MSL",
+      "ftMsl": "{{value}} MSL",
       "deleteCloud": "删除云层 {{n}}",
       "cloudTypes": {
         "cirrus": "卷云",
@@ -1684,7 +1709,7 @@
       "notamLabelDeparture": "出发",
       "notamLabelArrival": "到达",
       "notamLabelAlternate": "备降",
-      "transAltAbbr": "TA: {{value}} ft",
+      "transAltAbbr": "TA: {{value}}",
       "transLevelAbbr": "TL: FL{{value}}",
       "sigmetValid": "有效期：{{start}} - {{end}}",
       "sigmetFir": "FIR: {{name}}",
@@ -1703,11 +1728,10 @@
       "colEta": "ETA",
       "colFuelRem": "剩余燃油",
       "waypointCount": "{{count}} 航点",
-      "groundSpeedKt": "{{value}} kt",
       "position": "位置",
       "temperature": "温度",
       "windComponent": "风分量",
-      "windCompValue": "{{value}} kt {{tag}}",
+      "windCompValue": "{{value}} {{tag}}",
       "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
       "headwind": "(逆风)",
       "tailwind": "(顺风)",
@@ -1728,8 +1752,8 @@
       "tocBadge": "T/C",
       "todBadge": "T/D",
       "total": "总计：",
-      "distanceNm": "{{value}} NM",
-      "altitudeFt": "{{value}} ft"
+      "distanceNm": "{{value}}",
+      "altitudeFt": "{{value}}"
     },
     "performance": {
       "vspeeds": {
@@ -1744,8 +1768,8 @@
       "flaps": "襟翼",
       "thrust": "推力",
       "rwyLength": "跑道长度",
-      "meters": "{{value}} 米",
-      "feet": "{{value}} ft",
+      "meters": "{{value}}",
+      "feet": "{{value}}",
       "tlrNotAvailable": "无 TLR 数据",
       "ldaDry": "LDA (干)",
       "ldaWet": "LDA (湿)",
@@ -1755,14 +1779,14 @@
       "cruiseMach": "巡航马赫",
       "machValue": "M{{mach}}",
       "cruiseTas": "巡航 TAS",
-      "tasKt": "{{tas}} kt",
+      "tasKt": "{{tas}}",
       "stepClimbs": "阶梯爬升",
       "stepFallback": "第 {{n}} 阶",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
       "transAltOrigin": "{{icao}} 过渡高度",
       "transLevelDest": "{{icao}} 过渡高度层",
       "flightLevel": "FL{{value}}",
-      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+      "windDirSpeed": "{{dir}}°/{{speed}}"
     },
     "weather": {
       "alternate": "备降",
@@ -1904,10 +1928,22 @@
     "frequency": "频率",
     "altitude": "计划高度",
     "elevation": "海拔",
-    "bearingTrue": "方位（真）",
+    "bearing": "方位",
     "radial": "径向线",
     "distance": "距离",
     "noPlane": "无飞机位置"
+  },
+  "mapContextMenu": {
+    "startHere": "从此处开始",
+    "copyCoordinates": "复制坐标",
+    "coordinatesCopied": "坐标已复制",
+    "centerHere": "将地图居中于此",
+    "elevation": "海拔 {{value}}",
+    "measureFromHere": "从此处测量",
+    "deleteMeasurement": "删除测量",
+    "removePoint": "移除点",
+    "measureTotal": "总计 {{value}}",
+    "clearMeasurement": "清除测量"
   },
   "analytics": {
     "consent": {
@@ -1928,5 +1964,34 @@
     "donate": "支持这个项目",
     "notNow": "以后再说",
     "dontShowAgain": "不再显示"
+  },
+  "profile": {
+    "title": "垂直剖面",
+    "show": "显示垂直剖面",
+    "hide": "隐藏垂直剖面",
+    "noData": "没有剖面数据",
+    "noCruise": "设置巡航高度以查看剖面",
+    "tooShort": "计划太短，无法生成剖面",
+    "cruiseTooLow": "巡航高度过低",
+    "cruiseNotReached": "此计划无法到达巡航高度",
+    "loadingTerrain": "正在加载地形...",
+    "altitude": "高度",
+    "distance": "距离",
+    "terrain": "地形",
+    "wind": "风",
+    "flightPath": "航迹",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "最低安全高度",
+    "legSafe": "航段安全高度",
+    "total": "总计"
+  },
+  "thirdPartyNotices": {
+    "title": "第三方许可",
+    "description": "X-Dispatch 包含以下组件，各自遵循其许可协议。",
+    "search": "按名称或许可搜索",
+    "count_one": "{{count}} 个组件",
+    "count_other": "{{count}} 个组件",
+    "noResults": "没有匹配的组件"
   }
 }

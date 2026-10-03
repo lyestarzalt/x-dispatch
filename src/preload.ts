@@ -11,7 +11,6 @@ import type {
   RouteResolveResult,
   SaveFmsResult,
 } from './lib/flightplan/builder/types';
-import type { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import type { FlightInit } from './lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from './lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from './lib/xplaneServices/dataService/cycleInfo';
@@ -39,6 +38,7 @@ import type {
   PathValidation,
 } from './types/ipc';
 import type { IvaoData } from './types/ivao';
+import type { ResolvedAirportProcedures } from './types/navigation';
 import type {
   ATCController,
   AirportMetadata,
@@ -48,6 +48,7 @@ import type {
   Waypoint,
 } from './types/navigation';
 import type { AirwaySegmentWithCoords } from './types/navigation';
+import type { ThirdPartyNotices } from './types/notices';
 import type { TrafficSnapshot } from './types/traffic';
 import type { VatsimData, VatsimEventsResponse } from './types/vatsim';
 import type { VatsimSectorCacheState, VatsimSectorQueryResult } from './types/vatsimSectors';
@@ -103,6 +104,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   platform: process.platform,
   isSetupComplete: () => ipcRenderer.invoke('app:isSetupComplete'),
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  getThirdPartyNotices: () => ipcRenderer.invoke('app:getThirdPartyNotices'),
   checkForUpdate: () => ipcRenderer.invoke('app:checkForUpdate'),
   getCliFlags: () => ipcRenderer.invoke('app:getCliFlags'),
   getProcessMemory: () =>
@@ -457,6 +459,7 @@ declare global {
       platform: NodeJS.Platform;
       isSetupComplete: () => Promise<boolean>;
       getVersion: () => Promise<string>;
+      getThirdPartyNotices: () => Promise<ThirdPartyNotices>;
       checkForUpdate: () => Promise<{
         latestVersion: string | null;
         available: boolean;
@@ -571,7 +574,7 @@ declare global {
       getApproachNavaidsByRunway: (airportIcao: string, runway: string) => Promise<Navaid[]>;
       // Search and procedures
       searchNavaids: (query: string, limit?: number) => Promise<NavSearchResult[]>;
-      getAirportProcedures: (icao: string) => Promise<AirportProcedures | null>;
+      getAirportProcedures: (icao: string) => Promise<ResolvedAirportProcedures | null>;
       // New data queries
       getDataSources: () => Promise<NavDataSources | null>;
       getATCByFacility: (facilityId: string) => Promise<ATCController | null>;

@@ -4,7 +4,10 @@ import { ChevronDown, ChevronUp, Wind } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useUnits } from '@/hooks/useUnits';
+import type { Feet, NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import type { Knots } from '@/lib/utils/units';
 import type { SimBriefFix, SimBriefOFP } from '@/types/simbrief';
 
 interface NavlogTabProps {
@@ -14,6 +17,7 @@ interface NavlogTabProps {
 
 export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const [expandedFix, setExpandedFix] = useState<string | null>(null);
 
   const fixes = data.navlog.fix;
@@ -121,7 +125,9 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
         <span className="text-muted-foreground">
           {t('simbriefDialog.profile.total')}{' '}
           {t('simbriefDialog.profile.distanceNm', {
-            value: Math.round(processedFixes[processedFixes.length - 1]?.cumulativeDistance || 0),
+            value: units.distance(
+              (processedFixes[processedFixes.length - 1]?.cumulativeDistance || 0) as NauticalMiles
+            ),
           })}
         </span>
       </div>
@@ -154,6 +160,7 @@ function NavlogRow({
   onToggle,
 }: NavlogRowProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const windDir = parseInt(fix.wind_dir, 10);
   const windSpd = parseInt(fix.wind_spd, 10);
   const windComp = parseInt(fix.wind_component, 10);
@@ -198,7 +205,7 @@ function NavlogRow({
           <span className="font-mono text-sm">
             {parseInt(fix.altitude_feet, 10) >= 10000
               ? `FL${Math.round(parseInt(fix.altitude_feet, 10) / 100)}`
-              : `${parseInt(fix.altitude_feet, 10).toLocaleString()}`}
+              : units.altitude(parseInt(fix.altitude_feet, 10) as Feet)}
           </span>
         </div>
 
@@ -215,9 +222,7 @@ function NavlogRow({
 
         {/* GS / Mach */}
         <div className="flex flex-col items-end">
-          <span className="font-mono text-sm">
-            {t('simbriefDialog.navlog.groundSpeedKt', { value: fix.groundspeed })}
-          </span>
+          <span className="font-mono text-sm">{units.speed(Number(fix.groundspeed) as Knots)}</span>
           <span className="text-muted-foreground font-mono text-[10px]">
             {t('simbriefDialog.performance.machValue', {
               mach: (parseInt(fix.mach_thousandths, 10) / 1000).toFixed(2),
@@ -268,7 +273,7 @@ function NavlogRow({
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.windComponent')}</p>
             <p className={cn('font-mono', isHeadwind ? 'text-destructive' : 'text-success')}>
               {t('simbriefDialog.navlog.windCompValue', {
-                value: `${isHeadwind ? '' : '+'}${windComp}`,
+                value: `${isHeadwind ? '' : '+'}${units.speed(windComp as Knots)}`,
                 tag: isHeadwind
                   ? t('simbriefDialog.navlog.headwind')
                   : t('simbriefDialog.navlog.tailwind'),
@@ -289,17 +294,11 @@ function NavlogRow({
           </div>
           <div>
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.groundElevation')}</p>
-            <p className="font-mono">
-              {t('simbriefDialog.profile.altitudeFt', {
-                value: parseInt(fix.ground_height, 10).toLocaleString(),
-              })}
-            </p>
+            <p className="font-mono">{units.altitude(parseInt(fix.ground_height, 10) as Feet)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.mora')}</p>
-            <p className="font-mono">
-              {fix.mora ? t('simbriefDialog.profile.altitudeFt', { value: fix.mora }) : '—'}
-            </p>
+            <p className="font-mono">{fix.mora ? units.altitude(Number(fix.mora) as Feet) : '—'}</p>
           </div>
           <div>
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.fuelUsed')}</p>

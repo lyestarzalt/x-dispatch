@@ -300,7 +300,16 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
     }),
     {
       name: 'xplane-viz-plan-builder',
-      version: 1,
+      // v2: RunwayEnd gained the optional `elevationFt` (nothing to convert - older saved runway
+      // ends simply lack it until the runway is picked again).
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as Record<string, unknown>;
+        if (version < 2) {
+          // No field rewrite needed; kept as an explicit step so the cascade stays complete.
+        }
+        return state;
+      },
       partialize: (state) => ({
         departure: state.departure,
         arrival: state.arrival,

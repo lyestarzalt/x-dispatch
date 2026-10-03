@@ -1,8 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Plane, PlaneLanding } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useUnits } from '@/hooks/useUnits';
 import { RATING_TEXT_CLASS, formatDateTime, formatDuration } from '@/lib/flightRecorder/format';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import type { FeetPerMinute } from '@/lib/utils/units';
 import type { FlightSummary } from '@/types/flightRecorder';
 import { TrailThumbnail } from './TrailThumbnail';
 
@@ -35,6 +38,7 @@ interface FlightCardProps {
 
 function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
   const { t, i18n } = useTranslation();
+  const units = useUnits();
   const landing = flight.landing;
   const aircraftLabel =
     flight.aircraft.icao ?? flight.aircraft.name ?? t('logbook.unknownAircraft');
@@ -73,9 +77,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
           <span className="text-border">·</span>
           <span className="font-mono">{formatDuration(flight.blockTimeSec)}</span>
           <span className="text-border">·</span>
-          <span className="font-mono">
-            {Math.round(flight.distanceNm)} {t('units.nm')}
-          </span>
+          <span className="font-mono">{units.distance(flight.distanceNm as NauticalMiles)}</span>
         </div>
         <div className="text-muted-foreground/60 mt-0.5 text-[11px]">
           {formatDateTime(flight.startedAt, i18n.language)}
@@ -85,7 +87,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
         <div className={cn('flex flex-col items-end', RATING_TEXT_CLASS[landing.rating])}>
           <div className="flex items-center gap-1 font-mono text-sm font-bold">
             <PlaneLanding className="h-3.5 w-3.5" />
-            {landing.touchdownRateFpm}
+            {units.verticalSpeed(landing.touchdownRateFpm as FeetPerMinute)}
           </div>
           <span className="text-[10px] tracking-wide uppercase opacity-80">
             {t(`landing.rating.${landing.rating}`)}

@@ -8,12 +8,15 @@ export {
   type TurnDirection,
 } from './arcs';
 
+// Re-export course-intersection primitives
+export { crossTrackStatus, intersectRadials, lineCircleIntersection } from './intersections';
+
 type Brand<Base, Label extends string> = Base & { readonly __brand: Label };
 
 export type Degrees = Brand<number, 'degrees'>;
 export type Meters = Brand<number, 'meters'>;
 export type Feet = Brand<number, 'feet'>;
-type NauticalMiles = Brand<number, 'nauticalMiles'>;
+export type NauticalMiles = Brand<number, 'nauticalMiles'>;
 type LatLon = Brand<[number, number], 'latlon'>;
 
 const EARTH_RADIUS_M = 6371000;

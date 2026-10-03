@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
-import {
-  type PlanFix,
-  type RouteWaypoint,
-  addProcedureRouteLayer,
-  removeProcedureRouteLayer,
-} from '../layers';
+import { type PlanFix, addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseProcedureRouteSyncOptions {
@@ -47,20 +42,9 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
         addProcedureRouteLayer(
           map,
           {
-            type: selectedProcedure.type as 'SID' | 'STAR' | 'APPROACH',
+            type: selectedProcedure.type,
             name: selectedProcedure.name,
-            waypoints: selectedProcedure.waypoints.map((wp) => ({
-              fixId: wp.fixId,
-              latitude: wp.latitude,
-              longitude: wp.longitude,
-              resolved: wp.resolved,
-              altitude: wp.altitude as RouteWaypoint['altitude'],
-              speed: wp.speed,
-              pathTerminator: wp.pathTerminator,
-              course: wp.course,
-              distance: wp.distance,
-              turnDirection: wp.turnDirection,
-            })),
+            waypoints: selectedProcedure.waypoints,
           },
           undefined,
           { planFixes }

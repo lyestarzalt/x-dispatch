@@ -33,13 +33,19 @@
     "ft": "ft",
     "m": "m",
     "nm": "nm",
+    "km": "km",
+    "mi": "mi",
     "kt": "kt",
     "kts": "kts",
+    "kmh": "km/h",
+    "mph": "mph",
     "ms": "m/s",
     "s": "s",
     "kg": "kg",
     "lbs": "lbs",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "N",
@@ -142,7 +148,6 @@
     "approach": "Approach",
     "noProcedure": "None",
     "routeHint": "Airways and fixes as filed. Auto route finds the shortest airway path.",
-    "nmUnit": "NM",
     "removeToken": "Remove {{token}}",
     "departure": "Departure",
     "arrival": "Arrival",
@@ -152,10 +157,9 @@
     "anyRunway": "Any runway",
     "anyShort": "Any",
     "alternate": "Alternate",
-    "alternateAt": "Alternate · {{nm}} NM",
+    "alternateAt": "Alternate · {{value}}",
     "noAlternate": "No alternate",
     "fuel": "Block fuel",
-    "kgUnit": "kg",
     "liveHint": "The map redraws as you edit.",
     "windSuggest": "Wind {{wind}} favours {{runway}}",
     "useRunway": "Use",
@@ -411,6 +415,7 @@
       "addons": "Add-ons",
       "data": "Nav Data",
       "appearance": "Appearance",
+      "units": "Units",
       "graphics": "Graphics",
       "airports": "Airports",
       "simbrief": "SimBrief",
@@ -517,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Proprietary",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "For flight simulation only. Never use X-Dispatch for real-world aviation or navigation; its data may be incomplete, inaccurate or out of date.",
+      "thirdParty": "Third-party licenses"
     },
     "xplane": {
       "title": "X-Plane Installation",
@@ -581,11 +588,6 @@
       "customStyleHint": "Paste a MapLibre style URL (e.g. https://tiles.openfreemap.org/styles/liberty) or a raster tile URL pattern (e.g. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
       "advanced": "Advanced",
       "language": "Language",
-      "units": "Units",
-      "unitsDescription": "Configure display units for measurements",
-      "weightUnit": "Weight",
-      "lbs": "Pounds (lbs)",
-      "kg": "Kilograms (kg)",
       "fontSize": "Font Size",
       "fontSizeDescription": "Adjust the interface text size",
       "fontSizeSmall": "Small",
@@ -596,6 +598,29 @@
       "zoomLevel": "Interface Zoom",
       "zoomLevelDescription": "Scale the entire interface up or down",
       "zoomReset": "Reset"
+    },
+    "units": {
+      "title": "Units",
+      "description": "Choose how distance, altitude, speed and other measurements are displayed.",
+      "measurements": "Measurements",
+      "navigation": "Navigation",
+      "distance": "Distance",
+      "altitude": "Altitude",
+      "speed": "Speed",
+      "verticalSpeed": "Vertical speed",
+      "weight": "Weight",
+      "coordinates": "Coordinates",
+      "coordinateFormats": {
+        "decimal": "Decimal degrees",
+        "dms": "Degrees, minutes, seconds",
+        "dm": "Degrees, decimal minutes"
+      },
+      "course": "Course",
+      "courseModes": {
+        "magnetic": "Magnetic",
+        "true": "True",
+        "both": "Both"
+      }
     },
     "graphics": {
       "title": "Graphics",
@@ -873,7 +898,7 @@
       "glideslope": "Glideslope",
       "range": "Range",
       "ident": "Ident",
-      "rangeNm": "{{value}} NM"
+      "rangeNm": "{{value}}"
     },
     "rawMetar": "Raw METAR",
     "routeTab": {
@@ -945,7 +970,7 @@
       "approach": "Approach",
       "tow": "Tow",
       "distance": "Distance",
-      "approachNm": "{{distance}} nm final",
+      "approachNm": "{{distance}} final",
       "winch": "Winch",
       "tug": "Tug",
       "tugAircraft": "Tow plane: Cessna 172 SP",
@@ -1220,7 +1245,7 @@
       "cloudCoverage": "Cloud Coverage",
       "tops": "Tops",
       "bases": "Bases",
-      "ftMsl": "{{value}} ft MSL",
+      "ftMsl": "{{value}} MSL",
       "deleteCloud": "Delete Cloud Layer {{n}}",
       "cloudTypes": {
         "cirrus": "Cirrus",
@@ -1684,7 +1709,7 @@
       "notamLabelDeparture": "Departure",
       "notamLabelArrival": "Arrival",
       "notamLabelAlternate": "Alternate",
-      "transAltAbbr": "TA: {{value}} ft",
+      "transAltAbbr": "TA: {{value}}",
       "transLevelAbbr": "TL: FL{{value}}",
       "sigmetValid": "Valid: {{start}} to {{end}}",
       "sigmetFir": "FIR: {{name}}",
@@ -1703,11 +1728,10 @@
       "colEta": "ETA",
       "colFuelRem": "Fuel Rem",
       "waypointCount": "{{count}} waypoints",
-      "groundSpeedKt": "{{value}} kt",
       "position": "Position",
       "temperature": "Temperature",
       "windComponent": "Wind Component",
-      "windCompValue": "{{value}} kt {{tag}}",
+      "windCompValue": "{{value}} {{tag}}",
       "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
       "headwind": "(headwind)",
       "tailwind": "(tailwind)",
@@ -1728,8 +1752,8 @@
       "tocBadge": "T/C",
       "todBadge": "T/D",
       "total": "Total:",
-      "distanceNm": "{{value}} nm",
-      "altitudeFt": "{{value}} ft"
+      "distanceNm": "{{value}}",
+      "altitudeFt": "{{value}}"
     },
     "performance": {
       "vspeeds": {
@@ -1744,8 +1768,8 @@
       "flaps": "Flaps",
       "thrust": "Thrust",
       "rwyLength": "RWY Length",
-      "meters": "{{value}} m",
-      "feet": "{{value}} ft",
+      "meters": "{{value}}",
+      "feet": "{{value}}",
       "tlrNotAvailable": "TLR data not available",
       "ldaDry": "LDA (Dry)",
       "ldaWet": "LDA (Wet)",
@@ -1755,14 +1779,14 @@
       "cruiseMach": "Cruise Mach",
       "machValue": "M{{mach}}",
       "cruiseTas": "Cruise TAS",
-      "tasKt": "{{tas}} kt",
+      "tasKt": "{{tas}}",
       "stepClimbs": "Step Climbs",
       "stepFallback": "Step {{n}}",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
       "transAltOrigin": "{{icao}} Trans Alt",
       "transLevelDest": "{{icao}} Trans Level",
       "flightLevel": "FL{{value}}",
-      "windDirSpeed": "{{dir}}°/{{speed}}kt"
+      "windDirSpeed": "{{dir}}°/{{speed}}"
     },
     "weather": {
       "alternate": "Alternate",
@@ -1904,10 +1928,22 @@
     "frequency": "Frequency",
     "altitude": "Planned altitude",
     "elevation": "Elevation",
-    "bearingTrue": "Bearing (true)",
+    "bearing": "Bearing",
     "radial": "Radial",
     "distance": "Distance",
     "noPlane": "No aircraft position"
+  },
+  "mapContextMenu": {
+    "startHere": "Start anywhere here",
+    "copyCoordinates": "Copy coordinates",
+    "coordinatesCopied": "Coordinates copied",
+    "centerHere": "Center map here",
+    "elevation": "Elevation {{value}}",
+    "measureFromHere": "Measure from here",
+    "deleteMeasurement": "Delete measurement",
+    "removePoint": "Remove point",
+    "measureTotal": "Total {{value}}",
+    "clearMeasurement": "Clear measurement"
   },
   "analytics": {
     "consent": {
@@ -1928,5 +1964,34 @@
     "donate": "Support this project",
     "notNow": "Not now",
     "dontShowAgain": "Don't show again"
+  },
+  "profile": {
+    "title": "Vertical profile",
+    "show": "Show vertical profile",
+    "hide": "Hide vertical profile",
+    "noData": "No profile data available",
+    "noCruise": "Set a cruise altitude to see the profile",
+    "tooShort": "The plan is too short for a profile",
+    "cruiseTooLow": "The cruise altitude is too low",
+    "cruiseNotReached": "Cruise altitude is not reached on this plan",
+    "loadingTerrain": "Loading terrain...",
+    "altitude": "Altitude",
+    "distance": "Distance",
+    "terrain": "Terrain",
+    "wind": "Wind",
+    "flightPath": "Flight path",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min safe",
+    "legSafe": "Leg safe",
+    "total": "Total"
+  },
+  "thirdPartyNotices": {
+    "title": "Third-party licenses",
+    "description": "X-Dispatch includes these components, each under its own license.",
+    "search": "Search by name or license",
+    "count_one": "{{count}} component",
+    "count_other": "{{count}} components",
+    "noResults": "No component matches your search"
   }
 }

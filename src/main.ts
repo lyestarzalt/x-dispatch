@@ -26,7 +26,6 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
-import { AirportProcedures } from './lib/parsers/nav/cifpParser';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
@@ -73,6 +72,7 @@ import {
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { LaunchResult } from './lib/xplaneServices/launch';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
+import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
 // Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
@@ -521,6 +521,18 @@ function registerIpcHandlers() {
 
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:getThirdPartyNotices', async () => {
+    // Generated at build time by scripts/generate-third-party-notices.mjs into assets/licenses.
+    const file = app.isPackaged
+      ? path.join(process.resourcesPath, 'assets', 'licenses', 'third-party-notices.json')
+      : path.join(__dirname, '..', '..', 'assets', 'licenses', 'third-party-notices.json');
+    try {
+      return JSON.parse(await fs.promises.readFile(file, 'utf8')) as unknown;
+    } catch (error) {
+      logger.main.warn('Third-party notices unavailable', error);
+      return { entries: [] };
+    }
+  });
   ipcMain.handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
     // Dev builds skip the network call entirely to avoid hammering dl.x-dispatch.app during HMR.
     // Production always fetches: the About section needs latestVersion even when
@@ -1131,16 +1143,19 @@ function registerIpcHandlers() {
     return dataManager.searchNavaids(query, Math.min(Math.max(1, limit), 100));
   });
 
-  ipcMain.handle('nav:getAirportProcedures', (_, icao: string): AirportProcedures | null => {
-    if (!isValidICAO(icao)) return null;
-    const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
-    if (procedures) {
-      logger.main.info(
-        `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
-      );
+  ipcMain.handle(
+    'nav:getAirportProcedures',
+    (_, icao: string): ResolvedAirportProcedures | null => {
+      if (!isValidICAO(icao)) return null;
+      const procedures = dataManager.getAirportProcedures(icao.toUpperCase());
+      if (procedures) {
+        logger.main.info(
+          `[User] Loaded procedures for ${icao.toUpperCase()}: ${procedures.sids.length} SIDs, ${procedures.stars.length} STARs, ${procedures.approaches.length} approaches`
+        );
+      }
+      return procedures;
     }
-    return procedures;
-  });
+  );
 
   // New navigation data handlers
   ipcMain.handle('nav:getDataSources', () => dataManager.getDataSources());
@@ -1928,9 +1943,9 @@ app.whenReady().then(async () => {
         'Content-Security-Policy': [
           "default-src 'self'; " +
             "script-src 'self' 'unsafe-inline'; " +
-            "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; " +
+            "style-src 'self' 'unsafe-inline'; " +
             "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int;" +
-            "font-src 'self' data: https://fonts.gstatic.com; " +
+            "font-src 'self' data:; " +
             "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int; " +
             "worker-src 'self' blob:;",
         ],

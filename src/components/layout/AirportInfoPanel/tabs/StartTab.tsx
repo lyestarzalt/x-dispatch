@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
+import { useUnits } from '@/hooks/useUnits';
+import { type Degrees, metersToFeet, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
 import type { Helipad, Runway, StartupLocation } from '@/types/apt';
@@ -199,6 +200,7 @@ const OP_TYPE_LABELS: Record<string, { labelKey: string; variant: CatBadgeVarian
 
 function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps) {
   const { t } = useTranslation();
+  const units = useUnits();
 
   const xplaneIndices = useMemo(() => {
     const sortedWithIndices = gates
@@ -289,7 +291,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
               <span className="font-mono text-sm">{gate.name}</span>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground/50 text-[10px]">
-                  {Math.round(gate.heading)}°
+                  {units.course(gate.heading as Degrees, gate.latitude, gate.longitude)}
                 </span>
                 {isSelected && <Check className="h-3.5 w-3.5" />}
               </div>

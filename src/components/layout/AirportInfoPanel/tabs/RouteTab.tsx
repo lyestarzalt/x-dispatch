@@ -6,10 +6,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { runwayMatches } from '@/lib/flightplan/builder/procedures';
-import type { Procedure } from '@/lib/parsers/nav/cifpParser';
 import { cn } from '@/lib/utils/helpers';
 import { trackEvent, useAirportProcedures } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
+import type { ResolvedProcedure as Procedure } from '@/types/navigation';
 
 type ProcedureType = 'SID' | 'STAR' | 'APP';
 
@@ -75,10 +75,11 @@ export default function RouteTab() {
       selectedProcedure?.name === proc.name &&
       selectedProcedure?.transition === proc.transition &&
       selectedProcedure?.runway === proc.runway;
-    selectProcedure(isAlreadySelected ? null : (proc as Parameters<typeof selectProcedure>[0]));
+    selectProcedure(isAlreadySelected ? null : proc);
     if (!isAlreadySelected) {
       trackEvent('procedure_selected', {
         type: activeType === 'SID' ? 'sid' : activeType === 'STAR' ? 'star' : 'app',
+        source: 'manual',
       });
     }
   };

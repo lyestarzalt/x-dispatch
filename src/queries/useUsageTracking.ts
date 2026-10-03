@@ -6,11 +6,14 @@ import {
   type AnalyticsLayer,
   type AnalyticsWidget,
 } from '@/lib/analytics/events';
-import { builtTaxiRoute, isNewStartPosition } from '@/lib/analytics/mapActions';
+import { builtTaxiRoute, isNewStartPosition, pickedProcedures } from '@/lib/analytics/mapActions';
 import { useAppStore } from '@/stores/appStore';
 import { useCompanionAppsStore } from '@/stores/companionAppsStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import { useMapStore } from '@/stores/mapStore';
+import { useMeasureStore } from '@/stores/measureStore';
+import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { MAP_STYLE_PRESETS, useSettingsStore } from '@/stores/settingsStore';
 import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import { useThemeStore } from '@/stores/themeStore';
@@ -72,6 +75,12 @@ function sendPreferences() {
     map_style: mapStyleId(settings.map.mapStyleUrl),
     app_language: appLanguage(),
     weight_unit: settings.map.units.weight,
+    distance_unit: settings.map.units.distance,
+    altitude_unit: settings.map.units.altitude,
+    speed_unit: settings.map.units.speed,
+    vertical_speed_unit: settings.map.units.verticalSpeed,
+    coordinate_format: settings.map.units.coordinates,
+    course_mode: settings.map.units.course,
     font_size: settings.appearance.fontSize,
     clock_mode: settings.appearance.clockMode,
     surface_detail: settings.graphics.surfaceDetail,
@@ -91,10 +100,16 @@ function sendPreferences() {
   }
 }
 
+/** The profile strip is on screen only while a plan is loaded and the strip is not collapsed. */
+function profileStripVisible(): boolean {
+  return useMapStore.getState().profileStripOpen && useFlightPlanStore.getState().fmsData !== null;
+}
+
 /**
  * Reports how the map is used: layers as they are switched on and off, widgets
  * and Explore tabs as they are opened, airports and start positions as they are
- * picked, taxi routes once they are built, and one preferences snapshot per session.
+ * picked, procedures as they are chosen, measurements and taxi routes once they
+ * are drawn, and one preferences snapshot per session.
  * Mounted once by the map; events are dropped in main unless consent is granted.
  */
 export function useUsageTracking() {
@@ -150,11 +165,30 @@ export function useUsageTracking() {
       if (next.replay && !prev.replay) trackEvent('widget_opened', { widget: 'replay' });
       if (next.landing && !prev.landing) trackEvent('widget_opened', { widget: 'landing_report' });
     });
+    const unsubMeasure = useMeasureStore.subscribe((next, prev) => {
+      if (next.draft && !prev.draft) trackEvent('widget_opened', { widget: 'measure' });
+    });
+    const unsubPlanBuilder = usePlanBuilderStore.subscribe((next, prev) => {
+      for (const pick of pickedProcedures(next, prev)) trackEvent('procedure_selected', pick);
+    });
+    // The strip shows when a plan loads or when it is expanded again; either store can flip it.
+    let profileShown = profileStripVisible();
+    const onProfileChange = () => {
+      const shown = profileStripVisible();
+      if (shown && !profileShown) trackEvent('widget_opened', { widget: 'profile' });
+      profileShown = shown;
+    };
+    const unsubProfileMap = useMapStore.subscribe(onProfileChange);
+    const unsubProfilePlan = useFlightPlanStore.subscribe(onProfileChange);
     return () => {
       unsubMap();
       unsubApp();
       unsubTaxiRoute();
       unsubRecorder();
+      unsubMeasure();
+      unsubPlanBuilder();
+      unsubProfileMap();
+      unsubProfilePlan();
     };
   }, []);
 }

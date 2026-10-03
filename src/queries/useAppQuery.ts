@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { AirportProcedures } from '@/lib/parsers/nav/cifpParser';
-import type { ATCController } from '@/types/navigation';
+import type { ATCController, ResolvedAirportProcedures } from '@/types/navigation';
 
 export const appKeys = {
   all: ['app'] as const,
@@ -22,6 +21,17 @@ export function useAppVersion() {
     queryKey: appKeys.version,
     queryFn: () => window.appAPI.getVersion(),
     staleTime: Infinity,
+  });
+}
+
+/** The generated third-party licence list; static for the life of the process. */
+export function useThirdPartyNotices(enabled = true) {
+  return useQuery({
+    queryKey: ['app', 'thirdPartyNotices'] as const,
+    queryFn: () => window.appAPI.getThirdPartyNotices(),
+    enabled,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 
@@ -87,7 +97,7 @@ export function useATCControllers(icao: string | null) {
 export function useAirportProcedures(icao: string | null) {
   return useQuery({
     queryKey: appKeys.procedures(icao ?? ''),
-    queryFn: (): Promise<AirportProcedures | null> => {
+    queryFn: (): Promise<ResolvedAirportProcedures | null> => {
       if (!icao) return Promise.resolve(null);
       return window.navAPI.getAirportProcedures(icao);
     },

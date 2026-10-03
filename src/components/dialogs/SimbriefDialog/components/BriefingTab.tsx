@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { useUnits } from '@/hooks/useUnits';
+import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { SimBriefNotam, SimBriefOFP, SimBriefSigmet } from '@/types/simbrief';
 
@@ -27,6 +29,7 @@ interface BriefingTabProps {
 
 export function BriefingTab({ data }: BriefingTabProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const { origin, destination, alternate, sigmets, atc } = data;
 
   // SimBrief XML-to-JSON may return a single object instead of an array
@@ -165,7 +168,9 @@ export function BriefingTab({ data }: BriefingTabProps) {
             <div>
               <p className="text-muted-foreground text-sm">{origin.icao_code}</p>
               <p className="font-mono text-sm font-medium">
-                {t('simbriefDialog.briefing.transAltAbbr', { value: origin.trans_alt || '—' })}
+                {t('simbriefDialog.briefing.transAltAbbr', {
+                  value: origin.trans_alt ? units.altitude(Number(origin.trans_alt) as Feet) : '—',
+                })}
               </p>
             </div>
             <div>

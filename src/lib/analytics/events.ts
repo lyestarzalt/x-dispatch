@@ -37,7 +37,23 @@ export const ANALYTICS_LAYERS = [
   'airways',
 ] as const;
 
-export const ANALYTICS_WIDGETS = ['explore', 'nav_info', 'replay', 'landing_report'] as const;
+/** Map widgets, reported when opened; the measure line and profile strip count when first shown. */
+export const ANALYTICS_WIDGETS = [
+  'explore',
+  'nav_info',
+  'replay',
+  'landing_report',
+  'measure',
+  'profile',
+] as const;
+
+/** Actions of the map's right-click menu. */
+export const ANALYTICS_CONTEXT_MENU_ACTIONS = [
+  'start_here',
+  'copy_coordinates',
+  'measure',
+  'center_map',
+] as const;
 
 export const ANALYTICS_DONATE_SOURCES = [
   'support_prompt',
@@ -179,6 +195,7 @@ export const ANALYTICS_LANGUAGES = [
 export type AnalyticsFeature = (typeof ANALYTICS_FEATURES)[number];
 export type AnalyticsLayer = (typeof ANALYTICS_LAYERS)[number];
 export type AnalyticsWidget = (typeof ANALYTICS_WIDGETS)[number];
+export type AnalyticsContextMenuAction = (typeof ANALYTICS_CONTEXT_MENU_ACTIONS)[number];
 export type AnalyticsStartVariant = (typeof ANALYTICS_START_VARIANTS)[number];
 export type AnalyticsAddonType = (typeof ANALYTICS_ADDON_TYPES)[number];
 export type AnalyticsLaunchError = (typeof ANALYTICS_LAUNCH_ERRORS)[number];
@@ -248,8 +265,10 @@ const EVENT_SCHEMA = {
     start_type: oneOf(['runway', 'ramp', 'custom']),
     helipad: { kind: 'boolean' },
   },
-  /** A SID, STAR or approach shown on the map; the procedure name is never sent. */
-  procedure_selected: { type: oneOf(['sid', 'star', 'app']) },
+  /** A SID, STAR or approach chosen by the user or by the auto router; the name is never sent. */
+  procedure_selected: { type: oneOf(['sid', 'star', 'app']), source: oneOf(['manual', 'auto']) },
+  /** An item picked in the map's right-click menu. */
+  context_menu_used: { action: oneOf(ANALYTICS_CONTEXT_MENU_ACTIONS) },
   /** A frequency sent to an X-Plane radio from the airport panel. */
   frequency_tuned: {},
   /** A taxi route reached two points: routed from a runway pick, clicked node by node, or drawn. */
@@ -314,6 +333,12 @@ const EVENT_SCHEMA = {
     map_style: oneOf(ANALYTICS_MAP_STYLES),
     app_language: oneOf(ANALYTICS_LANGUAGES),
     weight_unit: oneOf(['lbs', 'kg']),
+    distance_unit: oneOf(['nm', 'km', 'mi']),
+    altitude_unit: oneOf(['ft', 'm']),
+    speed_unit: oneOf(['kts', 'kmh', 'mph']),
+    vertical_speed_unit: oneOf(['fpm', 'ms']),
+    coordinate_format: oneOf(['decimal', 'dms', 'dm']),
+    course_mode: oneOf(['magnetic', 'true', 'both']),
     font_size: oneOf(['small', 'medium', 'large']),
     clock_mode: oneOf(['zulu', 'local']),
     surface_detail: oneOf(['low', 'medium', 'high']),

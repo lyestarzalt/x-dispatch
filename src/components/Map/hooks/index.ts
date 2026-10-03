@@ -21,6 +21,8 @@ export { useAirfieldStrobes } from './useAirfieldStrobes';
 export { useApproachLightAnimation } from './useApproachLightAnimation';
 export { useGroundWeather } from './useGroundWeather';
 export { useCursorElevation } from './useCursorElevation';
+export { useMapContextMenu } from './useMapContextMenu';
+export { useMeasureTool } from './useMeasureTool';
 export { useSolarClock } from './useSolarClock';
 export { useSolarSky } from './useSolarSky';
 export { useCityLights } from './useCityLights';

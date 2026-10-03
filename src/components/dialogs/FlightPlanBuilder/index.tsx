@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Eraser,
   Loader2,
+  Mountain,
   Pencil,
   PlaneLanding,
   PlaneTakeoff,
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useUnits } from '@/hooks/useUnits';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   estimateFuelKg,
@@ -32,14 +34,18 @@ import {
   isEastbound,
   suggestCruiseAltitudeFt,
 } from '@/lib/flightplan/builder/geometry';
+import { planningClass } from '@/lib/flightplan/builder/planningClass';
 import {
   matchProcedure,
   procedureEntry,
   procedureExit,
   procedureJoins,
   proceduresForRunway,
+  suggestProcedures,
 } from '@/lib/flightplan/builder/procedures';
 import type { RouteToken } from '@/lib/flightplan/builder/types';
+import { kgToLbs } from '@/lib/utils/format';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
@@ -48,12 +54,12 @@ import { trackEvent, useAirportProcedures, useTrackFeatureOpened } from '@/queri
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
-import type { AircraftCategory } from '@/types/xplane';
 import { AirportPicker, toEndpoint } from './AirportPicker';
 import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
@@ -65,20 +71,6 @@ const FIELD_CLASS = 'h-8 w-full font-mono text-xs';
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Wind within this many degrees of a runway heading makes it the suggested one. */
 const WIND_SUGGEST_MIN_KT = 4;
-
-function planningClass(category: AircraftCategory | null | undefined): RangeRingCategory {
-  switch (category) {
-    case 'ga':
-    case 'glider':
-    case 'ultralight':
-    case 'seaplane':
-    case 'helicopter':
-    case 'vtol':
-      return 'prop';
-    default:
-      return 'jet';
-  }
-}
 
 function formatMinutes(minutes: number): string {
   const h = Math.floor(minutes / 60);
@@ -269,6 +261,7 @@ interface FlightPlanBuilderProps {
 
 export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
   useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
@@ -296,6 +289,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const resolve = usePlanBuilderStore((s) => s.resolve);
   const autoRoute = usePlanBuilderStore((s) => s.autoRoute);
   const saveToXPlane = usePlanBuilderStore((s) => s.saveToXPlane);
+  const profileStripOpen = useMapStore((s) => s.profileStripOpen);
+  const setProfileStripOpen = useMapStore((s) => s.setProfileStripOpen);
   const startAtDeparture = usePlanBuilderStore((s) => s.startAtDeparture);
   const aircraftCategory = usePlaneStore((s) => s.state?.aircraftCategory);
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
@@ -376,6 +371,59 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
       if (end) setRunway('arrival', arrival.runway, end);
     }
   }, [departure, arrival, depRunways, arrRunways, setRunway]);
+
+  // Pick procedures the way a dispatcher would, once per runway/route combination: the SID that
+  // exits where the route starts, the STAR that enters where it ends, and the best approach for
+  // the runway. Only empty slots are filled, so a choice (or a deliberate "none") stays put until
+  // the runway or the route changes.
+  const suggestedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isOpen || depLoading || arrLoading) return;
+    const enroute =
+      result?.plan.waypoints.filter((w) => w.via !== 'ADEP' && w.via !== 'ADES') ?? [];
+    const firstEnrouteFixId = enroute[0]?.id;
+    const lastEnrouteFixId = enroute[enroute.length - 1]?.id;
+    const key = [
+      departure?.icao,
+      departure?.runway,
+      arrival?.icao,
+      arrival?.runway,
+      firstEnrouteFixId,
+      lastEnrouteFixId,
+    ].join('|');
+    if (suggestedFor.current === key) return;
+    suggestedFor.current = key;
+    const suggestion = suggestProcedures({
+      sids,
+      stars,
+      approaches,
+      departureRunway: departure?.runway,
+      arrivalRunway: arrival?.runway,
+      firstEnrouteFixId,
+      lastEnrouteFixId,
+      star: matchProcedure(stars, arrival?.star, arrival?.runway),
+    });
+    if (departure?.runway && !departure.sid && suggestion.sid) {
+      setProcedureChoice('sid', suggestion.sid);
+    }
+    if (arrival?.runway && !arrival.star && suggestion.star) {
+      setProcedureChoice('star', suggestion.star);
+    }
+    if (arrival?.runway && !arrival.approach && suggestion.approach) {
+      setProcedureChoice('approach', suggestion.approach);
+    }
+  }, [
+    isOpen,
+    depLoading,
+    arrLoading,
+    result,
+    departure,
+    arrival,
+    sids,
+    stars,
+    approaches,
+    setProcedureChoice,
+  ]);
 
   // Turn the persisted procedure names back into resolved procedures whenever data or choices change.
   useEffect(() => {
@@ -534,8 +582,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           <div className="mt-3 grid grid-cols-4 gap-3">
             <Stat
               label={t('planBuilder.distance')}
-              value={ready ? String(Math.round(distanceNm)) : '—'}
-              unit={t('planBuilder.nmUnit')}
+              value={ready ? units.distance(distanceNm as NauticalMiles) : '—'}
             />
             <Stat
               label={t('planBuilder.ete')}
@@ -548,8 +595,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             />
             <Stat
               label={t('planBuilder.fuel')}
-              value={ready ? String(estimateFuelKg(distanceNm, cls)) : '—'}
-              unit={t('planBuilder.kgUnit')}
+              value={ready ? units.weight(kgToLbs(estimateFuelKg(distanceNm, cls))) : '—'}
             />
           </div>
 
@@ -689,7 +735,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                       label={
                         alternate
                           ? t('planBuilder.alternateAt', {
-                              nm: Math.round(greatCircleNm(arrival, alternate)),
+                              value: units.distance(
+                                greatCircleNm(arrival, alternate) as NauticalMiles
+                              ),
                             })
                           : t('planBuilder.alternate')
                       }
@@ -783,6 +831,17 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             </Badge>
           )}
           <div className="flex gap-2">
+            <Button
+              variant={profileStripOpen ? 'secondary' : 'outline'}
+              size="sm"
+              className="w-8 px-0"
+              onClick={() => setProfileStripOpen(!profileStripOpen)}
+              disabled={!ready}
+              aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
+              title={profileStripOpen ? t('profile.hide') : t('profile.show')}
+            >
+              <Mountain className="h-3.5 w-3.5" />
+            </Button>
             <Button variant="outline" size="sm" onClick={startAtDeparture} disabled={!departure}>
               <PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" />
               {t('planBuilder.setStart')}

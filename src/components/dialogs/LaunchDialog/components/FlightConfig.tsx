@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useUnits } from '@/hooks/useUnits';
 import { airSpeedFromMs, isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
-import { formatWeight } from '@/lib/utils/format';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
-import { useSettingsStore } from '@/stores/settingsStore';
 import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '../types';
 import { getWeatherSummary } from '../weatherTypes';
@@ -54,9 +54,9 @@ export function FlightConfig({
   aircraftList,
 }: FlightConfigProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const isAirStart = startPosition?.type === 'custom' && startPosition.customStartMode === 'air';
   const invalidAirSpeed = isAirStart && !isValidAirStartSpeed(startPosition.airSpeedMs);
-  const weightUnit = useSettingsStore((state) => state.map.units.weight);
 
   // Get selected airport data for lat/lon (enriched with coordinates at parse time)
   const selectedAirportData = useAppStore((s) => s.selectedAirportData);
@@ -241,26 +241,24 @@ export function FlightConfig({
                     isOverweight ? 'text-destructive' : 'text-foreground'
                   )}
                 >
-                  {formatWeight(totalWeight, weightUnit)}
+                  {units.weight(totalWeight)}
                 </span>
                 <span className="text-muted-foreground font-mono text-xs">
-                  {t('launcher.aircraft.maxWeight')}{' '}
-                  {formatWeight(selectedAircraft.maxWeight, weightUnit)}
+                  {t('launcher.aircraft.maxWeight')} {units.weight(selectedAircraft.maxWeight)}
                 </span>
               </div>
               <div className="text-muted-foreground flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1">
                   <span className="bg-primary inline-block h-1.5 w-1.5 rounded-full" />
-                  {t('launcher.config.fuel')} {formatWeight(totalFuelLbs, weightUnit)}
+                  {t('launcher.config.fuel')} {units.weight(totalFuelLbs)}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="bg-success inline-block h-1.5 w-1.5 rounded-full" />
-                  {t('weightBalance.payload')} {formatWeight(totalPayloadLbs, weightUnit)}
+                  {t('weightBalance.payload')} {units.weight(totalPayloadLbs)}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="bg-muted-foreground/40 inline-block h-1.5 w-1.5 rounded-full" />
-                  {t('launcher.aircraft.emptyWeight')}{' '}
-                  {formatWeight(selectedAircraft.emptyWeight, weightUnit)}
+                  {t('launcher.aircraft.emptyWeight')} {units.weight(selectedAircraft.emptyWeight)}
                 </span>
               </div>
             </>
@@ -327,7 +325,7 @@ export function FlightConfig({
               {startPosition?.approachDistanceNm != null && (
                 <div className="text-muted-foreground text-xs">
                   {t('airportInfo.runway.approachNm', {
-                    distance: startPosition.approachDistanceNm,
+                    distance: units.distance(startPosition.approachDistanceNm as NauticalMiles),
                   })}
                 </div>
               )}

@@ -33,13 +33,19 @@
     "ft": "ft",
     "m": "m",
     "nm": "nm",
+    "km": "km",
+    "mi": "mi",
     "kt": "kt",
     "kts": "kts",
+    "kmh": "km/h",
+    "mph": "mph",
     "ms": "m/s",
     "s": "s",
     "kg": "kg",
     "lbs": "lbs",
-    "fpm": "fpm"
+    "fpm": "fpm",
+    "degM": "M",
+    "degT": "T"
   },
   "directions": {
     "n": "N",
@@ -142,7 +148,6 @@
     "approach": "Podejście",
     "noProcedure": "Brak",
     "routeHint": "Drogi lotnicze i punkty jak w planie. Trasa automatyczna znajduje najkrótszą drogę po drogach lotniczych.",
-    "nmUnit": "NM",
     "removeToken": "Usuń {{token}}",
     "departure": "Odlot",
     "arrival": "Przylot",
@@ -152,10 +157,9 @@
     "anyRunway": "Dowolny pas",
     "anyShort": "Dowolny",
     "alternate": "Lotnisko zapasowe",
-    "alternateAt": "Zapasowe · {{nm}} NM",
+    "alternateAt": "Zapasowe · {{value}}",
     "noAlternate": "Brak zapasowego",
     "fuel": "Paliwo",
-    "kgUnit": "kg",
     "liveHint": "Mapa odświeża się podczas edycji.",
     "windSuggest": "Wiatr {{wind}} sprzyja pasowi {{runway}}",
     "useRunway": "Użyj",
@@ -411,6 +415,7 @@
       "addons": "Dodatki",
       "data": "Dane nawigacyjne",
       "appearance": "Wygląd",
+      "units": "Jednostki",
       "graphics": "Grafika",
       "airports": "Lotniska",
       "simbrief": "SimBrief",
@@ -517,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Własnościowa",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "Tylko do symulacji lotu. Nigdy nie używaj X-Dispatch w prawdziwym lotnictwie ani nawigacji; dane mogą być niekompletne, niedokładne lub nieaktualne.",
+      "thirdParty": "Licencje stron trzecich"
     },
     "xplane": {
       "title": "Instalacja X-Plane",
@@ -581,11 +588,6 @@
       "customStyleHint": "Wklej adres URL stylu MapLibre (np. https://tiles.openfreemap.org/styles/liberty) albo wzorzec URL kafelków rastrowych (np. https://tile.openstreetmap.org/{z}/{x}/{y}.png).",
       "advanced": "Zaawansowane",
       "language": "Język",
-      "units": "Jednostki",
-      "unitsDescription": "Skonfiguruj jednostki miary",
-      "weightUnit": "Masa",
-      "lbs": "Funty (lbs)",
-      "kg": "Kilogramy (kg)",
       "fontSize": "Rozmiar czcionki",
       "fontSizeDescription": "Dostosuj rozmiar tekstu interfejsu",
       "fontSizeSmall": "Mały",
@@ -596,6 +598,29 @@
       "zoomLevel": "Powiększenie interfejsu",
       "zoomLevelDescription": "Powiększ lub zmniejsz cały interfejs",
       "zoomReset": "Resetuj"
+    },
+    "units": {
+      "title": "Jednostki",
+      "description": "Wybierz sposób wyświetlania odległości, wysokości, prędkości i innych wartości.",
+      "measurements": "Miary",
+      "navigation": "Nawigacja",
+      "distance": "Odległość",
+      "altitude": "Wysokość",
+      "speed": "Prędkość",
+      "verticalSpeed": "Prędkość pionowa",
+      "weight": "Waga",
+      "coordinates": "Współrzędne",
+      "coordinateFormats": {
+        "decimal": "Stopnie dziesiętne",
+        "dms": "Stopnie, minuty, sekundy",
+        "dm": "Stopnie, minuty dziesiętne"
+      },
+      "course": "Kurs",
+      "courseModes": {
+        "magnetic": "Magnetyczny",
+        "true": "Rzeczywisty",
+        "both": "Oba"
+      }
     },
     "graphics": {
       "title": "Grafika",
@@ -873,7 +898,7 @@
       "glideslope": "Ścieżka schodzenia",
       "range": "Zasięg",
       "ident": "Identyfikator",
-      "rangeNm": "{{value}} NM"
+      "rangeNm": "{{value}}"
     },
     "rawMetar": "Oryginalny METAR",
     "routeTab": {
@@ -945,7 +970,7 @@
       "approach": "Podejście",
       "tow": "Holowanie",
       "distance": "Odległość",
-      "approachNm": "{{distance}} NM na prostej",
+      "approachNm": "{{distance}} na prostej",
       "winch": "Wyciągarka",
       "tug": "Holownik",
       "tugAircraft": "Samolot holujący: Cessna 172 SP",
@@ -1220,7 +1245,7 @@
       "cloudCoverage": "Pokrycie chmurami",
       "tops": "Wierzchołki",
       "bases": "Podstawy",
-      "ftMsl": "{{value}} ft MSL",
+      "ftMsl": "{{value}} MSL",
       "deleteCloud": "Usuń warstwę chmur {{n}}",
       "cloudTypes": {
         "cirrus": "Pierzaste",
@@ -1684,7 +1709,7 @@
       "notamLabelDeparture": "Odlot",
       "notamLabelArrival": "Przylot",
       "notamLabelAlternate": "Zapasowe",
-      "transAltAbbr": "TA: {{value}} ft",
+      "transAltAbbr": "TA: {{value}}",
       "transLevelAbbr": "TL: FL{{value}}",
       "sigmetValid": "Ważne: {{start}} - {{end}}",
       "sigmetFir": "FIR: {{name}}",
@@ -1703,11 +1728,10 @@
       "colEta": "ETA",
       "colFuelRem": "Pozost. paliwa",
       "waypointCount": "{{count}} punktów",
-      "groundSpeedKt": "{{value}} kt",
       "position": "Pozycja",
       "temperature": "Temperatura",
       "windComponent": "Składowa wiatru",
-      "windCompValue": "{{value}} kt {{tag}}",
+      "windCompValue": "{{value}} {{tag}}",
       "oatWithIsa": "{{oat}}°C (ISA{{sign}}{{dev}})",
       "headwind": "(pod wiatr)",
       "tailwind": "(z wiatrem)",
@@ -1728,8 +1752,8 @@
       "tocBadge": "T/C",
       "todBadge": "T/D",
       "total": "Razem:",
-      "distanceNm": "{{value}} NM",
-      "altitudeFt": "{{value}} ft"
+      "distanceNm": "{{value}}",
+      "altitudeFt": "{{value}}"
     },
     "performance": {
       "vspeeds": {
@@ -1744,8 +1768,8 @@
       "flaps": "Klapy",
       "thrust": "Ciąg",
       "rwyLength": "Długość pasa",
-      "meters": "{{value}} m",
-      "feet": "{{value}} ft",
+      "meters": "{{value}}",
+      "feet": "{{value}}",
       "tlrNotAvailable": "Brak danych TLR",
       "ldaDry": "LDA (sucha)",
       "ldaWet": "LDA (mokra)",
@@ -1755,14 +1779,14 @@
       "cruiseMach": "Mach przelotu",
       "machValue": "M{{mach}}",
       "cruiseTas": "TAS przelotu",
-      "tasKt": "{{tas}} kt",
+      "tasKt": "{{tas}}",
       "stepClimbs": "Wznoszenie stopniowe",
       "stepFallback": "Stopień {{n}}",
       "stepLabel": "{{altitude}} @ {{waypoint}}",
       "transAltOrigin": "{{icao}} wysokość przejścia",
       "transLevelDest": "{{icao}} poziom przejścia",
       "flightLevel": "FL{{value}}",
-      "windDirSpeed": "{{dir}}°/{{speed}} kt"
+      "windDirSpeed": "{{dir}}°/{{speed}}"
     },
     "weather": {
       "alternate": "Zapasowe",
@@ -1904,10 +1928,22 @@
     "frequency": "Częstotliwość",
     "altitude": "Planowana wysokość",
     "elevation": "Wysokość",
-    "bearingTrue": "Namiar (rzeczywisty)",
+    "bearing": "Namiar",
     "radial": "Radial",
     "distance": "Odległość",
     "noPlane": "Brak pozycji samolotu"
+  },
+  "mapContextMenu": {
+    "startHere": "Zacznij tutaj",
+    "copyCoordinates": "Kopiuj współrzędne",
+    "coordinatesCopied": "Skopiowano współrzędne",
+    "centerHere": "Wyśrodkuj mapę tutaj",
+    "elevation": "Wysokość {{value}}",
+    "measureFromHere": "Zmierz stąd",
+    "deleteMeasurement": "Usuń pomiar",
+    "removePoint": "Usuń punkt",
+    "measureTotal": "Łącznie {{value}}",
+    "clearMeasurement": "Wyczyść pomiar"
   },
   "analytics": {
     "consent": {
@@ -1928,5 +1964,34 @@
     "donate": "Wesprzyj projekt",
     "notNow": "Nie teraz",
     "dontShowAgain": "Nie pokazuj ponownie"
+  },
+  "profile": {
+    "title": "Profil pionowy",
+    "show": "Pokaż profil pionowy",
+    "hide": "Ukryj profil pionowy",
+    "noData": "Brak danych profilu",
+    "noCruise": "Ustaw wysokość przelotową, aby zobaczyć profil",
+    "tooShort": "Plan jest za krótki na profil",
+    "cruiseTooLow": "Wysokość przelotowa jest za niska",
+    "cruiseNotReached": "Wysokość przelotowa nie jest osiągana w tym planie",
+    "loadingTerrain": "Wczytywanie terenu...",
+    "altitude": "Wysokość",
+    "distance": "Odległość",
+    "terrain": "Teren",
+    "wind": "Wiatr",
+    "flightPath": "Tor lotu",
+    "toc": "T/C",
+    "tod": "T/D",
+    "safeAltitude": "Min. bezpieczna",
+    "legSafe": "Bezpieczna na odcinku",
+    "total": "Razem"
+  },
+  "thirdPartyNotices": {
+    "title": "Licencje stron trzecich",
+    "description": "X-Dispatch zawiera te komponenty, każdy na własnej licencji.",
+    "search": "Szukaj po nazwie lub licencji",
+    "count_one": "{{count}} komponent",
+    "count_other": "{{count}} komponentu",
+    "noResults": "Żaden komponent nie pasuje do wyszukiwania"
   }
 }

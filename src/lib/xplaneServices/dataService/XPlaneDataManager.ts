@@ -5,6 +5,7 @@
 import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
+import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
 import {
   ResolvedAirportProcedures,
@@ -562,30 +563,10 @@ export class XPlaneDataManager {
       const airportCoords = this.getAirportCoordinates(icao);
 
       // Extract runway ends from airport data for runway waypoint resolution (RW09, RW27L, etc.)
-      const runwayEnds: Array<{ name: string; latitude: number; longitude: number }> = [];
+      // `airports.data` is the raw apt.dat text, not JSON - runwayEndsFromApt reads it directly,
+      // the same parser already used for SID runway geometry.
       const airportDataResult = this.getAirportData(icao);
-      if (airportDataResult) {
-        try {
-          const airportData = JSON.parse(airportDataResult.data);
-          if (airportData.runways && Array.isArray(airportData.runways)) {
-            for (const runway of airportData.runways) {
-              if (runway.ends && Array.isArray(runway.ends)) {
-                for (const end of runway.ends) {
-                  if (end.name && end.latitude !== undefined && end.longitude !== undefined) {
-                    runwayEnds.push({
-                      name: end.name,
-                      latitude: end.latitude,
-                      longitude: end.longitude,
-                    });
-                  }
-                }
-              }
-            }
-          }
-        } catch {
-          // Ignore JSON parse errors - runway resolution will just not work
-        }
-      }
+      const runwayEnds = airportDataResult ? runwayEndsFromApt(airportDataResult.data) : [];
 
       // Create SQL-based resolver (queries SQLite directly, no memory arrays)
       const resolver = createSqlCoordResolver({
