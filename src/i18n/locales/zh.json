@@ -600,6 +600,8 @@
     "units": {
       "title": "单位",
       "description": "选择距离、高度、速度和其他测量值的显示方式。",
+      "measurements": "测量",
+      "navigation": "导航",
       "distance": "距离",
       "altitude": "高度",
       "speed": "速度",

@@ -600,6 +600,8 @@
     "units": {
       "title": "Unités",
       "description": "Choisissez comment la distance, l'altitude, la vitesse et les autres mesures sont affichées.",
+      "measurements": "Mesures",
+      "navigation": "Navigation",
       "distance": "Distance",
       "altitude": "Altitude",
       "speed": "Vitesse",

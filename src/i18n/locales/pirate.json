@@ -600,6 +600,8 @@
     "units": {
       "title": "Measures",
       "description": "Pick how distance, altitude, speed an' other measures be shown on the charts.",
+      "measurements": "Measurin’",
+      "navigation": "Navigatin’",
       "distance": "Distance",
       "altitude": "Altitude",
       "speed": "Speed",

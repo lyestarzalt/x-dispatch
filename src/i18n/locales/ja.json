@@ -600,6 +600,8 @@
     "units": {
       "title": "単位",
       "description": "距離、高度、速度などの測定値の表示方法を選択します。",
+      "measurements": "計測",
+      "navigation": "ナビゲーション",
       "distance": "距離",
       "altitude": "高度",
       "speed": "速度",

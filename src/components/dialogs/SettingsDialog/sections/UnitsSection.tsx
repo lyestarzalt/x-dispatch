@@ -1,60 +1,86 @@
 import { useTranslation } from 'react-i18next';
 import { Ruler } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/helpers';
-import type {
-  AltitudeUnit,
-  CoordinateFormat,
-  CourseMode,
-  DistanceUnit,
-  SpeedUnit,
-  VerticalSpeedUnit,
-} from '@/lib/utils/units';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { SettingsHeader, SettingsSectionBlock } from '../primitives';
+import { SettingsChoiceRow, SettingsHeader, SettingsSectionBlock } from '../primitives';
 import type { SettingsSectionProps } from '../types';
+import { type UnitExampleKinds, unitExample } from './unitExamples';
 
-/** One segmented-pill row: label on the left, a single-select ToggleGroup of unit options on the right. */
-function UnitPickerRow<TValue extends string>({
-  title,
-  value,
-  options,
-  onChange,
-}: {
-  title: string;
-  value: TValue;
-  options: ReadonlyArray<{ value: TValue; label: string }>;
-  onChange: (value: TValue) => void;
-}) {
-  return (
-    <SettingsSectionBlock title={title}>
-      <ToggleGroup
-        type="single"
-        value={value}
-        onValueChange={(next) => {
-          // Radix's single ToggleGroup emits '' when clicking the already-active
-          // item (it tries to deselect) — ignore that, one option must stay selected.
-          if (next) onChange(next as TValue);
-        }}
-        className="justify-start"
-      >
-        {options.map((opt) => (
-          <ToggleGroupItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </SettingsSectionBlock>
-  );
+type UnitKind = keyof UnitExampleKinds;
+
+interface UnitRowSpec<K extends UnitKind = UnitKind> {
+  kind: K;
+  options: ReadonlyArray<{ value: UnitExampleKinds[K]; labelKey: string }>;
+  /** Long descriptive labels get their own full-width row under the title. */
+  layout?: 'inline' | 'stacked';
 }
+
+const spec = <K extends UnitKind>(
+  kind: K,
+  options: ReadonlyArray<{ value: UnitExampleKinds[K]; labelKey: string }>,
+  layout: 'inline' | 'stacked' = 'inline'
+): UnitRowSpec<K> => ({ kind, options, layout });
+
+const MEASUREMENT_ROWS = [
+  spec('distance', [
+    { value: 'nm', labelKey: 'units.nm' },
+    { value: 'km', labelKey: 'units.km' },
+    { value: 'mi', labelKey: 'units.mi' },
+  ]),
+  spec('altitude', [
+    { value: 'ft', labelKey: 'units.ft' },
+    { value: 'm', labelKey: 'units.m' },
+  ]),
+  spec('speed', [
+    { value: 'kts', labelKey: 'units.kts' },
+    { value: 'kmh', labelKey: 'units.kmh' },
+    { value: 'mph', labelKey: 'units.mph' },
+  ]),
+  spec('verticalSpeed', [
+    { value: 'fpm', labelKey: 'units.fpm' },
+    { value: 'ms', labelKey: 'units.ms' },
+  ]),
+  spec('weight', [
+    { value: 'lbs', labelKey: 'units.lbs' },
+    { value: 'kg', labelKey: 'units.kg' },
+  ]),
+] as const;
+
+const NAVIGATION_ROWS = [
+  spec(
+    'coordinates',
+    [
+      { value: 'decimal', labelKey: 'settings.units.coordinateFormats.decimal' },
+      { value: 'dms', labelKey: 'settings.units.coordinateFormats.dms' },
+      { value: 'dm', labelKey: 'settings.units.coordinateFormats.dm' },
+    ],
+    'stacked'
+  ),
+  spec('course', [
+    { value: 'magnetic', labelKey: 'settings.units.courseModes.magnetic' },
+    { value: 'true', labelKey: 'settings.units.courseModes.true' },
+    { value: 'both', labelKey: 'settings.units.courseModes.both' },
+  ]),
+] as const;
 
 export default function UnitsSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const { map: mapSettings, updateMapSettings } = useSettingsStore();
   const units = mapSettings.units;
 
-  const update = (patch: Partial<typeof units>) =>
-    updateMapSettings({ units: { ...units, ...patch } });
+  /** One row per quantity: the title, the sample in the current unit, and the unit choice. */
+  const renderRow = ({ kind, options, layout }: UnitRowSpec) => (
+    <SettingsChoiceRow
+      key={kind}
+      title={t(`settings.units.${kind}`)}
+      description={<span className="font-mono">{unitExample(kind, units[kind], t)}</span>}
+      value={units[kind]}
+      options={options.map((opt) => ({ value: opt.value, label: t(opt.labelKey) }))}
+      onChange={(value) => updateMapSettings({ units: { ...units, [kind]: value } })}
+      layout={layout}
+    />
+  );
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -64,79 +90,15 @@ export default function UnitsSection({ className }: SettingsSectionProps) {
         description={t('settings.units.description')}
       />
 
-      <UnitPickerRow<DistanceUnit>
-        title={t('settings.units.distance')}
-        value={units.distance}
-        onChange={(distance) => update({ distance })}
-        options={[
-          { value: 'nm', label: t('units.nm') },
-          { value: 'km', label: t('units.km') },
-          { value: 'mi', label: t('units.mi') },
-        ]}
-      />
+      <SettingsSectionBlock title={t('settings.units.measurements')}>
+        {MEASUREMENT_ROWS.map(renderRow)}
+      </SettingsSectionBlock>
 
-      <UnitPickerRow<AltitudeUnit>
-        title={t('settings.units.altitude')}
-        value={units.altitude}
-        onChange={(altitude) => update({ altitude })}
-        options={[
-          { value: 'ft', label: t('units.ft') },
-          { value: 'm', label: t('units.m') },
-        ]}
-      />
+      <Separator />
 
-      <UnitPickerRow<SpeedUnit>
-        title={t('settings.units.speed')}
-        value={units.speed}
-        onChange={(speed) => update({ speed })}
-        options={[
-          { value: 'kts', label: t('units.kts') },
-          { value: 'kmh', label: t('units.kmh') },
-          { value: 'mph', label: t('units.mph') },
-        ]}
-      />
-
-      <UnitPickerRow<VerticalSpeedUnit>
-        title={t('settings.units.verticalSpeed')}
-        value={units.verticalSpeed}
-        onChange={(verticalSpeed) => update({ verticalSpeed })}
-        options={[
-          { value: 'fpm', label: t('units.fpm') },
-          { value: 'ms', label: t('units.ms') },
-        ]}
-      />
-
-      <UnitPickerRow<'lbs' | 'kg'>
-        title={t('settings.units.weight')}
-        value={units.weight}
-        onChange={(weight) => update({ weight })}
-        options={[
-          { value: 'lbs', label: t('units.lbs') },
-          { value: 'kg', label: t('units.kg') },
-        ]}
-      />
-
-      <UnitPickerRow<CoordinateFormat>
-        title={t('settings.units.coordinates')}
-        value={units.coordinates}
-        onChange={(coordinates) => update({ coordinates })}
-        options={[
-          { value: 'decimal', label: t('settings.units.coordinateFormats.decimal') },
-          { value: 'dms', label: t('settings.units.coordinateFormats.dms') },
-          { value: 'dm', label: t('settings.units.coordinateFormats.dm') },
-        ]}
-      />
-
-      <UnitPickerRow<CourseMode>
-        title={t('settings.units.course')}
-        value={units.course}
-        onChange={(course) => update({ course })}
-        options={[
-          { value: 'magnetic', label: t('settings.units.courseModes.magnetic') },
-          { value: 'true', label: t('settings.units.courseModes.true') },
-          { value: 'both', label: t('settings.units.courseModes.both') },
-        ]}
-      />
+      <SettingsSectionBlock title={t('settings.units.navigation')}>
+        {NAVIGATION_ROWS.map(renderRow)}
+      </SettingsSectionBlock>
     </div>
   );
 }
