@@ -174,6 +174,8 @@
     "notUsed": "No usados",
     "runwayPlaceholder": "RWY",
     "swap": "Intercambiar salida y llegada",
+    "newPlan": "Nuevo plan",
+    "clearAirport": "Quitar aeropuerto",
     "route": "Ruta",
     "routePlaceholder": "Aerovías y puntos, por ejemplo SUGOL UL620 KEKIX. Deja vacío para volar directo.",
     "cruise": "Altitud de crucero (ft)",

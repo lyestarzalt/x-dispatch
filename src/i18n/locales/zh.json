@@ -174,6 +174,8 @@
     "notUsed": "未使用",
     "runwayPlaceholder": "RWY",
     "swap": "交换出发和到达",
+    "newPlan": "新计划",
+    "clearAirport": "清除机场",
     "route": "航路",
     "routePlaceholder": "航路和航路点，例如 SUGOL UL620 KEKIX。留空则直飞。",
     "cruise": "巡航高度 (ft)",

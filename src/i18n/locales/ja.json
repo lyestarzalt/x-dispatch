@@ -174,6 +174,8 @@
     "notUsed": "未使用",
     "runwayPlaceholder": "RWY",
     "swap": "出発と到着を入れ替え",
+    "newPlan": "新しいプラン",
+    "clearAirport": "空港をクリア",
     "route": "ルート",
     "routePlaceholder": "航空路とフィックス（例: SUGOL UL620 KEKIX）。空欄なら直行。",
     "cruise": "巡航高度 (ft)",
