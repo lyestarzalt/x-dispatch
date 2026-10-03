@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { navInfoFromFeature } from './navInfo';
+import { navInfoFromFeature, plannedAltitudeFt } from './navInfo';
 
 describe('navInfoFromFeature', () => {
   it('describes a navaid with its type and frequency', () => {
@@ -48,7 +48,50 @@ describe('navInfoFromFeature', () => {
     expect(info?.frequency).toBeUndefined();
   });
 
+  it('carries the route index of a plan waypoint', () => {
+    const info = navInfoFromFeature(
+      'flightplan-waypoints',
+      { id: 'XATEL', navType: 11, index: 2, altitudeLabel: '' },
+      0,
+      0
+    );
+    expect(info?.routeIndex).toBe(2);
+  });
+
   it('ignores badge features without an id', () => {
     expect(navInfoFromFeature('flightplan-waypoints', { index: -1 }, 0, 0)).toBeNull();
+  });
+});
+
+describe('plannedAltitudeFt', () => {
+  const route = [
+    { id: 'LFMC', latitude: 43.38, longitude: 6.39 },
+    { id: 'GILON', latitude: 43.6, longitude: 6.2 },
+    { id: 'XATEL', latitude: 45.1, longitude: 4.6 },
+    { id: 'MTL', latitude: 44.56, longitude: 4.78 },
+  ];
+  const altitudes = [500, 1500, 4500, 5000];
+  const pick = (id: string, latitude: number, longitude: number, routeIndex?: number) => ({
+    id,
+    kind: 'WPT',
+    latitude,
+    longitude,
+    routeIndex,
+  });
+
+  it('reads the profile altitude at the clicked route index', () => {
+    expect(plannedAltitudeFt(pick('XATEL', 45.1, 4.6, 2), route, altitudes)).toBe(4500);
+  });
+
+  it('finds a navaid on the route by id and position', () => {
+    expect(plannedAltitudeFt(pick('MTL', 44.5601, 4.7799), route, altitudes)).toBe(5000);
+  });
+
+  it('skips a same-named fix elsewhere', () => {
+    expect(plannedAltitudeFt(pick('MTL', 10, 10), route, altitudes)).toBeNull();
+  });
+
+  it('is null without a computed profile', () => {
+    expect(plannedAltitudeFt(pick('XATEL', 45.1, 4.6, 2), route, [])).toBeNull();
   });
 });

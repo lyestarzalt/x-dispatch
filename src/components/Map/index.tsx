@@ -961,7 +961,7 @@ export default function Map({ airports }: MapProps) {
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard />
-      <NavInfoPopup mapRef={mapRef} />
+      <NavInfoPopup mapRef={mapRef} airports={airports} />
       <MapContextMenu mapRef={mapRef} onStartHere={handleStartHere} />
       <MeasureLabel mapRef={mapRef} />
 
