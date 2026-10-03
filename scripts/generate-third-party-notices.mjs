@@ -82,15 +82,32 @@ function manualEntries() {
   ];
 }
 
+/**
+ * Packages the lockfile pins to an OS or CPU (esbuild, rollup, Sentry CLI binaries...). Which of
+ * them is installed depends on the machine, so they are left out to keep the output identical
+ * on a Mac and on the Linux CI runner. They are build-time tooling, not shipped in the app.
+ */
+function platformBoundPackages() {
+  const lock = JSON.parse(read(path.join(root, 'package-lock.json')));
+  const names = new Set();
+  for (const [key, info] of Object.entries(lock.packages ?? {})) {
+    if (!key || (!info.os && !info.cpu)) continue;
+    names.add(key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length));
+  }
+  return names;
+}
+
 async function build() {
   const scanned = await scan();
   const self = JSON.parse(read(path.join(root, 'package.json'))).name;
+  const platformBound = platformBoundPackages();
   const entries = [];
   for (const [id, info] of Object.entries(scanned)) {
     const at = id.lastIndexOf('@');
     const name = id.slice(0, at);
     const version = id.slice(at + 1);
     if (name === self) continue; // the app itself is not a third party
+    if (platformBound.has(name)) continue;
     const licenseFile = info.licenseFile ?? '';
     const hasLicenseText = licenseFile && LICENSE_FILE_RE.test(path.basename(licenseFile));
     const text = hasLicenseText
