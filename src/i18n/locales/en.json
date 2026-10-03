@@ -522,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Proprietary",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "For flight simulation only. Never use X-Dispatch for real-world aviation or navigation; its data may be incomplete, inaccurate or out of date.",
+      "thirdParty": "Third-party licenses"
     },
     "xplane": {
       "title": "X-Plane Installation",
@@ -1983,5 +1985,13 @@
     "safeAltitude": "Min safe",
     "legSafe": "Leg safe",
     "total": "Total"
+  },
+  "thirdPartyNotices": {
+    "title": "Third-party licenses",
+    "description": "X-Dispatch includes these components, each under its own license.",
+    "search": "Search by name or license",
+    "count_one": "{{count}} component",
+    "count_other": "{{count}} components",
+    "noResults": "No component matches your search"
   }
 }

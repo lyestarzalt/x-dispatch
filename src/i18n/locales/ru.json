@@ -522,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Проприетарная",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "Только для авиасимуляторов. Никогда не используйте X-Dispatch в реальной авиации или навигации: данные могут быть неполными, неточными или устаревшими.",
+      "thirdParty": "Лицензии сторонних компонентов"
     },
     "xplane": {
       "title": "Установка X-Plane",
@@ -1983,5 +1985,13 @@
     "safeAltitude": "Мин. безопасная",
     "legSafe": "Безопасная на участке",
     "total": "Всего"
+  },
+  "thirdPartyNotices": {
+    "title": "Лицензии сторонних компонентов",
+    "description": "X-Dispatch включает эти компоненты, каждый под собственной лицензией.",
+    "search": "Поиск по названию или лицензии",
+    "count_one": "{{count}} компонент",
+    "count_other": "{{count}} компонента",
+    "noResults": "Ни один компонент не соответствует запросу"
   }
 }

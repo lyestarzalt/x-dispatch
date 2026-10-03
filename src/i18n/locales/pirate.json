@@ -522,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Proprietary",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "Fer flight simulation only, matey. Never steer a real ship o' the sky by X-Dispatch; its charts may be patchy, wrong or stale.",
+      "thirdParty": "Licenses o' other crews"
     },
     "xplane": {
       "title": "X-Plane Install",
@@ -1983,5 +1985,13 @@
     "safeAltitude": "Min safe",
     "legSafe": "Leg safe",
     "total": "Total"
+  },
+  "thirdPartyNotices": {
+    "title": "Licenses o' other crews",
+    "description": "X-Dispatch carries these parts, each under its own articles.",
+    "search": "Search by name or license",
+    "count_one": "{{count}} part",
+    "count_other": "{{count}} parts",
+    "noResults": "No part matches yer search"
   }
 }

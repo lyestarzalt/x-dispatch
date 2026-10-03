@@ -48,6 +48,7 @@ import type {
   Waypoint,
 } from './types/navigation';
 import type { AirwaySegmentWithCoords } from './types/navigation';
+import type { ThirdPartyNotices } from './types/notices';
 import type { TrafficSnapshot } from './types/traffic';
 import type { VatsimData, VatsimEventsResponse } from './types/vatsim';
 import type { VatsimSectorCacheState, VatsimSectorQueryResult } from './types/vatsimSectors';
@@ -103,6 +104,7 @@ contextBridge.exposeInMainWorld('appAPI', {
   platform: process.platform,
   isSetupComplete: () => ipcRenderer.invoke('app:isSetupComplete'),
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
+  getThirdPartyNotices: () => ipcRenderer.invoke('app:getThirdPartyNotices'),
   checkForUpdate: () => ipcRenderer.invoke('app:checkForUpdate'),
   getCliFlags: () => ipcRenderer.invoke('app:getCliFlags'),
   getProcessMemory: () =>
@@ -457,6 +459,7 @@ declare global {
       platform: NodeJS.Platform;
       isSetupComplete: () => Promise<boolean>;
       getVersion: () => Promise<string>;
+      getThirdPartyNotices: () => Promise<ThirdPartyNotices>;
       checkForUpdate: () => Promise<{
         latestVersion: string | null;
         available: boolean;

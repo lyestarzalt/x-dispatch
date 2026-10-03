@@ -60,3 +60,6 @@ jobs:
 
       - name: Drizzle migrations
         run: npm run check:migrations
+
+      - name: Third-party notices
+        run: npm run check:notices

@@ -24,6 +24,17 @@ export function useAppVersion() {
   });
 }
 
+/** The generated third-party licence list; static for the life of the process. */
+export function useThirdPartyNotices(enabled = true) {
+  return useQuery({
+    queryKey: ['app', 'thirdPartyNotices'] as const,
+    queryFn: () => window.appAPI.getThirdPartyNotices(),
+    enabled,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+}
+
 export function useXPlanePath() {
   return useQuery({
     queryKey: appKeys.xplanePath,

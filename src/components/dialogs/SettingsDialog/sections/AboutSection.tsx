@@ -1,11 +1,22 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CircleCheck, Download, FileText, FolderOpen, Heart, Info } from 'lucide-react';
+import {
+  ChevronRight,
+  CircleCheck,
+  Download,
+  FileText,
+  FolderOpen,
+  Heart,
+  Info,
+  ScrollText,
+} from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { isNewerVersion } from '@/lib/utils/versionCompare';
 import { trackEvent, useAppVersion, useConfigPath, useLogPath, useUpdateCheck } from '@/queries';
+import { ThirdPartyNoticesDialog } from '../ThirdPartyNoticesDialog';
 import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
@@ -16,6 +27,7 @@ const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 export default function AboutSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const { data: version } = useAppVersion();
+  const [noticesOpen, setNoticesOpen] = useState(false);
   const { data: logPath } = useLogPath();
   const { data: configPath } = useConfigPath();
   const { data: update } = useUpdateCheck();
@@ -62,6 +74,9 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <p className="text-muted-foreground mt-2 max-w-md text-xs">
           {t('settings.about.independenceNotice')}
         </p>
+        <p className="text-muted-foreground mt-2 max-w-md text-xs">
+          {t('settings.about.simulationOnly')}
+        </p>
       </div>
 
       {/* Credits + Links side-by-side */}
@@ -97,6 +112,18 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           <h3 className="xp-section-heading">{t('settings.about.links')}</h3>
           <div className="space-y-1">
             <SettingsLinkRow label={t('settings.about.website')} href={PROJECT_WEBSITE} />
+            <Button
+              variant="ghost"
+              onClick={() => setNoticesOpen(true)}
+              className="hover:bg-secondary h-auto w-full justify-between gap-3 px-3 py-2 text-sm"
+            >
+              <span className="flex min-w-0 items-center gap-1.5">
+                <ScrollText className="text-muted-foreground h-3.5 w-3.5" />
+                <span className="truncate">{t('settings.about.thirdParty')}</span>
+              </span>
+              <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
+            </Button>
+            <ThirdPartyNoticesDialog open={noticesOpen} onOpenChange={setNoticesOpen} />
             <SettingsLinkRow
               label={t('settings.about.supportProject')}
               href={KOFI_URL}

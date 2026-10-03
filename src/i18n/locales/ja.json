@@ -522,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "プロプライエタリ",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "フライトシミュレーション専用です。実際の航空や航法には絶対に使用しないでください。データは不完全・不正確・古い場合があります。",
+      "thirdParty": "サードパーティライセンス"
     },
     "xplane": {
       "title": "X-Plane インストール",
@@ -1983,5 +1985,13 @@
     "safeAltitude": "最低安全高度",
     "legSafe": "レグ安全高度",
     "total": "合計"
+  },
+  "thirdPartyNotices": {
+    "title": "サードパーティライセンス",
+    "description": "X-Dispatch には以下のコンポーネントが含まれ、それぞれ独自のライセンスに従います。",
+    "search": "名前またはライセンスで検索",
+    "count_one": "{{count}} 件",
+    "count_other": "{{count}} 件",
+    "noResults": "検索に一致するコンポーネントはありません"
   }
 }

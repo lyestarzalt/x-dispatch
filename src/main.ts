@@ -521,6 +521,18 @@ function registerIpcHandlers() {
 
   ipcMain.handle('app:isSetupComplete', () => isSetupComplete());
   ipcMain.handle('app:getVersion', () => app.getVersion());
+  ipcMain.handle('app:getThirdPartyNotices', async () => {
+    // Generated at build time by scripts/generate-third-party-notices.mjs into assets/licenses.
+    const file = app.isPackaged
+      ? path.join(process.resourcesPath, 'assets', 'licenses', 'third-party-notices.json')
+      : path.join(__dirname, '..', '..', 'assets', 'licenses', 'third-party-notices.json');
+    try {
+      return JSON.parse(await fs.promises.readFile(file, 'utf8')) as unknown;
+    } catch (error) {
+      logger.main.warn('Third-party notices unavailable', error);
+      return { entries: [] };
+    }
+  });
   ipcMain.handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
     // Dev builds skip the network call entirely to avoid hammering dl.x-dispatch.app during HMR.
     // Production always fetches: the About section needs latestVersion even when

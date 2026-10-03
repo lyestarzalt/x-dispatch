@@ -522,7 +522,9 @@
       "developerName": "Lyes Tarzalt",
       "licenseValue": "专有",
       "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)"
+      "specialThanksHandle": "(enjxp / simtwk3)",
+      "simulationOnly": "仅供飞行模拟使用。切勿将 X-Dispatch 用于真实航空或导航；其数据可能不完整、不准确或已过时。",
+      "thirdParty": "第三方许可"
     },
     "xplane": {
       "title": "X-Plane 安装",
@@ -1983,5 +1985,13 @@
     "safeAltitude": "最低安全高度",
     "legSafe": "航段安全高度",
     "total": "总计"
+  },
+  "thirdPartyNotices": {
+    "title": "第三方许可",
+    "description": "X-Dispatch 包含以下组件，各自遵循其许可协议。",
+    "search": "按名称或许可搜索",
+    "count_one": "{{count}} 个组件",
+    "count_other": "{{count}} 个组件",
+    "noResults": "没有匹配的组件"
   }
 }
