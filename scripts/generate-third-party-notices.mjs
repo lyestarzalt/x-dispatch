@@ -83,31 +83,37 @@ function manualEntries() {
 }
 
 /**
- * Packages the lockfile pins to an OS or CPU (esbuild, rollup, Sentry CLI binaries...). Which of
- * them is installed depends on the machine, so they are left out to keep the output identical
- * on a Mac and on the Linux CI runner. They are build-time tooling, not shipped in the app.
+ * Packages that are not part of every install: pinned to an OS or CPU (esbuild, rollup, Sentry
+ * CLI binaries), or only reachable through such a package (the macOS DMG maker's tree), which
+ * the lockfile records as optional. Which of them is installed depends on the machine, so they
+ * are left out to keep the output identical on a Mac and on the Linux CI runner. All of them
+ * are build-time tooling, never shipped in the app. A package is excluded only when every one
+ * of its lockfile entries is optional or platform-bound.
  */
-function platformBoundPackages() {
+function machineSpecificPackages() {
   const lock = JSON.parse(read(path.join(root, 'package-lock.json')));
-  const names = new Set();
+  const byId = new Map(); // "name@version" -> [isMachineSpecific, ...]
   for (const [key, info] of Object.entries(lock.packages ?? {})) {
-    if (!key || (!info.os && !info.cpu)) continue;
-    names.add(key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length));
+    if (!key) continue;
+    const name = key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length);
+    const id = `${name}@${info.version}`;
+    const specific = Boolean(info.os || info.cpu || info.optional || info.devOptional);
+    byId.set(id, [...(byId.get(id) ?? []), specific]);
   }
-  return names;
+  return new Set([...byId].filter(([, flags]) => flags.every(Boolean)).map(([id]) => id));
 }
 
 async function build() {
   const scanned = await scan();
   const self = JSON.parse(read(path.join(root, 'package.json'))).name;
-  const platformBound = platformBoundPackages();
+  const machineSpecific = machineSpecificPackages();
   const entries = [];
   for (const [id, info] of Object.entries(scanned)) {
     const at = id.lastIndexOf('@');
     const name = id.slice(0, at);
     const version = id.slice(at + 1);
     if (name === self) continue; // the app itself is not a third party
-    if (platformBound.has(name)) continue;
+    if (machineSpecific.has(`${name}@${version}`)) continue;
     const licenseFile = info.licenseFile ?? '';
     const hasLicenseText = licenseFile && LICENSE_FILE_RE.test(path.basename(licenseFile));
     const text = hasLicenseText
