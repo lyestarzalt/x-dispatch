@@ -40,7 +40,7 @@ jobs:
       - name: Mint website sync token
         id: site-token
         if: steps.r2.outputs.channel == 'stable'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.X_DISPATCH_APP_ID }}
           private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
