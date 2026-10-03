@@ -1,5 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '@fontsource/roboto-mono/400.css';
+import '@fontsource/roboto-mono/500.css';
+// Bundled typefaces: nothing is fetched from a font CDN at runtime.
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
 import * as Sentry from '@sentry/electron/renderer';
 import { init as reactInit } from '@sentry/react';
 import { initSentryContext } from '@/lib/sentry/sentryContext';
