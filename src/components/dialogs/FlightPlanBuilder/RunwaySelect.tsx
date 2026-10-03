@@ -8,26 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { normalizeRunwayName, runwaysFromProcedures } from '@/lib/flightplan/builder/runways';
 import { useAirportProcedures } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import type { RunwayEnd } from '@/types/fms';
-import type { AirportProcedures } from '@/types/navigation';
 
 const ANY = '__any__';
-
-/** Runways named by any SID, STAR or approach at the airport. */
-export function runwaysFromProcedures(procedures: AirportProcedures | null | undefined): string[] {
-  if (!procedures) return [];
-  const names = new Set<string>();
-  for (const list of [procedures.sids, procedures.stars, procedures.approaches]) {
-    for (const p of list) {
-      if (!p.runway || p.runway === 'ALL') continue;
-      const bare = p.runway.toUpperCase().replace(/^RW/, '');
-      if (/^\d{2}[LCR]?$/.test(bare)) names.add(bare);
-    }
-  }
-  return [...names];
-}
 
 function sortRunways(names: Iterable<string>): string[] {
   return [...new Set(names)].sort(
@@ -60,6 +46,10 @@ export function RunwaySelect({ icao, value, onChange, className }: RunwaySelectP
       <Input
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value.toUpperCase().trim() || undefined)}
+        onBlur={() => {
+          const canonical = normalizeRunwayName(value);
+          if (canonical && canonical !== value) onChange(canonical);
+        }}
         placeholder={t('planBuilder.runwayPlaceholder')}
         className={className ?? 'h-9 font-mono uppercase'}
         maxLength={3}
