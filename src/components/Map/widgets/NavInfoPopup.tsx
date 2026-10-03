@@ -5,19 +5,24 @@ import { X } from 'lucide-react';
 import * as maplibregl from 'maplibre-gl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useRouteProfile } from '@/hooks/useRouteProfile';
 import { useUnits } from '@/hooks/useUnits';
 import { type Degrees, type Feet, calculateBearing, distanceNm } from '@/lib/utils/geomath';
+import type { Airport } from '@/lib/xplaneServices/dataService';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { type NavInfoSelection, useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
+import { plannedAltitudeFt } from '../navInfo';
 
 const POPUP_OFFSET_PX = 14;
 
 interface NavInfoPopupProps {
   mapRef: RefObject<maplibregl.Map | null>;
+  airports: Airport[];
 }
 
 /** Card anchored to a clicked navaid or waypoint, with live bearing and distance from the aircraft. */
-export default function NavInfoPopup({ mapRef }: NavInfoPopupProps) {
+export default function NavInfoPopup({ mapRef, airports }: NavInfoPopupProps) {
   const info = useMapStore((s) => s.navInfo);
   const setNavInfo = useMapStore((s) => s.setNavInfo);
   const container = useMemo(() => document.createElement('div'), []);
@@ -45,13 +50,28 @@ export default function NavInfoPopup({ mapRef }: NavInfoPopupProps) {
   }, [info, mapRef, container, setNavInfo]);
 
   if (!info) return null;
-  return createPortal(<NavInfoCard info={info} onClose={() => setNavInfo(null)} />, container);
+  return createPortal(
+    <NavInfoCard info={info} airports={airports} onClose={() => setNavInfo(null)} />,
+    container
+  );
 }
 
-function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () => void }) {
+interface NavInfoCardProps {
+  info: NavInfoSelection;
+  airports: Airport[];
+  onClose: () => void;
+}
+
+function NavInfoCard({ info, airports, onClose }: NavInfoCardProps) {
   const { t } = useTranslation();
   const units = useUnits();
   const plane = usePlaneStore((s) => s.state);
+  const fmsData = useFlightPlanStore((s) => s.fmsData);
+  const { profile } = useRouteProfile(airports);
+  const plannedFt = fmsData
+    ? plannedAltitudeFt(info, fmsData.waypoints, profile?.altitudesFt ?? [])
+    : null;
+  const altitude = plannedFt !== null ? units.altitude(plannedFt as Feet) : info.altitudeLabel;
 
   const bearing = plane
     ? calculateBearing(plane.latitude, plane.longitude, info.latitude, info.longitude)
@@ -80,7 +100,7 @@ function NavInfoCard({ info, onClose }: { info: NavInfoSelection; onClose: () =>
 
       <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
         {info.frequency && <Row label={t('navInfo.frequency')} value={info.frequency} />}
-        {info.altitudeLabel && <Row label={t('navInfo.altitude')} value={info.altitudeLabel} />}
+        {altitude && <Row label={t('navInfo.altitude')} value={altitude} accent />}
         {info.elevationFt !== undefined && (
           <Row label={t('navInfo.elevation')} value={units.altitude(info.elevationFt as Feet)} />
         )}

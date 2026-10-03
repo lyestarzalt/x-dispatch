@@ -56,6 +56,7 @@ export function navInfoFromFeature(
   const navType = Number(props.navType);
   const frequency = Number(props.frequency);
   const altitudeLabel = typeof props.altitudeLabel === 'string' ? props.altitudeLabel : '';
+  const index = Number(props.index);
   let kind = 'WPT';
   let freqLabel: string | undefined;
   if (navType === FMS_NDB) {
@@ -70,7 +71,32 @@ export function navInfoFromFeature(
     kind,
     frequency: freqLabel,
     altitudeLabel: altitudeLabel || undefined,
+    routeIndex: Number.isInteger(index) && index >= 0 ? index : undefined,
     latitude,
     longitude,
   };
+}
+
+/** Degrees within which a clicked navaid counts as the plan waypoint of the same id. */
+const SAME_FIX_DEG = 0.01;
+
+/**
+ * Planned altitude over the selection from the route's vertical profile, feet. A plan waypoint
+ * carries its index; a navaid clicked on its own layer is matched to the route by id and position.
+ */
+export function plannedAltitudeFt(
+  info: NavInfoSelection,
+  waypoints: readonly { id: string; latitude: number; longitude: number }[],
+  altitudesFt: readonly number[]
+): number | null {
+  const index =
+    info.routeIndex ??
+    waypoints.findIndex(
+      (wp) =>
+        wp.id === info.id &&
+        Math.abs(wp.latitude - info.latitude) < SAME_FIX_DEG &&
+        Math.abs(wp.longitude - info.longitude) < SAME_FIX_DEG
+    );
+  const altitude = altitudesFt[index];
+  return altitude !== undefined && Number.isFinite(altitude) ? altitude : null;
 }
