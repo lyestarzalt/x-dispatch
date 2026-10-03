@@ -78,6 +78,13 @@ interface PlanBuilderState extends PlanDraft {
 
 let resolveRequest = 0;
 
+/** Takes the planner's plan off the map; a plan loaded from SimBrief or a file stays. */
+function clearDrawnPlan(departure: PlanEndpoint | null, arrival: PlanEndpoint | null): void {
+  const map = useFlightPlanStore.getState();
+  if (!departure || !arrival || !map.fmsData || map.simbriefData) return;
+  if (map.fileName === `${departure.icao}-${arrival.icao}`) map.clearFlightPlan();
+}
+
 export const usePlanBuilderStore = create<PlanBuilderState>()(
   persist(
     (set, get) => ({
@@ -98,21 +105,27 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
 
       // A route belongs to its pair of airports; changing either end starts the enroute part over.
       setDeparture: (endpoint) =>
-        set((state) => ({
-          departure: endpoint,
-          ...(endpoint?.icao !== state.departure?.icao
-            ? { routeText: '', cruiseAltitudeFt: null, result: null }
-            : {}),
-          savedPath: null,
-        })),
+        set((state) => {
+          if (!endpoint) clearDrawnPlan(state.departure, state.arrival);
+          return {
+            departure: endpoint,
+            ...(endpoint?.icao !== state.departure?.icao
+              ? { routeText: '', cruiseAltitudeFt: null, result: null }
+              : {}),
+            savedPath: null,
+          };
+        }),
       setArrival: (endpoint) =>
-        set((state) => ({
-          arrival: endpoint,
-          ...(endpoint?.icao !== state.arrival?.icao
-            ? { routeText: '', cruiseAltitudeFt: null, result: null, alternate: null }
-            : {}),
-          savedPath: null,
-        })),
+        set((state) => {
+          if (!endpoint) clearDrawnPlan(state.departure, state.arrival);
+          return {
+            arrival: endpoint,
+            ...(endpoint?.icao !== state.arrival?.icao
+              ? { routeText: '', cruiseAltitudeFt: null, result: null, alternate: null }
+              : {}),
+            savedPath: null,
+          };
+        }),
       setAlternate: (endpoint) => set({ alternate: endpoint }),
       aircraftClass: null,
       // The cruise cap differs per class, so the suggestion is redone.
@@ -285,7 +298,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         set({ isOpen: false });
       },
 
-      reset: () =>
+      reset: () => {
+        clearDrawnPlan(get().departure, get().arrival);
         set({
           departure: null,
           arrival: null,
@@ -296,7 +310,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           result: null,
           procedures: {},
           savedPath: null,
-        }),
+        });
+      },
     }),
     {
       name: 'xplane-viz-plan-builder',

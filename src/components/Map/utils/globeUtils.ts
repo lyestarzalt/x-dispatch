@@ -87,9 +87,11 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
   // Switch projection based on zoom level to avoid layer displacement.
   // 3D terrain is only enabled in mercator mode — globe projection doesn't
   // implement getRayDirectionFromPixel, which crashes the render loop.
+  // Switched once the camera stops: changing projection and terrain in the middle of a wheel
+  // zoom swaps the camera under the gesture, which could throw the view back to an old centre.
   let currentProjection: 'globe' | 'mercator' = 'globe';
 
-  map.on('zoom', () => {
+  map.on('moveend', () => {
     const zoom = map.getZoom();
     const { terrain3dEnabled } = useMapStore.getState();
 

@@ -11,6 +11,7 @@ import {
   Pencil,
   PlaneLanding,
   PlaneTakeoff,
+  RotateCcw,
   Route,
   Save,
   Wand2,
@@ -265,6 +266,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
   useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
+  const reset = usePlanBuilderStore((s) => s.reset);
   const departure = usePlanBuilderStore((s) => s.departure);
   const arrival = usePlanBuilderStore((s) => s.arrival);
   const routeText = usePlanBuilderStore((s) => s.routeText);
@@ -552,15 +554,27 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                 {t('toolbar.alphaTag')}
               </Badge>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground/60 hover:text-foreground h-7 w-7"
-              onClick={close}
-              aria-label={t('common.close')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground h-7 gap-1.5 px-2 text-xs"
+                onClick={reset}
+                disabled={!departure && !arrival && !routeText}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                {t('planBuilder.newPlan')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground/60 hover:text-foreground h-7 w-7"
+                onClick={close}
+                aria-label={t('common.close')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           <div className="mt-2 flex items-center gap-3">

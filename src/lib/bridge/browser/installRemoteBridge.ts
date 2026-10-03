@@ -4,6 +4,7 @@
  */
 import { WS_PATH } from '@/lib/remote/protocol';
 import { type BridgeTransport, buildBridgeApis } from '../apiSurface';
+import { getPageZoom, setPageZoom } from './pageZoom';
 import { type RemoteConnectionState, WsTransport } from './wsTransport';
 
 export type RemoteStateListener = (state: RemoteConnectionState) => void;
@@ -86,8 +87,8 @@ export function installRemoteBridge(): void {
   const apis = buildBridgeApis(withLocalChannels(transport), {
     platform: 'linux',
     isRemoteClient: true,
-    setZoomFactor: () => undefined,
-    getZoomFactor: () => 1,
+    setZoomFactor: (factor) => setPageZoom(factor),
+    getZoomFactor: () => getPageZoom(),
     getFilePathForDrop: () => {
       throw new Error('desktop-only');
     },

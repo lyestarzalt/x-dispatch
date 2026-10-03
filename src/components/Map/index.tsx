@@ -921,8 +921,8 @@ export default function Map({ airports }: MapProps) {
         <div ref={mapContainerRef} className="h-full w-full" />
       </div>
 
-      {/* Top bar overlay - full width, above sidebar */}
-      <div className="absolute top-4 right-4 left-4 z-30 space-y-2">
+      {/* Top bar overlay - full width, above the sidebar and the planner so search results stay visible */}
+      <div className="absolute top-4 right-4 left-4 z-40 space-y-2">
         <Toolbar
           airports={airports}
           onSelectAirport={selectAirport}
