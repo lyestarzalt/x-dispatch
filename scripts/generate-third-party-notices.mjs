@@ -144,7 +144,9 @@ function renderText({ entries }) {
 
 const data = await build();
 const txt = renderText(data);
-const json = JSON.stringify(data, null, 0);
+// Pretty-printed and newline-terminated: the same shape a formatter would leave, so a hook
+// touching the file cannot make it differ from what this script writes.
+const json = `${JSON.stringify(data, null, 2)}\n`;
 
 if (check) {
   const current = existsSync(jsonPath) ? readFileSync(jsonPath, 'utf8') : '';
@@ -152,6 +154,19 @@ if (check) {
     console.error(
       'Third-party notices are out of date. Run `npm run notices` and commit assets/licenses/.'
     );
+    // Say what differs, so a machine-specific difference is visible in the CI log.
+    const key = (e) => `${e.name}@${e.version ?? ''}`;
+    const before = new Map((current ? JSON.parse(current).entries : []).map((e) => [key(e), e]));
+    const after = new Map(data.entries.map((e) => [key(e), e]));
+    for (const k of before.keys()) if (!after.has(k)) console.error(`  missing here: ${k}`);
+    for (const k of after.keys()) if (!before.has(k)) console.error(`  new here:     ${k}`);
+    for (const [k, e] of after) {
+      const b = before.get(k);
+      if (b && JSON.stringify(b) !== JSON.stringify(e)) {
+        const field = ['license', 'repository', 'text'].find((f) => b[f] !== e[f]) ?? '?';
+        console.error(`  changed:      ${k} (${field})`);
+      }
+    }
     process.exit(1);
   }
   console.log(`Third-party notices are current (${data.entries.length} components).`);
