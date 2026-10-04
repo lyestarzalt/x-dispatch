@@ -66,6 +66,7 @@ import {
   usePinDrop,
   useProcedureRouteSync,
   useRangeRingsSync,
+  useRasterReferenceLabels,
   useRouteLineSync,
   useSolarClock,
   useSolarSky,
@@ -461,6 +462,7 @@ export default function Map({ airports }: MapProps) {
   useCursorElevation(mapRef);
   useMapContextMenu(mapRef);
   useBasemapLabelLanguage(mapRef);
+  useRasterReferenceLabels(mapRef, mapStyleUrl);
   useMeasureTool(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)
