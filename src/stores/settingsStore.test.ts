@@ -261,6 +261,7 @@ describe('migrateSettings', () => {
       debugOverlay: true,
       clockMode: 'zulu',
       flightStripScale: 1,
+      flightStripOpacity: 1,
     });
     expect(result.graphics.followSimTime).toBe(false);
   });

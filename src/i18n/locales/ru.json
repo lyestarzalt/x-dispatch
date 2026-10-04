@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Увеличить или уменьшить весь интерфейс",
       "zoomReset": "Сбросить",
       "flightStripScale": "Размер полётной полосы",
-      "flightStripScaleDescription": "Увеличивает полосу данных полёта, чтобы читать её издалека"
+      "flightStripScaleDescription": "Увеличивает полосу данных полёта, чтобы читать её издалека",
+      "flightStripOpacity": "Непрозрачность окна полосы полёта",
+      "flightStripOpacityDescription": "Симулятор виден сквозь отдельное окно полосы полёта"
     },
     "units": {
       "title": "Единицы",

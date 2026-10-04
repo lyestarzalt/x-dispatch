@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Ampliar o reducir toda la interfaz",
       "zoomReset": "Restablecer",
       "flightStripScale": "Tamaño de la tira de vuelo",
-      "flightStripScaleDescription": "Escala la tira de vuelo en vivo para leerla desde más lejos"
+      "flightStripScaleDescription": "Escala la tira de vuelo en vivo para leerla desde más lejos",
+      "flightStripOpacity": "Opacidad de la ventana de la tira de vuelo",
+      "flightStripOpacityDescription": "Ver el simulador a través de la ventana separada de la tira de vuelo"
     },
     "units": {
       "title": "Unidades",

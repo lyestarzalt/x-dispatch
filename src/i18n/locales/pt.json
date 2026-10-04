@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Aumentar ou diminuir toda a interface",
       "zoomReset": "Repor",
       "flightStripScale": "Tamanho da faixa de voo",
-      "flightStripScaleDescription": "Amplia a faixa de voo em direto para a ler de mais longe"
+      "flightStripScaleDescription": "Amplia a faixa de voo em direto para a ler de mais longe",
+      "flightStripOpacity": "Opacidade da janela da faixa de voo",
+      "flightStripOpacityDescription": "Ver o simulador através da janela destacada da faixa de voo"
     },
     "units": {
       "title": "Unidades",

@@ -609,7 +609,9 @@
       "zoomLevelDescription": "放大或缩小整个界面",
       "zoomReset": "重置",
       "flightStripScale": "飞行条大小",
-      "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读"
+      "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读",
+      "flightStripOpacity": "飞行条窗口不透明度",
+      "flightStripOpacityDescription": "透过独立的飞行条窗口看到模拟器"
     },
     "units": {
       "title": "单位",

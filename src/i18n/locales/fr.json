@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Agrandir ou réduire l'ensemble de l'interface",
       "zoomReset": "Réinitialiser",
       "flightStripScale": "Taille du bandeau de vol",
-      "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin"
+      "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin",
+      "flightStripOpacity": "Opacité de la fenêtre du bandeau de vol",
+      "flightStripOpacityDescription": "Voir le simulateur à travers la fenêtre détachée du bandeau de vol"
     },
     "units": {
       "title": "Unités",

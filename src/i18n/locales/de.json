@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Gesamte Oberfläche vergrößern oder verkleinern",
       "zoomReset": "Zurücksetzen",
       "flightStripScale": "Größe des Flugstreifens",
-      "flightStripScaleDescription": "Skaliert den Live-Flugstreifen, damit er aus größerer Entfernung lesbar bleibt"
+      "flightStripScaleDescription": "Skaliert den Live-Flugstreifen, damit er aus größerer Entfernung lesbar bleibt",
+      "flightStripOpacity": "Deckkraft des Flugstreifen-Fensters",
+      "flightStripOpacityDescription": "Den Simulator durch das abgelöste Flugstreifen-Fenster sehen"
     },
     "units": {
       "title": "Einheiten",

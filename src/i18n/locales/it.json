@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Ingrandisci o riduci l'intera interfaccia",
       "zoomReset": "Ripristina",
       "flightStripScale": "Dimensione della striscia di volo",
-      "flightStripScaleDescription": "Ingrandisce la striscia di volo in tempo reale per leggerla da più lontano"
+      "flightStripScaleDescription": "Ingrandisce la striscia di volo in tempo reale per leggerla da più lontano",
+      "flightStripOpacity": "Opacità della finestra della striscia di volo",
+      "flightStripOpacityDescription": "Vedi il simulatore attraverso la finestra separata della striscia di volo"
     },
     "units": {
       "title": "Unità",

@@ -366,6 +366,8 @@ async function proxyDownload(
 }
 
 let flightStripWindow: BrowserWindow | null = null;
+/** Set by the main window from the Appearance setting; window opacity is not supported on Linux. */
+let flightStripOpacity = 1;
 
 /**
  * A small frameless window with only the flight strip, kept above the simulator.
@@ -394,6 +396,7 @@ function toggleFlightStripWindow(): void {
     minWidth: 260,
     minHeight: 40,
     frame: false,
+    opacity: flightStripOpacity,
     alwaysOnTop: true,
     autoHideMenuBar: true,
     show: false,
@@ -692,6 +695,11 @@ function registerIpcHandlers() {
   });
   handle('app:openFlightStripWindow', () => toggleFlightStripWindow());
   handle('app:isFlightStripWindowOpen', () => isFlightStripWindowOpen());
+  handle('app:setFlightStripOpacity', (_, opacity: unknown) => {
+    if (typeof opacity !== 'number' || !Number.isFinite(opacity)) return;
+    flightStripOpacity = Math.max(0.3, Math.min(1, opacity));
+    if (isFlightStripWindowOpen()) flightStripWindow!.setOpacity(flightStripOpacity);
+  });
   handle('app:getCliFlags', () => getCliFlags());
   handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();

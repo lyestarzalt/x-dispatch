@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Scale the whole interface up or down",
       "zoomReset": "Reset Scale",
       "flightStripScale": "Size o' the flight strip",
-      "flightStripScaleDescription": "Blow up the live flight strip so ye can read it from across the deck"
+      "flightStripScaleDescription": "Blow up the live flight strip so ye can read it from across the deck",
+      "flightStripOpacity": "Flight strip porthole see-throughness",
+      "flightStripOpacityDescription": "Spy the simulator through the detached flight strip porthole"
     },
     "units": {
       "title": "Measures",
