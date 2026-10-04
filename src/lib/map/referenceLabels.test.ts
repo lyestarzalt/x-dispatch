@@ -35,6 +35,14 @@ const style: ReferenceStyle = {
       layout: { 'icon-image': 'circle-11' },
     },
     {
+      id: 'place_town',
+      type: 'symbol',
+      source: 'carto',
+      'source-layer': 'place',
+      layout: { 'text-field': '{name}', 'icon-image': '', 'icon-size': 1, 'text-size': 11 },
+      paint: { 'text-color': '#ccc', 'icon-color': '#fff' },
+    },
+    {
       id: 'poi_stadium',
       type: 'symbol',
       source: 'carto',
@@ -45,9 +53,14 @@ const style: ReferenceStyle = {
 };
 
 describe('buildReferenceLayers', () => {
-  it('keeps borders and place names, drops fills, dots and points of interest', () => {
+  it('keeps borders, places and points of interest, drops fills and dot-only layers', () => {
     const ids = buildReferenceLayers(style, 'en').map((l) => l.id);
-    expect(ids).toEqual(['ref-boundary_country_inner', 'ref-place_country_1']);
+    expect(ids).toEqual([
+      'ref-boundary_country_inner',
+      'ref-place_country_1',
+      'ref-place_town',
+      'ref-poi_stadium',
+    ]);
     expect(ids.every(isReferenceLayerId)).toBe(true);
   });
 
@@ -73,6 +86,14 @@ describe('buildReferenceLayers', () => {
     expect((english as maplibregl.SymbolLayerSpecification).layout?.['text-field']).toBe(
       '{name_en}'
     );
+  });
+
+  it('keeps town labels but drops their icon properties', () => {
+    const town = buildReferenceLayers(style, 'en').find(
+      (l) => l.id === 'ref-place_town'
+    ) as maplibregl.SymbolLayerSpecification;
+    expect(town.layout).toEqual({ 'text-field': '{name}', 'text-size': 11 });
+    expect(town.paint).toEqual({ 'text-color': '#ccc' });
   });
 
   it('does not mutate the source style', () => {

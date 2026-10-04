@@ -13,13 +13,19 @@ export const REFERENCE_STYLE_URL =
 /** Dropped by preserveCustomStyle on every style switch, so a vector basemap never doubles up. */
 export const REFERENCE_SOURCE_ID = 'ref-carto';
 const REFERENCE_LAYER_PREFIX = 'ref-';
-const REFERENCE_LAYER_PATTERN = /^(boundary_|place_|watername_|waterway_label)/;
+// Borders, places, water, road names and points of interest; house numbers stay off the imagery.
+const REFERENCE_LAYER_PATTERN = /^(boundary_|place_|watername_|waterway_label|roadname_|poi_)/;
 const BOUNDARY_COLOR = 'rgba(255, 255, 255, 0.55)';
 
 export interface ReferenceStyle {
   glyphs?: string;
   sources: Record<string, maplibregl.SourceSpecification>;
   layers: maplibregl.LayerSpecification[];
+}
+
+function withoutIconProperties<T extends object | undefined>(props: T): T {
+  if (!props) return props;
+  return Object.fromEntries(Object.entries(props).filter(([key]) => !key.startsWith('icon-'))) as T;
 }
 
 /** The overlay layers of a Carto style, renamed onto the reference source and localized. */
@@ -32,18 +38,21 @@ export function buildReferenceLayers(
   for (const layer of style.layers) {
     if (!REFERENCE_LAYER_PATTERN.test(layer.id)) continue;
     if (layer.type !== 'symbol' && layer.type !== 'line') continue;
-    // City dots need the style's sprite; the text layers cover those places anyway.
-    if (layer.layout && 'icon-image' in layer.layout) continue;
+    // Icons need the style's sprite, which a raster style lacks: text-only
+    // layers keep their text, pure dot layers go.
+    if (layer.type === 'symbol' && layer.layout?.['text-field'] === undefined) continue;
 
     const copy = structuredClone(layer) as maplibregl.LayerSpecification & { source?: string };
     copy.id = `${REFERENCE_LAYER_PREFIX}${layer.id}`;
     copy.source = REFERENCE_SOURCE_ID;
     if (copy.type === 'line') {
       copy.paint = { ...copy.paint, 'line-color': BOUNDARY_COLOR };
-    } else if (lang) {
+    } else {
       const symbol = copy as maplibregl.SymbolLayerSpecification;
+      symbol.layout = withoutIconProperties(symbol.layout);
+      symbol.paint = withoutIconProperties(symbol.paint);
       const textField = symbol.layout?.['text-field'];
-      if (textField !== undefined) {
+      if (lang && textField !== undefined) {
         symbol.layout = {
           ...symbol.layout,
           'text-field': localizeTextField(

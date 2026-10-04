@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Satellite and other image basemaps now show borders and place names, in the app language.
+- Satellite and other image basemaps now show borders, place names, road names and points of interest, in the app language.
 - The flight strip has its own size setting under Appearance, and a button that opens it in a small always-on-top window you can keep over the simulator.
 - Country, region and large water names on the map now follow the app language instead of staying in English. Town names keep their local spelling as before.
 - The About page shows what the updater is doing and has a **Check for updates** button. On Windows, a downloaded update now offers **Restart now** inside the app instead of a system dialog.
