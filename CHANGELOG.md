@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Country, region and large water names on the map now follow the app language instead of staying in English. Town names keep their local spelling as before.
 - The About page shows what the updater is doing and has a **Check for updates** button. On Windows, a downloaded update now offers **Restart now** inside the app instead of a system dialog.
 
 ### Fixed

@@ -28,3 +28,4 @@ export { useSolarSky } from './useSolarSky';
 export { useCityLights } from './useCityLights';
 export { useFlightTrail } from './useFlightTrail';
 export { useFlightReplay } from './useFlightReplay';
+export { useBasemapLabelLanguage } from './useBasemapLabelLanguage';
