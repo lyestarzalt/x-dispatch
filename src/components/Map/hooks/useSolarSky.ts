@@ -36,20 +36,25 @@ const DEFAULT_LIGHT: maplibregl.LightSpecification = {
 
 /**
  * The daylit half of the atmosphere adds a bright haze. At full strength it
- * washes a dark basemap out to pale blue and bleaches a light one, so both
- * get a thinner atmosphere; satellite imagery keeps the full one.
+ * washes a dark basemap out to pale blue, burns satellite imagery to white
+ * and bleaches a light basemap, which has no headroom for added light at
+ * all, so each gets a thinner atmosphere.
  */
 const DARK_BASEMAP_SKY: maplibregl.SkySpecification = {
   'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 5, 0.6, 7, 0],
 };
+const SATELLITE_BASEMAP_SKY: maplibregl.SkySpecification = {
+  'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 5, 0.4, 7, 0],
+};
 const LIGHT_BASEMAP_SKY: maplibregl.SkySpecification = {
-  'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.45, 5, 0.45, 7, 0],
+  'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.035, 5, 0.035, 7, 0],
 };
 
 function atmosphereForBasemap(): maplibregl.SkySpecification {
   const theme = getBasemapTheme(useSettingsStore.getState().map.mapStyleUrl);
   if (theme === 'dark') return DARK_BASEMAP_SKY;
-  return theme === 'light' || theme === 'custom' ? LIGHT_BASEMAP_SKY : BASE_SKY;
+  if (theme === 'satellite') return SATELLITE_BASEMAP_SKY;
+  return LIGHT_BASEMAP_SKY;
 }
 
 /**

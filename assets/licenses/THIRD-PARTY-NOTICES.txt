@@ -12654,7 +12654,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
 ------------------------------------------------------------------------------
-earcut 3.2.3
+earcut 3.2.4
 License: ISC
 Source: https://github.com/mapbox/earcut
 
@@ -16105,7 +16105,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------------
-maplibre-gl 6.11.0
+maplibre-gl 6.12.0
 License: BSD-3-Clause
 Source: https://github.com/maplibre/maplibre-gl-js
 
