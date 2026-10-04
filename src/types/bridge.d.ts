@@ -86,8 +86,12 @@ declare global {
       /** Restarts into a downloaded update; false when none is ready. */
       installUpdate: () => Promise<boolean>;
       onUpdateStatus: (callback: (status: UpdateStatus) => void) => () => void;
-      /** Opens (or focuses) the detached flight strip window. */
+      /** Opens the detached flight strip window, or closes it when open. */
       openFlightStripWindow: () => Promise<void>;
+      isFlightStripWindowOpen: () => Promise<boolean>;
+      /** 0.3 to 1; applied live to the open window and to the next one. */
+      setFlightStripOpacity: (opacity: number) => Promise<void>;
+      onFlightStripWindowOpen: (callback: (open: boolean) => void) => () => void;
       getCliFlags: () => Promise<CliFlags>;
       getProcessMemory: () => Promise<{ rss: number; heapUsed: number; heapTotal: number }>;
       startLoading: () => Promise<{ success: boolean; status?: DataLoadStatus; error?: string }>;

@@ -27,7 +27,17 @@ type AppState = 'checking' | 'setup' | 'loading' | 'ready' | 'error';
 initializeTheme();
 initializeFontSize();
 
+/** The strip window lives in its own renderer, so main relays the opacity setting to it. */
+function useFlightStripOpacitySync() {
+  const opacity = useSettingsStore((s) => s.appearance.flightStripOpacity);
+  useEffect(() => {
+    if (window.appAPI.isRemoteClient) return;
+    void window.appAPI.setFlightStripOpacity(opacity);
+  }, [opacity]);
+}
+
 function AppContent() {
+  useFlightStripOpacitySync();
   const [appState, setAppState] = useState<AppState>('checking');
   const [airports, setAirports] = useState<Airport[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);

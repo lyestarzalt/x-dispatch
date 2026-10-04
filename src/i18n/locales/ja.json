@@ -609,7 +609,9 @@
       "zoomLevelDescription": "インターフェース全体を拡大・縮小します",
       "zoomReset": "リセット",
       "flightStripScale": "フライトストリップのサイズ",
-      "flightStripScaleDescription": "離れた場所からも読めるようにライブのフライトストリップを拡大します"
+      "flightStripScaleDescription": "離れた場所からも読めるようにライブのフライトストリップを拡大します",
+      "flightStripOpacity": "フライトストリップウィンドウの不透明度",
+      "flightStripOpacityDescription": "切り離したフライトストリップのウィンドウ越しにシミュレーターを表示します"
     },
     "units": {
       "title": "単位",
@@ -1058,7 +1060,8 @@
     "followingTooltip": "クリックして機体の追従を停止",
     "reconnect": "再接続",
     "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行",
-    "detach": "フライトストリップを別ウィンドウで開く"
+    "detach": "フライトストリップを別ウィンドウで開く",
+    "closeWindow": "フライトストリップのウィンドウを閉じる"
   },
   "weather": {
     "fetching": "天気を取得中...",

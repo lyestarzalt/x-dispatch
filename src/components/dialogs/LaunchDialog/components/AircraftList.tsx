@@ -230,7 +230,8 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
     );
   }, []);
 
-  const ROW_HEIGHT = 68; // 64px card + 4px gap
+  // Only a first guess: the card is sized in rem, so rows are measured to follow the font size setting.
+  const ROW_HEIGHT = 68;
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns a mutable instance by design; it re-renders via its own subscription
   const rowVirtualizer = useVirtualizer({
     count: filteredAircraft.length,
@@ -361,8 +362,10 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
                 return (
                   <div
                     key={ac.path}
+                    data-index={row.index}
+                    ref={rowVirtualizer.measureElement}
                     className="absolute inset-x-0 top-0 pb-1"
-                    style={{ height: row.size, transform: `translateY(${row.start}px)` }}
+                    style={{ transform: `translateY(${row.start}px)` }}
                   >
                     <AircraftListItem
                       aircraft={ac}

@@ -609,7 +609,9 @@
       "zoomLevelDescription": "放大或缩小整个界面",
       "zoomReset": "重置",
       "flightStripScale": "飞行条大小",
-      "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读"
+      "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读",
+      "flightStripOpacity": "飞行条窗口不透明度",
+      "flightStripOpacityDescription": "透过独立的飞行条窗口看到模拟器"
     },
     "units": {
       "title": "单位",
@@ -1058,7 +1060,8 @@
     "followingTooltip": "点击以停止跟随飞机",
     "reconnect": "重新连接",
     "reconnectTooltip": "强制重新连接到 X-Plane 模拟器",
-    "detach": "在独立窗口中打开飞行条"
+    "detach": "在独立窗口中打开飞行条",
+    "closeWindow": "关闭飞行条窗口"
   },
   "weather": {
     "fetching": "正在获取天气...",

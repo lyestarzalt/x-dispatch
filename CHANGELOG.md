@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The flight strip window has an opacity setting under Appearance, so you can see the simulator through it.
+
+### Changed
+
+- The Dark and Light map themes now come from OpenFreeMap. CARTO started requiring an API key, so this keeps them free and watermark-free. If you used either theme, you are moved over automatically.
+- The flight strip window has no title bar. Drag the strip to move it, drag the edges to resize it, and the strip scales to fit. Hover it to show a close button.
+- The pop-out button on the flight strip also closes the strip window, and shows a close icon while it is open.
+
+### Fixed
+
+- The flight strip window stays above X-Plane in fullscreen, and no longer disappears when you minimize X-Dispatch.
+- Sea borders along coastlines are no longer drawn on the Dark and Light maps.
+- Aircraft in the launch list no longer overlap with the large font size.
+
 ## [2.3.0] - 2026-10-04
 
 ### Added

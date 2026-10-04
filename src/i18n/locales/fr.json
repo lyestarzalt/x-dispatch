@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Agrandir ou réduire l'ensemble de l'interface",
       "zoomReset": "Réinitialiser",
       "flightStripScale": "Taille du bandeau de vol",
-      "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin"
+      "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin",
+      "flightStripOpacity": "Opacité de la fenêtre du bandeau de vol",
+      "flightStripOpacityDescription": "Voir le simulateur à travers la fenêtre détachée du bandeau de vol"
     },
     "units": {
       "title": "Unités",
@@ -1058,7 +1060,8 @@
     "followingTooltip": "Cliquez pour arrêter de suivre l'avion",
     "reconnect": "Reconnecter",
     "reconnectTooltip": "Forcer la reconnexion au simulateur X-Plane",
-    "detach": "Ouvrir le bandeau de vol dans sa propre fenêtre"
+    "detach": "Ouvrir le bandeau de vol dans sa propre fenêtre",
+    "closeWindow": "Fermer la fenêtre du bandeau de vol"
   },
   "weather": {
     "fetching": "Récupération de la météo...",

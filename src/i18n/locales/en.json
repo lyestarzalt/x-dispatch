@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Scale the entire interface up or down",
       "zoomReset": "Reset",
       "flightStripScale": "Flight strip size",
-      "flightStripScaleDescription": "Scale the live aircraft strip so it reads from further away"
+      "flightStripScaleDescription": "Scale the live aircraft strip so it reads from further away",
+      "flightStripOpacity": "Flight strip window opacity",
+      "flightStripOpacityDescription": "See the simulator through the detached flight strip window"
     },
     "units": {
       "title": "Units",
@@ -1058,7 +1060,8 @@
     "followingTooltip": "Click to stop following aircraft",
     "reconnect": "Reconnect",
     "reconnectTooltip": "Force a reconnect to X-Plane",
-    "detach": "Open the flight strip in its own window"
+    "detach": "Open the flight strip in its own window",
+    "closeWindow": "Close the flight strip window"
   },
   "weather": {
     "fetching": "Fetching weather...",

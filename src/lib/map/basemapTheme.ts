@@ -12,10 +12,12 @@
 export type BasemapTheme = 'dark' | 'light' | 'satellite' | 'custom';
 
 const DARK_URLS: ReadonlySet<string> = new Set([
+  'https://tiles.openfreemap.org/styles/dark',
   'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
 ]);
 
 const LIGHT_URLS: ReadonlySet<string> = new Set([
+  'https://tiles.openfreemap.org/styles/positron',
   'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
   'https://tiles.openfreemap.org/styles/liberty',
 ]);

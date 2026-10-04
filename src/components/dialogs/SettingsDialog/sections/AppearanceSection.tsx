@@ -19,9 +19,12 @@ import type { SettingsSectionProps } from '../types';
 
 const FONT_SIZES = ['small', 'medium', 'large'] as const;
 
+const isLinux = window.appAPI?.platform === 'linux';
+
 function ZoomSlider({
   zoomLevel,
   onCommit,
+  onPreview,
   resetLabel,
   min = 70,
   max = 130,
@@ -29,6 +32,8 @@ function ZoomSlider({
 }: {
   zoomLevel: number;
   onCommit: (level: number) => void;
+  /** Called while dragging, before the value is saved. */
+  onPreview?: (level: number) => void;
   resetLabel: string;
   min?: number;
   max?: number;
@@ -47,6 +52,7 @@ function ZoomSlider({
           const val = v[0];
           if (val === undefined) return;
           setPreview(val);
+          onPreview?.(val / 100);
         }}
         onValueCommit={(v) => {
           const val = v[0];
@@ -78,8 +84,14 @@ function ZoomSlider({
 
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
-  const { appearance, setFontSize, setZoomLevel, setFlightStripScale, setDebugOverlay } =
-    useSettingsStore();
+  const {
+    appearance,
+    setFontSize,
+    setZoomLevel,
+    setFlightStripScale,
+    setFlightStripOpacity,
+    setDebugOverlay,
+  } = useSettingsStore();
 
   const handleLanguageChange = (langCode: string) => {
     changeLanguage(langCode);
@@ -159,6 +171,24 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           step={10}
         />
       </SettingsSectionBlock>
+
+      {/* Detached flight strip opacity; Electron cannot change window opacity on Linux */}
+      {!isLinux && (
+        <SettingsSectionBlock
+          title={t('settings.appearance.flightStripOpacity')}
+          description={t('settings.appearance.flightStripOpacityDescription')}
+        >
+          <ZoomSlider
+            zoomLevel={appearance.flightStripOpacity}
+            onCommit={setFlightStripOpacity}
+            onPreview={(opacity) => void window.appAPI.setFlightStripOpacity(opacity)}
+            resetLabel={t('settings.appearance.zoomReset')}
+            min={30}
+            max={100}
+            step={5}
+          />
+        </SettingsSectionBlock>
+      )}
 
       {/* Developer Tools */}
       <SettingsSectionBlock title={t('settings.about.tools')}>

@@ -36,7 +36,7 @@ export const MAP_STYLE_PRESETS: ReadonlyArray<MapStyle> = [
   {
     id: 'carto-dark',
     name: 'Dark',
-    url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    url: 'https://tiles.openfreemap.org/styles/dark',
   },
   {
     id: 'ofm-liberty',
@@ -46,7 +46,7 @@ export const MAP_STYLE_PRESETS: ReadonlyArray<MapStyle> = [
   {
     id: 'carto-positron',
     name: 'Light',
-    url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    url: 'https://tiles.openfreemap.org/styles/positron',
   },
   {
     id: 'esri-satellite',
@@ -101,6 +101,8 @@ export interface AppearanceSettings {
   clockMode: ClockMode;
   /** Size of the live aircraft strip, 1 to 2 times its base size. */
   flightStripScale: number;
+  /** Opacity of the detached flight strip window, 0.3 to 1. */
+  flightStripOpacity: number;
 }
 
 export type SurfaceDetail = 'low' | 'medium' | 'high';
@@ -181,6 +183,7 @@ interface SettingsState {
   setDebugOverlay: (enabled: boolean) => void;
   setClockMode: (mode: ClockMode) => void;
   setFlightStripScale: (scale: number) => void;
+  setFlightStripOpacity: (opacity: number) => void;
   resetToDefaults: () => void;
 }
 
@@ -212,6 +215,7 @@ const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   debugOverlay: false,
   clockMode: 'zulu',
   flightStripScale: 1,
+  flightStripOpacity: 1,
 };
 
 function applyZoomLevel(level: number) {
@@ -411,6 +415,12 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({ appearance: { ...state.appearance, flightStripScale: clamped } }));
       },
 
+      setFlightStripOpacity: (opacity: number) => {
+        const safe = Number.isFinite(opacity) ? opacity : 1;
+        const clamped = Math.round(Math.max(0.3, Math.min(1, safe)) * 100) / 100;
+        set((state) => ({ appearance: { ...state.appearance, flightStripOpacity: clamped } }));
+      },
+
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
         applyZoomLevel(DEFAULT_APPEARANCE_SETTINGS.zoomLevel);
@@ -428,7 +438,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 31,
+      version: 33,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -619,6 +629,25 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     state = {
       ...state,
       appearance: { ...state.appearance!, flightStripScale: 1 },
+    };
+  }
+
+  if (version < 32) {
+    // CARTO watermarks keyless tiles; its two themes move to the OpenFreeMap equivalents.
+    const replacements: Record<string, string> = {
+      'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json':
+        'https://tiles.openfreemap.org/styles/dark',
+      'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json':
+        'https://tiles.openfreemap.org/styles/positron',
+    };
+    const next = state.map?.mapStyleUrl ? replacements[state.map.mapStyleUrl] : undefined;
+    if (next) state = { ...state, map: { ...state.map!, mapStyleUrl: next } };
+  }
+
+  if (version < 33) {
+    state = {
+      ...state,
+      appearance: { ...state.appearance!, flightStripOpacity: 1 },
     };
   }
 

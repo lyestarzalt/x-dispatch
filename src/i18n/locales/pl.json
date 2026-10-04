@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Powiększ lub zmniejsz cały interfejs",
       "zoomReset": "Resetuj",
       "flightStripScale": "Rozmiar paska lotu",
-      "flightStripScaleDescription": "Skaluje pasek lotu na żywo, aby był czytelny z większej odległości"
+      "flightStripScaleDescription": "Skaluje pasek lotu na żywo, aby był czytelny z większej odległości",
+      "flightStripOpacity": "Przezroczystość okna paska lotu",
+      "flightStripOpacityDescription": "Widok symulatora przez odłączone okno paska lotu"
     },
     "units": {
       "title": "Jednostki",
@@ -1058,7 +1060,8 @@
     "followingTooltip": "Kliknij, aby przestać śledzić samolot",
     "reconnect": "Połącz ponownie",
     "reconnectTooltip": "Wymuś ponowne połączenie z symulatorem X-Plane",
-    "detach": "Otwórz pasek lotu w osobnym oknie"
+    "detach": "Otwórz pasek lotu w osobnym oknie",
+    "closeWindow": "Zamknij okno paska lotu"
   },
   "weather": {
     "fetching": "Pobieranie pogody...",

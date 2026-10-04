@@ -1,20 +1,20 @@
 import type * as maplibregl from 'maplibre-gl';
 import { localizeTextField, tileLanguageFor } from './basemapLabels';
+import { landOnlyFilter } from './maritimeBoundaries';
 
 /**
  * Raster basemaps (satellite imagery, custom tile URLs) carry no labels or
- * borders. The Carto dark style's boundary and place layers are laid over them:
+ * borders. The OpenFreeMap dark style's boundary and place layers are laid over them:
  * light text with a dark halo reads well on imagery, and the tiles carry the
  * same per-language names the vector basemaps use.
  */
 
-export const REFERENCE_STYLE_URL =
-  'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+export const REFERENCE_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
 /** Dropped by preserveCustomStyle on every style switch, so a vector basemap never doubles up. */
-export const REFERENCE_SOURCE_ID = 'ref-carto';
+export const REFERENCE_SOURCE_ID = 'ref-basemap';
 const REFERENCE_LAYER_PREFIX = 'ref-';
-// Borders, places, water, road names and points of interest; house numbers stay off the imagery.
-const REFERENCE_LAYER_PATTERN = /^(boundary_|place_|watername_|waterway_label|roadname_|poi_)/;
+// Borders, places, water and road names.
+const REFERENCE_LAYER_PATTERN = /^(boundary_|place_|water_name|highway_name_)/;
 const BOUNDARY_COLOR = 'rgba(255, 255, 255, 0.55)';
 
 export interface ReferenceStyle {
@@ -28,7 +28,7 @@ function withoutIconProperties<T extends object | undefined>(props: T): T {
   return Object.fromEntries(Object.entries(props).filter(([key]) => !key.startsWith('icon-'))) as T;
 }
 
-/** The overlay layers of a Carto style, renamed onto the reference source and localized. */
+/** The overlay layers of the reference style, renamed onto the reference source and localized. */
 export function buildReferenceLayers(
   style: ReferenceStyle,
   appLanguage: string
@@ -47,6 +47,7 @@ export function buildReferenceLayers(
     copy.source = REFERENCE_SOURCE_ID;
     if (copy.type === 'line') {
       copy.paint = { ...copy.paint, 'line-color': BOUNDARY_COLOR };
+      copy.filter = landOnlyFilter(copy.filter);
     } else {
       const symbol = copy as maplibregl.SymbolLayerSpecification;
       symbol.layout = withoutIconProperties(symbol.layout);

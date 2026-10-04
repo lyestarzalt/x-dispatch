@@ -609,7 +609,9 @@
       "zoomLevelDescription": "Scale the whole interface up or down",
       "zoomReset": "Reset Scale",
       "flightStripScale": "Size o' the flight strip",
-      "flightStripScaleDescription": "Blow up the live flight strip so ye can read it from across the deck"
+      "flightStripScaleDescription": "Blow up the live flight strip so ye can read it from across the deck",
+      "flightStripOpacity": "Flight strip porthole see-throughness",
+      "flightStripOpacityDescription": "Spy the simulator through the detached flight strip porthole"
     },
     "units": {
       "title": "Measures",
@@ -1058,7 +1060,8 @@
     "followingTooltip": "Click ta stop following aircraft",
     "reconnect": "Reconnect line",
     "reconnectTooltip": "Force reconnect ta X-Plane simulator",
-    "detach": "Open the flight strip in its own porthole"
+    "detach": "Open the flight strip in its own porthole",
+    "closeWindow": "Shut the flight strip porthole"
   },
   "weather": {
     "fetching": "Fetchin' weather...",
