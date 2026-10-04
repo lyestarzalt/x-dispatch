@@ -6,7 +6,6 @@ import {
   autoUpdater,
   clipboard,
   dialog,
-  globalShortcut,
   net,
   screen,
   session,
@@ -393,6 +392,7 @@ function openFlightStripWindow(): void {
     parent: mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined,
     alwaysOnTop: true,
     autoHideMenuBar: true,
+    show: false,
     backgroundColor: '#06090D',
     icon: iconPath,
     webPreferences: {
@@ -406,6 +406,7 @@ function openFlightStripWindow(): void {
     },
   });
   windowState.manage(win);
+  win.once('ready-to-show', () => win.show());
   win.on('page-title-updated', (e) => e.preventDefault());
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://') || url.startsWith('http://')) shell.openExternal(url);
@@ -509,6 +510,21 @@ function createWindow(): BrowserWindow {
 
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
+
+  window.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown' || !(input.control || input.meta) || input.alt) return;
+    // Zoom is owned by the Interface Zoom setting; the dev menu's zoom keys would drift from it.
+    if (['-', '=', '+', '0'].includes(input.key)) {
+      event.preventDefault();
+      return;
+    }
+    // Ctrl+F / Cmd+F focuses airport search. Window-scoped, so other apps keep the key.
+    if (!input.shift && input.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      analytics.track('shortcut_used', { shortcut: 'focus_search' });
+      broadcast('focus-search');
+    }
+  });
 
   window.webContents.on('will-navigate', (event, url) => {
     try {
@@ -677,12 +693,18 @@ function registerIpcHandlers() {
   handle('app:openConfigFolder', () => {
     shell.openPath(app.getPath('userData'));
   });
-  handle('app:openPath', (_, p: string) => {
-    // Security: Validate path
+  handle('app:openPath', async (_, p: string) => {
     if (typeof p !== 'string' || p.includes('..') || p.length > 1000) {
       return;
     }
-    shell.openPath(p);
+    // Folders open; files are only revealed, so this can never launch an executable.
+    const stat = await fs.promises.stat(p).catch(() => null);
+    if (!stat) return;
+    if (stat.isDirectory()) {
+      shell.openPath(p);
+    } else {
+      shell.showItemInFolder(p);
+    }
   });
   handle('app:clipboardWrite', async (_, text: string) => {
     if (typeof text !== 'string') return;
@@ -2049,23 +2071,6 @@ async function bootstrap(): Promise<void> {
       if (updateStatus.get().managed) initAutoUpdater();
     }, UPDATE_FIRST_CHECK_DELAY_MS);
   }
-
-  // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
-  mainWindow.on('focus', () => {
-    globalShortcut.register('CommandOrControl+F', () => {
-      analytics.track('shortcut_used', { shortcut: 'focus_search' });
-      // The shortcut handler can outlive its registration window briefly
-      // during teardown; optional chaining catches the null case, but a
-      // destroyed-but-still-truthy `mainWindow` would still throw on
-      // `.webContents.send()`. Sentry X-DISPATCH-E.
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        broadcast('focus-search');
-      }
-    });
-  });
-  mainWindow.on('blur', () => {
-    globalShortcut.unregister('CommandOrControl+F');
-  });
 
   if (process.platform === 'darwin' && app.dock) {
     const iconPath = app.isPackaged
