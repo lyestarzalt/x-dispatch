@@ -31,7 +31,14 @@ class TestRenderer extends BaseLayerRenderer {
 describe('BaseLayerRenderer.addLayer', () => {
   it('inserts airport layers under the aircraft and network overlays', () => {
     const map = makeMapMock();
-    map.order.push('basemap', 'vatsim-trails', 'vatsim-pilots', 'sim-traffic', 'player-plane');
+    map.order.push(
+      'basemap',
+      'flight-trail-live',
+      'vatsim-trails',
+      'vatsim-pilots',
+      'sim-traffic',
+      'player-plane'
+    );
     const renderer = new TestRenderer();
 
     renderer.add(map, 'gates');
@@ -41,6 +48,7 @@ describe('BaseLayerRenderer.addLayer', () => {
       'basemap',
       'gates',
       'taxiways',
+      'flight-trail-live',
       'vatsim-trails',
       'vatsim-pilots',
       'sim-traffic',
