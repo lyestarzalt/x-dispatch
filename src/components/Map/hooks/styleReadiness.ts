@@ -5,7 +5,8 @@ interface StyleReadyMap {
   style?: unknown;
 }
 
-function isStyleReadyForLayerUpdates(map: StyleReadyMap): boolean {
+/** True once the style JSON has loaded, even while sources are still updating. */
+export function isStyleReadyForLayerUpdates(map: StyleReadyMap): boolean {
   const style = map.style as { _loaded?: unknown } | undefined;
   return map.isStyleLoaded() === true || style?._loaded === true;
 }

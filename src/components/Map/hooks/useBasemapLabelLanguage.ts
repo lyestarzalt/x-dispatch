@@ -18,7 +18,7 @@ export function useBasemapLabelLanguage(mapRef: MapRef): void {
     const apply = () => {
       if (!mapRef.current) return;
       try {
-        localizeBasemapLabels(map, language);
+        localizeBasemapLabels(map, i18n.language);
       } catch (err) {
         window.appAPI?.log?.warn?.('Basemap label language not applied', err);
       }
@@ -26,8 +26,11 @@ export function useBasemapLabelLanguage(mapRef: MapRef): void {
 
     if (map.getStyle()?.layers?.length) apply();
     map.on('style.load', apply);
+    // The settings dialog may sit outside this render tree, so listen to i18next itself.
+    i18n.on('languageChanged', apply);
     return () => {
       map.off('style.load', apply);
+      i18n.off('languageChanged', apply);
     };
-  }, [mapRef, language]);
+  }, [mapRef, i18n, language]);
 }
