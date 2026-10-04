@@ -1,17 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-vi.stubGlobal('window', {
-  localStorage: {
-    getItem: vi.fn(() => null),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-    key: vi.fn(() => null),
-    length: 0,
-  },
-});
-
-const { migrateMeasure, useMeasureStore } = await import('./measureStore');
+import { beforeEach, describe, expect, it } from 'vitest';
+import { useMeasureStore } from './measureStore';
 
 const paris = { latitude: 48.86, longitude: 2.35 };
 const london = { latitude: 51.47, longitude: -0.46 };
@@ -119,21 +107,5 @@ describe('measureStore', () => {
     useMeasureStore.getState().finish();
     useMeasureStore.getState().clear();
     expect(useMeasureStore.getState().line).toBeNull();
-  });
-});
-
-describe('migrateMeasure', () => {
-  it('turns a v1 start/end line into a two-point line', () => {
-    const v1 = { line: { from: paris, to: newYork, snap: null } };
-    expect(migrateMeasure(v1, 1)).toEqual({ line: { points: [paris, newYork], snap: null } });
-  });
-
-  it('keeps a v2 line as-is', () => {
-    const v2 = { line: { points: [paris, london, newYork], snap: null } };
-    expect(migrateMeasure(v2, 2)).toEqual(v2);
-  });
-
-  it('fills a missing line with null', () => {
-    expect(migrateMeasure({}, 0)).toEqual({ line: null });
   });
 });

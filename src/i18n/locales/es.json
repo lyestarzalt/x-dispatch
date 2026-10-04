@@ -496,6 +496,13 @@
       "description": "Despacho de vuelos y visualización de aeropuertos para X-Plane",
       "updateAvailable": "Actualización disponible — v{{version}}",
       "upToDate": "Estás al día",
+      "checkForUpdates": "Buscar actualizaciones",
+      "checkingForUpdates": "Buscando actualizaciones…",
+      "downloadingUpdate": "Descargando la actualización en segundo plano…",
+      "updateReady": "v{{version}} está lista para instalarse",
+      "restartToUpdate": "Reiniciar ahora",
+      "updateCheckFailed": "La comprobación de actualizaciones ha fallado",
+      "tryAgain": "Reintentar",
       "projectNotice": "Un proyecto hecho con pasión para la comunidad de X-Plane, compartido gratis.",
       "credits": "Créditos",
       "developer": "Desarrollador",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "Rotar lentamente alrededor del aeropuerto seleccionado tras inactividad",
       "zoomLevel": "Zoom de interfaz",
       "zoomLevelDescription": "Ampliar o reducir toda la interfaz",
-      "zoomReset": "Restablecer"
+      "zoomReset": "Restablecer",
+      "flightStripScale": "Tamaño de la tira de vuelo",
+      "flightStripScaleDescription": "Escala la tira de vuelo en vivo para leerla desde más lejos"
     },
     "units": {
       "title": "Unidades",
@@ -1048,7 +1057,8 @@
     "following": "Siguiendo",
     "followingTooltip": "Haz clic para dejar de seguir la aeronave",
     "reconnect": "Reconectar",
-    "reconnectTooltip": "Forzar reconexión con el simulador X-Plane"
+    "reconnectTooltip": "Forzar reconexión con el simulador X-Plane",
+    "detach": "Abrir la tira de vuelo en su propia ventana"
   },
   "weather": {
     "fetching": "Obteniendo meteorología...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} está listo para descargar",
       "download": "Descargar",
       "dismiss": "Más tarde"
+    },
+    "ready": {
+      "title": "Actualización lista",
+      "description": "X-Dispatch {{version}} se instalará al reiniciar",
+      "restart": "Reiniciar ahora",
+      "dismiss": "Más tarde"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "Centrar mapa aquí",
     "elevation": "Elevación {{value}}",
     "measureFromHere": "Medir desde aquí",
-    "deleteMeasurement": "Eliminar medición",
     "removePoint": "Quitar punto",
     "measureTotal": "Total {{value}}",
     "clearMeasurement": "Borrar medición"

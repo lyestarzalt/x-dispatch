@@ -7,6 +7,7 @@ import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
 import { calculateOptimalZoom } from '../utils/zoomCalculator';
+import { isStyleReadyForLayerUpdates } from './styleReadiness';
 
 // Map layer IDs to visibility keys.
 const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
@@ -209,14 +210,17 @@ export function useAirportRenderer(
         return parsedAirport;
       };
 
-      // Defer until the style is fully loaded. Each renderer's `render()`
+      // Defer until the style JSON has loaded. Each renderer's `render()`
       // calls `addSource` / `addLayer`, which throw "Style is not done
       // loading" while `style._loaded` is false. The cold-start home-
       // airport autoload race (`App.tsx` fires `requestSelectAirport`
       // when appState reaches 'ready', which can land before
       // `map.on('load')` resolves) hits this path and floods the log
-      // with one swallowed error per layer.
-      if (!m.isStyleLoaded()) {
+      // with one swallowed error per layer. isStyleLoaded() alone is not
+      // the test: it also reports false while any source is mid-update,
+      // which a connected aircraft causes ten times a second, and the click
+      // would then wait for a 'style.load' that never comes.
+      if (!isStyleReadyForLayerUpdates(m)) {
         return new Promise<ParsedAirport | null>((resolve) => {
           m.once('style.load', () => {
             doRender().then(resolve);

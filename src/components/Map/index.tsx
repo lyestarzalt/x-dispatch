@@ -51,6 +51,7 @@ import {
   useAirportInteractions,
   useAirportRenderer,
   useApproachLightAnimation,
+  useBasemapLabelLanguage,
   useCityLights,
   useCursorElevation,
   useFlightReplay,
@@ -65,6 +66,7 @@ import {
   usePinDrop,
   useProcedureRouteSync,
   useRangeRingsSync,
+  useRasterReferenceLabels,
   useRouteLineSync,
   useSolarClock,
   useSolarSky,
@@ -459,6 +461,8 @@ export default function Map({ airports }: MapProps) {
   // compass widget.
   useCursorElevation(mapRef);
   useMapContextMenu(mapRef);
+  useBasemapLabelLanguage(mapRef);
+  useRasterReferenceLabels(mapRef, mapStyleUrl);
   useMeasureTool(mapRef);
 
   // Airport dot filters (type, surface, IATA, custom, runways)

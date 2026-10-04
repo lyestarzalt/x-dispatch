@@ -496,6 +496,13 @@
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
       "updateAvailable": "Update verfügbar — v{{version}}",
       "upToDate": "Sie sind auf dem neuesten Stand",
+      "checkForUpdates": "Nach Updates suchen",
+      "checkingForUpdates": "Suche nach Updates…",
+      "downloadingUpdate": "Update wird im Hintergrund heruntergeladen…",
+      "updateReady": "v{{version}} ist bereit zur Installation",
+      "restartToUpdate": "Jetzt neu starten",
+      "updateCheckFailed": "Die Update-Prüfung ist fehlgeschlagen",
+      "tryAgain": "Erneut versuchen",
       "projectNotice": "Ein Herzensprojekt für die X-Plane-Community, kostenlos bereitgestellt.",
       "credits": "Danksagungen",
       "developer": "Entwickler",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "Langsame Drehung um den ausgewählten Flughafen nach Inaktivität",
       "zoomLevel": "Oberflächenzoom",
       "zoomLevelDescription": "Gesamte Oberfläche vergrößern oder verkleinern",
-      "zoomReset": "Zurücksetzen"
+      "zoomReset": "Zurücksetzen",
+      "flightStripScale": "Größe des Flugstreifens",
+      "flightStripScaleDescription": "Skaliert den Live-Flugstreifen, damit er aus größerer Entfernung lesbar bleibt"
     },
     "units": {
       "title": "Einheiten",
@@ -1048,7 +1057,8 @@
     "following": "Folgt",
     "followingTooltip": "Klicken, um dem Flugzeug nicht mehr zu folgen",
     "reconnect": "Erneut verbinden",
-    "reconnectTooltip": "Verbindung zum X-Plane-Simulator erzwingen"
+    "reconnectTooltip": "Verbindung zum X-Plane-Simulator erzwingen",
+    "detach": "Flugstreifen in eigenem Fenster öffnen"
   },
   "weather": {
     "fetching": "Wetter wird abgerufen...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} steht zum Download bereit",
       "download": "Herunterladen",
       "dismiss": "Später"
+    },
+    "ready": {
+      "title": "Update bereit",
+      "description": "X-Dispatch {{version}} wird beim Neustart installiert",
+      "restart": "Jetzt neu starten",
+      "dismiss": "Später"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "Karte hier zentrieren",
     "elevation": "Höhe {{value}}",
     "measureFromHere": "Von hier messen",
-    "deleteMeasurement": "Messung löschen",
     "removePoint": "Punkt entfernen",
     "measureTotal": "Gesamt {{value}}",
     "clearMeasurement": "Messung löschen"

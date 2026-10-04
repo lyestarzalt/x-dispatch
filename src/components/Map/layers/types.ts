@@ -115,3 +115,23 @@ export function setLayersVisibility(
     }
   }
 }
+
+/** Traffic, network overlays and the own aircraft: airport geometry must never cover them. */
+const OVERLAY_LAYER_PREFIXES = [
+  'player-plane',
+  'flight-trail-',
+  'flight-touchdown-',
+  'flight-replay-',
+  'sim-traffic',
+  'vatsim-',
+  'ivao-',
+];
+
+export function isOverlayLayerId(id: string): boolean {
+  return OVERLAY_LAYER_PREFIXES.some((prefix) => id.startsWith(prefix));
+}
+
+/** The lowest overlay layer, so a layer inserted before it sits under all of them. */
+export function overlayLayerBeforeId(map: maplibregl.Map): string | undefined {
+  return map.getLayersOrder().find(isOverlayLayerId);
+}

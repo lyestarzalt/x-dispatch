@@ -1,18 +1,25 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Crosshair, Plane } from 'lucide-react';
+import { ChevronRight, Crosshair, PictureInPicture2, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
+import { useUnits } from '@/hooks/useUnits';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
+import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import type { FeetPerMinute, Knots } from '@/lib/utils/units';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { useDragPosition } from '../hooks/useDragPosition';
 
 const PRIMARY_COLOR_CLASS = 'text-primary';
 
 interface FlightStripProps {
   onCenterPlane: () => void;
+  /** Shown in its own window: fills it, cannot be dragged, no map actions. */
+  detached?: boolean;
 }
 
 // --- Formatting helpers ---
@@ -33,11 +40,13 @@ function formatNavFrequency(freq: number | undefined): string {
   return (freq / 100).toFixed(2);
 }
 
-function formatVS(vs: number | undefined): string {
+/** fpm reads in steps of 100, m/s with one decimal; both carry an explicit sign. */
+function formatVS(vs: number | undefined, metric: boolean): string {
   if (vs === undefined || isNaN(vs)) return '---';
-  const rounded = Math.round(vs / 100) * 100;
+  const rounded = metric ? Math.round(vs * 10) / 10 : Math.round(vs / 100) * 100;
   if (rounded === 0) return '0';
-  return rounded > 0 ? `+${formatValue(rounded)}` : formatValue(rounded);
+  const text = metric ? rounded.toFixed(1) : formatValue(rounded);
+  return rounded > 0 ? `+${text}` : text;
 }
 
 function formatMach(mach: number | undefined): string {
@@ -80,57 +89,72 @@ function isLowAGL(agl: number | undefined): boolean {
   return agl !== undefined && !isNaN(agl) && agl < 500;
 }
 
-function useStripDrag() {
+const noopPosition = () => {};
+
+/** The detached window shows the strip in place and must never rewrite the saved map position. */
+function useStripDrag(detached: boolean) {
   const position = useMapStore((s) => s.flightStripPosition);
   const setPosition = useMapStore((s) => s.setFlightStripPosition);
-  return useDragPosition(position, setPosition);
+  return useDragPosition(detached ? null : position, detached ? noopPosition : setPosition);
 }
 
 // --- Main component ---
 
-export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
+export default function FlightStrip({ onCenterPlane, detached = false }: FlightStripProps) {
   const planeState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
-  const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } = useStripDrag();
+  const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } =
+    useStripDrag(detached);
+  const units = useSettingsStore((s) => s.map.units);
+  const scale = useSettingsStore((s) => s.appearance.flightStripScale);
+  const { speedF, altitudeF, verticalSpeedF } = useUnits();
+  const speed = (kts: number | undefined) => (kts === undefined ? undefined : speedF(kts as Knots));
+  const altitude = (ft: number | undefined) =>
+    ft === undefined ? undefined : altitudeF(ft as Feet);
+  const verticalSpeed = (fpm: number | undefined) =>
+    fpm === undefined ? undefined : verticalSpeedF(fpm as FeetPerMinute);
+  const metricVS = units.verticalSpeed === 'ms';
+  const formatVerticalSpeed = (vs: number | undefined) => formatVS(vs, metricVS);
 
   const handleCenter = () => {
     if (hasDragged.current) return;
     onCenterPlane();
   };
 
-  const isDefault = position === null;
+  const isDefault = detached || position === null;
 
   return (
     <AnimatePresence>
-      {connected && (
+      {(connected || detached) && (
         <motion.div
           ref={stripRef}
           className={cn(
             'z-20 select-none',
-            isDefault && 'absolute bottom-4 left-1/2',
+            isDefault && !detached && 'absolute bottom-4 left-1/2',
             !isDefault && 'fixed'
           )}
           style={{
             // Centering stays a plain style transform so dragging never animates it.
-            x: isDefault ? '-50%' : 0,
+            x: isDefault && !detached ? '-50%' : 0,
             ...(!isDefault ? { left: position.x, top: position.y } : undefined),
           }}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8, transition: exitEase }}
           transition={panelSpring}
-          onMouseDown={handleMouseDown}
-          onDoubleClick={handleDoubleClick}
+          onMouseDown={detached ? undefined : handleMouseDown}
+          onDoubleClick={detached ? undefined : handleDoubleClick}
         >
           <div
             className={cn(
               'flex items-center rounded-xl border',
               'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
               'backdrop-blur-xl',
-              'cursor-grab active:cursor-grabbing'
+              !detached && 'cursor-grab active:cursor-grabbing'
             )}
+            style={{ zoom: scale }}
           >
             {/* Status indicator */}
             <div className="flex items-center gap-1.5 px-3 py-2">
@@ -167,27 +191,28 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
             <div className="flex items-center gap-4 px-4 py-1.5">
               <DataColumn
                 label={t('flightStrip.ias')}
-                target={formatTarget(
-                  planeState?.apAirspeedIsMach ? formatMach : formatValue,
-                  planeState?.apAirspeed
-                )}
-                value={formatValue(planeState?.indicatedAirspeed)}
-                unit={t('units.kt')}
+                target={
+                  planeState?.apAirspeedIsMach
+                    ? formatTarget(formatMach, planeState.apAirspeed)
+                    : formatTarget(formatValue, speed(planeState?.apAirspeed))
+                }
+                value={formatValue(speed(planeState?.indicatedAirspeed))}
+                unit={t(`units.${units.speed}`)}
                 valueColor={PRIMARY_COLOR_CLASS}
-                secondary={`${t('flightStrip.gs')} ${formatValue(planeState?.groundspeed)} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
+                secondary={`${t('flightStrip.gs')} ${formatValue(speed(planeState?.groundspeed))} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
               />
 
               <GroupSeparator />
 
               <DataColumn
                 label={t('flightStrip.alt')}
-                target={formatTarget(formatValue, planeState?.apAltitude)}
-                value={formatValue(planeState?.altitudeMSL)}
-                unit={t('units.ft')}
+                target={formatTarget(formatValue, altitude(planeState?.apAltitude))}
+                value={formatValue(altitude(planeState?.altitudeMSL))}
+                unit={t(`units.${units.altitude}`)}
                 valueColor={PRIMARY_COLOR_CLASS}
                 secondary={
                   <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
-                    {t('flightStrip.agl')} {formatValue(planeState?.altitudeAGL)}
+                    {t('flightStrip.agl')} {formatValue(altitude(planeState?.altitudeAGL))}
                   </span>
                 }
               />
@@ -196,9 +221,12 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
               <DataColumn
                 label={t('flightStrip.vs')}
-                target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
-                value={formatVS(planeState?.verticalSpeed)}
-                unit={t('units.fpm')}
+                target={formatTarget(
+                  formatVerticalSpeed,
+                  verticalSpeed(planeState?.apVerticalSpeed)
+                )}
+                value={formatVerticalSpeed(verticalSpeed(planeState?.verticalSpeed))}
+                unit={t(`units.${units.verticalSpeed}`)}
                 valueColor={getVSColor(planeState?.verticalSpeed)}
               />
 
@@ -217,29 +245,42 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
               <DataColumn
                 label={t('flightStrip.wind')}
-                value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-                unit={t('units.kt')}
+                value={formatWind(planeState?.windDirection, speed(planeState?.windSpeed))}
+                unit={t(`units.${units.speed}`)}
                 secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
               />
             </div>
 
             <GroupSeparator />
 
-            {/* Center / Follow button */}
-            <div className="px-1.5 py-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCenter}
-                className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
-                tooltip={
-                  followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
-                }
-              >
-                <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
-                {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
-              </Button>
-            </div>
+            {/* Center / Follow and pop-out buttons; the detached window has neither */}
+            {!detached && (
+              <div className="flex items-center gap-0.5 px-1.5 py-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCenter}
+                  className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
+                  tooltip={
+                    followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
+                  }
+                >
+                  <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                  {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
+                </Button>
+                <DesktopOnly>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground h-8 rounded-lg px-2"
+                    onClick={() => void window.appAPI.openFlightStripWindow()}
+                    tooltip={t('flightStrip.detach')}
+                  >
+                    <PictureInPicture2 className="h-3.5 w-3.5" />
+                  </Button>
+                </DesktopOnly>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

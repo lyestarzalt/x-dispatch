@@ -496,6 +496,13 @@
       "description": "Диспетчеризация полётов и визуализация аэропортов для X-Plane",
       "updateAvailable": "Доступно обновление — v{{version}}",
       "upToDate": "У вас актуальная версия",
+      "checkForUpdates": "Проверить обновления",
+      "checkingForUpdates": "Проверка обновлений…",
+      "downloadingUpdate": "Обновление загружается в фоновом режиме…",
+      "updateReady": "v{{version}} готова к установке",
+      "restartToUpdate": "Перезапустить сейчас",
+      "updateCheckFailed": "Не удалось проверить обновления",
+      "tryAgain": "Повторить",
       "projectNotice": "Личный проект для сообщества X-Plane, доступный бесплатно.",
       "credits": "Авторы",
       "developer": "Разработчик",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "Медленное вращение вокруг выбранного аэропорта после бездействия",
       "zoomLevel": "Масштаб интерфейса",
       "zoomLevelDescription": "Увеличить или уменьшить весь интерфейс",
-      "zoomReset": "Сбросить"
+      "zoomReset": "Сбросить",
+      "flightStripScale": "Размер полётной полосы",
+      "flightStripScaleDescription": "Увеличивает полосу данных полёта, чтобы читать её издалека"
     },
     "units": {
       "title": "Единицы",
@@ -1048,7 +1057,8 @@
     "following": "Слежение",
     "followingTooltip": "Нажмите, чтобы перестать следить за самолётом",
     "reconnect": "Переподключить",
-    "reconnectTooltip": "Принудительно переподключиться к симулятору X-Plane"
+    "reconnectTooltip": "Принудительно переподключиться к симулятору X-Plane",
+    "detach": "Открыть полосу полёта в отдельном окне"
   },
   "weather": {
     "fetching": "Получение метеоданных...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} готов к загрузке",
       "download": "Скачать",
       "dismiss": "Позже"
+    },
+    "ready": {
+      "title": "Обновление готово",
+      "description": "X-Dispatch {{version}} установится после перезапуска",
+      "restart": "Перезапустить сейчас",
+      "dismiss": "Позже"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "Центрировать карту здесь",
     "elevation": "Высота {{value}}",
     "measureFromHere": "Измерить отсюда",
-    "deleteMeasurement": "Удалить измерение",
     "removePoint": "Удалить точку",
     "measureTotal": "Итого {{value}}",
     "clearMeasurement": "Очистить измерение"

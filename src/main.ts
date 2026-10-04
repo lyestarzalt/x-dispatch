@@ -6,7 +6,6 @@ import {
   autoUpdater,
   clipboard,
   dialog,
-  globalShortcut,
   net,
   screen,
   session,
@@ -38,6 +37,7 @@ import {
   registerTileCacheScheme,
 } from './lib/tileCache';
 import { fetchCachedTile } from './lib/tileCache/fetchTile';
+import { createUpdateStatusStore, parseLatestStableVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -48,7 +48,6 @@ import {
   isValidSearchQuery,
   validateCoordinates,
 } from './lib/utils/validation';
-import { isNewerVersion } from './lib/utils/versionCompare';
 import {
   clearVatsimSectorData,
   getVatsimSectorData,
@@ -77,9 +76,11 @@ import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
-// Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
+// Squirrel.Windows runs the app for install, update and uninstall hooks (shortcut
+// handling); those runs quit without booting so they never race the real instance.
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- must run synchronously before any other code
-if (require('electron-squirrel-startup')) app.quit();
+const squirrelHookRun: boolean = require('electron-squirrel-startup');
+if (squirrelHookRun) app.quit();
 
 // CLI parsing — must run before Electron init so --help/--version can exit
 // before any window opens. Unknown flags are logged but don't block boot.
@@ -364,6 +365,66 @@ async function proxyDownload(
   });
 }
 
+let flightStripWindow: BrowserWindow | null = null;
+
+/** A small always-on-top window with only the flight strip, kept above the simulator. */
+function openFlightStripWindow(): void {
+  if (flightStripWindow && !flightStripWindow.isDestroyed()) {
+    flightStripWindow.focus();
+    return;
+  }
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets', 'icon.png')
+    : path.join(__dirname, '..', '..', 'assets', 'icon.png');
+  const windowState = windowStateKeeper({
+    file: 'flight-strip-window.json',
+    defaultWidth: 1000,
+    defaultHeight: 120,
+  });
+  const win = new BrowserWindow({
+    title: `${app.getName()} flight strip`,
+    x: windowState.x,
+    y: windowState.y,
+    width: windowState.width,
+    height: windowState.height,
+    minWidth: 520,
+    minHeight: 90,
+    parent: mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined,
+    alwaysOnTop: true,
+    autoHideMenuBar: true,
+    show: false,
+    backgroundColor: '#06090D',
+    icon: iconPath,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webviewTag: false,
+      allowRunningInsecureContent: false,
+      devTools: !app.isPackaged,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+  windowState.manage(win);
+  win.once('ready-to-show', () => win.show());
+  win.on('page-title-updated', (e) => e.preventDefault());
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://') || url.startsWith('http://')) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    win.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}?view=flight-strip`);
+  } else {
+    win.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`), {
+      query: { view: 'flight-strip' },
+    });
+  }
+  win.on('closed', () => {
+    flightStripWindow = null;
+  });
+  flightStripWindow = win;
+}
+
 function createWindow(): BrowserWindow {
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
@@ -450,6 +511,21 @@ function createWindow(): BrowserWindow {
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
+  window.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown' || !(input.control || input.meta) || input.alt) return;
+    // Zoom is owned by the Interface Zoom setting; the dev menu's zoom keys would drift from it.
+    if (['-', '=', '+', '0'].includes(input.key)) {
+      event.preventDefault();
+      return;
+    }
+    // Ctrl+F / Cmd+F focuses airport search. Window-scoped, so other apps keep the key.
+    if (!input.shift && input.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      analytics.track('shortcut_used', { shortcut: 'focus_search' });
+      broadcast('focus-search');
+    }
+  });
+
   window.webContents.on('will-navigate', (event, url) => {
     try {
       const parsedUrl = new URL(url);
@@ -481,44 +557,87 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
-// `latestVersion` is populated whenever the update manifest fetch + parse succeeds, so the
-// About section can display it even when there's no update.
-// `available` means "should trigger the update toast" — gated on isPackaged + non-Windows.
-type UpdateCheckResult = {
-  latestVersion: string | null;
-  available: boolean;
-  url: string;
-};
-
 const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
-const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
+const UPDATE_RETRY_MS = 10 * 60_000;
+const UPDATE_FIRST_CHECK_DELAY_MS = 5_000;
 
-async function fetchLatestStableTag(): Promise<string | null> {
+// Windows installs itself through Squirrel; macOS and Linux only get a notice.
+const updateStatus = createUpdateStatusStore({
+  managed: app.isPackaged && process.platform === 'win32',
+});
+updateStatus.subscribe((status) => broadcast('app:updateStatus', status));
+
+async function refreshLatestVersion(): Promise<void> {
   const result = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
-  if (!result.data || result.error) return null;
-  try {
-    const payload = JSON.parse(result.data) as { tag?: string; channel?: string };
-    return payload.tag && payload.channel === 'stable' ? payload.tag : null;
-  } catch (err) {
-    logger.main.warn(`Update check: latest.json parse failed: ${(err as Error).message}`);
-    return null;
+  if (!result.data || result.error) return;
+  const latestVersion = parseLatestStableVersion(result.data);
+  if (!latestVersion) {
+    logger.main.warn('Update check: latest.json is not a stable release manifest');
+    return;
   }
+  updateStatus.patch({ latestVersion });
 }
 
-async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
-  const tag = await fetchLatestStableTag();
-  if (!tag) {
-    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+let updateRetryTimer: NodeJS.Timeout | null = null;
+let autoUpdaterReady = false;
+
+function startManagedUpdateCheck(): void {
+  const { install } = updateStatus.get();
+  if (!autoUpdaterReady) return;
+  if (install === 'checking' || install === 'downloading' || install === 'ready') return;
+  if (updateRetryTimer) {
+    clearTimeout(updateRetryTimer);
+    updateRetryTimer = null;
   }
-  const latest = tag.replace(/^v/, '');
-  const shouldNotify =
-    isNewerVersion(app.getVersion(), latest) && app.isPackaged && process.platform !== 'win32';
-  return {
-    latestVersion: latest,
-    available: shouldNotify,
-    url: DOWNLOAD_PAGE_URL,
-  };
+  autoUpdater.checkForUpdates();
+}
+
+function initAutoUpdater(): void {
+  try {
+    updateElectronApp({
+      updateSource: {
+        type: UpdateSourceType.StaticStorage,
+        baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
+      },
+      // Also checks once right away; frequent polling only adds load on the download host.
+      updateInterval: '4 hours',
+      // The renderer offers the restart itself from the update status.
+      notifyUser: false,
+      logger: {
+        log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
+        info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
+        warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
+        error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
+      },
+    });
+    autoUpdater.on('checking-for-update', () => {
+      updateStatus.patch({ install: 'checking', error: null });
+    });
+    autoUpdater.on('update-available', () => {
+      updateStatus.patch({ install: 'downloading', error: null });
+      analytics.track('update_found', { method: 'auto' });
+    });
+    autoUpdater.on('update-not-available', () => {
+      updateStatus.patch({ install: 'up-to-date', error: null });
+    });
+    autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
+      updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
+      analytics.track('update_downloaded', {});
+    });
+    autoUpdater.on('error', (err) => {
+      updateStatus.patch({ install: 'error', error: err.message });
+      // One failed check at startup should not cost the user the whole 4 hour interval.
+      updateRetryTimer ??= setTimeout(() => {
+        updateRetryTimer = null;
+        startManagedUpdateCheck();
+      }, UPDATE_RETRY_MS);
+    });
+    autoUpdaterReady = true;
+    logger.main.info('Auto-updater initialized');
+  } catch (err) {
+    logger.main.error('Failed to initialize auto-updater', err);
+  }
 }
 
 function registerIpcHandlers() {
@@ -540,15 +659,18 @@ function registerIpcHandlers() {
       return { entries: [] };
     }
   });
-  handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
-    // Dev builds skip the network call entirely to avoid hammering dl.x-dispatch.app during HMR.
-    // Production always fetches: the About section needs latestVersion even when
-    // Windows users get their real update via update-electron-app (no toast for them).
-    if (!app.isPackaged) {
-      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
-    }
-    return checkForUpdateAvailable();
+  handle('app:getUpdateStatus', () => updateStatus.get());
+  handle('app:checkForUpdates', async () => {
+    if (updateStatus.get().managed) startManagedUpdateCheck();
+    await refreshLatestVersion();
+    return updateStatus.get();
   });
+  handle('app:installUpdate', () => {
+    if (updateStatus.get().install !== 'ready') return false;
+    autoUpdater.quitAndInstall();
+    return true;
+  });
+  handle('app:openFlightStripWindow', () => openFlightStripWindow());
   handle('app:getCliFlags', () => getCliFlags());
   handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();
@@ -571,12 +693,18 @@ function registerIpcHandlers() {
   handle('app:openConfigFolder', () => {
     shell.openPath(app.getPath('userData'));
   });
-  handle('app:openPath', (_, p: string) => {
-    // Security: Validate path
+  handle('app:openPath', async (_, p: string) => {
     if (typeof p !== 'string' || p.includes('..') || p.length > 1000) {
       return;
     }
-    shell.openPath(p);
+    // Folders open; files are only revealed, so this can never launch an executable.
+    const stat = await fs.promises.stat(p).catch(() => null);
+    if (!stat) return;
+    if (stat.isDirectory()) {
+      shell.openPath(p);
+    } else {
+      shell.showItemInFolder(p);
+    }
   });
   handle('app:clipboardWrite', async (_, text: string) => {
     if (typeof text !== 'string') return;
@@ -1805,36 +1933,12 @@ function reportDisplay(win: BrowserWindow): void {
   });
 }
 
-app.whenReady().then(async () => {
+if (!squirrelHookRun) app.whenReady().then(bootstrap);
+
+async function bootstrap(): Promise<void> {
   // Environment snapshot for production support
   logStartupEnvironment(shouldInitSentry);
   analytics.startSession();
-
-  if (app.isPackaged && process.platform === 'win32') {
-    try {
-      updateElectronApp({
-        updateSource: {
-          type: UpdateSourceType.StaticStorage,
-          baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
-        },
-        // Also checks once at startup; frequent polling only adds load on the download host.
-        updateInterval: '4 hours',
-        notifyUser: true,
-        logger: {
-          log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-          info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-          warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
-          error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
-        },
-      });
-      // update-electron-app drives Electron's autoUpdater; listen for analytics only.
-      autoUpdater.on('update-available', () => analytics.track('update_found', { method: 'auto' }));
-      autoUpdater.on('update-downloaded', () => analytics.track('update_downloaded', {}));
-      logger.main.info('Auto-updater initialized');
-    } catch (err) {
-      logger.main.error('Failed to initialize auto-updater', err);
-    }
-  }
 
   // Load React DevTools in development
   if (!app.isPackaged && process.platform === 'darwin') {
@@ -1960,22 +2064,13 @@ app.whenReady().then(async () => {
   mainWindow = createWindow();
   reportDisplay(mainWindow);
 
-  // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
-  mainWindow.on('focus', () => {
-    globalShortcut.register('CommandOrControl+F', () => {
-      analytics.track('shortcut_used', { shortcut: 'focus_search' });
-      // The shortcut handler can outlive its registration window briefly
-      // during teardown; optional chaining catches the null case, but a
-      // destroyed-but-still-truthy `mainWindow` would still throw on
-      // `.webContents.send()`. Sentry X-DISPATCH-E.
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        broadcast('focus-search');
-      }
-    });
-  });
-  mainWindow.on('blur', () => {
-    globalShortcut.unregister('CommandOrControl+F');
-  });
+  // Dev builds stay off the download host so HMR restarts do not hammer it.
+  if (app.isPackaged) {
+    setTimeout(() => {
+      void refreshLatestVersion();
+      if (updateStatus.get().managed) initAutoUpdater();
+    }, UPDATE_FIRST_CHECK_DELAY_MS);
+  }
 
   if (process.platform === 'darwin' && app.dock) {
     const iconPath = app.isPackaged
@@ -1983,7 +2078,7 @@ app.whenReady().then(async () => {
       : path.join(__dirname, '..', '..', 'assets', 'icon.png');
     app.dock.setIcon(iconPath);
   }
-});
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

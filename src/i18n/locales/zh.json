@@ -496,6 +496,13 @@
       "description": "X-Plane 飞行签派和机场可视化",
       "updateAvailable": "有可用更新 — v{{version}}",
       "upToDate": "已是最新版本",
+      "checkForUpdates": "检查更新",
+      "checkingForUpdates": "正在检查更新…",
+      "downloadingUpdate": "正在后台下载更新…",
+      "updateReady": "v{{version}} 已准备好安装",
+      "restartToUpdate": "立即重启",
+      "updateCheckFailed": "检查更新失败",
+      "tryAgain": "重试",
       "projectNotice": "这是为 X-Plane 社区打造的免费项目。",
       "credits": "制作人员",
       "developer": "开发者",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "闲置时缓慢环绕选定机场旋转",
       "zoomLevel": "界面缩放",
       "zoomLevelDescription": "放大或缩小整个界面",
-      "zoomReset": "重置"
+      "zoomReset": "重置",
+      "flightStripScale": "飞行条大小",
+      "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读"
     },
     "units": {
       "title": "单位",
@@ -1048,7 +1057,8 @@
     "following": "跟随",
     "followingTooltip": "点击以停止跟随飞机",
     "reconnect": "重新连接",
-    "reconnectTooltip": "强制重新连接到 X-Plane 模拟器"
+    "reconnectTooltip": "强制重新连接到 X-Plane 模拟器",
+    "detach": "在独立窗口中打开飞行条"
   },
   "weather": {
     "fetching": "正在获取天气...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} 可供下载",
       "download": "下载",
       "dismiss": "稍后"
+    },
+    "ready": {
+      "title": "更新已就绪",
+      "description": "X-Dispatch {{version}} 将在重启后安装",
+      "restart": "立即重启",
+      "dismiss": "稍后"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "将地图居中于此",
     "elevation": "海拔 {{value}}",
     "measureFromHere": "从此处测量",
-    "deleteMeasurement": "删除测量",
     "removePoint": "移除点",
     "measureTotal": "总计 {{value}}",
     "clearMeasurement": "清除测量"

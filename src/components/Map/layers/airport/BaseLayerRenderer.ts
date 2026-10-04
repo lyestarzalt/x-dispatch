@@ -1,6 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import type { ParsedAirport } from '@/types/apt';
-import { safeAddGeoJSONSource, safeRemove } from '../types';
+import { overlayLayerBeforeId, safeAddGeoJSONSource, safeRemove } from '../types';
 
 /**
  * Interface for all layer renderers
@@ -83,16 +83,14 @@ export abstract class BaseLayerRenderer implements LayerRenderer {
     safeAddGeoJSONSource(map, this.sourceId, data);
   }
 
-  /**
-   * Helper to safely add a layer
-   */
+  /** Adds the layer once, underneath aircraft and network overlays unless told otherwise. */
   protected addLayer(
     map: maplibregl.Map,
     spec: maplibregl.LayerSpecification,
     beforeId?: string
   ): void {
     if (!map.getLayer(spec.id)) {
-      map.addLayer(spec, beforeId);
+      map.addLayer(spec, beforeId ?? overlayLayerBeforeId(map));
     }
   }
 }

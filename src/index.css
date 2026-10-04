@@ -111,12 +111,21 @@
 @layer base {
   html {
     font-size: 16px;
+    color-scheme: dark;
   }
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  button,
+  label,
+  [role='button'],
+  [role='tab'],
+  [role='menuitem'],
+  [role='option'] {
+    user-select: none;
   }
 }
 

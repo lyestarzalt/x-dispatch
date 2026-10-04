@@ -496,6 +496,13 @@
       "description": "Flight dispatch and airport visualization for X-Plane",
       "updateAvailable": "Update available — v{{version}}",
       "upToDate": "You're up to date",
+      "checkForUpdates": "Check for updates",
+      "checkingForUpdates": "Checking for updates…",
+      "downloadingUpdate": "Downloading the update in the background…",
+      "updateReady": "v{{version}} is ready to install",
+      "restartToUpdate": "Restart now",
+      "updateCheckFailed": "The update check failed",
+      "tryAgain": "Try again",
       "projectNotice": "A passion project built for the X-Plane community, shared free of charge.",
       "credits": "Credits",
       "developer": "Developer",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "Slowly rotate around selected airport after inactivity",
       "zoomLevel": "Interface Zoom",
       "zoomLevelDescription": "Scale the entire interface up or down",
-      "zoomReset": "Reset"
+      "zoomReset": "Reset",
+      "flightStripScale": "Flight strip size",
+      "flightStripScaleDescription": "Scale the live aircraft strip so it reads from further away"
     },
     "units": {
       "title": "Units",
@@ -1048,7 +1057,8 @@
     "following": "Following",
     "followingTooltip": "Click to stop following aircraft",
     "reconnect": "Reconnect",
-    "reconnectTooltip": "Force a reconnect to X-Plane"
+    "reconnectTooltip": "Force a reconnect to X-Plane",
+    "detach": "Open the flight strip in its own window"
   },
   "weather": {
     "fetching": "Fetching weather...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} is ready to download",
       "download": "Download",
       "dismiss": "Later"
+    },
+    "ready": {
+      "title": "Update ready",
+      "description": "X-Dispatch {{version}} will install when you restart",
+      "restart": "Restart now",
+      "dismiss": "Later"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "Center map here",
     "elevation": "Elevation {{value}}",
     "measureFromHere": "Measure from here",
-    "deleteMeasurement": "Delete measurement",
     "removePoint": "Remove point",
     "measureTotal": "Total {{value}}",
     "clearMeasurement": "Clear measurement"

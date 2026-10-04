@@ -496,6 +496,13 @@
       "description": "Flight dispatch an' airport visualization fer X-Plane",
       "updateAvailable": "New booty available — v{{version}}",
       "upToDate": "Yer ship be shipshape",
+      "checkForUpdates": "Scout fer booty",
+      "checkingForUpdates": "Scoutin' fer booty…",
+      "downloadingUpdate": "Haulin' the booty below deck…",
+      "updateReady": "v{{version}} be ready to board",
+      "restartToUpdate": "Restart now",
+      "updateCheckFailed": "The scoutin’ run came back empty-handed",
+      "tryAgain": "Try again, matey",
       "projectNotice": "A passion-fueled project fer the X-Plane crew, shared free o' charge.",
       "credits": "Crew Credits",
       "developer": "Shipwright",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "Slowly circle the chosen airport after idle time",
       "zoomLevel": "Interface Scale",
       "zoomLevelDescription": "Scale the whole interface up or down",
-      "zoomReset": "Reset Scale"
+      "zoomReset": "Reset Scale",
+      "flightStripScale": "Size o' the flight strip",
+      "flightStripScaleDescription": "Blow up the live flight strip so ye can read it from across the deck"
     },
     "units": {
       "title": "Measures",
@@ -1048,7 +1057,8 @@
     "following": "Shadowin'",
     "followingTooltip": "Click ta stop following aircraft",
     "reconnect": "Reconnect line",
-    "reconnectTooltip": "Force reconnect ta X-Plane simulator"
+    "reconnectTooltip": "Force reconnect ta X-Plane simulator",
+    "detach": "Open the flight strip in its own porthole"
   },
   "weather": {
     "fetching": "Fetchin' weather...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} be ready t' plunder",
       "download": "Plunder",
       "dismiss": "Later, matey"
+    },
+    "ready": {
+      "title": "Fresh booty be aboard",
+      "description": "X-Dispatch {{version}} boards when ye restart",
+      "restart": "Restart now",
+      "dismiss": "Later, matey"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "Steer the chart here",
     "elevation": "Height o' land {{value}}",
     "measureFromHere": "Measure from this spot",
-    "deleteMeasurement": "Scrap the measurin' line",
     "removePoint": "Toss this point",
     "measureTotal": "All told {{value}}",
     "clearMeasurement": "Wipe the measurin’ line"

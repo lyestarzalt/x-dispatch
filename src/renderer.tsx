@@ -7,6 +7,11 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './index.css';
 
+// A file dropped outside a drop zone would otherwise navigate the window to it.
+for (const type of ['dragover', 'drop'] as const) {
+  document.addEventListener(type, (e) => e.preventDefault());
+}
+
 // In a browser on another device (tablet access) there is no preload: install
 // window.*API over a WebSocket first. The dynamic import keeps every app module
 // from evaluating before the bridge exists.

@@ -496,6 +496,13 @@
       "description": "X-Plane 向けフライトディスパッチと空港表示",
       "updateAvailable": "アップデートが利用可能 — v{{version}}",
       "upToDate": "最新版です",
+      "checkForUpdates": "アップデートを確認",
+      "checkingForUpdates": "アップデートを確認しています…",
+      "downloadingUpdate": "バックグラウンドでアップデートをダウンロード中…",
+      "updateReady": "v{{version}} をインストールする準備ができました",
+      "restartToUpdate": "今すぐ再起動",
+      "updateCheckFailed": "アップデートの確認に失敗しました",
+      "tryAgain": "再試行",
       "projectNotice": "X-Plane コミュニティ向けに作られた、無料のプロジェクトです。",
       "credits": "クレジット",
       "developer": "開発者",
@@ -600,7 +607,9 @@
       "idleOrbitDescription": "操作がないとき、選択した空港の周りをゆっくり回転します",
       "zoomLevel": "インターフェースのズーム",
       "zoomLevelDescription": "インターフェース全体を拡大・縮小します",
-      "zoomReset": "リセット"
+      "zoomReset": "リセット",
+      "flightStripScale": "フライトストリップのサイズ",
+      "flightStripScaleDescription": "離れた場所からも読めるようにライブのフライトストリップを拡大します"
     },
     "units": {
       "title": "単位",
@@ -1048,7 +1057,8 @@
     "following": "追従中",
     "followingTooltip": "クリックして機体の追従を停止",
     "reconnect": "再接続",
-    "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行"
+    "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行",
+    "detach": "フライトストリップを別ウィンドウで開く"
   },
   "weather": {
     "fetching": "天気を取得中...",
@@ -1864,6 +1874,12 @@
       "description": "X-Dispatch {{version}} をダウンロードできます",
       "download": "ダウンロード",
       "dismiss": "後で"
+    },
+    "ready": {
+      "title": "アップデートの準備完了",
+      "description": "X-Dispatch {{version}} は再起動時にインストールされます",
+      "restart": "今すぐ再起動",
+      "dismiss": "後で"
     }
   },
   "logbook": {
@@ -1966,7 +1982,6 @@
     "centerHere": "ここを中心に表示",
     "elevation": "標高 {{value}}",
     "measureFromHere": "ここから計測",
-    "deleteMeasurement": "計測を削除",
     "removePoint": "点を削除",
     "measureTotal": "合計 {{value}}",
     "clearMeasurement": "計測をクリア"

@@ -48,10 +48,7 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
   const openAddFromSuggestion = (id: string) => {
     const s = SUGGESTED_COMPANION_APPS.find((x) => x.id === id);
     if (!s) return;
-    const platform =
-      typeof process !== 'undefined' && process.platform
-        ? (process.platform as 'win32' | 'darwin' | 'linux')
-        : 'darwin';
+    const platform = window.appAPI.platform as 'win32' | 'darwin' | 'linux';
     setEdit({
       open: true,
       mode: 'add',

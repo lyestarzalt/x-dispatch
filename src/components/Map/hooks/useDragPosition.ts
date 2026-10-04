@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 const DRAG_THRESHOLD = 5;
 const EDGE_PADDING = 16;
@@ -70,6 +70,24 @@ export function useDragPosition(
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [setPosition]);
+
+  // A position saved under another window size or interface zoom can land outside
+  // the window; pull it back in so the widget is never lost off-screen.
+  useLayoutEffect(() => {
+    const el = stripRef.current;
+    if (!el || !position) return;
+    const clamp = () => {
+      const rect = el.getBoundingClientRect();
+      const maxX = Math.max(EDGE_PADDING, window.innerWidth - rect.width - EDGE_PADDING);
+      const maxY = Math.max(EDGE_PADDING, window.innerHeight - rect.height - EDGE_PADDING);
+      const x = Math.max(EDGE_PADDING, Math.min(maxX, position.x));
+      const y = Math.max(EDGE_PADDING, Math.min(maxY, position.y));
+      if (x !== position.x || y !== position.y) setPosition({ x, y });
+    };
+    clamp();
+    window.addEventListener('resize', clamp);
+    return () => window.removeEventListener('resize', clamp);
+  }, [position, setPosition]);
 
   const handleDoubleClick = useCallback(
     (e: React.MouseEvent) => {

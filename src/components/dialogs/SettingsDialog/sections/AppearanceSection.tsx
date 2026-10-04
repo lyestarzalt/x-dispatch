@@ -23,10 +23,16 @@ function ZoomSlider({
   zoomLevel,
   onCommit,
   resetLabel,
+  min = 70,
+  max = 130,
+  step = 10,
 }: {
   zoomLevel: number;
   onCommit: (level: number) => void;
   resetLabel: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }) {
   const persisted = Math.round((zoomLevel || 1) * 100);
   const [preview, setPreview] = useState<number | null>(null);
@@ -34,7 +40,7 @@ function ZoomSlider({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-muted-foreground text-xs">70%</span>
+      <span className="text-muted-foreground text-xs">{min}%</span>
       <Slider
         value={[display]}
         onValueChange={(v) => {
@@ -48,12 +54,12 @@ function ZoomSlider({
           setPreview(null);
           onCommit(val / 100);
         }}
-        min={70}
-        max={130}
-        step={10}
+        min={min}
+        max={max}
+        step={step}
         className="flex-1"
       />
-      <span className="text-muted-foreground text-xs">130%</span>
+      <span className="text-muted-foreground text-xs">{max}%</span>
       <span className="min-w-[4ch] text-center font-mono text-sm">{display}%</span>
       {persisted !== 100 && (
         <Button
@@ -72,7 +78,8 @@ function ZoomSlider({
 
 export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
-  const { appearance, setFontSize, setZoomLevel, setDebugOverlay } = useSettingsStore();
+  const { appearance, setFontSize, setZoomLevel, setFlightStripScale, setDebugOverlay } =
+    useSettingsStore();
 
   const handleLanguageChange = (langCode: string) => {
     changeLanguage(langCode);
@@ -135,6 +142,21 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           zoomLevel={appearance.zoomLevel}
           onCommit={setZoomLevel}
           resetLabel={t('settings.appearance.zoomReset')}
+        />
+      </SettingsSectionBlock>
+
+      {/* Flight strip size */}
+      <SettingsSectionBlock
+        title={t('settings.appearance.flightStripScale')}
+        description={t('settings.appearance.flightStripScaleDescription')}
+      >
+        <ZoomSlider
+          zoomLevel={appearance.flightStripScale}
+          onCommit={setFlightStripScale}
+          resetLabel={t('settings.appearance.zoomReset')}
+          min={100}
+          max={200}
+          step={10}
         />
       </SettingsSectionBlock>
 
