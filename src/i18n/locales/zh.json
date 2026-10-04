@@ -1058,7 +1058,8 @@
     "followingTooltip": "点击以停止跟随飞机",
     "reconnect": "重新连接",
     "reconnectTooltip": "强制重新连接到 X-Plane 模拟器",
-    "detach": "在独立窗口中打开飞行条"
+    "detach": "在独立窗口中打开飞行条",
+    "closeWindow": "关闭飞行条窗口"
   },
   "weather": {
     "fetching": "正在获取天气...",

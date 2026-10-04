@@ -1058,7 +1058,8 @@
     "followingTooltip": "Click to stop following aircraft",
     "reconnect": "Reconnect",
     "reconnectTooltip": "Force a reconnect to X-Plane",
-    "detach": "Open the flight strip in its own window"
+    "detach": "Open the flight strip in its own window",
+    "closeWindow": "Close the flight strip window"
   },
   "weather": {
     "fetching": "Fetching weather...",

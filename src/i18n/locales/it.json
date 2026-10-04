@@ -1058,7 +1058,8 @@
     "followingTooltip": "Fai clic per smettere di seguire l'aereo",
     "reconnect": "Riconnetti",
     "reconnectTooltip": "Forza la riconnessione al simulatore X-Plane",
-    "detach": "Apri la striscia di volo in una finestra separata"
+    "detach": "Apri la striscia di volo in una finestra separata",
+    "closeWindow": "Chiudi la finestra della striscia di volo"
   },
   "weather": {
     "fetching": "Recupero meteo...",

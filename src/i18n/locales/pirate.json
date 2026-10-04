@@ -1058,7 +1058,8 @@
     "followingTooltip": "Click ta stop following aircraft",
     "reconnect": "Reconnect line",
     "reconnectTooltip": "Force reconnect ta X-Plane simulator",
-    "detach": "Open the flight strip in its own porthole"
+    "detach": "Open the flight strip in its own porthole",
+    "closeWindow": "Shut the flight strip porthole"
   },
   "weather": {
     "fetching": "Fetchin' weather...",

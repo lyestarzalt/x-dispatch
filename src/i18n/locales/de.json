@@ -1058,7 +1058,8 @@
     "followingTooltip": "Klicken, um dem Flugzeug nicht mehr zu folgen",
     "reconnect": "Erneut verbinden",
     "reconnectTooltip": "Verbindung zum X-Plane-Simulator erzwingen",
-    "detach": "Flugstreifen in eigenem Fenster öffnen"
+    "detach": "Flugstreifen in eigenem Fenster öffnen",
+    "closeWindow": "Flugstreifen-Fenster schließen"
   },
   "weather": {
     "fetching": "Wetter wird abgerufen...",

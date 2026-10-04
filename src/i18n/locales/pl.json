@@ -1058,7 +1058,8 @@
     "followingTooltip": "Kliknij, aby przestać śledzić samolot",
     "reconnect": "Połącz ponownie",
     "reconnectTooltip": "Wymuś ponowne połączenie z symulatorem X-Plane",
-    "detach": "Otwórz pasek lotu w osobnym oknie"
+    "detach": "Otwórz pasek lotu w osobnym oknie",
+    "closeWindow": "Zamknij okno paska lotu"
   },
   "weather": {
     "fetching": "Pobieranie pogody...",

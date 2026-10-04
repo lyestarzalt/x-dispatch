@@ -147,6 +147,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'app:clearCache',
   'app:installUpdate',
   'app:openConfigFolder',
+  'app:isFlightStripWindowOpen',
   'app:openFlightStripWindow',
   'app:openLogFile',
   'app:openLogFolder',

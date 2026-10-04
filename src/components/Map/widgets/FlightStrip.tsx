@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Crosshair, PictureInPicture2, Plane } from 'lucide-react';
+import { ChevronRight, Crosshair, PictureInPicture2, Plane, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ const PRIMARY_COLOR_CLASS = 'text-primary';
 
 interface FlightStripProps {
   onCenterPlane: () => void;
-  /** Shown in its own window: fills it, cannot be dragged, no map actions. */
+  /** Shown in its own window: the window moves and sizes it, no map actions. */
   detached?: boolean;
 }
 
@@ -91,6 +91,19 @@ function isLowAGL(agl: number | undefined): boolean {
 
 const noopPosition = () => {};
 
+/** Whether the detached strip window is open; main pushes every change. */
+function useStripWindowOpen(): boolean {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    window.appAPI
+      .isFlightStripWindowOpen()
+      .then(setOpen)
+      .catch(() => {});
+    return window.appAPI.onFlightStripWindowOpen(setOpen);
+  }, []);
+  return open;
+}
+
 /** The detached window shows the strip in place and must never rewrite the saved map position. */
 function useStripDrag(detached: boolean) {
   const position = useMapStore((s) => s.flightStripPosition);
@@ -105,10 +118,13 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
+  const stripWindowOpen = useStripWindowOpen();
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } =
     useStripDrag(detached);
   const units = useSettingsStore((s) => s.map.units);
-  const scale = useSettingsStore((s) => s.appearance.flightStripScale);
+  const settingsScale = useSettingsStore((s) => s.appearance.flightStripScale);
+  // The detached window scales the strip to its own size instead.
+  const scale = detached ? 1 : settingsScale;
   const { speedF, altitudeF, verticalSpeedF } = useUnits();
   const speed = (kts: number | undefined) => (kts === undefined ? undefined : speedF(kts as Knots));
   const altitude = (ft: number | undefined) =>
@@ -274,9 +290,15 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
                     size="sm"
                     className="text-muted-foreground h-8 rounded-lg px-2"
                     onClick={() => void window.appAPI.openFlightStripWindow()}
-                    tooltip={t('flightStrip.detach')}
+                    tooltip={
+                      stripWindowOpen ? t('flightStrip.closeWindow') : t('flightStrip.detach')
+                    }
                   >
-                    <PictureInPicture2 className="h-3.5 w-3.5" />
+                    {stripWindowOpen ? (
+                      <X className="h-3.5 w-3.5" />
+                    ) : (
+                      <PictureInPicture2 className="h-3.5 w-3.5" />
+                    )}
                   </Button>
                 </DesktopOnly>
               </div>

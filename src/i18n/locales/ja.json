@@ -1058,7 +1058,8 @@
     "followingTooltip": "クリックして機体の追従を停止",
     "reconnect": "再接続",
     "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行",
-    "detach": "フライトストリップを別ウィンドウで開く"
+    "detach": "フライトストリップを別ウィンドウで開く",
+    "closeWindow": "フライトストリップのウィンドウを閉じる"
   },
   "weather": {
     "fetching": "天気を取得中...",

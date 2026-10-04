@@ -367,10 +367,14 @@ async function proxyDownload(
 
 let flightStripWindow: BrowserWindow | null = null;
 
-/** A small always-on-top window with only the flight strip, kept above the simulator. */
-function openFlightStripWindow(): void {
-  if (flightStripWindow && !flightStripWindow.isDestroyed()) {
-    flightStripWindow.focus();
+/**
+ * A small frameless window with only the flight strip, kept above the simulator.
+ * Not owned by the main window, so minimizing X-Dispatch leaves it on screen.
+ */
+function toggleFlightStripWindow(): void {
+  // The same button closes it again.
+  if (isFlightStripWindowOpen()) {
+    flightStripWindow!.close();
     return;
   }
   const iconPath = app.isPackaged
@@ -387,9 +391,9 @@ function openFlightStripWindow(): void {
     y: windowState.y,
     width: windowState.width,
     height: windowState.height,
-    minWidth: 520,
-    minHeight: 90,
-    parent: mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined,
+    minWidth: 260,
+    minHeight: 40,
+    frame: false,
     alwaysOnTop: true,
     autoHideMenuBar: true,
     show: false,
@@ -406,6 +410,16 @@ function openFlightStripWindow(): void {
     },
   });
   windowState.manage(win);
+  // The default level sits below a fullscreen simulator.
+  const keepOnTop = () => {
+    if (win.isDestroyed()) return;
+    win.setAlwaysOnTop(true, 'screen-saver');
+    win.moveTop();
+  };
+  keepOnTop();
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // Another topmost window (the sim going fullscreen) can push it down; take the top back.
+  win.on('blur', keepOnTop);
   win.once('ready-to-show', () => win.show());
   win.on('page-title-updated', (e) => e.preventDefault());
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -421,8 +435,14 @@ function openFlightStripWindow(): void {
   }
   win.on('closed', () => {
     flightStripWindow = null;
+    broadcast('app:flightStripWindowOpen', false);
   });
   flightStripWindow = win;
+  broadcast('app:flightStripWindowOpen', true);
+}
+
+function isFlightStripWindowOpen(): boolean {
+  return !!flightStripWindow && !flightStripWindow.isDestroyed();
 }
 
 function createWindow(): BrowserWindow {
@@ -670,7 +690,8 @@ function registerIpcHandlers() {
     autoUpdater.quitAndInstall();
     return true;
   });
-  handle('app:openFlightStripWindow', () => openFlightStripWindow());
+  handle('app:openFlightStripWindow', () => toggleFlightStripWindow());
+  handle('app:isFlightStripWindowOpen', () => isFlightStripWindowOpen());
   handle('app:getCliFlags', () => getCliFlags());
   handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();

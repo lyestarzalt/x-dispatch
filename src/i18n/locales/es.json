@@ -1058,7 +1058,8 @@
     "followingTooltip": "Haz clic para dejar de seguir la aeronave",
     "reconnect": "Reconectar",
     "reconnectTooltip": "Forzar reconexión con el simulador X-Plane",
-    "detach": "Abrir la tira de vuelo en su propia ventana"
+    "detach": "Abrir la tira de vuelo en su propia ventana",
+    "closeWindow": "Cerrar la ventana de la tira de vuelo"
   },
   "weather": {
     "fetching": "Obteniendo meteorología...",
