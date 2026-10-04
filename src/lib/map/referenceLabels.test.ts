@@ -78,16 +78,16 @@ describe('buildReferenceLayers', () => {
     expect((label as maplibregl.SymbolLayerSpecification).layout?.['text-field']).toEqual([
       'coalesce',
       ['get', 'name:fr'],
-      ['get', 'name_en'],
       ['get', 'name:latin'],
+      ['get', 'name_en'],
       ['get', 'name'],
     ]);
     const [, english] = buildReferenceLayers(style, 'en');
     expect((english as maplibregl.SymbolLayerSpecification).layout?.['text-field']).toEqual([
       'coalesce',
       ['get', 'name:en'],
-      ['get', 'name_en'],
       ['get', 'name:latin'],
+      ['get', 'name_en'],
       ['get', 'name'],
     ]);
   });

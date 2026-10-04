@@ -5,8 +5,8 @@ import { localizeBasemapLabels, localizeTextField, tileLanguageFor } from './bas
 const german = [
   'coalesce',
   ['get', 'name:de'],
-  ['get', 'name_en'],
   ['get', 'name:latin'],
+  ['get', 'name_en'],
   ['get', 'name'],
 ];
 
@@ -69,8 +69,8 @@ describe('localizeTextField', () => {
     expect(localizeTextField(once, 'ja')).toEqual([
       'coalesce',
       ['get', 'name:ja'],
-      ['get', 'name_en'],
       ['get', 'name:latin'],
+      ['get', 'name_en'],
       ['get', 'name'],
     ]);
   });
@@ -105,8 +105,8 @@ describe('localizeBasemapLabels', () => {
     expect(setLayoutProperty).toHaveBeenCalledWith('country', 'text-field', [
       'coalesce',
       ['get', 'name:en'],
-      ['get', 'name_en'],
       ['get', 'name:latin'],
+      ['get', 'name_en'],
       ['get', 'name'],
     ]);
 

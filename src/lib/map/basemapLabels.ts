@@ -22,12 +22,13 @@ export function tileLanguageFor(appLanguage: string): string | null {
   return TILE_LANGUAGES.has(lang) ? lang : null;
 }
 
+/** The language first, then the local name in Latin script, then the provider English. */
 function localizedName(lang: string): Expr[] {
   return [
     'coalesce',
     ['get', `name:${lang}`],
-    ['get', 'name_en'],
     ['get', 'name:latin'],
+    ['get', 'name_en'],
     ['get', 'name'],
   ];
 }
