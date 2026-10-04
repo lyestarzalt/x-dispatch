@@ -3,10 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { ChevronRight, Crosshair, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
+import { useUnits } from '@/hooks/useUnits';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
+import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import type { FeetPerMinute, Knots } from '@/lib/utils/units';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { useDragPosition } from '../hooks/useDragPosition';
 
 const PRIMARY_COLOR_CLASS = 'text-primary';
@@ -33,11 +37,13 @@ function formatNavFrequency(freq: number | undefined): string {
   return (freq / 100).toFixed(2);
 }
 
-function formatVS(vs: number | undefined): string {
+/** fpm reads in steps of 100, m/s with one decimal; both carry an explicit sign. */
+function formatVS(vs: number | undefined, metric: boolean): string {
   if (vs === undefined || isNaN(vs)) return '---';
-  const rounded = Math.round(vs / 100) * 100;
+  const rounded = metric ? Math.round(vs * 10) / 10 : Math.round(vs / 100) * 100;
   if (rounded === 0) return '0';
-  return rounded > 0 ? `+${formatValue(rounded)}` : formatValue(rounded);
+  const text = metric ? rounded.toFixed(1) : formatValue(rounded);
+  return rounded > 0 ? `+${text}` : text;
 }
 
 function formatMach(mach: number | undefined): string {
@@ -94,6 +100,15 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } = useStripDrag();
+  const units = useSettingsStore((s) => s.map.units);
+  const { speedF, altitudeF, verticalSpeedF } = useUnits();
+  const speed = (kts: number | undefined) => (kts === undefined ? undefined : speedF(kts as Knots));
+  const altitude = (ft: number | undefined) =>
+    ft === undefined ? undefined : altitudeF(ft as Feet);
+  const verticalSpeed = (fpm: number | undefined) =>
+    fpm === undefined ? undefined : verticalSpeedF(fpm as FeetPerMinute);
+  const metricVS = units.verticalSpeed === 'ms';
+  const formatVerticalSpeed = (vs: number | undefined) => formatVS(vs, metricVS);
 
   const handleCenter = () => {
     if (hasDragged.current) return;
@@ -167,27 +182,28 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
             <div className="flex items-center gap-4 px-4 py-1.5">
               <DataColumn
                 label={t('flightStrip.ias')}
-                target={formatTarget(
-                  planeState?.apAirspeedIsMach ? formatMach : formatValue,
-                  planeState?.apAirspeed
-                )}
-                value={formatValue(planeState?.indicatedAirspeed)}
-                unit={t('units.kt')}
+                target={
+                  planeState?.apAirspeedIsMach
+                    ? formatTarget(formatMach, planeState.apAirspeed)
+                    : formatTarget(formatValue, speed(planeState?.apAirspeed))
+                }
+                value={formatValue(speed(planeState?.indicatedAirspeed))}
+                unit={t(`units.${units.speed}`)}
                 valueColor={PRIMARY_COLOR_CLASS}
-                secondary={`${t('flightStrip.gs')} ${formatValue(planeState?.groundspeed)} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
+                secondary={`${t('flightStrip.gs')} ${formatValue(speed(planeState?.groundspeed))} · ${t('flightStrip.mach')} ${formatMach(planeState?.mach)}`}
               />
 
               <GroupSeparator />
 
               <DataColumn
                 label={t('flightStrip.alt')}
-                target={formatTarget(formatValue, planeState?.apAltitude)}
-                value={formatValue(planeState?.altitudeMSL)}
-                unit={t('units.ft')}
+                target={formatTarget(formatValue, altitude(planeState?.apAltitude))}
+                value={formatValue(altitude(planeState?.altitudeMSL))}
+                unit={t(`units.${units.altitude}`)}
                 valueColor={PRIMARY_COLOR_CLASS}
                 secondary={
                   <span className={cn(isLowAGL(planeState?.altitudeAGL) && 'text-warning')}>
-                    {t('flightStrip.agl')} {formatValue(planeState?.altitudeAGL)}
+                    {t('flightStrip.agl')} {formatValue(altitude(planeState?.altitudeAGL))}
                   </span>
                 }
               />
@@ -196,9 +212,12 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
               <DataColumn
                 label={t('flightStrip.vs')}
-                target={formatTarget(formatVS, planeState?.apVerticalSpeed)}
-                value={formatVS(planeState?.verticalSpeed)}
-                unit={t('units.fpm')}
+                target={formatTarget(
+                  formatVerticalSpeed,
+                  verticalSpeed(planeState?.apVerticalSpeed)
+                )}
+                value={formatVerticalSpeed(verticalSpeed(planeState?.verticalSpeed))}
+                unit={t(`units.${units.verticalSpeed}`)}
                 valueColor={getVSColor(planeState?.verticalSpeed)}
               />
 
@@ -217,8 +236,8 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
               <DataColumn
                 label={t('flightStrip.wind')}
-                value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
-                unit={t('units.kt')}
+                value={formatWind(planeState?.windDirection, speed(planeState?.windSpeed))}
+                unit={t(`units.${units.speed}`)}
                 secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
               />
             </div>

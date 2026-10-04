@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Windows: a failed update check at startup is retried after ten minutes instead of waiting four hours.
 - SIDs and STARs appear as soon as you select them while X-Plane is connected. They used to stay hidden until something else changed the map, such as zooming out.
 - The ruler measurement no longer comes back after a restart, and the right-click menu offers **Clear measurement** wherever you click once one exists.
+- The flight strip follows your speed, altitude and vertical speed units instead of always showing knots, feet and feet per minute.
 
 ## [2.2.1] - 2026-10-02
 
