@@ -7,14 +7,19 @@ import type * as maplibregl from 'maplibre-gl';
  * so the English references are swapped for the user's language with fallbacks.
  */
 
-/** App locales whose tiles have no own column fall back to the untouched style. */
-const TILE_LANGUAGES = new Set(['de', 'es', 'fr', 'it', 'pt', 'ru', 'pl', 'ja', 'zh']);
+/**
+ * Tile name columns for the app locales. English is rewritten too, so switching
+ * back to it restores the labels instead of leaving the previous language in place.
+ */
+const TILE_LANGUAGES = new Set(['en', 'de', 'es', 'fr', 'it', 'pt', 'ru', 'pl', 'ja', 'zh']);
+const LOCALE_ALIASES: Record<string, string> = { pirate: 'en' };
 
 type Expr = unknown;
 
 export function tileLanguageFor(appLanguage: string): string | null {
   const base = appLanguage.toLowerCase().split('-')[0] ?? '';
-  return TILE_LANGUAGES.has(base) ? base : null;
+  const lang = LOCALE_ALIASES[base] ?? base;
+  return TILE_LANGUAGES.has(lang) ? lang : null;
 }
 
 function localizedName(lang: string): Expr[] {

@@ -11,11 +11,12 @@ const german = [
 ];
 
 describe('tileLanguageFor', () => {
-  it('maps app locales to tile columns and leaves English and pirate alone', () => {
+  it('maps app locales to tile columns, English included, and pirate to English', () => {
     expect(tileLanguageFor('de')).toBe('de');
     expect(tileLanguageFor('pt-BR')).toBe('pt');
-    expect(tileLanguageFor('en')).toBeNull();
-    expect(tileLanguageFor('pirate')).toBeNull();
+    expect(tileLanguageFor('en')).toBe('en');
+    expect(tileLanguageFor('pirate')).toBe('en');
+    expect(tileLanguageFor('xx')).toBeNull();
   });
 });
 
@@ -101,6 +102,16 @@ describe('localizeBasemapLabels', () => {
 
     setLayoutProperty.mockClear();
     localizeBasemapLabels(map, 'en');
+    expect(setLayoutProperty).toHaveBeenCalledWith('country', 'text-field', [
+      'coalesce',
+      ['get', 'name:en'],
+      ['get', 'name_en'],
+      ['get', 'name:latin'],
+      ['get', 'name'],
+    ]);
+
+    setLayoutProperty.mockClear();
+    localizeBasemapLabels(map, 'xx');
     expect(setLayoutProperty).not.toHaveBeenCalled();
   });
 });

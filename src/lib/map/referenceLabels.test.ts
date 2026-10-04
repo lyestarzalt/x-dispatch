@@ -73,7 +73,7 @@ describe('buildReferenceLayers', () => {
     expect((border as maplibregl.LineLayerSpecification).paint?.['line-color']).toMatch(/rgba/);
   });
 
-  it('localizes the labels for a supported language and leaves English alone', () => {
+  it('localizes the labels for a supported language and for English itself', () => {
     const [, label] = buildReferenceLayers(style, 'fr');
     expect((label as maplibregl.SymbolLayerSpecification).layout?.['text-field']).toEqual([
       'coalesce',
@@ -83,9 +83,13 @@ describe('buildReferenceLayers', () => {
       ['get', 'name'],
     ]);
     const [, english] = buildReferenceLayers(style, 'en');
-    expect((english as maplibregl.SymbolLayerSpecification).layout?.['text-field']).toBe(
-      '{name_en}'
-    );
+    expect((english as maplibregl.SymbolLayerSpecification).layout?.['text-field']).toEqual([
+      'coalesce',
+      ['get', 'name:en'],
+      ['get', 'name_en'],
+      ['get', 'name:latin'],
+      ['get', 'name'],
+    ]);
   });
 
   it('keeps town labels but drops their icon properties', () => {
