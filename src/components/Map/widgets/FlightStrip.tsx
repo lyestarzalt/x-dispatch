@@ -89,10 +89,13 @@ function isLowAGL(agl: number | undefined): boolean {
   return agl !== undefined && !isNaN(agl) && agl < 500;
 }
 
-function useStripDrag() {
+const noopPosition = () => {};
+
+/** The detached window shows the strip in place and must never rewrite the saved map position. */
+function useStripDrag(detached: boolean) {
   const position = useMapStore((s) => s.flightStripPosition);
   const setPosition = useMapStore((s) => s.setFlightStripPosition);
-  return useDragPosition(position, setPosition);
+  return useDragPosition(detached ? null : position, detached ? noopPosition : setPosition);
 }
 
 // --- Main component ---
@@ -102,7 +105,8 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
-  const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } = useStripDrag();
+  const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } =
+    useStripDrag(detached);
   const units = useSettingsStore((s) => s.map.units);
   const scale = useSettingsStore((s) => s.appearance.flightStripScale);
   const { speedF, altitudeF, verticalSpeedF } = useUnits();
@@ -134,7 +138,6 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
           style={{
             // Centering stays a plain style transform so dragging never animates it.
             x: isDefault && !detached ? '-50%' : 0,
-            zoom: scale,
             ...(!isDefault ? { left: position.x, top: position.y } : undefined),
           }}
           initial={{ opacity: 0, y: 16 }}
@@ -151,6 +154,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
               'backdrop-blur-xl',
               !detached && 'cursor-grab active:cursor-grabbing'
             )}
+            style={{ zoom: scale }}
           >
             {/* Status indicator */}
             <div className="flex items-center gap-1.5 px-3 py-2">
