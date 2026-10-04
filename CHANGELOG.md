@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Your aircraft, VATSIM and IVAO pilots and X-Plane traffic stay above airport layouts such as gates and taxiways.
 - Windows: a failed update check at startup is retried after ten minutes instead of waiting four hours.
-- SIDs and STARs draw on the map again while X-Plane is connected; selecting one after a flight used to show nothing.
+- SIDs and STARs appear as soon as you select them while X-Plane is connected. They used to stay hidden until something else changed the map, such as zooming out.
 - The ruler measurement no longer comes back after a restart, and the right-click menu offers **Clear measurement** wherever you click once one exists.
 
 ## [2.2.1] - 2026-10-02
