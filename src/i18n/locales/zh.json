@@ -607,7 +607,9 @@
       "idleOrbitDescription": "闲置时缓慢环绕选定机场旋转",
       "zoomLevel": "界面缩放",
       "zoomLevelDescription": "放大或缩小整个界面",
-      "zoomReset": "重置"
+      "zoomReset": "重置",
+      "flightStripScale": "飞行条大小",
+      "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读"
     },
     "units": {
       "title": "单位",
@@ -1055,7 +1057,8 @@
     "following": "跟随",
     "followingTooltip": "点击以停止跟随飞机",
     "reconnect": "重新连接",
-    "reconnectTooltip": "强制重新连接到 X-Plane 模拟器"
+    "reconnectTooltip": "强制重新连接到 X-Plane 模拟器",
+    "detach": "在独立窗口中打开飞行条"
   },
   "weather": {
     "fetching": "正在获取天气...",

@@ -607,7 +607,9 @@
       "idleOrbitDescription": "Rotar lentamente alrededor del aeropuerto seleccionado tras inactividad",
       "zoomLevel": "Zoom de interfaz",
       "zoomLevelDescription": "Ampliar o reducir toda la interfaz",
-      "zoomReset": "Restablecer"
+      "zoomReset": "Restablecer",
+      "flightStripScale": "Tamaño de la tira de vuelo",
+      "flightStripScaleDescription": "Escala la tira de vuelo en vivo para leerla desde más lejos"
     },
     "units": {
       "title": "Unidades",
@@ -1055,7 +1057,8 @@
     "following": "Siguiendo",
     "followingTooltip": "Haz clic para dejar de seguir la aeronave",
     "reconnect": "Reconectar",
-    "reconnectTooltip": "Forzar reconexión con el simulador X-Plane"
+    "reconnectTooltip": "Forzar reconexión con el simulador X-Plane",
+    "detach": "Abrir la tira de vuelo en su propia ventana"
   },
   "weather": {
     "fetching": "Obteniendo meteorología...",

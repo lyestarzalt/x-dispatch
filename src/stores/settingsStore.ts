@@ -99,6 +99,8 @@ export interface AppearanceSettings {
   debugOverlay: boolean;
   /** Toolbar clock readout: Zulu (UTC) or the machine's local time. */
   clockMode: ClockMode;
+  /** Size of the live aircraft strip, 1 to 2 times its base size. */
+  flightStripScale: number;
 }
 
 export type SurfaceDetail = 'low' | 'medium' | 'high';
@@ -178,6 +180,7 @@ interface SettingsState {
   setZoomLevel: (level: number) => void;
   setDebugOverlay: (enabled: boolean) => void;
   setClockMode: (mode: ClockMode) => void;
+  setFlightStripScale: (scale: number) => void;
   resetToDefaults: () => void;
 }
 
@@ -208,6 +211,7 @@ const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   zoomLevel: 1.0,
   debugOverlay: false,
   clockMode: 'zulu',
+  flightStripScale: 1,
 };
 
 function applyZoomLevel(level: number) {
@@ -401,6 +405,12 @@ export const useSettingsStore = create<SettingsState>()(
       setClockMode: (mode: ClockMode) =>
         set((state) => ({ appearance: { ...state.appearance, clockMode: mode } })),
 
+      setFlightStripScale: (scale: number) => {
+        const safe = Number.isFinite(scale) ? scale : 1;
+        const clamped = Math.round(Math.max(1, Math.min(2, safe)) * 100) / 100;
+        set((state) => ({ appearance: { ...state.appearance, flightStripScale: clamped } }));
+      },
+
       resetToDefaults: () => {
         applyFontSize(DEFAULT_APPEARANCE_SETTINGS.fontSize);
         applyZoomLevel(DEFAULT_APPEARANCE_SETTINGS.zoomLevel);
@@ -418,7 +428,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 30,
+      version: 31,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -602,6 +612,13 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     state = {
       ...state,
       map: { ...state.map!, units: { ...state.map!.units, course: 'magnetic' } },
+    };
+  }
+
+  if (version < 31) {
+    state = {
+      ...state,
+      appearance: { ...state.appearance!, flightStripScale: 1 },
     };
   }
 

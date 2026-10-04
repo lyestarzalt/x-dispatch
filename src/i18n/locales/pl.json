@@ -607,7 +607,9 @@
       "idleOrbitDescription": "Powolny obrót wokół wybranego lotniska po bezczynności",
       "zoomLevel": "Powiększenie interfejsu",
       "zoomLevelDescription": "Powiększ lub zmniejsz cały interfejs",
-      "zoomReset": "Resetuj"
+      "zoomReset": "Resetuj",
+      "flightStripScale": "Rozmiar paska lotu",
+      "flightStripScaleDescription": "Skaluje pasek lotu na żywo, aby był czytelny z większej odległości"
     },
     "units": {
       "title": "Jednostki",
@@ -1055,7 +1057,8 @@
     "following": "Śledzenie",
     "followingTooltip": "Kliknij, aby przestać śledzić samolot",
     "reconnect": "Połącz ponownie",
-    "reconnectTooltip": "Wymuś ponowne połączenie z symulatorem X-Plane"
+    "reconnectTooltip": "Wymuś ponowne połączenie z symulatorem X-Plane",
+    "detach": "Otwórz pasek lotu w osobnym oknie"
   },
   "weather": {
     "fetching": "Pobieranie pogody...",

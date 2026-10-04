@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Crosshair, Plane } from 'lucide-react';
+import { ChevronRight, Crosshair, PictureInPicture2, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import { useUnits } from '@/hooks/useUnits';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
@@ -17,6 +18,8 @@ const PRIMARY_COLOR_CLASS = 'text-primary';
 
 interface FlightStripProps {
   onCenterPlane: () => void;
+  /** Shown in its own window: fills it, cannot be dragged, no map actions. */
+  detached?: boolean;
 }
 
 // --- Formatting helpers ---
@@ -94,13 +97,14 @@ function useStripDrag() {
 
 // --- Main component ---
 
-export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
+export default function FlightStrip({ onCenterPlane, detached = false }: FlightStripProps) {
   const planeState = usePlaneStore((s) => s.state);
   const connected = usePlaneStore((s) => s.connected);
   const { t } = useTranslation();
   const followPlane = useMapStore((s) => s.followPlane);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } = useStripDrag();
   const units = useSettingsStore((s) => s.map.units);
+  const scale = useSettingsStore((s) => s.appearance.flightStripScale);
   const { speedF, altitudeF, verticalSpeedF } = useUnits();
   const speed = (kts: number | undefined) => (kts === undefined ? undefined : speedF(kts as Knots));
   const altitude = (ft: number | undefined) =>
@@ -115,36 +119,37 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
     onCenterPlane();
   };
 
-  const isDefault = position === null;
+  const isDefault = detached || position === null;
 
   return (
     <AnimatePresence>
-      {connected && (
+      {(connected || detached) && (
         <motion.div
           ref={stripRef}
           className={cn(
             'z-20 select-none',
-            isDefault && 'absolute bottom-4 left-1/2',
+            isDefault && !detached && 'absolute bottom-4 left-1/2',
             !isDefault && 'fixed'
           )}
           style={{
             // Centering stays a plain style transform so dragging never animates it.
-            x: isDefault ? '-50%' : 0,
+            x: isDefault && !detached ? '-50%' : 0,
+            zoom: scale,
             ...(!isDefault ? { left: position.x, top: position.y } : undefined),
           }}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8, transition: exitEase }}
           transition={panelSpring}
-          onMouseDown={handleMouseDown}
-          onDoubleClick={handleDoubleClick}
+          onMouseDown={detached ? undefined : handleMouseDown}
+          onDoubleClick={detached ? undefined : handleDoubleClick}
         >
           <div
             className={cn(
               'flex items-center rounded-xl border',
               'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
               'backdrop-blur-xl',
-              'cursor-grab active:cursor-grabbing'
+              !detached && 'cursor-grab active:cursor-grabbing'
             )}
           >
             {/* Status indicator */}
@@ -244,21 +249,34 @@ export default function FlightStrip({ onCenterPlane }: FlightStripProps) {
 
             <GroupSeparator />
 
-            {/* Center / Follow button */}
-            <div className="px-1.5 py-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCenter}
-                className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
-                tooltip={
-                  followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
-                }
-              >
-                <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
-                {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
-              </Button>
-            </div>
+            {/* Center / Follow and pop-out buttons; the detached window has neither */}
+            {!detached && (
+              <div className="flex items-center gap-0.5 px-1.5 py-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCenter}
+                  className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
+                  tooltip={
+                    followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
+                  }
+                >
+                  <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                  {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
+                </Button>
+                <DesktopOnly>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground h-8 rounded-lg px-2"
+                    onClick={() => void window.appAPI.openFlightStripWindow()}
+                    tooltip={t('flightStrip.detach')}
+                  >
+                    <PictureInPicture2 className="h-3.5 w-3.5" />
+                  </Button>
+                </DesktopOnly>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

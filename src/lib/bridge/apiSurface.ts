@@ -95,6 +95,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getUpdateStatus: () => t.invoke('app:getUpdateStatus'),
       checkForUpdates: () => t.invoke('app:checkForUpdates'),
       installUpdate: () => t.invoke('app:installUpdate'),
+      openFlightStripWindow: () => t.invoke('app:openFlightStripWindow'),
       onUpdateStatus: (callback: (status: UpdateStatus) => void) =>
         t.on('app:updateStatus', callback),
       getCliFlags: () => t.invoke('app:getCliFlags'),

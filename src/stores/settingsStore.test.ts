@@ -263,6 +263,7 @@ describe('migrateSettings', () => {
       zoomLevel: 1.1,
       debugOverlay: true,
       clockMode: 'zulu',
+      flightStripScale: 1,
     });
     expect(result.graphics.followSimTime).toBe(false);
   });

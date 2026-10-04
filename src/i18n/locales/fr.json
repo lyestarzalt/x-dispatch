@@ -607,7 +607,9 @@
       "idleOrbitDescription": "Rotation lente autour de l'aéroport sélectionné après inactivité",
       "zoomLevel": "Zoom de l'interface",
       "zoomLevelDescription": "Agrandir ou réduire l'ensemble de l'interface",
-      "zoomReset": "Réinitialiser"
+      "zoomReset": "Réinitialiser",
+      "flightStripScale": "Taille du bandeau de vol",
+      "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin"
     },
     "units": {
       "title": "Unités",
@@ -1055,7 +1057,8 @@
     "following": "Suivi",
     "followingTooltip": "Cliquez pour arrêter de suivre l'avion",
     "reconnect": "Reconnecter",
-    "reconnectTooltip": "Forcer la reconnexion au simulateur X-Plane"
+    "reconnectTooltip": "Forcer la reconnexion au simulateur X-Plane",
+    "detach": "Ouvrir le bandeau de vol dans sa propre fenêtre"
   },
   "weather": {
     "fetching": "Récupération de la météo...",

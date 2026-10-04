@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { FlightStripWindow } from './components/FlightStripWindow';
 import Map from './components/Map';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
@@ -144,6 +145,10 @@ function AppContent() {
   );
 }
 
+/** The detached flight strip is the same renderer opened with ?view=flight-strip. */
+const isFlightStripView =
+  new URLSearchParams(window.location.search).get('view') === 'flight-strip';
+
 function App() {
   return (
     <ErrorBoundary>
@@ -151,10 +156,16 @@ function App() {
         <MotionConfig reducedMotion="user">
           {/* Native tooltip cadence: a beat before the first one, instant between neighbors */}
           <TooltipProvider delayDuration={500} skipDelayDuration={300}>
-            <AppContent />
-            <UpdateAvailableToast />
-            <Toaster position="bottom-center" />
-            <RemoteConnectionBanner />
+            {isFlightStripView ? (
+              <FlightStripWindow />
+            ) : (
+              <>
+                <AppContent />
+                <UpdateAvailableToast />
+                <Toaster position="bottom-center" />
+                <RemoteConnectionBanner />
+              </>
+            )}
           </TooltipProvider>
         </MotionConfig>
       </QueryProvider>

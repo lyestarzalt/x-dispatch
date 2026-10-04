@@ -366,6 +366,64 @@ async function proxyDownload(
   });
 }
 
+let flightStripWindow: BrowserWindow | null = null;
+
+/** A small always-on-top window with only the flight strip, kept above the simulator. */
+function openFlightStripWindow(): void {
+  if (flightStripWindow && !flightStripWindow.isDestroyed()) {
+    flightStripWindow.focus();
+    return;
+  }
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets', 'icon.png')
+    : path.join(__dirname, '..', '..', 'assets', 'icon.png');
+  const windowState = windowStateKeeper({
+    file: 'flight-strip-window.json',
+    defaultWidth: 1000,
+    defaultHeight: 120,
+  });
+  const win = new BrowserWindow({
+    title: `${app.getName()} flight strip`,
+    x: windowState.x,
+    y: windowState.y,
+    width: windowState.width,
+    height: windowState.height,
+    minWidth: 520,
+    minHeight: 90,
+    parent: mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined,
+    alwaysOnTop: true,
+    autoHideMenuBar: true,
+    backgroundColor: '#06090D',
+    icon: iconPath,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webviewTag: false,
+      allowRunningInsecureContent: false,
+      devTools: !app.isPackaged,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+  windowState.manage(win);
+  win.on('page-title-updated', (e) => e.preventDefault());
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://') || url.startsWith('http://')) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    win.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}?view=flight-strip`);
+  } else {
+    win.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`), {
+      query: { view: 'flight-strip' },
+    });
+  }
+  win.on('closed', () => {
+    flightStripWindow = null;
+  });
+  flightStripWindow = win;
+}
+
 function createWindow(): BrowserWindow {
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
@@ -596,6 +654,7 @@ function registerIpcHandlers() {
     autoUpdater.quitAndInstall();
     return true;
   });
+  handle('app:openFlightStripWindow', () => openFlightStripWindow());
   handle('app:getCliFlags', () => getCliFlags());
   handle('app:getProcessMemory', () => {
     const mem = process.memoryUsage();

@@ -607,7 +607,9 @@
       "idleOrbitDescription": "操作がないとき、選択した空港の周りをゆっくり回転します",
       "zoomLevel": "インターフェースのズーム",
       "zoomLevelDescription": "インターフェース全体を拡大・縮小します",
-      "zoomReset": "リセット"
+      "zoomReset": "リセット",
+      "flightStripScale": "フライトストリップのサイズ",
+      "flightStripScaleDescription": "離れた場所からも読めるようにライブのフライトストリップを拡大します"
     },
     "units": {
       "title": "単位",
@@ -1055,7 +1057,8 @@
     "following": "追従中",
     "followingTooltip": "クリックして機体の追従を停止",
     "reconnect": "再接続",
-    "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行"
+    "reconnectTooltip": "X-Plane シミュレーターへの再接続を実行",
+    "detach": "フライトストリップを別ウィンドウで開く"
   },
   "weather": {
     "fetching": "天気を取得中...",
