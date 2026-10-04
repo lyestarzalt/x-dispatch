@@ -173,7 +173,7 @@
     "lucide-react": "^1.47.0",
     "magvar": "^2.2.0",
     "maplibre-contour": "^0.1.1",
-    "maplibre-gl": "^6.11.0",
+    "maplibre-gl": "^6.12.0",
     "metar-taf-parser": "^9.1.3",
     "motion": "^13.4.4",
     "node-7z": "^3.0.0",
