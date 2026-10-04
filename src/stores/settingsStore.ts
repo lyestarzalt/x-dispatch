@@ -36,7 +36,7 @@ export const MAP_STYLE_PRESETS: ReadonlyArray<MapStyle> = [
   {
     id: 'carto-dark',
     name: 'Dark',
-    url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    url: 'https://tiles.openfreemap.org/styles/dark',
   },
   {
     id: 'ofm-liberty',
@@ -46,7 +46,7 @@ export const MAP_STYLE_PRESETS: ReadonlyArray<MapStyle> = [
   {
     id: 'carto-positron',
     name: 'Light',
-    url: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    url: 'https://tiles.openfreemap.org/styles/positron',
   },
   {
     id: 'esri-satellite',
@@ -428,7 +428,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 31,
+      version: 32,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -620,6 +620,18 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       ...state,
       appearance: { ...state.appearance!, flightStripScale: 1 },
     };
+  }
+
+  if (version < 32) {
+    // CARTO watermarks keyless tiles; its two themes move to the OpenFreeMap equivalents.
+    const replacements: Record<string, string> = {
+      'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json':
+        'https://tiles.openfreemap.org/styles/dark',
+      'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json':
+        'https://tiles.openfreemap.org/styles/positron',
+    };
+    const next = state.map?.mapStyleUrl ? replacements[state.map.mapStyleUrl] : undefined;
+    if (next) state = { ...state, map: { ...state.map!, mapStyleUrl: next } };
   }
 
   return state as SettingsState;

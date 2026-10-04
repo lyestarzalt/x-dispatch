@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { localizeBasemapLabels } from '@/lib/map/basemapLabels';
+import { hideMaritimeBoundaries } from '@/lib/map/maritimeBoundaries';
 import type { MapRef } from './useMapSetup';
 
 /**
- * Shows basemap place names in the UI language. Runs on the current style and
- * again after every style switch, which resets the layers to the provider's English.
+ * Shows basemap place names in the UI language and hides maritime borders. Runs on
+ * the current style and again after every style switch, which resets the layers.
  */
 export function useBasemapLabelLanguage(mapRef: MapRef): void {
   const { i18n } = useTranslation();
@@ -18,6 +19,7 @@ export function useBasemapLabelLanguage(mapRef: MapRef): void {
     const apply = () => {
       if (!mapRef.current) return;
       try {
+        hideMaritimeBoundaries(map);
         localizeBasemapLabels(map, i18n.language);
       } catch (err) {
         window.appAPI?.log?.warn?.('Basemap label language not applied', err);

@@ -53,10 +53,8 @@ describe('migrateSettings', () => {
     };
     const result = migrateSettings(v18Blob, 18);
     expect(result.map.userMapStyles).toEqual([]);
-    // Existing fields preserved
-    expect(result.map.mapStyleUrl).toBe(
-      'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-    );
+    // CARTO Dark Matter moves to its OpenFreeMap equivalent at v32
+    expect(result.map.mapStyleUrl).toBe('https://tiles.openfreemap.org/styles/dark');
     expect(result.appearance.fontSize).toBe('medium');
   });
 
@@ -79,9 +77,8 @@ describe('migrateSettings', () => {
       support: { promptDismissed: false },
     };
     const result = migrateSettings(v18Blob, 18);
-    expect(result.map.mapStyleUrl).toBe(
-      'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
-    );
+    // Rolled to CARTO Positron at v19, then to OpenFreeMap Positron at v32
+    expect(result.map.mapStyleUrl).toBe('https://tiles.openfreemap.org/styles/positron');
     expect(result.map.userMapStyles).toEqual([]);
   });
 
@@ -474,15 +471,14 @@ describe('userMapStyles actions', () => {
 
     removeUserMapStyle('u1');
     expect(useSettingsStore.getState().map.userMapStyles).toHaveLength(0);
-    // Default preset is the dark CARTO style (carto-dark).
     expect(useSettingsStore.getState().map.mapStyleUrl).toBe(
-      'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+      'https://tiles.openfreemap.org/styles/dark'
     );
   });
 
   it('removeUserMapStyle leaves the active selection alone when removing a non-active style', () => {
     const url = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-    const presetUrl = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+    const presetUrl = 'https://tiles.openfreemap.org/styles/positron';
     const { addUserMapStyle, updateMapSettings, removeUserMapStyle } = useSettingsStore.getState();
     addUserMapStyle({ id: 'u1', name: 'A', url });
     updateMapSettings({ mapStyleUrl: presetUrl });

@@ -43,23 +43,23 @@ const style: ReferenceStyle = {
       paint: { 'text-color': '#ccc', 'icon-color': '#fff' },
     },
     {
-      id: 'poi_stadium',
+      id: 'highway_name_other',
       type: 'symbol',
       source: 'carto',
-      'source-layer': 'poi',
+      'source-layer': 'transportation_name',
       layout: { 'text-field': '{name}' },
     },
   ] as maplibregl.LayerSpecification[],
 };
 
 describe('buildReferenceLayers', () => {
-  it('keeps borders, places and points of interest, drops fills and dot-only layers', () => {
+  it('keeps borders, places and road names, drops fills and dot-only layers', () => {
     const ids = buildReferenceLayers(style, 'en').map((l) => l.id);
     expect(ids).toEqual([
       'ref-boundary_country_inner',
       'ref-place_country_1',
       'ref-place_town',
-      'ref-poi_stadium',
+      'ref-highway_name_other',
     ]);
     expect(ids.every(isReferenceLayerId)).toBe(true);
   });
