@@ -38,6 +38,7 @@ import {
   registerTileCacheScheme,
 } from './lib/tileCache';
 import { fetchCachedTile } from './lib/tileCache/fetchTile';
+import { createUpdateStatusStore, parseLatestStableVersion } from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -48,7 +49,6 @@ import {
   isValidSearchQuery,
   validateCoordinates,
 } from './lib/utils/validation';
-import { isNewerVersion } from './lib/utils/versionCompare';
 import {
   clearVatsimSectorData,
   getVatsimSectorData,
@@ -77,9 +77,11 @@ import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
-// Handle Squirrel.Windows install/update/uninstall events (creates shortcuts)
+// Squirrel.Windows runs the app for install, update and uninstall hooks (shortcut
+// handling); those runs quit without booting so they never race the real instance.
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- must run synchronously before any other code
-if (require('electron-squirrel-startup')) app.quit();
+const squirrelHookRun: boolean = require('electron-squirrel-startup');
+if (squirrelHookRun) app.quit();
 
 // CLI parsing — must run before Electron init so --help/--version can exit
 // before any window opens. Unknown flags are logged but don't block boot.
@@ -481,44 +483,87 @@ function createWindow(): BrowserWindow {
   return window;
 }
 
-// `latestVersion` is populated whenever the update manifest fetch + parse succeeds, so the
-// About section can display it even when there's no update.
-// `available` means "should trigger the update toast" — gated on isPackaged + non-Windows.
-type UpdateCheckResult = {
-  latestVersion: string | null;
-  available: boolean;
-  url: string;
-};
-
 const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
-const DOWNLOAD_PAGE_URL = 'https://x-dispatch.app/download/';
+const UPDATE_RETRY_MS = 10 * 60_000;
+const UPDATE_FIRST_CHECK_DELAY_MS = 5_000;
 
-async function fetchLatestStableTag(): Promise<string | null> {
+// Windows installs itself through Squirrel; macOS and Linux only get a notice.
+const updateStatus = createUpdateStatusStore({
+  managed: app.isPackaged && process.platform === 'win32',
+});
+updateStatus.subscribe((status) => broadcast('app:updateStatus', status));
+
+async function refreshLatestVersion(): Promise<void> {
   const result = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
-  if (!result.data || result.error) return null;
-  try {
-    const payload = JSON.parse(result.data) as { tag?: string; channel?: string };
-    return payload.tag && payload.channel === 'stable' ? payload.tag : null;
-  } catch (err) {
-    logger.main.warn(`Update check: latest.json parse failed: ${(err as Error).message}`);
-    return null;
+  if (!result.data || result.error) return;
+  const latestVersion = parseLatestStableVersion(result.data);
+  if (!latestVersion) {
+    logger.main.warn('Update check: latest.json is not a stable release manifest');
+    return;
   }
+  updateStatus.patch({ latestVersion });
 }
 
-async function checkForUpdateAvailable(): Promise<UpdateCheckResult> {
-  const tag = await fetchLatestStableTag();
-  if (!tag) {
-    return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
+let updateRetryTimer: NodeJS.Timeout | null = null;
+let autoUpdaterReady = false;
+
+function startManagedUpdateCheck(): void {
+  const { install } = updateStatus.get();
+  if (!autoUpdaterReady) return;
+  if (install === 'checking' || install === 'downloading' || install === 'ready') return;
+  if (updateRetryTimer) {
+    clearTimeout(updateRetryTimer);
+    updateRetryTimer = null;
   }
-  const latest = tag.replace(/^v/, '');
-  const shouldNotify =
-    isNewerVersion(app.getVersion(), latest) && app.isPackaged && process.platform !== 'win32';
-  return {
-    latestVersion: latest,
-    available: shouldNotify,
-    url: DOWNLOAD_PAGE_URL,
-  };
+  autoUpdater.checkForUpdates();
+}
+
+function initAutoUpdater(): void {
+  try {
+    updateElectronApp({
+      updateSource: {
+        type: UpdateSourceType.StaticStorage,
+        baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
+      },
+      // Also checks once right away; frequent polling only adds load on the download host.
+      updateInterval: '4 hours',
+      // The renderer offers the restart itself from the update status.
+      notifyUser: false,
+      logger: {
+        log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
+        info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
+        warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
+        error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
+      },
+    });
+    autoUpdater.on('checking-for-update', () => {
+      updateStatus.patch({ install: 'checking', error: null });
+    });
+    autoUpdater.on('update-available', () => {
+      updateStatus.patch({ install: 'downloading', error: null });
+      analytics.track('update_found', { method: 'auto' });
+    });
+    autoUpdater.on('update-not-available', () => {
+      updateStatus.patch({ install: 'up-to-date', error: null });
+    });
+    autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
+      updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
+      analytics.track('update_downloaded', {});
+    });
+    autoUpdater.on('error', (err) => {
+      updateStatus.patch({ install: 'error', error: err.message });
+      // One failed check at startup should not cost the user the whole 4 hour interval.
+      updateRetryTimer ??= setTimeout(() => {
+        updateRetryTimer = null;
+        startManagedUpdateCheck();
+      }, UPDATE_RETRY_MS);
+    });
+    autoUpdaterReady = true;
+    logger.main.info('Auto-updater initialized');
+  } catch (err) {
+    logger.main.error('Failed to initialize auto-updater', err);
+  }
 }
 
 function registerIpcHandlers() {
@@ -540,14 +585,16 @@ function registerIpcHandlers() {
       return { entries: [] };
     }
   });
-  handle('app:checkForUpdate', async (): Promise<UpdateCheckResult> => {
-    // Dev builds skip the network call entirely to avoid hammering dl.x-dispatch.app during HMR.
-    // Production always fetches: the About section needs latestVersion even when
-    // Windows users get their real update via update-electron-app (no toast for them).
-    if (!app.isPackaged) {
-      return { latestVersion: null, available: false, url: DOWNLOAD_PAGE_URL };
-    }
-    return checkForUpdateAvailable();
+  handle('app:getUpdateStatus', () => updateStatus.get());
+  handle('app:checkForUpdates', async () => {
+    if (updateStatus.get().managed) startManagedUpdateCheck();
+    await refreshLatestVersion();
+    return updateStatus.get();
+  });
+  handle('app:installUpdate', () => {
+    if (updateStatus.get().install !== 'ready') return false;
+    autoUpdater.quitAndInstall();
+    return true;
   });
   handle('app:getCliFlags', () => getCliFlags());
   handle('app:getProcessMemory', () => {
@@ -1805,36 +1852,12 @@ function reportDisplay(win: BrowserWindow): void {
   });
 }
 
-app.whenReady().then(async () => {
+if (!squirrelHookRun) app.whenReady().then(bootstrap);
+
+async function bootstrap(): Promise<void> {
   // Environment snapshot for production support
   logStartupEnvironment(shouldInitSentry);
   analytics.startSession();
-
-  if (app.isPackaged && process.platform === 'win32') {
-    try {
-      updateElectronApp({
-        updateSource: {
-          type: UpdateSourceType.StaticStorage,
-          baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
-        },
-        // Also checks once at startup; frequent polling only adds load on the download host.
-        updateInterval: '4 hours',
-        notifyUser: true,
-        logger: {
-          log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-          info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-          warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
-          error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
-        },
-      });
-      // update-electron-app drives Electron's autoUpdater; listen for analytics only.
-      autoUpdater.on('update-available', () => analytics.track('update_found', { method: 'auto' }));
-      autoUpdater.on('update-downloaded', () => analytics.track('update_downloaded', {}));
-      logger.main.info('Auto-updater initialized');
-    } catch (err) {
-      logger.main.error('Failed to initialize auto-updater', err);
-    }
-  }
 
   // Load React DevTools in development
   if (!app.isPackaged && process.platform === 'darwin') {
@@ -1960,6 +1983,14 @@ app.whenReady().then(async () => {
   mainWindow = createWindow();
   reportDisplay(mainWindow);
 
+  // Dev builds stay off the download host so HMR restarts do not hammer it.
+  if (app.isPackaged) {
+    setTimeout(() => {
+      void refreshLatestVersion();
+      if (updateStatus.get().managed) initAutoUpdater();
+    }, UPDATE_FIRST_CHECK_DELAY_MS);
+  }
+
   // Register Ctrl+F / Cmd+F to focus airport search — only when app is focused
   mainWindow.on('focus', () => {
     globalShortcut.register('CommandOrControl+F', () => {
@@ -1983,7 +2014,7 @@ app.whenReady().then(async () => {
       : path.join(__dirname, '..', '..', 'assets', 'icon.png');
     app.dock.setIcon(iconPath);
   }
-});
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

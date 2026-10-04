@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The About page shows what the updater is doing and has a **Check for updates** button. On Windows, a downloaded update now offers **Restart now** inside the app instead of a system dialog.
+
+### Fixed
+
+- Your aircraft, VATSIM and IVAO pilots and X-Plane traffic stay above airport layouts such as gates and taxiways.
+- Windows: a failed update check at startup is retried after ten minutes instead of waiting four hours.
+
 ## [2.2.1] - 2026-10-02
 
 ### Added

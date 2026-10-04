@@ -496,6 +496,13 @@
       "description": "X-Plane 飞行签派和机场可视化",
       "updateAvailable": "有可用更新 — v{{version}}",
       "upToDate": "已是最新版本",
+      "checkForUpdates": "检查更新",
+      "checkingForUpdates": "正在检查更新…",
+      "downloadingUpdate": "正在后台下载更新…",
+      "updateReady": "v{{version}} 已准备好安装",
+      "restartToUpdate": "立即重启",
+      "updateCheckFailed": "检查更新失败",
+      "tryAgain": "重试",
       "projectNotice": "这是为 X-Plane 社区打造的免费项目。",
       "credits": "制作人员",
       "developer": "开发者",
@@ -1863,6 +1870,12 @@
       "title": "有可用更新",
       "description": "X-Dispatch {{version}} 可供下载",
       "download": "下载",
+      "dismiss": "稍后"
+    },
+    "ready": {
+      "title": "更新已就绪",
+      "description": "X-Dispatch {{version}} 将在重启后安装",
+      "restart": "立即重启",
       "dismiss": "稍后"
     }
   },

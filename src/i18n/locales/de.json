@@ -496,6 +496,13 @@
       "description": "Flugdisposition und Flughafenvisualisierung für X-Plane",
       "updateAvailable": "Update verfügbar — v{{version}}",
       "upToDate": "Sie sind auf dem neuesten Stand",
+      "checkForUpdates": "Nach Updates suchen",
+      "checkingForUpdates": "Suche nach Updates…",
+      "downloadingUpdate": "Update wird im Hintergrund heruntergeladen…",
+      "updateReady": "v{{version}} ist bereit zur Installation",
+      "restartToUpdate": "Jetzt neu starten",
+      "updateCheckFailed": "Die Update-Prüfung ist fehlgeschlagen",
+      "tryAgain": "Erneut versuchen",
       "projectNotice": "Ein Herzensprojekt für die X-Plane-Community, kostenlos bereitgestellt.",
       "credits": "Danksagungen",
       "developer": "Entwickler",
@@ -1863,6 +1870,12 @@
       "title": "Update verfügbar",
       "description": "X-Dispatch {{version}} steht zum Download bereit",
       "download": "Herunterladen",
+      "dismiss": "Später"
+    },
+    "ready": {
+      "title": "Update bereit",
+      "description": "X-Dispatch {{version}} wird beim Neustart installiert",
+      "restart": "Jetzt neu starten",
       "dismiss": "Später"
     }
   },

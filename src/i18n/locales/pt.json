@@ -496,6 +496,13 @@
       "description": "Despacho de voos e visualização de aeroportos para X-Plane",
       "updateAvailable": "Atualização disponível — v{{version}}",
       "upToDate": "Está atualizado",
+      "checkForUpdates": "Procurar atualizações",
+      "checkingForUpdates": "A procurar atualizações…",
+      "downloadingUpdate": "A transferir a atualização em segundo plano…",
+      "updateReady": "A v{{version}} está pronta para instalar",
+      "restartToUpdate": "Reiniciar agora",
+      "updateCheckFailed": "A verificação de atualizações falhou",
+      "tryAgain": "Tentar novamente",
       "projectNotice": "Um projeto pessoal feito para a comunidade X-Plane, disponibilizado gratuitamente.",
       "credits": "Créditos",
       "developer": "Programador",
@@ -1863,6 +1870,12 @@
       "title": "Atualização disponível",
       "description": "X-Dispatch {{version}} está pronto para transferência",
       "download": "Transferir",
+      "dismiss": "Mais tarde"
+    },
+    "ready": {
+      "title": "Atualização pronta",
+      "description": "O X-Dispatch {{version}} será instalado ao reiniciar",
+      "restart": "Reiniciar agora",
       "dismiss": "Mais tarde"
     }
   },

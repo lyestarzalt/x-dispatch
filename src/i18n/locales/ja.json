@@ -496,6 +496,13 @@
       "description": "X-Plane 向けフライトディスパッチと空港表示",
       "updateAvailable": "アップデートが利用可能 — v{{version}}",
       "upToDate": "最新版です",
+      "checkForUpdates": "アップデートを確認",
+      "checkingForUpdates": "アップデートを確認しています…",
+      "downloadingUpdate": "バックグラウンドでアップデートをダウンロード中…",
+      "updateReady": "v{{version}} をインストールする準備ができました",
+      "restartToUpdate": "今すぐ再起動",
+      "updateCheckFailed": "アップデートの確認に失敗しました",
+      "tryAgain": "再試行",
       "projectNotice": "X-Plane コミュニティ向けに作られた、無料のプロジェクトです。",
       "credits": "クレジット",
       "developer": "開発者",
@@ -1863,6 +1870,12 @@
       "title": "アップデートが利用可能です",
       "description": "X-Dispatch {{version}} をダウンロードできます",
       "download": "ダウンロード",
+      "dismiss": "後で"
+    },
+    "ready": {
+      "title": "アップデートの準備完了",
+      "description": "X-Dispatch {{version}} は再起動時にインストールされます",
+      "restart": "今すぐ再起動",
       "dismiss": "後で"
     }
   },

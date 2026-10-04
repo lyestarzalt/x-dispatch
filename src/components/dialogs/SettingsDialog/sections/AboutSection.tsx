@@ -8,7 +8,10 @@ import {
   FolderOpen,
   Heart,
   Info,
+  Loader2,
+  RefreshCw,
   ScrollText,
+  TriangleAlert,
 } from 'lucide-react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
@@ -16,7 +19,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { isNewerVersion } from '@/lib/utils/versionCompare';
-import { trackEvent, useAppVersion, useConfigPath, useLogPath, useUpdateCheck } from '@/queries';
+import {
+  trackEvent,
+  useAppVersion,
+  useCheckForUpdates,
+  useConfigPath,
+  useLogPath,
+  useUpdateStatus,
+} from '@/queries';
+import type { UpdateStatus } from '@/types/update';
 import { ThirdPartyNoticesDialog } from '../ThirdPartyNoticesDialog';
 import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
 import type { SettingsSectionProps } from '../types';
@@ -25,18 +36,134 @@ const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_
 const PROJECT_WEBSITE = 'https://x-dispatch.app/';
 const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
+interface UpdateStatusLineProps {
+  version: string;
+  update: UpdateStatus;
+  checking: boolean;
+  onCheck: () => void;
+}
+
+/** One line under the version: what the updater is doing, and the one action that fits. */
+function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLineProps) {
+  const { t } = useTranslation();
+  const outdated = !!update.latestVersion && isNewerVersion(version, update.latestVersion);
+  const busy = checking || update.install === 'checking';
+
+  const checkButton = (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="text-muted-foreground h-7 gap-1.5 px-2 text-xs"
+      disabled={busy}
+      onClick={onCheck}
+    >
+      <RefreshCw className={cn('h-3.5 w-3.5', busy && 'animate-spin')} />
+      {t('settings.about.checkForUpdates')}
+    </Button>
+  );
+
+  if (update.install === 'ready') {
+    const readyVersion = update.installVersion ?? update.latestVersion ?? '';
+    return (
+      <div className="mt-2 flex flex-col items-center gap-1.5">
+        <p className="text-success inline-flex items-center gap-1.5 text-xs">
+          <CircleCheck className="h-3.5 w-3.5" />
+          {t('settings.about.updateReady', { version: readyVersion })}
+        </p>
+        <DesktopOnly>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 px-2.5 text-xs"
+            onClick={() => void window.appAPI.installUpdate()}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            {t('settings.about.restartToUpdate')}
+          </Button>
+        </DesktopOnly>
+      </div>
+    );
+  }
+
+  if (busy) {
+    return (
+      <p className="text-muted-foreground mt-2 inline-flex items-center gap-1.5 text-xs">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        {t('settings.about.checkingForUpdates')}
+      </p>
+    );
+  }
+
+  if (update.install === 'downloading') {
+    return (
+      <p className="text-info mt-2 inline-flex items-center gap-1.5 text-xs">
+        <Download className="h-3.5 w-3.5" />
+        {t('settings.about.downloadingUpdate')}
+      </p>
+    );
+  }
+
+  if (update.install === 'error') {
+    return (
+      <div className="mt-2 flex flex-col items-center gap-1">
+        <p className="text-warning inline-flex items-center gap-1.5 text-xs">
+          <TriangleAlert className="h-3.5 w-3.5" />
+          {t('settings.about.updateCheckFailed')}
+        </p>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-muted-foreground h-7 gap-1.5 px-2 text-xs"
+          onClick={onCheck}
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          {t('settings.about.tryAgain')}
+        </Button>
+      </div>
+    );
+  }
+
+  if (outdated && !update.managed) {
+    return (
+      <button
+        type="button"
+        onClick={() => window.appAPI.openExternal(update.url)}
+        className="border-info/40 bg-info/5 text-info hover:bg-info/10 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors"
+      >
+        <Download className="h-3.5 w-3.5" />
+        {t('settings.about.updateAvailable', { version: update.latestVersion })}
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex flex-col items-center gap-1">
+      {outdated ? (
+        <p className="text-info inline-flex items-center gap-1.5 text-xs">
+          <Download className="h-3.5 w-3.5" />
+          {t('settings.about.updateAvailable', { version: update.latestVersion })}
+        </p>
+      ) : (
+        update.latestVersion && (
+          <p className="text-success inline-flex items-center gap-1.5 text-xs">
+            <CircleCheck className="h-3.5 w-3.5" />
+            {t('settings.about.upToDate')}
+          </p>
+        )
+      )}
+      {checkButton}
+    </div>
+  );
+}
+
 export default function AboutSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const { data: version } = useAppVersion();
   const [noticesOpen, setNoticesOpen] = useState(false);
   const { data: logPath } = useLogPath();
   const { data: configPath } = useConfigPath();
-  const { data: update } = useUpdateCheck();
-
-  const updateStatus = (() => {
-    if (!version || !update?.latestVersion) return null;
-    return isNewerVersion(version, update.latestVersion) ? 'outdated' : 'current';
-  })();
+  const { data: update } = useUpdateStatus();
+  const check = useCheckForUpdates();
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -53,21 +180,13 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <p className="text-muted-foreground mt-1 font-mono text-sm">
           {version ? `v${version}` : t('common.loading')}
         </p>
-        {updateStatus === 'outdated' && update?.latestVersion && (
-          <button
-            type="button"
-            onClick={() => window.appAPI.openExternal(update.url)}
-            className="border-info/40 bg-info/5 text-info hover:bg-info/10 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors"
-          >
-            <Download className="h-3.5 w-3.5" />
-            {t('settings.about.updateAvailable', { version: update.latestVersion })}
-          </button>
-        )}
-        {updateStatus === 'current' && (
-          <p className="text-success mt-2 inline-flex items-center gap-1.5 text-xs">
-            <CircleCheck className="h-3.5 w-3.5" />
-            {t('settings.about.upToDate')}
-          </p>
+        {version && update && (
+          <UpdateStatusLine
+            version={version}
+            update={update}
+            checking={check.isPending}
+            onCheck={() => check.mutate()}
+          />
         )}
         <p className="text-muted-foreground mt-3 max-w-md text-sm">
           {t('settings.about.projectNotice')}

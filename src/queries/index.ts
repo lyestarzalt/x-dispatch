@@ -81,4 +81,4 @@ export {
 export { useUsageTracking } from './useUsageTracking';
 
 // Update check hook
-export { useUpdateCheck, type UpdateCheckResult } from './useUpdateCheck';
+export { useCheckForUpdates, useUpdateStatus } from './useUpdateStatus';

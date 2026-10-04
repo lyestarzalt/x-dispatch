@@ -496,6 +496,13 @@
       "description": "Flight dispatch and airport visualization for X-Plane",
       "updateAvailable": "Update available — v{{version}}",
       "upToDate": "You're up to date",
+      "checkForUpdates": "Check for updates",
+      "checkingForUpdates": "Checking for updates…",
+      "downloadingUpdate": "Downloading the update in the background…",
+      "updateReady": "v{{version}} is ready to install",
+      "restartToUpdate": "Restart now",
+      "updateCheckFailed": "The update check failed",
+      "tryAgain": "Try again",
       "projectNotice": "A passion project built for the X-Plane community, shared free of charge.",
       "credits": "Credits",
       "developer": "Developer",
@@ -1863,6 +1870,12 @@
       "title": "Update available",
       "description": "X-Dispatch {{version}} is ready to download",
       "download": "Download",
+      "dismiss": "Later"
+    },
+    "ready": {
+      "title": "Update ready",
+      "description": "X-Dispatch {{version}} will install when you restart",
+      "restart": "Restart now",
       "dismiss": "Later"
     }
   },

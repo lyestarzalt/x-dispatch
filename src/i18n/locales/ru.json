@@ -496,6 +496,13 @@
       "description": "Диспетчеризация полётов и визуализация аэропортов для X-Plane",
       "updateAvailable": "Доступно обновление — v{{version}}",
       "upToDate": "У вас актуальная версия",
+      "checkForUpdates": "Проверить обновления",
+      "checkingForUpdates": "Проверка обновлений…",
+      "downloadingUpdate": "Обновление загружается в фоновом режиме…",
+      "updateReady": "v{{version}} готова к установке",
+      "restartToUpdate": "Перезапустить сейчас",
+      "updateCheckFailed": "Не удалось проверить обновления",
+      "tryAgain": "Повторить",
       "projectNotice": "Личный проект для сообщества X-Plane, доступный бесплатно.",
       "credits": "Авторы",
       "developer": "Разработчик",
@@ -1863,6 +1870,12 @@
       "title": "Доступно обновление",
       "description": "X-Dispatch {{version}} готов к загрузке",
       "download": "Скачать",
+      "dismiss": "Позже"
+    },
+    "ready": {
+      "title": "Обновление готово",
+      "description": "X-Dispatch {{version}} установится после перезапуска",
+      "restart": "Перезапустить сейчас",
       "dismiss": "Позже"
     }
   },

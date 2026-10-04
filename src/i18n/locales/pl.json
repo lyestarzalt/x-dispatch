@@ -496,6 +496,13 @@
       "description": "Planowanie lotów i wizualizacja lotnisk dla X-Plane",
       "updateAvailable": "Dostępna aktualizacja — v{{version}}",
       "upToDate": "Masz najnowszą wersję",
+      "checkForUpdates": "Sprawdź aktualizacje",
+      "checkingForUpdates": "Sprawdzanie aktualizacji…",
+      "downloadingUpdate": "Pobieranie aktualizacji w tle…",
+      "updateReady": "Wersja {{version}} jest gotowa do instalacji",
+      "restartToUpdate": "Uruchom ponownie",
+      "updateCheckFailed": "Sprawdzanie aktualizacji nie powiodło się",
+      "tryAgain": "Spróbuj ponownie",
       "projectNotice": "Darmowy projekt dla społeczności X-Plane.",
       "credits": "Twórcy",
       "developer": "Twórca",
@@ -1863,6 +1870,12 @@
       "title": "Dostępna aktualizacja",
       "description": "X-Dispatch {{version}} jest gotowy do pobrania",
       "download": "Pobierz",
+      "dismiss": "Później"
+    },
+    "ready": {
+      "title": "Aktualizacja gotowa",
+      "description": "X-Dispatch {{version}} zainstaluje się po ponownym uruchomieniu",
+      "restart": "Uruchom ponownie",
       "dismiss": "Później"
     }
   },

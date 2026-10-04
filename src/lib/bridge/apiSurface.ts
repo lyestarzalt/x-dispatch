@@ -14,6 +14,7 @@ import type {
 // Import types from canonical sources
 import type { AircraftHint, FlightRecorderEvent } from '@/types/flightRecorder';
 import type { TrafficSnapshot } from '@/types/traffic';
+import type { UpdateStatus } from '@/types/update';
 import type { LoadingProgress, PlaneState } from '@/types/xplane';
 
 type XPLogOpenResult = Awaited<ReturnType<typeof openXPlaneLogExternallyFn>>;
@@ -91,7 +92,11 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       isSetupComplete: () => t.invoke('app:isSetupComplete'),
       getVersion: () => t.invoke('app:getVersion'),
       getThirdPartyNotices: () => t.invoke('app:getThirdPartyNotices'),
-      checkForUpdate: () => t.invoke('app:checkForUpdate'),
+      getUpdateStatus: () => t.invoke('app:getUpdateStatus'),
+      checkForUpdates: () => t.invoke('app:checkForUpdates'),
+      installUpdate: () => t.invoke('app:installUpdate'),
+      onUpdateStatus: (callback: (status: UpdateStatus) => void) =>
+        t.on('app:updateStatus', callback),
       getCliFlags: () => t.invoke('app:getCliFlags'),
       getProcessMemory: () =>
         t.invoke('app:getProcessMemory') as Promise<{
