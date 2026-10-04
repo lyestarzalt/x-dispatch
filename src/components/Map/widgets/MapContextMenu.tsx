@@ -121,12 +121,10 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
             {t('mapContextMenu.removePoint')}
           </DropdownMenuItem>
         )}
-        {measurePointCount > 0 && (
-          <DropdownMenuItem onSelect={handleClearMeasurement}>
-            <Trash2 />
-            {t('mapContextMenu.clearMeasurement')}
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem disabled={measurePointCount === 0} onSelect={handleClearMeasurement}>
+          <Trash2 />
+          {t('mapContextMenu.clearMeasurement')}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleCenter}>
           <Crosshair />
