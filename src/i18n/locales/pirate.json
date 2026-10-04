@@ -1979,7 +1979,6 @@
     "centerHere": "Steer the chart here",
     "elevation": "Height o' land {{value}}",
     "measureFromHere": "Measure from this spot",
-    "deleteMeasurement": "Scrap the measurin' line",
     "removePoint": "Toss this point",
     "measureTotal": "All told {{value}}",
     "clearMeasurement": "Wipe the measurin’ line"

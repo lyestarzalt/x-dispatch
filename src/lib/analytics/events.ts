@@ -52,6 +52,7 @@ export const ANALYTICS_CONTEXT_MENU_ACTIONS = [
   'start_here',
   'copy_coordinates',
   'measure',
+  'clear_measurement',
   'center_map',
 ] as const;
 

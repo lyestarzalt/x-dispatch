@@ -1979,7 +1979,6 @@
     "centerHere": "Centrar mapa aquí",
     "elevation": "Elevación {{value}}",
     "measureFromHere": "Medir desde aquí",
-    "deleteMeasurement": "Eliminar medición",
     "removePoint": "Quitar punto",
     "measureTotal": "Total {{value}}",
     "clearMeasurement": "Borrar medición"

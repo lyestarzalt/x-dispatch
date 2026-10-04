@@ -1979,7 +1979,6 @@
     "centerHere": "将地图居中于此",
     "elevation": "海拔 {{value}}",
     "measureFromHere": "从此处测量",
-    "deleteMeasurement": "删除测量",
     "removePoint": "移除点",
     "measureTotal": "总计 {{value}}",
     "clearMeasurement": "清除测量"

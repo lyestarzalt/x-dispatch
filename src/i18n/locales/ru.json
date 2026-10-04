@@ -1979,7 +1979,6 @@
     "centerHere": "Центрировать карту здесь",
     "elevation": "Высота {{value}}",
     "measureFromHere": "Измерить отсюда",
-    "deleteMeasurement": "Удалить измерение",
     "removePoint": "Удалить точку",
     "measureTotal": "Итого {{value}}",
     "clearMeasurement": "Очистить измерение"

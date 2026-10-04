@@ -71,7 +71,8 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
       .start({ latitude: point.latitude, longitude: point.longitude }, point.snap);
   }, [point]);
 
-  const handleDeleteMeasurement = useCallback(() => {
+  const handleClearMeasurement = useCallback(() => {
+    trackEvent('context_menu_used', { action: 'clear_measurement' });
     useMeasureStore.getState().clear();
   }, []);
 
@@ -120,10 +121,10 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
             {t('mapContextMenu.removePoint')}
           </DropdownMenuItem>
         )}
-        {point.onMeasureLine && (
-          <DropdownMenuItem onSelect={handleDeleteMeasurement}>
+        {measurePointCount > 0 && (
+          <DropdownMenuItem onSelect={handleClearMeasurement}>
             <Trash2 />
-            {t('mapContextMenu.deleteMeasurement')}
+            {t('mapContextMenu.clearMeasurement')}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />

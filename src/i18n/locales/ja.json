@@ -1979,7 +1979,6 @@
     "centerHere": "ここを中心に表示",
     "elevation": "標高 {{value}}",
     "measureFromHere": "ここから計測",
-    "deleteMeasurement": "計測を削除",
     "removePoint": "点を削除",
     "measureTotal": "合計 {{value}}",
     "clearMeasurement": "計測をクリア"
