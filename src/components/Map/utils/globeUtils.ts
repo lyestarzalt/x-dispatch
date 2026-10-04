@@ -77,6 +77,23 @@ function addStarfieldIfMissing(map: maplibregl.Map): void {
   map.addLayer(starfield as unknown as maplibregl.CustomLayerInterface, firstLayer);
 }
 
+/**
+ * Terrain makes the wheel handler work on a saved copy of the camera, and
+ * that copy outlives the gesture. Globe mode (no terrain) ignores it while
+ * the user pans away, so the next time terrain comes on the handler resumes
+ * from the old view and the map snaps back to it. Re-asserting the current
+ * camera through the public API refreshes the copy and lets `moveend` drop it.
+ */
+function enableTerrain(map: maplibregl.Map): void {
+  map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
+  map.jumpTo({
+    center: map.getCenter(),
+    zoom: map.getZoom(),
+    bearing: map.getBearing(),
+    pitch: map.getPitch(),
+  });
+}
+
 export function setupGlobeProjection(map: maplibregl.Map): void {
   // Start with globe projection
   map.setProjection({ type: 'globe' });
@@ -104,7 +121,7 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
       }
       // Apply terrain in mercator if the user has 3D terrain enabled
       if (terrain3dEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
-        map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
+        enableTerrain(map);
       }
     } else if (zoom <= GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'mercator') {
       // Globe is incompatible with terrain — force off, the setting is preserved.
@@ -125,7 +142,7 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     if (state.terrain3dEnabled === prev.terrain3dEnabled) return;
     if (currentProjection !== 'mercator') return;
     if (state.terrain3dEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
-      map.setTerrain({ source: TERRAIN_SOURCE_ID, exaggeration: 1 });
+      enableTerrain(map);
     } else {
       map.setTerrain(null);
     }
