@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { type PlanFix, addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
+import { runWhenStyleIsReady } from './styleReadiness';
 import type { MapRef } from './useMapSetup';
 
 interface UseProcedureRouteSyncOptions {
@@ -54,19 +55,13 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
       }
     };
 
-    // Wait for style to be loaded before adding layers
-    if (!map.isStyleLoaded()) {
-      map.once('styledata', addLayer);
-      return () => {
-        map.off('styledata', addLayer);
-        removeProcedureRouteLayer(map);
-      };
-    }
-
-    addLayer();
+    // isStyleLoaded() stays false while any source is still updating, which with a
+    // connected aircraft is nearly always, and 'styledata' only fires on style edits.
+    // The helper also accepts a style that has merely finished loading.
+    const cancel = runWhenStyleIsReady(map, addLayer);
 
     return () => {
-      // Use captured map reference for cleanup
+      cancel();
       removeProcedureRouteLayer(map);
     };
   }, [mapRef, selectedProcedure, fmsData]);
