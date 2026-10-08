@@ -58,7 +58,8 @@
     "sw": "南西"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "オフラインです。再接続すると気象・トラフィック・地図が更新されます。"
   },
   "setup": {
     "title": "X-Dispatch",

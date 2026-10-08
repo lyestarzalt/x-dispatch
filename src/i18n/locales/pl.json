@@ -58,7 +58,8 @@
     "sw": "SW"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Jesteś offline. Pogoda, ruch i mapy zaktualizują się po ponownym połączeniu."
   },
   "setup": {
     "title": "X-Dispatch",

@@ -58,7 +58,8 @@
     "sw": "SW"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Du bist offline. Wetter, Verkehr und Karten werden aktualisiert, sobald die Verbindung wieder steht."
   },
   "setup": {
     "title": "X-Dispatch",

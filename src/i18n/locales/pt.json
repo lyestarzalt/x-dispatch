@@ -58,7 +58,8 @@
     "sw": "SO"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Você está offline. Clima, tráfego e mapas serão atualizados quando a conexão voltar."
   },
   "setup": {
     "title": "X-Dispatch",

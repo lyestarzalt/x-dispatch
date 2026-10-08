@@ -58,7 +58,8 @@
     "sw": "西南"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "当前离线。重新连接后，天气、交通和地图将自动更新。"
   },
   "setup": {
     "title": "X-Dispatch",

@@ -58,7 +58,8 @@
     "sw": "SW"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Ye be adrift with no line ashore. Winds, traffic an' charts will update when ye reconnect."
   },
   "setup": {
     "title": "X-Dispatch",

@@ -3,6 +3,7 @@ import { MotionConfig } from 'motion/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FlightStripWindow } from './components/FlightStripWindow';
 import Map from './components/Map';
+import { OfflineBanner } from './components/OfflineBanner';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
@@ -152,6 +153,7 @@ function AppContent() {
   return (
     <div className="bg-background flex h-screen w-screen flex-col overflow-hidden">
       <TitleBar />
+      <OfflineBanner />
       <div className="min-h-0 flex-1">{content}</div>
     </div>
   );

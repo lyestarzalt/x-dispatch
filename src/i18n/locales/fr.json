@@ -58,7 +58,8 @@
     "sw": "SO"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Vous êtes hors ligne. La météo, le trafic et les cartes se mettront à jour à la reconnexion."
   },
   "setup": {
     "title": "X-Dispatch",

@@ -58,7 +58,8 @@
     "sw": "SO"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Sin conexión. El tiempo, el tráfico y los mapas se actualizarán al reconectar."
   },
   "setup": {
     "title": "X-Dispatch",
