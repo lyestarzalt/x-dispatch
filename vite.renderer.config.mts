@@ -4,6 +4,7 @@ import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig } from 'vite';
 import pkg from './package.json' with { type: 'json' };
+import { CONTENT_SECURITY_POLICY, CSP_META_PLACEHOLDER } from './src/config/csp';
 import { pluginExposeRenderer } from './vite.base.config.mts';
 
 // https://vitejs.dev/config
@@ -35,6 +36,11 @@ export default defineConfig((env) => {
     plugins: [
       react(),
       pluginExposeRenderer(name),
+      {
+        name: 'x-dispatch-csp',
+        transformIndexHtml: (html: string) =>
+          html.replace(CSP_META_PLACEHOLDER, CONTENT_SECURITY_POLICY),
+      },
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,

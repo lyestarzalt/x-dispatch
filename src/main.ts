@@ -16,6 +16,7 @@ import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
+import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import type { AnalyticsConsentState } from './lib/analytics/events';
@@ -25,6 +26,7 @@ import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
+import { isAllowedNavigation } from './lib/nativeShell/navigationGuard';
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
@@ -429,6 +431,9 @@ function toggleFlightStripWindow(): void {
   win.on('blur', keepOnTop);
   win.once('ready-to-show', () => win.show());
   win.on('page-title-updated', (e) => e.preventDefault());
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedNavigation(url)) event.preventDefault();
+  });
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://') || url.startsWith('http://')) shell.openExternal(url);
     return { action: 'deny' };
@@ -554,18 +559,7 @@ function createWindow(): BrowserWindow {
   });
 
   window.webContents.on('will-navigate', (event, url) => {
-    try {
-      const parsedUrl = new URL(url);
-      if (
-        parsedUrl.protocol !== 'file:' &&
-        parsedUrl.hostname !== 'localhost' &&
-        parsedUrl.hostname !== '127.0.0.1'
-      ) {
-        event.preventDefault();
-      }
-    } catch {
-      event.preventDefault();
-    }
+    if (!isAllowedNavigation(url)) event.preventDefault();
   });
 
   window.webContents.setWindowOpenHandler(({ url }) => {
@@ -2081,15 +2075,7 @@ async function bootstrap(): Promise<void> {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline'; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int;" +
-            "font-src 'self' data:; " +
-            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int; " +
-            "worker-src 'self' blob:;",
-        ],
+        'Content-Security-Policy': [CONTENT_SECURITY_POLICY],
       },
     });
   });
