@@ -681,6 +681,7 @@
       "terrain3dDesc": "Show raised terrain when the map is zoomed in.",
       "terrainShading": "Terrain shading",
       "terrainShadingDesc": "Add shading and contour lines to make terrain easier to read.",
+      "terrainShadingSatellite": "Not available on the satellite basemap; the imagery already shows the relief.",
       "surfaceDetail": "Surface detail",
       "surfaceDetailDesc": "Curve smoothness for taxiway and pavement edges",
       "low": "Low",

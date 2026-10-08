@@ -681,6 +681,7 @@
       "terrain3dDesc": "Berge erheben sich beim Hineinzoomen aus der Karte.",
       "terrainShading": "Geländeschattierung",
       "terrainShadingDesc": "Schattierung und Höhenlinien lassen Berge besser erkennen.",
+      "terrainShadingSatellite": "Auf der Satellitenkarte nicht verfügbar; das Bild zeigt das Relief bereits.",
       "surfaceDetail": "Oberflächendetail",
       "surfaceDetailDesc": "Kurvenglättung für Rollweg- und Vorfeldkanten",
       "low": "Niedrig",

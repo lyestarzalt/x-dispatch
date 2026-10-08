@@ -681,6 +681,7 @@
       "terrain3dDesc": "Po przybliżeniu góry wznoszą się ponad mapę.",
       "terrainShading": "Cieniowanie terenu",
       "terrainShadingDesc": "Cieniowanie i poziomice ułatwiają rozpoznawanie gór.",
+      "terrainShadingSatellite": "Niedostępne na mapie satelitarnej; zdjęcia już pokazują rzeźbę terenu.",
       "surfaceDetail": "Szczegółowość powierzchni",
       "surfaceDetailDesc": "Gładkość krzywych na krawędziach dróg kołowania i nawierzchni",
       "low": "Niska",

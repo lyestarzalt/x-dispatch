@@ -681,6 +681,7 @@
       "terrain3dDesc": "放大时山脉从地图上立体浮现。",
       "terrainShading": "地形阴影",
       "terrainShadingDesc": "阴影与等高线让山脉更易辨识。",
+      "terrainShadingSatellite": "卫星底图上不可用；影像本身已显示地形起伏。",
       "surfaceDetail": "地表细节",
       "surfaceDetailDesc": "滑行道与铺装边缘曲线的平滑度",
       "low": "低",

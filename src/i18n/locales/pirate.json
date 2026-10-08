@@ -681,6 +681,7 @@
       "terrain3dDesc": "Mountains rise off the chart when ye zoom in.",
       "terrainShading": "Terrain shadowin'",
       "terrainShadingDesc": "Shading an' contour lines so mountains look better.",
+      "terrainShadingSatellite": "Not on the satellite chart, matey; the picture already shows the hills.",
       "surfaceDetail": "Ground detail",
       "surfaceDetailDesc": "Curve smoothness fer taxiway an' pavement edges",
       "low": "Low tide",

@@ -681,6 +681,7 @@
       "terrain3dDesc": "As montanhas sobressaem no mapa ao aproximar o zoom.",
       "terrainShading": "Sombreamento do terreno",
       "terrainShadingDesc": "Sombreamento e curvas de nível para destacar melhor as montanhas.",
+      "terrainShadingSatellite": "Indisponível no mapa de satélite; as imagens já mostram o relevo.",
       "surfaceDetail": "Detalhe da superfície",
       "surfaceDetailDesc": "Suavidade das curvas nas extremidades de pistas de táxi e pavimento",
       "low": "Baixo",

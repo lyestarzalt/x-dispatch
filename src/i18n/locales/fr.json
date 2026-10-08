@@ -681,6 +681,7 @@
       "terrain3dDesc": "Les montagnes se détachent de la carte en zoomant.",
       "terrainShading": "Ombrage du terrain",
       "terrainShadingDesc": "Ombrage et courbes de niveau pour mieux distinguer les montagnes.",
+      "terrainShadingSatellite": "Indisponible sur le fond satellite ; l'imagerie montre déjà le relief.",
       "surfaceDetail": "Détail des surfaces",
       "surfaceDetailDesc": "Lissage des courbes au bord des voies de circulation et des chaussées",
       "low": "Faible",

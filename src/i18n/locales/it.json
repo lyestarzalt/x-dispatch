@@ -681,6 +681,7 @@
       "terrain3dDesc": "Le montagne emergono dalla mappa quando ingrandisci.",
       "terrainShading": "Ombreggiatura del terreno",
       "terrainShadingDesc": "Ombreggiatura e curve di livello per distinguere meglio le montagne.",
+      "terrainShadingSatellite": "Non disponibile sulla mappa satellitare; le immagini mostrano già il rilievo.",
       "surfaceDetail": "Dettaglio superficie",
       "surfaceDetailDesc": "Morbidezza delle curve sui bordi di vie di rullaggio e piazzali",
       "low": "Basso",
