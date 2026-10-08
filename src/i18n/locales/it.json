@@ -27,7 +27,8 @@
     "selected": "Selezionato",
     "online": "online",
     "approved": "Approvato",
-    "recommended": "Consigliato"
+    "recommended": "Consigliato",
+    "showAll": "Mostra tutti"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Eventi",
       "noEvents": "Nessun evento in programma",
       "viewRoute": "Visualizza rotta",
-      "goToDeparture": "Vai alla partenza"
+      "goToDeparture": "Vai alla partenza",
+      "departures": "Partenze",
+      "arrivals": "Arrivi"
     },
     "filters": {
       "country": "Paese",
@@ -1057,7 +1060,8 @@
       "export": "Salva rotta di rullaggio",
       "exportSuccess": "Rotta di rullaggio salvata",
       "summary": "via {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frequenze"
   },
   "navigation": {
     "heading": "PRUA",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Mesh aeroporto",
         "mesh": "Mesh terreno",
         "unrecognized": "Non riconosciuto"
+      },
+      "badge": {
+        "airports": "Aeroporto",
+        "defaultAirports": "Predef.",
+        "libraries": "Libreria",
+        "other": "Altro",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Ricarica",
       "quit": "Esci"
     }
+  },
+  "weatherRadar": {
+    "controls": "Controlli radar meteo",
+    "previousFrame": "Fotogramma precedente",
+    "nextFrame": "Fotogramma successivo"
   }
 }

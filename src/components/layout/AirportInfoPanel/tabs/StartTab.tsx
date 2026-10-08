@@ -607,7 +607,7 @@ function RunwayStartOptions({
           </div>
           {towType === 'tug' && (
             <span className="text-muted-foreground text-xs">
-              {t('airportInfo.runway.tugAircraft', 'Tow plane: Cessna 172 SP')}
+              {t('airportInfo.runway.tugAircraft')}
             </span>
           )}
         </div>

@@ -31,7 +31,7 @@ export function nauticalMilesToMeters(nm: number): Meters {
   return (nm * METERS_PER_NM) as Meters;
 }
 
-function metersToNauticalMiles(meters: number): NauticalMiles {
+export function metersToNauticalMiles(meters: number): NauticalMiles {
   return (meters / METERS_PER_NM) as NauticalMiles;
 }
 

@@ -351,7 +351,7 @@ export function FlightConfig({
                   {startPosition.boatPosition
                     ? ` · ${t(`toolbar.pinModes.cat_${startPosition.boatPosition}`)}`
                     : startPosition.boatApproachNm
-                      ? ` · ${startPosition.boatApproachNm} nm`
+                      ? ` · ${units.distance(startPosition.boatApproachNm as NauticalMiles)}`
                       : ''}
                 </div>
               )}

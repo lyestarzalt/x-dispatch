@@ -27,7 +27,8 @@
     "selected": "Selecionado",
     "online": "online",
     "approved": "Aprovado",
-    "recommended": "Recomendado"
+    "recommended": "Recomendado",
+    "showAll": "Mostrar todos"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Eventos",
       "noEvents": "Sem eventos próximos",
       "viewRoute": "Ver rota",
-      "goToDeparture": "Ir para a partida"
+      "goToDeparture": "Ir para a partida",
+      "departures": "Partidas",
+      "arrivals": "Chegadas"
     },
     "filters": {
       "country": "País",
@@ -1057,7 +1060,8 @@
       "export": "Exportar para Follow the Greens",
       "exportSuccess": "Rota exportada para Follow the Greens",
       "summary": "via {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frequências"
   },
   "navigation": {
     "heading": "PROA",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Malha de aeroporto",
         "mesh": "Malha de terreno",
         "unrecognized": "Não reconhecido"
+      },
+      "badge": {
+        "airports": "Aeroporto",
+        "defaultAirports": "Padrão",
+        "libraries": "Biblioteca",
+        "other": "Outro",
+        "overlays": "Overlay",
+        "mesh": "Malha"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Recarregar",
       "quit": "Sair"
     }
+  },
+  "weatherRadar": {
+    "controls": "Controles do radar meteorológico",
+    "previousFrame": "Quadro anterior",
+    "nextFrame": "Próximo quadro"
   }
 }

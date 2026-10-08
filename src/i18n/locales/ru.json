@@ -27,7 +27,8 @@
     "selected": "Выбрано",
     "online": "онлайн",
     "approved": "Одобрено",
-    "recommended": "Рекомендуется"
+    "recommended": "Рекомендуется",
+    "showAll": "Показать все"
   },
   "units": {
     "ft": "фут",
@@ -384,7 +385,9 @@
       "events": "События",
       "noEvents": "Нет предстоящих событий",
       "viewRoute": "Показать маршрут",
-      "goToDeparture": "Перейти к вылету"
+      "goToDeparture": "Перейти к вылету",
+      "departures": "Вылеты",
+      "arrivals": "Прилёты"
     },
     "filters": {
       "country": "Страна",
@@ -1057,7 +1060,8 @@
       "export": "Сохранить маршрут руления",
       "exportSuccess": "Маршрут руления сохранён",
       "summary": "через {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Частоты"
   },
   "navigation": {
     "heading": "КУРС",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Сетка аэропорта",
         "mesh": "Сетка рельефа",
         "unrecognized": "Не распознано"
+      },
+      "badge": {
+        "airports": "Аэропорт",
+        "defaultAirports": "Стандарт",
+        "libraries": "Библиотека",
+        "other": "Другое",
+        "overlays": "Оверлей",
+        "mesh": "Меш"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Перезагрузить",
       "quit": "Выйти"
     }
+  },
+  "weatherRadar": {
+    "controls": "Управление метеорадаром",
+    "previousFrame": "Предыдущий кадр",
+    "nextFrame": "Следующий кадр"
   }
 }

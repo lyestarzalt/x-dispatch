@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Settings } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 
@@ -25,6 +26,7 @@ const Tile = React.forwardRef<HTMLDivElement, TileProps>(
     { className, children, selected, disabled, showSettingsIcon, onSettingsClick, ...props },
     ref
   ) => {
+    const { t } = useTranslation();
     const handleSettingsClick = (e: React.MouseEvent) => {
       e.stopPropagation();
       onSettingsClick?.(e);
@@ -52,7 +54,7 @@ const Tile = React.forwardRef<HTMLDivElement, TileProps>(
               'hover:bg-muted/50 absolute right-2 bottom-2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-70',
               selected && 'opacity-70'
             )}
-            aria-label="Settings"
+            aria-label={t('settings.title')}
           >
             <Settings className="h-3.5 w-3.5" />
           </button>

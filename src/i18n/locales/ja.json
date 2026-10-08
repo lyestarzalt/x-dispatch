@@ -27,7 +27,8 @@
     "selected": "選択済み",
     "online": "オンライン",
     "approved": "承認済み",
-    "recommended": "推奨"
+    "recommended": "推奨",
+    "showAll": "すべて表示"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "イベント",
       "noEvents": "予定されているイベントはありません",
       "viewRoute": "ルートを表示",
-      "goToDeparture": "出発地へ移動"
+      "goToDeparture": "出発地へ移動",
+      "departures": "出発",
+      "arrivals": "到着"
     },
     "filters": {
       "country": "国",
@@ -1057,7 +1060,8 @@
       "export": "Follow the Greens用にエクスポート",
       "exportSuccess": "Follow the Greens用にルートをエクスポートしました",
       "summary": "{{taxiways}} 経由 · {{distance}}"
-    }
+    },
+    "frequencies": "周波数"
   },
   "navigation": {
     "heading": "方位",
@@ -1535,6 +1539,14 @@
         "airportMesh": "空港メッシュ",
         "mesh": "地形メッシュ",
         "unrecognized": "認識不能"
+      },
+      "badge": {
+        "airports": "空港",
+        "defaultAirports": "標準",
+        "libraries": "ライブラリ",
+        "other": "その他",
+        "overlays": "オーバーレイ",
+        "mesh": "メッシュ"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "再読み込み",
       "quit": "終了"
     }
+  },
+  "weatherRadar": {
+    "controls": "気象レーダーの操作",
+    "previousFrame": "前のフレーム",
+    "nextFrame": "次のフレーム"
   }
 }

@@ -27,7 +27,8 @@
     "selected": "Wybrano",
     "online": "online",
     "approved": "Zatwierdzone",
-    "recommended": "Zalecane"
+    "recommended": "Zalecane",
+    "showAll": "Pokaż wszystkie"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Wydarzenia",
       "noEvents": "Brak nadchodzących wydarzeń",
       "viewRoute": "Zobacz trasę",
-      "goToDeparture": "Przejdź do odlotu"
+      "goToDeparture": "Przejdź do odlotu",
+      "departures": "Odloty",
+      "arrivals": "Przyloty"
     },
     "filters": {
       "country": "Kraj",
@@ -1057,7 +1060,8 @@
       "export": "Zapisz trasę kołowania",
       "exportSuccess": "Trasa kołowania zapisana",
       "summary": "przez {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Częstotliwości"
   },
   "navigation": {
     "heading": "KURS",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Siatka lotniska",
         "mesh": "Siatka terenu",
         "unrecognized": "Nierozpoznane"
+      },
+      "badge": {
+        "airports": "Lotnisko",
+        "defaultAirports": "Domyślne",
+        "libraries": "Biblioteka",
+        "other": "Inne",
+        "overlays": "Nakładka",
+        "mesh": "Siatka"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Przeładuj",
       "quit": "Zakończ"
     }
+  },
+  "weatherRadar": {
+    "controls": "Sterowanie radarem pogody",
+    "previousFrame": "Poprzednia klatka",
+    "nextFrame": "Następna klatka"
   }
 }

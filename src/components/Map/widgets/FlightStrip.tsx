@@ -261,8 +261,8 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
               <DataColumn
                 label={t('flightStrip.wind')}
-                value={formatWind(planeState?.windDirection, speed(planeState?.windSpeed))}
-                unit={t(`units.${units.speed}`)}
+                value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
+                unit={t('units.kt')}
                 secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
               />
             </div>

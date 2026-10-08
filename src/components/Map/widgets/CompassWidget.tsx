@@ -194,7 +194,7 @@ function CompassWidget() {
         <div
           className={cn(
             'mt-2 flex flex-col items-center rounded-md',
-            'border-border/50 border bg-black/30 px-2 py-1',
+            'border-border/50 bg-background/60 border px-2 py-1',
             'text-primary font-mono text-sm font-bold tracking-wider tabular-nums',
             // When terrain is on, lock the pill to the rose width so the
             // elevation value can swing from sea level to Everest without

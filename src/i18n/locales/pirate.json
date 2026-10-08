@@ -27,7 +27,8 @@
     "selected": "Chosen",
     "online": "aboard",
     "approved": "Stamped aye",
-    "recommended": "Cap'n's pick"
+    "recommended": "Cap'n's pick",
+    "showAll": "Show all of 'em"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Gatherings",
       "noEvents": "No events on the horizon",
       "viewRoute": "View course",
-      "goToDeparture": "Go ta Departure"
+      "goToDeparture": "Go ta Departure",
+      "departures": "Ships Sailin'",
+      "arrivals": "Ships Makin' Port"
     },
     "filters": {
       "country": "Nation",
@@ -1057,7 +1060,8 @@
       "export": "Stow taxi route",
       "exportSuccess": "Taxi route stowed",
       "summary": "via {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Freqs"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Airport terrain mesh",
         "mesh": "Terrain mesh",
         "unrecognized": "Mystery cargo"
+      },
+      "badge": {
+        "airports": "Port",
+        "defaultAirports": "Stock",
+        "libraries": "Chest",
+        "other": "Odds",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Hoist Again",
       "quit": "Abandon Ship"
     }
+  },
+  "weatherRadar": {
+    "controls": "Storm-spyglass helm",
+    "previousFrame": "Back a frame",
+    "nextFrame": "Forward a frame"
   }
 }

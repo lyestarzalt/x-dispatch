@@ -27,7 +27,8 @@
     "selected": "已选择",
     "online": "在线",
     "approved": "已批准",
-    "recommended": "推荐"
+    "recommended": "推荐",
+    "showAll": "显示全部"
   },
   "units": {
     "ft": "英尺",
@@ -384,7 +385,9 @@
       "events": "活动",
       "noEvents": "暂无活动",
       "viewRoute": "查看航线",
-      "goToDeparture": "前往出发地"
+      "goToDeparture": "前往出发地",
+      "departures": "出发",
+      "arrivals": "到达"
     },
     "filters": {
       "country": "国家",
@@ -1057,7 +1060,8 @@
       "export": "保存滑行路线",
       "exportSuccess": "滑行路线已保存",
       "summary": "经 {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "频率"
   },
   "navigation": {
     "heading": "航向",
@@ -1535,6 +1539,14 @@
         "airportMesh": "机场网格",
         "mesh": "地形网格",
         "unrecognized": "未识别"
+      },
+      "badge": {
+        "airports": "机场",
+        "defaultAirports": "默认",
+        "libraries": "库",
+        "other": "其他",
+        "overlays": "叠加",
+        "mesh": "网格"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "重新加载",
       "quit": "退出"
     }
+  },
+  "weatherRadar": {
+    "controls": "气象雷达控制",
+    "previousFrame": "上一帧",
+    "nextFrame": "下一帧"
   }
 }

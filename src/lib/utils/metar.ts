@@ -78,7 +78,8 @@ export function formatCeiling(
   const hasClear = clouds.some(
     (c) => c.quantity === CloudQuantity.SKC || c.quantity === CloudQuantity.NSC
   );
-  if (hasClear || clouds.length === 0) return opts.verbose ? 'Clear' : 'CLR';
+  // A METAR code in every style, like CALM and CAVOK, so it needs no translation.
+  if (hasClear || clouds.length === 0) return 'CLR';
   const lowest = clouds[0];
   if (lowest?.height !== undefined) {
     return formatCloudLayer(lowest.quantity, lowest.height, opts);

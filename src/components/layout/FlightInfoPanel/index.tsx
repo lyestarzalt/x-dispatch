@@ -13,8 +13,8 @@ import {
   Scale,
   X,
 } from 'lucide-react';
-import { DistanceUnit, parseMetar } from 'metar-taf-parser';
-import type { IAltimeter, IMetar, IWind, Visibility } from 'metar-taf-parser';
+import { parseMetar } from 'metar-taf-parser';
+import type { IMetar } from 'metar-taf-parser';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
+import { formatAltimeter, formatVisibility, formatWind } from '@/lib/utils/metar';
 import {
   formatDistance,
   formatFlightTime,
@@ -124,7 +125,7 @@ function FlightInfoPanel() {
               size="icon"
               className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
               onClick={openSimbriefDialog}
-              tooltip={t('simbrief.openFullBriefing', 'Open full briefing')}
+              tooltip={t('simbrief.openFullBriefing')}
             >
               <Maximize2 className="h-4 w-4" />
             </Button>
@@ -597,7 +598,9 @@ function WeatherCard({
       {metar && (
         <div className="mb-2 grid grid-cols-4 gap-1 text-center">
           <div>
-            <p className="font-mono text-[10px] font-medium">{formatWind(metar.wind)}</p>
+            <p className="font-mono text-[10px] font-medium">
+              {formatWind(metar.wind, { bare: true })}
+            </p>
             <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.wind')}</p>
           </div>
           <div>
@@ -613,7 +616,9 @@ function WeatherCard({
             <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.temp')}</p>
           </div>
           <div>
-            <p className="font-mono text-[10px] font-medium">{formatAltimeter(metar.altimeter)}</p>
+            <p className="font-mono text-[10px] font-medium">
+              {formatAltimeter(metar.altimeter, { bare: true })}
+            </p>
             <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.qnh')}</p>
           </div>
         </div>
@@ -624,32 +629,6 @@ function WeatherCard({
       </p>
     </div>
   );
-}
-
-// METAR formatting helpers
-function formatWind(wind: IWind | undefined): string {
-  if (!wind) return '—';
-  if (wind.speed === 0) return 'CALM';
-  const dir = wind.degrees !== undefined ? `${String(wind.degrees).padStart(3, '0')}°` : 'VRB';
-  const gust = wind.gust ? `G${wind.gust}` : '';
-  return `${dir}/${wind.speed}${gust}`;
-}
-
-function formatVisibility(vis: Visibility | undefined, cavok?: true): string {
-  if (cavok) return 'CAVOK';
-  if (!vis) return '—';
-  if (vis.unit === DistanceUnit.StatuteMiles) {
-    if (vis.value >= 10) return '>10SM';
-    return `${vis.value}SM`;
-  }
-  if (vis.value >= 9999) return '>10km';
-  return `${(vis.value / 1000).toFixed(1)}km`;
-}
-
-function formatAltimeter(alt: IAltimeter | undefined): string {
-  if (!alt) return '—';
-  if (alt.unit === 'inHg') return `${alt.value.toFixed(2)}"`;
-  return `${alt.value}`;
 }
 
 export default memo(FlightInfoPanel);

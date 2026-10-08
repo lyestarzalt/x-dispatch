@@ -1,8 +1,8 @@
 import { Fragment, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, ExternalLink, PlaneLanding, PlaneTakeoff } from 'lucide-react';
-import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
-import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
+import { Intensity } from 'metar-taf-parser';
+import type { IWeatherCondition } from 'metar-taf-parser';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { formatFrequency } from '@/lib/utils/format';
 import { type Degrees, type NauticalMiles, runwayLengthFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { formatAltimeter, formatCeiling, formatVisibility, formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
 import { buildAirportAtcRows } from '@/lib/vatsimSectors/airportAtc';
 import { trackEvent, useNavDataQuery } from '@/queries';
@@ -326,14 +327,14 @@ function ConditionsCard({
           <span className="text-muted-foreground flex items-center gap-2 text-xs">
             <span
               className="text-cat-emerald flex items-center gap-1"
-              aria-label={`${liveTraffic.departures} departures`}
+              aria-label={`${liveTraffic.departures} ${t('explore.vatsim.departures')}`}
             >
               <PlaneTakeoff className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.departures}</span>
             </span>
             <span
               className="text-cat-amber flex items-center gap-1"
-              aria-label={`${liveTraffic.arrivals} arrivals`}
+              aria-label={`${liveTraffic.arrivals} ${t('explore.vatsim.arrivals')}`}
             >
               <PlaneLanding className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.arrivals}</span>
@@ -343,16 +344,19 @@ function ConditionsCard({
       )}
       {metar && (
         <div className="bg-card/40 rounded-lg px-3 py-2.5 text-sm">
-          <KvRow label={t('airportInfo.conditions.wind')} value={formatWind(metar.wind)} />
+          <KvRow label={t('airportInfo.conditions.wind')} value={formatWind(metar.wind, VERBOSE)} />
           <KvRow
             label={t('airportInfo.conditions.visibility')}
-            value={formatVisibility(metar.visibility, metar.cavok)}
+            value={formatVisibility(metar.visibility, metar.cavok, VERBOSE)}
           />
           <KvRow
             label={t('airportInfo.conditions.ceiling')}
-            value={formatCeiling(metar.clouds, metar.verticalVisibility)}
+            value={formatCeiling(metar.clouds, metar.verticalVisibility, VERBOSE)}
           />
-          <KvRow label={t('airportInfo.conditions.qnh')} value={formatAltimeter(metar.altimeter)} />
+          <KvRow
+            label={t('airportInfo.conditions.qnh')}
+            value={formatAltimeter(metar.altimeter, VERBOSE)}
+          />
           <KvRow
             label={t('airportInfo.conditions.tempDew')}
             value={t('airportInfo.conditions.tempDewValue', {
@@ -617,9 +621,7 @@ function FrequenciesSection({
   return (
     <section>
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <h4 className="xp-section-heading mb-0 border-b-0">
-          {t('airportInfo.frequencies', 'Frequencies')}
-        </h4>
+        <h4 className="xp-section-heading mb-0 border-b-0">{t('airportInfo.frequencies')}</h4>
         {vatsimEnabled && onlineCount > 0 && (
           <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
             <span className="bg-cat-emerald h-1.5 w-1.5 animate-pulse rounded-full" />
@@ -650,12 +652,12 @@ function FrequenciesSection({
           {showAll ? (
             <>
               <ChevronDown className="h-3 w-3 rotate-180" />
-              {t('common.showLess', 'Show less')}
+              {t('common.showLess')}
             </>
           ) : (
             <>
               <ChevronDown className="h-3 w-3" />
-              {t('common.showAll', 'Show all')} · {hidden} {t('sidebar.more')}
+              {t('common.showAll')} · {hidden} {t('sidebar.more')}
             </>
           )}
         </Button>
@@ -883,54 +885,9 @@ function freqOrderRank(type: FrequencyType): number {
 
 // Re-typed inline because metar-taf-parser doesn't export the parsed shape;
 // we just borrow the field set the hook already returns.
+const VERBOSE = { verbose: true } as const;
+
 type ParsedMetar = NonNullable<ReturnType<typeof useVatsimMetarQuery>['data']>['parsed'];
-
-function formatWind(wind: IWind | undefined): string {
-  if (!wind) return '—';
-  if (wind.speed === 0) return 'CALM';
-  const dir = wind.degrees !== undefined ? `${String(wind.degrees).padStart(3, '0')}°` : 'VRB';
-  const gust = wind.gust ? `G${wind.gust}` : '';
-  return `${dir} / ${wind.speed}${gust}kt`;
-}
-
-function formatVisibility(vis: Visibility | undefined, cavok?: true): string {
-  if (cavok) return 'CAVOK';
-  if (!vis) return '—';
-  if (vis.unit === DistanceUnit.StatuteMiles) {
-    if (vis.value >= 10) return '>10 SM';
-    return `${vis.value} SM`;
-  }
-  if (vis.value >= 9999) return '>10 km';
-  return `${(vis.value / 1000).toFixed(1)} km`;
-}
-
-function formatCeiling(clouds: ICloud[], verticalVisibility?: number): string {
-  if (verticalVisibility !== undefined) {
-    return `VV ${String(verticalVisibility).padStart(3, '0')}`;
-  }
-  for (const cloud of clouds) {
-    if (
-      (cloud.quantity === CloudQuantity.BKN || cloud.quantity === CloudQuantity.OVC) &&
-      cloud.height !== undefined
-    ) {
-      return `${cloud.quantity} ${cloud.height.toLocaleString()} ft`;
-    }
-  }
-  const hasClear = clouds.some(
-    (c) => c.quantity === CloudQuantity.SKC || c.quantity === CloudQuantity.NSC
-  );
-  if (hasClear || clouds.length === 0) return 'Clear';
-  if (clouds[0]?.height !== undefined) {
-    return `${clouds[0].quantity} ${clouds[0].height.toLocaleString()} ft`;
-  }
-  return '—';
-}
-
-function formatAltimeter(alt: IAltimeter | undefined): string {
-  if (!alt) return '—';
-  if (alt.unit === 'inHg') return `${alt.value.toFixed(2)} "Hg`;
-  return `${alt.value} hPa`;
-}
 
 function formatWeatherConditions(conditions: IWeatherCondition[]): string {
   return conditions

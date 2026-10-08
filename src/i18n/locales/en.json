@@ -27,7 +27,8 @@
     "selected": "Selected",
     "online": "online",
     "approved": "Approved",
-    "recommended": "Recommended"
+    "recommended": "Recommended",
+    "showAll": "Show all"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Events",
       "noEvents": "No upcoming events",
       "viewRoute": "View Route",
-      "goToDeparture": "Go to Departure"
+      "goToDeparture": "Go to Departure",
+      "departures": "Departures",
+      "arrivals": "Arrivals"
     },
     "filters": {
       "country": "Country",
@@ -1057,7 +1060,8 @@
       "export": "Save taxi route",
       "exportSuccess": "Taxi route saved",
       "summary": "via {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frequencies"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Airport Mesh",
         "mesh": "Terrain Mesh",
         "unrecognized": "Unrecognized"
+      },
+      "badge": {
+        "airports": "Airport",
+        "defaultAirports": "Default",
+        "libraries": "Library",
+        "other": "Other",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Reload",
       "quit": "Quit"
     }
+  },
+  "weatherRadar": {
+    "controls": "Weather radar controls",
+    "previousFrame": "Previous frame",
+    "nextFrame": "Next frame"
   }
 }

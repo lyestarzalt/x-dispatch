@@ -42,7 +42,7 @@ export function showSupportToastIfEligible(): void {
                 className="gap-1.5"
                 onClick={() => {
                   trackEvent('donate_clicked', { source: 'support_prompt' });
-                  window.open(KOFI_URL, '_blank');
+                  void window.appAPI.openExternal(KOFI_URL);
                   dismiss();
                   toast.dismiss(id);
                 }}

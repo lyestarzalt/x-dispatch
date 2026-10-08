@@ -97,7 +97,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                       {t('simbriefDialog.performance.windDirSpeed', {
                         dir: takeoffConditions?.wind_direction ?? '',
                         speed: takeoffConditions?.wind_speed
-                          ? units.speed(Number(takeoffConditions.wind_speed) as Knots)
+                          ? `${Number(takeoffConditions.wind_speed)} ${t('units.kt')}`
                           : '',
                       })}
                     </p>
@@ -187,7 +187,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                       {t('simbriefDialog.performance.windDirSpeed', {
                         dir: landingConditions?.wind_direction ?? '',
                         speed: landingConditions?.wind_speed
-                          ? units.speed(Number(landingConditions.wind_speed) as Knots)
+                          ? `${Number(landingConditions.wind_speed)} ${t('units.kt')}`
                           : '',
                       })}
                     </p>

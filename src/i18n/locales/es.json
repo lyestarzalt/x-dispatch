@@ -27,7 +27,8 @@
     "selected": "Seleccionado",
     "online": "en línea",
     "approved": "Aprobado",
-    "recommended": "Recomendado"
+    "recommended": "Recomendado",
+    "showAll": "Mostrar todos"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Eventos",
       "noEvents": "Sin eventos próximos",
       "viewRoute": "Ver ruta",
-      "goToDeparture": "Ir a salida"
+      "goToDeparture": "Ir a salida",
+      "departures": "Salidas",
+      "arrivals": "Llegadas"
     },
     "filters": {
       "country": "País",
@@ -1057,7 +1060,8 @@
       "export": "Guardar ruta de rodaje",
       "exportSuccess": "Ruta de rodaje guardada",
       "summary": "vía {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frecuencias"
   },
   "navigation": {
     "heading": "RUMBO",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Malla de aeropuerto",
         "mesh": "Malla de terreno",
         "unrecognized": "No reconocido"
+      },
+      "badge": {
+        "airports": "Aeropuerto",
+        "defaultAirports": "Predet.",
+        "libraries": "Biblioteca",
+        "other": "Otro",
+        "overlays": "Overlay",
+        "mesh": "Malla"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Recargar",
       "quit": "Salir"
     }
+  },
+  "weatherRadar": {
+    "controls": "Controles del radar meteorológico",
+    "previousFrame": "Fotograma anterior",
+    "nextFrame": "Fotograma siguiente"
   }
 }

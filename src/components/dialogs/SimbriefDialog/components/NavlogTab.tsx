@@ -273,7 +273,7 @@ function NavlogRow({
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.windComponent')}</p>
             <p className={cn('font-mono', isHeadwind ? 'text-destructive' : 'text-success')}>
               {t('simbriefDialog.navlog.windCompValue', {
-                value: `${isHeadwind ? '' : '+'}${units.speed(windComp as Knots)}`,
+                value: `${isHeadwind ? '' : '+'}${Math.round(windComp)} ${t('units.kt')}`,
                 tag: isHeadwind
                   ? t('simbriefDialog.navlog.headwind')
                   : t('simbriefDialog.navlog.tailwind'),

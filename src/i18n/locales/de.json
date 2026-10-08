@@ -27,7 +27,8 @@
     "selected": "Ausgewählt",
     "online": "online",
     "approved": "Genehmigt",
-    "recommended": "Empfohlen"
+    "recommended": "Empfohlen",
+    "showAll": "Alle anzeigen"
   },
   "units": {
     "ft": "ft",
@@ -384,7 +385,9 @@
       "events": "Veranstaltungen",
       "noEvents": "Keine bevorstehenden Veranstaltungen",
       "viewRoute": "Route anzeigen",
-      "goToDeparture": "Zum Abflugort"
+      "goToDeparture": "Zum Abflugort",
+      "departures": "Abflüge",
+      "arrivals": "Ankünfte"
     },
     "filters": {
       "country": "Land",
@@ -1057,7 +1060,8 @@
       "export": "Rollroute speichern",
       "exportSuccess": "Rollroute gespeichert",
       "summary": "über {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frequenzen"
   },
   "navigation": {
     "heading": "KURS",
@@ -1535,6 +1539,14 @@
         "airportMesh": "Flughafen-Mesh",
         "mesh": "Gelände-Mesh",
         "unrecognized": "Nicht erkannt"
+      },
+      "badge": {
+        "airports": "Flughafen",
+        "defaultAirports": "Standard",
+        "libraries": "Bibliothek",
+        "other": "Sonstige",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -2115,5 +2127,10 @@
       "reload": "Neu laden",
       "quit": "Beenden"
     }
+  },
+  "weatherRadar": {
+    "controls": "Wetterradar-Steuerung",
+    "previousFrame": "Vorheriges Bild",
+    "nextFrame": "Nächstes Bild"
   }
 }

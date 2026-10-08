@@ -23,15 +23,8 @@ import {
   Wind,
   Zap,
 } from 'lucide-react';
-import { CloudQuantity, DistanceUnit, Intensity, parseMetar } from 'metar-taf-parser';
-import type {
-  IAltimeter,
-  ICloud,
-  IMetar,
-  IWeatherCondition,
-  IWind,
-  Visibility,
-} from 'metar-taf-parser';
+import { parseMetar } from 'metar-taf-parser';
+import type { IMetar } from 'metar-taf-parser';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +41,13 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils/helpers';
+import {
+  formatAltimeter,
+  formatCeiling,
+  formatVisibility,
+  formatWeatherConditions,
+  formatWind,
+} from '@/lib/utils/metar';
 import { useTrackFeatureOpened } from '@/queries';
 import {
   formatDistance,
@@ -119,15 +119,15 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-4xl gap-0 overflow-hidden p-0">
         {/* Header with SimBrief branding */}
-        <div className="from-background via-card to-background flex items-center justify-between border-b bg-gradient-to-r px-6 py-4">
+        <div className="bg-card flex items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-4">
             <SimbriefLogo size="md" className="opacity-90" />
             <div>
-              <DialogTitle className="text-lg font-semibold text-white">
-                {t('simbrief.title', 'Operational Flight Plan')}
+              <DialogTitle className="text-foreground text-lg font-semibold">
+                {t('simbrief.title')}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground text-sm">
-                {t('simbrief.description', 'Import your latest dispatch from SimBrief')}
+                {t('simbrief.description')}
               </DialogDescription>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               ) : (
                 <RefreshCw className="mr-2 h-4 w-4" />
               )}
-              {t('simbrief.refetch', 'Refresh')}
+              {t('simbrief.refetch')}
             </Button>
           )}
         </div>
@@ -156,14 +156,9 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               <AlertCircle className="text-warning h-12 w-12" />
             </div>
             <div className="space-y-2 text-center">
-              <p className="text-lg font-medium">
-                {t('simbrief.notConfigured', 'SimBrief not configured')}
-              </p>
+              <p className="text-lg font-medium">{t('simbrief.notConfigured')}</p>
               <p className="text-muted-foreground max-w-sm text-sm">
-                {t(
-                  'simbrief.configurePilotId',
-                  'Configure your Pilot ID in Settings → SimBrief to import flight plans'
-                )}
+                {t('simbrief.configurePilotId')}
               </p>
             </div>
           </div>
@@ -180,9 +175,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                     <Spinner className="text-primary size-12" />
                   </div>
                 </div>
-                <p className="text-muted-foreground text-sm">
-                  {t('simbrief.fetching', 'Fetching your latest dispatch...')}
-                </p>
+                <p className="text-muted-foreground text-sm">{t('simbrief.fetching')}</p>
               </>
             ) : fetchMutation.isError ? (
               <>
@@ -190,13 +183,11 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                   <AlertCircle className="text-destructive h-12 w-12" />
                 </div>
                 <div className="space-y-2 text-center">
-                  <p className="text-destructive font-medium">
-                    {t('simbrief.fetchError', 'Failed to fetch flight plan')}
-                  </p>
+                  <p className="text-destructive font-medium">{t('simbrief.fetchError')}</p>
                   <p className="text-muted-foreground text-sm">{fetchMutation.error.message}</p>
                 </div>
                 <Button onClick={handleFetch} variant="outline">
-                  {t('common.retry', 'Retry')}
+                  {t('common.retry')}
                 </Button>
               </>
             ) : (
@@ -205,17 +196,14 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                   <Plane className="text-primary h-16 w-16" />
                 </div>
                 <div className="space-y-2 text-center">
-                  <p className="text-lg font-medium">{t('simbrief.ready', 'Ready to Import')}</p>
+                  <p className="text-lg font-medium">{t('simbrief.ready')}</p>
                   <p className="text-muted-foreground max-w-sm text-sm">
-                    {t(
-                      'simbrief.clickToFetch',
-                      'Imports your most recently generated flight plan from SimBrief. Make sure to generate one on simbrief.com first.'
-                    )}
+                    {t('simbrief.clickToFetch')}
                   </p>
                 </div>
                 <Button onClick={handleFetch} size="lg" className="gap-2">
                   <SimbriefLogo size="xs" className="brightness-0 invert" />
-                  {t('simbrief.fetchLatest', 'Fetch Latest OFP')}
+                  {t('simbrief.fetchLatest')}
                 </Button>
               </>
             )}
@@ -317,12 +305,12 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
             )}
             <div className="flex gap-2">
               <Button variant="outline" onClick={onClose}>
-                {t('common.cancel', 'Cancel')}
+                {t('common.cancel')}
               </Button>
               {ofp && (
                 <Button onClick={handleImport} className="gap-2">
                   <Route className="h-4 w-4" />
-                  {t('simbrief.import', 'Import Flight Plan')}
+                  {t('simbrief.import')}
                 </Button>
               )}
             </div>
@@ -474,7 +462,7 @@ function StatItem({
       <Icon className="text-muted-foreground h-4 w-4" />
       <div>
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">{label}</p>
-        <p className="font-mono text-sm font-medium text-white">{value}</p>
+        <p className="text-foreground font-mono text-sm font-medium">{value}</p>
       </div>
     </div>
   );
@@ -820,7 +808,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                       isWarning && !isCritical && '[&>div]:bg-warning'
                     )}
                   />
-                  <span className="absolute top-1/2 right-2 -translate-y-1/2 font-mono text-[10px] font-bold text-white">
+                  <span className="text-foreground absolute top-1/2 right-2 -translate-y-1/2 font-mono text-[10px] font-bold">
                     {percentage.toFixed(1)}%
                   </span>
                 </div>
@@ -1094,66 +1082,4 @@ function MetarItem({
       <p className="text-muted-foreground text-[9px]">{label}</p>
     </div>
   );
-}
-
-// METAR formatting helpers
-function formatWind(wind: IWind | undefined): string {
-  if (!wind) return '—';
-  if (wind.speed === 0) return 'CALM';
-  const dir = wind.degrees !== undefined ? `${String(wind.degrees).padStart(3, '0')}°` : 'VRB';
-  const gust = wind.gust ? `G${wind.gust}` : '';
-  return `${dir}/${wind.speed}${gust}kt`;
-}
-
-function formatVisibility(vis: Visibility | undefined, cavok?: true): string {
-  if (cavok) return 'CAVOK';
-  if (!vis) return '—';
-  if (vis.unit === DistanceUnit.StatuteMiles) {
-    if (vis.value >= 10) return '>10SM';
-    return `${vis.value}SM`;
-  }
-  if (vis.value >= 9999) return '>10km';
-  return `${(vis.value / 1000).toFixed(1)}km`;
-}
-
-function formatCeiling(clouds: ICloud[], verticalVisibility?: number): string {
-  if (verticalVisibility !== undefined) {
-    return `VV${String(verticalVisibility).padStart(3, '0')}`;
-  }
-  for (const cloud of clouds) {
-    if (
-      (cloud.quantity === CloudQuantity.BKN || cloud.quantity === CloudQuantity.OVC) &&
-      cloud.height !== undefined
-    ) {
-      return `${cloud.quantity}${String(cloud.height).padStart(3, '0')}`;
-    }
-  }
-  const hasClear = clouds.some(
-    (c) => c.quantity === CloudQuantity.SKC || c.quantity === CloudQuantity.NSC
-  );
-  if (hasClear || clouds.length === 0) return 'CLR';
-  if (clouds[0]?.height !== undefined) {
-    return `${clouds[0].quantity}${String(clouds[0].height).padStart(3, '0')}`;
-  }
-  return '—';
-}
-
-function formatAltimeter(alt: IAltimeter | undefined): string {
-  if (!alt) return '—';
-  if (alt.unit === 'inHg') return `${alt.value.toFixed(2)}"`;
-  return `${alt.value}hPa`;
-}
-
-function formatWeatherConditions(conditions: IWeatherCondition[]): string {
-  return conditions
-    .map((c) => {
-      let str = '';
-      if (c.intensity === Intensity.LIGHT) str += '-';
-      else if (c.intensity === Intensity.HEAVY) str += '+';
-      else if (c.intensity === Intensity.IN_VICINITY) str += 'VC';
-      if (c.descriptive) str += c.descriptive;
-      str += c.phenomenons.join('');
-      return str;
-    })
-    .join(' ');
 }

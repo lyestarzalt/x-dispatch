@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { type TFunction } from 'i18next';
 import {
   Clock,
   CloudFog,
@@ -21,6 +22,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useUnits } from '@/hooks/useUnits';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
 import { useAircraftList } from '@/queries/useLaunchQuery';
@@ -49,19 +51,21 @@ const WEATHER_GRADIENTS: Record<string, string> = {
   custom: 'from-teal-500/15 via-teal-500/5 to-transparent',
 };
 
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return 'Just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 14) return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 8) return `${weeks}w ago`;
-  return new Date(iso).toLocaleDateString();
+/** "5 min ago" in the UI language; Intl rejects made-up locales (pirate), so fall back to English. */
+function formatRelativeTime(iso: string, language: string): string {
+  const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
+  const days = Math.round(seconds / 86_400);
+  if (Math.abs(days) >= 14) return new Date(iso).toLocaleDateString(language);
+  let rtf: Intl.RelativeTimeFormat;
+  try {
+    rtf = new Intl.RelativeTimeFormat(language, { numeric: 'auto', style: 'narrow' });
+  } catch {
+    rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow' });
+  }
+  if (Math.abs(seconds) < 60) return rtf.format(0, 'second');
+  if (Math.abs(seconds) < 3_600) return rtf.format(Math.round(seconds / 60), 'minute');
+  if (Math.abs(seconds) < 86_400) return rtf.format(Math.round(seconds / 3_600), 'hour');
+  return rtf.format(days, 'day');
 }
 
 function getWeatherGradientKey(entry: LogbookEntry): string {
@@ -70,23 +74,16 @@ function getWeatherGradientKey(entry: LogbookEntry): string {
   return entry.weatherPreset || 'clear';
 }
 
-function getWeatherLabel(entry: LogbookEntry): string {
-  if (entry.weatherMode === 'real') return 'Live';
-  if (entry.weatherMode === 'custom') return 'Custom';
-  return entry.weatherPreset.charAt(0).toUpperCase() + entry.weatherPreset.slice(1);
+function getWeatherLabel(entry: LogbookEntry, t: TFunction): string {
+  if (entry.weatherMode === 'real') return t('launcher.time.live');
+  if (entry.weatherMode === 'custom') return t('launcher.time.custom');
+  return t(`launcher.weather.${entry.weatherPreset || 'clear'}`);
 }
 
 function formatFuelSummary(percentages: number[]): string {
   if (percentages.length === 0) return '—';
   const avg = Math.round(percentages.reduce((s, v) => s + v, 0) / percentages.length);
   return `${avg}%`;
-}
-
-function formatPayloadSummary(weights: number[]): string {
-  const total = weights.reduce((s, v) => s + v, 0);
-  if (total === 0) return 'Empty';
-  if (total >= 1000) return `${(total / 1000).toFixed(1)}k lbs`;
-  return `${Math.round(total)} lbs`;
 }
 
 function formatTimeOfDay(hours: number): string {
@@ -190,7 +187,9 @@ interface LogbookCardProps {
 }
 
 function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const units = useUnits();
+  const payloadLbs = entry.payloadWeights.reduce((sum, w) => sum + w, 0);
   const [hovered, setHovered] = useState(false);
   const { data: previewImage } = useAircraftImage(entry.previewImagePath);
 
@@ -253,13 +252,15 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
         {/* Row 2: Metadata as icon·value pairs (AircraftPreview dot-separator pattern) */}
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
           <WeatherIcon className="h-3 w-3 shrink-0" />
-          <span>{getWeatherLabel(entry)}</span>
+          <span>{getWeatherLabel(entry, t)}</span>
           <span className="text-border">·</span>
           <Fuel className="h-3 w-3 shrink-0" />
           <span className="font-mono">{formatFuelSummary(entry.tankPercentages)}</span>
           <span className="text-border">·</span>
           <Weight className="h-3 w-3 shrink-0" />
-          <span className="font-mono">{formatPayloadSummary(entry.payloadWeights)}</span>
+          <span className="font-mono">
+            {payloadLbs === 0 ? t('weightBalance.empty') : units.weight(payloadLbs)}
+          </span>
           <span className="text-border">·</span>
           <Clock className="h-3 w-3 shrink-0" />
           <span className="font-mono">
@@ -281,10 +282,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 pt-2 pb-7">
         {isCustomPosition ? (
           <span className="text-foreground font-mono text-sm leading-tight font-bold">
-            {entry.startPosition.latitude >= 0 ? 'N' : 'S'}
-            {Math.abs(entry.startPosition.latitude).toFixed(3)}°{' '}
-            {entry.startPosition.longitude >= 0 ? 'E' : 'W'}
-            {Math.abs(entry.startPosition.longitude).toFixed(3)}°
+            {units.coordinates(entry.startPosition.latitude, entry.startPosition.longitude)}
           </span>
         ) : (
           <>
@@ -306,7 +304,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       {/* ── Bottom-right cluster: timestamp + actions ─────── */}
       <div className="absolute right-2 bottom-1.5 z-10 flex items-center gap-1.5">
         <span className="text-muted-foreground/40 font-mono text-[10px]">
-          {formatRelativeTime(entry.launchedAt)}
+          {formatRelativeTime(entry.launchedAt, i18n.language)}
         </span>
         <button
           type="button"

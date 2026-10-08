@@ -28,6 +28,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import type { FeetPerMinute } from '@/lib/utils/units';
 import { useTrackFeatureOpened } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
 import type {
@@ -597,6 +598,7 @@ function AtmosphericPanel({
   onUpdate: (partial: Partial<import('../weatherTypes').CustomWeatherState>) => void;
 }) {
   const { t } = useTranslation();
+  const units = useUnits();
   const visibilityIndex = findClosestVisibilityIndex(custom.visibility_km);
 
   const [visUnit, setVisUnit] = useState<'km' | 'SM'>('km');
@@ -864,7 +866,7 @@ function AtmosphericPanel({
           <span className="text-foreground font-mono">
             {custom.thermal_fpm === 0
               ? t('launcher.weatherDialog.thermalsNone')
-              : `${custom.thermal_fpm} fpm`}
+              : units.verticalSpeed(custom.thermal_fpm as FeetPerMinute)}
           </span>
         </div>
         <Slider
