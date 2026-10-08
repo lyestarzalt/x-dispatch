@@ -83,16 +83,16 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         >
           <Button
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
+            size="icon-sm"
+            className="text-muted-foreground/40 hover:text-foreground"
             onClick={() => setIsCollapsed(true)}
           >
             <ChevronRight className="h-4 w-4 rotate-180" />
           </Button>
           <Button
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
+            size="icon-sm"
+            className="text-muted-foreground/40 hover:text-foreground"
             onClick={() => setExploreOpen(false)}
           >
             <X className="h-4 w-4" />

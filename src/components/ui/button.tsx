@@ -6,7 +6,7 @@ import { TITLE_BAR_COLLISION_PADDING } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/helpers';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
@@ -23,8 +23,12 @@ const buttonVariants = cva(
       size: {
         default: 'h-10 px-4 py-2',
         sm: 'h-9 px-3',
+        /** Dense panels and toolbars (plan builder, explore, map widgets). */
+        xs: 'h-7 gap-1.5 px-2 text-xs',
         lg: 'h-11 px-8',
         icon: 'h-10 w-10',
+        'icon-sm': 'h-7 w-7',
+        'icon-xs': 'h-6 w-6',
       },
     },
     defaultVariants: {

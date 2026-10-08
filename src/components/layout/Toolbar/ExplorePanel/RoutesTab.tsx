@@ -29,14 +29,14 @@ export function RoutesTab({ airports, selectedRoute, onSelectRoute }: RoutesTabP
     <div className="space-y-4">
       <ToggleGroup
         type="single"
-        size="sm"
+        size="xs"
         variant="outline"
         value={mode}
         onValueChange={(v) => v && setMode(v as RoutesMode)}
         className="w-full"
       >
         {MODES.map((m) => (
-          <ToggleGroupItem key={m} value={m} className="h-7 min-w-0 flex-1 px-2 text-xs">
+          <ToggleGroupItem key={m} value={m} className="min-w-0 flex-1">
             <span className="truncate">{t(`explorePanel.routes.mode.${m}`)}</span>
           </ToggleGroupItem>
         ))}

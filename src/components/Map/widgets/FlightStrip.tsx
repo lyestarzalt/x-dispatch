@@ -166,7 +166,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
           <div
             className={cn(
               'flex items-center rounded-xl border',
-              'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
+              'border-border/50 bg-card/90 shadow-xl',
               'backdrop-blur-xl',
               !detached && 'cursor-grab active:cursor-grabbing'
             )}
@@ -281,7 +281,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
                     followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
                   }
                 >
-                  <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                  <Crosshair className={cn('h-3.5 w-3.5', followPlane && 'animate-pulse')} />
                   {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
                 </Button>
                 <DesktopOnly>

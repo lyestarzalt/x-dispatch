@@ -191,13 +191,13 @@ export function RandomRouteFinder({
         <span className="xp-label min-w-0 truncate">{t('explorePanel.random.aircraft')}</span>
         <ToggleGroup
           type="single"
-          size="sm"
+          size="xs"
           variant="outline"
           value={cls}
           onValueChange={(v) => v && setCls(v as RangeRingCategory)}
         >
           {CLASSES.map((c) => (
-            <ToggleGroupItem key={c} value={c} className="h-7 px-2 text-xs">
+            <ToggleGroupItem key={c} value={c}>
               {t(`planBuilder.class.${c}`)}
             </ToggleGroupItem>
           ))}
@@ -208,17 +208,13 @@ export function RandomRouteFinder({
         <div className="flex items-center justify-between gap-2">
           <ToggleGroup
             type="single"
-            size="sm"
+            size="xs"
             variant="outline"
             value={mode}
             onValueChange={changeMode}
           >
-            <ToggleGroupItem value="time" className="h-7 px-2 text-xs">
-              {t('explorePanel.random.time')}
-            </ToggleGroupItem>
-            <ToggleGroupItem value="distance" className="h-7 px-2 text-xs">
-              {t('explorePanel.random.distance')}
-            </ToggleGroupItem>
+            <ToggleGroupItem value="time">{t('explorePanel.random.time')}</ToggleGroupItem>
+            <ToggleGroupItem value="distance">{t('explorePanel.random.distance')}</ToggleGroupItem>
           </ToggleGroup>
           <span className="xp-value truncate text-xs">{rangeLabel}</span>
         </div>
@@ -249,14 +245,14 @@ export function RandomRouteFinder({
         <CollapsibleContent className="space-y-3 pt-3">
           <ToggleGroup
             type="single"
-            size="sm"
+            size="xs"
             variant="outline"
             value={scope}
             onValueChange={(v) => v && setScope(v as RouteScope)}
             className="w-full"
           >
             {SCOPES.map((s) => (
-              <ToggleGroupItem key={s} value={s} className="h-7 min-w-0 flex-1 px-2 text-xs">
+              <ToggleGroupItem key={s} value={s} className="min-w-0 flex-1">
                 <span className="truncate">{t(`explorePanel.random.scope.${s}`)}</span>
               </ToggleGroupItem>
             ))}
@@ -354,8 +350,8 @@ export function RandomRouteFinder({
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 shrink-0"
+                      size="icon-sm"
+                      className="shrink-0"
                       onClick={() => pick(route.airport)}
                       aria-label={actionLabel}
                     >

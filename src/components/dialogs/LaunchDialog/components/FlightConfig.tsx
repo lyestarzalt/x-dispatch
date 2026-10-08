@@ -205,12 +205,7 @@ export function FlightConfig({
               {t('launcher.weightFuelLabel')}
             </Label>
             {selectedAircraft && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setWeightDialogOpen(true)}
-                className="h-6 w-6"
-              >
+              <Button variant="ghost" size="icon-xs" onClick={() => setWeightDialogOpen(true)}>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             )}
@@ -377,7 +372,7 @@ export function FlightConfig({
         >
           {isLaunching ? (
             <>
-              <Spinner className="mr-2" />
+              <Spinner className="" />
               {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
             </>
           ) : isXPlaneRunning ? (

@@ -219,7 +219,7 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogPanel
         centered
-        className="border-border bg-background fixed top-[50%] left-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-lg border shadow-xl"
+        className="border-border bg-background fixed top-[50%] left-[50%] z-50 flex max-h-[calc(100vh-3rem)] w-[720px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-lg border"
         aria-describedby={undefined}
       >
         <VisuallyHidden.Root>
@@ -239,17 +239,17 @@ export function WeightBalanceDialog({ open, onClose }: WeightBalanceDialogProps)
                     units: { ...mapSettings.units, weight: value as WeightUnit },
                   });
               }}
-              size="sm"
+              size="xs"
               className="border-border gap-0 rounded-md border"
             >
-              <ToggleGroupItem value="kg" className="h-7 rounded-r-none px-2.5 text-xs">
+              <ToggleGroupItem value="kg" className="rounded-r-none">
                 {t('units.kg')}
               </ToggleGroupItem>
-              <ToggleGroupItem value="lbs" className="h-7 rounded-l-none px-2.5 text-xs">
+              <ToggleGroupItem value="lbs" className="rounded-l-none">
                 {t('units.lbs')}
               </ToggleGroupItem>
             </ToggleGroup>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+            <Button variant="ghost" size="icon-sm" onClick={onClose}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>

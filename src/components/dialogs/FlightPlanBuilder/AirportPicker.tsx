@@ -78,8 +78,8 @@ export function AirportPicker({ airports, value, placeholder, onChange }: Airpor
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-8 h-6 w-6 -translate-y-1/2"
+            size="icon-xs"
+            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-8 -translate-y-1/2"
             onClick={() => onChange(null)}
             aria-label={t('planBuilder.clearAirport')}
           >

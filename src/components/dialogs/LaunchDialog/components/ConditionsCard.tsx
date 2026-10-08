@@ -164,7 +164,7 @@ export function ConditionsCard({
 
   return (
     <div
-      className="border-border/50 relative overflow-hidden rounded-xl border shadow-lg"
+      className="border-border/50 relative overflow-hidden rounded-lg border"
       style={{ background: `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)` }}
     >
       {/* Night sinks towards the background token; weather washes towards muted. */}
@@ -190,18 +190,18 @@ export function ConditionsCard({
           <ToggleGroup
             type="single"
             variant="subtle"
-            size="sm"
+            size="xs"
             value={useRealWorldTime ? 'live' : 'set'}
             onValueChange={(v) => {
               if (v) onModeChange(v === 'live');
             }}
             className="gap-1.5"
           >
-            <ToggleGroupItem value="live" className="h-7 gap-1 px-2.5 text-xs">
+            <ToggleGroupItem value="live" className="gap-1">
               <Radio className="h-3.5 w-3.5" />
               <span>{t('launcher.time.live')}</span>
             </ToggleGroupItem>
-            <ToggleGroupItem value="set" className="h-7 gap-1 px-2.5 text-xs">
+            <ToggleGroupItem value="set" className="gap-1">
               <Clock className="h-3.5 w-3.5" />
               <span>{t('launcher.time.set')}</span>
             </ToggleGroupItem>

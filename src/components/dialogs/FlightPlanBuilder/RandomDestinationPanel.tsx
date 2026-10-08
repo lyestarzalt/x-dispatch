@@ -54,8 +54,8 @@ export function RandomDestinationPanel({
         </div>
         <Button
           variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground h-7 w-7"
+          size="icon-sm"
+          className="text-muted-foreground hover:text-foreground"
           onClick={onClose}
           aria-label={t('common.close')}
         >

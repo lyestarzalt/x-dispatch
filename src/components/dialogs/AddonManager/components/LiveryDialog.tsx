@@ -41,8 +41,8 @@ function LiveryItem({ livery, onDelete, isPending }: LiveryItemProps) {
       {/* Delete button */}
       <Button
         variant="ghost"
-        size="icon"
-        className="text-destructive hover:bg-destructive/10 h-7 w-7"
+        size="icon-sm"
+        className="text-destructive hover:bg-destructive/10"
         onClick={() => onDelete(livery.folderName)}
         disabled={isPending}
       >

@@ -84,8 +84,8 @@ export function AircraftEntry({
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-7 w-7"
+            size="icon-sm"
+
             onClick={() => onLock(aircraft.folderName)}
             disabled={disabled}
           >
@@ -108,8 +108,8 @@ export function AircraftEntry({
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-7 w-7"
+            size="icon-sm"
+
             onClick={() => onOpenFolder(aircraft.folderName)}
           >
             <FolderOpen className="text-muted-foreground h-4 w-4" />
@@ -123,8 +123,8 @@ export function AircraftEntry({
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
-            className="text-destructive hover:bg-destructive/10 h-7 w-7"
+            size="icon-sm"
+            className="text-destructive hover:bg-destructive/10"
             onClick={() => onDelete(aircraft.folderName)}
             disabled={disabled || aircraft.locked}
           >

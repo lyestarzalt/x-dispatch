@@ -244,7 +244,7 @@ function NavlogRow({
 
         {/* Expand button */}
         <div className="flex items-center justify-end">
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggle}>
+          <Button variant="ghost" size="icon-xs" onClick={onToggle}>
             {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </Button>
         </div>

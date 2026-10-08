@@ -62,8 +62,8 @@ export function FlightStripWindow() {
       </div>
       <Button
         variant="ghost"
-        size="icon"
-        className="text-muted-foreground absolute top-1 right-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        size="icon-xs"
+        className="text-muted-foreground absolute top-1 right-1 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         style={noDragStyle}
         onClick={() => window.close()}
         aria-label={t('common.close')}

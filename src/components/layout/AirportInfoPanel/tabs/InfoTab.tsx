@@ -829,13 +829,13 @@ function TuneButton({
   return (
     <Button
       variant="outline"
-      size="sm"
+      size="xs"
       disabled={pending}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
-      className="h-7 justify-center px-2 font-mono text-xs font-semibold"
+      className="justify-center font-mono font-semibold"
     >
       {radio}
     </Button>

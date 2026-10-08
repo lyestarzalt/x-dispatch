@@ -2,6 +2,10 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { BookOpen, History, PlaneLanding, Trash2, X } from 'lucide-react';
+import {
+  FULL_SCREEN_DIALOG,
+  FULL_SCREEN_DIALOG_HEADER,
+} from '@/components/dialogs/fullScreenDialog';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import {
   AlertDialog,
@@ -18,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils/helpers';
 import { useTrackFeatureOpened } from '@/queries';
 import { useClearFlights, useFlightsQuery } from '@/queries/useFlightsQuery';
 import { type LogbookTab, useAppStore } from '@/stores/appStore';
@@ -47,14 +52,14 @@ export default function LogbookDialog() {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && closeLogbook()}>
       <DialogPanel
-        className="border-border bg-background fixed inset-x-6 top-[60px] bottom-6 z-[60] flex flex-col rounded-lg border shadow-xl"
+        className={cn(FULL_SCREEN_DIALOG, 'z-[60] flex-col')}
         aria-describedby={undefined}
       >
         <VisuallyHidden.Root>
           <DialogTitle>{t('logbook.title')}</DialogTitle>
         </VisuallyHidden.Root>
 
-        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4">
+        <div className={FULL_SCREEN_DIALOG_HEADER}>
           <div className="flex items-center gap-3">
             <BookOpen className="text-muted-foreground h-4 w-4" />
             <span className="text-sm font-medium">{t('logbook.title')}</span>
@@ -78,11 +83,11 @@ export default function LogbookDialog() {
                   <DesktopOnly>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="xs"
                       disabled={flights.length === 0}
-                      className="text-destructive hover:text-destructive h-7 text-xs"
+                      className="text-destructive hover:text-destructive"
                     >
-                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" />
                       {t('logbook.clearAll')}
                     </Button>
                   </DesktopOnly>

@@ -22,7 +22,7 @@ function VatsimAirportAtcPopup({
   );
 
   return (
-    <Card className="border-border/50 bg-card/95 w-[360px] overflow-hidden shadow-2xl">
+    <Card className="border-border/50 bg-card/95 w-[360px] overflow-hidden shadow-xl">
       <CardHeader className="border-border/40 bg-background/60 border-b px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

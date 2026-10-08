@@ -109,8 +109,8 @@ export function PluginEntry({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7"
+                size="icon-sm"
+
                 onClick={() => onLock(plugin.folderName)}
                 disabled={disabled}
               >
@@ -133,8 +133,8 @@ export function PluginEntry({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7"
+                size="icon-sm"
+
                 onClick={() => onOpenFolder(plugin.folderName)}
               >
                 <FolderOpen className="text-muted-foreground h-4 w-4" />
@@ -148,8 +148,8 @@ export function PluginEntry({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-destructive hover:bg-destructive/10 h-7 w-7"
+                size="icon-sm"
+                className="text-destructive hover:bg-destructive/10"
                 onClick={() => onDelete(plugin.folderName)}
                 disabled={disabled || plugin.locked}
               >

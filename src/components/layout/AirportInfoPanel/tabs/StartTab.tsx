@@ -121,9 +121,9 @@ export default function StartTab({
           {searchQuery && (
             <Button
               variant="ghost"
-              size="icon"
+              size="icon-xs"
               onClick={() => setSearchQuery('')}
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 -translate-y-1/2"
             >
               <X className="h-3.5 w-3.5" />
             </Button>
@@ -519,10 +519,10 @@ function RunwayStartOptions({
           <Button
             key={m}
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => onSetMode(m)}
             className={cn(
-              'h-7 flex-1 gap-1 text-xs',
+              'flex-1',
               mode === m
                 ? 'bg-cat-emerald/10 text-cat-emerald'
                 : 'text-muted-foreground hover:text-foreground'
@@ -580,10 +580,10 @@ function RunwayStartOptions({
           <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
-              size="sm"
+              size="xs"
               onClick={() => onSetTowType('winch')}
               className={cn(
-                'h-7 flex-1 text-xs',
+                'flex-1',
                 towType === 'winch'
                   ? 'bg-primary/15 text-primary'
                   : 'text-muted-foreground hover:text-foreground'
@@ -593,10 +593,10 @@ function RunwayStartOptions({
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="xs"
               onClick={() => onSetTowType('tug')}
               className={cn(
-                'h-7 flex-1 text-xs',
+                'flex-1',
                 towType === 'tug'
                   ? 'bg-primary/15 text-primary'
                   : 'text-muted-foreground hover:text-foreground'

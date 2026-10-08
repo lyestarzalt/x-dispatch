@@ -119,9 +119,9 @@ function AirportInfoPanel({
         {/* Collapse button */}
         <Button
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           className={cn(
-            'text-muted-foreground/40 hover:text-foreground absolute top-3 right-3 z-10 h-7 w-7',
+            'text-muted-foreground/40 hover:text-foreground absolute top-3 right-3 z-10',
             isCollapsed && 'pointer-events-none opacity-0'
           )}
           onClick={() => setIsCollapsed(true)}
@@ -142,8 +142,8 @@ function AirportInfoPanel({
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-muted-foreground/60 hover:text-foreground h-7 w-7"
+                size="icon-sm"
+                className="text-muted-foreground/60 hover:text-foreground"
                 onClick={() => toggleFavoriteAirport(airport.id)}
                 tooltip={
                   favoriteIcaos.includes(airport.id)
@@ -160,8 +160,8 @@ function AirportInfoPanel({
               </Button>
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-muted-foreground/60 hover:text-foreground h-7 w-7"
+                size="icon-sm"
+                className="text-muted-foreground/60 hover:text-foreground"
                 onClick={() => setHomeAirport(homeIcao === airport.id ? null : airport.id)}
                 tooltip={
                   homeIcao === airport.id

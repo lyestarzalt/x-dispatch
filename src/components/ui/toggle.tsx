@@ -16,6 +16,8 @@ const toggleVariants = cva(
       size: {
         default: 'h-10 px-3 min-w-10',
         sm: 'h-9 px-2.5 min-w-9',
+        /** Dense chips in floating panels. */
+        xs: 'h-7 px-2 min-w-7 text-xs gap-1.5 [&_svg]:size-3.5',
         lg: 'h-11 px-5 min-w-11',
       },
     },

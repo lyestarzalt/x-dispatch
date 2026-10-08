@@ -360,7 +360,7 @@ function PinOptionsPopover({
                 disabled={!isCoordValid}
                 onClick={handleCoordSubmit}
               >
-                <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                <MapPin className="h-3.5 w-3.5" />
                 {t('toolbar.pinDropAndFly')}
               </Button>
             </div>
@@ -651,8 +651,8 @@ function Toolbar({
             searchQuery ? (
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-6 w-6"
+                size="icon-xs"
+
                 onClick={() => {
                   reportSearch(false);
                   setSearchQuery('');
@@ -879,7 +879,7 @@ function Toolbar({
                           ? t('airportFilters.allCountries')
                           : airportFilters.country}
                       </span>
-                      <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+                      <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
@@ -1202,9 +1202,9 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
     <div className="border-primary/50 bg-primary/10 animate-in fade-in slide-in-from-left-2 flex h-9 items-center gap-0.5 rounded-md border px-1.5 duration-200">
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={stepBack}
-        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground h-6 w-6"
+        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
         aria-label="Previous frame"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
@@ -1212,9 +1212,9 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
 
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={isPlaying ? pause : play}
-        className="text-primary hover:bg-foreground/10 hover:text-xp-cyan-light h-6 w-6"
+        className="text-primary hover:bg-foreground/10 hover:text-xp-cyan-light"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -1222,9 +1222,9 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
 
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={stepForward}
-        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground h-6 w-6"
+        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
         aria-label="Next frame"
       >
         <ChevronRight className="h-3.5 w-3.5" />

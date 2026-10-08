@@ -122,8 +122,8 @@ function FlightInfoPanel() {
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
-              size="icon"
-              className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
+              size="icon-sm"
+              className="text-muted-foreground/40 hover:text-foreground"
               onClick={openSimbriefDialog}
               tooltip={t('simbrief.openFullBriefing')}
             >
@@ -131,16 +131,16 @@ function FlightInfoPanel() {
             </Button>
             <Button
               variant="ghost"
-              size="icon"
-              className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
+              size="icon-sm"
+              className="text-muted-foreground/40 hover:text-foreground"
               onClick={() => setIsCollapsed(true)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
-              size="icon"
-              className="text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive h-7 w-7"
+              size="icon-sm"
+              className="text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive"
               onClick={clearFlightPlan}
             >
               <X className="h-4 w-4" />

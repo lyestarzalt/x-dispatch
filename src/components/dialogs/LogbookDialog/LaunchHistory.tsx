@@ -142,11 +142,11 @@ export function LaunchHistory() {
         <div className="border-border/40 flex flex-shrink-0 items-center justify-end border-b px-4 py-1.5">
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={clearLogbook}
-            className="text-destructive hover:text-destructive h-7 text-xs"
+            className="text-destructive hover:text-destructive"
           >
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+            <Trash2 className="h-3.5 w-3.5" />
             {t('launcher.logbook.clearAll')}
           </Button>
         </div>

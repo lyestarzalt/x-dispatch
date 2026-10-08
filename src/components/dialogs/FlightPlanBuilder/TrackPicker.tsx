@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Info, Loader2, Waves } from 'lucide-react';
+import { AlertTriangle, Info, Waves } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   type NatDirection,
@@ -70,7 +71,7 @@ function TrackChips({
   return (
     <ToggleGroup
       type="single"
-      size="sm"
+      size="xs"
       variant="outline"
       className="flex-wrap justify-start"
       value={value}
@@ -80,11 +81,7 @@ function TrackChips({
         onPick(v === AUTO ? null : v);
       }}
     >
-      {withAuto && (
-        <ToggleGroupItem value={AUTO} className="h-7 px-2.5 text-xs">
-          {t('planBuilder.tracks.auto')}
-        </ToggleGroupItem>
-      )}
+      {withAuto && <ToggleGroupItem value={AUTO}>{t('planBuilder.tracks.auto')}</ToggleGroupItem>}
       {tracks.map((track) => {
         const band = levelBand(track.levels, levels);
         const fits = cruiseFitsTrack(track, cruiseAltitudeFt);
@@ -92,7 +89,7 @@ function TrackChips({
           <ToggleGroupItem
             key={track.name}
             value={track.name}
-            className={cn('h-7 gap-1 px-2 text-xs', !fits && 'border-warning/40')}
+            className={cn('gap-1', !fits && 'border-warning/40')}
             aria-label={t('planBuilder.tracks.track', { id: track.id })}
             title={band ?? undefined}
           >
@@ -129,8 +126,8 @@ function MessageCaption({ message, upcoming }: { message: NatMessageInfo; upcomi
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-6 w-6 shrink-0 p-0"
+              size="icon-xs"
+              className="shrink-0"
               aria-label={t('planBuilder.tracks.remarks')}
               title={t('planBuilder.tracks.remarks')}
             >
@@ -248,7 +245,7 @@ export function TrackPicker({
         <span className="text-muted-foreground shrink-0 text-xs">
           {t(`planBuilder.tracks.${direction}`)}
         </span>
-        {disabled && <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />}
+        {disabled && <Spinner className="text-muted-foreground size-4 shrink-0" />}
       </div>
       {!current && !upcoming && (
         <p className="text-muted-foreground text-xs">

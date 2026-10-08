@@ -62,9 +62,9 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             onClick={handleTest}
             disabled={!localPilotId || fetchMutation.isPending}
           >
-            {fetchMutation.isPending && <Spinner className="mr-2" />}
-            {fetchMutation.isSuccess && <Check className="text-success mr-2 h-4 w-4" />}
-            {fetchMutation.isError && <X className="text-destructive mr-2 h-4 w-4" />}
+            {fetchMutation.isPending && <Spinner className="" />}
+            {fetchMutation.isSuccess && <Check className="text-success h-4 w-4" />}
+            {fetchMutation.isError && <X className="text-destructive h-4 w-4" />}
             {t('common.test')}
           </Button>
         </div>

@@ -8,7 +8,6 @@ import {
   FolderOpen,
   Heart,
   Info,
-  Loader2,
   RefreshCw,
   ScrollText,
   TriangleAlert,
@@ -17,6 +16,7 @@ import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { PROJECT_WEBSITE } from '@/config/links';
 import { cn } from '@/lib/utils/helpers';
 import { isNewerVersion } from '@/lib/utils/versionCompare';
@@ -51,9 +51,9 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
 
   const checkButton = (
     <Button
-      size="sm"
+      size="xs"
       variant="ghost"
-      className="text-muted-foreground h-7 gap-1.5 px-2 text-xs"
+      className="text-muted-foreground"
       disabled={busy}
       onClick={onCheck}
     >
@@ -72,9 +72,9 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
         </p>
         <DesktopOnly>
           <Button
-            size="sm"
+            size="xs"
             variant="outline"
-            className="h-7 gap-1.5 px-2.5 text-xs"
+
             onClick={() => void window.appAPI.installUpdate()}
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -88,7 +88,7 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
   if (busy) {
     return (
       <p className="text-muted-foreground mt-2 inline-flex items-center gap-1.5 text-xs">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <Spinner className="size-3.5" />
         {t('settings.about.checkingForUpdates')}
       </p>
     );
@@ -110,12 +110,7 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
           <TriangleAlert className="h-3.5 w-3.5" />
           {t('settings.about.updateCheckFailed')}
         </p>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-muted-foreground h-7 gap-1.5 px-2 text-xs"
-          onClick={onCheck}
-        >
+        <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={onCheck}>
           <RefreshCw className="h-3.5 w-3.5" />
           {t('settings.about.tryAgain')}
         </Button>
@@ -303,8 +298,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               <DesktopOnly>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="h-7 px-2"
+                  size="icon-sm"
                   onClick={() => window.appAPI.openLogFolder()}
                   disabled={!logPath}
                   tooltip={t('settings.about.openLogFolder')}

@@ -142,7 +142,7 @@ export function EditFmsTargetDialog({
               />
               <DesktopOnly>
                 <Button type="button" variant="outline" onClick={handlePickFolder}>
-                  <Folder className="mr-2 h-4 w-4" />
+                  <Folder className="h-4 w-4" />
                   {t('common.browse')}
                 </Button>
               </DesktopOnly>

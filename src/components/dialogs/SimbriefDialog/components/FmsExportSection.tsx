@@ -136,7 +136,7 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
         </div>
         {resolved.length > 1 && (
           <Button size="sm" variant="outline" onClick={sendAll} disabled={bulkSending}>
-            {bulkSending && <Spinner className="mr-2" />}
+            {bulkSending && <Spinner className="" />}
             {t('simbrief.export.sendAll')}
           </Button>
         )}

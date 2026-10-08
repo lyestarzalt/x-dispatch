@@ -199,8 +199,8 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                     <DesktopOnly>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
+                        size="icon-sm"
+
                         onClick={() => {
                           setEditingId(install.id);
                           setEditName(install.name);
@@ -215,8 +215,8 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                       <DesktopOnly>
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="h-7 text-xs"
+                          size="xs"
+
                           onClick={() => handleSwitch(install.id)}
                           disabled={loading}
                         >
@@ -226,8 +226,8 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
                       <DesktopOnly>
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive h-7 w-7"
+                          size="icon-sm"
+                          className="text-destructive hover:text-destructive"
                           onClick={() => handleRemove(install.id)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />

@@ -39,15 +39,15 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
       <div
         className={cn(
           'flex items-center gap-2 rounded-xl border px-3 py-2',
-          'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
+          'border-border/50 bg-card/90 shadow-xl',
           'backdrop-blur-xl'
         )}
       >
         <Button
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           onClick={stepBack}
-          className="text-muted-foreground hover:text-foreground h-7 w-7"
+          className="text-muted-foreground hover:text-foreground"
           tooltip={t('weatherRadar.previousFrame')}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -55,9 +55,9 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
 
         <Button
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           onClick={isPlaying ? pause : play}
-          className="text-primary hover:text-xp-cyan-light h-7 w-7"
+          className="text-primary hover:text-xp-cyan-light"
           tooltip={isPlaying ? t('replay.pause') : t('replay.play')}
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -65,9 +65,9 @@ export default function WeatherRadarWidget({ controls }: WeatherRadarWidgetProps
 
         <Button
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           onClick={stepForward}
-          className="text-muted-foreground hover:text-foreground h-7 w-7"
+          className="text-muted-foreground hover:text-foreground"
           tooltip={t('weatherRadar.nextFrame')}
         >
           <ChevronRight className="h-4 w-4" />

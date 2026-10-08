@@ -13,6 +13,10 @@ import {
   Waves,
   X,
 } from 'lucide-react';
+import {
+  FULL_SCREEN_DIALOG,
+  FULL_SCREEN_DIALOG_HEADER,
+} from '@/components/dialogs/fullScreenDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -168,43 +172,38 @@ export function WeatherDialog({ open, onClose, airportElevationFt = 0 }: Weather
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPanel
-        className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col overflow-hidden rounded-lg border shadow-xl"
-        aria-describedby={undefined}
-      >
+      <DialogPanel className={cn(FULL_SCREEN_DIALOG, 'flex-col')} aria-describedby={undefined}>
         <VisuallyHidden.Root>
           <DialogTitle>{t('launcher.weatherDialog.title')}</DialogTitle>
         </VisuallyHidden.Root>
 
         {/* Header */}
-        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between border-b px-4">
+        <div className={FULL_SCREEN_DIALOG_HEADER}>
           <span className="text-sm font-medium">{t('launcher.weatherDialog.title')}</span>
           <div className="flex items-center gap-2">
             {!isReal && (
               <>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="xs"
                   onClick={handleAddCloud}
                   disabled={custom.clouds.length >= 3}
-                  className="h-7 gap-1.5 text-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   {t('launcher.weatherDialog.addCloud')}
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="xs"
                   onClick={handleAddWind}
                   disabled={custom.wind.length >= 13}
-                  className="h-7 gap-1.5 text-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   {t('launcher.weatherDialog.addWind')}
                 </Button>
               </>
             )}
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+            <Button variant="ghost" size="icon-sm" onClick={onClose}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>

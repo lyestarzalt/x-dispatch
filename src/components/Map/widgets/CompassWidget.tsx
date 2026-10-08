@@ -131,7 +131,7 @@ function CompassWidget() {
       <div
         className={cn(
           'flex flex-col items-center rounded-xl border p-3',
-          'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
+          'border-border/50 bg-card/90 shadow-xl',
           'backdrop-blur-xl'
         )}
       >

@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Dices,
   Eraser,
-  Loader2,
   Mountain,
   Pencil,
   PlaneLanding,
@@ -26,6 +25,7 @@ import { Card } from '@/components/ui/card';
 import { IcaoCode } from '@/components/ui/icao-code';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -582,7 +582,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     <span className="text-muted-foreground">{t('planBuilder.pickEndpoints')}</span>
   ) : resolving ? (
     <span className="text-muted-foreground inline-flex items-center gap-1.5">
-      <Loader2 className="h-4 w-4 animate-spin" />
+      <Spinner className="size-4" />
       {t('planBuilder.resolving')}
     </span>
   ) : tokens.length === 0 ? (
@@ -625,11 +625,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className={cn(
-                      'h-7 w-7',
+                    size="icon-sm"
+                    className={
                       randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                    )}
+                    }
                     onClick={() => setRandomOpen((open) => !open)}
                     aria-label={t('planBuilder.randomDestination')}
                     aria-pressed={randomOpen}
@@ -641,8 +640,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               </Tooltip>
               <Button
                 variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground h-7 gap-1.5 px-2 text-xs"
+                size="xs"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={reset}
                 disabled={!departure && !arrival && !routeText}
               >
@@ -651,8 +650,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               </Button>
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground h-7 w-7"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={close}
                 aria-label={t('common.close')}
               >
@@ -701,7 +700,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
             <ToggleGroup
               type="single"
-              size="sm"
+              size="xs"
               variant="outline"
               value={cls}
               onValueChange={(v) => {
@@ -711,7 +710,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               }}
             >
               {CLASSES.map((c) => (
-                <ToggleGroupItem key={c} value={c} className="h-7 px-2.5 text-xs">
+                <ToggleGroupItem key={c} value={c}>
                   {t(`planBuilder.class.${c}`)}
                 </ToggleGroupItem>
               ))}
@@ -870,7 +869,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                       onClick={() => setRouteText('')}
                       disabled={routeText.length === 0}
                     >
-                      <Eraser className="mr-1 h-3.5 w-3.5" />
+                      <Eraser className="h-3.5 w-3.5" />
                       {t('planBuilder.clear')}
                     </Button>
                     <Button
@@ -880,9 +879,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                       disabled={!hasEndpoints || autoRouting}
                     >
                       {autoRouting ? (
-                        <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                        <Spinner className="size-3.5" />
                       ) : (
-                        <Wand2 className="mr-1 h-3.5 w-3.5" />
+                        <Wand2 className="h-3.5 w-3.5" />
                       )}
                       {autoRouting ? t('planBuilder.autoRouting') : t('planBuilder.autoRoute')}
                     </Button>
@@ -940,8 +939,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           <div className="flex gap-2">
             <Button
               variant={profileStripOpen ? 'secondary' : 'outline'}
-              size="sm"
-              className="w-8 px-0"
+              size="icon-sm"
+
               onClick={() => setProfileStripOpen(!profileStripOpen)}
               disabled={!ready}
               aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
@@ -958,11 +957,11 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               }}
               disabled={!departure}
             >
-              <PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" />
+              <PlaneTakeoff className="h-3.5 w-3.5" />
               {t('planBuilder.setStart')}
             </Button>
             <Button size="sm" onClick={handleSave} disabled={!ready || saving}>
-              <Save className="mr-1.5 h-3.5 w-3.5" />
+              <Save className="h-3.5 w-3.5" />
               {t('planBuilder.save')}
             </Button>
           </div>

@@ -41,7 +41,7 @@ export function FmsExportTargets() {
           </p>
         </div>
         <Button variant="outline" size="sm" className="shrink-0" onClick={() => setAddOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           {t('settings.simbrief.fmsExportTargets.add')}
         </Button>
       </div>

@@ -140,9 +140,9 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               className="text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               {fetchMutation.isPending ? (
-                <Spinner className="mr-2" />
+                <Spinner className="" />
               ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
               )}
               {t('simbrief.refetch')}
             </Button>
