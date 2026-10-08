@@ -26,6 +26,14 @@ import type {
 } from './types';
 import { INSTALLER_CONSTANTS } from './types';
 
+function isDirectory(filePath: string): boolean {
+  try {
+    return fs.statSync(filePath).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 export interface InstallOptions {
   /** Progress callback */
   onProgress?: (progress: InstallProgress) => void;
@@ -50,13 +58,15 @@ export class InstallerManager {
    */
   async analyze(filePaths: string[]): Promise<Result<DetectedItem[], InstallerError>> {
     const allItems: DetectedItem[] = [];
+    let archives = 0;
 
     for (const filePath of filePaths) {
       const format = detectArchiveFormat(filePath);
       if (!format) {
-        // Skip non-archive files (could be folders - handle later)
+        // Skip non-archive files; if nothing is an archive, that is reported below.
         continue;
       }
+      archives++;
 
       const entriesResult = await listArchiveEntries(filePath);
       if (!entriesResult.ok) {
@@ -106,6 +116,11 @@ export class InstallerManager {
       }
 
       allItems.push(...detected);
+    }
+
+    const first = filePaths[0];
+    if (archives === 0 && first) {
+      return err({ code: 'NOT_ARCHIVE', path: first, folder: isDirectory(first) });
     }
 
     return ok(allItems);
@@ -221,6 +236,7 @@ export class InstallerManager {
           taskId: task.id,
           success: false,
           error: `Extraction failed: ${extractResult.error.code}`,
+          errorCode: extractResult.error.code,
         };
       }
 
@@ -275,6 +291,7 @@ export class InstallerManager {
         taskId: task.id,
         success: false,
         error: String(e),
+        errorCode: (e as NodeJS.ErrnoException | null)?.code ?? 'UNKNOWN',
       };
     }
   }

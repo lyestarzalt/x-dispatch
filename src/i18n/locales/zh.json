@@ -1461,7 +1461,11 @@
       "supportedTypes": "飞机、插件、地景、涂装等",
       "installMore": "安装更多附加组件",
       "clear": "全部清除",
-      "successSceneryHint": "请启动一次 X-Plane，让它把新地景加入 scenery_packs.ini。X-Dispatch 只有在你明确要求时才会修改该文件。"
+      "successSceneryHint": "请启动一次 X-Plane，让它把新地景加入 scenery_packs.ini。X-Dispatch 只有在你明确要求时才会修改该文件。",
+      "noAddonFound": "此压缩包中未找到 X-Plane 插件。里面可能是安装程序或另一个压缩包；请解压后直接拖入插件本身。",
+      "notArchive": "这不是 .zip、.7z 或 .rar 压缩包。",
+      "folderNotSupported": "暂不支持直接安装文件夹。请先将文件夹压缩为 .zip，再拖到这里。",
+      "onlyFirstFile": "拖入了 {{count}} 个文件。只会安装第一个；请逐个拖入其余文件。"
     },
     "browser": {
       "searchPlaceholder": "搜索...",

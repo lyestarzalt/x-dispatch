@@ -1461,7 +1461,11 @@
       "supportedTypes": "Avions, plugins, scènes, livrées et plus",
       "installMore": "Installer d'autres extensions",
       "clear": "Tout effacer",
-      "successSceneryHint": "Lancez X-Plane une fois pour qu'il ajoute la nouvelle scène à scenery_packs.ini. X-Dispatch ne modifie ce fichier que sur votre demande explicite."
+      "successSceneryHint": "Lancez X-Plane une fois pour qu'il ajoute la nouvelle scène à scenery_packs.ini. X-Dispatch ne modifie ce fichier que sur votre demande explicite.",
+      "noAddonFound": "Aucun add-on X-Plane trouvé dans cette archive. Elle contient peut-être un installeur ou une autre archive ; extrayez-la et déposez l'add-on lui-même.",
+      "notArchive": "Ce n'est pas une archive .zip, .7z ou .rar.",
+      "folderNotSupported": "Les dossiers ne peuvent pas encore être installés. Compressez le dossier en .zip, puis déposez le .zip ici.",
+      "onlyFirstFile": "{{count}} fichiers déposés. Seul le premier est installé ; déposez les autres un par un."
     },
     "browser": {
       "searchPlaceholder": "Rechercher...",

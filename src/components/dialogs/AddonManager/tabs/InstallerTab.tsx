@@ -20,9 +20,18 @@ import type {
   InstallProgress,
   InstallResult,
 } from '@/lib/addonManager/installer/types';
-import { addonTypeId } from '@/lib/analytics/addons';
+import {
+  addonDetectReason,
+  addonInstallError,
+  addonSource,
+  addonTypeId,
+} from '@/lib/analytics/addons';
 import { cn } from '@/lib/utils/helpers';
-import { useInstallerAnalyze, useInstallerInstall } from '@/queries/useAddonManager';
+import {
+  InstallerRequestError,
+  useInstallerAnalyze,
+  useInstallerInstall,
+} from '@/queries/useAddonManager';
 import { trackEvent } from '@/queries/useAnalytics';
 import { DetectedItemCard } from '../components/DetectedItemCard';
 import { DropZone } from '../components/DropZone';
@@ -35,6 +44,9 @@ export function InstallerTab() {
   const [result, setResult] = useState<InstallResult | null>(null);
   // X-Plane registers new scenery in scenery_packs.ini itself; the app never edits that file.
   const [installedScenery, setInstalledScenery] = useState(false);
+
+  // The last drop: how many files came in, and whether the archive held no add-on.
+  const [drop, setDrop] = useState<{ files: number; noAddon: boolean } | null>(null);
 
   const analyzeMutation = useInstallerAnalyze();
   const installMutation = useInstallerInstall();
@@ -58,18 +70,32 @@ export function InstallerTab() {
   };
 
   const handleFilesDropped = async (paths: string[]) => {
+    // Only take the first file
+    const firstPath = paths[0];
+    if (!firstPath) return;
+    setResult(null);
+    setDrop({ files: paths.length, noAddon: false });
     try {
-      setResult(null);
-      // Only take the first file
-      const firstPath = paths[0];
-      if (!firstPath) return;
       const items = await analyzeMutation.mutateAsync([firstPath]);
       // Only use the first detected item
-      setDetectedItem(items[0] || null);
-      trackEvent('addon_detected', { result: items[0] ? 'recognized' : 'unrecognized' });
-    } catch {
-      // Error handled by mutation state
-      trackEvent('addon_detected', { result: 'error' });
+      const item = items[0] ?? null;
+      setDetectedItem(item);
+      setDrop({ files: paths.length, noAddon: item === null });
+      trackEvent('addon_detected', {
+        result: item ? 'recognized' : 'unrecognized',
+        reason: item ? null : 'no_addon_found',
+        source: addonSource(firstPath),
+        files: paths.length,
+      });
+    } catch (e) {
+      // Error shown from the mutation state
+      const error = e instanceof InstallerRequestError ? e : null;
+      trackEvent('addon_detected', {
+        result: 'error',
+        reason: addonDetectReason(error?.code),
+        source: addonSource(firstPath, error?.folder),
+        files: paths.length,
+      });
     }
   };
 
@@ -79,9 +105,11 @@ export function InstallerTab() {
       setProgress(null);
       setResult(null);
       const installResults = await installMutation.mutateAsync([detectedItem]);
+      const installed = installResults[0]?.success ?? false;
       trackEvent('addon_installed', {
         type: addonTypeId(detectedItem.addonType),
-        success: installResults[0]?.success ?? false,
+        success: installed,
+        error_code: installed ? null : addonInstallError(installResults[0]?.errorCode),
       });
       setInstalledScenery(
         detectedItem.addonType === 'Scenery' || detectedItem.addonType === 'SceneryLibrary'
@@ -92,8 +120,12 @@ export function InstallerTab() {
       if (installResults[0]?.success) {
         setDetectedItem(null);
       }
-    } catch {
-      trackEvent('addon_installed', { type: addonTypeId(detectedItem.addonType), success: false });
+    } catch (e) {
+      trackEvent('addon_installed', {
+        type: addonTypeId(detectedItem.addonType),
+        success: false,
+        error_code: addonInstallError(e instanceof InstallerRequestError ? e.code : undefined),
+      });
       setProgress(null);
     }
   };
@@ -102,8 +134,18 @@ export function InstallerTab() {
     setDetectedItem(null);
     setResult(null);
     setProgress(null);
+    setDrop(null);
     analyzeMutation.reset();
     installMutation.reset();
+  };
+
+  const analysisErrorText = (error: unknown) => {
+    if (error instanceof InstallerRequestError && error.code === 'NOT_ARCHIVE') {
+      return error.folder
+        ? t('addonManager.installer.folderNotSupported')
+        : t('addonManager.installer.notArchive');
+    }
+    return error instanceof Error ? error.message : t('addonManager.installer.analysisFailed');
   };
 
   const isInstalling = installMutation.isPending;
@@ -143,13 +185,26 @@ export function InstallerTab() {
           <div className="px-4">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {analyzeMutation.error instanceof Error
-                  ? analyzeMutation.error.message
-                  : t('addonManager.installer.analysisFailed')}
-              </AlertDescription>
+              <AlertDescription>{analysisErrorText(analyzeMutation.error)}</AlertDescription>
             </Alert>
           </div>
+        )}
+
+        {/* The archive opened but held nothing X-Plane can use */}
+        {drop?.noAddon && !isAnalyzing && !analyzeMutation.isError && (
+          <div className="px-4">
+            <Alert variant="warning">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{t('addonManager.installer.noAddonFound')}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* Several files dropped: only the first is used */}
+        {drop && drop.files > 1 && !isAnalyzing && !isInstalling && !result && (
+          <p className="text-muted-foreground px-4 pt-2 text-xs">
+            {t('addonManager.installer.onlyFirstFile', { count: drop.files })}
+          </p>
         )}
 
         {/* Detected item */}

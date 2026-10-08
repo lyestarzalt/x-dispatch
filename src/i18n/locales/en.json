@@ -1461,7 +1461,11 @@
       "supportedTypes": "Aircraft, plugins, scenery, liveries, and more",
       "installMore": "Install more add-ons",
       "clear": "Clear all",
-      "successSceneryHint": "Start X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only changes that file when you explicitly ask it to."
+      "successSceneryHint": "Start X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only changes that file when you explicitly ask it to.",
+      "noAddonFound": "No X-Plane add-on found in this archive. It may hold an installer or another archive inside; extract it and drop the add-on itself.",
+      "notArchive": "This isn't a .zip, .7z or .rar archive.",
+      "folderNotSupported": "Folders can't be installed yet. Zip the folder, then drop the .zip here.",
+      "onlyFirstFile": "{{count}} files dropped. Only the first one is installed; drop the others one at a time."
     },
     "browser": {
       "searchPlaceholder": "Search...",

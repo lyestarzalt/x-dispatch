@@ -176,15 +176,49 @@ describe('search, flight plan file and add-on install events', () => {
   it('accepts the outcome of each', () => {
     expect(sanitizeEvent('search_used', { found: false, picked: false })).not.toBeNull();
     expect(sanitizeEvent('flight_plan_file_loaded', { success: false })).not.toBeNull();
-    expect(sanitizeEvent('addon_detected', { result: 'unrecognized' })).not.toBeNull();
     expect(
-      sanitizeEvent('addon_installed', { type: 'scenery_library', success: true })
+      sanitizeEvent('addon_detected', {
+        result: 'unrecognized',
+        reason: 'no_addon_found',
+        source: 'zip',
+        files: 1,
+      })
+    ).not.toBeNull();
+    expect(
+      sanitizeEvent('addon_installed', {
+        type: 'scenery_library',
+        success: true,
+        error_code: null,
+      })
+    ).not.toBeNull();
+    expect(
+      sanitizeEvent('addon_installed', {
+        type: 'aircraft',
+        success: false,
+        error_code: 'permission_denied',
+      })
     ).not.toBeNull();
   });
 
   it('never accepts a typed query, file name or add-on name', () => {
     expect(sanitizeEvent('addon_installed', { type: 'Toliss A321', success: true })).toBeNull();
     expect(sanitizeEvent('addon_detected', { result: 'EGLL_scenery.zip' })).toBeNull();
+    expect(
+      sanitizeEvent('addon_detected', {
+        result: 'error',
+        reason: 'EACCES: permission denied, open C:\\X-Plane 12\\Aircraft',
+        source: 'zip',
+        files: 1,
+      })
+    ).toBeNull();
+    expect(
+      sanitizeEvent('addon_detected', {
+        result: 'error',
+        reason: 'unknown',
+        source: 'EGLL_scenery.zip',
+        files: 1,
+      })
+    ).toBeNull();
   });
 
   it('accepts right-click menu actions and procedure picks with their source', () => {

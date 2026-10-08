@@ -9,7 +9,7 @@ import type {
   SceneryError,
 } from '@/lib/addonManager/core/types';
 import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
-import { getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
+import { type InstallerError, getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
 import { launchKeys } from './useLaunchQuery';
 
 // Query keys
@@ -482,12 +482,33 @@ export function usePluginCheckUpdates() {
 
 // ===== INSTALLER =====
 
+/** An installer failure that keeps its code, for the message shown and for usage stats. */
+export class InstallerRequestError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+    /** A folder was dropped where an archive is expected. */
+    readonly folder = false
+  ) {
+    super(message);
+    this.name = 'InstallerRequestError';
+  }
+}
+
+function installerError(error: InstallerError): InstallerRequestError {
+  return new InstallerRequestError(
+    error.code,
+    getInstallerErrorMessage(error),
+    error.code === 'NOT_ARCHIVE' && error.folder
+  );
+}
+
 export function useInstallerAnalyze() {
   return useMutation({
     mutationFn: async (filePaths: string[]) => {
       const result = await window.addonManagerAPI.installer.analyze(filePaths);
       if (!result.ok) {
-        throw new Error(getInstallerErrorMessage(result.error));
+        throw installerError(result.error);
       }
       return result.value;
     },
@@ -502,13 +523,13 @@ export function useInstallerInstall() {
       // First prepare install tasks
       const prepareResult = await window.addonManagerAPI.installer.prepareInstall(items);
       if (!prepareResult.ok) {
-        throw new Error(getInstallerErrorMessage(prepareResult.error));
+        throw installerError(prepareResult.error);
       }
 
       // Then execute installation
       const installResult = await window.addonManagerAPI.installer.install(prepareResult.value);
       if (!installResult.ok) {
-        throw new Error(getInstallerErrorMessage(installResult.error));
+        throw installerError(installResult.error);
       }
 
       return installResult.value;

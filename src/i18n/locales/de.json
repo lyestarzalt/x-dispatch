@@ -1461,7 +1461,11 @@
       "supportedTypes": "Flugzeuge, Plugins, Szenerien, Bemalungen und mehr",
       "installMore": "Weitere Add-ons installieren",
       "clear": "Alle löschen",
-      "successSceneryHint": "Starte X-Plane einmal, damit es die neue Szenerie in scenery_packs.ini einträgt. X-Dispatch ändert diese Datei nur auf deine ausdrückliche Anweisung."
+      "successSceneryHint": "Starte X-Plane einmal, damit es die neue Szenerie in scenery_packs.ini einträgt. X-Dispatch ändert diese Datei nur auf deine ausdrückliche Anweisung.",
+      "noAddonFound": "In diesem Archiv wurde kein X-Plane-Add-on gefunden. Es enthält vielleicht einen Installer oder ein weiteres Archiv; entpacke es und ziehe das Add-on selbst hierher.",
+      "notArchive": "Das ist kein .zip-, .7z- oder .rar-Archiv.",
+      "folderNotSupported": "Ordner können noch nicht installiert werden. Packe den Ordner als .zip und ziehe die .zip hierher.",
+      "onlyFirstFile": "{{count}} Dateien abgelegt. Nur die erste wird installiert; lege die anderen einzeln ab."
     },
     "browser": {
       "searchPlaceholder": "Suchen...",

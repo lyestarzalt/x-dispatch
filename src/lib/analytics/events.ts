@@ -112,6 +112,41 @@ export const ANALYTICS_ADDON_TYPES = [
   'lua_script',
 ] as const;
 
+/** What was dropped on the installer, by extension only; never the name or path. */
+export const ANALYTICS_ADDON_SOURCES = ['zip', '7z', 'rar', 'folder', 'other'] as const;
+
+/** Why a drop on the installer gave no add-on. */
+export const ANALYTICS_ADDON_DETECT_REASONS = [
+  'not_archive',
+  'no_addon_found',
+  'password_required',
+  'invalid_password',
+  'unsupported_format',
+  'extraction_failed',
+  'path_traversal',
+  'size_exceeded',
+  'suspicious_ratio',
+  'xplane_not_set',
+  'unknown',
+] as const;
+
+/** Why an install failed: the installer's code or the file system error class. */
+export const ANALYTICS_ADDON_INSTALL_ERRORS = [
+  'extraction_failed',
+  'password_required',
+  'invalid_password',
+  'unsupported_format',
+  'path_traversal',
+  'disk_space',
+  'permission_denied',
+  'disk_full',
+  'file_locked',
+  'not_found',
+  'path_too_long',
+  'xplane_not_set',
+  'unknown',
+] as const;
+
 /** Where an error toast was shown; the message itself is never sent. */
 export const ANALYTICS_ERROR_AREAS = [
   'taxi_route',
@@ -232,6 +267,9 @@ export type AnalyticsWidget = (typeof ANALYTICS_WIDGETS)[number];
 export type AnalyticsContextMenuAction = (typeof ANALYTICS_CONTEXT_MENU_ACTIONS)[number];
 export type AnalyticsStartVariant = (typeof ANALYTICS_START_VARIANTS)[number];
 export type AnalyticsAddonType = (typeof ANALYTICS_ADDON_TYPES)[number];
+export type AnalyticsAddonSource = (typeof ANALYTICS_ADDON_SOURCES)[number];
+export type AnalyticsAddonDetectReason = (typeof ANALYTICS_ADDON_DETECT_REASONS)[number];
+export type AnalyticsAddonInstallError = (typeof ANALYTICS_ADDON_INSTALL_ERRORS)[number];
 export type AnalyticsLaunchError = (typeof ANALYTICS_LAUNCH_ERRORS)[number];
 export type AnalyticsDialogTimeBucket = (typeof ANALYTICS_DIALOG_TIME_BUCKETS)[number];
 export type AnalyticsStartupBucket = (typeof ANALYTICS_STARTUP_BUCKETS)[number];
@@ -344,8 +382,20 @@ const EVENT_SCHEMA = {
   /** A .fms file opened from the Flight Plan menu, and whether it could be read. */
   flight_plan_file_loaded: { success: { kind: 'boolean' } },
   /** A file dropped on the add-on installer: recognised, not recognised, or failed to read. */
-  addon_detected: { result: oneOf(['recognized', 'unrecognized', 'error']) },
-  addon_installed: { type: oneOf(ANALYTICS_ADDON_TYPES), success: { kind: 'boolean' } },
+  addon_detected: {
+    result: oneOf(['recognized', 'unrecognized', 'error']),
+    /** Set when nothing was recognized or analysis failed. */
+    reason: optionalOneOf(ANALYTICS_ADDON_DETECT_REASONS),
+    source: oneOf(ANALYTICS_ADDON_SOURCES),
+    /** Files in the drop; only the first is analysed. */
+    files: { kind: 'count' },
+  },
+  addon_installed: {
+    type: oneOf(ANALYTICS_ADDON_TYPES),
+    success: { kind: 'boolean' },
+    /** Set only when the install failed. */
+    error_code: optionalOneOf(ANALYTICS_ADDON_INSTALL_ERRORS),
+  },
   /** Where the Ko-fi link was clicked. */
   donate_clicked: { source: oneOf(ANALYTICS_DONATE_SOURCES) },
   /** The support toast shown after a few launches. */
