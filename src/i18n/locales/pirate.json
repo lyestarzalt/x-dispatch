@@ -1461,7 +1461,11 @@
       "supportedTypes": "Aircraft, plugins, scenery, liveries, an' more",
       "installMore": "Bring aboard more addons",
       "clear": "Clear cargo",
-      "successSceneryHint": "Run X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only touches that file when ye give the order."
+      "successSceneryHint": "Run X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only touches that file when ye give the order.",
+      "noAddonFound": "No X-Plane plunder in this chest, matey. There may be another chest or an installer inside; crack it open and drop the treasure itself.",
+      "notArchive": "That ain't a .zip, .7z or .rar chest.",
+      "folderNotSupported": "Ye can't stow a whole folder yet. Pack it in a .zip, then drop the .zip here.",
+      "onlyFirstFile": "{{count}} files dropped. Only the first be stowed; drop the rest one at a time."
     },
     "browser": {
       "searchPlaceholder": "Search fer...",

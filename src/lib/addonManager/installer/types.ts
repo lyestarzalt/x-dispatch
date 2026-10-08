@@ -112,6 +112,8 @@ export interface InstallResult {
   taskId: string;
   success: boolean;
   error?: string;
+  /** On failure: the installer's error code, or the file system's (EACCES, ENOSPC, ...). */
+  errorCode?: string;
   verificationStats?: VerificationStats;
 }
 
@@ -126,6 +128,7 @@ export interface VerificationStats {
  * Error types for installer operations
  */
 export type InstallerError =
+  | { code: 'NOT_ARCHIVE'; path: string; folder: boolean }
   | { code: 'UNSUPPORTED_FORMAT'; path: string }
   | { code: 'PASSWORD_REQUIRED'; path: string }
   | { code: 'INVALID_PASSWORD'; path: string }
@@ -162,6 +165,10 @@ export const PLATFORM_FOLDERS = ['32', '64', 'win', 'lin', 'mac', 'win_x64', 'ma
  */
 export function getInstallerErrorMessage(error: InstallerError): string {
   switch (error.code) {
+    case 'NOT_ARCHIVE':
+      return error.folder
+        ? `Folders can't be installed directly. Zip it first: ${error.path}`
+        : `Not a .zip, .7z or .rar archive: ${error.path}`;
     case 'UNSUPPORTED_FORMAT':
       return `Unsupported archive format: ${error.path}`;
     case 'PASSWORD_REQUIRED':

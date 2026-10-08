@@ -1461,7 +1461,11 @@
       "supportedTypes": "機体、プラグイン、シーナリー、リバリーなど",
       "installMore": "他のアドオンをインストール",
       "clear": "すべてクリア",
-      "successSceneryHint": "新しいシーナリーを scenery_packs.ini に登録するため、X-Plane を一度起動してください。X-Dispatch は明示的に指示された場合にのみこのファイルを変更します。"
+      "successSceneryHint": "新しいシーナリーを scenery_packs.ini に登録するため、X-Plane を一度起動してください。X-Dispatch は明示的に指示された場合にのみこのファイルを変更します。",
+      "noAddonFound": "このアーカイブに X-Plane アドオンが見つかりません。インストーラーや別のアーカイブが入っている可能性があります。展開してアドオン本体をドロップしてください。",
+      "notArchive": "これは .zip、.7z、.rar のアーカイブではありません。",
+      "folderNotSupported": "フォルダーはまだインストールできません。フォルダーを .zip にしてからドロップしてください。",
+      "onlyFirstFile": "{{count}} 個のファイルがドロップされました。インストールされるのは最初の 1 つだけです。残りは 1 つずつドロップしてください。"
     },
     "browser": {
       "searchPlaceholder": "検索...",

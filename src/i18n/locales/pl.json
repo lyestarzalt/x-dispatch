@@ -1461,7 +1461,11 @@
       "supportedTypes": "Samoloty, wtyczki, scenerie, malowania i inne",
       "installMore": "Zainstaluj więcej dodatków",
       "clear": "Wyczyść wszystko",
-      "successSceneryHint": "Uruchom X-Plane raz, aby dodał nową scenerię do scenery_packs.ini. X-Dispatch zmienia ten plik tylko na Twoje wyraźne polecenie."
+      "successSceneryHint": "Uruchom X-Plane raz, aby dodał nową scenerię do scenery_packs.ini. X-Dispatch zmienia ten plik tylko na Twoje wyraźne polecenie.",
+      "noAddonFound": "W tym archiwum nie znaleziono dodatku X-Plane. Może zawierać instalator lub inne archiwum; rozpakuj je i upuść sam dodatek.",
+      "notArchive": "To nie jest archiwum .zip, .7z ani .rar.",
+      "folderNotSupported": "Folderów nie można jeszcze instalować. Spakuj folder do .zip i upuść tutaj plik .zip.",
+      "onlyFirstFile": "Upuszczono {{count}} pliki. Instalowany jest tylko pierwszy; pozostałe upuść pojedynczo."
     },
     "browser": {
       "searchPlaceholder": "Szukaj...",

@@ -1461,7 +1461,11 @@
       "supportedTypes": "Aeronaves, plugins, escenarios, libreas y más",
       "installMore": "Instalar más complementos",
       "clear": "Limpiar todo",
-      "successSceneryHint": "Inicia X-Plane una vez para que añada el nuevo escenario a scenery_packs.ini. X-Dispatch solo modifica ese archivo cuando se lo pides expresamente."
+      "successSceneryHint": "Inicia X-Plane una vez para que añada el nuevo escenario a scenery_packs.ini. X-Dispatch solo modifica ese archivo cuando se lo pides expresamente.",
+      "noAddonFound": "No se encontró ningún add-on de X-Plane en este archivo. Puede contener un instalador u otro archivo comprimido; extráelo y suelta el add-on directamente.",
+      "notArchive": "Esto no es un archivo .zip, .7z o .rar.",
+      "folderNotSupported": "Aún no se pueden instalar carpetas. Comprime la carpeta en .zip y suelta el .zip aquí.",
+      "onlyFirstFile": "Se soltaron {{count}} archivos. Solo se instala el primero; suelta los demás de uno en uno."
     },
     "browser": {
       "searchPlaceholder": "Buscar...",
