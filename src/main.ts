@@ -29,6 +29,7 @@ import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import { createCrashRecovery } from './lib/nativeShell/crashRecovery';
 import {
   DEFAULT_NATIVE_LABELS,
   type NativeLabels,
@@ -195,6 +196,8 @@ app.on('render-process-gone', (_event, webContents, details) => {
       )
     );
   });
+
+  recoverCrashedWindow(webContents);
 });
 
 app.on('child-process-gone', (_event, details) => {
@@ -235,8 +238,38 @@ const sessionStartTime = Date.now();
 const analytics = initMainAnalytics();
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
+let isQuitting = false;
 /** Translated by the renderer; English until its first push. */
 let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
+const crashRecovery = createCrashRecovery();
+
+/** A crashed main window would otherwise stay blank until the user restarts the app. */
+function recoverCrashedWindow(webContents: Electron.WebContents): void {
+  const win = mainWindow;
+  if (isQuitting || !win || win.isDestroyed() || webContents !== win.webContents) return;
+
+  if (crashRecovery.onCrash(Date.now()) === 'reload') {
+    logger.main.warn('Reloading the main window after a renderer crash');
+    win.webContents.reload();
+    return;
+  }
+
+  const { crash } = nativeLabels;
+  void dialog
+    .showMessageBox(win, {
+      type: 'error',
+      message: crash.title,
+      detail: crash.message,
+      buttons: [crash.reload, crash.quit],
+      defaultId: 0,
+      cancelId: 1,
+    })
+    .then(({ response }) => {
+      if (win.isDestroyed()) return;
+      if (response === 0) win.webContents.reload();
+      else app.quit();
+    });
+}
 
 /** Only the desktop window: a tablet must not have Settings pop open from the PC's menu. */
 function openSettingsInMainWindow(tab: 'about' | null = null): void {
@@ -2184,6 +2217,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  isQuitting = true;
   // Synchronous: stores the session length for the next launch and never delays quitting.
   analytics.endSession();
   void stopRemoteAccess();
