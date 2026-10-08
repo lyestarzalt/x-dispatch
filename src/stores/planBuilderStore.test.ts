@@ -108,3 +108,29 @@ describe('planBuilderStore — swapping ends', () => {
     expect(usePlanBuilderStore.getState().departure?.icao).toBe('KJFK');
   });
 });
+
+describe('planBuilderStore — resolving router output', () => {
+  it('resolves the routed text straight away and not again for the same draft', async () => {
+    const autoRoute = vi.fn().mockResolvedValue({ routeText: 'MALOT NATA 5250N', distanceNm: 1 });
+    const resolveRoute = vi
+      .fn()
+      .mockResolvedValue({ plan: { waypoints: [] }, tokens: [], distanceNm: 1, enriched: {} });
+    vi.stubGlobal('window', { flightPlanAPI: { autoRoute, resolveRoute } });
+    usePlanBuilderStore.setState({
+      departure: { icao: 'EIDW', latitude: 53.4, longitude: -6.3 } as PlanEndpoint,
+      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
+    });
+    await usePlanBuilderStore.getState().autoRoute();
+    expect(resolveRoute).toHaveBeenCalledTimes(1);
+    expect(resolveRoute.mock.calls[0]![0]).toMatchObject({ routeText: 'MALOT NATA 5250N' });
+    expect(usePlanBuilderStore.getState().status).toBe('ready');
+    // The dialog's debounced resolve follows; the draft has not changed, so nothing is sent.
+    await usePlanBuilderStore.getState().resolve();
+    expect(resolveRoute).toHaveBeenCalledTimes(1);
+    // An edit is a new draft and resolves again.
+    usePlanBuilderStore.getState().setRouteText('MALOT NATB 5250N');
+    await usePlanBuilderStore.getState().resolve();
+    expect(resolveRoute).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
+  });
+});

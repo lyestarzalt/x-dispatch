@@ -28,11 +28,15 @@ interface MockFix {
 const navdata = vi.hoisted(() => ({
   airways: [] as unknown[],
   waypoints: [{ id: 'ZZZZZ', areaCode: 'EG', latitude: 60, longitude: -5 }] as unknown[],
+  waypointQueries: 0,
 }));
 vi.mock('@/lib/xplaneServices/dataService/navdata/navCache', () => ({
   getAllAirwaysFromDb: () => navdata.airways,
   getNavaidsInBounds: () => [],
-  getWaypointsInBounds: () => navdata.waypoints,
+  getWaypointsInBounds: () => {
+    navdata.waypointQueries++;
+    return navdata.waypoints;
+  },
   getAirspacesInBounds: () => [],
 }));
 vi.mock('@/lib/utils/logger', () => {
@@ -61,6 +65,7 @@ function segment(name: string, from: MockFix, to: MockFix): AirwaySegment {
 beforeEach(() => {
   navdata.airways = [];
   navdata.waypoints = [...BASE_FIXES];
+  navdata.waypointQueries = 0;
   resetAutoRouterCacheForTests();
   resetOceanicTracksForTests();
 });
@@ -331,5 +336,21 @@ describe('autoRoute and NAT tracks', () => {
     setNatMessages([currentWest, upcomingWest]);
     expect(autoRoute(input)?.routeText).toContain('NATB');
     expect(autoRoute({ ...input, track: 'NATA' })?.routeText).toContain('NATA');
+  });
+});
+
+describe('autoRoute graph reuse', () => {
+  it('reads the database once per call even when every pass runs', () => {
+    // No airways and no tracks: the airways pass, the direct pass and the oceanic pass all
+    // run and none finds a route, so the query count is the cost of the passes alone.
+    const result = autoRoute({
+      departure: { latitude: 50, longitude: -14.5 },
+      arrival: { latitude: 50, longitude: -41 },
+      from: { latitude: 50, longitude: -14.5 },
+      to: { latitude: 50, longitude: -41 },
+      cruiseAltitudeFt: 35000,
+    });
+    expect(result).toBeNull();
+    expect(navdata.waypointQueries).toBe(1);
   });
 });

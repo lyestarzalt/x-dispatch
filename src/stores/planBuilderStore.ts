@@ -87,6 +87,19 @@ interface PlanBuilderState extends PlanDraft {
 }
 
 let resolveRequest = 0;
+/** The draft the current result answers; the same draft is not sent again. */
+let resolvedDraft: string | null = null;
+
+function draftKey(state: PlanDraft): string {
+  return JSON.stringify([
+    state.departure?.icao,
+    state.departure?.runway,
+    state.arrival?.icao,
+    state.arrival?.runway,
+    state.routeText,
+    state.cruiseAltitudeFt,
+  ]);
+}
 
 /** Takes the planner's plan off the map; a plan loaded from SimBrief or a file stays. */
 function clearDrawnPlan(departure: PlanEndpoint | null, arrival: PlanEndpoint | null): void {
@@ -197,6 +210,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           set({ status: 'idle', result: null });
           return;
         }
+        const key = draftKey(get());
+        if (get().status === 'ready' && get().result && resolvedDraft === key) return;
         const request = ++resolveRequest;
         set({ status: 'resolving' });
         try {
@@ -207,6 +222,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             cruiseAltitudeFt,
           });
           if (request !== resolveRequest) return;
+          resolvedDraft = result ? key : null;
           set(result ? { status: 'ready', result } : { status: 'error', result: null });
           // The map is the preview: every successful resolve redraws while the panel is open.
           if (result && get().isOpen) get().showOnMap();
@@ -240,6 +256,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           set({ routeText: result.routeText, savedPath: null });
           if (result.sid) get().setProcedureChoice('sid', result.sid);
           if (result.star) get().setProcedureChoice('star', result.star);
+          // The router's text needs no typing pause: resolve now, and the dialog's own
+          // debounced resolve finds the draft already answered.
+          await get().resolve();
           return true;
         } catch (err) {
           logger.flight.error('Auto route failed', err);
@@ -318,6 +337,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
 
       reset: () => {
         clearDrawnPlan(get().departure, get().arrival);
+        resolvedDraft = null;
         set({
           departure: null,
           arrival: null,

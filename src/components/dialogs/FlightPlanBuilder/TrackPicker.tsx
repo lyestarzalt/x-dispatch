@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Info, Waves } from 'lucide-react';
+import { AlertTriangle, Info, Loader2, Waves } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -257,6 +257,7 @@ export function TrackPicker({
         <span className="text-muted-foreground shrink-0 text-[10px]">
           {t(`planBuilder.tracks.${direction}`)}
         </span>
+        {disabled && <Loader2 className="text-muted-foreground h-3 w-3 shrink-0 animate-spin" />}
       </div>
       {!current && !upcoming && (
         <p className="text-muted-foreground text-[11px]">

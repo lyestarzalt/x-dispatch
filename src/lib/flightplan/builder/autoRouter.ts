@@ -346,7 +346,11 @@ export function longitudeRanges(lons: number[], padDeg: number): [number, number
   ];
 }
 
-function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
+/**
+ * Everything the passes share: the fixes in the box, the airway and track edges and the
+ * terminal areas. Built once per auto-route; each pass works on its own copy.
+ */
+function buildBaseGraph(input: AutoRouteInput): Graph | null {
   const { departure, arrival, from, to } = input;
   const totalNm = greatCircleNm(from, to);
   const padNm = Math.max(MIN_PADDING_NM, totalNm * PADDING_FRACTION);
@@ -433,6 +437,21 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
   }
 
   addTrackEdges(graph, tracks, cruiseFl, input.track !== undefined);
+  return graph;
+}
+
+function cloneGraph(graph: Graph): Graph {
+  return {
+    positions: new Map(graph.positions),
+    edges: new Map([...graph.edges].map(([key, list]) => [key, list.slice()])),
+    terminal: new Set(graph.terminal),
+    chosenTrack: graph.chosenTrack,
+  };
+}
+
+/** The base graph plus the pass's direct legs, on a copy the search may wire into. */
+function graphForPass(base: Graph, opts: BuildOptions): Graph {
+  const graph = cloneGraph(base);
   if (opts.direct) addDirectLegs(graph, opts.oceanic === true);
   return graph;
 }
@@ -839,11 +858,14 @@ export function autoRoute(input: AutoRouteInput): AutoRouteResult | null {
   const directNm = greatCircleNm(input.from, input.to);
   if (directNm < 1) return null;
 
+  const base = buildBaseGraph(input);
+  if (!base) return null;
+
   const run = (name: string, opts: BuildOptions) => {
     const started = Date.now();
-    const graph = buildGraph(input, opts);
+    const graph = graphForPass(base, opts);
     let result: AutoRouteResult | null = null;
-    if (graph && graph.edges.size > 0) {
+    if (graph.edges.size > 0) {
       const joins = connectEndpoints(graph, input);
       const found = graph.chosenTrack
         ? searchViaTrack(graph, input.from, input.to, graph.chosenTrack)
