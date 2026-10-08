@@ -38,16 +38,13 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
         icon={CloudDownload}
         iconClassName={cn('h-5 w-5', isConfigured ? 'text-primary' : 'text-muted-foreground')}
         title="SimBrief"
-        description={t('settings.simbrief.description', 'Import flight plans from SimBrief')}
+        description={t('settings.simbrief.description')}
       />
 
       {/* Pilot ID */}
       <SettingsSectionBlock
-        title={t('settings.simbrief.pilotId', 'Pilot ID')}
-        description={t(
-          'settings.simbrief.pilotIdHelp',
-          'Your SimBrief Pilot ID (found in your SimBrief account settings)'
-        )}
+        title={t('settings.simbrief.pilotId')}
+        description={t('settings.simbrief.pilotIdHelp')}
       >
         <div className="flex gap-2">
           <Input
@@ -58,17 +55,17 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
             maxLength={10}
           />
           <Button variant="outline" onClick={handleSave} disabled={!hasChanges}>
-            {t('common.save', 'Save')}
+            {t('common.save')}
           </Button>
           <Button
             variant="secondary"
             onClick={handleTest}
             disabled={!localPilotId || fetchMutation.isPending}
           >
-            {fetchMutation.isPending && <Spinner className="mr-2" />}
-            {fetchMutation.isSuccess && <Check className="text-success mr-2 h-4 w-4" />}
-            {fetchMutation.isError && <X className="text-destructive mr-2 h-4 w-4" />}
-            {t('common.test', 'Test')}
+            {fetchMutation.isPending && <Spinner className="" />}
+            {fetchMutation.isSuccess && <Check className="text-success h-4 w-4" />}
+            {fetchMutation.isError && <X className="text-destructive h-4 w-4" />}
+            {t('common.test')}
           </Button>
         </div>
 
@@ -89,21 +86,13 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
           </div>
         )}
 
-        <p className="text-muted-foreground text-sm">
-          {t(
-            'settings.simbrief.pilotIdNote',
-            'Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.'
-          )}
-        </p>
+        <p className="text-muted-foreground text-sm">{t('settings.simbrief.pilotIdNote')}</p>
       </SettingsSectionBlock>
 
       {/* Help link */}
       <SettingsSectionBlock
-        title={t('settings.simbrief.needAccount', "Don't have a SimBrief account?")}
-        description={t(
-          'settings.simbrief.freeService',
-          'SimBrief is a free flight planning service'
-        )}
+        title={t('settings.simbrief.needAccount')}
+        description={t('settings.simbrief.freeService')}
       >
         <SettingsLinkRow label={t('settings.simbrief.linkLabel')} href={SIMBRIEF_URL} />
       </SettingsSectionBlock>

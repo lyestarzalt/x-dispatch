@@ -103,11 +103,11 @@ function GlobalAirportsRow({
 
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-sm"
         {...attributes}
         {...listeners}
         className={cn(
-          'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground h-7 w-7 cursor-grab',
+          'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground cursor-grab',
           isDragging && 'text-primary cursor-grabbing'
         )}
         disabled={disabled}

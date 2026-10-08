@@ -355,12 +355,7 @@ export function InstallerTab() {
       {/* Install button - sticky at bottom */}
       {hasItem && !isInstalling && !result && (
         <div className="border-border bg-card/50 border-t p-4">
-          <Button
-            className="from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 w-full gap-2 bg-gradient-to-r"
-            size="lg"
-            onClick={handleInstall}
-            disabled={isDisabled}
-          >
+          <Button className="w-full" size="lg" onClick={handleInstall} disabled={isDisabled}>
             <Download className="h-5 w-5" />
             {t('addonManager.installer.installOne')}
           </Button>

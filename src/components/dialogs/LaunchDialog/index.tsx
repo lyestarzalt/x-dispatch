@@ -4,12 +4,17 @@ import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
+import {
+  FULL_SCREEN_DIALOG,
+  FULL_SCREEN_DIALOG_HEADER,
+} from '@/components/dialogs/fullScreenDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { dialogTimeBucket } from '@/lib/analytics/buckets';
 import { launchChoices, launchErrorCode } from '@/lib/analytics/launchChoices';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
+import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { uuid } from '@/lib/utils/uuid';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
@@ -370,15 +375,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPanel
-        className="border-border bg-background fixed inset-x-8 top-[68px] bottom-8 z-50 flex flex-col rounded-lg border"
-        aria-describedby={undefined}
-      >
+      <DialogPanel className={cn(FULL_SCREEN_DIALOG, 'flex-col')} aria-describedby={undefined}>
         <VisuallyHidden.Root>
           <DialogTitle>{t('launcher.title')}</DialogTitle>
         </VisuallyHidden.Root>
         {/* Header */}
-        <div className="border-border bg-card flex h-11 flex-shrink-0 items-center justify-between rounded-t-lg border-b px-4 select-none">
+        <div className={FULL_SCREEN_DIALOG_HEADER}>
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium">{t('launcher.title')}</span>
             {startPosition && (

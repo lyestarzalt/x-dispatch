@@ -67,7 +67,7 @@ export function EditFmsTargetDialog({
 
   const handlePickFolder = async () => {
     const picked = await window.appAPI.pickDirectory({
-      title: t('settings.simbrief.fmsExportTargets.pickFolderTitle', 'Pick export folder'),
+      title: t('settings.simbrief.fmsExportTargets.pickFolderTitle'),
       defaultPath: folderPath || undefined,
     });
     if (picked) setFolderPath(picked);
@@ -87,21 +87,18 @@ export function EditFmsTargetDialog({
         <DialogHeader>
           <DialogTitle>
             {isEdit
-              ? t('settings.simbrief.fmsExportTargets.editTitle', 'Edit export target')
-              : t('settings.simbrief.fmsExportTargets.addTitle', 'Add export target')}
+              ? t('settings.simbrief.fmsExportTargets.editTitle')
+              : t('settings.simbrief.fmsExportTargets.addTitle')}
           </DialogTitle>
           <DialogDescription>
-            {t(
-              'settings.simbrief.fmsExportTargets.dialogDescription',
-              'Pick the SimBrief format your aircraft addon expects, and the folder it reads from.'
-            )}
+            {t('settings.simbrief.fmsExportTargets.dialogDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="fms-target-format">
-              {t('settings.simbrief.fmsExportTargets.format', 'Format')}
+              {t('settings.simbrief.fmsExportTargets.format')}
             </Label>
             <Select value={formatKey} onValueChange={handleFormatChange}>
               <SelectTrigger id="fms-target-format">
@@ -119,7 +116,7 @@ export function EditFmsTargetDialog({
 
           <div className="space-y-2">
             <Label htmlFor="fms-target-label">
-              {t('settings.simbrief.fmsExportTargets.label', 'Label')}
+              {t('settings.simbrief.fmsExportTargets.label')}
             </Label>
             <Input
               id="fms-target-label"
@@ -133,7 +130,7 @@ export function EditFmsTargetDialog({
 
           <div className="space-y-2">
             <Label htmlFor="fms-target-folder">
-              {t('settings.simbrief.fmsExportTargets.folder', 'Target folder')}
+              {t('settings.simbrief.fmsExportTargets.folder')}
             </Label>
             <div className="flex gap-2">
               <Input
@@ -145,8 +142,8 @@ export function EditFmsTargetDialog({
               />
               <DesktopOnly>
                 <Button type="button" variant="outline" onClick={handlePickFolder}>
-                  <Folder className="mr-2 h-4 w-4" />
-                  {t('common.browse', 'Browse')}
+                  <Folder className="h-4 w-4" />
+                  {t('common.browse')}
                 </Button>
               </DesktopOnly>
             </div>
@@ -155,10 +152,10 @@ export function EditFmsTargetDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            {t('common.cancel', 'Cancel')}
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={!canSave}>
-            {t('common.save', 'Save')}
+            {t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

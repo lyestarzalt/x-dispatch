@@ -70,11 +70,11 @@ function ZoomSlider({
       {persisted !== 100 && (
         <Button
           variant="ghost"
-          size="sm"
-          className="text-muted-foreground h-7 text-xs"
+          size="xs"
+          className="text-muted-foreground"
           onClick={() => onCommit(1.0)}
         >
-          <RotateCcw className="mr-1 h-3 w-3" />
+          <RotateCcw className="h-3 w-3" />
           {resetLabel}
         </Button>
       )}

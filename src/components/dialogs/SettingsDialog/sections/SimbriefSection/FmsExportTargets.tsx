@@ -34,28 +34,20 @@ export function FmsExportTargets() {
         <div className="min-w-0 flex-1">
           <h3 className="xp-section-heading flex items-center gap-2">
             <FolderOutput className="text-muted-foreground h-4 w-4" />
-            {t('settings.simbrief.fmsExportTargets.heading', 'FMS export targets')}
+            {t('settings.simbrief.fmsExportTargets.heading')}
           </h3>
           <p className="text-muted-foreground mt-1 text-sm">
-            {t(
-              'settings.simbrief.fmsExportTargets.description',
-              "Drop the SimBrief flight plan into your aircraft's flight-plan folder."
-            )}
+            {t('settings.simbrief.fmsExportTargets.description')}
           </p>
         </div>
         <Button variant="outline" size="sm" className="shrink-0" onClick={() => setAddOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('settings.simbrief.fmsExportTargets.add', 'Add target')}
+          <Plus className="h-4 w-4" />
+          {t('settings.simbrief.fmsExportTargets.add')}
         </Button>
       </div>
 
       {targets.length === 0 ? (
-        <SettingsEmptyState
-          message={t(
-            'settings.simbrief.fmsExportTargets.empty',
-            'No targets yet. Add one to send SimBrief plans straight into an addon folder.'
-          )}
-        />
+        <SettingsEmptyState message={t('settings.simbrief.fmsExportTargets.empty')} />
       ) : (
         <ul className="space-y-2">
           {targets.map((target) => (
@@ -78,7 +70,7 @@ export function FmsExportTargets() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setEditing(target)}
-                tooltip={t('common.edit', 'Edit')}
+                tooltip={t('common.edit')}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -86,7 +78,7 @@ export function FmsExportTargets() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setConfirmDelete(target)}
-                tooltip={t('common.delete', 'Delete')}
+                tooltip={t('common.delete')}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -119,19 +111,19 @@ export function FmsExportTargets() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t('settings.simbrief.fmsExportTargets.deleteTitle', 'Delete this export target?')}
+              {t('settings.simbrief.fmsExportTargets.deleteTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>{confirmDelete?.label}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (confirmDelete) removeFmsExportTarget(confirmDelete.id);
                 setConfirmDelete(undefined);
               }}
             >
-              {t('common.delete', 'Delete')}
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

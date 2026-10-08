@@ -166,7 +166,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
           <div
             className={cn(
               'flex items-center rounded-xl border',
-              'border-border/50 bg-card/90 shadow-2xl shadow-black/50',
+              'border-border/50 bg-card/90 shadow-xl',
               'backdrop-blur-xl',
               !detached && 'cursor-grab active:cursor-grabbing'
             )}
@@ -181,10 +181,10 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
                   className="flex flex-col leading-tight"
                   title={planeState?.aircraftName || undefined}
                 >
-                  <span className="text-foreground font-mono text-[11px] font-medium">
+                  <span className="text-foreground font-mono text-xs font-medium">
                     {planeState?.icaoType}
                   </span>
-                  <span className="text-muted-foreground font-mono text-[10px]">
+                  <span className="text-muted-foreground text-2xs font-mono">
                     {planeState?.tailNumber}
                   </span>
                 </div>
@@ -261,8 +261,8 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
 
               <DataColumn
                 label={t('flightStrip.wind')}
-                value={formatWind(planeState?.windDirection, speed(planeState?.windSpeed))}
-                unit={t(`units.${units.speed}`)}
+                value={formatWind(planeState?.windDirection, planeState?.windSpeed)}
+                unit={t('units.kt')}
                 secondary={`${t('flightStrip.oat')} ${formatOAT(planeState?.oat)}°C`}
               />
             </div>
@@ -281,7 +281,7 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
                     followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
                   }
                 >
-                  <Crosshair className={cn('mr-1.5 h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                  <Crosshair className={cn('h-3.5 w-3.5', followPlane && 'animate-pulse')} />
                   {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
                 </Button>
                 <DesktopOnly>
@@ -317,6 +317,11 @@ function GroupSeparator() {
 }
 
 // --- Mini attitude indicator ---
+
+/** Attitude indicator colours: blue sky over brown ground in every theme, as on a real ADI. */
+const ADI_SKY = '#39597e';
+const ADI_GROUND = '#6b4a2b';
+const ADI_HORIZON = '#e7e5e4';
 
 const ADI_RADIUS = 19;
 const ADI_PX_PER_DEG = 0.8;
@@ -361,18 +366,18 @@ function MiniAttitude({ pitch, roll }: { pitch: number | undefined; roll: number
             transition: 'transform 120ms linear',
           }}
         >
-          <rect x={-60} y={-100} width={120} height={100} fill="#39597e" />
-          <rect x={-60} y={0} width={120} height={100} fill="#6b4a2b" />
-          <rect x={-60} y={-0.5} width={120} height={1} fill="#e7e5e4" />
-          <rect x={-7} y={-8.3} width={14} height={0.6} fill="#e7e5e4" opacity={0.55} />
-          <rect x={-7} y={7.7} width={14} height={0.6} fill="#e7e5e4" opacity={0.55} />
+          <rect x={-60} y={-100} width={120} height={100} fill={ADI_SKY} />
+          <rect x={-60} y={0} width={120} height={100} fill={ADI_GROUND} />
+          <rect x={-60} y={-0.5} width={120} height={1} fill={ADI_HORIZON} />
+          <rect x={-7} y={-8.3} width={14} height={0.6} fill={ADI_HORIZON} opacity={0.55} />
+          <rect x={-7} y={7.7} width={14} height={0.6} fill={ADI_HORIZON} opacity={0.55} />
         </g>
       </g>
       {/* fixed miniature aircraft */}
       <path
         d="M -9 0 L -3.5 0 L -1.8 2.4 L 0 0 L 1.8 2.4 L 3.5 0 L 9 0"
         fill="none"
-        stroke="#fbbf24"
+        className="stroke-cat-amber"
         strokeWidth={1.4}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -396,7 +401,7 @@ interface DataColumnProps {
 function DataColumn({ label, value, unit, valueColor, target, secondary }: DataColumnProps) {
   return (
     <div className="flex min-w-0 flex-col">
-      <div className="flex h-3.5 items-center gap-1.5 text-[10px] tracking-wider uppercase">
+      <div className="text-2xs flex h-3.5 items-center gap-1.5 tracking-wider uppercase">
         <span className="text-muted-foreground font-medium">{label}</span>
         {target !== undefined && (
           // Keyed by value: animates only when the autopilot dial changes,
@@ -422,9 +427,9 @@ function DataColumn({ label, value, unit, valueColor, target, secondary }: DataC
         >
           {value}
         </span>
-        <span className="text-muted-foreground text-[10px]">{unit}</span>
+        <span className="text-muted-foreground text-2xs">{unit}</span>
       </div>
-      <div className="text-muted-foreground h-3.5 font-mono text-[11px] leading-tight tabular-nums">
+      <div className="text-muted-foreground h-3.5 font-mono text-xs leading-tight tabular-nums">
         {secondary}
       </div>
     </div>

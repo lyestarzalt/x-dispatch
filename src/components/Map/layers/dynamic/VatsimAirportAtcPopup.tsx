@@ -22,7 +22,7 @@ function VatsimAirportAtcPopup({
   );
 
   return (
-    <Card className="border-border/50 bg-card/95 w-[360px] overflow-hidden shadow-2xl">
+    <Card className="border-border/50 bg-card/95 w-[360px] overflow-hidden shadow-xl">
       <CardHeader className="border-border/40 bg-background/60 border-b px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -42,7 +42,7 @@ function VatsimAirportAtcPopup({
                 <div className="flex items-center gap-2">
                   <Badge
                     variant={row.badgeVariant}
-                    className="px-1.5 py-0 font-mono text-[10px] font-semibold uppercase"
+                    className="text-2xs px-1.5 py-0 font-mono font-semibold uppercase"
                   >
                     {row.badgeLabel}
                   </Badge>

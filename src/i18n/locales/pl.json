@@ -27,7 +27,11 @@
     "selected": "Wybrano",
     "online": "online",
     "approved": "Zatwierdzone",
-    "recommended": "Zalecane"
+    "recommended": "Zalecane",
+    "showAll": "Pokaż wszystkie",
+    "undo": "Cofnij",
+    "add": "Dodaj",
+    "remove": "Usuń"
   },
   "units": {
     "ft": "ft",
@@ -139,7 +143,6 @@
     "title": "Zaplanuj lot",
     "description": "Wybierz oba lotniska, wpisz trasę lub leć bezpośrednio, a potem wyślij do X-Plane.",
     "sections": {
-      "airports": "Lotniska",
       "enroute": "Trasa",
       "summary": "Przelot i podsumowanie",
       "light": "Światło"
@@ -161,7 +164,6 @@
     "alternateAt": "Zapasowe · {{value}}",
     "noAlternate": "Brak zapasowego",
     "fuel": "Paliwo",
-    "liveHint": "Mapa odświeża się podczas edycji.",
     "tracks": {
       "title": "Tracki północnoatlantyckie",
       "auto": "Auto",
@@ -215,7 +217,6 @@
     },
     "ete": "Czas",
     "aircraft": "Samolot",
-    "skipped": "Pominięto: {{count}}",
     "issues": {
       "notFound": "Brak w bazie nawigacyjnej",
       "airwayNoFixBefore": "Droga lotnicza wymaga punktu przed nią",
@@ -229,7 +230,7 @@
     "showOnMap": "Pokaż na mapie",
     "save": "Zapisz w X-Plane",
     "saved": "Zapisano w {{path}}",
-    "saveFailed": "Nie udało się zapisać: {{error}}",
+    "saveFailed": "Nie udało się zapisać w X-Plane ({{error}}). Sprawdź folder X-Plane w Ustawieniach.",
     "light": {
       "phase": {
         "day": "Dzień",
@@ -250,7 +251,12 @@
       "tomorrow": "Jutro",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Losowy cel"
+    "randomDestination": "Losowy cel",
+    "planCleared": "Plan wyczyszczony",
+    "routeCleared": "Trasa wyczyszczona",
+    "randomShort": "Losowo",
+    "profileShort": "Profil",
+    "savedAs": "Zapisano jako {{file}}"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "Wydarzenia",
       "noEvents": "Brak nadchodzących wydarzeń",
       "viewRoute": "Zobacz trasę",
-      "goToDeparture": "Przejdź do odlotu"
+      "goToDeparture": "Przejdź do odlotu",
+      "departures": "Odloty",
+      "arrivals": "Przyloty"
     },
     "filters": {
       "country": "Kraj",
@@ -1057,7 +1065,8 @@
       "export": "Zapisz trasę kołowania",
       "exportSuccess": "Trasa kołowania zapisana",
       "summary": "przez {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Częstotliwości"
   },
   "navigation": {
     "heading": "KURS",
@@ -1227,10 +1236,17 @@
       "startState": "Stan początkowy",
       "weather": "Pogoda",
       "fuel": "Paliwo",
-      "summary": "Podsumowanie",
       "departure": "Odlot",
       "livery": "Malowanie",
-      "conditions": "Warunki"
+      "conditions": "Warunki",
+      "overweight": "{{amount}} ponad maksimum",
+      "ofMtow": "z maks. {{max}}",
+      "spare": "{{amount}} zapasu",
+      "takeoffWeight": "Masa startowa",
+      "emptyHint": "Sam samolot, bez paliwa, ludzi i ładunku",
+      "payloadHint": "Pilot, pasażerowie i ładunek",
+      "fuelHint": "Paliwo w zbiornikach przy uruchomieniu",
+      "maxHint": "Maksymalna masa startowa (MTOW): najwięcej, ile samolot może ważyć przy starcie"
     },
     "startState": {
       "ready": "Gotowy",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "Na żywo",
-      "set": "Ustaw",
+      "set": "Wybierz godzinę",
       "now": "Teraz",
       "custom": "Niestandardowy",
       "dawn": "Świt",
@@ -1261,7 +1277,20 @@
       "rainy": "Deszczowo",
       "stormy": "Burzowo",
       "snowy": "Śnieżnie",
-      "foggy": "Mgliście"
+      "foggy": "Mgliście",
+      "realTitle": "Prawdziwa pogoda",
+      "realHint": "Bieżący METAR z lotniska odlotu",
+      "sky": {
+        "thunderstorm": "Burze",
+        "snow": "Śnieg",
+        "rain": "Deszcz",
+        "drizzle": "Mżawka",
+        "fog": "Mgła",
+        "overcast": "Zachmurzenie całkowite",
+        "cloudy": "Pochmurno",
+        "partlyCloudy": "Częściowe zachmurzenie",
+        "clear": "Bezchmurnie"
+      }
     },
     "weatherBuilder": {
       "custom": "Niestandardowa pogoda",
@@ -1295,7 +1324,9 @@
       "presets": "Ustawienia wstępne",
       "custom": "Niestandardowa",
       "poor": "Słaba",
-      "unlimited": "Nieograniczona"
+      "unlimited": "Nieograniczona",
+      "customTitle": "Własna pogoda",
+      "customHint": "Chmury, wiatr i widzialność, warstwa po warstwie"
     },
     "weatherDialog": {
       "title": "Ustawienia pogody",
@@ -1391,7 +1422,8 @@
       "copyJson": "Kopiuj JSON uruchomienia",
       "copyJsonToast": "JSON uruchomienia skopiowany. Wklej go na Discordzie, jeśli wystąpił problem z tym lotem.",
       "copyJsonError": "Nie udało się skopiować JSON uruchomienia",
-      "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na Discordzie."
+      "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na Discordzie.",
+      "restore": "Wczytaj tę konfigurację"
     },
     "weightFuelLabel": "Masa i paliwo",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "Siatka lotniska",
         "mesh": "Siatka terenu",
         "unrecognized": "Nierozpoznane"
+      },
+      "badge": {
+        "airports": "Lotnisko",
+        "defaultAirports": "Domyślne",
+        "libraries": "Biblioteka",
+        "other": "Inne",
+        "overlays": "Nakładka",
+        "mesh": "Siatka"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Polecane",
         "random": "Losowe"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Dane z"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "Losuj ponownie",
       "noMatch": "Brak pasujących lotnisk. Poszerz zakres lub usuń filtr.",
       "plan": "Zaplanuj ten lot",
-      "useAsArrival": "Ustaw jako przylot"
+      "useAsArrival": "Ustaw jako przylot",
+      "needOrigin": "Najpierw wybierz lotnisko odlotu."
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "Przeładuj",
       "quit": "Zakończ"
     }
+  },
+  "weatherRadar": {
+    "controls": "Sterowanie radarem pogody",
+    "previousFrame": "Poprzednia klatka",
+    "nextFrame": "Następna klatka"
   }
 }

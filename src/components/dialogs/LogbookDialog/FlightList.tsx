@@ -54,19 +54,19 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
           : 'border-border/50 bg-card/80 hover:border-primary/30 hover:bg-card'
       )}
     >
-      <TrailThumbnail preview={flight.preview} width={72} height={44} className="text-sky-300" />
+      <TrailThumbnail preview={flight.preview} width={72} height={44} className="text-cat-sky" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 font-mono text-sm font-semibold">
           <span>{flight.departure?.icao ?? '----'}</span>
           <ArrowRight className="text-muted-foreground h-3 w-3" />
           <span>{flight.arrival?.icao ?? '----'}</span>
           {flight.status === 'active' && (
-            <Badge variant="success" className="ml-1 px-1.5 py-0 text-[10px]">
+            <Badge variant="success" className="text-2xs ml-1 px-1.5 py-0">
               {t('logbook.active')}
             </Badge>
           )}
           {flight.status === 'aborted' && (
-            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
+            <Badge variant="secondary" className="text-2xs ml-1 px-1.5 py-0">
               {t('logbook.aborted')}
             </Badge>
           )}
@@ -79,7 +79,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
           <span className="text-border">·</span>
           <span className="font-mono">{units.distance(flight.distanceNm as NauticalMiles)}</span>
         </div>
-        <div className="text-muted-foreground/60 mt-0.5 text-[11px]">
+        <div className="text-muted-foreground/60 mt-0.5 text-xs">
           {formatDateTime(flight.startedAt, i18n.language)}
         </div>
       </div>
@@ -89,7 +89,7 @@ function FlightCard({ flight, selected, onSelect }: FlightCardProps) {
             <PlaneLanding className="h-3.5 w-3.5" />
             {units.verticalSpeed(landing.touchdownRateFpm as FeetPerMinute)}
           </div>
-          <span className="text-[10px] tracking-wide uppercase opacity-80">
+          <span className="text-2xs tracking-wide uppercase opacity-80">
             {t(`landing.rating.${landing.rating}`)}
           </span>
         </div>

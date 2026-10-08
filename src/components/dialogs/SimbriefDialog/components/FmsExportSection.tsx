@@ -60,16 +60,9 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
     return (
       <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <FolderOutput className="h-4 w-4" />
-        <span className="text-foreground font-medium">
-          {t('simbrief.export.heading', 'Send to FMS')}
-        </span>
+        <span className="text-foreground font-medium">{t('simbrief.export.heading')}</span>
         <span>·</span>
-        <span>
-          {t(
-            'simbrief.export.emptyHint',
-            'No export targets configured. Add one in Settings → SimBrief.'
-          )}
-        </span>
+        <span>{t('simbrief.export.emptyHint')}</span>
       </div>
     );
   }
@@ -78,16 +71,9 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
     return (
       <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <FolderOutput className="h-4 w-4" />
-        <span className="text-foreground font-medium">
-          {t('simbrief.export.heading', 'Send to FMS')}
-        </span>
+        <span className="text-foreground font-medium">{t('simbrief.export.heading')}</span>
         <span>·</span>
-        <span>
-          {t(
-            'simbrief.export.noMatches',
-            'None of your configured formats are present in this SimBrief plan.'
-          )}
-        </span>
+        <span>{t('simbrief.export.noMatches')}</span>
       </div>
     );
   }
@@ -103,7 +89,7 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
       });
       if (result.success) {
         toast.success(
-          t('simbrief.export.success', 'Wrote {{filename}} to {{label}}', {
+          t('simbrief.export.success', {
             filename: entry.filename,
             label: entry.label,
           })
@@ -112,7 +98,7 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
       }
       toastError(
         'fms_export',
-        t('simbrief.export.failure', "Couldn't export {{label}}: {{reason}}", {
+        t('simbrief.export.failure', {
           label: entry.label,
           reason: result.error,
         })
@@ -134,7 +120,7 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
     }
     setBulkSending(false);
     toast.info(
-      t('simbrief.export.bulkSummary', '{{ok}} of {{total}} sent', {
+      t('simbrief.export.bulkSummary', {
         ok,
         total: ok + fail,
       })
@@ -146,12 +132,12 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
       <div className="flex items-center justify-between">
         <div className="text-foreground flex items-center gap-2 text-sm font-medium">
           <FolderOutput className="text-muted-foreground h-4 w-4" />
-          {t('simbrief.export.heading', 'Send to FMS')}
+          {t('simbrief.export.heading')}
         </div>
         {resolved.length > 1 && (
           <Button size="sm" variant="outline" onClick={sendAll} disabled={bulkSending}>
-            {bulkSending && <Spinner className="mr-2" />}
-            {t('simbrief.export.sendAll', 'Send all')}
+            {bulkSending && <Spinner className="" />}
+            {t('simbrief.export.sendAll')}
           </Button>
         )}
       </div>

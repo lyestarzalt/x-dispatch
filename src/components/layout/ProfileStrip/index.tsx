@@ -84,7 +84,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
       )}
       style={!isDefault ? { left: position.x, top: position.y } : undefined}
     >
-      <div className="border-border/50 bg-card/90 rounded-xl border p-2 shadow-2xl shadow-black/50 backdrop-blur-xl">
+      <div className="border-border/50 bg-card/90 rounded-xl border p-2 shadow-xl backdrop-blur-xl">
         <div
           className="mb-1 flex min-w-0 cursor-grab items-center gap-2 px-1 active:cursor-grabbing"
           onMouseDown={handleMouseDown}
@@ -94,12 +94,12 @@ function ProfileStrip({ airports }: ProfileStripProps) {
           <Mountain className="text-muted-foreground h-4 w-4 shrink-0" />
           <span className="xp-section-heading truncate">{t('profile.title')}</span>
           {view.routeSafeFt !== null && (
-            <Badge variant="destructive" className="shrink-0 font-mono text-[10px]">
+            <Badge variant="destructive" className="text-2xs shrink-0 font-mono">
               {t('profile.safeAltitude')} {units.altitude(view.routeSafeFt as Feet)}
             </Badge>
           )}
           {errors.includes('cruiseNotReached') && (
-            <Badge variant="warning" className="min-w-0 truncate text-[10px]">
+            <Badge variant="warning" className="text-2xs min-w-0 truncate">
               {t('profile.cruiseNotReached')}
             </Badge>
           )}
@@ -117,8 +117,8 @@ function ProfileStrip({ airports }: ProfileStripProps) {
           <div className="flex-1" />
           <Button
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground h-6 w-6 shrink-0"
+            size="icon-xs"
+            className="text-muted-foreground hover:text-foreground shrink-0"
             onClick={() => setOpen(false)}
             aria-label={t('profile.hide')}
           >

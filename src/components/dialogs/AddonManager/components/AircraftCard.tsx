@@ -119,8 +119,8 @@ export function AircraftCard({
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      size="icon-sm"
+
                       onClick={() => onLock(aircraft.folderName)}
                       disabled={disabled}
                     >
@@ -141,7 +141,7 @@ export function AircraftCard({
                 {/* More menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Button variant="ghost" size="icon-sm">
                       <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>

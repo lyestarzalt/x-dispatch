@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
 import type { WeatherCategory } from '@/lib/weatherScan/parseMetarFeed';
 import type { Airport } from '@/lib/xplaneServices/dataService';
@@ -59,27 +60,25 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-1">
+      <ToggleGroup
+        type="single"
+        size="xs"
+        variant="outline"
+        value={category}
+        onValueChange={(v) => v && selectCategory(v as WeatherCategory)}
+        className="flex-wrap justify-start"
+      >
         {WEATHER_CATEGORIES.map((key) => {
           const Icon = WEATHER_CATEGORY_ICON[key];
           return (
-            <button
-              key={key}
-              onClick={() => selectCategory(key)}
-              className={cn(
-                'flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition-colors',
-                category === key
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border/40 text-muted-foreground hover:bg-muted/50'
-              )}
-            >
-              <Icon className="h-3 w-3" />
+            <ToggleGroupItem key={key} value={key}>
+              <Icon />
               {t(`explore.weather.categories.${key}`)}
               <span className="opacity-60">{counts[key] ?? 0}</span>
-            </button>
+            </ToggleGroupItem>
           );
         })}
-      </div>
+      </ToggleGroup>
 
       {observations.length === 0 ? (
         <p className="text-muted-foreground py-6 text-center text-xs">
@@ -131,17 +130,17 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                       <Badge
                         key={code}
                         variant="secondary"
-                        className="px-1 py-0 font-mono text-[10px]"
+                        className="text-2xs px-1 py-0 font-mono"
                       >
                         {code}
                       </Badge>
                     ))}
                     {observation.gustKt !== null && (
-                      <Badge variant="warning" className="px-1 py-0 font-mono text-[10px]">
+                      <Badge variant="warning" className="text-2xs px-1 py-0 font-mono">
                         G{observation.gustKt}
                       </Badge>
                     )}
-                    <span className="text-muted-foreground text-[10px]">
+                    <span className="text-muted-foreground text-2xs">
                       {t('explore.weather.minutesAgo', { minutes: observation.ageMinutes })}
                     </span>
                   </div>
@@ -153,7 +152,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                         event.stopPropagation();
                         window.appAPI.openExternal(GATEWAY_URL);
                       }}
-                      className="text-muted-foreground flex items-center gap-1 text-[10px] underline-offset-2 hover:underline"
+                      className="text-muted-foreground text-2xs flex items-center gap-1 underline-offset-2 hover:underline"
                     >
                       <ExternalLink className="h-2.5 w-2.5" />
                       {t('explore.weather.notInXPlane')}

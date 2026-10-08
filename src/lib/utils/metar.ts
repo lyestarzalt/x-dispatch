@@ -14,7 +14,14 @@
  * formatter divides by 100 to get back the METAR three-digit form.
  */
 import { CloudQuantity, DistanceUnit, Intensity } from 'metar-taf-parser';
-import type { IAltimeter, ICloud, IWeatherCondition, IWind, Visibility } from 'metar-taf-parser';
+import type {
+  IAltimeter,
+  ICloud,
+  IMetar,
+  IWeatherCondition,
+  IWind,
+  Visibility,
+} from 'metar-taf-parser';
 
 export interface FormatOptions {
   /** Use spaces + verbose units ("230° / 8 kt") instead of METAR-like ("230°/8kt"). */
@@ -78,7 +85,8 @@ export function formatCeiling(
   const hasClear = clouds.some(
     (c) => c.quantity === CloudQuantity.SKC || c.quantity === CloudQuantity.NSC
   );
-  if (hasClear || clouds.length === 0) return opts.verbose ? 'Clear' : 'CLR';
+  // A METAR code in every style, like CALM and CAVOK, so it needs no translation.
+  if (hasClear || clouds.length === 0) return 'CLR';
   const lowest = clouds[0];
   if (lowest?.height !== undefined) {
     return formatCloudLayer(lowest.quantity, lowest.height, opts);
@@ -121,4 +129,36 @@ export function formatWeatherConditions(conditions: IWeatherCondition[]): string
       return str;
     })
     .join(' ');
+}
+
+/** What the sky is doing, in words a pilot would use for a one-glance summary. */
+export type SkyCondition =
+  | 'thunderstorm'
+  | 'snow'
+  | 'rain'
+  | 'drizzle'
+  | 'fog'
+  | 'overcast'
+  | 'cloudy'
+  | 'partlyCloudy'
+  | 'clear';
+
+/** Present weather wins over cloud, the most significant first; then the densest cloud layer. */
+export function skyCondition(metar: IMetar): SkyCondition {
+  const codes = new Set<string>(
+    metar.weatherConditions.flatMap((c) => [
+      ...(c.descriptive ? [c.descriptive] : []),
+      ...c.phenomenons,
+    ])
+  );
+  if (codes.has('TS')) return 'thunderstorm';
+  if (codes.has('SN') || codes.has('SG') || codes.has('PL')) return 'snow';
+  if (codes.has('RA') || codes.has('SH')) return 'rain';
+  if (codes.has('DZ')) return 'drizzle';
+  if (codes.has('FG') || codes.has('BR')) return 'fog';
+  const cover = new Set(metar.clouds.map((c) => c.quantity));
+  if (cover.has(CloudQuantity.OVC)) return 'overcast';
+  if (cover.has(CloudQuantity.BKN)) return 'cloudy';
+  if (cover.has(CloudQuantity.SCT) || cover.has(CloudQuantity.FEW)) return 'partlyCloudy';
+  return 'clear';
 }

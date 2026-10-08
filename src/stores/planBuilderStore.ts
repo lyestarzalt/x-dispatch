@@ -35,6 +35,9 @@ import { addStationData, useFlightPlanStore } from './flightPlanStore';
 export type PlanBuilderStatus = 'idle' | 'resolving' | 'ready' | 'error';
 export type ProcedureKind = 'sid' | 'star' | 'approach';
 
+/** The persisted part of the planner: what an undo of "New plan" brings back. */
+type SavedDraft = PlanDraft & { aircraftClass: RangeRingCategory | null };
+
 interface PlanBuilderState extends PlanDraft {
   isOpen: boolean;
   status: PlanBuilderStatus;
@@ -83,7 +86,10 @@ interface PlanBuilderState extends PlanDraft {
   showOnMap: () => void;
   saveToXPlane: () => Promise<string | null>;
   startAtDeparture: () => void;
-  reset: () => void;
+  /** Empties the planner and returns what it held, for an undo. */
+  reset: () => SavedDraft;
+  /** Puts back a draft that `reset` returned. */
+  restoreDraft: (draft: SavedDraft) => void;
 }
 
 let resolveRequest = 0;
@@ -337,7 +343,16 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       },
 
       reset: () => {
-        clearDrawnPlan(get().departure, get().arrival);
+        const { departure, arrival, alternate, routeText, cruiseAltitudeFt, aircraftClass } = get();
+        const previous = {
+          departure,
+          arrival,
+          alternate,
+          routeText,
+          cruiseAltitudeFt,
+          aircraftClass,
+        };
+        clearDrawnPlan(departure, arrival);
         resolvedDraft = null;
         set({
           departure: null,
@@ -350,6 +365,12 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           procedures: {},
           savedPath: null,
         });
+        return previous;
+      },
+
+      restoreDraft: (draft) => {
+        resolvedDraft = null;
+        set({ ...draft, status: 'idle', result: null, procedures: {}, savedPath: null });
       },
     }),
     {

@@ -27,7 +27,11 @@
     "selected": "已选择",
     "online": "在线",
     "approved": "已批准",
-    "recommended": "推荐"
+    "recommended": "推荐",
+    "showAll": "显示全部",
+    "undo": "撤销",
+    "add": "添加",
+    "remove": "移除"
   },
   "units": {
     "ft": "英尺",
@@ -139,7 +143,6 @@
     "title": "规划航班",
     "description": "选择起降机场，输入航路或直飞，然后发送到 X-Plane。",
     "sections": {
-      "airports": "机场",
       "enroute": "航路",
       "summary": "巡航与摘要",
       "light": "光照"
@@ -161,7 +164,6 @@
     "alternateAt": "备降 · {{value}}",
     "noAlternate": "无备降机场",
     "fuel": "总油量",
-    "liveHint": "编辑时地图会实时重绘。",
     "tracks": {
       "title": "北大西洋航迹",
       "auto": "自动",
@@ -215,7 +217,6 @@
     },
     "ete": "时间",
     "aircraft": "机型",
-    "skipped": "已跳过 {{count}} 项",
     "issues": {
       "notFound": "导航数据库中不存在",
       "airwayNoFixBefore": "航路前需要一个航路点",
@@ -229,7 +230,7 @@
     "showOnMap": "在地图上显示",
     "save": "保存到 X-Plane",
     "saved": "已保存到 {{path}}",
-    "saveFailed": "无法保存：{{error}}",
+    "saveFailed": "无法保存到 X-Plane（{{error}}）。请在设置中检查 X-Plane 文件夹。",
     "light": {
       "phase": {
         "day": "白昼",
@@ -250,7 +251,12 @@
       "tomorrow": "明天",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "随机目的地"
+    "randomDestination": "随机目的地",
+    "planCleared": "计划已清除",
+    "routeCleared": "航路已清除",
+    "randomShort": "随机",
+    "profileShort": "剖面",
+    "savedAs": "已保存为 {{file}}"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "活动",
       "noEvents": "暂无活动",
       "viewRoute": "查看航线",
-      "goToDeparture": "前往出发地"
+      "goToDeparture": "前往出发地",
+      "departures": "出发",
+      "arrivals": "到达"
     },
     "filters": {
       "country": "国家",
@@ -1057,7 +1065,8 @@
       "export": "保存滑行路线",
       "exportSuccess": "滑行路线已保存",
       "summary": "经 {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "频率"
   },
   "navigation": {
     "heading": "航向",
@@ -1227,10 +1236,17 @@
       "startState": "启动状态",
       "weather": "天气",
       "fuel": "燃油",
-      "summary": "摘要",
       "departure": "出发",
       "livery": "涂装",
-      "conditions": "条件"
+      "conditions": "条件",
+      "overweight": "超出最大值 {{amount}}",
+      "ofMtow": "/ 最大 {{max}}",
+      "spare": "剩余 {{amount}}",
+      "takeoffWeight": "起飞重量",
+      "emptyHint": "飞机本身，不含燃油、人员和货物",
+      "payloadHint": "飞行员、乘客和货物",
+      "fuelHint": "启动时油箱中的燃油",
+      "maxHint": "最大起飞重量 (MTOW)：起飞时允许的最大重量"
     },
     "startState": {
       "ready": "就绪",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "实时",
-      "set": "设置",
+      "set": "选择时间",
       "now": "现在",
       "custom": "自定义",
       "dawn": "黎明",
@@ -1261,7 +1277,20 @@
       "rainy": "雨天",
       "stormy": "暴风雨",
       "snowy": "雪天",
-      "foggy": "雾天"
+      "foggy": "雾天",
+      "realTitle": "真实天气",
+      "realHint": "出发机场的实时 METAR",
+      "sky": {
+        "thunderstorm": "雷暴",
+        "snow": "雪",
+        "rain": "雨",
+        "drizzle": "毛毛雨",
+        "fog": "雾",
+        "overcast": "阴天",
+        "cloudy": "多云",
+        "partlyCloudy": "局部多云",
+        "clear": "晴"
+      }
     },
     "weatherBuilder": {
       "custom": "自定义天气",
@@ -1295,7 +1324,9 @@
       "presets": "预设",
       "custom": "自定义",
       "poor": "较差",
-      "unlimited": "无限制"
+      "unlimited": "无限制",
+      "customTitle": "自定义天气",
+      "customHint": "逐层设置云、风和能见度"
     },
     "weatherDialog": {
       "title": "天气设置",
@@ -1391,7 +1422,8 @@
       "copyJson": "复制启动 JSON",
       "copyJsonToast": "已复制启动 JSON。如果此次飞行遇到问题，请粘贴到 Discord。",
       "copyJsonError": "无法复制启动 JSON",
-      "shareHint": "飞行遇到问题？点击复制图标，把详细信息发给 Discord 上的开发者。"
+      "shareHint": "飞行遇到问题？点击复制图标，把详细信息发给 Discord 上的开发者。",
+      "restore": "载入此设置"
     },
     "weightFuelLabel": "重量与燃油",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "机场网格",
         "mesh": "地形网格",
         "unrecognized": "未识别"
+      },
+      "badge": {
+        "airports": "机场",
+        "defaultAirports": "默认",
+        "libraries": "库",
+        "other": "其他",
+        "overlays": "叠加",
+        "mesh": "网格"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "精选",
         "random": "随机"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "数据来自"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "重新抽取",
       "noMatch": "没有匹配的机场。请扩大范围或移除筛选。",
       "plan": "规划此航班",
-      "useAsArrival": "设为到达机场"
+      "useAsArrival": "设为到达机场",
+      "needOrigin": "请先选择出发机场。"
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "重新加载",
       "quit": "退出"
     }
+  },
+  "weatherRadar": {
+    "controls": "气象雷达控制",
+    "previousFrame": "上一帧",
+    "nextFrame": "下一帧"
   }
 }

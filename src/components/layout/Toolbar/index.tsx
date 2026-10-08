@@ -78,12 +78,7 @@ import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { NavLayerVisibility } from '@/types/layers';
-import {
-  ALL_RANGE_RING_CATEGORIES,
-  RANGE_RING_COLORS,
-  RANGE_RING_LABELS,
-  RANGE_RING_SPEEDS,
-} from '@/types/layers';
+import { ALL_RANGE_RING_CATEGORIES, RANGE_RING_COLORS, RANGE_RING_SPEEDS } from '@/types/layers';
 import { ClockWidget } from './ClockWidget';
 
 type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
@@ -360,7 +355,7 @@ function PinOptionsPopover({
                 disabled={!isCoordValid}
                 onClick={handleCoordSubmit}
               >
-                <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                <MapPin className="h-3.5 w-3.5" />
                 {t('toolbar.pinDropAndFly')}
               </Button>
             </div>
@@ -651,8 +646,8 @@ function Toolbar({
             searchQuery ? (
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-6 w-6"
+                size="icon-xs"
+
                 onClick={() => {
                   reportSearch(false);
                   setSearchQuery('');
@@ -879,7 +874,7 @@ function Toolbar({
                           ? t('airportFilters.allCountries')
                           : airportFilters.country}
                       </span>
-                      <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+                      <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
@@ -950,7 +945,7 @@ function Toolbar({
                   checked={navVisibility[layer.key] as boolean}
                   onCheckedChange={() => onNavToggle(layer.key)}
                 >
-                  <span className="flex-1">{t(layer.labelKey)}</span>
+                  <span className="min-w-0 flex-1 truncate">{t(layer.labelKey)}</span>
                   <span className="text-muted-foreground ml-2 font-mono text-xs">
                     {layer.count}
                   </span>
@@ -1095,7 +1090,9 @@ function Toolbar({
                         className="mr-2 inline-block h-2 w-2 rounded-full"
                         style={{ backgroundColor: RANGE_RING_COLORS[cat] }}
                       />
-                      <span className="flex-1">{RANGE_RING_LABELS[cat]}</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        {t(`planBuilder.class.${cat}`)}
+                      </span>
                       <span className="text-muted-foreground ml-2 font-mono text-xs">
                         {t('toolbar.rangeRingsKts', { speed: RANGE_RING_SPEEDS[cat] })}
                       </span>
@@ -1202,9 +1199,9 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
     <div className="border-primary/50 bg-primary/10 animate-in fade-in slide-in-from-left-2 flex h-9 items-center gap-0.5 rounded-md border px-1.5 duration-200">
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={stepBack}
-        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground h-6 w-6"
+        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
         aria-label="Previous frame"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
@@ -1212,9 +1209,9 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
 
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={isPlaying ? pause : play}
-        className="text-primary hover:bg-foreground/10 hover:text-xp-cyan-light h-6 w-6"
+        className="text-primary hover:bg-foreground/10 hover:text-xp-cyan-light"
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
@@ -1222,16 +1219,16 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
 
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={stepForward}
-        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground h-6 w-6"
+        className="text-foreground/60 hover:bg-foreground/10 hover:text-foreground"
         aria-label="Next frame"
       >
         <ChevronRight className="h-3.5 w-3.5" />
       </Button>
 
       <span className="text-primary ml-1 font-mono text-xs tabular-nums">{timeDisplay}</span>
-      <span className="text-foreground/40 mr-1 ml-0.5 text-[10px]">
+      <span className="text-foreground/40 text-2xs mr-1 ml-0.5">
         {frameIndex + 1}/{frameCount}
       </span>
     </div>

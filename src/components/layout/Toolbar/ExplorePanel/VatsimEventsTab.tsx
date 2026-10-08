@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
+import { ArrowRight, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   getEventStatus,
@@ -45,9 +45,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
       {/* Busiest Airports */}
       {busiestAirports.length > 0 && (
         <div>
-          <h4 className="xp-section-heading mb-2">
-            {t('explore.vatsim.busiestNow', 'Busiest Now')}
-          </h4>
+          <h4 className="xp-section-heading mb-2">{t('explore.vatsim.busiestNow')}</h4>
           <div className="space-y-0.5">
             {busiestAirports.map((airport, index) => (
               <button
@@ -62,14 +60,14 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                 <span className="flex-1" />
                 <span
                   className="text-success flex items-center gap-1 font-mono text-xs"
-                  title={t('explore.vatsim.departures', 'Departures')}
+                  title={t('explore.vatsim.departures')}
                 >
                   <PlaneTakeoff className="h-3 w-3" />
                   {airport.departures}
                 </span>
                 <span
                   className="text-warning flex items-center gap-1 font-mono text-xs"
-                  title={t('explore.vatsim.arrivals', 'Arrivals')}
+                  title={t('explore.vatsim.arrivals')}
                 >
                   <PlaneLanding className="h-3 w-3" />
                   {airport.arrivals}
@@ -82,11 +80,11 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
 
       {/* Events */}
       <div>
-        <h4 className="xp-section-heading mb-2">{t('explore.vatsim.events', 'Events')}</h4>
+        <h4 className="xp-section-heading mb-2">{t('explore.vatsim.events')}</h4>
 
         {sortedEvents.length === 0 ? (
           <p className="text-muted-foreground py-4 text-center text-xs">
-            {t('explore.vatsim.noEvents', 'No upcoming events')}
+            {t('explore.vatsim.noEvents')}
           </p>
         ) : (
           <div className="space-y-0.5">
@@ -105,7 +103,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                   <div className="flex items-start gap-2">
                     <Badge
                       variant={STATUS_VARIANT[status]}
-                      className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px]"
+                      className="text-2xs mt-0.5 shrink-0 px-1.5 py-0"
                     >
                       {status.toUpperCase()}
                     </Badge>
@@ -117,9 +115,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                     {primaryRoute && (
                       <span className="text-info flex shrink-0 items-center gap-1 font-mono text-xs font-semibold">
                         {primaryRoute.departure}
-                        <span className="text-muted-foreground/40">
-                          {t('explorePanel.vatsimEvents.arrow')}
-                        </span>
+                        <ArrowRight className="text-muted-foreground h-3 w-3" />
                         {primaryRoute.arrival}
                       </span>
                     )}

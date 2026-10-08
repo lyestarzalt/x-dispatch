@@ -123,10 +123,13 @@ export function GraphicsSection() {
               key={value}
               variant={graphics.surfaceDetail === value ? 'default' : 'outline'}
               size="sm"
-              className={cn('flex-1', graphics.surfaceDetail === value && 'pointer-events-none')}
+              className={cn(
+                'min-w-0 flex-1',
+                graphics.surfaceDetail === value && 'pointer-events-none'
+              )}
               onClick={() => updateGraphics({ surfaceDetail: value })}
             >
-              {t(labelKey)}
+              <span className="truncate">{t(labelKey)}</span>
             </Button>
           ))}
         </div>
@@ -162,10 +165,13 @@ export function GraphicsSection() {
                 key={value}
                 variant={graphics.airfieldLights === value ? 'default' : 'outline'}
                 size="sm"
-                className={cn('flex-1', graphics.airfieldLights === value && 'pointer-events-none')}
+                className={cn(
+                  'min-w-0 flex-1',
+                  graphics.airfieldLights === value && 'pointer-events-none'
+                )}
                 onClick={() => updateGraphics({ airfieldLights: value })}
               >
-                {t(labelKey)}
+                <span className="truncate">{t(labelKey)}</span>
               </Button>
             ))}
           </div>

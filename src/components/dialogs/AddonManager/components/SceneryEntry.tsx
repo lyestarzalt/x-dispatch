@@ -80,11 +80,11 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
           {/* Drag handle */}
           <Button
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             {...attributes}
             {...listeners}
             className={cn(
-              'h-7 w-7 cursor-grab',
+              'cursor-grab',
               'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
               isDragging && 'text-primary cursor-grabbing'
             )}
@@ -124,8 +124,8 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                size="icon-sm"
+                className="opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={() => onOpenFolder(entry.fullPath)}
               >
                 <FolderOpen className="text-muted-foreground h-3.5 w-3.5" />
@@ -139,8 +139,8 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="hover:text-destructive h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                size="icon-sm"
+                className="hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={() => onDelete(entry.folderName)}
                 disabled={disabled}
               >

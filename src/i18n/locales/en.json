@@ -27,7 +27,11 @@
     "selected": "Selected",
     "online": "online",
     "approved": "Approved",
-    "recommended": "Recommended"
+    "recommended": "Recommended",
+    "showAll": "Show all",
+    "undo": "Undo",
+    "add": "Add",
+    "remove": "Remove"
   },
   "units": {
     "ft": "ft",
@@ -139,7 +143,6 @@
     "title": "Plan a flight",
     "description": "Pick both ends, type a route or fly direct, then send it to X-Plane.",
     "sections": {
-      "airports": "Airports",
       "enroute": "Enroute",
       "summary": "Cruise and summary",
       "light": "Light"
@@ -161,7 +164,6 @@
     "alternateAt": "Alternate · {{value}}",
     "noAlternate": "No alternate",
     "fuel": "Block fuel",
-    "liveHint": "The map redraws as you edit.",
     "tracks": {
       "title": "North Atlantic tracks",
       "auto": "Auto",
@@ -215,7 +217,6 @@
     },
     "ete": "Time",
     "aircraft": "Aircraft",
-    "skipped": "{{count}} skipped",
     "issues": {
       "notFound": "Not in the navigation database",
       "airwayNoFixBefore": "An airway needs a fix before it",
@@ -229,7 +230,7 @@
     "showOnMap": "Show on map",
     "save": "Save to X-Plane",
     "saved": "Saved to {{path}}",
-    "saveFailed": "Could not save: {{error}}",
+    "saveFailed": "Couldn't save to X-Plane ({{error}}). Check the X-Plane folder in Settings.",
     "light": {
       "phase": {
         "day": "Day",
@@ -250,7 +251,12 @@
       "tomorrow": "Tomorrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Random destination"
+    "randomDestination": "Random destination",
+    "planCleared": "Plan cleared",
+    "routeCleared": "Route cleared",
+    "randomShort": "Random",
+    "profileShort": "Profile",
+    "savedAs": "Saved as {{file}}"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "Events",
       "noEvents": "No upcoming events",
       "viewRoute": "View Route",
-      "goToDeparture": "Go to Departure"
+      "goToDeparture": "Go to Departure",
+      "departures": "Departures",
+      "arrivals": "Arrivals"
     },
     "filters": {
       "country": "Country",
@@ -1057,7 +1065,8 @@
       "export": "Save taxi route",
       "exportSuccess": "Taxi route saved",
       "summary": "via {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frequencies"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1227,10 +1236,17 @@
       "startState": "Start State",
       "weather": "Weather",
       "fuel": "Fuel",
-      "summary": "Summary",
       "departure": "Departure",
       "livery": "Livery",
-      "conditions": "Conditions"
+      "conditions": "Conditions",
+      "overweight": "{{amount}} over the maximum",
+      "ofMtow": "of {{max}} max",
+      "spare": "{{amount}} spare",
+      "takeoffWeight": "Takeoff weight",
+      "emptyHint": "The aircraft itself, with no fuel, people or cargo",
+      "payloadHint": "Pilot, passengers and cargo",
+      "fuelHint": "Fuel in the tanks at engine start",
+      "maxHint": "Maximum takeoff weight (MTOW): the heaviest the aircraft may be when it takes off"
     },
     "startState": {
       "ready": "Ready",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "Live",
-      "set": "Set",
+      "set": "Choose time",
       "now": "Now",
       "custom": "Custom",
       "dawn": "Dawn",
@@ -1261,7 +1277,20 @@
       "rainy": "Rainy",
       "stormy": "Stormy",
       "snowy": "Snowy",
-      "foggy": "Foggy"
+      "foggy": "Foggy",
+      "realTitle": "Real weather",
+      "realHint": "Live METAR at the departure airport",
+      "sky": {
+        "thunderstorm": "Thunderstorms",
+        "snow": "Snow",
+        "rain": "Rain",
+        "drizzle": "Drizzle",
+        "fog": "Fog",
+        "overcast": "Overcast",
+        "cloudy": "Cloudy",
+        "partlyCloudy": "Partly cloudy",
+        "clear": "Clear"
+      }
     },
     "weatherBuilder": {
       "custom": "Custom Weather",
@@ -1295,7 +1324,9 @@
       "presets": "Presets",
       "custom": "Custom",
       "poor": "Poor",
-      "unlimited": "Unlimited"
+      "unlimited": "Unlimited",
+      "customTitle": "Custom weather",
+      "customHint": "Clouds, wind and visibility, layer by layer"
     },
     "weatherDialog": {
       "title": "Weather Settings",
@@ -1391,7 +1422,8 @@
       "copyJson": "Copy launch JSON",
       "copyJsonToast": "Launch JSON copied. Paste it on Discord if you hit a problem with this flight.",
       "copyJsonError": "Couldn't copy launch JSON",
-      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on Discord."
+      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on Discord.",
+      "restore": "Load this setup"
     },
     "weightFuelLabel": "Weight & Fuel",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "Airport Mesh",
         "mesh": "Terrain Mesh",
         "unrecognized": "Unrecognized"
+      },
+      "badge": {
+        "airports": "Airport",
+        "defaultAirports": "Default",
+        "libraries": "Library",
+        "other": "Other",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Featured",
         "random": "Random"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Data from"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "Reroll",
       "noMatch": "No airports match. Widen the range or drop a filter.",
       "plan": "Plan this flight",
-      "useAsArrival": "Use as arrival"
+      "useAsArrival": "Use as arrival",
+      "needOrigin": "Pick a departure first."
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "Reload",
       "quit": "Quit"
     }
+  },
+  "weatherRadar": {
+    "controls": "Weather radar controls",
+    "previousFrame": "Previous frame",
+    "nextFrame": "Next frame"
   }
 }

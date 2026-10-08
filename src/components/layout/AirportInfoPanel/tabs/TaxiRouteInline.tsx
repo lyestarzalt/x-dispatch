@@ -19,8 +19,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useUnits } from '@/hooks/useUnits';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
+import { metersToNauticalMiles } from '@/lib/utils/geomath';
 import { toastError } from '@/lib/utils/toastError';
 import { trackEvent } from '@/queries/useAnalytics';
 import { useAppStore } from '@/stores/appStore';
@@ -28,6 +30,7 @@ import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
 export default function TaxiRouteInline() {
   const { t } = useTranslation();
+  const units = useUnits();
 
   const icao = useAppStore((s) => s.selectedICAO);
   const airport = useAppStore((s) => s.selectedAirportData);
@@ -115,11 +118,9 @@ export default function TaxiRouteInline() {
     if (!result) return;
     if (result.success) {
       trackEvent('taxi_route_exported', {});
-      toast.success(
-        t('airportInfo.taxiRoute.exportSuccess', 'Route exported for Follow the Greens')
-      );
+      toast.success(t('airportInfo.taxiRoute.exportSuccess'));
     } else {
-      toastError('taxi_route', result.error ?? t('common.error', 'Error'));
+      toastError('taxi_route', result.error ?? t('common.error'));
     }
   };
 
@@ -140,11 +141,9 @@ export default function TaxiRouteInline() {
         unique.push(name);
       }
     }
-    const distance = autoRouteResult.totalDistance;
-    const distStr =
-      distance >= 1000 ? `${(distance / 1000).toFixed(1)} km` : `${Math.round(distance)} m`;
-    return { taxiways: unique, distance: distStr };
-  }, [autoRouteResult]);
+    const distance = units.distance(metersToNauticalMiles(autoRouteResult.totalDistance));
+    return { taxiways: unique, distance };
+  }, [autoRouteResult, units]);
 
   const isArrival = direction === 'arrival';
 
@@ -166,19 +165,19 @@ export default function TaxiRouteInline() {
         >
           <ToggleGroupItem
             value="departure"
-            aria-label={t('airportInfo.taxiRoute.departure', 'Departure')}
+            aria-label={t('airportInfo.taxiRoute.departure')}
             className="w-full text-xs"
           >
             <PlaneTakeoff className="h-3.5 w-3.5" />
-            {t('airportInfo.taxiRoute.departure', 'Departure')}
+            {t('airportInfo.taxiRoute.departure')}
           </ToggleGroupItem>
           <ToggleGroupItem
             value="arrival"
-            aria-label={t('airportInfo.taxiRoute.arrival', 'Arrival')}
+            aria-label={t('airportInfo.taxiRoute.arrival')}
             className="w-full text-xs"
           >
             <PlaneLanding className="h-3.5 w-3.5" />
-            {t('airportInfo.taxiRoute.arrival', 'Arrival')}
+            {t('airportInfo.taxiRoute.arrival')}
           </ToggleGroupItem>
         </ToggleGroup>
       )}
@@ -187,13 +186,13 @@ export default function TaxiRouteInline() {
       <div className="flex items-center gap-2">
         <span className="xp-label shrink-0">
           {isArrival && !isFreehand
-            ? t('airportInfo.taxiRoute.taxiFrom', 'Taxi from')
-            : t('airportInfo.taxiRoute.taxiTo', 'Taxi to')}
+            ? t('airportInfo.taxiRoute.taxiFrom')
+            : t('airportInfo.taxiRoute.taxiTo')}
         </span>
 
         {isFreehand ? (
           <span className="xp-label min-w-0 flex-1 truncate italic">
-            {t('airportInfo.taxiRoute.drawManually', 'Draw manually')}
+            {t('airportInfo.taxiRoute.drawManually')}
           </span>
         ) : (
           <Select
@@ -207,8 +206,8 @@ export default function TaxiRouteInline() {
               <SelectValue
                 placeholder={
                   hasGraph
-                    ? t('airportInfo.taxiRoute.selectRunway', 'Select runway')
-                    : t('airportInfo.taxiRoute.noNetwork', 'No taxi data')
+                    ? t('airportInfo.taxiRoute.selectRunway')
+                    : t('airportInfo.taxiRoute.noNetwork')
                 }
               />
             </SelectTrigger>
@@ -228,7 +227,7 @@ export default function TaxiRouteInline() {
           size="icon"
           onClick={() => (isNetwork ? removeLastNetworkNode() : removeLastWaypoint())}
           disabled={!hasRoute}
-          tooltip={t('airportInfo.taxiRoute.undo', 'Undo')}
+          tooltip={t('airportInfo.taxiRoute.undo')}
           className="h-8 w-8 shrink-0"
         >
           <RotateCcw className="h-4 w-4" />
@@ -239,7 +238,7 @@ export default function TaxiRouteInline() {
             variant="ghost"
             size="icon"
             onClick={handleExport}
-            tooltip={t('airportInfo.taxiRoute.export', 'Export for Follow the Greens')}
+            tooltip={t('airportInfo.taxiRoute.export')}
             className="h-8 w-8 shrink-0"
           >
             <Download className="h-4 w-4" />
@@ -270,7 +269,7 @@ export default function TaxiRouteInline() {
         {hasRoute ? (
           <Button variant="ghost" size="sm" onClick={clearRoute} className="h-7 gap-1 px-2 text-sm">
             <Trash2 className="h-3.5 w-3.5" />
-            {t('airportInfo.taxiRoute.clearAll', 'Clear')}
+            {t('airportInfo.taxiRoute.clearAll')}
           </Button>
         ) : (
           <span />
@@ -285,12 +284,12 @@ export default function TaxiRouteInline() {
           {isFreehand ? (
             <>
               <Route className="h-3.5 w-3.5" />
-              {t('airportInfo.taxiRoute.autoRoute', 'Auto route')}
+              {t('airportInfo.taxiRoute.autoRoute')}
             </>
           ) : (
             <>
               <Pencil className="h-3.5 w-3.5" />
-              {t('airportInfo.taxiRoute.drawManually', 'Draw manually')}
+              {t('airportInfo.taxiRoute.drawManually')}
             </>
           )}
         </Button>

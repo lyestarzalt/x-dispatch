@@ -83,16 +83,16 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         >
           <Button
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
+            size="icon-sm"
+            className="text-muted-foreground/40 hover:text-foreground"
             onClick={() => setIsCollapsed(true)}
           >
             <ChevronRight className="h-4 w-4 rotate-180" />
           </Button>
           <Button
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground/40 hover:text-foreground h-7 w-7"
+            size="icon-sm"
+            className="text-muted-foreground/40 hover:text-foreground"
             onClick={() => setExploreOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -118,8 +118,12 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         >
           <TabsList variant="line" className="shrink-0 px-2">
             {TABS.map((tab) => (
-              <TabsTrigger key={tab} value={tab} className="flex-1 text-xs tracking-wide uppercase">
-                {t(`explore.tabs.${tab}`)}
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className="min-w-0 flex-1 text-xs tracking-wide uppercase"
+              >
+                <span className="truncate">{t(`explore.tabs.${tab}`)}</span>
               </TabsTrigger>
             ))}
           </TabsList>

@@ -1,36 +1,29 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
-  ArrowDownUp,
-  ArrowRight,
+  ArrowLeftRight,
   CheckCircle2,
   Dices,
   Eraser,
-  Loader2,
   Mountain,
-  Pencil,
   PlaneLanding,
   PlaneTakeoff,
   RotateCcw,
   Route,
   Save,
   Wand2,
-  Wind,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { IcaoCode } from '@/components/ui/icao-code';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
+import { formatDuration } from '@/lib/flightRecorder/format';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   estimateFuelKg,
@@ -53,7 +46,6 @@ import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
-import { formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import {
@@ -63,206 +55,31 @@ import {
   useTrackFeatureOpened,
 } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
-import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
-import type { RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
 import { AirportPicker, toEndpoint } from './AirportPicker';
+import { CruiseStat } from './CruiseStat';
+import { EndpointLabel } from './EndpointLabel';
+import { Field } from './Field';
 import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
 import { RandomDestinationPanel } from './RandomDestinationPanel';
+import { RouteEnd } from './RouteEnd';
+import { RouteProblem } from './RouteProblem';
 import { RunwaySelect } from './RunwaySelect';
+import { Section } from './Section';
+import { Stat } from './Stat';
 import { TrackPicker } from './TrackPicker';
+import { WindHint } from './WindHint';
 
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
-/** Wind within this many degrees of a runway heading makes it the suggested one. */
-const WIND_SUGGEST_MIN_KT = 4;
-
-function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}:${String(m).padStart(2, '0')}`;
-}
-
-function formatLevel(feet: number | null): string {
-  if (feet === null) return '—';
-  return feet >= 18000 ? `FL${Math.round(feet / 100)}` : `${feet}`;
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0 space-y-1.5">
-      <span className="xp-label block truncate">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function StatLabel({ children }: { children: ReactNode }) {
-  return <span className="text-muted-foreground truncate text-xs">{children}</span>;
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <StatLabel>{label}</StatLabel>
-      <span className="xp-value truncate font-semibold tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-/** The cruise figure doubles as its own editor: click, type feet, Enter or blur to apply. */
-function CruiseStat({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number | null;
-  onChange: (feet: number | null) => void;
-}) {
-  const { t } = useTranslation();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState('');
-  const commit = () => {
-    const feet = Number(draft);
-    if (draft.trim() !== '' && Number.isFinite(feet) && feet >= 0) {
-      onChange(Math.round(feet / 100) * 100);
-    }
-    setEditing(false);
-  };
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <StatLabel>{label}</StatLabel>
-      {editing ? (
-        <Input
-          autoFocus
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value.replace(/\D/g, ''))}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') setEditing(false);
-          }}
-          className="h-6 w-20 px-1.5 font-mono text-sm tabular-nums"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(value === null ? '' : String(value));
-            setEditing(true);
-          }}
-          title={t('planBuilder.editCruise')}
-          className="xp-value hover:text-primary flex items-center gap-1 text-left font-semibold tabular-nums"
-        >
-          {formatLevel(value)}
-          <Pencil className="text-muted-foreground h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h3 className="xp-section-heading">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-function PlanCard({ children, className }: { children: ReactNode; className?: string }) {
-  return <Card className={cn('bg-secondary/40 p-3', className)}>{children}</Card>;
-}
-
-function ProblemChip({ token, onRemove }: { token: RouteToken; onRemove: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 font-mono text-xs',
-        token.status === 'unknown'
-          ? 'border-warning/40 bg-warning/10 text-warning'
-          : 'border-destructive/40 bg-destructive/10 text-destructive'
-      )}
-      title={token.issue ? t(`planBuilder.issues.${token.issue}`) : undefined}
-    >
-      {token.text}
-      <button
-        type="button"
-        onClick={onRemove}
-        className="hover:text-foreground -mr-0.5 rounded p-0.5 opacity-70 hover:opacity-100"
-        aria-label={t('planBuilder.removeToken', { token: token.text })}
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
-    </span>
-  );
-}
-
-/** The runway end best aligned with the reported wind, when the wind is worth acting on. */
-function windRunway(
-  ends: RunwayEnd[] | undefined,
-  wind: { degrees?: number; speed: number } | undefined
-): RunwayEnd | null {
-  if (!ends || !wind || wind.degrees === undefined || wind.speed < WIND_SUGGEST_MIN_KT) return null;
-  let best: RunwayEnd | null = null;
-  let bestDelta = Infinity;
-  for (const end of ends) {
-    let delta = Math.abs(end.headingDeg - wind.degrees);
-    if (delta > 180) delta = 360 - delta;
-    if (delta < bestDelta) {
-      bestDelta = delta;
-      best = end;
-    }
-  }
-  return best;
-}
-
-function WindHint({
-  icao,
-  selected,
-  onUse,
-}: {
-  icao: string;
-  selected: string | undefined;
-  onUse: (end: RunwayEnd) => void;
-}) {
-  const { t } = useTranslation();
-  const { data: metar } = useVatsimMetarQuery(icao);
-  const { data: ends } = useAirportRunways(icao);
-  const wind = metar?.parsed.wind;
-  const best = useMemo(() => windRunway(ends, wind), [ends, wind]);
-  if (!best || best.name === selected) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => onUse(best)}
-      className="text-muted-foreground hover:text-foreground inline-flex min-w-0 items-center gap-1.5 text-xs"
-    >
-      <Wind className="h-4 w-4 shrink-0" />
-      <span className="truncate">
-        {t('planBuilder.windSuggest', {
-          wind: formatWind(wind, { bare: true }),
-          runway: best.name,
-        })}
-      </span>
-      <span className="text-primary shrink-0 font-medium">{t('planBuilder.useRunway')}</span>
-    </button>
-  );
-}
 
 interface FlightPlanBuilderProps {
   airports: Airport[];
@@ -275,6 +92,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
   const reset = usePlanBuilderStore((s) => s.reset);
+  const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
   const departure = usePlanBuilderStore((s) => s.departure);
   const arrival = usePlanBuilderStore((s) => s.arrival);
   const routeText = usePlanBuilderStore((s) => s.routeText);
@@ -576,13 +394,28 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     }
   };
 
+  // Starting over and clearing the route are one click, so each offers an undo instead of a prompt.
+  const handleNewPlan = () => {
+    const previous = reset();
+    toast(t('planBuilder.planCleared'), {
+      action: { label: t('common.undo'), onClick: () => restoreDraft(previous) },
+    });
+  };
+  const handleClearRoute = () => {
+    const previous = routeText;
+    setRouteText('');
+    toast(t('planBuilder.routeCleared'), {
+      action: { label: t('common.undo'), onClick: () => setRouteText(previous) },
+    });
+  };
+
   if (!isOpen) return null;
 
   const routeStatus = !hasEndpoints ? (
     <span className="text-muted-foreground">{t('planBuilder.pickEndpoints')}</span>
   ) : resolving ? (
     <span className="text-muted-foreground inline-flex items-center gap-1.5">
-      <Loader2 className="h-4 w-4 animate-spin" />
+      <Spinner className="size-4" />
       {t('planBuilder.resolving')}
     </span>
   ) : tokens.length === 0 ? (
@@ -598,11 +431,6 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         <CheckCircle2 className="text-success h-4 w-4" />
       )}
       <span>{t('planBuilder.routeSummary', { fixes: fixCount, airways: airwayCount })}</span>
-      {problems.length > 0 && (
-        <Badge variant="warning" className="px-1.5 py-0">
-          {t('planBuilder.skipped', { count: problems.length })}
-        </Badge>
-      )}
     </span>
   );
 
@@ -614,36 +442,31 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
       )}
     >
       <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
-        <header className="border-border/30 border-b px-4 pt-3 pb-3">
-          <div className="flex items-center justify-between">
+        <header className="border-border/30 space-y-3 border-b px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <Route className="text-primary h-4 w-4 shrink-0" />
               <span className="truncate text-sm font-medium">{t('planBuilder.title')}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      'h-7 w-7',
-                      randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                    )}
-                    onClick={() => setRandomOpen((open) => !open)}
-                    aria-label={t('planBuilder.randomDestination')}
-                    aria-pressed={randomOpen}
-                  >
-                    <Dices className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('planBuilder.randomDestination')}</TooltipContent>
-              </Tooltip>
+            <div className="flex shrink-0 items-center gap-1">
               <Button
                 variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground h-7 gap-1.5 px-2 text-xs"
-                onClick={reset}
+                size="xs"
+                className={
+                  randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }
+                onClick={() => setRandomOpen((open) => !open)}
+                tooltip={t('planBuilder.randomDestination')}
+                aria-pressed={randomOpen}
+              >
+                <Dices className="h-3.5 w-3.5" />
+                {t('planBuilder.randomShort')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={handleNewPlan}
                 disabled={!departure && !arrival && !routeText}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -651,40 +474,39 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               </Button>
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground h-7 w-7"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={close}
-                aria-label={t('common.close')}
+                tooltip={t('common.close')}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="mt-3 flex items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <IcaoCode className="block text-2xl font-bold">{departure?.icao ?? '----'}</IcaoCode>
-              <div className="text-muted-foreground truncate text-xs">
-                {departure?.name ?? t('planBuilder.departure')}
-              </div>
-            </div>
-            <ArrowRight className="text-muted-foreground/60 h-5 w-5 shrink-0" />
-            <div className="min-w-0 flex-1 text-right">
-              <IcaoCode className="block text-2xl font-bold">{arrival?.icao ?? '----'}</IcaoCode>
-              <div className="text-muted-foreground truncate text-xs">
-                {arrival?.name ?? t('planBuilder.arrival')}
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <RouteEnd endpoint={departure} fallback={t('planBuilder.departure')} />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground shrink-0"
+              onClick={swapEndpoints}
+              disabled={!departure && !arrival}
+              tooltip={t('planBuilder.swap')}
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+            </Button>
+            <RouteEnd endpoint={arrival} fallback={t('planBuilder.arrival')} align="right" />
           </div>
 
-          <div className="mt-3 grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <Stat
               label={t('planBuilder.distance')}
               value={ready ? units.distance(distanceNm as NauticalMiles) : '—'}
             />
             <Stat
               label={t('planBuilder.ete')}
-              value={ready ? formatMinutes(estimateMinutes(distanceNm, cls)) : '—'}
+              value={ready ? formatDuration(estimateMinutes(distanceNm, cls) * 60) : '—'}
             />
             <CruiseStat
               label={t('planBuilder.cruiseShort')}
@@ -697,11 +519,11 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             />
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
             <ToggleGroup
               type="single"
-              size="sm"
+              size="xs"
               variant="outline"
               value={cls}
               onValueChange={(v) => {
@@ -711,7 +533,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               }}
             >
               {CLASSES.map((c) => (
-                <ToggleGroupItem key={c} value={c} className="h-7 px-2.5 text-xs">
+                <ToggleGroupItem key={c} value={c}>
                   {t(`planBuilder.class.${c}`)}
                 </ToggleGroupItem>
               ))}
@@ -720,15 +542,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         </header>
 
         <ScrollArea className="min-h-0 flex-1">
-          <div className="space-y-5 px-4 py-4">
-            <Section title={t('planBuilder.sections.airports')}>
-              <PlanCard className="border-l-success space-y-3 border-l-2">
-                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <span className="bg-success/15 text-success flex h-7 w-7 shrink-0 items-center justify-center rounded-sm">
-                    <PlaneTakeoff className="h-4 w-4" />
-                  </span>
-                  <span className="truncate">{t('planBuilder.departure')}</span>
-                </div>
+          <div className="space-y-5 p-4">
+            <div className="space-y-3">
+              <section className="border-border space-y-3 rounded-lg border p-3">
+                <EndpointLabel icon={PlaneTakeoff}>{t('planBuilder.departure')}</EndpointLabel>
                 <AirportPicker
                   airports={airports}
                   value={departure}
@@ -764,28 +581,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     />
                   </>
                 )}
-              </PlanCard>
+              </section>
 
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={swapEndpoints}
-                  disabled={!departure && !arrival}
-                >
-                  <ArrowDownUp className="h-4 w-4" />
-                  {t('planBuilder.swap')}
-                </Button>
-              </div>
-
-              <PlanCard className="border-l-warning space-y-3 border-l-2">
-                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <span className="bg-warning/15 text-warning flex h-7 w-7 shrink-0 items-center justify-center rounded-sm">
-                    <PlaneLanding className="h-4 w-4" />
-                  </span>
-                  <span className="truncate">{t('planBuilder.arrival')}</span>
-                </div>
+              <section className="border-border space-y-3 rounded-lg border p-3">
+                <EndpointLabel icon={PlaneLanding}>{t('planBuilder.arrival')}</EndpointLabel>
                 <AirportPicker
                   airports={airports}
                   value={arrival}
@@ -849,70 +648,69 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     </Field>
                   </>
                 )}
-              </PlanCard>
-            </Section>
+              </section>
+            </div>
 
             <Section title={t('planBuilder.sections.enroute')}>
-              <PlanCard className="space-y-3">
-                <Textarea
-                  value={routeText}
-                  onChange={(e) => handleRouteTyped(e.target.value)}
-                  placeholder={t('planBuilder.routePlaceholder')}
-                  className="[field-sizing:content] max-h-36 min-h-[3.25rem] resize-none overflow-y-auto font-mono text-sm leading-6 tracking-wide uppercase"
-                  spellCheck={false}
-                />
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <div className="min-w-0 truncate">{routeStatus}</div>
-                  <div className="flex shrink-0 gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setRouteText('')}
-                      disabled={routeText.length === 0}
-                    >
-                      <Eraser className="mr-1 h-3.5 w-3.5" />
-                      {t('planBuilder.clear')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAutoRoute}
-                      disabled={!hasEndpoints || autoRouting}
-                    >
-                      {autoRouting ? (
-                        <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Wand2 className="mr-1 h-3.5 w-3.5" />
-                      )}
-                      {autoRouting ? t('planBuilder.autoRouting') : t('planBuilder.autoRoute')}
-                    </Button>
-                  </div>
+              <Textarea
+                value={routeText}
+                onChange={(e) => handleRouteTyped(e.target.value)}
+                placeholder={t('planBuilder.routePlaceholder')}
+                className="[field-sizing:content] max-h-36 min-h-[3.25rem] resize-none overflow-y-auto font-mono text-sm leading-6 tracking-wide uppercase"
+                spellCheck={false}
+              />
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <div className="min-w-0 truncate">{routeStatus}</div>
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={handleClearRoute}
+                    disabled={routeText.length === 0}
+                  >
+                    <Eraser className="h-3.5 w-3.5" />
+                    {t('planBuilder.clear')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={handleAutoRoute}
+                    disabled={!hasEndpoints || autoRouting}
+                  >
+                    {autoRouting ? (
+                      <Spinner className="size-3.5" />
+                    ) : (
+                      <Wand2 className="h-3.5 w-3.5" />
+                    )}
+                    {autoRouting ? t('planBuilder.autoRouting') : t('planBuilder.autoRoute')}
+                  </Button>
                 </div>
-                {crossing && natFeed && (
-                  <TrackPicker
-                    feed={natFeed}
-                    direction={crossing}
-                    selected={selectedTrack}
-                    cruiseAltitudeFt={cruiseAltitudeFt}
-                    issues={routeIssues}
-                    disabled={autoRouting}
-                    onPick={(track) => void handlePickTrack(track)}
-                  />
-                )}
-                {problems.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="xp-label">{t('planBuilder.notUsed')}</span>
+              </div>
+              {crossing && natFeed && (
+                <TrackPicker
+                  feed={natFeed}
+                  direction={crossing}
+                  selected={selectedTrack}
+                  cruiseAltitudeFt={cruiseAltitudeFt}
+                  issues={routeIssues}
+                  disabled={autoRouting}
+                  onPick={(track) => void handlePickTrack(track)}
+                />
+              )}
+              {problems.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="xp-label">{t('planBuilder.notUsed')}</span>
+                  <ul className="space-y-1">
                     {problems.map(({ token, index }) => (
-                      <ProblemChip
+                      <RouteProblem
                         key={`${token.text}-${index}`}
                         token={token}
                         onRemove={() => removeRouteToken(index)}
                       />
                     ))}
-                  </div>
-                )}
-                <p className="text-muted-foreground text-xs">{t('planBuilder.liveHint')}</p>
-              </PlanCard>
+                  </ul>
+                </div>
+              )}
             </Section>
 
             {isOpen && ready && departure && arrival && (
@@ -926,43 +724,42 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </div>
         </ScrollArea>
 
-        <footer className="border-border/30 flex flex-col items-end gap-2 border-t px-4 py-3">
+        <footer className="border-border/30 space-y-2 border-t px-4 py-3">
           {savedPath && (
-            <Badge
-              variant="success"
-              className="max-w-full min-w-0 gap-1.5 font-mono"
-              title={savedPath}
-            >
+            <p className="text-success flex min-w-0 items-center gap-1.5 text-xs" title={savedPath}>
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{savedPath.split(/[\\/]/).pop()}</span>
-            </Badge>
+              <span className="truncate font-mono">
+                {t('planBuilder.savedAs', { file: savedPath.split(/[\\/]/).pop() })}
+              </span>
+            </p>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
-              variant={profileStripOpen ? 'secondary' : 'outline'}
-              size="sm"
-              className="w-8 px-0"
+              variant={profileStripOpen ? 'secondary' : 'ghost'}
+              size="xs"
+              className="mr-auto"
               onClick={() => setProfileStripOpen(!profileStripOpen)}
               disabled={!ready}
-              aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
-              title={profileStripOpen ? t('profile.hide') : t('profile.show')}
+              aria-pressed={profileStripOpen}
+              tooltip={profileStripOpen ? t('profile.hide') : t('profile.show')}
             >
               <Mountain className="h-3.5 w-3.5" />
+              {t('planBuilder.profileShort')}
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               onClick={() => {
                 startAtDeparture();
                 markVisit({ startSet: true });
               }}
               disabled={!departure}
             >
-              <PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" />
+              <PlaneTakeoff className="h-3.5 w-3.5" />
               {t('planBuilder.setStart')}
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={!ready || saving}>
-              <Save className="mr-1.5 h-3.5 w-3.5" />
+            <Button size="xs" onClick={handleSave} disabled={!ready || saving}>
+              <Save className="h-3.5 w-3.5" />
               {t('planBuilder.save')}
             </Button>
           </div>
@@ -972,10 +769,6 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         <RandomDestinationPanel
           airports={airports}
           aircraftClass={cls}
-          onAircraftClassChange={(next) => {
-            setAircraftClass(next);
-            rerouteAfterCruise.current = true;
-          }}
           onArrivalPicked={(icao) => markVisit({ randomArrival: icao })}
           onClose={() => setRandomOpen(false)}
           className="absolute top-0 bottom-0 left-full ml-2 w-80"

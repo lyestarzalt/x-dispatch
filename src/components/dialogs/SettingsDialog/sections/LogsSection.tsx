@@ -61,12 +61,12 @@ export function LogsSection({ active }: LogsSectionProps) {
   const toolbar = (
     <div className="flex flex-wrap items-center gap-2">
       <Button variant="outline" size="sm" onClick={handleRefresh} disabled={query.isFetching}>
-        <RefreshCcw className={`mr-2 h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
+        <RefreshCcw className={`h-3.5 w-3.5 ${query.isFetching ? 'animate-spin' : ''}`} />
         {t('settings.logs.refresh')}
       </Button>
       <DesktopOnly>
         <Button variant="outline" size="sm" onClick={handleOpenExternal}>
-          <ExternalLink className="mr-2 h-3.5 w-3.5" />
+          <ExternalLink className="h-3.5 w-3.5" />
           {t('settings.logs.openExternal')}
         </Button>
       </DesktopOnly>
@@ -153,8 +153,8 @@ export function LogsSection({ active }: LogsSectionProps) {
             <Button
               key={opt.id}
               variant={filter === opt.id ? 'default' : 'outline'}
-              size="sm"
-              className="h-7 px-2.5 text-xs"
+              size="xs"
+
               onClick={() => setFilter(opt.id)}
             >
               {t(opt.labelKey)}
@@ -173,7 +173,7 @@ export function LogsSection({ active }: LogsSectionProps) {
         <Collapsible open={showHeader} onOpenChange={setShowHeader}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
-              <ScrollText className="mr-2 h-4 w-4" />
+              <ScrollText className="h-4 w-4" />
               {showHeader
                 ? t('settings.logs.hideHeader')
                 : t('settings.logs.showHeader', { count: parsed.header.length })}

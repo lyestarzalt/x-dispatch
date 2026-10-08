@@ -376,7 +376,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange, bare }: S
 
           {/* Sunrise / Sunset labels inside SVG */}
           <text x={26} y={H - 24} fill={C.muted} fontSize="8" fontWeight="500" letterSpacing="1.5">
-            SUNRISE
+            {t('launcher.timePresets.sunrise').toLocaleUpperCase()}
           </text>
           <text x={26} y={H - 10} fill={C.cyanGlow} fontSize="14" fontWeight="300">
             {formatHours(sunriseHours)}
@@ -390,7 +390,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange, bare }: S
             letterSpacing="1.5"
             textAnchor="end"
           >
-            SUNSET
+            {t('launcher.timePresets.sunset').toLocaleUpperCase()}
           </text>
           <text
             x={W - 26}
@@ -413,7 +413,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange, bare }: S
             <span className="text-muted-foreground text-xs">{t('sunArc.local')}</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[10px]" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
+            <span className="text-2xs" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
               {statusText}
             </span>
             <span className="text-muted-foreground font-mono text-sm">{zuluTime}</span>

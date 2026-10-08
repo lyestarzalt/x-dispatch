@@ -27,7 +27,11 @@
     "selected": "Ausgewählt",
     "online": "online",
     "approved": "Genehmigt",
-    "recommended": "Empfohlen"
+    "recommended": "Empfohlen",
+    "showAll": "Alle anzeigen",
+    "undo": "Rückgängig",
+    "add": "Hinzufügen",
+    "remove": "Entfernen"
   },
   "units": {
     "ft": "ft",
@@ -139,7 +143,6 @@
     "title": "Flug planen",
     "description": "Start und Ziel wählen, Route eingeben oder direkt fliegen, dann an X-Plane senden.",
     "sections": {
-      "airports": "Flughäfen",
       "enroute": "Streckenflug",
       "summary": "Reiseflug und Übersicht",
       "light": "Licht"
@@ -161,7 +164,6 @@
     "alternateAt": "Ausweich · {{value}}",
     "noAlternate": "Kein Ausweichflughafen",
     "fuel": "Blockkraftstoff",
-    "liveHint": "Die Karte zeichnet beim Bearbeiten neu.",
     "tracks": {
       "title": "Nordatlantik-Tracks",
       "auto": "Auto",
@@ -215,7 +217,6 @@
     },
     "ete": "Zeit",
     "aircraft": "Flugzeug",
-    "skipped": "{{count}} übersprungen",
     "issues": {
       "notFound": "Nicht in der Navigationsdatenbank",
       "airwayNoFixBefore": "Eine Luftstraße braucht einen Wegpunkt davor",
@@ -229,7 +230,7 @@
     "showOnMap": "Auf Karte zeigen",
     "save": "In X-Plane speichern",
     "saved": "Gespeichert unter {{path}}",
-    "saveFailed": "Speichern fehlgeschlagen: {{error}}",
+    "saveFailed": "Speichern in X-Plane fehlgeschlagen ({{error}}). Prüfe den X-Plane-Ordner in den Einstellungen.",
     "light": {
       "phase": {
         "day": "Tag",
@@ -250,7 +251,12 @@
       "tomorrow": "Morgen",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Zufallsziel"
+    "randomDestination": "Zufallsziel",
+    "planCleared": "Plan geleert",
+    "routeCleared": "Route geleert",
+    "randomShort": "Zufall",
+    "profileShort": "Profil",
+    "savedAs": "Gespeichert als {{file}}"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "Veranstaltungen",
       "noEvents": "Keine bevorstehenden Veranstaltungen",
       "viewRoute": "Route anzeigen",
-      "goToDeparture": "Zum Abflugort"
+      "goToDeparture": "Zum Abflugort",
+      "departures": "Abflüge",
+      "arrivals": "Ankünfte"
     },
     "filters": {
       "country": "Land",
@@ -1057,7 +1065,8 @@
       "export": "Rollroute speichern",
       "exportSuccess": "Rollroute gespeichert",
       "summary": "über {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frequenzen"
   },
   "navigation": {
     "heading": "KURS",
@@ -1227,10 +1236,17 @@
       "startState": "Startzustand",
       "weather": "Wetter",
       "fuel": "Treibstoff",
-      "summary": "Zusammenfassung",
       "departure": "Abflug",
       "livery": "Bemalung",
-      "conditions": "Bedingungen"
+      "conditions": "Bedingungen",
+      "overweight": "{{amount}} über dem Maximum",
+      "ofMtow": "von max. {{max}}",
+      "spare": "{{amount}} frei",
+      "takeoffWeight": "Startgewicht",
+      "emptyHint": "Das Flugzeug selbst, ohne Treibstoff, Personen oder Fracht",
+      "payloadHint": "Pilot, Passagiere und Fracht",
+      "fuelHint": "Treibstoff in den Tanks beim Anlassen",
+      "maxHint": "Höchstabfluggewicht (MTOW): das Maximum, mit dem das Flugzeug starten darf"
     },
     "startState": {
       "ready": "Bereit",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "Live",
-      "set": "Einstellen",
+      "set": "Zeit wählen",
       "now": "Jetzt",
       "custom": "Benutzerdefiniert",
       "dawn": "Morgengrauen",
@@ -1261,7 +1277,20 @@
       "rainy": "Regnerisch",
       "stormy": "Stürmisch",
       "snowy": "Schnee",
-      "foggy": "Neblig"
+      "foggy": "Neblig",
+      "realTitle": "Echtes Wetter",
+      "realHint": "Aktuelles METAR am Abflughafen",
+      "sky": {
+        "thunderstorm": "Gewitter",
+        "snow": "Schnee",
+        "rain": "Regen",
+        "drizzle": "Niesel",
+        "fog": "Nebel",
+        "overcast": "Bedeckt",
+        "cloudy": "Bewölkt",
+        "partlyCloudy": "Teilweise bewölkt",
+        "clear": "Klar"
+      }
     },
     "weatherBuilder": {
       "custom": "Benutzerdefiniertes Wetter",
@@ -1295,7 +1324,9 @@
       "presets": "Voreinstellungen",
       "custom": "Benutzerdefiniert",
       "poor": "Schlecht",
-      "unlimited": "Unbegrenzt"
+      "unlimited": "Unbegrenzt",
+      "customTitle": "Eigenes Wetter",
+      "customHint": "Wolken, Wind und Sicht, Schicht für Schicht"
     },
     "weatherDialog": {
       "title": "Wettereinstellungen",
@@ -1391,7 +1422,8 @@
       "copyJson": "Start-JSON kopieren",
       "copyJsonToast": "Start-JSON kopiert. Fügen Sie es bei einem Problem mit diesem Flug auf Discord ein.",
       "copyJsonError": "Start-JSON konnte nicht kopiert werden",
-      "shareHint": "Probleme mit einem Flug? Klicken Sie auf das Kopier-Symbol, um die Details mit dem Entwickler auf Discord zu teilen."
+      "shareHint": "Probleme mit einem Flug? Klicken Sie auf das Kopier-Symbol, um die Details mit dem Entwickler auf Discord zu teilen.",
+      "restore": "Dieses Setup laden"
     },
     "weightFuelLabel": "Gewicht & Treibstoff",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "Flughafen-Mesh",
         "mesh": "Gelände-Mesh",
         "unrecognized": "Nicht erkannt"
+      },
+      "badge": {
+        "airports": "Flughafen",
+        "defaultAirports": "Standard",
+        "libraries": "Bibliothek",
+        "other": "Sonstige",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Empfohlen",
         "random": "Zufall"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Daten von"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "Neu würfeln",
       "noMatch": "Keine passenden Flughäfen. Bereich erweitern oder Filter entfernen.",
       "plan": "Diesen Flug planen",
-      "useAsArrival": "Als Ziel verwenden"
+      "useAsArrival": "Als Ziel verwenden",
+      "needOrigin": "Wähle zuerst einen Abflughafen."
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "Neu laden",
       "quit": "Beenden"
     }
+  },
+  "weatherRadar": {
+    "controls": "Wetterradar-Steuerung",
+    "previousFrame": "Vorheriges Bild",
+    "nextFrame": "Nächstes Bild"
   }
 }

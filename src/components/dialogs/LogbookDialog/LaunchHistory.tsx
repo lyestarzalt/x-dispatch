@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { type TFunction } from 'i18next';
 import {
   Clock,
   CloudFog,
@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useUnits } from '@/hooks/useUnits';
 import { cn } from '@/lib/utils/helpers';
 import { useAircraftImage } from '@/queries';
 import { useAircraftList } from '@/queries/useLaunchQuery';
@@ -39,29 +40,31 @@ const WEATHER_ICONS: Record<string, typeof Sun> = {
 };
 
 const WEATHER_GRADIENTS: Record<string, string> = {
-  clear: 'from-sky-500/15 via-sky-500/5 to-transparent',
-  cloudy: 'from-slate-400/15 via-slate-400/5 to-transparent',
-  rainy: 'from-slate-600/15 via-slate-600/5 to-transparent',
-  stormy: 'from-purple-900/15 via-purple-900/5 to-transparent',
-  snowy: 'from-white/10 via-white/5 to-transparent',
-  foggy: 'from-gray-300/10 via-gray-300/5 to-transparent',
-  real: 'from-neutral-400/10 via-neutral-400/5 to-transparent',
-  custom: 'from-teal-500/15 via-teal-500/5 to-transparent',
+  clear: 'from-cat-sky/15 via-cat-sky/5 to-transparent',
+  cloudy: 'from-muted-foreground/15 via-muted-foreground/5 to-transparent',
+  rainy: 'from-cat-blue/15 via-cat-blue/5 to-transparent',
+  stormy: 'from-cat-fuchsia/15 via-cat-fuchsia/5 to-transparent',
+  snowy: 'from-foreground/10 via-foreground/5 to-transparent',
+  foggy: 'from-muted-foreground/10 via-muted-foreground/5 to-transparent',
+  real: 'from-primary/10 via-primary/5 to-transparent',
+  custom: 'from-cat-teal/15 via-cat-teal/5 to-transparent',
 };
 
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return 'Just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 14) return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 8) return `${weeks}w ago`;
-  return new Date(iso).toLocaleDateString();
+/** "5 min ago" in the UI language; Intl rejects made-up locales (pirate), so fall back to English. */
+function formatRelativeTime(iso: string, language: string): string {
+  const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
+  const days = Math.round(seconds / 86_400);
+  if (Math.abs(days) >= 14) return new Date(iso).toLocaleDateString(language);
+  let rtf: Intl.RelativeTimeFormat;
+  try {
+    rtf = new Intl.RelativeTimeFormat(language, { numeric: 'auto', style: 'narrow' });
+  } catch {
+    rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow' });
+  }
+  if (Math.abs(seconds) < 60) return rtf.format(0, 'second');
+  if (Math.abs(seconds) < 3_600) return rtf.format(Math.round(seconds / 60), 'minute');
+  if (Math.abs(seconds) < 86_400) return rtf.format(Math.round(seconds / 3_600), 'hour');
+  return rtf.format(days, 'day');
 }
 
 function getWeatherGradientKey(entry: LogbookEntry): string {
@@ -70,23 +73,16 @@ function getWeatherGradientKey(entry: LogbookEntry): string {
   return entry.weatherPreset || 'clear';
 }
 
-function getWeatherLabel(entry: LogbookEntry): string {
-  if (entry.weatherMode === 'real') return 'Live';
-  if (entry.weatherMode === 'custom') return 'Custom';
-  return entry.weatherPreset.charAt(0).toUpperCase() + entry.weatherPreset.slice(1);
+function getWeatherLabel(entry: LogbookEntry, t: TFunction): string {
+  if (entry.weatherMode === 'real') return t('launcher.time.live');
+  if (entry.weatherMode === 'custom') return t('launcher.time.custom');
+  return t(`launcher.weather.${entry.weatherPreset || 'clear'}`);
 }
 
 function formatFuelSummary(percentages: number[]): string {
   if (percentages.length === 0) return '—';
   const avg = Math.round(percentages.reduce((s, v) => s + v, 0) / percentages.length);
   return `${avg}%`;
-}
-
-function formatPayloadSummary(weights: number[]): string {
-  const total = weights.reduce((s, v) => s + v, 0);
-  if (total === 0) return 'Empty';
-  if (total >= 1000) return `${(total / 1000).toFixed(1)}k lbs`;
-  return `${Math.round(total)} lbs`;
 }
 
 function formatTimeOfDay(hours: number): string {
@@ -145,11 +141,11 @@ export function LaunchHistory() {
         <div className="border-border/40 flex flex-shrink-0 items-center justify-end border-b px-4 py-1.5">
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={clearLogbook}
-            className="text-destructive hover:text-destructive h-7 text-xs"
+            className="text-destructive hover:text-destructive"
           >
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+            <Trash2 className="h-3.5 w-3.5" />
             {t('launcher.logbook.clearAll')}
           </Button>
         </div>
@@ -190,8 +186,9 @@ interface LogbookCardProps {
 }
 
 function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
-  const { t } = useTranslation();
-  const [hovered, setHovered] = useState(false);
+  const { t, i18n } = useTranslation();
+  const units = useUnits();
+  const payloadLbs = entry.payloadWeights.reduce((sum, w) => sum + w, 0);
   const { data: previewImage } = useAircraftImage(entry.previewImagePath);
 
   const handleCopyJson = async () => {
@@ -205,17 +202,18 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
   const isCustomPosition = entry.positionType === 'custom';
 
   return (
-    <button
-      type="button"
-      className="group border-border/50 bg-card/90 hover:border-primary/40 relative flex items-stretch overflow-hidden rounded-xl border text-left transition-colors"
-      onClick={() => onRestore(entry)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group border-border/50 bg-card/90 hover:border-primary/40 has-[button:focus-visible]:border-primary/40 relative flex items-stretch overflow-hidden rounded-lg border transition-colors">
+      {/* The whole card restores the setup; the actions sit above this button, not inside it. */}
+      <button
+        type="button"
+        className="focus-visible:ring-ring absolute inset-0 rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+        onClick={() => onRestore(entry)}
+        aria-label={`${t('launcher.logbook.restore')}: ${entry.aircraftName}`}
+      />
       {/* ── Aircraft image ────────────────────────────────── */}
       <div
         className={cn(
-          'relative flex w-40 shrink-0 items-center justify-center self-stretch bg-gradient-to-br',
+          'pointer-events-none relative flex w-40 shrink-0 items-center justify-center self-stretch bg-gradient-to-br',
           gradient
         )}
       >
@@ -232,7 +230,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       </div>
 
       {/* ── Aircraft identity + flight config ─────────────── */}
-      <div className="flex min-w-0 flex-1 flex-col justify-between py-2.5 pr-3 pl-2">
+      <div className="pointer-events-none flex min-w-0 flex-1 flex-col justify-between py-2.5 pr-3 pl-2">
         {/* Row 1: Aircraft name + ICAO badge */}
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
@@ -240,7 +238,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
               {entry.aircraftName}
             </span>
             {entry.aircraftICAO && (
-              <Badge variant="secondary" className="shrink-0 font-mono text-[10px]">
+              <Badge variant="secondary" className="text-2xs shrink-0 font-mono">
                 {entry.aircraftICAO}
               </Badge>
             )}
@@ -253,13 +251,15 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
         {/* Row 2: Metadata as icon·value pairs (AircraftPreview dot-separator pattern) */}
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
           <WeatherIcon className="h-3 w-3 shrink-0" />
-          <span>{getWeatherLabel(entry)}</span>
+          <span>{getWeatherLabel(entry, t)}</span>
           <span className="text-border">·</span>
           <Fuel className="h-3 w-3 shrink-0" />
           <span className="font-mono">{formatFuelSummary(entry.tankPercentages)}</span>
           <span className="text-border">·</span>
           <Weight className="h-3 w-3 shrink-0" />
-          <span className="font-mono">{formatPayloadSummary(entry.payloadWeights)}</span>
+          <span className="font-mono">
+            {payloadLbs === 0 ? t('weightBalance.empty') : units.weight(payloadLbs)}
+          </span>
           <span className="text-border">·</span>
           <Clock className="h-3 w-3 shrink-0" />
           <span className="font-mono">
@@ -278,13 +278,10 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       <div className="bg-border/30 h-auto w-px self-stretch" />
 
       {/* ── Location ──────────────────────────────────────── */}
-      <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 pt-2 pb-7">
+      <div className="pointer-events-none flex w-48 shrink-0 flex-col items-end justify-center px-4 pt-2 pb-7">
         {isCustomPosition ? (
           <span className="text-foreground font-mono text-sm leading-tight font-bold">
-            {entry.startPosition.latitude >= 0 ? 'N' : 'S'}
-            {Math.abs(entry.startPosition.latitude).toFixed(3)}°{' '}
-            {entry.startPosition.longitude >= 0 ? 'E' : 'W'}
-            {Math.abs(entry.startPosition.longitude).toFixed(3)}°
+            {units.coordinates(entry.startPosition.latitude, entry.startPosition.longitude)}
           </span>
         ) : (
           <>
@@ -305,36 +302,28 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
 
       {/* ── Bottom-right cluster: timestamp + actions ─────── */}
       <div className="absolute right-2 bottom-1.5 z-10 flex items-center gap-1.5">
-        <span className="text-muted-foreground/40 font-mono text-[10px]">
-          {formatRelativeTime(entry.launchedAt)}
+        <span className="text-muted-foreground text-2xs pointer-events-none font-mono">
+          {formatRelativeTime(entry.launchedAt, i18n.language)}
         </span>
-        <button
-          type="button"
-          className="text-muted-foreground/60 hover:bg-secondary hover:text-foreground flex h-5 w-5 items-center justify-center rounded"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCopyJson();
-          }}
-          title={t('launcher.logbook.copyJson')}
-          aria-label={t('launcher.logbook.copyJson')}
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground"
+          onClick={handleCopyJson}
+          tooltip={t('launcher.logbook.copyJson')}
         >
           <Copy className="h-3 w-3" />
-        </button>
-        <button
-          type="button"
-          className={cn(
-            'text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive flex h-5 w-5 items-center justify-center rounded transition-opacity',
-            hovered ? 'opacity-100' : 'opacity-0'
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(entry.id);
-          }}
-          aria-label={t('common.delete')}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          onClick={() => onDelete(entry.id)}
+          tooltip={t('common.delete')}
         >
           <X className="h-3 w-3" />
-        </button>
+        </Button>
       </div>
-    </button>
+    </div>
   );
 }

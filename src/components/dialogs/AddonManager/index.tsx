@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { FolderOpen, Layers, Package, PackagePlus, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { FULL_SCREEN_DIALOG } from '@/components/dialogs/fullScreenDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { indicatorSpring, quickFade } from '@/lib/motionPresets';
@@ -64,10 +65,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogPanel
-        className="border-border bg-background fixed inset-x-6 top-[60px] bottom-6 z-50 flex overflow-hidden rounded-lg border shadow-2xl"
-        aria-describedby={undefined}
-      >
+      <DialogPanel className={FULL_SCREEN_DIALOG} aria-describedby={undefined}>
         <VisuallyHidden.Root>
           <DialogTitle>{t('addonManager.title')}</DialogTitle>
         </VisuallyHidden.Root>

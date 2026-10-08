@@ -27,7 +27,11 @@
     "selected": "Chosen",
     "online": "aboard",
     "approved": "Stamped aye",
-    "recommended": "Cap'n's pick"
+    "recommended": "Cap'n's pick",
+    "showAll": "Show all of 'em",
+    "undo": "Belay that",
+    "add": "Add",
+    "remove": "Toss overboard"
   },
   "units": {
     "ft": "ft",
@@ -139,7 +143,6 @@
     "title": "Chart a Voyage",
     "description": "Pick both harbors, scrawl a route or sail straight, then send it to X-Plane.",
     "sections": {
-      "airports": "Harbors",
       "enroute": "Open Sea",
       "summary": "Cruisin' an' Tally",
       "light": "Sunlight"
@@ -161,7 +164,6 @@
     "alternateAt": "Safe harbour · {{value}}",
     "noAlternate": "No safe harbour",
     "fuel": "Grog in the tanks",
-    "liveHint": "The chart redraws as ye scribble.",
     "tracks": {
       "title": "North Atlantic tracks",
       "auto": "Auto",
@@ -215,7 +217,6 @@
     },
     "ete": "Time",
     "aircraft": "Vessel",
-    "skipped": "{{count}} tossed overboard",
     "issues": {
       "notFound": "Not on any chart we carry",
       "airwayNoFixBefore": "A sea lane needs a mark afore it",
@@ -229,7 +230,7 @@
     "showOnMap": "Show on the chart",
     "save": "Stow in X-Plane",
     "saved": "Stowed at {{path}}",
-    "saveFailed": "Couldn't stow it: {{error}}",
+    "saveFailed": "Couldn't stow it in X-Plane ({{error}}). Check yer X-Plane folder in Settings.",
     "light": {
       "phase": {
         "day": "Day",
@@ -250,7 +251,12 @@
       "tomorrow": "On the morrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Lucky port"
+    "randomDestination": "Lucky port",
+    "planCleared": "Chart wiped clean",
+    "routeCleared": "Course wiped",
+    "randomShort": "Luck",
+    "profileShort": "Profile",
+    "savedAs": "Stowed as {{file}}"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "Gatherings",
       "noEvents": "No events on the horizon",
       "viewRoute": "View course",
-      "goToDeparture": "Go ta Departure"
+      "goToDeparture": "Go ta Departure",
+      "departures": "Ships Sailin'",
+      "arrivals": "Ships Makin' Port"
     },
     "filters": {
       "country": "Nation",
@@ -1057,7 +1065,8 @@
       "export": "Stow taxi route",
       "exportSuccess": "Taxi route stowed",
       "summary": "via {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Freqs"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1227,10 +1236,17 @@
       "startState": "Starting State",
       "weather": "Skies",
       "fuel": "Fuel Stores",
-      "summary": "Voyage Summary",
       "departure": "Departure Berth",
       "livery": "Paint Scheme",
-      "conditions": "Conditions"
+      "conditions": "Conditions",
+      "overweight": "{{amount}} over what she can lift",
+      "ofMtow": "of {{max}} at most",
+      "spare": "{{amount}} to spare",
+      "takeoffWeight": "Weight at castin' off",
+      "emptyHint": "The bare ship, no fuel, crew nor cargo",
+      "payloadHint": "Cap'n, crew an' cargo",
+      "fuelHint": "Fuel in the barrels when the engines wake",
+      "maxHint": "Max takeoff weight (MTOW): the heaviest she may be leavin' port"
     },
     "startState": {
       "ready": "Ready fer departure",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "Live seas",
-      "set": "Set time",
+      "set": "Pick the hour",
       "now": "Right now",
       "custom": "Hand-set",
       "dawn": "First Light",
@@ -1261,7 +1277,20 @@
       "rainy": "Rain Squalls",
       "stormy": "Storm Fronts",
       "snowy": "Snow Squalls",
-      "foggy": "Thick Fog"
+      "foggy": "Thick Fog",
+      "realTitle": "The real sky",
+      "realHint": "Fresh METAR from yer home port",
+      "sky": {
+        "thunderstorm": "Thunder an' lightnin'",
+        "snow": "Snow",
+        "rain": "Rain",
+        "drizzle": "Drizzle",
+        "fog": "Fog",
+        "overcast": "Grey skies",
+        "cloudy": "Cloudy",
+        "partlyCloudy": "Some clouds",
+        "clear": "Fair skies"
+      }
     },
     "weatherBuilder": {
       "custom": "Custom Skies",
@@ -1295,7 +1324,9 @@
       "presets": "Preset Skies",
       "custom": "Hand-made",
       "poor": "Murky",
-      "unlimited": "Clear horizon"
+      "unlimited": "Clear horizon",
+      "customTitle": "Brew yer own weather",
+      "customHint": "Clouds, wind an' sight, layer by layer"
     },
     "weatherDialog": {
       "title": "Sky Conditions",
@@ -1391,7 +1422,8 @@
       "copyJson": "Plunder yer launch JSON",
       "copyJsonToast": "Launch JSON pilfered. Paste it on Discord if ye hit trouble with this voyage.",
       "copyJsonError": "Couldn't pilfer the launch JSON, blast it",
-      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on Discord."
+      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on Discord.",
+      "restore": "Hoist this setup"
     },
     "weightFuelLabel": "Heft & Grog",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "Airport terrain mesh",
         "mesh": "Terrain mesh",
         "unrecognized": "Mystery cargo"
+      },
+      "badge": {
+        "airports": "Port",
+        "defaultAirports": "Stock",
+        "libraries": "Chest",
+        "other": "Odds",
+        "overlays": "Overlay",
+        "mesh": "Mesh"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Treasured",
         "random": "Lucky Dip"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Charts from"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "Roll again",
       "noMatch": "No port fits, matey. Widen yer range or drop a sieve.",
       "plan": "Chart this voyage",
-      "useAsArrival": "Make it yer landfall"
+      "useAsArrival": "Make it yer landfall",
+      "needOrigin": "Pick yer port o' departure first."
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "Hoist Again",
       "quit": "Abandon Ship"
     }
+  },
+  "weatherRadar": {
+    "controls": "Storm-spyglass helm",
+    "previousFrame": "Back a frame",
+    "nextFrame": "Forward a frame"
   }
 }

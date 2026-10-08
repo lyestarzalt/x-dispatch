@@ -105,7 +105,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
             preview={flight.preview}
             width={140}
             height={84}
-            className="text-sky-300"
+            className="text-cat-sky"
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 font-mono text-2xl font-bold">
@@ -130,16 +130,16 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
 
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => openOnMap(false)}>
-            <MapIcon className="mr-1.5 h-4 w-4" />
+            <MapIcon className="h-4 w-4" />
             {t('logbook.showOnMap')}
           </Button>
           <Button size="sm" variant="outline" onClick={() => openOnMap(true)}>
-            <Play className="mr-1.5 h-4 w-4" />
+            <Play className="h-4 w-4" />
             {t('logbook.replay')}
           </Button>
           {landing && (
             <Button size="sm" variant="outline" onClick={() => void copyImage()}>
-              <Copy className="mr-1.5 h-4 w-4" />
+              <Copy className="h-4 w-4" />
               {t('logbook.copyImage')}
             </Button>
           )}
@@ -151,7 +151,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
               className="text-destructive hover:text-destructive"
               onClick={() => setConfirmDelete(true)}
             >
-              <Trash2 className="mr-1.5 h-4 w-4" />
+              <Trash2 className="h-4 w-4" />
               {t('logbook.delete')}
             </Button>
           </DesktopOnly>

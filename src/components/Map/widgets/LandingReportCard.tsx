@@ -102,7 +102,7 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
           exit={{ opacity: 0, y: 12, scale: 0.98, transition: exitEase }}
           transition={cardSpring}
           className={cn(
-            'border-border/50 bg-card/90 z-20 w-[400px] cursor-grab rounded-xl border shadow-2xl shadow-black/50 backdrop-blur-xl select-none active:cursor-grabbing',
+            'border-border/50 bg-card/90 z-20 w-[400px] cursor-grab rounded-xl border shadow-xl backdrop-blur-xl select-none active:cursor-grabbing',
             isDefault ? 'absolute right-4 bottom-4' : 'fixed'
           )}
           style={!isDefault ? { left: position.x, top: position.y } : undefined}
@@ -117,8 +117,8 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
             </span>
             <Button
               variant="ghost"
-              size="icon"
-              className="-mr-2 h-7 w-7"
+              size="icon-sm"
+              className="-mr-2"
               onClick={dismiss}
               tooltip={t('landing.dismiss')}
             >
@@ -163,16 +163,16 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
 
           <div className="border-border/50 mt-3 flex items-center gap-1 border-t px-2 py-1.5">
             <Button size="sm" variant="ghost" onClick={() => onShowOnMap(report.lat, report.lon)}>
-              <Crosshair className="mr-1.5 h-3.5 w-3.5" />
+              <Crosshair className="h-3.5 w-3.5" />
               {t('landing.showOnMap')}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => void copyImage()}>
-              <Copy className="mr-1.5 h-3.5 w-3.5" />
+              <Copy className="h-3.5 w-3.5" />
               {t('logbook.copyImage')}
             </Button>
             <div className="flex-1" />
             <Button size="sm" variant="ghost" onClick={openInLogbook}>
-              <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+              <BookOpen className="h-3.5 w-3.5" />
               {t('logbook.title')}
             </Button>
           </div>

@@ -119,9 +119,9 @@ function AircraftListItem({
       {/* Favorite Button */}
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-sm"
         className={cn(
-          'h-7 w-7 shrink-0',
+          'shrink-0',
           isFavorite ? 'text-warning' : 'text-muted-foreground/50 hover:text-muted-foreground'
         )}
         onClick={(e) => {
@@ -255,7 +255,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             placeholder={t('launcher.aircraft.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 flex-1 text-sm"
+            className="h-8 min-w-0 flex-1 text-sm"
             endIcon={<Search />}
           />
           <Button

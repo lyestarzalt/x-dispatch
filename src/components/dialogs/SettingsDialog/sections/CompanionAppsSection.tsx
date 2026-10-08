@@ -171,7 +171,7 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
       )}
 
       <Button variant="outline" onClick={openAdd} className="w-full">
-        <Plus className="mr-2 h-4 w-4" />
+        <Plus className="h-4 w-4" />
         {t('settings.companionApps.addButton')}
       </Button>
 
@@ -195,7 +195,7 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
                   disabled={alreadyAdded}
                   onClick={() => openAddFromSuggestion(s.id)}
                 >
-                  <Plus className="mr-1 h-3 w-3" />
+                  <Plus className="h-3 w-3" />
                   {t('settings.companionApps.add')}
                 </Button>
               </li>

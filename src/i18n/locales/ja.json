@@ -27,7 +27,11 @@
     "selected": "選択済み",
     "online": "オンライン",
     "approved": "承認済み",
-    "recommended": "推奨"
+    "recommended": "推奨",
+    "showAll": "すべて表示",
+    "undo": "元に戻す",
+    "add": "追加",
+    "remove": "削除"
   },
   "units": {
     "ft": "ft",
@@ -139,7 +143,6 @@
     "title": "フライトを計画",
     "description": "出発地と到着地を選び、ルートを入力するか直行にして、X-Planeへ送ります。",
     "sections": {
-      "airports": "空港",
       "enroute": "エンルート",
       "summary": "巡航と概要",
       "light": "日照"
@@ -161,7 +164,6 @@
     "alternateAt": "代替 · {{value}}",
     "noAlternate": "代替空港なし",
     "fuel": "搭載燃料",
-    "liveHint": "編集すると地図が更新されます。",
     "tracks": {
       "title": "北大西洋トラック",
       "auto": "自動",
@@ -215,7 +217,6 @@
     },
     "ete": "時間",
     "aircraft": "機種",
-    "skipped": "{{count}} 件スキップ",
     "issues": {
       "notFound": "航法データベースにありません",
       "airwayNoFixBefore": "航空路の前にはフィックスが必要です",
@@ -229,7 +230,7 @@
     "showOnMap": "地図に表示",
     "save": "X-Planeに保存",
     "saved": "{{path}} に保存しました",
-    "saveFailed": "保存できませんでした: {{error}}",
+    "saveFailed": "X-Plane に保存できませんでした（{{error}}）。設定で X-Plane フォルダーを確認してください。",
     "light": {
       "phase": {
         "day": "昼",
@@ -250,7 +251,12 @@
       "tomorrow": "明日",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "ランダムな目的地"
+    "randomDestination": "ランダムな目的地",
+    "planCleared": "プランを消去しました",
+    "routeCleared": "ルートを消去しました",
+    "randomShort": "ランダム",
+    "profileShort": "断面",
+    "savedAs": "{{file}} として保存"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "イベント",
       "noEvents": "予定されているイベントはありません",
       "viewRoute": "ルートを表示",
-      "goToDeparture": "出発地へ移動"
+      "goToDeparture": "出発地へ移動",
+      "departures": "出発",
+      "arrivals": "到着"
     },
     "filters": {
       "country": "国",
@@ -1057,7 +1065,8 @@
       "export": "Follow the Greens用にエクスポート",
       "exportSuccess": "Follow the Greens用にルートをエクスポートしました",
       "summary": "{{taxiways}} 経由 · {{distance}}"
-    }
+    },
+    "frequencies": "周波数"
   },
   "navigation": {
     "heading": "方位",
@@ -1227,10 +1236,17 @@
       "startState": "開始状態",
       "weather": "天候",
       "fuel": "燃料",
-      "summary": "概要",
       "departure": "出発",
       "livery": "塗装",
-      "conditions": "コンディション"
+      "conditions": "コンディション",
+      "overweight": "最大を {{amount}} 超過",
+      "ofMtow": "/ 最大 {{max}}",
+      "spare": "残り {{amount}}",
+      "takeoffWeight": "離陸重量",
+      "emptyHint": "燃料・人・貨物を含まない機体そのもの",
+      "payloadHint": "パイロット、乗客、貨物",
+      "fuelHint": "エンジン始動時のタンク内燃料",
+      "maxHint": "最大離陸重量 (MTOW)：離陸時に許される最大の重さ"
     },
     "startState": {
       "ready": "準備完了",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "ライブ",
-      "set": "設定",
+      "set": "時刻を選ぶ",
       "now": "現在",
       "custom": "カスタム",
       "dawn": "夜明け",
@@ -1261,7 +1277,20 @@
       "rainy": "雨",
       "stormy": "嵐",
       "snowy": "雪",
-      "foggy": "霧"
+      "foggy": "霧",
+      "realTitle": "実際の気象",
+      "realHint": "出発空港のリアルタイム METAR",
+      "sky": {
+        "thunderstorm": "雷雨",
+        "snow": "雪",
+        "rain": "雨",
+        "drizzle": "霧雨",
+        "fog": "霧",
+        "overcast": "曇天",
+        "cloudy": "曇り",
+        "partlyCloudy": "晴れ時々曇り",
+        "clear": "快晴"
+      }
     },
     "weatherBuilder": {
       "custom": "カスタム天候",
@@ -1295,7 +1324,9 @@
       "presets": "プリセット",
       "custom": "カスタム",
       "poor": "悪い",
-      "unlimited": "無制限"
+      "unlimited": "無制限",
+      "customTitle": "カスタム気象",
+      "customHint": "雲・風・視程を層ごとに設定"
     },
     "weatherDialog": {
       "title": "天候設定",
@@ -1391,7 +1422,8 @@
       "copyJson": "起動 JSON をコピー",
       "copyJsonToast": "起動 JSON をコピーしました。このフライトで問題があった場合は、Discord に貼り付けてください。",
       "copyJsonError": "起動 JSON をコピーできませんでした",
-      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を Discord で開発者と共有してください。"
+      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を Discord で開発者と共有してください。",
+      "restore": "この設定を読み込む"
     },
     "weightFuelLabel": "重量と燃料",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "空港メッシュ",
         "mesh": "地形メッシュ",
         "unrecognized": "認識不能"
+      },
+      "badge": {
+        "airports": "空港",
+        "defaultAirports": "標準",
+        "libraries": "ライブラリ",
+        "other": "その他",
+        "overlays": "オーバーレイ",
+        "mesh": "メッシュ"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "おすすめ",
         "random": "ランダム"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "データ提供"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "引き直す",
       "noMatch": "該当する空港がありません。範囲を広げるかフィルターを外してください。",
       "plan": "このフライトを計画",
-      "useAsArrival": "到着地に設定"
+      "useAsArrival": "到着地に設定",
+      "needOrigin": "先に出発空港を選んでください。"
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "再読み込み",
       "quit": "終了"
     }
+  },
+  "weatherRadar": {
+    "controls": "気象レーダーの操作",
+    "previousFrame": "前のフレーム",
+    "nextFrame": "次のフレーム"
   }
 }

@@ -83,7 +83,9 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                   />
 
                   {/* Name */}
-                  <span className="flex-1 truncate font-mono text-sm">{script.displayName}</span>
+                  <span className="min-w-0 flex-1 truncate font-mono text-sm">
+                    {script.displayName}
+                  </span>
 
                   {/* Extension indicator */}
                   <span className="text-muted-foreground text-sm">
@@ -93,8 +95,8 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                   {/* Delete button */}
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:bg-destructive/10 h-7 w-7"
+                    size="icon-sm"
+                    className="text-destructive hover:bg-destructive/10"
                     onClick={() => handleDelete(script.fileName)}
                     disabled={isPending}
                   >

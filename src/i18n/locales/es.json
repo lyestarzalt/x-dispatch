@@ -27,7 +27,11 @@
     "selected": "Seleccionado",
     "online": "en línea",
     "approved": "Aprobado",
-    "recommended": "Recomendado"
+    "recommended": "Recomendado",
+    "showAll": "Mostrar todos",
+    "undo": "Deshacer",
+    "add": "Añadir",
+    "remove": "Quitar"
   },
   "units": {
     "ft": "ft",
@@ -139,7 +143,6 @@
     "title": "Planificar un vuelo",
     "description": "Elige origen y destino, escribe una ruta o vuela directo y envíalo a X-Plane.",
     "sections": {
-      "airports": "Aeropuertos",
       "enroute": "En ruta",
       "summary": "Crucero y resumen",
       "light": "Luz"
@@ -161,7 +164,6 @@
     "alternateAt": "Alternativo · {{value}}",
     "noAlternate": "Sin alternativo",
     "fuel": "Combustible",
-    "liveHint": "El mapa se redibuja mientras editas.",
     "tracks": {
       "title": "Tracks del Atlántico Norte",
       "auto": "Auto",
@@ -215,7 +217,6 @@
     },
     "ete": "Tiempo",
     "aircraft": "Aeronave",
-    "skipped": "{{count}} omitidos",
     "issues": {
       "notFound": "No está en la base de datos de navegación",
       "airwayNoFixBefore": "Una aerovía necesita un punto antes",
@@ -229,7 +230,7 @@
     "showOnMap": "Mostrar en el mapa",
     "save": "Guardar en X-Plane",
     "saved": "Guardado en {{path}}",
-    "saveFailed": "No se pudo guardar: {{error}}",
+    "saveFailed": "No se pudo guardar en X-Plane ({{error}}). Revisa la carpeta de X-Plane en Ajustes.",
     "light": {
       "phase": {
         "day": "Día",
@@ -250,7 +251,12 @@
       "tomorrow": "Mañana",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Destino aleatorio"
+    "randomDestination": "Destino aleatorio",
+    "planCleared": "Plan borrado",
+    "routeCleared": "Ruta borrada",
+    "randomShort": "Aleatorio",
+    "profileShort": "Perfil",
+    "savedAs": "Guardado como {{file}}"
   },
   "toolbar": {
     "clock": {
@@ -384,7 +390,9 @@
       "events": "Eventos",
       "noEvents": "Sin eventos próximos",
       "viewRoute": "Ver ruta",
-      "goToDeparture": "Ir a salida"
+      "goToDeparture": "Ir a salida",
+      "departures": "Salidas",
+      "arrivals": "Llegadas"
     },
     "filters": {
       "country": "País",
@@ -1057,7 +1065,8 @@
       "export": "Guardar ruta de rodaje",
       "exportSuccess": "Ruta de rodaje guardada",
       "summary": "vía {{taxiways}} · {{distance}}"
-    }
+    },
+    "frequencies": "Frecuencias"
   },
   "navigation": {
     "heading": "RUMBO",
@@ -1227,10 +1236,17 @@
       "startState": "Estado inicial",
       "weather": "Meteorología",
       "fuel": "Combustible",
-      "summary": "Resumen",
       "departure": "Salida",
       "livery": "Librea",
-      "conditions": "Condiciones"
+      "conditions": "Condiciones",
+      "overweight": "{{amount}} por encima del máximo",
+      "ofMtow": "de {{max}} máx.",
+      "spare": "{{amount}} libres",
+      "takeoffWeight": "Peso al despegue",
+      "emptyHint": "El avión en sí, sin combustible, personas ni carga",
+      "payloadHint": "Piloto, pasajeros y carga",
+      "fuelHint": "Combustible en los tanques al arrancar",
+      "maxHint": "Peso máximo al despegue (MTOW): lo más pesado que puede estar el avión al despegar"
     },
     "startState": {
       "ready": "Listo",
@@ -1238,7 +1254,7 @@
     },
     "time": {
       "live": "En vivo",
-      "set": "Establecer",
+      "set": "Elegir hora",
       "now": "Ahora",
       "custom": "Personalizado",
       "dawn": "Amanecer",
@@ -1261,7 +1277,20 @@
       "rainy": "Lluvioso",
       "stormy": "Tormentoso",
       "snowy": "Nevado",
-      "foggy": "Niebla"
+      "foggy": "Niebla",
+      "realTitle": "Tiempo real",
+      "realHint": "METAR en vivo en el aeropuerto de salida",
+      "sky": {
+        "thunderstorm": "Tormentas",
+        "snow": "Nieve",
+        "rain": "Lluvia",
+        "drizzle": "Llovizna",
+        "fog": "Niebla",
+        "overcast": "Cubierto",
+        "cloudy": "Nublado",
+        "partlyCloudy": "Parcialmente nublado",
+        "clear": "Despejado"
+      }
     },
     "weatherBuilder": {
       "custom": "Meteorología personalizada",
@@ -1295,7 +1324,9 @@
       "presets": "Preajustes",
       "custom": "Personalizado",
       "poor": "Mala",
-      "unlimited": "Ilimitada"
+      "unlimited": "Ilimitada",
+      "customTitle": "Tiempo personalizado",
+      "customHint": "Nubes, viento y visibilidad, capa a capa"
     },
     "weatherDialog": {
       "title": "Ajustes meteorológicos",
@@ -1391,7 +1422,8 @@
       "copyJson": "Copiar JSON de inicio",
       "copyJsonToast": "JSON de inicio copiado. Pégalo en Discord si tuviste un problema con este vuelo.",
       "copyJsonError": "No se pudo copiar el JSON de inicio",
-      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en Discord."
+      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en Discord.",
+      "restore": "Cargar esta configuración"
     },
     "weightFuelLabel": "Peso y combustible",
     "conditions": {
@@ -1535,6 +1567,14 @@
         "airportMesh": "Malla de aeropuerto",
         "mesh": "Malla de terreno",
         "unrecognized": "No reconocido"
+      },
+      "badge": {
+        "airports": "Aeropuerto",
+        "defaultAirports": "Predet.",
+        "libraries": "Biblioteca",
+        "other": "Otro",
+        "overlays": "Overlay",
+        "mesh": "Malla"
       }
     },
     "liveryDialog": {
@@ -1889,14 +1929,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Destacadas",
         "random": "Aleatoria"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Datos de"
     },
     "random": {
@@ -1919,7 +1957,8 @@
       "reroll": "Otra vez",
       "noMatch": "Ningún aeropuerto coincide. Amplía el rango o quita un filtro.",
       "plan": "Planificar este vuelo",
-      "useAsArrival": "Usar como llegada"
+      "useAsArrival": "Usar como llegada",
+      "needOrigin": "Elige primero una salida."
     }
   },
   "sunArc": {
@@ -2115,5 +2154,10 @@
       "reload": "Recargar",
       "quit": "Salir"
     }
+  },
+  "weatherRadar": {
+    "controls": "Controles del radar meteorológico",
+    "previousFrame": "Fotograma anterior",
+    "nextFrame": "Fotograma siguiente"
   }
 }

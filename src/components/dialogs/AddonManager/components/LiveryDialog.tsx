@@ -36,13 +36,13 @@ function LiveryItem({ livery, onDelete, isPending }: LiveryItemProps) {
       )}
 
       {/* Name */}
-      <span className="flex-1 truncate text-sm">{livery.displayName}</span>
+      <span className="min-w-0 flex-1 truncate text-sm">{livery.displayName}</span>
 
       {/* Delete button */}
       <Button
         variant="ghost"
-        size="icon"
-        className="text-destructive hover:bg-destructive/10 h-7 w-7"
+        size="icon-sm"
+        className="text-destructive hover:bg-destructive/10"
         onClick={() => onDelete(livery.folderName)}
         disabled={isPending}
       >

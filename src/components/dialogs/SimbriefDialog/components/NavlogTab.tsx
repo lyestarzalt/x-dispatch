@@ -85,7 +85,7 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
   return (
     <div className="bg-card flex flex-col rounded-lg border">
       {/* Header */}
-      <div className="bg-muted/50 text-muted-foreground grid grid-cols-[1fr_80px_80px_100px_80px_80px_60px] gap-2 border-b px-4 py-2 text-[10px] font-medium tracking-wider uppercase">
+      <div className="bg-muted/50 text-muted-foreground text-2xs grid grid-cols-[1fr_80px_80px_100px_80px_80px_60px] gap-2 border-b px-4 py-2 font-medium tracking-wider uppercase">
         <div>{t('simbriefDialog.navlog.colFix')}</div>
         <div className="text-right">{t('simbriefDialog.navlog.colAltitude')}</div>
         <div className="text-right">{t('simbriefDialog.navlog.colWind')}</div>
@@ -184,18 +184,18 @@ function NavlogRow({
                 {fix.ident}
               </span>
               {fix.isTopOfClimb && (
-                <Badge variant="success" className="text-[9px]">
+                <Badge variant="success" className="text-2xs">
                   {t('simbriefDialog.profile.tocBadge')}
                 </Badge>
               )}
               {fix.isTopOfDescent && (
-                <Badge variant="warning" className="text-[9px]">
+                <Badge variant="warning" className="text-2xs">
                   {t('simbriefDialog.profile.todBadge')}
                 </Badge>
               )}
             </div>
             {fix.via_airway && (
-              <span className="text-muted-foreground text-[10px]">{fix.via_airway}</span>
+              <span className="text-muted-foreground text-2xs">{fix.via_airway}</span>
             )}
           </div>
         </div>
@@ -223,7 +223,7 @@ function NavlogRow({
         {/* GS / Mach */}
         <div className="flex flex-col items-end">
           <span className="font-mono text-sm">{units.speed(Number(fix.groundspeed) as Knots)}</span>
-          <span className="text-muted-foreground font-mono text-[10px]">
+          <span className="text-muted-foreground text-2xs font-mono">
             {t('simbriefDialog.performance.machValue', {
               mach: (parseInt(fix.mach_thousandths, 10) / 1000).toFixed(2),
             })}
@@ -244,7 +244,7 @@ function NavlogRow({
 
         {/* Expand button */}
         <div className="flex items-center justify-end">
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggle}>
+          <Button variant="ghost" size="icon-xs" onClick={onToggle}>
             {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </Button>
         </div>
@@ -273,7 +273,7 @@ function NavlogRow({
             <p className="text-muted-foreground">{t('simbriefDialog.navlog.windComponent')}</p>
             <p className={cn('font-mono', isHeadwind ? 'text-destructive' : 'text-success')}>
               {t('simbriefDialog.navlog.windCompValue', {
-                value: `${isHeadwind ? '' : '+'}${units.speed(windComp as Knots)}`,
+                value: `${isHeadwind ? '' : '+'}${Math.round(windComp)} ${t('units.kt')}`,
                 tag: isHeadwind
                   ? t('simbriefDialog.navlog.headwind')
                   : t('simbriefDialog.navlog.tailwind'),

@@ -31,7 +31,7 @@ export function showSupportToastIfEligible(): void {
     toast.custom(
       (id) => (
         <div className="border-primary/20 bg-card flex items-start gap-3 rounded-lg border p-4 shadow-lg">
-          <Heart className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+          <Heart className="text-cat-red mt-0.5 h-5 w-5 shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-foreground text-sm font-medium">{t('supportPrompt.title')}</p>
             <p className="text-muted-foreground mt-1 text-sm">{t('supportPrompt.description')}</p>
@@ -42,7 +42,7 @@ export function showSupportToastIfEligible(): void {
                 className="gap-1.5"
                 onClick={() => {
                   trackEvent('donate_clicked', { source: 'support_prompt' });
-                  window.open(KOFI_URL, '_blank');
+                  void window.appAPI.openExternal(KOFI_URL);
                   dismiss();
                   toast.dismiss(id);
                 }}

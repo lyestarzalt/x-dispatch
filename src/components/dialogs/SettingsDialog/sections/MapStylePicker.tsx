@@ -140,7 +140,7 @@ export function MapStylePicker({
             disabled={!draft.trim()}
             className="h-9 shrink-0"
           >
-            <Plus className="mr-1 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             {t('settings.graphics.customStyleAdd')}
           </Button>
         </div>

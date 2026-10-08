@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
-import { Heart, LifeBuoy, Loader2, Send } from 'lucide-react';
+import { Heart, LifeBuoy, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { DISCORD_INVITE, SUPPORT_PAGE } from '@/config/links';
 import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
@@ -95,11 +96,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
               disabled={!message.trim() || isSending}
               className="shrink-0 gap-2"
             >
-              {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+              {isSending ? <Spinner className="size-4" /> : <Send className="h-4 w-4" />}
               {t('settings.support.sendReport')}
             </Button>
           </div>
@@ -115,7 +112,7 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           <SettingsLinkRow
             label={t('settings.about.supportProject')}
             href="https://ko-fi.com/A0A21V3IZZ"
-            leadingIcon={<Heart className="h-3.5 w-3.5 text-red-400" />}
+            leadingIcon={<Heart className="text-cat-red h-3.5 w-3.5" />}
             onOpen={trackDonateClick}
           />
         </div>
