@@ -3,6 +3,7 @@
  * Manages the user's flight plan with departure, arrival, and route waypoints
  */
 import { create } from 'zustand';
+import { mergeStationData, toFmsPlan } from '@/lib/flightplan/stationData';
 import { parseFMSFile } from '@/lib/parsers/fms';
 import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
@@ -272,6 +273,9 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
         runway: data.destination.plan_rwy,
       },
     });
+
+    // SimBrief positions stay as published on its own cycle; the database only adds station data.
+    void addStationData(enrichedPlan);
   },
 
   openSimbriefDialog: () => set({ simbriefDialogOpen: true }),
@@ -369,3 +373,19 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
     }
   },
 }));
+
+/**
+ * Adds station names, types and frequencies from the nav database to the plan on show, for
+ * the map labels and the info card. Positions and the found flag are left as the publisher
+ * set them. A plan replaced before the lookup returns is left alone.
+ */
+export async function addStationData(plan: EnrichedFlightPlan): Promise<void> {
+  try {
+    const lookup = await window.flightPlanAPI.enrich(toFmsPlan(plan));
+    if (useFlightPlanStore.getState().fmsData !== plan) return;
+    const merged = mergeStationData(plan, lookup);
+    if (merged !== plan) useFlightPlanStore.setState({ fmsData: merged });
+  } catch (err) {
+    logger.flight.warn('Station lookup for the flight plan failed', err);
+  }
+}

@@ -1994,6 +1994,8 @@
   "navInfo": {
     "waypoint": "Wegpunkt",
     "frequency": "Frequenz",
+    "runway": "Piste",
+    "course": "Kurs",
     "altitude": "Geplante Höhe",
     "elevation": "Höhe",
     "bearing": "Peilung",

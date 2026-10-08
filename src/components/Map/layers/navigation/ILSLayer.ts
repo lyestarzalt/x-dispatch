@@ -2,6 +2,7 @@ import { SolidPolygonLayer } from '@deck.gl/layers';
 import { MapLibreOverlay } from '@deck.gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
+import { labelFont } from '@/lib/map/labelFonts';
 import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
@@ -120,6 +121,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
         properties: {
           id: ils.id,
           name: ils.name,
+          type: ils.type,
           frequency: ils.frequency,
           bearing: ils.bearing || 0,
           runway: ils.associatedRunway || '',
@@ -210,7 +212,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
           '\n',
           ['get', 'freqDisplay'],
         ],
-        'text-font': ['Open Sans Semibold'],
+        'text-font': labelFont(map, 'semibold'),
         'text-size': 9,
         'text-offset': [0, 1.5],
         'text-anchor': 'top',

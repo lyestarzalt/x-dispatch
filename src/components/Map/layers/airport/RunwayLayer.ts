@@ -1,6 +1,7 @@
 import * as maplibregl from 'maplibre-gl';
 import { SURFACE_TYPES, getSurfaceColor } from '@/config/mapStyles/surfaceColors';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { ParsedAirport } from '@/types/apt';
 import { createRunwayGeoJSON, createRunwayShoulderGeoJSON } from '../../utils/geoJsonFactory';
 import { safeAddGeoJSONSource } from '../types';
@@ -85,7 +86,7 @@ export class RunwayLayer extends BaseLayerRenderer {
       layout: {
         'text-field': ['get', 'name'],
         'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 18, 18],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-allow-overlap': false,
         'text-ignore-placement': false,
       },

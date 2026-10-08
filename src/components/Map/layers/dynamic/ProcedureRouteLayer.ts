@@ -14,6 +14,7 @@ import * as maplibregl from 'maplibre-gl';
 import { buildUnitFormatters } from '@/hooks/useUnits';
 import { procedureGeometry } from '@/lib/flightplan/builder/legGeometry';
 import { magneticToTrue } from '@/lib/magvar';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
@@ -431,7 +432,7 @@ export function addProcedureRouteLayer(
     source: WAYPOINT_SOURCE_ID,
     layout: {
       'text-field': ['get', 'fullLabel'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-size': zoomScaledTextSize(11),
       'text-offset': [0, -1.2],
       'text-anchor': 'bottom',
@@ -452,7 +453,7 @@ export function addProcedureRouteLayer(
     filter: ['any', ['get', 'hasAltitude'], ['get', 'hasSpeed']],
     layout: {
       'text-field': ['get', 'constraintLabel'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-size': zoomScaledTextSize(10),
       'text-offset': [0, 1.2],
       'text-anchor': 'top',
@@ -474,7 +475,7 @@ export function addProcedureRouteLayer(
     source: LEG_LABEL_SOURCE_ID,
     layout: {
       'text-field': ['get', 'label'],
-      'text-font': ['Open Sans Regular'],
+      'text-font': labelFont(map, 'regular'),
       'text-size': zoomScaledTextSize(9),
       'text-allow-overlap': false,
     },

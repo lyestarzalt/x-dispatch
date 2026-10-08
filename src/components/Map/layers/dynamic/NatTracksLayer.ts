@@ -9,6 +9,7 @@ import type * as maplibregl from 'maplibre-gl';
 import { greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { validityLabel } from '@/lib/flightplan/builder/trackChoice';
 import type { OceanicTrackInfo } from '@/lib/flightplan/builder/types';
+import { labelFont } from '@/lib/map/labelFonts';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
 import { legLabelPlacement } from './FlightPlanLayer';
@@ -237,7 +238,7 @@ export function addNatTracksLayer(
     filter: ['==', ['geometry-type'], 'Point'],
     layout: {
       'text-field': ['get', 'label'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-size': zoomScaledTextSize(10),
       'text-letter-spacing': 0.05,
       'text-rotate': ['get', 'rotate'],

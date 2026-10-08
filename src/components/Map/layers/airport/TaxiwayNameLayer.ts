@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { ParsedAirport } from '@/types/apt';
 import { createTaxiwayNameGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -32,7 +33,7 @@ export class TaxiwayNameLayer extends BaseLayerRenderer {
       minzoom: ZOOM_BEHAVIORS.taxiwayNames.minZoom,
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 16, 16, 19, 22],
         'text-allow-overlap': false,
         'text-ignore-placement': false,

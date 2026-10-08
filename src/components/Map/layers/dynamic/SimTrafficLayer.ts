@@ -1,4 +1,5 @@
 import type * as maplibregl from 'maplibre-gl';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { TrafficTarget } from '@/types/traffic';
 import { safeAddGeoJSONSource } from '../types';
 import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
@@ -104,7 +105,7 @@ export async function ensureSimTrafficLayer(
         ['concat', 'FL', ['to-string', ['get', 'flightLevel']]],
         { 'font-scale': 0.8 },
       ],
-      'text-font': ['Open Sans Semibold'],
+      'text-font': labelFont(map, 'semibold'),
       'text-size': ['interpolate', ['linear'], ['zoom'], 5, 9, 8, 10, 12, 11],
       'text-offset': [1.5, 0],
       'text-anchor': 'left',

@@ -1,6 +1,7 @@
 import { MaplibreStarfieldLayer } from '@geoql/maplibre-gl-starfield';
 import mlcontour from 'maplibre-contour';
 import * as maplibregl from 'maplibre-gl';
+import { labelFont } from '@/lib/map/labelFonts';
 import {
   CITY_LIGHTS_BASEMAP_LAYER_IDS,
   CITY_LIGHTS_PLACE_LAYER_IDS,
@@ -276,7 +277,7 @@ export function setup3DTerrain(map: maplibregl.Map): void {
     layout: {
       'symbol-placement': 'line',
       'text-field': ['concat', ['number-format', ['get', 'ele'], {}], ' m'],
-      'text-font': ['Open Sans Regular'],
+      'text-font': labelFont(map, 'regular'),
       'text-size': 10,
     },
     paint: {

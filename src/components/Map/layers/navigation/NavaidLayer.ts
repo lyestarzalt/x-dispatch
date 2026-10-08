@@ -4,6 +4,7 @@
  */
 import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
+import { labelFont } from '@/lib/map/labelFonts';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { zoomScaledTextSize } from '../labelSize';
@@ -321,7 +322,7 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
       minzoom: 7,
       layout: {
         'text-field': ['concat', ['get', 'id'], '\n', ['get', 'freqDisplay']],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-size': zoomScaledTextSize(10),
         'text-offset': [0, 2],
         'text-anchor': 'top',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { navInfoFromFeature, plannedAltitudeFt } from './navInfo';
+import { navInfoFromFeature, pickNavInfoFeature, plannedAltitudeFt } from './navInfo';
 
 describe('navInfoFromFeature', () => {
   it('describes a navaid with its type and frequency', () => {
@@ -93,5 +93,89 @@ describe('plannedAltitudeFt', () => {
 
   it('is null without a computed profile', () => {
     expect(plannedAltitudeFt(pick('XATEL', 45.1, 4.6, 2), route, [])).toBeNull();
+  });
+});
+
+describe('pickNavInfoFeature', () => {
+  const feature = (layerId: string, id: string) =>
+    ({
+      layer: { id: layerId },
+      properties: { id },
+    }) as unknown as import('maplibre-gl').MapGeoJSONFeature;
+
+  it('prefers the station under a plan waypoint, whichever is drawn on top', () => {
+    const picked = pickNavInfoFeature([
+      feature('flightplan-waypoints', 'MTL'),
+      feature('nav-navaids', 'MTL'),
+    ]);
+    expect(picked?.layer.id).toBe('nav-navaids');
+  });
+
+  it('prefers a localizer over a plan waypoint', () => {
+    const picked = pickNavInfoFeature([
+      feature('flightplan-waypoints', 'IMTL'),
+      feature('nav-ils', 'IMTL'),
+    ]);
+    expect(picked?.layer.id).toBe('nav-ils');
+  });
+
+  it('falls back to the topmost feature', () => {
+    const picked = pickNavInfoFeature([feature('flightplan-waypoints', 'GILON')]);
+    expect(picked?.layer.id).toBe('flightplan-waypoints');
+    expect(pickNavInfoFeature([])).toBeUndefined();
+  });
+});
+
+describe('navInfoFromFeature for stations and typed plan waypoints', () => {
+  it('describes a localizer with its runway, frequency and true course', () => {
+    const info = navInfoFromFeature(
+      'nav-ils',
+      {
+        id: 'IMTL',
+        name: 'MONTELIMAR',
+        type: 'ILS',
+        freqDisplay: '110.30',
+        runway: '02',
+        bearing: 15.2,
+      },
+      44.58,
+      4.73
+    );
+    expect(info).toMatchObject({
+      id: 'IMTL',
+      kind: 'ILS',
+      name: 'MONTELIMAR',
+      frequency: '110.30 MHz',
+      runway: '02',
+      courseTrue: 15.2,
+    });
+  });
+
+  it('shows the real station type of a plan navaid instead of a generic VOR badge', () => {
+    const info = navInfoFromFeature(
+      'flightplan-waypoints',
+      {
+        id: 'MTL',
+        navType: 3,
+        frequency: 113.65,
+        navaidType: 'VOR-DME',
+        name: 'MONTELIMAR',
+        index: 3,
+      },
+      0,
+      0
+    );
+    expect(info).toMatchObject({ kind: 'VOR-DME', name: 'MONTELIMAR', frequency: '113.65 MHz' });
+  });
+
+  it('keeps the generic badge when the plan carries no station type', () => {
+    const info = navInfoFromFeature(
+      'flightplan-waypoints',
+      { id: 'MTL', navType: 3, frequency: 0, navaidType: '', index: 3 },
+      0,
+      0
+    );
+    expect(info).toMatchObject({ kind: 'VOR' });
+    expect(info?.frequency).toBeUndefined();
   });
 });
