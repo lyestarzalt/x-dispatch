@@ -2,6 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useUnits } from '@/hooks/useUnits';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 
 export type RunwayStartMode = 'threshold' | 'approach' | 'tow';
@@ -27,6 +30,7 @@ export function RunwayStartOptions({
   onSetTowType: (type: 'tug' | 'winch') => void;
 }) {
   const { t } = useTranslation();
+  const units = useUnits();
 
   return (
     <div className="border-border/40 bg-muted/20 mt-2 space-y-2.5 rounded-lg border p-3">
@@ -59,8 +63,7 @@ export function RunwayStartOptions({
               {t('airportInfo.runway.distance')}
             </span>
             <span className="text-foreground font-mono text-sm">
-              {approachDistance}
-              <span className="text-muted-foreground ml-0.5 text-xs">nm</span>
+              {units.distance(approachDistance as NauticalMiles)}
             </span>
           </div>
           <Slider
@@ -72,22 +75,19 @@ export function RunwayStartOptions({
               if (v !== undefined) onSetApproachDistance(v);
             }}
           />
-          <div className="flex flex-wrap gap-1">
+          <ToggleGroup
+            type="single"
+            size="xs"
+            value={String(approachDistance)}
+            onValueChange={(v) => v && onSetApproachDistance(Number(v))}
+            className="flex-wrap justify-start"
+          >
             {APPROACH_DISTANCES.map((d) => (
-              <button
-                key={d}
-                onClick={() => onSetApproachDistance(d)}
-                className={cn(
-                  'text-2xs rounded px-1.5 py-0.5 font-mono transition-colors',
-                  approachDistance === d
-                    ? 'bg-primary/20 text-primary'
-                    : 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'
-                )}
-              >
-                {d}
-              </button>
+              <ToggleGroupItem key={d} value={String(d)} className="font-mono">
+                {units.distance(d as NauticalMiles)}
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
         </div>
       )}
 

@@ -347,10 +347,10 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           {isRunway && (
-            <Badge variant="warning" className="text-2xs mb-1">
-              RUNWAY
+            <Badge variant="warning" className="text-2xs mb-1 uppercase">
+              {t('navInfo.runway')}
             </Badge>
           )}
           <p className="text-foreground/80 font-mono leading-relaxed">

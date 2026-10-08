@@ -234,9 +234,9 @@ function AirportInfoPanel({
         >
           <TabsList variant="line" className="border-border/30">
             {TABS.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1.5 text-xs">
+              <TabsTrigger key={tab.id} value={tab.id} className="min-w-0 flex-1 gap-1.5 text-xs">
                 {tab.icon}
-                <span>{t(tab.labelKey)}</span>
+                <span className="truncate">{t(tab.labelKey)}</span>
               </TabsTrigger>
             ))}
           </TabsList>

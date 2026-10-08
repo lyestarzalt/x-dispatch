@@ -67,7 +67,7 @@ export function PluginEntry({
           />
 
           {/* Plugin name */}
-          <span className="flex-1 truncate font-mono text-sm">{plugin.displayName}</span>
+          <span className="min-w-0 flex-1 truncate font-mono text-sm">{plugin.displayName}</span>
 
           {/* Platform badge */}
           <Badge variant="outline" className="text-sm">

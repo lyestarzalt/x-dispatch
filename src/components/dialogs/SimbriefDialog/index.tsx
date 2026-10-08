@@ -189,33 +189,33 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
               <div className="p-4">
                 <Tabs defaultValue="flight" className="w-full">
                   <TabsList variant="line" className="mb-4">
-                    <TabsTrigger value="flight" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="flight" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <Route className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.flight')}
+                      <span className="truncate">{t('simbriefDialog.tabs.flight')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="performance" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="performance" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <Zap className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.performance')}
+                      <span className="truncate">{t('simbriefDialog.tabs.performance')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="navlog" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="navlog" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <List className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.navlog')}
+                      <span className="truncate">{t('simbriefDialog.tabs.navlog')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="fuel" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="fuel" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <Fuel className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.fuel')}
+                      <span className="truncate">{t('simbriefDialog.tabs.fuel')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="weights" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="weights" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <Scale className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.weights')}
+                      <span className="truncate">{t('simbriefDialog.tabs.weights')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="weather" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="weather" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <Cloud className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.weather')}
+                      <span className="truncate">{t('simbriefDialog.tabs.weather')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="briefing" className="flex-1 gap-1.5 text-xs">
+                    <TabsTrigger value="briefing" className="min-w-0 flex-1 gap-1.5 text-xs">
                       <FileText className="h-3.5 w-3.5" />
-                      {t('simbriefDialog.tabs.briefing')}
+                      <span className="truncate">{t('simbriefDialog.tabs.briefing')}</span>
                     </TabsTrigger>
                   </TabsList>
 

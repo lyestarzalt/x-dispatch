@@ -255,7 +255,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
             placeholder={t('launcher.aircraft.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 flex-1 text-sm"
+            className="h-8 min-w-0 flex-1 text-sm"
             endIcon={<Search />}
           />
           <Button

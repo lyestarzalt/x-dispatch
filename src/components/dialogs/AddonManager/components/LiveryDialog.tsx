@@ -36,7 +36,7 @@ function LiveryItem({ livery, onDelete, isPending }: LiveryItemProps) {
       )}
 
       {/* Name */}
-      <span className="flex-1 truncate text-sm">{livery.displayName}</span>
+      <span className="min-w-0 flex-1 truncate text-sm">{livery.displayName}</span>
 
       {/* Delete button */}
       <Button

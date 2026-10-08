@@ -127,6 +127,13 @@
   [role='option'] {
     user-select: none;
   }
+  /* Keyboard focus for plain buttons (list rows, chips, inline links) in the ring colour.
+     shadcn primitives set their own ring with utilities, which win over this base rule. */
+  button:focus-visible,
+  [role='button']:focus-visible {
+    outline: 2px solid oklch(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 /* X-Plane Typography Utilities */

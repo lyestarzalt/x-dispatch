@@ -83,7 +83,9 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
                   />
 
                   {/* Name */}
-                  <span className="flex-1 truncate font-mono text-sm">{script.displayName}</span>
+                  <span className="min-w-0 flex-1 truncate font-mono text-sm">
+                    {script.displayName}
+                  </span>
 
                   {/* Extension indicator */}
                   <span className="text-muted-foreground text-sm">

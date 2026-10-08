@@ -211,9 +211,9 @@ function FlightInfoPanel() {
         >
           <TabsList variant="line" className="border-border/30">
             {tabs.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="text-2xs flex-1 gap-1">
+              <TabsTrigger key={tab.id} value={tab.id} className="text-2xs min-w-0 flex-1 gap-1">
                 {tab.icon}
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="hidden min-w-0 truncate sm:block">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>

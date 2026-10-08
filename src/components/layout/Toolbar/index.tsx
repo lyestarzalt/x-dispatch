@@ -78,12 +78,7 @@ import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { NavLayerVisibility } from '@/types/layers';
-import {
-  ALL_RANGE_RING_CATEGORIES,
-  RANGE_RING_COLORS,
-  RANGE_RING_LABELS,
-  RANGE_RING_SPEEDS,
-} from '@/types/layers';
+import { ALL_RANGE_RING_CATEGORIES, RANGE_RING_COLORS, RANGE_RING_SPEEDS } from '@/types/layers';
 import { ClockWidget } from './ClockWidget';
 
 type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
@@ -950,7 +945,7 @@ function Toolbar({
                   checked={navVisibility[layer.key] as boolean}
                   onCheckedChange={() => onNavToggle(layer.key)}
                 >
-                  <span className="flex-1">{t(layer.labelKey)}</span>
+                  <span className="min-w-0 flex-1 truncate">{t(layer.labelKey)}</span>
                   <span className="text-muted-foreground ml-2 font-mono text-xs">
                     {layer.count}
                   </span>
@@ -1095,7 +1090,9 @@ function Toolbar({
                         className="mr-2 inline-block h-2 w-2 rounded-full"
                         style={{ backgroundColor: RANGE_RING_COLORS[cat] }}
                       />
-                      <span className="flex-1">{RANGE_RING_LABELS[cat]}</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        {t(`planBuilder.class.${cat}`)}
+                      </span>
                       <span className="text-muted-foreground ml-2 font-mono text-xs">
                         {t('toolbar.rangeRingsKts', { speed: RANGE_RING_SPEEDS[cat] })}
                       </span>

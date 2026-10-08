@@ -48,7 +48,7 @@ export function AircraftEntry({
       />
 
       {/* Aircraft name */}
-      <span className="flex-1 truncate font-mono text-sm">{aircraft.displayName}</span>
+      <span className="min-w-0 flex-1 truncate font-mono text-sm">{aircraft.displayName}</span>
 
       {/* Version badge */}
       {aircraft.version && (

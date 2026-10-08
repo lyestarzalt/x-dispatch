@@ -96,7 +96,7 @@ export function CompanionAppEditDialog({
                 id="ca-exe"
                 value={exePath}
                 onChange={(e) => setExePath(e.target.value)}
-                className="flex-1 font-mono text-xs"
+                className="min-w-0 flex-1 font-mono text-xs"
               />
               <DesktopOnly>
                 <Button type="button" variant="outline" size="icon" onClick={browseExe}>

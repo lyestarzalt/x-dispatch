@@ -118,8 +118,12 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
         >
           <TabsList variant="line" className="shrink-0 px-2">
             {TABS.map((tab) => (
-              <TabsTrigger key={tab} value={tab} className="flex-1 text-xs tracking-wide uppercase">
-                {t(`explore.tabs.${tab}`)}
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className="min-w-0 flex-1 text-xs tracking-wide uppercase"
+              >
+                <span className="truncate">{t(`explore.tabs.${tab}`)}</span>
               </TabsTrigger>
             ))}
           </TabsList>
