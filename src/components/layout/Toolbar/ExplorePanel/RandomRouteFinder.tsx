@@ -149,7 +149,10 @@ export function RandomRouteFinder({
     );
     setResults(routes);
     onSelectRoute(routes[0] ? { from: origin.icao, to: routes[0].airport.icao } : null);
-    trackEvent('explore_filter_selected', { tab: 'routes', filter: 'random' });
+    trackEvent('random_route_found', {
+      source: plan ? 'planner' : 'explore',
+      results: routes.length,
+    });
   };
 
   const pick = (destination: Airport) => {
@@ -322,7 +325,10 @@ export function RandomRouteFinder({
               >
                 <button
                   type="button"
-                  onClick={() => onSelectRoute({ from: origin.icao, to: route.airport.icao })}
+                  onClick={() => {
+                    onSelectRoute({ from: origin.icao, to: route.airport.icao });
+                    if (!plan) trackEvent('explore_item_selected', { tab: 'routes' });
+                  }}
                   className="flex min-w-0 flex-1 flex-col items-start text-left"
                 >
                   <span className="flex w-full min-w-0 items-baseline gap-2">

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FEATURED_ROUTES } from '@/components/layout/Toolbar/ExplorePanel/featured';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
+import { trackEvent } from '@/queries';
 import { RandomRouteFinder } from './RandomRouteFinder';
 import type { RoutesTabProps } from './types';
 
@@ -20,6 +21,7 @@ export function RoutesTab({ airports, selectedRoute, onSelectRoute }: RoutesTabP
       onSelectRoute(null);
     } else {
       onSelectRoute({ from, to });
+      trackEvent('explore_item_selected', { tab: 'routes' });
     }
   };
 

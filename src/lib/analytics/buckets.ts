@@ -1,8 +1,10 @@
-import type {
-  AnalyticsDialogTimeBucket,
-  AnalyticsScaleBucket,
-  AnalyticsStartupBucket,
-  AnalyticsWidthBucket,
+import {
+  ANALYTICS_FMS_FORMATS,
+  type AnalyticsDialogTimeBucket,
+  type AnalyticsFmsFormat,
+  type AnalyticsScaleBucket,
+  type AnalyticsStartupBucket,
+  type AnalyticsWidthBucket,
 } from './events';
 
 /** Time from window load to the map being ready. */
@@ -36,4 +38,11 @@ export function dialogTimeBucket(ms: number): AnalyticsDialogTimeBucket {
   if (ms < 60_000) return '10_60s';
   if (ms < 300_000) return '1_5m';
   return 'over_5m';
+}
+
+/** A SimBrief download key as reported; keys outside the known list become "other". */
+export function analyticsFmsFormat(key: string): AnalyticsFmsFormat {
+  return (ANALYTICS_FMS_FORMATS as readonly string[]).includes(key)
+    ? (key as AnalyticsFmsFormat)
+    : 'other';
 }

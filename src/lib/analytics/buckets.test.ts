@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { dialogTimeBucket, scaleBucket, startupBucket, widthBucket } from './buckets';
+import { FMS_FORMATS } from '@/lib/simbrief/fmsFormats';
+import {
+  analyticsFmsFormat,
+  dialogTimeBucket,
+  scaleBucket,
+  startupBucket,
+  widthBucket,
+} from './buckets';
 import { sanitizeEvent } from './events';
 
 describe('analytics buckets', () => {
@@ -55,5 +62,13 @@ describe('analytics buckets', () => {
         time_open: dialogTimeBucket(45_000),
       })
     ).not.toBeNull();
+  });
+
+  it('reports every known FMS format by key and anything else as other', () => {
+    for (const { key } of FMS_FORMATS) {
+      expect(analyticsFmsFormat(key)).toBe(key);
+      expect(sanitizeEvent('fms_exported', { format: analyticsFmsFormat(key) })).not.toBeNull();
+    }
+    expect(analyticsFmsFormat('my-custom')).toBe('other');
   });
 });

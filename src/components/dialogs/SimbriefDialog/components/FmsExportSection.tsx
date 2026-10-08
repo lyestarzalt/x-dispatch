@@ -99,6 +99,7 @@ export function FmsExportSection({ data }: FmsExportSectionProps) {
         url: entry.url,
         targetDir: entry.folderPath,
         filename: entry.filename,
+        format: entry.formatKey,
       });
       if (result.success) {
         toast.success(

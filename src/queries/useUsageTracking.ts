@@ -141,9 +141,6 @@ export function useUsageTracking() {
           filter: explore.featuredCategory,
         });
       }
-      if (explore.selectedRoute && explore.selectedRoute !== prev.explore.selectedRoute) {
-        trackEvent('explore_item_selected', { tab: 'routes' });
-      }
     });
     const unsubApp = useAppStore.subscribe((next, prev) => {
       if (next.selectedICAO && next.selectedICAO !== prev.selectedICAO) {

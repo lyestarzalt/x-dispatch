@@ -3,8 +3,9 @@ import { ANALYTICS_COMPANION_APPS } from './companionApps';
 /**
  * Allowlist shared by main and renderer. Every event and property sent to
  * PostHog is declared here; anything else is dropped before it leaves the app.
- * Adding one is a deliberate change that must also update the consent text
- * and the website privacy page.
+ * The consent text and the website privacy page describe kinds of data, not
+ * events: update them only when an event adds a new kind of data (typed text,
+ * locations, identifiers), never for another enum, boolean or count.
  */
 export const ANALYTICS_FEATURES = [
   'launch',
@@ -126,6 +127,36 @@ export const ANALYTICS_ERROR_AREAS = [
 ] as const;
 
 export const ANALYTICS_EXPLORE_TABS = ['featured', 'routes', 'vatsim', 'weather'] as const;
+
+/** How the planner's final route came about. */
+export const ANALYTICS_PLAN_ROUTES = [
+  'none',
+  'direct',
+  'typed',
+  'auto',
+  'track',
+  'restored',
+] as const;
+
+/** SimBrief download keys from FMS_FORMATS; anything else is reported as "other". */
+export const ANALYTICS_FMS_FORMATS = [
+  'xpn',
+  'xpe',
+  'tfd',
+  'zbo',
+  'ffa',
+  'ixg',
+  'jar',
+  'lvd',
+  'psx',
+  'inb',
+  'mjc',
+  'gtn',
+  'vfp',
+  'sfp',
+  'pdf',
+  'other',
+] as const;
 /** Category chips inside Explore: Featured airports and the live Weather scan. */
 export const ANALYTICS_EXPLORE_FILTERS = [
   'all',
@@ -160,6 +191,7 @@ export const ANALYTICS_SETTINGS_TABS = [
   'xplane',
   'data',
   'appearance',
+  'units',
   'graphics',
   'flights',
   'airports',
@@ -207,6 +239,8 @@ export type AnalyticsWidthBucket = (typeof ANALYTICS_WIDTH_BUCKETS)[number];
 export type AnalyticsScaleBucket = (typeof ANALYTICS_SCALE_BUCKETS)[number];
 export type AnalyticsErrorArea = (typeof ANALYTICS_ERROR_AREAS)[number];
 export type AnalyticsExploreTab = (typeof ANALYTICS_EXPLORE_TABS)[number];
+export type AnalyticsFmsFormat = (typeof ANALYTICS_FMS_FORMATS)[number];
+export type AnalyticsPlanRoute = (typeof ANALYTICS_PLAN_ROUTES)[number];
 export type AnalyticsWeatherPreset = (typeof ANALYTICS_WEATHER_PRESETS)[number];
 
 /** Airport idents and aircraft type designators: 2-7 uppercase letters/digits, e.g. EGLL, A320. */
@@ -218,8 +252,10 @@ type Rule =
   | { kind: 'boolean' }
   | { kind: 'count' };
 
-const oneOf = (values: readonly string[]): Rule => ({ kind: 'enum', values });
-const optionalOneOf = (values: readonly string[]) =>
+// Generic over the literal values, so a wrong value at a call site fails typecheck
+// instead of being dropped at runtime.
+const oneOf = <const V extends readonly string[]>(values: V) => ({ kind: 'enum', values }) as const;
+const optionalOneOf = <const V extends readonly string[]>(values: V) =>
   ({ kind: 'enum', values, optional: true }) as const;
 
 const EVENT_SCHEMA = {
@@ -283,6 +319,26 @@ const EVENT_SCHEMA = {
   flight_plan_auto_routed: { success: { kind: 'boolean' } },
   /** Flight plan builder: plan saved to X-Plane. */
   flight_plan_saved: {},
+  /**
+   * One planner visit, sent when it closes: how far the plan got and how it was built.
+   * Never the airports or the route itself.
+   */
+  flight_plan_closed: {
+    has_departure: { kind: 'boolean' },
+    has_arrival: { kind: 'boolean' },
+    route: oneOf(ANALYTICS_PLAN_ROUTES),
+    /** SID, STAR and approach chosen, 0 to 3. */
+    procedures: { kind: 'count' },
+    alternate: { kind: 'boolean' },
+    aircraft_class: oneOf(['jet', 'turboprop', 'prop']),
+    /** The arrival was taken from the random destination panel. */
+    arrival_from_random: { kind: 'boolean' },
+    saved: { kind: 'boolean' },
+    start_set: { kind: 'boolean' },
+    time_open: oneOf(ANALYTICS_DIALOG_TIME_BUCKETS),
+  },
+  /** Random destinations rolled, from Explore or the planner panel; how many matched. */
+  random_route_found: { source: oneOf(['explore', 'planner']), results: { kind: 'count' } },
   /** An airport search, once: a result was picked, or the field was left without one. */
   search_used: { found: { kind: 'boolean' }, picked: { kind: 'boolean' } },
   /** A .fms file opened from the Flight Plan menu, and whether it could be read. */
@@ -322,7 +378,8 @@ const EVENT_SCHEMA = {
     filter: oneOf(ANALYTICS_EXPLORE_FILTERS),
   },
   simbrief_imported: {},
-  fms_exported: {},
+  /** A SimBrief plan written to an FMS folder, by download format. */
+  fms_exported: { format: oneOf(ANALYTICS_FMS_FORMATS) },
   settings_tab_opened: { tab: oneOf(ANALYTICS_SETTINGS_TABS) },
   /** Tablet access turned on or off in Settings. */
   tablet_access_toggled: { enabled: { kind: 'boolean' } },

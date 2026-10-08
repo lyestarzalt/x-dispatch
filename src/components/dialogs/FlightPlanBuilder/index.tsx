@@ -30,6 +30,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
+import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   estimateFuelKg,
@@ -308,6 +309,31 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const [saving, setSaving] = useState(false);
   const [randomOpen, setRandomOpen] = useState(false);
 
+  // One visit to the planner, reported as flight_plan_closed when it closes.
+  const visitRef = useRef<PlanVisit | null>(null);
+  const markVisit = (update: Partial<PlanVisit>) => {
+    if (visitRef.current) Object.assign(visitRef.current, update);
+  };
+  useEffect(() => {
+    if (isOpen) {
+      visitRef.current = {
+        openedAt: performance.now(),
+        route: usePlanBuilderStore.getState().routeText.trim() ? 'restored' : null,
+        randomArrival: null,
+        saved: false,
+        startSet: false,
+      };
+      return;
+    }
+    const visit = visitRef.current;
+    visitRef.current = null;
+    if (!visit) return;
+    const plan = usePlanBuilderStore.getState();
+    const planClass =
+      plan.aircraftClass ?? planningClass(usePlaneStore.getState().state?.aircraftCategory);
+    trackEvent('flight_plan_closed', planVisitSummary(plan, visit, planClass, performance.now()));
+  }, [isOpen]);
+
   const { data: depProcedures, isLoading: depLoading } = useAirportProcedures(
     isOpen ? (departure?.icao ?? null) : null
   );
@@ -501,12 +527,14 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   useEffect(() => {
     if (!rerouteAfterCruise.current || cruiseAltitudeFt === null || autoRouting) return;
     rerouteAfterCruise.current = false;
+    markVisit({ route: 'auto' });
     void autoRoute(joins);
   }, [cruiseAltitudeFt, autoRouting, autoRoute, joins]);
 
   const handleAutoRoute = async () => {
     const ok = await autoRoute(joins);
     trackEvent('flight_plan_auto_routed', { success: ok });
+    if (ok) markVisit({ route: 'auto' });
     if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
   };
 
@@ -527,12 +555,18 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackRequest, clearTrackRequest]);
 
+  const handleRouteTyped = (text: string) => {
+    setRouteText(text);
+    markVisit({ route: 'typed' });
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const path = await saveToXPlane();
       if (path) {
         trackEvent('flight_plan_saved', {});
+        markVisit({ saved: true });
         toast.success(t('planBuilder.saved', { path }));
       }
     } catch (err) {
@@ -822,7 +856,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               <PlanCard className="space-y-3">
                 <Textarea
                   value={routeText}
-                  onChange={(e) => setRouteText(e.target.value)}
+                  onChange={(e) => handleRouteTyped(e.target.value)}
                   placeholder={t('planBuilder.routePlaceholder')}
                   className="[field-sizing:content] max-h-36 min-h-[3.25rem] resize-none overflow-y-auto font-mono text-sm leading-6 tracking-wide uppercase"
                   spellCheck={false}
@@ -915,7 +949,15 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             >
               <Mountain className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="outline" size="sm" onClick={startAtDeparture} disabled={!departure}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                startAtDeparture();
+                markVisit({ startSet: true });
+              }}
+              disabled={!departure}
+            >
               <PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" />
               {t('planBuilder.setStart')}
             </Button>
@@ -934,6 +976,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             setAircraftClass(next);
             rerouteAfterCruise.current = true;
           }}
+          onArrivalPicked={(icao) => markVisit({ randomArrival: icao })}
           onClose={() => setRandomOpen(false)}
           className="absolute top-0 bottom-0 left-full ml-2 w-80"
         />
