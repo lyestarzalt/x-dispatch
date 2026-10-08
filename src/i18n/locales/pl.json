@@ -29,7 +29,9 @@
     "approved": "Zatwierdzone",
     "recommended": "Zalecane",
     "showAll": "Pokaż wszystkie",
-    "undo": "Cofnij"
+    "undo": "Cofnij",
+    "add": "Dodaj",
+    "remove": "Usuń"
   },
   "units": {
     "ft": "ft",
@@ -1396,7 +1398,8 @@
       "copyJson": "Kopiuj JSON uruchomienia",
       "copyJsonToast": "JSON uruchomienia skopiowany. Wklej go na Discordzie, jeśli wystąpił problem z tym lotem.",
       "copyJsonError": "Nie udało się skopiować JSON uruchomienia",
-      "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na Discordzie."
+      "shareHint": "Problem z lotem? Kliknij ikonę kopiowania, aby udostępnić szczegóły deweloperowi na Discordzie.",
+      "restore": "Wczytaj tę konfigurację"
     },
     "weightFuelLabel": "Masa i paliwo",
     "conditions": {

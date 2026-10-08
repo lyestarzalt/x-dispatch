@@ -29,7 +29,9 @@
     "approved": "已批准",
     "recommended": "推荐",
     "showAll": "显示全部",
-    "undo": "撤销"
+    "undo": "撤销",
+    "add": "添加",
+    "remove": "移除"
   },
   "units": {
     "ft": "英尺",
@@ -1396,7 +1398,8 @@
       "copyJson": "复制启动 JSON",
       "copyJsonToast": "已复制启动 JSON。如果此次飞行遇到问题，请粘贴到 Discord。",
       "copyJsonError": "无法复制启动 JSON",
-      "shareHint": "飞行遇到问题？点击复制图标，把详细信息发给 Discord 上的开发者。"
+      "shareHint": "飞行遇到问题？点击复制图标，把详细信息发给 Discord 上的开发者。",
+      "restore": "载入此设置"
     },
     "weightFuelLabel": "重量与燃油",
     "conditions": {

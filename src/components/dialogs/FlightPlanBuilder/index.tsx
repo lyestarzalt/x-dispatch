@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
@@ -6,28 +6,22 @@ import {
   CheckCircle2,
   Dices,
   Eraser,
-  type LucideIcon,
   Mountain,
-  Pencil,
   PlaneLanding,
   PlaneTakeoff,
   RotateCcw,
   Route,
   Save,
   Wand2,
-  Wind,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { IcaoCode } from '@/components/ui/icao-code';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
 import { formatDuration } from '@/lib/flightRecorder/format';
@@ -53,7 +47,6 @@ import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
-import { formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import {
@@ -63,228 +56,31 @@ import {
   useTrackFeatureOpened,
 } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
-import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
-import type { RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
 import { AirportPicker, toEndpoint } from './AirportPicker';
+import { CruiseStat } from './CruiseStat';
+import { EndpointLabel } from './EndpointLabel';
+import { Field } from './Field';
 import { LightSection } from './LightSection';
+import { ProblemChip } from './ProblemChip';
 import { ProcedureSelect } from './ProcedureSelect';
 import { RandomDestinationPanel } from './RandomDestinationPanel';
+import { RouteEnd } from './RouteEnd';
 import { RunwaySelect } from './RunwaySelect';
+import { Section } from './Section';
+import { Stat } from './Stat';
 import { TrackPicker } from './TrackPicker';
+import { WindHint } from './WindHint';
 
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
-/** Wind within this many degrees of a runway heading makes it the suggested one. */
-const WIND_SUGGEST_MIN_KT = 4;
-
-function formatLevel(feet: number | null): string {
-  if (feet === null) return '—';
-  return feet >= 18000 ? `FL${Math.round(feet / 100)}` : `${feet}`;
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0 space-y-1.5">
-      <span className="xp-label block truncate">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function StatLabel({ children }: { children: ReactNode }) {
-  return <span className="text-muted-foreground truncate text-xs">{children}</span>;
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <StatLabel>{label}</StatLabel>
-      <span className="xp-value truncate font-semibold tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-/** The cruise figure doubles as its own editor: click, type feet, Enter or blur to apply. */
-function CruiseStat({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number | null;
-  onChange: (feet: number | null) => void;
-}) {
-  const { t } = useTranslation();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState('');
-  const commit = () => {
-    const feet = Number(draft);
-    if (draft.trim() !== '' && Number.isFinite(feet) && feet >= 0) {
-      onChange(Math.round(feet / 100) * 100);
-    }
-    setEditing(false);
-  };
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <StatLabel>{label}</StatLabel>
-      {editing ? (
-        <Input
-          autoFocus
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value.replace(/\D/g, ''))}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') setEditing(false);
-          }}
-          className="h-6 w-20 px-1.5 font-mono text-sm tabular-nums"
-        />
-      ) : (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => {
-                setDraft(value === null ? '' : String(value));
-                setEditing(true);
-              }}
-              aria-label={t('planBuilder.editCruise')}
-              className="xp-value hover:text-primary flex items-center gap-1 text-left font-semibold tabular-nums"
-            >
-              {formatLevel(value)}
-              <Pencil className="text-muted-foreground h-3.5 w-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{t('planBuilder.editCruise')}</TooltipContent>
-        </Tooltip>
-      )}
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h3 className="xp-section-heading">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-function EndpointLabel({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
-  return (
-    <div className="xp-label flex min-w-0 items-center gap-2">
-      <Icon className="h-4 w-4 shrink-0" />
-      <span className="truncate">{children}</span>
-    </div>
-  );
-}
-
-/** One end of the route in the header: large ICAO over the airport name. */
-function RouteEnd({
-  endpoint,
-  fallback,
-  align = 'left',
-}: {
-  endpoint: { icao: string; name?: string } | null;
-  fallback: string;
-  align?: 'left' | 'right';
-}) {
-  return (
-    <div className={cn('min-w-0 flex-1', align === 'right' && 'text-right')}>
-      <IcaoCode className="block text-2xl font-bold">{endpoint?.icao ?? '----'}</IcaoCode>
-      <div className="text-muted-foreground truncate text-xs">{endpoint?.name ?? fallback}</div>
-    </div>
-  );
-}
-
-function ProblemChip({ token, onRemove }: { token: RouteToken; onRemove: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 font-mono text-xs',
-        token.status === 'unknown'
-          ? 'border-warning/40 bg-warning/10 text-warning'
-          : 'border-destructive/40 bg-destructive/10 text-destructive'
-      )}
-      title={token.issue ? t(`planBuilder.issues.${token.issue}`) : undefined}
-    >
-      {token.text}
-      <button
-        type="button"
-        onClick={onRemove}
-        className="hover:text-foreground -mr-0.5 rounded p-0.5 opacity-70 hover:opacity-100"
-        aria-label={t('planBuilder.removeToken', { token: token.text })}
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
-    </span>
-  );
-}
-
-/** The runway end best aligned with the reported wind, when the wind is worth acting on. */
-function windRunway(
-  ends: RunwayEnd[] | undefined,
-  wind: { degrees?: number; speed: number } | undefined
-): RunwayEnd | null {
-  if (!ends || !wind || wind.degrees === undefined || wind.speed < WIND_SUGGEST_MIN_KT) return null;
-  let best: RunwayEnd | null = null;
-  let bestDelta = Infinity;
-  for (const end of ends) {
-    let delta = Math.abs(end.headingDeg - wind.degrees);
-    if (delta > 180) delta = 360 - delta;
-    if (delta < bestDelta) {
-      bestDelta = delta;
-      best = end;
-    }
-  }
-  return best;
-}
-
-function WindHint({
-  icao,
-  selected,
-  onUse,
-}: {
-  icao: string;
-  selected: string | undefined;
-  onUse: (end: RunwayEnd) => void;
-}) {
-  const { t } = useTranslation();
-  const { data: metar } = useVatsimMetarQuery(icao);
-  const { data: ends } = useAirportRunways(icao);
-  const wind = metar?.parsed.wind;
-  const best = useMemo(() => windRunway(ends, wind), [ends, wind]);
-  if (!best || best.name === selected) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => onUse(best)}
-      className="text-muted-foreground hover:text-foreground inline-flex min-w-0 items-center gap-1.5 text-xs"
-    >
-      <Wind className="h-4 w-4 shrink-0" />
-      <span className="truncate">
-        {t('planBuilder.windSuggest', {
-          wind: formatWind(wind, { bare: true }),
-          runway: best.name,
-        })}
-      </span>
-      <span className="text-primary shrink-0 font-medium">{t('planBuilder.useRunway')}</span>
-    </button>
-  );
-}
 
 interface FlightPlanBuilderProps {
   airports: Airport[];

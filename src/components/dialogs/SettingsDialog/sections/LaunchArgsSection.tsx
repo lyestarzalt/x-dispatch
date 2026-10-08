@@ -17,8 +17,10 @@ import { XPLANE_ARG_CATALOG } from '@/config/xplaneArgs';
 import { cn } from '@/lib/utils/helpers';
 import { useCliFlags } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { SettingsSectionBlock } from '../primitives';
+import type { SettingsSectionProps } from '../types';
 
-export default function LaunchArgsSection() {
+export default function LaunchArgsSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const customLaunchArgs = useSettingsStore((s) => s.launcher.customLaunchArgs);
   const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
@@ -65,14 +67,11 @@ export default function LaunchArgsSection() {
   };
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h3 className="xp-section-heading">{t('settings.xplane.launchArgs')}</h3>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {t('settings.xplane.launchArgsDescription')}
-        </p>
-      </div>
-
+    <SettingsSectionBlock
+      title={t('settings.xplane.launchArgs')}
+      description={t('settings.xplane.launchArgsDescription')}
+      className={className}
+    >
       {sessionArgs.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-muted-foreground text-xs font-medium">
@@ -94,7 +93,7 @@ export default function LaunchArgsSection() {
       <div className="flex items-center gap-2">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1 text-xs">
+            <Button variant="outline" size="xs" className="shrink-0">
               {t('settings.xplane.launchArgsBrowse')}
               <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
             </Button>
@@ -150,14 +149,15 @@ export default function LaunchArgsSection() {
               }
             }}
             placeholder={t('settings.xplane.launchArgsPlaceholder')}
-            className="h-8 min-w-0 flex-1 font-mono text-xs"
+            className="h-7 min-w-0 flex-1 font-mono text-xs"
           />
           <Button
             variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
+            size="icon-sm"
+            className="shrink-0"
             onClick={handleCustomSubmit}
             disabled={!customInput.trim()}
+            tooltip={t('common.add')}
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>
@@ -179,6 +179,7 @@ export default function LaunchArgsSection() {
                   type="button"
                   onClick={() => removeArg(arg)}
                   className="ml-0.5 rounded-sm opacity-70 hover:opacity-100"
+                  aria-label={`${t('common.remove')} ${arg}`}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -187,6 +188,6 @@ export default function LaunchArgsSection() {
           </div>
         </div>
       )}
-    </div>
+    </SettingsSectionBlock>
   );
 }

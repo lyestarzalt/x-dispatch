@@ -29,7 +29,9 @@
     "approved": "Stamped aye",
     "recommended": "Cap'n's pick",
     "showAll": "Show all of 'em",
-    "undo": "Belay that"
+    "undo": "Belay that",
+    "add": "Add",
+    "remove": "Toss overboard"
   },
   "units": {
     "ft": "ft",
@@ -1396,7 +1398,8 @@
       "copyJson": "Plunder yer launch JSON",
       "copyJsonToast": "Launch JSON pilfered. Paste it on Discord if ye hit trouble with this voyage.",
       "copyJsonError": "Couldn't pilfer the launch JSON, blast it",
-      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on Discord."
+      "shareHint": "Trouble with a voyage? Click the copy icon t' share the details with the cap'n on Discord.",
+      "restore": "Hoist this setup"
     },
     "weightFuelLabel": "Heft & Grog",
     "conditions": {

@@ -29,7 +29,9 @@
     "approved": "Approved",
     "recommended": "Recommended",
     "showAll": "Show all",
-    "undo": "Undo"
+    "undo": "Undo",
+    "add": "Add",
+    "remove": "Remove"
   },
   "units": {
     "ft": "ft",
@@ -1396,7 +1398,8 @@
       "copyJson": "Copy launch JSON",
       "copyJsonToast": "Launch JSON copied. Paste it on Discord if you hit a problem with this flight.",
       "copyJsonError": "Couldn't copy launch JSON",
-      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on Discord."
+      "shareHint": "Had a problem with a flight? Click the copy icon to share its details with the developer on Discord.",
+      "restore": "Load this setup"
     },
     "weightFuelLabel": "Weight & Fuel",
     "conditions": {

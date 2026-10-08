@@ -29,7 +29,9 @@
     "approved": "承認済み",
     "recommended": "推奨",
     "showAll": "すべて表示",
-    "undo": "元に戻す"
+    "undo": "元に戻す",
+    "add": "追加",
+    "remove": "削除"
   },
   "units": {
     "ft": "ft",
@@ -1396,7 +1398,8 @@
       "copyJson": "起動 JSON をコピー",
       "copyJsonToast": "起動 JSON をコピーしました。このフライトで問題があった場合は、Discord に貼り付けてください。",
       "copyJsonError": "起動 JSON をコピーできませんでした",
-      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を Discord で開発者と共有してください。"
+      "shareHint": "フライトで問題が発生しましたか？コピーアイコンをクリックして、詳細を Discord で開発者と共有してください。",
+      "restore": "この設定を読み込む"
     },
     "weightFuelLabel": "重量と燃料",
     "conditions": {

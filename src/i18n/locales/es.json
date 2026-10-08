@@ -29,7 +29,9 @@
     "approved": "Aprobado",
     "recommended": "Recomendado",
     "showAll": "Mostrar todos",
-    "undo": "Deshacer"
+    "undo": "Deshacer",
+    "add": "Añadir",
+    "remove": "Quitar"
   },
   "units": {
     "ft": "ft",
@@ -1396,7 +1398,8 @@
       "copyJson": "Copiar JSON de inicio",
       "copyJsonToast": "JSON de inicio copiado. Pégalo en Discord si tuviste un problema con este vuelo.",
       "copyJsonError": "No se pudo copiar el JSON de inicio",
-      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en Discord."
+      "shareHint": "¿Problemas con un vuelo? Haz clic en el icono de copiar para compartir los detalles con el desarrollador en Discord.",
+      "restore": "Cargar esta configuración"
     },
     "weightFuelLabel": "Peso y combustible",
     "conditions": {

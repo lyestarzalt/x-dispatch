@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type TFunction } from 'i18next';
 import {
@@ -190,7 +189,6 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
   const { t, i18n } = useTranslation();
   const units = useUnits();
   const payloadLbs = entry.payloadWeights.reduce((sum, w) => sum + w, 0);
-  const [hovered, setHovered] = useState(false);
   const { data: previewImage } = useAircraftImage(entry.previewImagePath);
 
   const handleCopyJson = async () => {
@@ -204,17 +202,18 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
   const isCustomPosition = entry.positionType === 'custom';
 
   return (
-    <button
-      type="button"
-      className="group border-border/50 bg-card/90 hover:border-primary/40 relative flex items-stretch overflow-hidden rounded-xl border text-left transition-colors"
-      onClick={() => onRestore(entry)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group border-border/50 bg-card/90 hover:border-primary/40 has-[button:focus-visible]:border-primary/40 relative flex items-stretch overflow-hidden rounded-lg border transition-colors">
+      {/* The whole card restores the setup; the actions sit above this button, not inside it. */}
+      <button
+        type="button"
+        className="focus-visible:ring-ring absolute inset-0 rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+        onClick={() => onRestore(entry)}
+        aria-label={`${t('launcher.logbook.restore')}: ${entry.aircraftName}`}
+      />
       {/* ── Aircraft image ────────────────────────────────── */}
       <div
         className={cn(
-          'relative flex w-40 shrink-0 items-center justify-center self-stretch bg-gradient-to-br',
+          'pointer-events-none relative flex w-40 shrink-0 items-center justify-center self-stretch bg-gradient-to-br',
           gradient
         )}
       >
@@ -231,7 +230,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       </div>
 
       {/* ── Aircraft identity + flight config ─────────────── */}
-      <div className="flex min-w-0 flex-1 flex-col justify-between py-2.5 pr-3 pl-2">
+      <div className="pointer-events-none flex min-w-0 flex-1 flex-col justify-between py-2.5 pr-3 pl-2">
         {/* Row 1: Aircraft name + ICAO badge */}
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
@@ -279,7 +278,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
       <div className="bg-border/30 h-auto w-px self-stretch" />
 
       {/* ── Location ──────────────────────────────────────── */}
-      <div className="flex w-48 shrink-0 flex-col items-end justify-center px-4 pt-2 pb-7">
+      <div className="pointer-events-none flex w-48 shrink-0 flex-col items-end justify-center px-4 pt-2 pb-7">
         {isCustomPosition ? (
           <span className="text-foreground font-mono text-sm leading-tight font-bold">
             {units.coordinates(entry.startPosition.latitude, entry.startPosition.longitude)}
@@ -303,36 +302,28 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
 
       {/* ── Bottom-right cluster: timestamp + actions ─────── */}
       <div className="absolute right-2 bottom-1.5 z-10 flex items-center gap-1.5">
-        <span className="text-muted-foreground/40 text-2xs font-mono">
+        <span className="text-muted-foreground text-2xs pointer-events-none font-mono">
           {formatRelativeTime(entry.launchedAt, i18n.language)}
         </span>
-        <button
-          type="button"
-          className="text-muted-foreground/60 hover:bg-secondary hover:text-foreground flex h-5 w-5 items-center justify-center rounded"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCopyJson();
-          }}
-          title={t('launcher.logbook.copyJson')}
-          aria-label={t('launcher.logbook.copyJson')}
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground"
+          onClick={handleCopyJson}
+          tooltip={t('launcher.logbook.copyJson')}
         >
           <Copy className="h-3 w-3" />
-        </button>
-        <button
-          type="button"
-          className={cn(
-            'text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive flex h-5 w-5 items-center justify-center rounded transition-opacity',
-            hovered ? 'opacity-100' : 'opacity-0'
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(entry.id);
-          }}
-          aria-label={t('common.delete')}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          onClick={() => onDelete(entry.id)}
+          tooltip={t('common.delete')}
         >
           <X className="h-3 w-3" />
-        </button>
+        </Button>
       </div>
-    </button>
+    </div>
   );
 }
