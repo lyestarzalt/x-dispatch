@@ -74,7 +74,23 @@ export function buildAppMenuTemplate({
     ],
   });
 
-  template.push({ label: labels.window, role: 'windowMenu' });
+  template.push({
+    label: labels.window,
+    // The role keeps the macOS list of open windows; the items are explicit because the
+    // default submenu leaves Close (Cmd+W) to a File menu on macOS, and elsewhere binds
+    // Ctrl+W to closing the only window, which quits the app.
+    role: 'windowMenu',
+    submenu: isMac
+      ? [
+          { role: 'minimize' },
+          { role: 'zoom' },
+          { type: 'separator' },
+          { role: 'close' },
+          { type: 'separator' },
+          { role: 'front' },
+        ]
+      : [{ role: 'minimize' }],
+  });
 
   if (!isPackaged) {
     template.push({

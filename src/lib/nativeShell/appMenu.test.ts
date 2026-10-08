@@ -79,6 +79,30 @@ describe('buildAppMenuTemplate', () => {
     expect(findByLabel(template, labels.window)!.role).toBe('windowMenu');
   });
 
+  it('binds Close (Cmd+W) in the Window menu, since there is no File menu to hold it', () => {
+    const template = buildAppMenuTemplate({
+      platform: 'darwin',
+      isPackaged: true,
+      appName: 'X-Dispatch',
+      labels,
+      actions: actions(),
+    });
+    const windowRoles = submenuOf(findByLabel(template, labels.window)!).map((i) => i.role);
+    expect(windowRoles).toEqual(expect.arrayContaining(['minimize', 'zoom', 'close', 'front']));
+  });
+
+  it('never binds Ctrl+W off macOS, where closing the only window quits the app', () => {
+    const template = buildAppMenuTemplate({
+      platform: 'win32',
+      isPackaged: true,
+      appName: 'X-Dispatch',
+      labels,
+      actions: actions(),
+    });
+    const windowRoles = submenuOf(findByLabel(template, labels.window)!).map((i) => i.role);
+    expect(windowRoles).toEqual(['minimize']);
+  });
+
   it('never exposes page zoom roles, the Interface Zoom setting owns zoom', () => {
     const template = buildAppMenuTemplate({
       platform: 'darwin',
