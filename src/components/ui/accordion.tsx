@@ -104,7 +104,7 @@ const TableAccordionTrigger = React.forwardRef<
       <Minus className="text-muted-foreground group-hover:text-xp-accent-hover hidden h-3 w-3 shrink-0 transition-colors group-data-[state=open]:block" />
       <span className="flex-1 text-left">{children}</span>
       {count !== undefined && (
-        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums">
+        <span className="bg-muted text-muted-foreground text-2xs rounded-full px-2 py-0.5 font-semibold tabular-nums">
           {count}
         </span>
       )}

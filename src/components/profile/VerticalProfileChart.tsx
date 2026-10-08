@@ -66,12 +66,12 @@ function CustomTooltip({
           {point.ident ?? units.distance(point.distance as NauticalMiles)}
         </span>
         {point.isTopOfClimb && (
-          <Badge variant="success" className="text-[10px]">
+          <Badge variant="success" className="text-2xs">
             {t('profile.toc')}
           </Badge>
         )}
         {point.isTopOfDescent && (
-          <Badge variant="warning" className="text-[10px]">
+          <Badge variant="warning" className="text-2xs">
             {t('profile.tod')}
           </Badge>
         )}
@@ -311,7 +311,7 @@ function VerticalProfileChartInner({
       <div
         className={
           compact
-            ? 'mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 text-[10px]'
+            ? 'text-2xs mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5'
             : 'mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs'
         }
       >

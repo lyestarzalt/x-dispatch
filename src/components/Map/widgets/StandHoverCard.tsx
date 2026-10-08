@@ -66,7 +66,7 @@ function Card({ hover }: { hover: StandHover }) {
             return (
               <span
                 key={code}
-                className="bg-muted rounded px-1.5 py-0.5 font-mono text-[10px]"
+                className="bg-muted text-2xs rounded px-1.5 py-0.5 font-mono"
                 title={name}
               >
                 {name ?? code}
@@ -74,13 +74,13 @@ function Card({ hover }: { hover: StandHover }) {
             );
           })}
           {more > 0 && (
-            <span className="text-muted-foreground px-1 py-0.5 text-[10px]">
+            <span className="text-muted-foreground text-2xs px-1 py-0.5">
               {t('stands.moreAirlines', { count: more })}
             </span>
           )}
         </div>
       )}
-      <div className="text-muted-foreground mt-2 text-[10px]">{t('stands.clickToStart')}</div>
+      <div className="text-muted-foreground text-2xs mt-2">{t('stands.clickToStart')}</div>
     </motion.div>
   );
 }

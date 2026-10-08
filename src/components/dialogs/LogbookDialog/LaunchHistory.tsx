@@ -41,14 +41,14 @@ const WEATHER_ICONS: Record<string, typeof Sun> = {
 };
 
 const WEATHER_GRADIENTS: Record<string, string> = {
-  clear: 'from-sky-500/15 via-sky-500/5 to-transparent',
-  cloudy: 'from-slate-400/15 via-slate-400/5 to-transparent',
-  rainy: 'from-slate-600/15 via-slate-600/5 to-transparent',
-  stormy: 'from-purple-900/15 via-purple-900/5 to-transparent',
-  snowy: 'from-white/10 via-white/5 to-transparent',
-  foggy: 'from-gray-300/10 via-gray-300/5 to-transparent',
-  real: 'from-neutral-400/10 via-neutral-400/5 to-transparent',
-  custom: 'from-teal-500/15 via-teal-500/5 to-transparent',
+  clear: 'from-cat-sky/15 via-cat-sky/5 to-transparent',
+  cloudy: 'from-muted-foreground/15 via-muted-foreground/5 to-transparent',
+  rainy: 'from-cat-blue/15 via-cat-blue/5 to-transparent',
+  stormy: 'from-cat-fuchsia/15 via-cat-fuchsia/5 to-transparent',
+  snowy: 'from-foreground/10 via-foreground/5 to-transparent',
+  foggy: 'from-muted-foreground/10 via-muted-foreground/5 to-transparent',
+  real: 'from-primary/10 via-primary/5 to-transparent',
+  custom: 'from-cat-teal/15 via-cat-teal/5 to-transparent',
 };
 
 /** "5 min ago" in the UI language; Intl rejects made-up locales (pirate), so fall back to English. */
@@ -239,7 +239,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
               {entry.aircraftName}
             </span>
             {entry.aircraftICAO && (
-              <Badge variant="secondary" className="shrink-0 font-mono text-[10px]">
+              <Badge variant="secondary" className="text-2xs shrink-0 font-mono">
                 {entry.aircraftICAO}
               </Badge>
             )}
@@ -303,7 +303,7 @@ function LogbookCard({ entry, onRestore, onDelete }: LogbookCardProps) {
 
       {/* ── Bottom-right cluster: timestamp + actions ─────── */}
       <div className="absolute right-2 bottom-1.5 z-10 flex items-center gap-1.5">
-        <span className="text-muted-foreground/40 font-mono text-[10px]">
+        <span className="text-muted-foreground/40 text-2xs font-mono">
           {formatRelativeTime(entry.launchedAt, i18n.language)}
         </span>
         <button

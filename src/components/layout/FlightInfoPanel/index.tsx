@@ -179,7 +179,7 @@ function FlightInfoPanel() {
               >
                 {simbriefData.origin.icao_code}
               </Button>
-              <p className="text-muted-foreground text-[10px]">
+              <p className="text-muted-foreground text-2xs">
                 {t('simbriefDialog.header.runway', { rwy: simbriefData.origin.plan_rwy })}
               </p>
             </div>
@@ -189,7 +189,7 @@ function FlightInfoPanel() {
                 <Plane className="text-primary h-3.5 w-3.5 rotate-90" />
                 <div className="to-border h-px w-8 bg-gradient-to-l from-transparent" />
               </div>
-              <span className="text-muted-foreground font-mono text-[9px]">
+              <span className="text-muted-foreground text-2xs font-mono">
                 {formatDistance(simbriefData.general.air_distance)}
               </span>
             </div>
@@ -206,7 +206,7 @@ function FlightInfoPanel() {
               >
                 {simbriefData.destination.icao_code}
               </Button>
-              <p className="text-muted-foreground text-[10px]">
+              <p className="text-muted-foreground text-2xs">
                 {t('simbriefDialog.header.runway', { rwy: simbriefData.destination.plan_rwy })}
               </p>
             </div>
@@ -220,7 +220,7 @@ function FlightInfoPanel() {
         >
           <TabsList variant="line" className="border-border/30">
             {tabs.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-1 text-[10px]">
+              <TabsTrigger key={tab.id} value={tab.id} className="text-2xs flex-1 gap-1">
                 {tab.icon}
                 <span className="hidden sm:inline">{tab.label}</span>
               </TabsTrigger>
@@ -327,7 +327,7 @@ function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) 
       <Button
         variant="ghost"
         size="sm"
-        className="text-muted-foreground h-7 w-full justify-center text-[10px]"
+        className="text-muted-foreground text-2xs h-7 w-full justify-center"
         onClick={() => window.appAPI.openExternal(data.files.pdf.link)}
       >
         {t('simbriefDialog.viewFullOfp')}
@@ -340,7 +340,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-muted/40 rounded-lg p-2 text-center">
       <p className="font-mono text-sm font-medium">{value}</p>
-      <p className="text-muted-foreground text-[9px]">{label}</p>
+      <p className="text-muted-foreground text-2xs">{label}</p>
     </div>
   );
 }
@@ -419,13 +419,13 @@ function FuelTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
       {/* Totals */}
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-primary/10 rounded-lg p-3 text-center">
-          <p className="text-muted-foreground text-[10px]">{t('flightInfoPanel.blockLabel')}</p>
+          <p className="text-muted-foreground text-2xs">{t('flightInfoPanel.blockLabel')}</p>
           <p className="text-primary font-mono text-sm font-bold">
             {formatFuel(data.fuel.plan_ramp, apiUnit)}
           </p>
         </div>
         <div className="bg-success/10 rounded-lg p-3 text-center">
-          <p className="text-muted-foreground text-[10px]">{t('flightInfoPanel.landingLabel')}</p>
+          <p className="text-muted-foreground text-2xs">{t('flightInfoPanel.landingLabel')}</p>
           <p className="text-success font-mono text-sm font-bold">
             {formatFuel(data.fuel.plan_landing, apiUnit)}
           </p>
@@ -491,7 +491,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                 isWarning && !isCritical && '[&>div]:bg-warning'
               )}
             />
-            <p className="text-muted-foreground text-right text-[9px]">{percentage.toFixed(1)}%</p>
+            <p className="text-muted-foreground text-2xs text-right">{percentage.toFixed(1)}%</p>
           </div>
         );
       })}
@@ -598,33 +598,33 @@ function WeatherCard({
       {metar && (
         <div className="mb-2 grid grid-cols-4 gap-1 text-center">
           <div>
-            <p className="font-mono text-[10px] font-medium">
+            <p className="text-2xs font-mono font-medium">
               {formatWind(metar.wind, { bare: true })}
             </p>
-            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.wind')}</p>
+            <p className="text-muted-foreground text-2xs">{t('flightInfoPanel.wind')}</p>
           </div>
           <div>
-            <p className="font-mono text-[10px] font-medium">
+            <p className="text-2xs font-mono font-medium">
               {formatVisibility(metar.visibility, metar.cavok)}
             </p>
-            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.vis')}</p>
+            <p className="text-muted-foreground text-2xs">{t('flightInfoPanel.vis')}</p>
           </div>
           <div>
-            <p className="font-mono text-[10px] font-medium">
+            <p className="text-2xs font-mono font-medium">
               {t('flightInfoPanel.tempDeg', { value: metar.temperature ?? '—' })}
             </p>
-            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.temp')}</p>
+            <p className="text-muted-foreground text-2xs">{t('flightInfoPanel.temp')}</p>
           </div>
           <div>
-            <p className="font-mono text-[10px] font-medium">
+            <p className="text-2xs font-mono font-medium">
               {formatAltimeter(metar.altimeter, { bare: true })}
             </p>
-            <p className="text-muted-foreground text-[8px]">{t('flightInfoPanel.qnh')}</p>
+            <p className="text-muted-foreground text-2xs">{t('flightInfoPanel.qnh')}</p>
           </div>
         </div>
       )}
 
-      <p className="text-muted-foreground font-mono text-[9px] leading-relaxed">
+      <p className="text-muted-foreground text-2xs font-mono leading-relaxed">
         {rawMetar || t('flightInfoPanel.noMetar')}
       </p>
     </div>

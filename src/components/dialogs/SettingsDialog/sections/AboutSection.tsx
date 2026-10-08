@@ -242,7 +242,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             <SettingsLinkRow
               label={t('settings.about.supportProject')}
               href={KOFI_URL}
-              leadingIcon={<Heart className="h-3.5 w-3.5 text-red-400" />}
+              leadingIcon={<Heart className="text-cat-red h-3.5 w-3.5" />}
               onOpen={trackDonateClick}
             />
           </div>

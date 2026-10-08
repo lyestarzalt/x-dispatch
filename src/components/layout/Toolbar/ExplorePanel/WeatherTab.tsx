@@ -131,17 +131,17 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                       <Badge
                         key={code}
                         variant="secondary"
-                        className="px-1 py-0 font-mono text-[10px]"
+                        className="text-2xs px-1 py-0 font-mono"
                       >
                         {code}
                       </Badge>
                     ))}
                     {observation.gustKt !== null && (
-                      <Badge variant="warning" className="px-1 py-0 font-mono text-[10px]">
+                      <Badge variant="warning" className="text-2xs px-1 py-0 font-mono">
                         G{observation.gustKt}
                       </Badge>
                     )}
-                    <span className="text-muted-foreground text-[10px]">
+                    <span className="text-muted-foreground text-2xs">
                       {t('explore.weather.minutesAgo', { minutes: observation.ageMinutes })}
                     </span>
                   </div>
@@ -153,7 +153,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                         event.stopPropagation();
                         window.appAPI.openExternal(GATEWAY_URL);
                       }}
-                      className="text-muted-foreground flex items-center gap-1 text-[10px] underline-offset-2 hover:underline"
+                      className="text-muted-foreground text-2xs flex items-center gap-1 underline-offset-2 hover:underline"
                     >
                       <ExternalLink className="h-2.5 w-2.5" />
                       {t('explore.weather.notInXPlane')}

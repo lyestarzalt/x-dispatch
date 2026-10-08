@@ -57,7 +57,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
                 {t('simbrief.briefing.sigmetsTitle', { count: sigmetList.length })}
               </h4>
             </div>
-            <p className="text-warning/70 mb-3 text-[11px]">{t('simbrief.briefing.sigmetsDesc')}</p>
+            <p className="text-warning/70 mb-3 text-xs">{t('simbrief.briefing.sigmetsDesc')}</p>
             <div className="space-y-2">
               {sigmetList.map((sigmet, i) => (
                 <SigmetCard key={sigmet.id || i} sigmet={sigmet} />
@@ -82,9 +82,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
               <MapPin className="h-3.5 w-3.5" />
               {t('simbrief.briefing.firTitle')}
             </h4>
-            <p className="text-muted-foreground mb-2 text-[11px]">
-              {t('simbrief.briefing.firDesc')}
-            </p>
+            <p className="text-muted-foreground mb-2 text-xs">{t('simbrief.briefing.firDesc')}</p>
             <div className="flex flex-wrap items-center gap-1">
               {firRoute.map((fir, i) => (
                 <div key={i} className="flex items-center">
@@ -108,9 +106,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
             <FileWarning className="h-3.5 w-3.5" />
             {t('simbrief.briefing.notamsTitle')}
           </h4>
-          <p className="text-muted-foreground mb-3 text-[11px]">
-            {t('simbrief.briefing.notamsDesc')}
-          </p>
+          <p className="text-muted-foreground mb-3 text-xs">{t('simbrief.briefing.notamsDesc')}</p>
 
           {!hasNotams ? (
             <div className="bg-card text-muted-foreground rounded-lg border p-4 text-center text-sm">
@@ -161,7 +157,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
             <Info className="h-3.5 w-3.5" />
             {t('simbrief.briefing.transAltTitle')}
           </h4>
-          <p className="text-muted-foreground mb-3 text-[11px]">
+          <p className="text-muted-foreground mb-3 text-xs">
             {t('simbrief.briefing.transAltDesc')}
           </p>
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -240,7 +236,7 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
             <span className="text-sm font-medium uppercase">
               {sigmet.qualifier} {sigmet.hazard}
             </span>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-2xs">
               {sigmet.fir}
             </Badge>
           </div>
@@ -250,7 +246,7 @@ function SigmetCard({ sigmet }: { sigmet: SimBriefSigmet }) {
       <CollapsibleContent>
         <div className="bg-muted/30 mt-1 rounded-md p-3 text-sm">
           <p className="font-mono leading-relaxed">{sigmet.text}</p>
-          <div className="text-muted-foreground mt-2 flex items-center gap-4 text-[10px]">
+          <div className="text-muted-foreground text-2xs mt-2 flex items-center gap-4">
             <span>
               {t('simbriefDialog.briefing.sigmetValid', {
                 start: formatSigmetTime(sigmet.start),
@@ -300,7 +296,7 @@ function NotamSection({
             <div className="text-left">
               <div className="flex items-center gap-2">
                 <span className="font-mono font-medium">{icao}</span>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-2xs">
                   {label}
                 </Badge>
               </div>
@@ -310,7 +306,7 @@ function NotamSection({
           <div className="flex items-center gap-2">
             <Badge
               variant={runwayNotams.length > 0 ? 'destructive' : 'outline'}
-              className="text-[10px]"
+              className="text-2xs"
             >
               {t('simbriefDialog.briefing.notamCount', { count: notams.length })}
             </Badge>
@@ -353,7 +349,7 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           {isRunway && (
-            <Badge variant="warning" className="mb-1 text-[9px]">
+            <Badge variant="warning" className="text-2xs mb-1">
               RUNWAY
             </Badge>
           )}
@@ -365,7 +361,7 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
             <Button
               variant="link"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-1 h-auto p-0 text-[10px]"
+              className="text-2xs mt-1 h-auto p-0"
             >
               {isExpanded
                 ? t('simbriefDialog.briefing.showLess')
@@ -375,7 +371,7 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
         </div>
       </div>
       {notam.date_effective && (
-        <p className="text-muted-foreground mt-1 text-[10px]">
+        <p className="text-muted-foreground text-2xs mt-1">
           {notam.date_expire
             ? t('simbriefDialog.briefing.notamEffectiveRange', {
                 start: formatNotamDate(notam.date_effective),

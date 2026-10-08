@@ -207,7 +207,7 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
                 <TooltipTrigger asChild>
                   <Badge
                     variant="outline"
-                    className="cursor-help border-amber-500/50 font-normal text-amber-600 dark:text-amber-400"
+                    className="border-warning/50 text-warning cursor-help font-normal"
                   >
                     {t('settings.navigation.airacExpired')}
                   </Badge>

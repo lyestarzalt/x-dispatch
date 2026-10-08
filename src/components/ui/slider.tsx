@@ -112,8 +112,8 @@ const LabeledSlider = React.forwardRef<
         {/* Bottom row: Min/Max labels */}
         {(minLabel || maxLabel) && (
           <div className="mt-1 flex items-center justify-between">
-            <span className="text-muted-foreground text-[10px]">{minLabel}</span>
-            <span className="text-muted-foreground text-[10px]">{maxLabel}</span>
+            <span className="text-muted-foreground text-2xs">{minLabel}</span>
+            <span className="text-muted-foreground text-2xs">{maxLabel}</span>
           </div>
         )}
       </div>

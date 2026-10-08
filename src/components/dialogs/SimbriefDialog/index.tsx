@@ -341,7 +341,7 @@ function FlightHeader({
   };
 
   return (
-    <div className="from-background to-card bg-gradient-to-b px-6 py-5">
+    <div className="bg-card px-6 py-5">
       <div className="flex items-start justify-between">
         {/* Route Display */}
         <div className="flex items-center gap-6">
@@ -371,7 +371,7 @@ function FlightHeader({
               <Plane className="text-primary h-5 w-5 rotate-90" />
               <div className="from-border via-border h-px w-12 bg-gradient-to-r to-transparent" />
             </div>
-            <span className="text-muted-foreground font-mono text-[10px]">
+            <span className="text-muted-foreground text-2xs font-mono">
               {formatDistance(data.general.air_distance)}
             </span>
           </div>
@@ -461,7 +461,7 @@ function StatItem({
     <div className="flex items-center gap-2">
       <Icon className="text-muted-foreground h-4 w-4" />
       <div>
-        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">{label}</p>
+        <p className="text-muted-foreground text-2xs tracking-wider uppercase">{label}</p>
         <p className="text-foreground font-mono text-sm font-medium">{value}</p>
       </div>
     </div>
@@ -481,12 +481,12 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
           </h4>
           <div className="flex items-center gap-2">
             {data.general.sid_ident && (
-              <Badge variant="secondary" className="text-[10px]">
+              <Badge variant="secondary" className="text-2xs">
                 {t('simbriefDialog.flight.sid', { id: data.general.sid_ident })}
               </Badge>
             )}
             {data.general.star_ident && (
-              <Badge variant="secondary" className="text-[10px]">
+              <Badge variant="secondary" className="text-2xs">
                 {t('simbriefDialog.flight.star', { id: data.general.star_ident })}
               </Badge>
             )}
@@ -501,7 +501,7 @@ function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
           <h4 className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             {t('simbriefDialog.flight.route')}
           </h4>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-2xs">
             {t('simbriefDialog.flight.fixesCount', { count: data.navlog.fix.length })}
           </Badge>
         </div>
@@ -808,7 +808,7 @@ function WeightsTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
                       isWarning && !isCritical && '[&>div]:bg-warning'
                     )}
                   />
-                  <span className="text-foreground absolute top-1/2 right-2 -translate-y-1/2 font-mono text-[10px] font-bold">
+                  <span className="text-foreground text-2xs absolute top-1/2 right-2 -translate-y-1/2 font-mono font-bold">
                     {percentage.toFixed(1)}%
                   </span>
                 </div>
@@ -998,7 +998,7 @@ function MetarCard({
           <Icon className="h-3.5 w-3.5" />
           {label ? t('simbriefDialog.weather.icaoWithLabel', { icao, label }) : icao}
         </h4>
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-2xs">
           {t('simbriefDialog.weather.metar')}
         </Badge>
       </div>
@@ -1054,7 +1054,7 @@ function MetarCard({
       {/* TAF */}
       {taf && (
         <div className="mt-3">
-          <Badge variant="outline" className="mb-2 text-[10px]">
+          <Badge variant="outline" className="text-2xs mb-2">
             {t('simbriefDialog.weather.taf')}
           </Badge>
           <div className="bg-muted/50 rounded p-3">
@@ -1079,7 +1079,7 @@ function MetarItem({
     <div className="bg-muted/40 rounded-lg p-2 text-center">
       <Icon className="text-muted-foreground mx-auto mb-1 h-4 w-4" />
       <p className="font-mono text-xs font-medium">{value}</p>
-      <p className="text-muted-foreground text-[9px]">{label}</p>
+      <p className="text-muted-foreground text-2xs">{label}</p>
     </div>
   );
 }

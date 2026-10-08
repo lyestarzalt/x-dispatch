@@ -279,7 +279,7 @@ export function ConditionsCard({
             <span className="text-muted-foreground truncate font-mono text-xs">
               {metarLine.text}
             </span>
-            <Badge variant="outline" className="shrink-0 font-mono text-[10px]">
+            <Badge variant="outline" className="text-2xs shrink-0 font-mono">
               {metarLine.category}
             </Badge>
           </div>

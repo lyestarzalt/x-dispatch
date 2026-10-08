@@ -88,7 +88,7 @@ function DebugMenu() {
           <Bug className="h-3 w-3" />
           <span>{t('titleBar.debug')}</span>
           {detached.length > 0 && (
-            <span className="bg-primary/20 ml-0.5 rounded px-1 text-[10px]">{detached.length}</span>
+            <span className="bg-primary/20 text-2xs ml-0.5 rounded px-1">{detached.length}</span>
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

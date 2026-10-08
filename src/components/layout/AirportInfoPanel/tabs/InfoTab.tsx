@@ -244,7 +244,7 @@ export default function InfoTab() {
           <div className="min-w-0 flex-1">
             <p className="text-primary text-xs">{t('airportInfo.gateway.updateAvailable')}</p>
             {(gatewayUpdate.artistName || gatewayUpdate.dateApproved) && (
-              <p className="text-muted-foreground mt-0.5 text-[10px]">
+              <p className="text-muted-foreground text-2xs mt-0.5">
                 {t('airportInfo.gateway.credit', {
                   artist: gatewayUpdate.artistName,
                   date: gatewayUpdate.dateApproved
@@ -396,7 +396,7 @@ function ActiveRunwayLine({
         {activeRunway.ends.join(', ')}
       </span>
       {isAtis && atisLetter && (
-        <Badge variant="cat-emerald" className="h-4 px-1.5 font-mono text-[10px]">
+        <Badge variant="cat-emerald" className="text-2xs h-4 px-1.5 font-mono">
           {t('airportInfo.atisLabel', { letter: atisLetter })}
         </Badge>
       )}
@@ -706,7 +706,7 @@ function FrequencyRow({
             )}
             <Badge
               variant={live ? row.badgeVariant : 'outline'}
-              className="shrink-0 px-1.5 py-0 font-mono text-[10px] font-semibold uppercase"
+              className="text-2xs shrink-0 px-1.5 py-0 font-mono font-semibold uppercase"
             >
               {live?.badgeLabel ?? row.label}
             </Badge>
@@ -732,7 +732,7 @@ function FrequencyRow({
           </div>
         </div>
         {live && (
-          <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 pl-[1.65rem] text-[11px]">
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 pl-[1.65rem] text-xs">
             <span className="text-foreground/80 font-mono">{live.callsign}</span>
             <span className="text-muted-foreground/40">·</span>
             <span className="truncate">{live.controllerName}</span>
@@ -743,7 +743,7 @@ function FrequencyRow({
         <div className="bg-muted/15 mt-1 space-y-2 rounded-md px-2.5 py-2">
           <TuneStrip freq={displayFreq} onTuned={onToggle} />
           {hasAtisBody && live?.atisBody && (
-            <pre className="text-muted-foreground font-mono text-[11px] leading-relaxed whitespace-pre-wrap">
+            <pre className="text-muted-foreground font-mono text-xs leading-relaxed whitespace-pre-wrap">
               {live.atisBody}
             </pre>
           )}
@@ -777,7 +777,7 @@ function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
 
   if (!simReachable) {
     return (
-      <p className="text-muted-foreground/70 text-center font-mono text-[10px] tracking-wider uppercase">
+      <p className="text-muted-foreground/70 text-2xs text-center font-mono tracking-wider uppercase">
         {t('airportInfo.tune.simOffline')}
       </p>
     );
@@ -800,7 +800,7 @@ function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void }) {
     <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-1.5 gap-y-1">
       {TUNE_SLOTS.map(({ slot, labelKey, toastKey }) => (
         <Fragment key={slot}>
-          <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          <span className="text-muted-foreground text-2xs font-mono tracking-wider uppercase">
             {t(labelKey)}
           </span>
           {TUNE_RADIOS.map((radio) => (
@@ -865,7 +865,7 @@ function DetailsSection({
       </Button>
       {expanded && (
         <div className="bg-muted/30 mt-1.5 rounded p-2">
-          <p className="text-muted-foreground font-mono text-[10px] leading-relaxed break-all">
+          <p className="text-muted-foreground text-2xs font-mono leading-relaxed break-all">
             {rawMetar}
           </p>
         </div>

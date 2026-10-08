@@ -42,7 +42,7 @@ function VatsimAirportAtcPopup({
                 <div className="flex items-center gap-2">
                   <Badge
                     variant={row.badgeVariant}
-                    className="px-1.5 py-0 font-mono text-[10px] font-semibold uppercase"
+                    className="text-2xs px-1.5 py-0 font-mono font-semibold uppercase"
                   >
                     {row.badgeLabel}
                   </Badge>

@@ -413,7 +413,7 @@ export function SunArc({ timeOfDay, latitude, longitude, onTimeChange, bare }: S
             <span className="text-muted-foreground text-xs">{t('sunArc.local')}</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[10px]" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
+            <span className="text-2xs" style={{ color: isDay ? C.amber : C.cyan, opacity: 0.8 }}>
               {statusText}
             </span>
             <span className="text-muted-foreground font-mono text-sm">{zuluTime}</span>

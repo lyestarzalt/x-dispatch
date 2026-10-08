@@ -94,12 +94,12 @@ function ProfileStrip({ airports }: ProfileStripProps) {
           <Mountain className="text-muted-foreground h-4 w-4 shrink-0" />
           <span className="xp-section-heading truncate">{t('profile.title')}</span>
           {view.routeSafeFt !== null && (
-            <Badge variant="destructive" className="shrink-0 font-mono text-[10px]">
+            <Badge variant="destructive" className="text-2xs shrink-0 font-mono">
               {t('profile.safeAltitude')} {units.altitude(view.routeSafeFt as Feet)}
             </Badge>
           )}
           {errors.includes('cruiseNotReached') && (
-            <Badge variant="warning" className="min-w-0 truncate text-[10px]">
+            <Badge variant="warning" className="text-2xs min-w-0 truncate">
               {t('profile.cruiseNotReached')}
             </Badge>
           )}

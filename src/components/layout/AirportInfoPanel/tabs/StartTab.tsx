@@ -290,7 +290,7 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
             <div className="flex items-center justify-between">
               <span className="font-mono text-sm">{gate.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground/50 text-[10px]">
+                <span className="text-muted-foreground/50 text-2xs">
                   {units.course(gate.heading as Degrees, gate.latitude, gate.longitude)}
                 </span>
                 {isSelected && <Check className="h-3.5 w-3.5" />}
@@ -300,12 +300,12 @@ function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateListProps
             {hasBadges && (
               <div className="mt-1 flex gap-1.5">
                 {sizeConfig && (
-                  <Badge variant={sizeConfig.variant} className="h-4 px-1.5 text-[9px]">
+                  <Badge variant={sizeConfig.variant} className="text-2xs h-4 px-1.5">
                     {t(sizeConfig.labelKey)}
                   </Badge>
                 )}
                 {opConfig && (
-                  <Badge variant={opConfig.variant} className="h-4 px-1.5 text-[9px]">
+                  <Badge variant={opConfig.variant} className="text-2xs h-4 px-1.5">
                     {t(opConfig.labelKey)}
                   </Badge>
                 )}
@@ -433,7 +433,7 @@ function RunwayList({
               <span className="text-foreground font-mono text-sm font-semibold">
                 {e1.name}/{e2.name}
               </span>
-              <span className="text-muted-foreground/50 text-[10px]">
+              <span className="text-muted-foreground/50 text-2xs">
                 {t('airportInfo.runwayDimensions', {
                   length: lengthFt.toLocaleString(),
                   width: widthFt,
@@ -561,7 +561,7 @@ function RunwayStartOptions({
                 key={d}
                 onClick={() => onSetApproachDistance(d)}
                 className={cn(
-                  'rounded px-1.5 py-0.5 font-mono text-[10px] transition-colors',
+                  'text-2xs rounded px-1.5 py-0.5 font-mono transition-colors',
                   approachDistance === d
                     ? 'bg-primary/20 text-primary'
                     : 'text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground'
@@ -688,7 +688,7 @@ function HelipadList({
           >
             <span className="font-mono text-sm">{helipad.name}</span>
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground/50 text-[10px]">{sizeFt}</span>
+              <span className="text-muted-foreground/50 text-2xs">{sizeFt}</span>
               {isSelected && <Check className="h-3.5 w-3.5" />}
             </div>
           </Button>

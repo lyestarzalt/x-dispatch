@@ -123,7 +123,7 @@ export function natTrackPopupHtml(track: OceanicTrackInfo, upcoming: boolean): s
   const t = (key: string) => String(i18n.t(key) ?? key);
   const rows: string[] = [];
   rows.push(
-    `<div class="flex items-center gap-2"><span class="font-mono font-bold text-sm" style="color:${COLORS.selected}">${escapeHtml(track.name)}</span><span class="text-muted-foreground text-xs">${escapeHtml(t(track.eastbound ? 'planBuilder.tracks.eastbound' : 'planBuilder.tracks.westbound'))}</span>${upcoming ? `<span class="text-info text-[10px] uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.upcoming'))}</span>` : ''}${track.pbcs ? `<span class="text-muted-foreground text-[10px] uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.pbcs'))}</span>` : ''}</div>`
+    `<div class="flex items-center gap-2"><span class="font-mono font-bold text-sm" style="color:${COLORS.selected}">${escapeHtml(track.name)}</span><span class="text-muted-foreground text-xs">${escapeHtml(t(track.eastbound ? 'planBuilder.tracks.eastbound' : 'planBuilder.tracks.westbound'))}</span>${upcoming ? `<span class="text-info text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.upcoming'))}</span>` : ''}${track.pbcs ? `<span class="text-muted-foreground text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.pbcs'))}</span>` : ''}</div>`
   );
   rows.push(
     `<div class="font-mono text-xs">${escapeHtml(validityLabel(track.validFrom, track.validTo))}</div>`
@@ -133,7 +133,7 @@ export function natTrackPopupHtml(track: OceanicTrackInfo, upcoming: boolean): s
     rows.push(`<div class="font-mono text-xs">FL ${escapeHtml(track.levels.join(' '))}</div>`);
   }
   rows.push(
-    `<div class="font-mono text-[11px] text-muted-foreground">${escapeHtml(track.points.map((p) => p.id).join(' '))}</div>`
+    `<div class="font-mono text-xs text-muted-foreground">${escapeHtml(track.points.map((p) => p.id).join(' '))}</div>`
   );
   const routes = [
     track.nars.length > 0 ? `NAR ${track.nars.join(' ')}` : '',
@@ -141,7 +141,7 @@ export function natTrackPopupHtml(track: OceanicTrackInfo, upcoming: boolean): s
   ].filter(Boolean);
   if (routes.length > 0) {
     rows.push(
-      `<div class="font-mono text-[11px] text-muted-foreground">${escapeHtml(routes.join(' · '))}</div>`
+      `<div class="font-mono text-xs text-muted-foreground">${escapeHtml(routes.join(' · '))}</div>`
     );
   }
   return `<div class="bg-card text-foreground border border-border rounded-lg px-3 py-2 space-y-1 max-w-[340px]">${rows.join('')}</div>`;

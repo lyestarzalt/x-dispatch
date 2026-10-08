@@ -105,7 +105,7 @@ function FlightDetailBody({ flight, onDeleted }: { flight: FlightDetail; onDelet
             preview={flight.preview}
             width={140}
             height={84}
-            className="text-sky-300"
+            className="text-cat-sky"
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 font-mono text-2xl font-bold">

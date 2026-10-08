@@ -39,7 +39,7 @@ function NoticeRow({ notice }: { notice: ThirdPartyNotice }) {
             <span className="text-muted-foreground ml-1.5 text-xs">{notice.version}</span>
           )}
         </span>
-        <Badge variant="outline" className="ml-auto shrink-0 font-mono text-[10px]">
+        <Badge variant="outline" className="text-2xs ml-auto shrink-0 font-mono">
           {notice.license}
         </Badge>
         <ChevronDown
@@ -60,7 +60,7 @@ function NoticeRow({ notice }: { notice: ThirdPartyNotice }) {
               <span className="truncate">{notice.repository}</span>
             </Button>
           )}
-          <pre className="bg-secondary/50 text-muted-foreground max-h-72 overflow-auto rounded px-3 py-2 font-mono text-[11px] leading-snug whitespace-pre-wrap">
+          <pre className="bg-secondary/50 text-muted-foreground max-h-72 overflow-auto rounded px-3 py-2 font-mono text-xs leading-snug whitespace-pre-wrap">
             {notice.text}
           </pre>
         </div>

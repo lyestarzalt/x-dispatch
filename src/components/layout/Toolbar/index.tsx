@@ -1231,7 +1231,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
       </Button>
 
       <span className="text-primary ml-1 font-mono text-xs tabular-nums">{timeDisplay}</span>
-      <span className="text-foreground/40 mr-1 ml-0.5 text-[10px]">
+      <span className="text-foreground/40 text-2xs mr-1 ml-0.5">
         {frameIndex + 1}/{frameCount}
       </span>
     </div>

@@ -54,7 +54,7 @@ export function RateScale({ touchdownRateFpm, rating, compact, className }: Rate
         />
       </div>
       {!compact && (
-        <div className="text-muted-foreground relative mt-1 h-3 font-mono text-[10px]">
+        <div className="text-muted-foreground text-2xs relative mt-1 h-3 font-mono">
           {BANDS.slice(0, -1).map((band) => (
             <span
               key={band.rating}

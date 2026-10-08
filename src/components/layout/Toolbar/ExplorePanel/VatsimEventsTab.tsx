@@ -103,7 +103,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                   <div className="flex items-start gap-2">
                     <Badge
                       variant={STATUS_VARIANT[status]}
-                      className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px]"
+                      className="text-2xs mt-0.5 shrink-0 px-1.5 py-0"
                     >
                       {status.toUpperCase()}
                     </Badge>

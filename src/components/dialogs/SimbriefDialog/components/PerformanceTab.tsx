@@ -42,7 +42,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               <PlaneTakeoff className="h-3.5 w-3.5" />
               {t('simbriefDialog.header.takeoffWithIcao', { icao: origin.icao_code })}
             </h4>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-2xs">
               {t('simbriefDialog.header.runway', {
                 rwy: takeoffConditions?.planned_runway || origin.plan_rwy,
               })}
@@ -77,7 +77,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Thermometer className="text-warning h-4 w-4" />
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase">
+                    <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.flexTemp')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -90,7 +90,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Wind className="text-primary h-4 w-4" />
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase">
+                    <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.wind')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -143,7 +143,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               <PlaneLanding className="h-3.5 w-3.5" />
               {t('simbriefDialog.header.landingWithIcao', { icao: destination.icao_code })}
             </h4>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-2xs">
               {t('simbriefDialog.header.runway', {
                 rwy: landingConditions?.planned_runway || destination.plan_rwy,
               })}
@@ -169,7 +169,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Gauge className="text-violet h-4 w-4" />
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase">
+                    <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.flaps')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -180,7 +180,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <div className="flex items-center gap-2">
                   <Wind className="text-primary h-4 w-4" />
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase">
+                    <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.wind')}
                     </p>
                     <p className="font-mono text-sm font-bold">
@@ -246,19 +246,19 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
 
         <div className="grid grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-muted-foreground text-[10px] uppercase">
+            <p className="text-muted-foreground text-2xs uppercase">
               {t('simbriefDialog.performance.initialFl')}
             </p>
             <p className="text-primary font-mono text-xl font-bold">{general.initial_altitude}</p>
           </div>
           <div className="text-center">
-            <p className="text-muted-foreground text-[10px] uppercase">
+            <p className="text-muted-foreground text-2xs uppercase">
               {t('simbriefDialog.performance.costIndex')}
             </p>
             <p className="font-mono text-xl font-bold">{general.costindex}</p>
           </div>
           <div className="text-center">
-            <p className="text-muted-foreground text-[10px] uppercase">
+            <p className="text-muted-foreground text-2xs uppercase">
               {t('simbriefDialog.performance.cruiseMach')}
             </p>
             <p className="font-mono text-xl font-bold">
@@ -266,7 +266,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-muted-foreground text-[10px] uppercase">
+            <p className="text-muted-foreground text-2xs uppercase">
               {t('simbriefDialog.performance.cruiseTas')}
             </p>
             <p className="font-mono text-xl font-bold">
@@ -363,7 +363,7 @@ function SpeedBox({
     <div
       className={cn('rounded-lg border p-2 text-center', colorClasses[color], large && 'px-6 py-3')}
     >
-      <p className="text-[10px] font-medium uppercase opacity-80">{label}</p>
+      <p className="text-2xs font-medium uppercase opacity-80">{label}</p>
       <p className={cn('font-mono font-bold', large ? 'text-2xl' : 'text-lg')}>{value || '—'}</p>
     </div>
   );

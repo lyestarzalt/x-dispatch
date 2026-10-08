@@ -87,7 +87,7 @@ function NavInfoCard({ info, airports, onClose }: NavInfoCardProps) {
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-info font-mono text-sm font-bold">{info.id}</span>
-            <Badge variant="secondary" className="px-1.5 py-0 font-mono text-[10px]">
+            <Badge variant="secondary" className="text-2xs px-1.5 py-0 font-mono">
               {info.kind === 'WPT' ? t('navInfo.waypoint') : info.kind}
             </Badge>
           </div>

@@ -85,12 +85,8 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
       onDrop={handleDrop}
       className={cn(
         'group relative flex h-44 flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-all duration-200',
-        isDragOver
-          ? 'border-primary bg-primary/5 shadow-primary/10 shadow-xl'
-          : 'border-muted-foreground/20 from-muted/20 to-muted/5 bg-gradient-to-b',
-        disabled
-          ? 'cursor-not-allowed opacity-50'
-          : 'hover:border-primary/40 hover:bg-muted/30 hover:shadow-lg'
+        isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/20 bg-muted/10',
+        disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-primary/40 hover:bg-muted/30'
       )}
     >
       {/* Background pattern */}
