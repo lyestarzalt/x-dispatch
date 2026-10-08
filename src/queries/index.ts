@@ -67,6 +67,7 @@ export { useGatewayReleasePacks, useGatewayUpdateCheck } from './useGatewayQuery
 
 // Data hooks
 export { useDistinctCountries } from './useDistinctCountries';
+export { useOceanicTracks } from './useOceanicTracks';
 
 // X-Plane log hook
 export { useXplaneLogQuery, xplaneLogKeys, type XPLogReadResult } from './useXplaneLogQuery';

@@ -161,6 +161,26 @@
     "noAlternate": "Sem alternativa",
     "fuel": "Combustível",
     "liveHint": "O mapa redesenha enquanto edita.",
+    "tracks": {
+      "title": "Tracks do Atlântico Norte",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Escolha um track para rotear por ele, ou clique num track no mapa.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Para leste",
+      "westbound": "Para oeste",
+      "none": "Neste momento não há tracks publicados para esta direção.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Válido agora",
+      "upcoming": "Seguinte",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Observações da mensagem de tracks",
+      "levelWarning": "O FL{{cruise}} não é oferecido no track {{id}}: FL {{levels}}",
+      "unavailable": "Mensagem de tracks indisponível: {{reason}}"
+    },
     "windSuggest": "Vento {{wind}} favorece a {{runway}}",
     "useRunway": "Usar",
     "profileTitle": "Cruzeiro e perfil",
@@ -201,7 +221,8 @@
       "airwayNoFixAfter": "Uma aerovia precisa de um fixo depois",
       "airwayExitUnknown": "O fixo após esta aerovia é desconhecido",
       "airwayNotJoined": "Esta aerovia não liga os fixos dos dois lados",
-      "airwayEndsAtCoordinate": "Uma aerovia deve terminar em um fixo, não em uma coordenada"
+      "airwayEndsAtCoordinate": "Uma aerovia deve terminar em um fixo, não em uma coordenada",
+      "trackPartial": "O designador de um track só se submete para o track completo; para uma parte, indique os seus pontos"
     },
     "setStart": "Começar na partida",
     "showOnMap": "Mostrar no mapa",
@@ -321,7 +342,8 @@
       "logbook": "Voos gravados, pousos e histórico de lançamentos"
     },
     "logbook": "Diário de bordo",
-    "flightTrail": "Rastro de voo"
+    "flightTrail": "Rastro de voo",
+    "natTracks": "Tracks do Atlântico Norte"
   },
   "airportFilters": {
     "title": "Aeroportos",
@@ -659,6 +681,7 @@
       "terrain3dDesc": "As montanhas sobressaem no mapa ao aproximar o zoom.",
       "terrainShading": "Sombreamento do terreno",
       "terrainShadingDesc": "Sombreamento e curvas de nível para destacar melhor as montanhas.",
+      "terrainShadingSatellite": "Indisponível no mapa de satélite; as imagens já mostram o relevo.",
       "surfaceDetail": "Detalhe da superfície",
       "surfaceDetailDesc": "Suavidade das curvas nas extremidades de pistas de táxi e pavimento",
       "low": "Baixo",

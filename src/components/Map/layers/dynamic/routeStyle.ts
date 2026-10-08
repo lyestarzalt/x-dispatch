@@ -5,11 +5,14 @@
  */
 import type * as maplibregl from 'maplibre-gl';
 import type { RouteLegKind } from '@/lib/flightplan/builder/routeLine';
+import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 
-/** Line colour per leg kind. Enroute keeps the --violet token; procedures reuse the phase palette. */
+/** Line colour per leg kind. Enroute keeps the --violet token, oceanic tracks the --cat-pink
+ * token; procedures reuse the phase palette. */
 export const ROUTE_KIND_COLORS: Record<RouteLegKind, string> = {
   enroute: '#8B5CF6',
+  track: '#F472B6',
   sid: '#22C55E',
   star: '#F59E0B',
   approach: '#06B6D4',
@@ -41,6 +44,26 @@ export const ROUTE_CASING_WIDTH: maplibregl.ExpressionSpecification = [
   13,
 ];
 
+/** Legs on an oceanic track are drawn this much wider than the rest of the line. */
+export const TRACK_WIDTH_FACTOR = 1.6;
+
+/**
+ * `width` (a zoom interpolation with numeric stops) scaled up on features whose `kind` is a
+ * track. The zoom interpolation has to stay the outermost expression, so the kind test is
+ * applied to each stop's value rather than around the whole thing.
+ */
+export function widthByKindExpression(
+  width: maplibregl.ExpressionSpecification
+): maplibregl.ExpressionSpecification {
+  const [op, curve, input, ...stops] = width as [string, unknown, unknown, ...(number | unknown)[]];
+  const out: unknown[] = [op, curve, input];
+  for (let i = 0; i < stops.length; i += 2) {
+    const base = stops[i + 1] as number;
+    out.push(stops[i], ['case', ['==', ['get', 'kind'], 'track'], base * TRACK_WIDTH_FACTOR, base]);
+  }
+  return out as maplibregl.ExpressionSpecification;
+}
+
 /** `hex` mixed towards black by `amount` (0..1). */
 export function darken(hex: string, amount: number): string {
   const n = parseInt(hex.slice(1), 16);
@@ -58,6 +81,8 @@ export function kindColorExpression(
   return [
     'match',
     ['get', 'kind'],
+    'track',
+    ROUTE_KIND_COLORS.track,
     'sid',
     ROUTE_KIND_COLORS.sid,
     'star',
@@ -81,9 +106,10 @@ export function procedureKind(type: 'SID' | 'STAR' | 'APPROACH' | 'ROUTE'): Rout
 export type WaypointLabelKind = Exclude<RouteLegKind, 'missed'> | 'airport';
 
 /** Badge colour per waypoint kind: a dark box for plain fixes, the line colours for procedure
- * fixes, --primary for the airports. */
+ * and track fixes, --primary for the airports. */
 export const LABEL_BADGE_COLORS: Record<WaypointLabelKind, string> = {
   enroute: '#1F2937',
+  track: ROUTE_KIND_COLORS.track,
   sid: ROUTE_KIND_COLORS.sid,
   star: ROUTE_KIND_COLORS.star,
   approach: ROUTE_KIND_COLORS.approach,
@@ -105,6 +131,7 @@ export function waypointBadgeId(
   procedurePaths?: { via: string; kind?: 'sid' | 'star' | 'approach' }[]
 ): string {
   if (via === 'ADEP' || via === 'ADES') return labelBadgeImageId('airport');
+  if (NAT_TRACK_RE.test(via)) return labelBadgeImageId('track');
   const proc = procedurePaths?.find((p) => p.via === via);
   return labelBadgeImageId(proc?.kind ?? 'enroute');
 }

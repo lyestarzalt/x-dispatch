@@ -1,4 +1,5 @@
 import type { FMSFlightPlan, FMSWaypoint } from '@/types/fms';
+import { NAT_TRACK_RE } from './routeTokens';
 
 const FMS_VERSION = 1100;
 
@@ -9,10 +10,12 @@ function runwayField(runway: string | undefined): string | undefined {
 }
 
 function waypointLine(wp: FMSWaypoint): string {
+  // X-Plane knows airways, not the day's NAT tracks: a track leg is a direct leg to it.
+  const via = NAT_TRACK_RE.test(wp.via) ? 'DRCT' : wp.via;
   return [
     wp.type,
     wp.id,
-    wp.via,
+    via,
     wp.altitude.toFixed(6),
     wp.latitude.toFixed(6),
     wp.longitude.toFixed(6),

@@ -41,6 +41,7 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'fetch-vatsim-metars-all',
   'flightplan:autoRoute',
   'flightplan:enrich',
+  'flightplan:oceanicTracks',
   'flightplan:resolveRoute',
   'flightplan:saveFms',
   'flights:get',

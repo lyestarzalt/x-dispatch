@@ -68,3 +68,69 @@ describe('planBuilderStore — starting over', () => {
     expect(useFlightPlanStore.getState().fmsData).not.toBeNull();
   });
 });
+
+describe('planBuilderStore — auto route via a chosen NAT track', () => {
+  it('sends the chosen track with the request and keeps the returned route', async () => {
+    const autoRoute = vi.fn().mockResolvedValue({ routeText: 'MALOT NATA 5250N', distanceNm: 1 });
+    vi.stubGlobal('window', { flightPlanAPI: { autoRoute } });
+    usePlanBuilderStore.setState({
+      departure: { icao: 'EIDW', latitude: 53.4, longitude: -6.3 } as PlanEndpoint,
+      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
+    });
+    const ok = await usePlanBuilderStore.getState().autoRoute(undefined, 'NATA');
+    expect(ok).toBe(true);
+    expect(autoRoute).toHaveBeenCalledWith(expect.objectContaining({ track: 'NATA' }));
+    expect(usePlanBuilderStore.getState().routeText).toBe('MALOT NATA 5250N');
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('planBuilderStore — swapping ends', () => {
+  it('reverses a plain airway route', () => {
+    usePlanBuilderStore.setState({
+      departure: LFMC as PlanEndpoint,
+      arrival: LFLN as PlanEndpoint,
+      routeText: 'XATEL UY30 MTL',
+    });
+    usePlanBuilderStore.getState().swapEndpoints();
+    expect(usePlanBuilderStore.getState().routeText).toBe('MTL UY30 XATEL');
+    expect(usePlanBuilderStore.getState().departure?.icao).toBe('LFLN');
+  });
+
+  it('drops a route that files a NAT track, since the other direction has its own tracks', () => {
+    usePlanBuilderStore.setState({
+      departure: { icao: 'EGLL', latitude: 51.5, longitude: -0.5 } as PlanEndpoint,
+      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
+      routeText: 'CPT DCT BALIX NATA PIDSO DCT URTAK',
+    });
+    usePlanBuilderStore.getState().swapEndpoints();
+    expect(usePlanBuilderStore.getState().routeText).toBe('');
+    expect(usePlanBuilderStore.getState().departure?.icao).toBe('KJFK');
+  });
+});
+
+describe('planBuilderStore — resolving router output', () => {
+  it('resolves the routed text straight away and not again for the same draft', async () => {
+    const autoRoute = vi.fn().mockResolvedValue({ routeText: 'MALOT NATA 5250N', distanceNm: 1 });
+    const resolveRoute = vi
+      .fn()
+      .mockResolvedValue({ plan: { waypoints: [] }, tokens: [], distanceNm: 1, enriched: {} });
+    vi.stubGlobal('window', { flightPlanAPI: { autoRoute, resolveRoute } });
+    usePlanBuilderStore.setState({
+      departure: { icao: 'EIDW', latitude: 53.4, longitude: -6.3 } as PlanEndpoint,
+      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
+    });
+    await usePlanBuilderStore.getState().autoRoute();
+    expect(resolveRoute).toHaveBeenCalledTimes(1);
+    expect(resolveRoute.mock.calls[0]![0]).toMatchObject({ routeText: 'MALOT NATA 5250N' });
+    expect(usePlanBuilderStore.getState().status).toBe('ready');
+    // The dialog's debounced resolve follows; the draft has not changed, so nothing is sent.
+    await usePlanBuilderStore.getState().resolve();
+    expect(resolveRoute).toHaveBeenCalledTimes(1);
+    // An edit is a new draft and resolves again.
+    usePlanBuilderStore.getState().setRouteText('MALOT NATB 5250N');
+    await usePlanBuilderStore.getState().resolve();
+    expect(resolveRoute).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
+  });
+});

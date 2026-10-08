@@ -161,6 +161,26 @@
     "noAlternate": "Sin alternativo",
     "fuel": "Combustible",
     "liveHint": "El mapa se redibuja mientras editas.",
+    "tracks": {
+      "title": "Tracks del Atlántico Norte",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Elige un track para enrutar por él, o haz clic en uno en el mapa.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Hacia el este",
+      "westbound": "Hacia el oeste",
+      "none": "Ahora mismo no hay tracks publicados para esta dirección.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Vigente ahora",
+      "upcoming": "Próximo",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Observaciones del mensaje de tracks",
+      "levelWarning": "FL{{cruise}} no se ofrece en el track {{id}}: FL {{levels}}",
+      "unavailable": "Mensaje de tracks no disponible: {{reason}}"
+    },
     "windSuggest": "Viento {{wind}} favorece {{runway}}",
     "useRunway": "Usar",
     "profileTitle": "Crucero y perfil",
@@ -201,7 +221,8 @@
       "airwayNoFixAfter": "Una aerovía necesita un punto después",
       "airwayExitUnknown": "El punto tras esta aerovía es desconocido",
       "airwayNotJoined": "Esta aerovía no conecta los puntos a ambos lados",
-      "airwayEndsAtCoordinate": "Una aerovía debe terminar en un punto, no en una coordenada"
+      "airwayEndsAtCoordinate": "Una aerovía debe terminar en un punto, no en una coordenada",
+      "trackPartial": "El designador de un track solo se presenta para el track completo; para una parte, indica sus puntos"
     },
     "setStart": "Empezar en la salida",
     "showOnMap": "Mostrar en el mapa",
@@ -321,7 +342,8 @@
       "logbook": "Vuelos grabados, aterrizajes e historial de lanzamientos"
     },
     "logbook": "Bitácora",
-    "flightTrail": "Estela de vuelo"
+    "flightTrail": "Estela de vuelo",
+    "natTracks": "Tracks del Atlántico Norte"
   },
   "airportFilters": {
     "title": "Aeropuertos",
@@ -659,6 +681,7 @@
       "terrain3dDesc": "Las montañas sobresalen del mapa al hacer zoom.",
       "terrainShading": "Sombreado del terreno",
       "terrainShadingDesc": "Sombreado y curvas de nivel para distinguir mejor las montañas.",
+      "terrainShadingSatellite": "No disponible en el mapa satelital; las imágenes ya muestran el relieve.",
       "surfaceDetail": "Detalle de superficie",
       "surfaceDetailDesc": "Suavidad de las curvas en los bordes de calles de rodaje y plataformas",
       "low": "Bajo",

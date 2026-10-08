@@ -18,6 +18,7 @@ import {
   sidInitialClimbNm,
 } from '@/lib/flightplan/builder/procedures';
 import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
+import { trackInRoute } from '@/lib/flightplan/builder/trackChoice';
 import type {
   PlanDraft,
   PlanEndpoint,
@@ -61,9 +62,18 @@ interface PlanBuilderState extends PlanDraft {
   /** Re-resolves the current draft; stale responses are dropped. */
   resolve: () => Promise<void>;
   /** Asks the main process for a shortest airway route and puts it in the route field. */
-  /** Candidate procedure joins let the router pick the SID and STAR along with the route. */
-  autoRoute: (joins?: { exits?: RouteJoin[]; entries?: RouteJoin[] }) => Promise<boolean>;
+  /** Candidate procedure joins let the router pick the SID and STAR along with the route; a
+   * track designator ("NATA") makes it route through that North Atlantic track. */
+  autoRoute: (
+    joins?: { exits?: RouteJoin[]; entries?: RouteJoin[] },
+    track?: string | null
+  ) => Promise<boolean>;
   setAlternate: (endpoint: PlanEndpoint | null) => void;
+  /** A track picked on the map, waiting for the dialog to route through it with its procedure
+   * joins; null inside means "let the router choose". */
+  trackRequest: { track: string | null } | null;
+  requestTrack: (track: string | null) => void;
+  clearTrackRequest: () => void;
   /** Planning class chosen by hand; null follows the aircraft loaded in X-Plane. */
   aircraftClass: RangeRingCategory | null;
   setAircraftClass: (cls: RangeRingCategory | null) => void;
@@ -77,6 +87,19 @@ interface PlanBuilderState extends PlanDraft {
 }
 
 let resolveRequest = 0;
+/** The draft the current result answers; the same draft is not sent again. */
+let resolvedDraft: string | null = null;
+
+function draftKey(state: PlanDraft): string {
+  return JSON.stringify([
+    state.departure?.icao,
+    state.departure?.runway,
+    state.arrival?.icao,
+    state.arrival?.runway,
+    state.routeText,
+    state.cruiseAltitudeFt,
+  ]);
+}
 
 /** Takes the planner's plan off the map; a plan loaded from SimBrief or a file stays. */
 function clearDrawnPlan(departure: PlanEndpoint | null, arrival: PlanEndpoint | null): void {
@@ -127,6 +150,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           };
         }),
       setAlternate: (endpoint) => set({ alternate: endpoint }),
+      trackRequest: null,
+      requestTrack: (track) => set({ trackRequest: { track } }),
+      clearTrackRequest: () => set({ trackRequest: null }),
       aircraftClass: null,
       // The cruise cap differs per class, so the suggestion is redone.
       setAircraftClass: (cls) => set({ aircraftClass: cls, cruiseAltitudeFt: null }),
@@ -160,8 +186,12 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           arrival: state.departure
             ? { ...state.departure, sid: undefined, star: undefined, approach: undefined }
             : null,
-          // "A UL620 B" read backwards is still A and B joined by UL620.
-          routeText: tokenizeRoute(state.routeText).reverse().join(' '),
+          // "A UL620 B" read backwards is still A and B joined by UL620. A NAT track is
+          // one-way and the other direction has its own set, so that route starts over and
+          // the auto router picks a track for the new crossing.
+          routeText: trackInRoute(state.routeText)
+            ? ''
+            : tokenizeRoute(state.routeText).reverse().join(' '),
           procedures: {},
           savedPath: null,
         })),
@@ -180,6 +210,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           set({ status: 'idle', result: null });
           return;
         }
+        const key = draftKey(get());
+        if (get().status === 'ready' && get().result && resolvedDraft === key) return;
         const request = ++resolveRequest;
         set({ status: 'resolving' });
         try {
@@ -190,6 +222,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             cruiseAltitudeFt,
           });
           if (request !== resolveRequest) return;
+          resolvedDraft = result ? key : null;
           set(result ? { status: 'ready', result } : { status: 'error', result: null });
           // The map is the preview: every successful resolve redraws while the panel is open.
           if (result && get().isOpen) get().showOnMap();
@@ -200,7 +233,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         }
       },
 
-      autoRoute: async (joins) => {
+      autoRoute: async (joins, track) => {
         const { departure, arrival, routeText, cruiseAltitudeFt, procedures } = get();
         if (!departure || !arrival) return false;
         set({ autoRouting: true });
@@ -217,11 +250,15 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             // Candidates only matter while that end has no procedure fixed yet.
             exits: exit ? undefined : joins?.exits,
             entries: entry ? undefined : joins?.entries,
+            track: track ?? undefined,
           });
           if (!result) return false;
           set({ routeText: result.routeText, savedPath: null });
           if (result.sid) get().setProcedureChoice('sid', result.sid);
           if (result.star) get().setProcedureChoice('star', result.star);
+          // The router's text needs no typing pause: resolve now, and the dialog's own
+          // debounced resolve finds the draft already answered.
+          await get().resolve();
           return true;
         } catch (err) {
           logger.flight.error('Auto route failed', err);
@@ -300,6 +337,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
 
       reset: () => {
         clearDrawnPlan(get().departure, get().arrival);
+        resolvedDraft = null;
         set({
           departure: null,
           arrival: null,

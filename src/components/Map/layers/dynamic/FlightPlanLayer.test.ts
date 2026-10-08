@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { EnrichedWaypoint } from '@/types/fms';
-import { createLegLabelGeoJSON, createProcedureNameGeoJSON } from './FlightPlanLayer';
+import {
+  addFlightPlanLayer,
+  createLegLabelGeoJSON,
+  createProcedureNameGeoJSON,
+} from './FlightPlanLayer';
 import { waypointBadgeId } from './routeStyle';
 
 const wp = (over: Partial<EnrichedWaypoint>): EnrichedWaypoint => ({
@@ -150,6 +154,21 @@ describe('createLegLabelGeoJSON', () => {
     for (const f of features) expect(f.properties?.chip).toBe('route-chip-enroute');
   });
 
+  it('puts the track designator in the track chip on legs flown on a NAT track', () => {
+    const waypoints = [
+      wp({ id: 'A', via: 'DRCT', latitude: 54, longitude: -15 }),
+      wp({ id: '5420N', via: 'NATA', latitude: 54, longitude: -20 }),
+      wp({ id: '5530N', via: 'NATA', latitude: 55, longitude: -30 }),
+      wp({ id: 'B', via: 'DRCT', latitude: 50, longitude: -60 }),
+    ];
+    const { features } = createLegLabelGeoJSON(waypoints);
+    expect(features.map((f) => [f.properties?.airway, f.properties?.chip])).toEqual([
+      ['NATA', 'route-chip-track'],
+      ['NATA', 'route-chip-track'],
+      ['', 'route-chip-enroute'],
+    ]);
+  });
+
   it('skips zero-length legs', () => {
     const waypoints = [
       wp({ id: 'A', latitude: 40, longitude: -80 }),
@@ -173,5 +192,61 @@ describe('waypointBadgeId', () => {
     expect(waypointBadgeId('I36C', paths)).toBe('route-badge-approach');
     expect(waypointBadgeId('UL620', paths)).toBe('route-badge-enroute');
     expect(waypointBadgeId('DRCT')).toBe('route-badge-enroute');
+  });
+});
+
+/** Just enough of a MapLibre map to see what the layer does to sources and layers. */
+function fakeMap() {
+  const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
+  const layers = new Set<string>();
+  const addLayer = vi.fn((spec: { id: string }) => layers.add(spec.id));
+  const removeLayer = vi.fn((id: string) => layers.delete(id));
+  return {
+    sources,
+    addLayer,
+    removeLayer,
+    map: {
+      getStyle: () => ({}),
+      getSource: (id: string) => sources.get(id),
+      addSource: (id: string) => sources.set(id, { setData: vi.fn() }),
+      removeSource: (id: string) => sources.delete(id),
+      getLayer: (id: string) => (layers.has(id) ? { id } : undefined),
+      addLayer,
+      removeLayer,
+      hasImage: () => true,
+      addImage: vi.fn(),
+    },
+  };
+}
+
+const plan = (ids: string[]) =>
+  ({
+    version: 1100,
+    departure: { icao: 'EGLL' },
+    arrival: { icao: 'KJFK' },
+    waypoints: ids.map((id, i) =>
+      wp({ id, type: i === 0 || i === ids.length - 1 ? 1 : 11, latitude: 50, longitude: -i })
+    ),
+  }) as unknown as Parameters<typeof addFlightPlanLayer>[1];
+
+describe('addFlightPlanLayer', () => {
+  it('updates an existing plan in place instead of removing and re-adding the layers', () => {
+    const { map, sources, addLayer, removeLayer } = fakeMap();
+    addFlightPlanLayer(map as never, plan(['EGLL', 'A', 'KJFK']));
+    const created = addLayer.mock.calls.length;
+    expect(created).toBeGreaterThan(0);
+    addFlightPlanLayer(map as never, plan(['EGLL', 'A', 'B', 'KJFK']));
+    expect(addLayer).toHaveBeenCalledTimes(created);
+    expect(removeLayer).not.toHaveBeenCalled();
+    const route = sources.get('flightplan-route-source')!;
+    expect(route.setData).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes the plan off the map when it has fewer than two waypoints', () => {
+    const { map, removeLayer } = fakeMap();
+    addFlightPlanLayer(map as never, plan(['EGLL', 'A', 'KJFK']));
+    addFlightPlanLayer(map as never, plan(['EGLL']));
+    expect(removeLayer).toHaveBeenCalled();
+    expect(map.getLayer('flightplan-route-line')).toBeUndefined();
   });
 });

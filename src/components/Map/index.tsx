@@ -15,6 +15,7 @@ import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { useRouteTerrain } from '@/hooks/useRouteProfile';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
+import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
 import { cn } from '@/lib/utils/helpers';
@@ -62,6 +63,7 @@ import {
   useMapContextMenu,
   useMapSetup,
   useMeasureTool,
+  useNatTracksSync,
   useNavLayerSync,
   usePinDrop,
   useProcedureRouteSync,
@@ -402,6 +404,9 @@ export default function Map({ airports }: MapProps) {
   // Procedure route sync - renders selected procedure on map
   useProcedureRouteSync({ mapRef });
 
+  // North Atlantic tracks offered to the planner, pickable on the map
+  useNatTracksSync({ mapRef });
+
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation });
 
@@ -440,7 +445,8 @@ export default function Map({ airports }: MapProps) {
   useCityLights(mapRef, cityLightsEnabled);
 
   // Terrain shading (hillshade + contour lines)
-  useTerrainShading(mapRef, terrainShadingEnabled);
+  // Imagery basemaps show their own relief; shading would only darken the photo.
+  useTerrainShading(mapRef, terrainShadingEnabled && terrainShadingAllowed(mapStyleUrl));
 
   // Recorded track behind the aircraft, touchdown markers and flight replay.
   useFlightTrail({

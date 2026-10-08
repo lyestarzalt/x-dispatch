@@ -7,6 +7,7 @@ import * as maplibregl from 'maplibre-gl';
 import { buildUnitFormatters } from '@/hooks/useUnits';
 import { bearingDeg, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { routeLineSegments } from '@/lib/flightplan/builder/routeLine';
+import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -22,6 +23,7 @@ import {
   legChipImageId,
   loadRouteLabelImages,
   waypointBadgeId,
+  widthByKindExpression,
 } from './routeStyle';
 
 // Layer IDs
@@ -262,7 +264,7 @@ export function createLegLabelGeoJSON(
         airway: leg.airway,
         showAirway: leg.showAirway,
         rotate,
-        chip: legChipImageId('enroute'),
+        chip: legChipImageId(NAT_TRACK_RE.test(leg.airway) ? 'track' : 'enroute'),
       },
     };
   });
@@ -335,10 +337,9 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   // With transformStyle, layers survive basemap changes — no re-add needed.
   if (!map.getStyle()) return;
 
-  removeFlightPlanLayer(map);
-
   const waypoints = fmsData.waypoints;
   if (waypoints.length < 2) {
+    removeFlightPlanLayer(map);
     return;
   }
 
@@ -481,7 +482,34 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     features: waypointFeatures,
   };
 
-  // Add sources
+  const dest = waypoints[waypoints.length - 1]!;
+  const alt = fmsData.alternate;
+  const alternateGeoJSON: GeoJSON.FeatureCollection = {
+    type: 'FeatureCollection',
+    features: alt
+      ? [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [dest.longitude, dest.latitude],
+                [alt.longitude, alt.latitude],
+              ],
+            },
+            properties: {},
+          },
+          {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [alt.longitude, alt.latitude] },
+            properties: { icao: alt.icao },
+          },
+        ]
+      : [],
+  };
+
+  // Sources: created the first time, updated in place after that so an edited plan never
+  // flashes off and on.
   safeAddGeoJSONSource(map, SOURCE_ID, routeGeoJSON);
   safeAddGeoJSONSource(map, WAYPOINT_SOURCE_ID, waypointGeoJSON);
   safeAddGeoJSONSource(
@@ -494,6 +522,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     PROCEDURE_NAME_SOURCE_ID,
     createProcedureNameGeoJSON(fmsData.procedurePaths ?? [])
   );
+  safeAddGeoJSONSource(map, ALTERNATE_SOURCE_ID, alternateGeoJSON);
+  if (map.getLayer(CASING_ID)) return;
 
   // Thin dark outline under the line so it reads over satellite imagery.
   map.addLayer({
@@ -504,13 +534,13 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
       'line-color': '#000000',
-      'line-width': ROUTE_CASING_WIDTH,
+      'line-width': widthByKindExpression(ROUTE_CASING_WIDTH),
       'line-opacity': 0.45,
     },
   });
 
-  // Route line: thick and translucent, one colour per leg kind (SID / STAR / approach / enroute),
-  // or per flight phase when the plan carries SimBrief stages.
+  // Route line: thick and translucent, one colour per leg kind (SID / STAR / approach / enroute,
+  // wider and pink on an oceanic track), or per flight phase when the plan carries SimBrief stages.
   map.addLayer({
     id: LINE_ID,
     type: 'line',
@@ -529,7 +559,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
         COLORS.dsc,
         kindColorExpression(),
       ],
-      'line-width': ROUTE_LINE_WIDTH,
+      'line-width': widthByKindExpression(ROUTE_LINE_WIDTH),
       'line-opacity': ROUTE_LINE_OPACITY,
     },
   });
@@ -677,73 +707,43 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     },
   });
 
-  // Alternate airport — dashed line from destination
-  if (fmsData.alternate) {
-    const dest = waypoints[waypoints.length - 1];
-    if (!dest) return;
-    const alt = fmsData.alternate;
+  // Alternate airport: a dashed line from the destination, empty when none is chosen.
+  map.addLayer({
+    id: ALTERNATE_LINE_ID,
+    type: 'line',
+    source: ALTERNATE_SOURCE_ID,
+    filter: ['==', '$type', 'LineString'],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': COLORS.alternate,
+      'line-width': 2,
+      'line-dasharray': [4, 3],
+      'line-opacity': 0.7,
+    },
+  });
 
-    const alternateGeoJSON: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: [
-              [dest.longitude, dest.latitude],
-              [alt.longitude, alt.latitude],
-            ],
-          },
-          properties: {},
-        },
-        {
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: [alt.longitude, alt.latitude] },
-          properties: { icao: alt.icao },
-        },
-      ],
-    };
-
-    safeAddGeoJSONSource(map, ALTERNATE_SOURCE_ID, alternateGeoJSON);
-
-    map.addLayer({
-      id: ALTERNATE_LINE_ID,
-      type: 'line',
-      source: ALTERNATE_SOURCE_ID,
-      filter: ['==', '$type', 'LineString'],
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': COLORS.alternate,
-        'line-width': 2,
-        'line-dasharray': [4, 3],
-        'line-opacity': 0.7,
-      },
-    });
-
-    map.addLayer({
-      id: ALTERNATE_LABEL_ID,
-      type: 'symbol',
-      source: ALTERNATE_SOURCE_ID,
-      filter: ['==', '$type', 'Point'],
-      layout: {
-        'icon-image': 'fp-airport',
-        'icon-size': 0.8,
-        'text-field': ['get', 'icao'],
-        'text-font': ['Open Sans Bold'],
-        'text-size': zoomScaledTextSize(11),
-        'text-offset': [0, -1.8],
-        'text-anchor': 'bottom',
-        'icon-allow-overlap': true,
-        'text-allow-overlap': true,
-      },
-      paint: {
-        'text-color': COLORS.alternate,
-        'text-halo-color': COLORS.labelHalo,
-        'text-halo-width': 2,
-      },
-    });
-  }
+  map.addLayer({
+    id: ALTERNATE_LABEL_ID,
+    type: 'symbol',
+    source: ALTERNATE_SOURCE_ID,
+    filter: ['==', '$type', 'Point'],
+    layout: {
+      'icon-image': 'fp-airport',
+      'icon-size': 0.8,
+      'text-field': ['get', 'icao'],
+      'text-font': ['Open Sans Bold'],
+      'text-size': zoomScaledTextSize(11),
+      'text-offset': [0, -1.8],
+      'text-anchor': 'bottom',
+      'icon-allow-overlap': true,
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': COLORS.alternate,
+      'text-halo-color': COLORS.labelHalo,
+      'text-halo-width': 2,
+    },
+  });
 }
 
 export function removeFlightPlanLayer(map: maplibregl.Map): void {

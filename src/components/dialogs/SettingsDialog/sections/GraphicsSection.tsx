@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
+import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import type { SurfaceDetail } from '@/stores/settingsStore';
@@ -39,6 +40,9 @@ export function GraphicsSection() {
   const setTerrain3dEnabled = useMapStore((s) => s.setTerrain3dEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
+  // Off and locked on an imagery basemap; the stored preference returns with a vector style.
+  const mapStyleUrl = useSettingsStore((s) => s.map.mapStyleUrl);
+  const shadingAllowed = terrainShadingAllowed(mapStyleUrl);
 
   return (
     <div className="space-y-6">
@@ -72,8 +76,13 @@ export function GraphicsSection() {
         />
         <SettingsToggleRow
           title={t('settings.graphics.terrainShading')}
-          description={t('settings.graphics.terrainShadingDesc')}
-          checked={terrainShadingEnabled}
+          description={
+            shadingAllowed
+              ? t('settings.graphics.terrainShadingDesc')
+              : t('settings.graphics.terrainShadingSatellite')
+          }
+          checked={terrainShadingEnabled && shadingAllowed}
+          disabled={!shadingAllowed}
           onCheckedChange={(checked) => setTerrainShadingEnabled(checked)}
         />
       </SettingsSectionBlock>

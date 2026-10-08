@@ -158,3 +158,26 @@ describe('routeLinePoints', () => {
     expect(line[line.length - 1]).toEqual({ latitude: 50, longitude: 8.05 });
   });
 });
+
+describe('routeLineSegments with a NAT track', () => {
+  it('tags the legs flown on a track so the map can draw them apart from plain enroute', () => {
+    const wps = [
+      { via: 'ADEP', latitude: 53.4, longitude: -6.3 },
+      { via: 'DRCT', latitude: 54, longitude: -15 }, // entry fix
+      { via: 'NATA', latitude: 54, longitude: -20 },
+      { via: 'NATA', latitude: 55, longitude: -30 },
+      { via: 'NATA', latitude: 54, longitude: -40 }, // exit fix
+      { via: 'DRCT', latitude: 50, longitude: -60 },
+      { via: 'ADES', latitude: 40.6, longitude: -73.8 },
+    ];
+    const segments = routeLineSegments(wps);
+    expect(segments.map((s) => s.kind)).toEqual(['enroute', 'track', 'enroute']);
+    expect(segments[1]!.via).toBe('NATA');
+    // The track segment runs from the entry fix to the exit fix.
+    expect(segments[1]!.points[0]).toEqual({ latitude: 54, longitude: -15 });
+    expect(segments[1]!.points[segments[1]!.points.length - 1]).toEqual({
+      latitude: 54,
+      longitude: -40,
+    });
+  });
+});

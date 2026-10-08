@@ -161,6 +161,26 @@
     "noAlternate": "Nessun alternato",
     "fuel": "Carburante",
     "liveHint": "La mappa si ridisegna mentre modifichi.",
+    "tracks": {
+      "title": "Track del Nord Atlantico",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Scegli un track per instradare su di esso, o cliccane uno sulla mappa.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Verso est",
+      "westbound": "Verso ovest",
+      "none": "Al momento non ci sono track pubblicati per questa direzione.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Valido ora",
+      "upcoming": "Prossimo",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Note del messaggio dei track",
+      "levelWarning": "FL{{cruise}} non è offerto sul track {{id}}: FL {{levels}}",
+      "unavailable": "Messaggio dei track non disponibile: {{reason}}"
+    },
     "windSuggest": "Vento {{wind}} favorisce la {{runway}}",
     "useRunway": "Usa",
     "profileTitle": "Crociera e profilo",
@@ -201,7 +221,8 @@
       "airwayNoFixAfter": "Un'aerovia richiede un punto dopo",
       "airwayExitUnknown": "Il punto dopo questa aerovia è sconosciuto",
       "airwayNotJoined": "Questa aerovia non collega i punti ai due lati",
-      "airwayEndsAtCoordinate": "Un'aerovia deve terminare su un punto, non su una coordinata"
+      "airwayEndsAtCoordinate": "Un'aerovia deve terminare su un punto, non su una coordinata",
+      "trackPartial": "Il designatore di un track si presenta solo per il track intero; altrimenti indica i suoi punti"
     },
     "setStart": "Inizia alla partenza",
     "showOnMap": "Mostra sulla mappa",
@@ -321,7 +342,8 @@
       "logbook": "Voli registrati, atterraggi e cronologia degli avvii"
     },
     "logbook": "Diario di volo",
-    "flightTrail": "Scia di volo"
+    "flightTrail": "Scia di volo",
+    "natTracks": "Track del Nord Atlantico"
   },
   "airportFilters": {
     "title": "Aeroporti",
@@ -659,6 +681,7 @@
       "terrain3dDesc": "Le montagne emergono dalla mappa quando ingrandisci.",
       "terrainShading": "Ombreggiatura del terreno",
       "terrainShadingDesc": "Ombreggiatura e curve di livello per distinguere meglio le montagne.",
+      "terrainShadingSatellite": "Non disponibile sulla mappa satellitare; le immagini mostrano già il rilievo.",
       "surfaceDetail": "Dettaglio superficie",
       "surfaceDetailDesc": "Morbidezza delle curve sui bordi di vie di rullaggio e piazzali",
       "low": "Basso",

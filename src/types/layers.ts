@@ -42,6 +42,8 @@ export interface NavLayerVisibility {
   airspaces: boolean;
   /** Airways display mode */
   airwaysMode: AirwaysMode;
+  /** The day's North Atlantic tracks, on the map outside the planner too. */
+  natTracks: boolean;
 }
 
 // Default airport layer visibility
@@ -70,6 +72,7 @@ export const DEFAULT_NAV_VISIBILITY: NavLayerVisibility = {
   ils: false,
   airspaces: false,
   airwaysMode: 'off',
+  natTracks: false,
 };
 
 // Range Rings - aircraft category reach visualization

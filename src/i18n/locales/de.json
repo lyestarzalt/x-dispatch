@@ -161,6 +161,26 @@
     "noAlternate": "Kein Ausweichflughafen",
     "fuel": "Blockkraftstoff",
     "liveHint": "Die Karte zeichnet beim Bearbeiten neu.",
+    "tracks": {
+      "title": "Nordatlantik-Tracks",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Wähle einen Track, um darüber zu routen, oder klicke ihn auf der Karte an.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Ostwärts",
+      "westbound": "Westwärts",
+      "none": "Für diese Richtung sind derzeit keine Tracks veröffentlicht.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Jetzt gültig",
+      "upcoming": "Demnächst",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Bemerkungen zur Track-Meldung",
+      "levelWarning": "FL{{cruise}} wird auf Track {{id}} nicht angeboten: FL {{levels}}",
+      "unavailable": "Track-Meldung nicht verfügbar: {{reason}}"
+    },
     "windSuggest": "Wind {{wind}} spricht für {{runway}}",
     "useRunway": "Übernehmen",
     "profileTitle": "Reiseflug und Profil",
@@ -201,7 +221,8 @@
       "airwayNoFixAfter": "Eine Luftstraße braucht einen Wegpunkt danach",
       "airwayExitUnknown": "Der Wegpunkt nach dieser Luftstraße ist unbekannt",
       "airwayNotJoined": "Diese Luftstraße verbindet die Wegpunkte beidseitig nicht",
-      "airwayEndsAtCoordinate": "Eine Luftstraße muss an einem Wegpunkt enden, nicht an einer Koordinate"
+      "airwayEndsAtCoordinate": "Eine Luftstraße muss an einem Wegpunkt enden, nicht an einer Koordinate",
+      "trackPartial": "Ein Track-Kennzeichen wird nur für den ganzen Track gefiled; sonst die Punkte angeben"
     },
     "setStart": "Am Abflug starten",
     "showOnMap": "Auf Karte zeigen",
@@ -321,7 +342,8 @@
       "logbook": "Aufgezeichnete Flüge, Landungen und Startverlauf"
     },
     "logbook": "Logbuch",
-    "flightTrail": "Flugspur"
+    "flightTrail": "Flugspur",
+    "natTracks": "Nordatlantik-Tracks"
   },
   "airportFilters": {
     "title": "Flughäfen",
@@ -659,6 +681,7 @@
       "terrain3dDesc": "Berge erheben sich beim Hineinzoomen aus der Karte.",
       "terrainShading": "Geländeschattierung",
       "terrainShadingDesc": "Schattierung und Höhenlinien lassen Berge besser erkennen.",
+      "terrainShadingSatellite": "Auf der Satellitenkarte nicht verfügbar; das Bild zeigt das Relief bereits.",
       "surfaceDetail": "Oberflächendetail",
       "surfaceDetailDesc": "Kurvenglättung für Rollweg- und Vorfeldkanten",
       "low": "Niedrig",

@@ -12,7 +12,7 @@ import {
 import type { FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
 import type { AirwaySegment } from '@/types/navigation';
 import { type LatLon, pathDistanceNm } from './geometry';
-import { isTrackName, trackSegments } from './oceanicTracks';
+import { getOceanicTracks, isTrackName, trackSegments } from './oceanicTracks';
 import { type LexedToken, lexRoute, stripEndpoints } from './routeTokens';
 import type { PlanDraft, RouteResolution, RouteToken } from './types';
 
@@ -86,6 +86,21 @@ function walkAirway(name: string, from: string, to: string): string[] | null {
   return path.slice(0, -1);
 }
 
+/** A track designator stands for the whole track; filed between other points it is flagged. */
+function flagPartialTrack(
+  pending: { token: RouteToken; name: string; entryId: string },
+  exitId: string
+): void {
+  if (!isTrackName(pending.name)) return;
+  const track = getOceanicTracks().find((t) => t.name === pending.name.toUpperCase());
+  if (!track || track.points.length === 0) return;
+  const first = track.points[0]!.id;
+  const last = track.points[track.points.length - 1]!.id;
+  if (first === pending.entryId && last === exitId) return;
+  pending.token.status = 'warning';
+  pending.token.issue = 'trackPartial';
+}
+
 export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution | null {
   const { departure, arrival } = draft;
   if (!departure || !arrival) return null;
@@ -104,7 +119,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
   const tokens: RouteToken[] = [];
   let cursor: LatLon = departure;
   let lastFixId: string | null = null;
-  let pendingAirway: { token: RouteToken; name: string } | null = null;
+  let pendingAirway: { token: RouteToken; name: string; entryId: string } | null = null;
 
   const push = (point: ResolvedPoint, via: string) => {
     waypoints.push({ ...point, via, altitude: cruise });
@@ -158,7 +173,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
         token.issue = 'airwayNoFixBefore';
         continue;
       }
-      pendingAirway = { token, name: lexedToken.text };
+      pendingAirway = { token, name: lexedToken.text, entryId: lastFixId };
       continue;
     }
 
@@ -195,6 +210,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
         push(point, 'DRCT');
       } else {
         push(point, pendingAirway.name);
+        flagPartialTrack(pendingAirway, point.id);
         pendingAirway = null;
       }
       continue;

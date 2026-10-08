@@ -253,6 +253,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
         t.invoke('flightplan:enrich', fmsData),
       resolveRoute: (draft: PlanDraft) => t.invoke('flightplan:resolveRoute', draft),
       autoRoute: (request: AutoRouteRequest) => t.invoke('flightplan:autoRoute', request),
+      oceanicTracks: () => t.invoke('flightplan:oceanicTracks'),
       saveFms: (args: { stem: string; content: string }) => t.invoke('flightplan:saveFms', args),
     },
 

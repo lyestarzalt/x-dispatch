@@ -1,15 +1,37 @@
-import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  currentTracks,
+  getOceanicTracks,
+  parseNatFeed,
   parseNatMessage,
+  refreshOceanicTracks,
+  resetOceanicTracksForTests,
+  resolvedFeed,
+  resolvedTracks,
+  setNatMessages,
   setOceanicTracks,
   trackPoint,
   trackSegments,
   tracksFromNatJson,
 } from './oceanicTracks';
 
+const warn = vi.fn();
 vi.mock('@/lib/utils/logger', () => {
-  const noop = new Proxy({}, { get: () => () => {} });
-  return { default: new Proxy({}, { get: () => noop }) };
+  const scope = new Proxy({}, { get: (_t, k) => (k === 'warn' ? warn : () => {}) });
+  return { default: new Proxy({}, { get: () => scope }) };
+});
+
+const FEED = JSON.parse(
+  readFileSync(resolve(__dirname, '__fixtures__/nat-2026-10-08.json'), 'utf8')
+) as unknown;
+/** Eastbound set valid 01:00-08:00Z that day, westbound 11:30-19:00Z. */
+const DURING_EASTBOUND = Date.parse('2026-10-08T05:00:00Z');
+
+beforeEach(() => {
+  resetOceanicTracksForTests();
+  warn.mockClear();
 });
 
 const PART_ONE = [
@@ -110,5 +132,195 @@ describe('trackSegments', () => {
       topFl: 400,
     });
     expect(trackSegments()).toHaveLength(12);
+  });
+});
+
+describe('resolvedTracks', () => {
+  it('gives every point a position, looking named fixes up near the track, and drops unknown ones', () => {
+    const far = new Date(Date.now() + 3_600_000).toISOString();
+    setOceanicTracks(parseNatMessage(PART_ONE, far, far));
+    const seen: { id: string; near: { latitude: number; longitude: number } }[] = [];
+    const lookup = (id: string, near: { latitude: number; longitude: number }) => {
+      seen.push({ id, near });
+      if (id === 'ALLRY') return { latitude: 53.5, longitude: -56 };
+      if (id === 'RESNO') return { latitude: 55, longitude: -15 };
+      return null;
+    };
+    const tracks = resolvedTracks(lookup);
+    expect(tracks.map((t) => t.name)).toEqual(['NATU', 'NATV']);
+    const u = tracks[0]!;
+    expect(u.points.map((p) => p.id)).toEqual([
+      'ALLRY',
+      '5150N',
+      '5340N',
+      '5430N',
+      '5520N',
+      'RESNO',
+    ]);
+    expect(u.points[0]).toEqual({ id: 'ALLRY', latitude: 53.5, longitude: -56 });
+    expect(u.points.every((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))).toBe(
+      true
+    );
+    // The entry fix is searched near the first coordinate point, the exit near the last.
+    expect(seen.find((s) => s.id === 'ALLRY')?.near).toEqual({ latitude: 51, longitude: -50 });
+    expect(seen.find((s) => s.id === 'RESNO')?.near).toEqual({ latitude: 55, longitude: -20 });
+    expect(u).toMatchObject({ eastbound: true, levels: [340, 350, 360, 370, 380, 390, 400] });
+  });
+});
+
+describe('parseNatFeed', () => {
+  it('reads both sets of the day with TMI, validity, status and remarks', () => {
+    const messages = parseNatFeed(FEED, DURING_EASTBOUND);
+    expect(messages.map((m) => [m.origin, m.eastbound, m.status, m.tmi])).toEqual([
+      ['CZQX', true, 'current', 281],
+      ['EGGX', false, 'upcoming', 281],
+    ]);
+    expect(messages[0]!.tracks.map((t) => t.id).join('')).toBe('VWXYZ');
+    expect(messages[1]!.tracks.map((t) => t.id).join('')).toBe('ABCDEFG');
+    expect(messages[1]).toMatchObject({
+      validFrom: '2026-10-08T11:30:00Z',
+      validTo: '2026-10-08T19:00:00Z',
+    });
+    expect(messages[1]!.remarks.startsWith('1. TMI IS 281.')).toBe(true);
+    expect(messages[1]!.remarks).toContain('SLOP SHOULD BE USED');
+    expect(messages[1]!.remarks).not.toContain('END OF PART');
+  });
+
+  it("keeps each track's NARs and European feeder fixes", () => {
+    const [east, west] = parseNatFeed(FEED, DURING_EASTBOUND);
+    const f = west!.tracks.find((t) => t.id === 'F')!;
+    expect(f).toMatchObject({
+      name: 'NATF',
+      eastbound: false,
+      levels: [350, 360, 370, 390, 400],
+      feederFixes: ['REGHI'],
+      nars: ['N82A', 'N94A'],
+      pbcs: false,
+    });
+    expect(f.points.map((p) => p.id)).toEqual([
+      'ETIKI',
+      '4715N',
+      '4720N',
+      '4630N',
+      '4640N',
+      '4550N',
+      'RAFIN',
+    ]);
+    const v = east!.tracks.find((t) => t.id === 'V')!;
+    expect(v).toMatchObject({ feederFixes: [], nars: ['N649B', 'N635A'] });
+  });
+
+  it('drops a set that has expired', () => {
+    const messages = parseNatFeed(FEED, Date.parse('2026-10-08T12:00:00Z'));
+    expect(messages.map((m) => [m.origin, m.status])).toEqual([['EGGX', 'current']]);
+  });
+
+  it('marks the PBCS tracks named in the remarks', () => {
+    const text = [
+      'NAT-1/1 TRACKS FLS 340/400 INCLUSIVE',
+      'OCT 08/1130Z TO OCT 08/1900Z',
+      'PART ONE OF ONE PARTS-',
+      'A BALIX 60/20 62/30 PIDSO',
+      'EAST LVLS NIL',
+      'WEST LVLS 350 360',
+      'EUR RTS WEST NIL',
+      'NAR NIL-',
+      'B GOMUP 59/20 61/30 SAVRY',
+      'EAST LVLS NIL',
+      'WEST LVLS 350 360',
+      'EUR RTS WEST NIL',
+      'NAR N922A-',
+      'REMARKS.',
+      '1. TMI IS 281.',
+      '3. PBCS OTS LEVELS 350-400. PBCS TRACKS AS FOLLOWS',
+      'B',
+      'END OF PBCS OTS',
+      'END OF PART ONE OF ONE PARTS',
+    ].join('\n');
+    const far = new Date(Date.now() + 3_600_000).toISOString();
+    const [msg] = parseNatFeed(
+      [
+        {
+          origin_id: 'EGGX',
+          part_no: 1,
+          condition_message: text,
+          start_datetime: far,
+          end_datetime: far,
+        },
+      ],
+      Date.now()
+    );
+    expect(msg!.tracks.map((t) => [t.id, t.pbcs, t.nars])).toEqual([
+      ['A', false, []],
+      ['B', true, ['N922A']],
+    ]);
+  });
+});
+
+describe('track availability', () => {
+  it('offers every unexpired track to the resolver but only valid ones as current', () => {
+    setNatMessages(parseNatFeed(FEED, DURING_EASTBOUND));
+    expect(
+      getOceanicTracks(DURING_EASTBOUND)
+        .map((t) => t.id)
+        .join('')
+    ).toBe('VWXYZABCDEFG');
+    expect(
+      currentTracks(DURING_EASTBOUND)
+        .map((t) => t.id)
+        .join('')
+    ).toBe('VWXYZ');
+  });
+});
+
+describe('refreshOceanicTracks', () => {
+  it('times out, logs the elapsed time and reason, and keeps the previous feed', async () => {
+    setNatMessages(parseNatFeed(FEED, DURING_EASTBOUND));
+    const hanging: typeof fetch = (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+      });
+    await refreshOceanicTracks(hanging, { timeoutMs: 20, force: true });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]![0])).toMatch(/NAT tracks unavailable after \d+ms: /);
+    const feed = resolvedFeed(() => null, DURING_EASTBOUND);
+    expect(feed.messages).toHaveLength(2);
+    expect(feed.error).toMatch(/abort|timeout/i);
+  });
+
+  it('replaces the feed on success and clears the error', async () => {
+    const ok: typeof fetch = async () =>
+      new Response(JSON.stringify(FEED), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    await refreshOceanicTracks(ok, { force: true, now: DURING_EASTBOUND });
+    const feed = resolvedFeed(() => null, DURING_EASTBOUND);
+    expect(feed.messages.map((m) => m.origin)).toEqual(['CZQX', 'EGGX']);
+    expect(feed.error).toBeNull();
+    expect(feed.fetchedAt).not.toBeNull();
+  });
+});
+
+describe('resolvedFeed', () => {
+  it('returns the messages with placed track points and the fetch state', () => {
+    setNatMessages(parseNatFeed(FEED, DURING_EASTBOUND));
+    const feed = resolvedFeed(
+      (id) => (id === 'ETIKI' ? { latitude: 47, longitude: -12 } : null),
+      DURING_EASTBOUND
+    );
+    const f = feed.messages[1]!.tracks.find((t) => t.id === 'F')!;
+    // RAFIN is unknown to the lookup and dropped; ETIKI is placed.
+    expect(f.points.map((p) => p.id)).toEqual([
+      'ETIKI',
+      '4715N',
+      '4720N',
+      '4630N',
+      '4640N',
+      '4550N',
+    ]);
+    expect(f.points[0]).toEqual({ id: 'ETIKI', latitude: 47, longitude: -12 });
+    expect(f.nars).toEqual(['N82A', 'N94A']);
+    expect(feed.messages[1]!.status).toBe('upcoming');
   });
 });

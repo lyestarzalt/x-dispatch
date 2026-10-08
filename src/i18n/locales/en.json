@@ -161,6 +161,26 @@
     "noAlternate": "No alternate",
     "fuel": "Block fuel",
     "liveHint": "The map redraws as you edit.",
+    "tracks": {
+      "title": "North Atlantic tracks",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Pick a track to route through it, or click one on the map.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Eastbound",
+      "westbound": "Westbound",
+      "none": "No tracks are published for this direction right now.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Valid now",
+      "upcoming": "Upcoming",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Track message remarks",
+      "levelWarning": "FL{{cruise}} is not offered on track {{id}}: FL {{levels}}",
+      "unavailable": "Track message unavailable: {{reason}}"
+    },
     "windSuggest": "Wind {{wind}} favours {{runway}}",
     "useRunway": "Use",
     "profileTitle": "Cruise and profile",
@@ -201,7 +221,8 @@
       "airwayNoFixAfter": "An airway needs a fix after it",
       "airwayExitUnknown": "The fix after this airway is unknown",
       "airwayNotJoined": "This airway does not connect the fixes either side",
-      "airwayEndsAtCoordinate": "An airway must end at a fix, not a coordinate"
+      "airwayEndsAtCoordinate": "An airway must end at a fix, not a coordinate",
+      "trackPartial": "A track designator is filed only for the whole track; file its points instead"
     },
     "setStart": "Start at departure",
     "showOnMap": "Show on map",
@@ -321,7 +342,8 @@
       "logbook": "Recorded flights, landings and launch history"
     },
     "logbook": "Logbook",
-    "flightTrail": "Flight Trail"
+    "flightTrail": "Flight Trail",
+    "natTracks": "North Atlantic tracks"
   },
   "airportFilters": {
     "title": "Airports",
@@ -659,6 +681,7 @@
       "terrain3dDesc": "Show raised terrain when the map is zoomed in.",
       "terrainShading": "Terrain shading",
       "terrainShadingDesc": "Add shading and contour lines to make terrain easier to read.",
+      "terrainShadingSatellite": "Not available on the satellite basemap; the imagery already shows the relief.",
       "surfaceDetail": "Surface detail",
       "surfaceDetailDesc": "Curve smoothness for taxiway and pavement edges",
       "low": "Low",
