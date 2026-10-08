@@ -59,6 +59,11 @@ export function estimateMinutes(distanceNm: number, category: RangeRingCategory)
   return Math.round((distanceNm / RANGE_RING_SPEEDS[category]) * 60 + TERMINAL_MINUTES[category]);
 }
 
+/** The leg length a block time allows: the inverse of estimateMinutes. */
+export function minutesToNm(minutes: number, category: RangeRingCategory): number {
+  return Math.max(0, ((minutes - TERMINAL_MINUTES[category]) / 60) * RANGE_RING_SPEEDS[category]);
+}
+
 /** Typical block burn per class, kg per hour: a narrow-body jet, a regional turboprop, a light piston. */
 const BURN_KG_PER_HOUR: Record<RangeRingCategory, number> = { jet: 2500, turboprop: 600, prop: 30 };
 const RESERVE_MINUTES = 45;

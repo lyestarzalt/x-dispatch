@@ -249,7 +249,8 @@
       },
       "tomorrow": "Tomorrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "Random destination"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "Search airports...",
     "clearSearch": "Clear search",
     "addons": "Add-ons",
-    "alphaTag": "alpha",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}}kts",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "Featured",
+        "random": "Random"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "Data from"
+    },
+    "random": {
+      "from": "From",
+      "pickOrigin": "Pick a departure",
+      "aircraft": "Aircraft",
+      "time": "Time",
+      "distance": "Distance",
+      "length": "Flight length",
+      "filters": "Filters",
+      "scope": {
+        "any": "Anywhere",
+        "domestic": "Domestic",
+        "international": "International"
+      },
+      "customOnly": "Custom scenery only",
+      "atcOnly": "VATSIM ATC online",
+      "weather": "Destination weather",
+      "roll": "Find a flight",
+      "reroll": "Reroll",
+      "noMatch": "No airports match. Widen the range or drop a filter.",
+      "plan": "Plan this flight",
+      "useAsArrival": "Use as arrival"
     }
   },
   "sunArc": {

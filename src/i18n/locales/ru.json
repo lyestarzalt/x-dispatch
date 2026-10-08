@@ -249,7 +249,8 @@
       },
       "tomorrow": "Завтра",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "Случайный пункт назначения"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "Поиск аэропортов...",
     "clearSearch": "Очистить поиск",
     "addons": "Дополнения",
-    "alphaTag": "альфа",
     "rangeRingsHours": "{{n}}ч",
     "rangeRingsKts": "{{speed}} уз",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "Избранные",
+        "random": "Случайный"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "Данные от"
+    },
+    "random": {
+      "from": "Откуда",
+      "pickOrigin": "Выберите аэропорт вылета",
+      "aircraft": "Самолёт",
+      "time": "Время",
+      "distance": "Расстояние",
+      "length": "Длина полёта",
+      "filters": "Фильтры",
+      "scope": {
+        "any": "Любые",
+        "domestic": "Внутренние",
+        "international": "Международные"
+      },
+      "customOnly": "Только своя сценерия",
+      "atcOnly": "Диспетчер VATSIM онлайн",
+      "weather": "Погода в пункте назначения",
+      "roll": "Найти рейс",
+      "reroll": "Ещё раз",
+      "noMatch": "Нет подходящих аэропортов. Расширьте диапазон или уберите фильтр.",
+      "plan": "Спланировать этот полёт",
+      "useAsArrival": "Сделать пунктом прибытия"
     }
   },
   "sunArc": {

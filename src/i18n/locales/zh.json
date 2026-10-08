@@ -249,7 +249,8 @@
       },
       "tomorrow": "明天",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "随机目的地"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "搜索机场...",
     "clearSearch": "清除搜索",
     "addons": "附加组件",
-    "alphaTag": "测试版",
     "rangeRingsHours": "{{n}}小时",
     "rangeRingsKts": "{{speed}}节",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "精选",
+        "random": "随机"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "数据来自"
+    },
+    "random": {
+      "from": "出发",
+      "pickOrigin": "选择出发机场",
+      "aircraft": "机型",
+      "time": "时间",
+      "distance": "距离",
+      "length": "航程长度",
+      "filters": "筛选",
+      "scope": {
+        "any": "不限",
+        "domestic": "国内",
+        "international": "国际"
+      },
+      "customOnly": "仅自定义场景",
+      "atcOnly": "VATSIM 管制在线",
+      "weather": "目的地天气",
+      "roll": "寻找航班",
+      "reroll": "重新抽取",
+      "noMatch": "没有匹配的机场。请扩大范围或移除筛选。",
+      "plan": "规划此航班",
+      "useAsArrival": "设为到达机场"
     }
   },
   "sunArc": {

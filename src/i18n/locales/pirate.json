@@ -249,7 +249,8 @@
       },
       "tomorrow": "On the morrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "Lucky port"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "Search fer airports...",
     "clearSearch": "Clear the hunt",
     "addons": "Extra Gear",
-    "alphaTag": "arrr-pha",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}}kts",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "Treasured",
+        "random": "Lucky Dip"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "Charts from"
+    },
+    "random": {
+      "from": "From",
+      "pickOrigin": "Pick yer port o' sail",
+      "aircraft": "Vessel",
+      "time": "Time",
+      "distance": "Leagues",
+      "length": "Length o' voyage",
+      "filters": "Sieves",
+      "scope": {
+        "any": "Anywhere",
+        "domestic": "Home waters",
+        "international": "Foreign shores"
+      },
+      "customOnly": "Custom scenery only",
+      "atcOnly": "VATSIM harbourmaster aboard",
+      "weather": "Weather at port",
+      "roll": "Roll the bones",
+      "reroll": "Roll again",
+      "noMatch": "No port fits, matey. Widen yer range or drop a sieve.",
+      "plan": "Chart this voyage",
+      "useAsArrival": "Make it yer landfall"
     }
   },
   "sunArc": {

@@ -95,6 +95,17 @@ function callsignMatchesAirport(callsign: string, airport: string | AirportCalls
   return getAirportMatchPrefixes(airport).has(prefix);
 }
 
+/** Every callsign prefix with a controller or ATIS online, for airport lookups in bulk. */
+export function getStaffedCallsignPrefixes(data: VatsimData | undefined): Set<string> {
+  const prefixes = new Set<string>();
+  if (!data) return prefixes;
+  for (const station of [...data.controllers, ...data.atis]) {
+    const prefix = station.callsign.toUpperCase().split('_')[0];
+    if (prefix) prefixes.add(prefix);
+  }
+  return prefixes;
+}
+
 export function getControllersForAirport(
   data: VatsimData | undefined,
   airport: string | AirportCallsignMatch
