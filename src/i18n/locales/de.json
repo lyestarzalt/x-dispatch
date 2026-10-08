@@ -1236,10 +1236,10 @@
       "startState": "Startzustand",
       "weather": "Wetter",
       "fuel": "Treibstoff",
-      "summary": "Zusammenfassung",
       "departure": "Abflug",
       "livery": "Bemalung",
-      "conditions": "Bedingungen"
+      "conditions": "Bedingungen",
+      "overweight": "{{amount}} über MTOW"
     },
     "startState": {
       "ready": "Bereit",

@@ -1236,10 +1236,10 @@
       "startState": "启动状态",
       "weather": "天气",
       "fuel": "燃油",
-      "summary": "摘要",
       "departure": "出发",
       "livery": "涂装",
-      "conditions": "条件"
+      "conditions": "条件",
+      "overweight": "超出 MTOW {{amount}}"
     },
     "startState": {
       "ready": "就绪",

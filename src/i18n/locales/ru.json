@@ -1236,10 +1236,10 @@
       "startState": "Начальное состояние",
       "weather": "Погода",
       "fuel": "Топливо",
-      "summary": "Сводка",
       "departure": "Вылет",
       "livery": "Ливрея",
-      "conditions": "Условия"
+      "conditions": "Условия",
+      "overweight": "На {{amount}} больше MTOW"
     },
     "startState": {
       "ready": "Готов",

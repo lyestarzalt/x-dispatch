@@ -1236,10 +1236,10 @@
       "startState": "Start State",
       "weather": "Weather",
       "fuel": "Fuel",
-      "summary": "Summary",
       "departure": "Departure",
       "livery": "Livery",
-      "conditions": "Conditions"
+      "conditions": "Conditions",
+      "overweight": "{{amount}} over MTOW"
     },
     "startState": {
       "ready": "Ready",

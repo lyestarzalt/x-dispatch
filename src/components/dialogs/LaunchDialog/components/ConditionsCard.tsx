@@ -144,7 +144,6 @@ export function ConditionsCard({
       : sun.sunrise - hour;
   const untilH = Math.floor(untilChange);
   const untilM = Math.round((untilChange % 1) * 60);
-  const Watermark = WEATHER_ICONS[weatherValue] ?? Cloud;
 
   const metarLine = useMemo(() => {
     if (!metar) return null;
@@ -178,10 +177,6 @@ export function ConditionsCard({
           style={{ background: mix('muted', wash, 'transparent') }}
         />
       )}
-      <Watermark
-        className="text-foreground/10 pointer-events-none absolute -top-4 -right-4 h-28 w-28"
-        strokeWidth={1}
-      />
 
       <div className="relative space-y-3 p-3">
         {/* Mode */}

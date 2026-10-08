@@ -1236,10 +1236,10 @@
       "startState": "Stato iniziale",
       "weather": "Meteo",
       "fuel": "Carburante",
-      "summary": "Riepilogo",
       "departure": "Partenza",
       "livery": "Livrea",
-      "conditions": "Condizioni"
+      "conditions": "Condizioni",
+      "overweight": "{{amount}} oltre il MTOW"
     },
     "startState": {
       "ready": "Pronto",

@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ErrorScreenProps {
   title?: string;
-  message: string;
+  /** The load error; the generic description when there is none. */
+  message?: string;
   onRetry?: () => void;
   onConfigure?: () => void;
   configureLabel?: string;
@@ -27,14 +28,14 @@ export default function ErrorScreen({
           <div className="bg-destructive/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
             <AlertCircle className="text-destructive h-6 w-6" />
           </div>
-          <CardTitle className="text-destructive">{title || t('error.title')}</CardTitle>
+          <CardTitle className="text-destructive">{title || t('loading.failed')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p className="text-muted-foreground">{message}</p>
+          <p className="text-muted-foreground">{message || t('errorBoundary.description')}</p>
           <div className="flex justify-center gap-2">
             {onConfigure && (
               <Button variant="outline" onClick={onConfigure}>
-                {configureLabel || t('error.configure')}
+                {configureLabel || t('loading.configureXPlanePath')}
               </Button>
             )}
             {onRetry && (

@@ -1236,10 +1236,10 @@
       "startState": "État de démarrage",
       "weather": "Météo",
       "fuel": "Carburant",
-      "summary": "Résumé",
       "departure": "Départ",
       "livery": "Livrée",
-      "conditions": "Conditions"
+      "conditions": "Conditions",
+      "overweight": "{{amount}} au-dessus de la MTOW"
     },
     "startState": {
       "ready": "Prêt",

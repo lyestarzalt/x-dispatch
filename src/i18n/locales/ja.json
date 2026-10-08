@@ -1236,10 +1236,10 @@
       "startState": "開始状態",
       "weather": "天候",
       "fuel": "燃料",
-      "summary": "概要",
       "departure": "出発",
       "livery": "塗装",
-      "conditions": "コンディション"
+      "conditions": "コンディション",
+      "overweight": "MTOW を {{amount}} 超過"
     },
     "startState": {
       "ready": "準備完了",

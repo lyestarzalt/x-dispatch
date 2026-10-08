@@ -1236,10 +1236,10 @@
       "startState": "Starting State",
       "weather": "Skies",
       "fuel": "Fuel Stores",
-      "summary": "Voyage Summary",
       "departure": "Departure Berth",
       "livery": "Paint Scheme",
-      "conditions": "Conditions"
+      "conditions": "Conditions",
+      "overweight": "{{amount}} over what she can lift"
     },
     "startState": {
       "ready": "Ready fer departure",

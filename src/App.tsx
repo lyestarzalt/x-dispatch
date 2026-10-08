@@ -142,10 +142,8 @@ function AppContent() {
   } else if (appState === 'error') {
     content = (
       <ErrorScreen
-        title="Loading Failed"
-        message={loadError || 'An unknown error occurred'}
+        message={loadError || undefined}
         onConfigure={handleConfigurePath}
-        configureLabel="Configure Path"
         onRetry={() => window.location.reload()}
       />
     );

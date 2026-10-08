@@ -5,12 +5,12 @@ import tzLookup from 'tz-lookup';
 import { AirStartSpeedInput } from '@/components/AirStartSpeedInput';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { IcaoCode } from '@/components/ui/icao-code';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
 import { airSpeedFromMs, isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
-import type { NauticalMiles } from '@/lib/utils/geomath';
+import { type NauticalMiles, metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
@@ -20,6 +20,10 @@ import { getWeatherSummary } from '../weatherTypes';
 import { ConditionsCard } from './ConditionsCard';
 import { WeatherDialog } from './WeatherDialog';
 import { WeightBalanceDialog } from './WeightBalanceDialog';
+import { WeightLegendItem } from './WeightLegendItem';
+
+/** X-Plane's default air start, 3,000 ft. */
+const DEFAULT_AIR_ALTITUDE_M = 914.4;
 
 interface FlightConfigProps {
   startPosition: StartPosition | null;
@@ -28,9 +32,9 @@ interface FlightConfigProps {
   aircraftList: Aircraft[];
 }
 
-/** Choice buttons: a visible border and shadow so they read as pressable, primary when on. */
+/** Choice buttons: a visible border so they read as pressable, primary when on. */
 const CHOICE =
-  'border-border/60 bg-secondary/40 border shadow-sm hover:border-border hover:bg-secondary hover:text-foreground data-[state=on]:border-primary data-[state=on]:bg-primary/15 data-[state=on]:text-primary';
+  'border-border/60 bg-secondary/40 border hover:border-border hover:bg-secondary hover:text-foreground data-[state=on]:border-primary data-[state=on]:bg-primary/15 data-[state=on]:text-primary';
 
 function getTimezoneOffset(timezone: string): string {
   try {
@@ -176,11 +180,7 @@ export function FlightConfig({
 
   return (
     <div className="border-border/50 bg-card flex w-[22rem] min-w-[320px] shrink-0 flex-col border-l lg:w-[24rem]">
-      <div className="flex-shrink-0 px-4 py-3">
-        <h3 className="xp-section-heading mb-0 border-0 pb-0">{t('launcher.config.summary')}</h3>
-      </div>
-
-      <div className="flex-1 space-y-4 overflow-auto px-4 pt-1 pb-4">
+      <div className="flex-1 space-y-5 overflow-auto p-4">
         <ConditionsCard
           coords={airportCoords}
           timeOfDay={timeOfDay}
@@ -199,13 +199,19 @@ export function FlightConfig({
 
         {/* ── Weight & Fuel ──────────────────────────────── */}
         <section className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Weight className="h-4 w-4" />
-              {t('launcher.weightFuelLabel')}
-            </Label>
+          <div className="flex items-center justify-between gap-2">
+            <span className="xp-label flex min-w-0 items-center gap-2">
+              <Weight className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('launcher.weightFuelLabel')}</span>
+            </span>
             {selectedAircraft && (
-              <Button variant="ghost" size="icon-xs" onClick={() => setWeightDialogOpen(true)}>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="text-muted-foreground hover:text-foreground shrink-0"
+                onClick={() => setWeightDialogOpen(true)}
+              >
+                {t('common.edit')}
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             )}
@@ -213,9 +219,9 @@ export function FlightConfig({
           {selectedAircraft && (
             <>
               {/* Loading gauge: empty, payload and fuel stacked against the maximum weight */}
-              <div className="bg-muted flex h-2.5 w-full overflow-hidden rounded-full">
+              <div className="bg-muted flex h-2 w-full overflow-hidden rounded-full">
                 <div
-                  className="bg-muted-foreground/40 h-full"
+                  className="bg-muted-foreground/50 h-full"
                   style={{
                     width: `${(selectedAircraft.emptyWeight / selectedAircraft.maxWeight) * 100}%`,
                   }}
@@ -229,7 +235,7 @@ export function FlightConfig({
                   style={{ width: `${(totalFuelLbs / selectedAircraft.maxWeight) * 100}%` }}
                 />
               </div>
-              <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline justify-between gap-2">
                 <span
                   className={cn(
                     'font-mono text-xl font-semibold tabular-nums',
@@ -238,34 +244,47 @@ export function FlightConfig({
                 >
                   {units.weight(totalWeight)}
                 </span>
-                <span className="text-muted-foreground font-mono text-xs">
-                  {t('launcher.aircraft.maxWeight')} {units.weight(selectedAircraft.maxWeight)}
+                <span
+                  className={cn(
+                    'min-w-0 truncate text-xs',
+                    isOverweight ? 'text-destructive' : 'text-muted-foreground'
+                  )}
+                >
+                  {isOverweight
+                    ? t('launcher.config.overweight', {
+                        amount: units.weight(totalWeight - selectedAircraft.maxWeight),
+                      })
+                    : `${t('launcher.specs.maxWeight')} ${units.weight(selectedAircraft.maxWeight)}`}
                 </span>
               </div>
-              <div className="text-muted-foreground flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1">
-                  <span className="bg-primary inline-block h-1.5 w-1.5 rounded-full" />
-                  {t('launcher.config.fuel')} {units.weight(totalFuelLbs)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="bg-success inline-block h-1.5 w-1.5 rounded-full" />
-                  {t('weightBalance.payload')} {units.weight(totalPayloadLbs)}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="bg-muted-foreground/40 inline-block h-1.5 w-1.5 rounded-full" />
-                  {t('launcher.aircraft.emptyWeight')} {units.weight(selectedAircraft.emptyWeight)}
-                </span>
-              </div>
+              {/* Legend in the gauge's order, one column each so values never wrap */}
+              <dl className="grid grid-cols-3 gap-2 text-xs">
+                <WeightLegendItem
+                  dotClass="bg-muted-foreground/50"
+                  label={t('launcher.specs.emptyWeight')}
+                  value={units.weight(selectedAircraft.emptyWeight)}
+                />
+                <WeightLegendItem
+                  dotClass="bg-success"
+                  label={t('weightBalance.payload')}
+                  value={units.weight(totalPayloadLbs)}
+                />
+                <WeightLegendItem
+                  dotClass={isOverweight ? 'bg-destructive' : 'bg-primary'}
+                  label={t('launcher.config.fuel')}
+                  value={units.weight(totalFuelLbs)}
+                />
+              </dl>
             </>
           )}
         </section>
 
         {/* ── Start State ────────────────────────────────── */}
         <section className="space-y-2">
-          <Label className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Power className="h-4 w-4" />
-            {t('launcher.config.startState')}
-          </Label>
+          <span className="xp-label flex min-w-0 items-center gap-2">
+            <Power className="h-4 w-4 shrink-0" />
+            <span className="truncate">{t('launcher.config.startState')}</span>
+          </span>
           <ToggleGroup
             type="single"
             value={coldAndDark ? 'cold' : 'ready'}
@@ -300,23 +319,31 @@ export function FlightConfig({
             }
           />
         )}
-        <div className="bg-secondary/50 space-y-1.5 rounded-lg p-3">
-          <div className="flex items-start justify-between gap-2">
-            <span className="xp-label shrink-0">{t('launcher.aircraft.title')}</span>
-            <span className="text-foreground text-right font-mono text-sm">
-              {selectedAircraft?.name || '—'}
-            </span>
+        {/* What will launch: a last look before committing */}
+        <dl className="bg-secondary/50 space-y-1.5 rounded-lg p-3 text-sm">
+          <div className="flex items-start justify-between gap-3">
+            <dt className="xp-label shrink-0">{t('launcher.aircraft.title')}</dt>
+            <dd className="text-foreground min-w-0 text-right">{selectedAircraft?.name || '—'}</dd>
           </div>
-          <div className="flex items-start justify-between gap-2">
-            <span className="xp-label shrink-0">{t('launcher.config.livery')}</span>
-            <span className="text-foreground text-right font-mono text-sm">{selectedLivery}</span>
+          <div className="flex items-start justify-between gap-3">
+            <dt className="xp-label shrink-0">{t('launcher.config.livery')}</dt>
+            <dd className="text-foreground min-w-0 truncate text-right">{selectedLivery}</dd>
           </div>
-          <div className="flex items-start justify-between gap-2">
-            <span className="xp-label shrink-0">{t('launcher.config.departure')}</span>
-            <div className="text-right">
-              <span className="text-primary font-mono text-sm">
-                {startPosition ? `${startPosition.airport} ${startPosition.name}` : '—'}
-              </span>
+          <div className="flex items-start justify-between gap-3">
+            <dt className="xp-label shrink-0">{t('launcher.config.departure')}</dt>
+            <dd className="min-w-0 text-right">
+              {!startPosition ? (
+                <span className="text-muted-foreground">—</span>
+              ) : startPosition.type === 'custom' ? (
+                <span className="text-primary font-mono">
+                  {units.coordinates(startPosition.latitude, startPosition.longitude)}
+                </span>
+              ) : (
+                <span className="text-foreground">
+                  <IcaoCode className="text-primary">{startPosition.airport}</IcaoCode>{' '}
+                  {startPosition.name}
+                </span>
+              )}
               {startPosition?.approachDistanceNm != null && (
                 <div className="text-muted-foreground text-xs">
                   {t('airportInfo.runway.approachNm', {
@@ -334,7 +361,9 @@ export function FlightConfig({
               {startPosition?.customStartMode === 'air' && (
                 <div className="text-muted-foreground text-xs">
                   {t('toolbar.pinModes.air')}{' '}
-                  {Math.round((startPosition.airAltitudeM ?? 914.4) / 0.3048).toLocaleString()} ft
+                  {units.altitude(
+                    metersToFeet(startPosition.airAltitudeM ?? DEFAULT_AIR_ALTITUDE_M)
+                  )}
                   {isValidAirStartSpeed(startPosition.airSpeedMs) &&
                     ` · ${Math.round(airSpeedFromMs(startPosition.airSpeedMs, startPosition.airSpeedUnit ?? 'kt'))} ${t(`units.${startPosition.airSpeedUnit ?? 'kt'}`)}`}
                 </div>
@@ -350,9 +379,9 @@ export function FlightConfig({
                       : ''}
                 </div>
               )}
-            </div>
+            </dd>
           </div>
-        </div>
+        </dl>
 
         {launchError && (
           <Alert variant="destructive" className="p-2">
