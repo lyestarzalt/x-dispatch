@@ -1239,7 +1239,14 @@
       "departure": "Departure",
       "livery": "Livery",
       "conditions": "Conditions",
-      "overweight": "{{amount}} over MTOW"
+      "overweight": "{{amount}} over the maximum",
+      "ofMtow": "of {{max}} max",
+      "spare": "{{amount}} spare",
+      "takeoffWeight": "Takeoff weight",
+      "emptyHint": "The aircraft itself, with no fuel, people or cargo",
+      "payloadHint": "Pilot, passengers and cargo",
+      "fuelHint": "Fuel in the tanks at engine start",
+      "maxHint": "Maximum takeoff weight (MTOW): the heaviest the aircraft may be when it takes off"
     },
     "startState": {
       "ready": "Ready",
@@ -1270,7 +1277,20 @@
       "rainy": "Rainy",
       "stormy": "Stormy",
       "snowy": "Snowy",
-      "foggy": "Foggy"
+      "foggy": "Foggy",
+      "realTitle": "Real weather",
+      "realHint": "Live METAR at the departure airport",
+      "sky": {
+        "thunderstorm": "Thunderstorms",
+        "snow": "Snow",
+        "rain": "Rain",
+        "drizzle": "Drizzle",
+        "fog": "Fog",
+        "overcast": "Overcast",
+        "cloudy": "Cloudy",
+        "partlyCloudy": "Partly cloudy",
+        "clear": "Clear"
+      }
     },
     "weatherBuilder": {
       "custom": "Custom Weather",
@@ -1304,7 +1324,9 @@
       "presets": "Presets",
       "custom": "Custom",
       "poor": "Poor",
-      "unlimited": "Unlimited"
+      "unlimited": "Unlimited",
+      "customTitle": "Custom weather",
+      "customHint": "Clouds, wind and visibility, layer by layer"
     },
     "weatherDialog": {
       "title": "Weather Settings",

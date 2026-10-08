@@ -1239,7 +1239,14 @@
       "departure": "Partenza",
       "livery": "Livrea",
       "conditions": "Condizioni",
-      "overweight": "{{amount}} oltre il MTOW"
+      "overweight": "{{amount}} oltre il massimo",
+      "ofMtow": "di {{max}} max",
+      "spare": "{{amount}} di margine",
+      "takeoffWeight": "Peso al decollo",
+      "emptyHint": "L'aereo da solo, senza carburante, persone o carico",
+      "payloadHint": "Pilota, passeggeri e carico",
+      "fuelHint": "Carburante nei serbatoi all'avviamento",
+      "maxHint": "Peso massimo al decollo (MTOW): il massimo con cui l'aereo può decollare"
     },
     "startState": {
       "ready": "Pronto",
@@ -1270,7 +1277,20 @@
       "rainy": "Piovoso",
       "stormy": "Tempestoso",
       "snowy": "Nevoso",
-      "foggy": "Nebbioso"
+      "foggy": "Nebbioso",
+      "realTitle": "Meteo reale",
+      "realHint": "METAR in tempo reale all'aeroporto di partenza",
+      "sky": {
+        "thunderstorm": "Temporali",
+        "snow": "Neve",
+        "rain": "Pioggia",
+        "drizzle": "Pioviggine",
+        "fog": "Nebbia",
+        "overcast": "Coperto",
+        "cloudy": "Nuvoloso",
+        "partlyCloudy": "Parzialmente nuvoloso",
+        "clear": "Sereno"
+      }
     },
     "weatherBuilder": {
       "custom": "Meteo personalizzato",
@@ -1304,7 +1324,9 @@
       "presets": "Preimpostazioni",
       "custom": "Personalizzato",
       "poor": "Scarsa",
-      "unlimited": "Illimitata"
+      "unlimited": "Illimitata",
+      "customTitle": "Meteo personalizzato",
+      "customHint": "Nuvole, vento e visibilità, strato per strato"
     },
     "weatherDialog": {
       "title": "Impostazioni meteo",

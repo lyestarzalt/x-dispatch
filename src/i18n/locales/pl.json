@@ -1239,7 +1239,14 @@
       "departure": "Odlot",
       "livery": "Malowanie",
       "conditions": "Warunki",
-      "overweight": "{{amount}} ponad MTOW"
+      "overweight": "{{amount}} ponad maksimum",
+      "ofMtow": "z maks. {{max}}",
+      "spare": "{{amount}} zapasu",
+      "takeoffWeight": "Masa startowa",
+      "emptyHint": "Sam samolot, bez paliwa, ludzi i ładunku",
+      "payloadHint": "Pilot, pasażerowie i ładunek",
+      "fuelHint": "Paliwo w zbiornikach przy uruchomieniu",
+      "maxHint": "Maksymalna masa startowa (MTOW): najwięcej, ile samolot może ważyć przy starcie"
     },
     "startState": {
       "ready": "Gotowy",
@@ -1270,7 +1277,20 @@
       "rainy": "Deszczowo",
       "stormy": "Burzowo",
       "snowy": "Śnieżnie",
-      "foggy": "Mgliście"
+      "foggy": "Mgliście",
+      "realTitle": "Prawdziwa pogoda",
+      "realHint": "Bieżący METAR z lotniska odlotu",
+      "sky": {
+        "thunderstorm": "Burze",
+        "snow": "Śnieg",
+        "rain": "Deszcz",
+        "drizzle": "Mżawka",
+        "fog": "Mgła",
+        "overcast": "Zachmurzenie całkowite",
+        "cloudy": "Pochmurno",
+        "partlyCloudy": "Częściowe zachmurzenie",
+        "clear": "Bezchmurnie"
+      }
     },
     "weatherBuilder": {
       "custom": "Niestandardowa pogoda",
@@ -1304,7 +1324,9 @@
       "presets": "Ustawienia wstępne",
       "custom": "Niestandardowa",
       "poor": "Słaba",
-      "unlimited": "Nieograniczona"
+      "unlimited": "Nieograniczona",
+      "customTitle": "Własna pogoda",
+      "customHint": "Chmury, wiatr i widzialność, warstwa po warstwie"
     },
     "weatherDialog": {
       "title": "Ustawienia pogody",

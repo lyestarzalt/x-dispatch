@@ -1239,7 +1239,14 @@
       "departure": "Вылет",
       "livery": "Ливрея",
       "conditions": "Условия",
-      "overweight": "На {{amount}} больше MTOW"
+      "overweight": "На {{amount}} больше максимума",
+      "ofMtow": "из макс. {{max}}",
+      "spare": "Запас {{amount}}",
+      "takeoffWeight": "Взлётная масса",
+      "emptyHint": "Сам самолёт без топлива, людей и груза",
+      "payloadHint": "Пилот, пассажиры и груз",
+      "fuelHint": "Топливо в баках при запуске",
+      "maxHint": "Максимальная взлётная масса (MTOW): предельная масса самолёта на взлёте"
     },
     "startState": {
       "ready": "Готов",
@@ -1270,7 +1277,20 @@
       "rainy": "Дождь",
       "stormy": "Гроза",
       "snowy": "Снег",
-      "foggy": "Туман"
+      "foggy": "Туман",
+      "realTitle": "Реальная погода",
+      "realHint": "Текущий METAR аэропорта вылета",
+      "sky": {
+        "thunderstorm": "Грозы",
+        "snow": "Снег",
+        "rain": "Дождь",
+        "drizzle": "Морось",
+        "fog": "Туман",
+        "overcast": "Сплошная облачность",
+        "cloudy": "Облачно",
+        "partlyCloudy": "Переменная облачность",
+        "clear": "Ясно"
+      }
     },
     "weatherBuilder": {
       "custom": "Своя погода",
@@ -1304,7 +1324,9 @@
       "presets": "Шаблоны",
       "custom": "Своя",
       "poor": "Плохая",
-      "unlimited": "Неограниченная"
+      "unlimited": "Неограниченная",
+      "customTitle": "Своя погода",
+      "customHint": "Облака, ветер и видимость по слоям"
     },
     "weatherDialog": {
       "title": "Настройки погоды",

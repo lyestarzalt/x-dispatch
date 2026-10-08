@@ -1239,7 +1239,14 @@
       "departure": "Partida",
       "livery": "Pintura",
       "conditions": "Condições",
-      "overweight": "{{amount}} acima do MTOW"
+      "overweight": "{{amount}} acima do máximo",
+      "ofMtow": "de {{max}} máx.",
+      "spare": "{{amount}} livres",
+      "takeoffWeight": "Peso de decolagem",
+      "emptyHint": "A aeronave em si, sem combustível, pessoas ou carga",
+      "payloadHint": "Piloto, passageiros e carga",
+      "fuelHint": "Combustível nos tanques na partida",
+      "maxHint": "Peso máximo de decolagem (MTOW): o mais pesado que a aeronave pode estar ao decolar"
     },
     "startState": {
       "ready": "Pronto",
@@ -1270,7 +1277,20 @@
       "rainy": "Chuva",
       "stormy": "Tempestade",
       "snowy": "Neve",
-      "foggy": "Nevoeiro"
+      "foggy": "Nevoeiro",
+      "realTitle": "Tempo real",
+      "realHint": "METAR ao vivo no aeroporto de partida",
+      "sky": {
+        "thunderstorm": "Trovoadas",
+        "snow": "Neve",
+        "rain": "Chuva",
+        "drizzle": "Garoa",
+        "fog": "Nevoeiro",
+        "overcast": "Encoberto",
+        "cloudy": "Nublado",
+        "partlyCloudy": "Parcialmente nublado",
+        "clear": "Céu limpo"
+      }
     },
     "weatherBuilder": {
       "custom": "Meteorologia personalizada",
@@ -1304,7 +1324,9 @@
       "presets": "Predefinições",
       "custom": "Personalizado",
       "poor": "Fraca",
-      "unlimited": "Ilimitada"
+      "unlimited": "Ilimitada",
+      "customTitle": "Tempo personalizado",
+      "customHint": "Nuvens, vento e visibilidade, camada a camada"
     },
     "weatherDialog": {
       "title": "Definições meteorológicas",

@@ -1239,7 +1239,14 @@
       "departure": "出発",
       "livery": "塗装",
       "conditions": "コンディション",
-      "overweight": "MTOW を {{amount}} 超過"
+      "overweight": "最大を {{amount}} 超過",
+      "ofMtow": "/ 最大 {{max}}",
+      "spare": "残り {{amount}}",
+      "takeoffWeight": "離陸重量",
+      "emptyHint": "燃料・人・貨物を含まない機体そのもの",
+      "payloadHint": "パイロット、乗客、貨物",
+      "fuelHint": "エンジン始動時のタンク内燃料",
+      "maxHint": "最大離陸重量 (MTOW)：離陸時に許される最大の重さ"
     },
     "startState": {
       "ready": "準備完了",
@@ -1270,7 +1277,20 @@
       "rainy": "雨",
       "stormy": "嵐",
       "snowy": "雪",
-      "foggy": "霧"
+      "foggy": "霧",
+      "realTitle": "実際の気象",
+      "realHint": "出発空港のリアルタイム METAR",
+      "sky": {
+        "thunderstorm": "雷雨",
+        "snow": "雪",
+        "rain": "雨",
+        "drizzle": "霧雨",
+        "fog": "霧",
+        "overcast": "曇天",
+        "cloudy": "曇り",
+        "partlyCloudy": "晴れ時々曇り",
+        "clear": "快晴"
+      }
     },
     "weatherBuilder": {
       "custom": "カスタム天候",
@@ -1304,7 +1324,9 @@
       "presets": "プリセット",
       "custom": "カスタム",
       "poor": "悪い",
-      "unlimited": "無制限"
+      "unlimited": "無制限",
+      "customTitle": "カスタム気象",
+      "customHint": "雲・風・視程を層ごとに設定"
     },
     "weatherDialog": {
       "title": "天候設定",

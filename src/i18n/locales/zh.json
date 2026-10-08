@@ -1239,7 +1239,14 @@
       "departure": "出发",
       "livery": "涂装",
       "conditions": "条件",
-      "overweight": "超出 MTOW {{amount}}"
+      "overweight": "超出最大值 {{amount}}",
+      "ofMtow": "/ 最大 {{max}}",
+      "spare": "剩余 {{amount}}",
+      "takeoffWeight": "起飞重量",
+      "emptyHint": "飞机本身，不含燃油、人员和货物",
+      "payloadHint": "飞行员、乘客和货物",
+      "fuelHint": "启动时油箱中的燃油",
+      "maxHint": "最大起飞重量 (MTOW)：起飞时允许的最大重量"
     },
     "startState": {
       "ready": "就绪",
@@ -1270,7 +1277,20 @@
       "rainy": "雨天",
       "stormy": "暴风雨",
       "snowy": "雪天",
-      "foggy": "雾天"
+      "foggy": "雾天",
+      "realTitle": "真实天气",
+      "realHint": "出发机场的实时 METAR",
+      "sky": {
+        "thunderstorm": "雷暴",
+        "snow": "雪",
+        "rain": "雨",
+        "drizzle": "毛毛雨",
+        "fog": "雾",
+        "overcast": "阴天",
+        "cloudy": "多云",
+        "partlyCloudy": "局部多云",
+        "clear": "晴"
+      }
     },
     "weatherBuilder": {
       "custom": "自定义天气",
@@ -1304,7 +1324,9 @@
       "presets": "预设",
       "custom": "自定义",
       "poor": "较差",
-      "unlimited": "无限制"
+      "unlimited": "无限制",
+      "customTitle": "自定义天气",
+      "customHint": "逐层设置云、风和能见度"
     },
     "weatherDialog": {
       "title": "天气设置",

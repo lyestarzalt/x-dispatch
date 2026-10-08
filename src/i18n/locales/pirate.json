@@ -1239,7 +1239,14 @@
       "departure": "Departure Berth",
       "livery": "Paint Scheme",
       "conditions": "Conditions",
-      "overweight": "{{amount}} over what she can lift"
+      "overweight": "{{amount}} over what she can lift",
+      "ofMtow": "of {{max}} at most",
+      "spare": "{{amount}} to spare",
+      "takeoffWeight": "Weight at castin' off",
+      "emptyHint": "The bare ship, no fuel, crew nor cargo",
+      "payloadHint": "Cap'n, crew an' cargo",
+      "fuelHint": "Fuel in the barrels when the engines wake",
+      "maxHint": "Max takeoff weight (MTOW): the heaviest she may be leavin' port"
     },
     "startState": {
       "ready": "Ready fer departure",
@@ -1270,7 +1277,20 @@
       "rainy": "Rain Squalls",
       "stormy": "Storm Fronts",
       "snowy": "Snow Squalls",
-      "foggy": "Thick Fog"
+      "foggy": "Thick Fog",
+      "realTitle": "The real sky",
+      "realHint": "Fresh METAR from yer home port",
+      "sky": {
+        "thunderstorm": "Thunder an' lightnin'",
+        "snow": "Snow",
+        "rain": "Rain",
+        "drizzle": "Drizzle",
+        "fog": "Fog",
+        "overcast": "Grey skies",
+        "cloudy": "Cloudy",
+        "partlyCloudy": "Some clouds",
+        "clear": "Fair skies"
+      }
     },
     "weatherBuilder": {
       "custom": "Custom Skies",
@@ -1304,7 +1324,9 @@
       "presets": "Preset Skies",
       "custom": "Hand-made",
       "poor": "Murky",
-      "unlimited": "Clear horizon"
+      "unlimited": "Clear horizon",
+      "customTitle": "Brew yer own weather",
+      "customHint": "Clouds, wind an' sight, layer by layer"
     },
     "weatherDialog": {
       "title": "Sky Conditions",

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { airSpeedFromMs, isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { type NauticalMiles, metersToFeet } from '@/lib/utils/geomath';
@@ -21,6 +22,7 @@ import { ConditionsCard } from './ConditionsCard';
 import { WeatherDialog } from './WeatherDialog';
 import { WeightBalanceDialog } from './WeightBalanceDialog';
 import { WeightLegendItem } from './WeightLegendItem';
+import { LAUNCH_CHOICE } from './choiceStyle';
 
 /** X-Plane's default air start, 3,000 ft. */
 const DEFAULT_AIR_ALTITUDE_M = 914.4;
@@ -31,10 +33,6 @@ interface FlightConfigProps {
   onLaunch: () => void;
   aircraftList: Aircraft[];
 }
-
-/** Choice buttons: a visible border so they read as pressable, primary when on. */
-const CHOICE =
-  'border-border/60 bg-secondary/40 border hover:border-border hover:bg-secondary hover:text-foreground data-[state=on]:border-primary data-[state=on]:bg-primary/15 data-[state=on]:text-primary';
 
 function getTimezoneOffset(timezone: string): string {
   try {
@@ -180,250 +178,298 @@ export function FlightConfig({
 
   return (
     <div className="border-border/50 bg-card flex w-[22rem] min-w-[320px] shrink-0 flex-col border-l lg:w-[24rem]">
-      <div className="flex-1 space-y-5 overflow-auto p-4">
-        <ConditionsCard
-          coords={airportCoords}
-          timeOfDay={timeOfDay}
-          live={airportTimeInfo}
-          useRealWorldTime={useRealWorldTime}
-          onModeChange={setUseRealWorldTime}
-          onTimeChange={setTimeOfDay}
-          weatherValue={weatherValue}
-          onWeatherChange={(v) => {
-            if (v === 'custom') setWeatherDialogOpen(true);
-            else setWeatherPreset(v);
-          }}
-          customSummary={weatherConfig.mode === 'custom' ? getWeatherSummary(weatherConfig) : null}
-          metarIcao={startPosition?.airport ?? selectedAirportData?.id ?? null}
-        />
-
-        {/* ── Weight & Fuel ──────────────────────────────── */}
-        <section className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="xp-label flex min-w-0 items-center gap-2">
-              <Weight className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t('launcher.weightFuelLabel')}</span>
-            </span>
-            {selectedAircraft && (
-              <Button
-                variant="ghost"
-                size="xs"
-                className="text-muted-foreground hover:text-foreground shrink-0"
-                onClick={() => setWeightDialogOpen(true)}
-              >
-                {t('common.edit')}
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </div>
-          {selectedAircraft && (
-            <>
-              {/* Loading gauge: empty, payload and fuel stacked against the maximum weight */}
-              <div className="bg-muted flex h-2 w-full overflow-hidden rounded-full">
-                <div
-                  className="bg-muted-foreground/50 h-full"
-                  style={{
-                    width: `${(selectedAircraft.emptyWeight / selectedAircraft.maxWeight) * 100}%`,
-                  }}
-                />
-                <div
-                  className="bg-success h-full"
-                  style={{ width: `${(totalPayloadLbs / selectedAircraft.maxWeight) * 100}%` }}
-                />
-                <div
-                  className={cn('h-full', isOverweight ? 'bg-destructive' : 'bg-primary')}
-                  style={{ width: `${(totalFuelLbs / selectedAircraft.maxWeight) * 100}%` }}
-                />
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <span
-                  className={cn(
-                    'font-mono text-xl font-semibold tabular-nums',
-                    isOverweight ? 'text-destructive' : 'text-foreground'
-                  )}
-                >
-                  {units.weight(totalWeight)}
-                </span>
-                <span
-                  className={cn(
-                    'min-w-0 truncate text-xs',
-                    isOverweight ? 'text-destructive' : 'text-muted-foreground'
-                  )}
-                >
-                  {isOverweight
-                    ? t('launcher.config.overweight', {
-                        amount: units.weight(totalWeight - selectedAircraft.maxWeight),
-                      })
-                    : `${t('launcher.specs.maxWeight')} ${units.weight(selectedAircraft.maxWeight)}`}
-                </span>
-              </div>
-              {/* Legend in the gauge's order, one column each so values never wrap */}
-              <dl className="grid grid-cols-3 gap-2 text-xs">
-                <WeightLegendItem
-                  dotClass="bg-muted-foreground/50"
-                  label={t('launcher.specs.emptyWeight')}
-                  value={units.weight(selectedAircraft.emptyWeight)}
-                />
-                <WeightLegendItem
-                  dotClass="bg-success"
-                  label={t('weightBalance.payload')}
-                  value={units.weight(totalPayloadLbs)}
-                />
-                <WeightLegendItem
-                  dotClass={isOverweight ? 'bg-destructive' : 'bg-primary'}
-                  label={t('launcher.config.fuel')}
-                  value={units.weight(totalFuelLbs)}
-                />
-              </dl>
-            </>
-          )}
-        </section>
-
-        {/* ── Start State ────────────────────────────────── */}
-        <section className="space-y-2">
-          <span className="xp-label flex min-w-0 items-center gap-2">
-            <Power className="h-4 w-4 shrink-0" />
-            <span className="truncate">{t('launcher.config.startState')}</span>
-          </span>
-          <ToggleGroup
-            type="single"
-            value={coldAndDark ? 'cold' : 'ready'}
-            onValueChange={(v) => {
-              if (v) setColdAndDark(v === 'cold');
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto">
+        <div className="space-y-5 p-4">
+          <ConditionsCard
+            coords={airportCoords}
+            timeOfDay={timeOfDay}
+            live={airportTimeInfo}
+            useRealWorldTime={useRealWorldTime}
+            onModeChange={setUseRealWorldTime}
+            onTimeChange={setTimeOfDay}
+            weatherValue={weatherValue}
+            onWeatherChange={(v) => {
+              if (v === 'custom') setWeatherDialogOpen(true);
+              else setWeatherPreset(v);
             }}
-            className="grid grid-cols-2 gap-1.5"
-          >
-            <ToggleGroupItem
-              value="ready"
-              className={cn('h-auto gap-1.5 px-2 py-2 text-sm', CHOICE)}
-            >
-              <Power className="h-4 w-4" />
-              <span>{t('launcher.startState.ready')}</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="cold"
-              className={cn('h-auto gap-1.5 px-2 py-2 text-sm', CHOICE)}
-            >
-              <PowerOff className="h-4 w-4" />
-              <span>{t('launcher.startState.cold')}</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </section>
-
-        {/* ── Flight Summary ─────────────────────────────── */}
-        {isAirStart && (
-          <AirStartSpeedInput
-            position={startPosition}
-            onChange={(fields) =>
-              useAppStore.getState().setStartPosition({ ...startPosition, ...fields })
+            customSummary={
+              weatherConfig.mode === 'custom' ? getWeatherSummary(weatherConfig) : null
             }
+            metarIcao={startPosition?.airport ?? selectedAirportData?.id ?? null}
           />
-        )}
-      </div>
 
-      {/* What will launch and the action that launches it, together at the bottom */}
-      <div className="border-border/50 shrink-0 space-y-3 border-t p-4">
-        {/* What will launch: a last look before committing */}
-        <dl className="bg-secondary/50 space-y-1.5 rounded-lg p-3 text-sm">
-          <div className="flex items-start justify-between gap-3">
-            <dt className="xp-label shrink-0">{t('launcher.aircraft.title')}</dt>
-            <dd className="text-foreground min-w-0 text-right">{selectedAircraft?.name || '—'}</dd>
-          </div>
-          <div className="flex items-start justify-between gap-3">
-            <dt className="xp-label shrink-0">{t('launcher.config.livery')}</dt>
-            <dd className="text-foreground min-w-0 truncate text-right">{selectedLivery}</dd>
-          </div>
-          <div className="flex items-start justify-between gap-3">
-            <dt className="xp-label shrink-0">{t('launcher.config.departure')}</dt>
-            <dd className="min-w-0 text-right">
-              {!startPosition ? (
-                <span className="text-muted-foreground">—</span>
-              ) : startPosition.type === 'custom' ? (
-                <>
-                  <span className="text-primary">
-                    {t(`toolbar.pinModes.${startPosition.customStartMode ?? 'ground'}`)}
-                  </span>
-                  <div className="text-muted-foreground font-mono text-xs">
-                    {units.coordinates(startPosition.latitude, startPosition.longitude)}
-                  </div>
-                </>
-              ) : (
-                <span className="text-foreground">
-                  <IcaoCode className="text-primary">{startPosition.airport}</IcaoCode>{' '}
-                  {startPosition.name}
+          {/* ── Weight & Fuel ──────────────────────────────── */}
+          {/* The whole card opens weight & balance: one stretched button under the content */}
+          <section
+            className={cn(
+              'relative space-y-2 rounded-lg border p-3 transition-colors',
+              selectedAircraft
+                ? 'border-border bg-secondary/30 hover:border-primary/40 hover:bg-secondary/60 has-[button:focus-visible]:border-primary'
+                : 'border-border/50'
+            )}
+          >
+            {selectedAircraft && (
+              <button
+                type="button"
+                className="absolute inset-0 rounded-lg focus-visible:outline-none"
+                onClick={() => setWeightDialogOpen(true)}
+                aria-label={`${t('common.edit')}: ${t('launcher.weightFuelLabel')}`}
+              />
+            )}
+            <div className="pointer-events-none relative flex items-center justify-between gap-2">
+              <span className="xp-label flex min-w-0 items-center gap-2">
+                <Weight className="h-4 w-4 shrink-0" />
+                <span className="truncate">{t('launcher.weightFuelLabel')}</span>
+              </span>
+              {selectedAircraft && (
+                <span className="text-primary flex shrink-0 items-center gap-0.5 text-xs font-medium">
+                  {t('common.edit')}
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </span>
               )}
-              {startPosition?.approachDistanceNm != null && (
-                <div className="text-muted-foreground text-xs">
-                  {t('airportInfo.runway.approachNm', {
-                    distance: units.distance(startPosition.approachDistanceNm as NauticalMiles),
-                  })}
+            </div>
+            {selectedAircraft && (
+              <div className="pointer-events-none relative space-y-2">
+                {/* Takeoff weight as a fraction of the maximum, so the bar under it reads as "this much of that" */}
+                <div className="flex items-end justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="xp-label block text-xs">
+                      {t('launcher.config.takeoffWeight')}
+                    </span>
+                    <span className="flex min-w-0 items-baseline gap-1.5">
+                      <span
+                        className={cn(
+                          'font-mono text-xl font-semibold tabular-nums',
+                          isOverweight ? 'text-destructive' : 'text-foreground'
+                        )}
+                      >
+                        {units.weight(totalWeight)}
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-muted-foreground pointer-events-auto cursor-help truncate text-xs underline decoration-dotted underline-offset-2">
+                            {t('launcher.config.ofMtow', {
+                              max: units.weight(selectedAircraft.maxWeight),
+                            })}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-64">
+                          {t('launcher.config.maxHint')}
+                        </TooltipContent>
+                      </Tooltip>
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      'shrink-0 text-xs',
+                      isOverweight ? 'text-destructive font-medium' : 'text-muted-foreground'
+                    )}
+                  >
+                    {isOverweight
+                      ? t('launcher.config.overweight', {
+                          amount: units.weight(totalWeight - selectedAircraft.maxWeight),
+                        })
+                      : t('launcher.config.spare', {
+                          amount: units.weight(selectedAircraft.maxWeight - totalWeight),
+                        })}
+                  </span>
                 </div>
-              )}
-              {startPosition?.towType && (
-                <div className="text-muted-foreground text-xs">
-                  {t('airportInfo.runway.towWith', {
-                    type: t(`airportInfo.runway.${startPosition.towType}`),
-                  })}
-                </div>
-              )}
-              {startPosition?.customStartMode === 'air' && (
-                <div className="text-muted-foreground text-xs">
-                  {units.altitude(
-                    metersToFeet(startPosition.airAltitudeM ?? DEFAULT_AIR_ALTITUDE_M)
+                {/* The outlined track is MTOW; empty, payload and fuel fill it from the left */}
+                <div
+                  className={cn(
+                    'flex h-2.5 w-full overflow-hidden rounded-full border',
+                    isOverweight ? 'border-destructive' : 'border-border'
                   )}
-                  {isValidAirStartSpeed(startPosition.airSpeedMs) &&
-                    ` · ${Math.round(airSpeedFromMs(startPosition.airSpeedMs, startPosition.airSpeedUnit ?? 'kt'))} ${t(`units.${startPosition.airSpeedUnit ?? 'kt'}`)}`}
+                >
+                  <div
+                    className="bg-muted-foreground h-full"
+                    style={{
+                      width: `${(selectedAircraft.emptyWeight / selectedAircraft.maxWeight) * 100}%`,
+                    }}
+                  />
+                  <div
+                    className="bg-success h-full"
+                    style={{ width: `${(totalPayloadLbs / selectedAircraft.maxWeight) * 100}%` }}
+                  />
+                  <div
+                    className={cn('h-full', isOverweight ? 'bg-destructive' : 'bg-primary')}
+                    style={{ width: `${(totalFuelLbs / selectedAircraft.maxWeight) * 100}%` }}
+                  />
                 </div>
-              )}
-              {(startPosition?.customStartMode === 'carrier' ||
-                startPosition?.customStartMode === 'frigate') && (
-                <div className="text-muted-foreground text-xs">
-                  {startPosition.boatPosition
-                    ? t(`toolbar.pinModes.cat_${startPosition.boatPosition}`)
-                    : startPosition.boatApproachNm
-                      ? units.distance(startPosition.boatApproachNm as NauticalMiles)
-                      : ''}
-                </div>
-              )}
-            </dd>
-          </div>
-        </dl>
+                {/* Legend in the gauge's order, one column each so values never wrap */}
+                <dl className="grid grid-cols-3 gap-2 text-xs">
+                  <WeightLegendItem
+                    dotClass="bg-muted-foreground"
+                    label={t('launcher.specs.emptyWeight')}
+                    hint={t('launcher.config.emptyHint')}
+                    value={units.weight(selectedAircraft.emptyWeight)}
+                  />
+                  <WeightLegendItem
+                    dotClass="bg-success"
+                    label={t('weightBalance.payload')}
+                    hint={t('launcher.config.payloadHint')}
+                    value={units.weight(totalPayloadLbs)}
+                  />
+                  <WeightLegendItem
+                    dotClass={isOverweight ? 'bg-destructive' : 'bg-primary'}
+                    label={t('launcher.config.fuel')}
+                    hint={t('launcher.config.fuelHint')}
+                    value={units.weight(totalFuelLbs)}
+                  />
+                </dl>
+              </div>
+            )}
+          </section>
 
-        {launchError && (
-          <Alert variant="destructive" className="p-2">
-            <AlertDescription className="text-sm">{launchError}</AlertDescription>
-          </Alert>
-        )}
+          {/* ── Start State ────────────────────────────────── */}
+          <section className="space-y-2">
+            <span className="xp-label flex min-w-0 items-center gap-2">
+              <Power className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('launcher.config.startState')}</span>
+            </span>
+            <ToggleGroup
+              type="single"
+              value={coldAndDark ? 'cold' : 'ready'}
+              onValueChange={(v) => {
+                if (v) setColdAndDark(v === 'cold');
+              }}
+              className="grid grid-cols-2 gap-1.5"
+            >
+              <ToggleGroupItem
+                value="ready"
+                className={cn('h-auto gap-1.5 px-2 py-2 text-sm', LAUNCH_CHOICE)}
+              >
+                <Power className="h-4 w-4" />
+                <span>{t('launcher.startState.ready')}</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="cold"
+                className={cn('h-auto gap-1.5 px-2 py-2 text-sm', LAUNCH_CHOICE)}
+              >
+                <PowerOff className="h-4 w-4" />
+                <span>{t('launcher.startState.cold')}</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </section>
 
-        <Button
-          data-testid="confirm-launch"
-          onClick={onLaunch}
-          disabled={!selectedAircraft || !startPosition || isLaunching || invalidAirSpeed}
-          className="w-full"
-          size="lg"
-        >
-          {isLaunching ? (
-            <>
-              <Spinner className="" />
-              {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
-            </>
-          ) : isXPlaneRunning ? (
-            t('launcher.changeFlight')
-          ) : (
-            t('launcher.launch')
+          {/* ── Flight Summary ─────────────────────────────── */}
+          {isAirStart && (
+            <AirStartSpeedInput
+              position={startPosition}
+              onChange={(fields) =>
+                useAppStore.getState().setStartPosition({ ...startPosition, ...fields })
+              }
+            />
           )}
-        </Button>
-        {!startPosition && (
-          <p className="text-muted-foreground mt-1.5 text-center text-sm">
-            {t('launcher.selectDeparture')}
-          </p>
-        )}
-        {isXPlaneRunning && (
-          <p className="text-muted-foreground mt-1.5 text-center text-sm">
-            {t('launcher.xplaneRunning')}
-          </p>
-        )}
+        </div>
+
+        {/* What will launch and the button that launches it: right after the settings, and
+            pinned to the bottom edge only when the settings outgrow the panel. */}
+        <div className="border-border/50 bg-card sticky bottom-0 space-y-3 border-t p-4">
+          {/* What will launch: a last look before committing */}
+          <dl className="bg-secondary/50 space-y-1.5 rounded-lg p-3 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <dt className="xp-label shrink-0">{t('launcher.aircraft.title')}</dt>
+              <dd className="text-foreground min-w-0 text-right">
+                {selectedAircraft?.name || '—'}
+              </dd>
+            </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="xp-label shrink-0">{t('launcher.config.livery')}</dt>
+              <dd className="text-foreground min-w-0 truncate text-right">{selectedLivery}</dd>
+            </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="xp-label shrink-0">{t('launcher.config.departure')}</dt>
+              <dd className="min-w-0 text-right">
+                {!startPosition ? (
+                  <span className="text-muted-foreground">—</span>
+                ) : startPosition.type === 'custom' ? (
+                  <>
+                    <span className="text-primary">
+                      {t(`toolbar.pinModes.${startPosition.customStartMode ?? 'ground'}`)}
+                    </span>
+                    <div className="text-muted-foreground font-mono text-xs">
+                      {units.coordinates(startPosition.latitude, startPosition.longitude)}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-foreground">
+                    <IcaoCode className="text-primary">{startPosition.airport}</IcaoCode>{' '}
+                    {startPosition.name}
+                  </span>
+                )}
+                {startPosition?.approachDistanceNm != null && (
+                  <div className="text-muted-foreground text-xs">
+                    {t('airportInfo.runway.approachNm', {
+                      distance: units.distance(startPosition.approachDistanceNm as NauticalMiles),
+                    })}
+                  </div>
+                )}
+                {startPosition?.towType && (
+                  <div className="text-muted-foreground text-xs">
+                    {t('airportInfo.runway.towWith', {
+                      type: t(`airportInfo.runway.${startPosition.towType}`),
+                    })}
+                  </div>
+                )}
+                {startPosition?.customStartMode === 'air' && (
+                  <div className="text-muted-foreground text-xs">
+                    {units.altitude(
+                      metersToFeet(startPosition.airAltitudeM ?? DEFAULT_AIR_ALTITUDE_M)
+                    )}
+                    {isValidAirStartSpeed(startPosition.airSpeedMs) &&
+                      ` · ${Math.round(airSpeedFromMs(startPosition.airSpeedMs, startPosition.airSpeedUnit ?? 'kt'))} ${t(`units.${startPosition.airSpeedUnit ?? 'kt'}`)}`}
+                  </div>
+                )}
+                {(startPosition?.customStartMode === 'carrier' ||
+                  startPosition?.customStartMode === 'frigate') && (
+                  <div className="text-muted-foreground text-xs">
+                    {startPosition.boatPosition
+                      ? t(`toolbar.pinModes.cat_${startPosition.boatPosition}`)
+                      : startPosition.boatApproachNm
+                        ? units.distance(startPosition.boatApproachNm as NauticalMiles)
+                        : ''}
+                  </div>
+                )}
+              </dd>
+            </div>
+          </dl>
+
+          {launchError && (
+            <Alert variant="destructive" className="p-2">
+              <AlertDescription className="text-sm">{launchError}</AlertDescription>
+            </Alert>
+          )}
+
+          <Button
+            data-testid="confirm-launch"
+            onClick={onLaunch}
+            disabled={!selectedAircraft || !startPosition || isLaunching || invalidAirSpeed}
+            className="w-full"
+            size="lg"
+          >
+            {isLaunching ? (
+              <>
+                <Spinner className="" />
+                {isXPlaneRunning ? t('launcher.changingFlight') : t('launcher.launching')}
+              </>
+            ) : isXPlaneRunning ? (
+              t('launcher.changeFlight')
+            ) : (
+              t('launcher.launch')
+            )}
+          </Button>
+          {!startPosition && (
+            <p className="text-muted-foreground mt-1.5 text-center text-sm">
+              {t('launcher.selectDeparture')}
+            </p>
+          )}
+          {isXPlaneRunning && (
+            <p className="text-muted-foreground mt-1.5 text-center text-sm">
+              {t('launcher.xplaneRunning')}
+            </p>
+          )}
+        </div>
       </div>
 
       <WeatherDialog
