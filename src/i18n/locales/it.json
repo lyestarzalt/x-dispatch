@@ -28,7 +28,8 @@
     "online": "online",
     "approved": "Approvato",
     "recommended": "Consigliato",
-    "showAll": "Mostra tutti"
+    "showAll": "Mostra tutti",
+    "undo": "Annulla"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "Pianifica un volo",
     "description": "Scegli partenza e arrivo, scrivi una rotta o vola diretto, poi invia a X-Plane.",
     "sections": {
-      "airports": "Aeroporti",
       "enroute": "In rotta",
       "summary": "Crociera e riepilogo",
       "light": "Luce"
@@ -162,7 +162,6 @@
     "alternateAt": "Alternato · {{value}}",
     "noAlternate": "Nessun alternato",
     "fuel": "Carburante",
-    "liveHint": "La mappa si ridisegna mentre modifichi.",
     "tracks": {
       "title": "Track del Nord Atlantico",
       "auto": "Auto",
@@ -251,7 +250,9 @@
       "tomorrow": "Domani",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Destinazione casuale"
+    "randomDestination": "Destinazione casuale",
+    "planCleared": "Piano cancellato",
+    "routeCleared": "Rotta cancellata"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "In evidenza",
         "random": "Casuale"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Dati da"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "Ritira",
       "noMatch": "Nessun aeroporto corrisponde. Allarga l'intervallo o togli un filtro.",
       "plan": "Pianifica questo volo",
-      "useAsArrival": "Usa come arrivo"
+      "useAsArrival": "Usa come arrivo",
+      "needOrigin": "Scegli prima una partenza."
     }
   },
   "sunArc": {

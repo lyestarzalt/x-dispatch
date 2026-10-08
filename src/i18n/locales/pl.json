@@ -28,7 +28,8 @@
     "online": "online",
     "approved": "Zatwierdzone",
     "recommended": "Zalecane",
-    "showAll": "Pokaż wszystkie"
+    "showAll": "Pokaż wszystkie",
+    "undo": "Cofnij"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "Zaplanuj lot",
     "description": "Wybierz oba lotniska, wpisz trasę lub leć bezpośrednio, a potem wyślij do X-Plane.",
     "sections": {
-      "airports": "Lotniska",
       "enroute": "Trasa",
       "summary": "Przelot i podsumowanie",
       "light": "Światło"
@@ -162,7 +162,6 @@
     "alternateAt": "Zapasowe · {{value}}",
     "noAlternate": "Brak zapasowego",
     "fuel": "Paliwo",
-    "liveHint": "Mapa odświeża się podczas edycji.",
     "tracks": {
       "title": "Tracki północnoatlantyckie",
       "auto": "Auto",
@@ -251,7 +250,9 @@
       "tomorrow": "Jutro",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Losowy cel"
+    "randomDestination": "Losowy cel",
+    "planCleared": "Plan wyczyszczony",
+    "routeCleared": "Trasa wyczyszczona"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Polecane",
         "random": "Losowe"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Dane z"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "Losuj ponownie",
       "noMatch": "Brak pasujących lotnisk. Poszerz zakres lub usuń filtr.",
       "plan": "Zaplanuj ten lot",
-      "useAsArrival": "Ustaw jako przylot"
+      "useAsArrival": "Ustaw jako przylot",
+      "needOrigin": "Najpierw wybierz lotnisko odlotu."
     }
   },
   "sunArc": {

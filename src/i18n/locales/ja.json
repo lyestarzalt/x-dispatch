@@ -28,7 +28,8 @@
     "online": "オンライン",
     "approved": "承認済み",
     "recommended": "推奨",
-    "showAll": "すべて表示"
+    "showAll": "すべて表示",
+    "undo": "元に戻す"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "フライトを計画",
     "description": "出発地と到着地を選び、ルートを入力するか直行にして、X-Planeへ送ります。",
     "sections": {
-      "airports": "空港",
       "enroute": "エンルート",
       "summary": "巡航と概要",
       "light": "日照"
@@ -162,7 +162,6 @@
     "alternateAt": "代替 · {{value}}",
     "noAlternate": "代替空港なし",
     "fuel": "搭載燃料",
-    "liveHint": "編集すると地図が更新されます。",
     "tracks": {
       "title": "北大西洋トラック",
       "auto": "自動",
@@ -251,7 +250,9 @@
       "tomorrow": "明日",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "ランダムな目的地"
+    "randomDestination": "ランダムな目的地",
+    "planCleared": "プランを消去しました",
+    "routeCleared": "ルートを消去しました"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "おすすめ",
         "random": "ランダム"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "データ提供"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "引き直す",
       "noMatch": "該当する空港がありません。範囲を広げるかフィルターを外してください。",
       "plan": "このフライトを計画",
-      "useAsArrival": "到着地に設定"
+      "useAsArrival": "到着地に設定",
+      "needOrigin": "先に出発空港を選んでください。"
     }
   },
   "sunArc": {

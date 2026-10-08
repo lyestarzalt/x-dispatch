@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   type NatDirection,
   cruiseFitsTrack,
@@ -240,8 +241,17 @@ export function TrackPicker({
   return (
     <div className="space-y-2">
       <div className="flex min-w-0 items-center gap-2">
-        <Waves className="text-muted-foreground h-4 w-4 shrink-0" />
-        <Caption>{t('planBuilder.tracks.title')}</Caption>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="flex min-w-0 items-center gap-2">
+              <Waves className="text-muted-foreground h-4 w-4 shrink-0" />
+              <Caption className="underline decoration-dotted underline-offset-4">
+                {t('planBuilder.tracks.title')}
+              </Caption>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-64">{t('planBuilder.tracks.hint')}</TooltipContent>
+        </Tooltip>
         <span className="text-muted-foreground shrink-0 text-xs">
           {t(`planBuilder.tracks.${direction}`)}
         </span>
@@ -288,7 +298,6 @@ export function TrackPicker({
           issues={issues}
         />
       )}
-      <p className="text-muted-foreground text-xs">{t('planBuilder.tracks.hint')}</p>
     </div>
   );
 }

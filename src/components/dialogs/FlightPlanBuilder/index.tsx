@@ -2,11 +2,11 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
-  ArrowDownUp,
-  ArrowRight,
+  ArrowLeftRight,
   CheckCircle2,
   Dices,
   Eraser,
+  type LucideIcon,
   Mountain,
   Pencil,
   PlaneLanding,
@@ -21,7 +21,6 @@ import {
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { IcaoCode } from '@/components/ui/icao-code';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,6 +30,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
+import { formatDuration } from '@/lib/flightRecorder/format';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   estimateFuelKg,
@@ -84,12 +84,6 @@ const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Wind within this many degrees of a runway heading makes it the suggested one. */
 const WIND_SUGGEST_MIN_KT = 4;
-
-function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}:${String(m).padStart(2, '0')}`;
-}
 
 function formatLevel(feet: number | null): string {
   if (feet === null) return '—';
@@ -157,18 +151,23 @@ function CruiseStat({
           className="h-6 w-20 px-1.5 font-mono text-sm tabular-nums"
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(value === null ? '' : String(value));
-            setEditing(true);
-          }}
-          title={t('planBuilder.editCruise')}
-          className="xp-value hover:text-primary flex items-center gap-1 text-left font-semibold tabular-nums"
-        >
-          {formatLevel(value)}
-          <Pencil className="text-muted-foreground h-3.5 w-3.5" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => {
+                setDraft(value === null ? '' : String(value));
+                setEditing(true);
+              }}
+              aria-label={t('planBuilder.editCruise')}
+              className="xp-value hover:text-primary flex items-center gap-1 text-left font-semibold tabular-nums"
+            >
+              {formatLevel(value)}
+              <Pencil className="text-muted-foreground h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('planBuilder.editCruise')}</TooltipContent>
+        </Tooltip>
       )}
     </div>
   );
@@ -183,8 +182,31 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function PlanCard({ children, className }: { children: ReactNode; className?: string }) {
-  return <Card className={cn('bg-secondary/40 p-3', className)}>{children}</Card>;
+function EndpointLabel({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+  return (
+    <div className="xp-label flex min-w-0 items-center gap-2">
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="truncate">{children}</span>
+    </div>
+  );
+}
+
+/** One end of the route in the header: large ICAO over the airport name. */
+function RouteEnd({
+  endpoint,
+  fallback,
+  align = 'left',
+}: {
+  endpoint: { icao: string; name?: string } | null;
+  fallback: string;
+  align?: 'left' | 'right';
+}) {
+  return (
+    <div className={cn('min-w-0 flex-1', align === 'right' && 'text-right')}>
+      <IcaoCode className="block text-2xl font-bold">{endpoint?.icao ?? '----'}</IcaoCode>
+      <div className="text-muted-foreground truncate text-xs">{endpoint?.name ?? fallback}</div>
+    </div>
+  );
 }
 
 function ProblemChip({ token, onRemove }: { token: RouteToken; onRemove: () => void }) {
@@ -275,6 +297,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
   const reset = usePlanBuilderStore((s) => s.reset);
+  const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
   const departure = usePlanBuilderStore((s) => s.departure);
   const arrival = usePlanBuilderStore((s) => s.arrival);
   const routeText = usePlanBuilderStore((s) => s.routeText);
@@ -576,6 +599,21 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     }
   };
 
+  // Starting over and clearing the route are one click, so each offers an undo instead of a prompt.
+  const handleNewPlan = () => {
+    const previous = reset();
+    toast(t('planBuilder.planCleared'), {
+      action: { label: t('common.undo'), onClick: () => restoreDraft(previous) },
+    });
+  };
+  const handleClearRoute = () => {
+    const previous = routeText;
+    setRouteText('');
+    toast(t('planBuilder.routeCleared'), {
+      action: { label: t('common.undo'), onClick: () => setRouteText(previous) },
+    });
+  };
+
   if (!isOpen) return null;
 
   const routeStatus = !hasEndpoints ? (
@@ -614,35 +652,30 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
       )}
     >
       <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-2xl border shadow-xl backdrop-blur-sm">
-        <header className="border-border/30 border-b px-4 pt-3 pb-3">
-          <div className="flex items-center justify-between">
+        <header className="border-border/30 space-y-3 border-b px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <Route className="text-primary h-4 w-4 shrink-0" />
               <span className="truncate text-sm font-medium">{t('planBuilder.title')}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className={
-                      randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                    }
-                    onClick={() => setRandomOpen((open) => !open)}
-                    aria-label={t('planBuilder.randomDestination')}
-                    aria-pressed={randomOpen}
-                  >
-                    <Dices className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('planBuilder.randomDestination')}</TooltipContent>
-              </Tooltip>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className={
+                  randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }
+                onClick={() => setRandomOpen((open) => !open)}
+                tooltip={t('planBuilder.randomDestination')}
+                aria-pressed={randomOpen}
+              >
+                <Dices className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="xs"
                 className="text-muted-foreground hover:text-foreground"
-                onClick={reset}
+                onClick={handleNewPlan}
                 disabled={!departure && !arrival && !routeText}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -653,37 +686,36 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground"
                 onClick={close}
-                aria-label={t('common.close')}
+                tooltip={t('common.close')}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="mt-3 flex items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <IcaoCode className="block text-2xl font-bold">{departure?.icao ?? '----'}</IcaoCode>
-              <div className="text-muted-foreground truncate text-xs">
-                {departure?.name ?? t('planBuilder.departure')}
-              </div>
-            </div>
-            <ArrowRight className="text-muted-foreground/60 h-5 w-5 shrink-0" />
-            <div className="min-w-0 flex-1 text-right">
-              <IcaoCode className="block text-2xl font-bold">{arrival?.icao ?? '----'}</IcaoCode>
-              <div className="text-muted-foreground truncate text-xs">
-                {arrival?.name ?? t('planBuilder.arrival')}
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <RouteEnd endpoint={departure} fallback={t('planBuilder.departure')} />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground shrink-0"
+              onClick={swapEndpoints}
+              disabled={!departure && !arrival}
+              tooltip={t('planBuilder.swap')}
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+            </Button>
+            <RouteEnd endpoint={arrival} fallback={t('planBuilder.arrival')} align="right" />
           </div>
 
-          <div className="mt-3 grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <Stat
               label={t('planBuilder.distance')}
               value={ready ? units.distance(distanceNm as NauticalMiles) : '—'}
             />
             <Stat
               label={t('planBuilder.ete')}
-              value={ready ? formatMinutes(estimateMinutes(distanceNm, cls)) : '—'}
+              value={ready ? formatDuration(estimateMinutes(distanceNm, cls) * 60) : '—'}
             />
             <CruiseStat
               label={t('planBuilder.cruiseShort')}
@@ -696,7 +728,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             />
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
             <ToggleGroup
               type="single"
@@ -719,15 +751,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         </header>
 
         <ScrollArea className="min-h-0 flex-1">
-          <div className="space-y-5 px-4 py-4">
-            <Section title={t('planBuilder.sections.airports')}>
-              <PlanCard className="border-l-success space-y-3 border-l-2">
-                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <span className="bg-success/15 text-success flex h-7 w-7 shrink-0 items-center justify-center rounded-sm">
-                    <PlaneTakeoff className="h-4 w-4" />
-                  </span>
-                  <span className="truncate">{t('planBuilder.departure')}</span>
-                </div>
+          <div className="space-y-5 p-4">
+            <div className="space-y-3">
+              <section className="border-border space-y-3 rounded-lg border p-3">
+                <EndpointLabel icon={PlaneTakeoff}>{t('planBuilder.departure')}</EndpointLabel>
                 <AirportPicker
                   airports={airports}
                   value={departure}
@@ -763,28 +790,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     />
                   </>
                 )}
-              </PlanCard>
+              </section>
 
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={swapEndpoints}
-                  disabled={!departure && !arrival}
-                >
-                  <ArrowDownUp className="h-4 w-4" />
-                  {t('planBuilder.swap')}
-                </Button>
-              </div>
-
-              <PlanCard className="border-l-warning space-y-3 border-l-2">
-                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <span className="bg-warning/15 text-warning flex h-7 w-7 shrink-0 items-center justify-center rounded-sm">
-                    <PlaneLanding className="h-4 w-4" />
-                  </span>
-                  <span className="truncate">{t('planBuilder.arrival')}</span>
-                </div>
+              <section className="border-border space-y-3 rounded-lg border p-3">
+                <EndpointLabel icon={PlaneLanding}>{t('planBuilder.arrival')}</EndpointLabel>
                 <AirportPicker
                   airports={airports}
                   value={arrival}
@@ -848,70 +857,67 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     </Field>
                   </>
                 )}
-              </PlanCard>
-            </Section>
+              </section>
+            </div>
 
             <Section title={t('planBuilder.sections.enroute')}>
-              <PlanCard className="space-y-3">
-                <Textarea
-                  value={routeText}
-                  onChange={(e) => handleRouteTyped(e.target.value)}
-                  placeholder={t('planBuilder.routePlaceholder')}
-                  className="[field-sizing:content] max-h-36 min-h-[3.25rem] resize-none overflow-y-auto font-mono text-sm leading-6 tracking-wide uppercase"
-                  spellCheck={false}
-                />
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <div className="min-w-0 truncate">{routeStatus}</div>
-                  <div className="flex shrink-0 gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setRouteText('')}
-                      disabled={routeText.length === 0}
-                    >
-                      <Eraser className="h-3.5 w-3.5" />
-                      {t('planBuilder.clear')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAutoRoute}
-                      disabled={!hasEndpoints || autoRouting}
-                    >
-                      {autoRouting ? (
-                        <Spinner className="size-3.5" />
-                      ) : (
-                        <Wand2 className="h-3.5 w-3.5" />
-                      )}
-                      {autoRouting ? t('planBuilder.autoRouting') : t('planBuilder.autoRoute')}
-                    </Button>
-                  </div>
+              <Textarea
+                value={routeText}
+                onChange={(e) => handleRouteTyped(e.target.value)}
+                placeholder={t('planBuilder.routePlaceholder')}
+                className="[field-sizing:content] max-h-36 min-h-[3.25rem] resize-none overflow-y-auto font-mono text-sm leading-6 tracking-wide uppercase"
+                spellCheck={false}
+              />
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <div className="min-w-0 truncate">{routeStatus}</div>
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={handleClearRoute}
+                    disabled={routeText.length === 0}
+                  >
+                    <Eraser className="h-3.5 w-3.5" />
+                    {t('planBuilder.clear')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={handleAutoRoute}
+                    disabled={!hasEndpoints || autoRouting}
+                  >
+                    {autoRouting ? (
+                      <Spinner className="size-3.5" />
+                    ) : (
+                      <Wand2 className="h-3.5 w-3.5" />
+                    )}
+                    {autoRouting ? t('planBuilder.autoRouting') : t('planBuilder.autoRoute')}
+                  </Button>
                 </div>
-                {crossing && natFeed && (
-                  <TrackPicker
-                    feed={natFeed}
-                    direction={crossing}
-                    selected={selectedTrack}
-                    cruiseAltitudeFt={cruiseAltitudeFt}
-                    issues={routeIssues}
-                    disabled={autoRouting}
-                    onPick={(track) => void handlePickTrack(track)}
-                  />
-                )}
-                {problems.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="xp-label">{t('planBuilder.notUsed')}</span>
-                    {problems.map(({ token, index }) => (
-                      <ProblemChip
-                        key={`${token.text}-${index}`}
-                        token={token}
-                        onRemove={() => removeRouteToken(index)}
-                      />
-                    ))}
-                  </div>
-                )}
-                <p className="text-muted-foreground text-xs">{t('planBuilder.liveHint')}</p>
-              </PlanCard>
+              </div>
+              {crossing && natFeed && (
+                <TrackPicker
+                  feed={natFeed}
+                  direction={crossing}
+                  selected={selectedTrack}
+                  cruiseAltitudeFt={cruiseAltitudeFt}
+                  issues={routeIssues}
+                  disabled={autoRouting}
+                  onPick={(track) => void handlePickTrack(track)}
+                />
+              )}
+              {problems.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="xp-label">{t('planBuilder.notUsed')}</span>
+                  {problems.map(({ token, index }) => (
+                    <ProblemChip
+                      key={`${token.text}-${index}`}
+                      token={token}
+                      onRemove={() => removeRouteToken(index)}
+                    />
+                  ))}
+                </div>
+              )}
             </Section>
 
             {isOpen && ready && departure && arrival && (
@@ -925,56 +931,51 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </div>
         </ScrollArea>
 
-        <footer className="border-border/30 flex flex-col items-end gap-2 border-t px-4 py-3">
-          {savedPath && (
-            <Badge
-              variant="success"
-              className="max-w-full min-w-0 gap-1.5 font-mono"
-              title={savedPath}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{savedPath.split(/[\\/]/).pop()}</span>
-            </Badge>
-          )}
-          <div className="flex gap-2">
-            <Button
-              variant={profileStripOpen ? 'secondary' : 'outline'}
-              size="icon-sm"
-
-              onClick={() => setProfileStripOpen(!profileStripOpen)}
-              disabled={!ready}
-              aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
-              title={profileStripOpen ? t('profile.hide') : t('profile.show')}
-            >
-              <Mountain className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                startAtDeparture();
-                markVisit({ startSet: true });
-              }}
-              disabled={!departure}
-            >
-              <PlaneTakeoff className="h-3.5 w-3.5" />
-              {t('planBuilder.setStart')}
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={!ready || saving}>
-              <Save className="h-3.5 w-3.5" />
-              {t('planBuilder.save')}
-            </Button>
+        <footer className="border-border/30 flex items-center gap-2 border-t px-4 py-3">
+          <div className="min-w-0 flex-1">
+            {savedPath && (
+              <span
+                className="text-success flex min-w-0 items-center gap-1.5 text-xs"
+                title={savedPath}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate font-mono">{savedPath.split(/[\\/]/).pop()}</span>
+              </span>
+            )}
           </div>
+          <Button
+            variant={profileStripOpen ? 'secondary' : 'outline'}
+            size="icon-sm"
+            className="shrink-0"
+            onClick={() => setProfileStripOpen(!profileStripOpen)}
+            disabled={!ready}
+            tooltip={profileStripOpen ? t('profile.hide') : t('profile.show')}
+          >
+            <Mountain className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="xs"
+            className="shrink-0"
+            onClick={() => {
+              startAtDeparture();
+              markVisit({ startSet: true });
+            }}
+            disabled={!departure}
+          >
+            <PlaneTakeoff className="h-3.5 w-3.5" />
+            {t('planBuilder.setStart')}
+          </Button>
+          <Button size="xs" className="shrink-0" onClick={handleSave} disabled={!ready || saving}>
+            <Save className="h-3.5 w-3.5" />
+            {t('planBuilder.save')}
+          </Button>
         </footer>
       </div>
       {randomOpen && (
         <RandomDestinationPanel
           airports={airports}
           aircraftClass={cls}
-          onAircraftClassChange={(next) => {
-            setAircraftClass(next);
-            rerouteAfterCruise.current = true;
-          }}
           onArrivalPicked={(icao) => markVisit({ randomArrival: icao })}
           onClose={() => setRandomOpen(false)}
           className="absolute top-0 bottom-0 left-full ml-2 w-80"

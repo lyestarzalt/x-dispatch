@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import {
   ChevronRight,
   Dices,
-  Map as MapIcon,
   PlaneLanding,
   Radio,
+  Route as RouteIcon,
   SlidersHorizontal,
 } from 'lucide-react';
 import { AirportPicker, toEndpoint } from '@/components/dialogs/FlightPlanBuilder/AirportPicker';
@@ -16,7 +16,6 @@ import { IcaoCode } from '@/components/ui/icao-code';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { formatDuration } from '@/lib/flightRecorder/format';
 import { minutesToNm } from '@/lib/flightplan/builder/geometry';
@@ -55,14 +54,12 @@ interface RandomRouteFinderProps {
   selectedRoute: { from: string; to: string } | null;
   onSelectRoute: (route: { from: string; to: string } | null) => void;
   /**
-   * Hosted by the plan builder: origin and class follow the plan and the row action
-   * sets the arrival. Left out, the finder keeps its own and opens the plan builder.
+   * Hosted by the plan builder: origin and class are the plan's (edited there) and the row
+   * action sets the arrival. Left out, the finder keeps its own and opens the plan builder.
    */
   plan?: {
     originIcao: string | null;
-    onOriginChange: (airport: Airport | null) => void;
     aircraftClass: RangeRingCategory;
-    onAircraftClassChange: (cls: RangeRingCategory) => void;
     onPick: (destination: Airport) => void;
   };
 }
@@ -82,7 +79,6 @@ export function RandomRouteFinder({
   const [ownCls, setOwnCls] = useState<RangeRingCategory>(() => planningClass(aircraftCategory));
   const originIcao = plan ? plan.originIcao : ownOriginIcao;
   const cls = plan ? plan.aircraftClass : ownCls;
-  const setCls = plan ? plan.onAircraftClassChange : setOwnCls;
   const [mode, setMode] = useState<LengthMode>('time');
   const [range, setRange] = useState<number[]>(LENGTH_RANGE.time.init);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -121,11 +117,6 @@ export function RandomRouteFinder({
     setMode(next as LengthMode);
     setRange(LENGTH_RANGE[next as LengthMode].init);
   };
-
-  const toggleWeather = (key: WeatherCategory) =>
-    setWeather((current) =>
-      current.includes(key) ? current.filter((w) => w !== key) : [...current, key]
-    );
 
   const roll = () => {
     if (!origin) return;
@@ -172,37 +163,52 @@ export function RandomRouteFinder({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1.5">
-        <span className="xp-label">{t('explorePanel.random.from')}</span>
-        <AirportPicker
-          airports={airports}
-          value={origin ? toEndpoint(origin) : null}
-          placeholder={t('explorePanel.random.pickOrigin')}
-          onChange={(endpoint) => {
-            const airport = endpoint ? (airportsByIcao.get(endpoint.icao) ?? null) : null;
-            if (plan) plan.onOriginChange(airport);
-            else setOwnOriginIcao(airport?.icao ?? null);
-            setResults(null);
-          }}
-        />
-      </div>
+      {plan ? (
+        // Hosted by the plan builder: origin and class are the plan's, edited there.
+        <p className="xp-label flex min-w-0 items-center gap-1.5">
+          <span className="shrink-0">{t('explorePanel.random.from')}</span>
+          {origin ? (
+            <>
+              <IcaoCode className="text-sm">{origin.icao}</IcaoCode>
+              <span className="truncate">· {t(`planBuilder.class.${cls}`)}</span>
+            </>
+          ) : (
+            <span className="truncate">{t('explorePanel.random.needOrigin')}</span>
+          )}
+        </p>
+      ) : (
+        <>
+          <div className="space-y-1.5">
+            <span className="xp-label">{t('explorePanel.random.from')}</span>
+            <AirportPicker
+              airports={airports}
+              value={origin ? toEndpoint(origin) : null}
+              placeholder={t('explorePanel.random.pickOrigin')}
+              onChange={(endpoint) => {
+                setOwnOriginIcao(endpoint?.icao ?? null);
+                setResults(null);
+              }}
+            />
+          </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <span className="xp-label min-w-0 truncate">{t('explorePanel.random.aircraft')}</span>
-        <ToggleGroup
-          type="single"
-          size="xs"
-          variant="outline"
-          value={cls}
-          onValueChange={(v) => v && setCls(v as RangeRingCategory)}
-        >
-          {CLASSES.map((c) => (
-            <ToggleGroupItem key={c} value={c}>
-              {t(`planBuilder.class.${c}`)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="xp-label min-w-0 truncate">{t('explorePanel.random.aircraft')}</span>
+            <ToggleGroup
+              type="single"
+              size="xs"
+              variant="outline"
+              value={cls}
+              onValueChange={(v) => v && setOwnCls(v as RangeRingCategory)}
+            >
+              {CLASSES.map((c) => (
+                <ToggleGroupItem key={c} value={c}>
+                  {t(`planBuilder.class.${c}`)}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+        </>
+      )}
 
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2">
@@ -216,7 +222,9 @@ export function RandomRouteFinder({
             <ToggleGroupItem value="time">{t('explorePanel.random.time')}</ToggleGroupItem>
             <ToggleGroupItem value="distance">{t('explorePanel.random.distance')}</ToggleGroupItem>
           </ToggleGroup>
-          <span className="xp-value truncate text-xs">{rangeLabel}</span>
+          <span className="text-foreground truncate font-mono text-xs tabular-nums">
+            {rangeLabel}
+          </span>
         </div>
         <Slider
           value={range}
@@ -269,28 +277,24 @@ export function RandomRouteFinder({
 
           <div className="space-y-1.5">
             <span className="xp-label">{t('explorePanel.random.weather')}</span>
-            <div className="flex flex-wrap gap-1">
+            <ToggleGroup
+              type="multiple"
+              size="xs"
+              variant="outline"
+              value={weather}
+              onValueChange={(v) => setWeather(v as WeatherCategory[])}
+              className="flex-wrap justify-start"
+            >
               {WEATHER_CATEGORIES.map((key) => {
                 const Icon = WEATHER_CATEGORY_ICON[key];
-                const on = weather.includes(key);
                 return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => toggleWeather(key)}
-                    className={cn(
-                      'flex items-center gap-1 rounded-full border px-2 py-1 text-xs transition-colors',
-                      on
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border/40 text-muted-foreground hover:bg-muted/50'
-                    )}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
+                  <ToggleGroupItem key={key} value={key}>
+                    <Icon />
                     {t(`explore.weather.categories.${key}`)}
-                  </button>
+                  </ToggleGroupItem>
                 );
               })}
-            </div>
+            </ToggleGroup>
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -299,6 +303,11 @@ export function RandomRouteFinder({
         <Dices className="h-4 w-4" />
         {results ? t('explorePanel.random.reroll') : t('explorePanel.random.roll')}
       </Button>
+      {!origin && !plan && (
+        <p className="text-muted-foreground text-center text-xs">
+          {t('explorePanel.random.needOrigin')}
+        </p>
+      )}
 
       {results && results.length === 0 && (
         <p className="text-muted-foreground py-4 text-center text-xs">
@@ -341,29 +350,37 @@ export function RandomRouteFinder({
                     {formatDuration(route.minutes * 60)}
                     {route.weather.slice(0, 3).map((w) => {
                       const Icon = WEATHER_CATEGORY_ICON[w];
-                      return <Icon key={w} className="h-3.5 w-3.5" />;
+                      return (
+                        <Icon
+                          key={w}
+                          role="img"
+                          aria-label={t(`explore.weather.categories.${w}`)}
+                          className="h-3.5 w-3.5"
+                        />
+                      );
                     })}
-                    {route.staffed && <Radio className="text-success h-3.5 w-3.5" />}
+                    {route.staffed && (
+                      <Radio
+                        role="img"
+                        aria-label={t('explorePanel.random.atcOnly')}
+                        className="text-success h-3.5 w-3.5"
+                      />
+                    )}
                   </span>
                 </button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="shrink-0"
-                      onClick={() => pick(route.airport)}
-                      aria-label={actionLabel}
-                    >
-                      {plan ? (
-                        <PlaneLanding className="h-3.5 w-3.5" />
-                      ) : (
-                        <MapIcon className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{actionLabel}</TooltipContent>
-                </Tooltip>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0"
+                  onClick={() => pick(route.airport)}
+                  tooltip={actionLabel}
+                >
+                  {plan ? (
+                    <PlaneLanding className="h-3.5 w-3.5" />
+                  ) : (
+                    <RouteIcon className="h-3.5 w-3.5" />
+                  )}
+                </Button>
               </div>
             );
           })}

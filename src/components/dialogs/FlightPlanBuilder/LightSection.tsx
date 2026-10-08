@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import tzlookup from 'tz-lookup';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import {
@@ -105,7 +104,8 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
     [arrival.latitude, arrival.longitude]
   );
 
-  const [open, setOpen] = useState(true);
+  // Secondary detail: closed until asked for, so the planner opens on the route itself.
+  const [open, setOpen] = useState(false);
   const [nowMs, setNowMs] = useState(minuteNow);
   // Start from what the launcher would use, so the two screens agree.
   const [takeoffMs, setTakeoffMs] = useState(() =>
@@ -181,48 +181,48 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <section className="space-y-3">
-        <CollapsibleTrigger className="group xp-section-heading hover:text-foreground flex w-full items-center gap-1 text-left transition-colors">
-          {t('planBuilder.sections.light')}
-          <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+        <CollapsibleTrigger className="group xp-section-heading hover:text-foreground flex w-full items-center gap-2 text-left transition-colors">
+          <span className="min-w-0 truncate">{t('planBuilder.sections.light')}</span>
+          <ChevronRight className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90" />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <Card className="bg-secondary/40 space-y-3 p-3">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="xp-label shrink-0">{t('planBuilder.light.takeoff')}</span>
+              <span className="xp-label min-w-0 truncate">{t('planBuilder.light.takeoff')}</span>
               <TimeInput value={formatInZone(takeoffMs, depTz)} onCommit={onTimeInput} />
               {isTomorrow && (
-                <span className="text-muted-foreground truncate text-xs">
+                <span className="text-muted-foreground min-w-0 truncate text-xs">
                   {t('planBuilder.light.tomorrow')}
                 </span>
               )}
               <Button
                 variant="ghost"
-                size="sm"
+                size="xs"
+                className="ml-auto shrink-0"
                 onClick={() => setTakeoffMs(nowMs)}
                 disabled={takeoffMs === nowMs}
               >
                 {t('planBuilder.light.now')}
               </Button>
-              <div className="flex-1" />
-              <Select
-                value={activeGoal}
-                onValueChange={(goal) => {
-                  const solved = goals[goal as LightGoal];
-                  if (solved !== null && solved !== undefined) setTakeoffMs(solved);
-                }}
-              >
-                <SelectTrigger className="h-7 w-auto min-w-0 gap-1 text-xs">
-                  <SelectValue placeholder={t('planBuilder.light.planFor')} />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  {LIGHT_GOALS.map((goal) => (
-                    <SelectItem key={goal} value={goal} disabled={goals[goal] === null}>
-                      {t(`planBuilder.light.goal.${goal}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
+            <Select
+              value={activeGoal}
+              onValueChange={(goal) => {
+                const solved = goals[goal as LightGoal];
+                if (solved !== null && solved !== undefined) setTakeoffMs(solved);
+              }}
+            >
+              <SelectTrigger className="h-8 w-full text-xs">
+                <SelectValue placeholder={t('planBuilder.light.planFor')} />
+              </SelectTrigger>
+              <SelectContent>
+                {LIGHT_GOALS.map((goal) => (
+                  <SelectItem key={goal} value={goal} disabled={goals[goal] === null}>
+                    {t(`planBuilder.light.goal.${goal}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <div className="flex items-center gap-2">
               <Endpoint
@@ -273,7 +273,7 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
                 align="right"
               />
             </div>
-          </Card>
+          </div>
         </CollapsibleContent>
       </section>
     </Collapsible>

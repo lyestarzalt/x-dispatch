@@ -28,7 +28,8 @@
     "online": "online",
     "approved": "Approved",
     "recommended": "Recommended",
-    "showAll": "Show all"
+    "showAll": "Show all",
+    "undo": "Undo"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "Plan a flight",
     "description": "Pick both ends, type a route or fly direct, then send it to X-Plane.",
     "sections": {
-      "airports": "Airports",
       "enroute": "Enroute",
       "summary": "Cruise and summary",
       "light": "Light"
@@ -162,7 +162,6 @@
     "alternateAt": "Alternate · {{value}}",
     "noAlternate": "No alternate",
     "fuel": "Block fuel",
-    "liveHint": "The map redraws as you edit.",
     "tracks": {
       "title": "North Atlantic tracks",
       "auto": "Auto",
@@ -251,7 +250,9 @@
       "tomorrow": "Tomorrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Random destination"
+    "randomDestination": "Random destination",
+    "planCleared": "Plan cleared",
+    "routeCleared": "Route cleared"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Featured",
         "random": "Random"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Data from"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "Reroll",
       "noMatch": "No airports match. Widen the range or drop a filter.",
       "plan": "Plan this flight",
-      "useAsArrival": "Use as arrival"
+      "useAsArrival": "Use as arrival",
+      "needOrigin": "Pick a departure first."
     }
   },
   "sunArc": {

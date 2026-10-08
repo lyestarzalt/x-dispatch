@@ -14,7 +14,6 @@ import { toEndpoint } from './AirportPicker';
 interface RandomDestinationPanelProps {
   airports: Airport[];
   aircraftClass: RangeRingCategory;
-  onAircraftClassChange: (cls: RangeRingCategory) => void;
   /** An airport from the panel became the plan's arrival. */
   onArrivalPicked: (icao: string) => void;
   onClose: () => void;
@@ -25,14 +24,12 @@ interface RandomDestinationPanelProps {
 export function RandomDestinationPanel({
   airports,
   aircraftClass,
-  onAircraftClassChange,
   onArrivalPicked,
   onClose,
   className,
 }: RandomDestinationPanelProps) {
   const { t } = useTranslation();
   const departure = usePlanBuilderStore((s) => s.departure);
-  const setDeparture = usePlanBuilderStore((s) => s.setDeparture);
   const setArrival = usePlanBuilderStore((s) => s.setArrival);
   const selectedRoute = useMapStore((s) => s.explore.selectedRoute);
   const setSelectedRoute = useMapStore((s) => s.setSelectedRoute);
@@ -57,7 +54,7 @@ export function RandomDestinationPanel({
           size="icon-sm"
           className="text-muted-foreground hover:text-foreground"
           onClick={onClose}
-          aria-label={t('common.close')}
+          tooltip={t('common.close')}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -70,9 +67,7 @@ export function RandomDestinationPanel({
             onSelectRoute={setSelectedRoute}
             plan={{
               originIcao: departure?.icao ?? null,
-              onOriginChange: (airport) => setDeparture(airport ? toEndpoint(airport) : null),
               aircraftClass,
-              onAircraftClassChange,
               onPick: (destination) => {
                 setSelectedRoute(null);
                 setArrival(toEndpoint(destination));

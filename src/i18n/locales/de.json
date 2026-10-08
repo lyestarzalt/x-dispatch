@@ -28,7 +28,8 @@
     "online": "online",
     "approved": "Genehmigt",
     "recommended": "Empfohlen",
-    "showAll": "Alle anzeigen"
+    "showAll": "Alle anzeigen",
+    "undo": "Rückgängig"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "Flug planen",
     "description": "Start und Ziel wählen, Route eingeben oder direkt fliegen, dann an X-Plane senden.",
     "sections": {
-      "airports": "Flughäfen",
       "enroute": "Streckenflug",
       "summary": "Reiseflug und Übersicht",
       "light": "Licht"
@@ -162,7 +162,6 @@
     "alternateAt": "Ausweich · {{value}}",
     "noAlternate": "Kein Ausweichflughafen",
     "fuel": "Blockkraftstoff",
-    "liveHint": "Die Karte zeichnet beim Bearbeiten neu.",
     "tracks": {
       "title": "Nordatlantik-Tracks",
       "auto": "Auto",
@@ -251,7 +250,9 @@
       "tomorrow": "Morgen",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Zufallsziel"
+    "randomDestination": "Zufallsziel",
+    "planCleared": "Plan geleert",
+    "routeCleared": "Route geleert"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Empfohlen",
         "random": "Zufall"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Daten von"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "Neu würfeln",
       "noMatch": "Keine passenden Flughäfen. Bereich erweitern oder Filter entfernen.",
       "plan": "Diesen Flug planen",
-      "useAsArrival": "Als Ziel verwenden"
+      "useAsArrival": "Als Ziel verwenden",
+      "needOrigin": "Wähle zuerst einen Abflughafen."
     }
   },
   "sunArc": {

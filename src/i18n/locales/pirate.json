@@ -28,7 +28,8 @@
     "online": "aboard",
     "approved": "Stamped aye",
     "recommended": "Cap'n's pick",
-    "showAll": "Show all of 'em"
+    "showAll": "Show all of 'em",
+    "undo": "Belay that"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "Chart a Voyage",
     "description": "Pick both harbors, scrawl a route or sail straight, then send it to X-Plane.",
     "sections": {
-      "airports": "Harbors",
       "enroute": "Open Sea",
       "summary": "Cruisin' an' Tally",
       "light": "Sunlight"
@@ -162,7 +162,6 @@
     "alternateAt": "Safe harbour · {{value}}",
     "noAlternate": "No safe harbour",
     "fuel": "Grog in the tanks",
-    "liveHint": "The chart redraws as ye scribble.",
     "tracks": {
       "title": "North Atlantic tracks",
       "auto": "Auto",
@@ -251,7 +250,9 @@
       "tomorrow": "On the morrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Lucky port"
+    "randomDestination": "Lucky port",
+    "planCleared": "Chart wiped clean",
+    "routeCleared": "Course wiped"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "Treasured",
         "random": "Lucky Dip"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Charts from"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "Roll again",
       "noMatch": "No port fits, matey. Widen yer range or drop a sieve.",
       "plan": "Chart this voyage",
-      "useAsArrival": "Make it yer landfall"
+      "useAsArrival": "Make it yer landfall",
+      "needOrigin": "Pick yer port o' departure first."
     }
   },
   "sunArc": {

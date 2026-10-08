@@ -28,7 +28,8 @@
     "online": "en ligne",
     "approved": "Approuvé",
     "recommended": "Recommandé",
-    "showAll": "Tout afficher"
+    "showAll": "Tout afficher",
+    "undo": "Annuler"
   },
   "units": {
     "ft": "ft",
@@ -140,7 +141,6 @@
     "title": "Planifier un vol",
     "description": "Choisissez départ et arrivée, saisissez une route ou volez direct, puis envoyez à X-Plane.",
     "sections": {
-      "airports": "Aéroports",
       "enroute": "En route",
       "summary": "Croisière et résumé",
       "light": "Jour"
@@ -162,7 +162,6 @@
     "alternateAt": "Dégagement · {{value}}",
     "noAlternate": "Aucun dégagement",
     "fuel": "Carburant bloc",
-    "liveHint": "La carte se redessine pendant l'édition.",
     "tracks": {
       "title": "Tracks de l'Atlantique Nord",
       "auto": "Auto",
@@ -251,7 +250,9 @@
       "tomorrow": "Demain",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Destination aléatoire"
+    "randomDestination": "Destination aléatoire",
+    "planCleared": "Plan effacé",
+    "routeCleared": "Route effacée"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "À la une",
         "random": "Aléatoire"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "Données de"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "Relancer",
       "noMatch": "Aucun aéroport ne correspond. Élargissez la plage ou retirez un filtre.",
       "plan": "Planifier ce vol",
-      "useAsArrival": "Utiliser comme arrivée"
+      "useAsArrival": "Utiliser comme arrivée",
+      "needOrigin": "Choisissez d'abord un départ."
     }
   },
   "sunArc": {

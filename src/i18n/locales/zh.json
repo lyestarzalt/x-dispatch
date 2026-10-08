@@ -28,7 +28,8 @@
     "online": "在线",
     "approved": "已批准",
     "recommended": "推荐",
-    "showAll": "显示全部"
+    "showAll": "显示全部",
+    "undo": "撤销"
   },
   "units": {
     "ft": "英尺",
@@ -140,7 +141,6 @@
     "title": "规划航班",
     "description": "选择起降机场，输入航路或直飞，然后发送到 X-Plane。",
     "sections": {
-      "airports": "机场",
       "enroute": "航路",
       "summary": "巡航与摘要",
       "light": "光照"
@@ -162,7 +162,6 @@
     "alternateAt": "备降 · {{value}}",
     "noAlternate": "无备降机场",
     "fuel": "总油量",
-    "liveHint": "编辑时地图会实时重绘。",
     "tracks": {
       "title": "北大西洋航迹",
       "auto": "自动",
@@ -251,7 +250,9 @@
       "tomorrow": "明天",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "随机目的地"
+    "randomDestination": "随机目的地",
+    "planCleared": "计划已清除",
+    "routeCleared": "航路已清除"
   },
   "toolbar": {
     "clock": {
@@ -1901,14 +1902,12 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→",
       "mode": {
         "featured": "精选",
         "random": "随机"
       }
     },
     "vatsimEvents": {
-      "arrow": "→",
       "dataFrom": "数据来自"
     },
     "random": {
@@ -1931,7 +1930,8 @@
       "reroll": "重新抽取",
       "noMatch": "没有匹配的机场。请扩大范围或移除筛选。",
       "plan": "规划此航班",
-      "useAsArrival": "设为到达机场"
+      "useAsArrival": "设为到达机场",
+      "needOrigin": "请先选择出发机场。"
     }
   },
   "sunArc": {

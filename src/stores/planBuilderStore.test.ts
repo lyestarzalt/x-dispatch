@@ -48,6 +48,22 @@ describe('planBuilderStore — starting over', () => {
     expect(useFlightPlanStore.getState().fmsData).toBeNull();
   });
 
+  it('reset hands back the draft so the user can undo it', () => {
+    drawnPlan();
+    usePlanBuilderStore.setState({ alternate: LFMC as PlanEndpoint, aircraftClass: 'prop' });
+    const previous = usePlanBuilderStore.getState().reset();
+    usePlanBuilderStore.getState().restoreDraft(previous);
+
+    const builder = usePlanBuilderStore.getState();
+    expect(builder.departure?.icao).toBe('LFMC');
+    expect(builder.arrival?.icao).toBe('LFLN');
+    expect(builder.alternate?.icao).toBe('LFMC');
+    expect(builder.routeText).toBe('XATEL UY30 MTL');
+    expect(builder.cruiseAltitudeFt).toBe(5000);
+    expect(builder.aircraftClass).toBe('prop');
+    expect(builder.status).toBe('idle');
+  });
+
   it('clearing an airport removes the drawn plan', () => {
     drawnPlan();
     usePlanBuilderStore.getState().setDeparture(null);

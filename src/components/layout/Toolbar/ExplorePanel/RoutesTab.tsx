@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ArrowRight } from 'lucide-react';
 import { FEATURED_ROUTES } from '@/components/layout/Toolbar/ExplorePanel/featured';
+import { IcaoCode } from '@/components/ui/icao-code';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
 import { trackEvent } from '@/queries';
@@ -61,25 +63,13 @@ export function RoutesTab({ airports, selectedRoute, onSelectRoute }: RoutesTabP
                   active ? 'bg-primary/10' : 'hover:bg-muted/50'
                 )}
               >
-                <span
-                  className={cn(
-                    'shrink-0 font-mono text-sm font-semibold',
-                    active ? 'text-primary' : 'text-info'
-                  )}
-                >
+                <IcaoCode className={cn('shrink-0 text-sm', active ? 'text-primary' : 'text-info')}>
                   {route.from}
-                </span>
-                <span className="text-muted-foreground/40 text-xs">
-                  {t('explorePanel.routes.arrow')}
-                </span>
-                <span
-                  className={cn(
-                    'shrink-0 font-mono text-sm font-semibold',
-                    active ? 'text-primary' : 'text-info'
-                  )}
-                >
+                </IcaoCode>
+                <ArrowRight className="text-muted-foreground h-3.5 w-3.5 shrink-0 self-center" />
+                <IcaoCode className={cn('shrink-0 text-sm', active ? 'text-primary' : 'text-info')}>
                   {route.to}
-                </span>
+                </IcaoCode>
                 <span className="xp-label min-w-0 truncate">{route.name}</span>
               </button>
             );

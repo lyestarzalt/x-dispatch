@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
+import { ArrowRight, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   getEventStatus,
@@ -115,9 +115,7 @@ export function VatsimEventsTab({ onSelectAirport }: VatsimEventsTabProps) {
                     {primaryRoute && (
                       <span className="text-info flex shrink-0 items-center gap-1 font-mono text-xs font-semibold">
                         {primaryRoute.departure}
-                        <span className="text-muted-foreground/40">
-                          {t('explorePanel.vatsimEvents.arrow')}
-                        </span>
+                        <ArrowRight className="text-muted-foreground h-3 w-3" />
                         {primaryRoute.arrival}
                       </span>
                     )}
