@@ -1,3 +1,4 @@
+import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { FeaturedCategory } from '@/types/featured';
 
 export interface FeaturedTabProps {
@@ -7,6 +8,7 @@ export interface FeaturedTabProps {
 }
 
 export interface RoutesTabProps {
+  airports: Airport[];
   selectedRoute: { from: string; to: string } | null;
   onSelectRoute: (route: { from: string; to: string } | null) => void;
 }

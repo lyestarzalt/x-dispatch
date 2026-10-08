@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { VatsimData } from '@/types/vatsim';
-import { getATISForAirport, getControllersForAirport } from './useVatsimQuery';
+import {
+  getATISForAirport,
+  getControllersForAirport,
+  getStaffedCallsignPrefixes,
+} from './useVatsimQuery';
 
 const data = {
   general: undefined,
@@ -57,5 +61,10 @@ describe('airport VATSIM helpers', () => {
     });
 
     expect(atis.map((station) => station.callsign)).toEqual(['JFK_ATIS']);
+  });
+
+  it('collects staffed callsign prefixes from controllers and ATIS', () => {
+    expect(getStaffedCallsignPrefixes(data)).toEqual(new Set(['JFK']));
+    expect(getStaffedCallsignPrefixes(undefined)).toEqual(new Set());
   });
 });

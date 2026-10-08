@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import tzlookup from 'tz-lookup';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import {
@@ -79,12 +80,6 @@ function atLocalHours(baseMs: number, timeZone: string, hours: number): number {
 
 function minuteNow(): number {
   return Math.floor(Date.now() / MIN_MS) * MIN_MS;
-}
-
-function Caption({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="text-muted-foreground text-[10px] tracking-wider uppercase">{children}</span>
-  );
 }
 
 interface Props {
@@ -185,18 +180,18 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <section className="space-y-2">
-        <CollapsibleTrigger className="group flex w-full items-center gap-1 text-left">
-          <Caption>{t('planBuilder.sections.light')}</Caption>
-          <ChevronRight className="text-muted-foreground h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+      <section className="space-y-3">
+        <CollapsibleTrigger className="group xp-section-heading hover:text-foreground flex w-full items-center gap-1 text-left transition-colors">
+          {t('planBuilder.sections.light')}
+          <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]:rotate-90" />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="border-border bg-secondary/40 space-y-2.5 rounded-xl border p-3 shadow-sm">
+          <Card className="bg-secondary/40 space-y-3 p-3">
             <div className="flex items-center gap-2">
-              <Caption>{t('planBuilder.light.takeoff')}</Caption>
+              <span className="xp-label shrink-0">{t('planBuilder.light.takeoff')}</span>
               <TimeInput value={formatInZone(takeoffMs, depTz)} onCommit={onTimeInput} />
               {isTomorrow && (
-                <span className="text-muted-foreground truncate text-[10px]">
+                <span className="text-muted-foreground truncate text-xs">
                   {t('planBuilder.light.tomorrow')}
                 </span>
               )}
@@ -205,7 +200,6 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
                 size="sm"
                 onClick={() => setTakeoffMs(nowMs)}
                 disabled={takeoffMs === nowMs}
-                className="h-7 px-2 text-xs"
               >
                 {t('planBuilder.light.now')}
               </Button>
@@ -265,7 +259,7 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
                 {scrub !== null && scrubLabel && (
                   <div
                     aria-hidden
-                    className="bg-popover text-popover-foreground border-border pointer-events-none absolute bottom-full mb-1 -translate-x-1/2 rounded border px-1.5 py-0.5 font-mono text-[10px] whitespace-nowrap tabular-nums"
+                    className="bg-popover text-popover-foreground border-border pointer-events-none absolute bottom-full mb-1 -translate-x-1/2 rounded-sm border px-1.5 py-0.5 font-mono text-xs whitespace-nowrap tabular-nums"
                     style={{ left: `${scrub * 100}%` }}
                   >
                     {scrubLabel}
@@ -279,7 +273,7 @@ export function LightSection({ departure, arrival, routePoints, eteMinutes }: Pr
                 align="right"
               />
             </div>
-          </div>
+          </Card>
         </CollapsibleContent>
       </section>
     </Collapsible>
@@ -301,11 +295,9 @@ function Endpoint({
   const { t } = useTranslation();
   return (
     <div className={cn('flex shrink-0 flex-col leading-tight', align === 'right' && 'text-right')}>
-      <span className="font-mono text-xs font-semibold">{icao}</span>
-      <span className="text-muted-foreground font-mono text-[10px] tabular-nums">{time}</span>
-      <span className="text-muted-foreground text-[10px]">
-        {t(`planBuilder.light.phase.${light}`)}
-      </span>
+      <span className="xp-value font-semibold">{icao}</span>
+      <span className="text-muted-foreground font-mono text-xs tabular-nums">{time}</span>
+      <span className="text-muted-foreground text-xs">{t(`planBuilder.light.phase.${light}`)}</span>
     </div>
   );
 }

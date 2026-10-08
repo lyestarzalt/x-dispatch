@@ -249,7 +249,8 @@
       },
       "tomorrow": "Jutro",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "Losowy cel"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "Szukaj lotnisk...",
     "clearSearch": "Wyczyść wyszukiwanie",
     "addons": "Dodatki",
-    "alphaTag": "alfa",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}}kts",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "Polecane",
+        "random": "Losowe"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "Dane z"
+    },
+    "random": {
+      "from": "Z",
+      "pickOrigin": "Wybierz lotnisko wylotu",
+      "aircraft": "Samolot",
+      "time": "Czas",
+      "distance": "Dystans",
+      "length": "Długość lotu",
+      "filters": "Filtry",
+      "scope": {
+        "any": "Wszędzie",
+        "domestic": "Krajowe",
+        "international": "Międzynarodowe"
+      },
+      "customOnly": "Tylko własna sceneria",
+      "atcOnly": "ATC VATSIM online",
+      "weather": "Pogoda w celu",
+      "roll": "Znajdź lot",
+      "reroll": "Losuj ponownie",
+      "noMatch": "Brak pasujących lotnisk. Poszerz zakres lub usuń filtr.",
+      "plan": "Zaplanuj ten lot",
+      "useAsArrival": "Ustaw jako przylot"
     }
   },
   "sunArc": {

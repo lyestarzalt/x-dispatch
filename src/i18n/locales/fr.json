@@ -249,7 +249,8 @@
       },
       "tomorrow": "Demain",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "Destination aléatoire"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "Rechercher des aéroports...",
     "clearSearch": "Effacer la recherche",
     "addons": "Extensions",
-    "alphaTag": "alpha",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}} kt",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "À la une",
+        "random": "Aléatoire"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "Données de"
+    },
+    "random": {
+      "from": "Départ",
+      "pickOrigin": "Choisir un départ",
+      "aircraft": "Avion",
+      "time": "Durée",
+      "distance": "Distance",
+      "length": "Longueur du vol",
+      "filters": "Filtres",
+      "scope": {
+        "any": "Partout",
+        "domestic": "National",
+        "international": "International"
+      },
+      "customOnly": "Scénerie custom uniquement",
+      "atcOnly": "ATC VATSIM en ligne",
+      "weather": "Météo à destination",
+      "roll": "Trouver un vol",
+      "reroll": "Relancer",
+      "noMatch": "Aucun aéroport ne correspond. Élargissez la plage ou retirez un filtre.",
+      "plan": "Planifier ce vol",
+      "useAsArrival": "Utiliser comme arrivée"
     }
   },
   "sunArc": {

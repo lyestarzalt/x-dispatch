@@ -249,7 +249,8 @@
       },
       "tomorrow": "Morgen",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "Zufallsziel"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "Flughäfen suchen...",
     "clearSearch": "Suche löschen",
     "addons": "Add-ons",
-    "alphaTag": "Alpha",
     "rangeRingsHours": "{{n}}h",
     "rangeRingsKts": "{{speed}} kt",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "Empfohlen",
+        "random": "Zufall"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "Daten von"
+    },
+    "random": {
+      "from": "Von",
+      "pickOrigin": "Abflughafen wählen",
+      "aircraft": "Flugzeug",
+      "time": "Zeit",
+      "distance": "Distanz",
+      "length": "Flugdauer",
+      "filters": "Filter",
+      "scope": {
+        "any": "Überall",
+        "domestic": "Inland",
+        "international": "International"
+      },
+      "customOnly": "Nur Custom-Szenerie",
+      "atcOnly": "VATSIM-ATC online",
+      "weather": "Wetter am Ziel",
+      "roll": "Flug finden",
+      "reroll": "Neu würfeln",
+      "noMatch": "Keine passenden Flughäfen. Bereich erweitern oder Filter entfernen.",
+      "plan": "Diesen Flug planen",
+      "useAsArrival": "Als Ziel verwenden"
     }
   },
   "sunArc": {

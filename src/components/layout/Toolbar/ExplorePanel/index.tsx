@@ -134,7 +134,11 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
                 />
               </TabsContent>
               <TabsContent value="routes" className="mt-0">
-                <RoutesTab selectedRoute={explore.selectedRoute} onSelectRoute={setSelectedRoute} />
+                <RoutesTab
+                  airports={airports}
+                  selectedRoute={explore.selectedRoute}
+                  onSelectRoute={setSelectedRoute}
+                />
               </TabsContent>
               <TabsContent value="vatsim" className="mt-0">
                 <VatsimEventsTab onSelectAirport={handleSelectAirport} />

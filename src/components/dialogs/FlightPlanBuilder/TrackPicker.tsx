@@ -41,16 +41,7 @@ function levelBand(levels: number[], label: (from: number, to: number) => string
 }
 
 function Caption({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <span
-      className={cn(
-        'text-muted-foreground min-w-0 truncate text-[10px] tracking-wider uppercase',
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
+  return <span className={cn('xp-label min-w-0 truncate', className)}>{children}</span>;
 }
 
 function TrackChips({
@@ -107,7 +98,7 @@ function TrackChips({
           >
             <span className="font-mono font-semibold">{track.id}</span>
             {band && (
-              <span className={cn('text-[10px]', fits ? 'text-muted-foreground' : 'text-warning')}>
+              <span className={cn('text-xs', fits ? 'text-muted-foreground' : 'text-warning')}>
                 {band}
               </span>
             )}
@@ -125,11 +116,11 @@ function MessageCaption({ message, upcoming }: { message: NatMessageInfo; upcomi
       <Caption>
         {upcoming ? t('planBuilder.tracks.upcoming') : t('planBuilder.tracks.current')}
       </Caption>
-      <span className="text-muted-foreground shrink-0 font-mono text-[10px]">
+      <span className="text-muted-foreground shrink-0 font-mono text-xs">
         {validityLabel(message.validFrom, message.validTo)}
       </span>
       {message.tmi !== null && (
-        <Badge variant="outline" className="shrink-0 px-1.5 py-0 font-mono text-[10px]">
+        <Badge variant="outline" className="shrink-0 px-1.5 py-0 font-mono">
           {t('planBuilder.tracks.tmi', { tmi: message.tmi })}
         </Badge>
       )}
@@ -139,7 +130,7 @@ function MessageCaption({ message, upcoming }: { message: NatMessageInfo; upcomi
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 w-5 shrink-0 p-0"
+              className="h-6 w-6 shrink-0 p-0"
               aria-label={t('planBuilder.tracks.remarks')}
               title={t('planBuilder.tracks.remarks')}
             >
@@ -148,7 +139,7 @@ function MessageCaption({ message, upcoming }: { message: NatMessageInfo; upcomi
           </PopoverTrigger>
           <PopoverContent align="start" className="w-96">
             <Caption className="mb-2 block">{t('planBuilder.tracks.remarks')}</Caption>
-            <pre className="max-h-64 overflow-y-auto font-mono text-[11px] leading-4 whitespace-pre-wrap">
+            <pre className="max-h-64 overflow-y-auto font-mono text-xs leading-5 whitespace-pre-wrap">
               {message.remarks}
             </pre>
           </PopoverContent>
@@ -185,28 +176,28 @@ function TrackDetail({
   return (
     <div className="border-border/60 space-y-1.5 rounded-lg border p-2">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <span className="font-mono text-xs font-semibold">
+        <span className="xp-value font-semibold">
           {t('planBuilder.tracks.track', { id: track.id })}
         </span>
         {upcoming && (
-          <Badge variant="info" className="px-1.5 py-0 text-[10px]">
+          <Badge variant="info" className="px-1.5 py-0">
             {t('planBuilder.tracks.upcoming')}
           </Badge>
         )}
         {track.pbcs && (
-          <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+          <Badge variant="outline" className="px-1.5 py-0">
             {t('planBuilder.tracks.pbcs')}
           </Badge>
         )}
         {track.levels.length > 0 && (
-          <span className="text-muted-foreground min-w-0 truncate font-mono text-[11px]">
+          <span className="text-muted-foreground min-w-0 truncate font-mono text-xs">
             {t('planBuilder.tracks.levelList', { levels: track.levels.join(' ') })}
           </span>
         )}
       </div>
-      <p className="font-mono text-[11px] leading-4 break-words">{trackFixString(track)}</p>
+      <p className="font-mono text-xs leading-5 break-words">{trackFixString(track)}</p>
       {(track.nars.length > 0 || track.feederFixes.length > 0) && (
-        <p className="text-muted-foreground min-w-0 truncate font-mono text-[11px]">
+        <p className="text-muted-foreground min-w-0 truncate font-mono text-xs">
           {[
             track.nars.length > 0 && t('planBuilder.tracks.nar', { list: track.nars.join(' ') }),
             track.feederFixes.length > 0 &&
@@ -217,8 +208,8 @@ function TrackDetail({
         </p>
       )}
       {warnings.map((w) => (
-        <p key={w} className="text-warning flex items-start gap-1.5 text-[11px]">
-          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+        <p key={w} className="text-warning flex items-start gap-1.5 text-xs">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{w}</span>
         </p>
       ))}
@@ -252,15 +243,15 @@ export function TrackPicker({
   return (
     <div className="space-y-2">
       <div className="flex min-w-0 items-center gap-2">
-        <Waves className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+        <Waves className="text-muted-foreground h-4 w-4 shrink-0" />
         <Caption>{t('planBuilder.tracks.title')}</Caption>
-        <span className="text-muted-foreground shrink-0 text-[10px]">
+        <span className="text-muted-foreground shrink-0 text-xs">
           {t(`planBuilder.tracks.${direction}`)}
         </span>
-        {disabled && <Loader2 className="text-muted-foreground h-3 w-3 shrink-0 animate-spin" />}
+        {disabled && <Loader2 className="text-muted-foreground h-4 w-4 shrink-0 animate-spin" />}
       </div>
       {!current && !upcoming && (
-        <p className="text-muted-foreground text-[11px]">
+        <p className="text-muted-foreground text-xs">
           {feed?.error && feed.messages.length === 0
             ? t('planBuilder.tracks.unavailable', { reason: feed.error })
             : t('planBuilder.tracks.none')}
@@ -300,7 +291,7 @@ export function TrackPicker({
           issues={issues}
         />
       )}
-      <p className="text-muted-foreground text-[11px]">{t('planBuilder.tracks.hint')}</p>
+      <p className="text-muted-foreground text-xs">{t('planBuilder.tracks.hint')}</p>
     </div>
   );
 }

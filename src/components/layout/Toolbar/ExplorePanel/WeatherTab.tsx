@@ -1,39 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AlertTriangle,
-  Cloud,
-  CloudRain,
-  CloudSnow,
-  ExternalLink,
-  Eye,
-  Haze,
-  Snowflake,
-  Sun,
-  Wind,
-  Zap,
-} from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/helpers';
 import type { WeatherCategory } from '@/lib/weatherScan/parseMetarFeed';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { WEATHER_CATEGORIES, filterByCategory, trackEvent, useWeatherScanQuery } from '@/queries';
+import { WEATHER_CATEGORY_ICON } from './weatherIcons';
 
 const GATEWAY_URL = 'https://gateway.x-plane.com';
-
-const CATEGORY_ICON: Record<WeatherCategory, typeof CloudSnow> = {
-  snow: CloudSnow,
-  freezing: Snowflake,
-  fog: Eye,
-  lowVisibility: Eye,
-  lowCeiling: Cloud,
-  heavyPrecipitation: CloudRain,
-  thunderstorm: Zap,
-  severe: AlertTriangle,
-  dustSand: Haze,
-  strongWind: Wind,
-  clear: Sun,
-};
 
 interface WeatherTabProps {
   airports: Airport[];
@@ -86,7 +61,7 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
     <div className="space-y-3">
       <div className="flex flex-wrap gap-1">
         {WEATHER_CATEGORIES.map((key) => {
-          const Icon = CATEGORY_ICON[key];
+          const Icon = WEATHER_CATEGORY_ICON[key];
           return (
             <button
               key={key}

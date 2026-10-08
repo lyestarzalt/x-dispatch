@@ -249,7 +249,8 @@
       },
       "tomorrow": "明日",
       "scrubLabel": "{{time}}Z · {{phase}}"
-    }
+    },
+    "randomDestination": "ランダムな目的地"
   },
   "toolbar": {
     "clock": {
@@ -271,7 +272,6 @@
     "searchPlaceholder": "空港を検索...",
     "clearSearch": "検索をクリア",
     "addons": "アドオン",
-    "alphaTag": "アルファ",
     "rangeRingsHours": "{{n}} 時間",
     "rangeRingsKts": "{{speed}}kts",
     "pinCoords": "{{lat}}°, {{lon}}°",
@@ -1885,11 +1885,37 @@
   },
   "explorePanel": {
     "routes": {
-      "arrow": "→"
+      "arrow": "→",
+      "mode": {
+        "featured": "おすすめ",
+        "random": "ランダム"
+      }
     },
     "vatsimEvents": {
       "arrow": "→",
       "dataFrom": "データ提供"
+    },
+    "random": {
+      "from": "出発",
+      "pickOrigin": "出発空港を選択",
+      "aircraft": "機体",
+      "time": "時間",
+      "distance": "距離",
+      "length": "飛行の長さ",
+      "filters": "フィルター",
+      "scope": {
+        "any": "すべて",
+        "domestic": "国内",
+        "international": "国際"
+      },
+      "customOnly": "カスタムシーナリーのみ",
+      "atcOnly": "VATSIM 管制オンライン",
+      "weather": "目的地の天気",
+      "roll": "フライトを探す",
+      "reroll": "引き直す",
+      "noMatch": "該当する空港がありません。範囲を広げるかフィルターを外してください。",
+      "plan": "このフライトを計画",
+      "useAsArrival": "到着地に設定"
     }
   },
   "sunArc": {
