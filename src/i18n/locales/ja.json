@@ -161,6 +161,16 @@
     "noAlternate": "代替空港なし",
     "fuel": "搭載燃料",
     "liveHint": "編集すると地図が更新されます。",
+    "tracks": {
+      "title": "北大西洋トラック",
+      "auto": "自動",
+      "track": "トラック {{id}}",
+      "hint": "トラックを選ぶとそこを通るルートになります。地図上でクリックしても選べます。",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "東行き",
+      "westbound": "西行き",
+      "none": "現在この方向のトラックは公開されていません。"
+    },
     "windSuggest": "風 {{wind}} なら {{runway}} が有利",
     "useRunway": "使用",
     "profileTitle": "巡航とプロファイル",

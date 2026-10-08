@@ -68,3 +68,19 @@ describe('planBuilderStore — starting over', () => {
     expect(useFlightPlanStore.getState().fmsData).not.toBeNull();
   });
 });
+
+describe('planBuilderStore — auto route via a chosen NAT track', () => {
+  it('sends the chosen track with the request and keeps the returned route', async () => {
+    const autoRoute = vi.fn().mockResolvedValue({ routeText: 'MALOT NATA 5250N', distanceNm: 1 });
+    vi.stubGlobal('window', { flightPlanAPI: { autoRoute } });
+    usePlanBuilderStore.setState({
+      departure: { icao: 'EIDW', latitude: 53.4, longitude: -6.3 } as PlanEndpoint,
+      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
+    });
+    const ok = await usePlanBuilderStore.getState().autoRoute(undefined, 'NATA');
+    expect(ok).toBe(true);
+    expect(autoRoute).toHaveBeenCalledWith(expect.objectContaining({ track: 'NATA' }));
+    expect(usePlanBuilderStore.getState().routeText).toBe('MALOT NATA 5250N');
+    vi.unstubAllGlobals();
+  });
+});

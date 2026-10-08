@@ -161,6 +161,16 @@
     "noAlternate": "Sem alternativa",
     "fuel": "Combustível",
     "liveHint": "O mapa redesenha enquanto edita.",
+    "tracks": {
+      "title": "Tracks do Atlântico Norte",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Escolha um track para rotear por ele, ou clique num track no mapa.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Para leste",
+      "westbound": "Para oeste",
+      "none": "Neste momento não há tracks publicados para esta direção."
+    },
     "windSuggest": "Vento {{wind}} favorece a {{runway}}",
     "useRunway": "Usar",
     "profileTitle": "Cruzeiro e perfil",

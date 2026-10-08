@@ -61,9 +61,18 @@ interface PlanBuilderState extends PlanDraft {
   /** Re-resolves the current draft; stale responses are dropped. */
   resolve: () => Promise<void>;
   /** Asks the main process for a shortest airway route and puts it in the route field. */
-  /** Candidate procedure joins let the router pick the SID and STAR along with the route. */
-  autoRoute: (joins?: { exits?: RouteJoin[]; entries?: RouteJoin[] }) => Promise<boolean>;
+  /** Candidate procedure joins let the router pick the SID and STAR along with the route; a
+   * track designator ("NATA") makes it route through that North Atlantic track. */
+  autoRoute: (
+    joins?: { exits?: RouteJoin[]; entries?: RouteJoin[] },
+    track?: string | null
+  ) => Promise<boolean>;
   setAlternate: (endpoint: PlanEndpoint | null) => void;
+  /** A track picked on the map, waiting for the dialog to route through it with its procedure
+   * joins; null inside means "let the router choose". */
+  trackRequest: { track: string | null } | null;
+  requestTrack: (track: string | null) => void;
+  clearTrackRequest: () => void;
   /** Planning class chosen by hand; null follows the aircraft loaded in X-Plane. */
   aircraftClass: RangeRingCategory | null;
   setAircraftClass: (cls: RangeRingCategory | null) => void;
@@ -127,6 +136,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           };
         }),
       setAlternate: (endpoint) => set({ alternate: endpoint }),
+      trackRequest: null,
+      requestTrack: (track) => set({ trackRequest: { track } }),
+      clearTrackRequest: () => set({ trackRequest: null }),
       aircraftClass: null,
       // The cruise cap differs per class, so the suggestion is redone.
       setAircraftClass: (cls) => set({ aircraftClass: cls, cruiseAltitudeFt: null }),
@@ -200,7 +212,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         }
       },
 
-      autoRoute: async (joins) => {
+      autoRoute: async (joins, track) => {
         const { departure, arrival, routeText, cruiseAltitudeFt, procedures } = get();
         if (!departure || !arrival) return false;
         set({ autoRouting: true });
@@ -217,6 +229,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             // Candidates only matter while that end has no procedure fixed yet.
             exits: exit ? undefined : joins?.exits,
             entries: entry ? undefined : joins?.entries,
+            track: track ?? undefined,
           });
           if (!result) return false;
           set({ routeText: result.routeText, savedPath: null });

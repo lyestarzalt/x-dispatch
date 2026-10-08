@@ -44,6 +44,7 @@ import {
   proceduresForRunway,
   suggestProcedures,
 } from '@/lib/flightplan/builder/procedures';
+import { natCrossing, trackInRoute } from '@/lib/flightplan/builder/trackChoice';
 import type { RouteToken } from '@/lib/flightplan/builder/types';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
@@ -51,7 +52,12 @@ import { cn } from '@/lib/utils/helpers';
 import { formatWind } from '@/lib/utils/metar';
 import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { trackEvent, useAirportProcedures, useTrackFeatureOpened } from '@/queries';
+import {
+  trackEvent,
+  useAirportProcedures,
+  useOceanicTracks,
+  useTrackFeatureOpened,
+} from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -65,6 +71,7 @@ import { AirportPicker, toEndpoint } from './AirportPicker';
 import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
 import { RunwaySelect } from './RunwaySelect';
+import { TrackPicker } from './TrackPicker';
 
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
@@ -275,6 +282,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const result = usePlanBuilderStore((s) => s.result);
   const alternate = usePlanBuilderStore((s) => s.alternate ?? null);
   const setAlternate = usePlanBuilderStore((s) => s.setAlternate);
+  const trackRequest = usePlanBuilderStore((s) => s.trackRequest);
+  const clearTrackRequest = usePlanBuilderStore((s) => s.clearTrackRequest);
   const savedPath = usePlanBuilderStore((s) => s.savedPath);
   const autoRouting = usePlanBuilderStore((s) => s.autoRouting);
   const setDeparture = usePlanBuilderStore((s) => s.setDeparture);
@@ -491,6 +500,30 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     trackEvent('flight_plan_auto_routed', { success: ok });
     if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
   };
+
+  // North Atlantic tracks for the crossing, if the pair makes one; the chosen one is whatever
+  // the route files. Picking a chip or a track on the map routes through it.
+  const crossing = departure && arrival ? natCrossing(departure, arrival) : null;
+  const { data: oceanicTracks } = useOceanicTracks(isOpen && crossing !== null);
+  const directionTracks = useMemo(
+    () =>
+      crossing && oceanicTracks
+        ? oceanicTracks.filter((tr) => tr.eastbound === (crossing === 'eastbound'))
+        : null,
+    [oceanicTracks, crossing]
+  );
+  const selectedTrack = useMemo(() => trackInRoute(routeText), [routeText]);
+  const handlePickTrack = async (track: string | null) => {
+    const ok = await autoRoute(joins, track);
+    if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
+  };
+  useEffect(() => {
+    if (!trackRequest) return;
+    clearTrackRequest();
+    void handlePickTrack(trackRequest.track);
+    // The handler closes over the latest joins; only the request itself should trigger this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackRequest, clearTrackRequest]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -806,6 +839,15 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     </Button>
                   </div>
                 </div>
+                {crossing && directionTracks && (
+                  <TrackPicker
+                    tracks={directionTracks}
+                    direction={crossing}
+                    selected={selectedTrack}
+                    disabled={autoRouting}
+                    onPick={(track) => void handlePickTrack(track)}
+                  />
+                )}
                 {problems.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5">
                     <Caption>{t('planBuilder.notUsed')}</Caption>

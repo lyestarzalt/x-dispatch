@@ -62,6 +62,7 @@ import {
   useMapContextMenu,
   useMapSetup,
   useMeasureTool,
+  useNatTracksSync,
   useNavLayerSync,
   usePinDrop,
   useProcedureRouteSync,
@@ -401,6 +402,9 @@ export default function Map({ airports }: MapProps) {
 
   // Procedure route sync - renders selected procedure on map
   useProcedureRouteSync({ mapRef });
+
+  // North Atlantic tracks offered to the planner, pickable on the map
+  useNatTracksSync({ mapRef });
 
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation });

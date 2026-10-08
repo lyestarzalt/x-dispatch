@@ -83,6 +83,8 @@ export interface AutoRouteRequest extends PlanDraft {
   routeTo?: { latitude: number; longitude: number };
   exits?: RouteJoin[];
   entries?: RouteJoin[];
+  /** A NAT track the route must use, by designator ("NATA"). */
+  track?: string;
 }
 
 export interface AutoRouteResult {
@@ -92,6 +94,20 @@ export interface AutoRouteResult {
   /** Procedures the router joined through, when it was given candidates. */
   sid?: ProcedureChoice;
   star?: ProcedureChoice;
+}
+
+/** A current North Atlantic track with every point placed, as the main process hands it over. */
+export interface OceanicTrackInfo {
+  /** The letter, "A". */
+  id: string;
+  /** Filed designator, "NATA". */
+  name: string;
+  eastbound: boolean;
+  /** Flight levels available in the track direction. */
+  levels: number[];
+  validFrom: string;
+  validTo: string;
+  points: { id: string; latitude: number; longitude: number }[];
 }
 
 export interface SaveFmsResult {

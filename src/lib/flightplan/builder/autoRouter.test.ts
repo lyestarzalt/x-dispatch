@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  autoRoute,
   bandAllows,
   compressPath,
   crossTrackNm,
@@ -7,11 +8,13 @@ import {
   limitToFeet,
   longitudeRanges,
 } from './autoRouter';
+import { parseNatMessage, setOceanicTracks } from './oceanicTracks';
 
 vi.mock('@/lib/xplaneServices/dataService/navdata/navCache', () => ({
   getAllAirwaysFromDb: () => [],
   getNavaidsInBounds: () => [],
-  getWaypointsInBounds: () => [],
+  // One fix far from every test route, so the graph is never empty.
+  getWaypointsInBounds: () => [{ id: 'ZZZZZ', areaCode: 'EG', latitude: 60, longitude: -5 }],
   getAirspacesInBounds: () => [],
 }));
 vi.mock('@/lib/utils/logger', () => {
@@ -120,5 +123,36 @@ describe('legCrossesArea', () => {
     expect(
       legCrossesArea({ latitude: 50.5, longitude: 10.5 }, { latitude: 53, longitude: 12 }, square)
     ).toBe(true);
+  });
+});
+
+describe('autoRoute with a chosen NAT track', () => {
+  const far = new Date(Date.now() + 3_600_000).toISOString();
+  const message = [
+    'A 54/15 54/20 54/30 54/40',
+    'EAST LVLS NIL',
+    'WEST LVLS 340 350 360',
+    'B 50/15 50/20 50/30 50/40',
+    'EAST LVLS NIL',
+    'WEST LVLS 340 350 360',
+  ].join('\n');
+  const input = {
+    departure: { latitude: 50, longitude: -14.5 },
+    arrival: { latitude: 50, longitude: -41 },
+    from: { latitude: 50, longitude: -14.5 },
+    to: { latitude: 50, longitude: -41 },
+    cruiseAltitudeFt: 35000,
+  };
+
+  it('takes the nearer track when none is chosen', () => {
+    setOceanicTracks(parseNatMessage(message, far, far));
+    expect(autoRoute(input)?.routeText).toContain('NATB');
+  });
+
+  it('routes through the chosen track even when another is shorter', () => {
+    setOceanicTracks(parseNatMessage(message, far, far));
+    const result = autoRoute({ ...input, track: 'NATA' });
+    expect(result?.routeText).toContain('NATA');
+    expect(result?.routeText).not.toContain('NATB');
   });
 });

@@ -161,6 +161,16 @@
     "noAlternate": "No safe harbour",
     "fuel": "Grog in the tanks",
     "liveHint": "The chart redraws as ye scribble.",
+    "tracks": {
+      "title": "North Atlantic tracks",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Pick a track to sail it, or click one on the chart.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Eastbound",
+      "westbound": "Westbound",
+      "none": "No tracks be posted this way at present."
+    },
     "windSuggest": "Wind {{wind}} favours strip {{runway}}",
     "useRunway": "Take it",
     "profileTitle": "Cruise and profile",

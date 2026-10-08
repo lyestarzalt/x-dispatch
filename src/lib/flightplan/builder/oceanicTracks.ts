@@ -7,7 +7,9 @@
  */
 import logger from '@/lib/utils/logger';
 import type { AirwaySegment, FixTypeNumber } from '@/types/navigation';
+import type { LatLon } from './geometry';
 import { NAT_TRACK_RE } from './routeTokens';
+import type { OceanicTrackInfo } from './types';
 
 export const NAT_JSON_URL = 'https://nms.aim.faa.gov/datanat/nat.json';
 const REFRESH_MS = 30 * 60 * 1000;
@@ -146,6 +148,50 @@ export function trackSegments(name?: string): AirwaySegment[] {
         topFl: Number.isFinite(top) ? top : 0,
       });
     }
+  }
+  return out;
+}
+
+/**
+ * The current tracks with every point placed: lat/lon points carry their own position, named
+ * fixes are looked up near the closest coordinate point on the track. Points the lookup cannot
+ * place are dropped, so the renderer can draw each track as one line.
+ */
+export function resolvedTracks(
+  lookup: (id: string, near: LatLon) => LatLon | null,
+  now = Date.now()
+): OceanicTrackInfo[] {
+  const out: OceanicTrackInfo[] = [];
+  for (const track of getOceanicTracks(now)) {
+    const placed = track.points.filter((p) => Number.isFinite(p.latitude));
+    const points: OceanicTrackInfo['points'] = [];
+    for (let i = 0; i < track.points.length; i++) {
+      const p = track.points[i]!;
+      if (Number.isFinite(p.latitude)) {
+        points.push({ id: p.id, latitude: p.latitude, longitude: p.longitude });
+        continue;
+      }
+      // Nearest placed point along the track: the first one after an entry fix, the last one
+      // before an exit fix.
+      const after = track.points.slice(i + 1).find((q) => Number.isFinite(q.latitude));
+      const before = [...track.points.slice(0, i)]
+        .reverse()
+        .find((q) => Number.isFinite(q.latitude));
+      const near = after ?? before ?? placed[0];
+      if (!near) continue;
+      const pos = lookup(p.id, { latitude: near.latitude, longitude: near.longitude });
+      if (pos) points.push({ id: p.id, latitude: pos.latitude, longitude: pos.longitude });
+    }
+    if (points.length < 2) continue;
+    out.push({
+      id: track.id,
+      name: track.name,
+      eastbound: track.eastbound,
+      levels: track.levels,
+      validFrom: track.validFrom,
+      validTo: track.validTo,
+      points,
+    });
   }
   return out;
 }

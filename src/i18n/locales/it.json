@@ -161,6 +161,16 @@
     "noAlternate": "Nessun alternato",
     "fuel": "Carburante",
     "liveHint": "La mappa si ridisegna mentre modifichi.",
+    "tracks": {
+      "title": "Track del Nord Atlantico",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Scegli un track per instradare su di esso, o cliccane uno sulla mappa.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Verso est",
+      "westbound": "Verso ovest",
+      "none": "Al momento non ci sono track pubblicati per questa direzione."
+    },
     "windSuggest": "Vento {{wind}} favorisce la {{runway}}",
     "useRunway": "Usa",
     "profileTitle": "Crociera e profilo",

@@ -161,6 +161,16 @@
     "noAlternate": "Brak zapasowego",
     "fuel": "Paliwo",
     "liveHint": "Mapa odświeża się podczas edycji.",
+    "tracks": {
+      "title": "Tracki północnoatlantyckie",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Wybierz track, aby poprowadzić trasę przez niego, lub kliknij go na mapie.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Na wschód",
+      "westbound": "Na zachód",
+      "none": "Obecnie nie ma opublikowanych tracków w tym kierunku."
+    },
     "windSuggest": "Wiatr {{wind}} sprzyja pasowi {{runway}}",
     "useRunway": "Użyj",
     "profileTitle": "Przelot i profil",

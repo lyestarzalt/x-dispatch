@@ -44,6 +44,11 @@ export {
 } from './dynamic/ProcedureRouteLayer';
 export { addRouteLineLayer, removeRouteLineLayer, updateRouteLine } from './dynamic/RouteLineLayer';
 export {
+  NAT_TRACKS_LAYER_IDS,
+  addNatTracksLayer,
+  removeNatTracksLayer,
+} from './dynamic/NatTracksLayer';
+export {
   addMeasureLayer,
   removeMeasureLayer,
   updateMeasureLine,

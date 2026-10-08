@@ -161,6 +161,16 @@
     "noAlternate": "无备降机场",
     "fuel": "总油量",
     "liveHint": "编辑时地图会实时重绘。",
+    "tracks": {
+      "title": "北大西洋航迹",
+      "auto": "自动",
+      "track": "航迹 {{id}}",
+      "hint": "选择一条航迹以经由它规划航路，或在地图上点击一条航迹。",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "东行",
+      "westbound": "西行",
+      "none": "当前该方向没有发布的航迹。"
+    },
     "windSuggest": "风 {{wind}} 适合跑道 {{runway}}",
     "useRunway": "使用",
     "profileTitle": "巡航与剖面",

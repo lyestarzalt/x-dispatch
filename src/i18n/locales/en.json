@@ -161,6 +161,16 @@
     "noAlternate": "No alternate",
     "fuel": "Block fuel",
     "liveHint": "The map redraws as you edit.",
+    "tracks": {
+      "title": "North Atlantic tracks",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Pick a track to route through it, or click one on the map.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Eastbound",
+      "westbound": "Westbound",
+      "none": "No tracks are published for this direction right now."
+    },
     "windSuggest": "Wind {{wind}} favours {{runway}}",
     "useRunway": "Use",
     "profileTitle": "Cruise and profile",

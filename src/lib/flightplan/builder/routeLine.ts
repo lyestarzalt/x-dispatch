@@ -7,6 +7,7 @@
  */
 import type { RunwayEnd } from '@/types/fms';
 import { type LatLon, destinationPoint } from './geometry';
+import { NAT_TRACK_RE } from './routeTokens';
 
 /** LNM's custom departure/approach leg length when no procedure is chosen. */
 const CUSTOM_LEG_NM = 3;
@@ -44,11 +45,11 @@ export interface ProcedurePathHint {
 }
 
 /** What a stretch of the drawn line is, for colouring and labelling. */
-export type RouteLegKind = 'enroute' | 'sid' | 'star' | 'approach' | 'missed';
+export type RouteLegKind = 'enroute' | 'track' | 'sid' | 'star' | 'approach' | 'missed';
 
 export interface RouteLineSegment {
   kind: RouteLegKind;
-  /** The procedure name for SID/STAR/approach segments. */
+  /** The procedure name for SID/STAR/approach segments, the track designator for track legs. */
   via?: string;
   /** Starts where the previous segment ended, so segments draw as one continuous line. */
   points: LatLon[];
@@ -138,7 +139,9 @@ export function routeLineSegments(
       wp.via === 'ADES' && ends?.arrival
         ? finalApproachPath(ends.arrival)
         : [{ latitude: wp.latitude, longitude: wp.longitude }];
-    push('enroute', pts);
+    // Legs flown on an oceanic track keep its designator, so the map can set them apart.
+    if (wp.via && NAT_TRACK_RE.test(wp.via)) push('track', pts, wp.via);
+    else push('enroute', pts);
   }
   return segments.filter((s) => s.points.length > 1 || segments.length === 1);
 }

@@ -112,6 +112,8 @@ export interface AutoRouteInput {
   exits?: RouteJoin[];
   entries?: RouteJoin[];
   cruiseAltitudeFt: number | null;
+  /** A NAT track the route must use, by designator ("NATA"); the other tracks are left out. */
+  track?: string;
   /** Receives one line per pass, for the main log. */
   trace?: (message: string) => void;
 }
@@ -419,7 +421,7 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
     }
   }
 
-  addTrackEdges(graph, cruiseFl);
+  addTrackEdges(graph, cruiseFl, input.track);
   if (opts.direct) addDirectLegs(graph, opts.oceanic === true);
   return graph;
 }
@@ -427,9 +429,10 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
 /**
  * Current NAT tracks as one-way legs named by designator. Named entry and exit fixes
  * come from the database; lat/lon points carry their own position when the box lacks them.
+ * With a chosen track only that one is offered, so the search has to go through it.
  */
-function addTrackEdges(graph: Graph, cruiseFl: number): void {
-  const tracks = getOceanicTracks();
+function addTrackEdges(graph: Graph, cruiseFl: number, chosen?: string): void {
+  const tracks = getOceanicTracks().filter((t) => !chosen || t.name === chosen.toUpperCase());
   if (tracks.length === 0) return;
   const keyById = new Map<string, string>();
   for (const key of graph.positions.keys()) {

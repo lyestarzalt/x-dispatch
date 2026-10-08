@@ -24,6 +24,7 @@ import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } fro
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
+import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
@@ -75,6 +76,9 @@ import type { LaunchResult } from './lib/xplaneServices/launch';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
+
+/** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
+const TRACK_FIX_SEARCH_NM = 1500;
 
 // Squirrel.Windows runs the app for install, update and uninstall hooks (shortcut
 // handling); those runs quit without booting so they never race the real instance.
@@ -1465,7 +1469,7 @@ function registerIpcHandlers() {
       const { autoRoute } = await import('./lib/flightplan/builder/autoRouter');
       const { refreshOceanicTracks } = await import('./lib/flightplan/builder/oceanicTracks');
       await refreshOceanicTracks();
-      const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo, exits, entries } =
+      const { departure, arrival, cruiseAltitudeFt, routeFrom, routeTo, exits, entries, track } =
         request as import('./lib/flightplan/builder/types').AutoRouteRequest;
       if (!departure || !arrival) return null;
       const startedAt = Date.now();
@@ -1477,6 +1481,7 @@ function registerIpcHandlers() {
         exits,
         entries,
         cruiseAltitudeFt,
+        track: typeof track === 'string' && NAT_TRACK_RE.test(track) ? track : undefined,
         trace: (message) => logger.main.debug(`Auto route pass ${message}`),
       });
       logger.main.info(
@@ -1486,6 +1491,22 @@ function registerIpcHandlers() {
     } catch (err) {
       logger.main.error('Auto route failed', err);
       return null;
+    }
+  });
+
+  handle('flightplan:oceanicTracks', async () => {
+    try {
+      const { refreshOceanicTracks, resolvedTracks } =
+        await import('./lib/flightplan/builder/oceanicTracks');
+      const { getWaypointNearestById } =
+        await import('./lib/xplaneServices/dataService/navdata/navCache');
+      await refreshOceanicTracks();
+      return resolvedTracks((id, near) =>
+        getWaypointNearestById(id, near.latitude, near.longitude, TRACK_FIX_SEARCH_NM)
+      );
+    } catch (err) {
+      logger.main.error('Failed to load NAT tracks', err);
+      return [];
     }
   });
 

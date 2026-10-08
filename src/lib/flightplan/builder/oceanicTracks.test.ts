@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   parseNatMessage,
+  resolvedTracks,
   setOceanicTracks,
   trackPoint,
   trackSegments,
@@ -110,5 +111,38 @@ describe('trackSegments', () => {
       topFl: 400,
     });
     expect(trackSegments()).toHaveLength(12);
+  });
+});
+
+describe('resolvedTracks', () => {
+  it('gives every point a position, looking named fixes up near the track, and drops unknown ones', () => {
+    const far = new Date(Date.now() + 3_600_000).toISOString();
+    setOceanicTracks(parseNatMessage(PART_ONE, far, far));
+    const seen: { id: string; near: { latitude: number; longitude: number } }[] = [];
+    const lookup = (id: string, near: { latitude: number; longitude: number }) => {
+      seen.push({ id, near });
+      if (id === 'ALLRY') return { latitude: 53.5, longitude: -56 };
+      if (id === 'RESNO') return { latitude: 55, longitude: -15 };
+      return null;
+    };
+    const tracks = resolvedTracks(lookup);
+    expect(tracks.map((t) => t.name)).toEqual(['NATU', 'NATV']);
+    const u = tracks[0]!;
+    expect(u.points.map((p) => p.id)).toEqual([
+      'ALLRY',
+      '5150N',
+      '5340N',
+      '5430N',
+      '5520N',
+      'RESNO',
+    ]);
+    expect(u.points[0]).toEqual({ id: 'ALLRY', latitude: 53.5, longitude: -56 });
+    expect(u.points.every((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude))).toBe(
+      true
+    );
+    // The entry fix is searched near the first coordinate point, the exit near the last.
+    expect(seen.find((s) => s.id === 'ALLRY')?.near).toEqual({ latitude: 51, longitude: -50 });
+    expect(seen.find((s) => s.id === 'RESNO')?.near).toEqual({ latitude: 55, longitude: -20 });
+    expect(u).toMatchObject({ eastbound: true, levels: [340, 350, 360, 370, 380, 390, 400] });
   });
 });

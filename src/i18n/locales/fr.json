@@ -161,6 +161,16 @@
     "noAlternate": "Aucun dégagement",
     "fuel": "Carburant bloc",
     "liveHint": "La carte se redessine pendant l'édition.",
+    "tracks": {
+      "title": "Tracks de l'Atlantique Nord",
+      "auto": "Auto",
+      "track": "Track {{id}}",
+      "hint": "Choisissez un track pour router dessus, ou cliquez-en un sur la carte.",
+      "levels": "FL{{from}}–FL{{to}}",
+      "eastbound": "Vers l'est",
+      "westbound": "Vers l'ouest",
+      "none": "Aucun track n'est publié pour cette direction en ce moment."
+    },
     "windSuggest": "Vent {{wind}} favorise la {{runway}}",
     "useRunway": "Utiliser",
     "profileTitle": "Croisière et profil",

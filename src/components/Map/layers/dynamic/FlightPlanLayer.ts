@@ -7,6 +7,7 @@ import * as maplibregl from 'maplibre-gl';
 import { buildUnitFormatters } from '@/hooks/useUnits';
 import { bearingDeg, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { routeLineSegments } from '@/lib/flightplan/builder/routeLine';
+import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -22,6 +23,7 @@ import {
   legChipImageId,
   loadRouteLabelImages,
   waypointBadgeId,
+  widthByKindExpression,
 } from './routeStyle';
 
 // Layer IDs
@@ -262,7 +264,7 @@ export function createLegLabelGeoJSON(
         airway: leg.airway,
         showAirway: leg.showAirway,
         rotate,
-        chip: legChipImageId('enroute'),
+        chip: legChipImageId(NAT_TRACK_RE.test(leg.airway) ? 'track' : 'enroute'),
       },
     };
   });
@@ -504,13 +506,13 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
       'line-color': '#000000',
-      'line-width': ROUTE_CASING_WIDTH,
+      'line-width': widthByKindExpression(ROUTE_CASING_WIDTH),
       'line-opacity': 0.45,
     },
   });
 
-  // Route line: thick and translucent, one colour per leg kind (SID / STAR / approach / enroute),
-  // or per flight phase when the plan carries SimBrief stages.
+  // Route line: thick and translucent, one colour per leg kind (SID / STAR / approach / enroute,
+  // wider and pink on an oceanic track), or per flight phase when the plan carries SimBrief stages.
   map.addLayer({
     id: LINE_ID,
     type: 'line',
@@ -529,7 +531,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
         COLORS.dsc,
         kindColorExpression(),
       ],
-      'line-width': ROUTE_LINE_WIDTH,
+      'line-width': widthByKindExpression(ROUTE_LINE_WIDTH),
       'line-opacity': ROUTE_LINE_OPACITY,
     },
   });

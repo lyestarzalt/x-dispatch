@@ -9,6 +9,7 @@ export { useIvaoSync, toggleIvaoLayer } from './useIvaoSync';
 export { useAirportInteractions } from './useAirportInteractions';
 export { useRouteLineSync } from './useRouteLineSync';
 export { useProcedureRouteSync } from './useProcedureRouteSync';
+export { useNatTracksSync } from './useNatTracksSync';
 export { useAirportFilters } from './useAirportFilters';
 export { useRangeRingsSync } from './useRangeRingsSync';
 export { usePinDrop } from './usePinDrop';

@@ -150,6 +150,21 @@ describe('createLegLabelGeoJSON', () => {
     for (const f of features) expect(f.properties?.chip).toBe('route-chip-enroute');
   });
 
+  it('puts the track designator in the track chip on legs flown on a NAT track', () => {
+    const waypoints = [
+      wp({ id: 'A', via: 'DRCT', latitude: 54, longitude: -15 }),
+      wp({ id: '5420N', via: 'NATA', latitude: 54, longitude: -20 }),
+      wp({ id: '5530N', via: 'NATA', latitude: 55, longitude: -30 }),
+      wp({ id: 'B', via: 'DRCT', latitude: 50, longitude: -60 }),
+    ];
+    const { features } = createLegLabelGeoJSON(waypoints);
+    expect(features.map((f) => [f.properties?.airway, f.properties?.chip])).toEqual([
+      ['NATA', 'route-chip-track'],
+      ['NATA', 'route-chip-track'],
+      ['', 'route-chip-enroute'],
+    ]);
+  });
+
   it('skips zero-length legs', () => {
     const waypoints = [
       wp({ id: 'A', latitude: 40, longitude: -80 }),
