@@ -319,6 +319,10 @@ export function FlightConfig({
             }
           />
         )}
+      </div>
+
+      {/* What will launch and the action that launches it, together at the bottom */}
+      <div className="border-border/50 shrink-0 space-y-3 border-t p-4">
         {/* What will launch: a last look before committing */}
         <dl className="bg-secondary/50 space-y-1.5 rounded-lg p-3 text-sm">
           <div className="flex items-start justify-between gap-3">
@@ -335,9 +339,14 @@ export function FlightConfig({
               {!startPosition ? (
                 <span className="text-muted-foreground">—</span>
               ) : startPosition.type === 'custom' ? (
-                <span className="text-primary font-mono">
-                  {units.coordinates(startPosition.latitude, startPosition.longitude)}
-                </span>
+                <>
+                  <span className="text-primary">
+                    {t(`toolbar.pinModes.${startPosition.customStartMode ?? 'ground'}`)}
+                  </span>
+                  <div className="text-muted-foreground font-mono text-xs">
+                    {units.coordinates(startPosition.latitude, startPosition.longitude)}
+                  </div>
+                </>
               ) : (
                 <span className="text-foreground">
                   <IcaoCode className="text-primary">{startPosition.airport}</IcaoCode>{' '}
@@ -360,7 +369,6 @@ export function FlightConfig({
               )}
               {startPosition?.customStartMode === 'air' && (
                 <div className="text-muted-foreground text-xs">
-                  {t('toolbar.pinModes.air')}{' '}
                   {units.altitude(
                     metersToFeet(startPosition.airAltitudeM ?? DEFAULT_AIR_ALTITUDE_M)
                   )}
@@ -371,11 +379,10 @@ export function FlightConfig({
               {(startPosition?.customStartMode === 'carrier' ||
                 startPosition?.customStartMode === 'frigate') && (
                 <div className="text-muted-foreground text-xs">
-                  {t(`toolbar.pinModes.${startPosition.customStartMode}`)}
                   {startPosition.boatPosition
-                    ? ` · ${t(`toolbar.pinModes.cat_${startPosition.boatPosition}`)}`
+                    ? t(`toolbar.pinModes.cat_${startPosition.boatPosition}`)
                     : startPosition.boatApproachNm
-                      ? ` · ${units.distance(startPosition.boatApproachNm as NauticalMiles)}`
+                      ? units.distance(startPosition.boatApproachNm as NauticalMiles)
                       : ''}
                 </div>
               )}
@@ -388,10 +395,7 @@ export function FlightConfig({
             <AlertDescription className="text-sm">{launchError}</AlertDescription>
           </Alert>
         )}
-      </div>
 
-      {/* Launch button — pinned to bottom */}
-      <div className="flex-shrink-0 p-3">
         <Button
           data-testid="confirm-launch"
           onClick={onLaunch}

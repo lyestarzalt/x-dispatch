@@ -1247,7 +1247,7 @@
     },
     "time": {
       "live": "Live",
-      "set": "Set",
+      "set": "Choose time",
       "now": "Now",
       "custom": "Custom",
       "dawn": "Dawn",

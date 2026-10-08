@@ -162,127 +162,131 @@ export function ConditionsCard({
   }, [metar]);
 
   return (
-    <div
-      className="border-border/50 relative overflow-hidden rounded-lg border"
-      style={{ background: `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)` }}
-    >
-      {/* Night sinks towards the background token; weather washes towards muted. */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: mix('background', nightShade * 55, 'transparent') }}
-      />
-      {wash && (
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: mix('muted', wash, 'transparent') }}
-        />
-      )}
-
-      <div className="relative space-y-3 p-3">
-        {/* Mode */}
-        <div className="flex items-center justify-between">
-          <span className="xp-label">{t('launcher.config.conditions')}</span>
-          <ToggleGroup
-            type="single"
-            variant="subtle"
-            size="xs"
-            value={useRealWorldTime ? 'live' : 'set'}
-            onValueChange={(v) => {
-              if (v) onModeChange(v === 'live');
-            }}
-            className="gap-1.5"
-          >
-            <ToggleGroupItem value="live" className="gap-1">
-              <Radio className="h-3.5 w-3.5" />
-              <span>{t('launcher.time.live')}</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="set" className="gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{t('launcher.time.set')}</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-
-        {/* Readout */}
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-foreground font-mono text-4xl font-semibold tabular-nums">
-                {isLive ? live.timeStr : formatHours(timeOfDay)}
-              </span>
-              <span className="text-muted-foreground text-xs">
-                {isLive ? live.offset : t('sunArc.local')}
-              </span>
-            </div>
-            <div className="text-muted-foreground text-xs">
-              {isLive ? live.dateStr : sun.dateStr}
-              {isLive && <span className="ml-2 font-mono">{live.utcStr}Z</span>}
-            </div>
-          </div>
-          {coords && (
-            <span className="text-muted-foreground text-right text-xs">
-              {isDay
-                ? t('launcher.conditions.untilSunset', { h: untilH, m: untilM })
-                : t('launcher.conditions.untilSunrise', { h: untilH, m: untilM })}
-            </span>
-          )}
-        </div>
-
-        {/* Arc and slider, only when the time is set by hand */}
-        {!useRealWorldTime && coords && (
-          <SunArc
-            bare
-            timeOfDay={timeOfDay}
-            latitude={coords.latitude}
-            longitude={coords.longitude}
-            onTimeChange={onTimeChange}
-          />
-        )}
-
-        {/* Weather */}
+    <section className="space-y-2">
+      {/* Header outside the card, like the other launcher sections */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="xp-label flex min-w-0 items-center gap-2">
+          <CloudSun className="h-4 w-4 shrink-0" />
+          <span className="truncate">{t('launcher.config.conditions')}</span>
+        </span>
         <ToggleGroup
           type="single"
           variant="subtle"
-          value={weatherValue}
+          size="xs"
+          value={useRealWorldTime ? 'live' : 'set'}
           onValueChange={(v) => {
-            if (v) onWeatherChange(v);
+            if (v) onModeChange(v === 'live');
           }}
-          className="grid grid-cols-4 gap-1.5"
+          className="shrink-0 gap-1.5"
         >
-          {WEATHER_CHOICES.map((weather) => {
-            const Icon = WEATHER_ICONS[weather] ?? Cloud;
-            return (
-              <ToggleGroupItem
-                key={weather}
-                value={weather}
-                onClick={weather === 'custom' ? () => onWeatherChange('custom') : undefined}
-                className="h-auto min-w-0 flex-col gap-1 px-1 py-2 text-xs"
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="w-full truncate text-center">
-                  {weather === 'custom'
-                    ? t('launcher.weatherModal.custom')
-                    : t(`launcher.weather.${weather}`)}
-                </span>
-              </ToggleGroupItem>
-            );
-          })}
+          <ToggleGroupItem value="live">
+            <Radio />
+            <span>{t('launcher.time.live')}</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="set">
+            <Clock />
+            <span>{t('launcher.time.set')}</span>
+          </ToggleGroupItem>
         </ToggleGroup>
-
-        {metarLine && (
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-muted-foreground truncate font-mono text-xs">
-              {metarLine.text}
-            </span>
-            <Badge variant="outline" className="text-2xs shrink-0 font-mono">
-              {metarLine.category}
-            </Badge>
-          </div>
-        )}
-        {customSummary && (
-          <span className="text-muted-foreground block font-mono text-xs">{customSummary}</span>
-        )}
       </div>
-    </div>
+      <div
+        className="border-border/50 relative overflow-hidden rounded-lg border"
+        style={{ background: `linear-gradient(180deg, ${top} 0%, ${bottom} 100%)` }}
+      >
+        {/* Night sinks towards the background token; weather washes towards muted. */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: mix('background', nightShade * 55, 'transparent') }}
+        />
+        {wash && (
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: mix('muted', wash, 'transparent') }}
+          />
+        )}
+
+        <div className="relative space-y-3 p-3">
+          {/* Readout */}
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-foreground font-mono text-3xl font-semibold tabular-nums">
+                  {isLive ? live.timeStr : formatHours(timeOfDay)}
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  {isLive ? live.offset : t('sunArc.local')}
+                </span>
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {isLive ? live.dateStr : sun.dateStr}
+                {isLive && <span className="ml-2 font-mono">{live.utcStr}Z</span>}
+              </div>
+            </div>
+            {coords && (
+              <span className="text-muted-foreground text-right text-xs">
+                {isDay
+                  ? t('launcher.conditions.untilSunset', { h: untilH, m: untilM })
+                  : t('launcher.conditions.untilSunrise', { h: untilH, m: untilM })}
+              </span>
+            )}
+          </div>
+
+          {/* Arc and slider, only when the time is set by hand */}
+          {!useRealWorldTime && coords && (
+            <SunArc
+              bare
+              timeOfDay={timeOfDay}
+              latitude={coords.latitude}
+              longitude={coords.longitude}
+              onTimeChange={onTimeChange}
+            />
+          )}
+
+          {/* Weather */}
+          <ToggleGroup
+            type="single"
+            variant="subtle"
+            value={weatherValue}
+            onValueChange={(v) => {
+              if (v) onWeatherChange(v);
+            }}
+            className="grid grid-cols-4 gap-1"
+          >
+            {WEATHER_CHOICES.map((weather) => {
+              const Icon = WEATHER_ICONS[weather] ?? Cloud;
+              return (
+                <ToggleGroupItem
+                  key={weather}
+                  value={weather}
+                  onClick={weather === 'custom' ? () => onWeatherChange('custom') : undefined}
+                  className="h-8 min-w-0 justify-start gap-1.5 px-2 text-xs"
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0 truncate">
+                    {weather === 'custom'
+                      ? t('launcher.weatherModal.custom')
+                      : t(`launcher.weather.${weather}`)}
+                  </span>
+                </ToggleGroupItem>
+              );
+            })}
+          </ToggleGroup>
+
+          {metarLine && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground truncate font-mono text-xs">
+                {metarLine.text}
+              </span>
+              <Badge variant="outline" className="text-2xs shrink-0 font-mono">
+                {metarLine.category}
+              </Badge>
+            </div>
+          )}
+          {customSummary && (
+            <span className="text-muted-foreground block font-mono text-xs">{customSummary}</span>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
