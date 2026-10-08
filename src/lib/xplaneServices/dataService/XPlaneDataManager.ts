@@ -4,7 +4,7 @@
  */
 import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
-import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
+import { airports, aptFileMeta, closeDb, getDb, isDbReady, saveDb } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
 import {
@@ -1183,6 +1183,7 @@ export class XPlaneDataManager {
     const db = getDb();
     db.delete(airports).run();
     db.delete(aptFileMeta).run();
+    saveDb();
     // Note: navaids/waypoints/airspaces/airways tables are cleared by navCache when reloading
   }
 

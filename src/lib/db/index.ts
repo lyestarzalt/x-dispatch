@@ -38,14 +38,20 @@ function getSchemaFingerprint(): string {
 }
 
 /**
- * Clean up leftover .old-* database files from previous failed deletions (Windows file lock workaround).
+ * Clean up leftover .old-* database files from previous failed deletions (Windows file lock workaround)
+ * and temp files from interrupted saves.
  */
 function cleanupOldDbFiles(): void {
   try {
     const dir = path.dirname(dbPath);
     const base = path.basename(dbPath);
     for (const file of fs.readdirSync(dir)) {
-      if (file.startsWith(base + '.old-')) {
+      // Also temp files from a save cut short by a crash; each is a full copy of the DB.
+      if (
+        file.startsWith(base + '.old-') ||
+        file === `${base}.tmp` ||
+        file === `${base}.quit.tmp`
+      ) {
         try {
           fs.unlinkSync(path.join(dir, file));
         } catch {
@@ -159,6 +165,8 @@ export async function initDb(): Promise<DrizzleDatabase<typeof schema>> {
     sqlite = new SQL.Database(data);
     db = drizzle(sqlite, { schema });
     migrate(db, { migrationsFolder });
+    // A new database exists only in memory until written.
+    dirty = !data;
   } catch (err) {
     logger.data.warn(`Database open/migrate failed, deleting and restarting: ${err}`);
     discardDbAndRelaunch();
@@ -201,6 +209,8 @@ const SAVE_COALESCE_MS = 5000;
 let saveTimer: NodeJS.Timeout | null = null;
 let saveInFlight = false;
 let saveQueued = false;
+/** Changes not yet on disk. Quit skips the write without them: the file runs to hundreds of MB. */
+let dirty = false;
 
 function exportDbBuffer(): Buffer | null {
   if (!sqlite || !dbPath) return null;
@@ -214,6 +224,8 @@ async function writeDbToDisk(): Promise<void> {
   }
   saveInFlight = true;
   try {
+    // Cleared before the export, so a change made during the write marks it dirty again.
+    dirty = false;
     const buffer = exportDbBuffer();
     if (!buffer) return;
     const dir = path.dirname(dbPath);
@@ -231,6 +243,7 @@ async function writeDbToDisk(): Promise<void> {
     }
     logger.data.info('Database saved to disk');
   } catch (err) {
+    dirty = true; // quit retries it
     logger.data.warn(`Database save failed: ${err}`);
   } finally {
     saveInFlight = false;
@@ -243,6 +256,7 @@ async function writeDbToDisk(): Promise<void> {
 
 export function saveDb(): void {
   if (!sqlite || !dbPath) return;
+  dirty = true;
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     saveTimer = null;
@@ -256,13 +270,21 @@ function flushDbSync(): void {
     clearTimeout(saveTimer);
     saveTimer = null;
   }
+  if (!dirty) return;
   const buffer = exportDbBuffer();
   if (!buffer) return;
-  const dir = path.dirname(dbPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  // Same temp-and-rename as the debounced save: a quit cut short must not truncate the file.
+  // Its own temp name, so a background save still writing cannot interleave with it.
+  const tmpPath = `${dbPath}.quit.tmp`;
+  fs.writeFileSync(tmpPath, buffer);
+  try {
+    fs.renameSync(tmpPath, dbPath);
+  } catch {
+    fs.writeFileSync(dbPath, buffer);
+    fs.rmSync(tmpPath, { force: true });
   }
-  fs.writeFileSync(dbPath, buffer);
+  dirty = false;
   logger.data.info('Database saved to disk');
 }
 

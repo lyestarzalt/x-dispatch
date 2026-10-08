@@ -25,7 +25,7 @@ import type { AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
-import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
+import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
@@ -941,6 +941,7 @@ function registerIpcHandlers() {
     if (!db) return { columns: [], rows: [], error: 'No database' };
     try {
       const result = db.exec(sql);
+      saveDb();
       if (!result[0]) return { columns: [], rows: [] };
       return { columns: result[0].columns, rows: result[0].values };
     } catch (err) {

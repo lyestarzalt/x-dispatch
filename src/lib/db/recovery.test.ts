@@ -291,4 +291,157 @@ describe('DB integrity & recovery', () => {
       mod.closeDb();
     });
   });
+
+  describe('saving on quit', () => {
+    /** Backdate the file so a rewrite shows up as a newer mtime. */
+    function backdateDb(): number {
+      const old = new Date('2020-01-01T00:00:00Z');
+      fs.utimesSync(dbFilePath(), old, old);
+      return fs.statSync(dbFilePath()).mtimeMs;
+    }
+
+    it('does not rewrite an unchanged database on quit', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+      const before = backdateDb();
+
+      const mod2 = await freshInit();
+      mod2.closeDb();
+      expect(fs.statSync(dbFilePath()).mtimeMs).toBe(before);
+    });
+
+    it('writes pending changes on quit without waiting for the debounce', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+      const before = backdateDb();
+
+      const mod2 = await freshInit();
+      mod2.saveDb();
+      mod2.closeDb();
+      expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(before);
+    });
+
+    /** Lets real fs promises settle while setTimeout stays faked. */
+    async function until(check: () => boolean) {
+      for (let i = 0; i < 5000 && !check(); i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      expect(check()).toBe(true);
+    }
+
+    it('does not write again on quit once the background save has landed', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+      const before = backdateDb();
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const mod2 = await freshInit();
+        mod2.saveDb();
+        vi.advanceTimersByTime(5000);
+        await until(() => fs.statSync(dbFilePath()).mtimeMs > before);
+
+        const afterBackground = backdateDb();
+        mod2.closeDb();
+        expect(fs.statSync(dbFilePath()).mtimeMs).toBe(afterBackground);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('writes on quit when something changed after the background save', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const mod2 = await freshInit();
+        mod2.saveDb();
+        vi.advanceTimersByTime(5000);
+        const before = backdateDb();
+        await until(() => fs.statSync(dbFilePath()).mtimeMs > before);
+
+        mod2.saveDb(); // a later change, still inside the debounce window
+        const afterBackground = backdateDb();
+        mod2.closeDb();
+        expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(afterBackground);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('keeps a valid database when quit lands while a background save is writing', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const mod2 = await freshInit();
+        mod2.saveDb();
+        vi.advanceTimersByTime(5000); // background write starts
+        mod2.saveDb();
+        mod2.closeDb(); // quit before it finishes
+        await until(() => !fs.readdirSync(TEST_USER_DATA).some((f) => f.endsWith('.tmp')));
+      } finally {
+        vi.useRealTimers();
+      }
+
+      // Whichever write landed last, the next launch opens it without a recovery relaunch.
+      const mod3 = await freshInit();
+      expect(relaunchSpy).not.toHaveBeenCalled();
+      mod3.closeDb();
+    });
+
+    it('retries on quit after a failed background save', async () => {
+      if (process.platform === 'win32') return; // chmod does not block writes on Windows
+      const mod = await freshInit();
+      mod.closeDb();
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        const mod2 = await freshInit();
+        mod2.saveDb();
+        const before = backdateDb();
+        fs.chmodSync(TEST_USER_DATA, 0o500); // the temp file cannot be created
+        vi.advanceTimersByTime(5000);
+        // Give the failed write time to settle; nothing reaches disk.
+        for (let i = 0; i < 500; i++) await new Promise((resolve) => setImmediate(resolve));
+        fs.chmodSync(TEST_USER_DATA, 0o700);
+        expect(fs.statSync(dbFilePath()).mtimeMs).toBe(before);
+
+        mod2.closeDb();
+        expect(fs.statSync(dbFilePath()).mtimeMs).toBeGreaterThan(before);
+      } finally {
+        fs.chmodSync(TEST_USER_DATA, 0o700);
+        vi.useRealTimers();
+      }
+    });
+
+    it('tolerates saveDb before init and closeDb twice', async () => {
+      vi.resetModules();
+      const mod = await import('@/lib/db');
+      expect(() => mod.saveDb()).not.toThrow();
+      await mod.initDb();
+      mod.closeDb();
+      expect(() => mod.closeDb()).not.toThrow();
+    });
+
+    it('removes temp files left by a save cut short by a crash', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+      fs.writeFileSync(dbFilePath() + '.tmp', 'partial');
+      fs.writeFileSync(dbFilePath() + '.quit.tmp', 'partial');
+
+      const mod2 = await freshInit();
+      expect(fs.existsSync(dbFilePath() + '.tmp')).toBe(false);
+      expect(fs.existsSync(dbFilePath() + '.quit.tmp')).toBe(false);
+      mod2.closeDb();
+    });
+
+    it('leaves no temp file behind after the quit write', async () => {
+      const mod = await freshInit();
+      mod.closeDb();
+      expect(fs.readdirSync(TEST_USER_DATA).filter((f) => f.endsWith('.tmp'))).toEqual([]);
+    });
+  });
 });
