@@ -14,6 +14,7 @@ import SetupScreen from './components/screens/SetupScreen';
 import { Toaster } from './components/ui/sonner';
 import { FullScreenSpinner } from './components/ui/spinner';
 import { TooltipProvider } from './components/ui/tooltip';
+import { useNativeShell } from './hooks/useNativeShell';
 import './i18n';
 import { startupBucket } from './lib/analytics/buckets';
 import type { Airport } from './lib/xplaneServices/dataService';
@@ -38,6 +39,7 @@ function useFlightStripOpacitySync() {
 
 function AppContent() {
   useFlightStripOpacitySync();
+  useNativeShell();
   const [appState, setAppState] = useState<AppState>('checking');
   const [airports, setAirports] = useState<Airport[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);

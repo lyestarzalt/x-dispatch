@@ -5,6 +5,7 @@
  * so the desktop and a tablet cannot drift apart.
  */
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
+import type { NativeLabels } from '@/lib/nativeShell/labels';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type {
@@ -136,6 +137,9 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getZoomFactor: x.getZoomFactor,
       getFilePathForDrop: x.getFilePathForDrop,
       onFocusSearch: (callback: () => void) => t.on('focus-search', callback),
+      onOpenSettings: (callback: (tab: 'about' | null) => void) =>
+        t.on('app:openSettings', callback),
+      setNativeLabels: (labels: NativeLabels) => t.send('app:setNativeLabels', labels),
       resyncCustomAirports: () =>
         t.invoke('airport:resync-custom') as Promise<{
           synced: boolean;

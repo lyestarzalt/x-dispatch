@@ -6,6 +6,7 @@ import {
   autoUpdater,
   clipboard,
   dialog,
+  nativeTheme,
   net,
   screen,
   session,
@@ -17,6 +18,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
+import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import type { AnalyticsConsentState } from './lib/analytics/events';
@@ -26,6 +28,12 @@ import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
+import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import {
+  DEFAULT_NATIVE_LABELS,
+  type NativeLabels,
+  parseNativeLabels,
+} from './lib/nativeShell/labels';
 import { isAllowedNavigation } from './lib/nativeShell/navigationGuard';
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
@@ -227,6 +235,36 @@ const sessionStartTime = Date.now();
 const analytics = initMainAnalytics();
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
+/** Translated by the renderer; English until its first push. */
+let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
+
+/** Only the desktop window: a tablet must not have Settings pop open from the PC's menu. */
+function openSettingsInMainWindow(tab: 'about' | null = null): void {
+  const win = mainWindow;
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.focus();
+  win.webContents.send('app:openSettings', tab);
+}
+
+function installAppMenu(): void {
+  const template = buildAppMenuTemplate({
+    platform: process.platform,
+    isPackaged: app.isPackaged,
+    appName: app.getName(),
+    labels: nativeLabels.menu,
+    actions: {
+      openSettings: () => openSettingsInMainWindow(),
+      checkForUpdates: () => {
+        openSettingsInMainWindow('about');
+        void checkForUpdatesNow();
+      },
+      openExternal: (url) => void shell.openExternal(url),
+      toggleDevTools: () => BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools(),
+    },
+  });
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
 
 async function getXPlaneModule() {
   if (!xplaneModule) {
@@ -555,6 +593,13 @@ function createWindow(): BrowserWindow {
       event.preventDefault();
       analytics.track('shortcut_used', { shortcut: 'focus_search' });
       broadcast('focus-search');
+      return;
+    }
+    // The menu accelerator covers macOS; with the title bar hidden, Windows and Linux
+    // have no visible menu, so Ctrl+, is caught here instead.
+    if (!isMac && !input.shift && input.key === ',') {
+      event.preventDefault();
+      openSettingsInMainWindow();
     }
   });
 
@@ -598,6 +643,12 @@ async function refreshLatestVersion(): Promise<void> {
     return;
   }
   updateStatus.patch({ latestVersion });
+}
+
+async function checkForUpdatesNow() {
+  if (updateStatus.get().managed) startManagedUpdateCheck();
+  await refreshLatestVersion();
+  return updateStatus.get();
 }
 
 let updateRetryTimer: NodeJS.Timeout | null = null;
@@ -681,10 +732,12 @@ function registerIpcHandlers() {
     }
   });
   handle('app:getUpdateStatus', () => updateStatus.get());
-  handle('app:checkForUpdates', async () => {
-    if (updateStatus.get().managed) startManagedUpdateCheck();
-    await refreshLatestVersion();
-    return updateStatus.get();
+  handle('app:checkForUpdates', () => checkForUpdatesNow());
+  on('app:setNativeLabels', (event, labels: unknown) => {
+    // Only the desktop window speaks for the menu's language.
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    nativeLabels = parseNativeLabels(labels);
+    installAppMenu();
   });
   handle('app:installUpdate', () => {
     if (updateStatus.get().install !== 'ready') return false;
@@ -2005,9 +2058,14 @@ async function bootstrap(): Promise<void> {
     }
   }
 
-  if (app.isPackaged) {
-    Menu.setApplicationMenu(null);
-  }
+  // One dark theme: native menus, dialogs and scrollbars match it on every OS setting.
+  nativeTheme.themeSource = 'dark';
+  app.setAboutPanelOptions({
+    applicationName: app.getName(),
+    applicationVersion: app.getVersion(),
+    website: PROJECT_WEBSITE,
+  });
+  installAppMenu();
 
   try {
     await initDb();

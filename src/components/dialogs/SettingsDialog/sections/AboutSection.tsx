@@ -17,6 +17,7 @@ import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PROJECT_WEBSITE } from '@/config/links';
 import { cn } from '@/lib/utils/helpers';
 import { isNewerVersion } from '@/lib/utils/versionCompare';
 import {
@@ -33,7 +34,6 @@ import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primiti
 import type { SettingsSectionProps } from '../types';
 
 const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_about' });
-const PROJECT_WEBSITE = 'https://x-dispatch.app/';
 const KOFI_URL = 'https://ko-fi.com/A0A21V3IZZ';
 
 interface UpdateStatusLineProps {

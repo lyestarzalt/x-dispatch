@@ -10,6 +10,8 @@ interface AppState {
   selectedAirportIsCustom: boolean;
   showSidebar: boolean;
   showSettings: boolean;
+  /** Request for the Settings dialog to open on a tab (the menu's Check for Updates); it clears it. */
+  pendingSettingsTab: SettingsTabRequest | null;
   showLaunchDialog: boolean;
   selectedProcedure: SelectedProcedure | null;
   startPosition: StartPosition | null;
@@ -29,6 +31,8 @@ interface AppState {
   clearAirport: () => void;
   setShowSidebar: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
+  openSettings: (tab?: SettingsTabRequest | null) => void;
+  clearPendingSettingsTab: () => void;
   setShowLaunchDialog: (show: boolean) => void;
   selectProcedure: (procedure: SelectedProcedure | null) => void;
   setStartPosition: (position: StartPosition | null) => void;
@@ -43,6 +47,7 @@ interface AppState {
 }
 
 export type LogbookTab = 'flights' | 'launches';
+export type SettingsTabRequest = 'about';
 
 export const useAppStore = create<AppState>()(
   subscribeWithSelector((set) => ({
@@ -51,6 +56,7 @@ export const useAppStore = create<AppState>()(
     selectedAirportIsCustom: false,
     showSidebar: true,
     showSettings: false,
+    pendingSettingsTab: null as SettingsTabRequest | null,
     showLaunchDialog: false,
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
@@ -79,6 +85,8 @@ export const useAppStore = create<AppState>()(
 
     setShowSidebar: (show) => set({ showSidebar: show }),
     setShowSettings: (show) => set({ showSettings: show }),
+    openSettings: (tab) => set({ showSettings: true, pendingSettingsTab: tab ?? null }),
+    clearPendingSettingsTab: () => set({ pendingSettingsTab: null }),
     setShowLaunchDialog: (show) => set({ showLaunchDialog: show }),
 
     selectProcedure: (procedure) => set({ selectedProcedure: procedure }),

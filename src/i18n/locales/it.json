@@ -2067,5 +2067,22 @@
     "desktopOnly": "Available in X-Dispatch on your computer",
     "reconnecting": "Connection to X-Dispatch lost. Reconnecting…",
     "pairingReset": "Pairing was reset. Scan the QR code in X-Dispatch again."
+  },
+  "nativeShell": {
+    "menu": {
+      "settings": "Impostazioni…",
+      "edit": "Modifica",
+      "window": "Finestra",
+      "help": "Aiuto",
+      "website": "Sito web di X-Dispatch",
+      "discord": "Community Discord",
+      "checkForUpdates": "Cerca aggiornamenti…"
+    },
+    "crash": {
+      "title": "X-Dispatch ha smesso di funzionare",
+      "message": "La finestra si è bloccata di nuovo poco dopo il ricaricamento. Ricaricarla ancora una volta o uscire?",
+      "reload": "Ricarica",
+      "quit": "Esci"
+    }
   }
 }

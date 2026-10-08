@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { DISCORD_INVITE, SUPPORT_PAGE } from '@/config/links';
 import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
@@ -14,8 +15,6 @@ import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitive
 import type { SettingsSectionProps } from '../types';
 
 const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_support' });
-const SUPPORT_PAGE = 'https://x-dispatch.app/support/';
-const DISCORD_INVITE = 'https://discord.gg/76UYpxXWW7';
 
 export default function SupportSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();

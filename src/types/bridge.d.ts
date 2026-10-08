@@ -136,6 +136,8 @@ declare global {
       resyncCustomAirports: () => Promise<{ synced: boolean; count: number; diff: number }>;
       onAirportsUpdated: (callback: () => void) => () => void;
       onFocusSearch: (callback: () => void) => () => void;
+      onOpenSettings: (callback: (tab: 'about' | null) => void) => () => void;
+      setNativeLabels: (labels: import('@/lib/nativeShell/labels').NativeLabels) => void;
       onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => () => void;
       pickDirectory: (opts?: { title?: string; defaultPath?: string }) => Promise<string | null>;
     };
