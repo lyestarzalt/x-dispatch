@@ -1,4 +1,5 @@
 import * as maplibregl from 'maplibre-gl';
+import { labelFont } from '@/lib/map/labelFonts';
 import { parseSignText } from '@/lib/parsers/apt/signs';
 import type { ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -54,7 +55,7 @@ export class SignLayer extends BaseLayerRenderer {
       layout: {
         'text-field': ['get', 'text'],
         'text-size': 11,
-        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-rotate': ['get', 'heading'],
         'text-rotation-alignment': 'map',
         'text-allow-overlap': true,

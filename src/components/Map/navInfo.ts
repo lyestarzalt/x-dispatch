@@ -1,7 +1,13 @@
 import type * as maplibregl from 'maplibre-gl';
 import { type NavInfoSelection, useMapStore } from '@/stores/mapStore';
 
-export const NAV_INFO_LAYER_IDS = ['nav-navaids', 'flightplan-waypoints'];
+export const NAV_INFO_LAYER_IDS = ['nav-navaids', 'nav-ils', 'flightplan-waypoints'];
+
+/**
+ * Station layers first: a plan waypoint drawn over a navaid or localizer only knows what the
+ * plan carried, while the station feature has the frequency, name and elevation from nav data.
+ */
+const FEATURE_PRIORITY = ['nav-navaids', 'nav-ils'];
 
 type FeatureEvent = maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] };
 
@@ -12,7 +18,7 @@ type FeatureEvent = maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSO
  */
 export function setupNavInfoClicks(map: maplibregl.Map): void {
   map.on('click', NAV_INFO_LAYER_IDS, (e: FeatureEvent) => {
-    const feature = e.features?.[0];
+    const feature = pickNavInfoFeature(e.features ?? []);
     if (!feature || feature.geometry.type !== 'Point') return;
     const [lng, lat] = feature.geometry.coordinates;
     if (lng === undefined || lat === undefined) return;
@@ -25,6 +31,17 @@ export function setupNavInfoClicks(map: maplibregl.Map): void {
   map.on('mouseleave', NAV_INFO_LAYER_IDS, () => {
     map.getCanvas().style.cursor = '';
   });
+}
+
+/** The clicked feature to describe: a station when one sits under the cursor, else the topmost. */
+export function pickNavInfoFeature(
+  features: readonly maplibregl.MapGeoJSONFeature[]
+): maplibregl.MapGeoJSONFeature | undefined {
+  for (const layerId of FEATURE_PRIORITY) {
+    const station = features.find((f) => f.layer.id === layerId);
+    if (station) return station;
+  }
+  return features[0];
 }
 
 const FMS_NDB = 2;
@@ -53,21 +70,37 @@ export function navInfoFromFeature(
       longitude,
     };
   }
+  if (layerId === 'nav-ils') {
+    const bearing = Number(props.bearing);
+    return {
+      id,
+      name: typeof props.name === 'string' ? props.name : undefined,
+      kind: String(props.type ?? 'ILS'),
+      frequency: `${String(props.freqDisplay ?? '')} MHz`,
+      runway: typeof props.runway === 'string' && props.runway ? props.runway : undefined,
+      courseTrue: Number.isFinite(bearing) ? bearing : undefined,
+      latitude,
+      longitude,
+    };
+  }
   const navType = Number(props.navType);
   const frequency = Number(props.frequency);
   const altitudeLabel = typeof props.altitudeLabel === 'string' ? props.altitudeLabel : '';
   const index = Number(props.index);
+  // The station type from enrichment, when the plan has it; the FMS type otherwise.
+  const navaidType = typeof props.navaidType === 'string' ? props.navaidType : '';
   let kind = 'WPT';
   let freqLabel: string | undefined;
   if (navType === FMS_NDB) {
-    kind = 'NDB';
+    kind = navaidType || 'NDB';
     if (frequency > 0) freqLabel = `${frequency} kHz`;
   } else if (navType === FMS_VOR) {
-    kind = 'VOR';
+    kind = navaidType || 'VOR';
     if (frequency > 0) freqLabel = `${frequency.toFixed(2)} MHz`;
   }
   return {
     id,
+    name: typeof props.name === 'string' && props.name ? props.name : undefined,
     kind,
     frequency: freqLabel,
     altitudeLabel: altitudeLabel || undefined,

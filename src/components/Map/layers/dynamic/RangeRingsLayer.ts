@@ -6,6 +6,7 @@
  * Includes a drag handle on the outermost ring to interactively resize all rings.
  */
 import * as maplibregl from 'maplibre-gl';
+import { labelFont } from '@/lib/map/labelFonts';
 import { destinationPoint, haversineDistance, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import type { RangeRingCategory } from '@/types/layers';
 import { safeAddGeoJSONSource } from '../types';
@@ -413,7 +414,7 @@ export function addRangeRingsLayer(
       'symbol-placement': 'line',
       'symbol-spacing': 400,
       'text-field': ['get', 'label'],
-      'text-font': ['Open Sans Regular'],
+      'text-font': labelFont(map, 'regular'),
       'text-size': 11,
       'text-letter-spacing': 0.05,
       'text-allow-overlap': false,

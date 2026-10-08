@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import type { StyleImageInterface } from 'maplibre-gl';
+import { labelFont } from '@/lib/map/labelFonts';
 import { useSolarStore } from '@/stores/solarStore';
 import type { PlanePosition } from '@/types/xplane';
 import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
@@ -297,7 +298,7 @@ export function addPlaneLayer(map: maplibregl.Map, position: PlanePosition | nul
         ],
         { 'font-scale': 0.8 },
       ],
-      'text-font': ['Open Sans Semibold'],
+      'text-font': labelFont(map, 'semibold'),
       'text-size': ['interpolate', ['linear'], ['zoom'], 7, 10, 12, 12],
       'text-offset': [1.6, 0],
       'text-anchor': 'left',

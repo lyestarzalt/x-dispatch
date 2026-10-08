@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { labelFont } from '@/lib/map/labelFonts';
 import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/utils/geomath';
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
@@ -109,7 +110,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       minzoom: ZOOM_BEHAVIORS.runwayEnds.minZoom,
       layout: {
         'text-field': ['get', 'number'],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-size': [
           'interpolate',
           ['linear'],

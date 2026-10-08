@@ -100,6 +100,13 @@ function NavInfoCard({ info, airports, onClose }: NavInfoCardProps) {
 
       <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
         {info.frequency && <Row label={t('navInfo.frequency')} value={info.frequency} />}
+        {info.runway && <Row label={t('navInfo.runway')} value={info.runway} />}
+        {info.courseTrue !== undefined && (
+          <Row
+            label={t('navInfo.course')}
+            value={units.course(info.courseTrue as Degrees, info.latitude, info.longitude)}
+          />
+        )}
         {altitude && <Row label={t('navInfo.altitude')} value={altitude} accent />}
         {info.elevationFt !== undefined && (
           <Row label={t('navInfo.elevation')} value={units.altitude(info.elevationFt as Feet)} />

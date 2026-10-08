@@ -48,6 +48,10 @@ export interface NavInfoSelection {
   altitudeLabel?: string;
   /** Station elevation of a navaid, feet MSL. */
   elevationFt?: number;
+  /** Runway served by a localizer. */
+  runway?: string;
+  /** Published localizer course, degrees true. */
+  courseTrue?: number;
   /** Position in the flight plan's waypoint list, for a clicked plan waypoint. */
   routeIndex?: number;
   latitude: number;

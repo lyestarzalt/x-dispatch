@@ -6,6 +6,7 @@ import {
   NAV_LINE_STYLES,
   NAV_ZOOM_LEVELS,
 } from '@/config/navLayerConfig';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
 import { setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
@@ -146,7 +147,7 @@ export class HighAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithC
       minzoom: NAV_ZOOM_LEVELS.highAirways.labels,
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': NAV_LABEL_STYLES.fonts.bold,
+        'text-font': labelFont(map, 'bold'),
         'text-size': [
           'interpolate',
           ['linear'],
@@ -279,7 +280,7 @@ export class LowAirwayLayerRenderer extends NavLayerRenderer<AirwaySegmentWithCo
       minzoom: NAV_ZOOM_LEVELS.lowAirways.labels,
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': NAV_LABEL_STYLES.fonts.bold,
+        'text-font': labelFont(map, 'bold'),
         'text-size': [
           'interpolate',
           ['linear'],

@@ -101,11 +101,6 @@ export const NAV_SYMBOL_SIZES = {
 };
 
 export const NAV_LABEL_STYLES = {
-  fonts: {
-    bold: ['Open Sans Bold'] as string[],
-    semibold: ['Open Sans Semibold'] as string[],
-    regular: ['Open Sans Regular'] as string[],
-  },
   textSize: {
     airways: { min: 8, medium: 10, max: 11 },
     fir: 11,

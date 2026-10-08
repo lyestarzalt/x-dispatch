@@ -1994,6 +1994,8 @@
   "navInfo": {
     "waypoint": "航路点",
     "frequency": "频率",
+    "runway": "跑道",
+    "course": "航向",
     "altitude": "计划高度",
     "elevation": "海拔",
     "bearing": "方位",

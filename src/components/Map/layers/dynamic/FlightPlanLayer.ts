@@ -8,6 +8,7 @@ import { buildUnitFormatters } from '@/hooks/useUnits';
 import { bearingDeg, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { routeLineSegments } from '@/lib/flightplan/builder/routeLine';
 import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -152,11 +153,8 @@ function formatAltitude(altitude: number): string {
   return `${Math.round(altitude)}`;
 }
 
+/** Ident only; the frequency is on the info card, not the map. */
 function buildLabel(wp: EnrichedWaypoint): string {
-  if (wp.frequency && wp.frequency > 0) {
-    if (wp.type === 2) return `${wp.id}\n${wp.frequency}`;
-    if (wp.type === 3) return `${wp.id}\n${wp.frequency.toFixed(2)}`;
-  }
   return wp.id;
 }
 
@@ -424,6 +422,9 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       index,
       navType: wp.type,
       frequency: wp.frequency ?? 0,
+      // Station data from enrichment, for the info card; empty when the plan has none.
+      navaidType: wp.navaidType ?? '',
+      name: wp.name ?? '',
       altitudeLabel: wp.constraintLabel ?? formatAltitude(wp.altitude),
       label: buildLabel(wp),
       badge: waypointBadgeId(wp.via, fmsData.procedurePaths),
@@ -584,7 +585,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   // per map tile). Chips collide with each other and with waypoint labels, so they thin out as
   // the map zooms out. Zoomed out only airway names show; zoomed in, distance and course.
   const chipLayout = {
-    'text-font': ['Open Sans Semibold'],
+    'text-font': labelFont(map, 'semibold'),
     'text-size': zoomScaledTextSize(9),
     'text-anchor': 'center',
     'text-rotate': ['get', 'rotate'],
@@ -626,7 +627,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: {
       ...chipLayout,
       'text-field': ['get', 'name'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-letter-spacing': 0.05,
     },
     paint: { 'text-color': COLORS.labelText },
@@ -655,7 +656,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     filter: ['!=', ['get', 'label'], ''],
     layout: {
       'text-field': ['get', 'label'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-size': zoomScaledTextSize(10),
       'text-letter-spacing': 0.1,
       'text-variable-anchor': [
@@ -693,7 +694,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     minzoom: 7,
     layout: {
       'text-field': ['get', 'altitudeLabel'],
-      'text-font': ['Open Sans Semibold'],
+      'text-font': labelFont(map, 'semibold'),
       'text-size': zoomScaledTextSize(9),
       'text-offset': [0, 1.4],
       'text-anchor': 'top',
@@ -731,7 +732,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       'icon-image': 'fp-airport',
       'icon-size': 0.8,
       'text-field': ['get', 'icao'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-size': zoomScaledTextSize(11),
       'text-offset': [0, -1.8],
       'text-anchor': 'bottom',

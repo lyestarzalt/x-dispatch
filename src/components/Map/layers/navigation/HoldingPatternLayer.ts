@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { HoldingPattern } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
@@ -165,7 +166,7 @@ export class HoldingPatternLayerRenderer extends NavLayerRenderer<HoldingPattern
       filter: ['==', '$type', 'Point'],
       layout: {
         'text-field': ['get', 'label'],
-        'text-font': ['Open Sans Semibold'],
+        'text-font': labelFont(map, 'semibold'),
         'text-size': 10,
         'text-offset': [0, -2],
         'text-anchor': 'bottom',

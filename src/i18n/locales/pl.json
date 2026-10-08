@@ -1994,6 +1994,8 @@
   "navInfo": {
     "waypoint": "Punkt trasy",
     "frequency": "Częstotliwość",
+    "runway": "Pas",
+    "course": "Kurs",
     "altitude": "Planowana wysokość",
     "elevation": "Wysokość",
     "bearing": "Namiar",

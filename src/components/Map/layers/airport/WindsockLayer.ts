@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { ParsedAirport } from '@/types/apt';
 import { createWindsockGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -53,7 +54,7 @@ export class WindsockLayer extends BaseLayerRenderer {
       minzoom: ZOOM_BEHAVIORS.labels.minZoom + 2,
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-offset': [0, 1.5],
         'text-anchor': 'top',
         'text-size': ['interpolate', ['linear'], ['zoom'], 16, 10, 20, 14],

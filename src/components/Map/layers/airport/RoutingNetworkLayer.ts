@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { ParsedAirport, TaxiNodeUsage } from '@/types/apt';
 import { createRoutingNetworkGeoJSON } from '../../utils/geoJsonFactory';
 import { safeAddGeoJSONSource } from '../types';
@@ -118,7 +119,7 @@ export class RoutingNetworkLayer extends BaseLayerRenderer {
         'symbol-placement': 'line',
         'symbol-spacing': 60,
         'text-field': '▶',
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-size': ['interpolate', ['linear'], ['zoom'], 14, 8, 18, 13],
         'text-rotation-alignment': 'map',
         'text-keep-upright': false,

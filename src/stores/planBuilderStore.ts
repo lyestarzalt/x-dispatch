@@ -30,7 +30,7 @@ import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FMSFlightPlan, RunwayEnd } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import { useAppStore } from './appStore';
-import { useFlightPlanStore } from './flightPlanStore';
+import { addStationData, useFlightPlanStore } from './flightPlanStore';
 
 export type PlanBuilderStatus = 'idle' | 'resolving' | 'ready' | 'error';
 export type ProcedureKind = 'sid' | 'star' | 'approach';
@@ -312,6 +312,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             transition: composed.plan.arrival.starTransition,
           },
         });
+        void addStationData(composed.enriched);
       },
 
       saveToXPlane: async () => {

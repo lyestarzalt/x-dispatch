@@ -12,18 +12,12 @@ import type { EnrichedFlightPlan, EnrichedWaypoint, FMSFlightPlan } from '@/type
 const MAX_SEARCH_DISTANCE_NM = 100;
 
 /**
- * Format frequency for display
- * VORs stored in Hz * 100, display as MHz (e.g., 11450 -> 114.50)
- * NDBs stored in Hz * 100, display as kHz (e.g., 35000 -> 350)
+ * Frequency for display: VORs are stored in 10 kHz units and shown in MHz (11450 -> 114.50);
+ * NDBs are stored in kHz and shown as they are (400 -> 400).
  */
 function formatFrequency(freqRaw: number, isNDB: boolean): number {
   if (freqRaw === 0) return 0;
-  if (isNDB) {
-    // NDB frequencies are in kHz, stored as Hz * 100
-    return Math.round(freqRaw / 100);
-  }
-  // VOR frequencies are in MHz, stored as Hz * 100
-  return freqRaw / 100;
+  return isNDB ? freqRaw : freqRaw / 100;
 }
 
 /**

@@ -11,6 +11,7 @@ import {
   getAirspaceColor,
   getAirspaceStyle,
 } from '@/config/navLayerConfig';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { Airspace } from '@/types/navigation';
 import { NavLayerRenderer } from './NavLayerRenderer';
 
@@ -138,7 +139,7 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
       minzoom: 8,
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-size': ['interpolate', ['linear'], ['zoom'], 8, 10, 12, 12],
         'text-allow-overlap': false,
         'symbol-placement': 'line',
@@ -215,7 +216,7 @@ export class FIRLayerRenderer extends NavLayerRenderer<Airspace> {
       minzoom: NAV_ZOOM_LEVELS.firBoundaries.labels,
       layout: {
         'text-field': ['concat', ['get', 'class'], ' ', ['get', 'name']],
-        'text-font': NAV_LABEL_STYLES.fonts.bold,
+        'text-font': labelFont(map, 'bold'),
         'text-size': NAV_LABEL_STYLES.textSize.fir,
         'text-allow-overlap': false,
         'symbol-placement': 'point',

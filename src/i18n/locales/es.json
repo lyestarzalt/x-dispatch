@@ -1994,6 +1994,8 @@
   "navInfo": {
     "waypoint": "Punto de ruta",
     "frequency": "Frecuencia",
+    "runway": "Pista",
+    "course": "Rumbo",
     "altitude": "Altitud planificada",
     "elevation": "Elevación",
     "bearing": "Rumbo",

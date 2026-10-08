@@ -6,6 +6,7 @@ import {
   normalizeOperation,
   normalizeWidthCode,
 } from '@/lib/airports/standIdentity';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { ParsedAirport } from '@/types/apt';
 import type { Helipad, StartupLocation } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
@@ -258,7 +259,7 @@ export class GateLayer extends BaseLayerRenderer {
       minzoom: minZoom,
       layout: {
         'text-field': ['get', 'name'],
-        'text-font': ['Open Sans Bold'],
+        'text-font': labelFont(map, 'bold'),
         'text-size': ['interpolate', ['linear'], ['zoom'], minZoom, 9, 17, 12, 19, 14],
         'text-offset': [0, 1.8],
         'text-anchor': 'top',

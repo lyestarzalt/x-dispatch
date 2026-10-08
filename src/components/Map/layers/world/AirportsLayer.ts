@@ -19,6 +19,7 @@ import {
   type AirportThemeColors,
   type BasemapTheme,
 } from '@/lib/map/basemapTheme';
+import { labelFont } from '@/lib/map/labelFonts';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this ?raw import
@@ -319,7 +320,7 @@ export function setupAirportsLayer(
     minzoom: 6,
     layout: {
       'text-field': ['get', 'icao'],
-      'text-font': ['Open Sans Bold'],
+      'text-font': labelFont(map, 'bold'),
       'text-offset': [0, 1.2],
       'text-anchor': 'top',
       'text-size': ['interpolate', ['linear'], ['zoom'], 6, 8, 10, 10, 14, 12],
