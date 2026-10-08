@@ -12,8 +12,14 @@ vi.mock('@/lib/utils/logger', () => ({
   default: { main: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } },
 }));
 
-const { getAnalyticsConsent, getInstallations, isSetupComplete, saveAnalyticsPendingSession } =
-  await import('./config');
+const {
+  getAnalyticsConsent,
+  getInstallations,
+  getStoredXPlaneVersion,
+  isSetupComplete,
+  saveAnalyticsPendingSession,
+  setActiveInstallation,
+} = await import('./config');
 
 const configPath = () => path.join(userData, 'config.json');
 
@@ -87,6 +93,29 @@ describe('config persistence', () => {
     expect(backups).toHaveLength(1);
     expect(fs.readFileSync(path.join(userData, backups[0]!), 'utf-8')).toContain('installations');
     expect(readConfig().analyticsPendingSession).toEqual(SESSION);
+  });
+
+  it('forgets the previous install version when switching installs', () => {
+    writeConfig({
+      xplanePath: '/steam',
+      version: 1,
+      lastUpdated: '2026-01-01T00:00:00.000Z',
+      xplaneVersion: '12.4.3-r2-15ff1e4d',
+      xplaneIsSteam: true,
+      installations: [
+        { id: 'steam', name: 'Steam', path: '/steam' },
+        { id: 'beta', name: 'Beta', path: '/beta' },
+      ],
+      activeInstallationId: 'steam',
+    });
+
+    expect(setActiveInstallation('beta')).toBe(true);
+
+    const saved = readConfig();
+    expect(saved.xplanePath).toBe('/beta');
+    expect(saved.xplaneVersion).toBeUndefined();
+    expect(saved.xplaneIsSteam).toBeUndefined();
+    expect(getStoredXPlaneVersion()).toBeNull();
   });
 
   it('writes atomically, leaving no temp file behind', () => {

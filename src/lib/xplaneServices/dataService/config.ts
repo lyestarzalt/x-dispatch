@@ -154,8 +154,9 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       version: CONFIG_VERSION,
       lastUpdated: new Date().toISOString(),
       sendCrashReports: config.sendCrashReports ?? existing?.sendCrashReports ?? true,
-      xplaneVersion: config.xplaneVersion ?? existing?.xplaneVersion,
-      xplaneIsSteam: config.xplaneIsSteam ?? existing?.xplaneIsSteam,
+      // `in` check so switching installs can clear the old install's version.
+      xplaneVersion: 'xplaneVersion' in config ? config.xplaneVersion : existing?.xplaneVersion,
+      xplaneIsSteam: 'xplaneIsSteam' in config ? config.xplaneIsSteam : existing?.xplaneIsSteam,
       installations: config.installations ?? existing?.installations,
       activeInstallationId: config.activeInstallationId ?? existing?.activeInstallationId,
       analyticsConsent: config.analyticsConsent ?? existing?.analyticsConsent,
