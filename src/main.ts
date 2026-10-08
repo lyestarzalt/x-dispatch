@@ -1496,17 +1496,18 @@ function registerIpcHandlers() {
 
   handle('flightplan:oceanicTracks', async () => {
     try {
-      const { refreshOceanicTracks, resolvedTracks } =
+      const { refreshOceanicTracks, resolvedFeed } =
         await import('./lib/flightplan/builder/oceanicTracks');
       const { getWaypointNearestById } =
         await import('./lib/xplaneServices/dataService/navdata/navCache');
       await refreshOceanicTracks();
-      return resolvedTracks((id, near) =>
+      return resolvedFeed((id, near) =>
         getWaypointNearestById(id, near.latitude, near.longitude, TRACK_FIX_SEARCH_NM)
       );
     } catch (err) {
       logger.main.error('Failed to load NAT tracks', err);
-      return [];
+      const reason = err instanceof Error ? err.message : String(err);
+      return { messages: [], fetchedAt: null, error: reason };
     }
   });
 

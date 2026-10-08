@@ -28,6 +28,7 @@ import {
   Settings,
   Ship,
   Sunrise,
+  Waves,
   Wind,
   X,
 } from 'lucide-react';
@@ -1016,6 +1017,13 @@ function Toolbar({
               >
                 <Route className="mr-2 h-4 w-4" />
                 {t('toolbar.flightTrail')}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={navVisibility.natTracks}
+                onCheckedChange={() => onNavToggle('natTracks')}
+              >
+                <Waves className="mr-2 h-4 w-4" />
+                {t('toolbar.natTracks')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={simTrafficEnabled}

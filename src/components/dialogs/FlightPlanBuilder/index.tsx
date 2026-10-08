@@ -457,13 +457,21 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
   const distanceNm = result?.distanceNm ?? 0;
   const tokens = useMemo(() => result?.tokens ?? [], [result]);
+  // Warnings are used as typed and shown with the track detail, not as skipped tokens.
   const problems = useMemo(
     () =>
-      tokens.map((token, index) => ({ token, index })).filter(({ token }) => token.status !== 'ok'),
+      tokens
+        .map((token, index) => ({ token, index }))
+        .filter(({ token }) => token.status === 'unknown' || token.status === 'invalid'),
     [tokens]
   );
-  const fixCount = tokens.filter((tk) => tk.status === 'ok' && tk.kind !== 'airway').length;
-  const airwayCount = tokens.filter((tk) => tk.status === 'ok' && tk.kind === 'airway').length;
+  const routeIssues = useMemo(
+    () => tokens.flatMap((tk) => (tk.status === 'warning' && tk.issue ? [tk.issue] : [])),
+    [tokens]
+  );
+  const used = (tk: RouteToken) => tk.status === 'ok' || tk.status === 'warning';
+  const fixCount = tokens.filter((tk) => used(tk) && tk.kind !== 'airway').length;
+  const airwayCount = tokens.filter((tk) => used(tk) && tk.kind === 'airway').length;
   const ready = status === 'ready' && result !== null;
 
   // Departure, resolved en-route fixes and arrival, so the light band follows
@@ -504,14 +512,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   // North Atlantic tracks for the crossing, if the pair makes one; the chosen one is whatever
   // the route files. Picking a chip or a track on the map routes through it.
   const crossing = departure && arrival ? natCrossing(departure, arrival) : null;
-  const { data: oceanicTracks } = useOceanicTracks(isOpen && crossing !== null);
-  const directionTracks = useMemo(
-    () =>
-      crossing && oceanicTracks
-        ? oceanicTracks.filter((tr) => tr.eastbound === (crossing === 'eastbound'))
-        : null,
-    [oceanicTracks, crossing]
-  );
+  const { data: natFeed } = useOceanicTracks(isOpen && crossing !== null);
   const selectedTrack = useMemo(() => trackInRoute(routeText), [routeText]);
   const handlePickTrack = async (track: string | null) => {
     const ok = await autoRoute(joins, track);
@@ -717,9 +718,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
               <div className="flex justify-center">
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
-                  className="text-muted-foreground h-7 gap-1.5 text-xs"
+                  className="border-border text-muted-foreground hover:text-foreground h-7 gap-1.5 rounded-full border px-3 text-xs"
                   onClick={swapEndpoints}
                   disabled={!departure && !arrival}
                 >
@@ -839,11 +840,13 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     </Button>
                   </div>
                 </div>
-                {crossing && directionTracks && (
+                {crossing && natFeed && (
                   <TrackPicker
-                    tracks={directionTracks}
+                    feed={natFeed}
                     direction={crossing}
                     selected={selectedTrack}
+                    cruiseAltitudeFt={cruiseAltitudeFt}
+                    issues={routeIssues}
                     disabled={autoRouting}
                     onPick={(track) => void handlePickTrack(track)}
                   />

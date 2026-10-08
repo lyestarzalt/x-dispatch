@@ -4,6 +4,7 @@
  */
 import type { LatLon } from './geometry';
 import { NAT_TRACK_RE, tokenizeRoute } from './routeTokens';
+import type { NatFeed, NatMessageInfo, OceanicTrackInfo } from './types';
 
 /** The track designator filed in the route ("NATA"), or null when the route has none. */
 export function trackInRoute(routeText: string): string | null {
@@ -31,4 +32,41 @@ export function natCrossing(departure: LatLon, arrival: LatLon): NatDirection | 
   const arrWest = arrival.longitude < NAT_MERIDIAN;
   if (depWest === arrWest) return null;
   return depWest ? 'eastbound' : 'westbound';
+}
+
+/** The message valid now and the one published for later, for the direction flown. */
+export function messagesForDirection(
+  feed: NatFeed | undefined,
+  direction: NatDirection
+): { current: NatMessageInfo | null; upcoming: NatMessageInfo | null } {
+  const eastbound = direction === 'eastbound';
+  const mine = (feed?.messages ?? []).filter((m) => m.eastbound === eastbound);
+  return {
+    current: mine.find((m) => m.status === 'current') ?? null,
+    upcoming: mine.find((m) => m.status === 'upcoming') ?? null,
+  };
+}
+
+/** Whether the track publishes the cruise level; no cruise or no level list counts as a fit. */
+export function cruiseFitsTrack(track: OceanicTrackInfo, cruiseFt: number | null): boolean {
+  if (cruiseFt === null || track.levels.length === 0) return true;
+  return track.levels.includes(Math.round(cruiseFt / 100));
+}
+
+function zulu(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mm = String(d.getUTCMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+/** "11:30–19:00Z". Times are Zulu by convention, so this is not locale-aware. */
+export function validityLabel(validFrom: string, validTo: string): string {
+  return `${zulu(validFrom)}–${zulu(validTo)}Z`;
+}
+
+/** The track's points as they are filed, "ETIKI 4715N 4720N ... RAFIN". */
+export function trackFixString(track: OceanicTrackInfo): string {
+  return track.points.map((p) => p.id).join(' ');
 }

@@ -169,7 +169,17 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "东行",
       "westbound": "西行",
-      "none": "当前该方向没有发布的航迹。"
+      "none": "当前该方向没有发布的航迹。",
+      "tmi": "TMI {{tmi}}",
+      "current": "当前有效",
+      "upcoming": "即将生效",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "航迹电报备注",
+      "levelWarning": "航迹 {{id}} 不提供 FL{{cruise}}：FL {{levels}}",
+      "unavailable": "无法获取航迹电报：{{reason}}"
     },
     "windSuggest": "风 {{wind}} 适合跑道 {{runway}}",
     "useRunway": "使用",
@@ -211,7 +221,8 @@
       "airwayNoFixAfter": "航路后需要一个航路点",
       "airwayExitUnknown": "此航路之后的航路点未知",
       "airwayNotJoined": "此航路未连接两侧的航路点",
-      "airwayEndsAtCoordinate": "航路必须以航路点结束，而不是坐标"
+      "airwayEndsAtCoordinate": "航路必须以航路点结束，而不是坐标",
+      "trackPartial": "航迹代号仅在飞行整条航迹时申报；部分飞行请填写各航路点"
     },
     "setStart": "从出发机场开始",
     "showOnMap": "在地图上显示",
@@ -331,7 +342,8 @@
       "logbook": "已记录的飞行、着陆和启动历史"
     },
     "logbook": "飞行日志",
-    "flightTrail": "飞行轨迹"
+    "flightTrail": "飞行轨迹",
+    "natTracks": "北大西洋航迹"
   },
   "airportFilters": {
     "title": "机场",

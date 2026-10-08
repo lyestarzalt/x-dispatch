@@ -169,7 +169,17 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Eastbound",
       "westbound": "Westbound",
-      "none": "No tracks be posted this way at present."
+      "none": "No tracks be posted this way at present.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Good right now",
+      "upcoming": "Comin' up",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Track message scribblin's",
+      "levelWarning": "FL{{cruise}} ain't on offer on track {{id}}: FL {{levels}}",
+      "unavailable": "Track message be lost at sea: {{reason}}"
     },
     "windSuggest": "Wind {{wind}} favours strip {{runway}}",
     "useRunway": "Take it",
@@ -211,7 +221,8 @@
       "airwayNoFixAfter": "A sea lane needs a mark after it",
       "airwayExitUnknown": "The mark after this lane be unknown",
       "airwayNotJoined": "This lane don't join the marks either side",
-      "airwayEndsAtCoordinate": "A lane must end at a mark, not a bare coordinate"
+      "airwayEndsAtCoordinate": "A lane must end at a mark, not a bare coordinate",
+      "trackPartial": "A track's letter be filed only for the whole track; else file its points, ye scallywag"
     },
     "setStart": "Start at the harbor",
     "showOnMap": "Show on the chart",
@@ -331,7 +342,8 @@
       "logbook": "Voyages logged, landin's an' launch history"
     },
     "logbook": "Cap'n's Log",
-    "flightTrail": "Wake o' the Voyage"
+    "flightTrail": "Wake o' the Voyage",
+    "natTracks": "North Atlantic tracks"
   },
   "airportFilters": {
     "title": "Airfields",

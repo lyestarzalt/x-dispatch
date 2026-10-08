@@ -10,7 +10,7 @@ import type {
 import type {
   AutoRouteRequest,
   AutoRouteResult,
-  OceanicTrackInfo,
+  NatFeed,
   PlanDraft,
   RouteResolveResult,
   SaveFmsResult,
@@ -260,8 +260,8 @@ declare global {
       ) => Promise<import('@/types/fms').EnrichedFlightPlan | null>;
       resolveRoute: (draft: PlanDraft) => Promise<RouteResolveResult | null>;
       autoRoute: (request: AutoRouteRequest) => Promise<AutoRouteResult | null>;
-      /** The current North Atlantic tracks with their geometry; empty when none are known. */
-      oceanicTracks: () => Promise<OceanicTrackInfo[]>;
+      /** The North Atlantic track messages with their geometry and the download state. */
+      oceanicTracks: () => Promise<NatFeed>;
       saveFms: (args: { stem: string; content: string }) => Promise<SaveFmsResult>;
     };
     simbriefAPI: {

@@ -24,7 +24,7 @@ import {
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
 import { type LatLon, bearingDeg, greatCircleNm } from './geometry';
-import { getOceanicTracks } from './oceanicTracks';
+import { type OceanicTrack, getOceanicTracks, tracksForAutoRouting } from './oceanicTracks';
 import type { AutoRouteResult, ProcedureChoice, RouteJoin } from './types';
 
 /** Box padding around the endpoints; wide enough to let the route bend round gaps. */
@@ -69,6 +69,8 @@ const OCEANIC_NEIGHBOURS = 8;
 const OCEANIC_PENALTY = 1.5;
 /** An organised track at a usable level is cheaper than the same miles flown at random. */
 const TRACK_PREFERENCE = 0.9;
+/** North American Routes published with a track are the expected way on and off it. */
+const NAR_PREFERENCE = 0.8;
 /** Fixes inside a run of direct legs are dropped while the track stays within this corridor. */
 const STRAIGHT_CORRIDOR_NM = 8;
 const EARTH_RADIUS_NM = 3440.065;
@@ -119,6 +121,10 @@ export interface AutoRouteInput {
 }
 
 let cachedSegments: AirwaySegment[] | null = null;
+
+export function resetAutoRouterCacheForTests(): void {
+  cachedSegments = null;
+}
 
 /** Airway segments rarely change within a session; loading them is the expensive part. */
 function loadSegments(): AirwaySegment[] {
@@ -297,6 +303,8 @@ interface Graph {
   edges: Map<string, Edge[]>;
   /** Fix keys inside either terminal area. */
   terminal: Set<string>;
+  /** The track the route must fly whole, once its entry and exit are in the graph. */
+  chosenTrack?: { name: string; entry: string; exit: string; nm: number };
 }
 
 function addEdge(graph: Graph, from: string, to: string, weight: number, airway: string | null) {
@@ -397,6 +405,8 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
   const preferHigh = cruiseFt >= HIGH_FAMILY_MIN_FT;
   const avoid = avoidAreasAtLevel(airspaceRows, cruiseFt);
 
+  const tracks = tracksForRouting(input.track);
+  const preferredNars = new Set(tracks.flatMap((t) => t.nars));
   const graph: Graph = { positions, edges: new Map(), terminal };
   for (const s of loadSegments()) {
     const a = fixKey(s.fromFix, s.fromRegion);
@@ -415,48 +425,110 @@ function buildGraph(input: AutoRouteInput, opts: BuildOptions): Graph | null {
     // A segment shared by several airways is stored as "A31-A411": one edge per airway,
     // so the path can stay on whichever name it arrived on.
     for (const name of s.name.split('-')) {
+      const w = preferredNars.has(name) ? weight * NAR_PREFERENCE : weight;
       // direction: 0 both ways, 1 forward only, 2 backward only
-      if (s.direction !== 2) addEdge(graph, a, b, weight, name);
-      if (s.direction !== 1) addEdge(graph, b, a, weight, name);
+      if (s.direction !== 2) addEdge(graph, a, b, w, name);
+      if (s.direction !== 1) addEdge(graph, b, a, w, name);
     }
   }
 
-  addTrackEdges(graph, cruiseFl, input.track);
+  addTrackEdges(graph, tracks, cruiseFl, input.track !== undefined);
   if (opts.direct) addDirectLegs(graph, opts.oceanic === true);
   return graph;
 }
 
 /**
- * Current NAT tracks as one-way legs named by designator. Named entry and exit fixes
- * come from the database; lat/lon points carry their own position when the box lacks them.
- * With a chosen track only that one is offered, so the search has to go through it.
+ * The tracks the router may use: the chosen one from any unexpired message (so a track
+ * published for the next period can be planned), else per direction the set valid now or,
+ * failing that, the upcoming one.
  */
-function addTrackEdges(graph: Graph, cruiseFl: number, chosen?: string): void {
-  const tracks = getOceanicTracks().filter((t) => !chosen || t.name === chosen.toUpperCase());
+function tracksForRouting(chosen?: string): OceanicTrack[] {
+  if (chosen) return getOceanicTracks().filter((t) => t.name === chosen.toUpperCase());
+  return tracksForAutoRouting();
+}
+
+/**
+ * Each track as one one-way edge from its entry to its exit, named by designator, so the
+ * search flies it whole or not at all (the message asks for the designator only when the
+ * entire track is flown). Named entry and exit fixes come from the database; lat/lon points
+ * carry their own position. A track whose published levels leave out the cruise level is
+ * penalised unless it is the one chosen, and its European feeder fixes get a cheap direct
+ * leg onto the entry (westbound) or off the exit (eastbound).
+ */
+function addTrackEdges(
+  graph: Graph,
+  tracks: OceanicTrack[],
+  cruiseFl: number,
+  chosen: boolean
+): void {
   if (tracks.length === 0) return;
   const keyById = new Map<string, string>();
   for (const key of graph.positions.keys()) {
     const id = key.split('/')[0]!;
     if (!keyById.has(id)) keyById.set(id, key);
   }
+  const place = (p: { id: string; latitude: number; longitude: number }): string | null => {
+    const known = keyById.get(p.id);
+    if (known) return known;
+    if (Number.isNaN(p.latitude)) return null;
+    const key = fixKey(p.id, 'NAT');
+    graph.positions.set(key, { latitude: p.latitude, longitude: p.longitude });
+    return key;
+  };
   for (const track of tracks) {
-    const keys = track.points.map((p) => {
-      const known = keyById.get(p.id);
-      if (known) return known;
-      if (Number.isNaN(p.latitude)) return null;
-      const key = fixKey(p.id, 'NAT');
-      graph.positions.set(key, { latitude: p.latitude, longitude: p.longitude });
-      return key;
-    });
-    const inBand =
-      track.levels.length === 0 ||
-      (cruiseFl >= Math.min(...track.levels) && cruiseFl <= Math.max(...track.levels));
-    for (let i = 0; i + 1 < keys.length; i++) {
-      const a = keys[i];
-      const b = keys[i + 1];
-      if (!a || !b) continue;
-      const nm = greatCircleNm(graph.positions.get(a)!, graph.positions.get(b)!);
-      addEdge(graph, a, b, nm * (inBand ? TRACK_PREFERENCE : OUT_OF_BAND_PENALTY), track.name);
+    if (track.points.length < 2) continue;
+    const entry = place(track.points[0]!);
+    const exit = place(track.points[track.points.length - 1]!);
+    if (!entry || !exit) continue;
+    // Length along the published points; a named mid point the box lacks is skipped.
+    let nm = 0;
+    let prev: LatLon = graph.positions.get(entry)!;
+    for (let i = 1; i < track.points.length; i++) {
+      const p = track.points[i]!;
+      const at =
+        i === track.points.length - 1
+          ? graph.positions.get(exit)!
+          : keyById.has(p.id)
+            ? graph.positions.get(keyById.get(p.id)!)!
+            : Number.isNaN(p.latitude)
+              ? null
+              : { latitude: p.latitude, longitude: p.longitude };
+      if (!at) continue;
+      nm += greatCircleNm(prev, at);
+      prev = at;
+    }
+    const levelOk = chosen || track.levels.length === 0 || track.levels.includes(cruiseFl);
+    // The exit has no leg of its own; it still has to count as a node the endpoints can join.
+    if (!graph.edges.has(exit)) graph.edges.set(exit, []);
+    addEdge(
+      graph,
+      entry,
+      exit,
+      nm * (levelOk ? TRACK_PREFERENCE : OUT_OF_BAND_PENALTY),
+      track.name
+    );
+    if (chosen) graph.chosenTrack = { name: track.name, entry, exit, nm };
+    for (const fix of track.feederFixes) {
+      const key = keyById.get(fix);
+      if (!key) continue;
+      const feeder = graph.positions.get(key)!;
+      if (track.eastbound) {
+        addEdge(
+          graph,
+          exit,
+          key,
+          greatCircleNm(graph.positions.get(exit)!, feeder) * TRACK_PREFERENCE,
+          null
+        );
+      } else {
+        addEdge(
+          graph,
+          key,
+          entry,
+          greatCircleNm(feeder, graph.positions.get(entry)!) * TRACK_PREFERENCE,
+          null
+        );
+      }
     }
   }
 }
@@ -603,17 +675,27 @@ interface SearchResult {
   distanceNm: number;
 }
 
-function search(graph: Graph, from: LatLon, to: LatLon): SearchResult | null {
-  const best = new Map<string, number>([[START, 0]]);
+/**
+ * A* from `startKey` to `goalKey` (START to END unless a track splits the search). The
+ * chain holds every node strictly between them, plus the goal itself when it is a real fix.
+ */
+function search(
+  graph: Graph,
+  from: LatLon,
+  to: LatLon,
+  startKey = START,
+  goalKey = END
+): SearchResult | null {
+  const best = new Map<string, number>([[startKey, 0]]);
   const cameFrom = new Map<string, { from: string; airway: string | null }>();
   const heap = new MinHeap();
-  heap.push(START, greatCircleNm(from, to));
+  heap.push(startKey, greatCircleNm(from, to));
   const closed = new Set<string>();
 
   while (heap.size > 0) {
     const current = heap.pop()!;
     if (closed.has(current.key)) continue;
-    if (current.key === END) break;
+    if (current.key === goalKey) break;
     closed.add(current.key);
     const g = best.get(current.key)!;
     const arrivedBy = cameFrom.get(current.key)?.airway ?? null;
@@ -621,7 +703,7 @@ function search(graph: Graph, from: LatLon, to: LatLon): SearchResult | null {
       if (closed.has(edge.to)) continue;
       // Leaving or joining an airway counts as a change too, so a route does not hop on
       // and off the network fix by fix.
-      const changes = current.key !== START && edge.airway !== arrivedBy;
+      const changes = current.key !== startKey && edge.airway !== arrivedBy;
       const terminal = graph.terminal.has(edge.to) ? TERMINAL_PENALTY : 1;
       const tentative = g + edge.weight * terminal + (changes ? AIRWAY_CHANGE_PENALTY_NM : 0);
       if (tentative >= (best.get(edge.to) ?? Infinity)) continue;
@@ -630,11 +712,11 @@ function search(graph: Graph, from: LatLon, to: LatLon): SearchResult | null {
       heap.push(edge.to, tentative + greatCircleNm(graph.positions.get(edge.to)!, to));
     }
   }
-  if (!cameFrom.has(END)) return null;
+  if (!cameFrom.has(goalKey)) return null;
 
   const chain: { key: string; arrivedBy: string | null }[] = [];
-  let cursor = END;
-  while (cursor !== START) {
+  let cursor = goalKey;
+  while (cursor !== startKey) {
     const link = cameFrom.get(cursor)!;
     if (cursor !== END) chain.unshift({ key: cursor, arrivedBy: link.airway });
     cursor = link.from;
@@ -649,6 +731,28 @@ function search(graph: Graph, from: LatLon, to: LatLon): SearchResult | null {
   }
   distanceNm += greatCircleNm(prev, to);
   return { chain, distanceNm };
+}
+
+/**
+ * The route through a chosen track, flown whole: the start to the track entry, then the
+ * track exit to the destination, joined by the track itself.
+ */
+function searchViaTrack(
+  graph: Graph,
+  from: LatLon,
+  to: LatLon,
+  track: NonNullable<Graph['chosenTrack']>
+): SearchResult | null {
+  const entryAt = graph.positions.get(track.entry)!;
+  const exitAt = graph.positions.get(track.exit)!;
+  const inbound = search(graph, from, entryAt, START, track.entry);
+  if (!inbound) return null;
+  const outbound = search(graph, exitAt, to, track.exit, END);
+  if (!outbound) return null;
+  return {
+    chain: [...inbound.chain, { key: track.exit, arrivedBy: track.name }, ...outbound.chain],
+    distanceNm: inbound.distanceNm + track.nm + outbound.distanceNm,
+  };
 }
 
 /** Perpendicular distance of p from the great circle through a and b, in nautical miles. */
@@ -741,7 +845,9 @@ export function autoRoute(input: AutoRouteInput): AutoRouteResult | null {
     let result: AutoRouteResult | null = null;
     if (graph && graph.edges.size > 0) {
       const joins = connectEndpoints(graph, input);
-      const found = search(graph, input.from, input.to);
+      const found = graph.chosenTrack
+        ? searchViaTrack(graph, input.from, input.to, graph.chosenTrack)
+        : search(graph, input.from, input.to);
       result = found ? toResult(found, graph, joins) : null;
     }
     input.trace?.(

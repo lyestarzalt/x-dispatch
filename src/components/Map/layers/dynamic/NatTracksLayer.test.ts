@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OceanicTrackInfo } from '@/lib/flightplan/builder/types';
-import { natTracksGeoJSON } from './NatTracksLayer';
+import { natTrackPopupHtml, natTracksGeoJSON } from './NatTracksLayer';
 
 const track = (id: string, levels: number[]): OceanicTrackInfo => ({
   id,
@@ -9,6 +9,9 @@ const track = (id: string, levels: number[]): OceanicTrackInfo => ({
   levels,
   validFrom: '',
   validTo: '',
+  nars: [],
+  feederFixes: [],
+  pbcs: false,
   points: [
     { id: 'ENTRY', latitude: 54, longitude: -15 },
     { id: '5420N', latitude: 54, longitude: -20 },
@@ -16,11 +19,17 @@ const track = (id: string, levels: number[]): OceanicTrackInfo => ({
   ],
 });
 
+const current = (t: OceanicTrackInfo) => ({ track: t, upcoming: false });
+
 describe('natTracksGeoJSON', () => {
-  it('draws one line per track, marks the chosen one and labels each with its letter and level band', () => {
-    const { features } = natTracksGeoJSON([track('A', [340, 350, 360]), track('B', [])], 'NATB');
-    expect(features).toHaveLength(2);
-    expect(features[0]!.geometry).toEqual({
+  it('draws one line per track and marks the chosen one', () => {
+    const { features } = natTracksGeoJSON(
+      [current(track('A', [340, 350, 360])), current(track('B', []))],
+      'NATB'
+    );
+    const lines = features.filter((f) => f.geometry.type === 'LineString');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]!.geometry).toEqual({
       type: 'LineString',
       coordinates: [
         [-15, 54],
@@ -28,12 +37,48 @@ describe('natTracksGeoJSON', () => {
         [-40, 53],
       ],
     });
-    expect(features[0]!.properties).toEqual({
+    expect(lines[0]!.properties).toMatchObject({ name: 'NATA', id: 'A', selected: false });
+    expect(lines[1]!.properties).toMatchObject({ name: 'NATB', id: 'B', selected: true });
+  });
+
+  it('marks tracks from the upcoming message so they draw dotted and dimmer', () => {
+    const { features } = natTracksGeoJSON(
+      [current(track('A', [350])), { track: track('B', [350]), upcoming: true }],
+      null
+    );
+    expect(features.map((f) => f.properties?.upcoming)).toEqual([false, false, true, true]);
+  });
+
+  it('labels each track once, with its letter and level band, on its longest leg', () => {
+    const { features } = natTracksGeoJSON(
+      [current(track('A', [340, 350, 360])), current(track('B', []))],
+      null
+    );
+    const labels = features.filter((f) => f.geometry.type === 'Point');
+    expect(labels).toHaveLength(2);
+    // The longest leg of the fixture runs 5420N -> EXIT; the label sits on its midpoint.
+    const [lon, lat] = (labels[0]!.geometry as GeoJSON.Point).coordinates;
+    expect(lon).toBeCloseTo(-30, 6);
+    expect(lat).toBeGreaterThan(53);
+    expect(lat).toBeLessThan(54);
+    expect(labels[0]!.properties).toMatchObject({
       name: 'NATA',
-      id: 'A',
       selected: false,
       label: 'A  FL340–FL360',
     });
-    expect(features[1]!.properties).toEqual({ name: 'NATB', id: 'B', selected: true, label: 'B' });
+    expect(typeof labels[0]!.properties?.rotate).toBe('number');
+    expect(labels[1]!.properties).toMatchObject({ name: 'NATB', label: 'B' });
+  });
+});
+
+describe('natTrackPopupHtml', () => {
+  it('names the track and lists its levels, window, NARs and feeder fixes', () => {
+    const f = { ...track('F', [350, 360]), nars: ['N82A'], feederFixes: ['REGHI'], pbcs: true };
+    const html = natTrackPopupHtml(f, true);
+    expect(html).toContain('NATF');
+    expect(html).toContain('350 360');
+    expect(html).toContain('N82A');
+    expect(html).toContain('REGHI');
+    expect(html).not.toContain('<script');
   });
 });

@@ -386,7 +386,7 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 16,
+      version: 17,
       storage: createJSONStorage(() => dedupedLocalStorage),
       partialize: (state) => ({
         landingCardPosition: state.landingCardPosition,
@@ -405,95 +405,104 @@ export const useMapStore = create<MapState>()(
         terrainShadingEnabled: state.terrainShadingEnabled,
         terrain3dEnabled: state.terrain3dEnabled,
       }),
-      migrate: (persisted, version) => {
-        const state = persisted as Record<string, unknown>;
-        // Migration from v1 to v2: consolidate navVisibility
-        if (version === 1) {
-          const oldNav = state.navVisibility as Record<string, unknown> | undefined;
-          if (oldNav) {
-            const hadNavaids = oldNav.vors || oldNav.ndbs || oldNav.dmes;
-            state.navVisibility = {
-              navaids: hadNavaids ?? true,
-              ils: oldNav.ils ?? true,
-              airspaces: oldNav.airspaces ?? true,
-              airwaysMode: oldNav.airwaysMode ?? 'off',
-            };
-          }
-        }
-        // Migration to v3+: add airportFilters
-        if (version < 3) {
-          state.airportFilters = DEFAULT_AIRPORT_FILTERS;
-        }
-        // Migration to v4: remove deprecated filter keys, reset to clean state
-        if (version < 4) {
-          const old = state.airportFilters as Record<string, unknown> | undefined;
-          if (old) {
-            delete old.onlyWithIata;
-            delete old.showPaved;
-            delete old.showUnpaved;
-            delete old.minRunways;
-          }
-          state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
-        }
-        // Migration to v6: add surfaceTypes and country to airport filters
-        if (version < 6) {
-          const old = state.airportFilters as Record<string, unknown> | undefined;
-          if (old) {
-            if (!old.surfaceTypes) old.surfaceTypes = [...ALL_SURFACE_TYPES];
-            if (!old.country) old.country = 'all';
-          }
-          state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
-        }
-        // Migration to v7: add range rings state
-        if (version < 7) {
-          if (!state.rangeRingsEnabled) state.rangeRingsEnabled = false;
-          if (!state.rangeRingsDuration) state.rangeRingsDuration = DEFAULT_RANGE_RINGS_DURATION;
-          if (!state.rangeRingsCategories)
-            state.rangeRingsCategories = ['jet', 'turboprop', 'prop'];
-        }
-        // Migration to v8: add flight strip position
-        if (version < 8) {
-          if (state.flightStripPosition === undefined) state.flightStripPosition = null;
-        }
-        // Migration to v9: add terrain shading toggle
-        if (version < 9) {
-          if (state.terrainShadingEnabled === undefined) state.terrainShadingEnabled = true;
-        }
-        // Migration to v10: add 3D terrain toggle (default on, replaces the
-        // MapLibre TerrainControl button that used to live on the map).
-        if (version < 10) {
-          if (state.terrain3dEnabled === undefined) state.terrain3dEnabled = true;
-        }
-        // Migration to v11: routing network layer, off by default. Persisted
-        // layerVisibility from v10 has no such key, which would leave it
-        // undefined rather than false.
-        if (version < 11) {
-          const layers = state.layerVisibility as Record<string, unknown> | undefined;
-          if (layers && layers.routingNetwork === undefined) {
-            layers.routingNetwork = false;
-          }
-        }
-        // Migration to v12: the day/night overlay is gone, the sun-lit globe
-        // atmosphere shows the night side instead.
-        if (version < 12) {
-          delete state.dayNightEnabled;
-        }
-        if (version < 13) {
-          if (state.flightTrailEnabled === undefined) state.flightTrailEnabled = true;
-        }
-        if (version < 14) {
-          if (state.landingCardPosition === undefined) state.landingCardPosition = null;
-        }
-        // v15: the vertical profile strip, shown by default
-        if (version < 15) {
-          if (state.profileStripOpen === undefined) state.profileStripOpen = true;
-        }
-        // v16: the profile strip can be dragged; null is its default place
-        if (version < 16) {
-          if (state.profileStripPosition === undefined) state.profileStripPosition = null;
-        }
-        return state;
-      },
+      migrate: migrateMapState,
     }
   )
 );
+
+/** Persisted-state migrations; every step runs in turn, no early returns. */
+export function migrateMapState(persisted: unknown, version: number): unknown {
+  {
+    const state = persisted as Record<string, unknown>;
+    // Migration from v1 to v2: consolidate navVisibility
+    if (version === 1) {
+      const oldNav = state.navVisibility as Record<string, unknown> | undefined;
+      if (oldNav) {
+        const hadNavaids = oldNav.vors || oldNav.ndbs || oldNav.dmes;
+        state.navVisibility = {
+          navaids: hadNavaids ?? true,
+          ils: oldNav.ils ?? true,
+          airspaces: oldNav.airspaces ?? true,
+          airwaysMode: oldNav.airwaysMode ?? 'off',
+        };
+      }
+    }
+    // Migration to v3+: add airportFilters
+    if (version < 3) {
+      state.airportFilters = DEFAULT_AIRPORT_FILTERS;
+    }
+    // Migration to v4: remove deprecated filter keys, reset to clean state
+    if (version < 4) {
+      const old = state.airportFilters as Record<string, unknown> | undefined;
+      if (old) {
+        delete old.onlyWithIata;
+        delete old.showPaved;
+        delete old.showUnpaved;
+        delete old.minRunways;
+      }
+      state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
+    }
+    // Migration to v6: add surfaceTypes and country to airport filters
+    if (version < 6) {
+      const old = state.airportFilters as Record<string, unknown> | undefined;
+      if (old) {
+        if (!old.surfaceTypes) old.surfaceTypes = [...ALL_SURFACE_TYPES];
+        if (!old.country) old.country = 'all';
+      }
+      state.airportFilters = { ...DEFAULT_AIRPORT_FILTERS, ...old };
+    }
+    // Migration to v7: add range rings state
+    if (version < 7) {
+      if (!state.rangeRingsEnabled) state.rangeRingsEnabled = false;
+      if (!state.rangeRingsDuration) state.rangeRingsDuration = DEFAULT_RANGE_RINGS_DURATION;
+      if (!state.rangeRingsCategories) state.rangeRingsCategories = ['jet', 'turboprop', 'prop'];
+    }
+    // Migration to v8: add flight strip position
+    if (version < 8) {
+      if (state.flightStripPosition === undefined) state.flightStripPosition = null;
+    }
+    // Migration to v9: add terrain shading toggle
+    if (version < 9) {
+      if (state.terrainShadingEnabled === undefined) state.terrainShadingEnabled = true;
+    }
+    // Migration to v10: add 3D terrain toggle (default on, replaces the
+    // MapLibre TerrainControl button that used to live on the map).
+    if (version < 10) {
+      if (state.terrain3dEnabled === undefined) state.terrain3dEnabled = true;
+    }
+    // Migration to v11: routing network layer, off by default. Persisted
+    // layerVisibility from v10 has no such key, which would leave it
+    // undefined rather than false.
+    if (version < 11) {
+      const layers = state.layerVisibility as Record<string, unknown> | undefined;
+      if (layers && layers.routingNetwork === undefined) {
+        layers.routingNetwork = false;
+      }
+    }
+    // Migration to v12: the day/night overlay is gone, the sun-lit globe
+    // atmosphere shows the night side instead.
+    if (version < 12) {
+      delete state.dayNightEnabled;
+    }
+    if (version < 13) {
+      if (state.flightTrailEnabled === undefined) state.flightTrailEnabled = true;
+    }
+    if (version < 14) {
+      if (state.landingCardPosition === undefined) state.landingCardPosition = null;
+    }
+    // v15: the vertical profile strip, shown by default
+    if (version < 15) {
+      if (state.profileStripOpen === undefined) state.profileStripOpen = true;
+    }
+    // v16: the profile strip can be dragged; null is its default place
+    if (version < 16) {
+      if (state.profileStripPosition === undefined) state.profileStripPosition = null;
+    }
+    // v17: the North Atlantic tracks layer, off by default
+    if (version < 17) {
+      const nav = state.navVisibility as Record<string, unknown> | undefined;
+      if (nav && nav.natTracks === undefined) nav.natTracks = false;
+    }
+    return state;
+  }
+}

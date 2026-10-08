@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { greatCircleNm } from './geometry';
+import { parseNatMessage, setOceanicTracks } from './oceanicTracks';
 import { resolveRoute } from './routeResolver';
 
 // Three fixes 20° apart along 50N: A to C is about 1540 nm, past the lookup radius.
@@ -55,5 +56,34 @@ describe('resolveRoute', () => {
     expect(res.tokens.map((t) => t.status)).toEqual(['ok', 'ok', 'ok', 'ok', 'ok']);
     const res2 = resolveRoute(draft('BBBBB Z9 CCCCC'))!;
     expect(res2.tokens[1]).toMatchObject({ status: 'unknown', issue: 'notFound' });
+  });
+});
+
+describe('resolveRoute with a NAT track', () => {
+  const past = new Date(Date.now() - 3_600_000).toISOString();
+  const far = new Date(Date.now() + 3_600_000).toISOString();
+  const track = 'A AAAAA BBBBB CCCCC\nEAST LVLS NIL\nWEST LVLS 350 360';
+
+  it('accepts the designator for the whole track', () => {
+    setOceanicTracks(parseNatMessage(track, past, far));
+    const result = resolveRoute(draft('AAAAA NATA CCCCC'))!;
+    expect(result.tokens.find((t) => t.text === 'NATA')).toMatchObject({ status: 'ok' });
+    expect(result.plan.waypoints.map((w) => `${w.id}/${w.via}`)).toEqual([
+      'EGXX/ADEP',
+      'AAAAA/DRCT',
+      'BBBBB/NATA',
+      'CCCCC/NATA',
+      'CYXX/ADES',
+    ]);
+  });
+
+  it('warns when the designator covers only part of the track, but still uses it', () => {
+    setOceanicTracks(parseNatMessage(track, past, far));
+    const result = resolveRoute(draft('AAAAA NATA BBBBB'))!;
+    expect(result.tokens.find((t) => t.text === 'NATA')).toMatchObject({
+      status: 'warning',
+      issue: 'trackPartial',
+    });
+    expect(result.plan.waypoints.map((w) => w.id)).toEqual(['EGXX', 'AAAAA', 'BBBBB', 'CYXX']);
   });
 });

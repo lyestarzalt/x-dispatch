@@ -47,11 +47,21 @@ export const ROUTE_CASING_WIDTH: maplibregl.ExpressionSpecification = [
 /** Legs on an oceanic track are drawn this much wider than the rest of the line. */
 export const TRACK_WIDTH_FACTOR = 1.6;
 
-/** `width`, scaled up on features whose `kind` is a track. */
+/**
+ * `width` (a zoom interpolation with numeric stops) scaled up on features whose `kind` is a
+ * track. The zoom interpolation has to stay the outermost expression, so the kind test is
+ * applied to each stop's value rather than around the whole thing.
+ */
 export function widthByKindExpression(
   width: maplibregl.ExpressionSpecification
 ): maplibregl.ExpressionSpecification {
-  return ['case', ['==', ['get', 'kind'], 'track'], ['*', width, TRACK_WIDTH_FACTOR], width];
+  const [op, curve, input, ...stops] = width as [string, unknown, unknown, ...(number | unknown)[]];
+  const out: unknown[] = [op, curve, input];
+  for (let i = 0; i < stops.length; i += 2) {
+    const base = stops[i + 1] as number;
+    out.push(stops[i], ['case', ['==', ['get', 'kind'], 'track'], base * TRACK_WIDTH_FACTOR, base]);
+  }
+  return out as maplibregl.ExpressionSpecification;
 }
 
 /** `hex` mixed towards black by `amount` (0..1). */

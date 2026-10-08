@@ -169,7 +169,17 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Na wschód",
       "westbound": "Na zachód",
-      "none": "Obecnie nie ma opublikowanych tracków w tym kierunku."
+      "none": "Obecnie nie ma opublikowanych tracków w tym kierunku.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Ważne teraz",
+      "upcoming": "Nadchodzące",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Uwagi do komunikatu o trackach",
+      "levelWarning": "FL{{cruise}} nie jest dostępny na tracku {{id}}: FL {{levels}}",
+      "unavailable": "Komunikat o trackach niedostępny: {{reason}}"
     },
     "windSuggest": "Wiatr {{wind}} sprzyja pasowi {{runway}}",
     "useRunway": "Użyj",
@@ -211,7 +221,8 @@
       "airwayNoFixAfter": "Droga lotnicza wymaga punktu po niej",
       "airwayExitUnknown": "Punkt po tej drodze lotniczej jest nieznany",
       "airwayNotJoined": "Ta droga lotnicza nie łączy punktów po obu stronach",
-      "airwayEndsAtCoordinate": "Droga lotnicza musi kończyć się punktem, nie współrzędną"
+      "airwayEndsAtCoordinate": "Droga lotnicza musi kończyć się punktem, nie współrzędną",
+      "trackPartial": "Oznaczenie tracku zgłasza się tylko dla całego tracku; dla części podaj jego punkty"
     },
     "setStart": "Start z lotniska odlotu",
     "showOnMap": "Pokaż na mapie",
@@ -331,7 +342,8 @@
       "logbook": "Nagrane loty, lądowania i historia uruchomień"
     },
     "logbook": "Dziennik lotów",
-    "flightTrail": "Ślad lotu"
+    "flightTrail": "Ślad lotu",
+    "natTracks": "Tracki północnoatlantyckie"
   },
   "airportFilters": {
     "title": "Lotniska",

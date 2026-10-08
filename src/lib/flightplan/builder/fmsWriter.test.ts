@@ -51,6 +51,22 @@ describe('serializeFms', () => {
     expect(lines).toContain('ADES EDDF');
   });
 
+  it('writes track legs as DRCT because X-Plane has no airway for a NAT track', () => {
+    const lines = serializeFms({
+      ...plan,
+      waypoints: [
+        plan.waypoints[0]!,
+        { type: 11, id: 'MALOT', via: 'DRCT', altitude: 35000, latitude: 53, longitude: -15 },
+        { type: 11, id: '5320N', via: 'NATA', altitude: 35000, latitude: 53, longitude: -20 },
+        { type: 11, id: 'ALLRY', via: 'NATA', altitude: 35000, latitude: 51, longitude: -50 },
+        plan.waypoints[3]!,
+      ],
+    }).split('\n');
+    expect(lines.find((l) => l.includes(' 5320N '))).toMatch(/^11 5320N DRCT /);
+    expect(lines.find((l) => l.includes(' ALLRY '))).toMatch(/^11 ALLRY DRCT /);
+    expect(lines.join('\n')).not.toContain('NATA');
+  });
+
   it('builds a safe file stem', () => {
     expect(fmsFileStem('eham', 'ed/df', '01')).toBe('EHAMEDDF01');
   });

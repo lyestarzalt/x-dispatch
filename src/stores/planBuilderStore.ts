@@ -18,6 +18,7 @@ import {
   sidInitialClimbNm,
 } from '@/lib/flightplan/builder/procedures';
 import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
+import { trackInRoute } from '@/lib/flightplan/builder/trackChoice';
 import type {
   PlanDraft,
   PlanEndpoint,
@@ -172,8 +173,12 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           arrival: state.departure
             ? { ...state.departure, sid: undefined, star: undefined, approach: undefined }
             : null,
-          // "A UL620 B" read backwards is still A and B joined by UL620.
-          routeText: tokenizeRoute(state.routeText).reverse().join(' '),
+          // "A UL620 B" read backwards is still A and B joined by UL620. A NAT track is
+          // one-way and the other direction has its own set, so that route starts over and
+          // the auto router picks a track for the new crossing.
+          routeText: trackInRoute(state.routeText)
+            ? ''
+            : tokenizeRoute(state.routeText).reverse().join(' '),
           procedures: {},
           savedPath: null,
         })),

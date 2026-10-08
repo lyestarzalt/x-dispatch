@@ -35,7 +35,8 @@ export interface PlanDraft {
 
 export type RouteTokenKind = 'fix' | 'navaid' | 'airport' | 'airway' | 'latlon' | 'direct';
 
-export type RouteTokenStatus = 'ok' | 'unknown' | 'invalid';
+/** `warning`: used as typed, but flagged. */
+export type RouteTokenStatus = 'ok' | 'unknown' | 'invalid' | 'warning';
 
 /** Machine-readable reasons; the UI translates them. */
 export type RouteIssue =
@@ -44,7 +45,9 @@ export type RouteIssue =
   | 'airwayNoFixAfter'
   | 'airwayExitUnknown'
   | 'airwayNotJoined'
-  | 'airwayEndsAtCoordinate';
+  | 'airwayEndsAtCoordinate'
+  /** A NAT designator filed for part of the track; the message asks for the whole track. */
+  | 'trackPartial';
 
 export interface RouteToken {
   text: string;
@@ -96,7 +99,7 @@ export interface AutoRouteResult {
   star?: ProcedureChoice;
 }
 
-/** A current North Atlantic track with every point placed, as the main process hands it over. */
+/** A North Atlantic track with every point placed, as the main process hands it over. */
 export interface OceanicTrackInfo {
   /** The letter, "A". */
   id: string;
@@ -108,6 +111,38 @@ export interface OceanicTrackInfo {
   validFrom: string;
   validTo: string;
   points: { id: string; latitude: number; longitude: number }[];
+  /** North American Routes published for the track, "N944A". */
+  nars: string[];
+  /** European routing fixes published for the track direction (EUR RTS), none for NIL. */
+  feederFixes: string[];
+  /** Listed among the PBCS tracks of its message. */
+  pbcs: boolean;
+}
+
+export type NatMessageStatus = 'current' | 'upcoming';
+
+/** One track message (one direction, one validity window) with its tracks. */
+export interface NatMessageInfo {
+  /** Issuing centre, "EGGX" (Shanwick, westbound) or "CZQX" (Gander, eastbound). */
+  origin: string;
+  eastbound: boolean;
+  /** Track message identifier from the remarks, "TMI IS 281". */
+  tmi: number | null;
+  validFrom: string;
+  validTo: string;
+  status: NatMessageStatus;
+  /** The REMARKS block as published. */
+  remarks: string;
+  tracks: OceanicTrackInfo[];
+}
+
+/** What the renderer gets: every unexpired message plus how the last download went. */
+export interface NatFeed {
+  messages: NatMessageInfo[];
+  /** Epoch ms of the last successful download, null before the first. */
+  fetchedAt: number | null;
+  /** Why the last download failed, null when it succeeded. */
+  error: string | null;
 }
 
 export interface SaveFmsResult {

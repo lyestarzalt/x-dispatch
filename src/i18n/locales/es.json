@@ -169,7 +169,17 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Hacia el este",
       "westbound": "Hacia el oeste",
-      "none": "Ahora mismo no hay tracks publicados para esta dirección."
+      "none": "Ahora mismo no hay tracks publicados para esta dirección.",
+      "tmi": "TMI {{tmi}}",
+      "current": "Vigente ahora",
+      "upcoming": "Próximo",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "Observaciones del mensaje de tracks",
+      "levelWarning": "FL{{cruise}} no se ofrece en el track {{id}}: FL {{levels}}",
+      "unavailable": "Mensaje de tracks no disponible: {{reason}}"
     },
     "windSuggest": "Viento {{wind}} favorece {{runway}}",
     "useRunway": "Usar",
@@ -211,7 +221,8 @@
       "airwayNoFixAfter": "Una aerovía necesita un punto después",
       "airwayExitUnknown": "El punto tras esta aerovía es desconocido",
       "airwayNotJoined": "Esta aerovía no conecta los puntos a ambos lados",
-      "airwayEndsAtCoordinate": "Una aerovía debe terminar en un punto, no en una coordenada"
+      "airwayEndsAtCoordinate": "Una aerovía debe terminar en un punto, no en una coordenada",
+      "trackPartial": "El designador de un track solo se presenta para el track completo; para una parte, indica sus puntos"
     },
     "setStart": "Empezar en la salida",
     "showOnMap": "Mostrar en el mapa",
@@ -331,7 +342,8 @@
       "logbook": "Vuelos grabados, aterrizajes e historial de lanzamientos"
     },
     "logbook": "Bitácora",
-    "flightTrail": "Estela de vuelo"
+    "flightTrail": "Estela de vuelo",
+    "natTracks": "Tracks del Atlántico Norte"
   },
   "airportFilters": {
     "title": "Aeropuertos",

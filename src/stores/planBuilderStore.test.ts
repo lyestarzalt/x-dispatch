@@ -84,3 +84,27 @@ describe('planBuilderStore — auto route via a chosen NAT track', () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe('planBuilderStore — swapping ends', () => {
+  it('reverses a plain airway route', () => {
+    usePlanBuilderStore.setState({
+      departure: LFMC as PlanEndpoint,
+      arrival: LFLN as PlanEndpoint,
+      routeText: 'XATEL UY30 MTL',
+    });
+    usePlanBuilderStore.getState().swapEndpoints();
+    expect(usePlanBuilderStore.getState().routeText).toBe('MTL UY30 XATEL');
+    expect(usePlanBuilderStore.getState().departure?.icao).toBe('LFLN');
+  });
+
+  it('drops a route that files a NAT track, since the other direction has its own tracks', () => {
+    usePlanBuilderStore.setState({
+      departure: { icao: 'EGLL', latitude: 51.5, longitude: -0.5 } as PlanEndpoint,
+      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
+      routeText: 'CPT DCT BALIX NATA PIDSO DCT URTAK',
+    });
+    usePlanBuilderStore.getState().swapEndpoints();
+    expect(usePlanBuilderStore.getState().routeText).toBe('');
+    expect(usePlanBuilderStore.getState().departure?.icao).toBe('KJFK');
+  });
+});

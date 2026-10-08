@@ -169,7 +169,17 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "東行き",
       "westbound": "西行き",
-      "none": "現在この方向のトラックは公開されていません。"
+      "none": "現在この方向のトラックは公開されていません。",
+      "tmi": "TMI {{tmi}}",
+      "current": "現在有効",
+      "upcoming": "次回",
+      "levelList": "FL {{levels}}",
+      "nar": "NAR {{list}}",
+      "eurRts": "EUR RTS {{list}}",
+      "pbcs": "PBCS",
+      "remarks": "トラックメッセージの備考",
+      "levelWarning": "FL{{cruise}} はトラック {{id}} では提供されていません: FL {{levels}}",
+      "unavailable": "トラックメッセージを取得できません: {{reason}}"
     },
     "windSuggest": "風 {{wind}} なら {{runway}} が有利",
     "useRunway": "使用",
@@ -211,7 +221,8 @@
       "airwayNoFixAfter": "航空路の後にはフィックスが必要です",
       "airwayExitUnknown": "この航空路の次のフィックスが不明です",
       "airwayNotJoined": "この航空路は両側のフィックスをつないでいません",
-      "airwayEndsAtCoordinate": "航空路は座標ではなくフィックスで終える必要があります"
+      "airwayEndsAtCoordinate": "航空路は座標ではなくフィックスで終える必要があります",
+      "trackPartial": "トラック識別子はトラック全体を飛行する場合のみ申請できます。一部の場合はポイントを記入してください"
     },
     "setStart": "出発地からスタート",
     "showOnMap": "地図に表示",
@@ -331,7 +342,8 @@
       "logbook": "記録したフライト、着陸、起動履歴"
     },
     "logbook": "ログブック",
-    "flightTrail": "飛行軌跡"
+    "flightTrail": "飛行軌跡",
+    "natTracks": "北大西洋トラック"
   },
   "airportFilters": {
     "title": "空港",
