@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { titleBarMetrics } from '@/lib/nativeShell/titleBarMetrics';
 import { cn } from '@/lib/utils/helpers';
 import { useDebugStore } from '@/stores/debugStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -18,11 +19,6 @@ const dragStyle = { WebkitAppRegion: 'drag' } as CSSProperties;
 const noDragStyle = { WebkitAppRegion: 'no-drag' } as CSSProperties;
 
 const isMac = typeof window !== 'undefined' && window.appAPI?.platform === 'darwin';
-
-// macOS reserves the top-left corner for the native traffic-light buttons
-// when titleBarStyle: 'hiddenInset' is set in main.ts. 78px is the standard
-// inset Apple uses; matches Finder, Safari, Xcode, etc.
-const MAC_TRAFFIC_LIGHT_OFFSET = '78px';
 
 // Window Controls Overlay (Win/Linux) exposes its width via the
 // `env(titlebar-area-*)` CSS env vars. We pad-right by whatever's left of
@@ -34,6 +30,9 @@ export function TitleBar() {
   const { t } = useTranslation();
   const [version, setVersion] = useState('');
   const [installation, setInstallation] = useState('');
+  // Interface Zoom scales CSS pixels but not the OS window controls.
+  const zoomLevel = useSettingsStore((s) => s.appearance.zoomLevel);
+  const { heightPx, trafficLightInsetPx } = titleBarMetrics(zoomLevel);
 
   useEffect(() => {
     window.appAPI.getVersion().then(setVersion);
@@ -44,10 +43,11 @@ export function TitleBar() {
 
   return (
     <header
-      className="border-border/40 bg-background text-muted-foreground relative z-[70] flex h-9 w-full shrink-0 items-center gap-2 border-b text-xs select-none"
+      className="border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none"
       style={{
         ...dragStyle,
-        paddingLeft: isMac ? MAC_TRAFFIC_LIGHT_OFFSET : '0.75rem',
+        height: heightPx,
+        paddingLeft: isMac ? trafficLightInsetPx : '0.75rem',
         paddingRight: isMac ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
       }}
     >
