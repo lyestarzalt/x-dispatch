@@ -2,6 +2,7 @@ import { app } from 'electron';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import logger from '@/lib/utils/logger';
 import { validateXPlanePath } from './paths';
 import type { XPlaneVersionInfo } from './versionDetector';
 
@@ -78,45 +79,74 @@ function migrateOldConfig(): void {
   }
 }
 
-function loadConfig(): XPlaneConfig | null {
+/**
+ * Write to a sibling temp file, then rename over the target. A reader (or a
+ * second app instance) never sees a half-written file, which would parse as
+ * garbage and be replaced by defaults.
+ */
+function writeConfigFile(config: XPlaneConfig): void {
+  const configPath = getConfigPath();
+  const tmpPath = `${configPath}.${process.pid}.tmp`;
   try {
-    // Migrate old config file if needed
-    migrateOldConfig();
+    fs.writeFileSync(tmpPath, JSON.stringify(config, null, 2), 'utf-8');
+    fs.renameSync(tmpPath, configPath);
+  } catch (error) {
+    // Windows can refuse the rename while something (antivirus) holds the target.
+    fs.rmSync(tmpPath, { force: true });
+    throw error;
+  }
+}
 
-    const configPath = getConfigPath();
-    if (!fs.existsSync(configPath)) {
-      return null;
-    }
+/** An unreadable config is kept aside, never overwritten in place: it holds the user's setup. */
+function backUpCorruptConfig(configPath: string, error: unknown): void {
+  const backupPath = `${configPath}.corrupt-${Date.now()}`;
+  try {
+    fs.renameSync(configPath, backupPath);
+    logger.main.warn(`Config file unreadable, moved to ${backupPath}`, error);
+  } catch (renameError) {
+    logger.main.error('Config file unreadable and could not be backed up', renameError);
+  }
+}
 
-    const content = fs.readFileSync(configPath, 'utf-8');
-    const config = JSON.parse(content) as XPlaneConfig;
+/**
+ * The stored config, or null when there is none. A saved X-Plane path that no
+ * longer exists (unplugged drive) is still returned: the path is validated where
+ * it is used, and hiding the file here made the next save wipe every setting.
+ */
+function loadConfig(): XPlaneConfig | null {
+  // Migrate old config file if needed
+  migrateOldConfig();
 
-    if (config.xplanePath && !fs.existsSync(config.xplanePath)) {
-      return null;
-    }
-
-    // Migrate: create installations array from existing xplanePath
-    if (!config.installations && config.xplanePath) {
-      const id = crypto.randomUUID();
-      config.installations = [{ id, name: 'Main', path: config.xplanePath }];
-      config.activeInstallationId = id;
-      // Write back the migration
-      try {
-        fs.writeFileSync(getConfigPath(), JSON.stringify(config, null, 2), 'utf-8');
-      } catch {
-        // Non-fatal: migration will retry next load
-      }
-    }
-
-    return config;
-  } catch {
+  const configPath = getConfigPath();
+  if (!fs.existsSync(configPath)) {
     return null;
   }
+
+  let config: XPlaneConfig;
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as XPlaneConfig;
+  } catch (error) {
+    backUpCorruptConfig(configPath, error);
+    return null;
+  }
+
+  // Migrate: create installations array from existing xplanePath
+  if (!config.installations && config.xplanePath) {
+    const id = crypto.randomUUID();
+    config.installations = [{ id, name: 'Main', path: config.xplanePath }];
+    config.activeInstallationId = id;
+    try {
+      writeConfigFile(config);
+    } catch {
+      // Non-fatal: migration will retry next load
+    }
+  }
+
+  return config;
 }
 
 function saveConfig(config: Partial<XPlaneConfig>): boolean {
   try {
-    const configPath = getConfigPath();
     const existing = loadConfig();
 
     const newConfig: XPlaneConfig = {
@@ -124,8 +154,9 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       version: CONFIG_VERSION,
       lastUpdated: new Date().toISOString(),
       sendCrashReports: config.sendCrashReports ?? existing?.sendCrashReports ?? true,
-      xplaneVersion: config.xplaneVersion ?? existing?.xplaneVersion,
-      xplaneIsSteam: config.xplaneIsSteam ?? existing?.xplaneIsSteam,
+      // `in` check so switching installs can clear the old install's version.
+      xplaneVersion: 'xplaneVersion' in config ? config.xplaneVersion : existing?.xplaneVersion,
+      xplaneIsSteam: 'xplaneIsSteam' in config ? config.xplaneIsSteam : existing?.xplaneIsSteam,
       installations: config.installations ?? existing?.installations,
       activeInstallationId: config.activeInstallationId ?? existing?.activeInstallationId,
       analyticsConsent: config.analyticsConsent ?? existing?.analyticsConsent,
@@ -139,9 +170,10 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
     };
 
-    fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf-8');
+    writeConfigFile(newConfig);
     return true;
-  } catch {
+  } catch (error) {
+    logger.main.error('Failed to save config', error);
     return false;
   }
 }

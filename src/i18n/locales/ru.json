@@ -58,7 +58,8 @@
     "sw": "ЮЗ"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "Нет подключения к интернету. Погода, трафик и карты обновятся после восстановления связи."
   },
   "setup": {
     "title": "X-Dispatch",
@@ -2067,5 +2068,22 @@
     "desktopOnly": "Available in X-Dispatch on your computer",
     "reconnecting": "Connection to X-Dispatch lost. Reconnecting…",
     "pairingReset": "Pairing was reset. Scan the QR code in X-Dispatch again."
+  },
+  "nativeShell": {
+    "menu": {
+      "settings": "Настройки…",
+      "edit": "Правка",
+      "window": "Окно",
+      "help": "Справка",
+      "website": "Сайт X-Dispatch",
+      "discord": "Сообщество в Discord",
+      "checkForUpdates": "Проверить обновления…"
+    },
+    "crash": {
+      "title": "X-Dispatch перестал работать",
+      "message": "Окно снова аварийно завершилось вскоре после перезагрузки. Перезагрузить ещё раз или выйти?",
+      "reload": "Перезагрузить",
+      "quit": "Выйти"
+    }
   }
 }

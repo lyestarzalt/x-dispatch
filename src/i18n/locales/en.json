@@ -58,7 +58,8 @@
     "sw": "SW"
   },
   "app": {
-    "title": "X-Dispatch"
+    "title": "X-Dispatch",
+    "offline": "You're offline. Weather, traffic and maps will update when you reconnect."
   },
   "setup": {
     "title": "X-Dispatch",
@@ -2067,5 +2068,22 @@
     "desktopOnly": "Available in X-Dispatch on your computer",
     "reconnecting": "Connection to X-Dispatch lost. Reconnecting…",
     "pairingReset": "Pairing was reset. Scan the QR code in X-Dispatch again."
+  },
+  "nativeShell": {
+    "menu": {
+      "settings": "Settings…",
+      "edit": "Edit",
+      "window": "Window",
+      "help": "Help",
+      "website": "X-Dispatch Website",
+      "discord": "Discord Community",
+      "checkForUpdates": "Check for Updates…"
+    },
+    "crash": {
+      "title": "X-Dispatch stopped working",
+      "message": "The window crashed again shortly after reloading. Reload it once more, or quit?",
+      "reload": "Reload",
+      "quit": "Quit"
+    }
   }
 }

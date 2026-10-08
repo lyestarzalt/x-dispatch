@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import i18n from 'i18next';
+import { buildUnitFormatters } from '@/hooks/useUnits';
+import type { FeetPerMinute } from '@/lib/utils/units';
 import { useFlightRecorderStore } from '@/stores/flightRecorderStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -72,10 +74,11 @@ export function useFlightRecorderStream(): void {
       ) {
         // The user is in the sim or the app is minimized: surface the report
         // through the OS so the moment isn't missed.
-        const rate = event.report.touchdownRateFpm;
+        const units = buildUnitFormatters(useSettingsStore.getState().map.units, i18n.t);
+        const rate = units.verticalSpeed(event.report.touchdownRateFpm as FeetPerMinute);
         const rating = i18n.t(`landing.rating.${event.report.rating}`);
         const notification = new Notification(i18n.t('landing.title'), {
-          body: `${rate} ${i18n.t('units.fpm')} · ${rating}`,
+          body: `${rate} · ${rating}`,
           silent: true,
         });
         notification.onclick = () => window.focus();

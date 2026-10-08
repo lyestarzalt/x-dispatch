@@ -69,17 +69,18 @@ const vatsimMetarKeys = {
   metar: (icao: string) => ['vatsim-metar', icao.toUpperCase()] as const,
 };
 
-async function fetchVatsimMetar(icao: string): Promise<ParsedMetarData | null> {
+export async function fetchVatsimMetar(icao: string): Promise<ParsedMetarData | null> {
+  const response = await window.airportAPI.fetchVatsimMetar(icao);
+  // Throwing keeps the last good METAR on screen and lets the query retry.
+  if (response.error) throw new Error(response.error);
+  if (!response.data) return null;
+
+  const raw = response.data;
   try {
-    const response = await window.airportAPI.fetchVatsimMetar(icao);
-    if (!response.data || response.error) return null;
-
-    const raw = response.data;
     const parsed = parseMetar(raw);
-    const flightCategory = calculateFlightCategory(parsed);
-
-    return { raw, parsed, flightCategory };
+    return { raw, parsed, flightCategory: calculateFlightCategory(parsed) };
   } catch {
+    // An unparseable report is as good as none.
     return null;
   }
 }

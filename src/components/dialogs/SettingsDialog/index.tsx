@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Boxes,
@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
 import { trackEvent, useTrackFeatureOpened } from '@/queries';
+import { useAppStore } from '@/stores/appStore';
 import {
   AboutSection,
   AirportsSection,
@@ -91,6 +92,21 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { t } = useTranslation();
   const { data: version } = useAppVersion();
   const [activeTab, setActiveTab] = useState<TabId>('xplane');
+
+  // The native menu can ask for a specific tab (Check for Updates opens About).
+  useEffect(
+    () =>
+      useAppStore.subscribe(
+        (s) => s.pendingSettingsTab,
+        (tab) => {
+          if (!tab) return;
+          setActiveTab(tab);
+          useAppStore.getState().clearPendingSettingsTab();
+        },
+        { fireImmediately: true }
+      ),
+    []
+  );
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as TabId);

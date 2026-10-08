@@ -6,6 +6,7 @@ import {
   autoUpdater,
   clipboard,
   dialog,
+  nativeTheme,
   net,
   screen,
   session,
@@ -16,15 +17,25 @@ import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
+import { CONTENT_SECURITY_POLICY } from './config/csp';
+import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import type { AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
-import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
+import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
+import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import { createCrashRecovery } from './lib/nativeShell/crashRecovery';
+import {
+  DEFAULT_NATIVE_LABELS,
+  type NativeLabels,
+  parseNativeLabels,
+} from './lib/nativeShell/labels';
+import { isAllowedNavigation } from './lib/nativeShell/navigationGuard';
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
@@ -185,6 +196,8 @@ app.on('render-process-gone', (_event, webContents, details) => {
       )
     );
   });
+
+  recoverCrashedWindow(webContents);
 });
 
 app.on('child-process-gone', (_event, details) => {
@@ -225,6 +238,66 @@ const sessionStartTime = Date.now();
 const analytics = initMainAnalytics();
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
+let isQuitting = false;
+/** Translated by the renderer; English until its first push. */
+let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
+const crashRecovery = createCrashRecovery();
+
+/** A crashed main window would otherwise stay blank until the user restarts the app. */
+function recoverCrashedWindow(webContents: Electron.WebContents): void {
+  const win = mainWindow;
+  if (isQuitting || !win || win.isDestroyed() || webContents !== win.webContents) return;
+
+  if (crashRecovery.onCrash(Date.now()) === 'reload') {
+    logger.main.warn('Reloading the main window after a renderer crash');
+    win.webContents.reload();
+    return;
+  }
+
+  const { crash } = nativeLabels;
+  void dialog
+    .showMessageBox(win, {
+      type: 'error',
+      message: crash.title,
+      detail: crash.message,
+      buttons: [crash.reload, crash.quit],
+      defaultId: 0,
+      cancelId: 1,
+    })
+    .then(({ response }) => {
+      if (win.isDestroyed()) return;
+      if (response === 0) win.webContents.reload();
+      else app.quit();
+    });
+}
+
+/** Only the desktop window: a tablet must not have Settings pop open from the PC's menu. */
+function openSettingsInMainWindow(tab: 'about' | null = null): void {
+  const win = mainWindow;
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.focus();
+  win.webContents.send('app:openSettings', tab);
+}
+
+function installAppMenu(): void {
+  const template = buildAppMenuTemplate({
+    platform: process.platform,
+    isPackaged: app.isPackaged,
+    appName: app.getName(),
+    labels: nativeLabels.menu,
+    actions: {
+      openSettings: () => openSettingsInMainWindow(),
+      checkForUpdates: () => {
+        openSettingsInMainWindow('about');
+        void checkForUpdatesNow();
+      },
+      openExternal: (url) => void shell.openExternal(url),
+      toggleDevTools: () => BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools(),
+    },
+  });
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
 
 async function getXPlaneModule() {
   if (!xplaneModule) {
@@ -429,6 +502,9 @@ function toggleFlightStripWindow(): void {
   win.on('blur', keepOnTop);
   win.once('ready-to-show', () => win.show());
   win.on('page-title-updated', (e) => e.preventDefault());
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedNavigation(url)) event.preventDefault();
+  });
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://') || url.startsWith('http://')) shell.openExternal(url);
     return { action: 'deny' };
@@ -550,22 +626,18 @@ function createWindow(): BrowserWindow {
       event.preventDefault();
       analytics.track('shortcut_used', { shortcut: 'focus_search' });
       broadcast('focus-search');
+      return;
+    }
+    // The menu accelerator covers macOS; with the title bar hidden, Windows and Linux
+    // have no visible menu, so Ctrl+, is caught here instead.
+    if (!isMac && !input.shift && input.key === ',') {
+      event.preventDefault();
+      openSettingsInMainWindow();
     }
   });
 
   window.webContents.on('will-navigate', (event, url) => {
-    try {
-      const parsedUrl = new URL(url);
-      if (
-        parsedUrl.protocol !== 'file:' &&
-        parsedUrl.hostname !== 'localhost' &&
-        parsedUrl.hostname !== '127.0.0.1'
-      ) {
-        event.preventDefault();
-      }
-    } catch {
-      event.preventDefault();
-    }
+    if (!isAllowedNavigation(url)) event.preventDefault();
   });
 
   window.webContents.setWindowOpenHandler(({ url }) => {
@@ -604,6 +676,12 @@ async function refreshLatestVersion(): Promise<void> {
     return;
   }
   updateStatus.patch({ latestVersion });
+}
+
+async function checkForUpdatesNow() {
+  if (updateStatus.get().managed) startManagedUpdateCheck();
+  await refreshLatestVersion();
+  return updateStatus.get();
 }
 
 let updateRetryTimer: NodeJS.Timeout | null = null;
@@ -687,10 +765,12 @@ function registerIpcHandlers() {
     }
   });
   handle('app:getUpdateStatus', () => updateStatus.get());
-  handle('app:checkForUpdates', async () => {
-    if (updateStatus.get().managed) startManagedUpdateCheck();
-    await refreshLatestVersion();
-    return updateStatus.get();
+  handle('app:checkForUpdates', () => checkForUpdatesNow());
+  on('app:setNativeLabels', (event, labels: unknown) => {
+    // Only the desktop window speaks for the menu's language.
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    nativeLabels = parseNativeLabels(labels);
+    installAppMenu();
   });
   handle('app:installUpdate', () => {
     if (updateStatus.get().install !== 'ready') return false;
@@ -861,6 +941,7 @@ function registerIpcHandlers() {
     if (!db) return { columns: [], rows: [], error: 'No database' };
     try {
       const result = db.exec(sql);
+      saveDb();
       if (!result[0]) return { columns: [], rows: [] };
       return { columns: result[0].columns, rows: result[0].values };
     } catch (err) {
@@ -2011,9 +2092,14 @@ async function bootstrap(): Promise<void> {
     }
   }
 
-  if (app.isPackaged) {
-    Menu.setApplicationMenu(null);
-  }
+  // One dark theme: native menus, dialogs and scrollbars match it on every OS setting.
+  nativeTheme.themeSource = 'dark';
+  app.setAboutPanelOptions({
+    applicationName: app.getName(),
+    applicationVersion: app.getVersion(),
+    website: PROJECT_WEBSITE,
+  });
+  installAppMenu();
 
   try {
     await initDb();
@@ -2081,15 +2167,7 @@ async function bootstrap(): Promise<void> {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline'; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://server.arcgisonline.com https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int;" +
-            "font-src 'self' data:; " +
-            "connect-src 'self' ws://localhost:* http://localhost:* https://avwx.rest https://gateway.x-plane.com https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://*.arcgisonline.com https://api.maptiler.com https://tiles.openfreemap.org https://s3.amazonaws.com https://tiles.mapterhorn.com https://*.rainviewer.com https://gibs.earthdata.nasa.gov https://view.eumetsat.int; " +
-            "worker-src 'self' blob:;",
-        ],
+        'Content-Security-Policy': [CONTENT_SECURITY_POLICY],
       },
     });
   });
@@ -2140,6 +2218,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  isQuitting = true;
   // Synchronous: stores the session length for the next launch and never delays quitting.
   analytics.endSession();
   void stopRemoteAccess();

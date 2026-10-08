@@ -155,6 +155,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'app:openPath',
   'app:pickDirectory',
   'app:setFlightStripOpacity',
+  'app:setNativeLabels',
   'app:setSendCrashReports',
   'companion-apps:browseForExe',
   'debug:dbExec',
