@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { analyticsFmsFormat } from '@/lib/analytics/buckets';
 import type { SimBriefOFP } from '@/types/simbrief';
 import { trackEvent } from './useAnalytics';
 
@@ -73,10 +74,18 @@ export function useSimbriefFetch() {
  */
 export function useDownloadFmsFile() {
   return useMutation({
-    mutationFn: (args: { url: string; targetDir: string; filename: string }) =>
-      window.simbriefAPI.downloadFmsFile(args),
-    onSuccess: (result) => {
-      if (result.success) trackEvent('fms_exported', {});
+    mutationFn: ({
+      format: _format,
+      ...args
+    }: {
+      url: string;
+      targetDir: string;
+      filename: string;
+      /** SimBrief download key, for usage stats only. */
+      format: string;
+    }) => window.simbriefAPI.downloadFmsFile(args),
+    onSuccess: (result, { format }) => {
+      if (result.success) trackEvent('fms_exported', { format: analyticsFmsFormat(format) });
     },
   });
 }

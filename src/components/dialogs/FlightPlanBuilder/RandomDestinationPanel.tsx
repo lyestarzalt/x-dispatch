@@ -15,6 +15,8 @@ interface RandomDestinationPanelProps {
   airports: Airport[];
   aircraftClass: RangeRingCategory;
   onAircraftClassChange: (cls: RangeRingCategory) => void;
+  /** An airport from the panel became the plan's arrival. */
+  onArrivalPicked: (icao: string) => void;
   onClose: () => void;
   className?: string;
 }
@@ -24,6 +26,7 @@ export function RandomDestinationPanel({
   airports,
   aircraftClass,
   onAircraftClassChange,
+  onArrivalPicked,
   onClose,
   className,
 }: RandomDestinationPanelProps) {
@@ -73,6 +76,7 @@ export function RandomDestinationPanel({
               onPick: (destination) => {
                 setSelectedRoute(null);
                 setArrival(toEndpoint(destination));
+                onArrivalPicked(destination.icao);
               },
             }}
           />
