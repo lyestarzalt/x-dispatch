@@ -217,7 +217,6 @@
     },
     "ete": "時間",
     "aircraft": "機種",
-    "skipped": "{{count}} 件スキップ",
     "issues": {
       "notFound": "航法データベースにありません",
       "airwayNoFixBefore": "航空路の前にはフィックスが必要です",
@@ -231,7 +230,7 @@
     "showOnMap": "地図に表示",
     "save": "X-Planeに保存",
     "saved": "{{path}} に保存しました",
-    "saveFailed": "保存できませんでした: {{error}}",
+    "saveFailed": "X-Plane に保存できませんでした（{{error}}）。設定で X-Plane フォルダーを確認してください。",
     "light": {
       "phase": {
         "day": "昼",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "ランダムな目的地",
     "planCleared": "プランを消去しました",
-    "routeCleared": "ルートを消去しました"
+    "routeCleared": "ルートを消去しました",
+    "randomShort": "ランダム",
+    "profileShort": "断面",
+    "savedAs": "{{file}} として保存"
   },
   "toolbar": {
     "clock": {

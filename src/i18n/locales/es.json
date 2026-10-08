@@ -217,7 +217,6 @@
     },
     "ete": "Tiempo",
     "aircraft": "Aeronave",
-    "skipped": "{{count}} omitidos",
     "issues": {
       "notFound": "No está en la base de datos de navegación",
       "airwayNoFixBefore": "Una aerovía necesita un punto antes",
@@ -231,7 +230,7 @@
     "showOnMap": "Mostrar en el mapa",
     "save": "Guardar en X-Plane",
     "saved": "Guardado en {{path}}",
-    "saveFailed": "No se pudo guardar: {{error}}",
+    "saveFailed": "No se pudo guardar en X-Plane ({{error}}). Revisa la carpeta de X-Plane en Ajustes.",
     "light": {
       "phase": {
         "day": "Día",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "Destino aleatorio",
     "planCleared": "Plan borrado",
-    "routeCleared": "Ruta borrada"
+    "routeCleared": "Ruta borrada",
+    "randomShort": "Aleatorio",
+    "profileShort": "Perfil",
+    "savedAs": "Guardado como {{file}}"
   },
   "toolbar": {
     "clock": {

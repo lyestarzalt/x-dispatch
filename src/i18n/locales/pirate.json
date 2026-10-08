@@ -217,7 +217,6 @@
     },
     "ete": "Time",
     "aircraft": "Vessel",
-    "skipped": "{{count}} tossed overboard",
     "issues": {
       "notFound": "Not on any chart we carry",
       "airwayNoFixBefore": "A sea lane needs a mark afore it",
@@ -231,7 +230,7 @@
     "showOnMap": "Show on the chart",
     "save": "Stow in X-Plane",
     "saved": "Stowed at {{path}}",
-    "saveFailed": "Couldn't stow it: {{error}}",
+    "saveFailed": "Couldn't stow it in X-Plane ({{error}}). Check yer X-Plane folder in Settings.",
     "light": {
       "phase": {
         "day": "Day",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "Lucky port",
     "planCleared": "Chart wiped clean",
-    "routeCleared": "Course wiped"
+    "routeCleared": "Course wiped",
+    "randomShort": "Luck",
+    "profileShort": "Profile",
+    "savedAs": "Stowed as {{file}}"
   },
   "toolbar": {
     "clock": {

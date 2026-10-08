@@ -217,7 +217,6 @@
     },
     "ete": "Time",
     "aircraft": "Aircraft",
-    "skipped": "{{count}} skipped",
     "issues": {
       "notFound": "Not in the navigation database",
       "airwayNoFixBefore": "An airway needs a fix before it",
@@ -231,7 +230,7 @@
     "showOnMap": "Show on map",
     "save": "Save to X-Plane",
     "saved": "Saved to {{path}}",
-    "saveFailed": "Could not save: {{error}}",
+    "saveFailed": "Couldn't save to X-Plane ({{error}}). Check the X-Plane folder in Settings.",
     "light": {
       "phase": {
         "day": "Day",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "Random destination",
     "planCleared": "Plan cleared",
-    "routeCleared": "Route cleared"
+    "routeCleared": "Route cleared",
+    "randomShort": "Random",
+    "profileShort": "Profile",
+    "savedAs": "Saved as {{file}}"
   },
   "toolbar": {
     "clock": {

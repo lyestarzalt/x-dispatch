@@ -217,7 +217,6 @@
     },
     "ete": "Temps",
     "aircraft": "Appareil",
-    "skipped": "{{count}} ignorés",
     "issues": {
       "notFound": "Absent de la base de navigation",
       "airwayNoFixBefore": "Une voie aérienne a besoin d'un point avant",
@@ -231,7 +230,7 @@
     "showOnMap": "Afficher sur la carte",
     "save": "Enregistrer dans X-Plane",
     "saved": "Enregistré dans {{path}}",
-    "saveFailed": "Enregistrement impossible : {{error}}",
+    "saveFailed": "Impossible d'enregistrer dans X-Plane ({{error}}). Vérifiez le dossier X-Plane dans les Paramètres.",
     "light": {
       "phase": {
         "day": "Jour",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "Destination aléatoire",
     "planCleared": "Plan effacé",
-    "routeCleared": "Route effacée"
+    "routeCleared": "Route effacée",
+    "randomShort": "Hasard",
+    "profileShort": "Profil",
+    "savedAs": "Enregistré sous {{file}}"
   },
   "toolbar": {
     "clock": {

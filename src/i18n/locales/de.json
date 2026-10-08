@@ -217,7 +217,6 @@
     },
     "ete": "Zeit",
     "aircraft": "Flugzeug",
-    "skipped": "{{count}} übersprungen",
     "issues": {
       "notFound": "Nicht in der Navigationsdatenbank",
       "airwayNoFixBefore": "Eine Luftstraße braucht einen Wegpunkt davor",
@@ -231,7 +230,7 @@
     "showOnMap": "Auf Karte zeigen",
     "save": "In X-Plane speichern",
     "saved": "Gespeichert unter {{path}}",
-    "saveFailed": "Speichern fehlgeschlagen: {{error}}",
+    "saveFailed": "Speichern in X-Plane fehlgeschlagen ({{error}}). Prüfe den X-Plane-Ordner in den Einstellungen.",
     "light": {
       "phase": {
         "day": "Tag",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "Zufallsziel",
     "planCleared": "Plan geleert",
-    "routeCleared": "Route geleert"
+    "routeCleared": "Route geleert",
+    "randomShort": "Zufall",
+    "profileShort": "Profil",
+    "savedAs": "Gespeichert als {{file}}"
   },
   "toolbar": {
     "clock": {

@@ -217,7 +217,6 @@
     },
     "ete": "时间",
     "aircraft": "机型",
-    "skipped": "已跳过 {{count}} 项",
     "issues": {
       "notFound": "导航数据库中不存在",
       "airwayNoFixBefore": "航路前需要一个航路点",
@@ -231,7 +230,7 @@
     "showOnMap": "在地图上显示",
     "save": "保存到 X-Plane",
     "saved": "已保存到 {{path}}",
-    "saveFailed": "无法保存：{{error}}",
+    "saveFailed": "无法保存到 X-Plane（{{error}}）。请在设置中检查 X-Plane 文件夹。",
     "light": {
       "phase": {
         "day": "白昼",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "随机目的地",
     "planCleared": "计划已清除",
-    "routeCleared": "航路已清除"
+    "routeCleared": "航路已清除",
+    "randomShort": "随机",
+    "profileShort": "剖面",
+    "savedAs": "已保存为 {{file}}"
   },
   "toolbar": {
     "clock": {

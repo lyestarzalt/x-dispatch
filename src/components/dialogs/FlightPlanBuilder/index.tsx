@@ -16,7 +16,6 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
@@ -67,10 +66,10 @@ import { CruiseStat } from './CruiseStat';
 import { EndpointLabel } from './EndpointLabel';
 import { Field } from './Field';
 import { LightSection } from './LightSection';
-import { ProblemChip } from './ProblemChip';
 import { ProcedureSelect } from './ProcedureSelect';
 import { RandomDestinationPanel } from './RandomDestinationPanel';
 import { RouteEnd } from './RouteEnd';
+import { RouteProblem } from './RouteProblem';
 import { RunwaySelect } from './RunwaySelect';
 import { Section } from './Section';
 import { Stat } from './Stat';
@@ -432,11 +431,6 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
         <CheckCircle2 className="text-success h-4 w-4" />
       )}
       <span>{t('planBuilder.routeSummary', { fixes: fixCount, airways: airwayCount })}</span>
-      {problems.length > 0 && (
-        <Badge variant="warning" className="px-1.5 py-0">
-          {t('planBuilder.skipped', { count: problems.length })}
-        </Badge>
-      )}
     </span>
   );
 
@@ -457,7 +451,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             <div className="flex shrink-0 items-center gap-1">
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="xs"
                 className={
                   randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 }
@@ -465,7 +459,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                 tooltip={t('planBuilder.randomDestination')}
                 aria-pressed={randomOpen}
               >
-                <Dices className="h-4 w-4" />
+                <Dices className="h-3.5 w-3.5" />
+                {t('planBuilder.randomShort')}
               </Button>
               <Button
                 variant="ghost"
@@ -703,15 +698,17 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                 />
               )}
               {problems.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="space-y-1.5">
                   <span className="xp-label">{t('planBuilder.notUsed')}</span>
-                  {problems.map(({ token, index }) => (
-                    <ProblemChip
-                      key={`${token.text}-${index}`}
-                      token={token}
-                      onRemove={() => removeRouteToken(index)}
-                    />
-                  ))}
+                  <ul className="space-y-1">
+                    {problems.map(({ token, index }) => (
+                      <RouteProblem
+                        key={`${token.text}-${index}`}
+                        token={token}
+                        onRemove={() => removeRouteToken(index)}
+                      />
+                    ))}
+                  </ul>
                 </div>
               )}
             </Section>
@@ -727,45 +724,45 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </div>
         </ScrollArea>
 
-        <footer className="border-border/30 flex items-center gap-2 border-t px-4 py-3">
-          <div className="min-w-0 flex-1">
-            {savedPath && (
-              <span
-                className="text-success flex min-w-0 items-center gap-1.5 text-xs"
-                title={savedPath}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate font-mono">{savedPath.split(/[\\/]/).pop()}</span>
+        <footer className="border-border/30 space-y-2 border-t px-4 py-3">
+          {savedPath && (
+            <p className="text-success flex min-w-0 items-center gap-1.5 text-xs" title={savedPath}>
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate font-mono">
+                {t('planBuilder.savedAs', { file: savedPath.split(/[\\/]/).pop() })}
               </span>
-            )}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button
+              variant={profileStripOpen ? 'secondary' : 'ghost'}
+              size="xs"
+              className="mr-auto"
+              onClick={() => setProfileStripOpen(!profileStripOpen)}
+              disabled={!ready}
+              aria-pressed={profileStripOpen}
+              tooltip={profileStripOpen ? t('profile.hide') : t('profile.show')}
+            >
+              <Mountain className="h-3.5 w-3.5" />
+              {t('planBuilder.profileShort')}
+            </Button>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => {
+                startAtDeparture();
+                markVisit({ startSet: true });
+              }}
+              disabled={!departure}
+            >
+              <PlaneTakeoff className="h-3.5 w-3.5" />
+              {t('planBuilder.setStart')}
+            </Button>
+            <Button size="xs" onClick={handleSave} disabled={!ready || saving}>
+              <Save className="h-3.5 w-3.5" />
+              {t('planBuilder.save')}
+            </Button>
           </div>
-          <Button
-            variant={profileStripOpen ? 'secondary' : 'outline'}
-            size="icon-sm"
-            className="shrink-0"
-            onClick={() => setProfileStripOpen(!profileStripOpen)}
-            disabled={!ready}
-            tooltip={profileStripOpen ? t('profile.hide') : t('profile.show')}
-          >
-            <Mountain className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="xs"
-            className="shrink-0"
-            onClick={() => {
-              startAtDeparture();
-              markVisit({ startSet: true });
-            }}
-            disabled={!departure}
-          >
-            <PlaneTakeoff className="h-3.5 w-3.5" />
-            {t('planBuilder.setStart')}
-          </Button>
-          <Button size="xs" className="shrink-0" onClick={handleSave} disabled={!ready || saving}>
-            <Save className="h-3.5 w-3.5" />
-            {t('planBuilder.save')}
-          </Button>
         </footer>
       </div>
       {randomOpen && (

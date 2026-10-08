@@ -217,7 +217,6 @@
     },
     "ete": "Czas",
     "aircraft": "Samolot",
-    "skipped": "Pominięto: {{count}}",
     "issues": {
       "notFound": "Brak w bazie nawigacyjnej",
       "airwayNoFixBefore": "Droga lotnicza wymaga punktu przed nią",
@@ -231,7 +230,7 @@
     "showOnMap": "Pokaż na mapie",
     "save": "Zapisz w X-Plane",
     "saved": "Zapisano w {{path}}",
-    "saveFailed": "Nie udało się zapisać: {{error}}",
+    "saveFailed": "Nie udało się zapisać w X-Plane ({{error}}). Sprawdź folder X-Plane w Ustawieniach.",
     "light": {
       "phase": {
         "day": "Dzień",
@@ -254,7 +253,10 @@
     },
     "randomDestination": "Losowy cel",
     "planCleared": "Plan wyczyszczony",
-    "routeCleared": "Trasa wyczyszczona"
+    "routeCleared": "Trasa wyczyszczona",
+    "randomShort": "Losowo",
+    "profileShort": "Profil",
+    "savedAs": "Zapisano jako {{file}}"
   },
   "toolbar": {
     "clock": {
