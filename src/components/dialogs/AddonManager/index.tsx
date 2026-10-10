@@ -1,5 +1,5 @@
 // src/components/dialogs/AddonManager/index.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { FolderOpen, Layers, Package, PackagePlus, X } from 'lucide-react';
@@ -10,6 +10,7 @@ import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { indicatorSpring, quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import { useTrackFeatureOpened } from '@/queries';
+import { useAppStore } from '@/stores/appStore';
 import { BrowserTab } from './tabs/BrowserTab';
 import { InstallerTab } from './tabs/InstallerTab';
 import { SceneryTab } from './tabs/SceneryTab';
@@ -55,6 +56,20 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
   useTrackFeatureOpened('addon_manager', open);
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabValue>('installed');
+
+  // A link asked for a tab (xdispatch://addon?tab=installer).
+  useEffect(() => {
+    if (!open) return;
+    return useAppStore.subscribe(
+      (s) => s.pendingAddonTab,
+      (tab) => {
+        if (!tab) return;
+        setActiveTab(tab);
+        useAppStore.getState().clearPendingAddonTab();
+      },
+      { fireImmediately: true }
+    );
+  }, [open]);
 
   const handleOpenXPlaneFolder = async () => {
     const xplanePath = await window.xplaneAPI.getPath();

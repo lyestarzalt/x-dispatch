@@ -15,6 +15,7 @@ import {
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
+import { execFile } from 'node:child_process';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
@@ -29,13 +30,33 @@ import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './l
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import {
+  APP_URL_SCHEME,
+  type AppAction,
+  findAppUrlInArgv,
+  parseAppUrl,
+  remoteFileUrlOf,
+} from './lib/nativeShell/appUrl';
 import { createCrashRecovery } from './lib/nativeShell/crashRecovery';
+import {
+  findFmsFileInArgv,
+  isFmsFileArg,
+  windowsFmsRegistryCommands,
+} from './lib/nativeShell/fileAssociations';
 import {
   DEFAULT_NATIVE_LABELS,
   type NativeLabels,
   parseNativeLabels,
 } from './lib/nativeShell/labels';
 import { isAllowedNavigation } from './lib/nativeShell/navigationGuard';
+import { createPendingActions } from './lib/nativeShell/pendingActions';
+import {
+  type RecentAirport,
+  addRecentAirport,
+  buildDockMenuTemplate,
+  buildJumpListCategories,
+  parseRecentAirports,
+} from './lib/nativeShell/recentAirports';
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
@@ -242,6 +263,15 @@ let isQuitting = false;
 /** Translated by the renderer; English until its first push. */
 let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
 const crashRecovery = createCrashRecovery();
+/**
+ * Actions from links, held until the renderer is listening. A link on a cold
+ * start arrives before the window exists; the renderer drains the queue once
+ * it mounts and takes later actions as pushes.
+ */
+const pendingAppActions = createPendingActions<AppAction>();
+/** Files the OS asked us to open; the only paths `flightplan:readFile` will read. */
+const openableFiles = new Set<string>();
+let recentAirports: RecentAirport[] = [];
 
 /** A crashed main window would otherwise stay blank until the user restarts the app. */
 function recoverCrashedWindow(webContents: Electron.WebContents): void {
@@ -333,15 +363,17 @@ const DEFAULT_PROXY_FETCH_TIMEOUT_MS = 15_000;
 
 async function proxyFetch(
   url: string,
-  opts: { timeoutMs?: number } = {}
+  opts: { timeoutMs?: number; maxBytes?: number } = {}
 ): Promise<{ data: string | null; error: string | null; statusCode?: number }> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_PROXY_FETCH_TIMEOUT_MS;
+  const maxBytes = opts.maxBytes ?? Infinity;
   const startedAt = Date.now();
 
   return new Promise((resolve) => {
     const request = net.request(url);
     request.setHeader('User-Agent', `X-Dispatch/${app.getVersion()}`);
     let data = '';
+    let received = 0;
     let settled = false;
 
     const settle = (result: { data: string | null; error: string | null; statusCode?: number }) => {
@@ -368,6 +400,16 @@ async function proxyFetch(
 
     request.on('response', (response) => {
       response.on('data', (chunk) => {
+        received += chunk.length;
+        if (received > maxBytes) {
+          settle({ data: null, error: `Response larger than ${maxBytes} bytes` });
+          try {
+            request.abort();
+          } catch {
+            // already settling
+          }
+          return;
+        }
         data += chunk.toString();
       });
       response.on('end', () => {
@@ -614,6 +656,10 @@ function createWindow(): BrowserWindow {
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
+  // A reload (crash recovery, dev HMR) drops the renderer's listeners: hold
+  // app actions again until the new page drains the queue.
+  window.webContents.on('did-start-loading', () => pendingAppActions.reset());
+
   window.webContents.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown' || !(input.control || input.meta) || input.alt) return;
     // Zoom is owned by the Interface Zoom setting; the dev menu's zoom keys would drift from it.
@@ -771,6 +817,12 @@ function registerIpcHandlers() {
     if (!mainWindow || event.sender !== mainWindow.webContents) return;
     nativeLabels = parseNativeLabels(labels);
     installAppMenu();
+    refreshRecentsMenus();
+  });
+  on('app:airportOpened', (event, icao: unknown, name: unknown) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    if (typeof icao !== 'string' || !isValidICAO(icao)) return;
+    recordRecentAirport(icao.toUpperCase(), typeof name === 'string' ? name.slice(0, 80) : '');
   });
   handle('app:installUpdate', () => {
     if (updateStatus.get().install !== 'ready') return false;
@@ -793,6 +845,38 @@ function registerIpcHandlers() {
       heapTotal: mem.heapTotal,
     };
   });
+  // The renderer takes whatever links arrived before it listened, then gets pushes.
+  handle('app:takePendingActions', () => pendingAppActions.drain());
+
+  // A flight plan the user agreed to download from a link: https only, small, and
+  // parsed by the renderer like a file it opened itself.
+  handle('flightplan:fetchRemote', async (_, rawUrl: unknown) => {
+    const url = typeof rawUrl === 'string' ? remoteFileUrlOf(rawUrl) : undefined;
+    if (!url) return { content: null, fileName: null, error: 'invalid_url' };
+    const result = await proxyFetch(url, { timeoutMs: 10_000, maxBytes: 1024 * 1024 });
+    if (!result.data || result.error) {
+      return { content: null, fileName: null, error: result.error ?? 'empty' };
+    }
+    const fileName = path.basename(new URL(url).pathname) || 'flightplan.fms';
+    return { content: result.data, fileName, error: null };
+  });
+
+  // A .fms the OS handed to main; any other path is refused, whatever the renderer says.
+  handle('flightplan:readFile', async (_, rawPath: unknown) => {
+    if (typeof rawPath !== 'string' || !openableFiles.has(rawPath)) {
+      return { content: null, fileName: null, error: 'not_allowed' };
+    }
+    try {
+      const stat = await fs.promises.stat(rawPath);
+      if (stat.size > 1024 * 1024) return { content: null, fileName: null, error: 'too_large' };
+      const content = await fs.promises.readFile(rawPath, 'utf-8');
+      return { content, fileName: path.basename(rawPath), error: null };
+    } catch (err) {
+      logger.main.warn(`Could not read flight plan file: ${String(err)}`);
+      return { content: null, fileName: null, error: 'read_failed' };
+    }
+  });
+
   handle('app:getLogPath', () => getLogPath());
   handle('app:openLogFile', () => {
     const logPath = getLogPath();
@@ -1504,6 +1588,7 @@ function registerIpcHandlers() {
       }
 
       const filePath = result.filePaths[0]!;
+      app.addRecentDocument(filePath);
       const content = fs.readFileSync(filePath, 'utf-8');
       const fileName = path.basename(filePath);
 
@@ -2006,8 +2091,8 @@ if (!app.isPackaged) {
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
 
-// Deep link protocol: xdispatch://airport/ICAO
-const PROTOCOL = 'xdispatch';
+// Deep links: xdispatch://airport/ICAO, xdispatch://route?from=…, see lib/nativeShell/appUrl.
+const PROTOCOL = APP_URL_SCHEME;
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -2017,13 +2102,92 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient(PROTOCOL);
 }
 
-function handleDeepLink(url: string): void {
-  if (!url.startsWith(`${PROTOCOL}://`)) return;
-  const parsed = new URL(url);
-  // xdispatch://airport/LFMN → host="airport", pathname="/LFMN"
-  if (parsed.host === 'airport' && parsed.pathname.length > 1) {
-    const icao = parsed.pathname.slice(1).toUpperCase();
-    broadcast('deep-link', { type: 'airport', icao });
+function focusMainWindow(): void {
+  // `if (mainWindow)` alone passes a destroyed BrowserWindow (still truthy),
+  // and any method on it throws "Object has been destroyed". Sentry
+  // X-DISPATCH-6.
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  if (!mainWindow.isVisible()) mainWindow.show();
+  mainWindow.focus();
+}
+
+function dispatchAppAction(action: AppAction): void {
+  focusMainWindow();
+  if (pendingAppActions.isReady() && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('app:action', action);
+    return;
+  }
+  pendingAppActions.push(action);
+}
+
+function handleAppUrl(url: string): void {
+  const action = parseAppUrl(url);
+  if (!action) {
+    logger.main.warn(`Ignoring app URL that does not parse: ${url.slice(0, 200)}`);
+    return;
+  }
+  logger.main.info(`App URL: ${action.kind}${action.source ? ` from ${action.source}` : ''}`);
+  dispatchAppAction(action);
+}
+
+/** A .fms the OS handed us: double-click, Open With, drop on the dock icon. */
+function handleFilePath(filePath: string): void {
+  if (!isFmsFileArg(filePath) || !fs.existsSync(filePath)) {
+    logger.main.warn(`Ignoring file the OS asked to open: ${filePath.slice(0, 200)}`);
+    return;
+  }
+  openableFiles.add(filePath);
+  void app.whenReady().then(() => app.addRecentDocument(filePath));
+  logger.main.info('Opening a flight plan file from the OS');
+  dispatchAppAction({ kind: 'import-file', path: filePath });
+}
+
+function recentAirportsFile(): string {
+  return path.join(app.getPath('userData'), 'recent-airports.json');
+}
+
+function loadRecentAirports(): void {
+  try {
+    recentAirports = parseRecentAirports(
+      JSON.parse(fs.readFileSync(recentAirportsFile(), 'utf-8'))
+    );
+  } catch {
+    recentAirports = [];
+  }
+}
+
+/** Dock menu on macOS, jump list on Windows: the recent airports, in the UI language. */
+function refreshRecentsMenus(): void {
+  const labels = { recentAirports: nativeLabels.menu.recentAirports };
+  if (process.platform === 'darwin' && app.dock) {
+    const template = buildDockMenuTemplate(recentAirports, labels, (icao) =>
+      dispatchAppAction({ kind: 'airport', icao })
+    );
+    app.dock.setMenu(Menu.buildFromTemplate(template));
+  } else if (process.platform === 'win32' && app.isPackaged) {
+    const categories = buildJumpListCategories(recentAirports, labels, process.execPath);
+    const result = app.setJumpList(categories.length > 0 ? categories : null);
+    if (result !== 'ok') logger.main.warn(`Jump list not set: ${result}`);
+  }
+}
+
+function recordRecentAirport(icao: string, name: string): void {
+  recentAirports = addRecentAirport(recentAirports, { icao, name });
+  try {
+    fs.writeFileSync(recentAirportsFile(), JSON.stringify(recentAirports));
+  } catch (err) {
+    logger.main.warn('Could not save recent airports', err);
+  }
+  refreshRecentsMenus();
+}
+
+/** Per-user "Open With" entry for .fms; the exe path moves with every Squirrel update. */
+function registerWindowsFileAssociations(): void {
+  for (const args of windowsFmsRegistryCommands(process.execPath)) {
+    execFile('reg', ['add', ...args], { windowsHide: true }, (err) => {
+      if (err) logger.main.warn(`reg add ${args[0]} failed: ${err.message}`);
+    });
   }
 }
 
@@ -2033,23 +2197,33 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('second-instance', (_event, commandLine) => {
-  // `if (mainWindow)` alone passes a destroyed BrowserWindow (still truthy),
-  // and any method on it throws "Object has been destroyed". Sentry
-  // X-DISPATCH-6.
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  }
-  // Windows/Linux: deep link URL is the last arg
-  const url = commandLine.find((arg) => arg.startsWith(`${PROTOCOL}://`));
-  if (url) handleDeepLink(url);
+  focusMainWindow();
+  // Windows/Linux: the link or file the second instance was launched with
+  const url = findAppUrlInArgv(commandLine);
+  if (url) handleAppUrl(url);
+  const file = findFmsFileInArgv(commandLine);
+  if (file) handleFilePath(file);
 });
 
-// macOS: deep link via open-url event
+// macOS: deep link via open-url event, which can fire before the app is ready
 app.on('open-url', (event, url) => {
   event.preventDefault();
-  handleDeepLink(url);
+  handleAppUrl(url);
 });
+
+// macOS: a .fms opened from Finder or dropped on the dock icon
+app.on('open-file', (event, filePath) => {
+  event.preventDefault();
+  handleFilePath(filePath);
+});
+
+// Windows/Linux cold start: the link or file is an argument of this very process
+{
+  const coldStartUrl = findAppUrlInArgv(process.argv);
+  if (coldStartUrl) handleAppUrl(coldStartUrl);
+  const coldStartFile = findFmsFileInArgv(process.argv);
+  if (coldStartFile) handleFilePath(coldStartFile);
+}
 
 /** One snapshot per launch of the window size and display scaling, as buckets. */
 function reportDisplay(win: BrowserWindow): void {
@@ -2100,6 +2274,9 @@ async function bootstrap(): Promise<void> {
     website: PROJECT_WEBSITE,
   });
   installAppMenu();
+  loadRecentAirports();
+  refreshRecentsMenus();
+  if (process.platform === 'win32' && app.isPackaged) registerWindowsFileAssociations();
 
   try {
     await initDb();

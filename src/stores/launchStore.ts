@@ -22,6 +22,8 @@ interface LaunchState {
   // Selection
   selectedAircraftPath: string | null;
   selectedAircraft: Aircraft | null;
+  /** Aircraft name a link asked for; the dialog matches it once the scan is in. Not persisted. */
+  pendingAircraftName: string | null;
   selectedLivery: string;
 
   // Flight Config
@@ -63,6 +65,7 @@ interface LaunchState {
   setWeatherConfig: (config: WeatherConfig) => void;
   selectAircraft: (aircraft: Aircraft | null) => void;
   hydrateAircraft: (aircraft: Aircraft | null) => void;
+  setPendingAircraftName: (name: string | null) => void;
   setSelectedLivery: (livery: string) => void;
   setTankPercentage: (index: number, value: number) => void;
   setAllTanksPercentage: (value: number) => void;
@@ -94,6 +97,7 @@ interface LaunchState {
 const DEFAULT_CONFIG = {
   selectedAircraftPath: null as string | null,
   selectedAircraft: null as Aircraft | null,
+  pendingAircraftName: null as string | null,
   selectedLivery: 'Default',
   tankPercentages: [] as number[],
   payloadWeights: [] as number[],
@@ -158,6 +162,8 @@ export const useLaunchStore = create<LaunchState>()(
             launchError: null,
           };
         }),
+
+      setPendingAircraftName: (name) => set({ pendingAircraftName: name }),
 
       hydrateAircraft: (aircraft) =>
         set((state) => {

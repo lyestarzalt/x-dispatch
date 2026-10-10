@@ -2146,7 +2146,8 @@
       "help": "Hilfe",
       "website": "X-Dispatch-Website",
       "discord": "Discord-Community",
-      "checkForUpdates": "Nach Updates suchen…"
+      "checkForUpdates": "Nach Updates suchen…",
+      "recentAirports": "Zuletzt geöffnete Flughäfen"
     },
     "crash": {
       "title": "X-Dispatch funktioniert nicht mehr",
@@ -2159,5 +2160,18 @@
     "controls": "Wetterradar-Steuerung",
     "previousFrame": "Vorheriges Bild",
     "nextFrame": "Nächstes Bild"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} ist nicht in deiner Flughafenliste",
+    "aircraftNotFound": "Kein installiertes Flugzeug passt zu „{{name}}“",
+    "importConfirm": {
+      "title": "Flugplan herunterladen?",
+      "description": "Ein Link möchte einen Flugplan von {{host}} laden. Fahre nur fort, wenn du der Herkunft des Links vertraust.",
+      "download": "Herunterladen",
+      "cancel": "Abbrechen"
+    },
+    "importDone": "{{fileName}} geladen",
+    "importFailed": "Flugplan von {{host}} konnte nicht geladen werden",
+    "importFileFailed": "Diese Flugplandatei konnte nicht geladen werden"
   }
 }

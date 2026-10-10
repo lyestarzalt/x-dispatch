@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import i18n from 'i18next';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
+import { airportsListQuery } from '@/queries/useAirportsListQuery';
 import { useAppStore } from '@/stores/appStore';
 
 function translatedLabels(): NativeLabels {
@@ -14,6 +16,7 @@ function translatedLabels(): NativeLabels {
       website: t('nativeShell.menu.website'),
       discord: t('nativeShell.menu.discord'),
       checkForUpdates: t('nativeShell.menu.checkForUpdates'),
+      recentAirports: t('nativeShell.menu.recentAirports'),
     },
     crash: {
       title: t('nativeShell.crash.title'),
@@ -29,6 +32,23 @@ function translatedLabels(): NativeLabels {
  * language, and opens Settings when the menu asks for it.
  */
 export function useNativeShell() {
+  const queryClient = useQueryClient();
+
+  // Recent airports for the dock menu and jump list.
+  useEffect(() => {
+    if (window.appAPI.isRemoteClient) return;
+    return useAppStore.subscribe(
+      (s) => s.selectedICAO,
+      (icao) => {
+        if (!icao) return;
+        const airport = queryClient
+          .getQueryData(airportsListQuery.queryKey)
+          ?.find((a) => a.icao === icao);
+        window.appAPI.noteAirportOpened(icao, airport?.name ?? '');
+      }
+    );
+  }, [queryClient]);
+
   useEffect(() => {
     if (window.appAPI.isRemoteClient) return;
     const push = () => window.appAPI.setNativeLabels(translatedLabels());

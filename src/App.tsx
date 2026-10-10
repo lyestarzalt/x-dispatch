@@ -9,6 +9,7 @@ import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import { AnalyticsConsentDialog } from './components/dialogs/AnalyticsConsentDialog';
+import { AppActionConfirmDialog } from './components/dialogs/AppActionConfirmDialog';
 import { RemoteConnectionBanner } from './components/remote/RemoteConnectionBanner';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
@@ -16,6 +17,7 @@ import SetupScreen from './components/screens/SetupScreen';
 import { Toaster } from './components/ui/sonner';
 import { FullScreenSpinner } from './components/ui/spinner';
 import { TooltipProvider } from './components/ui/tooltip';
+import { useAppActions } from './hooks/useAppActions';
 import { useNativeShell } from './hooks/useNativeShell';
 import './i18n';
 import { startupBucket } from './lib/analytics/buckets';
@@ -45,6 +47,7 @@ function AppContent() {
   useNativeShell();
   const queryClient = useQueryClient();
   const [appState, setAppState] = useState<AppState>('checking');
+  useAppActions(appState === 'ready');
   const [airports, setAirports] = useState<Airport[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -152,6 +155,7 @@ function AppContent() {
       <SectionErrorBoundary name="Map">
         <Map airports={airports} />
         <AnalyticsConsentDialog />
+        <AppActionConfirmDialog />
       </SectionErrorBoundary>
     );
   }

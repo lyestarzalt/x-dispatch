@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import type { AddonManagerTab, AirportPanelTab, SettingsTab } from '@/lib/nativeShell/appUrl';
 import type { ParsedAirport } from '@/types/apt';
 import type { ResolvedProcedure as SelectedProcedure } from '@/types/navigation';
 import type { StartPosition } from '@/types/position';
@@ -25,6 +26,15 @@ interface AppState {
    * forget; the Map is the single consumer.
    */
   pendingAirportSelectionIcao: string | null;
+  /** A link asked for a tab of the airport panel; the panel switches and clears. */
+  pendingAirportTab: AirportPanelTab | null;
+  /** A link asked for a runway end as the start position; the Map resolves it once the airport is loaded. */
+  pendingStartRunway: { icao: string; runway: string } | null;
+  showAddonManager: boolean;
+  /** Tab the Addon Manager opens on; it clears it. */
+  pendingAddonTab: AddonManagerTab | null;
+  /** A link wants to fetch something remote; the dialog asks and resolves. */
+  pendingConfirmation: AppActionConfirmation | null;
   logbook: { open: boolean; tab: LogbookTab; flightId: string | null };
 
   selectAirport: (icao: string, data: ParsedAirport, isCustom?: boolean) => void;
@@ -40,6 +50,16 @@ interface AppState {
   requestSelectAirport: (icao: string) => void;
   /** Consumer: clears the pending request once handled (or to drop it). */
   clearPendingAirportSelection: () => void;
+  requestAirportTab: (tab: AirportPanelTab) => void;
+  clearPendingAirportTab: () => void;
+  requestStartRunway: (icao: string, runway: string) => void;
+  clearPendingStartRunway: () => void;
+  openAddonManager: (tab?: AddonManagerTab | null) => void;
+  closeAddonManager: () => void;
+  clearPendingAddonTab: () => void;
+  requestConfirmation: (confirmation: AppActionConfirmation) => void;
+  /** Answers and clears the pending confirmation. */
+  resolveConfirmation: (accepted: boolean) => void;
   openLogbook: (tab?: LogbookTab, flightId?: string | null) => void;
   closeLogbook: () => void;
   setLogbookTab: (tab: LogbookTab) => void;
@@ -47,7 +67,16 @@ interface AppState {
 }
 
 export type LogbookTab = 'flights' | 'launches';
-export type SettingsTabRequest = 'about';
+export type SettingsTabRequest = SettingsTab;
+
+/** What a link wants to download, shown to the user before anything is fetched. */
+export interface AppActionConfirmation {
+  kind: 'import-url';
+  url: string;
+  host: string;
+  path: string;
+  resolve: (accepted: boolean) => void;
+}
 
 export const useAppStore = create<AppState>()(
   subscribeWithSelector((set) => ({
@@ -61,6 +90,11 @@ export const useAppStore = create<AppState>()(
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
     pendingAirportSelectionIcao: null as string | null,
+    pendingAirportTab: null as AirportPanelTab | null,
+    pendingStartRunway: null as { icao: string; runway: string } | null,
+    showAddonManager: false,
+    pendingAddonTab: null as AddonManagerTab | null,
+    pendingConfirmation: null as AppActionConfirmation | null,
     logbook: { open: false, tab: 'flights' as LogbookTab, flightId: null as string | null },
 
     selectAirport: (icao, data, isCustom) =>
@@ -96,6 +130,28 @@ export const useAppStore = create<AppState>()(
     requestSelectAirport: (icao) => set({ pendingAirportSelectionIcao: icao.toUpperCase() }),
 
     clearPendingAirportSelection: () => set({ pendingAirportSelectionIcao: null }),
+
+    requestAirportTab: (tab) => set({ pendingAirportTab: tab }),
+    clearPendingAirportTab: () => set({ pendingAirportTab: null }),
+    requestStartRunway: (icao, runway) =>
+      set({ pendingStartRunway: { icao: icao.toUpperCase(), runway: runway.toUpperCase() } }),
+    clearPendingStartRunway: () => set({ pendingStartRunway: null }),
+
+    openAddonManager: (tab) => set({ showAddonManager: true, pendingAddonTab: tab ?? null }),
+    closeAddonManager: () => set({ showAddonManager: false }),
+    clearPendingAddonTab: () => set({ pendingAddonTab: null }),
+
+    requestConfirmation: (confirmation) =>
+      set((state) => {
+        // Only one question at a time; a second link answers the first with "no".
+        state.pendingConfirmation?.resolve(false);
+        return { pendingConfirmation: confirmation };
+      }),
+    resolveConfirmation: (accepted) =>
+      set((state) => {
+        state.pendingConfirmation?.resolve(accepted);
+        return { pendingConfirmation: null };
+      }),
 
     openLogbook: (tab, flightId) =>
       set((state) => ({

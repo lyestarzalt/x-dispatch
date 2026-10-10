@@ -2146,7 +2146,8 @@
       "help": "Ajuda",
       "website": "Site do X-Dispatch",
       "discord": "Comunidade no Discord",
-      "checkForUpdates": "Verificar atualizações…"
+      "checkForUpdates": "Verificar atualizações…",
+      "recentAirports": "Aeroportos recentes"
     },
     "crash": {
       "title": "O X-Dispatch parou de funcionar",
@@ -2159,5 +2160,18 @@
     "controls": "Controles do radar meteorológico",
     "previousFrame": "Quadro anterior",
     "nextFrame": "Próximo quadro"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} não está na sua lista de aeroportos",
+    "aircraftNotFound": "Nenhuma aeronave instalada corresponde a \"{{name}}\"",
+    "importConfirm": {
+      "title": "Transferir plano de voo?",
+      "description": "Um link quer carregar um plano de voo de {{host}}. Continue apenas se confiar na origem do link.",
+      "download": "Transferir",
+      "cancel": "Cancelar"
+    },
+    "importDone": "{{fileName}} carregado",
+    "importFailed": "Não foi possível carregar o plano de voo de {{host}}",
+    "importFileFailed": "Não foi possível carregar esse ficheiro de plano de voo"
   }
 }

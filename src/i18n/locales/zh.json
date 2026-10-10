@@ -2146,7 +2146,8 @@
       "help": "帮助",
       "website": "X-Dispatch 网站",
       "discord": "Discord 社区",
-      "checkForUpdates": "检查更新…"
+      "checkForUpdates": "检查更新…",
+      "recentAirports": "最近的机场"
     },
     "crash": {
       "title": "X-Dispatch 已停止工作",
@@ -2159,5 +2160,18 @@
     "controls": "气象雷达控制",
     "previousFrame": "上一帧",
     "nextFrame": "下一帧"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} 不在你的机场列表中",
+    "aircraftNotFound": "没有已安装的机型与“{{name}}”匹配",
+    "importConfirm": {
+      "title": "下载飞行计划？",
+      "description": "一个链接想从 {{host}} 加载飞行计划。仅在你信任该链接来源时继续。",
+      "download": "下载",
+      "cancel": "取消"
+    },
+    "importDone": "已加载 {{fileName}}",
+    "importFailed": "无法从 {{host}} 加载飞行计划",
+    "importFileFailed": "无法加载该飞行计划文件"
   }
 }

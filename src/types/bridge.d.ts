@@ -15,6 +15,7 @@ import type {
   RouteResolveResult,
   SaveFmsResult,
 } from '@/lib/flightplan/builder/types';
+import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
@@ -138,7 +139,12 @@ declare global {
       onFocusSearch: (callback: () => void) => () => void;
       onOpenSettings: (callback: (tab: 'about' | null) => void) => () => void;
       setNativeLabels: (labels: import('@/lib/nativeShell/labels').NativeLabels) => void;
-      onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => () => void;
+      /** Feeds the dock menu and jump list of recent airports. */
+      noteAirportOpened: (icao: string, name: string) => void;
+      /** Actions from xdispatch:// links while the app is running. */
+      onAppAction: (callback: (action: AppAction) => void) => () => void;
+      /** Links that arrived before the renderer listened; marks it as listening. */
+      takePendingActions: () => Promise<AppAction[]>;
       pickDirectory: (opts?: { title?: string; defaultPath?: string }) => Promise<string | null>;
     };
     airportAPI: {
@@ -257,6 +263,20 @@ declare global {
     };
     flightPlanAPI: {
       openFile: () => Promise<{ content: string; fileName: string } | null>;
+      /** Reads a .fms the OS handed to main (double-click, Open With); other paths are refused. */
+      readFile: (
+        path: string
+      ) => Promise<
+        | { content: string; fileName: string; error: null }
+        | { content: null; fileName: null; error: string }
+      >;
+      /** Downloads a plan the user agreed to from a link; https only, 1 MB cap. */
+      fetchRemote: (
+        url: string
+      ) => Promise<
+        | { content: string; fileName: string; error: null }
+        | { content: null; fileName: null; error: string }
+      >;
       enrich: (
         fmsData: import('@/types/fms').FMSFlightPlan
       ) => Promise<import('@/types/fms').EnrichedFlightPlan | null>;

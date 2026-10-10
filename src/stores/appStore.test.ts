@@ -66,3 +66,54 @@ describe('appStore — airport selection request channel', () => {
     expect(after.showSidebar).toBe(before.showSidebar);
   });
 });
+
+describe('appStore — app action requests', () => {
+  it('requestStartRunway upper-cases both fields and clears on demand', () => {
+    useAppStore.getState().requestStartRunway('daag', '23l');
+    expect(useAppStore.getState().pendingStartRunway).toEqual({ icao: 'DAAG', runway: '23L' });
+    useAppStore.getState().clearPendingStartRunway();
+    expect(useAppStore.getState().pendingStartRunway).toBeNull();
+  });
+
+  it('openAddonManager opens on the requested tab and the tab clears separately', () => {
+    useAppStore.getState().openAddonManager('installer');
+    expect(useAppStore.getState().showAddonManager).toBe(true);
+    expect(useAppStore.getState().pendingAddonTab).toBe('installer');
+    useAppStore.getState().clearPendingAddonTab();
+    expect(useAppStore.getState().pendingAddonTab).toBeNull();
+    useAppStore.getState().closeAddonManager();
+    expect(useAppStore.getState().showAddonManager).toBe(false);
+  });
+
+  it('resolveConfirmation answers the pending question and clears it', () => {
+    const answers: boolean[] = [];
+    useAppStore.getState().requestConfirmation({
+      kind: 'import-url',
+      url: 'https://example.com/a.fms',
+      host: 'example.com',
+      path: '/a.fms',
+      resolve: (ok) => answers.push(ok),
+    });
+    useAppStore.getState().resolveConfirmation(true);
+    expect(answers).toEqual([true]);
+    expect(useAppStore.getState().pendingConfirmation).toBeNull();
+  });
+
+  it('a second request answers the first with no', () => {
+    const answers: string[] = [];
+    const ask = (name: string) =>
+      useAppStore.getState().requestConfirmation({
+        kind: 'import-url',
+        url: `https://example.com/${name}`,
+        host: 'example.com',
+        path: `/${name}`,
+        resolve: (ok) => answers.push(`${name}:${ok}`),
+      });
+    ask('first');
+    ask('second');
+    expect(answers).toEqual(['first:false']);
+    expect(useAppStore.getState().pendingConfirmation?.path).toBe('/second');
+    useAppStore.getState().resolveConfirmation(false);
+    expect(answers).toEqual(['first:false', 'second:false']);
+  });
+});

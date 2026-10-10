@@ -2146,7 +2146,8 @@
       "help": "Справка",
       "website": "Сайт X-Dispatch",
       "discord": "Сообщество в Discord",
-      "checkForUpdates": "Проверить обновления…"
+      "checkForUpdates": "Проверить обновления…",
+      "recentAirports": "Недавние аэропорты"
     },
     "crash": {
       "title": "X-Dispatch перестал работать",
@@ -2159,5 +2160,18 @@
     "controls": "Управление метеорадаром",
     "previousFrame": "Предыдущий кадр",
     "nextFrame": "Следующий кадр"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} нет в вашем списке аэропортов",
+    "aircraftNotFound": "Ни один установленный самолёт не соответствует «{{name}}»",
+    "importConfirm": {
+      "title": "Скачать план полёта?",
+      "description": "Ссылка хочет загрузить план полёта с {{host}}. Продолжайте, только если доверяете источнику ссылки.",
+      "download": "Скачать",
+      "cancel": "Отмена"
+    },
+    "importDone": "Загружен {{fileName}}",
+    "importFailed": "Не удалось загрузить план полёта с {{host}}",
+    "importFileFailed": "Не удалось загрузить этот файл плана полёта"
   }
 }

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
@@ -50,6 +51,11 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
   useTrackFeatureOpened('simbrief', open);
   const { t } = useTranslation();
   const { simbrief } = useSettingsStore();
+  // A link can bring its own pilot ID for this dialog session; it is never saved.
+  const pilotIdOverride = useFlightPlanStore((s) => s.simbriefPilotIdOverride);
+  const autoFetch = useFlightPlanStore((s) => s.simbriefAutoFetch);
+  const clearSimbriefAutoFetch = useFlightPlanStore((s) => s.clearSimbriefAutoFetch);
+  const pilotId = pilotIdOverride ?? simbrief.pilotId;
   const { loadFromSimbrief } = useFlightPlanStore();
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const fetchMutation = useSimbriefFetch();
@@ -69,10 +75,17 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
   };
 
   const handleFetch = () => {
-    if (simbrief.pilotId) {
-      fetchMutation.mutate(simbrief.pilotId);
+    if (pilotId) {
+      fetchMutation.mutate(pilotId);
     }
   };
+
+  const { mutate: fetchOfp } = fetchMutation;
+  useEffect(() => {
+    if (!open || !autoFetch) return;
+    clearSimbriefAutoFetch();
+    if (pilotId) fetchOfp(pilotId);
+  }, [open, autoFetch, pilotId, clearSimbriefAutoFetch, fetchOfp]);
 
   const handleImport = () => {
     if (ofp) {
@@ -81,7 +94,7 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
     }
   };
 
-  const isConfigured = !!simbrief.pilotId;
+  const isConfigured = !!pilotId;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>

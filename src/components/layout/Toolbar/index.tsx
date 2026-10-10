@@ -393,7 +393,9 @@ function Toolbar({
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [addonManagerOpen, setAddonManagerOpen] = useState(false);
+  const addonManagerOpen = useAppStore((s) => s.showAddonManager);
+  const openAddonManager = useAppStore((s) => s.openAddonManager);
+  const closeAddonManager = useAppStore((s) => s.closeAddonManager);
   const isRemoteClient = useIsRemoteClient();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -701,7 +703,7 @@ function Toolbar({
       <DesktopOnly>
         <Button
           variant="outline"
-          onClick={() => setAddonManagerOpen(true)}
+          onClick={() => openAddonManager()}
           className="h-9 gap-2 px-3"
           tooltip={t('toolbar.tooltips.addons')}
         >
@@ -745,7 +747,7 @@ function Toolbar({
               {t('toolbar.loadPlan')}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={openSimbriefDialog}
+              onClick={() => openSimbriefDialog()}
               className={cn(simbriefData && 'text-info')}
             >
               <CloudDownload className="mr-2 h-4 w-4" />
@@ -1164,7 +1166,7 @@ function Toolbar({
 
       {/* Dialogs */}
       <SimbriefDialog open={simbriefOpen} onClose={closeSimbriefDialog} />
-      <AddonManager open={addonManagerOpen} onClose={() => setAddonManagerOpen(false)} />
+      <AddonManager open={addonManagerOpen} onClose={closeAddonManager} />
     </div>
   );
 }

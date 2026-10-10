@@ -8,6 +8,7 @@ import { MakerAppImage } from '@reforged/maker-appimage';
 import { cp, mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { buildThirdPartyLicenses } from './src/lib/build/thirdPartyLicenses';
+import { macDocumentTypesInfo } from './src/lib/nativeShell/fileAssociations';
 
 function getPlatformLabel(platform: string, arch: string): string {
   if (platform === 'win32') return `windows-${arch}`;
@@ -31,6 +32,8 @@ const config: ForgeConfig = {
         schemes: ['xdispatch'],
       },
     ],
+    // .fms flight plans show X-Dispatch under Open With; Windows registers per user at launch.
+    extendInfo: macDocumentTypesInfo(),
   },
   rebuildConfig: {},
   makers: [
@@ -47,7 +50,7 @@ const config: ForgeConfig = {
       options: {
         icon: './assets/icon.png',
         categories: ['Utility', 'Game'],
-        mimeType: ['x-scheme-handler/xdispatch'],
+        mimeType: ['x-scheme-handler/xdispatch', 'application/x-xplane-fms'],
       },
     }),
   ],

@@ -5,6 +5,7 @@
  * so the desktop and a tablet cannot drift apart.
  */
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
+import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
@@ -140,6 +141,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       onOpenSettings: (callback: (tab: 'about' | null) => void) =>
         t.on('app:openSettings', callback),
       setNativeLabels: (labels: NativeLabels) => t.send('app:setNativeLabels', labels),
+      noteAirportOpened: (icao: string, name: string) => t.send('app:airportOpened', icao, name),
       resyncCustomAirports: () =>
         t.invoke('airport:resync-custom') as Promise<{
           synced: boolean;
@@ -147,8 +149,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
           diff: number;
         }>,
       onAirportsUpdated: (callback: () => void) => t.on('airports-updated', callback),
-      onDeepLink: (callback: (data: { type: string; icao?: string }) => void) =>
-        t.on('deep-link', callback),
+      onAppAction: (callback: (action: AppAction) => void) => t.on('app:action', callback),
+      takePendingActions: () => t.invoke('app:takePendingActions') as Promise<AppAction[]>,
       pickDirectory: (opts?: { title?: string; defaultPath?: string }) =>
         t.invoke('app:pickDirectory', opts),
     },
@@ -253,6 +255,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
 
     flightPlanAPI: {
       openFile: () => t.invoke('flightplan:openFile'),
+      fetchRemote: (url: string) => t.invoke('flightplan:fetchRemote', url),
+      readFile: (path: string) => t.invoke('flightplan:readFile', path),
       enrich: (fmsData: import('@/types/fms').FMSFlightPlan) =>
         t.invoke('flightplan:enrich', fmsData),
       resolveRoute: (draft: PlanDraft) => t.invoke('flightplan:resolveRoute', draft),

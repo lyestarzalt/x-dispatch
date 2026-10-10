@@ -2146,7 +2146,8 @@
       "help": "ヘルプ",
       "website": "X-Dispatch ウェブサイト",
       "discord": "Discord コミュニティ",
-      "checkForUpdates": "アップデートを確認…"
+      "checkForUpdates": "アップデートを確認…",
+      "recentAirports": "最近の空港"
     },
     "crash": {
       "title": "X-Dispatch が応答しなくなりました",
@@ -2159,5 +2160,18 @@
     "controls": "気象レーダーの操作",
     "previousFrame": "前のフレーム",
     "nextFrame": "次のフレーム"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} は空港リストにありません",
+    "aircraftNotFound": "「{{name}}」に一致する機体がインストールされていません",
+    "importConfirm": {
+      "title": "フライトプランをダウンロードしますか？",
+      "description": "リンクが {{host}} からフライトプランを読み込もうとしています。リンクの出所を信頼できる場合のみ続行してください。",
+      "download": "ダウンロード",
+      "cancel": "キャンセル"
+    },
+    "importDone": "{{fileName}} を読み込みました",
+    "importFailed": "{{host}} からフライトプランを読み込めませんでした",
+    "importFileFailed": "そのフライトプランファイルを読み込めませんでした"
   }
 }

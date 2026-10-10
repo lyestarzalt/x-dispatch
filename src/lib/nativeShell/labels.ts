@@ -12,6 +12,7 @@ export interface NativeLabels {
     website: string;
     discord: string;
     checkForUpdates: string;
+    recentAirports: string;
   };
   crash: {
     title: string;
@@ -30,6 +31,7 @@ export const DEFAULT_NATIVE_LABELS: NativeLabels = {
     website: 'X-Dispatch Website',
     discord: 'Discord Community',
     checkForUpdates: 'Check for Updates…',
+    recentAirports: 'Recent Airports',
   },
   crash: {
     title: 'X-Dispatch stopped working',

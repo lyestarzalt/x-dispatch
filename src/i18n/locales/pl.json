@@ -2146,7 +2146,8 @@
       "help": "Pomoc",
       "website": "Strona X-Dispatch",
       "discord": "Społeczność Discord",
-      "checkForUpdates": "Sprawdź aktualizacje…"
+      "checkForUpdates": "Sprawdź aktualizacje…",
+      "recentAirports": "Ostatnie lotniska"
     },
     "crash": {
       "title": "X-Dispatch przestał działać",
@@ -2159,5 +2160,18 @@
     "controls": "Sterowanie radarem pogody",
     "previousFrame": "Poprzednia klatka",
     "nextFrame": "Następna klatka"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} nie ma na twojej liście lotnisk",
+    "aircraftNotFound": "Żaden zainstalowany samolot nie pasuje do „{{name}}”",
+    "importConfirm": {
+      "title": "Pobrać plan lotu?",
+      "description": "Link chce wczytać plan lotu z {{host}}. Kontynuuj tylko, jeśli ufasz źródłu linku.",
+      "download": "Pobierz",
+      "cancel": "Anuluj"
+    },
+    "importDone": "Wczytano {{fileName}}",
+    "importFailed": "Nie udało się wczytać planu lotu z {{host}}",
+    "importFileFailed": "Nie udało się wczytać tego pliku planu lotu"
   }
 }

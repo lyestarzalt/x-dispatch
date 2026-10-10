@@ -2146,7 +2146,8 @@
       "help": "Parley",
       "website": "X-Dispatch Port o' Call",
       "discord": "Discord Crew",
-      "checkForUpdates": "Scan the Horizon fer Updates…"
+      "checkForUpdates": "Scan the Horizon fer Updates…",
+      "recentAirports": "Ports o’ Late"
     },
     "crash": {
       "title": "X-Dispatch be sunk",
@@ -2159,5 +2160,18 @@
     "controls": "Storm-spyglass helm",
     "previousFrame": "Back a frame",
     "nextFrame": "Forward a frame"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} be not on yer chart o' ports",
+    "aircraftNotFound": "No vessel aboard matches \"{{name}}\"",
+    "importConfirm": {
+      "title": "Haul in this flight plan?",
+      "description": "A link be wantin' to load a flight plan from {{host}}. Only carry on if ye trust where the link hails from.",
+      "download": "Haul it in",
+      "cancel": "Belay that"
+    },
+    "importDone": "Hauled in {{fileName}}",
+    "importFailed": "Couldn't haul in the flight plan from {{host}}",
+    "importFileFailed": "Couldn't haul in that flight plan file"
   }
 }
