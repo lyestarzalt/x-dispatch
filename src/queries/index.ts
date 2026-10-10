@@ -32,7 +32,6 @@ export { useNavDataQuery, useNavDataCounts, getNavDataCounts } from './useNavDat
 export { useVatsimQuery } from './useVatsimQuery';
 export { useVatsimSectorQuery } from './useVatsimSectorQuery';
 export { useVatsimMetarQuery } from './useVatsimMetarQuery';
-export { useVatsimEventsQuery } from './useVatsimEventsQuery';
 export {
   useWeatherScanQuery,
   filterByCategory,

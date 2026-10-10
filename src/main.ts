@@ -1480,18 +1480,6 @@ function registerIpcHandlers() {
     return proxyFetch('https://metar.vatsim.net/metar.php?id=all');
   });
 
-  handle('fetch-vatsim-events', async () => {
-    const result = await proxyFetch('https://my.vatsim.net/api/v2/events/latest');
-    if (result.data) {
-      try {
-        return { data: JSON.parse(result.data), error: null };
-      } catch {
-        return { data: null, error: 'Failed to parse VATSIM events' };
-      }
-    }
-    return result;
-  });
-
   handle('vatsim-sectors:getData', async () => {
     return getVatsimSectorData();
   });

@@ -79,7 +79,6 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       fetchVatsimData: () => t.invoke('fetch-vatsim-data'),
       fetchVatsimMetar: (icao: string) => t.invoke('fetch-vatsim-metar', icao),
       fetchVatsimMetarsAll: () => t.invoke('fetch-vatsim-metars-all'),
-      fetchVatsimEvents: () => t.invoke('fetch-vatsim-events'),
       fetchIvaoData: () => t.invoke('fetch-ivao-data'),
     },
 

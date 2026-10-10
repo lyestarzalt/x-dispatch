@@ -395,8 +395,10 @@ function Toolbar({
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const cloudLayerEnabled = useMapStore((s) => s.cloudLayerEnabled);
-  const exploreOpen = useMapStore((s) => s.explore.isOpen);
-  const setExploreOpen = useMapStore((s) => s.setExploreOpen);
+  const exploreOpen = usePlanBuilderStore((s) => s.explore !== null);
+  const setExplore = usePlanBuilderStore((s) => s.setExplore);
+  const openExplore = usePlanBuilderStore((s) => s.openExplore);
+  const toggleExplore = () => (exploreOpen ? setExplore(null) : openExplore('routes'));
   const airportFilters = useMapStore((s) => s.airportFilters);
   const rangeRingsEnabled = useMapStore((s) => s.rangeRingsEnabled);
   const filtersActive = isAirportFiltersActive(airportFilters);
@@ -696,7 +698,7 @@ function Toolbar({
       {/* Explore button */}
       <Button
         variant="outline"
-        onClick={() => setExploreOpen(!exploreOpen)}
+        onClick={toggleExplore}
         className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
         tooltip={t('toolbar.tooltips.explore')}
       >

@@ -41,7 +41,6 @@ export const ANALYTICS_LAYERS = [
 
 /** Map widgets, reported when opened; the measure line and profile strip count when first shown. */
 export const ANALYTICS_WIDGETS = [
-  'explore',
   'nav_info',
   'replay',
   'landing_report',
@@ -178,7 +177,7 @@ export const ANALYTICS_ERROR_AREAS = [
   'addon_manager',
 ] as const;
 
-export const ANALYTICS_EXPLORE_TABS = ['featured', 'routes', 'vatsim', 'weather'] as const;
+export const ANALYTICS_EXPLORE_TABS = ['random', 'routes', 'weather'] as const;
 
 /** How the planner's final route came about. */
 export const ANALYTICS_PLAN_ROUTES = [
@@ -209,13 +208,9 @@ export const ANALYTICS_FMS_FORMATS = [
   'pdf',
   'other',
 ] as const;
-/** Category chips inside Explore: Featured airports and the live Weather scan. */
+/** Category chips inside Explore's live Weather scan. */
 export const ANALYTICS_EXPLORE_FILTERS = [
   'all',
-  'challenging',
-  'scenic',
-  'unique',
-  'historic',
   'snow',
   'freezing',
   'fog',
@@ -392,8 +387,8 @@ const EVENT_SCHEMA = {
     start_set: { kind: 'boolean' },
     time_open: oneOf(ANALYTICS_DIALOG_TIME_BUCKETS),
   },
-  /** Random destinations rolled, from Explore or the planner panel; how many matched. */
-  random_route_found: { source: oneOf(['explore', 'planner']), results: { kind: 'count' } },
+  /** Random destinations rolled in the planner panel; how many matched. */
+  random_route_found: { results: { kind: 'count' } },
   /** An airport search, once: a result was picked, or the field was left without one. */
   search_used: { found: { kind: 'boolean' }, picked: { kind: 'boolean' } },
   /** A .fms file opened from the Flight Plan menu, and whether it could be read. */
@@ -443,7 +438,7 @@ const EVENT_SCHEMA = {
   /** An airport, route or event picked in Explore; the tab only, never what was picked. */
   explore_item_selected: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
   explore_filter_selected: {
-    tab: oneOf(['featured', 'weather']),
+    tab: oneOf(['weather']),
     filter: oneOf(ANALYTICS_EXPLORE_FILTERS),
   },
   simbrief_imported: {},

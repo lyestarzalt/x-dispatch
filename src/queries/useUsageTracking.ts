@@ -45,7 +45,6 @@ const LAYER_STATE: ReadonlyArray<[AnalyticsLayer, (s: MapState) => boolean]> = [
 ];
 
 const MAP_WIDGET_STATE: ReadonlyArray<[AnalyticsWidget, (s: MapState) => boolean]> = [
-  ['explore', (s) => s.explore.isOpen],
   ['nav_info', (s) => s.navInfo !== null],
 ];
 
@@ -127,19 +126,6 @@ export function useUsageTracking() {
       for (const [widget, isOpen] of MAP_WIDGET_STATE) {
         if (isOpen(next) && !isOpen(prev)) trackEvent('widget_opened', { widget });
       }
-      const explore = next.explore;
-      if (
-        explore.isOpen &&
-        (!prev.explore.isOpen || explore.activeTab !== prev.explore.activeTab)
-      ) {
-        trackEvent('explore_tab_opened', { tab: explore.activeTab });
-      }
-      if (explore.featuredCategory !== prev.explore.featuredCategory) {
-        trackEvent('explore_filter_selected', {
-          tab: 'featured',
-          filter: explore.featuredCategory,
-        });
-      }
     });
     const unsubApp = useAppStore.subscribe((next, prev) => {
       if (next.selectedICAO && next.selectedICAO !== prev.selectedICAO) {
@@ -166,6 +152,9 @@ export function useUsageTracking() {
     });
     const unsubPlanBuilder = usePlanBuilderStore.subscribe((next, prev) => {
       for (const pick of pickedProcedures(next, prev)) trackEvent('procedure_selected', pick);
+      if (next.explore && next.explore !== prev.explore) {
+        trackEvent('explore_tab_opened', { tab: next.explore });
+      }
     });
     // The strip shows when a plan loads or when it is expanded again; either store can flip it.
     let profileShown = profileStripVisible();

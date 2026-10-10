@@ -100,39 +100,3 @@ export interface VatsimData {
   prefiles?: VatsimPrefile[];
   lastUpdate: Date;
 }
-
-export interface VatsimEventOrganiser {
-  region: string | null;
-  division: string | null;
-  subdivision: string | null;
-  organised_by_vatsim: boolean;
-}
-
-export interface VatsimEventAirport {
-  icao: string;
-}
-
-export interface VatsimEventRoute {
-  departure: string;
-  arrival: string;
-  route: string;
-}
-
-export interface VatsimEvent {
-  id: number;
-  type: string;
-  name: string;
-  link: string;
-  organisers: VatsimEventOrganiser[];
-  airports: VatsimEventAirport[];
-  routes: VatsimEventRoute[];
-  start_time: string;
-  end_time: string;
-  short_description: string;
-  description: string;
-  banner: string;
-}
-
-export interface VatsimEventsResponse {
-  data: VatsimEvent[];
-}
