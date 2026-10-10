@@ -142,6 +142,8 @@ export default function Map({ airports }: MapProps) {
   const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
   const pendingAirportSelectionIcao = useAppStore((s) => s.pendingAirportSelectionIcao);
   const clearPendingAirportSelection = useAppStore((s) => s.clearPendingAirportSelection);
+  const pendingStartRunway = useAppStore((s) => s.pendingStartRunway);
+  const clearPendingStartRunway = useAppStore((s) => s.clearPendingStartRunway);
 
   const layerVisibility = useMapStore((s) => s.layerVisibility);
   const navVisibility = useMapStore((s) => s.navVisibility);
@@ -322,6 +324,7 @@ export default function Map({ airports }: MapProps) {
     if (!isXPlaneConnected || hasAutoEnabledRef.current) return;
     hasAutoEnabledRef.current = true;
     trackEvent('xplane_connected', {});
+    if (!window.appAPI.isRemoteClient) window.appAPI.requestAttention();
     if (!showPlaneTracker) setShowPlaneTracker(true);
   }, [isXPlaneConnected, showPlaneTracker, setShowPlaneTracker]);
 
@@ -734,18 +737,6 @@ export default function Map({ airports }: MapProps) {
     ]
   );
 
-  // Deep link handler — navigate to airport from xdispatch:// URL
-  useEffect(() => {
-    return window.appAPI.onDeepLink((data) => {
-      if (data.type === 'airport' && data.icao) {
-        const airport = airports.find((a) => a.icao === data.icao);
-        if (airport) {
-          selectAirport(airport);
-        }
-      }
-    });
-  }, [airports, selectAirport]);
-
   // In-app jump-to-airport channel — flight-plan chips, SimBrief panel, etc.
   // dispatch via appStore.requestSelectAirport(icao); we resolve and clear.
   // selectAirport() handles the camera (fitBounds on runway extent), so no
@@ -760,6 +751,31 @@ export default function Map({ airports }: MapProps) {
     // and a stale pending value shouldn't hang around.
     clearPendingAirportSelection();
   }, [pendingAirportSelectionIcao, airports, selectAirport, clearPendingAirportSelection]);
+
+  // A link asked for a runway end as the start position; resolved once that
+  // airport's apt.dat is loaded, dropped when the runway is not there.
+  useEffect(() => {
+    if (!pendingStartRunway || !selectedAirportData) return;
+    if (selectedAirportData.id.toUpperCase() !== pendingStartRunway.icao) return;
+    const runways = selectedAirportData.runways;
+    for (let i = 0; i < runways.length; i++) {
+      const ends = runways[i]!.ends;
+      for (let j = 0; j < ends.length; j++) {
+        const end = ends[j]!;
+        if (end.name.toUpperCase() !== pendingStartRunway.runway) continue;
+        selectRunwayEndAsStart({
+          name: end.name,
+          latitude: end.latitude,
+          longitude: end.longitude,
+          index: i * 2 + j,
+          xplaneIndex: `${i}_${j}`,
+        });
+        clearPendingStartRunway();
+        return;
+      }
+    }
+    clearPendingStartRunway();
+  }, [pendingStartRunway, selectedAirportData, selectRunwayEndAsStart, clearPendingStartRunway]);
 
   const handleNavLayerToggle = useCallback(
     (layer: keyof NavLayerVisibility) => {

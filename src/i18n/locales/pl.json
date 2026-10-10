@@ -642,7 +642,16 @@
       "flightStripScale": "Rozmiar paska lotu",
       "flightStripScaleDescription": "Skaluje pasek lotu na żywo, aby był czytelny z większej odległości",
       "flightStripOpacity": "Przezroczystość okna paska lotu",
-      "flightStripOpacityDescription": "Widok symulatora przez odłączone okno paska lotu"
+      "flightStripOpacityDescription": "Widok symulatora przez odłączone okno paska lotu",
+      "desktop": "Okno aplikacji",
+      "desktopDescription": "Jak X-Dispatch zachowuje się jako okno na tym komputerze.",
+      "keepRunningOnClose": "Działaj dalej po zamknięciu okna",
+      "keepRunningOnCloseDescription": "Aplikacja zostaje w Docku i otwiera się natychmiast. Zakończ przez ⌘Q.",
+      "attention": "Zwróć moją uwagę w tle",
+      "attentionDescription": "Podskakuj ikoną w Docku lub migaj na pasku zadań, gdy X-Plane się połączy, plan zostanie wczytany lub aktualizacja będzie gotowa.",
+      "recentAirportsMenu": "Ostatnie lotniska w menu aplikacji",
+      "recentAirportsMenuDescriptionMac": "Kliknij prawym przyciskiem ikonę w Docku, aby przejść do niedawno otwartego lotniska.",
+      "recentAirportsMenuDescriptionWindows": "Kliknij prawym przyciskiem ikonę na pasku zadań, aby przejść do niedawno otwartego lotniska."
     },
     "units": {
       "title": "Jednostki",
@@ -1925,7 +1934,9 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Panele",
-    "hideDebugMenu": "Ukryj menu debugowania (⌃⇧D)"
+    "hideDebugMenu": "Ukryj menu debugowania (⌃⇧D)",
+    "fullScreenHint": "Naciśnij {{keys}}, aby wyjść z pełnego ekranu",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2146,7 +2157,23 @@
       "help": "Pomoc",
       "website": "Strona X-Dispatch",
       "discord": "Społeczność Discord",
-      "checkForUpdates": "Sprawdź aktualizacje…"
+      "checkForUpdates": "Sprawdź aktualizacje…",
+      "recentAirports": "Ostatnie lotniska",
+      "file": "Plik",
+      "openFlightPlan": "Otwórz plan lotu…",
+      "importSimbrief": "Importuj z SimBrief…",
+      "launchXPlane": "Uruchom X-Plane…",
+      "findAirport": "Znajdź lotnisko",
+      "view": "Widok",
+      "zoomIn": "Powiększ",
+      "zoomOut": "Pomniejsz",
+      "zoomReset": "Rzeczywisty rozmiar",
+      "toggleSidebar": "Pokaż/ukryj panel boczny",
+      "flightStripWindow": "Okno paska lotu",
+      "toggleFullScreen": "Pełny ekran",
+      "close": "Zamknij okno",
+      "keyboardShortcuts": "Skróty klawiszowe",
+      "openLogs": "Otwórz folder dzienników"
     },
     "crash": {
       "title": "X-Dispatch przestał działać",
@@ -2159,5 +2186,27 @@
     "controls": "Sterowanie radarem pogody",
     "previousFrame": "Poprzednia klatka",
     "nextFrame": "Następna klatka"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} nie ma na twojej liście lotnisk",
+    "aircraftNotFound": "Żaden zainstalowany samolot nie pasuje do „{{name}}”",
+    "importConfirm": {
+      "title": "Pobrać plan lotu?",
+      "description": "Link chce wczytać plan lotu z {{host}}. Kontynuuj tylko, jeśli ufasz źródłu linku.",
+      "download": "Pobierz",
+      "cancel": "Anuluj"
+    },
+    "importDone": "Wczytano {{fileName}}",
+    "importFailed": "Nie udało się wczytać planu lotu z {{host}}",
+    "importFileFailed": "Nie udało się wczytać tego pliku planu lotu"
+  },
+  "shortcuts": {
+    "title": "Skróty klawiszowe",
+    "description": "Wszystkie skróty, tak jak w menu.",
+    "inApp": {
+      "title": "W aplikacji",
+      "debugPanels": "Panele debugowania",
+      "closeDialog": "Zamknij okno dialogowe lub menu"
+    }
   }
 }

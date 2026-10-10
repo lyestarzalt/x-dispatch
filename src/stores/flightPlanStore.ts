@@ -44,6 +44,10 @@ interface FlightPlanState {
   selectedWaypointIndex: number | null;
   showFlightPlanBar: boolean;
   simbriefDialogOpen: boolean;
+  /** Pilot ID a link asked for, used for that dialog session only; never saved. */
+  simbriefPilotIdOverride: string | null;
+  /** A link opened the dialog: fetch as soon as it mounts, once. */
+  simbriefAutoFetch: boolean;
 
   // Actions
   setDeparture: (endpoint: FlightPlanEndpoint | null) => void;
@@ -64,8 +68,9 @@ interface FlightPlanState {
 
   // SimBrief Actions
   loadFromSimbrief: (data: SimBriefOFP) => void;
-  openSimbriefDialog: () => void;
+  openSimbriefDialog: (options?: { pilotId?: string; autoFetch?: boolean }) => void;
   closeSimbriefDialog: () => void;
+  clearSimbriefAutoFetch: () => void;
 
   // Parse route string (e.g., "KJFK LOGEN J42 BOSSS KATL")
   parseRouteString: (routeString: string) => void;
@@ -83,6 +88,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
   selectedWaypointIndex: null,
   showFlightPlanBar: false,
   simbriefDialogOpen: false,
+  simbriefPilotIdOverride: null,
+  simbriefAutoFetch: false,
 
   setDeparture: (endpoint) => set({ departure: endpoint }),
 
@@ -278,9 +285,16 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
     void addStationData(enrichedPlan);
   },
 
-  openSimbriefDialog: () => set({ simbriefDialogOpen: true }),
+  openSimbriefDialog: (options) =>
+    set({
+      simbriefDialogOpen: true,
+      simbriefPilotIdOverride: options?.pilotId ?? null,
+      simbriefAutoFetch: options?.autoFetch ?? false,
+    }),
+  clearSimbriefAutoFetch: () => set({ simbriefAutoFetch: false }),
 
-  closeSimbriefDialog: () => set({ simbriefDialogOpen: false }),
+  closeSimbriefDialog: () =>
+    set({ simbriefDialogOpen: false, simbriefPilotIdOverride: null, simbriefAutoFetch: false }),
 
   getChips: () => {
     const { fmsData } = get();

@@ -254,6 +254,11 @@ async function writeDbToDisk(): Promise<void> {
   }
 }
 
+/** Whether a background write is still running; tests wait on it before quitting. */
+export function isSaveInFlight(): boolean {
+  return saveInFlight;
+}
+
 export function saveDb(): void {
   if (!sqlite || !dbPath) return;
   dirty = true;

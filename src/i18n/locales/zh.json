@@ -642,7 +642,16 @@
       "flightStripScale": "飞行条大小",
       "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读",
       "flightStripOpacity": "飞行条窗口不透明度",
-      "flightStripOpacityDescription": "透过独立的飞行条窗口看到模拟器"
+      "flightStripOpacityDescription": "透过独立的飞行条窗口看到模拟器",
+      "desktop": "桌面窗口",
+      "desktopDescription": "X-Dispatch 作为窗口在这台电脑上的行为方式。",
+      "keepRunningOnClose": "关闭窗口后继续运行",
+      "keepRunningOnCloseDescription": "应用保留在 Dock 中并可立即重新打开。使用 ⌘Q 退出。",
+      "attention": "在后台提醒我",
+      "attentionDescription": "当 X-Plane 连接、计划加载完成或更新就绪时，弹跳 Dock 图标或闪烁任务栏。",
+      "recentAirportsMenu": "在应用菜单中显示最近的机场",
+      "recentAirportsMenuDescriptionMac": "右键点击 Dock 图标可跳转到最近打开的机场。",
+      "recentAirportsMenuDescriptionWindows": "右键点击任务栏图标可跳转到最近打开的机场。"
     },
     "units": {
       "title": "单位",
@@ -1925,7 +1934,9 @@
     "version": "v{{version}}",
     "debug": "调试",
     "panels": "面板",
-    "hideDebugMenu": "隐藏调试菜单 (⌃⇧D)"
+    "hideDebugMenu": "隐藏调试菜单 (⌃⇧D)",
+    "fullScreenHint": "按 {{keys}} 退出全屏",
+    "appMenu": "菜单"
   },
   "explorePanel": {
     "routes": {
@@ -2146,7 +2157,23 @@
       "help": "帮助",
       "website": "X-Dispatch 网站",
       "discord": "Discord 社区",
-      "checkForUpdates": "检查更新…"
+      "checkForUpdates": "检查更新…",
+      "recentAirports": "最近的机场",
+      "file": "文件",
+      "openFlightPlan": "打开飞行计划…",
+      "importSimbrief": "从 SimBrief 导入…",
+      "launchXPlane": "启动 X-Plane…",
+      "findAirport": "查找机场",
+      "view": "视图",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "zoomReset": "实际大小",
+      "toggleSidebar": "显示/隐藏侧边栏",
+      "flightStripWindow": "飞行条窗口",
+      "toggleFullScreen": "切换全屏",
+      "close": "关闭窗口",
+      "keyboardShortcuts": "键盘快捷键",
+      "openLogs": "打开日志文件夹"
     },
     "crash": {
       "title": "X-Dispatch 已停止工作",
@@ -2159,5 +2186,27 @@
     "controls": "气象雷达控制",
     "previousFrame": "上一帧",
     "nextFrame": "下一帧"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} 不在你的机场列表中",
+    "aircraftNotFound": "没有已安装的机型与“{{name}}”匹配",
+    "importConfirm": {
+      "title": "下载飞行计划？",
+      "description": "一个链接想从 {{host}} 加载飞行计划。仅在你信任该链接来源时继续。",
+      "download": "下载",
+      "cancel": "取消"
+    },
+    "importDone": "已加载 {{fileName}}",
+    "importFailed": "无法从 {{host}} 加载飞行计划",
+    "importFileFailed": "无法加载该飞行计划文件"
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "description": "菜单中列出的所有快捷键。",
+    "inApp": {
+      "title": "应用内",
+      "debugPanels": "调试面板",
+      "closeDialog": "关闭对话框或菜单"
+    }
   }
 }

@@ -5,7 +5,11 @@
  * so the desktop and a tablet cannot drift apart.
  */
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
+import type { MenuCommand } from '@/lib/nativeShell/appMenu';
+import type { AppAction } from '@/lib/nativeShell/appUrl';
+import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
+import type { AppMenuNode } from '@/lib/nativeShell/menuSerialization';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type {
@@ -137,9 +141,22 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getZoomFactor: x.getZoomFactor,
       getFilePathForDrop: x.getFilePathForDrop,
       onFocusSearch: (callback: () => void) => t.on('focus-search', callback),
+      onMenuCommand: (callback: (command: MenuCommand) => void) =>
+        t.on('app:menuCommand', callback),
+      closeWindow: () => t.invoke('app:closeWindow'),
+      getAppMenu: () => t.invoke('app:getAppMenu') as Promise<AppMenuNode[]>,
+      clickMenuItem: (id: string) => t.invoke('app:clickMenuItem', id),
       onOpenSettings: (callback: (tab: 'about' | null) => void) =>
         t.on('app:openSettings', callback),
       setNativeLabels: (labels: NativeLabels) => t.send('app:setNativeLabels', labels),
+      noteAirportOpened: (icao: string, name: string) => t.send('app:airportOpened', icao, name),
+      setDesktopPrefs: (prefs: DesktopPrefs) => t.send('app:setDesktopPrefs', prefs),
+      requestAttention: () => t.send('app:requestAttention'),
+      getWindowState: () =>
+        t.invoke('app:getWindowState') as Promise<{ focused: boolean; fullScreen: boolean }>,
+      onWindowFocus: (callback: (focused: boolean) => void) => t.on('app:windowFocus', callback),
+      onFullScreen: (callback: (fullScreen: boolean) => void) => t.on('app:fullScreen', callback),
+      titleBarDoubleClick: () => t.invoke('app:titleBarDoubleClick'),
       resyncCustomAirports: () =>
         t.invoke('airport:resync-custom') as Promise<{
           synced: boolean;
@@ -147,8 +164,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
           diff: number;
         }>,
       onAirportsUpdated: (callback: () => void) => t.on('airports-updated', callback),
-      onDeepLink: (callback: (data: { type: string; icao?: string }) => void) =>
-        t.on('deep-link', callback),
+      onAppAction: (callback: (action: AppAction) => void) => t.on('app:action', callback),
+      takePendingActions: () => t.invoke('app:takePendingActions') as Promise<AppAction[]>,
       pickDirectory: (opts?: { title?: string; defaultPath?: string }) =>
         t.invoke('app:pickDirectory', opts),
     },
@@ -253,6 +270,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
 
     flightPlanAPI: {
       openFile: () => t.invoke('flightplan:openFile'),
+      fetchRemote: (url: string) => t.invoke('flightplan:fetchRemote', url),
+      readFile: (path: string) => t.invoke('flightplan:readFile', path),
       enrich: (fmsData: import('@/types/fms').FMSFlightPlan) =>
         t.invoke('flightplan:enrich', fmsData),
       resolveRoute: (draft: PlanDraft) => t.invoke('flightplan:resolveRoute', draft),

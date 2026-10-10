@@ -53,6 +53,10 @@ describe('analytics buckets', () => {
       })
     ).not.toBeNull();
     expect(sanitizeEvent('shortcut_used', { shortcut: 'focus_search' })).not.toBeNull();
+    expect(
+      sanitizeEvent('deep_link_opened', { action: 'airport', source: 'website' })
+    ).not.toBeNull();
+    expect(sanitizeEvent('deep_link_opened', { action: 'install', source: 'none' })).toBeNull();
     expect(sanitizeEvent('error_shown', { area: 'fms_export' })).not.toBeNull();
     expect(sanitizeEvent('error_shown', { area: 'Could not save file' })).toBeNull();
     expect(

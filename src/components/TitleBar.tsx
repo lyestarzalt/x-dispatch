@@ -1,6 +1,7 @@
 import { type CSSProperties, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bug } from 'lucide-react';
+import { AppMenuButton } from '@/components/AppMenuButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { titleBarMetrics } from '@/lib/nativeShell/titleBarMetrics';
 import { cn } from '@/lib/utils/helpers';
+import { useAppStore } from '@/stores/appStore';
 import { useDebugStore } from '@/stores/debugStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { TABS } from './Map/widgets/DevDebugOverlay/types';
@@ -33,6 +35,14 @@ export function TitleBar() {
   // Interface Zoom scales CSS pixels but not the OS window controls.
   const zoomLevel = useSettingsStore((s) => s.appearance.zoomLevel);
   const { heightPx, trafficLightInsetPx } = titleBarMetrics(zoomLevel);
+  // Full screen has no traffic lights and no OS controls to keep clear of.
+  const fullScreen = useAppStore((s) => s.windowFullScreen);
+
+  const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (window.appAPI?.isRemoteClient) return;
+    if ((event.target as HTMLElement).closest('button, [role="menu"], [role="menuitem"]')) return;
+    void window.appAPI.titleBarDoubleClick();
+  };
 
   useEffect(() => {
     window.appAPI.getVersion().then(setVersion);
@@ -43,14 +53,20 @@ export function TitleBar() {
 
   return (
     <header
-      className="border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none"
+      onDoubleClick={handleDoubleClick}
+      className={cn(
+        'border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none',
+        // The bar dims with the OS controls when the window is inactive.
+        'transition-opacity [html[data-window-inactive]_&]:opacity-50'
+      )}
       style={{
         ...dragStyle,
         height: heightPx,
-        paddingLeft: isMac ? trafficLightInsetPx : '0.75rem',
-        paddingRight: isMac ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
+        paddingLeft: isMac && !fullScreen ? trafficLightInsetPx : '0.75rem',
+        paddingRight: isMac || fullScreen ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
       }}
     >
+      {!isMac && !window.appAPI?.isRemoteClient && <AppMenuButton />}
       <span className="text-foreground font-medium tracking-tight">X-Dispatch</span>
       {version && <span className="font-mono">{t('titleBar.version', { version })}</span>}
       {installation && (

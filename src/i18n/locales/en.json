@@ -642,7 +642,16 @@
       "flightStripScale": "Flight strip size",
       "flightStripScaleDescription": "Scale the live aircraft strip so it reads from further away",
       "flightStripOpacity": "Flight strip window opacity",
-      "flightStripOpacityDescription": "See the simulator through the detached flight strip window"
+      "flightStripOpacityDescription": "See the simulator through the detached flight strip window",
+      "desktop": "Desktop window",
+      "desktopDescription": "How X-Dispatch behaves as a window on this computer.",
+      "keepRunningOnClose": "Keep running when the window is closed",
+      "keepRunningOnCloseDescription": "The app stays in the Dock and reopens instantly. Quit with ⌘Q.",
+      "attention": "Get my attention in the background",
+      "attentionDescription": "Bounce the Dock icon or flash the taskbar when X-Plane connects, a plan is loaded or an update is ready.",
+      "recentAirportsMenu": "Recent airports in the app menu",
+      "recentAirportsMenuDescriptionMac": "Right-click the Dock icon to jump to an airport you opened recently.",
+      "recentAirportsMenuDescriptionWindows": "Right-click the taskbar icon to jump to an airport you opened recently."
     },
     "units": {
       "title": "Units",
@@ -1925,7 +1934,9 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)",
+    "fullScreenHint": "Press {{keys}} to leave full screen",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2146,7 +2157,23 @@
       "help": "Help",
       "website": "X-Dispatch Website",
       "discord": "Discord Community",
-      "checkForUpdates": "Check for Updates…"
+      "checkForUpdates": "Check for Updates…",
+      "recentAirports": "Recent Airports",
+      "file": "File",
+      "openFlightPlan": "Open Flight Plan…",
+      "importSimbrief": "Import from SimBrief…",
+      "launchXPlane": "Launch X-Plane…",
+      "findAirport": "Find Airport",
+      "view": "View",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "zoomReset": "Actual Size",
+      "toggleSidebar": "Toggle Sidebar",
+      "flightStripWindow": "Flight Strip Window",
+      "toggleFullScreen": "Toggle Full Screen",
+      "close": "Close Window",
+      "keyboardShortcuts": "Keyboard Shortcuts",
+      "openLogs": "Open Logs Folder"
     },
     "crash": {
       "title": "X-Dispatch stopped working",
@@ -2159,5 +2186,27 @@
     "controls": "Weather radar controls",
     "previousFrame": "Previous frame",
     "nextFrame": "Next frame"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} is not in your airport list",
+    "aircraftNotFound": "No installed aircraft matches \"{{name}}\"",
+    "importConfirm": {
+      "title": "Download flight plan?",
+      "description": "A link wants to load a flight plan from {{host}}. Only continue if you trust where the link came from.",
+      "download": "Download",
+      "cancel": "Cancel"
+    },
+    "importDone": "Loaded {{fileName}}",
+    "importFailed": "Could not load the flight plan from {{host}}",
+    "importFileFailed": "Could not load that flight plan file"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "description": "Every shortcut, as listed in the menu.",
+    "inApp": {
+      "title": "In the app",
+      "debugPanels": "Debug panels",
+      "closeDialog": "Close dialog or menu"
+    }
   }
 }

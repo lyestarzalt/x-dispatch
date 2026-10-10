@@ -642,7 +642,16 @@
       "flightStripScale": "Taille du bandeau de vol",
       "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin",
       "flightStripOpacity": "Opacité de la fenêtre du bandeau de vol",
-      "flightStripOpacityDescription": "Voir le simulateur à travers la fenêtre détachée du bandeau de vol"
+      "flightStripOpacityDescription": "Voir le simulateur à travers la fenêtre détachée du bandeau de vol",
+      "desktop": "Fenêtre de bureau",
+      "desktopDescription": "Comment X-Dispatch se comporte en tant que fenêtre sur cet ordinateur.",
+      "keepRunningOnClose": "Rester ouvert quand la fenêtre est fermée",
+      "keepRunningOnCloseDescription": "L’app reste dans le Dock et se rouvre instantanément. Quittez avec ⌘Q.",
+      "attention": "Attirer mon attention en arrière-plan",
+      "attentionDescription": "Faire rebondir l’icône du Dock ou clignoter la barre des tâches quand X-Plane se connecte, qu’un plan est chargé ou qu’une mise à jour est prête.",
+      "recentAirportsMenu": "Aéroports récents dans le menu de l’app",
+      "recentAirportsMenuDescriptionMac": "Clic droit sur l’icône du Dock pour retrouver un aéroport ouvert récemment.",
+      "recentAirportsMenuDescriptionWindows": "Clic droit sur l’icône de la barre des tâches pour retrouver un aéroport ouvert récemment."
     },
     "units": {
       "title": "Unités",
@@ -1925,7 +1934,9 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Panneaux",
-    "hideDebugMenu": "Masquer le menu de débogage (⌃⇧D)"
+    "hideDebugMenu": "Masquer le menu de débogage (⌃⇧D)",
+    "fullScreenHint": "Appuyez sur {{keys}} pour quitter le plein écran",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2146,7 +2157,23 @@
       "help": "Aide",
       "website": "Site web X-Dispatch",
       "discord": "Communauté Discord",
-      "checkForUpdates": "Rechercher des mises à jour…"
+      "checkForUpdates": "Rechercher des mises à jour…",
+      "recentAirports": "Aéroports récents",
+      "file": "Fichier",
+      "openFlightPlan": "Ouvrir un plan de vol…",
+      "importSimbrief": "Importer depuis SimBrief…",
+      "launchXPlane": "Lancer X-Plane…",
+      "findAirport": "Rechercher un aéroport",
+      "view": "Présentation",
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "zoomReset": "Taille réelle",
+      "toggleSidebar": "Afficher/masquer la barre latérale",
+      "flightStripWindow": "Fenêtre du strip de vol",
+      "toggleFullScreen": "Plein écran",
+      "close": "Fermer la fenêtre",
+      "keyboardShortcuts": "Raccourcis clavier",
+      "openLogs": "Ouvrir le dossier des journaux"
     },
     "crash": {
       "title": "X-Dispatch a cessé de fonctionner",
@@ -2159,5 +2186,27 @@
     "controls": "Commandes du radar météo",
     "previousFrame": "Image précédente",
     "nextFrame": "Image suivante"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} n'est pas dans votre liste d'aéroports",
+    "aircraftNotFound": "Aucun appareil installé ne correspond à « {{name}} »",
+    "importConfirm": {
+      "title": "Télécharger le plan de vol ?",
+      "description": "Un lien veut charger un plan de vol depuis {{host}}. Ne continuez que si vous faites confiance à la provenance du lien.",
+      "download": "Télécharger",
+      "cancel": "Annuler"
+    },
+    "importDone": "{{fileName}} chargé",
+    "importFailed": "Impossible de charger le plan de vol depuis {{host}}",
+    "importFileFailed": "Impossible de charger ce fichier de plan de vol"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "description": "Tous les raccourcis, tels que listés dans le menu.",
+    "inApp": {
+      "title": "Dans l’app",
+      "debugPanels": "Panneaux de débogage",
+      "closeDialog": "Fermer la boîte de dialogue ou le menu"
+    }
   }
 }

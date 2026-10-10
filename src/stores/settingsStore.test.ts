@@ -266,6 +266,20 @@ describe('migrateSettings', () => {
     expect(result.graphics.followSimTime).toBe(false);
   });
 
+  it('adds the desktop window settings at v34 with every behaviour on', () => {
+    const v33Blob = {
+      appearance: { fontSize: 'medium', zoomLevel: 1, flightStripOpacity: 1 },
+      airports: { favoriteIcaos: ['DAAG'], homeIcao: null, autoNavigateHomeOnStart: true },
+    };
+    const result = migrateSettings(v33Blob, 33);
+    expect(result.desktop).toEqual({
+      keepRunningOnClose: true,
+      attention: true,
+      recentAirportsMenu: true,
+    });
+    expect(result.airports.favoriteIcaos).toEqual(['DAAG']);
+  });
+
   it('adds the five new unit preferences at v29 while preserving the existing weight choice', () => {
     const v28Blob = {
       map: {

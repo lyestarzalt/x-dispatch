@@ -115,7 +115,7 @@ function FlightInfoPanel() {
               variant="ghost"
               size="icon-sm"
               className="text-muted-foreground/40 hover:text-foreground"
-              onClick={openSimbriefDialog}
+              onClick={() => openSimbriefDialog()}
               tooltip={t('simbrief.openFullBriefing')}
             >
               <Maximize2 className="h-4 w-4" />

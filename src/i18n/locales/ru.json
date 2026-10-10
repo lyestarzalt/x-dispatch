@@ -642,7 +642,16 @@
       "flightStripScale": "Размер полётной полосы",
       "flightStripScaleDescription": "Увеличивает полосу данных полёта, чтобы читать её издалека",
       "flightStripOpacity": "Непрозрачность окна полосы полёта",
-      "flightStripOpacityDescription": "Симулятор виден сквозь отдельное окно полосы полёта"
+      "flightStripOpacityDescription": "Симулятор виден сквозь отдельное окно полосы полёта",
+      "desktop": "Окно приложения",
+      "desktopDescription": "Как X-Dispatch ведёт себя как окно на этом компьютере.",
+      "keepRunningOnClose": "Продолжать работу при закрытии окна",
+      "keepRunningOnCloseDescription": "Приложение остаётся в Dock и мгновенно открывается снова. Выход — ⌘Q.",
+      "attention": "Привлекать внимание в фоне",
+      "attentionDescription": "Подпрыгивать значком в Dock или мигать на панели задач, когда X-Plane подключается, загружен план или готово обновление.",
+      "recentAirportsMenu": "Недавние аэропорты в меню приложения",
+      "recentAirportsMenuDescriptionMac": "Щёлкните правой кнопкой по значку в Dock, чтобы перейти к недавно открытому аэропорту.",
+      "recentAirportsMenuDescriptionWindows": "Щёлкните правой кнопкой по значку на панели задач, чтобы перейти к недавно открытому аэропорту."
     },
     "units": {
       "title": "Единицы",
@@ -1925,7 +1934,9 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Панели",
-    "hideDebugMenu": "Скрыть меню отладки (⌃⇧D)"
+    "hideDebugMenu": "Скрыть меню отладки (⌃⇧D)",
+    "fullScreenHint": "Нажмите {{keys}}, чтобы выйти из полноэкранного режима",
+    "appMenu": "Меню"
   },
   "explorePanel": {
     "routes": {
@@ -2146,7 +2157,23 @@
       "help": "Справка",
       "website": "Сайт X-Dispatch",
       "discord": "Сообщество в Discord",
-      "checkForUpdates": "Проверить обновления…"
+      "checkForUpdates": "Проверить обновления…",
+      "recentAirports": "Недавние аэропорты",
+      "file": "Файл",
+      "openFlightPlan": "Открыть план полёта…",
+      "importSimbrief": "Импорт из SimBrief…",
+      "launchXPlane": "Запустить X-Plane…",
+      "findAirport": "Найти аэропорт",
+      "view": "Вид",
+      "zoomIn": "Увеличить",
+      "zoomOut": "Уменьшить",
+      "zoomReset": "Реальный размер",
+      "toggleSidebar": "Показать/скрыть боковую панель",
+      "flightStripWindow": "Окно полётной полосы",
+      "toggleFullScreen": "Полноэкранный режим",
+      "close": "Закрыть окно",
+      "keyboardShortcuts": "Сочетания клавиш",
+      "openLogs": "Открыть папку журналов"
     },
     "crash": {
       "title": "X-Dispatch перестал работать",
@@ -2159,5 +2186,27 @@
     "controls": "Управление метеорадаром",
     "previousFrame": "Предыдущий кадр",
     "nextFrame": "Следующий кадр"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} нет в вашем списке аэропортов",
+    "aircraftNotFound": "Ни один установленный самолёт не соответствует «{{name}}»",
+    "importConfirm": {
+      "title": "Скачать план полёта?",
+      "description": "Ссылка хочет загрузить план полёта с {{host}}. Продолжайте, только если доверяете источнику ссылки.",
+      "download": "Скачать",
+      "cancel": "Отмена"
+    },
+    "importDone": "Загружен {{fileName}}",
+    "importFailed": "Не удалось загрузить план полёта с {{host}}",
+    "importFileFailed": "Не удалось загрузить этот файл плана полёта"
+  },
+  "shortcuts": {
+    "title": "Сочетания клавиш",
+    "description": "Все сочетания, как они указаны в меню.",
+    "inApp": {
+      "title": "В приложении",
+      "debugPanels": "Панели отладки",
+      "closeDialog": "Закрыть диалог или меню"
+    }
   }
 }

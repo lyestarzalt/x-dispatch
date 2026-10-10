@@ -65,6 +65,22 @@ function AirportInfoPanel({
     trackEvent('airport_tab_opened', { tab: value as TabId });
   };
 
+  // A link asked for a tab (xdispatch://airport/ICAO?tab=start).
+  useEffect(
+    () =>
+      useAppStore.subscribe(
+        (s) => s.pendingAirportTab,
+        (tab) => {
+          if (!tab) return;
+          setActiveTab(tab);
+          setIsCollapsed(false);
+          useAppStore.getState().clearPendingAirportTab();
+        },
+        { fireImmediately: true }
+      ),
+    []
+  );
+
   // Auto-switch to Start tab when user clicks a gate/runway on the map
   const prevPositionRef = useRef(selectedStartPosition);
   useEffect(() => {

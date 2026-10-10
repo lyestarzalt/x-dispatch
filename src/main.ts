@@ -11,31 +11,59 @@ import {
   screen,
   session,
   shell,
+  systemPreferences,
 } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
+import { execFile } from 'node:child_process';
 import path from 'path';
 import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
-import type { AnalyticsConsentState } from './lib/analytics/events';
+import { ANALYTICS_SHORTCUTS, type AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
-import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import { MENU_COMMANDS, type MenuCommand, buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import {
+  APP_URL_SCHEME,
+  type AppAction,
+  findAppUrlInArgv,
+  parseAppUrl,
+  remoteFileUrlOf,
+} from './lib/nativeShell/appUrl';
 import { createCrashRecovery } from './lib/nativeShell/crashRecovery';
+import {
+  DEFAULT_DESKTOP_PREFS,
+  type DesktopPrefs,
+  parseDesktopPrefs,
+} from './lib/nativeShell/desktopPrefs';
+import {
+  findFmsFileInArgv,
+  isFmsFileArg,
+  windowsFmsRegistryCommands,
+} from './lib/nativeShell/fileAssociations';
 import {
   DEFAULT_NATIVE_LABELS,
   type NativeLabels,
   parseNativeLabels,
 } from './lib/nativeShell/labels';
+import { type MenuItemLike, serializeMenu } from './lib/nativeShell/menuSerialization';
 import { isAllowedNavigation } from './lib/nativeShell/navigationGuard';
+import { createPendingActions } from './lib/nativeShell/pendingActions';
+import {
+  type RecentAirport,
+  addRecentAirport,
+  buildDockMenuTemplate,
+  buildJumpListCategories,
+  parseRecentAirports,
+} from './lib/nativeShell/recentAirports';
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
@@ -242,6 +270,21 @@ let isQuitting = false;
 /** Translated by the renderer; English until its first push. */
 let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
 const crashRecovery = createCrashRecovery();
+/**
+ * Actions from links, held until the renderer is listening. A link on a cold
+ * start arrives before the window exists; the renderer drains the queue once
+ * it mounts and takes later actions as pushes.
+ */
+const pendingAppActions = createPendingActions<AppAction>();
+/** Files the OS asked us to open; the only paths `flightplan:readFile` will read. */
+const openableFiles = new Set<string>();
+let recentAirports: RecentAirport[] = [];
+/** From Settings; defaults until the renderer's first push. */
+let desktopPrefs: DesktopPrefs = DEFAULT_DESKTOP_PREFS;
+/** Menu command ids as the analytics allow-list spells them. */
+const MENU_COMMAND_ANALYTICS = Object.fromEntries(
+  MENU_COMMANDS.map((c) => [c, c.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`)])
+) as Record<MenuCommand, (typeof ANALYTICS_SHORTCUTS)[number]>;
 
 /** A crashed main window would otherwise stay blank until the user restarts the app. */
 function recoverCrashedWindow(webContents: Electron.WebContents): void {
@@ -294,9 +337,42 @@ function installAppMenu(): void {
       },
       openExternal: (url) => void shell.openExternal(url),
       toggleDevTools: () => BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools(),
+      command: runMenuCommand,
     },
   });
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+/**
+ * A menu item or its accelerator. What main can do itself it does here; the
+ * rest goes to the desktop window's renderer, which owns the stores.
+ */
+function runMenuCommand(command: MenuCommand): void {
+  analytics.track('shortcut_used', { shortcut: MENU_COMMAND_ANALYTICS[command] });
+  const focused = BrowserWindow.getFocusedWindow();
+  switch (command) {
+    case 'closeWindow':
+      // The flight strip has no dialogs to close first.
+      if (focused && focused !== mainWindow) {
+        focused.close();
+        return;
+      }
+      break;
+    case 'flightStripWindow':
+      toggleFlightStripWindow();
+      return;
+    case 'focusSearch':
+      // The toolbar listens on its own channel; the tablet gets it too.
+      broadcast('focus-search');
+      return;
+    case 'openLogs':
+      shell.showItemInFolder(getLogPath());
+      return;
+  }
+  const win = mainWindow;
+  if (!win || win.isDestroyed()) return;
+  if (command !== 'closeWindow') focusMainWindow();
+  win.webContents.send('app:menuCommand', command);
 }
 
 async function getXPlaneModule() {
@@ -333,15 +409,17 @@ const DEFAULT_PROXY_FETCH_TIMEOUT_MS = 15_000;
 
 async function proxyFetch(
   url: string,
-  opts: { timeoutMs?: number } = {}
+  opts: { timeoutMs?: number; maxBytes?: number } = {}
 ): Promise<{ data: string | null; error: string | null; statusCode?: number }> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_PROXY_FETCH_TIMEOUT_MS;
+  const maxBytes = opts.maxBytes ?? Infinity;
   const startedAt = Date.now();
 
   return new Promise((resolve) => {
     const request = net.request(url);
     request.setHeader('User-Agent', `X-Dispatch/${app.getVersion()}`);
     let data = '';
+    let received = 0;
     let settled = false;
 
     const settle = (result: { data: string | null; error: string | null; statusCode?: number }) => {
@@ -368,6 +446,16 @@ async function proxyFetch(
 
     request.on('response', (response) => {
       response.on('data', (chunk) => {
+        received += chunk.length;
+        if (received > maxBytes) {
+          settle({ data: null, error: `Response larger than ${maxBytes} bytes` });
+          try {
+            request.abort();
+          } catch {
+            // already settling
+          }
+          return;
+        }
         data += chunk.toString();
       });
       response.on('end', () => {
@@ -528,6 +616,15 @@ function isFlightStripWindowOpen(): boolean {
   return !!flightStripWindow && !flightStripWindow.isDestroyed();
 }
 
+/** Window Controls Overlay (Windows, Linux): colours match the renderer's title bar. */
+const TITLE_BAR_OVERLAY = {
+  color: '#06090D',
+  symbolColor: '#FFFFFF',
+  /** The OS controls dim with the rest of the bar when the window is inactive. */
+  symbolColorInactive: '#7C8594',
+  height: 36,
+} as const;
+
 function createWindow(): BrowserWindow {
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
@@ -550,14 +647,16 @@ function createWindow(): BrowserWindow {
     show: false,
     backgroundColor: '#06090D',
     icon: iconPath,
+    // A click on an inactive window acts at once instead of only focusing it.
+    acceptFirstMouse: true,
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     ...(isMac
       ? {}
       : {
           titleBarOverlay: {
-            color: '#06090D',
-            symbolColor: '#FFFFFF',
-            height: 36,
+            color: TITLE_BAR_OVERLAY.color,
+            symbolColor: TITLE_BAR_OVERLAY.symbolColor,
+            height: TITLE_BAR_OVERLAY.height,
           },
         }),
     webPreferences: {
@@ -614,27 +713,50 @@ function createWindow(): BrowserWindow {
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
-  window.webContents.on('before-input-event', (event, input) => {
-    if (input.type !== 'keyDown' || !(input.control || input.meta) || input.alt) return;
-    // Zoom is owned by the Interface Zoom setting; the dev menu's zoom keys would drift from it.
-    if (['-', '=', '+', '0'].includes(input.key)) {
-      event.preventDefault();
-      return;
-    }
-    // Ctrl+F / Cmd+F focuses airport search. Window-scoped, so other apps keep the key.
-    if (!input.shift && input.key.toLowerCase() === 'f') {
-      event.preventDefault();
-      analytics.track('shortcut_used', { shortcut: 'focus_search' });
-      broadcast('focus-search');
-      return;
-    }
-    // The menu accelerator covers macOS; with the title bar hidden, Windows and Linux
-    // have no visible menu, so Ctrl+, is caught here instead.
-    if (!isMac && !input.shift && input.key === ',') {
-      event.preventDefault();
-      openSettingsInMainWindow();
+  // macOS: closing the window keeps the app in the Dock, like every single-window
+  // Mac app; the next Dock click shows the same window with its state intact.
+  window.on('close', (event) => {
+    if (!isMac || isQuitting || !desktopPrefs.keepRunningOnClose) return;
+    event.preventDefault();
+    if (window.isFullScreen()) {
+      window.once('leave-full-screen', () => window.hide());
+      window.setFullScreen(false);
+    } else {
+      window.hide();
     }
   });
+
+  // Native sheets (the crash dialog) attach below the custom title bar, not over it.
+  if (isMac) window.setSheetOffset(TITLE_BAR_OVERLAY.height);
+
+  // The renderer dims its title bar like a native window; the OS controls follow.
+  const sendWindowFocus = (focused: boolean) => {
+    if (window.isDestroyed()) return;
+    window.webContents.send('app:windowFocus', focused);
+    if (process.platform === 'win32') {
+      window.setTitleBarOverlay({
+        symbolColor: focused
+          ? TITLE_BAR_OVERLAY.symbolColor
+          : TITLE_BAR_OVERLAY.symbolColorInactive,
+      });
+    }
+  };
+  window.on('focus', () => {
+    if (!isMac) window.flashFrame(false);
+    sendWindowFocus(true);
+  });
+  window.on('blur', () => sendWindowFocus(false));
+
+  // Full screen hides the traffic lights and the OS controls; the title bar follows.
+  window.on('enter-full-screen', () => window.webContents.send('app:fullScreen', true));
+  window.on('leave-full-screen', () => window.webContents.send('app:fullScreen', false));
+
+  // A reload (crash recovery, dev HMR) drops the renderer's listeners: hold
+  // app actions again until the new page drains the queue.
+  window.webContents.on('did-start-loading', () => pendingAppActions.reset());
+
+  // Every shortcut is a menu accelerator (lib/nativeShell/appMenu): one list, every OS.
+  // Page zoom keys reach the Interface Zoom setting through the View menu.
 
   window.webContents.on('will-navigate', (event, url) => {
     if (!isAllowedNavigation(url)) event.preventDefault();
@@ -729,6 +851,7 @@ function initAutoUpdater(): void {
     autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
       updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
       analytics.track('update_downloaded', {});
+      requestAttention();
     });
     autoUpdater.on('error', (err) => {
       updateStatus.patch({ install: 'error', error: err.message });
@@ -771,6 +894,21 @@ function registerIpcHandlers() {
     if (!mainWindow || event.sender !== mainWindow.webContents) return;
     nativeLabels = parseNativeLabels(labels);
     installAppMenu();
+    refreshRecentsMenus();
+  });
+  on('app:setDesktopPrefs', (event, prefs: unknown) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    desktopPrefs = parseDesktopPrefs(prefs);
+    refreshRecentsMenus();
+  });
+  on('app:requestAttention', (event) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    requestAttention();
+  });
+  on('app:airportOpened', (event, icao: unknown, name: unknown) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    if (typeof icao !== 'string' || !isValidICAO(icao)) return;
+    recordRecentAirport(icao.toUpperCase(), typeof name === 'string' ? name.slice(0, 80) : '');
   });
   handle('app:installUpdate', () => {
     if (updateStatus.get().install !== 'ready') return false;
@@ -793,6 +931,80 @@ function registerIpcHandlers() {
       heapTotal: mem.heapTotal,
     };
   });
+  // The renderer takes whatever links arrived before it listened, then gets pushes.
+  handle('app:takePendingActions', () => pendingAppActions.drain());
+  // Double-click on the title bar: what the user set in System Settings on macOS
+  // (zoom, minimise or nothing), maximise elsewhere.
+  handle('app:titleBarDoubleClick', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return;
+    const action =
+      process.platform === 'darwin'
+        ? systemPreferences.getUserDefault('AppleActionOnDoubleClick', 'string')
+        : 'Maximize';
+    if (action === 'None') return;
+    if (action === 'Minimize') {
+      win.minimize();
+      return;
+    }
+    if (win.isMaximized()) win.unmaximize();
+    else win.maximize();
+  });
+  handle('app:getAppMenu', () =>
+    serializeMenu(Menu.getApplicationMenu() as unknown as { items: MenuItemLike[] } | null)
+  );
+  handle('app:clickMenuItem', (event, id: unknown) => {
+    if (typeof id !== 'string') return;
+    const item = Menu.getApplicationMenu()?.getMenuItemById(id);
+    if (!item) return;
+    const win = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+    // Electron's runtime click runs the role first, then any custom handler.
+    (item.click as unknown as (e: unknown, w?: BrowserWindow, wc?: Electron.WebContents) => void)(
+      {},
+      win,
+      win?.webContents
+    );
+  });
+  handle('app:closeWindow', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
+  });
+  handle('app:getWindowState', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return {
+      focused: win?.isFocused() ?? true,
+      fullScreen: win?.isFullScreen() ?? false,
+    };
+  });
+
+  // A flight plan the user agreed to download from a link: https only, small, and
+  // parsed by the renderer like a file it opened itself.
+  handle('flightplan:fetchRemote', async (_, rawUrl: unknown) => {
+    const url = typeof rawUrl === 'string' ? remoteFileUrlOf(rawUrl) : undefined;
+    if (!url) return { content: null, fileName: null, error: 'invalid_url' };
+    const result = await proxyFetch(url, { timeoutMs: 10_000, maxBytes: 1024 * 1024 });
+    if (!result.data || result.error) {
+      return { content: null, fileName: null, error: result.error ?? 'empty' };
+    }
+    const fileName = path.basename(new URL(url).pathname) || 'flightplan.fms';
+    return { content: result.data, fileName, error: null };
+  });
+
+  // A .fms the OS handed to main; any other path is refused, whatever the renderer says.
+  handle('flightplan:readFile', async (_, rawPath: unknown) => {
+    if (typeof rawPath !== 'string' || !openableFiles.has(rawPath)) {
+      return { content: null, fileName: null, error: 'not_allowed' };
+    }
+    try {
+      const stat = await fs.promises.stat(rawPath);
+      if (stat.size > 1024 * 1024) return { content: null, fileName: null, error: 'too_large' };
+      const content = await fs.promises.readFile(rawPath, 'utf-8');
+      return { content, fileName: path.basename(rawPath), error: null };
+    } catch (err) {
+      logger.main.warn(`Could not read flight plan file: ${String(err)}`);
+      return { content: null, fileName: null, error: 'read_failed' };
+    }
+  });
+
   handle('app:getLogPath', () => getLogPath());
   handle('app:openLogFile', () => {
     const logPath = getLogPath();
@@ -1504,6 +1716,7 @@ function registerIpcHandlers() {
       }
 
       const filePath = result.filePaths[0]!;
+      app.addRecentDocument(filePath);
       const content = fs.readFileSync(filePath, 'utf-8');
       const fileName = path.basename(filePath);
 
@@ -2006,8 +2219,8 @@ if (!app.isPackaged) {
 // Must register custom scheme before app is ready
 registerTileCacheScheme();
 
-// Deep link protocol: xdispatch://airport/ICAO
-const PROTOCOL = 'xdispatch';
+// Deep links: xdispatch://airport/ICAO, xdispatch://route?from=…, see lib/nativeShell/appUrl.
+const PROTOCOL = APP_URL_SCHEME;
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -2017,13 +2230,108 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient(PROTOCOL);
 }
 
-function handleDeepLink(url: string): void {
-  if (!url.startsWith(`${PROTOCOL}://`)) return;
-  const parsed = new URL(url);
-  // xdispatch://airport/LFMN → host="airport", pathname="/LFMN"
-  if (parsed.host === 'airport' && parsed.pathname.length > 1) {
-    const icao = parsed.pathname.slice(1).toUpperCase();
-    broadcast('deep-link', { type: 'airport', icao });
+function focusMainWindow(): void {
+  // `if (mainWindow)` alone passes a destroyed BrowserWindow (still truthy),
+  // and any method on it throws "Object has been destroyed". Sentry
+  // X-DISPATCH-6.
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  if (!mainWindow.isVisible()) mainWindow.show();
+  mainWindow.focus();
+}
+
+function dispatchAppAction(action: AppAction): void {
+  focusMainWindow();
+  if (pendingAppActions.isReady() && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('app:action', action);
+    return;
+  }
+  pendingAppActions.push(action);
+}
+
+function handleAppUrl(url: string): void {
+  const action = parseAppUrl(url);
+  if (!action) {
+    logger.main.warn(`Ignoring app URL that does not parse: ${url.slice(0, 200)}`);
+    return;
+  }
+  logger.main.info(`App URL: ${action.kind}${action.source ? ` from ${action.source}` : ''}`);
+  dispatchAppAction(action);
+}
+
+/** A .fms the OS handed us: double-click, Open With, drop on the dock icon. */
+function handleFilePath(filePath: string): void {
+  if (!isFmsFileArg(filePath) || !fs.existsSync(filePath)) {
+    logger.main.warn(`Ignoring file the OS asked to open: ${filePath.slice(0, 200)}`);
+    return;
+  }
+  openableFiles.add(filePath);
+  void app.whenReady().then(() => app.addRecentDocument(filePath));
+  logger.main.info('Opening a flight plan file from the OS');
+  dispatchAppAction({ kind: 'import-file', path: filePath });
+}
+
+function recentAirportsFile(): string {
+  return path.join(app.getPath('userData'), 'recent-airports.json');
+}
+
+function loadRecentAirports(): void {
+  try {
+    recentAirports = parseRecentAirports(
+      JSON.parse(fs.readFileSync(recentAirportsFile(), 'utf-8'))
+    );
+  } catch {
+    recentAirports = [];
+  }
+}
+
+/** Dock menu on macOS, jump list on Windows: the recent airports, in the UI language. */
+function refreshRecentsMenus(): void {
+  const labels = { recentAirports: nativeLabels.menu.recentAirports };
+  const shown = desktopPrefs.recentAirportsMenu ? recentAirports : [];
+  if (process.platform === 'darwin' && app.dock) {
+    const template = buildDockMenuTemplate(shown, labels, (icao) =>
+      dispatchAppAction({ kind: 'airport', icao })
+    );
+    app.dock.setMenu(Menu.buildFromTemplate(template));
+  } else if (process.platform === 'win32' && app.isPackaged) {
+    const categories = buildJumpListCategories(shown, labels, process.execPath);
+    const result = app.setJumpList(categories.length > 0 ? categories : null);
+    if (result !== 'ok') logger.main.warn(`Jump list not set: ${result}`);
+  }
+}
+
+function recordRecentAirport(icao: string, name: string): void {
+  recentAirports = addRecentAirport(recentAirports, { icao, name });
+  try {
+    fs.writeFileSync(recentAirportsFile(), JSON.stringify(recentAirports));
+  } catch (err) {
+    logger.main.warn('Could not save recent airports', err);
+  }
+  refreshRecentsMenus();
+}
+
+/**
+ * Something finished while the window was in the background: bounce the Dock
+ * icon on macOS, flash the taskbar elsewhere. The flash clears on focus.
+ */
+function requestAttention(): void {
+  if (!desktopPrefs.attention) return;
+  const win = mainWindow;
+  if (!win || win.isDestroyed() || win.isFocused()) return;
+  if (process.platform === 'darwin') {
+    app.dock?.bounce('informational');
+  } else {
+    win.flashFrame(true);
+  }
+}
+
+/** Per-user "Open With" entry for .fms; the exe path moves with every Squirrel update. */
+function registerWindowsFileAssociations(): void {
+  for (const args of windowsFmsRegistryCommands(process.execPath)) {
+    execFile('reg', ['add', ...args], { windowsHide: true }, (err) => {
+      if (err) logger.main.warn(`reg add ${args[0]} failed: ${err.message}`);
+    });
   }
 }
 
@@ -2033,23 +2341,33 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on('second-instance', (_event, commandLine) => {
-  // `if (mainWindow)` alone passes a destroyed BrowserWindow (still truthy),
-  // and any method on it throws "Object has been destroyed". Sentry
-  // X-DISPATCH-6.
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  }
-  // Windows/Linux: deep link URL is the last arg
-  const url = commandLine.find((arg) => arg.startsWith(`${PROTOCOL}://`));
-  if (url) handleDeepLink(url);
+  focusMainWindow();
+  // Windows/Linux: the link or file the second instance was launched with
+  const url = findAppUrlInArgv(commandLine);
+  if (url) handleAppUrl(url);
+  const file = findFmsFileInArgv(commandLine);
+  if (file) handleFilePath(file);
 });
 
-// macOS: deep link via open-url event
+// macOS: deep link via open-url event, which can fire before the app is ready
 app.on('open-url', (event, url) => {
   event.preventDefault();
-  handleDeepLink(url);
+  handleAppUrl(url);
 });
+
+// macOS: a .fms opened from Finder or dropped on the dock icon
+app.on('open-file', (event, filePath) => {
+  event.preventDefault();
+  handleFilePath(filePath);
+});
+
+// Windows/Linux cold start: the link or file is an argument of this very process
+{
+  const coldStartUrl = findAppUrlInArgv(process.argv);
+  if (coldStartUrl) handleAppUrl(coldStartUrl);
+  const coldStartFile = findFmsFileInArgv(process.argv);
+  if (coldStartFile) handleFilePath(coldStartFile);
+}
 
 /** One snapshot per launch of the window size and display scaling, as buckets. */
 function reportDisplay(win: BrowserWindow): void {
@@ -2100,6 +2418,9 @@ async function bootstrap(): Promise<void> {
     website: PROJECT_WEBSITE,
   });
   installAppMenu();
+  loadRecentAirports();
+  refreshRecentsMenus();
+  if (process.platform === 'win32' && app.isPackaged) registerWindowsFileAssociations();
 
   try {
     await initDb();
@@ -2239,5 +2560,9 @@ app.on('activate', () => {
   // createWindow() touches `screen` via electron-window-state, which throws
   // until app is ready. Sentry X-DISPATCH-M.
   if (!app.isReady()) return;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (!mainWindow.isVisible()) mainWindow.show();
+    return;
+  }
   if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
 });

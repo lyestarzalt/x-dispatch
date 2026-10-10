@@ -1,3 +1,4 @@
+import { APP_ACTION_KINDS } from '../nativeShell/appUrl';
 import { ANALYTICS_COMPANION_APPS } from './companionApps';
 
 /**
@@ -85,7 +86,23 @@ export const ANALYTICS_WIDTH_BUCKETS = [
   '2560_plus',
 ] as const;
 export const ANALYTICS_SCALE_BUCKETS = ['1', '1.25', '1.5', '1.75', '2', 'other'] as const;
-export const ANALYTICS_SHORTCUTS = ['focus_search'] as const;
+/** Menu items and their accelerators; `focus_search` is Find Airport. */
+export const ANALYTICS_SHORTCUTS = [
+  'open_flight_plan',
+  'import_simbrief',
+  'launch_x_plane',
+  'focus_search',
+  'zoom_in',
+  'zoom_out',
+  'zoom_reset',
+  'toggle_sidebar',
+  'flight_strip_window',
+  'keyboard_shortcuts',
+  'close_window',
+  'open_logs',
+] as const;
+/** Where an xdispatch:// link said it came from; 'none' when it did not say. */
+export const ANALYTICS_DEEP_LINK_SOURCES = ['website', 'discord', 'manual', 'none'] as const;
 
 /** Why a launch failed: the launcher's error codes, or a flight change X-Plane refused. */
 export const ANALYTICS_LAUNCH_ERRORS = [
@@ -419,6 +436,8 @@ const EVENT_SCHEMA = {
     fullscreen: { kind: 'boolean' },
   },
   shortcut_used: { shortcut: oneOf(ANALYTICS_SHORTCUTS) },
+  /** An xdispatch:// link was followed: which action, and the source it declared. */
+  deep_link_opened: { action: oneOf(APP_ACTION_KINDS), source: oneOf(ANALYTICS_DEEP_LINK_SOURCES) },
   error_shown: { area: oneOf(ANALYTICS_ERROR_AREAS) },
   explore_tab_opened: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
   /** An airport, route or event picked in Explore; the tab only, never what was picked. */

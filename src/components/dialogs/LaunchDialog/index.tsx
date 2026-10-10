@@ -144,6 +144,29 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     hydrateAircraft(freshAircraft ?? null);
   }, [selectedAircraftPath, selectedAircraft, aircraftList, hydrateAircraft]);
 
+  // A link asked for an aircraft by name; pick it once the scan is in.
+  const pendingAircraftName = useLaunchStore((s) => s.pendingAircraftName);
+  const selectAircraftFromLink = useLaunchStore((s) => s.selectAircraft);
+  const setPendingAircraftName = useLaunchStore((s) => s.setPendingAircraftName);
+  useEffect(() => {
+    if (!open || !pendingAircraftName || isScanning) return;
+    const wanted = pendingAircraftName.toLowerCase();
+    const match =
+      aircraftList.find((a) => a.name.toLowerCase() === wanted) ??
+      aircraftList.find((a) => a.name.toLowerCase().includes(wanted));
+    if (match) selectAircraftFromLink(match);
+    else toast.warning(t('appActions.aircraftNotFound', { name: pendingAircraftName }));
+    setPendingAircraftName(null);
+  }, [
+    open,
+    pendingAircraftName,
+    isScanning,
+    aircraftList,
+    selectAircraftFromLink,
+    setPendingAircraftName,
+    t,
+  ]);
+
   // Launch - same FlightInit payload for both: REST API (running) or cold start
   const handleLaunch = async () => {
     if (!selectedAircraft || !startPosition) return;

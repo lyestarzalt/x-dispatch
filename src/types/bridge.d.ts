@@ -15,6 +15,7 @@ import type {
   RouteResolveResult,
   SaveFmsResult,
 } from '@/lib/flightplan/builder/types';
+import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
@@ -136,9 +137,33 @@ declare global {
       resyncCustomAirports: () => Promise<{ synced: boolean; count: number; diff: number }>;
       onAirportsUpdated: (callback: () => void) => () => void;
       onFocusSearch: (callback: () => void) => () => void;
+      /** A menu item or accelerator the renderer carries out. */
+      onMenuCommand: (
+        callback: (command: import('@/lib/nativeShell/appMenu').MenuCommand) => void
+      ) => () => void;
+      /** Closes this window; on macOS that hides it when the setting says so. */
+      closeWindow: () => Promise<void>;
+      /** The native menu as data, for the title-bar menu and the shortcuts dialog. */
+      getAppMenu: () => Promise<import('@/lib/nativeShell/menuSerialization').AppMenuNode[]>;
+      clickMenuItem: (id: string) => Promise<void>;
       onOpenSettings: (callback: (tab: 'about' | null) => void) => () => void;
       setNativeLabels: (labels: import('@/lib/nativeShell/labels').NativeLabels) => void;
-      onDeepLink: (callback: (data: { type: string; icao?: string }) => void) => () => void;
+      /** Feeds the dock menu and jump list of recent airports. */
+      noteAirportOpened: (icao: string, name: string) => void;
+      /** Window behaviour from Settings; main applies it. */
+      setDesktopPrefs: (prefs: import('@/lib/nativeShell/desktopPrefs').DesktopPrefs) => void;
+      /** Bounce the Dock icon or flash the taskbar if the window is in the background. */
+      requestAttention: () => void;
+      getWindowState: () => Promise<{ focused: boolean; fullScreen: boolean }>;
+      /** The window gained or lost focus; the title bar dims like a native one. */
+      onWindowFocus: (callback: (focused: boolean) => void) => () => void;
+      onFullScreen: (callback: (fullScreen: boolean) => void) => () => void;
+      /** Zoom, minimise or nothing, per the macOS preference; maximise elsewhere. */
+      titleBarDoubleClick: () => Promise<void>;
+      /** Actions from xdispatch:// links while the app is running. */
+      onAppAction: (callback: (action: AppAction) => void) => () => void;
+      /** Links that arrived before the renderer listened; marks it as listening. */
+      takePendingActions: () => Promise<AppAction[]>;
       pickDirectory: (opts?: { title?: string; defaultPath?: string }) => Promise<string | null>;
     };
     airportAPI: {
@@ -257,6 +282,20 @@ declare global {
     };
     flightPlanAPI: {
       openFile: () => Promise<{ content: string; fileName: string } | null>;
+      /** Reads a .fms the OS handed to main (double-click, Open With); other paths are refused. */
+      readFile: (
+        path: string
+      ) => Promise<
+        | { content: string; fileName: string; error: null }
+        | { content: null; fileName: null; error: string }
+      >;
+      /** Downloads a plan the user agreed to from a link; https only, 1 MB cap. */
+      fetchRemote: (
+        url: string
+      ) => Promise<
+        | { content: string; fileName: string; error: null }
+        | { content: null; fileName: null; error: string }
+      >;
       enrich: (
         fmsData: import('@/types/fms').FMSFlightPlan
       ) => Promise<import('@/types/fms').EnrichedFlightPlan | null>;

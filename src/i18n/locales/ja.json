@@ -642,7 +642,16 @@
       "flightStripScale": "フライトストリップのサイズ",
       "flightStripScaleDescription": "離れた場所からも読めるようにライブのフライトストリップを拡大します",
       "flightStripOpacity": "フライトストリップウィンドウの不透明度",
-      "flightStripOpacityDescription": "切り離したフライトストリップのウィンドウ越しにシミュレーターを表示します"
+      "flightStripOpacityDescription": "切り離したフライトストリップのウィンドウ越しにシミュレーターを表示します",
+      "desktop": "デスクトップウィンドウ",
+      "desktopDescription": "このコンピューター上でのウィンドウとしての X-Dispatch の動作。",
+      "keepRunningOnClose": "ウィンドウを閉じても実行を続ける",
+      "keepRunningOnCloseDescription": "アプリは Dock に残り、すぐに再表示できます。終了は ⌘Q。",
+      "attention": "バックグラウンドで知らせる",
+      "attentionDescription": "X-Plane の接続、プランの読み込み、アップデートの準備完了時に Dock アイコンをバウンスまたはタスクバーを点滅させます。",
+      "recentAirportsMenu": "アプリメニューに最近の空港を表示",
+      "recentAirportsMenuDescriptionMac": "Dock アイコンを右クリックすると、最近開いた空港にジャンプできます。",
+      "recentAirportsMenuDescriptionWindows": "タスクバーアイコンを右クリックすると、最近開いた空港にジャンプできます。"
     },
     "units": {
       "title": "単位",
@@ -1925,7 +1934,9 @@
     "version": "v{{version}}",
     "debug": "デバッグ",
     "panels": "パネル",
-    "hideDebugMenu": "デバッグメニューを隠す（⌃⇧D）"
+    "hideDebugMenu": "デバッグメニューを隠す（⌃⇧D）",
+    "fullScreenHint": "{{keys}} でフルスクリーンを終了",
+    "appMenu": "メニュー"
   },
   "explorePanel": {
     "routes": {
@@ -2146,7 +2157,23 @@
       "help": "ヘルプ",
       "website": "X-Dispatch ウェブサイト",
       "discord": "Discord コミュニティ",
-      "checkForUpdates": "アップデートを確認…"
+      "checkForUpdates": "アップデートを確認…",
+      "recentAirports": "最近の空港",
+      "file": "ファイル",
+      "openFlightPlan": "フライトプランを開く…",
+      "importSimbrief": "SimBrief から読み込む…",
+      "launchXPlane": "X-Plane を起動…",
+      "findAirport": "空港を検索",
+      "view": "表示",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "zoomReset": "実際のサイズ",
+      "toggleSidebar": "サイドバーの表示/非表示",
+      "flightStripWindow": "フライトストリップウインドウ",
+      "toggleFullScreen": "フルスクリーン切り替え",
+      "close": "ウインドウを閉じる",
+      "keyboardShortcuts": "キーボードショートカット",
+      "openLogs": "ログフォルダを開く"
     },
     "crash": {
       "title": "X-Dispatch が応答しなくなりました",
@@ -2159,5 +2186,27 @@
     "controls": "気象レーダーの操作",
     "previousFrame": "前のフレーム",
     "nextFrame": "次のフレーム"
+  },
+  "appActions": {
+    "airportNotFound": "{{icao}} は空港リストにありません",
+    "aircraftNotFound": "「{{name}}」に一致する機体がインストールされていません",
+    "importConfirm": {
+      "title": "フライトプランをダウンロードしますか？",
+      "description": "リンクが {{host}} からフライトプランを読み込もうとしています。リンクの出所を信頼できる場合のみ続行してください。",
+      "download": "ダウンロード",
+      "cancel": "キャンセル"
+    },
+    "importDone": "{{fileName}} を読み込みました",
+    "importFailed": "{{host}} からフライトプランを読み込めませんでした",
+    "importFileFailed": "そのフライトプランファイルを読み込めませんでした"
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "description": "メニューに記載されているすべてのショートカット。",
+    "inApp": {
+      "title": "アプリ内",
+      "debugPanels": "デバッグパネル",
+      "closeDialog": "ダイアログまたはメニューを閉じる"
+    }
   }
 }
