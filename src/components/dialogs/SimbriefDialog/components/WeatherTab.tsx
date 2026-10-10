@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PlaneLanding, PlaneTakeoff, Route, Wind } from 'lucide-react';
 import { parseMetar } from 'metar-taf-parser';
 import { Separator } from '@/components/ui/separator';
+import { primaryAlternate } from '@/lib/simbrief/ofp';
 import type { SimBriefOFP } from '@/types/simbrief';
 import { MetarCard } from './MetarCard';
 
@@ -28,7 +29,8 @@ export function WeatherTab({ data }: { data: SimBriefOFP }) {
     }
   }, [data.destination.metar]);
 
-  const alternateMetarRaw = data.alternate?.metar;
+  const alternate = primaryAlternate(data);
+  const alternateMetarRaw = alternate?.metar;
   const altMetar = useMemo(() => {
     if (!alternateMetarRaw) return null;
     try {
@@ -59,12 +61,12 @@ export function WeatherTab({ data }: { data: SimBriefOFP }) {
       />
 
       {/* Alternate Weather */}
-      {data.alternate && (
+      {alternate && (
         <MetarCard
-          icao={data.alternate.icao_code}
+          icao={alternate.icao_code}
           icon={Route}
           label={t('simbriefDialog.weather.alternate')}
-          rawMetar={data.alternate.metar}
+          rawMetar={alternate.metar}
           parsedMetar={altMetar}
         />
       )}

@@ -25,6 +25,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { describeSimbriefError } from '@/lib/simbrief/fetchError';
 import { useTrackFeatureOpened } from '@/queries';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -165,7 +166,9 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                 </div>
                 <div className="space-y-2 text-center">
                   <p className="text-destructive font-medium">{t('simbrief.fetchError')}</p>
-                  <p className="text-muted-foreground text-sm">{fetchMutation.error.message}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {describeSimbriefError(fetchMutation.error, t)}
+                  </p>
                 </div>
                 <Button onClick={handleFetch} variant="outline">
                   {t('common.retry')}

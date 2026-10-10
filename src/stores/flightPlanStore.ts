@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { mergeStationData, toFmsPlan } from '@/lib/flightplan/stationData';
 import { parseFMSFile } from '@/lib/parsers/fms';
+import { enrichedPlanFromOfp } from '@/lib/simbrief/plan';
 import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
 import type { SimBriefOFP } from '@/types/simbrief';
@@ -212,59 +213,7 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
   },
 
   loadFromSimbrief: (data) => {
-    // Map SimBrief fix type to FMS waypoint type
-    const mapFixType = (type: string): 1 | 2 | 3 | 11 | 28 => {
-      switch (type) {
-        case 'apt':
-          return 1; // Airport
-        case 'ndb':
-          return 2; // NDB
-        case 'vor':
-          return 3; // VOR
-        case 'ltlg':
-          return 28; // Lat/Lon
-        default:
-          return 11; // Fix/waypoint
-      }
-    };
-
-    // Convert SimBrief to EnrichedFlightPlan for map layer
-    const enrichedPlan: EnrichedFlightPlan = {
-      version: 1100,
-      cycle: data.general.airac,
-      departure: {
-        icao: data.origin.icao_code,
-        runway: data.origin.plan_rwy,
-      },
-      arrival: {
-        icao: data.destination.icao_code,
-        runway: data.destination.plan_rwy,
-      },
-      waypoints: data.navlog.fix.map((fix) => ({
-        type: mapFixType(fix.type),
-        id: fix.ident,
-        via: fix.via_airway || 'DRCT',
-        altitude: parseInt(fix.altitude_feet, 10),
-        latitude: parseFloat(fix.pos_lat),
-        longitude: parseFloat(fix.pos_long),
-        found: true,
-        stage: fix.stage as 'CLB' | 'CRZ' | 'DSC',
-        frequency: fix.frequency ? parseFloat(fix.frequency) : undefined,
-      })),
-      alternate: data.alternate
-        ? {
-            icao: data.alternate.icao_code,
-            latitude: parseFloat(data.alternate.pos_lat),
-            longitude: parseFloat(data.alternate.pos_long),
-          }
-        : undefined,
-      resolution: {
-        total: data.navlog.fix.length,
-        found: data.navlog.fix.length,
-        notFound: 0,
-        cycleMatch: true,
-      },
-    };
+    const enrichedPlan = enrichedPlanFromOfp(data);
 
     set({
       simbriefData: data,

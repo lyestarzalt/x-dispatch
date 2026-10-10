@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnits } from '@/hooks/useUnits';
+import { parseDurationSeconds } from '@/lib/simbrief/ofp';
 import type { Feet, NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { Knots } from '@/lib/utils/units';
@@ -20,7 +21,7 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
   const units = useUnits();
   const [expandedFix, setExpandedFix] = useState<string | null>(null);
 
-  const fixes = data.navlog.fix;
+  const fixes = data.navlog;
 
   // Process fixes to add cumulative data. The new react-hooks/immutability
   // rule flags mutation captured by closures (`.map` callback reassigning an
@@ -52,9 +53,9 @@ export function NavlogTab({ data, apiUnit }: NavlogTabProps) {
     return result;
   }, [fixes]);
 
-  const formatTime = (seconds: string) => {
-    const totalSec = parseInt(seconds, 10);
-    if (isNaN(totalSec)) return '—';
+  const formatTime = (duration: string) => {
+    const totalSec = parseDurationSeconds(duration);
+    if (totalSec === null) return '—';
     const hours = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
     return `${hours}:${mins.toString().padStart(2, '0')}`;
@@ -225,7 +226,7 @@ function NavlogRow({
           <span className="font-mono text-sm">{units.speed(Number(fix.groundspeed) as Knots)}</span>
           <span className="text-muted-foreground text-2xs font-mono">
             {t('simbriefDialog.performance.machValue', {
-              mach: (parseInt(fix.mach_thousandths, 10) / 1000).toFixed(2),
+              mach: (Number(fix.mach_thousandths) || Number(fix.mach) || 0).toFixed(2),
             })}
           </span>
         </div>

@@ -69,6 +69,7 @@ import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
+import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
 import {
   closeTileCache,
   getTileCache,
@@ -1828,46 +1829,21 @@ function registerIpcHandlers() {
   });
 
   // SimBrief API
-  handle('simbrief:fetchLatest', async (_, pilotId: string) => {
-    // Validate pilot ID
-    if (!pilotId || typeof pilotId !== 'string') {
-      return { success: false, error: 'Invalid pilot ID' };
-    }
-    if (!/^\d{1,10}$/.test(pilotId)) {
-      return { success: false, error: 'Pilot ID must be numeric' };
+  handle('simbrief:fetchLatest', async (_, user: string) => {
+    if (typeof user !== 'string' || !isSimbriefUser(user)) {
+      return { success: false, code: 'invalid_user', error: 'Invalid Pilot ID or username' };
     }
 
-    try {
-      const url = `https://www.simbrief.com/api/xml.fetcher.php?userid=${encodeURIComponent(pilotId)}&json=1`;
-      const result = await proxyFetch(url);
-
-      if (!result.data) {
-        return { success: false, error: result.error || 'No data received' };
-      }
-
-      const data = JSON.parse(result.data);
-
-      // Check for SimBrief error response (API returns 400 with error details)
-      if (data.fetch?.status?.startsWith('Error')) {
-        const msg = data.fetch.status.replace(/^Error:\s*/, '');
-        if (msg.toLowerCase().includes('no flight plan on file')) {
-          return {
-            success: false,
-            error: 'No flight plan found. Generate one on simbrief.com first.',
-          };
-        }
-        return { success: false, error: msg };
-      }
-
-      if (result.error) {
-        return { success: false, error: result.error };
-      }
-
-      return { success: true, data };
-    } catch (err) {
-      logger.main.error('Failed to fetch SimBrief flight plan', err);
-      return { success: false, error: 'Failed to fetch flight plan' };
+    // The response is parsed and trimmed here, in main, so the renderer gets a 0.5 MB plan
+    // instead of the 3 MB the fetcher sends (NOTAM archive, HTML briefing, images).
+    const startedAt = Date.now();
+    const result = parseOfpResponse(await proxyFetch(simbriefFetchUrl(user)));
+    if (!result.success) {
+      logger.main.warn(
+        `SimBrief fetch failed in ${Date.now() - startedAt}ms: ${result.code} (${result.error})`
+      );
     }
+    return result;
   });
 
   handle(

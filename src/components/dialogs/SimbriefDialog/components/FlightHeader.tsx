@@ -138,7 +138,7 @@ export function FlightHeader({
           value={data.general.costindex}
         />
         <Separator orientation="vertical" className="bg-border h-8" />
-        <StatItem icon={Route} label={t('simbriefDialog.stats.airac')} value={data.general.airac} />
+        <StatItem icon={Route} label={t('simbriefDialog.stats.airac')} value={data.params.airac} />
       </div>
     </div>
   );

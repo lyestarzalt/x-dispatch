@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Flugpläne von SimBrief importieren",
-      "pilotId": "Piloten-ID",
-      "pilotIdHelp": "Ihre SimBrief-Piloten-ID (in den Kontoeinstellungen)",
-      "pilotIdNote": "Ihre Piloten-ID ist eine numerische Kennung. Sie finden sie unter simbrief.com → Kontoeinstellungen → Piloten-ID.",
+      "pilotId": "Pilot-ID oder Benutzername",
+      "pilotIdHelp": "Dein SimBrief-Benutzername (Navigraph-Alias) oder deine numerische Pilot-ID",
+      "pilotIdNote": "Beides funktioniert. Der Benutzername ist der Alias, mit dem du dich anmeldest; die Pilot-ID steht unter simbrief.com → Account Settings.",
       "testSuccess": "Flugplan gefunden",
       "needAccount": "Kein SimBrief-Konto?",
       "freeService": "SimBrief ist ein kostenloser Flugplanungsdienst",
@@ -531,7 +531,8 @@
         "deleteTitle": "Diesen Exportordner löschen?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "Benutzername oder 1234567"
     },
     "about": {
       "title": "Über",
@@ -1661,7 +1662,7 @@
     "title": "Von SimBrief importieren",
     "description": "Ihren letzten Flugplan von SimBrief abrufen",
     "notConfigured": "SimBrief nicht konfiguriert",
-    "configurePilotId": "Bitte konfigurieren Sie Ihre Piloten-ID unter Einstellungen → SimBrief",
+    "configurePilotId": "Trage deinen SimBrief-Benutzernamen oder deine Pilot-ID unter Einstellungen → SimBrief ein",
     "fetching": "Flugplan wird abgerufen...",
     "fetchError": "Flugplan konnte nicht abgerufen werden",
     "ready": "Bereit zum Abrufen",
@@ -1707,6 +1708,13 @@
       "noNotams": "Keine NOTAMs verfügbar",
       "transAltTitle": "Übergangshöhen",
       "transAltDesc": "Höhe, bei der zwischen lokalem Höhenmesser (QNH) und Standarddruck (STD) gewechselt wird — Höhenmesser entsprechend einstellen"
+    },
+    "errors": {
+      "invalid_user": "Das sieht nicht wie ein SimBrief-Benutzername oder eine Pilot-ID aus.",
+      "unknown_user": "SimBrief kennt diesen Benutzernamen bzw. diese Pilot-ID nicht.",
+      "no_plan": "Kein Flugplan gefunden. Erstelle zuerst einen auf simbrief.com.",
+      "bad_response": "SimBrief hat eine Antwort geschickt, die die App nicht lesen konnte. Versuche es gleich noch einmal.",
+      "network": "simbrief.com ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
     }
   },
   "flightInfoPanel": {

@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "SimBrief からフライトプランをインポート",
-      "pilotId": "パイロット ID",
-      "pilotIdHelp": "SimBrief のパイロット ID（SimBrief アカウント設定で確認できます）",
-      "pilotIdNote": "パイロット ID は数値の識別子です。simbrief.com → アカウント設定 → パイロット ID で確認できます。",
+      "pilotId": "パイロットIDまたはユーザー名",
+      "pilotIdHelp": "SimBriefのユーザー名（Navigraphエイリアス）または数字のパイロットID",
+      "pilotIdNote": "どちらでも使えます。ユーザー名はログインに使うエイリアス、パイロットIDは simbrief.com → Account Settings にあります。",
       "testSuccess": "フライトプランが見つかりました",
       "needAccount": "SimBrief アカウントをお持ちでないですか？",
       "freeService": "SimBrief は無料のフライトプランニングサービスです",
@@ -531,7 +531,8 @@
         "deleteTitle": "このエクスポート先を削除しますか？"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "ユーザー名 または 1234567"
     },
     "about": {
       "title": "情報",
@@ -1661,7 +1662,7 @@
     "title": "SimBrief からインポート",
     "description": "SimBrief から最新のフライトプランを取得",
     "notConfigured": "SimBrief 未設定",
-    "configurePilotId": "設定 → SimBrief でパイロット ID を設定してください",
+    "configurePilotId": "設定 → SimBrief でSimBriefのユーザー名またはパイロットIDを追加してください",
     "fetching": "フライトプランを取得中...",
     "fetchError": "フライトプランの取得に失敗しました",
     "ready": "取得準備完了",
@@ -1707,6 +1708,13 @@
       "noNotams": "NOTAMはありません",
       "transAltTitle": "遷移高度",
       "transAltDesc": "現地気圧（QNH）と標準気圧（STD）を切り替える高度です。高度計を適切に設定してください。"
+    },
+    "errors": {
+      "invalid_user": "SimBriefのユーザー名またはパイロットIDとして正しくないようです。",
+      "unknown_user": "このユーザー名またはパイロットIDはSimBriefに登録されていません。",
+      "no_plan": "フライトプランが見つかりません。先に simbrief.com で作成してください。",
+      "bad_response": "SimBriefからの応答を読み取れませんでした。しばらくしてからもう一度お試しください。",
+      "network": "simbrief.com に接続できません。接続を確認してもう一度お試しください。"
     }
   },
   "flightInfoPanel": {

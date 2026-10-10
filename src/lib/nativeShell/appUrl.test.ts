@@ -72,8 +72,16 @@ describe('parseAppUrl', () => {
       });
     });
 
-    it('rejects a non-numeric pilot id instead of ignoring it', () => {
-      expect(parseAppUrl('xdispatch://simbrief?user=bob')).toBeNull();
+    it('carries a SimBrief username too', () => {
+      expect(parseAppUrl('xdispatch://simbrief?user=bob.smith')).toEqual({
+        kind: 'simbrief',
+        pilotId: 'bob.smith',
+      });
+    });
+
+    it('rejects a user SimBrief could not accept instead of ignoring it', () => {
+      expect(parseAppUrl('xdispatch://simbrief?user=bob%20smith')).toBeNull();
+      expect(parseAppUrl('xdispatch://simbrief?user=%3Cscript%3E')).toBeNull();
     });
   });
 

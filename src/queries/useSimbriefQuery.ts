@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { analyticsFmsFormat } from '@/lib/analytics/buckets';
-import type { SimBriefOFP } from '@/types/simbrief';
+import { parseDurationSeconds } from '@/lib/simbrief/ofp';
+import type { SimBriefErrorCode, SimBriefOFP } from '@/types/simbrief';
 import { trackEvent } from './useAnalytics';
 
 export const simbriefKeys = {
@@ -8,33 +9,24 @@ export const simbriefKeys = {
   latest: (pilotId: string) => ['simbrief', 'latest', pilotId] as const,
 };
 
-/**
- * Recursively sanitize SimBrief API response.
- * The API returns empty objects `{}` instead of null for missing fields,
- * which crashes React when rendered as children. This converts them to undefined.
- */
-function sanitize<T>(value: T): T {
-  if (value === null || value === undefined) return value;
-  if (Array.isArray(value)) return value.map(sanitize) as T;
-  if (typeof value === 'object') {
-    const obj = value as Record<string, unknown>;
-    const keys = Object.keys(obj);
-    if (keys.length === 0) return undefined as T;
-    const cleaned: Record<string, unknown> = {};
-    for (const key of keys) {
-      cleaned[key] = sanitize(obj[key]);
-    }
-    return cleaned as T;
+/** A failed fetch, with the code the UI translates. */
+export class SimbriefFetchError extends Error {
+  constructor(
+    readonly code: SimBriefErrorCode,
+    message: string
+  ) {
+    super(message);
+    this.name = 'SimbriefFetchError';
   }
-  return value;
 }
 
-async function fetchSimbrief(pilotId: string): Promise<SimBriefOFP> {
-  const response = await window.simbriefAPI.fetchLatest(pilotId);
+/** The main process parses, trims and normalises the OFP; the renderer only reads it. */
+async function fetchSimbrief(user: string): Promise<SimBriefOFP> {
+  const response = await window.simbriefAPI.fetchLatest(user);
   if (!response.success) {
-    throw new Error(response.error);
+    throw new SimbriefFetchError(response.code, response.error);
   }
-  return sanitize(response.data);
+  return response.data;
 }
 
 /**
@@ -54,16 +46,17 @@ export function useSimbriefQuery(pilotId: string, enabled = false) {
 
 /**
  * Mutation for manual fetch (import button)
- * Use this for explicit user-triggered fetches
+ * Use this for explicit user-triggered fetches. The Settings test button passes
+ * `track: false` so a connection check does not count as an import.
  */
-export function useSimbriefFetch() {
+export function useSimbriefFetch({ track = true }: { track?: boolean } = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: fetchSimbrief,
-    onSuccess: (data, pilotId) => {
-      queryClient.setQueryData(simbriefKeys.latest(pilotId), data);
-      trackEvent('simbrief_imported', {});
+    onSuccess: (data, user) => {
+      queryClient.setQueryData(simbriefKeys.latest(user), data);
+      if (track) trackEvent('simbrief_imported', {});
     },
   });
 }
@@ -94,14 +87,15 @@ export function useDownloadFmsFile() {
  * Get route coordinates from SimBrief data
  */
 export function getRouteCoordinates(data: SimBriefOFP): [number, number][] {
-  return data.navlog.fix.map((fix) => [parseFloat(fix.pos_long), parseFloat(fix.pos_lat)]);
+  return data.navlog.map((fix) => [parseFloat(fix.pos_long), parseFloat(fix.pos_lat)]);
 }
 
 /**
- * Format flight time from seconds to human readable
+ * Format a SimBrief duration ("13:17:31", or seconds) as "13h 17m".
  */
-export function formatFlightTime(seconds: string | number): string {
-  const secs = typeof seconds === 'string' ? parseInt(seconds, 10) : seconds;
+export function formatFlightTime(duration: string | number): string {
+  const secs = parseDurationSeconds(duration);
+  if (secs === null) return '—';
   const hours = Math.floor(secs / 3600);
   const mins = Math.floor((secs % 3600) / 60);
   return `${hours}h ${mins}m`;

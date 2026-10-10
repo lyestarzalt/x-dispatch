@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Fuel, PlaneLanding, Scale, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { primaryAlternate } from '@/lib/simbrief/ofp';
 import { formatFuel, formatWeight } from '@/queries/useSimbriefQuery';
 import type { SimBriefOFP } from '@/types/simbrief';
 import { VerticalProfile } from './';
@@ -9,6 +10,7 @@ import { VerticalProfile } from './';
 // Flight Tab (with vertical profile)
 export function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   const { t } = useTranslation();
+  const alternate = primaryAlternate(data);
   return (
     <div className="space-y-4">
       {/* Vertical Profile */}
@@ -30,7 +32,7 @@ export function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: strin
             )}
           </div>
         </div>
-        <VerticalProfile fixes={data.navlog.fix} className="h-48" />
+        <VerticalProfile data={data} className="h-48" />
       </div>
 
       {/* Route String */}
@@ -40,7 +42,7 @@ export function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: strin
             {t('simbriefDialog.flight.route')}
           </h4>
           <Badge variant="outline" className="text-2xs">
-            {t('simbriefDialog.flight.fixesCount', { count: data.navlog.fix.length })}
+            {t('simbriefDialog.flight.fixesCount', { count: data.navlog.length })}
           </Badge>
         </div>
         <p className="text-foreground/80 font-mono text-sm leading-relaxed">{data.general.route}</p>
@@ -150,18 +152,18 @@ export function FlightTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: strin
         </div>
 
         {/* Alternate */}
-        {data.alternate && (
+        {alternate && (
           <div className="bg-card rounded-lg border p-4">
             <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-medium tracking-wider uppercase">
               <PlaneLanding className="h-3.5 w-3.5" />
               {t('simbriefDialog.flight.alternate')}
             </h4>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xl font-bold">{data.alternate.icao_code}</span>
+              <span className="font-mono text-xl font-bold">{alternate.icao_code}</span>
               <div>
-                <p className="text-sm">{data.alternate.name}</p>
+                <p className="text-sm">{alternate.name}</p>
                 <p className="text-muted-foreground text-sm">
-                  {t('simbriefDialog.header.runway', { rwy: data.alternate.plan_rwy })}
+                  {t('simbriefDialog.header.runway', { rwy: alternate.plan_rwy })}
                 </p>
               </div>
             </div>

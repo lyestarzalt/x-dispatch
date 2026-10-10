@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Import voyage plans from SimBrief",
-      "pilotId": "Pilot Mark",
-      "pilotIdHelp": "Yer SimBrief Pilot ID (found in yer SimBrief account settings)",
-      "pilotIdNote": "Yer Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.",
+      "pilotId": "Pilot ID or handle",
+      "pilotIdHelp": "Yer SimBrief handle (Navigraph alias) or yer numeric Pilot ID",
+      "pilotIdNote": "Either’ll do, matey. The handle be the alias ye sign in with; the Pilot ID hides under simbrief.com → Account Settings.",
       "testSuccess": "Voyage plan sighted",
       "needAccount": "Need a SimBrief account, matey?",
       "freeService": "SimBrief be a free flight-planning service",
@@ -531,7 +531,8 @@
         "deleteTitle": "Scuttle this export mark?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "handle or 1234567"
     },
     "about": {
       "title": "Ship's Log",
@@ -1661,7 +1662,7 @@
     "title": "SimBrief Import",
     "description": "Fetch yer latest flight plan from SimBrief",
     "notConfigured": "SimBrief ain't rigged",
-    "configurePilotId": "Rig yer Pilot ID in Settings → SimBrief",
+    "configurePilotId": "Scrawl yer SimBrief handle or Pilot ID in Settings → SimBrief",
     "fetching": "Fetchin' flight plan...",
     "fetchError": "Failed ta fetch flight plan",
     "ready": "Ready ta haul",
@@ -1707,6 +1708,13 @@
       "noNotams": "No NOTAMs in sight",
       "transAltTitle": "Altimeter change heights",
       "transAltDesc": "Altitude where ye switch between local altimeter (QNH) an' standard pressure (STD) — set yer altimeter accordingly"
+    },
+    "errors": {
+      "invalid_user": "That be no SimBrief handle nor Pilot ID, ye scallywag.",
+      "unknown_user": "SimBrief never heard o’ that handle or Pilot ID.",
+      "no_plan": "No flight plan in the hold. Chart one on simbrief.com first.",
+      "bad_response": "SimBrief sent back gibberish the ship couldn’t read. Try again shortly.",
+      "network": "Can’t raise simbrief.com. Check yer rigging and try again."
     }
   },
   "flightInfoPanel": {

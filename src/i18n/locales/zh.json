@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "从 SimBrief 导入飞行计划",
-      "pilotId": "飞行员ID",
-      "pilotIdHelp": "SimBrief 飞行员 ID（可在 SimBrief 账户设置中找到）",
-      "pilotIdNote": "飞行员 ID 是数字标识符，可在 simbrief.com → 账户设置 → 飞行员 ID 中找到。",
+      "pilotId": "飞行员 ID 或用户名",
+      "pilotIdHelp": "你的 SimBrief 用户名（Navigraph 别名）或数字飞行员 ID",
+      "pilotIdNote": "两者都可以。用户名是你登录时使用的别名；飞行员 ID 在 simbrief.com → Account Settings 中。",
       "testSuccess": "找到飞行计划",
       "needAccount": "没有 SimBrief 账户？",
       "freeService": "SimBrief 是免费的飞行计划服务",
@@ -531,7 +531,8 @@
         "deleteTitle": "删除此导出目标？"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "用户名 或 1234567"
     },
     "about": {
       "title": "关于",
@@ -1661,7 +1662,7 @@
     "title": "从 SimBrief 导入",
     "description": "从 SimBrief 获取最新飞行计划",
     "notConfigured": "SimBrief 未配置",
-    "configurePilotId": "请在设置 → SimBrief 中配置飞行员 ID",
+    "configurePilotId": "请在 设置 → SimBrief 中填写你的 SimBrief 用户名或飞行员 ID",
     "fetching": "正在获取飞行计划...",
     "fetchError": "获取飞行计划失败",
     "ready": "准备获取",
@@ -1707,6 +1708,13 @@
       "noNotams": "暂无 NOTAM",
       "transAltTitle": "过渡高度",
       "transAltDesc": "在本场气压（QNH）和标准气压（STD）之间切换的高度 — 请相应调整高度表"
+    },
+    "errors": {
+      "invalid_user": "这看起来不像 SimBrief 用户名或飞行员 ID。",
+      "unknown_user": "SimBrief 不认识这个用户名或飞行员 ID。",
+      "no_plan": "未找到飞行计划。请先在 simbrief.com 生成一个。",
+      "bad_response": "SimBrief 返回了应用无法读取的内容。请稍后重试。",
+      "network": "无法连接 simbrief.com。请检查网络连接后重试。"
     }
   },
   "flightInfoPanel": {

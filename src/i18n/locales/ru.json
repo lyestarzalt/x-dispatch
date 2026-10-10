@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Импорт планов полёта из SimBrief",
-      "pilotId": "ID пилота",
-      "pilotIdHelp": "Ваш ID пилота SimBrief (в настройках аккаунта SimBrief)",
-      "pilotIdNote": "ID пилота — это числовой идентификатор. Найдите его на simbrief.com → Настройки аккаунта → ID пилота.",
+      "pilotId": "ID пилота или имя пользователя",
+      "pilotIdHelp": "Ваше имя пользователя SimBrief (алиас Navigraph) или числовой ID пилота",
+      "pilotIdNote": "Подходит и то, и другое. Имя пользователя — это алиас для входа; ID пилота указан на simbrief.com → Account Settings.",
       "testSuccess": "План полёта найден",
       "needAccount": "Нет аккаунта SimBrief?",
       "freeService": "SimBrief — бесплатный сервис планирования полётов",
@@ -531,7 +531,8 @@
         "deleteTitle": "Удалить эту папку экспорта?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "имя пользователя или 1234567"
     },
     "about": {
       "title": "О программе",
@@ -1661,7 +1662,7 @@
     "title": "Импорт из SimBrief",
     "description": "Получить последний план полёта из SimBrief",
     "notConfigured": "SimBrief не настроен",
-    "configurePilotId": "Настройте ID пилота в разделе Настройки → SimBrief",
+    "configurePilotId": "Укажите имя пользователя или ID пилота SimBrief в Настройки → SimBrief",
     "fetching": "Получение плана полёта...",
     "fetchError": "Не удалось получить план полёта",
     "ready": "Готов к получению",
@@ -1707,6 +1708,13 @@
       "noNotams": "NOTAM не найдены",
       "transAltTitle": "Высоты перехода",
       "transAltDesc": "Высота, на которой вы переходите с местной настройки высотомера (QNH) на стандартное давление (STD) — установите высотомер соответственно"
+    },
+    "errors": {
+      "invalid_user": "Это не похоже на имя пользователя или ID пилота SimBrief.",
+      "unknown_user": "SimBrief не знает такого имени пользователя или ID пилота.",
+      "no_plan": "План полёта не найден. Сначала создайте его на simbrief.com.",
+      "bad_response": "SimBrief прислал ответ, который приложение не смогло прочитать. Попробуйте ещё раз чуть позже.",
+      "network": "Не удалось связаться с simbrief.com. Проверьте подключение и попробуйте снова."
     }
   },
   "flightInfoPanel": {

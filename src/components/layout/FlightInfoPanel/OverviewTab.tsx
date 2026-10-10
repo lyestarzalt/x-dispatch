@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { primaryAlternate } from '@/lib/simbrief/ofp';
 import { formatFlightTime, formatFuel, formatWeight } from '@/queries/useSimbriefQuery';
 import { useAppStore } from '@/stores/appStore';
 import type { SimBriefOFP } from '@/types/simbrief';
@@ -8,6 +9,7 @@ import { StatBox } from './StatBox';
 // Overview Tab
 export function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: string }) {
   const { t } = useTranslation();
+  const alternate = primaryAlternate(data);
   return (
     <div className="space-y-3">
       {/* Quick Stats */}
@@ -18,7 +20,7 @@ export function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: str
         />
         <StatBox label={t('simbriefDialog.stats.fl')} value={data.general.initial_altitude} />
         <StatBox label={t('simbriefDialog.stats.ci')} value={data.general.costindex} />
-        <StatBox label={t('simbriefDialog.stats.airac')} value={data.general.airac} />
+        <StatBox label={t('simbriefDialog.stats.airac')} value={data.params.airac} />
       </div>
 
       {/* Wind */}
@@ -63,18 +65,18 @@ export function OverviewTab({ data, apiUnit }: { data: SimBriefOFP; apiUnit: str
       </div>
 
       {/* Alternate */}
-      {data.alternate && (
+      {alternate && (
         <div className="bg-warning/10 flex items-center justify-between rounded-lg px-3 py-2">
           <span className="text-warning/70 text-sm">{t('flightInfoPanel.alternate')}</span>
           <Button
             variant="link"
-            onClick={() => useAppStore.getState().requestSelectAirport(data.alternate!.icao_code)}
+            onClick={() => useAppStore.getState().requestSelectAirport(alternate.icao_code)}
             className="h-auto p-0 font-mono text-sm font-medium"
             aria-label={t('simbriefDialog.header.goToAirportLayoutAria', {
-              icao: data.alternate.icao_code,
+              icao: alternate.icao_code,
             })}
           >
-            {data.alternate.icao_code}
+            {alternate.icao_code}
           </Button>
         </div>
       )}

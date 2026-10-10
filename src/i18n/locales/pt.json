@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Importar planos de voo do SimBrief",
-      "pilotId": "ID de piloto",
-      "pilotIdHelp": "O seu ID de piloto SimBrief (nas definições da sua conta SimBrief)",
-      "pilotIdNote": "O seu ID de piloto é um identificador numérico. Encontre-o em simbrief.com → Definições da conta → ID de piloto.",
+      "pilotId": "ID de piloto ou nome de utilizador",
+      "pilotIdHelp": "O seu nome de utilizador SimBrief (alias Navigraph) ou o ID de piloto numérico",
+      "pilotIdNote": "Ambos funcionam. O nome de utilizador é o alias com que inicia sessão; o ID de piloto está em simbrief.com → Account Settings.",
       "testSuccess": "Plano de voo encontrado",
       "needAccount": "Não tem uma conta SimBrief?",
       "freeService": "O SimBrief é um serviço gratuito de planeamento de voos",
@@ -531,7 +531,8 @@
         "deleteTitle": "Eliminar este destino de exportação?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "utilizador ou 1234567"
     },
     "about": {
       "title": "Sobre",
@@ -1661,7 +1662,7 @@
     "title": "Importar do SimBrief",
     "description": "Obter o seu plano de voo mais recente do SimBrief",
     "notConfigured": "SimBrief não configurado",
-    "configurePilotId": "Configure o seu ID de piloto em Definições → SimBrief",
+    "configurePilotId": "Adicione o seu nome de utilizador ou ID de piloto SimBrief em Definições → SimBrief",
     "fetching": "A obter plano de voo...",
     "fetchError": "Não foi possível obter o plano de voo",
     "ready": "Pronto para obter",
@@ -1707,6 +1708,13 @@
       "noNotams": "Nenhum NOTAM disponível",
       "transAltTitle": "Altitudes de transição",
       "transAltDesc": "Altitude em que muda entre o altímetro local (QNH) e a pressão padrão (STD) — ajuste o altímetro conforme necessário"
+    },
+    "errors": {
+      "invalid_user": "Isso não parece um nome de utilizador nem um ID de piloto SimBrief.",
+      "unknown_user": "O SimBrief não reconhece este nome de utilizador ou ID de piloto.",
+      "no_plan": "Nenhum plano de voo encontrado. Gere um primeiro em simbrief.com.",
+      "bad_response": "O SimBrief enviou uma resposta que a app não conseguiu ler. Tente novamente daqui a pouco.",
+      "network": "Não foi possível contactar simbrief.com. Verifique a ligação e tente novamente."
     }
   },
   "flightInfoPanel": {

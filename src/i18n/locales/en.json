@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Import flight plans from SimBrief",
-      "pilotId": "Pilot ID",
-      "pilotIdHelp": "Your SimBrief Pilot ID (found in your SimBrief account settings)",
-      "pilotIdNote": "Your Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.",
+      "pilotId": "Pilot ID or username",
+      "pilotIdHelp": "Your SimBrief username (Navigraph alias) or numeric Pilot ID",
+      "pilotIdNote": "Both work. The username is the alias you sign in with; the Pilot ID is under simbrief.com → Account Settings.",
       "testSuccess": "Found flight plan",
       "needAccount": "Don't have a SimBrief account?",
       "freeService": "SimBrief is a free flight planning service",
@@ -531,7 +531,8 @@
         "deleteTitle": "Delete this export target?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "username or 1234567"
     },
     "about": {
       "title": "About",
@@ -1661,7 +1662,7 @@
     "title": "Import from SimBrief",
     "description": "Fetch your latest flight plan from SimBrief",
     "notConfigured": "SimBrief not configured",
-    "configurePilotId": "Please configure your Pilot ID in Settings → SimBrief",
+    "configurePilotId": "Add your SimBrief username or Pilot ID in Settings → SimBrief",
     "fetching": "Fetching flight plan...",
     "fetchError": "Failed to fetch flight plan",
     "ready": "Ready to fetch",
@@ -1707,6 +1708,13 @@
       "noNotams": "No NOTAMs available",
       "transAltTitle": "Transition Altitudes",
       "transAltDesc": "Altitude where you switch between local altimeter (QNH) and standard pressure (STD) — set your altimeter accordingly"
+    },
+    "errors": {
+      "invalid_user": "That doesn't look like a SimBrief username or Pilot ID.",
+      "unknown_user": "SimBrief doesn't know this username or Pilot ID.",
+      "no_plan": "No flight plan found. Generate one on simbrief.com first.",
+      "bad_response": "SimBrief sent a reply the app couldn't read. Try again in a moment.",
+      "network": "Couldn't reach simbrief.com. Check your connection and try again."
     }
   },
   "flightInfoPanel": {
