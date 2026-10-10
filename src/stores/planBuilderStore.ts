@@ -51,6 +51,8 @@ interface PlanBuilderState extends PlanDraft {
   procedures: ProcedureParts;
   savedPath: string | null;
   autoRouting: boolean;
+  /** The last route the router wrote, to tell the router's route from one the pilot edited. */
+  autoRoutedText: string | null;
 
   open: () => void;
   close: () => void;
@@ -135,6 +137,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       procedures: {},
       savedPath: null,
       autoRouting: false,
+      autoRoutedText: null,
 
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
@@ -282,7 +285,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             track: track ?? undefined,
           });
           if (!result) return false;
-          set({ routeText: result.routeText, savedPath: null });
+          set({ routeText: result.routeText, autoRoutedText: result.routeText, savedPath: null });
           if (result.sid) get().setProcedureChoice('sid', result.sid);
           if (result.star) get().setProcedureChoice('star', result.star);
           // The router's text needs no typing pause: resolve now, and the dialog's own

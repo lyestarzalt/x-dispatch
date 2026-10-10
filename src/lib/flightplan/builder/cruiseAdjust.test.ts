@@ -4,6 +4,8 @@ import {
   adjustCruiseAltitudeFt,
   cruiseBand,
   cruiseProblem,
+  describeCruiseIssue,
+  fitCruiseToBand,
   planIsEastbound,
   procedureFloorFt,
 } from './cruiseAdjust';
@@ -77,6 +79,58 @@ describe('cruiseBand and procedureFloorFt', () => {
     expect(cruiseBand(upper, 30000)).toEqual({ minFt: 30000, maxFt: 46000 });
     expect(cruiseBand(upper, 5000)).toEqual(upper);
     expect(cruiseBand(open, 5000)).toEqual({ minFt: 5000, maxFt: null });
+  });
+});
+
+describe('fitCruiseToBand', () => {
+  it('moves the suggestion inside the route band on the right parity', () => {
+    // A jet suggestion of FL410 on a route of low airways capped at FL250, westbound.
+    expect(fitCruiseToBand(41000, { minFt: null, maxFt: 25000 }, false)).toBe(24000);
+    // A low suggestion on upper airways, eastbound.
+    expect(fitCruiseToBand(9000, { minFt: 24500, maxFt: 46000 }, true)).toBe(25000);
+    expect(fitCruiseToBand(36000, { minFt: 24500, maxFt: 46000 }, false)).toBe(36000);
+  });
+
+  it('leaves the suggestion alone when no level fits the route', () => {
+    expect(fitCruiseToBand(41000, { minFt: 29000, maxFt: 25000 }, false)).toBe(41000);
+  });
+});
+
+describe('describeCruiseIssue', () => {
+  it('names both airways when no level fits the route, and offers nothing to adjust to', () => {
+    const issue = describeCruiseIssue(
+      25000,
+      { minFt: 29000, maxFt: 25000 },
+      { floor: 'UL28', ceiling: 'L10' },
+      false
+    );
+    expect(issue).toEqual({
+      kind: 'conflict',
+      low: 'L10',
+      ceilingFt: 25000,
+      high: 'UL28',
+      floorFt: 29000,
+    });
+  });
+
+  it('names the airway behind a floor or ceiling the cruise is outside of', () => {
+    expect(
+      describeCruiseIssue(40000, { minFt: null, maxFt: 25000 }, { ceiling: 'L10' }, false)
+    ).toEqual({ kind: 'aboveCeiling', airway: 'L10', ceilingFt: 25000 });
+    expect(describeCruiseIssue(20000, { minFt: 29000, maxFt: null }, {}, false)).toEqual({
+      kind: 'belowFloor',
+      airway: null,
+      floorFt: 29000,
+    });
+  });
+
+  it('falls back to the odd-or-even rule and is quiet when the cruise fits', () => {
+    expect(describeCruiseIssue(35000, { minFt: null, maxFt: null }, {}, false)).toEqual({
+      kind: 'parity',
+      eastbound: false,
+    });
+    expect(describeCruiseIssue(36000, { minFt: null, maxFt: null }, {}, false)).toBeNull();
+    expect(describeCruiseIssue(null, { minFt: 29000, maxFt: 25000 }, {}, false)).toBeNull();
   });
 });
 

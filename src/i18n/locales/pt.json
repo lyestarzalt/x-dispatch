@@ -273,6 +273,11 @@
     "cruiseAboveCeiling": "A rota permite {{level}} ou abaixo",
     "cruiseOddLevels": "Para leste: níveis ímpares",
     "cruiseEvenLevels": "Para oeste: níveis pares",
+    "cruiseAirwayCeiling": "{{airway}} termina em {{level}}",
+    "cruiseAirwayFloor": "{{airway}} começa em {{level}}",
+    "cruiseConflict": "{{low}} termina em {{ceiling}} mas {{high}} começa em {{floor}}. Nenhum nível serve para ambas. Remove uma aerovia.",
+    "cruiseConflictProcedure": "{{low}} termina em {{ceiling}} mas os procedimentos pedem {{floor}} ou acima. Remove a aerovia.",
+    "cruiseConflictPlain": "A rota pede {{floor}} ou acima e {{ceiling}} ou abaixo. Nenhum nível serve para ambos.",
     "levelsBetween": "de {{min}} a {{max}}",
     "levelsFrom": "a partir de {{min}}",
     "levelsUpTo": "até {{max}}"

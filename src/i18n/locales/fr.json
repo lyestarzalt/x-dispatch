@@ -273,6 +273,11 @@
     "cruiseAboveCeiling": "La route autorise {{level}} ou moins",
     "cruiseOddLevels": "Vers l'est : niveaux impairs",
     "cruiseEvenLevels": "Vers l'ouest : niveaux pairs",
+    "cruiseAirwayCeiling": "{{airway}} s'arrête au {{level}}",
+    "cruiseAirwayFloor": "{{airway}} commence au {{level}}",
+    "cruiseConflict": "{{low}} s'arrête au {{ceiling}} mais {{high}} commence au {{floor}}. Aucun niveau ne convient aux deux. Retirez une voie aérienne.",
+    "cruiseConflictProcedure": "{{low}} s'arrête au {{ceiling}} mais les procédures demandent {{floor}} ou plus. Retirez la voie aérienne.",
+    "cruiseConflictPlain": "La route demande {{floor}} ou plus et {{ceiling}} ou moins. Aucun niveau ne convient aux deux.",
     "levelsBetween": "de {{min}} à {{max}}",
     "levelsFrom": "à partir de {{min}}",
     "levelsUpTo": "jusqu'à {{max}}"

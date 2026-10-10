@@ -160,6 +160,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
   let cursor: LatLon = departure;
   let lastFixId: string | null = null;
   let levels: LevelBand = { minFt: null, maxFt: null };
+  const levelSetters: RouteResolution['levelSetters'] = {};
   let pendingAirway: { token: RouteToken; name: string; entryId: string } | null = null;
 
   const push = (point: ResolvedPoint, via: string) => {
@@ -260,6 +261,12 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
           walked,
           draft.cruiseAltitudeFt
         );
+        if (band.minFt !== null && (levels.minFt === null || band.minFt > levels.minFt)) {
+          levelSetters.floor = pendingAirway.name;
+        }
+        if (band.maxFt !== null && (levels.maxFt === null || band.maxFt < levels.maxFt)) {
+          levelSetters.ceiling = pendingAirway.name;
+        }
         levels = narrowBand(levels, band);
         pendingAirway = null;
       }
@@ -288,5 +295,5 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     waypoints,
   };
 
-  return { plan, tokens, distanceNm: pathDistanceNm(waypoints), levels };
+  return { plan, tokens, distanceNm: pathDistanceNm(waypoints), levels, levelSetters };
 }

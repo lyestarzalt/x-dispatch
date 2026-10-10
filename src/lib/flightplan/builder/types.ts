@@ -74,6 +74,8 @@ export interface RouteResolution {
   distanceNm: number;
   /** What every airway walked allows together: the highest floor and the lowest ceiling. */
   levels: LevelBand;
+  /** The airway behind each edge of `levels`, so a conflict can name them. */
+  levelSetters: { floor?: string; ceiling?: string };
 }
 
 /** What the main process hands back: the raw plan plus the enriched copy the map layer draws. */

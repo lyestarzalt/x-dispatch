@@ -273,6 +273,11 @@
     "cruiseAboveCeiling": "The route allows {{level}} or lower",
     "cruiseOddLevels": "Eastbound flights use odd levels",
     "cruiseEvenLevels": "Westbound flights use even levels",
+    "cruiseAirwayCeiling": "{{airway}} stops at {{level}}",
+    "cruiseAirwayFloor": "{{airway}} starts at {{level}}",
+    "cruiseConflict": "{{low}} stops at {{ceiling}} but {{high}} starts at {{floor}}. No level fits both. Remove one airway.",
+    "cruiseConflictProcedure": "{{low}} stops at {{ceiling}} but the procedures need {{floor}} or higher. Remove the airway.",
+    "cruiseConflictPlain": "The route needs {{floor}} or higher and {{ceiling}} or lower. No level fits both.",
     "levelsBetween": "{{min}} to {{max}}",
     "levelsFrom": "from {{min}}",
     "levelsUpTo": "up to {{max}}"

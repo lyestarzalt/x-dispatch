@@ -339,6 +339,44 @@ describe('autoRoute and NAT tracks', () => {
   });
 });
 
+describe('autoRoute and airway level bands', () => {
+  const a = { id: 'AAAAA', areaCode: 'EG', latitude: 50, longitude: -10 };
+  // Far enough north that the detour is well over 1.6 times the straight line.
+  const m = { id: 'MMMMM', areaCode: 'EG', latitude: 70, longitude: -30 };
+  const c = { id: 'CCCCC', areaCode: 'EG', latitude: 50, longitude: -50 };
+  const input = {
+    departure: { latitude: 50, longitude: -9 },
+    from: { latitude: 50, longitude: -9 },
+    arrival: { latitude: 50, longitude: -51 },
+    to: { latitude: 50, longitude: -51 },
+  };
+  beforeEach(() => {
+    navdata.waypoints = [...BASE_FIXES, a, m, c];
+    navdata.airways = [
+      // The straight line, but only published up to FL250.
+      { ...segment('L10', a, c), isHigh: false, baseFl: 50, topFl: 250 },
+      // The detour, published for the upper levels.
+      { ...segment('UL28', a, m), baseFl: 245, topFl: 460 },
+      { ...segment('UL28', m, c), baseFl: 245, topFl: 460 },
+    ];
+  });
+
+  it('never flies an airway outside its published levels, even when it is the shortcut', () => {
+    const high = autoRoute({ ...input, cruiseAltitudeFt: 36000 })?.routeText ?? '';
+    expect(high).toContain('UL28');
+    expect(high).not.toContain('L10');
+    const low = autoRoute({ ...input, cruiseAltitudeFt: 20000 })?.routeText ?? '';
+    expect(low).toContain('L10');
+    expect(low).not.toContain('UL28');
+  });
+
+  it('goes direct rather than take an airway the cruise level is not allowed on', () => {
+    navdata.airways = [{ ...segment('L10', a, c), isHigh: false, baseFl: 50, topFl: 250 }];
+    const result = autoRoute({ ...input, cruiseAltitudeFt: 36000 });
+    expect(result?.routeText ?? '').not.toContain('L10');
+  });
+});
+
 describe('autoRoute graph reuse', () => {
   it('reads the database once per call even when every pass runs', () => {
     // No airways and no tracks: the airways pass, the direct pass and the oceanic pass all

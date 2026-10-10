@@ -273,6 +273,11 @@
     "cruiseAboveCeiling": "Die Route erlaubt {{level}} oder tiefer",
     "cruiseOddLevels": "Nach Osten: ungerade Flugflächen",
     "cruiseEvenLevels": "Nach Westen: gerade Flugflächen",
+    "cruiseAirwayCeiling": "{{airway}} endet bei {{level}}",
+    "cruiseAirwayFloor": "{{airway}} beginnt bei {{level}}",
+    "cruiseConflict": "{{low}} endet bei {{ceiling}}, {{high}} beginnt erst bei {{floor}}. Keine Höhe passt zu beiden. Eine Luftstraße entfernen.",
+    "cruiseConflictProcedure": "{{low}} endet bei {{ceiling}}, die Verfahren brauchen aber {{floor}} oder höher. Luftstraße entfernen.",
+    "cruiseConflictPlain": "Die Route braucht {{floor}} oder höher und {{ceiling}} oder tiefer. Keine Höhe passt zu beiden.",
     "levelsBetween": "{{min}} bis {{max}}",
     "levelsFrom": "ab {{min}}",
     "levelsUpTo": "bis {{max}}"

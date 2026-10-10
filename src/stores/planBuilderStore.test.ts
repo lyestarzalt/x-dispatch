@@ -97,6 +97,10 @@ describe('planBuilderStore — auto route via a chosen NAT track', () => {
     expect(ok).toBe(true);
     expect(autoRoute).toHaveBeenCalledWith(expect.objectContaining({ track: 'NATA' }));
     expect(usePlanBuilderStore.getState().routeText).toBe('MALOT NATA 5250N');
+    // The dialog re-routes on a cruise change only while the route is still the router's.
+    expect(usePlanBuilderStore.getState().autoRoutedText).toBe('MALOT NATA 5250N');
+    usePlanBuilderStore.getState().setRouteText('MALOT NATA 5250N DCT XYZ');
+    expect(usePlanBuilderStore.getState().autoRoutedText).toBe('MALOT NATA 5250N');
     vi.unstubAllGlobals();
   });
 });
