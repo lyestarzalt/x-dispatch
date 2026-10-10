@@ -4,7 +4,7 @@
  */
 import type { Airspace, AirspaceClass } from '@/types/navigation';
 import { lonLat } from '../schemas';
-import { hasMinLength } from '../types';
+import { hasMinLength, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 // Valid airspace classes
@@ -77,7 +77,14 @@ export function parseAirspaces(content: string): ParseResult<Airspace[]> {
 
   const finalize = () => {
     if (!current || coords.length < 3) {
-      if (current) skipped++;
+      if (current) {
+        skipped++;
+        recordSkip(
+          errors,
+          undefined,
+          `airspace ${current.name ?? '?'} has ${coords.length} points`
+        );
+      }
       return;
     }
 

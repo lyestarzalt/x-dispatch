@@ -31,11 +31,12 @@ export type NavDataType = 'navaids' | 'waypoints' | 'airways' | 'airspaces';
  * Bump a type's version whenever its parser changes what it stores, so caches built by the
  * old parser are read again from the source file. The file's mtime alone cannot tell.
  * airways 2: the one-way letter and the level family were read from each other's field.
+ * airways 3: segments topping above FL600 were dropped by the level bound.
  */
 export const PARSER_VERSIONS: Record<NavDataType, number> = {
   navaids: 1,
   waypoints: 1,
-  airways: 2,
+  airways: 3,
   airspaces: 1,
 };
 export type NavSourceType = 'navigraph' | 'xplane-default' | 'unknown';

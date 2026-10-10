@@ -9,8 +9,9 @@ export const latitude = z.number().min(-90).max(90);
 export const longitude = z.number().min(-180).max(180);
 export const bearing = z.number().min(0).max(360);
 export const vhfFrequency = z.number().min(108).max(137);
-export const flightLevel = z.number().min(0).max(600);
-export const altitude = z.number().min(-2000).max(60000);
+// Upper airways and holds reach FL660 in Europe; a top of 0 means open.
+export const flightLevel = z.number().min(0).max(999);
+export const altitude = z.number().min(-2000).max(99999);
 export const positiveNumber = z.number().positive();
 export const nonNegative = z.number().nonnegative();
 
