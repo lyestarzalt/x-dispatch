@@ -1,6 +1,7 @@
 import { type CSSProperties, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bug } from 'lucide-react';
+import { AppMenuButton } from '@/components/AppMenuButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,6 +66,7 @@ export function TitleBar() {
         paddingRight: isMac || fullScreen ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
       }}
     >
+      {!isMac && !window.appAPI?.isRemoteClient && <AppMenuButton />}
       <span className="text-foreground font-medium tracking-tight">X-Dispatch</span>
       {version && <span className="font-mono">{t('titleBar.version', { version })}</span>}
       {installation && (

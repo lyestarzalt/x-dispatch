@@ -11,6 +11,7 @@ import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import { ZoomIndicator } from './components/ZoomIndicator';
 import { AnalyticsConsentDialog } from './components/dialogs/AnalyticsConsentDialog';
 import { AppActionConfirmDialog } from './components/dialogs/AppActionConfirmDialog';
+import { KeyboardShortcutsDialog } from './components/dialogs/KeyboardShortcutsDialog';
 import { RemoteConnectionBanner } from './components/remote/RemoteConnectionBanner';
 import ErrorScreen from './components/screens/ErrorScreen';
 import LoadingScreen from './components/screens/LoadingScreen';
@@ -166,6 +167,7 @@ function AppContent() {
       <TitleBar />
       <OfflineBanner />
       <ZoomIndicator />
+      <KeyboardShortcutsDialog />
       <div className="min-h-0 flex-1">{content}</div>
     </div>
   );

@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Панели",
     "hideDebugMenu": "Скрыть меню отладки (⌃⇧D)",
-    "fullScreenHint": "Нажмите {{keys}}, чтобы выйти из полноэкранного режима"
+    "fullScreenHint": "Нажмите {{keys}}, чтобы выйти из полноэкранного режима",
+    "appMenu": "Меню"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "Загружен {{fileName}}",
     "importFailed": "Не удалось загрузить план полёта с {{host}}",
     "importFileFailed": "Не удалось загрузить этот файл плана полёта"
+  },
+  "shortcuts": {
+    "title": "Сочетания клавиш",
+    "description": "Все сочетания, как они указаны в меню.",
+    "inApp": {
+      "title": "В приложении",
+      "debugPanels": "Панели отладки",
+      "closeDialog": "Закрыть диалог или меню"
+    }
   }
 }

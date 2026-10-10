@@ -54,6 +54,7 @@ import {
   type NativeLabels,
   parseNativeLabels,
 } from './lib/nativeShell/labels';
+import { type MenuItemLike, serializeMenu } from './lib/nativeShell/menuSerialization';
 import { isAllowedNavigation } from './lib/nativeShell/navigationGuard';
 import { createPendingActions } from './lib/nativeShell/pendingActions';
 import {
@@ -948,6 +949,21 @@ function registerIpcHandlers() {
     }
     if (win.isMaximized()) win.unmaximize();
     else win.maximize();
+  });
+  handle('app:getAppMenu', () =>
+    serializeMenu(Menu.getApplicationMenu() as unknown as { items: MenuItemLike[] } | null)
+  );
+  handle('app:clickMenuItem', (event, id: unknown) => {
+    if (typeof id !== 'string') return;
+    const item = Menu.getApplicationMenu()?.getMenuItemById(id);
+    if (!item) return;
+    const win = BrowserWindow.fromWebContents(event.sender) ?? undefined;
+    // Electron's runtime click runs the role first, then any custom handler.
+    (item.click as unknown as (e: unknown, w?: BrowserWindow, wc?: Electron.WebContents) => void)(
+      {},
+      win,
+      win?.webContents
+    );
   });
   handle('app:closeWindow', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close();

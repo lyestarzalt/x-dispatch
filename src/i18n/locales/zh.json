@@ -1935,7 +1935,8 @@
     "debug": "调试",
     "panels": "面板",
     "hideDebugMenu": "隐藏调试菜单 (⌃⇧D)",
-    "fullScreenHint": "按 {{keys}} 退出全屏"
+    "fullScreenHint": "按 {{keys}} 退出全屏",
+    "appMenu": "菜单"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "已加载 {{fileName}}",
     "importFailed": "无法从 {{host}} 加载飞行计划",
     "importFileFailed": "无法加载该飞行计划文件"
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "description": "菜单中列出的所有快捷键。",
+    "inApp": {
+      "title": "应用内",
+      "debugPanels": "调试面板",
+      "closeDialog": "关闭对话框或菜单"
+    }
   }
 }

@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Paneles",
     "hideDebugMenu": "Ocultar menú de depuración (⌃⇧D)",
-    "fullScreenHint": "Pulsa {{keys}} para salir de pantalla completa"
+    "fullScreenHint": "Pulsa {{keys}} para salir de pantalla completa",
+    "appMenu": "Menú"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "{{fileName}} cargado",
     "importFailed": "No se pudo cargar el plan de vuelo desde {{host}}",
     "importFileFailed": "No se pudo cargar ese archivo de plan de vuelo"
+  },
+  "shortcuts": {
+    "title": "Atajos de teclado",
+    "description": "Todos los atajos, tal como aparecen en el menú.",
+    "inApp": {
+      "title": "En la app",
+      "debugPanels": "Paneles de depuración",
+      "closeDialog": "Cerrar diálogo o menú"
+    }
   }
 }

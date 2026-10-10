@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Bereiche",
     "hideDebugMenu": "Debug-Menü ausblenden (⌃⇧D)",
-    "fullScreenHint": "{{keys}} drücken, um den Vollbildmodus zu verlassen"
+    "fullScreenHint": "{{keys}} drücken, um den Vollbildmodus zu verlassen",
+    "appMenu": "Menü"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "{{fileName}} geladen",
     "importFailed": "Flugplan von {{host}} konnte nicht geladen werden",
     "importFileFailed": "Diese Flugplandatei konnte nicht geladen werden"
+  },
+  "shortcuts": {
+    "title": "Tastaturkurzbefehle",
+    "description": "Alle Kurzbefehle, wie im Menü aufgeführt.",
+    "inApp": {
+      "title": "In der App",
+      "debugPanels": "Debug-Panels",
+      "closeDialog": "Dialog oder Menü schließen"
+    }
   }
 }

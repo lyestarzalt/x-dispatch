@@ -1935,7 +1935,8 @@
     "debug": "デバッグ",
     "panels": "パネル",
     "hideDebugMenu": "デバッグメニューを隠す（⌃⇧D）",
-    "fullScreenHint": "{{keys}} でフルスクリーンを終了"
+    "fullScreenHint": "{{keys}} でフルスクリーンを終了",
+    "appMenu": "メニュー"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "{{fileName}} を読み込みました",
     "importFailed": "{{host}} からフライトプランを読み込めませんでした",
     "importFileFailed": "そのフライトプランファイルを読み込めませんでした"
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "description": "メニューに記載されているすべてのショートカット。",
+    "inApp": {
+      "title": "アプリ内",
+      "debugPanels": "デバッグパネル",
+      "closeDialog": "ダイアログまたはメニューを閉じる"
+    }
   }
 }

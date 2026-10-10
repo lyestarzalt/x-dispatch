@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Panele",
     "hideDebugMenu": "Ukryj menu debugowania (⌃⇧D)",
-    "fullScreenHint": "Naciśnij {{keys}}, aby wyjść z pełnego ekranu"
+    "fullScreenHint": "Naciśnij {{keys}}, aby wyjść z pełnego ekranu",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "Wczytano {{fileName}}",
     "importFailed": "Nie udało się wczytać planu lotu z {{host}}",
     "importFileFailed": "Nie udało się wczytać tego pliku planu lotu"
+  },
+  "shortcuts": {
+    "title": "Skróty klawiszowe",
+    "description": "Wszystkie skróty, tak jak w menu.",
+    "inApp": {
+      "title": "W aplikacji",
+      "debugPanels": "Panele debugowania",
+      "closeDialog": "Zamknij okno dialogowe lub menu"
+    }
   }
 }

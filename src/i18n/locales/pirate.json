@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Panels",
     "hideDebugMenu": "Hide debug menu (⌃⇧D)",
-    "fullScreenHint": "Press {{keys}} to leave full screen, matey"
+    "fullScreenHint": "Press {{keys}} to leave full screen, matey",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "Hauled in {{fileName}}",
     "importFailed": "Couldn't haul in the flight plan from {{host}}",
     "importFileFailed": "Couldn't haul in that flight plan file"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "description": "Every shortcut, as the menu lists ’em.",
+    "inApp": {
+      "title": "Aboard the app",
+      "debugPanels": "Debug panels",
+      "closeDialog": "Close dialog or menu"
+    }
   }
 }

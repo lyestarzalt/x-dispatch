@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Panels",
     "hideDebugMenu": "Hide debug menu (⌃⇧D)",
-    "fullScreenHint": "Press {{keys}} to leave full screen"
+    "fullScreenHint": "Press {{keys}} to leave full screen",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "Loaded {{fileName}}",
     "importFailed": "Could not load the flight plan from {{host}}",
     "importFileFailed": "Could not load that flight plan file"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "description": "Every shortcut, as listed in the menu.",
+    "inApp": {
+      "title": "In the app",
+      "debugPanels": "Debug panels",
+      "closeDialog": "Close dialog or menu"
+    }
   }
 }

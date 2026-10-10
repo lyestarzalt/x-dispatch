@@ -9,6 +9,7 @@ import type { MenuCommand } from '@/lib/nativeShell/appMenu';
 import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
+import type { AppMenuNode } from '@/lib/nativeShell/menuSerialization';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type {
@@ -143,6 +144,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       onMenuCommand: (callback: (command: MenuCommand) => void) =>
         t.on('app:menuCommand', callback),
       closeWindow: () => t.invoke('app:closeWindow'),
+      getAppMenu: () => t.invoke('app:getAppMenu') as Promise<AppMenuNode[]>,
+      clickMenuItem: (id: string) => t.invoke('app:clickMenuItem', id),
       onOpenSettings: (callback: (tab: 'about' | null) => void) =>
         t.on('app:openSettings', callback),
       setNativeLabels: (labels: NativeLabels) => t.send('app:setNativeLabels', labels),

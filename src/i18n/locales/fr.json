@@ -1935,7 +1935,8 @@
     "debug": "debug",
     "panels": "Panneaux",
     "hideDebugMenu": "Masquer le menu de débogage (⌃⇧D)",
-    "fullScreenHint": "Appuyez sur {{keys}} pour quitter le plein écran"
+    "fullScreenHint": "Appuyez sur {{keys}} pour quitter le plein écran",
+    "appMenu": "Menu"
   },
   "explorePanel": {
     "routes": {
@@ -2198,5 +2199,14 @@
     "importDone": "{{fileName}} chargé",
     "importFailed": "Impossible de charger le plan de vol depuis {{host}}",
     "importFileFailed": "Impossible de charger ce fichier de plan de vol"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "description": "Tous les raccourcis, tels que listés dans le menu.",
+    "inApp": {
+      "title": "Dans l’app",
+      "debugPanels": "Panneaux de débogage",
+      "closeDialog": "Fermer la boîte de dialogue ou le menu"
+    }
   }
 }

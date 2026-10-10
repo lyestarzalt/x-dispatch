@@ -143,6 +143,9 @@ declare global {
       ) => () => void;
       /** Closes this window; on macOS that hides it when the setting says so. */
       closeWindow: () => Promise<void>;
+      /** The native menu as data, for the title-bar menu and the shortcuts dialog. */
+      getAppMenu: () => Promise<import('@/lib/nativeShell/menuSerialization').AppMenuNode[]>;
+      clickMenuItem: (id: string) => Promise<void>;
       onOpenSettings: (callback: (tab: 'about' | null) => void) => () => void;
       setNativeLabels: (labels: import('@/lib/nativeShell/labels').NativeLabels) => void;
       /** Feeds the dock menu and jump list of recent airports. */
