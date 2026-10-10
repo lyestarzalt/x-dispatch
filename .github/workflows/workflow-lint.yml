@@ -1,0 +1,29 @@
+name: Workflow lint
+
+# Only when a workflow file changes; it has nothing to say about app code.
+on:
+  pull_request:
+    paths: ['.github/workflows/**']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/**']
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint:1.7.7
+        with:
+          args: -color
+        env:
+          # Keep info-level notes (SC2086 style nits in working release
+          # scripts) out of the gate; warnings and errors still fail.
+          SHELLCHECK_OPTS: --severity=warning

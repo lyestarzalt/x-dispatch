@@ -14,25 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  workflow-lint:
-    name: Workflow lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run actionlint
-        uses: docker://rhysd/actionlint:1.7.7
-        with:
-          args: -color
-        env:
-          # Keep info-level notes (SC2086 style nits in working release
-          # scripts) out of the gate; warnings and errors still fail.
-          SHELLCHECK_OPTS: --severity=warning
-
   check:
     name: Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,23 +28,30 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      # node_modules itself, keyed on the lockfile: a hit skips the install entirely.
+      - name: Restore node_modules
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: TypeScript
-        run: npm run typecheck
+      # The slow checks share nothing, so they run at once; the step fails if any of them does.
+      - name: Typecheck, lint, format, tests
+        run: |
+          npm run typecheck & p1=$!
+          npm run lint & p2=$!
+          npm run format:check & p3=$!
+          npm run test:run & p4=$!
+          status=0
+          for pid in "$p1" "$p2" "$p3" "$p4"; do
+            wait "$pid" || status=1
+          done
+          exit "$status"
 
-      - name: ESLint
-        run: npm run lint
-
-      - name: Prettier
-        run: npm run format:check
-
-      - name: Tests
-        run: npm run test:run
-
-      - name: Drizzle migrations
-        run: npm run check:migrations
-
-      - name: Third-party notices
-        run: npm run check:notices
+      - name: Drizzle migrations and third-party notices
+        run: npm run check:migrations && npm run check:notices
