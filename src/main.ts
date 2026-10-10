@@ -2472,6 +2472,12 @@ async function bootstrap(): Promise<void> {
   initTileCache();
   registerTileCacheHandler();
 
+  // Last night's NAT track set stays on offer after a restart, until a new one is published.
+  void import('./lib/flightplan/builder/oceanicTracks').then((tracks) => {
+    tracks.configureOceanicTracksCache(path.join(app.getPath('userData'), 'nat-tracks.json'));
+    tracks.loadOceanicTracksCache();
+  });
+
   registerIpcHandlers();
   initRemoteAccess({
     rendererDir: path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`),

@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "東行き",
       "westbound": "西行き",
-      "none": "現在この方向のトラックは公開されていません。",
+      "none": {
+        "eastbound": "東行きのセットはまだ公開されていません。Gander は通常 1300Z 頃に公開します。",
+        "westbound": "西行きのセットはまだ公開されていません。Shanwick は通常 2100Z 頃に公開します。"
+      },
+      "nextSet": {
+        "eastbound": "このセットは終了しました。Gander は通常 1300Z 頃に次を公開します。シミュレーターではそのまま飛べます。",
+        "westbound": "このセットは終了しました。Shanwick は通常 2100Z 頃に次を公開します。シミュレーターではそのまま飛べます。"
+      },
       "tmi": "TMI {{tmi}}",
       "current": "現在有効",
       "upcoming": "次回",
+      "lastPublished": "最終公開",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "トラックメッセージの備考",
-      "levelWarning": "FL{{cruise}} はトラック {{id}} では提供されていません: FL {{levels}}",
+      "levelWarning": "このトラックに FL{{cruise}} はありません",
       "unavailable": "トラックメッセージを取得できません: {{reason}}"
     },
     "windSuggest": "風 {{wind}} なら {{runway}} が有利",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "この航空路は両側のフィックスをつないでいません",
       "airwayEndsAtCoordinate": "航空路は座標ではなくフィックスで終える必要があります",
       "trackPartial": "トラック識別子はトラック全体を飛行する場合のみ申請できます。一部の場合はポイントを記入してください",
-      "airwayWrongWay": "一方通行の航空路を逆方向に申請しています",
-      "airwayLevel": "巡航高度では公示されていません。この航空路は {{levels}} です"
+      "airwayWrongWay": "この航空路は一方通行で、ルートは逆方向に飛んでいます",
+      "airwayLevel": "この航空路は {{levels}} 専用で、巡航高度では使えません"
     },
     "setStart": "出発地からスタート",
     "showOnMap": "地図に表示",
@@ -261,10 +269,10 @@
     "savedAs": "{{file}} として保存",
     "check": "要確認",
     "adjustCruise": "調整",
-    "cruiseBelowFloor": "巡航高度がルートの下限 {{level}} を下回っています",
-    "cruiseAboveCeiling": "巡航高度がルートの上限 {{level}} を上回っています",
-    "cruiseOddLevels": "東行きは奇数千フィートを使います",
-    "cruiseEvenLevels": "西行きは偶数千フィートを使います",
+    "cruiseBelowFloor": "このルートは {{level}} 以上です",
+    "cruiseAboveCeiling": "このルートは {{level}} 以下です",
+    "cruiseOddLevels": "東行きは奇数の高度を使います",
+    "cruiseEvenLevels": "西行きは偶数の高度を使います",
     "levelsBetween": "{{min}} から {{max}}",
     "levelsFrom": "{{min}} 以上",
     "levelsUpTo": "{{max}} 以下"

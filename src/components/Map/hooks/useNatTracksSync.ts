@@ -21,7 +21,8 @@ interface UseNatTracksSyncOptions {
 
 /**
  * Shows the North Atlantic tracks: for the planner's crossing while it is open (the flown
- * direction, current and upcoming sets), or every set when the map layer is switched on.
+ * direction: current and upcoming sets, or the last published one while nothing is on), or
+ * every set when the map layer is switched on.
  * The track filed in the route is highlighted. Hovering a track shows its details; a click
  * while the planner is open asks the planner to route through it, and the dialog does the
  * routing so the procedure joins it knows are kept.
@@ -43,7 +44,7 @@ export function useNatTracksSync({ mapRef }: UseNatTracksSyncOptions): void {
     for (const message of feed.messages) {
       if (crossing && message.eastbound !== (crossing === 'eastbound')) continue;
       for (const track of message.tracks) {
-        items.push({ track, upcoming: message.status === 'upcoming' });
+        items.push({ track, status: message.status });
       }
     }
     return items;
@@ -87,7 +88,7 @@ export function useNatTracksSync({ mapRef }: UseNatTracksSyncOptions): void {
       const feature = e.features?.[0];
       const hit = feature ? trackFromFeature(feature.properties ?? {}) : null;
       if (!hit) return;
-      popup.setLngLat(e.lngLat).setHTML(natTrackPopupHtml(hit.track, hit.upcoming)).addTo(map);
+      popup.setLngLat(e.lngLat).setHTML(natTrackPopupHtml(hit.track, hit.status)).addTo(map);
     };
     const onEnter = () => {
       map.getCanvas().style.cursor = 'pointer';

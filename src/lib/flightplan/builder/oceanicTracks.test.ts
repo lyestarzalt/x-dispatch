@@ -1,9 +1,13 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  type NatMessage,
+  configureOceanicTracksCache,
   currentTracks,
   getOceanicTracks,
+  loadOceanicTracksCache,
   parseNatFeed,
   parseNatMessage,
   refreshOceanicTracks,
@@ -14,6 +18,7 @@ import {
   setOceanicTracks,
   trackPoint,
   trackSegments,
+  tracksForAutoRouting,
   tracksFromNatJson,
 } from './oceanicTracks';
 
@@ -28,11 +33,15 @@ const FEED = JSON.parse(
 ) as unknown;
 /** Eastbound set valid 01:00-08:00Z that day, westbound 11:30-19:00Z. */
 const DURING_EASTBOUND = Date.parse('2026-10-08T05:00:00Z');
+/** The eastbound set has ended, the westbound one is valid. */
+const DURING_WESTBOUND = Date.parse('2026-10-08T12:00:00Z');
 
 beforeEach(() => {
   resetOceanicTracksForTests();
   warn.mockClear();
 });
+
+const ids = (tracks: { id: string }[]) => tracks.map((t) => t.id).join('');
 
 const PART_ONE = [
   'NAT-1/3 TRACKS FLS 340/400 INCLUSIVE',
@@ -210,9 +219,12 @@ describe('parseNatFeed', () => {
     expect(v).toMatchObject({ feederFixes: [], nars: ['N649B', 'N635A'] });
   });
 
-  it('drops a set that has expired', () => {
-    const messages = parseNatFeed(FEED, Date.parse('2026-10-08T12:00:00Z'));
-    expect(messages.map((m) => [m.origin, m.status])).toEqual([['EGGX', 'current']]);
+  it('keeps a set that has ended, marked as expired', () => {
+    const messages = parseNatFeed(FEED, DURING_WESTBOUND);
+    expect(messages.map((m) => [m.origin, m.status])).toEqual([
+      ['CZQX', 'expired'],
+      ['EGGX', 'current'],
+    ]);
   });
 
   it('marks the PBCS tracks named in the remarks', () => {
@@ -270,6 +282,93 @@ describe('track availability', () => {
         .map((t) => t.id)
         .join('')
     ).toBe('VWXYZ');
+  });
+});
+
+describe('last published set', () => {
+  it('offers the ended set for a direction with nothing valid, as a suggestion', () => {
+    setNatMessages(parseNatFeed(FEED, DURING_EASTBOUND));
+    expect(ids(currentTracks(DURING_WESTBOUND))).toBe('ABCDEFG');
+    // The router falls back to it, the resolver accepts a typed designator from it.
+    expect(ids(tracksForAutoRouting(DURING_WESTBOUND))).toBe('VWXYZABCDEFG');
+    expect(ids(getOceanicTracks(DURING_WESTBOUND))).toBe('VWXYZABCDEFG');
+    const feed = resolvedFeed(() => null, DURING_WESTBOUND);
+    expect(feed.messages.map((m) => [m.origin, m.status])).toEqual([
+      ['CZQX', 'expired'],
+      ['EGGX', 'current'],
+    ]);
+  });
+
+  it('drops the ended set once a new one for its direction is published', () => {
+    const [east, west] = parseNatFeed(FEED, DURING_EASTBOUND) as [NatMessage, NatMessage];
+    const next: NatMessage = {
+      ...east,
+      validFrom: '2026-10-09T01:00:00Z',
+      validTo: '2026-10-09T08:00:00Z',
+      status: 'upcoming',
+    };
+    setNatMessages([east, west, next]);
+    const now = Date.parse('2026-10-08T14:00:00Z');
+    expect(resolvedFeed(() => null, now).messages.map((m) => [m.origin, m.status])).toEqual([
+      ['EGGX', 'current'],
+      ['CZQX', 'upcoming'],
+    ]);
+    expect(ids(tracksForAutoRouting(now))).toBe('VWXYZABCDEFG');
+  });
+
+  it('forgets an ended set after two days', () => {
+    setNatMessages(parseNatFeed(FEED, DURING_EASTBOUND));
+    const later = Date.parse('2026-10-10T20:00:00Z');
+    expect(resolvedFeed(() => null, later).messages).toEqual([]);
+    expect(tracksForAutoRouting(later)).toEqual([]);
+  });
+
+  it('keeps the ended set when the live feed no longer carries it', async () => {
+    setNatMessages(parseNatFeed(FEED, DURING_EASTBOUND));
+    const westOnly = (FEED as { origin_id: string }[]).filter((p) => p.origin_id === 'EGGXZOZX');
+    const live: typeof fetch = async () =>
+      new Response(JSON.stringify(westOnly), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    await refreshOceanicTracks(live, { force: true, now: DURING_WESTBOUND });
+    const feed = resolvedFeed(() => null, DURING_WESTBOUND);
+    expect(feed.messages.map((m) => [m.origin, m.status])).toEqual([
+      ['CZQX', 'expired'],
+      ['EGGX', 'current'],
+    ]);
+  });
+});
+
+describe('track cache', () => {
+  it('saves the feed after a download and loads it back on start', async () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'nat-')), 'nat-tracks.json');
+    configureOceanicTracksCache(file);
+    const ok: typeof fetch = async () =>
+      new Response(JSON.stringify(FEED), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    await refreshOceanicTracks(ok, { force: true, now: DURING_EASTBOUND });
+    expect(existsSync(file)).toBe(true);
+
+    resetOceanicTracksForTests();
+    configureOceanicTracksCache(file);
+    expect(resolvedFeed(() => null, DURING_WESTBOUND).messages).toEqual([]);
+    loadOceanicTracksCache(DURING_WESTBOUND);
+    expect(resolvedFeed(() => null, DURING_WESTBOUND).messages.map((m) => m.origin)).toEqual([
+      'CZQX',
+      'EGGX',
+    ]);
+  });
+
+  it('ignores a missing or broken cache file', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'nat-')), 'nat-tracks.json');
+    configureOceanicTracksCache(file);
+    expect(() => loadOceanicTracksCache()).not.toThrow();
+    writeFileSync(file, '{not json');
+    expect(() => loadOceanicTracksCache()).not.toThrow();
+    expect(resolvedFeed(() => null).messages).toEqual([]);
   });
 });
 

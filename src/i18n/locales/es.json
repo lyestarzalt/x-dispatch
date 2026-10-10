@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Hacia el este",
       "westbound": "Hacia el oeste",
-      "none": "Ahora mismo no hay tracks publicados para esta dirección.",
+      "none": {
+        "eastbound": "Aún no hay juego hacia el este publicado. Gander suele publicarlo hacia las 1300Z.",
+        "westbound": "Aún no hay juego hacia el oeste publicado. Shanwick suele publicarlo hacia las 2100Z."
+      },
+      "nextSet": {
+        "eastbound": "Este juego ha terminado. Gander suele publicar el siguiente hacia las 1300Z. En el simulador puedes volarlo igualmente.",
+        "westbound": "Este juego ha terminado. Shanwick suele publicar el siguiente hacia las 2100Z. En el simulador puedes volarlo igualmente."
+      },
       "tmi": "TMI {{tmi}}",
       "current": "Vigente ahora",
       "upcoming": "Próximo",
+      "lastPublished": "Último publicado",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "Observaciones del mensaje de tracks",
-      "levelWarning": "FL{{cruise}} no se ofrece en el track {{id}}: FL {{levels}}",
+      "levelWarning": "El FL{{cruise}} no está en este track",
       "unavailable": "Mensaje de tracks no disponible: {{reason}}"
     },
     "windSuggest": "Viento {{wind}} favorece {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "Esta aerovía no conecta los puntos a ambos lados",
       "airwayEndsAtCoordinate": "Una aerovía debe terminar en un punto, no en una coordenada",
       "trackPartial": "El designador de un track solo se presenta para el track completo; para una parte, indica sus puntos",
-      "airwayWrongWay": "Aerovía de sentido único, presentada en contra de su dirección",
-      "airwayLevel": "No publicada al nivel de crucero; esta aerovía va {{levels}}"
+      "airwayWrongWay": "Esta aerovía es de sentido único y la ruta la recorre en sentido contrario",
+      "airwayLevel": "Esta aerovía solo vale para {{levels}}, no para el nivel de crucero"
     },
     "setStart": "Empezar en la salida",
     "showOnMap": "Mostrar en el mapa",
@@ -261,10 +269,10 @@
     "savedAs": "Guardado como {{file}}",
     "check": "Revisar",
     "adjustCruise": "Ajustar",
-    "cruiseBelowFloor": "El crucero está por debajo del mínimo {{level}} de la ruta",
-    "cruiseAboveCeiling": "El crucero está por encima del máximo {{level}} de la ruta",
-    "cruiseOddLevels": "Los vuelos hacia el este usan miles impares",
-    "cruiseEvenLevels": "Los vuelos hacia el oeste usan miles pares",
+    "cruiseBelowFloor": "La ruta permite {{level}} o más",
+    "cruiseAboveCeiling": "La ruta permite {{level}} o menos",
+    "cruiseOddLevels": "Hacia el este: niveles impares",
+    "cruiseEvenLevels": "Hacia el oeste: niveles pares",
     "levelsBetween": "de {{min}} a {{max}}",
     "levelsFrom": "desde {{min}}",
     "levelsUpTo": "hasta {{max}}"

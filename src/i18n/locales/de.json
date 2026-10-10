@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Ostwärts",
       "westbound": "Westwärts",
-      "none": "Für diese Richtung sind derzeit keine Tracks veröffentlicht.",
+      "none": {
+        "eastbound": "Noch kein Satz nach Osten veröffentlicht. Gander veröffentlicht meist gegen 1300Z einen.",
+        "westbound": "Noch kein Satz nach Westen veröffentlicht. Shanwick veröffentlicht meist gegen 2100Z einen."
+      },
+      "nextSet": {
+        "eastbound": "Dieser Satz ist abgelaufen. Gander veröffentlicht den nächsten meist gegen 1300Z. Im Simulator kannst du ihn trotzdem fliegen.",
+        "westbound": "Dieser Satz ist abgelaufen. Shanwick veröffentlicht den nächsten meist gegen 2100Z. Im Simulator kannst du ihn trotzdem fliegen."
+      },
       "tmi": "TMI {{tmi}}",
       "current": "Jetzt gültig",
       "upcoming": "Demnächst",
+      "lastPublished": "Zuletzt veröffentlicht",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "Bemerkungen zur Track-Meldung",
-      "levelWarning": "FL{{cruise}} wird auf Track {{id}} nicht angeboten: FL {{levels}}",
+      "levelWarning": "FL{{cruise}} gibt es auf diesem Track nicht",
       "unavailable": "Track-Meldung nicht verfügbar: {{reason}}"
     },
     "windSuggest": "Wind {{wind}} spricht für {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "Diese Luftstraße verbindet die Wegpunkte beidseitig nicht",
       "airwayEndsAtCoordinate": "Eine Luftstraße muss an einem Wegpunkt enden, nicht an einer Koordinate",
       "trackPartial": "Ein Track-Kennzeichen wird nur für den ganzen Track gefiled; sonst die Punkte angeben",
-      "airwayWrongWay": "Einbahn-Luftstraße, gegen ihre Richtung eingetragen",
-      "airwayLevel": "Auf der Reiseflughöhe nicht veröffentlicht; diese Luftstraße gilt {{levels}}"
+      "airwayWrongWay": "Diese Luftstraße ist eine Einbahnstraße, und die Route fliegt sie in die falsche Richtung",
+      "airwayLevel": "Diese Luftstraße gilt nur für {{levels}}, nicht für die Reiseflughöhe"
     },
     "setStart": "Am Abflug starten",
     "showOnMap": "Auf Karte zeigen",
@@ -261,10 +269,10 @@
     "savedAs": "Gespeichert als {{file}}",
     "check": "Prüfen",
     "adjustCruise": "Anpassen",
-    "cruiseBelowFloor": "Reiseflughöhe liegt unter der Untergrenze {{level}} der Route",
-    "cruiseAboveCeiling": "Reiseflughöhe liegt über der Obergrenze {{level}} der Route",
-    "cruiseOddLevels": "Ostkurse fliegen ungerade Tausender",
-    "cruiseEvenLevels": "Westkurse fliegen gerade Tausender",
+    "cruiseBelowFloor": "Die Route erlaubt {{level}} oder höher",
+    "cruiseAboveCeiling": "Die Route erlaubt {{level}} oder tiefer",
+    "cruiseOddLevels": "Nach Osten: ungerade Flugflächen",
+    "cruiseEvenLevels": "Nach Westen: gerade Flugflächen",
     "levelsBetween": "{{min}} bis {{max}}",
     "levelsFrom": "ab {{min}}",
     "levelsUpTo": "bis {{max}}"

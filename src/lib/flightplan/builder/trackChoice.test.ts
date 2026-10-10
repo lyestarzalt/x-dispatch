@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   cruiseFitsTrack,
+  cruiseOnTracks,
   messagesForDirection,
   natCrossing,
+  offeredTracks,
   trackFixString,
   trackInRoute,
   validityLabel,
@@ -89,6 +91,61 @@ describe('track message helpers', () => {
     const east = messagesForDirection(feed, 'eastbound');
     expect(east.current?.tracks.map((t) => t.id)).toEqual(['V']);
     expect(east.upcoming).toBeNull();
+    expect(east.expired).toBeNull();
+  });
+
+  it('hands over the last published set when the direction has nothing valid', () => {
+    const feed: NatFeed = {
+      messages: [message('expired', true, [track('V', true, [350])])],
+      fetchedAt: 1,
+      error: null,
+    };
+    const east = messagesForDirection(feed, 'eastbound');
+    expect(east.current).toBeNull();
+    expect(east.upcoming).toBeNull();
+    expect(east.expired?.tracks.map((t) => t.id)).toEqual(['V']);
+  });
+
+  it('offers the tracks of the set the router would use: current, else upcoming, else last published', () => {
+    const feed = (messages: NatMessageInfo[]): NatFeed => ({ messages, fetchedAt: 1, error: null });
+    const west = (status: NatMessageStatus, id: string) =>
+      message(status, false, [track(id, false, [350])]);
+    expect(
+      offeredTracks(
+        feed([west('expired', 'A'), west('upcoming', 'B'), west('current', 'C')]),
+        'westbound'
+      ).map((t) => t.id)
+    ).toEqual(['C']);
+    expect(
+      offeredTracks(feed([west('expired', 'A'), west('upcoming', 'B')]), 'westbound').map(
+        (t) => t.id
+      )
+    ).toEqual(['B']);
+    expect(offeredTracks(feed([west('expired', 'A')]), 'westbound').map((t) => t.id)).toEqual([
+      'A',
+    ]);
+    expect(offeredTracks(feed([west('current', 'A')]), 'eastbound')).toEqual([]);
+    expect(offeredTracks(undefined, 'eastbound')).toEqual([]);
+  });
+
+  it('moves a suggested cruise onto a level the tracks offer, keeping the odd-or-even rule', () => {
+    const band = [340, 350, 360, 370, 380, 390, 400];
+    const tracks = [track('V', true, band), track('W', true, band)];
+    // FL410 is above the band: the highest odd level under it.
+    expect(cruiseOnTracks(41000, tracks, true)).toBe(39000);
+    // Already offered, nothing to do.
+    expect(cruiseOnTracks(40000, tracks, false)).toBe(40000);
+    expect(cruiseOnTracks(37000, tracks, true)).toBe(37000);
+    // Below the band: the lowest level of the right parity.
+    expect(cruiseOnTracks(33000, tracks, true)).toBe(35000);
+    expect(cruiseOnTracks(33000, tracks, false)).toBe(34000);
+    // One track with a narrow band: the nearest level it has.
+    expect(cruiseOnTracks(41000, [track('X', false, [360, 380])], false)).toBe(38000);
+    // No parity match at all: the highest level offered under the cruise wins.
+    expect(cruiseOnTracks(41000, [track('Y', true, [360, 380])], true)).toBe(38000);
+    // Nothing published: the suggestion stands.
+    expect(cruiseOnTracks(41000, [], true)).toBe(41000);
+    expect(cruiseOnTracks(41000, [track('Z', true, [])], true)).toBe(41000);
   });
 
   it('knows whether the cruise level is offered on a track', () => {

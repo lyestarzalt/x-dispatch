@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Eastbound",
       "westbound": "Westbound",
-      "none": "No tracks be posted this way at present.",
+      "none": {
+        "eastbound": "No eastward set posted yet. Gander usually posts one near 1300Z.",
+        "westbound": "No westward set posted yet. Shanwick usually posts one near 2100Z."
+      },
+      "nextSet": {
+        "eastbound": "This set be done. Gander usually posts the next near 1300Z. In the sim ye can still sail it.",
+        "westbound": "This set be done. Shanwick usually posts the next near 2100Z. In the sim ye can still sail it."
+      },
       "tmi": "TMI {{tmi}}",
       "current": "Good right now",
       "upcoming": "Comin' up",
+      "lastPublished": "Last posted",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "Track message scribblin's",
-      "levelWarning": "FL{{cruise}} ain't on offer on track {{id}}: FL {{levels}}",
+      "levelWarning": "FL{{cruise}} ain't on this track",
       "unavailable": "Track message be lost at sea: {{reason}}"
     },
     "windSuggest": "Wind {{wind}} favours strip {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "This lane don't join the marks either side",
       "airwayEndsAtCoordinate": "A lane must end at a mark, not a bare coordinate",
       "trackPartial": "A track's letter be filed only for the whole track; else file its points, ye scallywag",
-      "airwayWrongWay": "One-way sea lane, filed against the tide",
-      "airwayLevel": "Not charted at yer cruisin' height; this lane runs {{levels}}"
+      "airwayWrongWay": "This lane be one-way and yer course sails it against the tide",
+      "airwayLevel": "This lane be only for {{levels}}, not fer yer cruisin' height"
     },
     "setStart": "Start at the harbor",
     "showOnMap": "Show on the chart",
@@ -261,10 +269,10 @@
     "savedAs": "Stowed as {{file}}",
     "check": "Look sharp",
     "adjustCruise": "Trim it",
-    "cruiseBelowFloor": "Ye be sailin' under the route's floor o' {{level}}",
-    "cruiseAboveCeiling": "Ye be sailin' over the route's ceilin' o' {{level}}",
-    "cruiseOddLevels": "Eastward bound sails odd thousands",
-    "cruiseEvenLevels": "Westward bound sails even thousands",
+    "cruiseBelowFloor": "The route allows {{level}} or higher",
+    "cruiseAboveCeiling": "The route allows {{level}} or lower",
+    "cruiseOddLevels": "Eastward bound sails odd levels",
+    "cruiseEvenLevels": "Westward bound sails even levels",
     "levelsBetween": "{{min}} to {{max}}",
     "levelsFrom": "from {{min}}",
     "levelsUpTo": "up to {{max}}"

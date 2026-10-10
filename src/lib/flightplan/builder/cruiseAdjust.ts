@@ -65,7 +65,8 @@ function clamp(feet: number, band: LevelBand): number {
   return out;
 }
 
-function hasParity(feet: number, eastbound: boolean): boolean {
+/** Whether a cruise is a whole thousand of the parity the direction asks for: odd eastbound. */
+export function hasParity(feet: number, eastbound: boolean): boolean {
   if (feet % THOUSAND !== 0) return false;
   const odd = (feet / THOUSAND) % 2 === 1;
   return odd === eastbound;
