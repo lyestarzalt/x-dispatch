@@ -86,7 +86,21 @@ export const ANALYTICS_WIDTH_BUCKETS = [
   '2560_plus',
 ] as const;
 export const ANALYTICS_SCALE_BUCKETS = ['1', '1.25', '1.5', '1.75', '2', 'other'] as const;
-export const ANALYTICS_SHORTCUTS = ['focus_search'] as const;
+/** Menu items and their accelerators; `focus_search` is Find Airport. */
+export const ANALYTICS_SHORTCUTS = [
+  'open_flight_plan',
+  'import_simbrief',
+  'launch_x_plane',
+  'focus_search',
+  'zoom_in',
+  'zoom_out',
+  'zoom_reset',
+  'toggle_sidebar',
+  'flight_strip_window',
+  'keyboard_shortcuts',
+  'close_window',
+  'open_logs',
+] as const;
 /** Where an xdispatch:// link said it came from; 'none' when it did not say. */
 export const ANALYTICS_DEEP_LINK_SOURCES = ['website', 'discord', 'manual', 'none'] as const;
 

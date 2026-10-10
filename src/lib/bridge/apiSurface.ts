@@ -5,6 +5,7 @@
  * so the desktop and a tablet cannot drift apart.
  */
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
+import type { MenuCommand } from '@/lib/nativeShell/appMenu';
 import type { AppAction } from '@/lib/nativeShell/appUrl';
 import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
@@ -139,6 +140,9 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getZoomFactor: x.getZoomFactor,
       getFilePathForDrop: x.getFilePathForDrop,
       onFocusSearch: (callback: () => void) => t.on('focus-search', callback),
+      onMenuCommand: (callback: (command: MenuCommand) => void) =>
+        t.on('app:menuCommand', callback),
+      closeWindow: () => t.invoke('app:closeWindow'),
       onOpenSettings: (callback: (tab: 'about' | null) => void) =>
         t.on('app:openSettings', callback),
       setNativeLabels: (labels: NativeLabels) => t.send('app:setNativeLabels', labels),

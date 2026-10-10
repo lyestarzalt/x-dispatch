@@ -23,14 +23,14 @@ import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
-import type { AnalyticsConsentState } from './lib/analytics/events';
+import { ANALYTICS_SHORTCUTS, type AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics } from './lib/analytics/mainAnalytics';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption, saveDb } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
-import { buildAppMenuTemplate } from './lib/nativeShell/appMenu';
+import { MENU_COMMANDS, type MenuCommand, buildAppMenuTemplate } from './lib/nativeShell/appMenu';
 import {
   APP_URL_SCHEME,
   type AppAction,
@@ -280,6 +280,10 @@ const openableFiles = new Set<string>();
 let recentAirports: RecentAirport[] = [];
 /** From Settings; defaults until the renderer's first push. */
 let desktopPrefs: DesktopPrefs = DEFAULT_DESKTOP_PREFS;
+/** Menu command ids as the analytics allow-list spells them. */
+const MENU_COMMAND_ANALYTICS = Object.fromEntries(
+  MENU_COMMANDS.map((c) => [c, c.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`)])
+) as Record<MenuCommand, (typeof ANALYTICS_SHORTCUTS)[number]>;
 
 /** A crashed main window would otherwise stay blank until the user restarts the app. */
 function recoverCrashedWindow(webContents: Electron.WebContents): void {
@@ -332,9 +336,42 @@ function installAppMenu(): void {
       },
       openExternal: (url) => void shell.openExternal(url),
       toggleDevTools: () => BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools(),
+      command: runMenuCommand,
     },
   });
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+/**
+ * A menu item or its accelerator. What main can do itself it does here; the
+ * rest goes to the desktop window's renderer, which owns the stores.
+ */
+function runMenuCommand(command: MenuCommand): void {
+  analytics.track('shortcut_used', { shortcut: MENU_COMMAND_ANALYTICS[command] });
+  const focused = BrowserWindow.getFocusedWindow();
+  switch (command) {
+    case 'closeWindow':
+      // The flight strip has no dialogs to close first.
+      if (focused && focused !== mainWindow) {
+        focused.close();
+        return;
+      }
+      break;
+    case 'flightStripWindow':
+      toggleFlightStripWindow();
+      return;
+    case 'focusSearch':
+      // The toolbar listens on its own channel; the tablet gets it too.
+      broadcast('focus-search');
+      return;
+    case 'openLogs':
+      shell.showItemInFolder(getLogPath());
+      return;
+  }
+  const win = mainWindow;
+  if (!win || win.isDestroyed()) return;
+  if (command !== 'closeWindow') focusMainWindow();
+  win.webContents.send('app:menuCommand', command);
 }
 
 async function getXPlaneModule() {
@@ -717,27 +754,8 @@ function createWindow(): BrowserWindow {
   // app actions again until the new page drains the queue.
   window.webContents.on('did-start-loading', () => pendingAppActions.reset());
 
-  window.webContents.on('before-input-event', (event, input) => {
-    if (input.type !== 'keyDown' || !(input.control || input.meta) || input.alt) return;
-    // Zoom is owned by the Interface Zoom setting; the dev menu's zoom keys would drift from it.
-    if (['-', '=', '+', '0'].includes(input.key)) {
-      event.preventDefault();
-      return;
-    }
-    // Ctrl+F / Cmd+F focuses airport search. Window-scoped, so other apps keep the key.
-    if (!input.shift && input.key.toLowerCase() === 'f') {
-      event.preventDefault();
-      analytics.track('shortcut_used', { shortcut: 'focus_search' });
-      broadcast('focus-search');
-      return;
-    }
-    // The menu accelerator covers macOS; with the title bar hidden, Windows and Linux
-    // have no visible menu, so Ctrl+, is caught here instead.
-    if (!isMac && !input.shift && input.key === ',') {
-      event.preventDefault();
-      openSettingsInMainWindow();
-    }
-  });
+  // Every shortcut is a menu accelerator (lib/nativeShell/appMenu): one list, every OS.
+  // Page zoom keys reach the Interface Zoom setting through the View menu.
 
   window.webContents.on('will-navigate', (event, url) => {
     if (!isAllowedNavigation(url)) event.preventDefault();
@@ -930,6 +948,9 @@ function registerIpcHandlers() {
     }
     if (win.isMaximized()) win.unmaximize();
     else win.maximize();
+  });
+  handle('app:closeWindow', (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
   });
   handle('app:getWindowState', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);

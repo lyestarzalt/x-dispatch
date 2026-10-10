@@ -1934,7 +1934,8 @@
     "version": "v{{version}}",
     "debug": "调试",
     "panels": "面板",
-    "hideDebugMenu": "隐藏调试菜单 (⌃⇧D)"
+    "hideDebugMenu": "隐藏调试菜单 (⌃⇧D)",
+    "fullScreenHint": "按 {{keys}} 退出全屏"
   },
   "explorePanel": {
     "routes": {
@@ -2156,7 +2157,22 @@
       "website": "X-Dispatch 网站",
       "discord": "Discord 社区",
       "checkForUpdates": "检查更新…",
-      "recentAirports": "最近的机场"
+      "recentAirports": "最近的机场",
+      "file": "文件",
+      "openFlightPlan": "打开飞行计划…",
+      "importSimbrief": "从 SimBrief 导入…",
+      "launchXPlane": "启动 X-Plane…",
+      "findAirport": "查找机场",
+      "view": "视图",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "zoomReset": "实际大小",
+      "toggleSidebar": "显示/隐藏侧边栏",
+      "flightStripWindow": "飞行条窗口",
+      "toggleFullScreen": "切换全屏",
+      "close": "关闭窗口",
+      "keyboardShortcuts": "键盘快捷键",
+      "openLogs": "打开日志文件夹"
     },
     "crash": {
       "title": "X-Dispatch 已停止工作",

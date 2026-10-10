@@ -92,6 +92,9 @@ export interface SimBriefSettings {
   fmsExportTargets: FmsExportTarget[];
 }
 
+/** Interface Zoom bounds, shared by the Settings slider and the View menu. */
+export const ZOOM_LEVEL_RANGE = { min: 0.7, max: 1.3, step: 0.1 } as const;
+
 export interface AppearanceSettings {
   fontSize: FontSize;
   /** Zoom factor for the entire UI (0.7–1.3, default 1.0) */

@@ -13,6 +13,21 @@ export interface NativeLabels {
     discord: string;
     checkForUpdates: string;
     recentAirports: string;
+    file: string;
+    openFlightPlan: string;
+    importSimbrief: string;
+    launchXPlane: string;
+    findAirport: string;
+    view: string;
+    zoomIn: string;
+    zoomOut: string;
+    zoomReset: string;
+    toggleSidebar: string;
+    flightStripWindow: string;
+    toggleFullScreen: string;
+    close: string;
+    keyboardShortcuts: string;
+    openLogs: string;
   };
   crash: {
     title: string;
@@ -32,6 +47,21 @@ export const DEFAULT_NATIVE_LABELS: NativeLabels = {
     discord: 'Discord Community',
     checkForUpdates: 'Check for Updates…',
     recentAirports: 'Recent Airports',
+    file: 'File',
+    openFlightPlan: 'Open Flight Plan…',
+    importSimbrief: 'Import from SimBrief…',
+    launchXPlane: 'Launch X-Plane…',
+    findAirport: 'Find Airport',
+    view: 'View',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    zoomReset: 'Actual Size',
+    toggleSidebar: 'Toggle Sidebar',
+    flightStripWindow: 'Flight Strip Window',
+    toggleFullScreen: 'Toggle Full Screen',
+    close: 'Close Window',
+    keyboardShortcuts: 'Keyboard Shortcuts',
+    openLogs: 'Open Logs Folder',
   },
   crash: {
     title: 'X-Dispatch stopped working',

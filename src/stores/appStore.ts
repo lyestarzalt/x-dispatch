@@ -37,6 +37,7 @@ interface AppState {
   pendingConfirmation: AppActionConfirmation | null;
   /** Native full screen: no traffic lights, no OS controls, the title bar adapts. */
   windowFullScreen: boolean;
+  showShortcuts: boolean;
   logbook: { open: boolean; tab: LogbookTab; flightId: string | null };
 
   selectAirport: (icao: string, data: ParsedAirport, isCustom?: boolean) => void;
@@ -63,6 +64,7 @@ interface AppState {
   /** Answers and clears the pending confirmation. */
   resolveConfirmation: (accepted: boolean) => void;
   setWindowFullScreen: (fullScreen: boolean) => void;
+  setShowShortcuts: (show: boolean) => void;
   openLogbook: (tab?: LogbookTab, flightId?: string | null) => void;
   closeLogbook: () => void;
   setLogbookTab: (tab: LogbookTab) => void;
@@ -99,6 +101,7 @@ export const useAppStore = create<AppState>()(
     pendingAddonTab: null as AddonManagerTab | null,
     pendingConfirmation: null as AppActionConfirmation | null,
     windowFullScreen: false,
+    showShortcuts: false,
     logbook: { open: false, tab: 'flights' as LogbookTab, flightId: null as string | null },
 
     selectAirport: (icao, data, isCustom) =>
@@ -152,6 +155,7 @@ export const useAppStore = create<AppState>()(
         return { pendingConfirmation: confirmation };
       }),
     setWindowFullScreen: (fullScreen) => set({ windowFullScreen: fullScreen }),
+    setShowShortcuts: (show) => set({ showShortcuts: show }),
 
     resolveConfirmation: (accepted) =>
       set((state) => {

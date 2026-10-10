@@ -1934,7 +1934,8 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Панели",
-    "hideDebugMenu": "Скрыть меню отладки (⌃⇧D)"
+    "hideDebugMenu": "Скрыть меню отладки (⌃⇧D)",
+    "fullScreenHint": "Нажмите {{keys}}, чтобы выйти из полноэкранного режима"
   },
   "explorePanel": {
     "routes": {
@@ -2156,7 +2157,22 @@
       "website": "Сайт X-Dispatch",
       "discord": "Сообщество в Discord",
       "checkForUpdates": "Проверить обновления…",
-      "recentAirports": "Недавние аэропорты"
+      "recentAirports": "Недавние аэропорты",
+      "file": "Файл",
+      "openFlightPlan": "Открыть план полёта…",
+      "importSimbrief": "Импорт из SimBrief…",
+      "launchXPlane": "Запустить X-Plane…",
+      "findAirport": "Найти аэропорт",
+      "view": "Вид",
+      "zoomIn": "Увеличить",
+      "zoomOut": "Уменьшить",
+      "zoomReset": "Реальный размер",
+      "toggleSidebar": "Показать/скрыть боковую панель",
+      "flightStripWindow": "Окно полётной полосы",
+      "toggleFullScreen": "Полноэкранный режим",
+      "close": "Закрыть окно",
+      "keyboardShortcuts": "Сочетания клавиш",
+      "openLogs": "Открыть папку журналов"
     },
     "crash": {
       "title": "X-Dispatch перестал работать",

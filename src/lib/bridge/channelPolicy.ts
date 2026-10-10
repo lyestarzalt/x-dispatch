@@ -146,6 +146,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'addon:scenery:toggle',
   'analytics:setConsent',
   'app:clearCache',
+  'app:closeWindow',
   'app:installUpdate',
   'app:openConfigFolder',
   'app:isFlightStripWindowOpen',

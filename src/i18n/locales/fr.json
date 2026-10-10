@@ -1934,7 +1934,8 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Panneaux",
-    "hideDebugMenu": "Masquer le menu de débogage (⌃⇧D)"
+    "hideDebugMenu": "Masquer le menu de débogage (⌃⇧D)",
+    "fullScreenHint": "Appuyez sur {{keys}} pour quitter le plein écran"
   },
   "explorePanel": {
     "routes": {
@@ -2156,7 +2157,22 @@
       "website": "Site web X-Dispatch",
       "discord": "Communauté Discord",
       "checkForUpdates": "Rechercher des mises à jour…",
-      "recentAirports": "Aéroports récents"
+      "recentAirports": "Aéroports récents",
+      "file": "Fichier",
+      "openFlightPlan": "Ouvrir un plan de vol…",
+      "importSimbrief": "Importer depuis SimBrief…",
+      "launchXPlane": "Lancer X-Plane…",
+      "findAirport": "Rechercher un aéroport",
+      "view": "Présentation",
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "zoomReset": "Taille réelle",
+      "toggleSidebar": "Afficher/masquer la barre latérale",
+      "flightStripWindow": "Fenêtre du strip de vol",
+      "toggleFullScreen": "Plein écran",
+      "close": "Fermer la fenêtre",
+      "keyboardShortcuts": "Raccourcis clavier",
+      "openLogs": "Ouvrir le dossier des journaux"
     },
     "crash": {
       "title": "X-Dispatch a cessé de fonctionner",

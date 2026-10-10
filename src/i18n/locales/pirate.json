@@ -1934,7 +1934,8 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Panels",
-    "hideDebugMenu": "Hide debug menu (⌃⇧D)"
+    "hideDebugMenu": "Hide debug menu (⌃⇧D)",
+    "fullScreenHint": "Press {{keys}} to leave full screen, matey"
   },
   "explorePanel": {
     "routes": {
@@ -2156,7 +2157,22 @@
       "website": "X-Dispatch Port o' Call",
       "discord": "Discord Crew",
       "checkForUpdates": "Scan the Horizon fer Updates…",
-      "recentAirports": "Ports o’ Late"
+      "recentAirports": "Ports o’ Late",
+      "file": "Cargo",
+      "openFlightPlan": "Open a Flight Plan…",
+      "importSimbrief": "Haul in from SimBrief…",
+      "launchXPlane": "Set Sail in X-Plane…",
+      "findAirport": "Find a Port",
+      "view": "Spyglass",
+      "zoomIn": "Closer",
+      "zoomOut": "Farther",
+      "zoomReset": "True Size",
+      "toggleSidebar": "Toggle Sidebar",
+      "flightStripWindow": "Flight Strip Porthole",
+      "toggleFullScreen": "Toggle Full Screen",
+      "close": "Close Porthole",
+      "keyboardShortcuts": "Keyboard Shortcuts",
+      "openLogs": "Open the Ship’s Log"
     },
     "crash": {
       "title": "X-Dispatch be sunk",

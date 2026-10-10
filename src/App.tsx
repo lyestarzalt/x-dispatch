@@ -8,6 +8,7 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
+import { ZoomIndicator } from './components/ZoomIndicator';
 import { AnalyticsConsentDialog } from './components/dialogs/AnalyticsConsentDialog';
 import { AppActionConfirmDialog } from './components/dialogs/AppActionConfirmDialog';
 import { RemoteConnectionBanner } from './components/remote/RemoteConnectionBanner';
@@ -164,6 +165,7 @@ function AppContent() {
     <div className="bg-background flex h-screen w-screen flex-col overflow-hidden">
       <TitleBar />
       <OfflineBanner />
+      <ZoomIndicator />
       <div className="min-h-0 flex-1">{content}</div>
     </div>
   );

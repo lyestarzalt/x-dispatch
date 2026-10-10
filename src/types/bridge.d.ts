@@ -137,6 +137,12 @@ declare global {
       resyncCustomAirports: () => Promise<{ synced: boolean; count: number; diff: number }>;
       onAirportsUpdated: (callback: () => void) => () => void;
       onFocusSearch: (callback: () => void) => () => void;
+      /** A menu item or accelerator the renderer carries out. */
+      onMenuCommand: (
+        callback: (command: import('@/lib/nativeShell/appMenu').MenuCommand) => void
+      ) => () => void;
+      /** Closes this window; on macOS that hides it when the setting says so. */
+      closeWindow: () => Promise<void>;
       onOpenSettings: (callback: (tab: 'about' | null) => void) => () => void;
       setNativeLabels: (labels: import('@/lib/nativeShell/labels').NativeLabels) => void;
       /** Feeds the dock menu and jump list of recent airports. */

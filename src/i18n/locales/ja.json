@@ -1934,7 +1934,8 @@
     "version": "v{{version}}",
     "debug": "デバッグ",
     "panels": "パネル",
-    "hideDebugMenu": "デバッグメニューを隠す（⌃⇧D）"
+    "hideDebugMenu": "デバッグメニューを隠す（⌃⇧D）",
+    "fullScreenHint": "{{keys}} でフルスクリーンを終了"
   },
   "explorePanel": {
     "routes": {
@@ -2156,7 +2157,22 @@
       "website": "X-Dispatch ウェブサイト",
       "discord": "Discord コミュニティ",
       "checkForUpdates": "アップデートを確認…",
-      "recentAirports": "最近の空港"
+      "recentAirports": "最近の空港",
+      "file": "ファイル",
+      "openFlightPlan": "フライトプランを開く…",
+      "importSimbrief": "SimBrief から読み込む…",
+      "launchXPlane": "X-Plane を起動…",
+      "findAirport": "空港を検索",
+      "view": "表示",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "zoomReset": "実際のサイズ",
+      "toggleSidebar": "サイドバーの表示/非表示",
+      "flightStripWindow": "フライトストリップウインドウ",
+      "toggleFullScreen": "フルスクリーン切り替え",
+      "close": "ウインドウを閉じる",
+      "keyboardShortcuts": "キーボードショートカット",
+      "openLogs": "ログフォルダを開く"
     },
     "crash": {
       "title": "X-Dispatch が応答しなくなりました",

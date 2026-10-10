@@ -1934,7 +1934,8 @@
     "version": "v{{version}}",
     "debug": "debug",
     "panels": "Bereiche",
-    "hideDebugMenu": "Debug-Menü ausblenden (⌃⇧D)"
+    "hideDebugMenu": "Debug-Menü ausblenden (⌃⇧D)",
+    "fullScreenHint": "{{keys}} drücken, um den Vollbildmodus zu verlassen"
   },
   "explorePanel": {
     "routes": {
@@ -2156,7 +2157,22 @@
       "website": "X-Dispatch-Website",
       "discord": "Discord-Community",
       "checkForUpdates": "Nach Updates suchen…",
-      "recentAirports": "Zuletzt geöffnete Flughäfen"
+      "recentAirports": "Zuletzt geöffnete Flughäfen",
+      "file": "Ablage",
+      "openFlightPlan": "Flugplan öffnen…",
+      "importSimbrief": "Aus SimBrief importieren…",
+      "launchXPlane": "X-Plane starten…",
+      "findAirport": "Flughafen suchen",
+      "view": "Darstellung",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "zoomReset": "Originalgröße",
+      "toggleSidebar": "Seitenleiste ein-/ausblenden",
+      "flightStripWindow": "Flugstreifen-Fenster",
+      "toggleFullScreen": "Vollbild ein/aus",
+      "close": "Fenster schließen",
+      "keyboardShortcuts": "Tastaturkurzbefehle",
+      "openLogs": "Protokollordner öffnen"
     },
     "crash": {
       "title": "X-Dispatch funktioniert nicht mehr",
