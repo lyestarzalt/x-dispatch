@@ -6,6 +6,7 @@
  * Every field is validated here so the renderer never sees free text from a
  * link. Anything that does not match is dropped, never partially applied.
  */
+import { isSimbriefUser } from '@/lib/simbrief/ofp';
 
 export const APP_URL_SCHEME = 'xdispatch';
 
@@ -75,8 +76,6 @@ const ICAO_RE = /^[A-Z0-9]{2,7}$/;
 const RUNWAY_RE = /^(0[1-9]|[12][0-9]|3[0-6])[LRC]?$/;
 /** A filed route: fixes, airways, DCT, lat/lon fixes. */
 const ROUTE_RE = /^[A-Z0-9 /.-]{1,512}$/;
-/** Matches the SimBrief handler in main. */
-const SIMBRIEF_PILOT_ID_RE = /^\d{1,10}$/;
 /** Aircraft names as X-Plane scans them: "Cessna 172", "ToLiss A321 (XP12)". */
 const AIRCRAFT_NAME_RE = /^[\w .'()/&+-]{1,80}$/;
 const MAX_REMOTE_URL_LENGTH = 1024;
@@ -185,7 +184,7 @@ export function parseAppUrl(input: string): AppAction | null {
     }
     case 'simbrief': {
       const user = params.get('user');
-      if (user !== null && !SIMBRIEF_PILOT_ID_RE.test(user.trim())) return null;
+      if (user !== null && !isSimbriefUser(user)) return null;
       return withSource({
         kind: 'simbrief',
         ...(user !== null ? { pilotId: user.trim() } : {}),

@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Import voyage plans from SimBrief",
-      "pilotId": "Pilot Mark",
-      "pilotIdHelp": "Yer SimBrief Pilot ID (found in yer SimBrief account settings)",
-      "pilotIdNote": "Yer Pilot ID is a numeric identifier. Find it at simbrief.com → Account Settings → Pilot ID.",
+      "pilotId": "Pilot ID or handle",
+      "pilotIdHelp": "Yer SimBrief handle (Navigraph alias) or yer numeric Pilot ID",
+      "pilotIdNote": "Either’ll do, matey. The handle be the alias ye sign in with; the Pilot ID hides under simbrief.com → Account Settings.",
       "testSuccess": "Voyage plan sighted",
       "needAccount": "Need a SimBrief account, matey?",
       "freeService": "SimBrief be a free flight-planning service",
@@ -531,7 +531,8 @@
         "deleteTitle": "Scuttle this export mark?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "handle or 1234567"
     },
     "about": {
       "title": "Ship's Log",
@@ -549,7 +550,6 @@
       "credits": "Crew Credits",
       "developer": "Shipwright",
       "license": "Ship's papers",
-      "specialThanks": "Hat tips",
       "links": "Useful Links",
       "website": "Project Port",
       "supportProject": "Back this voyage",
@@ -573,10 +573,11 @@
       "debugShortcut": "Ye can also use Ctrl+Shift+D (Cmd+Shift+D on Mac)",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Proprietary",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "Fer flight simulation only, matey. Never steer a real ship o' the sky by X-Dispatch; its charts may be patchy, wrong or stale.",
-      "thirdParty": "Licenses o' other crews"
+      "thirdParty": "Licenses o' other crews",
+      "testingCommunity": "Sea trials & crew liaison",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Plane Install",
@@ -1649,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "Send ta FMS",
-      "send": "Dispatch",
-      "sendAll": "Send all hands",
-      "emptyHint": "No export marks set. Add one at Settings → SimBrief, ye scallywag.",
-      "noMatches": "None o' yer formats be in this SimBrief plan.",
       "success": "Stowed {{filename}} aboard {{label}}",
       "failure": "Couldn't dispatch {{label}}: {{reason}}",
       "bulkSummary": "{{ok}} o' {{total}} sent"
@@ -1661,7 +1657,7 @@
     "title": "SimBrief Import",
     "description": "Fetch yer latest flight plan from SimBrief",
     "notConfigured": "SimBrief ain't rigged",
-    "configurePilotId": "Rig yer Pilot ID in Settings → SimBrief",
+    "configurePilotId": "Scrawl yer SimBrief handle or Pilot ID in Settings → SimBrief",
     "fetching": "Fetchin' flight plan...",
     "fetchError": "Failed ta fetch flight plan",
     "ready": "Ready ta haul",
@@ -1707,39 +1703,19 @@
       "noNotams": "No NOTAMs in sight",
       "transAltTitle": "Altimeter change heights",
       "transAltDesc": "Altitude where ye switch between local altimeter (QNH) an' standard pressure (STD) — set yer altimeter accordingly"
+    },
+    "errors": {
+      "invalid_user": "That be no SimBrief handle nor Pilot ID, ye scallywag.",
+      "unknown_user": "SimBrief never heard o’ that handle or Pilot ID.",
+      "no_plan": "No flight plan in the hold. Chart one on simbrief.com first.",
+      "bad_response": "SimBrief sent back gibberish the ship couldn’t read. Try again shortly.",
+      "network": "Can’t raise simbrief.com. Check yer rigging and try again."
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "Course",
-      "fuel": "Grog",
-      "weight": "Heft",
-      "wx": "WX"
-    },
-    "avgWind": "Avg wind",
-    "blockFuel": "Block grog",
-    "landing": "Touchdown",
-    "paxCargo": "PAX / Loot",
-    "alternate": "Alt port",
-    "blockLabel": "Block",
-    "landingLabel": "Touchdown",
-    "passengers": "Souls aboard",
-    "cargo": "Loot",
-    "payload": "Plunder",
-    "wind": "Wind",
-    "vis": "Spy",
-    "temp": "Temp",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "No METAR scroll",
-    "fuelItems": {
-      "taxi": "Taxi",
-      "trip": "Voyage",
-      "contingency": "Just-in-case",
-      "alternate": "Alt port",
-      "reserve": "Reserve",
-      "extra": "Extra"
-    }
+    "expand": "Unfurl the flight panel",
+    "collapse": "Furl the flight panel",
+    "clear": "Scuttle the flight plan"
   },
   "weightBalance": {
     "title": "Booty & Grog",
@@ -1755,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "Full OFP scroll (PDF)",
     "notAvailable": "N/A",
     "noMetarAvailable": "No METAR scroll, arr",
     "header": {
       "goToAirportLayoutAria": "Set course for {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Cast off - {{icao}}",
-      "landingWithIcao": "Drop anchor - {{icao}}"
+      "landingWithIcao": "Drop anchor - {{icao}}",
+      "generated": "Charted {{time}}, {{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "Safe harbour"
     },
     "tabs": {
-      "flight": "Voyage",
-      "performance": "Perf",
-      "navlog": "Logbook",
-      "fuel": "Grog",
-      "weights": "Heft",
-      "weather": "Skies",
-      "briefing": "Briefin'"
+      "route": "Course",
+      "fuelWeights": "Grog & ballast",
+      "performance": "Sailin’ numbers",
+      "weather": "Weather & NOTAMs"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
-      "avgWind": "AVG WIND",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "Up-down profile",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "Course",
-      "fixesCount": "{{count}} marks",
-      "fuelSummary": "Grog summary",
-      "blockFuel": "Block grog",
-      "tripFuel": "Voyage grog",
-      "landingFuel": "Touchdown grog",
-      "weightsSummary": "Heft summary",
-      "payload": "Plunder",
-      "passengers": "Souls aboard",
-      "cargo": "Loot",
-      "totalPayload": "Total plunder",
-      "alternate": "Alt port"
+      "cruise": "Cruise",
+      "blockFuel": "Fuel in the hold",
+      "takeoffWeight": "Weight at launch",
+      "percentOfMax": "{{value}}% o’ the limit",
+      "avgWind": "Average wind",
+      "airac": "AIRAC",
+      "ete": "Time at sea"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1862,7 +1822,7 @@
       "groundElevation": "Land height",
       "mora": "MORA",
       "fuelUsed": "Grog burnt",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "Elapsed"
     },
     "profile": {
       "noData": "No profile scroll",
@@ -1924,7 +1884,26 @@
       "visibility": "Spyglass range",
       "ceiling": "Cloud ceilin'",
       "temp": "Temp",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "Show raw METAR",
+      "hideRaw": "Hide raw METAR"
+    },
+    "actions": {
+      "import": "Hoist the flight plan",
+      "importAgain": "Hoist it again",
+      "onMap": "On the chart",
+      "openPdf": "Open the full OFP (PDF)",
+      "sendToFms": "Send to FMS",
+      "sendAll": "Send the lot",
+      "noTargets": "No export targets yet, matey",
+      "noMatches": "None o’ yer targets fit this plan",
+      "setupTargets": "Set up export targets…",
+      "openSettings": "Open the SimBrief settings"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "{{count}} fixes"
     }
   },
   "errorBoundary": {

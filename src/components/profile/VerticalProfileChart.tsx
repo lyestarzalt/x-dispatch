@@ -208,7 +208,7 @@ function VerticalProfileChartInner({
             fontSize={10}
             tickFormatter={(value: number) => units.altitude(value as Feet)}
             stroke="oklch(var(--muted-foreground))"
-            width={60}
+            width={68}
           />
 
           {tocDistance !== null && (

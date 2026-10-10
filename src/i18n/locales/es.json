@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Importar planes de vuelo desde SimBrief",
-      "pilotId": "ID de piloto",
-      "pilotIdHelp": "Tu ID de piloto de SimBrief (en la configuración de tu cuenta)",
-      "pilotIdNote": "Tu ID de piloto es un identificador numérico. Encuéntralo en simbrief.com → Configuración de cuenta → Pilot ID.",
+      "pilotId": "ID de piloto o nombre de usuario",
+      "pilotIdHelp": "Tu nombre de usuario de SimBrief (alias de Navigraph) o tu ID de piloto numérico",
+      "pilotIdNote": "Ambos sirven. El nombre de usuario es el alias con el que inicias sesión; el ID de piloto está en simbrief.com → Account Settings.",
       "testSuccess": "Plan de vuelo encontrado",
       "needAccount": "¿No tienes cuenta SimBrief?",
       "freeService": "SimBrief es un servicio gratuito de planificación de vuelos",
@@ -531,7 +531,8 @@
         "deleteTitle": "¿Eliminar este destino de exportación?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "usuario o 1234567"
     },
     "about": {
       "title": "Acerca de",
@@ -549,7 +550,6 @@
       "credits": "Créditos",
       "developer": "Desarrollador",
       "license": "Licencia",
-      "specialThanks": "Agradecimientos especiales",
       "links": "Enlaces",
       "website": "Sitio web del proyecto",
       "supportProject": "Apoyar este proyecto",
@@ -573,10 +573,11 @@
       "debugShortcut": "También puedes usar Ctrl+Shift+D (Cmd+Shift+D en Mac)",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Propietaria",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "Solo para simulación de vuelo. Nunca uses X-Dispatch para aviación o navegación real; sus datos pueden estar incompletos, ser inexactos o estar desactualizados.",
-      "thirdParty": "Licencias de terceros"
+      "thirdParty": "Licencias de terceros",
+      "testingCommunity": "Pruebas y comunidad",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "Instalación de X-Plane",
@@ -1649,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "Enviar al FMS",
-      "send": "Enviar",
-      "sendAll": "Enviar todo",
-      "emptyHint": "No hay destinos de exportación configurados. Añade uno en Ajustes → SimBrief.",
-      "noMatches": "Ninguno de tus formatos configurados está presente en este plan SimBrief.",
       "success": "{{filename}} escrito en {{label}}",
       "failure": "No se pudo exportar {{label}}: {{reason}}",
       "bulkSummary": "{{ok}} de {{total}} enviados"
@@ -1661,7 +1657,7 @@
     "title": "Importar desde SimBrief",
     "description": "Obtener tu último plan de vuelo desde SimBrief",
     "notConfigured": "SimBrief no configurado",
-    "configurePilotId": "Configura tu ID de piloto en Configuración → SimBrief",
+    "configurePilotId": "Añade tu nombre de usuario o ID de piloto de SimBrief en Ajustes → SimBrief",
     "fetching": "Obteniendo plan de vuelo...",
     "fetchError": "Error al obtener el plan de vuelo",
     "ready": "Listo para obtener",
@@ -1707,39 +1703,19 @@
       "noNotams": "No hay NOTAMs disponibles",
       "transAltTitle": "Altitudes de transición",
       "transAltDesc": "Altitud donde cambias entre altímetro local (QNH) y presión estándar (STD) — ajusta tu altímetro en consecuencia"
+    },
+    "errors": {
+      "invalid_user": "Eso no parece un nombre de usuario ni un ID de piloto de SimBrief.",
+      "unknown_user": "SimBrief no reconoce este nombre de usuario o ID de piloto.",
+      "no_plan": "No se encontró ningún plan de vuelo. Genera uno primero en simbrief.com.",
+      "bad_response": "SimBrief envió una respuesta que la app no pudo leer. Inténtalo de nuevo en un momento.",
+      "network": "No se pudo conectar con simbrief.com. Comprueba tu conexión e inténtalo de nuevo."
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "Ruta",
-      "fuel": "Combust.",
-      "weight": "Peso",
-      "wx": "MET"
-    },
-    "avgWind": "Viento med.",
-    "blockFuel": "Comb. bloque",
-    "landing": "Aterriz.",
-    "paxCargo": "PAX / Carga",
-    "alternate": "Alternativo",
-    "blockLabel": "Bloque",
-    "landingLabel": "Aterriz.",
-    "passengers": "Pasajeros",
-    "cargo": "Carga",
-    "payload": "Carga útil",
-    "wind": "Viento",
-    "vis": "Vis",
-    "temp": "Temp",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "Sin METAR",
-    "fuelItems": {
-      "taxi": "Rodaje",
-      "trip": "Ruta",
-      "contingency": "Contingencia",
-      "alternate": "Alternativo",
-      "reserve": "Reserva",
-      "extra": "Extra"
-    }
+    "expand": "Expandir panel de vuelo",
+    "collapse": "Contraer panel de vuelo",
+    "clear": "Quitar plan de vuelo"
   },
   "weightBalance": {
     "title": "Peso y combustible",
@@ -1755,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "OFP completo (PDF)",
     "notAvailable": "N/D",
     "noMetarAvailable": "No hay METAR disponible",
     "header": {
       "goToAirportLayoutAria": "Ir al plano de {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Despegue - {{icao}}",
-      "landingWithIcao": "Aterrizaje - {{icao}}"
+      "landingWithIcao": "Aterrizaje - {{icao}}",
+      "generated": "Generado {{time}}, {{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "Alternativo"
     },
     "tabs": {
-      "flight": "Vuelo",
-      "performance": "Rend.",
-      "navlog": "Navlog",
-      "fuel": "Combustible",
-      "weights": "Pesos",
-      "weather": "Meteo",
-      "briefing": "Briefing"
+      "route": "Ruta",
+      "fuelWeights": "Combustible y pesos",
+      "performance": "Rendimiento",
+      "weather": "Meteo y NOTAM"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
-      "avgWind": "VIENTO MED.",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "Perfil vertical",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "Ruta",
-      "fixesCount": "{{count}} puntos",
-      "fuelSummary": "Resumen de comb.",
-      "blockFuel": "Comb. bloque",
-      "tripFuel": "Comb. ruta",
-      "landingFuel": "Comb. aterriz.",
-      "weightsSummary": "Resumen pesos",
-      "payload": "Carga útil",
-      "passengers": "Pasajeros",
-      "cargo": "Carga",
-      "totalPayload": "Carga útil total",
-      "alternate": "Alternativo"
+      "cruise": "Crucero",
+      "blockFuel": "Combustible de bloque",
+      "takeoffWeight": "Peso al despegue",
+      "percentOfMax": "{{value}} % del máximo",
+      "avgWind": "Viento medio",
+      "airac": "AIRAC",
+      "ete": "Tiempo en ruta"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1862,7 +1822,7 @@
       "groundElevation": "Elev. terreno",
       "mora": "MORA",
       "fuelUsed": "Comb. usado",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "Transcurrido"
     },
     "profile": {
       "noData": "Sin datos de perfil",
@@ -1924,7 +1884,26 @@
       "visibility": "Visibilidad",
       "ceiling": "Techo",
       "temp": "Temp",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "Mostrar METAR sin decodificar",
+      "hideRaw": "Ocultar METAR sin decodificar"
+    },
+    "actions": {
+      "import": "Importar plan de vuelo",
+      "importAgain": "Importar de nuevo",
+      "onMap": "En el mapa",
+      "openPdf": "Abrir OFP completo (PDF)",
+      "sendToFms": "Enviar al FMS",
+      "sendAll": "Enviar todo",
+      "noTargets": "Aún no hay destinos de exportación",
+      "noMatches": "Ninguno de tus destinos coincide con este plan",
+      "setupTargets": "Configurar destinos de exportación…",
+      "openSettings": "Abrir ajustes de SimBrief"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "{{count}} fijos"
     }
   },
   "errorBoundary": {

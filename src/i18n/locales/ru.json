@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Импорт планов полёта из SimBrief",
-      "pilotId": "ID пилота",
-      "pilotIdHelp": "Ваш ID пилота SimBrief (в настройках аккаунта SimBrief)",
-      "pilotIdNote": "ID пилота — это числовой идентификатор. Найдите его на simbrief.com → Настройки аккаунта → ID пилота.",
+      "pilotId": "ID пилота или имя пользователя",
+      "pilotIdHelp": "Ваше имя пользователя SimBrief (алиас Navigraph) или числовой ID пилота",
+      "pilotIdNote": "Подходит и то, и другое. Имя пользователя — это алиас для входа; ID пилота указан на simbrief.com → Account Settings.",
       "testSuccess": "План полёта найден",
       "needAccount": "Нет аккаунта SimBrief?",
       "freeService": "SimBrief — бесплатный сервис планирования полётов",
@@ -531,7 +531,8 @@
         "deleteTitle": "Удалить эту папку экспорта?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "имя пользователя или 1234567"
     },
     "about": {
       "title": "О программе",
@@ -549,7 +550,6 @@
       "credits": "Авторы",
       "developer": "Разработчик",
       "license": "Лицензия",
-      "specialThanks": "Особая благодарность",
       "links": "Ссылки",
       "website": "Сайт проекта",
       "supportProject": "Поддержать проект",
@@ -573,10 +573,11 @@
       "debugShortcut": "Также можно использовать Ctrl+Shift+D (Cmd+Shift+D на Mac)",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Проприетарная",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "Только для авиасимуляторов. Никогда не используйте X-Dispatch в реальной авиации или навигации: данные могут быть неполными, неточными или устаревшими.",
-      "thirdParty": "Лицензии сторонних компонентов"
+      "thirdParty": "Лицензии сторонних компонентов",
+      "testingCommunity": "Тестирование и сообщество",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "Установка X-Plane",
@@ -1649,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "Отправить в FMS",
-      "send": "Отправить",
-      "sendAll": "Отправить все",
-      "emptyHint": "Папки экспорта не настроены. Добавьте одну в Настройках → SimBrief.",
-      "noMatches": "Ни один из настроенных форматов не представлен в этом плане SimBrief.",
       "success": "{{filename}} записан в {{label}}",
       "failure": "Не удалось экспортировать {{label}}: {{reason}}",
       "bulkSummary": "Отправлено {{ok}} из {{total}}"
@@ -1661,7 +1657,7 @@
     "title": "Импорт из SimBrief",
     "description": "Получить последний план полёта из SimBrief",
     "notConfigured": "SimBrief не настроен",
-    "configurePilotId": "Настройте ID пилота в разделе Настройки → SimBrief",
+    "configurePilotId": "Укажите имя пользователя или ID пилота SimBrief в Настройки → SimBrief",
     "fetching": "Получение плана полёта...",
     "fetchError": "Не удалось получить план полёта",
     "ready": "Готов к получению",
@@ -1707,39 +1703,19 @@
       "noNotams": "NOTAM не найдены",
       "transAltTitle": "Высоты перехода",
       "transAltDesc": "Высота, на которой вы переходите с местной настройки высотомера (QNH) на стандартное давление (STD) — установите высотомер соответственно"
+    },
+    "errors": {
+      "invalid_user": "Это не похоже на имя пользователя или ID пилота SimBrief.",
+      "unknown_user": "SimBrief не знает такого имени пользователя или ID пилота.",
+      "no_plan": "План полёта не найден. Сначала создайте его на simbrief.com.",
+      "bad_response": "SimBrief прислал ответ, который приложение не смогло прочитать. Попробуйте ещё раз чуть позже.",
+      "network": "Не удалось связаться с simbrief.com. Проверьте подключение и попробуйте снова."
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "Маршрут",
-      "fuel": "Топл.",
-      "weight": "Масса",
-      "wx": "МЕТ"
-    },
-    "avgWind": "Сред. ветер",
-    "blockFuel": "Блок. топл.",
-    "landing": "Посадка",
-    "paxCargo": "PAX / Груз",
-    "alternate": "Запасной",
-    "blockLabel": "Блок",
-    "landingLabel": "Посадка",
-    "passengers": "Пассажиры",
-    "cargo": "Груз",
-    "payload": "Полезная нагрузка",
-    "wind": "Ветер",
-    "vis": "Вид.",
-    "temp": "Темп.",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "Нет METAR",
-    "fuelItems": {
-      "taxi": "Руление",
-      "trip": "Маршрут",
-      "contingency": "Непредв.",
-      "alternate": "Запасной",
-      "reserve": "Резерв",
-      "extra": "Доп."
-    }
+    "expand": "Развернуть панель полёта",
+    "collapse": "Свернуть панель полёта",
+    "clear": "Убрать план полёта"
   },
   "weightBalance": {
     "title": "Масса и топливо",
@@ -1755,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "Полный OFP (PDF)",
     "notAvailable": "Н/Д",
     "noMetarAvailable": "METAR недоступен",
     "header": {
       "goToAirportLayoutAria": "К схеме {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Взлёт - {{icao}}",
-      "landingWithIcao": "Посадка - {{icao}}"
+      "landingWithIcao": "Посадка - {{icao}}",
+      "generated": "Создан {{time}}, {{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "Запасной"
     },
     "tabs": {
-      "flight": "Полёт",
-      "performance": "ЛТХ",
-      "navlog": "Навлог",
-      "fuel": "Топливо",
-      "weights": "Массы",
-      "weather": "Погода",
-      "briefing": "Брифинг"
+      "route": "Маршрут",
+      "fuelWeights": "Топливо и массы",
+      "performance": "Характеристики",
+      "weather": "Погода и NOTAM"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
-      "avgWind": "СР. ВЕТЕР",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "Вертикальный профиль",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "Маршрут",
-      "fixesCount": "{{count}} точек",
-      "fuelSummary": "Сводка по топливу",
-      "blockFuel": "Блочное топливо",
-      "tripFuel": "Топл. маршрута",
-      "landingFuel": "Топл. посадки",
-      "weightsSummary": "Сводка по массам",
-      "payload": "Полезная нагрузка",
-      "passengers": "Пассажиры",
-      "cargo": "Груз",
-      "totalPayload": "Общая нагрузка",
-      "alternate": "Запасной"
+      "cruise": "Эшелон",
+      "blockFuel": "Блок-топливо",
+      "takeoffWeight": "Взлётная масса",
+      "percentOfMax": "{{value}}% от максимума",
+      "avgWind": "Средний ветер",
+      "airac": "AIRAC",
+      "ete": "Время в пути"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1862,7 +1822,7 @@
       "groundElevation": "Высота рельефа",
       "mora": "MORA",
       "fuelUsed": "Расход топлива",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "Прошло"
     },
     "profile": {
       "noData": "Нет данных профиля",
@@ -1924,7 +1884,26 @@
       "visibility": "Видимость",
       "ceiling": "Нижняя граница облаков",
       "temp": "Темп.",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "Показать исходный METAR",
+      "hideRaw": "Скрыть исходный METAR"
+    },
+    "actions": {
+      "import": "Импортировать план полёта",
+      "importAgain": "Импортировать снова",
+      "onMap": "На карте",
+      "openPdf": "Открыть полный OFP (PDF)",
+      "sendToFms": "Отправить в FMS",
+      "sendAll": "Отправить все",
+      "noTargets": "Целей экспорта пока нет",
+      "noMatches": "Ни одна из целей не подходит к этому плану",
+      "setupTargets": "Настроить цели экспорта…",
+      "openSettings": "Открыть настройки SimBrief"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "Точек: {{count}}"
     }
   },
   "errorBoundary": {

@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Flugpläne von SimBrief importieren",
-      "pilotId": "Piloten-ID",
-      "pilotIdHelp": "Ihre SimBrief-Piloten-ID (in den Kontoeinstellungen)",
-      "pilotIdNote": "Ihre Piloten-ID ist eine numerische Kennung. Sie finden sie unter simbrief.com → Kontoeinstellungen → Piloten-ID.",
+      "pilotId": "Pilot-ID oder Benutzername",
+      "pilotIdHelp": "Dein SimBrief-Benutzername (Navigraph-Alias) oder deine numerische Pilot-ID",
+      "pilotIdNote": "Beides funktioniert. Der Benutzername ist der Alias, mit dem du dich anmeldest; die Pilot-ID steht unter simbrief.com → Account Settings.",
       "testSuccess": "Flugplan gefunden",
       "needAccount": "Kein SimBrief-Konto?",
       "freeService": "SimBrief ist ein kostenloser Flugplanungsdienst",
@@ -531,7 +531,8 @@
         "deleteTitle": "Diesen Exportordner löschen?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "Benutzername oder 1234567"
     },
     "about": {
       "title": "Über",
@@ -549,7 +550,6 @@
       "credits": "Danksagungen",
       "developer": "Entwickler",
       "license": "Lizenz",
-      "specialThanks": "Besonderer Dank",
       "links": "Links",
       "website": "Projektwebsite",
       "supportProject": "Projekt unterstützen",
@@ -573,10 +573,11 @@
       "debugShortcut": "Sie können auch Strg+Umschalt+D verwenden (Cmd+Shift+D auf dem Mac)",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Proprietär",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "Nur für die Flugsimulation. X-Dispatch niemals für die reale Luftfahrt oder Navigation verwenden; die Daten können unvollständig, fehlerhaft oder veraltet sein.",
-      "thirdParty": "Lizenzen Dritter"
+      "thirdParty": "Lizenzen Dritter",
+      "testingCommunity": "Tests & Community",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Plane-Installation",
@@ -1649,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "An das FMS senden",
-      "send": "Senden",
-      "sendAll": "Alle senden",
-      "emptyHint": "Keine Exportordner konfiguriert. Fügen Sie einen unter Einstellungen → SimBrief hinzu.",
-      "noMatches": "Keines Ihrer konfigurierten Formate ist in diesem SimBrief-Plan enthalten.",
       "success": "{{filename}} in {{label}} geschrieben",
       "failure": "Export von {{label}} fehlgeschlagen: {{reason}}",
       "bulkSummary": "{{ok}} von {{total}} gesendet"
@@ -1661,7 +1657,7 @@
     "title": "Von SimBrief importieren",
     "description": "Ihren letzten Flugplan von SimBrief abrufen",
     "notConfigured": "SimBrief nicht konfiguriert",
-    "configurePilotId": "Bitte konfigurieren Sie Ihre Piloten-ID unter Einstellungen → SimBrief",
+    "configurePilotId": "Trage deinen SimBrief-Benutzernamen oder deine Pilot-ID unter Einstellungen → SimBrief ein",
     "fetching": "Flugplan wird abgerufen...",
     "fetchError": "Flugplan konnte nicht abgerufen werden",
     "ready": "Bereit zum Abrufen",
@@ -1707,39 +1703,19 @@
       "noNotams": "Keine NOTAMs verfügbar",
       "transAltTitle": "Übergangshöhen",
       "transAltDesc": "Höhe, bei der zwischen lokalem Höhenmesser (QNH) und Standarddruck (STD) gewechselt wird — Höhenmesser entsprechend einstellen"
+    },
+    "errors": {
+      "invalid_user": "Das sieht nicht wie ein SimBrief-Benutzername oder eine Pilot-ID aus.",
+      "unknown_user": "SimBrief kennt diesen Benutzernamen bzw. diese Pilot-ID nicht.",
+      "no_plan": "Kein Flugplan gefunden. Erstelle zuerst einen auf simbrief.com.",
+      "bad_response": "SimBrief hat eine Antwort geschickt, die die App nicht lesen konnte. Versuche es gleich noch einmal.",
+      "network": "simbrief.com ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "Route",
-      "fuel": "Treibst.",
-      "weight": "Gewicht",
-      "wx": "MET"
-    },
-    "avgWind": "Mittl. Wind",
-    "blockFuel": "Blocktreibstoff",
-    "landing": "Landung",
-    "paxCargo": "PAX / Fracht",
-    "alternate": "Ausweichflugh.",
-    "blockLabel": "Block",
-    "landingLabel": "Landung",
-    "passengers": "Passagiere",
-    "cargo": "Fracht",
-    "payload": "Nutzlast",
-    "wind": "Wind",
-    "vis": "Sicht",
-    "temp": "Temp",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "Kein METAR",
-    "fuelItems": {
-      "taxi": "Rollen",
-      "trip": "Strecke",
-      "contingency": "Reserve",
-      "alternate": "Ausweich",
-      "reserve": "Reserve",
-      "extra": "Extra"
-    }
+    "expand": "Flugpanel ausklappen",
+    "collapse": "Flugpanel einklappen",
+    "clear": "Flugplan verwerfen"
   },
   "weightBalance": {
     "title": "Gewicht & Treibstoff",
@@ -1755,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "Vollständiger OFP (PDF)",
     "notAvailable": "k.A.",
     "noMetarAvailable": "Kein METAR verfügbar",
     "header": {
       "goToAirportLayoutAria": "Zum Layout von {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Start: {{icao}}",
-      "landingWithIcao": "Landung: {{icao}}"
+      "landingWithIcao": "Landung: {{icao}}",
+      "generated": "Erstellt {{time}}, {{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "Ausweich"
     },
     "tabs": {
-      "flight": "Flug",
-      "performance": "Leist.",
-      "navlog": "Navlog",
-      "fuel": "Treibstoff",
-      "weights": "Gewichte",
-      "weather": "Wetter",
-      "briefing": "Briefing"
+      "route": "Route",
+      "fuelWeights": "Kraftstoff & Gewichte",
+      "performance": "Leistung",
+      "weather": "Wetter & NOTAMs"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
-      "avgWind": "MITTL. WIND",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "Vertikalprofil",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "Route",
-      "fixesCount": "{{count}} Wegpunkte",
-      "fuelSummary": "Treibstoffübersicht",
-      "blockFuel": "Blocktreibstoff",
-      "tripFuel": "Streckentreibstoff",
-      "landingFuel": "Landetreibstoff",
-      "weightsSummary": "Gewichtsübersicht",
-      "payload": "Nutzlast",
-      "passengers": "Passagiere",
-      "cargo": "Fracht",
-      "totalPayload": "Gesamte Nutzlast",
-      "alternate": "Ausweichflughafen"
+      "cruise": "Reiseflug",
+      "blockFuel": "Blockkraftstoff",
+      "takeoffWeight": "Startgewicht",
+      "percentOfMax": "{{value}} % vom Maximum",
+      "avgWind": "Mittlerer Wind",
+      "airac": "AIRAC",
+      "ete": "Flugzeit"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1862,7 +1822,7 @@
       "groundElevation": "Geländehöhe",
       "mora": "MORA",
       "fuelUsed": "Treibstoff verbraucht",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "Verstrichen"
     },
     "profile": {
       "noData": "Keine Profildaten verfügbar",
@@ -1924,7 +1884,26 @@
       "visibility": "Sicht",
       "ceiling": "Wolkenuntergr.",
       "temp": "Temp",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "Roh-METAR anzeigen",
+      "hideRaw": "Roh-METAR ausblenden"
+    },
+    "actions": {
+      "import": "Flugplan importieren",
+      "importAgain": "Erneut importieren",
+      "onMap": "Auf der Karte",
+      "openPdf": "Vollständigen OFP öffnen (PDF)",
+      "sendToFms": "An FMS senden",
+      "sendAll": "Alle senden",
+      "noTargets": "Noch keine Exportziele",
+      "noMatches": "Keines deiner Ziele passt zu diesem Plan",
+      "setupTargets": "Exportziele einrichten…",
+      "openSettings": "SimBrief-Einstellungen öffnen"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "{{count}} Fixes"
     }
   },
   "errorBoundary": {

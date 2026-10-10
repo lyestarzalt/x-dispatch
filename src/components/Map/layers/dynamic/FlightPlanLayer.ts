@@ -70,9 +70,8 @@ const COLORS = {
   labelText: '#FFFFFF', // White labels
   labelHalo: '#1F2937', // Dark halo
   altitudeText: '#94A3B8', // Muted slate
-  // Phase colors
+  // T/C and T/D badges
   clb: '#22C55E', // Green – climb
-  crz: '#06B6D4', // Cyan – cruise
   dsc: '#F59E0B', // Amber – descent
   alternate: '#64748B', // Muted slate – alternate route
 };
@@ -351,44 +350,25 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   loadImage(map, 'fp-td', createBadgeSymbol('T/D', COLORS.dsc));
   loadRouteLabelImages(map);
 
-  // Route line GeoJSON — per-segment LineStrings with stage property
-  const hasStages = waypoints.some((wp) => wp.stage);
+  // Route line GeoJSON — one LineString per leg kind. A SimBrief plan goes through the same
+  // segmenting as a built one: its SID and STAR arrive as procedurePaths, so it gets the same
+  // colours; its flight phases only place the T/C and T/D badges below.
   const routeFeatures: GeoJSON.Feature[] = [];
-
-  if (hasStages) {
-    for (let i = 0; i < waypoints.length - 1; i++) {
-      const from = waypoints[i];
-      const to = waypoints[i + 1];
-      if (!from || !to) continue;
-      routeFeatures.push({
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: [
-            [from.longitude, from.latitude],
-            [to.longitude, to.latitude],
-          ],
-        },
-        properties: { stage: from.stage || '' },
-      });
-    }
-  } else {
-    const segments = routeLineSegments(
-      waypoints,
-      fmsData.runwayEnds,
-      fmsData.initialClimbNm,
-      fmsData.procedurePaths
-    );
-    for (const seg of segments) {
-      routeFeatures.push({
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: seg.points.map((p) => [p.longitude, p.latitude]),
-        },
-        properties: { stage: '', kind: seg.kind, via: seg.via ?? '' },
-      });
-    }
+  const segments = routeLineSegments(
+    waypoints,
+    fmsData.runwayEnds,
+    fmsData.initialClimbNm,
+    fmsData.procedurePaths
+  );
+  for (const seg of segments) {
+    routeFeatures.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: seg.points.map((p) => [p.longitude, p.latitude]),
+      },
+      properties: { kind: seg.kind, via: seg.via ?? '' },
+    });
   }
 
   // Missed-approach segments, kept out of the main (solid) route line and drawn dashed - they
@@ -401,7 +381,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
         type: 'LineString',
         coordinates: proc.missedPath.map((p) => [p.longitude, p.latitude]),
       },
-      properties: { stage: '', kind: 'missed', missed: true },
+      properties: { kind: 'missed', missed: true },
     });
   }
 
@@ -439,8 +419,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     },
   }));
 
-  // Detect T/C and T/D transitions
-  if (hasStages) {
+  // T/C and T/D badges at the phase transitions, when the plan carries SimBrief stages
+  if (waypoints.some((wp) => wp.stage)) {
     for (let i = 0; i < waypoints.length - 1; i++) {
       const wpFrom = waypoints[i];
       const wpTo = waypoints[i + 1];
@@ -541,7 +521,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   });
 
   // Route line: thick and translucent, one colour per leg kind (SID / STAR / approach / enroute,
-  // wider and pink on an oceanic track), or per flight phase when the plan carries SimBrief stages.
+  // wider and pink on an oceanic track).
   map.addLayer({
     id: LINE_ID,
     type: 'line',
@@ -549,17 +529,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     filter: ['!=', ['get', 'missed'], true],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': [
-        'match',
-        ['get', 'stage'],
-        'CLB',
-        COLORS.clb,
-        'CRZ',
-        COLORS.crz,
-        'DSC',
-        COLORS.dsc,
-        kindColorExpression(),
-      ],
+      'line-color': kindColorExpression(),
       'line-width': widthByKindExpression(ROUTE_LINE_WIDTH),
       'line-opacity': ROUTE_LINE_OPACITY,
     },

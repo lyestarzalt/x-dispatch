@@ -4,6 +4,8 @@ import { Check, CloudDownload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { describeSimbriefError } from '@/lib/simbrief/fetchError';
+import { isSimbriefUser } from '@/lib/simbrief/ofp';
 import { cn } from '@/lib/utils/helpers';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -17,18 +19,20 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const { simbrief, updateSimbriefSettings } = useSettingsStore();
   const [localPilotId, setLocalPilotId] = useState(simbrief.pilotId);
-  const fetchMutation = useSimbriefFetch();
+  const fetchMutation = useSimbriefFetch({ track: false });
 
-  const hasChanges = localPilotId !== simbrief.pilotId;
+  const trimmed = localPilotId.trim();
+  const hasChanges = trimmed !== simbrief.pilotId;
+  const isValid = trimmed === '' || isSimbriefUser(trimmed);
   const isConfigured = !!simbrief.pilotId;
 
   const handleSave = () => {
-    updateSimbriefSettings({ pilotId: localPilotId });
+    updateSimbriefSettings({ pilotId: trimmed });
   };
 
   const handleTest = () => {
-    if (localPilotId) {
-      fetchMutation.mutate(localPilotId);
+    if (trimmed) {
+      fetchMutation.mutate(trimmed);
     }
   };
 
@@ -49,18 +53,19 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
         <div className="flex gap-2">
           <Input
             value={localPilotId}
-            onChange={(e) => setLocalPilotId(e.target.value.replace(/\D/g, ''))}
-            placeholder="1234567"
+            onChange={(e) => setLocalPilotId(e.target.value)}
+            placeholder={t('settings.simbrief.pilotIdPlaceholder')}
             className="font-mono"
-            maxLength={10}
+            maxLength={64}
+            aria-invalid={!isValid}
           />
-          <Button variant="outline" onClick={handleSave} disabled={!hasChanges}>
+          <Button variant="outline" onClick={handleSave} disabled={!hasChanges || !isValid}>
             {t('common.save')}
           </Button>
           <Button
             variant="secondary"
             onClick={handleTest}
-            disabled={!localPilotId || fetchMutation.isPending}
+            disabled={!trimmed || !isValid || fetchMutation.isPending}
           >
             {fetchMutation.isPending && <Spinner className="" />}
             {fetchMutation.isSuccess && <Check className="text-success h-4 w-4" />}
@@ -82,7 +87,7 @@ export default function SimbriefSection({ className }: SettingsSectionProps) {
 
         {fetchMutation.isError && (
           <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
-            {fetchMutation.error.message}
+            {describeSimbriefError(fetchMutation.error, t)}
           </div>
         )}
 

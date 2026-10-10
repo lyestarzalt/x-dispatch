@@ -509,9 +509,9 @@
     },
     "simbrief": {
       "description": "Importuj plany lotu z SimBrief",
-      "pilotId": "ID pilota",
-      "pilotIdHelp": "Twój ID pilota SimBrief (znajdziesz go w ustawieniach konta SimBrief)",
-      "pilotIdNote": "Twój ID pilota to identyfikator numeryczny. Znajdziesz go na simbrief.com → Ustawienia konta → ID pilota.",
+      "pilotId": "ID pilota lub nazwa użytkownika",
+      "pilotIdHelp": "Twoja nazwa użytkownika SimBrief (alias Navigraph) lub numeryczne ID pilota",
+      "pilotIdNote": "Oba działają. Nazwa użytkownika to alias, którym się logujesz; ID pilota znajdziesz na simbrief.com → Account Settings.",
       "testSuccess": "Znaleziono plan lotu",
       "needAccount": "Nie masz konta SimBrief?",
       "freeService": "SimBrief to darmowy serwis planowania lotów",
@@ -531,7 +531,8 @@
         "deleteTitle": "Usunąć ten cel eksportu?"
       },
       "testSuccessFull": "{{message}}: {{origin}} → {{destination}} ({{aircraft}})",
-      "linkLabel": "simbrief.com"
+      "linkLabel": "simbrief.com",
+      "pilotIdPlaceholder": "użytkownik lub 1234567"
     },
     "about": {
       "title": "O programie",
@@ -549,7 +550,6 @@
       "credits": "Twórcy",
       "developer": "Twórca",
       "license": "Licencja",
-      "specialThanks": "Specjalne podziękowania",
       "links": "Linki",
       "website": "Strona projektu",
       "supportProject": "Wesprzyj ten projekt",
@@ -573,10 +573,11 @@
       "debugShortcut": "Możesz też użyć Ctrl+Shift+D (Cmd+Shift+D na Macu)",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Własnościowa",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "Tylko do symulacji lotu. Nigdy nie używaj X-Dispatch w prawdziwym lotnictwie ani nawigacji; dane mogą być niekompletne, niedokładne lub nieaktualne.",
-      "thirdParty": "Licencje stron trzecich"
+      "thirdParty": "Licencje stron trzecich",
+      "testingCommunity": "Testy i społeczność",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "Instalacja X-Plane",
@@ -1649,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "Wyślij do FMS",
-      "send": "Wyślij",
-      "sendAll": "Wyślij wszystko",
-      "emptyHint": "Brak skonfigurowanych celów eksportu. Dodaj jeden w sekcji Ustawienia → SimBrief.",
-      "noMatches": "Żaden ze skonfigurowanych formatów nie występuje w tym planie SimBrief.",
       "success": "Zapisano {{filename}} do {{label}}",
       "failure": "Nie udało się wyeksportować {{label}}: {{reason}}",
       "bulkSummary": "Wysłano {{ok}} z {{total}}"
@@ -1661,7 +1657,7 @@
     "title": "Importuj z SimBrief",
     "description": "Pobierz najnowszy plan lotu z SimBrief",
     "notConfigured": "SimBrief nie jest skonfigurowany",
-    "configurePilotId": "Skonfiguruj swój ID pilota w Ustawienia → SimBrief",
+    "configurePilotId": "Dodaj swoją nazwę użytkownika lub ID pilota SimBrief w Ustawienia → SimBrief",
     "fetching": "Pobieranie planu lotu...",
     "fetchError": "Nie udało się pobrać planu lotu",
     "ready": "Gotowy do pobrania",
@@ -1707,39 +1703,19 @@
       "noNotams": "Brak dostępnych NOTAM",
       "transAltTitle": "Wysokości przejścia",
       "transAltDesc": "Wysokość, na której przełącza się między lokalnym ciśnieniem (QNH) a ciśnieniem standardowym (STD) — ustaw odpowiednio wysokościomierz"
+    },
+    "errors": {
+      "invalid_user": "To nie wygląda na nazwę użytkownika ani ID pilota SimBrief.",
+      "unknown_user": "SimBrief nie zna tej nazwy użytkownika ani ID pilota.",
+      "no_plan": "Nie znaleziono planu lotu. Najpierw wygeneruj go na simbrief.com.",
+      "bad_response": "SimBrief przysłał odpowiedź, której aplikacja nie mogła odczytać. Spróbuj ponownie za chwilę.",
+      "network": "Nie można połączyć się z simbrief.com. Sprawdź połączenie i spróbuj ponownie."
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "Trasa",
-      "fuel": "Paliwo",
-      "weight": "Masa",
-      "wx": "WX"
-    },
-    "avgWind": "Śr. wiatr",
-    "blockFuel": "Paliwo blokowe",
-    "landing": "Lądowanie",
-    "paxCargo": "PAX / Ładunek",
-    "alternate": "Zapasowe",
-    "blockLabel": "Blok",
-    "landingLabel": "Lądow.",
-    "passengers": "Pasażerowie",
-    "cargo": "Ładunek",
-    "payload": "Ładunek",
-    "wind": "Wiatr",
-    "vis": "Widocz.",
-    "temp": "Temp",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "Brak METAR",
-    "fuelItems": {
-      "taxi": "Kołowanie",
-      "trip": "Trasa",
-      "contingency": "Rezerwa",
-      "alternate": "Zapasowe",
-      "reserve": "Rezerwa",
-      "extra": "Dodatkowe paliwo"
-    }
+    "expand": "Rozwiń panel lotu",
+    "collapse": "Zwiń panel lotu",
+    "clear": "Usuń plan lotu"
   },
   "weightBalance": {
     "title": "Masa i paliwo",
@@ -1755,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "Pełny OFP (PDF)",
     "notAvailable": "b.d.",
     "noMetarAvailable": "Brak METAR",
     "header": {
       "goToAirportLayoutAria": "Przejdź do planu lotniska {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Start: {{icao}}",
-      "landingWithIcao": "Lądowanie: {{icao}}"
+      "landingWithIcao": "Lądowanie: {{icao}}",
+      "generated": "Wygenerowano {{time}}, {{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "Zapasowe"
     },
     "tabs": {
-      "flight": "Lot",
+      "route": "Trasa",
+      "fuelWeights": "Paliwo i masy",
       "performance": "Osiągi",
-      "navlog": "Navlog",
-      "fuel": "Paliwo",
-      "weights": "Masy",
-      "weather": "Pogoda",
-      "briefing": "Briefing"
+      "weather": "Pogoda i NOTAM-y"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
-      "avgWind": "ŚR. WIATR",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "Profil pionowy",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "Trasa",
-      "fixesCount": "{{count}} punktów",
-      "fuelSummary": "Podsum. paliwa",
+      "cruise": "Przelot",
       "blockFuel": "Paliwo blokowe",
-      "tripFuel": "Paliwo na trasę",
-      "landingFuel": "Paliwo przy lądowaniu",
-      "weightsSummary": "Podsum. mas",
-      "payload": "Ładunek",
-      "passengers": "Pasażerowie",
-      "cargo": "Ładunek",
-      "totalPayload": "Łączny ładunek",
-      "alternate": "Zapasowe"
+      "takeoffWeight": "Masa startowa",
+      "percentOfMax": "{{value}}% maks.",
+      "avgWind": "Średni wiatr",
+      "airac": "AIRAC",
+      "ete": "Czas lotu"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1862,7 +1822,7 @@
       "groundElevation": "Wys. terenu",
       "mora": "MORA",
       "fuelUsed": "Zużyte paliwo",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "Upłynęło"
     },
     "profile": {
       "noData": "Brak danych profilu",
@@ -1924,7 +1884,26 @@
       "visibility": "Widoczność",
       "ceiling": "Pułap chmur",
       "temp": "Temp",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "Pokaż surowy METAR",
+      "hideRaw": "Ukryj surowy METAR"
+    },
+    "actions": {
+      "import": "Importuj plan lotu",
+      "importAgain": "Importuj ponownie",
+      "onMap": "Na mapie",
+      "openPdf": "Otwórz pełny OFP (PDF)",
+      "sendToFms": "Wyślij do FMS",
+      "sendAll": "Wyślij wszystkie",
+      "noTargets": "Brak celów eksportu",
+      "noMatches": "Żaden z celów nie pasuje do tego planu",
+      "setupTargets": "Skonfiguruj cele eksportu…",
+      "openSettings": "Otwórz ustawienia SimBrief"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "{{count}} punktów"
     }
   },
   "errorBoundary": {

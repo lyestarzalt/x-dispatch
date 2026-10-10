@@ -212,11 +212,11 @@ export default function AboutSection({ className }: SettingsSectionProps) {
               </Badge>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-muted-foreground">{t('settings.about.specialThanks')}</span>
+              <span className="text-muted-foreground">{t('settings.about.testingCommunity')}</span>
               <span className="min-w-0 truncate text-right">
-                {t('settings.about.specialThanksName')}{' '}
+                {t('settings.about.testingCommunityName')}{' '}
                 <span className="text-muted-foreground">
-                  {t('settings.about.specialThanksHandle')}
+                  {t('settings.about.testingCommunityHandle')}
                 </span>
               </span>
             </div>

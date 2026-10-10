@@ -16,9 +16,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useUnits } from '@/hooks/useUnits';
+import { parseTimestamp, primaryAlternate } from '@/lib/simbrief/ofp';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { SimBriefNotam, SimBriefOFP, SimBriefSigmet } from '@/types/simbrief';
@@ -30,23 +30,25 @@ interface BriefingTabProps {
 export function BriefingTab({ data }: BriefingTabProps) {
   const { t } = useTranslation();
   const units = useUnits();
-  const { origin, destination, alternate, sigmets, atc } = data;
+  const { origin, destination, sigmets, atc } = data;
+  const alternate = primaryAlternate(data);
 
   // SimBrief XML-to-JSON may return a single object instead of an array
   // when there's only one item, so always coerce to array
-  const originNotams = Array.isArray(origin?.notam) ? origin.notam : [];
-  const destNotams = Array.isArray(destination?.notam) ? destination.notam : [];
-  const altNotams = Array.isArray(alternate?.notam) ? alternate.notam : [];
+  const originNotams = origin.notam;
+  const destNotams = destination.notam;
+  const altNotams = alternate?.notam ?? [];
 
-  const sigmetList = Array.isArray(sigmets?.sigmet) ? sigmets.sigmet : [];
+  const sigmetList = sigmets;
 
-  const firRoute = Array.isArray(atc?.fir_enroute) ? atc.fir_enroute : [];
+  const firRoute = atc.fir_enroute;
 
   const hasNotams = originNotams.length > 0 || destNotams.length > 0 || altNotams.length > 0;
   const hasSigmets = sigmetList.length > 0;
 
   return (
-    <ScrollArea className="h-[500px] pr-4">
+    <div className="space-y-4">
+      <Separator />
       <div className="space-y-4">
         {/* SIGMETs Section */}
         {hasSigmets && (
@@ -190,7 +192,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
           </div>
         </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 }
 
@@ -388,23 +390,11 @@ function NotamCard({ notam, isRunway }: { notam: SimBriefNotam; isRunway?: boole
 
 // Helper functions
 function formatSigmetTime(timestamp: string): string {
-  if (!timestamp) return '—';
-  try {
-    const date = new Date(parseInt(timestamp, 10) * 1000);
-    return date.toISOString().slice(11, 16) + 'Z';
-  } catch {
-    return timestamp;
-  }
+  const date = parseTimestamp(timestamp);
+  return date ? date.toISOString().slice(11, 16) + 'Z' : '—';
 }
 
 function formatNotamDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  try {
-    // SimBrief format varies, try to parse
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  } catch {
-    return dateStr;
-  }
+  const date = parseTimestamp(dateStr);
+  return date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
 }

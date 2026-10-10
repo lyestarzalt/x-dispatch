@@ -56,17 +56,14 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.v1')}
                   value={units.speed(Number(takeoffRunway.speeds_v1) as Knots)}
-                  color="warning"
                 />
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.vr')}
                   value={units.speed(Number(takeoffRunway.speeds_vr) as Knots)}
-                  color="success"
                 />
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.v2')}
                   value={units.speed(Number(takeoffRunway.speeds_v2) as Knots)}
-                  color="primary"
                 />
               </div>
 
@@ -75,7 +72,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Flex & Conditions */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <Thermometer className="text-warning h-4 w-4" />
+                  <Thermometer className="text-muted-foreground h-4 w-4" />
                   <div>
                     <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.flexTemp')}
@@ -88,7 +85,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Wind className="text-primary h-4 w-4" />
+                  <Wind className="text-muted-foreground h-4 w-4" />
                   <div>
                     <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.wind')}
@@ -157,7 +154,6 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                 <SpeedBox
                   label={t('simbriefDialog.performance.vspeeds.vref')}
                   value={units.speed(Number(tlr.landing.distance_dry.speeds_vref) as Knots)}
-                  color="violet"
                   large
                 />
               </div>
@@ -167,7 +163,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
               {/* Conditions */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
-                  <Gauge className="text-violet h-4 w-4" />
+                  <Gauge className="text-muted-foreground h-4 w-4" />
                   <div>
                     <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.flaps')}
@@ -178,7 +174,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Wind className="text-primary h-4 w-4" />
+                  <Wind className="text-muted-foreground h-4 w-4" />
                   <div>
                     <p className="text-muted-foreground text-2xs uppercase">
                       {t('simbriefDialog.performance.wind')}
@@ -249,7 +245,11 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
             <p className="text-muted-foreground text-2xs uppercase">
               {t('simbriefDialog.performance.initialFl')}
             </p>
-            <p className="text-primary font-mono text-xl font-bold">{general.initial_altitude}</p>
+            <p className="font-mono text-xl font-bold">
+              {t('simbriefDialog.performance.flightLevel', {
+                value: Math.round((parseInt(general.initial_altitude, 10) || 0) / 100),
+              })}
+            </p>
           </div>
           <div className="text-center">
             <p className="text-muted-foreground text-2xs uppercase">
@@ -341,29 +341,10 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
 }
 
 // Helper component for V-speed boxes
-function SpeedBox({
-  label,
-  value,
-  color,
-  large,
-}: {
-  label: string;
-  value: string;
-  color: 'warning' | 'success' | 'primary' | 'violet';
-  large?: boolean;
-}) {
-  const colorClasses = {
-    warning: 'bg-warning/10 text-warning border-warning/20',
-    success: 'bg-success/10 text-success border-success/20',
-    primary: 'bg-primary/10 text-primary border-primary/20',
-    violet: 'bg-violet/10 text-violet border-violet/20',
-  };
-
+function SpeedBox({ label, value, large }: { label: string; value: string; large?: boolean }) {
   return (
-    <div
-      className={cn('rounded-lg border p-2 text-center', colorClasses[color], large && 'px-6 py-3')}
-    >
-      <p className="text-2xs font-medium uppercase opacity-80">{label}</p>
+    <div className={cn('bg-muted/40 rounded-lg border p-2 text-center', large && 'px-6 py-3')}>
+      <p className="text-muted-foreground text-xs">{label}</p>
       <p className={cn('font-mono font-bold', large ? 'text-2xl' : 'text-lg')}>{value || '—'}</p>
     </div>
   );

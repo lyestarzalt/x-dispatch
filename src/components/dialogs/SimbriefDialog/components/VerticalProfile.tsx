@@ -3,24 +3,45 @@ import {
   VerticalProfileChart,
   type VerticalProfileRow,
 } from '@/components/profile/VerticalProfileChart';
-import type { SimBriefFix } from '@/types/simbrief';
+import type { SimBriefOFP } from '@/types/simbrief';
 
 interface VerticalProfileProps {
-  fixes: SimBriefFix[];
+  data: SimBriefOFP;
   className?: string;
+  onHover?: (row: VerticalProfileRow | null) => void;
 }
 
-/** The SimBrief navlog's own planned altitudes and terrain, in the shared profile chart. */
-export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
+/**
+ * The SimBrief navlog's own planned altitudes and terrain, in the shared profile chart.
+ * The navlog starts at the first fix (often the top of climb) and ends on a fix whose altitude
+ * is the approach platform, so the departure airport is added at 0 NM and the arrival is
+ * brought down to field elevation: the line then climbs out of one airport and lands at the
+ * other, like a built plan's.
+ */
+export function VerticalProfile({ data, className, onHover }: VerticalProfileProps) {
   const { rows, tocDistance, todDistance } = useMemo(() => {
+    const { origin, destination, navlog: fixes } = data;
+    const airportRow = (airport: SimBriefOFP['origin'], distance: number): VerticalProfileRow => {
+      const elevation = Math.max(parseInt(airport.elevation, 10) || 0, 0);
+      return {
+        distance,
+        latitude: parseFloat(airport.pos_lat),
+        longitude: parseFloat(airport.pos_long),
+        altitude: elevation,
+        groundHeight: elevation,
+        ident: airport.icao_code,
+      };
+    };
+
     let cumulative = 0;
     let toc: number | null = null;
     let tod: number | null = null;
-    const rows: VerticalProfileRow[] = [];
+    const rows: VerticalProfileRow[] = [airportRow(origin, 0)];
     for (let i = 0; i < fixes.length; i++) {
       const fix = fixes[i];
       if (!fix) continue;
       cumulative += parseFloat(fix.distance) || 0;
+      if (fix.type === 'apt' && fix.ident === destination.icao_code) continue;
       const next = fixes[i + 1];
       const isTopOfClimb = fix.stage === 'CLB' && next?.stage === 'CRZ';
       const isTopOfDescent = fix.stage === 'CRZ' && next?.stage === 'DSC';
@@ -39,8 +60,10 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
         oat: `${fix.oat}°C`,
       });
     }
+    const total = Math.max(cumulative, parseFloat(data.general.route_distance) || 0);
+    rows.push(airportRow(destination, Math.round(total)));
     return { rows, tocDistance: toc, todDistance: tod };
-  }, [fixes]);
+  }, [data]);
 
   return (
     <VerticalProfileChart
@@ -48,6 +71,7 @@ export function VerticalProfile({ fixes, className }: VerticalProfileProps) {
       tocDistance={tocDistance}
       todDistance={todDistance}
       className={className}
+      onHover={onHover ? (row) => onHover(row) : undefined}
     />
   );
 }

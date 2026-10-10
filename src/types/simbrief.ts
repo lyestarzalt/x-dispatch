@@ -1,8 +1,14 @@
 /**
  * SimBrief API Types
- * Types for the SimBrief OFP (Operational Flight Plan) API response
+ * Types for the SimBrief OFP (Operational Flight Plan) as the app receives it: the
+ * `json=v2` fetcher response after `slimOfp` (src/lib/simbrief/ofp.ts) dropped the sections
+ * the app never reads and made every list an array.
  *
- * Note: SimBrief returns most numeric values as strings
+ * Notes:
+ * - SimBrief returns most numeric values as strings.
+ * - Durations are `HH:MM:SS` and timestamps ISO 8601; read them with `parseDurationSeconds`
+ *   and `parseTimestamp` rather than `parseInt`.
+ * - A missing string arrives as `""`, a missing flag as `false`.
  */
 
 // =============================================================================
@@ -17,9 +23,12 @@ export interface SimBriefNotam {
   notam_qcode_category: string;
   notam_qcode_subject: string;
   notam_qcode_status: string;
+  /** ISO 8601. */
   date_effective: string;
-  date_expire: string | null;
-  date_expire_is_estimated?: string;
+  /** ISO 8601, or empty when the NOTAM has no expiry. */
+  date_expire: string;
+  date_expire_is_estimated?: boolean | string;
+  notam_schedule?: string;
   location_icao: string;
   location_name: string;
 }
@@ -45,8 +54,9 @@ export interface SimBriefAirport {
   metar_visibility: string;
   metar_ceiling: string;
   taf: string;
-  taf_time: string;
-  notam?: SimBriefNotam[];
+  /** ISO 8601, or `false` when there is no TAF. */
+  taf_time: string | boolean;
+  notam: SimBriefNotam[];
 }
 
 // =============================================================================
@@ -87,11 +97,14 @@ export interface SimBriefFirCrossing {
 export interface SimBriefFix {
   ident: string;
   name: string;
+  /** 'wpt' | 'vor' | 'ndb' | 'apt' | 'ltlg' */
   type: string;
-  frequency?: string;
+  /** Navaid frequency, or empty for a plain fix. */
+  frequency: string;
   pos_lat: string;
   pos_long: string;
   stage: string; // 'CLB' | 'CRZ' | 'DSC'
+  /** Airway, 'DCT', an oceanic track ('NATJ') or the SID/STAR name for procedure fixes. */
   via_airway: string;
   is_sid_star: string; // '0' | '1'
   distance: string;
@@ -104,7 +117,9 @@ export interface SimBriefFix {
   mach_thousandths: string;
   wind_component: string;
   groundspeed: string;
+  /** `HH:MM:SS` */
   time_leg: string;
+  /** `HH:MM:SS` */
   time_total: string;
   fuel_flow: string;
   fuel_leg: string;
@@ -122,12 +137,8 @@ export interface SimBriefFix {
   fir: string;
   fir_units: string;
   fir_valid_levels: string;
-  wind_data?: {
-    level: SimBriefWindLevel[];
-  };
-  fir_crossing?: {
-    fir?: SimBriefFirCrossing;
-  };
+  wind_data?: SimBriefWindLevel[];
+  fir_crossing?: SimBriefFirCrossing[];
 }
 
 // =============================================================================
@@ -224,12 +235,16 @@ export interface SimBriefTLR {
 export interface SimBriefSigmet {
   type: string;
   hazard: string;
+  /** 'SEV', 'MOD', ... or empty. */
   qualifier: string;
   fir: string;
   fir_name: string;
   id: string;
+  /** ISO 8601 */
   issued: string;
+  /** ISO 8601 */
   start: string;
+  /** ISO 8601 */
   end: string;
   text: string;
 }
@@ -281,6 +296,7 @@ export interface SimBriefWeights {
 // Times Types
 // =============================================================================
 
+/** Durations are `HH:MM:SS`, times of day ISO 8601, timezones `+03:00:00`. */
 export interface SimBriefTimes {
   est_time_enroute: string;
   sched_time_enroute: string;
@@ -336,7 +352,6 @@ export interface SimBriefGeneral {
   sid_trans: string;
   star_ident: string;
   star_trans: string;
-  airac: string;
 }
 
 // =============================================================================
@@ -378,43 +393,12 @@ export interface SimBriefATC {
 }
 
 // =============================================================================
-// Crew Types
-// =============================================================================
-
-export interface SimBriefCrew {
-  cpt: string;
-  fo: string;
-  dx: string;
-  fa: string[];
-}
-
-// =============================================================================
-// Images Types
-// =============================================================================
-
-export interface SimBriefImage {
-  name: string;
-  link: string;
-}
-
-export interface SimBriefImages {
-  directory: string;
-  map: SimBriefImage[];
-}
-
-// =============================================================================
 // Files Types
 // =============================================================================
-
-export interface SimBriefFile {
-  name: string;
-  link: string;
-}
 
 export interface SimBriefFiles {
   directory: string;
   pdf: { name?: string; link: string };
-  file?: SimBriefFile[];
 }
 
 // =============================================================================
@@ -514,39 +498,8 @@ export interface SimBriefWeatherSummary {
   orig_taf: string;
   dest_metar: string;
   dest_taf: string;
-  altn_metar: string;
-  altn_taf: string;
-}
-
-// =============================================================================
-// Top-level NOTAMs Types
-// =============================================================================
-
-export interface SimBriefNotamRecord {
-  notam_id: string;
-  icao_id: string;
-  icao_name: string;
-  notam_text: string;
-  notam_report: string;
-  notam_qcode: string;
-  notam_created_dtg: string;
-  notam_effective_dtg: string;
-  notam_expire_dtg?: string;
-  notam_expire_dtg_estimated?: string;
-}
-
-export interface SimBriefNotams {
-  notamdrec: SimBriefNotamRecord[];
-  'rec-count': string;
-}
-
-// =============================================================================
-// Text/OFP Output Types
-// =============================================================================
-
-export interface SimBriefText {
-  plan_html: string;
-  tlr_section?: string;
+  altn_metar: string | string[];
+  altn_taf: string | string[];
 }
 
 // =============================================================================
@@ -556,45 +509,46 @@ export interface SimBriefText {
 export interface SimBriefOFP {
   fetch: {
     userid: string;
+    static_id: string;
     status: string;
     time: string;
   };
   params: {
     request_id: string;
     user_id: string;
+    /** ISO 8601 */
     time_generated: string;
     ofp_layout: string;
+    /** AIRAC cycle the plan was built on, e.g. "2610". */
     airac: string;
+    /** "lbs" or "kgs": the unit every fuel and weight figure is in. */
     units: string;
   };
   general: SimBriefGeneral;
   origin: SimBriefAirport;
   destination: SimBriefAirport;
-  alternate?: SimBriefAlternate;
-  navlog: {
-    fix: SimBriefFix[];
-  };
+  /** The dispatched alternate first, then any extra alternates; empty when none. */
+  alternate: SimBriefAlternate[];
+  navlog: SimBriefFix[];
   tlr?: SimBriefTLR;
   atc: SimBriefATC;
   aircraft: SimBriefAircraft;
   fuel: SimBriefFuel;
   weights: SimBriefWeights;
   times: SimBriefTimes;
-  crew?: SimBriefCrew;
   impacts?: SimBriefImpacts;
-  sigmets?: {
-    sigmet: SimBriefSigmet[];
-  };
-  notams?: SimBriefNotams;
+  sigmets: SimBriefSigmet[];
   weather?: SimBriefWeatherSummary;
   files: SimBriefFiles;
   fms_downloads?: SimBriefFmsDownloads;
-  images?: SimBriefImages;
   links?: SimBriefLinks;
   prefile?: SimBriefPrefile;
-  text?: SimBriefText;
 }
+
+/** Why a fetch failed, for the UI to translate. The raw message is kept for logs. */
+export type SimBriefErrorCode =
+  'invalid_user' | 'unknown_user' | 'no_plan' | 'bad_response' | 'network';
 
 /** IPC response type for SimBrief fetch */
 export type SimBriefFetchResult =
-  { success: true; data: SimBriefOFP } | { success: false; error: string };
+  { success: true; data: SimBriefOFP } | { success: false; error: string; code: SimBriefErrorCode };
