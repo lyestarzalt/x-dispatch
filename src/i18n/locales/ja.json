@@ -706,7 +706,20 @@
       "followSimTime": "X-Planeの時刻に従う",
       "followSimTimeDesc": "X-Plane接続中はシミュレーターの時計を、それ以外はシステムの時計を使用します。",
       "contours": "等高線",
-      "contoursDesc": "地形上の標高等高線"
+      "contoursDesc": "地形上の標高等高線",
+      "mapLabels": "地図ラベル",
+      "mapLabelsDesc": "衛星画像やその他の画像タイルの上に描かれる地名と国境。",
+      "labelBrightness": "ラベルの明るさ",
+      "labelSize": "ラベルのサイズ",
+      "labelCategory": {
+        "borders": "国境",
+        "countries": "国名",
+        "states": "州・地域",
+        "cities": "都市",
+        "towns": "町と村",
+        "water": "海・湖・川",
+        "roads": "道路名"
+      }
     },
     "navigation": {
       "title": "ナビゲーション",

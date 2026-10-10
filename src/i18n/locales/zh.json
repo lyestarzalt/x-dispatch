@@ -706,7 +706,20 @@
       "followSimTime": "跟随 X-Plane 时间",
       "followSimTimeDesc": "X-Plane 连接时使用模拟器时钟，否则使用系统时钟。",
       "contours": "等高线",
-      "contoursDesc": "地形上的高程等高线"
+      "contoursDesc": "地形上的高程等高线",
+      "mapLabels": "地图标注",
+      "mapLabelsDesc": "绘制在卫星底图及其他图像瓦片上的地名和边界。",
+      "labelBrightness": "标注亮度",
+      "labelSize": "标注大小",
+      "labelCategory": {
+        "borders": "边界",
+        "countries": "国家",
+        "states": "州和地区",
+        "cities": "城市",
+        "towns": "城镇和村庄",
+        "water": "海洋、湖泊和河流",
+        "roads": "道路名称"
+      }
     },
     "navigation": {
       "title": "导航",

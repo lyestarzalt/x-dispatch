@@ -706,7 +706,20 @@
       "followSimTime": "Suivre l'heure X-Plane",
       "followSimTimeDesc": "Utiliser l'horloge du simulateur quand X-Plane est connecté, sinon celle du système.",
       "contours": "Courbes de niveau",
-      "contoursDesc": "Courbes de niveau d'altitude sur le terrain"
+      "contoursDesc": "Courbes de niveau d'altitude sur le terrain",
+      "mapLabels": "Étiquettes de la carte",
+      "mapLabelsDesc": "Noms de lieux et frontières dessinés sur le fond satellite et les autres tuiles d'image.",
+      "labelBrightness": "Luminosité des étiquettes",
+      "labelSize": "Taille des étiquettes",
+      "labelCategory": {
+        "borders": "Frontières",
+        "countries": "Pays",
+        "states": "États et régions",
+        "cities": "Villes",
+        "towns": "Bourgs et villages",
+        "water": "Mers, lacs et rivières",
+        "roads": "Noms de routes"
+      }
     },
     "navigation": {
       "title": "Navigation",

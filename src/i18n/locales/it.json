@@ -706,7 +706,20 @@
       "followSimTime": "Segui l'ora di X-Plane",
       "followSimTimeDesc": "Usa l'orologio del simulatore quando X-Plane è connesso, altrimenti quello di sistema.",
       "contours": "Curve di livello",
-      "contoursDesc": "Curve di livello di altitudine sul terreno"
+      "contoursDesc": "Curve di livello di altitudine sul terreno",
+      "mapLabels": "Etichette della mappa",
+      "mapLabelsDesc": "Nomi di luoghi e confini disegnati sulla mappa satellitare e sulle altre tessere immagine.",
+      "labelBrightness": "Luminosità delle etichette",
+      "labelSize": "Dimensione delle etichette",
+      "labelCategory": {
+        "borders": "Confini",
+        "countries": "Paesi",
+        "states": "Stati e regioni",
+        "cities": "Città",
+        "towns": "Paesi e villaggi",
+        "water": "Mari, laghi e fiumi",
+        "roads": "Nomi delle strade"
+      }
     },
     "navigation": {
       "title": "Navigazione",

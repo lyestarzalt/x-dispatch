@@ -706,7 +706,20 @@
       "followSimTime": "Follow X-Plane's clock",
       "followSimTimeDesc": "Use the simulator's clock while X-Plane be connected, else yer own ship's clock.",
       "contours": "Hill contour lines",
-      "contoursDesc": "Elevation contour lines across the terrain"
+      "contoursDesc": "Elevation contour lines across the terrain",
+      "mapLabels": "Chart lettering",
+      "mapLabelsDesc": "Place names and borders scrawled over the satellite chart and other picture tiles.",
+      "labelBrightness": "Lettering brightness",
+      "labelSize": "Lettering size",
+      "labelCategory": {
+        "borders": "Borders",
+        "countries": "Countries",
+        "states": "States and regions",
+        "cities": "Cities",
+        "towns": "Towns and villages",
+        "water": "Seas, lakes and rivers",
+        "roads": "Road names"
+      }
     },
     "navigation": {
       "title": "Charting",

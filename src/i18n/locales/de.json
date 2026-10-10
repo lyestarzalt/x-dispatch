@@ -706,7 +706,20 @@
       "followSimTime": "X-Plane-Zeit folgen",
       "followSimTimeDesc": "Simulatoruhr verwenden, solange X-Plane verbunden ist, sonst die Systemuhr.",
       "contours": "Höhenlinien",
-      "contoursDesc": "Höhenlinien auf dem Gelände"
+      "contoursDesc": "Höhenlinien auf dem Gelände",
+      "mapLabels": "Kartenbeschriftung",
+      "mapLabelsDesc": "Ortsnamen und Grenzen, die über die Satellitenkarte und andere Bildkacheln gezeichnet werden.",
+      "labelBrightness": "Helligkeit der Beschriftung",
+      "labelSize": "Größe der Beschriftung",
+      "labelCategory": {
+        "borders": "Grenzen",
+        "countries": "Länder",
+        "states": "Bundesländer und Regionen",
+        "cities": "Städte",
+        "towns": "Kleinstädte und Dörfer",
+        "water": "Meere, Seen und Flüsse",
+        "roads": "Straßennamen"
+      }
     },
     "navigation": {
       "title": "Navigation",
