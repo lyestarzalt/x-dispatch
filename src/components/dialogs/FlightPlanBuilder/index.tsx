@@ -49,8 +49,14 @@ import {
   proceduresForRunway,
   suggestProcedures,
 } from '@/lib/flightplan/builder/procedures';
-import { natCrossing, trackInRoute } from '@/lib/flightplan/builder/trackChoice';
-import type { RouteToken } from '@/lib/flightplan/builder/types';
+import {
+  cruiseFitsTrack,
+  cruiseOnTracks,
+  natCrossing,
+  offeredTracks,
+  trackInRoute,
+} from '@/lib/flightplan/builder/trackChoice';
+import type { PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -210,6 +216,18 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   // The router picks airways for the cruise level, so a missing cruise is guessed from the
   // great-circle distance first; routing at the router's own default would favour the lower
   // airways and leave a jet flagged on every one of them.
+  // North Atlantic tracks for the crossing, if the pair makes one. The cruise suggested for a
+  // crossing lands on a level the tracks offer, so the router can take a track straight away.
+  const crossing = departure && arrival ? natCrossing(departure, arrival) : null;
+  const { data: natFeed } = useOceanicTracks(isOpen && crossing !== null);
+  const suggestCruise = (departure: PlanEndpoint, arrival: PlanEndpoint, distanceNm: number) => {
+    const eastbound = isEastbound(departure, arrival);
+    const suggested = suggestCruiseAltitudeFt(distanceNm, cls, eastbound);
+    return crossing
+      ? cruiseOnTracks(suggested, offeredTracks(natFeed, crossing), eastbound)
+      : suggested;
+  };
+
   const autoRoutedPair = useRef<string | null>(null);
   useEffect(() => {
     if (!isOpen || !departure || !arrival || routeText !== '') return;
@@ -217,12 +235,15 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     const pair = `${departure.icao}-${arrival.icao}`;
     if (autoRoutedPair.current === pair) return;
     if (cruiseAltitudeFt === null) {
-      const direct = greatCircleNm(departure, arrival);
-      setCruiseAltitude(suggestCruiseAltitudeFt(direct, cls, isEastbound(departure, arrival)));
+      // A crossing waits for the track message, like the procedures, so the cruise fits it.
+      if (crossing && natFeed === undefined) return;
+      setCruiseAltitude(suggestCruise(departure, arrival, greatCircleNm(departure, arrival)));
       return;
     }
     autoRoutedPair.current = pair;
     void autoRoute(joins);
+    // suggestCruise is rebuilt every render from values that are all listed here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isOpen,
     departure,
@@ -230,6 +251,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     routeText,
     cruiseAltitudeFt,
     cls,
+    crossing,
+    natFeed,
     setCruiseAltitude,
     autoRoute,
     joins,
@@ -393,8 +416,21 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   // Cruise is picked for the user from distance, aircraft class and direction of flight.
   useEffect(() => {
     if (!ready || !departure || !arrival || cruiseAltitudeFt !== null) return;
-    setCruiseAltitude(suggestCruiseAltitudeFt(distanceNm, cls, isEastbound(departure, arrival)));
-  }, [ready, departure, arrival, cruiseAltitudeFt, distanceNm, cls, setCruiseAltitude]);
+    if (crossing && natFeed === undefined) return;
+    setCruiseAltitude(suggestCruise(departure, arrival, distanceNm));
+    // suggestCruise is rebuilt every render from values that are all listed here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    ready,
+    departure,
+    arrival,
+    cruiseAltitudeFt,
+    distanceNm,
+    cls,
+    crossing,
+    natFeed,
+    setCruiseAltitude,
+  ]);
 
   // A new class means a new cruise level, and the airways that suit it; route again once it is set.
   const rerouteAfterCruise = useRef(false);
@@ -412,12 +448,24 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
   };
 
-  // North Atlantic tracks for the crossing, if the pair makes one; the chosen one is whatever
-  // the route files. Picking a chip or a track on the map routes through it.
-  const crossing = departure && arrival ? natCrossing(departure, arrival) : null;
-  const { data: natFeed } = useOceanicTracks(isOpen && crossing !== null);
+  // The chosen track is whatever the route files. Picking a chip or a track on the map routes
+  // through it, and takes the cruise along onto a level that track offers.
   const selectedTrack = useMemo(() => trackInRoute(routeText), [routeText]);
   const handlePickTrack = async (track: string | null) => {
+    const picked = track
+      ? (natFeed?.messages ?? []).flatMap((m) => m.tracks).find((tr) => tr.name === track)
+      : undefined;
+    if (
+      picked &&
+      departure &&
+      arrival &&
+      cruiseAltitudeFt !== null &&
+      !cruiseFitsTrack(picked, cruiseAltitudeFt)
+    ) {
+      setCruiseAltitude(
+        cruiseOnTracks(cruiseAltitudeFt, [picked], isEastbound(departure, arrival))
+      );
+    }
     const ok = await autoRoute(joins, track);
     if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
   };
@@ -579,7 +627,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="text-warning flex min-w-0 items-center gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{cruiseIssue}</span>
+                <span className="truncate" title={cruiseIssue}>
+                  {cruiseIssue}
+                </span>
               </span>
               <Button
                 variant="outline"

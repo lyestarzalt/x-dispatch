@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Na wschód",
       "westbound": "Na zachód",
-      "none": "Obecnie nie ma opublikowanych tracków w tym kierunku.",
+      "none": {
+        "eastbound": "Zestaw na wschód jeszcze nie został opublikowany. Gander zwykle publikuje go około 1300Z.",
+        "westbound": "Zestaw na zachód jeszcze nie został opublikowany. Shanwick zwykle publikuje go około 2100Z."
+      },
+      "nextSet": {
+        "eastbound": "Ten zestaw się skończył. Gander zwykle publikuje kolejny około 1300Z. W symulatorze nadal możesz nim lecieć.",
+        "westbound": "Ten zestaw się skończył. Shanwick zwykle publikuje kolejny około 2100Z. W symulatorze nadal możesz nim lecieć."
+      },
       "tmi": "TMI {{tmi}}",
       "current": "Ważne teraz",
       "upcoming": "Nadchodzące",
+      "lastPublished": "Ostatnio opublikowany",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "Uwagi do komunikatu o trackach",
-      "levelWarning": "FL{{cruise}} nie jest dostępny na tracku {{id}}: FL {{levels}}",
+      "levelWarning": "FL{{cruise}} nie ma na tym tracku",
       "unavailable": "Komunikat o trackach niedostępny: {{reason}}"
     },
     "windSuggest": "Wiatr {{wind}} sprzyja pasowi {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "Ta droga lotnicza nie łączy punktów po obu stronach",
       "airwayEndsAtCoordinate": "Droga lotnicza musi kończyć się punktem, nie współrzędną",
       "trackPartial": "Oznaczenie tracku zgłasza się tylko dla całego tracku; dla części podaj jego punkty",
-      "airwayWrongWay": "Droga lotnicza jednokierunkowa, zgłoszona pod prąd",
-      "airwayLevel": "Nieopublikowana na poziomie przelotu; ta droga lotnicza obowiązuje {{levels}}"
+      "airwayWrongWay": "Ta droga lotnicza jest jednokierunkowa, a trasa leci nią w złą stronę",
+      "airwayLevel": "Ta droga lotnicza obowiązuje tylko {{levels}}, nie na poziomie przelotu"
     },
     "setStart": "Start z lotniska odlotu",
     "showOnMap": "Pokaż na mapie",
@@ -261,10 +269,10 @@
     "savedAs": "Zapisano jako {{file}}",
     "check": "Sprawdź",
     "adjustCruise": "Dopasuj",
-    "cruiseBelowFloor": "Przelot jest poniżej dolnej granicy trasy {{level}}",
-    "cruiseAboveCeiling": "Przelot jest powyżej górnej granicy trasy {{level}}",
-    "cruiseOddLevels": "Loty na wschód używają nieparzystych tysięcy",
-    "cruiseEvenLevels": "Loty na zachód używają parzystych tysięcy",
+    "cruiseBelowFloor": "Trasa pozwala na {{level}} lub wyżej",
+    "cruiseAboveCeiling": "Trasa pozwala na {{level}} lub niżej",
+    "cruiseOddLevels": "Na wschód: nieparzyste poziomy",
+    "cruiseEvenLevels": "Na zachód: parzyste poziomy",
     "levelsBetween": "od {{min}} do {{max}}",
     "levelsFrom": "od {{min}}",
     "levelsUpTo": "do {{max}}"

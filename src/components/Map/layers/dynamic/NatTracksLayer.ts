@@ -1,14 +1,14 @@
 /**
  * North Atlantic tracks on the map: every track of the sets shown as a muted dashed line,
- * tracks of an upcoming message dotted and dimmer, the one filed in the route solid in the
- * track colour, each labelled once with its letter and level band. A wide transparent line
+ * tracks of an upcoming or last published message dotted and dimmer, the one filed in the
+ * route solid in the track colour, each labelled once with its letter and level band. A wide transparent line
  * on top takes clicks and hover; the hover popup is built from the feature's properties.
  */
 import i18n from 'i18next';
 import type * as maplibregl from 'maplibre-gl';
 import { greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { validityLabel } from '@/lib/flightplan/builder/trackChoice';
-import type { OceanicTrackInfo } from '@/lib/flightplan/builder/types';
+import type { NatMessageStatus, OceanicTrackInfo } from '@/lib/flightplan/builder/types';
 import { labelFont } from '@/lib/map/labelFonts';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
@@ -39,10 +39,10 @@ const COLORS = {
   labelHalo: '#1F2937',
 };
 
-/** A track to draw and whether it comes from the message published for later. */
+/** A track to draw and the status of the message it comes from. */
 export interface TrackDrawItem {
   track: OceanicTrackInfo;
-  upcoming: boolean;
+  status: NatMessageStatus;
 }
 
 /** Flight levels are feet by convention, so the band is not unit-aware. */
@@ -52,12 +52,16 @@ function levelBand(levels: number[]): string {
 }
 
 /** Everything the popup needs, carried on the feature so the hook stays data-free. */
-function trackProperties(track: OceanicTrackInfo, upcoming: boolean, selected: string | null) {
+function trackProperties(
+  track: OceanicTrackInfo,
+  status: NatMessageStatus,
+  selected: string | null
+) {
   return {
     name: track.name,
     id: track.id,
     selected: track.name === selected,
-    upcoming,
+    status,
     eastbound: track.eastbound,
     levels: track.levels.join(' '),
     validFrom: track.validFrom,
@@ -78,8 +82,8 @@ export function natTracksGeoJSON(
   selected: string | null
 ): GeoJSON.FeatureCollection {
   const features: GeoJSON.Feature[] = [];
-  for (const { track, upcoming } of items) {
-    const properties = trackProperties(track, upcoming, selected);
+  for (const { track, status } of items) {
+    const properties = trackProperties(track, status, selected);
     features.push({
       type: 'Feature',
       geometry: {
@@ -118,12 +122,18 @@ function escapeHtml(text: string): string {
 }
 
 /** The hover card for a track: designator, direction, status, levels, window, NARs, feeders. */
-export function natTrackPopupHtml(track: OceanicTrackInfo, upcoming: boolean): string {
+export function natTrackPopupHtml(track: OceanicTrackInfo, status: NatMessageStatus): string {
   // Before i18n is ready (tests) the key itself stands in for the text.
   const t = (key: string) => String(i18n.t(key) ?? key);
+  const tag =
+    status === 'upcoming'
+      ? `<span class="text-info text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.upcoming'))}</span>`
+      : status === 'expired'
+        ? `<span class="text-muted-foreground text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.lastPublished'))}</span>`
+        : '';
   const rows: string[] = [];
   rows.push(
-    `<div class="flex items-center gap-2"><span class="font-mono font-bold text-sm" style="color:${COLORS.selected}">${escapeHtml(track.name)}</span><span class="text-muted-foreground text-xs">${escapeHtml(t(track.eastbound ? 'planBuilder.tracks.eastbound' : 'planBuilder.tracks.westbound'))}</span>${upcoming ? `<span class="text-info text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.upcoming'))}</span>` : ''}${track.pbcs ? `<span class="text-muted-foreground text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.pbcs'))}</span>` : ''}</div>`
+    `<div class="flex items-center gap-2"><span class="font-mono font-bold text-sm" style="color:${COLORS.selected}">${escapeHtml(track.name)}</span><span class="text-muted-foreground text-xs">${escapeHtml(t(track.eastbound ? 'planBuilder.tracks.eastbound' : 'planBuilder.tracks.westbound'))}</span>${tag}${track.pbcs ? `<span class="text-muted-foreground text-2xs uppercase tracking-wider">${escapeHtml(t('planBuilder.tracks.pbcs'))}</span>` : ''}</div>`
   );
   rows.push(
     `<div class="font-mono text-xs">${escapeHtml(validityLabel(track.validFrom, track.validTo))}</div>`
@@ -150,12 +160,16 @@ export function natTrackPopupHtml(track: OceanicTrackInfo, upcoming: boolean): s
 /** The track behind a hit-layer feature, rebuilt from its properties for the popup. */
 export function trackFromFeature(properties: Record<string, unknown>): {
   track: OceanicTrackInfo;
-  upcoming: boolean;
+  status: NatMessageStatus;
 } | null {
   if (typeof properties.name !== 'string' || typeof properties.id !== 'string') return null;
   const words = (v: unknown) => (typeof v === 'string' && v !== '' ? v.split(' ') : []);
+  const status: NatMessageStatus =
+    properties.status === 'upcoming' || properties.status === 'expired'
+      ? properties.status
+      : 'current';
   return {
-    upcoming: properties.upcoming === true,
+    status,
     track: {
       id: properties.id,
       name: properties.name,
@@ -183,11 +197,12 @@ export function addNatTracksLayer(
 
   const isLine: maplibregl.ExpressionSpecification = ['==', ['geometry-type'], 'LineString'];
   const notSelected: maplibregl.ExpressionSpecification = ['!=', ['get', 'selected'], true];
+  const isCurrent: maplibregl.ExpressionSpecification = ['==', ['get', 'status'], 'current'];
   map.addLayer({
     id: LINE_ID,
     type: 'line',
     source: SOURCE_ID,
-    filter: ['all', isLine, notSelected, ['!=', ['get', 'upcoming'], true]],
+    filter: ['all', isLine, notSelected, isCurrent],
     layout: { 'line-cap': 'butt', 'line-join': 'round' },
     paint: {
       'line-color': COLORS.other,
@@ -196,12 +211,12 @@ export function addNatTracksLayer(
       'line-dasharray': [3, 2],
     },
   });
-  // Published for later: dotted and dimmer, so the current set reads first.
+  // Published for later or already ended: dotted and dimmer, so a current set reads first.
   map.addLayer({
     id: UPCOMING_LINE_ID,
     type: 'line',
     source: SOURCE_ID,
-    filter: ['all', isLine, notSelected, ['==', ['get', 'upcoming'], true]],
+    filter: ['all', isLine, notSelected, ['!', isCurrent]],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
       'line-color': COLORS.other,
@@ -248,7 +263,7 @@ export function addNatTracksLayer(
     },
     paint: {
       'text-color': COLORS.labelText,
-      'text-opacity': ['case', ['==', ['get', 'upcoming'], true], 0.6, 1],
+      'text-opacity': ['case', ['==', ['get', 'status'], 'current'], 1, 0.6],
       'text-halo-color': COLORS.labelHalo,
       'text-halo-width': 1.5,
     },

@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "东行",
       "westbound": "西行",
-      "none": "当前该方向没有发布的航迹。",
+      "none": {
+        "eastbound": "尚未发布东向航迹组。Gander 通常在 1300Z 左右发布。",
+        "westbound": "尚未发布西向航迹组。Shanwick 通常在 2100Z 左右发布。"
+      },
+      "nextSet": {
+        "eastbound": "此航迹组已结束。Gander 通常在 1300Z 左右发布下一组。在模拟器中仍可飞行。",
+        "westbound": "此航迹组已结束。Shanwick 通常在 2100Z 左右发布下一组。在模拟器中仍可飞行。"
+      },
       "tmi": "TMI {{tmi}}",
       "current": "当前有效",
       "upcoming": "即将生效",
+      "lastPublished": "最近发布",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "航迹电报备注",
-      "levelWarning": "航迹 {{id}} 不提供 FL{{cruise}}：FL {{levels}}",
+      "levelWarning": "此航迹不提供 FL{{cruise}}",
       "unavailable": "无法获取航迹电报：{{reason}}"
     },
     "windSuggest": "风 {{wind}} 适合跑道 {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "此航路未连接两侧的航路点",
       "airwayEndsAtCoordinate": "航路必须以航路点结束，而不是坐标",
       "trackPartial": "航迹代号仅在飞行整条航迹时申报；部分飞行请填写各航路点",
-      "airwayWrongWay": "单向航路，申报方向与之相反",
-      "airwayLevel": "巡航高度未公布；此航路适用 {{levels}}"
+      "airwayWrongWay": "此航路为单向，而航线反向飞行",
+      "airwayLevel": "此航路仅适用 {{levels}}，不适用于巡航高度"
     },
     "setStart": "从出发机场开始",
     "showOnMap": "在地图上显示",
@@ -261,10 +269,10 @@
     "savedAs": "已保存为 {{file}}",
     "check": "请检查",
     "adjustCruise": "调整",
-    "cruiseBelowFloor": "巡航高度低于航路下限 {{level}}",
-    "cruiseAboveCeiling": "巡航高度高于航路上限 {{level}}",
-    "cruiseOddLevels": "东向飞行使用奇数千英尺",
-    "cruiseEvenLevels": "西向飞行使用偶数千英尺",
+    "cruiseBelowFloor": "此航线允许 {{level}} 或更高",
+    "cruiseAboveCeiling": "此航线允许 {{level}} 或更低",
+    "cruiseOddLevels": "东向飞行使用奇数高度层",
+    "cruiseEvenLevels": "西向飞行使用偶数高度层",
     "levelsBetween": "{{min}} 至 {{max}}",
     "levelsFrom": "{{min}} 以上",
     "levelsUpTo": "{{max}} 以下"

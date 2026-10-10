@@ -3,7 +3,7 @@ import { Waves } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { type NatDirection, messagesForDirection } from '@/lib/flightplan/builder/trackChoice';
-import type { NatFeed, RouteIssue } from '@/lib/flightplan/builder/types';
+import type { NatFeed, NatMessageInfo, RouteIssue } from '@/lib/flightplan/builder/types';
 import { MessageCaption } from './MessageCaption';
 import { Caption } from './TrackCaption';
 import { TrackChips } from './TrackChips';
@@ -25,7 +25,8 @@ interface TrackPickerProps {
 /**
  * The North Atlantic tracks offered for the crossing, laid out like a track message: the
  * set valid now with its TMI and window, the upcoming set below it, one chip per track with
- * its level band, and the chosen track's fix string, levels, NARs and feeder fixes.
+ * its level band, and the chosen track's fix string, levels, NARs and feeder fixes. While
+ * nothing is valid or upcoming, the last published set stands in as a suggestion.
  */
 export function TrackPicker({
   feed,
@@ -37,14 +38,15 @@ export function TrackPicker({
   onPick,
 }: TrackPickerProps) {
   const { t } = useTranslation();
-  const { current, upcoming } = messagesForDirection(feed, direction);
-  const chosenCurrent = selected ? current?.tracks.find((tr) => tr.name === selected) : undefined;
-  const chosenUpcoming = selected ? upcoming?.tracks.find((tr) => tr.name === selected) : undefined;
-  const chosen = chosenCurrent
-    ? { track: chosenCurrent, upcoming: false }
-    : chosenUpcoming
-      ? { track: chosenUpcoming, upcoming: true }
-      : null;
+  const { current, upcoming, expired } = messagesForDirection(feed, direction);
+  // The last published set stands in only while nothing is valid or upcoming.
+  const shown = current || upcoming ? [current, upcoming] : [expired];
+  const sets = shown.filter((m): m is NatMessageInfo => m !== null);
+  const chosen = selected
+    ? (sets.flatMap((m) =>
+        m.tracks.filter((tr) => tr.name === selected).map((track) => ({ track, status: m.status }))
+      )[0] ?? null)
+    : null;
   return (
     <div className="space-y-2">
       <div className="flex min-w-0 items-center gap-2">
@@ -64,43 +66,32 @@ export function TrackPicker({
         </span>
         {disabled && <Spinner className="text-muted-foreground size-4 shrink-0" />}
       </div>
-      {!current && !upcoming && (
+      {sets.length === 0 && (
         <p className="text-muted-foreground text-xs">
           {feed?.error && feed.messages.length === 0
             ? t('planBuilder.tracks.unavailable', { reason: feed.error })
-            : t('planBuilder.tracks.none')}
+            : direction === 'eastbound'
+              ? t('planBuilder.tracks.none.eastbound')
+              : t('planBuilder.tracks.none.westbound')}
         </p>
       )}
-      {current && (
-        <div className="space-y-1.5">
-          <MessageCaption message={current} upcoming={false} />
+      {sets.map((message, index) => (
+        <div key={`${message.origin}|${message.validFrom}`} className="space-y-1.5">
+          <MessageCaption message={message} direction={direction} />
           <TrackChips
-            tracks={current.tracks}
+            tracks={message.tracks}
             selected={selected}
             cruiseAltitudeFt={cruiseAltitudeFt}
             disabled={disabled}
-            withAuto
+            withAuto={index === 0}
             onPick={onPick}
           />
         </div>
-      )}
-      {upcoming && (
-        <div className="space-y-1.5">
-          <MessageCaption message={upcoming} upcoming />
-          <TrackChips
-            tracks={upcoming.tracks}
-            selected={selected}
-            cruiseAltitudeFt={cruiseAltitudeFt}
-            disabled={disabled}
-            withAuto={!current}
-            onPick={onPick}
-          />
-        </div>
-      )}
+      ))}
       {chosen && (
         <TrackDetail
           track={chosen.track}
-          upcoming={chosen.upcoming}
+          status={chosen.status}
           cruiseAltitudeFt={cruiseAltitudeFt}
           issues={issues}
         />

@@ -133,7 +133,8 @@ export interface OceanicTrackInfo {
   pbcs: boolean;
 }
 
-export type NatMessageStatus = 'current' | 'upcoming';
+/** `expired` is a set that has ended, kept as the last published one for its direction. */
+export type NatMessageStatus = 'current' | 'upcoming' | 'expired';
 
 /** One track message (one direction, one validity window) with its tracks. */
 export interface NatMessageInfo {
@@ -150,7 +151,10 @@ export interface NatMessageInfo {
   tracks: OceanicTrackInfo[];
 }
 
-/** What the renderer gets: every unexpired message plus how the last download went. */
+/**
+ * What the renderer gets: every unexpired message, the last published set for a direction
+ * with nothing valid, plus how the last download went.
+ */
 export interface NatFeed {
   messages: NatMessageInfo[];
   /** Epoch ms of the last successful download, null before the first. */

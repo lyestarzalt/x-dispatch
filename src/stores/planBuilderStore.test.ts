@@ -101,27 +101,47 @@ describe('planBuilderStore — auto route via a chosen NAT track', () => {
   });
 });
 
+const choice = (name: string) => ({ name, transition: null });
+
 describe('planBuilderStore — swapping ends', () => {
-  it('reverses a plain airway route', () => {
+  it('starts the return leg over: route, cruise, alternate and procedures are re-suggested', () => {
     usePlanBuilderStore.setState({
-      departure: LFMC as PlanEndpoint,
-      arrival: LFLN as PlanEndpoint,
+      departure: { ...LFMC, runway: '13', sid: choice('LUC1A') } as PlanEndpoint,
+      arrival: {
+        ...LFLN,
+        runway: '15',
+        star: choice('YAN2B'),
+        approach: choice('I15'),
+      } as PlanEndpoint,
+      alternate: LFMC as PlanEndpoint,
       routeText: 'XATEL UY30 MTL',
+      cruiseAltitudeFt: 35000,
+      status: 'ready',
+      result: {} as never,
+      procedures: { sid: {} as never },
+      savedPath: '/tmp/LFMC-LFLN.fms',
     });
     usePlanBuilderStore.getState().swapEndpoints();
-    expect(usePlanBuilderStore.getState().routeText).toBe('MTL UY30 XATEL');
-    expect(usePlanBuilderStore.getState().departure?.icao).toBe('LFLN');
+    const state = usePlanBuilderStore.getState();
+    expect(state.departure).toMatchObject({ icao: 'LFLN', runway: '15' });
+    expect(state.departure?.sid).toBeUndefined();
+    expect(state.departure?.star).toBeUndefined();
+    expect(state.arrival).toMatchObject({ icao: 'LFMC', runway: '13' });
+    expect(state.arrival?.sid).toBeUndefined();
+    expect(state.arrival?.approach).toBeUndefined();
+    expect(state.routeText).toBe('');
+    expect(state.cruiseAltitudeFt).toBeNull();
+    expect(state.alternate).toBeNull();
+    expect(state.result).toBeNull();
+    expect(state.procedures).toEqual({});
+    expect(state.savedPath).toBeNull();
   });
 
-  it('drops a route that files a NAT track, since the other direction has its own tracks', () => {
-    usePlanBuilderStore.setState({
-      departure: { icao: 'EGLL', latitude: 51.5, longitude: -0.5 } as PlanEndpoint,
-      arrival: { icao: 'KJFK', latitude: 40.6, longitude: -73.8 } as PlanEndpoint,
-      routeText: 'CPT DCT BALIX NATA PIDSO DCT URTAK',
-    });
+  it('swaps a single endpoint without inventing the other', () => {
+    usePlanBuilderStore.setState({ departure: LFMC as PlanEndpoint, arrival: null });
     usePlanBuilderStore.getState().swapEndpoints();
-    expect(usePlanBuilderStore.getState().routeText).toBe('');
-    expect(usePlanBuilderStore.getState().departure?.icao).toBe('KJFK');
+    expect(usePlanBuilderStore.getState().departure).toBeNull();
+    expect(usePlanBuilderStore.getState().arrival?.icao).toBe('LFMC');
   });
 });
 

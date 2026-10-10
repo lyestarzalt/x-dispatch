@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Vers l'est",
       "westbound": "Vers l'ouest",
-      "none": "Aucun track n'est publié pour cette direction en ce moment.",
+      "none": {
+        "eastbound": "Aucun jeu vers l'est publié pour l'instant. Gander en publie un en général vers 1300Z.",
+        "westbound": "Aucun jeu vers l'ouest publié pour l'instant. Shanwick en publie un en général vers 2100Z."
+      },
+      "nextSet": {
+        "eastbound": "Ce jeu est terminé. Gander publie le suivant en général vers 1300Z. Dans le simulateur, vous pouvez quand même le voler.",
+        "westbound": "Ce jeu est terminé. Shanwick publie le suivant en général vers 2100Z. Dans le simulateur, vous pouvez quand même le voler."
+      },
       "tmi": "TMI {{tmi}}",
       "current": "Valide maintenant",
       "upcoming": "À venir",
+      "lastPublished": "Dernier publié",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "Remarques du message de tracks",
-      "levelWarning": "Le FL{{cruise}} n'est pas proposé sur le track {{id}} : FL {{levels}}",
+      "levelWarning": "Le FL{{cruise}} n'est pas sur ce track",
       "unavailable": "Message de tracks indisponible : {{reason}}"
     },
     "windSuggest": "Vent {{wind}} favorise la {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "Cette voie aérienne ne relie pas les points de part et d'autre",
       "airwayEndsAtCoordinate": "Une voie aérienne doit finir sur un point, pas une coordonnée",
       "trackPartial": "L'indicatif d'un track ne se dépose que pour le track entier ; sinon, déposez ses points",
-      "airwayWrongWay": "Voie aérienne à sens unique, déposée à contresens",
-      "airwayLevel": "Non publiée au niveau de croisière ; cette voie aérienne va {{levels}}"
+      "airwayWrongWay": "Cette voie aérienne est à sens unique et la route la parcourt à contresens",
+      "airwayLevel": "Cette voie aérienne ne vaut que de {{levels}}, pas au niveau de croisière"
     },
     "setStart": "Démarrer au départ",
     "showOnMap": "Afficher sur la carte",
@@ -261,10 +269,10 @@
     "savedAs": "Enregistré sous {{file}}",
     "check": "À vérifier",
     "adjustCruise": "Ajuster",
-    "cruiseBelowFloor": "Le niveau de croisière est sous le plancher {{level}} de la route",
-    "cruiseAboveCeiling": "Le niveau de croisière dépasse le plafond {{level}} de la route",
-    "cruiseOddLevels": "Vers l'est, on vole des milliers impairs",
-    "cruiseEvenLevels": "Vers l'ouest, on vole des milliers pairs",
+    "cruiseBelowFloor": "La route autorise {{level}} ou plus",
+    "cruiseAboveCeiling": "La route autorise {{level}} ou moins",
+    "cruiseOddLevels": "Vers l'est : niveaux impairs",
+    "cruiseEvenLevels": "Vers l'ouest : niveaux pairs",
     "levelsBetween": "de {{min}} à {{max}}",
     "levelsFrom": "à partir de {{min}}",
     "levelsUpTo": "jusqu'à {{max}}"

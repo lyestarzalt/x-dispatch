@@ -2,16 +2,20 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cruiseFitsTrack, trackFixString } from '@/lib/flightplan/builder/trackChoice';
-import type { OceanicTrackInfo, RouteIssue } from '@/lib/flightplan/builder/types';
+import type {
+  NatMessageStatus,
+  OceanicTrackInfo,
+  RouteIssue,
+} from '@/lib/flightplan/builder/types';
 
 export function TrackDetail({
   track,
-  upcoming,
+  status,
   cruiseAltitudeFt,
   issues,
 }: {
   track: OceanicTrackInfo;
-  upcoming: boolean;
+  status: NatMessageStatus;
   cruiseAltitudeFt: number | null;
   issues: RouteIssue[];
 }) {
@@ -19,12 +23,9 @@ export function TrackDetail({
   const fits = cruiseFitsTrack(track, cruiseAltitudeFt);
   const warnings: string[] = [];
   if (!fits && cruiseAltitudeFt !== null) {
+    // The levels on offer are listed just above, so the warning only names the cruise.
     warnings.push(
-      t('planBuilder.tracks.levelWarning', {
-        cruise: Math.round(cruiseAltitudeFt / 100),
-        id: track.id,
-        levels: track.levels.join(', '),
-      })
+      t('planBuilder.tracks.levelWarning', { cruise: Math.round(cruiseAltitudeFt / 100) })
     );
   }
   if (issues.includes('trackPartial')) warnings.push(t('planBuilder.issues.trackPartial'));
@@ -34,9 +35,14 @@ export function TrackDetail({
         <span className="xp-value font-semibold">
           {t('planBuilder.tracks.track', { id: track.id })}
         </span>
-        {upcoming && (
+        {status === 'upcoming' && (
           <Badge variant="info" className="px-1.5 py-0">
             {t('planBuilder.tracks.upcoming')}
+          </Badge>
+        )}
+        {status === 'expired' && (
+          <Badge variant="outline" className="px-1.5 py-0">
+            {t('planBuilder.tracks.lastPublished')}
           </Badge>
         )}
         {track.pbcs && (

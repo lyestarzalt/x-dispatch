@@ -4,8 +4,13 @@
  * validity window and lists its tracks with their levels, the North American Routes and
  * European feeder fixes that go with them, and remarks carrying the TMI and PBCS tracks.
  * Tracks are offered to the router and the resolver as one-way airways named NATA to
- * NATZ, which is how they are filed. Main process only.
+ * NATZ, which is how they are filed. A set that has ended stays on offer as the last
+ * published one for its direction until a new one is published, since a sim pilot may fly
+ * the crossing at any hour; the feed is cached on disk so that set survives a restart.
+ * Main process only.
  */
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import logger from '@/lib/utils/logger';
 import type { AirwaySegment, FixTypeNumber } from '@/types/navigation';
 import type { LatLon } from './geometry';
@@ -15,6 +20,8 @@ import type { NatFeed, NatMessageInfo, NatMessageStatus, OceanicTrackInfo } from
 export const NAT_JSON_URL = 'https://nms.aim.faa.gov/datanat/nat.json';
 const REFRESH_MS = 30 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 15_000;
+/** An ended set is offered as the last published one for this long after it ends. */
+const LAST_PUBLISHED_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 const FIX_TYPE = 11 as FixTypeNumber;
 
 export interface TrackPoint {
@@ -161,15 +168,14 @@ export function parseNatMessage(text: string, validFrom: string, validTo: string
 }
 
 /**
- * Every message in the FAA JSON that has not expired, parts joined, oldest first. A
- * message is one origin and one validity window.
+ * Every message in the FAA JSON, ended ones included and marked, parts joined, oldest first.
+ * A message is one origin and one validity window.
  */
 export function parseNatFeed(parts: unknown, now = Date.now()): NatMessage[] {
   if (!Array.isArray(parts)) return [];
   const groups = new Map<string, NatPart[]>();
   for (const part of parts as NatPart[]) {
     if (typeof part?.condition_message !== 'string' || !part.end_datetime) continue;
-    if (Date.parse(part.end_datetime) <= now) continue;
     const key = `${part.origin_id ?? ''}|${part.start_datetime ?? ''}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(part);
@@ -200,7 +206,9 @@ export function parseNatFeed(parts: unknown, now = Date.now()): NatMessage[] {
 
 /** Tracks from the FAA JSON that have not expired. */
 export function tracksFromNatJson(parts: unknown, now = Date.now()): OceanicTrack[] {
-  return parseNatFeed(parts, now).flatMap((m) => m.tracks);
+  return parseNatFeed(parts, now)
+    .filter((m) => m.status !== 'expired')
+    .flatMap((m) => m.tracks);
 }
 
 let messages: NatMessage[] = [];
@@ -241,12 +249,14 @@ export function resetOceanicTracksForTests(): void {
   fetchedAt = null;
   lastAttempt = 0;
   lastError = null;
+  cachePath = null;
 }
 
 export function messageStatus(
   msg: { validFrom: string; validTo: string },
   now: number
 ): NatMessageStatus {
+  if (Date.parse(msg.validTo) <= now) return 'expired';
   return Date.parse(msg.validFrom) > now ? 'upcoming' : 'current';
 }
 
@@ -254,9 +264,33 @@ function unexpired(now: number): NatMessage[] {
   return messages.filter((m) => Date.parse(m.validTo) > now);
 }
 
-/** Every published track that has not expired, upcoming ones included, for the resolver. */
+/** Whether an ended message is still recent enough to stand in as the last published set. */
+function recentlyEnded(m: NatMessage, now: number): boolean {
+  const end = Date.parse(m.validTo);
+  return end <= now && now - end < LAST_PUBLISHED_MAX_AGE_MS;
+}
+
+/**
+ * What is on offer: every unexpired message plus, for a direction with none, the set that
+ * ended most recently. Oldest first.
+ */
+function offered(now: number): NatMessage[] {
+  const live = unexpired(now);
+  const out = [...live];
+  for (const eastbound of [true, false]) {
+    if (live.some((m) => m.eastbound === eastbound)) continue;
+    const last = messages
+      .filter((m) => m.eastbound === eastbound && recentlyEnded(m, now))
+      .sort((a, b) => Date.parse(b.validTo) - Date.parse(a.validTo))[0];
+    if (last) out.push(last);
+  }
+  out.sort((a, b) => Date.parse(a.validFrom) - Date.parse(b.validFrom));
+  return out;
+}
+
+/** Every track on offer, upcoming and last published ones included, for the resolver. */
 export function getOceanicTracks(now = Date.now()): OceanicTrack[] {
-  return unexpired(now).flatMap((m) => m.tracks);
+  return offered(now).flatMap((m) => m.tracks);
 }
 
 /** Only the tracks valid right now, for the router's own choice. */
@@ -268,13 +302,15 @@ export function currentTracks(now = Date.now()): OceanicTrack[] {
 
 /**
  * The tracks the router may pick on its own: per direction the set valid now, or, while no
- * set for that direction is valid yet, the one published for later. A flight planned before
- * the day's westbound set starts still gets a westbound track.
+ * set for that direction is valid yet, the one published for later, or, failing both, the
+ * last published one. A flight planned before the day's westbound set starts still gets a
+ * westbound track; one planned in the morning gets last night's eastbound set.
  */
 export function tracksForAutoRouting(now = Date.now()): OceanicTrack[] {
   const out: OceanicTrack[] = [];
+  const all = offered(now);
   for (const eastbound of [true, false]) {
-    const mine = unexpired(now).filter((m) => m.eastbound === eastbound);
+    const mine = all.filter((m) => m.eastbound === eastbound);
     const current = mine.filter((m) => messageStatus(m, now) === 'current');
     const pick = current.length > 0 ? current : mine;
     out.push(...pick.flatMap((m) => m.tracks));
@@ -309,12 +345,13 @@ export async function refreshOceanicTracks(
       signal: controller.signal,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    messages = parseNatFeed(await res.json(), now);
+    messages = mergeMessages(messages, parseNatFeed(await res.json(), now), now);
     fetchedAt = Date.now();
     lastError = null;
     logger.main.info(
       `NAT tracks loaded: ${messages.map((m) => `${m.origin} ${m.tracks.map((t) => t.id).join('')}`).join(', ') || 'none'}`
     );
+    saveOceanicTracksCache();
   } catch (err) {
     const reason = controller.signal.aborted
       ? 'timeout'
@@ -325,6 +362,59 @@ export async function refreshOceanicTracks(
     logger.main.warn(`NAT tracks unavailable after ${Date.now() - startedAt}ms: ${reason}`);
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/**
+ * The live feed plus the ended sets it no longer carries, so the last published set for a
+ * direction stays on offer. The live feed is authoritative for anything still valid.
+ */
+function mergeMessages(previous: NatMessage[], fresh: NatMessage[], now: number): NatMessage[] {
+  const key = (m: NatMessage) => `${m.origin}|${m.validFrom}`;
+  const seen = new Set(fresh.map(key));
+  const kept = previous.filter((m) => !seen.has(key(m)) && recentlyEnded(m, now));
+  return [...fresh, ...kept].sort((a, b) => Date.parse(a.validFrom) - Date.parse(b.validFrom));
+}
+
+let cachePath: string | null = null;
+
+/** Where the feed is kept between runs; null disables the cache. */
+export function configureOceanicTracksCache(filePath: string | null): void {
+  cachePath = filePath;
+}
+
+function isNatMessage(value: unknown): value is NatMessage {
+  const m = value as Partial<NatMessage> | null;
+  return (
+    typeof m?.origin === 'string' &&
+    typeof m.eastbound === 'boolean' &&
+    typeof m.validFrom === 'string' &&
+    typeof m.validTo === 'string' &&
+    Array.isArray(m.tracks)
+  );
+}
+
+/** The feed saved by the previous run, so the last published set is there before the first download. */
+export function loadOceanicTracksCache(now = Date.now()): void {
+  if (!cachePath) return;
+  try {
+    const raw = JSON.parse(readFileSync(cachePath, 'utf8')) as { messages?: unknown };
+    if (!Array.isArray(raw.messages)) return;
+    messages = raw.messages
+      .filter(isNatMessage)
+      .filter((m) => Date.parse(m.validTo) > now || recentlyEnded(m, now));
+  } catch {
+    // No cache yet, or an unreadable one: the first download fills it.
+  }
+}
+
+function saveOceanicTracksCache(): void {
+  if (!cachePath) return;
+  try {
+    mkdirSync(dirname(cachePath), { recursive: true });
+    writeFileSync(cachePath, JSON.stringify({ messages }));
+  } catch (err) {
+    logger.main.warn('Could not save the NAT track cache', err);
   }
 }
 
@@ -384,7 +474,7 @@ function placeTrack(track: OceanicTrack, lookup: Lookup): OceanicTrackInfo | nul
   return { ...track, points };
 }
 
-/** The unexpired tracks with every point placed, flat (kept for callers without a feed). */
+/** The offered tracks with every point placed, flat (kept for callers without a feed). */
 export function resolvedTracks(lookup: Lookup, now = Date.now()): OceanicTrackInfo[] {
   const out: OceanicTrackInfo[] = [];
   for (const track of getOceanicTracks(now)) {
@@ -394,10 +484,10 @@ export function resolvedTracks(lookup: Lookup, now = Date.now()): OceanicTrackIn
   return out;
 }
 
-/** The unexpired messages with placed tracks and the state of the last download. */
+/** The offered messages with placed tracks and the state of the last download. */
 export function resolvedFeed(lookup: Lookup, now = Date.now()): NatFeed {
   const out: NatMessageInfo[] = [];
-  for (const msg of unexpired(now)) {
+  for (const msg of offered(now)) {
     const tracks: OceanicTrackInfo[] = [];
     for (const track of msg.tracks) {
       const placed = placeTrack(track, lookup);

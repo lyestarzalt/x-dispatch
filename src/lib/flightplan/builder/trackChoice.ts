@@ -2,6 +2,7 @@
  * Renderer-side helpers for offering North Atlantic tracks: which track a route already files,
  * and whether a pair of airports crosses the track system at all.
  */
+import { hasParity } from './cruiseAdjust';
 import type { LatLon } from './geometry';
 import { NAT_TRACK_RE, tokenizeRoute } from './routeTokens';
 import type { NatFeed, NatMessageInfo, OceanicTrackInfo } from './types';
@@ -34,17 +35,61 @@ export function natCrossing(departure: LatLon, arrival: LatLon): NatDirection | 
   return depWest ? 'eastbound' : 'westbound';
 }
 
-/** The message valid now and the one published for later, for the direction flown. */
+/**
+ * The message valid now, the one published for later, and the last published one, for the
+ * direction flown. The feed carries the last published set only while nothing else is on.
+ */
 export function messagesForDirection(
   feed: NatFeed | undefined,
   direction: NatDirection
-): { current: NatMessageInfo | null; upcoming: NatMessageInfo | null } {
+): {
+  current: NatMessageInfo | null;
+  upcoming: NatMessageInfo | null;
+  expired: NatMessageInfo | null;
+} {
   const eastbound = direction === 'eastbound';
   const mine = (feed?.messages ?? []).filter((m) => m.eastbound === eastbound);
   return {
     current: mine.find((m) => m.status === 'current') ?? null,
     upcoming: mine.find((m) => m.status === 'upcoming') ?? null,
+    expired: mine.find((m) => m.status === 'expired') ?? null,
   };
+}
+
+/**
+ * The tracks the router picks from on its own for the direction: the set valid now, else the
+ * one published for later, else the last published one.
+ */
+export function offeredTracks(
+  feed: NatFeed | undefined,
+  direction: NatDirection
+): OceanicTrackInfo[] {
+  const { current, upcoming, expired } = messagesForDirection(feed, direction);
+  return (current ?? upcoming ?? expired)?.tracks ?? [];
+}
+
+const FL_TO_FT = 100;
+
+/**
+ * A cruise moved onto a level the tracks offer: the suggestion itself when offered, else the
+ * highest level of the right parity under it, else the lowest of the right parity, else the
+ * nearest level offered at all. With no levels published the suggestion stands.
+ */
+export function cruiseOnTracks(
+  suggestedFt: number,
+  tracks: OceanicTrackInfo[],
+  eastbound: boolean
+): number {
+  const levels = [...new Set(tracks.flatMap((t) => t.levels))]
+    .map((fl) => fl * FL_TO_FT)
+    .sort((a, b) => a - b);
+  if (levels.length === 0 || levels.includes(suggestedFt)) return suggestedFt;
+  const legal = levels.filter((ft) => hasParity(ft, eastbound));
+  const legalBelow = legal.filter((ft) => ft <= suggestedFt);
+  if (legalBelow.length > 0) return legalBelow[legalBelow.length - 1]!;
+  if (legal.length > 0) return legal[0]!;
+  const below = levels.filter((ft) => ft <= suggestedFt);
+  return below.length > 0 ? below[below.length - 1]! : levels[0]!;
 }
 
 /** Whether the track publishes the cruise level; no cruise or no level list counts as a fit. */

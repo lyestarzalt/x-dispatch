@@ -172,16 +172,24 @@
       "levels": "FL{{from}}–FL{{to}}",
       "eastbound": "Verso est",
       "westbound": "Verso ovest",
-      "none": "Al momento non ci sono track pubblicati per questa direzione.",
+      "none": {
+        "eastbound": "Nessun set verso est pubblicato per ora. Gander di solito ne pubblica uno verso le 1300Z.",
+        "westbound": "Nessun set verso ovest pubblicato per ora. Shanwick di solito ne pubblica uno verso le 2100Z."
+      },
+      "nextSet": {
+        "eastbound": "Questo set è scaduto. Gander di solito pubblica il prossimo verso le 1300Z. Nel simulatore puoi comunque volarlo.",
+        "westbound": "Questo set è scaduto. Shanwick di solito pubblica il prossimo verso le 2100Z. Nel simulatore puoi comunque volarlo."
+      },
       "tmi": "TMI {{tmi}}",
       "current": "Valido ora",
       "upcoming": "Prossimo",
+      "lastPublished": "Ultimo pubblicato",
       "levelList": "FL {{levels}}",
       "nar": "NAR {{list}}",
       "eurRts": "EUR RTS {{list}}",
       "pbcs": "PBCS",
       "remarks": "Note del messaggio dei track",
-      "levelWarning": "FL{{cruise}} non è offerto sul track {{id}}: FL {{levels}}",
+      "levelWarning": "FL{{cruise}} non è su questo track",
       "unavailable": "Messaggio dei track non disponibile: {{reason}}"
     },
     "windSuggest": "Vento {{wind}} favorisce la {{runway}}",
@@ -225,8 +233,8 @@
       "airwayNotJoined": "Questa aerovia non collega i punti ai due lati",
       "airwayEndsAtCoordinate": "Un'aerovia deve terminare su un punto, non su una coordinata",
       "trackPartial": "Il designatore di un track si presenta solo per il track intero; altrimenti indica i suoi punti",
-      "airwayWrongWay": "Aerovia a senso unico, presentata contro la sua direzione",
-      "airwayLevel": "Non pubblicata al livello di crociera; questa aerovia va {{levels}}"
+      "airwayWrongWay": "Questa aerovia è a senso unico e la rotta la percorre nel senso sbagliato",
+      "airwayLevel": "Questa aerovia vale solo per {{levels}}, non per il livello di crociera"
     },
     "setStart": "Inizia alla partenza",
     "showOnMap": "Mostra sulla mappa",
@@ -261,10 +269,10 @@
     "savedAs": "Salvato come {{file}}",
     "check": "Da verificare",
     "adjustCruise": "Regola",
-    "cruiseBelowFloor": "La crociera è sotto il minimo {{level}} della rotta",
-    "cruiseAboveCeiling": "La crociera è sopra il massimo {{level}} della rotta",
-    "cruiseOddLevels": "I voli verso est usano migliaia dispari",
-    "cruiseEvenLevels": "I voli verso ovest usano migliaia pari",
+    "cruiseBelowFloor": "La rotta consente {{level}} o superiore",
+    "cruiseAboveCeiling": "La rotta consente {{level}} o inferiore",
+    "cruiseOddLevels": "Verso est: livelli dispari",
+    "cruiseEvenLevels": "Verso ovest: livelli pari",
     "levelsBetween": "da {{min}} a {{max}}",
     "levelsFrom": "da {{min}}",
     "levelsUpTo": "fino a {{max}}"

@@ -19,7 +19,7 @@ const track = (id: string, levels: number[]): OceanicTrackInfo => ({
   ],
 });
 
-const current = (t: OceanicTrackInfo) => ({ track: t, upcoming: false });
+const current = (t: OceanicTrackInfo) => ({ track: t, status: 'current' as const });
 
 describe('natTracksGeoJSON', () => {
   it('draws one line per track and marks the chosen one', () => {
@@ -41,12 +41,23 @@ describe('natTracksGeoJSON', () => {
     expect(lines[1]!.properties).toMatchObject({ name: 'NATB', id: 'B', selected: true });
   });
 
-  it('marks tracks from the upcoming message so they draw dotted and dimmer', () => {
+  it('carries the message status so upcoming and ended sets draw dotted and dimmer', () => {
     const { features } = natTracksGeoJSON(
-      [current(track('A', [350])), { track: track('B', [350]), upcoming: true }],
+      [
+        current(track('A', [350])),
+        { track: track('B', [350]), status: 'upcoming' },
+        { track: track('C', [350]), status: 'expired' },
+      ],
       null
     );
-    expect(features.map((f) => f.properties?.upcoming)).toEqual([false, false, true, true]);
+    expect(features.map((f) => f.properties?.status)).toEqual([
+      'current',
+      'current',
+      'upcoming',
+      'upcoming',
+      'expired',
+      'expired',
+    ]);
   });
 
   it('labels each track once, with its letter and level band, on its longest leg', () => {
@@ -74,11 +85,19 @@ describe('natTracksGeoJSON', () => {
 describe('natTrackPopupHtml', () => {
   it('names the track and lists its levels, window, NARs and feeder fixes', () => {
     const f = { ...track('F', [350, 360]), nars: ['N82A'], feederFixes: ['REGHI'], pbcs: true };
-    const html = natTrackPopupHtml(f, true);
+    const html = natTrackPopupHtml(f, 'upcoming');
     expect(html).toContain('NATF');
     expect(html).toContain('350 360');
     expect(html).toContain('N82A');
     expect(html).toContain('REGHI');
     expect(html).not.toContain('<script');
+  });
+
+  it('tags a track from the last published set', () => {
+    // i18n is not initialised in tests, so the key stands in for the text.
+    expect(natTrackPopupHtml(track('A', [350]), 'expired')).toContain(
+      'planBuilder.tracks.lastPublished'
+    );
+    expect(natTrackPopupHtml(track('A', [350]), 'current')).not.toContain('lastPublished');
   });
 });
