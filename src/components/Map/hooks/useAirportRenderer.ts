@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { AirportParser } from '@/lib/parsers/apt';
-import { setActiveBezierResolution } from '@/lib/parsers/apt/bezier';
-import { useSettingsStore } from '@/stores/settingsStore';
 import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
 import { LayerRenderer, createLayerRenderers } from '../layers';
@@ -35,7 +33,6 @@ const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-taxiway-lights': 'runwayLights',
   'airport-taxiway-lights-core': 'runwayLights',
   'airport-taxiway-light-glow': 'runwayLights',
-  'airport-taxiways': 'taxiways',
   'airport-linear-features': 'linearFeatures',
   'airport-linear-features-border': 'linearFeatures',
   'airport-linear-features-centerline': 'linearFeatures',
@@ -168,10 +165,6 @@ export function useAirportRenderer(
 
         const result = await window.airportAPI.getAirportData(icao);
         if (!result) return null;
-
-        // Apply surface detail setting before parsing
-        const { surfaceDetail } = useSettingsStore.getState().graphics;
-        setActiveBezierResolution(surfaceDetail);
 
         const parser = new AirportParser(result.data);
         const { data: parsedAirport, errors, stats } = parser.parse();

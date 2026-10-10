@@ -266,3 +266,39 @@ describe('PathParser — edge cases', () => {
     expect(paths[0]!.coordinates).toHaveLength(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Start index — the parser reads from an offset instead of a sliced copy
+// ---------------------------------------------------------------------------
+
+describe('PathParser — start index', () => {
+  const file = [
+    '110 1 0.25 90.00 Apron',
+    '111  40.640000 -73.780000',
+    '112  40.641000 -73.780000 40.641500 -73.780500',
+    '113  40.641000 -73.779000',
+    '120 Line',
+    '111  40.650000 -73.790000 1',
+    '115  40.651000 -73.791000 1',
+  ];
+
+  it('parses the same paths from an offset as from a sliced copy', () => {
+    const fromSlice = new PathParser(file.slice(1)).getPaths('polygon');
+    const fromOffset = new PathParser(file, 1).getPaths('polygon');
+    expect(fromOffset).toEqual(fromSlice);
+  });
+
+  it('counts consumed lines relative to the offset', () => {
+    const parser = new PathParser(file, 1);
+    parser.getPaths('polygon');
+    expect(parser.getLinesConsumed()).toBe(3);
+  });
+
+  it('stops at the next feature header and leaves it for the caller', () => {
+    const parser = new PathParser(file, 5);
+    const paths = parser.getPaths('line');
+    expect(paths).toHaveLength(1);
+    expect(paths[0]!.coordinates).toHaveLength(2);
+    expect(parser.getLinesConsumed()).toBe(2);
+  });
+});

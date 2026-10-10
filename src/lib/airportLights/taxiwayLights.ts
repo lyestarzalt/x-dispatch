@@ -88,23 +88,3 @@ export function taxiwayLightPoints(
   }
   return { type: 'FeatureCollection', features: out };
 }
-
-/** The same lit segments as lines, for the zoom range where single fixtures would be sub-pixel. */
-export function taxiwayLightLines(
-  features: LinearFeature[]
-): GeoJSON.FeatureCollection<GeoJSON.LineString, { color: LightColor }> {
-  const out: GeoJSON.Feature<GeoJSON.LineString, { color: LightColor }>[] = [];
-  for (const feature of features) {
-    const rule = LIGHT_RULES[feature.lighting_line_type];
-    if (!rule || feature.coordinates.length < 2) continue;
-    out.push({
-      type: 'Feature',
-      geometry: {
-        type: 'LineString',
-        coordinates: feature.coordinates.map(([lon, lat]) => [lon, lat]),
-      },
-      properties: { color: rule.colors[0]! },
-    });
-  }
-  return { type: 'FeatureCollection', features: out };
-}

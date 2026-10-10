@@ -5,16 +5,9 @@ import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
-import type { SurfaceDetail } from '@/stores/settingsStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import { MapStylePicker } from './MapStylePicker';
-
-const SURFACE_DETAIL_OPTIONS: { value: SurfaceDetail; labelKey: string }[] = [
-  { value: 'low', labelKey: 'settings.graphics.low' },
-  { value: 'medium', labelKey: 'settings.graphics.medium' },
-  { value: 'high', labelKey: 'settings.graphics.high' },
-];
 
 const AIRFIELD_LIGHT_OPTIONS: { value: AirfieldLightsMode; labelKey: string }[] = [
   { value: 'auto', labelKey: 'settings.graphics.airfieldLightsAuto' },
@@ -110,29 +103,6 @@ export function GraphicsSection() {
           checked={graphics.followSimTime}
           onCheckedChange={(checked) => updateGraphics({ followSimTime: checked })}
         />
-      </SettingsSectionBlock>
-
-      {/* Surface Detail */}
-      <SettingsSectionBlock
-        title={t('settings.graphics.surfaceDetail')}
-        description={t('settings.graphics.surfaceDetailDesc')}
-      >
-        <div className="flex gap-2">
-          {SURFACE_DETAIL_OPTIONS.map(({ value, labelKey }) => (
-            <Button
-              key={value}
-              variant={graphics.surfaceDetail === value ? 'default' : 'outline'}
-              size="sm"
-              className={cn(
-                'min-w-0 flex-1',
-                graphics.surfaceDetail === value && 'pointer-events-none'
-              )}
-              onClick={() => updateGraphics({ surfaceDetail: value })}
-            >
-              <span className="truncate">{t(labelKey)}</span>
-            </Button>
-          ))}
-        </div>
       </SettingsSectionBlock>
 
       {/* Airport effects */}

@@ -133,13 +133,43 @@ describe('migrateSettings', () => {
     const result = migrateSettings(v24Blob, 24);
     expect(result.graphics).toEqual({
       approachLightAnimation: false,
-      surfaceDetail: 'low',
       dynamicSky: true,
       cityLights: true,
       followSimTime: true,
       groundWeather: true,
       airfieldLights: 'on',
     });
+  });
+
+  it('drops the surface detail choice at v35 and keeps the other graphics settings', () => {
+    const v34Blob = {
+      map: { userMapStyles: [], units: { weight: 'lbs' as const } },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {
+        approachLightAnimation: false,
+        surfaceDetail: 'low',
+        dynamicSky: true,
+        cityLights: false,
+        followSimTime: true,
+        groundWeather: true,
+        airfieldLights: 'on' as const,
+      },
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+      desktop: {},
+    };
+    const result = migrateSettings(v34Blob, 34);
+    expect(result.graphics).toEqual({
+      approachLightAnimation: false,
+      dynamicSky: true,
+      cityLights: false,
+      followSimTime: true,
+      groundWeather: true,
+      airfieldLights: 'on',
+    });
+    expect('surfaceDetail' in result.graphics).toBe(false);
   });
 
   it('adds flight recorder defaults at v26 and keeps earlier sections', () => {
