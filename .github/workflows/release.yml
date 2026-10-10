@@ -34,7 +34,7 @@ jobs:
       # The branch rule on main only lets the X-Dispatch app push; the default token cannot.
       - name: Mint release token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.X_DISPATCH_APP_ID }}
           private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
@@ -143,7 +143,7 @@ jobs:
     steps:
       - name: Mint release token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.X_DISPATCH_APP_ID }}
           private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
@@ -314,7 +314,7 @@ jobs:
       - name: Mint website sync token
         id: site-token
         continue-on-error: true
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.X_DISPATCH_APP_ID }}
           private-key: ${{ secrets.X_DISPATCH_APP_PRIVATE_KEY }}
