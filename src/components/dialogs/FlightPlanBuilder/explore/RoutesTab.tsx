@@ -1,12 +1,25 @@
+import { useMemo } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { IcaoCode } from '@/components/ui/icao-code';
-import { FEATURED_ROUTES } from './featured/featuredRoutes';
-import type { RoutesTabProps } from './types';
+import type { Airport } from '@/lib/xplaneServices/dataService';
+import { FEATURED_ROUTES } from './featuredRoutes';
 
-export function RoutesTab({ onPlanRoute }: RoutesTabProps) {
+interface RoutesTabProps {
+  airports: Airport[];
+  /** A city pair was picked: it becomes the plan's departure and arrival. */
+  onPlanRoute: (from: string, to: string) => void;
+}
+
+export function RoutesTab({ airports, onPlanRoute }: RoutesTabProps) {
+  // Only routes the user can actually fly: both ends must be in X-Plane's database.
+  const routes = useMemo(() => {
+    const known = new Set(airports.map((a) => a.icao));
+    return FEATURED_ROUTES.filter((route) => known.has(route.from) && known.has(route.to));
+  }, [airports]);
+
   return (
     <div className="space-y-0.5">
-      {FEATURED_ROUTES.map((route) => (
+      {routes.map((route) => (
         <button
           key={`${route.from}-${route.to}`}
           onClick={() => onPlanRoute(route.from, route.to)}

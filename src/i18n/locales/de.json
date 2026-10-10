@@ -261,10 +261,8 @@
       "tomorrow": "Morgen",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Zufallsziel",
     "planCleared": "Plan geleert",
     "routeCleared": "Route geleert",
-    "randomShort": "Zufall",
     "profileShort": "Profil",
     "savedAs": "Gespeichert als {{file}}",
     "check": "Prüfen",
@@ -397,6 +395,7 @@
   "explore": {
     "title": "Entdecken",
     "tabs": {
+      "random": "Zufall",
       "routes": "Routen",
       "weather": "Wetter"
     },

@@ -261,10 +261,8 @@
       "tomorrow": "On the morrow",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Lucky port",
     "planCleared": "Chart wiped clean",
     "routeCleared": "Course wiped",
-    "randomShort": "Luck",
     "profileShort": "Profile",
     "savedAs": "Stowed as {{file}}",
     "check": "Look sharp",
@@ -397,6 +395,7 @@
   "explore": {
     "title": "Scout",
     "tabs": {
+      "random": "Lucky Dip",
       "routes": "Courses",
       "weather": "Skies"
     },

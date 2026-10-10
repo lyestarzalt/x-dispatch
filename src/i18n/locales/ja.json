@@ -261,10 +261,8 @@
       "tomorrow": "明日",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "ランダムな目的地",
     "planCleared": "プランを消去しました",
     "routeCleared": "ルートを消去しました",
-    "randomShort": "ランダム",
     "profileShort": "断面",
     "savedAs": "{{file}} として保存",
     "check": "要確認",
@@ -397,6 +395,7 @@
   "explore": {
     "title": "探索",
     "tabs": {
+      "random": "ランダム",
       "routes": "ルート",
       "weather": "気象"
     },

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Dices, PlaneLanding, Radio, SlidersHorizontal } from 'lucide-react';
-import { WEATHER_CATEGORY_ICON } from '@/components/layout/Toolbar/ExplorePanel/weatherIcons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -24,6 +23,7 @@ import type { Airport } from '@/lib/xplaneServices/dataService';
 import { WEATHER_CATEGORIES, trackEvent, useWeatherScanQuery } from '@/queries';
 import { getStaffedCallsignPrefixes, useVatsimQuery } from '@/queries/useVatsimQuery';
 import type { RangeRingCategory } from '@/types/layers';
+import { WEATHER_CATEGORY_ICON } from './weatherIcons';
 
 type LengthMode = 'time' | 'distance';
 

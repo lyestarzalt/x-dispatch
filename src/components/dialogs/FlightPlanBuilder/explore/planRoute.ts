@@ -1,6 +1,6 @@
-import { toEndpoint } from '@/components/dialogs/FlightPlanBuilder/AirportPicker';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
+import { toEndpoint } from '../AirportPicker';
 
 /**
  * Hands a city pair to the plan builder and opens it. False when either airport is

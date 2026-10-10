@@ -5,8 +5,10 @@ import {
   ArrowLeftRight,
   ArrowUpDown,
   CheckCircle2,
+  CloudSun,
   Dices,
   Eraser,
+  type LucideIcon,
   Mountain,
   PlaneLanding,
   PlaneTakeoff,
@@ -71,7 +73,7 @@ import {
 import { useAirportRunways } from '@/queries/useAirportRunways';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
-import { usePlanBuilderStore } from '@/stores/planBuilderStore';
+import { type ExploreTab, usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RangeRingCategory } from '@/types/layers';
 import type { ResolvedProcedure } from '@/types/navigation';
@@ -81,7 +83,6 @@ import { EndpointLabel } from './EndpointLabel';
 import { Field } from './Field';
 import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
-import { RandomDestinationPanel } from './RandomDestinationPanel';
 import { RouteEnd } from './RouteEnd';
 import { RouteProblem } from './RouteProblem';
 import { RunwaySelect } from './RunwaySelect';
@@ -89,11 +90,18 @@ import { Section } from './Section';
 import { Stat } from './Stat';
 import { TrackPicker } from './TrackPicker';
 import { WindHint } from './WindHint';
+import { ExploreFlyout } from './explore/ExploreFlyout';
 
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
+/** Explore flyout tabs, in header order. */
+const EXPLORE_TABS = [
+  { id: 'random', icon: Dices },
+  { id: 'routes', icon: Route },
+  { id: 'weather', icon: CloudSun },
+] as const satisfies ReadonlyArray<{ id: ExploreTab; icon: LucideIcon }>;
 
 interface FlightPlanBuilderProps {
   airports: Airport[];
@@ -141,7 +149,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const aircraftCategory = usePlaneStore((s) => s.state?.aircraftCategory);
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const [saving, setSaving] = useState(false);
-  const [randomOpen, setRandomOpen] = useState(false);
+  const explore = usePlanBuilderStore((s) => s.explore);
+  const setExplore = usePlanBuilderStore((s) => s.setExplore);
 
   // One visit to the planner, reported as flight_plan_closed when it closes.
   const visitRef = useRef<PlanVisit | null>(null);
@@ -556,19 +565,6 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               <Button
                 variant="ghost"
                 size="xs"
-                className={
-                  randomOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                }
-                onClick={() => setRandomOpen((open) => !open)}
-                tooltip={t('planBuilder.randomDestination')}
-                aria-pressed={randomOpen}
-              >
-                <Dices className="h-3.5 w-3.5" />
-                {t('planBuilder.randomShort')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="xs"
                 className="text-muted-foreground hover:text-foreground"
                 onClick={handleNewPlan}
                 disabled={!departure && !arrival && !routeText}
@@ -663,6 +659,22 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               ))}
             </ToggleGroup>
           </div>
+
+          <ToggleGroup
+            type="single"
+            size="xs"
+            variant="subtle"
+            value={explore ?? ''}
+            onValueChange={(v) => setExplore(v ? (v as ExploreTab) : null)}
+            className="w-full"
+          >
+            {EXPLORE_TABS.map(({ id, icon: Icon }) => (
+              <ToggleGroupItem key={id} value={id} className="min-w-0 flex-1">
+                <Icon />
+                <span className="truncate">{t(`explore.tabs.${id}`)}</span>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </header>
 
         <ScrollArea className="min-h-0 flex-1">
@@ -903,12 +915,13 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </div>
         </footer>
       </div>
-      {randomOpen && (
-        <RandomDestinationPanel
+      {explore && (
+        <ExploreFlyout
           airports={airports}
           aircraftClass={cls}
-          onArrivalPicked={(icao) => markVisit({ randomArrival: icao })}
-          onClose={() => setRandomOpen(false)}
+          tab={explore}
+          onRandomArrival={(icao) => markVisit({ randomArrival: icao })}
+          onClose={() => setExplore(null)}
           className="absolute top-0 bottom-0 left-full ml-2 w-80"
         />
       )}

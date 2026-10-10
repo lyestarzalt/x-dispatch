@@ -261,10 +261,8 @@
       "tomorrow": "Завтра",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Случайный пункт назначения",
     "planCleared": "План очищен",
     "routeCleared": "Маршрут очищен",
-    "randomShort": "Случайно",
     "profileShort": "Профиль",
     "savedAs": "Сохранено как {{file}}",
     "check": "Проверить",
@@ -397,6 +395,7 @@
   "explore": {
     "title": "Обзор",
     "tabs": {
+      "random": "Случайный",
       "routes": "Маршруты",
       "weather": "Погода"
     },

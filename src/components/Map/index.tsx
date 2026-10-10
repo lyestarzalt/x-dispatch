@@ -11,7 +11,6 @@ import FlightInfoPanel from '@/components/layout/FlightInfoPanel';
 import FlightPlanBar from '@/components/layout/FlightPlanBar';
 import ProfileStrip from '@/components/layout/ProfileStrip';
 import Toolbar from '@/components/layout/Toolbar';
-import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { useRouteTerrain } from '@/hooks/useRouteProfile';
 import { startRunways } from '@/lib/airports/startRunways';
@@ -398,7 +397,7 @@ export default function Map({ airports }: MapProps) {
     ivaoEnabled,
   });
 
-  // Preview line for the planner's random destination panel
+  // Preview line for the planner's Explore flyout
   useRouteLineSync({
     mapRef,
     airports,
@@ -966,7 +965,6 @@ export default function Map({ airports }: MapProps) {
       {/* Map widgets - left side */}
       <CompassWidget />
       <DevDebugOverlay mapRef={mapRef} />
-      <ExplorePanel airports={airports} onSelectAirport={selectAirport} />
 
       {showPlaneTracker && <FlightStrip onCenterPlane={handleCenterPlane} />}
 

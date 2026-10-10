@@ -261,10 +261,8 @@
       "tomorrow": "明天",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "随机目的地",
     "planCleared": "计划已清除",
     "routeCleared": "航路已清除",
-    "randomShort": "随机",
     "profileShort": "剖面",
     "savedAs": "已保存为 {{file}}",
     "check": "请检查",
@@ -397,6 +395,7 @@
   "explore": {
     "title": "探索",
     "tabs": {
+      "random": "随机",
       "routes": "航线",
       "weather": "天气"
     },

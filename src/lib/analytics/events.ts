@@ -41,7 +41,6 @@ export const ANALYTICS_LAYERS = [
 
 /** Map widgets, reported when opened; the measure line and profile strip count when first shown. */
 export const ANALYTICS_WIDGETS = [
-  'explore',
   'nav_info',
   'replay',
   'landing_report',
@@ -178,7 +177,7 @@ export const ANALYTICS_ERROR_AREAS = [
   'addon_manager',
 ] as const;
 
-export const ANALYTICS_EXPLORE_TABS = ['routes', 'weather'] as const;
+export const ANALYTICS_EXPLORE_TABS = ['random', 'routes', 'weather'] as const;
 
 /** How the planner's final route came about. */
 export const ANALYTICS_PLAN_ROUTES = [

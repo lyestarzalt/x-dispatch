@@ -90,15 +90,6 @@ export const DEFAULT_AIRPORT_FILTERS: AirportFilterState = {
   country: 'all',
 };
 
-export type ExploreTab = 'routes' | 'weather';
-
-export interface ExploreState {
-  isOpen: boolean;
-  activeTab: ExploreTab;
-  /** City pair previewed on the map by the planner's random destination panel. */
-  selectedRoute: { from: string; to: string } | null;
-}
-
 interface MapState {
   layerVisibility: LayerVisibility;
   navVisibility: NavLayerVisibility;
@@ -125,7 +116,8 @@ interface MapState {
   cloudLayerEnabled: boolean;
   /** Draw the recorded track behind the aircraft. */
   flightTrailEnabled: boolean;
-  explore: ExploreState;
+  /** City pair previewed on the map by the planner's Explore flyout. */
+  routePreview: { from: string; to: string } | null;
   airportFilters: AirportFilterState;
   rangeRingsEnabled: boolean;
   rangeRingsDuration: number;
@@ -176,9 +168,7 @@ interface MapState {
   setRangeRingsDuration: (hours: number) => void;
   toggleRangeRingsCategory: (category: RangeRingCategory) => void;
 
-  setExploreOpen: (isOpen: boolean) => void;
-  setExploreTab: (tab: ExploreTab) => void;
-  setSelectedRoute: (route: { from: string; to: string } | null) => void;
+  setRoutePreview: (route: { from: string; to: string } | null) => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setLandingCardPosition: (pos: { x: number; y: number } | null) => void;
   setProfileStripOpen: (open: boolean) => void;
@@ -239,11 +229,7 @@ export const useMapStore = create<MapState>()(
       weatherRadarEnabled: false,
       cloudLayerEnabled: false,
       flightTrailEnabled: true,
-      explore: {
-        isOpen: false,
-        activeTab: 'routes' as ExploreTab,
-        selectedRoute: null as { from: string; to: string } | null,
-      },
+      routePreview: null as { from: string; to: string } | null,
       airportFilters: DEFAULT_AIRPORT_FILTERS,
       rangeRingsEnabled: false,
       rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
@@ -350,10 +336,7 @@ export const useMapStore = create<MapState>()(
           return { rangeRingsCategories: next };
         }),
 
-      setExploreOpen: (isOpen) => set((state) => ({ explore: { ...state.explore, isOpen } })),
-      setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
-      setSelectedRoute: (route) =>
-        set((state) => ({ explore: { ...state.explore, selectedRoute: route } })),
+      setRoutePreview: (route) => set({ routePreview: route }),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setLandingCardPosition: (pos) => set({ landingCardPosition: pos }),
       setProfileStripOpen: (open) => set({ profileStripOpen: open }),
