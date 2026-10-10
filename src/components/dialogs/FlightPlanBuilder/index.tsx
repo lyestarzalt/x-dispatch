@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   ArrowLeftRight,
+  ArrowUpDown,
   CheckCircle2,
   Dices,
   Eraser,
@@ -25,6 +26,13 @@ import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
 import { formatDuration } from '@/lib/flightRecorder/format';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
+import {
+  cruiseBand,
+  cruiseProblem,
+  planIsEastbound,
+  procedureFloorFt,
+} from '@/lib/flightplan/builder/cruiseAdjust';
+import { formatLevel } from '@/lib/flightplan/builder/formatLevel';
 import {
   estimateFuelKg,
   estimateMinutes,
@@ -114,6 +122,8 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const setRouteText = usePlanBuilderStore((s) => s.setRouteText);
   const removeRouteToken = usePlanBuilderStore((s) => s.removeRouteToken);
   const setCruiseAltitude = usePlanBuilderStore((s) => s.setCruiseAltitude);
+  const adjustCruiseAltitude = usePlanBuilderStore((s) => s.adjustCruiseAltitude);
+  const procedures = usePlanBuilderStore((s) => s.procedures);
   const aircraftClass = usePlanBuilderStore((s) => s.aircraftClass);
   const setAircraftClass = usePlanBuilderStore((s) => s.setAircraftClass);
   const resolve = usePlanBuilderStore((s) => s.resolve);
@@ -197,15 +207,35 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
   // A new pair of airports with nothing typed gets an airway route straight away, once per pair,
   // so clearing the field on purpose stays cleared. Waits for the procedures so joins are known.
+  // The router picks airways for the cruise level, so a missing cruise is guessed from the
+  // great-circle distance first; routing at the router's own default would favour the lower
+  // airways and leave a jet flagged on every one of them.
   const autoRoutedPair = useRef<string | null>(null);
   useEffect(() => {
     if (!isOpen || !departure || !arrival || routeText !== '') return;
     if (depLoading || arrLoading) return;
     const pair = `${departure.icao}-${arrival.icao}`;
     if (autoRoutedPair.current === pair) return;
+    if (cruiseAltitudeFt === null) {
+      const direct = greatCircleNm(departure, arrival);
+      setCruiseAltitude(suggestCruiseAltitudeFt(direct, cls, isEastbound(departure, arrival)));
+      return;
+    }
     autoRoutedPair.current = pair;
     void autoRoute(joins);
-  }, [isOpen, departure, arrival, routeText, autoRoute, joins, depLoading, arrLoading]);
+  }, [
+    isOpen,
+    departure,
+    arrival,
+    routeText,
+    cruiseAltitudeFt,
+    cls,
+    setCruiseAltitude,
+    autoRoute,
+    joins,
+    depLoading,
+    arrLoading,
+  ]);
 
   // An alternate is suggested once per arrival; the user can still pick another.
   useEffect(() => {
@@ -314,6 +344,14 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     () => tokens.flatMap((tk) => (tk.status === 'warning' && tk.issue ? [tk.issue] : [])),
     [tokens]
   );
+  // Airways used as typed but flagged; a partial track is explained by the track picker.
+  const checks = useMemo(
+    () =>
+      tokens
+        .map((token, index) => ({ token, index }))
+        .filter(({ token }) => token.status === 'warning' && token.issue !== 'trackPartial'),
+    [tokens]
+  );
   const used = (tk: RouteToken) => tk.status === 'ok' || tk.status === 'warning';
   const fixCount = tokens.filter((tk) => used(tk) && tk.kind !== 'airway').length;
   const airwayCount = tokens.filter((tk) => used(tk) && tk.kind === 'airway').length;
@@ -333,6 +371,24 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   }, [departure, arrival, result]);
   const hasEndpoints = !!departure && !!arrival;
   const resolving = hasEndpoints && (status === 'resolving' || !result);
+
+  // Why the cruise is not on a level the airways, procedures and direction allow.
+  const cruiseIssue = useMemo(() => {
+    if (!ready || !result || !departure || !arrival || cruiseAltitudeFt === null) return null;
+    const band = cruiseBand(result.levels, procedureFloorFt(procedures));
+    const eastbound = planIsEastbound(departure, arrival);
+    const problem = cruiseProblem(cruiseAltitudeFt, band, eastbound);
+    if (problem === 'belowFloor') {
+      return t('planBuilder.cruiseBelowFloor', { level: formatLevel(band.minFt) });
+    }
+    if (problem === 'aboveCeiling') {
+      return t('planBuilder.cruiseAboveCeiling', { level: formatLevel(band.maxFt) });
+    }
+    if (problem === 'parity') {
+      return t(eastbound ? 'planBuilder.cruiseOddLevels' : 'planBuilder.cruiseEvenLevels');
+    }
+    return null;
+  }, [ready, result, departure, arrival, cruiseAltitudeFt, procedures, t]);
 
   // Cruise is picked for the user from distance, aircraft class and direction of flight.
   useEffect(() => {
@@ -519,6 +575,24 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             />
           </div>
 
+          {cruiseIssue && (
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="text-warning flex min-w-0 items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{cruiseIssue}</span>
+              </span>
+              <Button
+                variant="outline"
+                size="xs"
+                className="shrink-0"
+                onClick={adjustCruiseAltitude}
+              >
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                {t('planBuilder.adjustCruise')}
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-3">
             <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
             <ToggleGroup
@@ -702,6 +776,20 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                   <span className="xp-label">{t('planBuilder.notUsed')}</span>
                   <ul className="space-y-1">
                     {problems.map(({ token, index }) => (
+                      <RouteProblem
+                        key={`${token.text}-${index}`}
+                        token={token}
+                        onRemove={() => removeRouteToken(index)}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {checks.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="xp-label">{t('planBuilder.check')}</span>
+                  <ul className="space-y-1">
+                    {checks.map(({ token, index }) => (
                       <RouteProblem
                         key={`${token.text}-${index}`}
                         token={token}

@@ -5,6 +5,12 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  adjustCruiseAltitudeFt,
+  cruiseBand,
+  planIsEastbound,
+  procedureFloorFt,
+} from '@/lib/flightplan/builder/cruiseAdjust';
 import { fmsFileStem, serializeFms } from '@/lib/flightplan/builder/fmsWriter';
 import { builtProcedurePaths } from '@/lib/flightplan/builder/legGeometry';
 import {
@@ -62,6 +68,8 @@ interface PlanBuilderState extends PlanDraft {
   setRouteText: (text: string) => void;
   removeRouteToken: (index: number) => void;
   setCruiseAltitude: (feet: number | null) => void;
+  /** Moves the cruise onto the nearest level the airways, procedures and direction allow. */
+  adjustCruiseAltitude: () => void;
   /** Re-resolves the current draft; stale responses are dropped. */
   resolve: () => Promise<void>;
   /** Asks the main process for a shortest airway route and puts it in the route field. */
@@ -209,6 +217,17 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           return { routeText: tokens.join(' '), savedPath: null };
         }),
       setCruiseAltitude: (feet) => set({ cruiseAltitudeFt: feet, savedPath: null }),
+      adjustCruiseAltitude: () => {
+        const { result, procedures, departure, arrival, cruiseAltitudeFt } = get();
+        if (!result || !departure || !arrival) return;
+        const band = cruiseBand(result.levels, procedureFloorFt(procedures));
+        const adjusted = adjustCruiseAltitudeFt(
+          cruiseAltitudeFt,
+          band,
+          planIsEastbound(departure, arrival)
+        );
+        if (adjusted !== cruiseAltitudeFt) set({ cruiseAltitudeFt: adjusted, savedPath: null });
+      },
 
       resolve: async () => {
         const { departure, arrival, routeText, cruiseAltitudeFt } = get();

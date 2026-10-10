@@ -224,7 +224,9 @@
       "airwayExitUnknown": "Il punto dopo questa aerovia è sconosciuto",
       "airwayNotJoined": "Questa aerovia non collega i punti ai due lati",
       "airwayEndsAtCoordinate": "Un'aerovia deve terminare su un punto, non su una coordinata",
-      "trackPartial": "Il designatore di un track si presenta solo per il track intero; altrimenti indica i suoi punti"
+      "trackPartial": "Il designatore di un track si presenta solo per il track intero; altrimenti indica i suoi punti",
+      "airwayWrongWay": "Aerovia a senso unico, presentata contro la sua direzione",
+      "airwayLevel": "Non pubblicata al livello di crociera; questa aerovia va {{levels}}"
     },
     "setStart": "Inizia alla partenza",
     "showOnMap": "Mostra sulla mappa",
@@ -256,7 +258,16 @@
     "routeCleared": "Rotta cancellata",
     "randomShort": "Casuale",
     "profileShort": "Profilo",
-    "savedAs": "Salvato come {{file}}"
+    "savedAs": "Salvato come {{file}}",
+    "check": "Da verificare",
+    "adjustCruise": "Regola",
+    "cruiseBelowFloor": "La crociera è sotto il minimo {{level}} della rotta",
+    "cruiseAboveCeiling": "La crociera è sopra il massimo {{level}} della rotta",
+    "cruiseOddLevels": "I voli verso est usano migliaia dispari",
+    "cruiseEvenLevels": "I voli verso ovest usano migliaia pari",
+    "levelsBetween": "da {{min}} a {{max}}",
+    "levelsFrom": "da {{min}}",
+    "levelsUpTo": "fino a {{max}}"
   },
   "toolbar": {
     "clock": {

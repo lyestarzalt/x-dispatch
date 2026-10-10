@@ -224,7 +224,9 @@
       "airwayExitUnknown": "Der Wegpunkt nach dieser Luftstraße ist unbekannt",
       "airwayNotJoined": "Diese Luftstraße verbindet die Wegpunkte beidseitig nicht",
       "airwayEndsAtCoordinate": "Eine Luftstraße muss an einem Wegpunkt enden, nicht an einer Koordinate",
-      "trackPartial": "Ein Track-Kennzeichen wird nur für den ganzen Track gefiled; sonst die Punkte angeben"
+      "trackPartial": "Ein Track-Kennzeichen wird nur für den ganzen Track gefiled; sonst die Punkte angeben",
+      "airwayWrongWay": "Einbahn-Luftstraße, gegen ihre Richtung eingetragen",
+      "airwayLevel": "Auf der Reiseflughöhe nicht veröffentlicht; diese Luftstraße gilt {{levels}}"
     },
     "setStart": "Am Abflug starten",
     "showOnMap": "Auf Karte zeigen",
@@ -256,7 +258,16 @@
     "routeCleared": "Route geleert",
     "randomShort": "Zufall",
     "profileShort": "Profil",
-    "savedAs": "Gespeichert als {{file}}"
+    "savedAs": "Gespeichert als {{file}}",
+    "check": "Prüfen",
+    "adjustCruise": "Anpassen",
+    "cruiseBelowFloor": "Reiseflughöhe liegt unter der Untergrenze {{level}} der Route",
+    "cruiseAboveCeiling": "Reiseflughöhe liegt über der Obergrenze {{level}} der Route",
+    "cruiseOddLevels": "Ostkurse fliegen ungerade Tausender",
+    "cruiseEvenLevels": "Westkurse fliegen gerade Tausender",
+    "levelsBetween": "{{min}} bis {{max}}",
+    "levelsFrom": "ab {{min}}",
+    "levelsUpTo": "bis {{max}}"
   },
   "toolbar": {
     "clock": {

@@ -224,7 +224,9 @@
       "airwayExitUnknown": "The mark after this lane be unknown",
       "airwayNotJoined": "This lane don't join the marks either side",
       "airwayEndsAtCoordinate": "A lane must end at a mark, not a bare coordinate",
-      "trackPartial": "A track's letter be filed only for the whole track; else file its points, ye scallywag"
+      "trackPartial": "A track's letter be filed only for the whole track; else file its points, ye scallywag",
+      "airwayWrongWay": "One-way sea lane, filed against the tide",
+      "airwayLevel": "Not charted at yer cruisin' height; this lane runs {{levels}}"
     },
     "setStart": "Start at the harbor",
     "showOnMap": "Show on the chart",
@@ -256,7 +258,16 @@
     "routeCleared": "Course wiped",
     "randomShort": "Luck",
     "profileShort": "Profile",
-    "savedAs": "Stowed as {{file}}"
+    "savedAs": "Stowed as {{file}}",
+    "check": "Look sharp",
+    "adjustCruise": "Trim it",
+    "cruiseBelowFloor": "Ye be sailin' under the route's floor o' {{level}}",
+    "cruiseAboveCeiling": "Ye be sailin' over the route's ceilin' o' {{level}}",
+    "cruiseOddLevels": "Eastward bound sails odd thousands",
+    "cruiseEvenLevels": "Westward bound sails even thousands",
+    "levelsBetween": "{{min}} to {{max}}",
+    "levelsFrom": "from {{min}}",
+    "levelsUpTo": "up to {{max}}"
   },
   "toolbar": {
     "clock": {

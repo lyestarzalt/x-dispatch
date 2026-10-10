@@ -1,0 +1,1 @@
+ALTER TABLE `nav_file_meta` ADD `parser_version` integer DEFAULT 0 NOT NULL;

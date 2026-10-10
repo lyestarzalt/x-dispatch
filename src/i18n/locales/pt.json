@@ -224,7 +224,9 @@
       "airwayExitUnknown": "O fixo após esta aerovia é desconhecido",
       "airwayNotJoined": "Esta aerovia não liga os fixos dos dois lados",
       "airwayEndsAtCoordinate": "Uma aerovia deve terminar em um fixo, não em uma coordenada",
-      "trackPartial": "O designador de um track só se submete para o track completo; para uma parte, indique os seus pontos"
+      "trackPartial": "O designador de um track só se submete para o track completo; para uma parte, indique os seus pontos",
+      "airwayWrongWay": "Aerovia de sentido único, submetida contra a sua direção",
+      "airwayLevel": "Não publicada no nível de cruzeiro; esta aerovia vai {{levels}}"
     },
     "setStart": "Começar na partida",
     "showOnMap": "Mostrar no mapa",
@@ -256,7 +258,16 @@
     "routeCleared": "Rota limpa",
     "randomShort": "Aleatório",
     "profileShort": "Perfil",
-    "savedAs": "Salvo como {{file}}"
+    "savedAs": "Salvo como {{file}}",
+    "check": "Verificar",
+    "adjustCruise": "Ajustar",
+    "cruiseBelowFloor": "O cruzeiro está abaixo do mínimo {{level}} da rota",
+    "cruiseAboveCeiling": "O cruzeiro está acima do máximo {{level}} da rota",
+    "cruiseOddLevels": "Voos para leste usam milhares ímpares",
+    "cruiseEvenLevels": "Voos para oeste usam milhares pares",
+    "levelsBetween": "de {{min}} a {{max}}",
+    "levelsFrom": "a partir de {{min}}",
+    "levelsUpTo": "até {{max}}"
   },
   "toolbar": {
     "clock": {

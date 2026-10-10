@@ -224,7 +224,9 @@
       "airwayExitUnknown": "El punto tras esta aerovía es desconocido",
       "airwayNotJoined": "Esta aerovía no conecta los puntos a ambos lados",
       "airwayEndsAtCoordinate": "Una aerovía debe terminar en un punto, no en una coordenada",
-      "trackPartial": "El designador de un track solo se presenta para el track completo; para una parte, indica sus puntos"
+      "trackPartial": "El designador de un track solo se presenta para el track completo; para una parte, indica sus puntos",
+      "airwayWrongWay": "Aerovía de sentido único, presentada en contra de su dirección",
+      "airwayLevel": "No publicada al nivel de crucero; esta aerovía va {{levels}}"
     },
     "setStart": "Empezar en la salida",
     "showOnMap": "Mostrar en el mapa",
@@ -256,7 +258,16 @@
     "routeCleared": "Ruta borrada",
     "randomShort": "Aleatorio",
     "profileShort": "Perfil",
-    "savedAs": "Guardado como {{file}}"
+    "savedAs": "Guardado como {{file}}",
+    "check": "Revisar",
+    "adjustCruise": "Ajustar",
+    "cruiseBelowFloor": "El crucero está por debajo del mínimo {{level}} de la ruta",
+    "cruiseAboveCeiling": "El crucero está por encima del máximo {{level}} de la ruta",
+    "cruiseOddLevels": "Los vuelos hacia el este usan miles impares",
+    "cruiseEvenLevels": "Los vuelos hacia el oeste usan miles pares",
+    "levelsBetween": "de {{min}} a {{max}}",
+    "levelsFrom": "desde {{min}}",
+    "levelsUpTo": "hasta {{max}}"
   },
   "toolbar": {
     "clock": {

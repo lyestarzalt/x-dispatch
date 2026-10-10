@@ -64,8 +64,10 @@ export function parseAirways(content: string): ParseResult<AirwaySegment[]> {
       toFix: parts[3],
       toRegion: parts[4],
       toNavaidType: parseInt(parts[5], 10),
-      isHigh: parts[6] === 'F',
-      direction: parseInt(parts[7], 10),
+      // Field 7 is the one-way letter (N none, F as written, B reversed); field 8 is the
+      // level family (1 low, 2 high).
+      direction: parts[6] === 'F' ? 1 : parts[6] === 'B' ? 2 : 0,
+      isHigh: parts[7] === '2',
       baseFl: parseInt(parts[8], 10),
       topFl: parseInt(parts[9], 10),
       name: parts[10],

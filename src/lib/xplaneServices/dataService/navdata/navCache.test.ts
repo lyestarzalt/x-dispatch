@@ -63,6 +63,7 @@ const {
   getAirwayCount,
   clearAirways,
   persistNavDatabase,
+  PARSER_VERSIONS,
   checkNavCacheValidity,
 } = await import('./navCache');
 
@@ -301,6 +302,8 @@ function seedNavMeta(opts: {
   mtime: number;
   dataType: 'navaids' | 'waypoints' | 'airways' | 'airspaces';
   sourceType: 'xplane-default' | 'navigraph' | 'unknown';
+  /** Defaults to the current parser so the other checks are exercised alone. */
+  parserVersion?: number;
 }) {
   const db = getTestDb();
   db.insert(navFileMetaTable)
@@ -310,6 +313,7 @@ function seedNavMeta(opts: {
       recordCount: 0,
       dataType: opts.dataType,
       sourceType: opts.sourceType,
+      parserVersion: opts.parserVersion ?? PARSER_VERSIONS[opts.dataType],
     })
     .run();
 }
@@ -351,6 +355,22 @@ describe('checkNavCacheValidity cache invalidation', () => {
     const result = checkNavCacheValidity(FIXTURE_NAV, 'navaids');
 
     expect(result.needsReload).toBe(false);
+  });
+
+  it('indicates reload needed when the parser was updated since the cache was built', async () => {
+    const actualMtime = Math.floor(fs.statSync(FIXTURE_NAV).mtimeMs);
+    seedNavMeta({
+      filePath: FIXTURE_NAV,
+      mtime: actualMtime,
+      dataType: 'airways',
+      sourceType: 'unknown',
+      parserVersion: PARSER_VERSIONS.airways - 1,
+    });
+
+    const result = checkNavCacheValidity(FIXTURE_NAV, 'airways');
+
+    expect(result.needsReload).toBe(true);
+    expect(result.reason).toMatch(/parser/i);
   });
 
   it('indicates reload needed when mtime changes', async () => {

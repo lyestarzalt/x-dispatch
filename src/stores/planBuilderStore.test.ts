@@ -150,3 +150,26 @@ describe('planBuilderStore — resolving router output', () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe('planBuilderStore — adjust cruise altitude', () => {
+  it('moves the cruise into the airway band on the hemispheric level', () => {
+    usePlanBuilderStore.setState({
+      departure: LFMC as PlanEndpoint,
+      arrival: LFLN as PlanEndpoint,
+      cruiseAltitudeFt: 18000,
+      status: 'ready',
+      savedPath: '/tmp/LFMCLFLN.fms',
+      result: { levels: { minFt: 24500, maxFt: 46000 } } as never,
+    });
+    usePlanBuilderStore.getState().adjustCruiseAltitude();
+    // Le Luc to Saint Yan heads north-west: even thousands.
+    expect(usePlanBuilderStore.getState().cruiseAltitudeFt).toBe(26000);
+    expect(usePlanBuilderStore.getState().savedPath).toBeNull();
+  });
+
+  it('does nothing without a resolved route', () => {
+    usePlanBuilderStore.setState({ cruiseAltitudeFt: 18000, result: null });
+    usePlanBuilderStore.getState().adjustCruiseAltitude();
+    expect(usePlanBuilderStore.getState().cruiseAltitudeFt).toBe(18000);
+  });
+});
