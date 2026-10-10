@@ -10,6 +10,7 @@ import { NamedPosition } from '@/types/geo';
 interface HelipadListProps {
   helipads: Helipad[];
   searchQuery: string;
+  /** Land and water runways ahead of the helipads in X-Plane's start list. */
   runwayCount: number;
   onSelect?: (helipad: NamedPosition) => void;
   selectedIndex?: number;
@@ -53,7 +54,7 @@ export function HelipadList({
       {filteredHelipads.map(({ helipad, originalIndex }) => {
         const isSelected = selectedIndex === originalIndex;
         const sizeFt = `${Math.round(metersToFeet(helipad.length))}'×${Math.round(metersToFeet(helipad.width))}'`;
-        const xplaneIndex = `${runwayCount + originalIndex}_0`;
+        const xplaneIndex = `${helipad.startRow ?? runwayCount + originalIndex}_0`;
 
         return (
           <Button

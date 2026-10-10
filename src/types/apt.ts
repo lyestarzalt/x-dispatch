@@ -37,6 +37,7 @@ export enum RowCode {
   FREQUENCY_DEPARTURE_833 = 1056,
   TAXI_SIGN = 20,
   LAND_RUNWAY = 100,
+  WATER_RUNWAY = 101,
   HELIPAD = 102,
   TAXIWAY = 110,
   FREE_CHAIN = 120,
@@ -163,9 +164,14 @@ export enum ShoulderSurfaceType {
 // ============================================================================
 
 export enum RunwayMarking {
+  NONE = 0,
   VISUAL = 1,
   NON_PRECISION = 2,
   PRECISION = 3,
+  UK_NON_PRECISION = 4,
+  UK_PRECISION = 5,
+  EASA_NON_PRECISION = 6,
+  EASA_PRECISION = 7,
 }
 
 export enum ApproachLighting {
@@ -259,6 +265,30 @@ export interface Runway {
   edge_lights: boolean;
   auto_distance_remaining_signs: boolean;
   ends: [RunwayEnd, RunwayEnd];
+  /**
+   * Position among the runway-type starts (land runways, water runways and
+   * helipads) in apt.dat file order. X-Plane numbers its runway start
+   * positions this way, so this is the row part of its `row_end` index.
+   */
+  startRow?: number;
+}
+
+export interface WaterRunwayEnd extends Coordinates {
+  name: string;
+}
+
+/** Water runway (row code 101): a lane on a lake or bay, no markings or lights. */
+export interface WaterRunway {
+  width: number;
+  /** Buoys mark the lane perimeter. */
+  perimeter_buoys: boolean;
+  ends: [WaterRunwayEnd, WaterRunwayEnd];
+  /**
+   * Position among the runway-type starts (land runways, water runways and
+   * helipads) in apt.dat file order. X-Plane numbers its runway start
+   * positions this way, so this is the row part of its `row_end` index.
+   */
+  startRow?: number;
 }
 
 export interface StartupLocation extends Coordinates {
@@ -325,6 +355,12 @@ export interface Helipad extends Coordinates {
   length: number;
   width: number;
   surface_type: SurfaceType;
+  /**
+   * Position among the runway-type starts (land runways, water runways and
+   * helipads) in apt.dat file order. X-Plane numbers its runway start
+   * positions this way, so this is the row part of its `row_end` index.
+   */
+  startRow?: number;
 }
 
 export interface TaxiwayFeature {
@@ -431,6 +467,7 @@ export interface ParsedAirport {
   elevation: number;
   metadata: Record<string, string>;
   runways: Runway[];
+  waterRunways: WaterRunway[];
   taxiways: TaxiwayFeature[];
   boundaries: BoundaryFeature[];
   /** @deprecated Unused, kept for compatibility */

@@ -86,3 +86,25 @@ describe('airportBoundsHaveArea', () => {
     ).toBe(false);
   });
 });
+
+describe('getAirportBounds — water runways', () => {
+  it('covers water runway ends when there are no land runways', () => {
+    const base = {
+      runways: [],
+      waterRunways: [
+        {
+          width: 50,
+          perimeter_buoys: false,
+          ends: [
+            { name: '09W', latitude: 62.51, longitude: -153.89 },
+            { name: '27W', latitude: 62.508, longitude: -153.87 },
+          ],
+        },
+      ],
+    } as unknown as ParsedAirport;
+    expect(getAirportBounds(base, [0, 0])).toEqual([
+      [-153.89, 62.508],
+      [-153.87, 62.51],
+    ]);
+  });
+});

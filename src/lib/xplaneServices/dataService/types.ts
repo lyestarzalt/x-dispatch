@@ -65,6 +65,8 @@ export interface CacheCheckResult {
   changedFiles: string[];
   newFiles: string[];
   deletedFiles: string[];
+  /** The cache was written by an older scanner and must be rebuilt even if no file changed. */
+  scannerChanged?: boolean;
 }
 
 // ============================================================================

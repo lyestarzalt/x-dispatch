@@ -1,27 +1,75 @@
-import { getRunwayPolygon, getRunwayShoulderPolygon } from '@/lib/parsers/apt/runwayHelper';
+import {
+  getRunwayOverrunPolygons,
+  getRunwayPolygon,
+  getRunwayShoulderPolygon,
+  getWaterRunwayPolygon,
+} from '@/lib/parsers/apt/runwayHelper';
 import type { ParsedAirport } from '@/types/apt';
-import type { LinearFeature, Pavement, Runway, TaxiNetwork, Windsock } from '@/types/apt';
+import { SurfaceType } from '@/types/apt';
+import type {
+  LinearFeature,
+  Pavement,
+  Runway,
+  TaxiNetwork,
+  WaterRunway,
+  Windsock,
+} from '@/types/apt';
 
-export function createRunwayGeoJSON(runways: Runway[]): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: runways.map((runway) => ({
-      type: 'Feature' as const,
-      geometry: {
-        type: 'Polygon' as const,
-        coordinates: [getRunwayPolygon(runway)],
-      },
-      properties: {
-        surface: runway.surface_type,
-        name: `${runway.ends[0].name}-${runway.ends[1].name}`,
-        width: runway.width,
-        centerlineLights: runway.centerline_lights,
-        edgeLights: runway.edge_lights,
-        shoulderSurface: runway.shoulder_surface_type,
-        shoulderWidth: runway.shoulder_width,
-      },
-    })),
-  };
+/**
+ * Land and water runways in one source. Water lanes carry `water: true` so
+ * the centerline and outline layers can leave them alone.
+ */
+export function createRunwayGeoJSON(
+  runways: Runway[],
+  waterRunways: WaterRunway[] = []
+): GeoJSON.FeatureCollection {
+  const land: GeoJSON.Feature[] = runways.map((runway) => ({
+    type: 'Feature' as const,
+    geometry: {
+      type: 'Polygon' as const,
+      coordinates: [getRunwayPolygon(runway)],
+    },
+    properties: {
+      surface: runway.surface_type,
+      name: `${runway.ends[0].name}-${runway.ends[1].name}`,
+      width: runway.width,
+      water: false,
+      centerlineLights: runway.centerline_lights,
+      edgeLights: runway.edge_lights,
+      shoulderSurface: runway.shoulder_surface_type,
+      shoulderWidth: runway.shoulder_width,
+    },
+  }));
+  const water: GeoJSON.Feature[] = waterRunways.map((runway) => ({
+    type: 'Feature' as const,
+    geometry: {
+      type: 'Polygon' as const,
+      coordinates: [getWaterRunwayPolygon(runway)],
+    },
+    properties: {
+      surface: SurfaceType.WATER_RUNWAY,
+      name: `${runway.ends[0].name}-${runway.ends[1].name}`,
+      width: runway.width,
+      water: true,
+      perimeterBuoys: runway.perimeter_buoys,
+    },
+  }));
+  return { type: 'FeatureCollection', features: [...land, ...water] };
+}
+
+/** Overrun and blast pad rectangles beyond the runway ends, tagged with the runway surface. */
+export function createRunwayOverrunGeoJSON(runways: Runway[]): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
+  for (const runway of runways) {
+    for (const { endName, polygon } of getRunwayOverrunPolygons(runway)) {
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [polygon] },
+        properties: { surface: runway.surface_type, endName },
+      });
+    }
+  }
+  return { type: 'FeatureCollection', features };
 }
 
 export function createRunwayShoulderGeoJSON(runways: Runway[]): GeoJSON.FeatureCollection {

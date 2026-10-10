@@ -116,6 +116,23 @@ const FILTER_DEFAULT: maplibregl.FilterSpecification = [
 ];
 const FILTER_STARRED: maplibregl.FilterSpecification = ['==', ['get', 'isFavorite'], 1];
 
+/**
+ * Each airport layer's own filter, keyed by layer id. The user filter hook
+ * ANDs its conditions onto these, so every dot, halo, star, label and hit
+ * target follows the same rule. Layers without a base filter map to undefined.
+ */
+export const AIRPORT_LAYER_BASE_FILTERS: Readonly<
+  Record<string, maplibregl.FilterSpecification | undefined>
+> = {
+  'airports-custom': FILTER_CUSTOM,
+  'airports-glow': FILTER_DEFAULT,
+  'airports-halo': FILTER_DEFAULT,
+  airports: FILTER_DEFAULT,
+  'airports-favorite': FILTER_STARRED,
+  'airport-labels': undefined,
+  'airports-hitbox': undefined,
+};
+
 // Stored as [zoom, value] pairs so we can both flatten into an
 // `interpolate` and append a per-feature `case` at the high-zoom stop.
 // MapLibre disallows `["zoom"]` inside `case`, so the case has to live

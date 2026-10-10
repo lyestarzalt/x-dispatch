@@ -10,6 +10,8 @@ import { isStyleReadyForLayerUpdates } from './styleReadiness';
 // Map layer IDs to visibility keys.
 const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-runways': 'runways',
+  'airport-runway-overruns': 'runways',
+  'airport-runway-overruns-hatch': 'runways',
   'airport-runway-centerlines': 'runways',
   'airport-runway-labels': 'runways',
   'airport-runway-markings': 'runwayMarkings',
@@ -17,6 +19,7 @@ const LAYER_VISIBILITY_MAP: Record<string, keyof LayerVisibility> = {
   'airport-runway-threshold-bars': 'runwayMarkings',
   'airport-runway-aiming-points': 'runwayMarkings',
   'airport-runway-tdz-marks': 'runwayMarkings',
+  'airport-runway-dthr-lines': 'runwayMarkings',
   'airport-runway-edge-lights': 'runwayLights',
   'airport-runway-edge-lights-core': 'runwayLights',
   'airport-runway-threshold-lights': 'runwayLights',
@@ -191,7 +194,7 @@ export function useAirportRenderer(
         // better than a silent paint-never-fires regression.
         paintLayers(parsedAirport);
 
-        const optimalZoom = calculateOptimalZoom(parsedAirport.runways);
+        const optimalZoom = calculateOptimalZoom(parsedAirport.runways, parsedAirport.waterRunways);
 
         m.flyTo({
           center,

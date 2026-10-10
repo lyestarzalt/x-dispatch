@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { startRunways } from '@/lib/airports/startRunways';
 import { useAppStore } from '@/stores/appStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
@@ -31,7 +32,7 @@ export default function StartTab({
   const airport = useAppStore((s) => s.selectedAirportData);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
 
-  const runways = useMemo(() => airport?.runways ?? [], [airport?.runways]);
+  const runways = useMemo(() => (airport ? startRunways(airport) : []), [airport]);
   const gates = useMemo(() => airport?.startupLocations ?? [], [airport?.startupLocations]);
   const helipads = useMemo(() => airport?.helipads ?? [], [airport?.helipads]);
 

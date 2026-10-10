@@ -1,18 +1,18 @@
 import { runwayLength } from '@/lib/utils/geomath';
-import type { Runway } from '@/types/apt';
+import type { Runway, WaterRunway } from '@/types/apt';
 
 // Re-export haversineDistance for backward compatibility
 /**
  * Calculate runway length from its end coordinates
  */
-function calculateRunwayLength(runway: Runway): number {
+function calculateRunwayLength(runway: Runway | WaterRunway): number {
   return runwayLength(runway.ends[0], runway.ends[1]);
 }
 
 /**
- * Get the longest runway length from an airport
+ * Get the longest runway length from an airport, land or water
  */
-function getLongestRunwayLength(runways: Runway[]): number {
+function getLongestRunwayLength(runways: (Runway | WaterRunway)[]): number {
   if (runways.length === 0) return 0;
 
   return Math.max(...runways.map(calculateRunwayLength));
@@ -22,8 +22,8 @@ function getLongestRunwayLength(runways: Runway[]): number {
  * Calculate optimal zoom level based on airport size
  * Uses longest runway length as the primary metric
  */
-export function calculateOptimalZoom(runways: Runway[]): number {
-  const longestRunway = getLongestRunwayLength(runways);
+export function calculateOptimalZoom(runways: Runway[], waterRunways: WaterRunway[] = []): number {
+  const longestRunway = getLongestRunwayLength([...runways, ...waterRunways]);
 
   // Zoom levels based on runway length (in meters)
   // Smaller airports need higher zoom, larger airports need lower zoom

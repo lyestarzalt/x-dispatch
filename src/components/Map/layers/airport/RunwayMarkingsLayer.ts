@@ -1,14 +1,30 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import { labelFont } from '@/lib/map/labelFonts';
+import {
+  THRESHOLD_BAR_WIDTH_M,
+  getDisplacedThresholdMarkings,
+  getDisplacedThresholdPoint,
+  getMarkingProfile,
+} from '@/lib/parsers/apt/runwayHelper';
 import { calculateBearing, destinationPoint as calculatePoint } from '@/lib/utils/geomath';
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
-import { RunwayMarking } from '@/types/apt';
 import { safeAddGeoJSONSource } from '../types';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
 type LonLat = [number, number];
+
+interface Origin {
+  latitude: number;
+  longitude: number;
+}
+
+/** The usable threshold of an end, where every marking is measured from. */
+function thresholdOrigin(runway: Runway, endIndex: 0 | 1): Origin {
+  const [longitude, latitude] = getDisplacedThresholdPoint(runway, endIndex);
+  return { latitude, longitude };
+}
 
 /**
  * Create a rectangle polygon from a center point, dimensions, and heading
@@ -41,6 +57,7 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
     'airport-runway-threshold-bars',
     'airport-runway-aiming-points',
     'airport-runway-tdz-marks',
+    'airport-runway-dthr-lines',
   ];
   additionalSourceIds = ['airport-runway-numbers'];
 
@@ -86,6 +103,21 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       paint: {
         'fill-color': '#FFFFFF',
         'fill-opacity': 0.95,
+      },
+    });
+
+    // Displaced threshold: dashed centerline from the pavement end to the threshold bar
+    this.addLayer(map, {
+      id: 'airport-runway-dthr-lines',
+      type: 'line',
+      source: this.sourceId,
+      filter: ['==', ['get', 'type'], 'dthr-line'],
+      minzoom: markingsMinZoom,
+      paint: {
+        'line-color': '#FFFFFF',
+        'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 16, 3, 20, 5],
+        'line-dasharray': [2, 2],
+        'line-opacity': 0.95,
       },
     });
 
@@ -164,28 +196,33 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       );
       const heading2 = (heading1 + 180) % 360;
 
-      // Generate threshold bars for each end
-      if (end1.marking >= RunwayMarking.VISUAL) {
-        this.generateThresholdBars(features, end1, heading1, width);
-      }
-      if (end2.marking >= RunwayMarking.VISUAL) {
-        this.generateThresholdBars(features, end2, heading2, width);
-      }
-
-      // Generate aiming points for precision runways
-      if (end1.marking >= RunwayMarking.NON_PRECISION) {
-        this.generateAimingPoints(features, end1, heading1, width);
-      }
-      if (end2.marking >= RunwayMarking.NON_PRECISION) {
-        this.generateAimingPoints(features, end2, heading2, width);
+      // Every marking is measured from the usable threshold, displaced or not.
+      const ends = [
+        [end1, thresholdOrigin(runway, 0), heading1],
+        [end2, thresholdOrigin(runway, 1), heading2],
+      ] as const;
+      for (const [end, origin, heading] of ends) {
+        const profile = getMarkingProfile(end.marking);
+        if (profile.thresholdStripes) this.generateThresholdBars(features, origin, heading, width);
+        if (profile.aimingPoint) this.generateAimingPoints(features, origin, heading, width);
+        if (profile.touchdownZone) this.generateTDZMarks(features, origin, heading, width);
       }
 
-      // Generate TDZ marks for precision runways
-      if (end1.marking >= RunwayMarking.PRECISION) {
-        this.generateTDZMarks(features, end1, heading1, width);
+      // Displaced section: a bar across the threshold and a dashed centerline back to the end.
+      const displaced = getDisplacedThresholdMarkings(runway);
+      for (const bar of displaced.bars) {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: [bar] },
+          properties: { type: 'threshold' },
+        });
       }
-      if (end2.marking >= RunwayMarking.PRECISION) {
-        this.generateTDZMarks(features, end2, heading2, width);
+      for (const line of displaced.centerlines) {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: line },
+          properties: { type: 'dthr-line' },
+        });
       }
     }
 
@@ -208,9 +245,11 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
       );
       const heading2 = (heading1 + 180) % 360;
 
-      // Number position - 300m from threshold
-      const pos1 = calculatePoint(end1.latitude, end1.longitude, 300, heading1);
-      const pos2 = calculatePoint(end2.latitude, end2.longitude, 300, heading2);
+      // Number position - 300m from the usable threshold
+      const origin1 = thresholdOrigin(runway, 0);
+      const origin2 = thresholdOrigin(runway, 1);
+      const pos1 = calculatePoint(origin1.latitude, origin1.longitude, 300, heading1);
+      const pos2 = calculatePoint(origin2.latitude, origin2.longitude, 300, heading2);
 
       // Format runway number with L/C/R designation
       const suffix1 = end1.name.match(/[LCR]$/)?.[0] || '';
@@ -251,8 +290,8 @@ export class RunwayMarkingsLayer extends BaseLayerRenderer {
     // Standard threshold has 8 bars (4 on each side), each 45m long, 1.8m wide
     const numBars = 8;
     const barLength = Math.min(45, width * 0.4);
-    const barWidth = 1.8;
-    const barSpacing = 1.8;
+    const barWidth = THRESHOLD_BAR_WIDTH_M;
+    const barSpacing = THRESHOLD_BAR_WIDTH_M;
     const startOffset = 6; // Distance from threshold
 
     for (let i = 0; i < numBars; i++) {

@@ -140,7 +140,7 @@ export function RunwayList({
                         latitude: end.latitude,
                         longitude: end.longitude,
                         index: globalEndIndex,
-                        xplaneIndex: `${originalIndex}_${endIndex}`,
+                        xplaneIndex: `${runway.startRow ?? originalIndex}_${endIndex}`,
                       })
                     }
                     className={cn(

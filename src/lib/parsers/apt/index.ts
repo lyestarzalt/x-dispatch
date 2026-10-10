@@ -369,6 +369,9 @@ export class AirportParser {
     // loop finishes.
     const legacyFrequencies: Frequency[] = [];
     const modernFrequencies: Frequency[] = [];
+    // Land runways, water runways and helipads share one start index in
+    // X-Plane, assigned in file order across the three row codes.
+    let startRow = 0;
     const airport: ParsedAirport = {
       id: '',
       name: '',
@@ -377,6 +380,7 @@ export class AirportParser {
       elevation: 0,
       metadata: {},
       runways: [],
+      waterRunways: [],
       taxiways: [],
       boundaries: [],
       lines: [],
@@ -474,6 +478,7 @@ export class AirportParser {
             length: lengthResult.success ? lengthResult.data : 1,
             width: widthResult.success ? widthResult.data : 1,
             surface_type: parseInt(token(tokens, 7)),
+            startRow: startRow++,
           });
           break;
         }
@@ -558,6 +563,38 @@ export class AirportParser {
             edge_lights: Boolean(parseInt(token(tokens, 6))),
             auto_distance_remaining_signs: Boolean(parseInt(token(tokens, 7))),
             ends: [end1, end2],
+            startRow: startRow++,
+          });
+          break;
+        }
+
+        case RowCode.WATER_RUNWAY: {
+          // 101  width  perimeter_buoys  name1 lat lon  name2 lat lon
+          if (tokens.length < 9) {
+            this.skipped++;
+            break;
+          }
+          const widthResult = positiveNumber.safeParse(parseFloat(token(tokens, 1)));
+          const end1 = coordinate.safeParse({
+            latitude: parseFloat(token(tokens, 4)),
+            longitude: parseFloat(token(tokens, 5)),
+          });
+          const end2 = coordinate.safeParse({
+            latitude: parseFloat(token(tokens, 7)),
+            longitude: parseFloat(token(tokens, 8)),
+          });
+          if (!end1.success || !end2.success) {
+            this.skipped++;
+            break;
+          }
+          airport.waterRunways.push({
+            width: widthResult.success ? widthResult.data : 30,
+            perimeter_buoys: Boolean(parseInt(token(tokens, 2))),
+            ends: [
+              { name: token(tokens, 3), ...end1.data },
+              { name: token(tokens, 6), ...end2.data },
+            ],
+            startRow: startRow++,
           });
           break;
         }
@@ -793,6 +830,7 @@ export class AirportParser {
     // Calculate stats
     const parsedCount =
       airport.runways.length +
+      airport.waterRunways.length +
       airport.taxiways.length +
       airport.startupLocations.length +
       airport.windsocks.length +
