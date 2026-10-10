@@ -3,33 +3,23 @@ import { useTranslation } from 'react-i18next';
 import {
   Anchor,
   BookOpen,
-  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
-  Cloud,
   CloudDownload,
-  CloudRain,
   Compass,
   FileUp,
-  Flashlight,
   Layers,
-  Lightbulb,
   MapPin,
   Package,
   Pause,
   Pencil,
   Plane,
   Play,
-  Radar,
   Route,
   Search,
   Settings,
   Ship,
-  Sunrise,
-  Waves,
-  Wind,
   X,
 } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -40,23 +30,11 @@ import type { WeatherRadarControls } from '@/components/Map/hooks/useWeatherRada
 import { AddonManager } from '@/components/dialogs/AddonManager';
 import SimbriefDialog from '@/components/dialogs/SimbriefDialog';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -64,27 +42,22 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
-import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
 import { quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
-import { trackEvent, useDistinctCountries, useNavDataCounts } from '@/queries';
+import { trackEvent, useNavDataCounts } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
 import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
-import { type SurfaceTypeFilter, useMapStore } from '@/stores/mapStore';
+import { useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
-import { useSettingsStore } from '@/stores/settingsStore';
 import type { NavLayerVisibility } from '@/types/layers';
-import { ALL_RANGE_RING_CATEGORIES, RANGE_RING_COLORS, RANGE_RING_SPEEDS } from '@/types/layers';
 import { ClockWidget } from './ClockWidget';
+import { LayersPanel } from './LayersPanel';
 
 type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
-
-const AIRFIELD_LIGHTS_ON: AirfieldLightsMode = 'on';
-const AIRFIELD_LIGHTS_OFF: AirfieldLightsMode = 'off';
 
 const PIN_MODE_CONFIG: { mode: CustomStartMode; icon: typeof MapPin; labelKey: string }[] = [
   { mode: 'ground', icon: MapPin, labelKey: 'toolbar.pinModes.ground' },
@@ -420,44 +393,13 @@ function Toolbar({
   // Map store
   const vatsimEnabled = useMapStore((s) => s.vatsimEnabled);
   const ivaoEnabled = useMapStore((s) => s.ivaoEnabled);
-  const simTrafficEnabled = useMapStore((s) => s.simTrafficEnabled);
-  const setSimTrafficEnabled = useMapStore((s) => s.setSimTrafficEnabled);
-  const navVisibility = useMapStore((s) => s.navVisibility);
   const weatherRadarEnabled = useMapStore((s) => s.weatherRadarEnabled);
   const cloudLayerEnabled = useMapStore((s) => s.cloudLayerEnabled);
-  const setCloudLayerEnabled = useMapStore((s) => s.setCloudLayerEnabled);
-  const flightTrailEnabled = useMapStore((s) => s.flightTrailEnabled);
-  const setFlightTrailEnabled = useMapStore((s) => s.setFlightTrailEnabled);
-  const dynamicSkyEnabled = useSettingsStore((s) => s.graphics.dynamicSky);
-  const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
-  const groundWeatherEnabled = useSettingsStore((s) => s.graphics.groundWeather);
-  const airfieldLightsOn = useSettingsStore((s) => s.graphics.airfieldLights !== 'off');
-  const updateGraphicsSettings = useSettingsStore((s) => s.updateGraphicsSettings);
   const exploreOpen = useMapStore((s) => s.explore.isOpen);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
   const airportFilters = useMapStore((s) => s.airportFilters);
-  const setAirportFilters = useMapStore((s) => s.setAirportFilters);
-  const resetAirportFilters = useMapStore((s) => s.resetAirportFilters);
   const rangeRingsEnabled = useMapStore((s) => s.rangeRingsEnabled);
-  const setRangeRingsEnabled = useMapStore((s) => s.setRangeRingsEnabled);
-  const rangeRingsDuration = useMapStore((s) => s.rangeRingsDuration);
-  const setRangeRingsDuration = useMapStore((s) => s.setRangeRingsDuration);
-  const rangeRingsCategories = useMapStore((s) => s.rangeRingsCategories);
-  const toggleRangeRingsCategory = useMapStore((s) => s.toggleRangeRingsCategory);
   const filtersActive = isAirportFiltersActive(airportFilters);
-  const checkedTypeCount = [
-    airportFilters.showLand,
-    airportFilters.showSeaplane,
-    airportFilters.showHeliport,
-  ].filter(Boolean).length;
-  /** The last airport type left on cannot be switched off: it would blank the map. */
-  const lastType = (checked: boolean) => checked && checkedTypeCount === 1;
-  const lastSurface = (type: SurfaceTypeFilter) =>
-    airportFilters.surfaceTypes.length === 1 && airportFilters.surfaceTypes.includes(type);
-  const [countryOpen, setCountryOpen] = useState(false);
-
-  // Country list query
-  const { data: countries = [] } = useDistinctCountries();
 
   // Flight plan store
   const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
@@ -490,15 +432,6 @@ function Toolbar({
       ? parseFloat(selectedAirportData.metadata.datum_lon)
       : null);
   const navDataCounts = useNavDataCounts(airportLat, airportLon);
-
-  const toggleSurfaceType = useCallback(
-    (type: SurfaceTypeFilter) => {
-      const current = airportFilters.surfaceTypes;
-      const next = current.includes(type) ? current.filter((t) => t !== type) : [...current, type];
-      setAirportFilters({ surfaceTypes: next });
-    },
-    [airportFilters.surfaceTypes, setAirportFilters]
-  );
 
   // Uppercase once per airport list, not once per airport per keystroke —
   // the list holds tens of thousands of entries.
@@ -622,12 +555,6 @@ function Toolbar({
   }, [loadFMSFile, t]);
 
   const totalNavItems = navDataCounts.navaids + navDataCounts.ils + navDataCounts.airspaces;
-
-  const localNavLayers: { key: keyof NavLayerVisibility; labelKey: string; count: number }[] = [
-    { key: 'navaids', labelKey: 'layers.items.navaids', count: navDataCounts.navaids },
-    { key: 'ils', labelKey: 'layers.items.ils', count: navDataCounts.ils },
-    { key: 'airspaces', labelKey: 'layers.navigation.airspaces', count: navDataCounts.airspaces },
-  ];
 
   const layersActive =
     filtersActive ||
@@ -791,11 +718,11 @@ function Toolbar({
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        {/* Layers dropdown */}
-        <Tooltip>
-          <DropdownMenu>
+        {/* Layers panel */}
+        <Popover>
+          <Tooltip>
             <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
+              <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn('h-9 gap-2 px-3', layersActive && 'border-primary/50 text-primary')}
@@ -805,321 +732,24 @@ function Toolbar({
                   {layersActive && <span className="bg-primary h-2 w-2 rounded-full" />}
                   <ChevronDown className="h-3 w-3" />
                 </Button>
-              </DropdownMenuTrigger>
+              </PopoverTrigger>
             </TooltipTrigger>
             <TooltipContent>
               <p>{t('toolbar.tooltips.layers')}</p>
             </TooltipContent>
-            <DropdownMenuContent align="end" className="max-h-[70vh] w-56 overflow-y-auto">
-              {/* Airports section */}
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('airportFilters.title')}
-              </DropdownMenuLabel>
-              <DropdownMenuCheckboxItem
-                checked={airportFilters.showLand}
-                disabled={lastType(airportFilters.showLand)}
-                onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
-              >
-                {t('airportFilters.land')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={airportFilters.showSeaplane}
-                disabled={lastType(airportFilters.showSeaplane)}
-                onCheckedChange={() =>
-                  setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
-                }
-              >
-                {t('airportFilters.seaplane')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={airportFilters.showHeliport}
-                disabled={lastType(airportFilters.showHeliport)}
-                onCheckedChange={() =>
-                  setAirportFilters({ showHeliport: !airportFilters.showHeliport })
-                }
-              >
-                {t('airportFilters.heliport')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={airportFilters.onlyCustom}
-                onCheckedChange={() =>
-                  setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })
-                }
-              >
-                {t('airportFilters.customOnly')}
-              </DropdownMenuCheckboxItem>
-
-              {/* Runway surface */}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('airportFilters.runwaySurface')}
-              </DropdownMenuLabel>
-              {(
-                [
-                  { type: 'paved', labelKey: 'airportFilters.paved' },
-                  { type: 'unpaved', labelKey: 'airportFilters.unpaved' },
-                  { type: 'water', labelKey: 'airportFilters.water' },
-                  { type: 'other', labelKey: 'airportFilters.surfaceOther' },
-                ] as const
-              ).map(({ type, labelKey }) => (
-                <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={airportFilters.surfaceTypes.includes(type)}
-                  disabled={lastSurface(type)}
-                  onCheckedChange={() => toggleSurfaceType(type)}
-                >
-                  {t(labelKey)}
-                </DropdownMenuCheckboxItem>
-              ))}
-
-              {/* Country */}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('airportFilters.country')}
-              </DropdownMenuLabel>
-              <div className="px-1 pb-1">
-                <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={countryOpen}
-                      className="h-8 w-full justify-between px-2 text-sm"
-                    >
-                      <span className="truncate">
-                        {airportFilters.country === 'all'
-                          ? t('airportFilters.allCountries')
-                          : airportFilters.country}
-                      </span>
-                      <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-52 p-0" align="start" side="left" sideOffset={8}>
-                    <Command>
-                      <CommandInput placeholder={t('common.search')} className="h-8" />
-                      <CommandList>
-                        <CommandEmpty>{t('common.noResults')}</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem
-                            value="all"
-                            onSelect={() => {
-                              setAirportFilters({ country: 'all' });
-                              setCountryOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'mr-2 h-4 w-4',
-                                airportFilters.country === 'all' ? 'opacity-100' : 'opacity-0'
-                              )}
-                            />
-                            {t('airportFilters.allCountries')}
-                          </CommandItem>
-                          {countries.map((country) => (
-                            <CommandItem
-                              key={country}
-                              value={country}
-                              onSelect={() => {
-                                setAirportFilters({ country });
-                                setCountryOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  airportFilters.country === country ? 'opacity-100' : 'opacity-0'
-                                )}
-                              />
-                              {country}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {filtersActive && (
-                <Button
-                  variant="ghost"
-                  onClick={resetAirportFilters}
-                  className="text-muted-foreground hover:text-foreground h-auto w-full rounded-none px-2 py-1.5 text-sm"
-                >
-                  {t('airportFilters.reset')}
-                </Button>
-              )}
-
-              <DropdownMenuSeparator />
-
-              {/* Navigation section */}
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('toolbar.aroundAirport')}
-              </DropdownMenuLabel>
-              {localNavLayers.map((layer) => (
-                <DropdownMenuCheckboxItem
-                  key={layer.key}
-                  checked={navVisibility[layer.key] as boolean}
-                  onCheckedChange={() => onNavToggle(layer.key)}
-                >
-                  <span className="min-w-0 flex-1 truncate">{t(layer.labelKey)}</span>
-                  <span className="text-muted-foreground ml-2 font-mono text-xs">
-                    {layer.count}
-                  </span>
-                </DropdownMenuCheckboxItem>
-              ))}
-
-              <DropdownMenuSeparator />
-
-              {/* Overlays section */}
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('toolbar.overlays')}
-              </DropdownMenuLabel>
-              <DropdownMenuCheckboxItem
-                checked={weatherRadarEnabled}
-                onCheckedChange={onToggleWeatherRadar}
-              >
-                <CloudRain className="mr-2 h-4 w-4" />
-                {t('toolbar.weather')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={cloudLayerEnabled}
-                onCheckedChange={() => setCloudLayerEnabled(!cloudLayerEnabled)}
-              >
-                <Cloud className="mr-2 h-4 w-4" />
-                {t('toolbar.satelliteClouds')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={dynamicSkyEnabled}
-                onCheckedChange={() => updateGraphicsSettings({ dynamicSky: !dynamicSkyEnabled })}
-              >
-                <Sunrise className="mr-2 h-4 w-4" />
-                {t('toolbar.dynamicSky')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={cityLightsEnabled}
-                onCheckedChange={() => updateGraphicsSettings({ cityLights: !cityLightsEnabled })}
-              >
-                <Lightbulb className="mr-2 h-4 w-4" />
-                {t('toolbar.cityLights')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={groundWeatherEnabled}
-                onCheckedChange={() =>
-                  updateGraphicsSettings({ groundWeather: !groundWeatherEnabled })
-                }
-              >
-                <Wind className="mr-2 h-4 w-4" />
-                {t('toolbar.groundWeather')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={airfieldLightsOn}
-                onCheckedChange={(checked) =>
-                  updateGraphicsSettings({
-                    airfieldLights: checked ? AIRFIELD_LIGHTS_ON : AIRFIELD_LIGHTS_OFF,
-                  })
-                }
-              >
-                <Flashlight className="mr-2 h-4 w-4" />
-                {t('toolbar.airfieldLights')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={flightTrailEnabled}
-                onCheckedChange={() => setFlightTrailEnabled(!flightTrailEnabled)}
-              >
-                <Route className="mr-2 h-4 w-4" />
-                {t('toolbar.flightTrail')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={navVisibility.natTracks}
-                onCheckedChange={() => onNavToggle('natTracks')}
-              >
-                <Waves className="mr-2 h-4 w-4" />
-                {t('toolbar.natTracks')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={simTrafficEnabled}
-                onCheckedChange={() => setSimTrafficEnabled(!simTrafficEnabled)}
-              >
-                <Plane className="mr-2 h-4 w-4" />
-                {t('toolbar.simTraffic')}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem checked={vatsimEnabled} onCheckedChange={onToggleVatsim}>
-                <Radar className="mr-2 h-4 w-4" />
-                {t('toolbar.vatsim')}
-                {vatsimEnabled && vatsimPilotCount !== undefined && (
-                  <Badge variant="success" className="ml-auto px-1.5 py-0.5">
-                    {vatsimPilotCount}
-                  </Badge>
-                )}
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem checked={ivaoEnabled} onCheckedChange={onToggleIvao}>
-                <Radar className="mr-2 h-4 w-4" />
-                IVAO
-                {ivaoEnabled && ivaoPilotCount !== undefined && (
-                  <Badge variant="cat-blue" className="ml-auto px-1.5 py-0.5">
-                    {ivaoPilotCount}
-                  </Badge>
-                )}
-              </DropdownMenuCheckboxItem>
-
-              <DropdownMenuSeparator />
-
-              {/* Range Rings section */}
-              <DropdownMenuLabel className="xp-section-heading">
-                {t('toolbar.rangeRings')}
-              </DropdownMenuLabel>
-              <DropdownMenuCheckboxItem
-                checked={rangeRingsEnabled}
-                onCheckedChange={() => setRangeRingsEnabled(!rangeRingsEnabled)}
-              >
-                {t('toolbar.enabled')}
-              </DropdownMenuCheckboxItem>
-              {rangeRingsEnabled && (
-                <>
-                  <div className="flex gap-1 px-2 py-1.5">
-                    {([1, 2, 3, 5, 8] as const).map((h) => (
-                      <Button
-                        key={h}
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setRangeRingsDuration(h);
-                        }}
-                        className={cn(
-                          'h-6 flex-1 px-0 text-xs',
-                          rangeRingsDuration === h && 'bg-primary/20 text-primary'
-                        )}
-                      >
-                        {t('toolbar.rangeRingsHours', { n: h })}
-                      </Button>
-                    ))}
-                  </div>
-                  {ALL_RANGE_RING_CATEGORIES.map((cat) => (
-                    <DropdownMenuCheckboxItem
-                      key={cat}
-                      checked={rangeRingsCategories.includes(cat)}
-                      onCheckedChange={() => toggleRangeRingsCategory(cat)}
-                    >
-                      <span
-                        className="mr-2 inline-block h-2 w-2 rounded-full"
-                        style={{ backgroundColor: RANGE_RING_COLORS[cat] }}
-                      />
-                      <span className="min-w-0 flex-1 truncate">
-                        {t(`planBuilder.class.${cat}`)}
-                      </span>
-                      <span className="text-muted-foreground ml-2 font-mono text-xs">
-                        {t('toolbar.rangeRingsKts', { speed: RANGE_RING_SPEEDS[cat] })}
-                      </span>
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </Tooltip>
+          </Tooltip>
+          <PopoverContent align="end" sideOffset={8} className="w-96 p-0">
+            <LayersPanel
+              navDataCounts={navDataCounts}
+              onNavToggle={onNavToggle}
+              onToggleWeatherRadar={onToggleWeatherRadar}
+              onToggleVatsim={onToggleVatsim}
+              onToggleIvao={onToggleIvao}
+              vatsimPilotCount={vatsimPilotCount}
+              ivaoPilotCount={ivaoPilotCount}
+            />
+          </PopoverContent>
+        </Popover>
 
         {/* Weather playback controls (inline, no toggle) */}
         {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
