@@ -13,6 +13,7 @@
 export { SettingsHeader } from './SettingsHeader';
 export { SettingsSectionBlock } from './SettingsSectionBlock';
 export { SettingsToggleRow } from './SettingsToggleRow';
+export { SettingsSliderRow } from './SettingsSliderRow';
 export { SettingsChoiceRow } from './SettingsChoiceRow';
 export { SettingsLinkRow } from './SettingsLinkRow';
 export { SettingsPathDisplay } from './SettingsPathDisplay';

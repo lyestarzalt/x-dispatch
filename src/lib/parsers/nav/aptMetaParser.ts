@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import type { AirportMetadata } from '@/types/navigation';
 import { altitude, latitude, longitude, nonNegative } from '../schemas';
+import { issueSummary, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 const AirportMetaSchema = z.object({
@@ -41,14 +42,8 @@ export function parseAirportMetadata(content: string): ParseResult<Map<string, A
     if (!line || line.startsWith('#')) continue;
 
     if (!headerSkipped) {
-      if (
-        line.startsWith('I') ||
-        line.startsWith('A') ||
-        /^\d+$/.test(line) ||
-        line.includes('Copyright')
-      ) {
-        continue;
-      }
+      // The header is a lone byte-order letter and a "1140 Version ..." line.
+      if (line === 'I' || line === 'A' || /^\d+\s+Version/i.test(line)) continue;
       headerSkipped = true;
     }
 
@@ -57,6 +52,7 @@ export function parseAirportMetadata(content: string): ParseResult<Map<string, A
     const parts = line.split(/\s+/);
     if (parts.length < 10) {
       skipped++;
+      recordSkip(errors, i + 1, 'expected 10 fields');
       continue;
     }
 
@@ -75,6 +71,7 @@ export function parseAirportMetadata(content: string): ParseResult<Map<string, A
       !transLvl
     ) {
       skipped++;
+      recordSkip(errors, i + 1, 'empty field');
       continue;
     }
 
@@ -94,6 +91,7 @@ export function parseAirportMetadata(content: string): ParseResult<Map<string, A
 
     if (!result.success) {
       skipped++;
+      recordSkip(errors, i + 1, issueSummary(result.error));
       continue;
     }
 

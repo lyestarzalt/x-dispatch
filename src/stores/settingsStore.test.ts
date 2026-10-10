@@ -172,6 +172,34 @@ describe('migrateSettings', () => {
     expect('surfaceDetail' in result.graphics).toBe(false);
   });
 
+  it('adds the image basemap label settings at v36 and keeps the other map choices', () => {
+    const v35Blob = {
+      map: { userMapStyles: [], idleOrbitEnabled: true, units: { weight: 'lbs' as const } },
+      simbrief: { pilotId: '', fmsExportTargets: [] },
+      appearance: { fontSize: 'medium' as const, zoomLevel: 1.0, debugOverlay: false },
+      graphics: {},
+      launcher: { closeOnLaunch: false, customLaunchArgs: [] },
+      support: { promptDismissed: false },
+      airports: { favoriteIcaos: [], homeIcao: null, autoNavigateHomeOnStart: true },
+      desktop: {},
+    };
+    const result = migrateSettings(v35Blob, 35);
+    expect(result.map.idleOrbitEnabled).toBe(true);
+    expect(result.map.referenceLabels).toEqual({
+      show: {
+        borders: true,
+        countries: true,
+        states: true,
+        cities: true,
+        towns: true,
+        water: true,
+        roads: true,
+      },
+      brightness: 1,
+      sizeScale: 1,
+    });
+  });
+
   it('adds flight recorder defaults at v26 and keeps earlier sections', () => {
     const v25Blob = {
       map: {

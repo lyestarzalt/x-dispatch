@@ -706,7 +706,20 @@
       "followSimTime": "Follow X-Plane time",
       "followSimTimeDesc": "Use the simulator clock while X-Plane is connected, otherwise your system clock.",
       "contours": "Contour lines",
-      "contoursDesc": "Show elevation contour lines on terrain"
+      "contoursDesc": "Show elevation contour lines on terrain",
+      "mapLabels": "Map labels",
+      "mapLabelsDesc": "Place names and borders drawn over the satellite basemap and other image tiles.",
+      "labelBrightness": "Label brightness",
+      "labelSize": "Label size",
+      "labelCategory": {
+        "borders": "Borders",
+        "countries": "Countries",
+        "states": "States and regions",
+        "cities": "Cities",
+        "towns": "Towns and villages",
+        "water": "Seas, lakes and rivers",
+        "roads": "Road names"
+      }
     },
     "navigation": {
       "title": "Navigation",

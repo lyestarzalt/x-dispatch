@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { Navaid, NavaidType } from '@/types/navigation';
 import { NavaidRowCode } from '@/types/navigation';
 import { latitude, longitude } from '../schemas';
-import { hasMinLength } from '../types';
+import { hasMinLength, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 const NavaidLineSchema = z.object({
@@ -234,6 +234,7 @@ export function parseNavaids(content: string): ParseResult<Navaid[]> {
     const parts = line.split(/\s+/);
     if (!hasMinLength(parts, 10)) {
       skipped++;
+      recordSkip(errors, i + 1, 'expected 10 fields');
       continue;
     }
 
@@ -243,12 +244,14 @@ export function parseNavaids(content: string): ParseResult<Navaid[]> {
     const parsed = parseNavaidLine(parts, rowCode);
     if (!parsed) {
       skipped++;
+      recordSkip(errors, i + 1, `row code ${rowCode} failed validation`);
       continue;
     }
 
     const type = determineNavaidType(rowCode, parsed.name);
     if (!type) {
       skipped++;
+      recordSkip(errors, i + 1, `row code ${rowCode} has no navaid type`);
       continue;
     }
 

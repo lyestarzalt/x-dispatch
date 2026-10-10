@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { HoldingPattern, TurnDirection } from '@/types/navigation';
 import { FixTypeNumber } from '@/types/navigation';
 import { altitude, bearing, nonNegative } from '../schemas';
-import { hasMinLength } from '../types';
+import { hasMinLength, issueSummary, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 // Valid fix type numbers in holdings
@@ -46,14 +46,8 @@ export function parseHoldingPatterns(content: string): ParseResult<HoldingPatter
     if (!line || line.startsWith('#')) continue;
 
     if (!headerSkipped) {
-      if (
-        line.startsWith('I') ||
-        line.startsWith('A') ||
-        /^\d+$/.test(line) ||
-        line.includes('Copyright')
-      ) {
-        continue;
-      }
+      // The header is a lone byte-order letter and a "1140 Version ..." line.
+      if (line === 'I' || line === 'A' || /^\d+\s+Version/i.test(line)) continue;
       headerSkipped = true;
     }
 
@@ -62,6 +56,7 @@ export function parseHoldingPatterns(content: string): ParseResult<HoldingPatter
     const parts = line.split(/\s+/);
     if (!hasMinLength(parts, 10)) {
       skipped++;
+      recordSkip(errors, i + 1, 'expected 10 fields');
       continue;
     }
 
@@ -75,12 +70,13 @@ export function parseHoldingPatterns(content: string): ParseResult<HoldingPatter
       legDistance: parseFloat(parts[6]) || 0,
       turnDirection: parts[7],
       minAlt: parseInt(parts[8], 10) || 0,
-      maxAlt: parseInt(parts[9], 10) || 99999,
+      maxAlt: parseInt(parts[9], 10) || 0,
       speedKts: hasMinLength(parts, 11) ? parseInt(parts[10], 10) || 0 : 0,
     });
 
     if (!result.success) {
       skipped++;
+      recordSkip(errors, i + 1, issueSummary(result.error));
       continue;
     }
 

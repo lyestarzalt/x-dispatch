@@ -706,7 +706,20 @@
       "followSimTime": "Śledź czas X-Plane",
       "followSimTimeDesc": "Używaj zegara symulatora, gdy X-Plane jest połączony, w przeciwnym razie zegara systemowego.",
       "contours": "Poziomice",
-      "contoursDesc": "Poziomice wysokości na terenie"
+      "contoursDesc": "Poziomice wysokości na terenie",
+      "mapLabels": "Etykiety mapy",
+      "mapLabelsDesc": "Nazwy miejsc i granice rysowane na mapie satelitarnej i innych kafelkach obrazu.",
+      "labelBrightness": "Jasność etykiet",
+      "labelSize": "Rozmiar etykiet",
+      "labelCategory": {
+        "borders": "Granice",
+        "countries": "Państwa",
+        "states": "Stany i regiony",
+        "cities": "Miasta",
+        "towns": "Miasteczka i wsie",
+        "water": "Morza, jeziora i rzeki",
+        "roads": "Nazwy dróg"
+      }
     },
     "navigation": {
       "title": "Nawigacja",

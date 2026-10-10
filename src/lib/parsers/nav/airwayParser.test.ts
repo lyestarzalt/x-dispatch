@@ -53,6 +53,11 @@ describe('Parsed count', () => {
   it('stats.parsed matches data.length', () => {
     expect(result.stats.parsed).toBe(result.data.length);
   });
+
+  it('skips no line of the fixture', () => {
+    expect(result.stats.skipped).toBe(0);
+    expect(result.errors).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -121,5 +126,33 @@ describe('Direction and altitude family', () => {
   it('reads the level family from the 1/2 field', () => {
     expect(parse('LALUX LF 11 MONOT LF 11 F 1  65 195 R161').isHigh).toBe(false);
     expect(parse('BOURI LF 11 LIMON LF 11 N 2 310 455 UG26').isHigh).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Level bounds and skip reporting
+// ---------------------------------------------------------------------------
+
+describe('Level bounds and skip reporting', () => {
+  const header = 'I\n1100 Version\n\n';
+  const parse = (line: string) => parseAirways(`${header}${line}\n99\n`);
+
+  it('keeps upper airways that top out above FL600', () => {
+    const segment = parse('PONEN LE 11 CASPE LE 11 F 2 145 660 T600').data[0]!;
+    expect(segment.baseFl).toBe(145);
+    expect(segment.topFl).toBe(660);
+  });
+
+  it('reports the line and reason of a skipped segment', () => {
+    const result = parse('PONEN LE 11 CASPE LE 11 F 2 145 660');
+    expect(result.data).toHaveLength(0);
+    expect(result.stats.skipped).toBe(1);
+    expect(result.errors).toEqual([{ line: 4, message: 'expected 11 fields' }]);
+  });
+
+  it('names the failing field of a rejected segment', () => {
+    const result = parse('PONEN LE 11 CASPE LE 99 F 2 145 660 T600');
+    expect(result.stats.skipped).toBe(1);
+    expect(result.errors[0]?.message).toContain('toNavaidType');
   });
 });

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { LonLatPath } from '@/types/geo';
 import type { ATCController } from '@/types/navigation';
 import { lonLat, vhfFrequency } from '../schemas';
-import { hasMinLength } from '../types';
+import { hasMinLength, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 const ATCRoleSchema = z.enum(['ctr', 'app', 'twr', 'gnd', 'del']);
@@ -30,7 +30,14 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
 
   const finalize = () => {
     if (!current?.name || !current?.facilityId || !current?.role) {
-      if (current) skipped++;
+      if (current) {
+        skipped++;
+        recordSkip(
+          errors,
+          undefined,
+          `controller ${current.name ?? '?'} lacks a name, facility or role`
+        );
+      }
       return;
     }
 

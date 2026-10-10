@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { AirwayDirection, AirwaySegment } from '@/types/navigation';
 import { FixTypeNumber } from '@/types/navigation';
 import { flightLevel } from '../schemas';
-import { hasMinLength } from '../types';
+import { hasMinLength, issueSummary, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 // Valid fix type numbers in airways
@@ -54,6 +54,7 @@ export function parseAirways(content: string): ParseResult<AirwaySegment[]> {
     const parts = line.split(/\s+/);
     if (!hasMinLength(parts, 11)) {
       skipped++;
+      recordSkip(errors, i + 1, 'expected 11 fields');
       continue;
     }
 
@@ -75,6 +76,7 @@ export function parseAirways(content: string): ParseResult<AirwaySegment[]> {
 
     if (!result.success) {
       skipped++;
+      recordSkip(errors, i + 1, issueSummary(result.error));
       continue;
     }
 

@@ -19,6 +19,7 @@ import { parseATCData } from '@/lib/parsers/nav/atcParser';
 import { parseHoldingPatterns } from '@/lib/parsers/nav/holdParser';
 import { parseNavaids } from '@/lib/parsers/nav/navaidParser';
 import { parseWaypoints } from '@/lib/parsers/nav/waypointParser';
+import type { ParseResult } from '@/lib/parsers/types';
 import logger from '@/lib/utils/logger';
 import type {
   ATCController,
@@ -75,6 +76,16 @@ export interface NavLoadResult<T> {
 // Navaids Loading
 // ============================================================================
 
+/** A skipped line is a lost record; the first few reasons tell a bad file from a bad bound. */
+function warnSkipped(label: string, result: Pick<ParseResult<unknown>, 'errors' | 'stats'>): void {
+  const { errors, stats } = result;
+  if (stats.skipped === 0 && errors.length === 0) return;
+  const samples = errors
+    .map((e) => (e.line === undefined ? e.message : `line ${e.line}: ${e.message}`))
+    .join('; ');
+  logger.data.warn(`${label}: ${stats.skipped} of ${stats.total} lines skipped. ${samples}`);
+}
+
 /**
  * Load navaids from earth_nav.dat with caching
  */
@@ -114,9 +125,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
   const content = await fs.promises.readFile(navPath, 'utf-8');
   const { data, errors, stats } = parseNavaids(content);
 
-  if (errors.length > 0) {
-    logger.data.warn(`Navaids: ${errors.length} errors, ${stats.skipped} skipped`);
-  }
+  warnSkipped('Navaids', { errors, stats });
 
   // Store in database
   const insertStart = Date.now();
@@ -190,9 +199,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
   const content = await fs.promises.readFile(fixPath, 'utf-8');
   const { data, errors, stats } = parseWaypoints(content);
 
-  if (errors.length > 0) {
-    logger.data.warn(`Waypoints: ${errors.length} errors, ${stats.skipped} skipped`);
-  }
+  warnSkipped('Waypoints', { errors, stats });
 
   // Store in database
   const insertStart = Date.now();
@@ -253,9 +260,7 @@ export async function loadAirways(xplanePath: string): Promise<NavLoadResult<Air
   const content = await fs.promises.readFile(awyPath, 'utf-8');
   const { data, errors, stats } = parseAirways(content);
 
-  if (errors.length > 0) {
-    logger.data.warn(`Airways: ${errors.length} errors, ${stats.skipped} skipped`);
-  }
+  warnSkipped('Airways', { errors, stats });
 
   // Store in database
   const insertStart = Date.now();
@@ -322,9 +327,7 @@ export async function loadAirspaces(xplanePath: string): Promise<NavLoadResult<A
   const content = await fs.promises.readFile(airspacePath, 'utf-8');
   const { data, errors, stats } = parseAirspaces(content);
 
-  if (errors.length > 0) {
-    logger.data.warn(`Airspaces: ${errors.length} errors, ${stats.skipped} skipped`);
-  }
+  warnSkipped('Airspaces', { errors, stats });
 
   // Store in database
   const insertStart = Date.now();
@@ -361,9 +364,7 @@ export async function loadATCData(xplanePath: string): Promise<NavLoadResult<ATC
   try {
     const content = await fs.promises.readFile(atcPath, 'utf-8');
     const { data, errors, stats } = parseATCData(content);
-    if (errors.length > 0) {
-      logger.data.warn(`ATC: ${errors.length} errors, ${stats.skipped} skipped`);
-    }
+    warnSkipped('ATC', { errors, stats });
     logger.data.info(`Loaded ${stats.parsed} ATC controllers in ${stats.timeMs}ms`);
     return { data, count: data.length, loaded: true, source: atcPath, fromCache: false };
   } catch (error) {
@@ -388,9 +389,7 @@ export async function loadHoldingPatterns(
   try {
     const content = await fs.promises.readFile(holdPath, 'utf-8');
     const { data, errors, stats } = parseHoldingPatterns(content);
-    if (errors.length > 0) {
-      logger.data.warn(`Holdings: ${errors.length} errors, ${stats.skipped} skipped`);
-    }
+    warnSkipped('Holdings', { errors, stats });
     logger.data.info(`Loaded ${stats.parsed} holding patterns in ${stats.timeMs}ms`);
     return { data, count: data.length, loaded: true, source: holdPath, fromCache: false };
   } catch (error) {
@@ -415,9 +414,7 @@ export async function loadAirportMetadata(
   try {
     const content = await fs.promises.readFile(aptMetaPath, 'utf-8');
     const { data, errors, stats } = parseAirportMetadata(content);
-    if (errors.length > 0) {
-      logger.data.warn(`Airport metadata: ${errors.length} errors, ${stats.skipped} skipped`);
-    }
+    warnSkipped('Airport metadata', { errors, stats });
     logger.data.info(`Loaded ${stats.parsed} airport metadata entries in ${stats.timeMs}ms`);
     return { data, count: data.size, loaded: true, source: aptMetaPath, fromCache: false };
   } catch (error) {

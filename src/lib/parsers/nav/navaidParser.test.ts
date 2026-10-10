@@ -53,6 +53,11 @@ describe('Parsed count', () => {
   it('stats.parsed matches data.length', () => {
     expect(result.stats.parsed).toBe(result.data.length);
   });
+
+  it('skips no line of the fixture', () => {
+    expect(result.stats.skipped).toBe(0);
+    expect(result.errors).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -153,9 +158,7 @@ describe('Required fields', () => {
 
 describe('Parse errors', () => {
   it('has zero parse errors', () => {
-    // The fixture contains well-formed data — all lines should parse cleanly.
-    // Errors array is populated only for validation failures; skipped lines
-    // (unknown row codes, short lines) do not produce errors.
+    // Rows with codes the parser does not handle are passed over, not skipped.
     expect(result.errors).toHaveLength(0);
   });
 });

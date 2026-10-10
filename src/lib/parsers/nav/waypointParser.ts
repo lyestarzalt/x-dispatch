@@ -5,7 +5,7 @@
 import { z } from 'zod';
 import type { Waypoint } from '@/types/navigation';
 import { latitude, longitude } from '../schemas';
-import { hasMinLength } from '../types';
+import { hasMinLength, issueSummary, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
 const WaypointLineSchema = z.object({
@@ -32,6 +32,7 @@ export function parseWaypoints(content: string): ParseResult<Waypoint[]> {
     const parts = line.split(/\s+/);
     if (!hasMinLength(parts, 5)) {
       skipped++;
+      recordSkip(errors, i + 1, 'expected 5 fields');
       continue;
     }
 
@@ -45,6 +46,7 @@ export function parseWaypoints(content: string): ParseResult<Waypoint[]> {
 
     if (!result.success) {
       skipped++;
+      recordSkip(errors, i + 1, issueSummary(result.error));
       continue;
     }
 

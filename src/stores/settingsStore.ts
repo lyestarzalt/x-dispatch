@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
+import {
+  DEFAULT_REFERENCE_LABEL_SETTINGS,
+  type ReferenceLabelSettings,
+} from '@/lib/map/referenceLabelSettings';
 import { validateMapStyleUrl } from '@/lib/map/tileUrlToStyle';
 import type { ClockMode } from '@/lib/utils/clock';
 import type { WeightUnit } from '@/lib/utils/format';
@@ -65,6 +69,8 @@ export interface MapSettings {
   /** User-added custom map styles, rendered alongside MAP_STYLE_PRESETS in the picker. */
   userMapStyles: MapStyle[];
   idleOrbitEnabled: boolean;
+  /** Labels and borders drawn over image basemaps, which carry none of their own. */
+  referenceLabels: ReferenceLabelSettings;
   units: {
     distance: DistanceUnit;
     altitude: AltitudeUnit;
@@ -204,6 +210,7 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   mapStyleUrl: DEFAULT_MAP_STYLE_URL,
   userMapStyles: [],
   idleOrbitEnabled: false,
+  referenceLabels: DEFAULT_REFERENCE_LABEL_SETTINGS,
   units: {
     distance: 'nm',
     altitude: 'ft',
@@ -461,7 +468,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 35,
+      version: 36,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -686,6 +693,13 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       unknown
     >;
     state = { ...state, graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...graphics } };
+  }
+
+  if (version < 36) {
+    state = {
+      ...state,
+      map: { ...state.map!, referenceLabels: DEFAULT_REFERENCE_LABEL_SETTINGS },
+    };
   }
 
   return state as SettingsState;

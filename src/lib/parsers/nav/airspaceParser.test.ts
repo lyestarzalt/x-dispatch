@@ -53,6 +53,11 @@ describe('Parsed count', () => {
   it('stats.parsed matches data.length', () => {
     expect(result.stats.parsed).toBe(result.data.length);
   });
+
+  it('skips no line of the fixture', () => {
+    expect(result.stats.skipped).toBe(0);
+    expect(result.errors).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -2,11 +2,22 @@ import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AirfieldLightsMode } from '@/lib/airportLights/lightFactor';
+import {
+  DEFAULT_REFERENCE_LABEL_SETTINGS,
+  REFERENCE_LABEL_CATEGORIES,
+  type ReferenceLabelSettings,
+} from '@/lib/map/referenceLabelSettings';
 import { terrainShadingAllowed } from '@/lib/map/terrainShading';
+import { isRasterTileUrl } from '@/lib/map/tileUrlToStyle';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
+import {
+  SettingsHeader,
+  SettingsSectionBlock,
+  SettingsSliderRow,
+  SettingsToggleRow,
+} from '../primitives';
 import { MapStylePicker } from './MapStylePicker';
 
 const AIRFIELD_LIGHT_OPTIONS: { value: AirfieldLightsMode; labelKey: string }[] = [
@@ -37,6 +48,11 @@ export function GraphicsSection() {
   const mapStyleUrl = useSettingsStore((s) => s.map.mapStyleUrl);
   const shadingAllowed = terrainShadingAllowed(mapStyleUrl);
 
+  const labelsUsed = isRasterTileUrl(mapStyleUrl);
+  const labels = mapSettings.referenceLabels ?? DEFAULT_REFERENCE_LABEL_SETTINGS;
+  const updateLabels = (patch: Partial<ReferenceLabelSettings>) =>
+    updateMapSettings({ referenceLabels: { ...labels, ...patch } });
+
   return (
     <div className="space-y-6">
       <SettingsHeader
@@ -58,6 +74,51 @@ export function GraphicsSection() {
           onRemove={removeUserMapStyle}
         />
       </SettingsSectionBlock>
+
+      {/* Labels over image basemaps; vector styles bring their own */}
+      {labelsUsed && (
+        <SettingsSectionBlock
+          title={t('settings.graphics.mapLabels')}
+          description={t('settings.graphics.mapLabelsDesc')}
+        >
+          <div className="flex flex-wrap gap-2">
+            {REFERENCE_LABEL_CATEGORIES.map((category) => {
+              const on = labels.show[category];
+              return (
+                <Button
+                  key={category}
+                  variant={on ? 'default' : 'outline'}
+                  size="sm"
+                  aria-pressed={on}
+                  onClick={() => updateLabels({ show: { ...labels.show, [category]: !on } })}
+                >
+                  {t(`settings.graphics.labelCategory.${category}`)}
+                </Button>
+              );
+            })}
+          </div>
+          <SettingsSliderRow
+            title={t('settings.graphics.labelBrightness')}
+            value={Math.round(labels.brightness * 100)}
+            defaultValue={Math.round(DEFAULT_REFERENCE_LABEL_SETTINGS.brightness * 100)}
+            min={50}
+            max={100}
+            step={5}
+            onCommit={(percent) => updateLabels({ brightness: percent / 100 })}
+            resetLabel={t('settings.appearance.zoomReset')}
+          />
+          <SettingsSliderRow
+            title={t('settings.graphics.labelSize')}
+            value={Math.round(labels.sizeScale * 100)}
+            defaultValue={Math.round(DEFAULT_REFERENCE_LABEL_SETTINGS.sizeScale * 100)}
+            min={80}
+            max={160}
+            step={10}
+            onCommit={(percent) => updateLabels({ sizeScale: percent / 100 })}
+            resetLabel={t('settings.appearance.zoomReset')}
+          />
+        </SettingsSectionBlock>
+      )}
 
       {/* Terrain */}
       <SettingsSectionBlock title={t('settings.graphics.terrain')}>
