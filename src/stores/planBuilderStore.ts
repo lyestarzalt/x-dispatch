@@ -24,7 +24,6 @@ import {
   sidInitialClimbNm,
 } from '@/lib/flightplan/builder/procedures';
 import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
-import { trackInRoute } from '@/lib/flightplan/builder/trackChoice';
 import type {
   PlanDraft,
   PlanEndpoint,
@@ -193,22 +192,27 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         if (get().isOpen && get().result) get().showOnMap();
       },
       swapEndpoints: () =>
-        set((state) => ({
-          departure: state.arrival
-            ? { ...state.arrival, sid: undefined, star: undefined, approach: undefined }
-            : null,
-          arrival: state.departure
-            ? { ...state.departure, sid: undefined, star: undefined, approach: undefined }
-            : null,
-          // "A UL620 B" read backwards is still A and B joined by UL620. A NAT track is
-          // one-way and the other direction has its own set, so that route starts over and
-          // the auto router picks a track for the new crossing.
-          routeText: trackInRoute(state.routeText)
-            ? ''
-            : tokenizeRoute(state.routeText).reverse().join(' '),
-          procedures: {},
-          savedPath: null,
-        })),
+        set((state) => {
+          clearDrawnPlan(state.departure, state.arrival);
+          return {
+            departure: state.arrival
+              ? { ...state.arrival, sid: undefined, star: undefined, approach: undefined }
+              : null,
+            arrival: state.departure
+              ? { ...state.departure, sid: undefined, star: undefined, approach: undefined }
+              : null,
+            // The return leg is a new plan: one-way airways and NAT tracks cannot be flown
+            // backwards, the cruise parity flips with the direction, and the alternate
+            // belongs to the other airport. Clearing them lets the dialog suggest each again
+            // and route once, as it does for a new pair of airports.
+            routeText: '',
+            cruiseAltitudeFt: null,
+            result: null,
+            alternate: null,
+            procedures: {},
+            savedPath: null,
+          };
+        }),
       setRouteText: (text) => set({ routeText: text, savedPath: null }),
       removeRouteToken: (index) =>
         set((state) => {
