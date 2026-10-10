@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **SimBrief username.** Enter your SimBrief username instead of hunting for the numeric Pilot ID. Both work, in Settings and in `xdispatch://simbrief` links.
+- **Send to FMS** from the briefing footer. Each export target you set up is one menu entry, with "Send all" when you have several. With none set up, the menu takes you to Settings.
+- The SimBrief briefing says when the plan was generated and which AIRAC cycle it uses, next to Refresh.
+
+### Changed
+
+- **SimBrief briefing, rebuilt.** One screen, same height whichever tab you pick: the route and the Import button at the top, then four tabs: Route, Fuel & weights, Performance, Weather & NOTAMs. Hover the vertical profile and the navlog scrolls to that fix. The navlog shows real ETAs, not elapsed time. Fuel and weights follow your unit settings, whatever units your SimBrief account uses.
+- **SimBrief routes on the map** draw like planned routes: the SID, STAR, airways and oceanic tracks in their own colours, with the route starting and ending at the airports.
+- The flight card on the map is a summary: route, alternate, time, cruise level, block fuel and takeoff weight, with one button to the full briefing. Collapsed, it still shows the flight number, the route and the cruise level.
+- SimBrief errors tell you what to do: unknown user, no plan on file, no connection. With no SimBrief account set up, the briefing has a button straight to the SimBrief settings.
+- About credits Gilles for testing and community.
+
+### Fixed
+
+- Opening some SimBrief plans crashed the briefing, for example a short flight with no route legs. SimBrief plans are now read in the format SimBrief recommends, which also makes the download much smaller.
+- The AIRAC cycle in the SimBrief briefing was always blank.
+- The SimBrief vertical profile started at top of climb instead of the departure airport, and did not land at the arrival.
+- The SimBrief navlog showed every Mach as M0.00.
+- The flight card's "Open full OFP" button opened a broken link.
+
 ## [2.3.1] - 2026-10-04
 
 ### Added
