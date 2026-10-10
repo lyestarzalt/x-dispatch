@@ -114,6 +114,13 @@ describe('buildReferenceLayers', () => {
     expect(town.layout?.['text-font']).toBeUndefined();
   });
 
+  it('stages labels by zoom: countries at once, towns only close in', () => {
+    const layers = buildReferenceLayers(style, 'en');
+    expect(layers.find((l) => l.id === 'ref-place_country_1')?.minzoom).toBeUndefined();
+    expect(layers.find((l) => l.id === 'ref-place_town')?.minzoom).toBe(8);
+    expect(layers.find((l) => l.id === 'ref-highway_name_other')?.minzoom).toBe(11);
+  });
+
   it('does not mutate the source style', () => {
     buildReferenceLayers(style, 'de');
     expect(style.layers[2]?.id).toBe('boundary_country_inner');

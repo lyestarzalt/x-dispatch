@@ -29,6 +29,22 @@ const LABEL_HALO = {
 const WATER_TINT = [0.81, 0.9, 1] as const;
 const BOLD_LAYER_PATTERN = /^place_(country|state|city_large)/;
 const BOLD_FONT = ['Noto Sans Bold'];
+/**
+ * The reference style lets the tiles decide when a place appears, which on imagery
+ * means every region and town the tile carries shows at once. Staged like other maps:
+ * countries first, then regions and cities, towns and roads only close in.
+ */
+const MIN_ZOOM: Record<string, number> = {
+  place_state: 4,
+  place_city: 5,
+  place_town: 8,
+  place_village: 10,
+  place_suburb: 11,
+  place_other: 11,
+  water_name: 5,
+  highway_name_motorway: 8,
+  highway_name_other: 11,
+};
 
 export interface ReferenceStyle {
   glyphs?: string;
@@ -85,6 +101,8 @@ export function buildReferenceLayers(
     const copy = structuredClone(layer) as maplibregl.LayerSpecification & { source?: string };
     copy.id = `${REFERENCE_LAYER_PREFIX}${layer.id}`;
     copy.source = REFERENCE_SOURCE_ID;
+    const minZoom = MIN_ZOOM[layer.id];
+    if (minZoom !== undefined) copy.minzoom = Math.max(copy.minzoom ?? 0, minZoom);
     if (copy.type === 'line') {
       copy.paint = { ...copy.paint, 'line-color': BOUNDARY_COLOR };
       copy.filter = landOnlyFilter(copy.filter);
