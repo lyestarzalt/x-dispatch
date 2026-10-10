@@ -194,6 +194,9 @@ function getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
  * Log cache change details
  */
 function logCacheChanges(cacheCheck: ReturnType<typeof detectAptFileChanges>): void {
+  if (cacheCheck.scannerChanged) {
+    logger.data.info('Airport cache written by an older scanner, rebuilding');
+  }
   if (cacheCheck.changedFiles.length > 0) {
     logger.data.info(`Changed apt.dat files: ${cacheCheck.changedFiles.length}`);
   }

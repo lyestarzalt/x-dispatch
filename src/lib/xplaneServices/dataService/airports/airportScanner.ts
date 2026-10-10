@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { latitude, longitude } from '@/lib/parsers/schemas';
 import type { ParsedAirportEntry } from '../types';
 import { FastFileReader } from '../utils';
+import { normalizeCountry } from './countryNames';
 
 // ============================================================================
 // Zod Schemas for Airport Header Validation
@@ -204,7 +205,7 @@ function parseMetadata(line: string, airport: ScanningAirport): void {
       airport.city = value;
       break;
     case 'country':
-      airport.country = value;
+      airport.country = normalizeCountry(value);
       break;
     case 'iata_code':
       airport.iataCode = value;

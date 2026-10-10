@@ -3,6 +3,7 @@
  * Verifies insertAirports, getAllAirportsFromDb, getAirportCount, and clearAirports
  * against a real in-memory SQLite database via the test helper.
  */
+import { eq } from 'drizzle-orm';
 import path from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { closeTestDb, createTestDb, getTestDb } from '../../../../../tests/helpers/db';
@@ -61,7 +62,11 @@ const {
   persistDatabase,
   detectAptFileChanges,
   updateStoredFileMeta,
+  getStoredFileMeta,
+  SCANNER_META_PATH,
+  SCANNER_VERSION,
 } = await import('./airportCache');
+const { aptFileMeta } = await import('@/lib/db/schema');
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -484,6 +489,33 @@ describe('detectAptFileChanges cache invalidation', () => {
     expect(result.changedFiles).toContain('/xplane/apt.dat');
     expect(result.newFiles).toHaveLength(0);
     expect(result.deletedFiles).toHaveLength(0);
+  });
+
+  it('indicates rescan needed when the stored scanner version is older than this build', async () => {
+    updateStoredFileMeta(
+      [{ path: '/xplane/apt.dat', mtime: 1000 }],
+      new Map([['/xplane/apt.dat', 42]])
+    );
+    // Pretend the cache was written by an older scanner.
+    getTestDb()
+      .update(aptFileMeta)
+      .set({ mtime: SCANNER_VERSION - 1 })
+      .where(eq(aptFileMeta.path, SCANNER_META_PATH))
+      .run();
+
+    const result = detectAptFileChanges([{ path: '/xplane/apt.dat', mtime: 1000 }]);
+
+    expect(result.needsReload).toBe(true);
+    expect(result.scannerChanged).toBe(true);
+    expect(result.deletedFiles).toHaveLength(0);
+  });
+
+  it('does not report the scanner version row as a file', async () => {
+    updateStoredFileMeta(
+      [{ path: '/xplane/apt.dat', mtime: 1000 }],
+      new Map([['/xplane/apt.dat', 42]])
+    );
+    expect([...getStoredFileMeta().keys()]).toEqual(['/xplane/apt.dat']);
   });
 
   it('indicates rescan needed when a new file appears that is not in cache', async () => {

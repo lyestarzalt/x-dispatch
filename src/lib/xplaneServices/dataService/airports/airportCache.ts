@@ -3,7 +3,7 @@
  * SQLite caching for parsed airport data.
  * Tracks file modification times to invalidate cache when apt.dat files change.
  */
-import { and, count, gte, like, lte } from 'drizzle-orm';
+import { and, count, eq, gte, like, lte } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airports, airportsCustom, aptFileMeta, getDb, saveDb } from '@/lib/db';
 import logger from '@/lib/utils/logger';
@@ -33,16 +33,37 @@ export function getFileMtime(filePath: string): number | null {
 }
 
 /**
- * Get stored file metadata from database
+ * Bump when the scanner starts storing something differently, so caches
+ * written by an older build are rebuilt on the next start. The version is
+ * kept in the file-metadata table under a path no apt.dat can have.
+ *
+ * 2: country row normalised to one name per ISO code.
+ */
+export const SCANNER_VERSION = 2;
+export const SCANNER_META_PATH = '#scanner';
+
+/**
+ * Get stored file metadata from database. The scanner version row is not a
+ * file and is left out.
  */
 export function getStoredFileMeta(): Map<string, number> {
   const db = getDb();
   const stored = db.select().from(aptFileMeta).all();
   const map = new Map<string, number>();
   for (const row of stored) {
+    if (row.path === SCANNER_META_PATH) continue;
     map.set(row.path, row.mtime);
   }
   return map;
+}
+
+function getStoredScannerVersion(): number | undefined {
+  const row = getDb()
+    .select({ mtime: aptFileMeta.mtime })
+    .from(aptFileMeta)
+    .where(eq(aptFileMeta.path, SCANNER_META_PATH))
+    .get();
+  return row?.mtime;
 }
 
 /**
@@ -75,9 +96,13 @@ export function detectAptFileChanges(currentFiles: AptFileInfo[]): CacheCheckRes
     }
   }
 
-  const needsReload = changedFiles.length > 0 || newFiles.length > 0 || deletedFiles.length > 0;
+  // A cache from an older scanner is stale even when every file matches.
+  const scannerChanged = stored.size > 0 && getStoredScannerVersion() !== SCANNER_VERSION;
 
-  return { needsReload, changedFiles, newFiles, deletedFiles };
+  const needsReload =
+    scannerChanged || changedFiles.length > 0 || newFiles.length > 0 || deletedFiles.length > 0;
+
+  return { needsReload, changedFiles, newFiles, deletedFiles, scannerChanged };
 }
 
 /**
@@ -110,10 +135,9 @@ export function updateStoredFileMeta(
     mtime: f.mtime,
     airportCount: airportCounts.get(f.path) ?? 0,
   }));
+  entries.push({ path: SCANNER_META_PATH, mtime: SCANNER_VERSION, airportCount: 0 });
 
-  if (entries.length > 0) {
-    db.insert(aptFileMeta).values(entries).run();
-  }
+  db.insert(aptFileMeta).values(entries).run();
 }
 
 /**
