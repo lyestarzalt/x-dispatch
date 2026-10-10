@@ -43,7 +43,11 @@ export function TitleBar() {
 
   return (
     <header
-      className="border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none"
+      className={cn(
+        'border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none',
+        // The bar dims with the OS controls when the window is inactive.
+        'transition-opacity [html[data-window-inactive]_&]:opacity-50'
+      )}
       style={{
         ...dragStyle,
         height: heightPx,

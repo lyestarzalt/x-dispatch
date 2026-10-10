@@ -577,6 +577,15 @@ function isFlightStripWindowOpen(): boolean {
   return !!flightStripWindow && !flightStripWindow.isDestroyed();
 }
 
+/** Window Controls Overlay (Windows, Linux): colours match the renderer's title bar. */
+const TITLE_BAR_OVERLAY = {
+  color: '#06090D',
+  symbolColor: '#FFFFFF',
+  /** The OS controls dim with the rest of the bar when the window is inactive. */
+  symbolColorInactive: '#7C8594',
+  height: 36,
+} as const;
+
 function createWindow(): BrowserWindow {
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'assets', 'icon.png')
@@ -599,14 +608,16 @@ function createWindow(): BrowserWindow {
     show: false,
     backgroundColor: '#06090D',
     icon: iconPath,
+    // A click on an inactive window acts at once instead of only focusing it.
+    acceptFirstMouse: true,
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     ...(isMac
       ? {}
       : {
           titleBarOverlay: {
-            color: '#06090D',
-            symbolColor: '#FFFFFF',
-            height: 36,
+            color: TITLE_BAR_OVERLAY.color,
+            symbolColor: TITLE_BAR_OVERLAY.symbolColor,
+            height: TITLE_BAR_OVERLAY.height,
           },
         }),
     webPreferences: {
@@ -676,9 +687,26 @@ function createWindow(): BrowserWindow {
     }
   });
 
+  // Native sheets (the crash dialog) attach below the custom title bar, not over it.
+  if (isMac) window.setSheetOffset(TITLE_BAR_OVERLAY.height);
+
+  // The renderer dims its title bar like a native window; the OS controls follow.
+  const sendWindowFocus = (focused: boolean) => {
+    if (window.isDestroyed()) return;
+    window.webContents.send('app:windowFocus', focused);
+    if (process.platform === 'win32') {
+      window.setTitleBarOverlay({
+        symbolColor: focused
+          ? TITLE_BAR_OVERLAY.symbolColor
+          : TITLE_BAR_OVERLAY.symbolColorInactive,
+      });
+    }
+  };
   window.on('focus', () => {
     if (!isMac) window.flashFrame(false);
+    sendWindowFocus(true);
   });
+  window.on('blur', () => sendWindowFocus(false));
 
   // A reload (crash recovery, dev HMR) drops the renderer's listeners: hold
   // app actions again until the new page drains the queue.
@@ -881,6 +909,13 @@ function registerIpcHandlers() {
   });
   // The renderer takes whatever links arrived before it listened, then gets pushes.
   handle('app:takePendingActions', () => pendingAppActions.drain());
+  handle('app:getWindowState', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return {
+      focused: win?.isFocused() ?? true,
+      fullScreen: win?.isFullScreen() ?? false,
+    };
+  });
 
   // A flight plan the user agreed to download from a link: https only, small, and
   // parsed by the renderer like a file it opened itself.

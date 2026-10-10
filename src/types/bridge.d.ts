@@ -145,6 +145,9 @@ declare global {
       setDesktopPrefs: (prefs: import('@/lib/nativeShell/desktopPrefs').DesktopPrefs) => void;
       /** Bounce the Dock icon or flash the taskbar if the window is in the background. */
       requestAttention: () => void;
+      getWindowState: () => Promise<{ focused: boolean; fullScreen: boolean }>;
+      /** The window gained or lost focus; the title bar dims like a native one. */
+      onWindowFocus: (callback: (focused: boolean) => void) => () => void;
       /** Actions from xdispatch:// links while the app is running. */
       onAppAction: (callback: (action: AppAction) => void) => () => void;
       /** Links that arrived before the renderer listened; marks it as listening. */

@@ -36,6 +36,15 @@ function translatedLabels(): NativeLabels {
 export function useNativeShell() {
   const queryClient = useQueryClient();
 
+  // Inactive window: the title bar dims, as every native window does.
+  useEffect(() => {
+    if (window.appAPI.isRemoteClient) return;
+    const apply = (focused: boolean) =>
+      document.documentElement.toggleAttribute('data-window-inactive', !focused);
+    void window.appAPI.getWindowState().then((state) => apply(state.focused));
+    return window.appAPI.onWindowFocus(apply);
+  }, []);
+
   // Window behaviour main applies: pushed now and on every change.
   useEffect(() => {
     if (window.appAPI.isRemoteClient) return;

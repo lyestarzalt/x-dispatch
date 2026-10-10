@@ -145,6 +145,9 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       noteAirportOpened: (icao: string, name: string) => t.send('app:airportOpened', icao, name),
       setDesktopPrefs: (prefs: DesktopPrefs) => t.send('app:setDesktopPrefs', prefs),
       requestAttention: () => t.send('app:requestAttention'),
+      getWindowState: () =>
+        t.invoke('app:getWindowState') as Promise<{ focused: boolean; fullScreen: boolean }>,
+      onWindowFocus: (callback: (focused: boolean) => void) => t.on('app:windowFocus', callback),
       resyncCustomAirports: () =>
         t.invoke('airport:resync-custom') as Promise<{
           synced: boolean;
