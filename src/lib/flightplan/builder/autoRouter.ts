@@ -6,7 +6,7 @@
  * great-circle distance finds the cheapest path, where cost is miles plus the
  * rules that make a route look filed rather than merely short:
  *
- * - segments whose published level band excludes the cruise level cost more
+ * - segments whose published level band excludes the cruise level are left out
  * - the network is joined at published SID exits and STAR entries when known
  * - fixes in either terminal area are avoided unless they are the join fix
  * - one-way airways are honoured and airway changes cost a few miles
@@ -24,7 +24,7 @@ import {
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
 import { bandAllows } from './airwayRules';
-import { type LatLon, bearingDeg, greatCircleNm } from './geometry';
+import { type LatLon, bearingDeg, greatCircleNm, greatCirclePoints } from './geometry';
 import { type OceanicTrack, getOceanicTracks, tracksForAutoRouting } from './oceanicTracks';
 import type { AutoRouteResult, ProcedureChoice, RouteJoin } from './types';
 
@@ -32,6 +32,10 @@ export { bandAllows };
 
 /** Box padding around the endpoints; wide enough to let the route bend round gaps. */
 const MIN_PADDING_NM = 150;
+/** Points sampled along the great circle to find how far poleward a leg really goes. */
+const GREAT_CIRCLE_SAMPLES = 24;
+/** A box reaching this close to a pole takes every longitude; a lon span means little there. */
+const POLAR_LAT = 80;
 const PADDING_FRACTION = 0.25;
 /**
  * Without published joins, direct legs onto and off the network are allowed this far
@@ -43,7 +47,7 @@ const JOIN_PENALTY = 2;
 const JOIN_FALLBACK_COUNT = 5;
 /** Airways of the wrong altitude family cost a little more so a jet stays on the upper network. */
 const WRONG_FAMILY_PENALTY = 1.15;
-/** A segment whose published level band excludes the cruise level costs this much more. */
+/** A track whose published levels leave out the cruise level costs this much more. */
 const OUT_OF_BAND_PENALTY = 1.6;
 const HIGH_FAMILY_MIN_FT = 18000;
 /** Switching airway costs a few miles so the route reads as a handful of long airways. */
@@ -304,6 +308,12 @@ export function legCrossesArea(a: LatLon, b: LatLon, area: AvoidArea): boolean {
 interface Graph {
   positions: Map<string, LatLon>;
   edges: Map<string, Edge[]>;
+  /**
+   * Fix keys that sit on some airway, open at the cruise level or not. Direct legs join
+   * these: in free route airspace the published fixes stay, even where the airways through
+   * them are closed at the level flown or were withdrawn altogether.
+   */
+  enroute: Set<string>;
   /** Fix keys inside either terminal area. */
   terminal: Set<string>;
   /** The track the route must fly whole, once its entry and exit are in the graph. */
@@ -347,16 +357,21 @@ function buildBaseGraph(input: AutoRouteInput): Graph | null {
   const totalNm = greatCircleNm(from, to);
   const padNm = Math.max(MIN_PADDING_NM, totalNm * PADDING_FRACTION);
   const padLat = padNm / 60;
-  const midLat = (from.latitude + to.latitude) / 2;
-  const padLon = padNm / (60 * Math.max(0.2, Math.cos((midLat * Math.PI) / 180)));
-  const minLat =
-    Math.min(from.latitude, to.latitude, departure.latitude, arrival.latitude) - padLat;
-  const maxLat =
-    Math.max(from.latitude, to.latitude, departure.latitude, arrival.latitude) + padLat;
-  const lonRanges = longitudeRanges(
-    [from.longitude, to.longitude, departure.longitude, arrival.longitude],
-    padLon
-  );
+  // The box follows the great circle, not just the endpoints: a long leg bends far poleward
+  // of both, and a flight over the Arctic needs every longitude up there.
+  const samples = [departure, arrival, ...greatCirclePoints(from, to, GREAT_CIRCLE_SAMPLES)];
+  const lats = samples.map((p) => p.latitude);
+  const minLat = Math.max(-90, Math.min(...lats) - padLat);
+  const maxLat = Math.min(90, Math.max(...lats) + padLat);
+  const farLat = Math.max(Math.abs(minLat), Math.abs(maxLat));
+  const padLon = padNm / (60 * Math.max(0.2, Math.cos((farLat * Math.PI) / 180)));
+  const lonRanges: [number, number][] =
+    farLat >= POLAR_LAT
+      ? [[-180, 180]]
+      : longitudeRanges(
+          samples.map((p) => p.longitude),
+          padLon
+        );
 
   // Airways name fixes by ICAO region. The fix tables keep that code in `areaCode`
   // (waypoints) and `country` (navaids); their `region` column is the ENRT marker.
@@ -403,15 +418,19 @@ function buildBaseGraph(input: AutoRouteInput): Graph | null {
 
   const tracks = tracksForRouting(input.track);
   const preferredNars = new Set(tracks.flatMap((t) => t.nars));
-  const graph: Graph = { positions, edges: new Map(), terminal };
+  const graph: Graph = { positions, edges: new Map(), enroute: new Set(), terminal };
   for (const s of loadSegments()) {
     const a = fixKey(s.fromFix, s.fromRegion);
     const b = fixKey(s.toFix, s.toRegion);
     const pa = positions.get(a);
     const pb = positions.get(b);
     if (!pa || !pb) continue;
+    graph.enroute.add(a);
+    graph.enroute.add(b);
+    // An airway not published at the cruise level is not an option: a plan that mixes a low
+    // airway into a high-level route has no level that fits it, and the pilot cannot fix that.
+    if (!bandAllows(s, cruiseFl)) continue;
     let weight = greatCircleNm(pa, pb) * (s.isHigh === preferHigh ? 1 : WRONG_FAMILY_PENALTY);
-    if (!bandAllows(s, cruiseFl)) weight *= OUT_OF_BAND_PENALTY;
     for (const area of avoid) {
       if (legCrossesArea(pa, pb, area)) {
         weight *= area.penalty;
@@ -436,6 +455,7 @@ function cloneGraph(graph: Graph): Graph {
   return {
     positions: new Map(graph.positions),
     edges: new Map([...graph.edges].map(([key, list]) => [key, list.slice()])),
+    enroute: graph.enroute,
     terminal: new Set(graph.terminal),
     chosenTrack: graph.chosenTrack,
   };
@@ -547,11 +567,16 @@ function addTrackEdges(
 /**
  * Relaxed pass only: direct legs between fixes that sit on an airway, found
  * through a degree grid. Terminal and approach fixes are not airway nodes, so
- * they never become shortcuts. The oceanic pass also admits lat/lon reporting
- * points, and fixes left with few neighbours get long legs to the nearest others.
+ * they never become shortcuts. Every en-route fix counts, not only those with an
+ * airway open at the cruise level: that is what free route airspace is, and it
+ * keeps a track exit from being hemmed in by the entries of the other direction.
+ * The oceanic pass also admits lat/lon reporting points, and fixes left with few
+ * neighbours get long legs to the nearest others.
  */
 function addDirectLegs(graph: Graph, oceanic: boolean): void {
-  const nodes = [...graph.edges.keys()];
+  const nodes = [...new Set([...graph.enroute, ...graph.edges.keys()])].filter(
+    (key) => !key.startsWith('@')
+  );
   if (oceanic) {
     for (const key of graph.positions.keys()) {
       if (!graph.edges.has(key) && REPORTING_POINT_RE.test(key.split('/')[0]!)) nodes.push(key);

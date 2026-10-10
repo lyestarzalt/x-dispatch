@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   estimateMinutes,
   greatCircleNm,
+  greatCirclePoints,
   isEastbound,
+  lonDeltaDeg,
   pathDistanceNm,
   smoothRoutePath,
   suggestCruiseAltitudeFt,
+  unwrapLongitude,
 } from './geometry';
 
 const EHAM = { latitude: 52.3086, longitude: 4.7639 };
@@ -69,5 +72,47 @@ describe('geometry', () => {
   it('knows which way is east', () => {
     expect(isEastbound(EHAM, EDDF)).toBe(true);
     expect(isEastbound(EDDF, EHAM)).toBe(false);
+  });
+});
+
+describe('longitude unwrapping', () => {
+  it('measures the short way round', () => {
+    expect(lonDeltaDeg(170, -170)).toBe(20);
+    expect(lonDeltaDeg(-170, 170)).toBe(-20);
+    expect(lonDeltaDeg(-73.8, -0.5)).toBeCloseTo(73.3);
+    // Exactly opposite: either way round is 180.
+    expect(Math.abs(lonDeltaDeg(10, -170))).toBe(180);
+  });
+
+  it('shifts a longitude by whole turns to stay next to the previous one', () => {
+    expect(unwrapLongitude(170, -170)).toBe(190);
+    expect(unwrapLongitude(190, 150)).toBe(150);
+    expect(unwrapLongitude(-170, 170)).toBe(-190);
+    expect(unwrapLongitude(4, 8)).toBe(8);
+  });
+});
+
+describe('greatCirclePoints', () => {
+  it('bends poleward on a long east-west leg', () => {
+    const kjfk = { latitude: 40.6, longitude: -73.8 };
+    const vhhh = { latitude: 22.3, longitude: 113.9 };
+    const pts = greatCirclePoints(kjfk, vhhh, 25);
+    expect(pts).toHaveLength(25);
+    expect(pts[0]).toEqual(kjfk);
+    expect(pts[24]!.latitude).toBeCloseTo(22.3, 6);
+    expect(Math.max(...pts.map((p) => p.latitude))).toBeGreaterThan(74);
+  });
+
+  it('is a straight interpolation along a meridian and handles identical points', () => {
+    const pts = greatCirclePoints(
+      { latitude: 0, longitude: 10 },
+      { latitude: 60, longitude: 10 },
+      4
+    );
+    expect(pts.map((p) => Math.round(p.latitude))).toEqual([0, 20, 40, 60]);
+    expect(pts.every((p) => Math.abs(p.longitude - 10) < 1e-9)).toBe(true);
+    expect(
+      greatCirclePoints({ latitude: 1, longitude: 1 }, { latitude: 1, longitude: 1 }, 5)
+    ).toHaveLength(2);
   });
 });

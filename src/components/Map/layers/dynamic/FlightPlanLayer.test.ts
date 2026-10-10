@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { EnrichedWaypoint } from '@/types/fms';
+import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
 import {
   addFlightPlanLayer,
   createLegLabelGeoJSON,
   createProcedureNameGeoJSON,
+  flightPlanBounds,
+  legLabelPlacement,
 } from './FlightPlanLayer';
 import { waypointBadgeId } from './routeStyle';
 
@@ -175,6 +177,61 @@ describe('createLegLabelGeoJSON', () => {
       wp({ id: 'A2', latitude: 40, longitude: -80 }),
     ];
     expect(createLegLabelGeoJSON(waypoints).features).toHaveLength(0);
+  });
+});
+
+describe('legLabelPlacement across the antimeridian', () => {
+  it('puts the label on the leg, not on the far side of the globe', () => {
+    const placed = legLabelPlacement(
+      { latitude: 57, longitude: 170 },
+      { latitude: 57, longitude: -170 }
+    );
+    expect(Math.abs(placed.lon)).toBeCloseTo(180, 6);
+    // Eastbound: text reads along the leg, not flipped.
+    expect(Math.abs(placed.rotate)).toBeLessThan(1);
+  });
+});
+
+describe('flightPlanBounds', () => {
+  const plan = (points: [number, number][]) =>
+    ({
+      waypoints: points.map(([latitude, longitude], i) => ({
+        id: `P${i}`,
+        latitude,
+        longitude,
+        found: true,
+      })),
+    }) as unknown as EnrichedFlightPlan;
+
+  it('frames a Pacific crossing over the Pacific, with longitudes unwrapped past 180', () => {
+    // San Francisco to Hong Kong by way of Alaska and Japan.
+    const bounds = flightPlanBounds(
+      plan([
+        [37.6, -122.4],
+        [57, -170],
+        [45, 150],
+        [22.3, 113.9],
+      ])
+    );
+    expect(bounds).toEqual([
+      [-246.1, 22.3],
+      [-122.4, 57],
+    ]);
+  });
+
+  it('is a plain box for an ordinary plan and null for an empty one', () => {
+    expect(
+      flightPlanBounds(
+        plan([
+          [52, 4],
+          [50, 8],
+        ])
+      )
+    ).toEqual([
+      [4, 50],
+      [8, 52],
+    ]);
+    expect(flightPlanBounds(plan([]))).toBeNull();
   });
 });
 

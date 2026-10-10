@@ -23,16 +23,25 @@ const NAT_MIN_LAT = 20;
 
 export type NatDirection = 'eastbound' | 'westbound';
 
+/** Degrees east from one longitude to another, the short way round: -180 to 180. */
+function shortArcDeg(fromLon: number, toLon: number): number {
+  return ((toLon - fromLon + 540) % 360) - 180;
+}
+
 /**
- * Which way the flight crosses the North Atlantic, or null when it does not: both ends on the
- * same side of mid-ocean, or either end too far south for the track system to matter.
+ * Which way the flight crosses the North Atlantic, or null when it does not. A crossing is a
+ * flight whose short way round passes the mid-ocean meridian: San Francisco to Hong Kong has
+ * one end either side of it but flies the other way, over the Pacific. Either end too far
+ * south and the track system does not matter.
  */
 export function natCrossing(departure: LatLon, arrival: LatLon): NatDirection | null {
   if (departure.latitude < NAT_MIN_LAT || arrival.latitude < NAT_MIN_LAT) return null;
-  const depWest = departure.longitude < NAT_MERIDIAN;
-  const arrWest = arrival.longitude < NAT_MERIDIAN;
-  if (depWest === arrWest) return null;
-  return depWest ? 'eastbound' : 'westbound';
+  const arc = shortArcDeg(departure.longitude, arrival.longitude);
+  const toMeridian = shortArcDeg(departure.longitude, NAT_MERIDIAN);
+  if (arc === 0 || toMeridian === 0) return null;
+  const passes = arc > 0 ? toMeridian > 0 && toMeridian < arc : toMeridian < 0 && toMeridian > arc;
+  if (!passes) return null;
+  return arc > 0 ? 'eastbound' : 'westbound';
 }
 
 /**

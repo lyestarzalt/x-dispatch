@@ -36,6 +36,8 @@ const AIRWAYS: Record<string, object[]> = {
   ],
   // Low airway with an open top, used to narrow the route band from below.
   V1: [{ name: 'V1', fromFix: 'BBBBB', toFix: 'CCCCC', direction: 0, baseFl: 85, topFl: 0 }],
+  // Low airway capped at FL150: with U1 ahead of it no level fits the whole route.
+  W1: [{ name: 'W1', fromFix: 'BBBBB', toFix: 'CCCCC', direction: 0, baseFl: 0, topFl: 150 }],
 };
 
 const draft = (routeText: string, cruiseAltitudeFt: number | null = 36000) => ({
@@ -105,6 +107,17 @@ describe('resolveRoute airway checks', () => {
     });
     expect(resolveRoute(draft('BBBBB V1 CCCCC'))!.levels).toEqual({ minFt: 8500, maxFt: null });
     expect(resolveRoute(draft('AAAAA DCT CCCCC'))!.levels).toEqual({ minFt: null, maxFt: null });
+  });
+
+  it('names the airway that sets the floor and the one that sets the ceiling', () => {
+    const res = resolveRoute(draft('AAAAA U1 BBBBB W1 CCCCC'))!;
+    expect(res.levels).toEqual({ minFt: 24500, maxFt: 15000 });
+    expect(res.levelSetters).toEqual({ floor: 'U1', ceiling: 'W1' });
+    expect(resolveRoute(draft('AAAAA U1 BBBBB V1 CCCCC'))!.levelSetters).toEqual({
+      floor: 'U1',
+      ceiling: 'U1',
+    });
+    expect(resolveRoute(draft('AAAAA DCT CCCCC'))!.levelSetters).toEqual({});
   });
 });
 

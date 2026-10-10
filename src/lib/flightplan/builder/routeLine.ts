@@ -6,7 +6,7 @@
  * straight final onto the arrival threshold. No fly-by arcs are ever invented.
  */
 import type { RunwayEnd } from '@/types/fms';
-import { type LatLon, destinationPoint } from './geometry';
+import { type LatLon, destinationPoint, unwrapLongitude } from './geometry';
 import { NAT_TRACK_RE } from './routeTokens';
 
 /** LNM's custom departure/approach leg length when no procedure is chosen. */
@@ -55,9 +55,14 @@ export interface RouteLineSegment {
   points: LatLon[];
 }
 
+/**
+ * Appends points, dropping a repeat of the last one and keeping longitudes continuous: a leg
+ * from 170E to 170W is drawn 20 degrees east across the antimeridian, not 340 degrees west.
+ */
 function appendDeduped(line: LatLon[], points: LatLon[]): void {
-  for (const p of points) {
+  for (const raw of points) {
     const last = line[line.length - 1];
+    const p = last ? { ...raw, longitude: unwrapLongitude(last.longitude, raw.longitude) } : raw;
     if (
       last &&
       Math.abs(last.latitude - p.latitude) < 1e-7 &&

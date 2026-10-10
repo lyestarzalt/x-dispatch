@@ -5,7 +5,12 @@
 import i18n from 'i18next';
 import * as maplibregl from 'maplibre-gl';
 import { buildUnitFormatters } from '@/hooks/useUnits';
-import { bearingDeg, greatCircleNm } from '@/lib/flightplan/builder/geometry';
+import {
+  bearingDeg,
+  greatCircleNm,
+  lonDeltaDeg,
+  unwrapLongitude,
+} from '@/lib/flightplan/builder/geometry';
 import { routeLineSegments } from '@/lib/flightplan/builder/routeLine';
 import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
 import { labelFont } from '@/lib/map/labelFonts';
@@ -175,15 +180,18 @@ export function legLabelPlacement(
 ): { lon: number; lat: number; rotate: number } {
   const ya = mercatorY(a.latitude);
   const yb = mercatorY(b.latitude);
-  // Both axes in radians of Web Mercator, so the angle is the one on screen.
-  const dx = ((b.longitude - a.longitude) * Math.PI) / 180;
+  // Both axes in radians of Web Mercator, so the angle is the one on screen. The longitude
+  // difference is taken the short way round, so a leg across the antimeridian is labelled
+  // on the leg and not on the far side of the globe.
+  const dLon = lonDeltaDeg(a.longitude, b.longitude);
+  const dx = (dLon * Math.PI) / 180;
   const dy = yb - ya;
   // Screen angle of the line, clockwise from north, then rotated so text runs along it.
   const screenBearing = ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360;
   let rotate = screenBearing - 90;
   if (screenBearing >= 180) rotate = screenBearing - 270; // west/southbound: keep the text upright
   return {
-    lon: (a.longitude + b.longitude) / 2,
+    lon: ((a.longitude + dLon / 2 + 540) % 360) - 180,
     lat: latFromMercatorY((ya + yb) / 2),
     rotate: ((rotate + 180) % 360) - 180,
   };
@@ -756,20 +764,41 @@ export function setFlightPlanVisibility(map: maplibregl.Map, visible: boolean): 
   }
 }
 
-export function fitMapToFlightPlan(map: maplibregl.Map, fmsData: EnrichedFlightPlan): void {
-  if (fmsData.waypoints.length === 0) return;
-  const bounds = new maplibregl.LngLatBounds();
-  fmsData.waypoints.forEach((wp) => {
-    if (isFinite(wp.longitude) && isFinite(wp.latitude)) {
-      bounds.extend([wp.longitude, wp.latitude]);
-    }
-  });
-  if (
-    fmsData.alternate &&
-    isFinite(fmsData.alternate.longitude) &&
-    isFinite(fmsData.alternate.latitude)
-  ) {
-    bounds.extend([fmsData.alternate.longitude, fmsData.alternate.latitude]);
+/**
+ * The box around a plan as `[[west, south], [east, north]]`, with longitudes unwrapped along
+ * the route so a Pacific crossing is framed over the Pacific and not the long way round the
+ * globe. Longitudes may run past ±180, which MapLibre accepts. Null for an empty plan.
+ */
+export function flightPlanBounds(
+  fmsData: EnrichedFlightPlan
+): [[number, number], [number, number]] | null {
+  const points: LatLon[] = [];
+  for (const wp of fmsData.waypoints) {
+    if (Number.isFinite(wp.longitude) && Number.isFinite(wp.latitude)) points.push(wp);
   }
-  if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 100, duration: 1500 });
+  const alt = fmsData.alternate;
+  if (alt && Number.isFinite(alt.longitude) && Number.isFinite(alt.latitude)) points.push(alt);
+  if (points.length === 0) return null;
+  let west = points[0]!.longitude;
+  let east = west;
+  let south = points[0]!.latitude;
+  let north = south;
+  let previous = west;
+  for (const p of points) {
+    const lon = unwrapLongitude(previous, p.longitude);
+    previous = lon;
+    west = Math.min(west, lon);
+    east = Math.max(east, lon);
+    south = Math.min(south, p.latitude);
+    north = Math.max(north, p.latitude);
+  }
+  return [
+    [west, south],
+    [east, north],
+  ];
+}
+
+export function fitMapToFlightPlan(map: maplibregl.Map, fmsData: EnrichedFlightPlan): void {
+  const bounds = flightPlanBounds(fmsData);
+  if (bounds) map.fitBounds(bounds, { padding: 100, duration: 1500 });
 }

@@ -30,7 +30,8 @@ import { formatDuration } from '@/lib/flightRecorder/format';
 import { suggestAlternate } from '@/lib/flightplan/builder/alternate';
 import {
   cruiseBand,
-  cruiseProblem,
+  describeCruiseIssue,
+  fitCruiseToBand,
   planIsEastbound,
   procedureFloorFt,
 } from '@/lib/flightplan/builder/cruiseAdjust';
@@ -58,7 +59,7 @@ import {
   offeredTracks,
   trackInRoute,
 } from '@/lib/flightplan/builder/trackChoice';
-import type { PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
+import type { LevelBand, PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -127,6 +128,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const clearTrackRequest = usePlanBuilderStore((s) => s.clearTrackRequest);
   const savedPath = usePlanBuilderStore((s) => s.savedPath);
   const autoRouting = usePlanBuilderStore((s) => s.autoRouting);
+  const autoRoutedText = usePlanBuilderStore((s) => s.autoRoutedText);
   const setDeparture = usePlanBuilderStore((s) => s.setDeparture);
   const setArrival = usePlanBuilderStore((s) => s.setArrival);
   const setRunway = usePlanBuilderStore((s) => s.setRunway);
@@ -229,12 +231,20 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   // crossing lands on a level the tracks offer, so the router can take a track straight away.
   const crossing = departure && arrival ? natCrossing(departure, arrival) : null;
   const { data: natFeed } = useOceanicTracks(isOpen && crossing !== null);
-  const suggestCruise = (departure: PlanEndpoint, arrival: PlanEndpoint, distanceNm: number) => {
+  // The level the app picks: by distance, class and direction, then onto the tracks of a
+  // crossing, then inside what an existing route and its procedures allow.
+  const suggestCruise = (
+    departure: PlanEndpoint,
+    arrival: PlanEndpoint,
+    distanceNm: number,
+    band?: LevelBand
+  ) => {
     const eastbound = isEastbound(departure, arrival);
-    const suggested = suggestCruiseAltitudeFt(distanceNm, cls, eastbound);
-    return crossing
-      ? cruiseOnTracks(suggested, offeredTracks(natFeed, crossing), eastbound)
-      : suggested;
+    let suggested = suggestCruiseAltitudeFt(distanceNm, cls, eastbound);
+    if (crossing)
+      suggested = cruiseOnTracks(suggested, offeredTracks(natFeed, crossing), eastbound);
+    if (band) suggested = fitCruiseToBand(suggested, band, eastbound);
+    return suggested;
   };
 
   const autoRoutedPair = useRef<string | null>(null);
@@ -404,33 +414,65 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const hasEndpoints = !!departure && !!arrival;
   const resolving = hasEndpoints && (status === 'resolving' || !result);
 
-  // Why the cruise is not on a level the airways, procedures and direction allow.
+  // Why the cruise is not on a level the airways, procedures and direction allow. Two airways
+  // that never share a level are a conflict no cruise can fix, so that banner has no Adjust.
   const cruiseIssue = useMemo(() => {
-    if (!ready || !result || !departure || !arrival || cruiseAltitudeFt === null) return null;
+    if (!ready || !result || !departure || !arrival) return null;
     const band = cruiseBand(result.levels, procedureFloorFt(procedures));
     const eastbound = planIsEastbound(departure, arrival);
-    const problem = cruiseProblem(cruiseAltitudeFt, band, eastbound);
-    if (problem === 'belowFloor') {
-      return t('planBuilder.cruiseBelowFloor', { level: formatLevel(band.minFt) });
+    const issue = describeCruiseIssue(cruiseAltitudeFt, band, result.levelSetters, eastbound);
+    if (!issue) return null;
+    switch (issue.kind) {
+      case 'conflict': {
+        const ceiling = formatLevel(issue.ceilingFt);
+        const floor = formatLevel(issue.floorFt);
+        const text =
+          issue.low && issue.high
+            ? t('planBuilder.cruiseConflict', { low: issue.low, ceiling, high: issue.high, floor })
+            : issue.low
+              ? t('planBuilder.cruiseConflictProcedure', { low: issue.low, ceiling, floor })
+              : t('planBuilder.cruiseConflictPlain', { ceiling, floor });
+        return { text, adjustable: false };
+      }
+      case 'aboveCeiling': {
+        const level = formatLevel(issue.ceilingFt);
+        return {
+          text: issue.airway
+            ? t('planBuilder.cruiseAirwayCeiling', { airway: issue.airway, level })
+            : t('planBuilder.cruiseAboveCeiling', { level }),
+          adjustable: true,
+        };
+      }
+      case 'belowFloor': {
+        const level = formatLevel(issue.floorFt);
+        return {
+          text: issue.airway
+            ? t('planBuilder.cruiseAirwayFloor', { airway: issue.airway, level })
+            : t('planBuilder.cruiseBelowFloor', { level }),
+          adjustable: true,
+        };
+      }
+      case 'parity':
+        return {
+          text: t(issue.eastbound ? 'planBuilder.cruiseOddLevels' : 'planBuilder.cruiseEvenLevels'),
+          adjustable: true,
+        };
     }
-    if (problem === 'aboveCeiling') {
-      return t('planBuilder.cruiseAboveCeiling', { level: formatLevel(band.maxFt) });
-    }
-    if (problem === 'parity') {
-      return t(eastbound ? 'planBuilder.cruiseOddLevels' : 'planBuilder.cruiseEvenLevels');
-    }
-    return null;
   }, [ready, result, departure, arrival, cruiseAltitudeFt, procedures, t]);
 
-  // Cruise is picked for the user from distance, aircraft class and direction of flight.
+  // Cruise is picked for the user from distance, aircraft class and direction of flight,
+  // inside what the resolved route allows.
   useEffect(() => {
-    if (!ready || !departure || !arrival || cruiseAltitudeFt !== null) return;
+    if (!ready || !result || !departure || !arrival || cruiseAltitudeFt !== null) return;
     if (crossing && natFeed === undefined) return;
-    setCruiseAltitude(suggestCruise(departure, arrival, distanceNm));
+    const band = cruiseBand(result.levels, procedureFloorFt(procedures));
+    setCruiseAltitude(suggestCruise(departure, arrival, distanceNm, band));
     // suggestCruise is rebuilt every render from values that are all listed here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     ready,
+    result,
+    procedures,
     departure,
     arrival,
     cruiseAltitudeFt,
@@ -449,6 +491,22 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     markVisit({ route: 'auto' });
     void autoRoute(joins);
   }, [cruiseAltitudeFt, autoRouting, autoRoute, joins]);
+
+  // A new cruise on a route the router built is routed again for that level, so the plan
+  // stays legal without the pilot noticing. A route the pilot typed or edited is theirs: the
+  // banner says what it allows and Adjust moves the level instead. The first suggestion
+  // (from no cruise) is routed by the pair effect above, and a track pick routes itself.
+  const previousCruise = useRef(cruiseAltitudeFt);
+  useEffect(() => {
+    const previous = previousCruise.current;
+    previousCruise.current = cruiseAltitudeFt;
+    if (previous === null || cruiseAltitudeFt === null || previous === cruiseAltitudeFt) return;
+    if (!isOpen || autoRouting || routeText === '' || routeText !== autoRoutedText) return;
+    markVisit({ route: 'auto' });
+    void autoRoute(joins, trackInRoute(routeText));
+    // Only a cruise change should route again; the rest is read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cruiseAltitudeFt]);
 
   const handleAutoRoute = async () => {
     const ok = await autoRoute(joins);
@@ -621,21 +679,23 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
           {cruiseIssue && (
             <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="text-warning flex min-w-0 items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate" title={cruiseIssue}>
-                  {cruiseIssue}
+              <span className="text-warning flex min-w-0 items-start gap-1.5">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span className="line-clamp-2" title={cruiseIssue.text}>
+                  {cruiseIssue.text}
                 </span>
               </span>
-              <Button
-                variant="outline"
-                size="xs"
-                className="shrink-0"
-                onClick={adjustCruiseAltitude}
-              >
-                <ArrowUpDown className="h-3.5 w-3.5" />
-                {t('planBuilder.adjustCruise')}
-              </Button>
+              {cruiseIssue.adjustable && (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  className="shrink-0"
+                  onClick={adjustCruiseAltitude}
+                >
+                  <ArrowUpDown className="h-3.5 w-3.5" />
+                  {t('planBuilder.adjustCruise')}
+                </Button>
+              )}
             </div>
           )}
 
@@ -808,7 +868,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     {t('planBuilder.clear')}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="xs"
                     onClick={handleAutoRoute}
                     disabled={!hasEndpoints || autoRouting}

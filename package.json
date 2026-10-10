@@ -47,6 +47,7 @@
     "prepare": "husky",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:sweep": "ROUTE_SWEEP=1 vitest run tests/routeSweep.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:xplane": "npx tsx scripts/test-xplane-websocket.ts",
     "test:e2e": "playwright test",

@@ -271,6 +271,11 @@
     "cruiseAboveCeiling": "Маршрут допускает {{level}} и ниже",
     "cruiseOddLevels": "На восток: нечётные эшелоны",
     "cruiseEvenLevels": "На запад: чётные эшелоны",
+    "cruiseAirwayCeiling": "{{airway}} заканчивается на {{level}}",
+    "cruiseAirwayFloor": "{{airway}} начинается с {{level}}",
+    "cruiseConflict": "{{low}} заканчивается на {{ceiling}}, а {{high}} начинается с {{floor}}. Ни один эшелон не подходит обеим. Уберите одну трассу.",
+    "cruiseConflictProcedure": "{{low}} заканчивается на {{ceiling}}, а процедурам нужен {{floor}} и выше. Уберите трассу.",
+    "cruiseConflictPlain": "Маршруту нужен {{floor}} и выше и {{ceiling}} и ниже. Ни один эшелон не подходит.",
     "levelsBetween": "от {{min}} до {{max}}",
     "levelsFrom": "от {{min}}",
     "levelsUpTo": "до {{max}}"

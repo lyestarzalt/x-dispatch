@@ -103,3 +103,61 @@ export function cruiseProblem(
   if (band.maxFt !== null && currentFt > band.maxFt) return 'aboveCeiling';
   return adjustCruiseAltitudeFt(currentFt, band, eastbound) === currentFt ? null : 'parity';
 }
+
+/** Whether the band has a floor above its ceiling: two airways that never share a level. */
+export function isConflict(band: LevelBand): band is { minFt: number; maxFt: number } {
+  return band.minFt !== null && band.maxFt !== null && band.minFt > band.maxFt;
+}
+
+/**
+ * A suggested cruise moved inside what the route allows, on the right parity. A conflicting
+ * band cannot be fitted, so the suggestion stands and the banner explains the route instead.
+ */
+export function fitCruiseToBand(suggestedFt: number, band: LevelBand, eastbound: boolean): number {
+  return isConflict(band) ? suggestedFt : adjustCruiseAltitudeFt(suggestedFt, band, eastbound);
+}
+
+/**
+ * What the cruise banner says, as data for the dialog to word. A conflict is a band with its
+ * floor above its ceiling: two airways that never share a level, which no cruise can fix,
+ * so the banner names both and offers no Adjust. The other cases name the airway behind
+ * the limit when the resolver knows it.
+ */
+export type CruiseIssue =
+  | {
+      kind: 'conflict';
+      low: string | null;
+      ceilingFt: number;
+      high: string | null;
+      floorFt: number;
+    }
+  | { kind: 'belowFloor'; airway: string | null; floorFt: number }
+  | { kind: 'aboveCeiling'; airway: string | null; ceilingFt: number }
+  | { kind: 'parity'; eastbound: boolean };
+
+export function describeCruiseIssue(
+  currentFt: number | null,
+  band: LevelBand,
+  setters: { floor?: string; ceiling?: string },
+  eastbound: boolean
+): CruiseIssue | null {
+  if (currentFt === null) return null;
+  if (isConflict(band)) {
+    return {
+      kind: 'conflict',
+      low: setters.ceiling ?? null,
+      ceilingFt: band.maxFt,
+      high: setters.floor ?? null,
+      floorFt: band.minFt,
+    };
+  }
+  const problem = cruiseProblem(currentFt, band, eastbound);
+  if (problem === 'belowFloor') {
+    return { kind: 'belowFloor', airway: setters.floor ?? null, floorFt: band.minFt! };
+  }
+  if (problem === 'aboveCeiling') {
+    return { kind: 'aboveCeiling', airway: setters.ceiling ?? null, ceilingFt: band.maxFt! };
+  }
+  if (problem === 'parity') return { kind: 'parity', eastbound };
+  return null;
+}

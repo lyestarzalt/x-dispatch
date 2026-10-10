@@ -271,6 +271,11 @@
     "cruiseAboveCeiling": "此航线允许 {{level}} 或更低",
     "cruiseOddLevels": "东向飞行使用奇数高度层",
     "cruiseEvenLevels": "西向飞行使用偶数高度层",
+    "cruiseAirwayCeiling": "{{airway}} 止于 {{level}}",
+    "cruiseAirwayFloor": "{{airway}} 始于 {{level}}",
+    "cruiseConflict": "{{low}} 止于 {{ceiling}}，而 {{high}} 始于 {{floor}}。没有同时适合两者的高度层。请移除一条航路。",
+    "cruiseConflictProcedure": "{{low}} 止于 {{ceiling}}，但程序要求 {{floor}} 或更高。请移除该航路。",
+    "cruiseConflictPlain": "此航线要求 {{floor}} 或更高且 {{ceiling}} 或更低。没有同时适合的高度层。",
     "levelsBetween": "{{min}} 至 {{max}}",
     "levelsFrom": "{{min}} 以上",
     "levelsUpTo": "{{max}} 以下"

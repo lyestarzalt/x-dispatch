@@ -271,6 +271,11 @@
     "cruiseAboveCeiling": "The route allows {{level}} or lower",
     "cruiseOddLevels": "Eastward bound sails odd levels",
     "cruiseEvenLevels": "Westward bound sails even levels",
+    "cruiseAirwayCeiling": "{{airway}} ends at {{level}}",
+    "cruiseAirwayFloor": "{{airway}} begins at {{level}}",
+    "cruiseConflict": "{{low}} ends at {{ceiling}} but {{high}} begins at {{floor}}. No height fits both. Toss one lane.",
+    "cruiseConflictProcedure": "{{low}} ends at {{ceiling}} but the procedures want {{floor}} or higher. Toss the lane.",
+    "cruiseConflictPlain": "The course wants {{floor}} or higher and {{ceiling}} or lower. No height fits both.",
     "levelsBetween": "{{min}} to {{max}}",
     "levelsFrom": "from {{min}}",
     "levelsUpTo": "up to {{max}}"
