@@ -9,9 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **North Atlantic tracks** in the flight planner. Pick a track from today's message, see its levels, fixes and remarks, and let Auto route fly it from entry to exit. The planner warns when your cruise level is not available on the track. A new map layer draws the day's tracks, and clicking one routes through it.
+- **Airway checks** in the planner. If you type an airway the wrong way, or at a level it is not published for, the planner tells you under the route and shows the levels it allows. When your cruise altitude does not fit the route, or is odd where it should be even for your direction, an **Adjust** button fixes it in one click.
+- **Random destination.** Choose a departure, how long you want to fly, and your aircraft class, and get five random destinations. Filter by domestic or international, custom scenery only, destination weather, or VATSIM ATC online. Find it under Explore > Routes > Random, or from the dice button in the planner.
+- **Better runways on the map.** Displaced thresholds, overruns and blast pads are drawn, with the markings and lights in the right place. Water runways appear as lanes and can be used as start positions, so seaplane bases work from the Start tab and the map.
+- **New Layers panel.** The long Layers list is now a compact panel that fits on a 1080p screen: airport types and surfaces as chips, nav layers as switches, overlays as tiles, and range rings with an hour picker. It stays open while you change things.
+- **Open from links and files.** Links such as `xdispatch://airport/EHAM` can open an airport, a route, a SimBrief plan, the launcher or settings, even when the app is closed. `.fms` files open from Finder and Explorer with Open With. Recent airports show in the Dock menu on macOS and the taskbar jump list on Windows.
+- **Application menu** on every platform with working shortcuts, including Settings, Check for Updates and Help links. Windows and Linux get a menu button in the title bar. Press Cmd+/ or Ctrl+/ to see all shortcuts. Cmd+W closes a dialog before the window, and Ctrl+W no longer quits the app.
+- **Desktop window settings** under Appearance: keep X-Dispatch running when you close the window on macOS, bounce the Dock or flash the taskbar when X-Plane connects or an update is ready, and show recent airports in the Dock or jump list.
 - **SimBrief username.** Enter your SimBrief username instead of hunting for the numeric Pilot ID. Both work, in Settings and in `xdispatch://simbrief` links.
 - **Send to FMS** from the briefing footer. Each export target you set up is one menu entry, with "Send all" when you have several. With none set up, the menu takes you to Settings.
 - The SimBrief briefing says when the plan was generated and which AIRAC cycle it uses, next to Refresh.
+- A banner under the title bar tells you when you are offline.
+- Planner: **Undo** after New plan or Clear, and skipped route items say why.
+- Launcher: choose live weather, a preset or your own; the Real button shows a summary of today's METAR. Weight & Fuel is one card with your takeoff weight, the maximum and the margin. The launch summary sits right above the Launch button.
 
 ### Changed
 
@@ -19,6 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SimBrief routes on the map** draw like planned routes: the SID, STAR, airways and oceanic tracks in their own colours, with the route starting and ending at the airports.
 - The flight card on the map is a summary: route, alternate, time, cruise level, block fuel and takeoff weight, with one button to the full briefing. Collapsed, it still shows the flight number, the route and the cruise level.
 - SimBrief errors tell you what to do: unknown user, no plan on file, no connection. With no SimBrief account set up, the briefing has a button straight to the SimBrief settings.
+- Large airports such as Paris, Frankfurt and Atlanta load several times faster, with no visible change. The Surface detail setting is gone, since there is nothing left to choose.
+- Auto route picks airways for your cruise level from the start. Before, a jet route built before the cruise altitude was set could end up on low airways capped at FL195.
+- The planner shows departure and arrival in their own blocks, with a swap button between them and the aircraft class next to the figures it affects.
+- The airport filter now hides every filtered airport, and favourites no longer draw twice. You cannot switch off the last airport type or runway surface.
+- The country filter lists each country once. The scenery files spell the United States eight different ways.
+- Taxi distance, thermals, approach and boat distances, launch history and the air-start altitude follow your unit settings. Wind stays in knots.
+- Long names and translated labels no longer overflow, and every button shows a focus ring when you tab to it.
+- Zoom keys change the interface size and show the percentage.
+- macOS: the title bar dims when the window is inactive, follows your double-click preference, and adapts to full screen.
+- The add-on installer explains why a drop cannot be installed: a folder (zip it first), a file that is not .zip, .7z or .rar, an archive with no add-on inside, or several files dropped at once.
 - About credits Gilles for testing and community.
 
 ### Fixed
@@ -27,7 +48,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The AIRAC cycle in the SimBrief briefing was always blank.
 - The SimBrief vertical profile started at top of climb instead of the departure airport, and did not land at the arrival.
 - The SimBrief navlog showed every Mach as M0.00.
+- SimBrief weather showed cloud ceilings as BKN8000 instead of BKN080.
 - The flight card's "Open full OFP" button opened a broken link.
+- One-way airways and the split between low and high airways were read wrong from the navigation data. This affected Auto route and the airway layers on the map. The navigation data is read again once on the first launch after updating, so the first start takes a little longer.
+- Clicking a VOR or NDB always shows its type, name and frequency, including waypoints of a loaded plan. NDB frequencies in built plans were shown divided by 100. Localizers can be clicked to see their runway and course.
+- The launcher weight panel and the loading error screen no longer show raw translation keys.
+- If a METAR refresh fails, the last report stays instead of disappearing.
+- Settings can no longer lose your X-Plane installations when the folder is missing or a file is unreadable. Switching installs clears the previous install's X-Plane version.
+- Quitting is faster: the navigation data is only saved when something changed.
+- If the app window crashes, it reloads itself. A second crash within a minute asks whether to reload or quit.
+- The landing notification shows the touchdown rate in your chosen vertical speed unit.
+- The title bar keeps its size and stays clear of the window controls at any interface zoom.
+- Terrain shading stays off on satellite and other image basemaps, where it only darkened the picture.
 
 ## [2.3.1] - 2026-10-04
 
