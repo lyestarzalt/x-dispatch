@@ -41,8 +41,17 @@ export function useNativeShell() {
     if (window.appAPI.isRemoteClient) return;
     const apply = (focused: boolean) =>
       document.documentElement.toggleAttribute('data-window-inactive', !focused);
-    void window.appAPI.getWindowState().then((state) => apply(state.focused));
-    return window.appAPI.onWindowFocus(apply);
+    const setFullScreen = useAppStore.getState().setWindowFullScreen;
+    void window.appAPI.getWindowState().then((state) => {
+      apply(state.focused);
+      setFullScreen(state.fullScreen);
+    });
+    const offFocus = window.appAPI.onWindowFocus(apply);
+    const offFullScreen = window.appAPI.onFullScreen(setFullScreen);
+    return () => {
+      offFocus();
+      offFullScreen();
+    };
   }, []);
 
   // Window behaviour main applies: pushed now and on every change.

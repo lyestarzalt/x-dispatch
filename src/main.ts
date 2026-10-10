@@ -11,6 +11,7 @@ import {
   screen,
   session,
   shell,
+  systemPreferences,
 } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
@@ -708,6 +709,10 @@ function createWindow(): BrowserWindow {
   });
   window.on('blur', () => sendWindowFocus(false));
 
+  // Full screen hides the traffic lights and the OS controls; the title bar follows.
+  window.on('enter-full-screen', () => window.webContents.send('app:fullScreen', true));
+  window.on('leave-full-screen', () => window.webContents.send('app:fullScreen', false));
+
   // A reload (crash recovery, dev HMR) drops the renderer's listeners: hold
   // app actions again until the new page drains the queue.
   window.webContents.on('did-start-loading', () => pendingAppActions.reset());
@@ -909,6 +914,23 @@ function registerIpcHandlers() {
   });
   // The renderer takes whatever links arrived before it listened, then gets pushes.
   handle('app:takePendingActions', () => pendingAppActions.drain());
+  // Double-click on the title bar: what the user set in System Settings on macOS
+  // (zoom, minimise or nothing), maximise elsewhere.
+  handle('app:titleBarDoubleClick', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return;
+    const action =
+      process.platform === 'darwin'
+        ? systemPreferences.getUserDefault('AppleActionOnDoubleClick', 'string')
+        : 'Maximize';
+    if (action === 'None') return;
+    if (action === 'Minimize') {
+      win.minimize();
+      return;
+    }
+    if (win.isMaximized()) win.unmaximize();
+    else win.maximize();
+  });
   handle('app:getWindowState', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return {

@@ -148,6 +148,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getWindowState: () =>
         t.invoke('app:getWindowState') as Promise<{ focused: boolean; fullScreen: boolean }>,
       onWindowFocus: (callback: (focused: boolean) => void) => t.on('app:windowFocus', callback),
+      onFullScreen: (callback: (fullScreen: boolean) => void) => t.on('app:fullScreen', callback),
+      titleBarDoubleClick: () => t.invoke('app:titleBarDoubleClick'),
       resyncCustomAirports: () =>
         t.invoke('airport:resync-custom') as Promise<{
           synced: boolean;

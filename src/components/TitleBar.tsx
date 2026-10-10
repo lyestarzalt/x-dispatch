@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { titleBarMetrics } from '@/lib/nativeShell/titleBarMetrics';
 import { cn } from '@/lib/utils/helpers';
+import { useAppStore } from '@/stores/appStore';
 import { useDebugStore } from '@/stores/debugStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { TABS } from './Map/widgets/DevDebugOverlay/types';
@@ -33,6 +34,14 @@ export function TitleBar() {
   // Interface Zoom scales CSS pixels but not the OS window controls.
   const zoomLevel = useSettingsStore((s) => s.appearance.zoomLevel);
   const { heightPx, trafficLightInsetPx } = titleBarMetrics(zoomLevel);
+  // Full screen has no traffic lights and no OS controls to keep clear of.
+  const fullScreen = useAppStore((s) => s.windowFullScreen);
+
+  const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (window.appAPI?.isRemoteClient) return;
+    if ((event.target as HTMLElement).closest('button, [role="menu"], [role="menuitem"]')) return;
+    void window.appAPI.titleBarDoubleClick();
+  };
 
   useEffect(() => {
     window.appAPI.getVersion().then(setVersion);
@@ -43,6 +52,7 @@ export function TitleBar() {
 
   return (
     <header
+      onDoubleClick={handleDoubleClick}
       className={cn(
         'border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none',
         // The bar dims with the OS controls when the window is inactive.
@@ -51,8 +61,8 @@ export function TitleBar() {
       style={{
         ...dragStyle,
         height: heightPx,
-        paddingLeft: isMac ? trafficLightInsetPx : '0.75rem',
-        paddingRight: isMac ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
+        paddingLeft: isMac && !fullScreen ? trafficLightInsetPx : '0.75rem',
+        paddingRight: isMac || fullScreen ? '0.75rem' : WIN_LINUX_CONTROLS_PAD,
       }}
     >
       <span className="text-foreground font-medium tracking-tight">X-Dispatch</span>

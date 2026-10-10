@@ -157,6 +157,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'app:setFlightStripOpacity',
   'app:airportOpened',
   'app:getWindowState',
+  'app:titleBarDoubleClick',
   'app:requestAttention',
   'app:setDesktopPrefs',
   'app:setNativeLabels',

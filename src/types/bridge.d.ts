@@ -148,6 +148,9 @@ declare global {
       getWindowState: () => Promise<{ focused: boolean; fullScreen: boolean }>;
       /** The window gained or lost focus; the title bar dims like a native one. */
       onWindowFocus: (callback: (focused: boolean) => void) => () => void;
+      onFullScreen: (callback: (fullScreen: boolean) => void) => () => void;
+      /** Zoom, minimise or nothing, per the macOS preference; maximise elsewhere. */
+      titleBarDoubleClick: () => Promise<void>;
       /** Actions from xdispatch:// links while the app is running. */
       onAppAction: (callback: (action: AppAction) => void) => () => void;
       /** Links that arrived before the renderer listened; marks it as listening. */

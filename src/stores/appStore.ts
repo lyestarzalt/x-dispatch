@@ -35,6 +35,8 @@ interface AppState {
   pendingAddonTab: AddonManagerTab | null;
   /** A link wants to fetch something remote; the dialog asks and resolves. */
   pendingConfirmation: AppActionConfirmation | null;
+  /** Native full screen: no traffic lights, no OS controls, the title bar adapts. */
+  windowFullScreen: boolean;
   logbook: { open: boolean; tab: LogbookTab; flightId: string | null };
 
   selectAirport: (icao: string, data: ParsedAirport, isCustom?: boolean) => void;
@@ -60,6 +62,7 @@ interface AppState {
   requestConfirmation: (confirmation: AppActionConfirmation) => void;
   /** Answers and clears the pending confirmation. */
   resolveConfirmation: (accepted: boolean) => void;
+  setWindowFullScreen: (fullScreen: boolean) => void;
   openLogbook: (tab?: LogbookTab, flightId?: string | null) => void;
   closeLogbook: () => void;
   setLogbookTab: (tab: LogbookTab) => void;
@@ -95,6 +98,7 @@ export const useAppStore = create<AppState>()(
     showAddonManager: false,
     pendingAddonTab: null as AddonManagerTab | null,
     pendingConfirmation: null as AppActionConfirmation | null,
+    windowFullScreen: false,
     logbook: { open: false, tab: 'flights' as LogbookTab, flightId: null as string | null },
 
     selectAirport: (icao, data, isCustom) =>
@@ -147,6 +151,8 @@ export const useAppStore = create<AppState>()(
         state.pendingConfirmation?.resolve(false);
         return { pendingConfirmation: confirmation };
       }),
+    setWindowFullScreen: (fullScreen) => set({ windowFullScreen: fullScreen }),
+
     resolveConfirmation: (accepted) =>
       set((state) => {
         state.pendingConfirmation?.resolve(accepted);
