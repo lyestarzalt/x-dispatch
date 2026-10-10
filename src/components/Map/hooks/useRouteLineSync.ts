@@ -10,7 +10,7 @@ interface UseRouteLineSyncOptions {
 }
 
 export function useRouteLineSync({ mapRef, airports }: UseRouteLineSyncOptions): void {
-  const selectedRoute = useMapStore((s) => s.explore.selectedRoute);
+  const selectedRoute = useMapStore((s) => s.routePreview);
 
   // Initialize route line layer on map load and style change
   useEffect(() => {

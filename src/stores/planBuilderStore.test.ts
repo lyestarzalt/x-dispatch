@@ -197,3 +197,29 @@ describe('planBuilderStore — adjust cruise altitude', () => {
     expect(usePlanBuilderStore.getState().cruiseAltitudeFt).toBe(18000);
   });
 });
+
+describe('planBuilderStore — Explore flyout', () => {
+  it('openExplore opens the planner with that tab showing', () => {
+    usePlanBuilderStore.getState().openExplore('routes');
+
+    const builder = usePlanBuilderStore.getState();
+    expect(builder.isOpen).toBe(true);
+    expect(builder.explore).toBe('routes');
+  });
+
+  it('closing the planner puts the flyout away too', () => {
+    usePlanBuilderStore.getState().openExplore('weather');
+    usePlanBuilderStore.getState().close();
+
+    expect(usePlanBuilderStore.getState().explore).toBeNull();
+  });
+
+  it('setExplore(null) keeps the planner open', () => {
+    usePlanBuilderStore.getState().openExplore('random');
+    usePlanBuilderStore.getState().setExplore(null);
+
+    const builder = usePlanBuilderStore.getState();
+    expect(builder.isOpen).toBe(true);
+    expect(builder.explore).toBeNull();
+  });
+});

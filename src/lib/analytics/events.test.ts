@@ -81,8 +81,8 @@ describe('sanitizeEvent', () => {
   });
 
   it('validates Explore tabs and selections', () => {
-    expect(sanitizeEvent('explore_tab_opened', { tab: 'vatsim' })?.properties).toEqual({
-      tab: 'vatsim',
+    expect(sanitizeEvent('explore_tab_opened', { tab: 'weather' })?.properties).toEqual({
+      tab: 'weather',
     });
     expect(sanitizeEvent('explore_item_selected', { tab: 'routes' })?.properties).toEqual({
       tab: 'routes',
@@ -151,7 +151,7 @@ describe('airport and route events', () => {
     expect(sanitizeEvent('flight_plan_saved', {})).not.toBeNull();
     expect(
       sanitizeEvent('explore_filter_selected', { tab: 'featured', filter: 'scenic' })
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       sanitizeEvent('explore_filter_selected', { tab: 'weather', filter: 'fog' })
     ).not.toBeNull();

@@ -39,12 +39,16 @@ import { addStationData, useFlightPlanStore } from './flightPlanStore';
 
 export type PlanBuilderStatus = 'idle' | 'resolving' | 'ready' | 'error';
 export type ProcedureKind = 'sid' | 'star' | 'approach';
+/** Tabs of the Explore flyout beside the planner. */
+export type ExploreTab = 'random' | 'routes' | 'weather';
 
 /** The persisted part of the planner: what an undo of "New plan" brings back. */
 type SavedDraft = PlanDraft & { aircraftClass: RangeRingCategory | null };
 
 interface PlanBuilderState extends PlanDraft {
   isOpen: boolean;
+  /** Which Explore tab is showing beside the planner; null when the flyout is closed. */
+  explore: ExploreTab | null;
   status: PlanBuilderStatus;
   result: RouteResolveResult | null;
   /** Resolved copies of the chosen procedures, supplied by the dialog once the airport data loads. */
@@ -56,6 +60,9 @@ interface PlanBuilderState extends PlanDraft {
 
   open: () => void;
   close: () => void;
+  setExplore: (tab: ExploreTab | null) => void;
+  /** Open the planner with the Explore flyout on this tab. */
+  openExplore: (tab: ExploreTab) => void;
   setDeparture: (endpoint: PlanEndpoint | null) => void;
   setArrival: (endpoint: PlanEndpoint | null) => void;
   setRunway: (
@@ -132,6 +139,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       routeText: '',
       cruiseAltitudeFt: null,
       isOpen: false,
+      explore: null,
       status: 'idle',
       result: null,
       procedures: {},
@@ -140,7 +148,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       autoRoutedText: null,
 
       open: () => set({ isOpen: true }),
-      close: () => set({ isOpen: false }),
+      close: () => set({ isOpen: false, explore: null }),
+      setExplore: (tab) => set({ explore: tab }),
+      openExplore: (tab) => set({ isOpen: true, explore: tab }),
 
       // A route belongs to its pair of airports; changing either end starts the enroute part over.
       setDeparture: (endpoint) =>
@@ -365,7 +375,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         const { departure } = get();
         if (!departure) return;
         useAppStore.getState().requestSelectAirport(departure.icao);
-        set({ isOpen: false });
+        set({ isOpen: false, explore: null });
       },
 
       reset: () => {

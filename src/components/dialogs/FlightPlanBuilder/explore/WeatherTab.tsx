@@ -13,10 +13,11 @@ const GATEWAY_URL = 'https://gateway.x-plane.com';
 
 interface WeatherTabProps {
   airports: Airport[];
-  onSelectAirport: (icao: string) => void;
+  /** A station in X-Plane was picked: it becomes the plan's arrival. */
+  onPick: (airport: Airport) => void;
 }
 
-export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
+export function WeatherTab({ airports, onPick }: WeatherTabProps) {
   const { t } = useTranslation();
   const [category, setCategory] = useState<WeatherCategory>('snow');
   const selectCategory = (key: WeatherCategory) => {
@@ -95,11 +96,11 @@ export function WeatherTab({ airports, onSelectAirport }: WeatherTabProps) {
                 key={observation.icao}
                 role={known ? 'button' : undefined}
                 tabIndex={known ? 0 : undefined}
-                onClick={() => known && onSelectAirport(observation.icao)}
+                onClick={() => known && onPick(airport)}
                 onKeyDown={(event) => {
                   if (!known || (event.key !== 'Enter' && event.key !== ' ')) return;
                   event.preventDefault();
-                  onSelectAirport(observation.icao);
+                  onPick(airport);
                 }}
                 className={cn(
                   'group flex w-full min-w-0 items-start gap-3 overflow-hidden rounded px-2 py-2 text-left transition-colors',

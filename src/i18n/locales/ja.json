@@ -261,10 +261,8 @@
       "tomorrow": "明日",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "ランダムな目的地",
     "planCleared": "プランを消去しました",
     "routeCleared": "ルートを消去しました",
-    "randomShort": "ランダム",
     "profileShort": "断面",
     "savedAs": "{{file}} として保存",
     "check": "要確認",
@@ -360,7 +358,7 @@
       "addons": "機体、プラグイン、シーナリーを管理",
       "loadPlan": "X-Plane の .fms フライトプランファイルを読み込む",
       "simbrief": "SimBrief からフライトプランをインポート",
-      "explore": "おすすめの空港とルートを発見",
+      "explore": "ルートとライブ気象",
       "nav": "空港周辺のナビゲーションレイヤーを表示",
       "track": "X-Plane で機体を追跡",
       "vatsim": "VATSIM のライブトラフィックを表示",
@@ -401,47 +399,10 @@
   },
   "explore": {
     "title": "探索",
-    "close": "探索を閉じる",
     "tabs": {
-      "filters": "フィルター",
-      "featured": "注目",
+      "random": "ランダム",
       "routes": "ルート",
-      "vatsim": "VATSIM",
       "weather": "気象"
-    },
-    "vatsim": {
-      "busiestNow": "現在最も混雑",
-      "events": "イベント",
-      "noEvents": "予定されているイベントはありません",
-      "viewRoute": "ルートを表示",
-      "goToDeparture": "出発地へ移動",
-      "departures": "出発",
-      "arrivals": "到着"
-    },
-    "filters": {
-      "country": "国",
-      "region": "地域",
-      "type": "タイプ",
-      "allCountries": "すべての国",
-      "allRegions": "すべての地域",
-      "allTypes": "すべてのタイプ",
-      "land": "陸上",
-      "seaplane": "水上機",
-      "heliport": "ヘリポート",
-      "hasIata": "IATAコードあり"
-    },
-    "featured": {
-      "all": "すべて",
-      "challenging": "難易度高め",
-      "scenic": "景色の良い",
-      "unique": "ユニーク",
-      "historic": "歴史的",
-      "icons": {
-        "mountain": "^",
-        "sunrise": "*",
-        "sparkles": "+",
-        "landmark": "#"
-      }
     },
     "weather": {
       "error": "気象情報を読み込めませんでした",
@@ -981,7 +942,9 @@
       "qnh": "QNH",
       "tempDew": "気温 / 露点",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
-      "phenomena": "気象現象"
+      "phenomena": "気象現象",
+      "departures": "出発",
+      "arrivals": "到着"
     },
     "activeRunway": "使用滑走路",
     "windAligned": "· 風向と一致、ずれ {{delta}}°",
@@ -1937,19 +1900,8 @@
     "appMenu": "メニュー"
   },
   "explorePanel": {
-    "routes": {
-      "mode": {
-        "featured": "おすすめ",
-        "random": "ランダム"
-      }
-    },
-    "vatsimEvents": {
-      "dataFrom": "データ提供"
-    },
     "random": {
       "from": "出発",
-      "pickOrigin": "出発空港を選択",
-      "aircraft": "機体",
       "time": "時間",
       "distance": "距離",
       "length": "飛行の長さ",
@@ -1965,7 +1917,6 @@
       "roll": "フライトを探す",
       "reroll": "引き直す",
       "noMatch": "該当する空港がありません。範囲を広げるかフィルターを外してください。",
-      "plan": "このフライトを計画",
       "useAsArrival": "到着地に設定",
       "needOrigin": "先に出発空港を選んでください。"
     }

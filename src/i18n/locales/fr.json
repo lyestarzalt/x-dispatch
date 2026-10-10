@@ -261,10 +261,8 @@
       "tomorrow": "Demain",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "Destination aléatoire",
     "planCleared": "Plan effacé",
     "routeCleared": "Route effacée",
-    "randomShort": "Hasard",
     "profileShort": "Profil",
     "savedAs": "Enregistré sous {{file}}",
     "check": "À vérifier",
@@ -360,7 +358,7 @@
       "addons": "Gérer les avions, plugins et scènes",
       "loadPlan": "Charger un fichier de plan de vol .fms X-Plane",
       "simbrief": "Importer un plan de vol depuis SimBrief",
-      "explore": "Découvrir une sélection d'aéroports et de routes",
+      "explore": "Routes et météo en direct",
       "nav": "Afficher ou masquer les couches de navigation",
       "track": "Suivre votre avion dans X-Plane",
       "vatsim": "Afficher le trafic VATSIM en direct",
@@ -401,47 +399,10 @@
   },
   "explore": {
     "title": "Explorer",
-    "close": "Fermer l'exploration",
     "tabs": {
-      "filters": "Filtres",
-      "featured": "En vedette",
+      "random": "Aléatoire",
       "routes": "Routes",
-      "vatsim": "VATSIM",
       "weather": "Météo"
-    },
-    "vatsim": {
-      "busiestNow": "Plus actifs maintenant",
-      "events": "Événements",
-      "noEvents": "Aucun événement à venir",
-      "viewRoute": "Voir la route",
-      "goToDeparture": "Aller au départ",
-      "departures": "Départs",
-      "arrivals": "Arrivées"
-    },
-    "filters": {
-      "country": "Pays",
-      "region": "Région",
-      "type": "Type",
-      "allCountries": "Tous les pays",
-      "allRegions": "Toutes les régions",
-      "allTypes": "Tous les types",
-      "land": "Terrestre",
-      "seaplane": "Hydravion",
-      "heliport": "Héliport",
-      "hasIata": "Avec code IATA"
-    },
-    "featured": {
-      "all": "Tous",
-      "challenging": "Difficiles",
-      "scenic": "Pittoresques",
-      "unique": "Uniques",
-      "historic": "Historiques",
-      "icons": {
-        "mountain": "^",
-        "sunrise": "*",
-        "sparkles": "+",
-        "landmark": "#"
-      }
     },
     "weather": {
       "error": "Impossible de charger la météo",
@@ -981,7 +942,9 @@
       "qnh": "QNH",
       "tempDew": "Temp. / point de rosée",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
-      "phenomena": "Phénomènes"
+      "phenomena": "Phénomènes",
+      "departures": "Départs",
+      "arrivals": "Arrivées"
     },
     "activeRunway": "Piste en service",
     "windAligned": "· alignée au vent, écart {{delta}}°",
@@ -1937,19 +1900,8 @@
     "appMenu": "Menu"
   },
   "explorePanel": {
-    "routes": {
-      "mode": {
-        "featured": "À la une",
-        "random": "Aléatoire"
-      }
-    },
-    "vatsimEvents": {
-      "dataFrom": "Données de"
-    },
     "random": {
       "from": "Départ",
-      "pickOrigin": "Choisir un départ",
-      "aircraft": "Avion",
       "time": "Durée",
       "distance": "Distance",
       "length": "Longueur du vol",
@@ -1965,7 +1917,6 @@
       "roll": "Trouver un vol",
       "reroll": "Relancer",
       "noMatch": "Aucun aéroport ne correspond. Élargissez la plage ou retirez un filtre.",
-      "plan": "Planifier ce vol",
       "useAsArrival": "Utiliser comme arrivée",
       "needOrigin": "Choisissez d'abord un départ."
     }

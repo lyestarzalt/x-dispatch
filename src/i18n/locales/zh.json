@@ -261,10 +261,8 @@
       "tomorrow": "明天",
       "scrubLabel": "{{time}}Z · {{phase}}"
     },
-    "randomDestination": "随机目的地",
     "planCleared": "计划已清除",
     "routeCleared": "航路已清除",
-    "randomShort": "随机",
     "profileShort": "剖面",
     "savedAs": "已保存为 {{file}}",
     "check": "请检查",
@@ -360,7 +358,7 @@
       "addons": "管理飞机、插件和地景",
       "loadPlan": "加载 X-Plane .fms 飞行计划文件",
       "simbrief": "从 SimBrief 导入飞行计划",
-      "explore": "发现精选机场和航线",
+      "explore": "航线和实时天气",
       "nav": "显示机场周围的导航图层",
       "track": "在 X-Plane 中跟踪飞机",
       "vatsim": "显示 VATSIM 实时交通",
@@ -401,47 +399,10 @@
   },
   "explore": {
     "title": "探索",
-    "close": "关闭探索",
     "tabs": {
-      "filters": "筛选",
-      "featured": "精选",
+      "random": "随机",
       "routes": "航线",
-      "vatsim": "VATSIM",
       "weather": "天气"
-    },
-    "vatsim": {
-      "busiestNow": "当前最繁忙",
-      "events": "活动",
-      "noEvents": "暂无活动",
-      "viewRoute": "查看航线",
-      "goToDeparture": "前往出发地",
-      "departures": "出发",
-      "arrivals": "到达"
-    },
-    "filters": {
-      "country": "国家",
-      "region": "地区",
-      "type": "类型",
-      "allCountries": "所有国家",
-      "allRegions": "所有地区",
-      "allTypes": "所有类型",
-      "land": "陆地",
-      "seaplane": "水上飞机",
-      "heliport": "直升机场",
-      "hasIata": "有 IATA 代码"
-    },
-    "featured": {
-      "all": "全部",
-      "challenging": "具挑战性",
-      "scenic": "风景优美",
-      "unique": "独特",
-      "historic": "历史悠久",
-      "icons": {
-        "mountain": "^",
-        "sunrise": "*",
-        "sparkles": "+",
-        "landmark": "#"
-      }
     },
     "weather": {
       "error": "无法加载天气数据",
@@ -981,7 +942,9 @@
       "qnh": "QNH",
       "tempDew": "温度 / 露点",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
-      "phenomena": "天气现象"
+      "phenomena": "天气现象",
+      "departures": "出发",
+      "arrivals": "到达"
     },
     "activeRunway": "使用跑道",
     "windAligned": "· 与风向对齐，偏差 {{delta}}°",
@@ -1937,19 +1900,8 @@
     "appMenu": "菜单"
   },
   "explorePanel": {
-    "routes": {
-      "mode": {
-        "featured": "精选",
-        "random": "随机"
-      }
-    },
-    "vatsimEvents": {
-      "dataFrom": "数据来自"
-    },
     "random": {
       "from": "出发",
-      "pickOrigin": "选择出发机场",
-      "aircraft": "机型",
       "time": "时间",
       "distance": "距离",
       "length": "航程长度",
@@ -1965,7 +1917,6 @@
       "roll": "寻找航班",
       "reroll": "重新抽取",
       "noMatch": "没有匹配的机场。请扩大范围或移除筛选。",
-      "plan": "规划此航班",
       "useAsArrival": "设为到达机场",
       "needOrigin": "请先选择出发机场。"
     }

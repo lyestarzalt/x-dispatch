@@ -156,46 +156,6 @@ export function getTrafficCountsForAirport(
   return { departures, arrivals };
 }
 
-export interface BusiestAirport {
-  icao: string;
-  total: number;
-  departures: number;
-  arrivals: number;
-}
-
-export function getBusiestAirports(
-  data: VatsimData | undefined,
-  limit: number = 5
-): BusiestAirport[] {
-  if (!data) return [];
-
-  const counts = new Map<string, { departures: number; arrivals: number }>();
-
-  for (const pilot of data.pilots) {
-    const dep = pilot.flight_plan?.departure?.toUpperCase();
-    const arr = pilot.flight_plan?.arrival?.toUpperCase();
-
-    if (dep) {
-      const existing = counts.get(dep) || { departures: 0, arrivals: 0 };
-      existing.departures++;
-      counts.set(dep, existing);
-    }
-
-    if (arr) {
-      const existing = counts.get(arr) || { departures: 0, arrivals: 0 };
-      existing.arrivals++;
-      counts.set(arr, existing);
-    }
-  }
-
-  const airports: BusiestAirport[] = [];
-  for (const [icao, { departures, arrivals }] of counts) {
-    airports.push({ icao, total: departures + arrivals, departures, arrivals });
-  }
-
-  return airports.sort((a, b) => b.total - a.total).slice(0, limit);
-}
-
 /**
  * Parse ATIS text to extract runway information
  */

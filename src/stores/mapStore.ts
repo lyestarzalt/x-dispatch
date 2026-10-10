@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { MeasureSnap } from '@/lib/measure/measureLabel';
-import type { FeaturedCategory } from '@/types/featured';
 import {
   AirwaysMode,
   DEFAULT_LAYER_VISIBILITY,
@@ -91,25 +90,6 @@ export const DEFAULT_AIRPORT_FILTERS: AirportFilterState = {
   country: 'all',
 };
 
-export interface ExploreFilters {
-  country: string | null;
-  region: string | null;
-  type: 'all' | 'land' | 'seaplane' | 'heliport';
-  hasIata: boolean;
-}
-
-export type ExploreTab = 'featured' | 'routes' | 'vatsim' | 'weather';
-/** Filter variant includes 'all' option for UI */
-export type FeaturedCategoryFilter = 'all' | FeaturedCategory;
-
-export interface ExploreState {
-  isOpen: boolean;
-  activeTab: ExploreTab;
-  selectedRoute: { from: string; to: string } | null;
-  filters: ExploreFilters;
-  featuredCategory: FeaturedCategoryFilter;
-}
-
 interface MapState {
   layerVisibility: LayerVisibility;
   navVisibility: NavLayerVisibility;
@@ -136,7 +116,8 @@ interface MapState {
   cloudLayerEnabled: boolean;
   /** Draw the recorded track behind the aircraft. */
   flightTrailEnabled: boolean;
-  explore: ExploreState;
+  /** City pair previewed on the map by the planner's Explore flyout. */
+  routePreview: { from: string; to: string } | null;
   airportFilters: AirportFilterState;
   rangeRingsEnabled: boolean;
   rangeRingsDuration: number;
@@ -187,11 +168,7 @@ interface MapState {
   setRangeRingsDuration: (hours: number) => void;
   toggleRangeRingsCategory: (category: RangeRingCategory) => void;
 
-  setExploreOpen: (isOpen: boolean) => void;
-  setExploreTab: (tab: ExploreTab) => void;
-  setSelectedRoute: (route: { from: string; to: string } | null) => void;
-  setExploreFilters: (filters: Partial<ExploreFilters>) => void;
-  setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
+  setRoutePreview: (route: { from: string; to: string } | null) => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setLandingCardPosition: (pos: { x: number; y: number } | null) => void;
   setProfileStripOpen: (open: boolean) => void;
@@ -252,18 +229,7 @@ export const useMapStore = create<MapState>()(
       weatherRadarEnabled: false,
       cloudLayerEnabled: false,
       flightTrailEnabled: true,
-      explore: {
-        isOpen: false,
-        activeTab: 'featured' as ExploreTab,
-        selectedRoute: null as { from: string; to: string } | null,
-        filters: {
-          country: null as string | null,
-          region: null as string | null,
-          type: 'all' as ExploreFilters['type'],
-          hasIata: false,
-        },
-        featuredCategory: 'all' as FeaturedCategoryFilter,
-      },
+      routePreview: null as { from: string; to: string } | null,
       airportFilters: DEFAULT_AIRPORT_FILTERS,
       rangeRingsEnabled: false,
       rangeRingsDuration: DEFAULT_RANGE_RINGS_DURATION,
@@ -370,16 +336,7 @@ export const useMapStore = create<MapState>()(
           return { rangeRingsCategories: next };
         }),
 
-      setExploreOpen: (isOpen) => set((state) => ({ explore: { ...state.explore, isOpen } })),
-      setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
-      setSelectedRoute: (route) =>
-        set((state) => ({ explore: { ...state.explore, selectedRoute: route } })),
-      setExploreFilters: (filters) =>
-        set((state) => ({
-          explore: { ...state.explore, filters: { ...state.explore.filters, ...filters } },
-        })),
-      setFeaturedCategory: (category) =>
-        set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
+      setRoutePreview: (route) => set({ routePreview: route }),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setLandingCardPosition: (pos) => set({ landingCardPosition: pos }),
       setProfileStripOpen: (open) => set({ profileStripOpen: open }),
