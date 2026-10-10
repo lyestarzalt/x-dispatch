@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Last published track set.** Outside track hours the planner keeps the last North Atlantic set on offer, marked "Last published", so you can still plan a crossing in the morning before the day's eastbound set is out. Hover the label to see when the next set is usually published. The set is remembered between launches.
+
+### Changed
+
+- **Explore lives in the planner.** The Explore pane on the map is gone. Open the planner and use the Random, Routes and Weather buttons in its header: a route fills both airports, a random or weather pick becomes the arrival. The toolbar Explore button opens the planner on Routes. The Featured airports and VATSIM events tabs are removed; the VATSIM map layer stays.
+- **Swap** starts the return leg over: a new route, cruise level, alternate and procedures, routed in one go. Before, it reversed the old route and kept the old level, so one-way airways ran the wrong way and the alternate belonged to the other airport.
+- **Cruise level picked for you** now lands on a level the tracks offer and inside what your route allows, odd or even for your direction. Picking a track moves the cruise onto that track's levels. Changing the level on a plan Auto route built routes it again for the new level.
+- **Clearer level warnings.** The banner names the airway behind a limit, for example "L10 stops at FL250". When two airways never share a level it says so and points you to Remove instead of an Adjust button that cannot help. Shorter, plainer wording throughout the planner.
+- Auto route is the blue button, so the main action stands out.
+
+### Fixed
+
+- Auto route could mix a low airway into a high-level plan, leaving no level that fit the whole route and an Adjust button that flipped between "above the ceiling" and "below the floor". The router now only uses airways published at your cruise level.
+- Flights across the Pacific: fixes beyond the dateline were reported as not in the database, the route drew a giant loop around the globe, Show on map framed the wrong side of the world, and the North Atlantic tracks panel appeared.
+- Polar routes such as London to Tokyo or New York to Hong Kong found no route.
+- Routes over France at high levels found no route, since France has removed most of its upper airways. Auto route now flies direct between en-route fixes there, as the real airspace works.
+- Atlantic crossings could find no route at all while both track sets were published.
+
 ## [2.4.0] - 2026-10-10
 
 ### Added
