@@ -550,7 +550,6 @@
       "credits": "Créditos",
       "developer": "Programador",
       "license": "Licença",
-      "specialThanks": "Agradecimentos especiais",
       "links": "Links",
       "website": "Site do projeto",
       "supportProject": "Apoiar este projeto",
@@ -574,10 +573,11 @@
       "debugShortcut": "Também pode usar Ctrl+Shift+D (Cmd+Shift+D no Mac)",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "Proprietária",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "Apenas para simulação de voo. Nunca use o X-Dispatch na aviação ou navegação real; os dados podem estar incompletos, imprecisos ou desatualizados.",
-      "thirdParty": "Licenças de terceiros"
+      "thirdParty": "Licenças de terceiros",
+      "testingCommunity": "Testes e comunidade",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "Instalação do X-Plane",
@@ -1650,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "Enviar para o FMS",
-      "send": "Enviar",
-      "sendAll": "Enviar todos",
-      "emptyHint": "Nenhum destino de exportação configurado. Adicione um em Definições → SimBrief.",
-      "noMatches": "Nenhum dos formatos configurados está presente neste plano SimBrief.",
       "success": "{{filename}} gravado em {{label}}",
       "failure": "Não foi possível exportar {{label}}: {{reason}}",
       "bulkSummary": "{{ok}} de {{total}} enviados"
@@ -1718,36 +1713,9 @@
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "Rota",
-      "fuel": "Combust.",
-      "weight": "Peso",
-      "wx": "MET"
-    },
-    "avgWind": "Vento méd.",
-    "blockFuel": "Comb. bloco",
-    "landing": "Aterragem",
-    "paxCargo": "PAX / Carga",
-    "alternate": "Alternativo",
-    "blockLabel": "Bloco",
-    "landingLabel": "Aterragem",
-    "passengers": "Passageiros",
-    "cargo": "Carga",
-    "payload": "Carga útil",
-    "wind": "Vento",
-    "vis": "Vis",
-    "temp": "Temp",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "Sem METAR",
-    "fuelItems": {
-      "taxi": "Táxi",
-      "trip": "Viagem",
-      "contingency": "Contingência",
-      "alternate": "Alternativo",
-      "reserve": "Reserva",
-      "extra": "Extra"
-    }
+    "expand": "Expandir painel de voo",
+    "collapse": "Recolher painel de voo",
+    "clear": "Limpar plano de voo"
   },
   "weightBalance": {
     "title": "Peso e combustível",
@@ -1763,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "OFP completo (PDF)",
     "notAvailable": "N/D",
     "noMetarAvailable": "Sem METAR disponível",
     "header": {
       "goToAirportLayoutAria": "Ir para o layout de {{icao}}",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "Descolagem - {{icao}}",
-      "landingWithIcao": "Aterragem - {{icao}}"
+      "landingWithIcao": "Aterragem - {{icao}}",
+      "generated": "Gerado {{time}}, {{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "Alternante"
     },
     "tabs": {
-      "flight": "Voo",
-      "performance": "Desemp.",
-      "navlog": "Navlog",
-      "fuel": "Combustível",
-      "weights": "Pesos",
-      "weather": "Met.",
-      "briefing": "Briefing"
+      "route": "Rota",
+      "fuelWeights": "Combustível e pesos",
+      "performance": "Desempenho",
+      "weather": "Meteorologia e NOTAM"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
-      "avgWind": "VENTO MÉD.",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "Perfil vertical",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "Rota",
-      "fixesCount": "{{count}} fixos",
-      "fuelSummary": "Resumo combust.",
-      "blockFuel": "Comb. bloco",
-      "tripFuel": "Comb. viagem",
-      "landingFuel": "Comb. aterragem",
-      "weightsSummary": "Resumo pesos",
-      "payload": "Carga útil",
-      "passengers": "Passageiros",
-      "cargo": "Carga",
-      "totalPayload": "Carga útil total",
-      "alternate": "Alternativo"
+      "cruise": "Cruzeiro",
+      "blockFuel": "Combustível de bloco",
+      "takeoffWeight": "Peso à descolagem",
+      "percentOfMax": "{{value}}% do máximo",
+      "avgWind": "Vento médio",
+      "airac": "AIRAC",
+      "ete": "Tempo em rota"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1870,7 +1822,7 @@
       "groundElevation": "Elev. terreno",
       "mora": "MORA",
       "fuelUsed": "Comb. usado",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "Decorrido"
     },
     "profile": {
       "noData": "Sem dados de perfil",
@@ -1932,7 +1884,26 @@
       "visibility": "Visibilidade",
       "ceiling": "Teto de nuvens",
       "temp": "Temp",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "Mostrar METAR em bruto",
+      "hideRaw": "Ocultar METAR em bruto"
+    },
+    "actions": {
+      "import": "Importar plano de voo",
+      "importAgain": "Importar novamente",
+      "onMap": "No mapa",
+      "openPdf": "Abrir OFP completo (PDF)",
+      "sendToFms": "Enviar para o FMS",
+      "sendAll": "Enviar todos",
+      "noTargets": "Ainda sem destinos de exportação",
+      "noMatches": "Nenhum dos seus destinos corresponde a este plano",
+      "setupTargets": "Configurar destinos de exportação…",
+      "openSettings": "Abrir definições do SimBrief"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "{{count}} fixos"
     }
   },
   "errorBoundary": {

@@ -550,7 +550,6 @@
       "credits": "制作人员",
       "developer": "开发者",
       "license": "许可证",
-      "specialThanks": "特别感谢",
       "links": "链接",
       "website": "项目网站",
       "supportProject": "支持这个项目",
@@ -574,10 +573,11 @@
       "debugShortcut": "也可以使用 Ctrl+Shift+D（Mac 上为 Cmd+Shift+D）",
       "developerName": "Lyes Tarzalt",
       "licenseValue": "专有",
-      "specialThanksName": "Gilles",
-      "specialThanksHandle": "(enjxp / simtwk3)",
       "simulationOnly": "仅供飞行模拟使用。切勿将 X-Dispatch 用于真实航空或导航；其数据可能不完整、不准确或已过时。",
-      "thirdParty": "第三方许可"
+      "thirdParty": "第三方许可",
+      "testingCommunity": "测试与社区",
+      "testingCommunityName": "Gilles",
+      "testingCommunityHandle": "(enjxp / simtwk3)"
     },
     "xplane": {
       "title": "X-Plane 安装",
@@ -1650,11 +1650,6 @@
   },
   "simbrief": {
     "export": {
-      "heading": "发送到 FMS",
-      "send": "发送",
-      "sendAll": "全部发送",
-      "emptyHint": "尚未配置导出目标。在设置 → SimBrief 中添加。",
-      "noMatches": "配置的格式都不包含在此 SimBrief 计划中。",
       "success": "{{filename}} 已写入 {{label}}",
       "failure": "无法导出 {{label}}：{{reason}}",
       "bulkSummary": "已发送 {{ok}}/{{total}}"
@@ -1718,36 +1713,9 @@
     }
   },
   "flightInfoPanel": {
-    "tabs": {
-      "route": "航路",
-      "fuel": "燃油",
-      "weight": "重量",
-      "wx": "气象"
-    },
-    "avgWind": "平均风",
-    "blockFuel": "轮挡油",
-    "landing": "着陆",
-    "paxCargo": "乘客 / 货物",
-    "alternate": "备降",
-    "blockLabel": "轮挡",
-    "landingLabel": "着陆",
-    "passengers": "乘客",
-    "cargo": "货物",
-    "payload": "载重",
-    "wind": "风",
-    "vis": "能见",
-    "temp": "温度",
-    "tempDeg": "{{value}}°",
-    "qnh": "QNH",
-    "noMetar": "无 METAR",
-    "fuelItems": {
-      "taxi": "滑行",
-      "trip": "航段",
-      "contingency": "备用",
-      "alternate": "备降",
-      "reserve": "储备",
-      "extra": "额外油"
-    }
+    "expand": "展开飞行面板",
+    "collapse": "收起飞行面板",
+    "clear": "清除飞行计划"
   },
   "weightBalance": {
     "title": "重量与燃油",
@@ -1763,47 +1731,31 @@
     "overallFuelValue": "{{pct}}% ({{weight}})"
   },
   "simbriefDialog": {
-    "viewFullOfp": "完整 OFP (PDF)",
     "notAvailable": "无",
     "noMetarAvailable": "无 METAR 数据",
     "header": {
       "goToAirportLayoutAria": "前往 {{icao}} 机场图",
       "runway": "RWY {{rwy}}",
       "takeoffWithIcao": "起飞：{{icao}}",
-      "landingWithIcao": "着陆：{{icao}}"
+      "landingWithIcao": "着陆：{{icao}}",
+      "generated": "生成于 {{time}}，{{ago}}",
+      "airac": "AIRAC {{cycle}}",
+      "alternate": "备降"
     },
     "tabs": {
-      "flight": "航班",
+      "route": "航路",
+      "fuelWeights": "燃油与重量",
       "performance": "性能",
-      "navlog": "航段记录",
-      "fuel": "燃油",
-      "weights": "重量",
-      "weather": "气象",
-      "briefing": "简报"
+      "weather": "气象与 NOTAM"
     },
     "stats": {
-      "ete": "ETE",
-      "fl": "FL",
+      "cruise": "巡航",
+      "blockFuel": "总油量",
+      "takeoffWeight": "起飞重量",
+      "percentOfMax": "最大值的 {{value}}%",
       "avgWind": "平均风",
-      "ci": "CI",
-      "airac": "AIRAC"
-    },
-    "flight": {
-      "verticalProfile": "垂直剖面",
-      "sid": "SID: {{id}}",
-      "star": "STAR: {{id}}",
-      "route": "航路",
-      "fixesCount": "{{count}} 个航点",
-      "fuelSummary": "燃油概览",
-      "blockFuel": "轮挡油",
-      "tripFuel": "航程油",
-      "landingFuel": "落地油",
-      "weightsSummary": "重量概览",
-      "payload": "载重",
-      "passengers": "乘客",
-      "cargo": "货物",
-      "totalPayload": "总载重",
-      "alternate": "备降"
+      "airac": "AIRAC",
+      "ete": "航路时间"
     },
     "weights": {
       "zfw": "ZFW",
@@ -1870,7 +1822,7 @@
       "groundElevation": "地面高度",
       "mora": "MORA",
       "fuelUsed": "已用燃油",
-      "fuelUsedValue": "{{value}} {{unit}}"
+      "colElapsed": "已用时间"
     },
     "profile": {
       "noData": "无剖面数据",
@@ -1932,7 +1884,26 @@
       "visibility": "能见度",
       "ceiling": "云底高",
       "temp": "温度",
-      "qnh": "QNH"
+      "qnh": "QNH",
+      "showRaw": "显示原始 METAR",
+      "hideRaw": "隐藏原始 METAR"
+    },
+    "actions": {
+      "import": "导入飞行计划",
+      "importAgain": "重新导入",
+      "onMap": "已在地图上",
+      "openPdf": "打开完整 OFP (PDF)",
+      "sendToFms": "发送到 FMS",
+      "sendAll": "全部发送",
+      "noTargets": "尚未设置导出目标",
+      "noMatches": "没有与此计划匹配的导出目标",
+      "setupTargets": "设置导出目标…",
+      "openSettings": "打开 SimBrief 设置"
+    },
+    "route": {
+      "sid": "SID {{id}}",
+      "star": "STAR {{id}}",
+      "fixesCount": "{{count}} 个航路点"
     }
   },
   "errorBoundary": {

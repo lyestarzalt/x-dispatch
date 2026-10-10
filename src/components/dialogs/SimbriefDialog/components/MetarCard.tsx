@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cloud, Droplets, Eye, Gauge, PlaneTakeoff, Thermometer, Wind } from 'lucide-react';
 import type { IMetar } from 'metar-taf-parser';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   formatAltimeter,
   formatCeiling,
@@ -28,6 +30,7 @@ export function MetarCard({
   taf?: string;
 }) {
   const { t } = useTranslation();
+  const [showRaw, setShowRaw] = useState(!parsedMetar);
   return (
     <div className="bg-card rounded-lg border p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -81,12 +84,24 @@ export function MetarCard({
         </div>
       )}
 
-      {/* Raw METAR */}
-      <div className="bg-muted/50 rounded p-3">
-        <p className="font-mono text-sm leading-relaxed">
-          {rawMetar || t('simbriefDialog.noMetarAvailable')}
-        </p>
-      </div>
+      {/* Raw METAR: the decoded tiles say the same thing, so the text waits behind a toggle */}
+      {parsedMetar && (
+        <Button
+          variant="link"
+          size="sm"
+          onClick={() => setShowRaw((v) => !v)}
+          className="text-muted-foreground h-auto p-0 text-xs"
+        >
+          {showRaw ? t('simbriefDialog.weather.hideRaw') : t('simbriefDialog.weather.showRaw')}
+        </Button>
+      )}
+      {showRaw && (
+        <div className="bg-muted/50 mt-2 rounded p-3">
+          <p className="font-mono text-sm leading-relaxed">
+            {rawMetar || t('simbriefDialog.noMetarAvailable')}
+          </p>
+        </div>
+      )}
 
       {/* TAF */}
       {taf && (

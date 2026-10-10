@@ -18,6 +18,7 @@ import {
   formatSpeed,
   formatVerticalSpeed,
   formatWeight,
+  formatWeightExact,
 } from '@/lib/utils/units';
 import { useSettingsStore } from '@/stores/settingsStore';
 
@@ -36,6 +37,8 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
     speed: (kts: Knots) => formatSpeed(kts, units.speed, t),
     verticalSpeed: (fpm: FeetPerMinute) => formatVerticalSpeed(fpm, units.verticalSpeed, t),
     weight: (lbs: number) => formatWeight(lbs, units.weight),
+    // Full digits for dispatch figures (fuel, takeoff weight), where "50k lbs" is not enough.
+    weightExact: (lbs: number) => formatWeightExact(lbs, units.weight),
     coordinates: (lat: number, lon: number) => formatCoordinates(lat, lon, units.coordinates, t),
     course: (trueDeg: Degrees, lat: number, lon: number, date?: Date) =>
       formatCourse(trueDeg, units.course, lat, lon, t, date),

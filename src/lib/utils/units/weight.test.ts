@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { convertWeight, formatWeight, parseWeightInput } from './weight';
+import { convertWeight, formatWeight, formatWeightExact, parseWeightInput } from './weight';
 
 describe('convertWeight', () => {
   it('returns the value unchanged for lbs', () => {
@@ -24,5 +24,13 @@ describe('parseWeightInput', () => {
 describe('formatWeight (re-export)', () => {
   it('re-exports the existing format/index formatter unchanged', () => {
     expect(formatWeight(1000, 'lbs')).toBe('1.0k lbs');
+  });
+});
+
+describe('formatWeightExact', () => {
+  it('keeps every digit in both units', () => {
+    expect(formatWeightExact(50450, 'lbs')).toBe('50,450 lbs');
+    expect(formatWeightExact(50450, 'kg')).toBe('22,884 kg');
+    expect(formatWeightExact(508, 'lbs')).toBe('508 lbs');
   });
 });

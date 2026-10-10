@@ -8,6 +8,7 @@ import type { SimBriefOFP } from '@/types/simbrief';
 interface VerticalProfileProps {
   data: SimBriefOFP;
   className?: string;
+  onHover?: (row: VerticalProfileRow | null) => void;
 }
 
 /**
@@ -17,7 +18,7 @@ interface VerticalProfileProps {
  * brought down to field elevation: the line then climbs out of one airport and lands at the
  * other, like a built plan's.
  */
-export function VerticalProfile({ data, className }: VerticalProfileProps) {
+export function VerticalProfile({ data, className, onHover }: VerticalProfileProps) {
   const { rows, tocDistance, todDistance } = useMemo(() => {
     const { origin, destination, navlog: fixes } = data;
     const airportRow = (airport: SimBriefOFP['origin'], distance: number): VerticalProfileRow => {
@@ -70,6 +71,7 @@ export function VerticalProfile({ data, className }: VerticalProfileProps) {
       tocDistance={tocDistance}
       todDistance={todDistance}
       className={className}
+      onHover={onHover ? (row) => onHover(row) : undefined}
     />
   );
 }

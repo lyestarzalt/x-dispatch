@@ -4,44 +4,42 @@ import {
   AlertCircle,
   Cloud,
   ExternalLink,
-  FileText,
   Fuel,
-  List,
   Plane,
   RefreshCw,
   Route,
-  Scale,
+  Settings,
+  X,
   Zap,
 } from 'lucide-react';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
+  DialogPanel,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { describeSimbriefError } from '@/lib/simbrief/fetchError';
+import { parseTimestamp } from '@/lib/simbrief/ofp';
+import { formatRelativeTime } from '@/lib/utils/format/relativeTime';
+import { cn } from '@/lib/utils/helpers';
 import { useTrackFeatureOpened } from '@/queries';
 import { useSimbriefFetch } from '@/queries/useSimbriefQuery';
+import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import type { SimBriefOFP } from '@/types/simbrief';
-import { BriefingTab, FmsExportSection, NavlogTab, PerformanceTab } from './components';
-import { FlightHeader } from './components/FlightHeader';
-import { FlightTab } from './components/FlightTab';
-import { FuelTab } from './components/FuelTab';
+import { FULL_SCREEN_DIALOG, FULL_SCREEN_DIALOG_HEADER } from '../fullScreenDialog';
+import { DispatchHeader } from './components/DispatchHeader';
+import { FmsExportMenu } from './components/FmsExportMenu';
+import { FuelWeightsTab } from './components/FuelWeightsTab';
+import { PerformanceTab } from './components/PerformanceTab';
+import { RouteTab } from './components/RouteTab';
 import { WeatherTab } from './components/WeatherTab';
-import { WeightsTab } from './components/WeightsTab';
-
-// Helper to get unit from API response
-function getApiUnit(data: SimBriefOFP): string {
-  return data.params.units;
-}
 
 interface SimbriefDialogProps {
   open: boolean;
@@ -50,7 +48,7 @@ interface SimbriefDialogProps {
 
 export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
   useTrackFeatureOpened('simbrief', open);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { simbrief } = useSettingsStore();
   // A link can bring its own pilot ID for this dialog session; it is never saved.
   const pilotIdOverride = useFlightPlanStore((s) => s.simbriefPilotIdOverride);
@@ -64,21 +62,18 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
   // Fresh fetch wins over previously imported data; otherwise fall back to the
   // in-memory OFP so re-opening the dialog after import shows the tabbed view.
   const ofp = fetchMutation.data ?? simbriefData;
-
-  // Get unit from API response (SimBrief returns "lbs" or "kgs")
-  const apiUnit = ofp ? getApiUnit(ofp) : 'lbs';
+  const apiUnit = ofp?.params.units ?? 'lbs';
+  const imported = !!ofp && simbriefData?.params.request_id === ofp.params.request_id;
+  const generated = ofp ? parseTimestamp(ofp.params.time_generated) : null;
 
   const handleOpenPDF = () => {
     if (ofp?.files.pdf.link) {
-      const fullUrl = ofp.files.directory + ofp.files.pdf.link;
-      window.appAPI.openExternal(fullUrl);
+      window.appAPI.openExternal(ofp.files.directory + ofp.files.pdf.link);
     }
   };
 
   const handleFetch = () => {
-    if (pilotId) {
-      fetchMutation.mutate(pilotId);
-    }
+    if (pilotId) fetchMutation.mutate(pilotId);
   };
 
   const { mutate: fetchOfp } = fetchMutation;
@@ -87,6 +82,12 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
     clearSimbriefAutoFetch();
     if (pilotId) fetchOfp(pilotId);
   }, [open, autoFetch, pilotId, clearSimbriefAutoFetch, fetchOfp]);
+
+  // Settings opens on the SimBrief tab; this dialog closes first so the two never stack.
+  const handleOpenSettings = () => {
+    onClose();
+    useAppStore.getState().openSettings('simbrief');
+  };
 
   const handleImport = () => {
     if (ofp) {
@@ -99,41 +100,56 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-4xl gap-0 overflow-hidden p-0">
-        {/* Header with SimBrief branding */}
-        <div className="bg-card flex items-center justify-between border-b px-6 py-4">
-          <div className="flex items-center gap-4">
-            <SimbriefLogo size="md" className="opacity-90" />
-            <div>
-              <DialogTitle className="text-foreground text-lg font-semibold">
-                {t('simbrief.title')}
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm">
-                {t('simbrief.description')}
-              </DialogDescription>
-            </div>
+      <DialogPanel className={cn(FULL_SCREEN_DIALOG, 'mx-auto max-w-5xl flex-col')}>
+        {/* Title row: who the plan comes from, how fresh it is */}
+        <div className={FULL_SCREEN_DIALOG_HEADER}>
+          <div className="flex min-w-0 items-center gap-4">
+            <SimbriefLogo size="md" />
+            <DialogTitle className="truncate text-sm font-medium">
+              {t('simbrief.title')}
+            </DialogTitle>
+            <DialogDescription className="sr-only">{t('simbrief.description')}</DialogDescription>
           </div>
-          {ofp && (
+          <div className="flex shrink-0 items-center gap-3">
+            {ofp && (
+              <>
+                <p className="text-muted-foreground text-xs">
+                  {generated
+                    ? t('simbriefDialog.header.generated', {
+                        time: generated.toISOString().slice(11, 16) + 'Z',
+                        ago: formatRelativeTime(generated, i18n.language),
+                      })
+                    : t('simbriefDialog.header.airac', { cycle: ofp.params.airac })}
+                  {generated && <span className="text-border mx-2">|</span>}
+                  {generated && t('simbriefDialog.header.airac', { cycle: ofp.params.airac })}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFetch}
+                  disabled={fetchMutation.isPending}
+                  className="text-muted-foreground hover:text-foreground gap-2"
+                >
+                  {fetchMutation.isPending ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
+                  {t('simbrief.refetch')}
+                </Button>
+              </>
+            )}
             <Button
               variant="ghost"
-              size="sm"
-              onClick={handleFetch}
-              disabled={fetchMutation.isPending}
-              className="text-muted-foreground hover:bg-accent hover:text-foreground"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8"
+              tooltip={t('common.close')}
             >
-              {fetchMutation.isPending ? (
-                <Spinner className="" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-              {t('simbrief.refetch')}
+              <X className="h-4 w-4" />
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Not Configured State */}
         {!isConfigured && (
-          <div className="flex flex-col items-center justify-center gap-6 py-16">
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 py-16">
             <div className="bg-warning/10 rounded-full p-4">
               <AlertCircle className="text-warning h-12 w-12" />
             </div>
@@ -143,12 +159,16 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
                 {t('simbrief.configurePilotId')}
               </p>
             </div>
+            <Button onClick={handleOpenSettings} size="lg" className="gap-2">
+              <Settings className="h-4 w-4" />
+              {t('simbriefDialog.actions.openSettings')}
+            </Button>
           </div>
         )}
 
         {/* Configured - Fetch UI */}
         {isConfigured && !ofp && (
-          <div className="flex flex-col items-center justify-center gap-6 py-16">
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 py-16">
             {fetchMutation.isPending ? (
               <>
                 <div className="relative">
@@ -194,113 +214,80 @@ export default function SimbriefDialog({ open, onClose }: SimbriefDialogProps) {
           </div>
         )}
 
-        {/* Flight Plan Preview */}
         {ofp && (
-          <ScrollArea className="max-h-[70vh]">
-            <div className="space-y-0">
-              {/* Flight Header - OFP Style */}
-              <FlightHeader data={ofp} onAirportClick={onClose} />
+          <>
+            <DispatchHeader
+              data={ofp}
+              apiUnit={apiUnit}
+              imported={imported}
+              onImport={handleImport}
+              onAirportClick={onClose}
+            />
 
-              {/* Main Content Tabs */}
-              <div className="p-4">
-                <Tabs defaultValue="flight" className="w-full">
-                  <TabsList variant="line" className="mb-4">
-                    <TabsTrigger value="flight" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <Route className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.flight')}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="performance" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <Zap className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.performance')}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="navlog" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <List className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.navlog')}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="fuel" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <Fuel className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.fuel')}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="weights" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <Scale className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.weights')}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="weather" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <Cloud className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.weather')}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="briefing" className="min-w-0 flex-1 gap-1.5 text-xs">
-                      <FileText className="h-3.5 w-3.5" />
-                      <span className="truncate">{t('simbriefDialog.tabs.briefing')}</span>
-                    </TabsTrigger>
-                  </TabsList>
+            <div className="flex min-h-0 flex-1 flex-col px-6 py-4">
+              <Tabs defaultValue="route" className="flex min-h-0 flex-1 flex-col">
+                <TabsList variant="line" className="mb-4 shrink-0">
+                  <TabsTrigger value="route" className="min-w-0 flex-1 gap-1.5 text-xs">
+                    <Route className="h-3.5 w-3.5" />
+                    <span className="truncate">{t('simbriefDialog.tabs.route')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="fuel" className="min-w-0 flex-1 gap-1.5 text-xs">
+                    <Fuel className="h-3.5 w-3.5" />
+                    <span className="truncate">{t('simbriefDialog.tabs.fuelWeights')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="performance" className="min-w-0 flex-1 gap-1.5 text-xs">
+                    <Zap className="h-3.5 w-3.5" />
+                    <span className="truncate">{t('simbriefDialog.tabs.performance')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="weather" className="min-w-0 flex-1 gap-1.5 text-xs">
+                    <Cloud className="h-3.5 w-3.5" />
+                    <span className="truncate">{t('simbriefDialog.tabs.weather')}</span>
+                  </TabsTrigger>
+                </TabsList>
 
-                  <TabsContent value="flight" className="mt-0">
-                    <FlightTab data={ofp} apiUnit={apiUnit} />
-                  </TabsContent>
-
-                  <TabsContent value="performance" className="mt-0">
+                <TabsContent value="route" className="mt-0 flex min-h-0 flex-1 flex-col">
+                  <RouteTab data={ofp} apiUnit={apiUnit} />
+                </TabsContent>
+                <TabsContent value="fuel" className="mt-0 min-h-0 flex-1">
+                  <ScrollArea className="h-full">
+                    <FuelWeightsTab data={ofp} apiUnit={apiUnit} />
+                  </ScrollArea>
+                </TabsContent>
+                <TabsContent value="performance" className="mt-0 min-h-0 flex-1">
+                  <ScrollArea className="h-full">
                     <PerformanceTab data={ofp} />
-                  </TabsContent>
-
-                  <TabsContent value="navlog" className="mt-0">
-                    <NavlogTab data={ofp} apiUnit={apiUnit} />
-                  </TabsContent>
-
-                  <TabsContent value="fuel" className="mt-0">
-                    <FuelTab data={ofp} apiUnit={apiUnit} />
-                  </TabsContent>
-
-                  <TabsContent value="weights" className="mt-0">
-                    <WeightsTab data={ofp} apiUnit={apiUnit} />
-                  </TabsContent>
-
-                  <TabsContent value="weather" className="mt-0">
+                  </ScrollArea>
+                </TabsContent>
+                <TabsContent value="weather" className="mt-0 min-h-0 flex-1">
+                  <ScrollArea className="h-full">
                     <WeatherTab data={ofp} />
-                  </TabsContent>
-
-                  <TabsContent value="briefing" className="mt-0">
-                    <BriefingTab data={ofp} />
-                  </TabsContent>
-                </Tabs>
-              </div>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
             </div>
-          </ScrollArea>
-        )}
 
-        {ofp && (
-          <div className="bg-card/50 border-t px-6 py-3">
-            <FmsExportSection data={ofp} />
-          </div>
-        )}
-
-        <DialogFooter className="bg-muted/30 border-t px-6 py-4">
-          <div className="flex w-full items-center justify-between">
-            {ofp && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleOpenPDF}
-                className="text-muted-foreground gap-2 text-sm"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                {t('simbriefDialog.viewFullOfp')}
-              </Button>
-            )}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose}>
-                {t('common.cancel')}
-              </Button>
-              {ofp && (
-                <Button onClick={handleImport} className="gap-2">
-                  <Route className="h-4 w-4" />
-                  {t('simbrief.import')}
+            <DialogFooter className="bg-muted/30 border-t px-6 py-3">
+              <div className="flex w-full items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleOpenPDF}
+                    className="text-muted-foreground gap-2"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {t('simbriefDialog.actions.openPdf')}
+                  </Button>
+                  <FmsExportMenu data={ofp} onOpenSettings={onClose} />
+                </div>
+                <Button variant="outline" size="sm" onClick={onClose}>
+                  {t('common.close')}
                 </Button>
-              )}
-            </div>
-          </div>
-        </DialogFooter>
-      </DialogContent>
+              </div>
+            </DialogFooter>
+          </>
+        )}
+      </DialogPanel>
     </Dialog>
   );
 }

@@ -5,6 +5,7 @@ import { parseMetar } from 'metar-taf-parser';
 import { Separator } from '@/components/ui/separator';
 import { primaryAlternate } from '@/lib/simbrief/ofp';
 import type { SimBriefOFP } from '@/types/simbrief';
+import { BriefingTab } from './BriefingTab';
 import { MetarCard } from './MetarCard';
 
 // Weather Tab
@@ -103,6 +104,8 @@ export function WeatherTab({ data }: { data: SimBriefOFP }) {
           </div>
         </div>
       </div>
+
+      <BriefingTab data={data} />
     </div>
   );
 }

@@ -16,7 +16,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useUnits } from '@/hooks/useUnits';
 import { parseTimestamp, primaryAlternate } from '@/lib/simbrief/ofp';
@@ -48,7 +47,8 @@ export function BriefingTab({ data }: BriefingTabProps) {
   const hasSigmets = sigmetList.length > 0;
 
   return (
-    <ScrollArea className="h-[500px] pr-4">
+    <div className="space-y-4">
+      <Separator />
       <div className="space-y-4">
         {/* SIGMETs Section */}
         {hasSigmets && (
@@ -192,7 +192,7 @@ export function BriefingTab({ data }: BriefingTabProps) {
           </div>
         </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 }
 

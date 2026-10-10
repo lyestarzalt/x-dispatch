@@ -100,32 +100,3 @@ export function formatFlightTime(duration: string | number): string {
   const mins = Math.floor((secs % 3600) / 60);
   return `${hours}h ${mins}m`;
 }
-
-/**
- * Format fuel value with unit
- * SimBrief API returns values already in the user's preferred units
- * The unit parameter should be from params.units ("lbs" or "kgs")
- */
-export function formatFuel(value: string, apiUnit: string = 'lbs'): string {
-  const num = parseInt(value, 10);
-  const unitLabel = apiUnit === 'kgs' ? 'kg' : 'lbs';
-  return `${num.toLocaleString()} ${unitLabel}`;
-}
-
-/**
- * Format weight value with unit
- * SimBrief API returns values already in the user's preferred units
- * The unit parameter should be from params.units ("lbs" or "kgs")
- */
-export function formatWeight(value: string, apiUnit: string = 'lbs'): string {
-  const num = parseInt(value, 10);
-  const unitLabel = apiUnit === 'kgs' ? 'kg' : 'lbs';
-  return `${num.toLocaleString()} ${unitLabel}`;
-}
-
-/**
- * Format distance in nautical miles
- */
-export function formatDistance(nm: string): string {
-  return `${parseInt(nm, 10).toLocaleString()} nm`;
-}
