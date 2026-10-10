@@ -404,8 +404,12 @@ describe('DB integrity & recovery', () => {
         const before = backdateDb();
         fs.chmodSync(TEST_USER_DATA, 0o500); // the temp file cannot be created
         vi.advanceTimersByTime(5000);
-        // Give the failed write time to settle; nothing reaches disk.
-        for (let i = 0; i < 500; i++) await new Promise((resolve) => setImmediate(resolve));
+        // Wait for the failed write to settle, however loaded the machine is; nothing reaches disk.
+        const deadline = Date.now() + 10_000;
+        while (mod2.isSaveInFlight() && Date.now() < deadline) {
+          await new Promise((resolve) => setImmediate(resolve));
+        }
+        expect(mod2.isSaveInFlight()).toBe(false);
         fs.chmodSync(TEST_USER_DATA, 0o700);
         expect(fs.statSync(dbFilePath()).mtimeMs).toBe(before);
 
