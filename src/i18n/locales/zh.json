@@ -224,7 +224,9 @@
       "airwayExitUnknown": "此航路之后的航路点未知",
       "airwayNotJoined": "此航路未连接两侧的航路点",
       "airwayEndsAtCoordinate": "航路必须以航路点结束，而不是坐标",
-      "trackPartial": "航迹代号仅在飞行整条航迹时申报；部分飞行请填写各航路点"
+      "trackPartial": "航迹代号仅在飞行整条航迹时申报；部分飞行请填写各航路点",
+      "airwayWrongWay": "单向航路，申报方向与之相反",
+      "airwayLevel": "巡航高度未公布；此航路适用 {{levels}}"
     },
     "setStart": "从出发机场开始",
     "showOnMap": "在地图上显示",
@@ -256,7 +258,16 @@
     "routeCleared": "航路已清除",
     "randomShort": "随机",
     "profileShort": "剖面",
-    "savedAs": "已保存为 {{file}}"
+    "savedAs": "已保存为 {{file}}",
+    "check": "请检查",
+    "adjustCruise": "调整",
+    "cruiseBelowFloor": "巡航高度低于航路下限 {{level}}",
+    "cruiseAboveCeiling": "巡航高度高于航路上限 {{level}}",
+    "cruiseOddLevels": "东向飞行使用奇数千英尺",
+    "cruiseEvenLevels": "西向飞行使用偶数千英尺",
+    "levelsBetween": "{{min}} 至 {{max}}",
+    "levelsFrom": "{{min}} 以上",
+    "levelsUpTo": "{{max}} 以下"
   },
   "toolbar": {
     "clock": {

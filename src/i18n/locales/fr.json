@@ -224,7 +224,9 @@
       "airwayExitUnknown": "Le point après cette voie aérienne est inconnu",
       "airwayNotJoined": "Cette voie aérienne ne relie pas les points de part et d'autre",
       "airwayEndsAtCoordinate": "Une voie aérienne doit finir sur un point, pas une coordonnée",
-      "trackPartial": "L'indicatif d'un track ne se dépose que pour le track entier ; sinon, déposez ses points"
+      "trackPartial": "L'indicatif d'un track ne se dépose que pour le track entier ; sinon, déposez ses points",
+      "airwayWrongWay": "Voie aérienne à sens unique, déposée à contresens",
+      "airwayLevel": "Non publiée au niveau de croisière ; cette voie aérienne va {{levels}}"
     },
     "setStart": "Démarrer au départ",
     "showOnMap": "Afficher sur la carte",
@@ -256,7 +258,16 @@
     "routeCleared": "Route effacée",
     "randomShort": "Hasard",
     "profileShort": "Profil",
-    "savedAs": "Enregistré sous {{file}}"
+    "savedAs": "Enregistré sous {{file}}",
+    "check": "À vérifier",
+    "adjustCruise": "Ajuster",
+    "cruiseBelowFloor": "Le niveau de croisière est sous le plancher {{level}} de la route",
+    "cruiseAboveCeiling": "Le niveau de croisière dépasse le plafond {{level}} de la route",
+    "cruiseOddLevels": "Vers l'est, on vole des milliers impairs",
+    "cruiseEvenLevels": "Vers l'ouest, on vole des milliers pairs",
+    "levelsBetween": "de {{min}} à {{max}}",
+    "levelsFrom": "à partir de {{min}}",
+    "levelsUpTo": "jusqu'à {{max}}"
   },
   "toolbar": {
     "clock": {

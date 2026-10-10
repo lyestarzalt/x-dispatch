@@ -224,7 +224,9 @@
       "airwayExitUnknown": "Punkt po tej drodze lotniczej jest nieznany",
       "airwayNotJoined": "Ta droga lotnicza nie łączy punktów po obu stronach",
       "airwayEndsAtCoordinate": "Droga lotnicza musi kończyć się punktem, nie współrzędną",
-      "trackPartial": "Oznaczenie tracku zgłasza się tylko dla całego tracku; dla części podaj jego punkty"
+      "trackPartial": "Oznaczenie tracku zgłasza się tylko dla całego tracku; dla części podaj jego punkty",
+      "airwayWrongWay": "Droga lotnicza jednokierunkowa, zgłoszona pod prąd",
+      "airwayLevel": "Nieopublikowana na poziomie przelotu; ta droga lotnicza obowiązuje {{levels}}"
     },
     "setStart": "Start z lotniska odlotu",
     "showOnMap": "Pokaż na mapie",
@@ -256,7 +258,16 @@
     "routeCleared": "Trasa wyczyszczona",
     "randomShort": "Losowo",
     "profileShort": "Profil",
-    "savedAs": "Zapisano jako {{file}}"
+    "savedAs": "Zapisano jako {{file}}",
+    "check": "Sprawdź",
+    "adjustCruise": "Dopasuj",
+    "cruiseBelowFloor": "Przelot jest poniżej dolnej granicy trasy {{level}}",
+    "cruiseAboveCeiling": "Przelot jest powyżej górnej granicy trasy {{level}}",
+    "cruiseOddLevels": "Loty na wschód używają nieparzystych tysięcy",
+    "cruiseEvenLevels": "Loty na zachód używają parzystych tysięcy",
+    "levelsBetween": "od {{min}} do {{max}}",
+    "levelsFrom": "od {{min}}",
+    "levelsUpTo": "do {{max}}"
   },
   "toolbar": {
     "clock": {

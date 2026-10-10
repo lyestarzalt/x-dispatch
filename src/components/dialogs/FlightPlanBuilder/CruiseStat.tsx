@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
-function formatLevel(feet: number | null): string {
-  if (feet === null) return '—';
-  return feet >= 18000 ? `FL${Math.round(feet / 100)}` : `${feet}`;
-}
+import { formatLevel } from '@/lib/flightplan/builder/formatLevel';
 
 /** The cruise figure doubles as its own editor: click, type feet, Enter or blur to apply. */
 export function CruiseStat({

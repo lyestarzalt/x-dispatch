@@ -26,6 +26,18 @@ import { FixTypeNumber } from '@/types/navigation';
 // ============================================================================
 
 export type NavDataType = 'navaids' | 'waypoints' | 'airways' | 'airspaces';
+
+/**
+ * Bump a type's version whenever its parser changes what it stores, so caches built by the
+ * old parser are read again from the source file. The file's mtime alone cannot tell.
+ * airways 2: the one-way letter and the level family were read from each other's field.
+ */
+export const PARSER_VERSIONS: Record<NavDataType, number> = {
+  navaids: 1,
+  waypoints: 1,
+  airways: 2,
+  airspaces: 1,
+};
 export type NavSourceType = 'navigraph' | 'xplane-default' | 'unknown';
 
 export interface NavFileInfo {
@@ -75,7 +87,7 @@ export function getFileMtime(filePath: string): number | null {
  */
 export function getStoredNavFileMeta(
   dataType: NavDataType
-): { path: string; mtime: number; sourceType: NavSourceType } | null {
+): { path: string; mtime: number; sourceType: NavSourceType; parserVersion: number } | null {
   const db = getDb();
   const stored = db.select().from(navFileMeta).where(eq(navFileMeta.dataType, dataType)).get();
 
@@ -84,6 +96,7 @@ export function getStoredNavFileMeta(
         path: stored.path,
         mtime: stored.mtime,
         sourceType: (stored.sourceType as NavSourceType) || 'unknown',
+        parserVersion: stored.parserVersion ?? 0,
       }
     : null;
 }
@@ -100,6 +113,10 @@ export function checkNavCacheValidity(
 
   if (!stored) {
     return { needsReload: true, reason: 'No cached data' };
+  }
+
+  if (stored.parserVersion !== PARSER_VERSIONS[dataType]) {
+    return { needsReload: true, reason: 'Parser updated' };
   }
 
   // Check if source changed (Navigraph ↔ X-Plane)
@@ -155,6 +172,7 @@ export function updateNavFileMeta(
       recordCount,
       dataType,
       sourceType,
+      parserVersion: PARSER_VERSIONS[dataType],
     })
     .run();
 

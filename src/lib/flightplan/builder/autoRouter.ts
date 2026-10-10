@@ -23,9 +23,12 @@ import {
   getWaypointsInBounds,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
+import { bandAllows } from './airwayRules';
 import { type LatLon, bearingDeg, greatCircleNm } from './geometry';
 import { type OceanicTrack, getOceanicTracks, tracksForAutoRouting } from './oceanicTracks';
 import type { AutoRouteResult, ProcedureChoice, RouteJoin } from './types';
+
+export { bandAllows };
 
 /** Box padding around the endpoints; wide enough to let the route bend round gaps. */
 const MIN_PADDING_NM = 150;
@@ -310,17 +313,6 @@ interface Graph {
 function addEdge(graph: Graph, from: string, to: string, weight: number, airway: string | null) {
   if (!graph.edges.has(from)) graph.edges.set(from, []);
   graph.edges.get(from)!.push({ to, weight, airway });
-}
-
-/**
- * Whether the published level band covers the cruise level. Bands with no data
- * count as open. Kept a penalty rather than a cut: a single out-of-band segment
- * would otherwise sever a continent-wide network.
- */
-export function bandAllows(segment: AirwaySegment, cruiseFl: number): boolean {
-  if (segment.baseFl === 0 && segment.topFl === 0) return true;
-  if (segment.baseFl > cruiseFl) return false;
-  return segment.topFl === 0 || segment.topFl >= cruiseFl;
 }
 
 interface BuildOptions {

@@ -47,19 +47,33 @@ export type RouteIssue =
   | 'airwayNotJoined'
   | 'airwayEndsAtCoordinate'
   /** A NAT designator filed for part of the track; the message asks for the whole track. */
-  | 'trackPartial';
+  | 'trackPartial'
+  /** A one-way airway walked against its published direction. */
+  | 'airwayWrongWay'
+  /** The cruise level is outside the airway's published level band. */
+  | 'airwayLevel';
+
+/** Feet; null means no limit on that side. */
+export interface LevelBand {
+  minFt: number | null;
+  maxFt: number | null;
+}
 
 export interface RouteToken {
   text: string;
   kind: RouteTokenKind;
   status: RouteTokenStatus;
   issue?: RouteIssue;
+  /** The published band of the segment behind an `airwayLevel` warning. */
+  levels?: LevelBand;
 }
 
 export interface RouteResolution {
   plan: FMSFlightPlan;
   tokens: RouteToken[];
   distanceNm: number;
+  /** What every airway walked allows together: the highest floor and the lowest ceiling. */
+  levels: LevelBand;
 }
 
 /** What the main process hands back: the raw plan plus the enriched copy the map layer draws. */

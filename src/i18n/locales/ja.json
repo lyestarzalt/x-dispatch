@@ -224,7 +224,9 @@
       "airwayExitUnknown": "この航空路の次のフィックスが不明です",
       "airwayNotJoined": "この航空路は両側のフィックスをつないでいません",
       "airwayEndsAtCoordinate": "航空路は座標ではなくフィックスで終える必要があります",
-      "trackPartial": "トラック識別子はトラック全体を飛行する場合のみ申請できます。一部の場合はポイントを記入してください"
+      "trackPartial": "トラック識別子はトラック全体を飛行する場合のみ申請できます。一部の場合はポイントを記入してください",
+      "airwayWrongWay": "一方通行の航空路を逆方向に申請しています",
+      "airwayLevel": "巡航高度では公示されていません。この航空路は {{levels}} です"
     },
     "setStart": "出発地からスタート",
     "showOnMap": "地図に表示",
@@ -256,7 +258,16 @@
     "routeCleared": "ルートを消去しました",
     "randomShort": "ランダム",
     "profileShort": "断面",
-    "savedAs": "{{file}} として保存"
+    "savedAs": "{{file}} として保存",
+    "check": "要確認",
+    "adjustCruise": "調整",
+    "cruiseBelowFloor": "巡航高度がルートの下限 {{level}} を下回っています",
+    "cruiseAboveCeiling": "巡航高度がルートの上限 {{level}} を上回っています",
+    "cruiseOddLevels": "東行きは奇数千フィートを使います",
+    "cruiseEvenLevels": "西行きは偶数千フィートを使います",
+    "levelsBetween": "{{min}} から {{max}}",
+    "levelsFrom": "{{min}} 以上",
+    "levelsUpTo": "{{max}} 以下"
   },
   "toolbar": {
     "clock": {

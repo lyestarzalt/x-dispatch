@@ -103,3 +103,23 @@ describe('Parse errors', () => {
     expect(result.errors).toHaveLength(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Direction and altitude family
+// ---------------------------------------------------------------------------
+
+describe('Direction and altitude family', () => {
+  const header = 'I\n1100 Version\n\n';
+  const parse = (line: string) => parseAirways(`${header}${line}\n99\n`).data[0]!;
+
+  it('reads the one-way letter as the direction, not the level family', () => {
+    expect(parse('LALUX LF 11 MONOT LF 11 F 1  65 195 R161').direction).toBe(1);
+    expect(parse('BOURI LF 11 LIMON LF 11 N 2 310 455 UG26').direction).toBe(0);
+    expect(parse('BOURI LF 11 LIMON LF 11 B 2 310 455 UG26').direction).toBe(2);
+  });
+
+  it('reads the level family from the 1/2 field', () => {
+    expect(parse('LALUX LF 11 MONOT LF 11 F 1  65 195 R161').isHigh).toBe(false);
+    expect(parse('BOURI LF 11 LIMON LF 11 N 2 310 455 UG26').isHigh).toBe(true);
+  });
+});

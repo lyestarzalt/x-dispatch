@@ -224,7 +224,9 @@
       "airwayExitUnknown": "The fix after this airway is unknown",
       "airwayNotJoined": "This airway does not connect the fixes either side",
       "airwayEndsAtCoordinate": "An airway must end at a fix, not a coordinate",
-      "trackPartial": "A track designator is filed only for the whole track; file its points instead"
+      "trackPartial": "A track designator is filed only for the whole track; file its points instead",
+      "airwayWrongWay": "One-way airway, filed against its direction",
+      "airwayLevel": "Not published at the cruise level; this airway runs {{levels}}"
     },
     "setStart": "Start at departure",
     "showOnMap": "Show on map",
@@ -256,7 +258,16 @@
     "routeCleared": "Route cleared",
     "randomShort": "Random",
     "profileShort": "Profile",
-    "savedAs": "Saved as {{file}}"
+    "savedAs": "Saved as {{file}}",
+    "check": "Check",
+    "adjustCruise": "Adjust",
+    "cruiseBelowFloor": "Cruise is below the {{level}} floor of the route",
+    "cruiseAboveCeiling": "Cruise is above the {{level}} ceiling of the route",
+    "cruiseOddLevels": "Eastbound flights use odd thousands",
+    "cruiseEvenLevels": "Westbound flights use even thousands",
+    "levelsBetween": "{{min}} to {{max}}",
+    "levelsFrom": "from {{min}}",
+    "levelsUpTo": "up to {{max}}"
   },
   "toolbar": {
     "clock": {

@@ -11,10 +11,11 @@ import {
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
 import type { AirwaySegment } from '@/types/navigation';
+import { narrowBand, pairBand, segmentAllowsDirection, segmentsForPair } from './airwayRules';
 import { type LatLon, pathDistanceNm } from './geometry';
 import { getOceanicTracks, isTrackName, trackSegments } from './oceanicTracks';
 import { type LexedToken, lexRoute, stripEndpoints } from './routeTokens';
-import type { PlanDraft, RouteResolution, RouteToken } from './types';
+import type { LevelBand, PlanDraft, RouteResolution, RouteToken } from './types';
 
 /** Idents are looked up within this radius of the previous point; legs longer than this are rare. */
 const SEARCH_RADIUS_NM = 1500;
@@ -101,6 +102,45 @@ function flagPartialTrack(
   pending.token.issue = 'trackPartial';
 }
 
+/**
+ * Checks each pair of fixes walked along an airway against its stored segments: the
+ * direction they may be flown and the level band they are published for. The first
+ * failing pair marks the token; a wrong direction outranks a wrong level. Returns the band
+ * the whole walk allows. Tracks carry their own levels and are checked by the track picker.
+ */
+function checkAirway(
+  token: RouteToken,
+  name: string,
+  path: string[],
+  cruiseFt: number | null
+): LevelBand {
+  let band: LevelBand = { minFt: null, maxFt: null };
+  if (isTrackName(name)) return band;
+  const segments = airwaySegments(name);
+  for (let i = 1; i < path.length; i++) {
+    const from = path[i - 1]!;
+    const to = path[i]!;
+    const stored = segmentsForPair(segments, from, to);
+    const flyable = stored.filter((s) => segmentAllowsDirection(s, from, to));
+    if (stored.length > 0 && flyable.length === 0) {
+      token.status = 'warning';
+      token.issue = 'airwayWrongWay';
+      delete token.levels;
+      return band;
+    }
+    const pair = pairBand(flyable);
+    band = narrowBand(band, pair);
+    const below = pair.minFt !== null && cruiseFt !== null && cruiseFt < pair.minFt;
+    const above = pair.maxFt !== null && cruiseFt !== null && cruiseFt > pair.maxFt;
+    if ((below || above) && token.status === 'ok') {
+      token.status = 'warning';
+      token.issue = 'airwayLevel';
+      token.levels = pair;
+    }
+  }
+  return band;
+}
+
 export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution | null {
   const { departure, arrival } = draft;
   if (!departure || !arrival) return null;
@@ -119,6 +159,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
   const tokens: RouteToken[] = [];
   let cursor: LatLon = departure;
   let lastFixId: string | null = null;
+  let levels: LevelBand = { minFt: null, maxFt: null };
   let pendingAirway: { token: RouteToken; name: string; entryId: string } | null = null;
 
   const push = (point: ResolvedPoint, via: string) => {
@@ -183,6 +224,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
       pendingAirway && lastFixId
         ? walkAirway(pendingAirway.name, lastFixId, lexedToken.text)
         : null;
+    const entryId = lastFixId;
     if (between) {
       const via = pendingAirway!.name;
       for (const midId of between) {
@@ -211,6 +253,14 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
       } else {
         push(point, pendingAirway.name);
         flagPartialTrack(pendingAirway, point.id);
+        const walked = [entryId!, ...between, point.id];
+        const band = checkAirway(
+          pendingAirway.token,
+          pendingAirway.name,
+          walked,
+          draft.cruiseAltitudeFt
+        );
+        levels = narrowBand(levels, band);
         pendingAirway = null;
       }
       continue;
@@ -238,5 +288,5 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     waypoints,
   };
 
-  return { plan, tokens, distanceNm: pathDistanceNm(waypoints) };
+  return { plan, tokens, distanceNm: pathDistanceNm(waypoints), levels };
 }
