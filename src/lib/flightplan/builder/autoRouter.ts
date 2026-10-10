@@ -6,7 +6,7 @@
  * great-circle distance finds the cheapest path, where cost is miles plus the
  * rules that make a route look filed rather than merely short:
  *
- * - segments whose published level band excludes the cruise level cost more
+ * - segments whose published level band excludes the cruise level are left out
  * - the network is joined at published SID exits and STAR entries when known
  * - fixes in either terminal area are avoided unless they are the join fix
  * - one-way airways are honoured and airway changes cost a few miles
@@ -43,7 +43,7 @@ const JOIN_PENALTY = 2;
 const JOIN_FALLBACK_COUNT = 5;
 /** Airways of the wrong altitude family cost a little more so a jet stays on the upper network. */
 const WRONG_FAMILY_PENALTY = 1.15;
-/** A segment whose published level band excludes the cruise level costs this much more. */
+/** A track whose published levels leave out the cruise level costs this much more. */
 const OUT_OF_BAND_PENALTY = 1.6;
 const HIGH_FAMILY_MIN_FT = 18000;
 /** Switching airway costs a few miles so the route reads as a handful of long airways. */
@@ -410,8 +410,10 @@ function buildBaseGraph(input: AutoRouteInput): Graph | null {
     const pa = positions.get(a);
     const pb = positions.get(b);
     if (!pa || !pb) continue;
+    // An airway not published at the cruise level is not an option: a plan that mixes a low
+    // airway into a high-level route has no level that fits it, and the pilot cannot fix that.
+    if (!bandAllows(s, cruiseFl)) continue;
     let weight = greatCircleNm(pa, pb) * (s.isHigh === preferHigh ? 1 : WRONG_FAMILY_PENALTY);
-    if (!bandAllows(s, cruiseFl)) weight *= OUT_OF_BAND_PENALTY;
     for (const area of avoid) {
       if (legCrossesArea(pa, pb, area)) {
         weight *= area.penalty;

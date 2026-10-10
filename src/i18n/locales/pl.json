@@ -273,6 +273,11 @@
     "cruiseAboveCeiling": "Trasa pozwala na {{level}} lub niżej",
     "cruiseOddLevels": "Na wschód: nieparzyste poziomy",
     "cruiseEvenLevels": "Na zachód: parzyste poziomy",
+    "cruiseAirwayCeiling": "{{airway}} kończy się na {{level}}",
+    "cruiseAirwayFloor": "{{airway}} zaczyna się od {{level}}",
+    "cruiseConflict": "{{low}} kończy się na {{ceiling}}, a {{high}} zaczyna od {{floor}}. Żaden poziom nie pasuje do obu. Usuń jedną drogę lotniczą.",
+    "cruiseConflictProcedure": "{{low}} kończy się na {{ceiling}}, a procedury wymagają {{floor}} lub wyżej. Usuń drogę lotniczą.",
+    "cruiseConflictPlain": "Trasa wymaga {{floor}} lub wyżej i {{ceiling}} lub niżej. Żaden poziom nie pasuje do obu.",
     "levelsBetween": "od {{min}} do {{max}}",
     "levelsFrom": "od {{min}}",
     "levelsUpTo": "do {{max}}"

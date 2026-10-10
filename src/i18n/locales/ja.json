@@ -273,6 +273,11 @@
     "cruiseAboveCeiling": "このルートは {{level}} 以下です",
     "cruiseOddLevels": "東行きは奇数の高度を使います",
     "cruiseEvenLevels": "西行きは偶数の高度を使います",
+    "cruiseAirwayCeiling": "{{airway}} は {{level}} までです",
+    "cruiseAirwayFloor": "{{airway}} は {{level}} からです",
+    "cruiseConflict": "{{low}} は {{ceiling}} までですが、{{high}} は {{floor}} からです。両方に合う高度はありません。どちらかの航空路を外してください。",
+    "cruiseConflictProcedure": "{{low}} は {{ceiling}} までですが、方式には {{floor}} 以上が必要です。航空路を外してください。",
+    "cruiseConflictPlain": "このルートは {{floor}} 以上かつ {{ceiling}} 以下を求めています。両方に合う高度はありません。",
     "levelsBetween": "{{min}} から {{max}}",
     "levelsFrom": "{{min}} 以上",
     "levelsUpTo": "{{max}} 以下"
