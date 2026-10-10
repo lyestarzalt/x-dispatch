@@ -39,6 +39,27 @@ describe('natCrossing', () => {
     expect(natCrossing(EGLL, LFPG)).toBeNull();
   });
 
+  it('is null when the short way round goes over the Pacific or the pole', () => {
+    const ksfo = { latitude: 37.6, longitude: -122.4 };
+    const vhhh = { latitude: 22.3, longitude: 113.9 };
+    const panc = { latitude: 61.2, longitude: -150 };
+    const rjaa = { latitude: 35.8, longitude: 140.4 };
+    const uhpp = { latitude: 53.2, longitude: 158.5 };
+    expect(natCrossing(ksfo, vhhh)).toBeNull();
+    expect(natCrossing(panc, rjaa)).toBeNull();
+    expect(natCrossing(panc, uhpp)).toBeNull();
+    expect(natCrossing(rjaa, KJFK)).toBeNull();
+    // Polar great circles: London to Tokyo and New York to Hong Kong never pass 30W.
+    expect(natCrossing(EGLL, rjaa)).toBeNull();
+    expect(natCrossing(KJFK, { latitude: 22.3, longitude: 113.9 })).toBeNull();
+  });
+
+  it('is a crossing when the short way round passes 30W, however far east it starts', () => {
+    const omdb = { latitude: 25.3, longitude: 55.4 };
+    expect(natCrossing(omdb, KJFK)).toBe('westbound');
+    expect(natCrossing(KJFK, omdb)).toBe('eastbound');
+  });
+
   it('is null for a crossing well south of the track system', () => {
     expect(natCrossing(LFPG, SBGR)).toBeNull();
   });

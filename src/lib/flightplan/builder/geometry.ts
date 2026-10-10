@@ -97,6 +97,61 @@ export function suggestCruiseAltitudeFt(
   return isOdd === wantOdd ? alt : Math.max(floor - 1000, alt - 1000);
 }
 
+/**
+ * Points along the great circle from `a` to `b`, `count` of them including both ends, by
+ * spherical interpolation. Used to bound a search by where a long leg really goes: a flight
+ * from New York to Hong Kong passes over the Arctic, far north of either airport.
+ */
+export function greatCirclePoints(a: LatLon, b: LatLon, count: number): LatLon[] {
+  if (count < 2) return [a];
+  const toRad = Math.PI / 180;
+  const lat1 = a.latitude * toRad;
+  const lon1 = a.longitude * toRad;
+  const lat2 = b.latitude * toRad;
+  const lon2 = b.longitude * toRad;
+  const d =
+    2 *
+    Math.asin(
+      Math.sqrt(
+        Math.sin((lat2 - lat1) / 2) ** 2 +
+          Math.cos(lat1) * Math.cos(lat2) * Math.sin((lon2 - lon1) / 2) ** 2
+      )
+    );
+  if (d < 1e-12) return [a, b];
+  const out: LatLon[] = [a];
+  for (let i = 1; i < count - 1; i++) {
+    const f = i / (count - 1);
+    const A = Math.sin((1 - f) * d) / Math.sin(d);
+    const B = Math.sin(f * d) / Math.sin(d);
+    const x = A * Math.cos(lat1) * Math.cos(lon1) + B * Math.cos(lat2) * Math.cos(lon2);
+    const y = A * Math.cos(lat1) * Math.sin(lon1) + B * Math.cos(lat2) * Math.sin(lon2);
+    const z = A * Math.sin(lat1) + B * Math.sin(lat2);
+    out.push({
+      latitude: Math.atan2(z, Math.sqrt(x * x + y * y)) / toRad,
+      longitude: Math.atan2(y, x) / toRad,
+    });
+  }
+  out.push(b);
+  return out;
+}
+
+/** Degrees east from one longitude to another, the short way round: -180 to 180. */
+export function lonDeltaDeg(fromLon: number, toLon: number): number {
+  return ((toLon - fromLon + 540) % 360) - 180;
+}
+
+/**
+ * `lon` shifted by whole turns so it sits within 180 degrees of `previousLon`. A line drawn
+ * through unwrapped longitudes crosses the antimeridian the short way instead of circling
+ * the globe; MapLibre accepts longitudes past 180 for exactly this.
+ */
+export function unwrapLongitude(previousLon: number, lon: number): number {
+  const diff = lon - previousLon;
+  if (diff > 180) return lon - 360;
+  if (diff < -180) return lon + 360;
+  return lon;
+}
+
 const NM_PER_DEG_LAT = 60;
 const TURN_SAMPLES = 8;
 /** Turns shallower than this are drawn as a plain corner. */

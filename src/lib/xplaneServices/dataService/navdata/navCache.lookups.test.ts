@@ -60,6 +60,7 @@ const {
   searchWaypointsDb,
   getNavaidCountsByType,
   getWaypointByIdRegion,
+  getWaypointNearestById,
   getAirwaysByName,
 } = await import('./navCache');
 
@@ -220,6 +221,42 @@ describe('navCache lookups & search', () => {
     it('returns null when no navaid in range', async () => {
       const result = getNavaidEnrichedById('EDR', 0, 0, 1);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('nearest-by-id lookups across the antimeridian', () => {
+    beforeEach(async () => {
+      // One fix in Alaska at 170W, one in Japan at 150E, a navaid at 148E.
+      await insertWaypoints([
+        makeWaypoint({ id: 'NYMPH', latitude: 57, longitude: -170, region: 'PA' }),
+        makeWaypoint({ id: 'SWAMP', latitude: 45, longitude: 150, region: 'RJ' }),
+      ]);
+      await insertNavaids([makeNavaid({ id: 'IXE', latitude: 44, longitude: 148, type: 'VOR' })]);
+    });
+
+    it('finds a fix on the far side of 180 in either direction', () => {
+      // 175E to 170W is 15 degrees east across the dateline, about 490 nm at 57N.
+      expect(getWaypointNearestById('NYMPH', 57, 175, 1500)?.region).toBe('PA');
+      // 178W to 150E is 32 degrees west across the dateline, about 1360 nm at 45N.
+      expect(getWaypointNearestById('SWAMP', 45, -178, 1500)?.region).toBe('RJ');
+    });
+
+    it('finds a navaid on the far side of 180', () => {
+      expect(getNavaidEnrichedById('IXE', 44, -179, 1500)?.id).toBe('IXE');
+    });
+
+    it('searches the whole circle of longitude near a pole', async () => {
+      await insertWaypoints([makeWaypoint({ id: 'POLAR', latitude: 88, longitude: 179 })]);
+      // 179 degrees of longitude at 88N is only about 375 nm.
+      expect(getWaypointNearestById('POLAR', 88, 0, 1500)?.id).toBe('POLAR');
+    });
+
+    it('measures the distance the short way round', () => {
+      // 176W to 150E is 34 degrees, about 1440 nm at 45N: inside 1500. Measured the long
+      // way it would be 326 degrees and never found.
+      expect(getWaypointNearestById('SWAMP', 45, -176, 1500)?.region).toBe('RJ');
+      // 150W to 150E is 60 degrees, about 2550 nm: outside, whichever way round.
+      expect(getWaypointNearestById('SWAMP', 45, -150, 1500)).toBeNull();
     });
   });
 

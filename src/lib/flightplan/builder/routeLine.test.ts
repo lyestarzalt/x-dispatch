@@ -5,6 +5,33 @@ import { routeLinePoints, routeLineSegments } from './routeLine';
 const RWY_09 = { name: '09', latitude: 52, longitude: 4, headingDeg: 90, lengthNm: 2 };
 const RWY_27 = { name: '27', latitude: 50, longitude: 8.05, headingDeg: 270, lengthNm: 2 };
 
+describe('routeLinePoints across the antimeridian', () => {
+  it('keeps longitudes continuous so the line crosses 180 the short way', () => {
+    const wps = [
+      { via: 'ADEP', latitude: 61, longitude: -150 },
+      { via: 'FIX', latitude: 57, longitude: -170 },
+      { via: 'FIX', latitude: 50, longitude: 170 },
+      { via: 'ADES', latitude: 36, longitude: 140 },
+    ];
+    expect(routeLinePoints(wps).map((p) => p.longitude)).toEqual([-150, -170, -190, -220]);
+    // The other way round unwraps upwards past 180.
+    const back = [...wps].reverse();
+    expect(routeLinePoints(back).map((p) => p.longitude)).toEqual([140, 170, 190, 210]);
+  });
+
+  it('carries the unwrapped longitude across segment boundaries', () => {
+    const wps = [
+      { via: 'ADEP', latitude: 57, longitude: 175 },
+      { via: 'NATA', latitude: 57, longitude: -175 },
+      { via: 'FIX', latitude: 57, longitude: -160 },
+    ];
+    const segments = routeLineSegments(wps);
+    expect(segments.map((s) => s.kind)).toEqual(['track', 'enroute']);
+    expect(segments[0]!.points.map((p) => p.longitude)).toEqual([175, 185]);
+    expect(segments[1]!.points.map((p) => p.longitude)).toEqual([185, 200]);
+  });
+});
+
 describe('routeLinePoints', () => {
   it('uses the airport datum when no runway is chosen', () => {
     const wps = [

@@ -868,7 +868,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                     {t('planBuilder.clear')}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="xs"
                     onClick={handleAutoRoute}
                     disabled={!hasEndpoints || autoRouting}
