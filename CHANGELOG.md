@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-10-10
+
 ### Added
 
 - **Last published track set.** Outside track hours the planner keeps the last North Atlantic set on offer, marked "Last published", so you can still plan a crossing in the morning before the day's eastbound set is out. Hover the label to see when the next set is usually published. The set is remembered between launches.
@@ -166,7 +168,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.2.1...v2.3.0
