@@ -355,7 +355,7 @@
       "addons": "Управление самолётами, плагинами и сценариями",
       "loadPlan": "Загрузить файл плана полёта .fms X-Plane",
       "simbrief": "Импортировать план полёта из SimBrief",
-      "explore": "Посмотреть подборку аэропортов и маршрутов",
+      "explore": "Маршруты и погода в реальном времени",
       "nav": "Показать навигационные слои вокруг аэропорта",
       "track": "Следить за самолётом в X-Plane",
       "vatsim": "Показать трафик VATSIM в реальном времени",
@@ -396,47 +396,9 @@
   },
   "explore": {
     "title": "Обзор",
-    "close": "Закрыть обзор",
     "tabs": {
-      "filters": "Фильтры",
-      "featured": "Подборка",
       "routes": "Маршруты",
-      "vatsim": "VATSIM",
       "weather": "Погода"
-    },
-    "vatsim": {
-      "busiestNow": "Самые загруженные сейчас",
-      "events": "События",
-      "noEvents": "Нет предстоящих событий",
-      "viewRoute": "Показать маршрут",
-      "goToDeparture": "Перейти к вылету",
-      "departures": "Вылеты",
-      "arrivals": "Прилёты"
-    },
-    "filters": {
-      "country": "Страна",
-      "region": "Регион",
-      "type": "Тип",
-      "allCountries": "Все страны",
-      "allRegions": "Все регионы",
-      "allTypes": "Все типы",
-      "land": "Наземный",
-      "seaplane": "Гидросамолёт",
-      "heliport": "Вертолётная площадка",
-      "hasIata": "Есть код IATA"
-    },
-    "featured": {
-      "all": "Все",
-      "challenging": "Сложные",
-      "scenic": "Живописные",
-      "unique": "Уникальные",
-      "historic": "Исторические",
-      "icons": {
-        "mountain": "^",
-        "sunrise": "*",
-        "sparkles": "+",
-        "landmark": "#"
-      }
     },
     "weather": {
       "error": "Не удалось загрузить погоду",
@@ -976,7 +938,9 @@
       "qnh": "QNH",
       "tempDew": "Темп. / точка росы",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
-      "phenomena": "Явления"
+      "phenomena": "Явления",
+      "departures": "Вылеты",
+      "arrivals": "Прилёты"
     },
     "activeRunway": "Активная ВПП",
     "windAligned": "· с учётом ветра, отклонение {{delta}}°",
@@ -1932,19 +1896,8 @@
     "appMenu": "Меню"
   },
   "explorePanel": {
-    "routes": {
-      "mode": {
-        "featured": "Избранные",
-        "random": "Случайный"
-      }
-    },
-    "vatsimEvents": {
-      "dataFrom": "Данные от"
-    },
     "random": {
       "from": "Откуда",
-      "pickOrigin": "Выберите аэропорт вылета",
-      "aircraft": "Самолёт",
       "time": "Время",
       "distance": "Расстояние",
       "length": "Длина полёта",
@@ -1960,7 +1913,6 @@
       "roll": "Найти рейс",
       "reroll": "Ещё раз",
       "noMatch": "Нет подходящих аэропортов. Расширьте диапазон или уберите фильтр.",
-      "plan": "Спланировать этот полёт",
       "useAsArrival": "Сделать пунктом прибытия",
       "needOrigin": "Сначала выберите аэропорт вылета."
     }

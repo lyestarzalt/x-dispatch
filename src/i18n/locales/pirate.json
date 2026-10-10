@@ -355,7 +355,7 @@
       "addons": "Manage aircraft, plugins, an' scenery",
       "loadPlan": "Load an X-Plane .fms voyage file",
       "simbrief": "Import a voyage plan from SimBrief",
-      "explore": "Scout marked airfields an' routes",
+      "explore": "Routes an' live weather",
       "nav": "Toggle chart layers round the airport",
       "track": "Track yer aircraft in X-Plane",
       "vatsim": "Show live VATSIM traffic on the chart",
@@ -396,47 +396,9 @@
   },
   "explore": {
     "title": "Scout",
-    "close": "Close scoutin'",
     "tabs": {
-      "filters": "Sifters",
-      "featured": "Marked",
       "routes": "Courses",
-      "vatsim": "VATSIM",
       "weather": "Skies"
-    },
-    "vatsim": {
-      "busiestNow": "Busy Skies",
-      "events": "Gatherings",
-      "noEvents": "No events on the horizon",
-      "viewRoute": "View course",
-      "goToDeparture": "Go ta Departure",
-      "departures": "Ships Sailin'",
-      "arrivals": "Ships Makin' Port"
-    },
-    "filters": {
-      "country": "Nation",
-      "region": "Quarter",
-      "type": "Kind",
-      "allCountries": "All Nations",
-      "allRegions": "All quarters",
-      "allTypes": "All Kinds",
-      "land": "Land Fields",
-      "seaplane": "Seaplane Berths",
-      "heliport": "Rotor Pads",
-      "hasIata": "Carries an IATA mark"
-    },
-    "featured": {
-      "all": "All finds",
-      "challenging": "Treacherous",
-      "scenic": "Pretty as treasure",
-      "unique": "Rare",
-      "historic": "Old Salts",
-      "icons": {
-        "mountain": "^",
-        "sunrise": "*",
-        "sparkles": "+",
-        "landmark": "#"
-      }
     },
     "weather": {
       "error": "Couldn't spy the skies",
@@ -976,7 +938,9 @@
       "qnh": "QNH",
       "tempDew": "Temp / Dewdrop",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
-      "phenomena": "Weather omens"
+      "phenomena": "Weather omens",
+      "departures": "Ships Sailin'",
+      "arrivals": "Ships Makin' Port"
     },
     "activeRunway": "Active landin' strip",
     "windAligned": "· wind-blown, {{delta}}° askew",
@@ -1932,19 +1896,8 @@
     "appMenu": "Menu"
   },
   "explorePanel": {
-    "routes": {
-      "mode": {
-        "featured": "Treasured",
-        "random": "Lucky Dip"
-      }
-    },
-    "vatsimEvents": {
-      "dataFrom": "Charts from"
-    },
     "random": {
       "from": "From",
-      "pickOrigin": "Pick yer port o' sail",
-      "aircraft": "Vessel",
       "time": "Time",
       "distance": "Leagues",
       "length": "Length o' voyage",
@@ -1960,7 +1913,6 @@
       "roll": "Roll the bones",
       "reroll": "Roll again",
       "noMatch": "No port fits, matey. Widen yer range or drop a sieve.",
-      "plan": "Chart this voyage",
       "useAsArrival": "Make it yer landfall",
       "needOrigin": "Pick yer port o' departure first."
     }

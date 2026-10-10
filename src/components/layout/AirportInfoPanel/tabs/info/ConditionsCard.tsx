@@ -34,14 +34,14 @@ export function ConditionsCard({
           <span className="text-muted-foreground flex items-center gap-2 text-xs">
             <span
               className="text-cat-emerald flex items-center gap-1"
-              aria-label={`${liveTraffic.departures} ${t('explore.vatsim.departures')}`}
+              aria-label={`${liveTraffic.departures} ${t('airportInfo.conditions.departures')}`}
             >
               <PlaneTakeoff className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.departures}</span>
             </span>
             <span
               className="text-cat-amber flex items-center gap-1"
-              aria-label={`${liveTraffic.arrivals} ${t('explore.vatsim.arrivals')}`}
+              aria-label={`${liveTraffic.arrivals} ${t('airportInfo.conditions.arrivals')}`}
             >
               <PlaneLanding className="h-3 w-3" />
               <span className="font-mono tabular-nums">{liveTraffic.arrivals}</span>

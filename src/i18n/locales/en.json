@@ -355,7 +355,7 @@
       "addons": "Manage aircraft, plugins, and scenery add-ons",
       "loadPlan": "Load an X-Plane .fms flight plan file",
       "simbrief": "Import flight plan from SimBrief",
-      "explore": "Discover featured airports and routes",
+      "explore": "Routes and live weather",
       "nav": "Toggle navigation layers around the airport",
       "track": "Track your aircraft in X-Plane",
       "vatsim": "Show live VATSIM traffic",
@@ -396,47 +396,9 @@
   },
   "explore": {
     "title": "Explore",
-    "close": "Close explore",
     "tabs": {
-      "filters": "Filters",
-      "featured": "Featured",
       "routes": "Routes",
-      "vatsim": "VATSIM",
       "weather": "Weather"
-    },
-    "vatsim": {
-      "busiestNow": "Busiest Now",
-      "events": "Events",
-      "noEvents": "No upcoming events",
-      "viewRoute": "View Route",
-      "goToDeparture": "Go to Departure",
-      "departures": "Departures",
-      "arrivals": "Arrivals"
-    },
-    "filters": {
-      "country": "Country",
-      "region": "Region",
-      "type": "Type",
-      "allCountries": "All Countries",
-      "allRegions": "All Regions",
-      "allTypes": "All Types",
-      "land": "Land",
-      "seaplane": "Seaplane",
-      "heliport": "Heliport",
-      "hasIata": "Has IATA code"
-    },
-    "featured": {
-      "all": "All",
-      "challenging": "Challenging",
-      "scenic": "Scenic",
-      "unique": "Unique",
-      "historic": "Historic",
-      "icons": {
-        "mountain": "^",
-        "sunrise": "*",
-        "sparkles": "+",
-        "landmark": "#"
-      }
     },
     "weather": {
       "error": "Could not load weather",
@@ -976,7 +938,9 @@
       "qnh": "QNH",
       "tempDew": "Temp / Dew",
       "tempDewValue": "{{temp}}°C / {{dew}}°C",
-      "phenomena": "Phenomena"
+      "phenomena": "Phenomena",
+      "departures": "Departures",
+      "arrivals": "Arrivals"
     },
     "activeRunway": "Active runway",
     "windAligned": "· wind-aligned, {{delta}}° off",
@@ -1932,19 +1896,8 @@
     "appMenu": "Menu"
   },
   "explorePanel": {
-    "routes": {
-      "mode": {
-        "featured": "Featured",
-        "random": "Random"
-      }
-    },
-    "vatsimEvents": {
-      "dataFrom": "Data from"
-    },
     "random": {
       "from": "From",
-      "pickOrigin": "Pick a departure",
-      "aircraft": "Aircraft",
       "time": "Time",
       "distance": "Distance",
       "length": "Flight length",
@@ -1960,7 +1913,6 @@
       "roll": "Find a flight",
       "reroll": "Reroll",
       "noMatch": "No airports match. Widen the range or drop a filter.",
-      "plan": "Plan this flight",
       "useAsArrival": "Use as arrival",
       "needOrigin": "Pick a departure first."
     }

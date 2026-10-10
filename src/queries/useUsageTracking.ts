@@ -134,12 +134,6 @@ export function useUsageTracking() {
       ) {
         trackEvent('explore_tab_opened', { tab: explore.activeTab });
       }
-      if (explore.featuredCategory !== prev.explore.featuredCategory) {
-        trackEvent('explore_filter_selected', {
-          tab: 'featured',
-          filter: explore.featuredCategory,
-        });
-      }
     });
     const unsubApp = useAppStore.subscribe((next, prev) => {
       if (next.selectedICAO && next.selectedICAO !== prev.selectedICAO) {

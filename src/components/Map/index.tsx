@@ -398,7 +398,7 @@ export default function Map({ airports }: MapProps) {
     ivaoEnabled,
   });
 
-  // Route line sync for Explore panel routes
+  // Preview line for the planner's random destination panel
   useRouteLineSync({
     mapRef,
     airports,

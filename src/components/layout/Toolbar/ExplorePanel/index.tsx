@@ -7,12 +7,11 @@ import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { trackEvent } from '@/queries';
 import { useMapStore } from '@/stores/mapStore';
-import { FeaturedTab } from './FeaturedTab';
 import { RoutesTab } from './RoutesTab';
-import { VatsimEventsTab } from './VatsimEventsTab';
 import { WeatherTab } from './WeatherTab';
+import { openPlannerForRoute } from './planRoute';
 
-const TABS = ['featured', 'routes', 'vatsim', 'weather'] as const;
+const TABS = ['routes', 'weather'] as const;
 
 interface ExplorePanelProps {
   airports: Airport[];
@@ -24,8 +23,6 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
   const explore = useMapStore((s) => s.explore);
   const setExploreTab = useMapStore((s) => s.setExploreTab);
   const setExploreOpen = useMapStore((s) => s.setExploreOpen);
-  const setFeaturedCategory = useMapStore((s) => s.setFeaturedCategory);
-  const setSelectedRoute = useMapStore((s) => s.setSelectedRoute);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleSelectAirport = useCallback(
@@ -38,6 +35,20 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
       }
     },
     [airports, explore.activeTab, onSelectAirport, setExploreOpen]
+  );
+
+  // Every card ends in an action: a city pair opens the planner on it. When one end is not
+  // in X-Plane the departure is selected instead, so the click still goes somewhere.
+  const handlePlanRoute = useCallback(
+    (from: string, to: string) => {
+      if (openPlannerForRoute(airports, from, to)) {
+        trackEvent('explore_item_selected', { tab: explore.activeTab });
+        setExploreOpen(false);
+        return;
+      }
+      handleSelectAirport(from);
+    },
+    [airports, explore.activeTab, handleSelectAirport, setExploreOpen]
   );
 
   if (!explore.isOpen) return null;
@@ -130,22 +141,8 @@ function ExplorePanelComponent({ airports, onSelectAirport }: ExplorePanelProps)
 
           <div className="flex-1 overflow-x-hidden overflow-y-auto">
             <div className="p-4">
-              <TabsContent value="featured" className="mt-0">
-                <FeaturedTab
-                  category={explore.featuredCategory}
-                  onCategoryChange={setFeaturedCategory}
-                  onSelectAirport={handleSelectAirport}
-                />
-              </TabsContent>
               <TabsContent value="routes" className="mt-0">
-                <RoutesTab
-                  airports={airports}
-                  selectedRoute={explore.selectedRoute}
-                  onSelectRoute={setSelectedRoute}
-                />
-              </TabsContent>
-              <TabsContent value="vatsim" className="mt-0">
-                <VatsimEventsTab onSelectAirport={handleSelectAirport} />
+                <RoutesTab onPlanRoute={handlePlanRoute} />
               </TabsContent>
               <TabsContent value="weather" className="mt-0">
                 <WeatherTab airports={airports} onSelectAirport={handleSelectAirport} />

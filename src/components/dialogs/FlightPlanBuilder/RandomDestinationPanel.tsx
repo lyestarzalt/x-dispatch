@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dices, X } from 'lucide-react';
-import { RandomRouteFinder } from '@/components/layout/Toolbar/ExplorePanel/RandomRouteFinder';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils/helpers';
@@ -10,6 +9,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import type { RangeRingCategory } from '@/types/layers';
 import { toEndpoint } from './AirportPicker';
+import { RandomRouteFinder } from './RandomRouteFinder';
 
 interface RandomDestinationPanelProps {
   airports: Airport[];
@@ -65,14 +65,12 @@ export function RandomDestinationPanel({
             airports={airports}
             selectedRoute={selectedRoute}
             onSelectRoute={setSelectedRoute}
-            plan={{
-              originIcao: departure?.icao ?? null,
-              aircraftClass,
-              onPick: (destination) => {
-                setSelectedRoute(null);
-                setArrival(toEndpoint(destination));
-                onArrivalPicked(destination.icao);
-              },
+            originIcao={departure?.icao ?? null}
+            aircraftClass={aircraftClass}
+            onPick={(destination) => {
+              setSelectedRoute(null);
+              setArrival(toEndpoint(destination));
+              onArrivalPicked(destination.icao);
             }}
           />
         </div>

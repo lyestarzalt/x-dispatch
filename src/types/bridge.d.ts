@@ -56,7 +56,7 @@ import type { AirwaySegmentWithCoords } from '@/types/navigation';
 import type { ThirdPartyNotices } from '@/types/notices';
 import type { TrafficSnapshot } from '@/types/traffic';
 import type { UpdateStatus } from '@/types/update';
-import type { VatsimData, VatsimEventsResponse } from '@/types/vatsim';
+import type { VatsimData } from '@/types/vatsim';
 import type { VatsimSectorCacheState, VatsimSectorQueryResult } from '@/types/vatsimSectors';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from '@/types/xplane';
 
@@ -179,7 +179,6 @@ declare global {
       fetchVatsimData: () => Promise<{ data: VatsimData | null; error: string | null }>;
       fetchVatsimMetar: (icao: string) => Promise<ApiResponse>;
       fetchVatsimMetarsAll: () => Promise<ApiResponse>;
-      fetchVatsimEvents: () => Promise<{ data: VatsimEventsResponse | null; error: string | null }>;
       fetchIvaoData: () => Promise<{ data: IvaoData | null; error: string | null }>;
     };
     vatsimSectorAPI: {

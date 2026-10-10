@@ -36,7 +36,6 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'fetch-metar',
   'fetch-taf',
   'fetch-vatsim-data',
-  'fetch-vatsim-events',
   'fetch-vatsim-metar',
   'fetch-vatsim-metars-all',
   'flightplan:autoRoute',

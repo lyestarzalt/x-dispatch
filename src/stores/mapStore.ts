@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { MeasureSnap } from '@/lib/measure/measureLabel';
-import type { FeaturedCategory } from '@/types/featured';
 import {
   AirwaysMode,
   DEFAULT_LAYER_VISIBILITY,
@@ -91,23 +90,13 @@ export const DEFAULT_AIRPORT_FILTERS: AirportFilterState = {
   country: 'all',
 };
 
-export interface ExploreFilters {
-  country: string | null;
-  region: string | null;
-  type: 'all' | 'land' | 'seaplane' | 'heliport';
-  hasIata: boolean;
-}
-
-export type ExploreTab = 'featured' | 'routes' | 'vatsim' | 'weather';
-/** Filter variant includes 'all' option for UI */
-export type FeaturedCategoryFilter = 'all' | FeaturedCategory;
+export type ExploreTab = 'routes' | 'weather';
 
 export interface ExploreState {
   isOpen: boolean;
   activeTab: ExploreTab;
+  /** City pair previewed on the map by the planner's random destination panel. */
   selectedRoute: { from: string; to: string } | null;
-  filters: ExploreFilters;
-  featuredCategory: FeaturedCategoryFilter;
 }
 
 interface MapState {
@@ -190,8 +179,6 @@ interface MapState {
   setExploreOpen: (isOpen: boolean) => void;
   setExploreTab: (tab: ExploreTab) => void;
   setSelectedRoute: (route: { from: string; to: string } | null) => void;
-  setExploreFilters: (filters: Partial<ExploreFilters>) => void;
-  setFeaturedCategory: (category: FeaturedCategoryFilter) => void;
   setFlightStripPosition: (pos: { x: number; y: number } | null) => void;
   setLandingCardPosition: (pos: { x: number; y: number } | null) => void;
   setProfileStripOpen: (open: boolean) => void;
@@ -254,15 +241,8 @@ export const useMapStore = create<MapState>()(
       flightTrailEnabled: true,
       explore: {
         isOpen: false,
-        activeTab: 'featured' as ExploreTab,
+        activeTab: 'routes' as ExploreTab,
         selectedRoute: null as { from: string; to: string } | null,
-        filters: {
-          country: null as string | null,
-          region: null as string | null,
-          type: 'all' as ExploreFilters['type'],
-          hasIata: false,
-        },
-        featuredCategory: 'all' as FeaturedCategoryFilter,
       },
       airportFilters: DEFAULT_AIRPORT_FILTERS,
       rangeRingsEnabled: false,
@@ -374,12 +354,6 @@ export const useMapStore = create<MapState>()(
       setExploreTab: (tab) => set((state) => ({ explore: { ...state.explore, activeTab: tab } })),
       setSelectedRoute: (route) =>
         set((state) => ({ explore: { ...state.explore, selectedRoute: route } })),
-      setExploreFilters: (filters) =>
-        set((state) => ({
-          explore: { ...state.explore, filters: { ...state.explore.filters, ...filters } },
-        })),
-      setFeaturedCategory: (category) =>
-        set((state) => ({ explore: { ...state.explore, featuredCategory: category } })),
       setFlightStripPosition: (pos) => set({ flightStripPosition: pos }),
       setLandingCardPosition: (pos) => set({ landingCardPosition: pos }),
       setProfileStripOpen: (open) => set({ profileStripOpen: open }),
