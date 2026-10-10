@@ -5,6 +5,7 @@ import {
   normalizeOperation,
   normalizeWidthCode,
 } from '@/lib/airports/standIdentity';
+import { helipadStartRow } from '@/lib/airports/startRunways';
 import logger from '@/lib/utils/loggerRenderer';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
@@ -188,9 +189,12 @@ export function useAirportInteractions({
 
         if (isHelipad) {
           // Helipads use type 'runway' (X-Plane treats them identically)
-          // xplaneIndex = "row_0" where row = runways.length + helipadIndex
+          // and sit after every land and water runway in its start list.
           const helipadIndex = props.helipadIndex as number;
-          const row = currentAirport.runways.length + helipadIndex;
+          const helipad = currentAirport.helipads[helipadIndex];
+          const row = helipad
+            ? helipadStartRow(helipad, helipadIndex, currentAirport)
+            : currentAirport.runways.length + helipadIndex;
 
           setStartPosition({
             type: 'runway',
@@ -299,11 +303,11 @@ export function useAirportInteractions({
 
       const currentAirport = selectedAirportDataRef.current;
       if (props && currentAirport) {
-        // Calculate X-Plane index for runway: "row_end" format
-        // featureId is the global end index (runwayIndex * 2 + endIndex)
+        // X-Plane index for a runway end: "row_end". The layer writes both
+        // parts on the feature; the id alone is only the list position.
         const runwayIndex = Math.floor(featureId / 2);
         const whichEnd = featureId % 2;
-        const xplaneIndex = `${runwayIndex}_${whichEnd}`;
+        const xplaneIndex = `${props.startRow ?? runwayIndex}_${props.endIndex ?? whichEnd}`;
 
         setStartPosition({
           type: 'runway',

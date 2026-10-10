@@ -1,5 +1,6 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { startRunways } from '@/lib/airports/startRunways';
 import { labelFont } from '@/lib/map/labelFonts';
 import type { ParsedAirport } from '@/types/apt';
 import type { Runway } from '@/types/apt';
@@ -22,13 +23,13 @@ export class RunwayEndLayer extends BaseLayerRenderer {
   additionalLayerIds = ['airport-runway-ends-labels'];
 
   hasData(airport: ParsedAirport): boolean {
-    return airport.runways && airport.runways.length > 0;
+    return airport.runways.length > 0 || (airport.waterRunways?.length ?? 0) > 0;
   }
 
   render(map: maplibregl.Map, airport: ParsedAirport): void {
     if (!this.hasData(airport)) return;
 
-    const geoJSON = this.createGeoJSON(airport.runways);
+    const geoJSON = this.createGeoJSON(startRunways(airport));
     this.addSource(map, geoJSON);
 
     const minZoom = ZOOM_BEHAVIORS.runwayEnds.minZoom;
@@ -119,8 +120,8 @@ export class RunwayEndLayer extends BaseLayerRenderer {
     const features: GeoJSON.Feature[] = [];
     let id = 0;
 
-    for (const runway of runways) {
-      for (const end of runway.ends) {
+    runways.forEach((runway, runwayIndex) => {
+      runway.ends.forEach((end, endIndex) => {
         features.push({
           type: 'Feature',
           id: id++,
@@ -134,10 +135,14 @@ export class RunwayEndLayer extends BaseLayerRenderer {
             latitude: end.latitude,
             longitude: end.longitude,
             hasILS: end.lighting > 0,
+            // X-Plane start index parts; the feature id alone cannot say
+            // which row a water lane is.
+            startRow: runway.startRow ?? runwayIndex,
+            endIndex,
           },
         });
-      }
-    }
+      });
+    });
 
     return {
       type: 'FeatureCollection',

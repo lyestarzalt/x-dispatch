@@ -303,3 +303,57 @@ describe('OTHH – Doha Hamad Intl', () => {
     expect(result.errors).toHaveLength(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Water runways (row 101)
+// ---------------------------------------------------------------------------
+
+describe('water runways', () => {
+  const chunk = [
+    '16 0 0 0 PAFK Farewell Lake SPB',
+    '101 50.00 1 09W  62.5100000 -153.8900000 27W  62.5080000 -153.8700000',
+    '101 30.00 0 18  62.5120000 -153.8800000 36  62.5050000 -153.8810000',
+  ].join('\n');
+
+  it('parses each 101 row into a water runway with width, buoys and both ends', () => {
+    const airport = new AirportParser(chunk).parse().data;
+    expect(airport.waterRunways).toHaveLength(2);
+    const first = airport.waterRunways[0]!;
+    expect(first.width).toBe(50);
+    expect(first.perimeter_buoys).toBe(true);
+    expect(first.ends[0]).toMatchObject({ name: '09W', latitude: 62.51, longitude: -153.89 });
+    expect(first.ends[1]).toMatchObject({ name: '27W', latitude: 62.508, longitude: -153.87 });
+    expect(airport.waterRunways[1]!.perimeter_buoys).toBe(false);
+  });
+
+  it('keeps water runways out of the land runway list', () => {
+    const airport = new AirportParser(chunk).parse().data;
+    expect(airport.runways).toHaveLength(0);
+  });
+
+  it('counts water runways in the parse stats', () => {
+    const { stats } = new AirportParser(chunk).parse();
+    expect(stats.parsed).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Start rows — X-Plane numbers runway-type starts in apt.dat file order
+// ---------------------------------------------------------------------------
+
+describe('start rows', () => {
+  const chunk = [
+    '1 10 0 0 XTST Mixed Test',
+    '100 45.00 1 0 0.25 0 0 0 09  49.0000000 2.5000000 0 0 3 0 0 0 27  49.0000000 2.5500000 0 0 3 0 0 0',
+    '101 50.00 0 09W  49.0100000 2.5000000 27W  49.0100000 2.5500000',
+    '102 H1 49.0200000 2.5200000 90.00 20.00 20.00 1 0 0 0.25 0',
+    '100 45.00 1 0 0.25 0 0 0 18  49.0300000 2.5200000 0 0 3 0 0 0 36  49.0000000 2.5200000 0 0 3 0 0 0',
+  ].join('\n');
+
+  it('numbers land runways, water runways and helipads by their order in the file', () => {
+    const airport = new AirportParser(chunk).parse().data;
+    expect(airport.runways.map((r) => r.startRow)).toEqual([0, 3]);
+    expect(airport.waterRunways.map((r) => r.startRow)).toEqual([1]);
+    expect(airport.helipads.map((h) => h.startRow)).toEqual([2]);
+  });
+});

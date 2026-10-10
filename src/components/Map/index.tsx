@@ -14,6 +14,7 @@ import Toolbar from '@/components/layout/Toolbar';
 import { ExplorePanel } from '@/components/layout/Toolbar/ExplorePanel';
 import { NAV_GLOBAL_LOADING } from '@/config/navLayerConfig';
 import { useRouteTerrain } from '@/hooks/useRouteProfile';
+import { startRunways } from '@/lib/airports/startRunways';
 import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
@@ -756,7 +757,7 @@ export default function Map({ airports }: MapProps) {
   useEffect(() => {
     if (!pendingStartRunway || !selectedAirportData) return;
     if (selectedAirportData.id.toUpperCase() !== pendingStartRunway.icao) return;
-    const runways = selectedAirportData.runways;
+    const runways = startRunways(selectedAirportData);
     for (let i = 0; i < runways.length; i++) {
       const ends = runways[i]!.ends;
       for (let j = 0; j < ends.length; j++) {
@@ -767,7 +768,7 @@ export default function Map({ airports }: MapProps) {
           latitude: end.latitude,
           longitude: end.longitude,
           index: i * 2 + j,
-          xplaneIndex: `${i}_${j}`,
+          xplaneIndex: `${runways[i]!.startRow ?? i}_${j}`,
         });
         clearPendingStartRunway();
         return;

@@ -1,6 +1,7 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
 import type { LightColor } from '@/lib/airportLights/taxiwayLights';
+import { getDisplacedThresholdPoint } from '@/lib/parsers/apt/runwayHelper';
 import {
   calculateBearing,
   destinationPoint as calculatePoint,
@@ -148,6 +149,13 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         end2.longitude
       );
 
+      // Threshold, approach, touchdown and REIL fixtures belong to the usable
+      // threshold; edge, end and centerline fixtures follow the pavement.
+      const [thr1Lon, thr1Lat] = getDisplacedThresholdPoint(runway, 0);
+      const [thr2Lon, thr2Lat] = getDisplacedThresholdPoint(runway, 1);
+      const thr1 = { latitude: thr1Lat, longitude: thr1Lon };
+      const thr2 = { latitude: thr2Lat, longitude: thr2Lon };
+
       // Edge lights (both sides, every 60m)
       if (runway.edge_lights) {
         for (let dist = 0; dist <= length; dist += 60) {
@@ -172,17 +180,17 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         }
       }
 
-      // Threshold lights (green bar at runway start)
+      // Threshold lights (green bar at the usable threshold)
       for (let offset = -width / 2; offset <= width / 2; offset += 3) {
         const pt1 = calculatePoint(
-          end1.latitude,
-          end1.longitude,
+          thr1.latitude,
+          thr1.longitude,
           Math.abs(offset),
           offset < 0 ? heading1 - 90 : heading1 + 90
         );
         const pt2 = calculatePoint(
-          end2.latitude,
-          end2.longitude,
+          thr2.latitude,
+          thr2.longitude,
           Math.abs(offset),
           offset < 0 ? heading2 - 90 : heading2 + 90
         );
@@ -234,23 +242,23 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
         }
       }
 
-      // Approach lights
+      // Approach lights lead to the usable threshold
       if (end1.lighting && end1.lighting > 0) {
-        this.generateApproachLights(features, end1, heading1 + 180);
+        this.generateApproachLights(features, { ...thr1, lighting: end1.lighting }, heading1 + 180);
       }
       if (end2.lighting && end2.lighting > 0) {
-        this.generateApproachLights(features, end2, heading2 + 180);
+        this.generateApproachLights(features, { ...thr2, lighting: end2.lighting }, heading2 + 180);
       }
 
       // Touchdown zone barrettes and runway end identifier strobes, per end.
-      for (const [end, heading] of [
-        [end1, heading1],
-        [end2, heading2],
+      for (const [end, thr, heading] of [
+        [end1, thr1, heading1],
+        [end2, thr2, heading2],
       ] as const) {
         if (end.tdz_lighting) {
           const tdzEnd = Math.min(TDZ_LENGTH_M, length / 2);
           for (let dist = TDZ_SPACING_M; dist <= tdzEnd; dist += TDZ_SPACING_M) {
-            const center = calculatePoint(end.latitude, end.longitude, dist, heading);
+            const center = calculatePoint(thr.latitude, thr.longitude, dist, heading);
             for (const side of [-1, 1]) {
               for (const lateral of [9, 10.5, 12]) {
                 features.push({
@@ -272,8 +280,8 @@ export class RunwayLightsLayer extends BaseLayerRenderer {
               geometry: {
                 type: 'Point',
                 coordinates: calculatePoint(
-                  end.latitude,
-                  end.longitude,
+                  thr.latitude,
+                  thr.longitude,
                   width / 2 + REIL_OFFSET_M,
                   heading + side * 90
                 ),

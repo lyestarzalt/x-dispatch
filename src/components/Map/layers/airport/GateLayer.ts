@@ -347,6 +347,7 @@ export class GateLayer extends BaseLayerRenderer {
           locationType: 'helipad',
           gateType: 'helipad' as GateType,
           helipadIndex: index,
+          startRow: helipad.startRow,
           heading: helipad.heading,
           airplaneTypes: 'F',
           iconScale: 1.0,

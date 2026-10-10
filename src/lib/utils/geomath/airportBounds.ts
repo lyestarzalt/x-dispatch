@@ -3,7 +3,7 @@ import type { ParsedAirport } from '@/types/apt';
 
 /**
  * Bounding box [[minLon, minLat], [maxLon, maxLat]] around all runway
- * endpoints of a parsed airport.
+ * endpoints of a parsed airport, water lanes included.
  *
  * Returned as `LngLatBoundsLike` so it can be passed straight to
  * `map.fitBounds(...)`. If the airport has no runways (heliport-only,
@@ -20,7 +20,7 @@ export function getAirportBounds(
   let maxLon = -Infinity;
   let maxLat = -Infinity;
 
-  for (const rwy of airport.runways) {
+  for (const rwy of [...airport.runways, ...(airport.waterRunways ?? [])]) {
     for (const end of rwy.ends) {
       if (end.longitude < minLon) minLon = end.longitude;
       if (end.longitude > maxLon) maxLon = end.longitude;
