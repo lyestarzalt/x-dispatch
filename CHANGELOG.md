@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-10
+
 ### Added
 
 - **North Atlantic tracks** in the flight planner. Pick a track from today's message, see its levels, fixes and remarks, and let Auto route fly it from entry to exit. The planner warns when your cruise level is not available on the track. A new map layer draws the day's tracks, and clicking one routes through it.
@@ -144,7 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.1...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.2.0...v2.2.1
