@@ -445,6 +445,15 @@ function Toolbar({
   const rangeRingsCategories = useMapStore((s) => s.rangeRingsCategories);
   const toggleRangeRingsCategory = useMapStore((s) => s.toggleRangeRingsCategory);
   const filtersActive = isAirportFiltersActive(airportFilters);
+  const checkedTypeCount = [
+    airportFilters.showLand,
+    airportFilters.showSeaplane,
+    airportFilters.showHeliport,
+  ].filter(Boolean).length;
+  /** The last airport type left on cannot be switched off: it would blank the map. */
+  const lastType = (checked: boolean) => checked && checkedTypeCount === 1;
+  const lastSurface = (type: SurfaceTypeFilter) =>
+    airportFilters.surfaceTypes.length === 1 && airportFilters.surfaceTypes.includes(type);
   const [countryOpen, setCountryOpen] = useState(false);
 
   // Country list query
@@ -808,12 +817,14 @@ function Toolbar({
               </DropdownMenuLabel>
               <DropdownMenuCheckboxItem
                 checked={airportFilters.showLand}
+                disabled={lastType(airportFilters.showLand)}
                 onCheckedChange={() => setAirportFilters({ showLand: !airportFilters.showLand })}
               >
                 {t('airportFilters.land')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={airportFilters.showSeaplane}
+                disabled={lastType(airportFilters.showSeaplane)}
                 onCheckedChange={() =>
                   setAirportFilters({ showSeaplane: !airportFilters.showSeaplane })
                 }
@@ -822,6 +833,7 @@ function Toolbar({
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={airportFilters.showHeliport}
+                disabled={lastType(airportFilters.showHeliport)}
                 onCheckedChange={() =>
                   setAirportFilters({ showHeliport: !airportFilters.showHeliport })
                 }
@@ -837,8 +849,9 @@ function Toolbar({
                 {t('airportFilters.customOnly')}
               </DropdownMenuCheckboxItem>
 
-              {/* Runway surface sub-filter */}
-              <DropdownMenuLabel className="text-muted-foreground/50 pl-6 text-xs tracking-wider uppercase">
+              {/* Runway surface */}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="xp-section-heading">
                 {t('airportFilters.runwaySurface')}
               </DropdownMenuLabel>
               {(
@@ -852,14 +865,16 @@ function Toolbar({
                 <DropdownMenuCheckboxItem
                   key={type}
                   checked={airportFilters.surfaceTypes.includes(type)}
+                  disabled={lastSurface(type)}
                   onCheckedChange={() => toggleSurfaceType(type)}
                 >
                   {t(labelKey)}
                 </DropdownMenuCheckboxItem>
               ))}
 
-              {/* Country sub-filter */}
-              <DropdownMenuLabel className="text-muted-foreground/50 pl-6 text-xs tracking-wider uppercase">
+              {/* Country */}
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="xp-section-heading">
                 {t('airportFilters.country')}
               </DropdownMenuLabel>
               <div className="px-1 pb-1">

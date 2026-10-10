@@ -2,18 +2,17 @@ import { useEffect } from 'react';
 import type * as maplibregl from 'maplibre-gl';
 import type { ExpressionSpecification } from 'maplibre-gl';
 import { ALL_SURFACE_TYPES, type AirportFilterState, useMapStore } from '@/stores/mapStore';
+import { AIRPORT_LAYER_BASE_FILTERS } from '../layers/world/AirportsLayer';
 import type { MapRef } from './useMapSetup';
 
-/** All airport layer IDs that need filter application */
-const AIRPORT_LAYER_IDS = [
-  'airports-custom',
-  'airports-glow',
-  'airports',
-  'airport-labels',
-  'airports-hitbox',
-] as const;
+/** Every airport layer, in the order the layer file adds them. */
+export const AIRPORT_FILTERABLE_LAYER_IDS: readonly string[] = Object.keys(
+  AIRPORT_LAYER_BASE_FILTERS
+);
 
 type FilterExpr = ExpressionSpecification;
+
+const NEVER_MATCH: maplibregl.FilterSpecification = ['==', ['get', 'icao'], '__never_match__'];
 
 /**
  * Build a list of MapLibre expression filter conditions from AirportFilterState.
@@ -59,46 +58,27 @@ function buildConditions(filters: AirportFilterState): FilterExpr[] | undefined 
 }
 
 /**
- * Apply filter to a single layer, combining base isCustom split with user conditions.
+ * The complete filter for one airport layer: its own base filter from the
+ * layer file ANDed with the user's conditions. `null` clears the filter.
  */
-function setLayerFilter(
-  map: maplibregl.Map,
+export function buildAirportLayerFilter(
   layerId: string,
-  conditions: FilterExpr[] | undefined
-): void {
-  if (!map.getLayer(layerId)) return;
+  filters: AirportFilterState
+): maplibregl.FilterSpecification | null {
+  const base = AIRPORT_LAYER_BASE_FILTERS[layerId];
+  const conditions = buildConditions(filters);
 
-  // Base filter: some layers split on isCustom
-  let baseFilter: FilterExpr | undefined;
-  if (layerId === 'airports-custom') {
-    baseFilter = ['==', ['get', 'isCustom'], 1];
-  } else if (layerId === 'airports' || layerId === 'airports-glow') {
-    baseFilter = ['==', ['get', 'isCustom'], 0];
-  }
+  if (conditions !== undefined && conditions.length === 0) return NEVER_MATCH;
+  if (conditions === undefined) return base ?? null;
 
-  let combined: maplibregl.FilterSpecification | null;
-
-  if (conditions !== undefined && conditions.length === 0) {
-    // Hide everything
-    combined = ['==', ['get', 'icao'], '__never_match__'];
-  } else if (conditions !== undefined) {
-    // When onlyCustom is active its condition is ['==', isCustom, 1].
-    // On layers whose base is isCustom===0 this creates a contradiction
-    // and hides them — which is exactly what we want.
-    const parts: FilterExpr[] = [];
-    if (baseFilter) parts.push(baseFilter);
-    parts.push(...conditions);
-    combined =
-      parts.length === 1
-        ? (parts[0] as maplibregl.FilterSpecification)
-        : (['all', ...parts] as maplibregl.FilterSpecification);
-  } else if (baseFilter) {
-    combined = baseFilter as maplibregl.FilterSpecification;
-  } else {
-    combined = null;
-  }
-
-  map.setFilter(layerId, combined);
+  // When onlyCustom is active its condition contradicts the isCustom===0
+  // base of the default layers and hides them, which is the intent.
+  const parts: FilterExpr[] = [];
+  if (base) parts.push(base as FilterExpr);
+  parts.push(...conditions);
+  return parts.length === 1
+    ? (parts[0] as maplibregl.FilterSpecification)
+    : (['all', ...parts] as maplibregl.FilterSpecification);
 }
 
 /**
@@ -110,10 +90,10 @@ function applyCurrentFilters(mapRef: MapRef): void {
   if (!map || !map.getLayer('airports')) return;
 
   const { airportFilters } = useMapStore.getState();
-  const conditions = buildConditions(airportFilters);
 
-  for (const layerId of AIRPORT_LAYER_IDS) {
-    setLayerFilter(map, layerId, conditions);
+  for (const layerId of AIRPORT_FILTERABLE_LAYER_IDS) {
+    if (!map.getLayer(layerId)) continue;
+    map.setFilter(layerId, buildAirportLayerFilter(layerId, airportFilters));
   }
 }
 
