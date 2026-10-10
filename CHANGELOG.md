@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The flight card on the map is a summary: route, alternate, time, cruise level, block fuel and takeoff weight, with one button to the full briefing. Collapsed, it still shows the flight number, the route and the cruise level.
 - SimBrief errors tell you what to do: unknown user, no plan on file, no connection. With no SimBrief account set up, the briefing has a button straight to the SimBrief settings.
 - Large airports such as Paris, Frankfurt and Atlanta load several times faster, with no visible change. The Surface detail setting is gone, since there is nothing left to choose.
-- Auto route picks airways for your cruise level from the start. Before, a jet route built before the cruise altitude was set could end up on low airways capped at FL195.
+- Auto route is faster, picks airways for your cruise level from the start, and the plan no longer flickers while it redraws. Before, a jet route built before the cruise altitude was set could end up on low airways capped at FL195.
 - The planner shows departure and arrival in their own blocks, with a swap button between them and the aircraft class next to the figures it affects.
 - The airport filter now hides every filtered airport, and favourites no longer draw twice. You cannot switch off the last airport type or runway surface.
 - The country filter lists each country once. The scenery files spell the United States eight different ways.
