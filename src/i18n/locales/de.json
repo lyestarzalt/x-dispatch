@@ -642,7 +642,16 @@
       "flightStripScale": "Größe des Flugstreifens",
       "flightStripScaleDescription": "Skaliert den Live-Flugstreifen, damit er aus größerer Entfernung lesbar bleibt",
       "flightStripOpacity": "Deckkraft des Flugstreifen-Fensters",
-      "flightStripOpacityDescription": "Den Simulator durch das abgelöste Flugstreifen-Fenster sehen"
+      "flightStripOpacityDescription": "Den Simulator durch das abgelöste Flugstreifen-Fenster sehen",
+      "desktop": "Desktop-Fenster",
+      "desktopDescription": "Wie sich X-Dispatch als Fenster auf diesem Computer verhält.",
+      "keepRunningOnClose": "Beim Schließen des Fensters weiterlaufen",
+      "keepRunningOnCloseDescription": "Die App bleibt im Dock und öffnet sich sofort wieder. Beenden mit ⌘Q.",
+      "attention": "Im Hintergrund auf mich aufmerksam machen",
+      "attentionDescription": "Dock-Symbol hüpfen oder Taskleiste blinken lassen, wenn X-Plane verbindet, ein Plan geladen oder ein Update bereit ist.",
+      "recentAirportsMenu": "Zuletzt geöffnete Flughäfen im App-Menü",
+      "recentAirportsMenuDescriptionMac": "Rechtsklick auf das Dock-Symbol springt zu einem kürzlich geöffneten Flughafen.",
+      "recentAirportsMenuDescriptionWindows": "Rechtsklick auf das Taskleisten-Symbol springt zu einem kürzlich geöffneten Flughafen."
     },
     "units": {
       "title": "Einheiten",

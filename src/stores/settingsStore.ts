@@ -145,6 +145,16 @@ export interface SupportSettings {
   promptDismissed: boolean;
 }
 
+/** Window behaviour main applies; see lib/nativeShell/desktopPrefs. */
+export interface DesktopSettings {
+  /** macOS: closing the window keeps the app running in the Dock. */
+  keepRunningOnClose: boolean;
+  /** Bounce the Dock icon or flash the taskbar when something finishes in the background. */
+  attention: boolean;
+  /** Recent airports in the Dock menu and the Windows jump list. */
+  recentAirportsMenu: boolean;
+}
+
 export interface AirportsSettings {
   /** ICAOs the user has starred, uppercase, insertion order. */
   favoriteIcaos: string[];
@@ -163,6 +173,7 @@ interface SettingsState {
   flights: FlightsSettings;
   support: SupportSettings;
   airports: AirportsSettings;
+  desktop: DesktopSettings;
   updateMapSettings: (settings: Partial<MapSettings>) => void;
   addUserMapStyle: (style: MapStyle) => void;
   removeUserMapStyle: (id: string) => void;
@@ -175,6 +186,7 @@ interface SettingsState {
   updateFlightsSettings: (settings: Partial<FlightsSettings>) => void;
   updateSupportSettings: (settings: Partial<SupportSettings>) => void;
   updateAirportsSettings: (settings: Partial<AirportsSettings>) => void;
+  updateDesktopSettings: (settings: Partial<DesktopSettings>) => void;
   toggleFavoriteAirport: (icao: string) => void;
   removeFavoriteAirport: (icao: string) => void;
   setHomeAirport: (icao: string | null) => void;
@@ -248,6 +260,12 @@ const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
   promptDismissed: false,
 };
 
+const DEFAULT_DESKTOP_SETTINGS: DesktopSettings = {
+  keepRunningOnClose: true,
+  attention: true,
+  recentAirportsMenu: true,
+};
+
 const DEFAULT_AIRPORTS_SETTINGS: AirportsSettings = {
   favoriteIcaos: [],
   homeIcao: null,
@@ -265,6 +283,7 @@ export const useSettingsStore = create<SettingsState>()(
       flights: DEFAULT_FLIGHTS_SETTINGS,
       support: DEFAULT_SUPPORT_SETTINGS,
       airports: DEFAULT_AIRPORTS_SETTINGS,
+      desktop: DEFAULT_DESKTOP_SETTINGS,
 
       updateMapSettings: (settings) =>
         set((state) => ({
@@ -358,6 +377,11 @@ export const useSettingsStore = create<SettingsState>()(
           support: { ...state.support, ...settings },
         })),
 
+      updateDesktopSettings: (settings) =>
+        set((state) => ({
+          desktop: { ...state.desktop, ...settings },
+        })),
+
       updateAirportsSettings: (settings) =>
         set((state) => ({
           airports: { ...state.airports, ...settings },
@@ -433,12 +457,13 @@ export const useSettingsStore = create<SettingsState>()(
           flights: DEFAULT_FLIGHTS_SETTINGS,
           support: DEFAULT_SUPPORT_SETTINGS,
           airports: DEFAULT_AIRPORTS_SETTINGS,
+          desktop: DEFAULT_DESKTOP_SETTINGS,
         });
       },
     }),
     {
       name: 'xplane-viz-settings',
-      version: 33,
+      version: 34,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -649,6 +674,10 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       ...state,
       appearance: { ...state.appearance!, flightStripOpacity: 1 },
     };
+  }
+
+  if (version < 34) {
+    state = { ...state, desktop: { ...DEFAULT_DESKTOP_SETTINGS } };
   }
 
   return state as SettingsState;

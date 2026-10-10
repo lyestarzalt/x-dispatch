@@ -6,6 +6,7 @@
  */
 import type { AutoRouteRequest, PlanDraft } from '@/lib/flightplan/builder/types';
 import type { AppAction } from '@/lib/nativeShell/appUrl';
+import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
@@ -142,6 +143,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
         t.on('app:openSettings', callback),
       setNativeLabels: (labels: NativeLabels) => t.send('app:setNativeLabels', labels),
       noteAirportOpened: (icao: string, name: string) => t.send('app:airportOpened', icao, name),
+      setDesktopPrefs: (prefs: DesktopPrefs) => t.send('app:setDesktopPrefs', prefs),
+      requestAttention: () => t.send('app:requestAttention'),
       resyncCustomAirports: () =>
         t.invoke('airport:resync-custom') as Promise<{
           synced: boolean;

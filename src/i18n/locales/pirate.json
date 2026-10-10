@@ -642,7 +642,16 @@
       "flightStripScale": "Size o' the flight strip",
       "flightStripScaleDescription": "Blow up the live flight strip so ye can read it from across the deck",
       "flightStripOpacity": "Flight strip porthole see-throughness",
-      "flightStripOpacityDescription": "Spy the simulator through the detached flight strip porthole"
+      "flightStripOpacityDescription": "Spy the simulator through the detached flight strip porthole",
+      "desktop": "Deck window",
+      "desktopDescription": "How X-Dispatch behaves as a window on this here vessel.",
+      "keepRunningOnClose": "Keep sailin’ when the window be closed",
+      "keepRunningOnCloseDescription": "The app stays in the Dock and reopens in a flash. Quit with ⌘Q.",
+      "attention": "Hail me when I be lookin’ away",
+      "attentionDescription": "Bounce the Dock icon or flash the taskbar when X-Plane joins, a plan be loaded or an update be ready.",
+      "recentAirportsMenu": "Ports o’ late in the app menu",
+      "recentAirportsMenuDescriptionMac": "Right-click the Dock icon to jump to a port ye opened o’ late.",
+      "recentAirportsMenuDescriptionWindows": "Right-click the taskbar icon to jump to a port ye opened o’ late."
     },
     "units": {
       "title": "Measures",

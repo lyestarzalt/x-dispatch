@@ -642,7 +642,16 @@
       "flightStripScale": "Размер полётной полосы",
       "flightStripScaleDescription": "Увеличивает полосу данных полёта, чтобы читать её издалека",
       "flightStripOpacity": "Непрозрачность окна полосы полёта",
-      "flightStripOpacityDescription": "Симулятор виден сквозь отдельное окно полосы полёта"
+      "flightStripOpacityDescription": "Симулятор виден сквозь отдельное окно полосы полёта",
+      "desktop": "Окно приложения",
+      "desktopDescription": "Как X-Dispatch ведёт себя как окно на этом компьютере.",
+      "keepRunningOnClose": "Продолжать работу при закрытии окна",
+      "keepRunningOnCloseDescription": "Приложение остаётся в Dock и мгновенно открывается снова. Выход — ⌘Q.",
+      "attention": "Привлекать внимание в фоне",
+      "attentionDescription": "Подпрыгивать значком в Dock или мигать на панели задач, когда X-Plane подключается, загружен план или готово обновление.",
+      "recentAirportsMenu": "Недавние аэропорты в меню приложения",
+      "recentAirportsMenuDescriptionMac": "Щёлкните правой кнопкой по значку в Dock, чтобы перейти к недавно открытому аэропорту.",
+      "recentAirportsMenuDescriptionWindows": "Щёлкните правой кнопкой по значку на панели задач, чтобы перейти к недавно открытому аэропорту."
     },
     "units": {
       "title": "Единицы",

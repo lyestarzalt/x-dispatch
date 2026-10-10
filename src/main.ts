@@ -39,6 +39,11 @@ import {
 } from './lib/nativeShell/appUrl';
 import { createCrashRecovery } from './lib/nativeShell/crashRecovery';
 import {
+  DEFAULT_DESKTOP_PREFS,
+  type DesktopPrefs,
+  parseDesktopPrefs,
+} from './lib/nativeShell/desktopPrefs';
+import {
   findFmsFileInArgv,
   isFmsFileArg,
   windowsFmsRegistryCommands,
@@ -272,6 +277,8 @@ const pendingAppActions = createPendingActions<AppAction>();
 /** Files the OS asked us to open; the only paths `flightplan:readFile` will read. */
 const openableFiles = new Set<string>();
 let recentAirports: RecentAirport[] = [];
+/** From Settings; defaults until the renderer's first push. */
+let desktopPrefs: DesktopPrefs = DEFAULT_DESKTOP_PREFS;
 
 /** A crashed main window would otherwise stay blank until the user restarts the app. */
 function recoverCrashedWindow(webContents: Electron.WebContents): void {
@@ -656,6 +663,23 @@ function createWindow(): BrowserWindow {
   windowState.manage(window);
   window.once('ready-to-show', () => window.show());
 
+  // macOS: closing the window keeps the app in the Dock, like every single-window
+  // Mac app; the next Dock click shows the same window with its state intact.
+  window.on('close', (event) => {
+    if (!isMac || isQuitting || !desktopPrefs.keepRunningOnClose) return;
+    event.preventDefault();
+    if (window.isFullScreen()) {
+      window.once('leave-full-screen', () => window.hide());
+      window.setFullScreen(false);
+    } else {
+      window.hide();
+    }
+  });
+
+  window.on('focus', () => {
+    if (!isMac) window.flashFrame(false);
+  });
+
   // A reload (crash recovery, dev HMR) drops the renderer's listeners: hold
   // app actions again until the new page drains the queue.
   window.webContents.on('did-start-loading', () => pendingAppActions.reset());
@@ -775,6 +799,7 @@ function initAutoUpdater(): void {
     autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
       updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
       analytics.track('update_downloaded', {});
+      requestAttention();
     });
     autoUpdater.on('error', (err) => {
       updateStatus.patch({ install: 'error', error: err.message });
@@ -818,6 +843,15 @@ function registerIpcHandlers() {
     nativeLabels = parseNativeLabels(labels);
     installAppMenu();
     refreshRecentsMenus();
+  });
+  on('app:setDesktopPrefs', (event, prefs: unknown) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    desktopPrefs = parseDesktopPrefs(prefs);
+    refreshRecentsMenus();
+  });
+  on('app:requestAttention', (event) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    requestAttention();
   });
   on('app:airportOpened', (event, icao: unknown, name: unknown) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return;
@@ -2160,13 +2194,14 @@ function loadRecentAirports(): void {
 /** Dock menu on macOS, jump list on Windows: the recent airports, in the UI language. */
 function refreshRecentsMenus(): void {
   const labels = { recentAirports: nativeLabels.menu.recentAirports };
+  const shown = desktopPrefs.recentAirportsMenu ? recentAirports : [];
   if (process.platform === 'darwin' && app.dock) {
-    const template = buildDockMenuTemplate(recentAirports, labels, (icao) =>
+    const template = buildDockMenuTemplate(shown, labels, (icao) =>
       dispatchAppAction({ kind: 'airport', icao })
     );
     app.dock.setMenu(Menu.buildFromTemplate(template));
   } else if (process.platform === 'win32' && app.isPackaged) {
-    const categories = buildJumpListCategories(recentAirports, labels, process.execPath);
+    const categories = buildJumpListCategories(shown, labels, process.execPath);
     const result = app.setJumpList(categories.length > 0 ? categories : null);
     if (result !== 'ok') logger.main.warn(`Jump list not set: ${result}`);
   }
@@ -2180,6 +2215,21 @@ function recordRecentAirport(icao: string, name: string): void {
     logger.main.warn('Could not save recent airports', err);
   }
   refreshRecentsMenus();
+}
+
+/**
+ * Something finished while the window was in the background: bounce the Dock
+ * icon on macOS, flash the taskbar elsewhere. The flash clears on focus.
+ */
+function requestAttention(): void {
+  if (!desktopPrefs.attention) return;
+  const win = mainWindow;
+  if (!win || win.isDestroyed() || win.isFocused()) return;
+  if (process.platform === 'darwin') {
+    app.dock?.bounce('informational');
+  } else {
+    win.flashFrame(true);
+  }
 }
 
 /** Per-user "Open With" entry for .fms; the exe path moves with every Squirrel update. */
@@ -2416,5 +2466,9 @@ app.on('activate', () => {
   // createWindow() touches `screen` via electron-window-state, which throws
   // until app is ready. Sentry X-DISPATCH-M.
   if (!app.isReady()) return;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (!mainWindow.isVisible()) mainWindow.show();
+    return;
+  }
   if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow();
 });

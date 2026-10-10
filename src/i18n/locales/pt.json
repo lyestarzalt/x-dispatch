@@ -642,7 +642,16 @@
       "flightStripScale": "Tamanho da faixa de voo",
       "flightStripScaleDescription": "Amplia a faixa de voo em direto para a ler de mais longe",
       "flightStripOpacity": "Opacidade da janela da faixa de voo",
-      "flightStripOpacityDescription": "Ver o simulador através da janela destacada da faixa de voo"
+      "flightStripOpacityDescription": "Ver o simulador através da janela destacada da faixa de voo",
+      "desktop": "Janela do computador",
+      "desktopDescription": "Como o X-Dispatch se comporta como janela neste computador.",
+      "keepRunningOnClose": "Continuar em execução ao fechar a janela",
+      "keepRunningOnCloseDescription": "A app fica na Dock e reabre de imediato. Saia com ⌘Q.",
+      "attention": "Chamar a minha atenção em segundo plano",
+      "attentionDescription": "Fazer saltar o ícone na Dock ou piscar a barra de tarefas quando o X-Plane liga, um plano é carregado ou uma atualização está pronta.",
+      "recentAirportsMenu": "Aeroportos recentes no menu da app",
+      "recentAirportsMenuDescriptionMac": "Clique com o botão direito no ícone da Dock para ir a um aeroporto aberto recentemente.",
+      "recentAirportsMenuDescriptionWindows": "Clique com o botão direito no ícone da barra de tarefas para ir a um aeroporto aberto recentemente."
     },
     "units": {
       "title": "Unidades",

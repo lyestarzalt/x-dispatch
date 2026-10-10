@@ -642,7 +642,16 @@
       "flightStripScale": "Dimensione della striscia di volo",
       "flightStripScaleDescription": "Ingrandisce la striscia di volo in tempo reale per leggerla da più lontano",
       "flightStripOpacity": "Opacità della finestra della striscia di volo",
-      "flightStripOpacityDescription": "Vedi il simulatore attraverso la finestra separata della striscia di volo"
+      "flightStripOpacityDescription": "Vedi il simulatore attraverso la finestra separata della striscia di volo",
+      "desktop": "Finestra desktop",
+      "desktopDescription": "Come si comporta X-Dispatch come finestra su questo computer.",
+      "keepRunningOnClose": "Resta in esecuzione quando la finestra è chiusa",
+      "keepRunningOnCloseDescription": "L’app resta nel Dock e si riapre all’istante. Esci con ⌘Q.",
+      "attention": "Attira la mia attenzione in background",
+      "attentionDescription": "Fai rimbalzare l’icona nel Dock o lampeggiare la barra delle applicazioni quando X-Plane si connette, un piano viene caricato o un aggiornamento è pronto.",
+      "recentAirportsMenu": "Aeroporti recenti nel menu dell’app",
+      "recentAirportsMenuDescriptionMac": "Clic destro sull’icona nel Dock per tornare a un aeroporto aperto di recente.",
+      "recentAirportsMenuDescriptionWindows": "Clic destro sull’icona nella barra delle applicazioni per tornare a un aeroporto aperto di recente."
     },
     "units": {
       "title": "Unità",

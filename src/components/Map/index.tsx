@@ -324,6 +324,7 @@ export default function Map({ airports }: MapProps) {
     if (!isXPlaneConnected || hasAutoEnabledRef.current) return;
     hasAutoEnabledRef.current = true;
     trackEvent('xplane_connected', {});
+    if (!window.appAPI.isRemoteClient) window.appAPI.requestAttention();
     if (!showPlaneTracker) setShowPlaneTracker(true);
   }, [isXPlaneConnected, showPlaneTracker, setShowPlaneTracker]);
 

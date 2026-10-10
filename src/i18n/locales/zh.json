@@ -642,7 +642,16 @@
       "flightStripScale": "飞行条大小",
       "flightStripScaleDescription": "放大实时飞行条，便于远距离阅读",
       "flightStripOpacity": "飞行条窗口不透明度",
-      "flightStripOpacityDescription": "透过独立的飞行条窗口看到模拟器"
+      "flightStripOpacityDescription": "透过独立的飞行条窗口看到模拟器",
+      "desktop": "桌面窗口",
+      "desktopDescription": "X-Dispatch 作为窗口在这台电脑上的行为方式。",
+      "keepRunningOnClose": "关闭窗口后继续运行",
+      "keepRunningOnCloseDescription": "应用保留在 Dock 中并可立即重新打开。使用 ⌘Q 退出。",
+      "attention": "在后台提醒我",
+      "attentionDescription": "当 X-Plane 连接、计划加载完成或更新就绪时，弹跳 Dock 图标或闪烁任务栏。",
+      "recentAirportsMenu": "在应用菜单中显示最近的机场",
+      "recentAirportsMenuDescriptionMac": "右键点击 Dock 图标可跳转到最近打开的机场。",
+      "recentAirportsMenuDescriptionWindows": "右键点击任务栏图标可跳转到最近打开的机场。"
     },
     "units": {
       "title": "单位",

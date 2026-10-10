@@ -642,7 +642,16 @@
       "flightStripScale": "Taille du bandeau de vol",
       "flightStripScaleDescription": "Agrandit le bandeau de vol en direct pour le lire de plus loin",
       "flightStripOpacity": "Opacité de la fenêtre du bandeau de vol",
-      "flightStripOpacityDescription": "Voir le simulateur à travers la fenêtre détachée du bandeau de vol"
+      "flightStripOpacityDescription": "Voir le simulateur à travers la fenêtre détachée du bandeau de vol",
+      "desktop": "Fenêtre de bureau",
+      "desktopDescription": "Comment X-Dispatch se comporte en tant que fenêtre sur cet ordinateur.",
+      "keepRunningOnClose": "Rester ouvert quand la fenêtre est fermée",
+      "keepRunningOnCloseDescription": "L’app reste dans le Dock et se rouvre instantanément. Quittez avec ⌘Q.",
+      "attention": "Attirer mon attention en arrière-plan",
+      "attentionDescription": "Faire rebondir l’icône du Dock ou clignoter la barre des tâches quand X-Plane se connecte, qu’un plan est chargé ou qu’une mise à jour est prête.",
+      "recentAirportsMenu": "Aéroports récents dans le menu de l’app",
+      "recentAirportsMenuDescriptionMac": "Clic droit sur l’icône du Dock pour retrouver un aéroport ouvert récemment.",
+      "recentAirportsMenuDescriptionWindows": "Clic droit sur l’icône de la barre des tâches pour retrouver un aéroport ouvert récemment."
     },
     "units": {
       "title": "Unités",

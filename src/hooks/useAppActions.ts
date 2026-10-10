@@ -136,6 +136,7 @@ export async function runAppAction(action: AppAction, ctx: ActionContext): Promi
       trackEvent('flight_plan_file_loaded', { success: loaded });
       if (loaded) toast.success(ctx.t('appActions.importDone', { fileName: result.fileName }));
       else toastError('flight_plan', ctx.t('appActions.importFailed', { host }));
+      window.appAPI.requestAttention();
       return;
     }
     case 'import-file': {

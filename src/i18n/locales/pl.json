@@ -642,7 +642,16 @@
       "flightStripScale": "Rozmiar paska lotu",
       "flightStripScaleDescription": "Skaluje pasek lotu na żywo, aby był czytelny z większej odległości",
       "flightStripOpacity": "Przezroczystość okna paska lotu",
-      "flightStripOpacityDescription": "Widok symulatora przez odłączone okno paska lotu"
+      "flightStripOpacityDescription": "Widok symulatora przez odłączone okno paska lotu",
+      "desktop": "Okno aplikacji",
+      "desktopDescription": "Jak X-Dispatch zachowuje się jako okno na tym komputerze.",
+      "keepRunningOnClose": "Działaj dalej po zamknięciu okna",
+      "keepRunningOnCloseDescription": "Aplikacja zostaje w Docku i otwiera się natychmiast. Zakończ przez ⌘Q.",
+      "attention": "Zwróć moją uwagę w tle",
+      "attentionDescription": "Podskakuj ikoną w Docku lub migaj na pasku zadań, gdy X-Plane się połączy, plan zostanie wczytany lub aktualizacja będzie gotowa.",
+      "recentAirportsMenu": "Ostatnie lotniska w menu aplikacji",
+      "recentAirportsMenuDescriptionMac": "Kliknij prawym przyciskiem ikonę w Docku, aby przejść do niedawno otwartego lotniska.",
+      "recentAirportsMenuDescriptionWindows": "Kliknij prawym przyciskiem ikonę na pasku zadań, aby przejść do niedawno otwartego lotniska."
     },
     "units": {
       "title": "Jednostki",

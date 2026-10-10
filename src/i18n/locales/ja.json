@@ -642,7 +642,16 @@
       "flightStripScale": "フライトストリップのサイズ",
       "flightStripScaleDescription": "離れた場所からも読めるようにライブのフライトストリップを拡大します",
       "flightStripOpacity": "フライトストリップウィンドウの不透明度",
-      "flightStripOpacityDescription": "切り離したフライトストリップのウィンドウ越しにシミュレーターを表示します"
+      "flightStripOpacityDescription": "切り離したフライトストリップのウィンドウ越しにシミュレーターを表示します",
+      "desktop": "デスクトップウィンドウ",
+      "desktopDescription": "このコンピューター上でのウィンドウとしての X-Dispatch の動作。",
+      "keepRunningOnClose": "ウィンドウを閉じても実行を続ける",
+      "keepRunningOnCloseDescription": "アプリは Dock に残り、すぐに再表示できます。終了は ⌘Q。",
+      "attention": "バックグラウンドで知らせる",
+      "attentionDescription": "X-Plane の接続、プランの読み込み、アップデートの準備完了時に Dock アイコンをバウンスまたはタスクバーを点滅させます。",
+      "recentAirportsMenu": "アプリメニューに最近の空港を表示",
+      "recentAirportsMenuDescriptionMac": "Dock アイコンを右クリックすると、最近開いた空港にジャンプできます。",
+      "recentAirportsMenuDescriptionWindows": "タスクバーアイコンを右クリックすると、最近開いた空港にジャンプできます。"
     },
     "units": {
       "title": "単位",

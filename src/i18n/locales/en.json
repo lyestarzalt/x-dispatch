@@ -642,7 +642,16 @@
       "flightStripScale": "Flight strip size",
       "flightStripScaleDescription": "Scale the live aircraft strip so it reads from further away",
       "flightStripOpacity": "Flight strip window opacity",
-      "flightStripOpacityDescription": "See the simulator through the detached flight strip window"
+      "flightStripOpacityDescription": "See the simulator through the detached flight strip window",
+      "desktop": "Desktop window",
+      "desktopDescription": "How X-Dispatch behaves as a window on this computer.",
+      "keepRunningOnClose": "Keep running when the window is closed",
+      "keepRunningOnCloseDescription": "The app stays in the Dock and reopens instantly. Quit with ⌘Q.",
+      "attention": "Get my attention in the background",
+      "attentionDescription": "Bounce the Dock icon or flash the taskbar when X-Plane connects, a plan is loaded or an update is ready.",
+      "recentAirportsMenu": "Recent airports in the app menu",
+      "recentAirportsMenuDescriptionMac": "Right-click the Dock icon to jump to an airport you opened recently.",
+      "recentAirportsMenuDescriptionWindows": "Right-click the taskbar icon to jump to an airport you opened recently."
     },
     "units": {
       "title": "Units",

@@ -141,6 +141,10 @@ declare global {
       setNativeLabels: (labels: import('@/lib/nativeShell/labels').NativeLabels) => void;
       /** Feeds the dock menu and jump list of recent airports. */
       noteAirportOpened: (icao: string, name: string) => void;
+      /** Window behaviour from Settings; main applies it. */
+      setDesktopPrefs: (prefs: import('@/lib/nativeShell/desktopPrefs').DesktopPrefs) => void;
+      /** Bounce the Dock icon or flash the taskbar if the window is in the background. */
+      requestAttention: () => void;
       /** Actions from xdispatch:// links while the app is running. */
       onAppAction: (callback: (action: AppAction) => void) => () => void;
       /** Links that arrived before the renderer listened; marks it as listening. */

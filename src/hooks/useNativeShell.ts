@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import i18n from 'i18next';
+import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
 import { airportsListQuery } from '@/queries/useAirportsListQuery';
 import { useAppStore } from '@/stores/appStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 function translatedLabels(): NativeLabels {
   const t = i18n.t.bind(i18n);
@@ -34,13 +36,23 @@ function translatedLabels(): NativeLabels {
 export function useNativeShell() {
   const queryClient = useQueryClient();
 
+  // Window behaviour main applies: pushed now and on every change.
+  useEffect(() => {
+    if (window.appAPI.isRemoteClient) return;
+    const push = (desktop: DesktopPrefs) => window.appAPI.setDesktopPrefs({ ...desktop });
+    push(useSettingsStore.getState().desktop);
+    return useSettingsStore.subscribe((state, previous) => {
+      if (state.desktop !== previous.desktop) push(state.desktop);
+    });
+  }, []);
+
   // Recent airports for the dock menu and jump list.
   useEffect(() => {
     if (window.appAPI.isRemoteClient) return;
     return useAppStore.subscribe(
       (s) => s.selectedICAO,
       (icao) => {
-        if (!icao) return;
+        if (!icao || !useSettingsStore.getState().desktop.recentAirportsMenu) return;
         const airport = queryClient
           .getQueryData(airportsListQuery.queryKey)
           ?.find((a) => a.icao === icao);

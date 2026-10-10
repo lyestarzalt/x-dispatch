@@ -20,6 +20,7 @@ import type { SettingsSectionProps } from '../types';
 const FONT_SIZES = ['small', 'medium', 'large'] as const;
 
 const isLinux = window.appAPI?.platform === 'linux';
+const isMac = window.appAPI?.platform === 'darwin';
 
 function ZoomSlider({
   zoomLevel,
@@ -91,6 +92,8 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
     setFlightStripScale,
     setFlightStripOpacity,
     setDebugOverlay,
+    desktop,
+    updateDesktopSettings,
   } = useSettingsStore();
 
   const handleLanguageChange = (langCode: string) => {
@@ -189,6 +192,45 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
           />
         </SettingsSectionBlock>
       )}
+
+      {/* Desktop window behaviour; main applies these */}
+      <SettingsSectionBlock
+        title={t('settings.appearance.desktop')}
+        description={t('settings.appearance.desktopDescription')}
+      >
+        <div className="space-y-3">
+          {isMac && (
+            <SettingsToggleRow
+              title={t('settings.appearance.keepRunningOnClose')}
+              description={t('settings.appearance.keepRunningOnCloseDescription')}
+              checked={desktop.keepRunningOnClose}
+              onCheckedChange={(keepRunningOnClose) =>
+                updateDesktopSettings({ keepRunningOnClose })
+              }
+            />
+          )}
+          <SettingsToggleRow
+            title={t('settings.appearance.attention')}
+            description={t('settings.appearance.attentionDescription')}
+            checked={desktop.attention}
+            onCheckedChange={(attention) => updateDesktopSettings({ attention })}
+          />
+          {!isLinux && (
+            <SettingsToggleRow
+              title={t('settings.appearance.recentAirportsMenu')}
+              description={t(
+                isMac
+                  ? 'settings.appearance.recentAirportsMenuDescriptionMac'
+                  : 'settings.appearance.recentAirportsMenuDescriptionWindows'
+              )}
+              checked={desktop.recentAirportsMenu}
+              onCheckedChange={(recentAirportsMenu) =>
+                updateDesktopSettings({ recentAirportsMenu })
+              }
+            />
+          )}
+        </div>
+      </SettingsSectionBlock>
 
       {/* Developer Tools */}
       <SettingsSectionBlock title={t('settings.about.tools')}>
