@@ -11,7 +11,6 @@ import {
   RunwayLayer,
   RunwayLightsLayer,
   RunwayMarkingsLayer,
-  TaxiwayLayer,
   TaxiwayNameLayer,
   TowerLayer,
   WindsockLayer,
@@ -91,7 +90,6 @@ export function createLayerRenderers(): LayerRenderer[] {
   return [
     new PavementLayer(),
     new BoundaryLayer(),
-    new TaxiwayLayer(),
     new RunwayLayer(),
     new RunwayMarkingsLayer(),
     new LinearFeatureLayer(),

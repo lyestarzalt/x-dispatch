@@ -1,12 +1,24 @@
 import * as maplibregl from 'maplibre-gl';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
-import { taxiwayLightLines, taxiwayLightPoints } from '@/lib/airportLights/taxiwayLights';
-import type { ParsedAirport } from '@/types/apt';
-import { safeAddGeoJSONSource } from '../types';
+import { LIGHT_RULES, taxiwayLightPoints } from '@/lib/airportLights/taxiwayLights';
+import type { LineLightingType, ParsedAirport } from '@/types/apt';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
-import { LIGHT_COLOR_EXPR, lightCoreLayerId, lightLayers } from './lightLayers';
+import { LIGHT_HEX, lightCoreLayerId, lightLayers } from './lightLayers';
 
 const WINDSOCK_GLOW_SIZE = 3;
+
+/** The painted-line source already carries every lit segment and its light code. */
+const LINE_SOURCE_ID = 'airport-linear-features';
+
+const LIT_CODES = Object.keys(LIGHT_RULES).map(Number) as LineLightingType[];
+
+/** Line light code to the fixture colour, for the far-zoom glow. */
+const GLOW_COLOR_EXPR = [
+  'match',
+  ['get', 'lightingType'],
+  ...LIT_CODES.flatMap((code) => [code, LIGHT_HEX[LIGHT_RULES[code]!.colors[0]!]]),
+  LIGHT_HEX.white,
+] as unknown as maplibregl.ExpressionSpecification;
 
 export const TAXIWAY_LIGHT_LAYERS = [
   'airport-taxiway-lights',
@@ -16,13 +28,14 @@ export const TAXIWAY_LIGHT_LAYERS = [
 
 /**
  * Taxiway fixtures from the apt.dat line light codes: glowing points when
- * close, the same segments as blurred lines further out.
+ * close, the same segments as blurred lines further out. The line glow is
+ * drawn straight from the linear-features source rather than a second
+ * copy of the geometry.
  */
 export class AirfieldLightsLayer extends BaseLayerRenderer {
   layerId = 'airport-taxiway-lights';
   sourceId = 'airport-taxiway-lights';
   additionalLayerIds = TAXIWAY_LIGHT_LAYERS.filter((id) => id !== 'airport-taxiway-lights');
-  additionalSourceIds = ['airport-taxiway-light-lines'];
 
   hasData(airport: ParsedAirport): boolean {
     return (
@@ -45,26 +58,25 @@ export class AirfieldLightsLayer extends BaseLayerRenderer {
       });
     }
     this.addSource(map, points);
-    safeAddGeoJSONSource(
-      map,
-      'airport-taxiway-light-lines',
-      taxiwayLightLines(airport.linearFeatures)
-    );
 
-    this.addLayer(map, {
-      id: 'airport-taxiway-light-glow',
-      type: 'line',
-      source: 'airport-taxiway-light-lines',
-      minzoom: ZOOM_BEHAVIORS.taxiways.minZoom,
-      maxzoom: pointZoom,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': LIGHT_COLOR_EXPR,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.6, pointZoom, 1.6],
-        'line-blur': 1.2,
-        'line-opacity': 0,
-      },
-    });
+    // LinearFeatureLayer renders first and owns the line source.
+    if (map.getSource(LINE_SOURCE_ID)) {
+      this.addLayer(map, {
+        id: 'airport-taxiway-light-glow',
+        type: 'line',
+        source: LINE_SOURCE_ID,
+        filter: ['match', ['get', 'lightingType'], LIT_CODES, true, false],
+        minzoom: ZOOM_BEHAVIORS.taxiways.minZoom,
+        maxzoom: pointZoom,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': GLOW_COLOR_EXPR,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.6, pointZoom, 1.6],
+          'line-blur': 1.2,
+          'line-opacity': 0,
+        },
+      });
+    }
 
     for (const spec of lightLayers({
       id: this.layerId,

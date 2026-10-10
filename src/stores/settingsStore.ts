@@ -108,13 +108,9 @@ export interface AppearanceSettings {
   flightStripOpacity: number;
 }
 
-export type SurfaceDetail = 'low' | 'medium' | 'high';
-
 export interface GraphicsSettings {
   /** Approach light sequenced flash animation */
   approachLightAnimation: boolean;
-  /** Surface detail — curve smoothness for taxiway/pavement edges */
-  surfaceDetail: SurfaceDetail;
   /** Sky colours, globe lighting and hillshade follow the sun. */
   dynamicSky: boolean;
   /** Cities and roads glow on the night side. */
@@ -239,7 +235,6 @@ function applyZoomLevel(level: number) {
 
 const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   approachLightAnimation: true,
-  surfaceDetail: 'high',
   dynamicSky: true,
   cityLights: true,
   followSimTime: true,
@@ -466,7 +461,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 34,
+      version: 35,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -681,6 +676,16 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
 
   if (version < 34) {
     state = { ...state, desktop: { ...DEFAULT_DESKTOP_SETTINGS } };
+  }
+
+  if (version < 35) {
+    // Surface detail is gone: curves are now sampled to a fixed chord error,
+    // which is both smoother than the old "high" and lighter than "low".
+    const { surfaceDetail: _dropped, ...graphics } = (state.graphics ?? {}) as Record<
+      string,
+      unknown
+    >;
+    state = { ...state, graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...graphics } };
   }
 
   return state as SettingsState;

@@ -248,7 +248,6 @@ describe('search, flight plan file and add-on install events', () => {
       course_mode: 'both',
       font_size: 'medium',
       clock_mode: 'zulu',
-      surface_detail: 'high',
       dynamic_sky: true,
       city_lights: false,
       idle_orbit: false,

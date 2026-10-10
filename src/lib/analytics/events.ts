@@ -473,7 +473,6 @@ const EVENT_SCHEMA = {
     course_mode: oneOf(['magnetic', 'true', 'both']),
     font_size: oneOf(['small', 'medium', 'large']),
     clock_mode: oneOf(['zulu', 'local']),
-    surface_detail: oneOf(['low', 'medium', 'high']),
     dynamic_sky: { kind: 'boolean' },
     city_lights: { kind: 'boolean' },
     idle_orbit: { kind: 'boolean' },

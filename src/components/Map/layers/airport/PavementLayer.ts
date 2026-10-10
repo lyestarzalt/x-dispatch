@@ -9,6 +9,11 @@ import type { ParsedAirport } from '@/types/apt';
 import { createPavementGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
+/**
+ * Every apt.dat taxiway row is a pavement, so this single fill is the
+ * taxiway depiction too; drawing the same polygons twice only doubled
+ * the fragment cost.
+ */
 export class PavementLayer extends BaseLayerRenderer {
   layerId = 'airport-pavements';
   sourceId = 'airport-pavements';
@@ -33,7 +38,7 @@ export class PavementLayer extends BaseLayerRenderer {
       minzoom: ZOOM_BEHAVIORS.pavements.minZoom,
       paint: {
         'fill-color': colorExpression,
-        'fill-opacity': 0.9,
+        'fill-opacity': 0.99,
         'fill-outline-color': this.buildSurfaceOutlineColorExpression(),
       },
     });

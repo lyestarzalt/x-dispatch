@@ -125,7 +125,6 @@ const CLICKABLE_LAYERS = [
   'airport-linear-features-centerline-border',
   'airport-gates',
   'airport-runways',
-  'airport-taxiways',
   'airport-windsocks',
 ];
 

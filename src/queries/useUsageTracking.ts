@@ -83,7 +83,6 @@ function sendPreferences() {
     course_mode: settings.map.units.course,
     font_size: settings.appearance.fontSize,
     clock_mode: settings.appearance.clockMode,
-    surface_detail: settings.graphics.surfaceDetail,
     dynamic_sky: settings.graphics.dynamicSky,
     city_lights: settings.graphics.cityLights,
     idle_orbit: settings.map.idleOrbitEnabled,

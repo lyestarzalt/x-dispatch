@@ -28,11 +28,17 @@ function isClockwise(coords: LonLat[]): boolean {
 
 export class PathParser {
   private lines: string[];
-  private currentIndex = 0;
+  private currentIndex: number;
   private linesConsumed = 0;
 
-  constructor(content: string[]) {
+  /**
+   * @param content  All lines of the airport block.
+   * @param startIndex  Row to start reading at. Passing the whole array with
+   *   an offset avoids copying the rest of the file for every path block.
+   */
+  constructor(content: string[], startIndex = 0) {
     this.lines = content;
+    this.currentIndex = startIndex;
   }
 
   getLinesConsumed(): number {

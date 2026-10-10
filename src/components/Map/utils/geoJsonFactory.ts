@@ -103,17 +103,18 @@ export function createPavementGeoJSON(pavements: Pavement[]): GeoJSON.FeatureCol
 }
 
 /**
- * Create GeoJSON FeatureCollection for linear features (painted lines)
- * Filters out lineType 0 (transparent/none) as these should not be rendered
- * Per X-Plane spec: lineType 0 = "Nothing" (no painted line)
+ * Create GeoJSON FeatureCollection for linear features (painted lines and
+ * line lights). A segment is kept when it has paint (lineType >= 1) or
+ * lights (lightingType >= 1); the paint layers filter on lineType and the
+ * glow layer on lightingType, so one source serves both. Per X-Plane spec
+ * lineType 0 = "Nothing" (no painted line).
  */
 export function createLinearFeatureGeoJSON(
   linearFeatures: LinearFeature[]
 ): GeoJSON.FeatureCollection {
-  const filtered = linearFeatures.filter((feature) => {
-    const lineType = feature.painted_line_type;
-    return lineType !== undefined && lineType !== null && lineType >= 1;
-  });
+  const filtered = linearFeatures.filter(
+    (feature) => (feature.painted_line_type ?? 0) >= 1 || (feature.lighting_line_type ?? 0) >= 1
+  );
 
   return {
     type: 'FeatureCollection',

@@ -1,21 +1,58 @@
 import { describe, expect, it } from 'vitest';
 import type { LonLat } from '@/types/geo';
 import {
-  DEFAULT_BEZIER_RESOLUTION,
+  DEFAULT_CHORD_TOLERANCE_M,
   calculateBezier,
   calculateCubicBezier,
+  cubicSegmentCount,
   mirrorControlPoint,
+  quadraticSegmentCount,
+  setBezierChordTolerance,
 } from './bezier';
+
+/** Metres per degree at the test latitude, for building curves of a known size. */
+const TEST_LAT = 49.0;
+const M_PER_DEG_LAT = 111320;
+const M_PER_DEG_LON = M_PER_DEG_LAT * Math.cos((TEST_LAT * Math.PI) / 180);
+
+/** A point `east` and `north` metres from the test origin, as [lon, lat]. */
+function metres(east: number, north: number): LonLat {
+  return [2.5 + east / M_PER_DEG_LON, TEST_LAT + north / M_PER_DEG_LAT];
+}
+
+function toMetres(p: LonLat): [number, number] {
+  return [(p[0] - 2.5) * M_PER_DEG_LON, (p[1] - TEST_LAT) * M_PER_DEG_LAT];
+}
+
+function pointToSegmentM(p: LonLat, a: LonLat, b: LonLat): number {
+  const [px, py] = toMetres(p);
+  const [ax, ay] = toMetres(a);
+  const [bx, by] = toMetres(b);
+  const dx = bx - ax;
+  const dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+/** Largest distance from any point of the dense curve to the flattened polyline, in metres. */
+function maxDeviationM(dense: LonLat[], polyline: LonLat[]): number {
+  let worst = 0;
+  for (const p of dense) {
+    let best = Infinity;
+    for (let i = 1; i < polyline.length; i++) {
+      best = Math.min(best, pointToSegmentM(p, polyline[i - 1]!, polyline[i]!));
+    }
+    worst = Math.max(worst, best);
+  }
+  return worst;
+}
 
 // ---------------------------------------------------------------------------
 // calculateBezier (quadratic)
 // ---------------------------------------------------------------------------
 
 describe('calculateBezier', () => {
-  it('has DEFAULT_BEZIER_RESOLUTION = 60', () => {
-    expect(DEFAULT_BEZIER_RESOLUTION).toBe(60);
-  });
-
   it('first point equals p0 and last point equals p2', () => {
     const p0: LonLat = [0, 0];
     const p1: LonLat = [5, 5];
@@ -191,5 +228,95 @@ describe('mirrorControlPoint', () => {
     const dOriginal = Math.hypot(control[0] - vertex[0], control[1] - vertex[1]);
     const dMirror = Math.hypot(result[0] - vertex[0], result[1] - vertex[1]);
     expect(dMirror).toBeCloseTo(dOriginal, 10);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Adaptive flattening — the default resolution follows the chord error
+// ---------------------------------------------------------------------------
+
+describe('adaptive flattening', () => {
+  it('defaults to a 0.1 m chord tolerance', () => {
+    expect(DEFAULT_CHORD_TOLERANCE_M).toBe(0.1);
+  });
+
+  it('a 3 m fillet needs only a handful of points', () => {
+    const p0 = metres(0, 0);
+    const p1 = metres(3, 0);
+    const p2 = metres(3, 3);
+    const points = calculateBezier(p0, p1, p2);
+    expect(points.length).toBeLessThanOrEqual(8);
+    expect(points.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('a 3 m fillet stays within tolerance of the dense curve', () => {
+    const p0 = metres(0, 0);
+    const p1 = metres(3, 0);
+    const p2 = metres(3, 3);
+    const dense = calculateBezier(p0, p1, p2, 2000);
+    expect(maxDeviationM(dense, calculateBezier(p0, p1, p2))).toBeLessThan(
+      DEFAULT_CHORD_TOLERANCE_M
+    );
+  });
+
+  it('a 200 m arc stays within tolerance of the dense curve', () => {
+    const p0 = metres(0, 0);
+    const p1 = metres(200, 0);
+    const p2 = metres(200, 200);
+    const dense = calculateBezier(p0, p1, p2, 2000);
+    const points = calculateBezier(p0, p1, p2);
+    expect(points.length).toBeGreaterThan(10);
+    expect(maxDeviationM(dense, points)).toBeLessThan(DEFAULT_CHORD_TOLERANCE_M);
+  });
+
+  it('a 100 m cubic S-curve stays within tolerance of the dense curve', () => {
+    const p0 = metres(0, 0);
+    const p1 = metres(30, 40);
+    const p2 = metres(70, -40);
+    const p3 = metres(100, 0);
+    const dense = calculateCubicBezier(p0, p1, p2, p3, 2000);
+    const points = calculateCubicBezier(p0, p1, p2, p3);
+    expect(points.length).toBeGreaterThan(10);
+    expect(maxDeviationM(dense, points)).toBeLessThan(DEFAULT_CHORD_TOLERANCE_M);
+  });
+
+  it('evenly spaced collinear control points produce a single straight chord', () => {
+    expect(calculateBezier(metres(0, 0), metres(50, 0), metres(100, 0))).toHaveLength(2);
+    expect(
+      calculateCubicBezier(metres(0, 0), metres(100 / 3, 0), metres(200 / 3, 0), metres(100, 0))
+    ).toHaveLength(2);
+  });
+
+  it('start and end points are the exact curve endpoints', () => {
+    const p0 = metres(0, 0);
+    const p1 = metres(20, 5);
+    const p2 = metres(20, 25);
+    const points = calculateBezier(p0, p1, p2);
+    expect(points[0]).toEqual(p0);
+    expect(points[points.length - 1]).toEqual(p2);
+  });
+
+  it('segment count grows with curve size and shrinks with tolerance', () => {
+    const small = quadraticSegmentCount(metres(0, 0), metres(3, 0), metres(3, 3));
+    const large = quadraticSegmentCount(metres(0, 0), metres(200, 0), metres(200, 200));
+    expect(large).toBeGreaterThan(small);
+    expect(quadraticSegmentCount(metres(0, 0), metres(200, 0), metres(200, 200), 1)).toBeLessThan(
+      large
+    );
+    const cubic = cubicSegmentCount(metres(0, 0), metres(30, 40), metres(70, -40), metres(100, 0));
+    expect(cubic).toBeGreaterThan(1);
+  });
+
+  it('setBezierChordTolerance changes the default sampling', () => {
+    const p0 = metres(0, 0);
+    const p1 = metres(200, 0);
+    const p2 = metres(200, 200);
+    const fine = calculateBezier(p0, p1, p2).length;
+    setBezierChordTolerance(1);
+    try {
+      expect(calculateBezier(p0, p1, p2).length).toBeLessThan(fine);
+    } finally {
+      setBezierChordTolerance(DEFAULT_CHORD_TOLERANCE_M);
+    }
   });
 });

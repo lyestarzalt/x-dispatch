@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LineLightingType, LineType, type LinearFeature } from '@/types/apt';
-import { taxiwayLightLines, taxiwayLightPoints } from './taxiwayLights';
+import { taxiwayLightPoints } from './taxiwayLights';
 
 function feature(light: LineLightingType, coords: [number, number][]): LinearFeature {
   return {
@@ -59,16 +59,5 @@ describe('taxiwayLightPoints', () => {
       feature(LineLightingType.GREEN_BIDIRECTIONAL_LIGHTS, KM_EAST),
     ]);
     expect(Math.abs(bent.features.length - straight.features.length)).toBeLessThanOrEqual(1);
-  });
-});
-
-describe('taxiwayLightLines', () => {
-  it('returns one coloured line per lit feature', () => {
-    const fc = taxiwayLightLines([
-      feature(LineLightingType.BLUE_OMNIDIRECTIONAL_LIGHTS, KM_EAST),
-      feature(LineLightingType.NONE, KM_EAST),
-    ]);
-    expect(fc.features).toHaveLength(1);
-    expect(fc.features[0]!.properties.color).toBe('blue');
   });
 });
