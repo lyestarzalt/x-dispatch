@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Beta updates.** Turn on Beta updates in Settings > About to try new features before everyone else. On Windows the newest beta downloads and installs like a normal update; on macOS and Linux you get a link to download it. When a stable release is newer than the latest beta, you get that instead, and the About page says so.
+
 ## [2.5.0] - 2026-10-12
 
 ### Added

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { UpdateStatus } from '@/types/update';
+import type { UpdateChannel, UpdateStatus } from '@/types/update';
 
 const updateKeys = {
   status: ['app', 'updateStatus'] as const,
@@ -31,6 +31,14 @@ export function useCheckForUpdates() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => window.appAPI.checkForUpdates(),
+    onSuccess: (status) => queryClient.setQueryData<UpdateStatus>(updateKeys.status, status),
+  });
+}
+
+export function useSetUpdateChannel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (channel: UpdateChannel) => window.appAPI.setUpdateChannel(channel),
     onSuccess: (status) => queryClient.setQueryData<UpdateStatus>(updateKeys.status, status),
   });
 }

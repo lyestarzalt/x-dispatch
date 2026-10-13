@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, ExternalLink, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { isNewerVersion } from '@/lib/utils/versionCompare';
+import { displayVersion, isNewerVersion } from '@/lib/utils/versionCompare';
 import { trackEvent, useAppVersion, useUpdateStatus } from '@/queries';
 import { Button } from './ui/button';
 
@@ -72,7 +72,7 @@ export function UpdateAvailableToast(): null {
     version &&
     update.latestVersion &&
     isNewerVersion(version, update.latestVersion)
-      ? update.latestVersion
+      ? displayVersion(update.latestVersion, t('settings.about.beta'))
       : null;
   const url = update?.url;
 
@@ -100,7 +100,12 @@ export function UpdateAvailableToast(): null {
   }, [downloadVersion, url, t]);
 
   const readyVersion =
-    update?.install === 'ready' ? (update.installVersion ?? update.latestVersion ?? '') : null;
+    update?.install === 'ready'
+      ? displayVersion(
+          update.installVersion ?? update.latestVersion ?? '',
+          t('settings.about.beta')
+        )
+      : null;
 
   useEffect(() => {
     if (readyVersion === null) return;

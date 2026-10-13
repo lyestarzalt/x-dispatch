@@ -171,6 +171,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'app:setDesktopPrefs',
   'app:setNativeLabels',
   'app:setSendCrashReports',
+  'app:setUpdateChannel',
   'app:takePendingActions',
   'companion-apps:browseForExe',
   'debug:dbExec',

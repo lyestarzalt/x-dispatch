@@ -56,7 +56,7 @@ import type {
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
 import type { ThirdPartyNotices } from '@/types/notices';
 import type { TrafficSnapshot } from '@/types/traffic';
-import type { UpdateStatus } from '@/types/update';
+import type { UpdateChannel, UpdateStatus } from '@/types/update';
 import type { VatsimData } from '@/types/vatsim';
 import type { VatsimSectorCacheState, VatsimSectorQueryResult } from '@/types/vatsimSectors';
 import type { LoadingProgress, PlaneState, XPlaneAPIResult } from '@/types/xplane';
@@ -86,6 +86,8 @@ declare global {
       getUpdateStatus: () => Promise<UpdateStatus>;
       /** Asks the updater (Windows) and the download host for the newest version. */
       checkForUpdates: () => Promise<UpdateStatus>;
+      /** Saves the channel and checks it right away. */
+      setUpdateChannel: (channel: UpdateChannel) => Promise<UpdateStatus>;
       /** Restarts into a downloaded update; false when none is ready. */
       installUpdate: () => Promise<boolean>;
       onUpdateStatus: (callback: (status: UpdateStatus) => void) => () => void;

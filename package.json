@@ -190,7 +190,6 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.186.0",
     "tz-lookup": "^6.1.25",
-    "update-electron-app": "^3.3.0",
     "utf-8-validate": "^6.0.6",
     "ws": "^8.21.3",
     "yauzl": "^3.4.0",

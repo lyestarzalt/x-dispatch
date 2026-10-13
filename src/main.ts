@@ -18,7 +18,6 @@ import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
 import path from 'path';
-import { UpdateSourceType, updateElectronApp } from 'update-electron-app';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
@@ -81,7 +80,14 @@ import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
 import type { StartupFailureReport } from './lib/startup/startupFallback';
-import { createUpdateStatusStore, parseLatestStableVersion } from './lib/updater/updateStatus';
+import {
+  DOWNLOAD_PAGE_URL,
+  type ManifestChannel,
+  createUpdateStatusStore,
+  installerUrl,
+  parseLatestManifest,
+  pickUpdateTarget,
+} from './lib/updater/updateStatus';
 import logger, { getLogPath } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
@@ -108,11 +114,13 @@ import {
   getAnalyticsConsent,
   getInstallations,
   getSendCrashReports,
+  getUpdateChannel,
   removeInstallation,
   renameInstallation,
   setActiveInstallation,
   setAnalyticsConsent,
   setSendCrashReports,
+  setUpdateChannel,
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { LaunchResult } from './lib/xplaneServices/launch';
@@ -913,29 +921,59 @@ function createWindow(): BrowserWindow {
 
 const DOWNLOADS_BASE_URL = 'https://dl.x-dispatch.app';
 const LATEST_STABLE_URL = `${DOWNLOADS_BASE_URL}/latest.json`;
+const LATEST_RC_URL = `${DOWNLOADS_BASE_URL}/latest-rc.json`;
+const SQUIRREL_FEEDS: Record<ManifestChannel, string> = {
+  stable: `${DOWNLOADS_BASE_URL}/win32/x64`,
+  rc: `${DOWNLOADS_BASE_URL}/win32/x64/rc`,
+};
+// Frequent polling only adds load on the download host.
+const UPDATE_INTERVAL_MS = 4 * 60 * 60_000;
 const UPDATE_RETRY_MS = 10 * 60_000;
 const UPDATE_FIRST_CHECK_DELAY_MS = 5_000;
 
 // Windows installs itself through Squirrel; macOS and Linux only get a notice.
 const updateStatus = createUpdateStatusStore({
   managed: app.isPackaged && process.platform === 'win32',
+  channel: getUpdateChannel(),
 });
 updateStatus.subscribe((status) => broadcast('app:updateStatus', status));
 
+let updateFeed: ManifestChannel = 'stable';
+/** Feed of the Squirrel check in flight, to recheck when the channel changed meanwhile. */
+let checkedFeed: ManifestChannel | null = null;
+
+async function fetchLatestManifest(url: string, channel: ManifestChannel) {
+  const result = await proxyFetch(url, { timeoutMs: 8_000 });
+  if (!result.data || result.error) return null;
+  const manifest = parseLatestManifest(result.data, channel);
+  if (!manifest) logger.main.warn(`Update check: ${url} is not a ${channel} release manifest`);
+  return manifest;
+}
+
 async function refreshLatestVersion(): Promise<void> {
-  const result = await proxyFetch(LATEST_STABLE_URL, { timeoutMs: 8_000 });
-  if (!result.data || result.error) return;
-  const latestVersion = parseLatestStableVersion(result.data);
-  if (!latestVersion) {
-    logger.main.warn('Update check: latest.json is not a stable release manifest');
-    return;
-  }
-  updateStatus.patch({ latestVersion });
+  const { channel } = updateStatus.get();
+  const [stable, rc] = await Promise.all([
+    fetchLatestManifest(LATEST_STABLE_URL, 'stable'),
+    channel === 'beta' ? fetchLatestManifest(LATEST_RC_URL, 'rc') : null,
+  ]);
+  // A refresh started before a channel switch must not report the old channel.
+  if (updateStatus.get().channel !== channel) return;
+  const target = pickUpdateTarget(stable, rc);
+  if (!target) return;
+  updateFeed = target.feed;
+  updateStatus.patch({
+    latestVersion: target.manifest.version,
+    latestBetaVersion: rc?.version ?? null,
+    url:
+      target.feed === 'rc'
+        ? installerUrl(target.manifest, process.platform, process.arch)
+        : DOWNLOAD_PAGE_URL,
+  });
 }
 
 async function checkForUpdatesNow() {
-  if (updateStatus.get().managed) startManagedUpdateCheck();
   await refreshLatestVersion();
+  if (updateStatus.get().managed) startManagedUpdateCheck();
   return updateStatus.get();
 }
 
@@ -950,55 +988,46 @@ function startManagedUpdateCheck(): void {
     clearTimeout(updateRetryTimer);
     updateRetryTimer = null;
   }
-  autoUpdater.checkForUpdates();
+  try {
+    checkedFeed = updateFeed;
+    autoUpdater.setFeedURL({ url: SQUIRREL_FEEDS[updateFeed] });
+    logger.main.info(`[AutoUpdate] checking ${SQUIRREL_FEEDS[updateFeed]}`);
+    autoUpdater.checkForUpdates();
+  } catch (err) {
+    logger.main.error('[AutoUpdate] check failed to start', err);
+  }
 }
 
 function initAutoUpdater(): void {
-  try {
-    updateElectronApp({
-      updateSource: {
-        type: UpdateSourceType.StaticStorage,
-        baseUrl: `${DOWNLOADS_BASE_URL}/win32/x64`,
-      },
-      // Also checks once right away; frequent polling only adds load on the download host.
-      updateInterval: '4 hours',
-      // The renderer offers the restart itself from the update status.
-      notifyUser: false,
-      logger: {
-        log: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-        info: (msg: string) => logger.main.info(`[AutoUpdate] ${msg}`),
-        warn: (msg: string) => logger.main.warn(`[AutoUpdate] ${msg}`),
-        error: (msg: string) => logger.main.error(`[AutoUpdate] ${msg}`),
-      },
-    });
-    autoUpdater.on('checking-for-update', () => {
-      updateStatus.patch({ install: 'checking', error: null });
-    });
-    autoUpdater.on('update-available', () => {
-      updateStatus.patch({ install: 'downloading', error: null });
-      analytics.track('update_found', { method: 'auto' });
-    });
-    autoUpdater.on('update-not-available', () => {
-      updateStatus.patch({ install: 'up-to-date', error: null });
-    });
-    autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
-      updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
-      analytics.track('update_downloaded', {});
-      requestAttention();
-    });
-    autoUpdater.on('error', (err) => {
-      updateStatus.patch({ install: 'error', error: err.message });
-      // One failed check at startup should not cost the user the whole 4 hour interval.
-      updateRetryTimer ??= setTimeout(() => {
-        updateRetryTimer = null;
-        startManagedUpdateCheck();
-      }, UPDATE_RETRY_MS);
-    });
-    autoUpdaterReady = true;
-    logger.main.info('Auto-updater initialized');
-  } catch (err) {
-    logger.main.error('Failed to initialize auto-updater', err);
-  }
+  autoUpdater.on('checking-for-update', () => {
+    updateStatus.patch({ install: 'checking', error: null });
+  });
+  autoUpdater.on('update-available', () => {
+    logger.main.info('[AutoUpdate] update available, downloading');
+    updateStatus.patch({ install: 'downloading', error: null });
+    analytics.track('update_found', { method: 'auto' });
+  });
+  autoUpdater.on('update-not-available', () => {
+    updateStatus.patch({ install: 'up-to-date', error: null });
+    if (checkedFeed !== updateFeed) startManagedUpdateCheck();
+  });
+  autoUpdater.on('update-downloaded', (_event, _notes, releaseName) => {
+    logger.main.info(`[AutoUpdate] downloaded ${releaseName}`);
+    updateStatus.patch({ install: 'ready', installVersion: releaseName || null, error: null });
+    analytics.track('update_downloaded', {});
+    requestAttention();
+  });
+  autoUpdater.on('error', (err) => {
+    logger.main.error('[AutoUpdate] updater error', err);
+    updateStatus.patch({ install: 'error', error: err.message });
+    // One failed check at startup should not cost the user the whole 4 hour interval.
+    updateRetryTimer ??= setTimeout(() => {
+      updateRetryTimer = null;
+      startManagedUpdateCheck();
+    }, UPDATE_RETRY_MS);
+  });
+  autoUpdaterReady = true;
+  logger.main.info('Auto-updater initialized');
 }
 
 function registerIpcHandlers() {
@@ -1022,6 +1051,20 @@ function registerIpcHandlers() {
   });
   handle('app:getUpdateStatus', () => updateStatus.get());
   handle('app:checkForUpdates', () => checkForUpdatesNow());
+  handle('app:setUpdateChannel', (_, channel: unknown) => {
+    if ((channel !== 'stable' && channel !== 'beta') || !setUpdateChannel(channel)) {
+      return updateStatus.get();
+    }
+    logger.main.info(`Update channel set to ${channel}`);
+    updateFeed = 'stable';
+    updateStatus.patch({
+      channel,
+      latestVersion: null,
+      latestBetaVersion: null,
+      url: DOWNLOAD_PAGE_URL,
+    });
+    return checkForUpdatesNow();
+  });
   on('app:setNativeLabels', (event, labels: unknown) => {
     // Only the desktop window speaks for the menu's language.
     if (!mainWindow || event.sender !== mainWindow.webContents) return;
@@ -2679,10 +2722,9 @@ async function bootstrap(): Promise<void> {
 
   // Dev builds stay off the download host so HMR restarts do not hammer it.
   if (app.isPackaged) {
-    setTimeout(() => {
-      void refreshLatestVersion();
-      if (updateStatus.get().managed) initAutoUpdater();
-    }, UPDATE_FIRST_CHECK_DELAY_MS);
+    if (updateStatus.get().managed) initAutoUpdater();
+    setTimeout(() => void checkForUpdatesNow(), UPDATE_FIRST_CHECK_DELAY_MS);
+    setInterval(() => void checkForUpdatesNow(), UPDATE_INTERVAL_MS);
   }
 
   if (process.platform === 'darwin' && app.dock) {

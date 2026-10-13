@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasPrerelease, isNewerVersion, parseSemverTriple } from './versionCompare';
+import { displayVersion, hasPrerelease, isNewerVersion, parseSemverTriple } from './versionCompare';
 
 describe('parseSemverTriple', () => {
   it('parses plain semver', () => {
@@ -67,8 +67,11 @@ describe('isNewerVersion', () => {
     expect(isNewerVersion('1.9.0', '1.9.0-rc.3')).toBe(false);
   });
 
-  it('does not nudge between two prereleases on same triple', () => {
-    expect(isNewerVersion('1.9.0-rc.1', '1.9.0-rc.3')).toBe(false);
+  it('orders prereleases of the same triple by number', () => {
+    expect(isNewerVersion('1.9.0-rc.1', '1.9.0-rc.3')).toBe(true);
+    expect(isNewerVersion('1.9.0-rc.3', '1.9.0-rc.1')).toBe(false);
+    expect(isNewerVersion('1.9.0-rc.9', '1.9.0-rc.10')).toBe(true);
+    expect(isNewerVersion('1.9.0-rc.3', '1.9.0-rc.3')).toBe(false);
   });
 
   it('still compares higher core versions regardless of prerelease suffix', () => {
@@ -87,5 +90,13 @@ describe('hasPrerelease', () => {
   it('returns false for plain semver', () => {
     expect(hasPrerelease('1.9.0')).toBe(false);
     expect(hasPrerelease('v1.9.0')).toBe(false);
+  });
+});
+
+describe('displayVersion', () => {
+  it('names release candidates as betas', () => {
+    expect(displayVersion('2.5.1-rc.1', 'Beta')).toBe('2.5.1 Beta 1');
+    expect(displayVersion('2.5.1-rc12', 'Beta')).toBe('2.5.1 Beta 12');
+    expect(displayVersion('v2.5.1', 'Beta')).toBe('2.5.1');
   });
 });

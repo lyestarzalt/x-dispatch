@@ -25,7 +25,7 @@ import type {
 // Import types from canonical sources
 import type { AircraftHint, FlightRecorderEvent } from '@/types/flightRecorder';
 import type { TrafficSnapshot } from '@/types/traffic';
-import type { UpdateStatus } from '@/types/update';
+import type { UpdateChannel, UpdateStatus } from '@/types/update';
 import type { LoadingProgress, PlaneState } from '@/types/xplane';
 
 type XPLogOpenResult = Awaited<ReturnType<typeof openXPlaneLogExternallyFn>>;
@@ -104,6 +104,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getThirdPartyNotices: () => t.invoke('app:getThirdPartyNotices'),
       getUpdateStatus: () => t.invoke('app:getUpdateStatus'),
       checkForUpdates: () => t.invoke('app:checkForUpdates'),
+      setUpdateChannel: (channel: UpdateChannel) => t.invoke('app:setUpdateChannel', channel),
       installUpdate: () => t.invoke('app:installUpdate'),
       openFlightStripWindow: () => t.invoke('app:openFlightStripWindow'),
       showFlightStripWindow: () => t.invoke('app:showFlightStripWindow'),

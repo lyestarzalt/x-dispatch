@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
+import type { UpdateChannel } from '@/types/update';
 import { validateXPlanePath } from './paths';
 import type { XPlaneVersionInfo } from './versionDetector';
 
@@ -39,6 +40,8 @@ interface XPlaneConfig {
   };
   /** Tablet access: the LAN server that serves the UI to other devices */
   remoteAccess?: RemoteAccessConfig;
+  /** App update channel; absent means stable */
+  updateChannel?: UpdateChannel;
 }
 
 export interface RemoteAccessConfig {
@@ -168,6 +171,7 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
           ? config.analyticsPendingSession
           : existing?.analyticsPendingSession,
       remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
+      updateChannel: config.updateChannel ?? existing?.updateChannel,
     };
 
     writeConfigFile(newConfig);
@@ -223,6 +227,14 @@ export function getSendCrashReports(): boolean {
  */
 export function setSendCrashReports(enabled: boolean): boolean {
   return saveConfig({ sendCrashReports: enabled });
+}
+
+export function getUpdateChannel(): UpdateChannel {
+  return loadConfig()?.updateChannel === 'beta' ? 'beta' : 'stable';
+}
+
+export function setUpdateChannel(channel: UpdateChannel): boolean {
+  return saveConfig({ updateChannel: channel });
 }
 
 export function getAnalyticsConsent(): 'granted' | 'denied' | null {

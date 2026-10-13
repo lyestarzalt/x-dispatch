@@ -14,23 +14,40 @@ import {
 } from 'lucide-react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { PROJECT_WEBSITE } from '@/config/links';
+import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
 import { cn } from '@/lib/utils/helpers';
-import { isNewerVersion } from '@/lib/utils/versionCompare';
+import { displayVersion, hasPrerelease, isNewerVersion } from '@/lib/utils/versionCompare';
 import {
   trackEvent,
   useAppVersion,
   useCheckForUpdates,
   useConfigPath,
   useLogPath,
+  useSetUpdateChannel,
   useUpdateStatus,
 } from '@/queries';
 import type { UpdateStatus } from '@/types/update';
 import { ThirdPartyNoticesDialog } from '../ThirdPartyNoticesDialog';
-import { SettingsHeader, SettingsLinkRow, SettingsPathDisplay } from '../primitives';
+import {
+  SettingsHeader,
+  SettingsLinkRow,
+  SettingsPathDisplay,
+  SettingsToggleRow,
+} from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
 const trackDonateClick = () => trackEvent('donate_clicked', { source: 'settings_about' });
@@ -47,6 +64,7 @@ interface UpdateStatusLineProps {
 function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLineProps) {
   const { t } = useTranslation();
   const outdated = !!update.latestVersion && isNewerVersion(version, update.latestVersion);
+  const latest = displayVersion(update.latestVersion ?? '', t('settings.about.beta'));
   const busy = checking || update.install === 'checking';
 
   const checkButton = (
@@ -63,7 +81,10 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
   );
 
   if (update.install === 'ready') {
-    const readyVersion = update.installVersion ?? update.latestVersion ?? '';
+    const readyVersion = displayVersion(
+      update.installVersion ?? update.latestVersion ?? '',
+      t('settings.about.beta')
+    );
     return (
       <div className="mt-2 flex flex-col items-center gap-1.5">
         <p className="text-success inline-flex items-center gap-1.5 text-xs">
@@ -126,7 +147,7 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
         className="border-info/40 bg-info/5 text-info hover:bg-info/10 mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors"
       >
         <Download className="h-3.5 w-3.5" />
-        {t('settings.about.updateAvailable', { version: update.latestVersion })}
+        {t('settings.about.updateAvailable', { version: latest })}
       </button>
     );
   }
@@ -136,7 +157,7 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
       {outdated ? (
         <p className="text-info inline-flex items-center gap-1.5 text-xs">
           <Download className="h-3.5 w-3.5" />
-          {t('settings.about.updateAvailable', { version: update.latestVersion })}
+          {t('settings.about.updateAvailable', { version: latest })}
         </p>
       ) : (
         update.latestVersion && (
@@ -148,6 +169,62 @@ function UpdateStatusLine({ version, update, checking, onCheck }: UpdateStatusLi
       )}
       {checkButton}
     </div>
+  );
+}
+
+/** Beta opt-in, with a confirmation before the first beta is fetched. */
+function BetaChannelRow({ version, update }: { version: string; update: UpdateStatus }) {
+  const { t } = useTranslation();
+  const remote = useIsRemoteClient();
+  const setChannel = useSetUpdateChannel();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const beta = update.channel === 'beta';
+  const betaLabel = t('settings.about.beta');
+
+  let note: string | null = null;
+  if (beta && update.latestBetaVersion && update.latestVersion !== update.latestBetaVersion) {
+    note = t('settings.about.betaBehindStable', {
+      stable: displayVersion(update.latestVersion ?? '', betaLabel),
+      beta: displayVersion(update.latestBetaVersion, betaLabel),
+    });
+  } else if (!beta && hasPrerelease(version)) {
+    note = t('settings.about.leavingBeta', { version: displayVersion(version, betaLabel) });
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        <SettingsToggleRow
+          title={t('settings.about.betaUpdates')}
+          description={t('settings.about.betaUpdatesDescription')}
+          checked={beta}
+          disabled={remote || setChannel.isPending}
+          onCheckedChange={(checked) =>
+            checked ? setConfirmOpen(true) : setChannel.mutate('stable')
+          }
+        />
+        {note && <p className="text-muted-foreground px-1 text-xs">{note}</p>}
+      </div>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('settings.about.betaConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {update.managed
+                ? t('settings.about.betaConfirmManaged')
+                : t('settings.about.betaConfirmManual')}{' '}
+              {t('settings.about.betaConfirmLeaving')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => setChannel.mutate('beta')}>
+              {t('settings.about.betaConfirmAction')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -173,7 +250,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
         <AppLogo size="lg" className="mb-4" />
         <h1 className="xp-detail-heading">X-Dispatch</h1>
         <p className="text-muted-foreground mt-1 font-mono text-sm">
-          {version ? `v${version}` : t('common.loading')}
+          {version ? `v${displayVersion(version, t('settings.about.beta'))}` : t('common.loading')}
         </p>
         {version && update && (
           <UpdateStatusLine
@@ -193,6 +270,8 @@ export default function AboutSection({ className }: SettingsSectionProps) {
           {t('settings.about.simulationOnly')}
         </p>
       </div>
+
+      {version && update && <BetaChannelRow version={version} update={update} />}
 
       {/* Credits + Links side-by-side */}
       <div className="grid gap-6 sm:grid-cols-2">
