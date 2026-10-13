@@ -81,6 +81,11 @@ import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
 import type { StartupFailureReport } from './lib/startup/startupFallback';
 import {
+  type GuidanceRoutes,
+  NO_GUIDANCE_ROUTES,
+  parseGuidanceRoutes,
+} from './lib/taxiGuidance/windowRoutes';
+import {
   DOWNLOAD_PAGE_URL,
   type ManifestChannel,
   createUpdateStatusStore,
@@ -594,6 +599,8 @@ let flightStripCapture = false;
 const FLIGHT_STRIP_MIN_SIZE = { width: 260, height: 40 };
 /** The strip size the window was last fitted to; null until the new window reports one. */
 let flightStripContent: Size | null = null;
+/** The planned taxi routes, as the main window last sent them; the strip window follows these. */
+let flightStripGuidance: GuidanceRoutes = NO_GUIDANCE_ROUTES;
 
 /**
  * Windows sends no mouse leave to a window that ignores the mouse, so a pointer
@@ -1100,6 +1107,15 @@ function registerIpcHandlers() {
     if (!mainWindow || event.sender !== mainWindow.webContents) return;
     flightStripOptions = parseFlightStripWindowOptions(options);
     applyFlightStripOptions();
+  });
+  handle('app:getFlightStripGuidance', () => flightStripGuidance);
+  on('app:setFlightStripGuidance', (event, routes: unknown) => {
+    // The main window plans the routes; the strip window only follows them.
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    flightStripGuidance = parseGuidanceRoutes(routes);
+    if (isFlightStripWindowOpen()) {
+      flightStripWindow!.webContents.send('app:flightStripGuidance', flightStripGuidance);
+    }
   });
   on('app:setFlightStripMouseCapture', (event, grip: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;

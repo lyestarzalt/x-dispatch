@@ -381,8 +381,8 @@ export interface BoundaryFeature {
 /** Node usage in the taxi network (row code 1201 field 3) */
 export type TaxiNodeUsage = 'init' | 'dest' | 'both' | 'junc';
 
-/** Taxiway width class A–E (row code 1202 restriction field, per apt.dat 1200 spec) */
-export type TaxiWidthClass = 'A' | 'B' | 'C' | 'D' | 'E';
+/** Taxiway width class A–F (row code 1202 restriction field, per apt.dat 1200 spec) */
+export type TaxiWidthClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
 /** Active zone type (row code 1204 field 1) */
 export type ActiveZoneType = 'departure' | 'arrival' | 'ils';

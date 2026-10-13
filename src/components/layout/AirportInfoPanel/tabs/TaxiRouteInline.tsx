@@ -22,11 +22,14 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { getRolloutEnd } from '@/lib/taxiGraph/rolloutEnd';
+import type { GuidanceSource } from '@/lib/taxiGuidance';
 import { metersToNauticalMiles } from '@/lib/utils/geomath';
 import { toastError } from '@/lib/utils/toastError';
 import { trackEvent } from '@/queries/useAnalytics';
 import { useAppStore } from '@/stores/appStore';
-import { useTaxiRouteStore } from '@/stores/taxiRouteStore';
+import { useFlightPlanStore } from '@/stores/flightPlanStore';
+import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
+import { type TaxiRouteDirection, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 
 export default function TaxiRouteInline() {
   const { t } = useTranslation();
@@ -50,6 +53,7 @@ export default function TaxiRouteInline() {
   const deactivate = useTaxiRouteStore((s) => s.deactivate);
   const setMode = useTaxiRouteStore((s) => s.setMode);
   const setDirection = useTaxiRouteStore((s) => s.setDirection);
+  const restoreRoute = useTaxiRouteStore((s) => s.restoreRoute);
   const removeLastWaypoint = useTaxiRouteStore((s) => s.removeLastWaypoint);
   const removeLastNetworkNode = useTaxiRouteStore((s) => s.removeLastNetworkNode);
 
@@ -78,20 +82,25 @@ export default function TaxiRouteInline() {
   // Both directions use `startPosition` (the gate selected in the launcher)
   // as the gate endpoint. Departure routes gate → runway, arrival routes
   // runway → gate. Only the runway is a user pick.
-  const handleRunwaySelect = (runwayName: string) => {
+  const handleRunwaySelect = (
+    runwayName: string,
+    routeDirection: TaxiRouteDirection = direction,
+    source: GuidanceSource = 'planned'
+  ) => {
     if (!graph || !startPosition) return;
     const rwyEnd = runwayEnds.find((r) => r.name === runwayName);
     if (!rwyEnd) return;
     // A found route replaces autoRouteResult; an unchanged one means no path to this runway.
     const previousResult = useTaxiRouteStore.getState().autoRouteResult;
 
-    if (direction === 'departure') {
+    if (routeDirection === 'departure') {
       computeAutoRoute(
         startPosition.longitude,
         startPosition.latitude,
         rwyEnd.lon,
         rwyEnd.lat,
-        runwayName
+        runwayName,
+        source
       );
     } else {
       // Arrival: the aircraft rolls out to the OPPOSITE end of the landing
@@ -105,13 +114,45 @@ export default function TaxiRouteInline() {
         startLat,
         startPosition.longitude,
         startPosition.latitude,
-        runwayName
+        runwayName,
+        source
       );
     }
     if (useTaxiRouteStore.getState().autoRouteResult === previousResult) {
       trackEvent('taxi_route_auto_failed', {});
     }
   };
+
+  // With no route yet: reopen the one kept for guidance from this gate, or else plan
+  // one from the flight plan's runway when this is its departure or arrival airport.
+  // Keyed on the planner being empty rather than a once-flag, so a remount (which
+  // resets the planner) restores the route too.
+  useEffect(() => {
+    if (!graph || !startPosition || !icao) return;
+    if (useTaxiRouteStore.getState().networkNodeIds.length > 0) return;
+
+    const here = icao.toUpperCase();
+    const kept = guidanceRoutes(useTaxiGuidanceStore.getState()).find(
+      (r) => r.icao === here && r.gateName === startPosition.name
+    );
+    if (kept) {
+      restoreRoute(kept);
+      return;
+    }
+
+    const { departure, arrival } = useFlightPlanStore.getState();
+    const plan =
+      departure?.icao.toUpperCase() === here && departure.runway
+        ? { direction: 'departure' as const, runway: departure.runway }
+        : arrival?.icao.toUpperCase() === here && arrival.runway
+          ? { direction: 'arrival' as const, runway: arrival.runway }
+          : null;
+    if (!plan || !runwayEnds.some((r) => r.name === plan.runway)) return;
+    setDirection(plan.direction);
+    handleRunwaySelect(plan.runway, plan.direction, 'auto');
+    // Runs once, when the graph and gate are first known.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graph, startPosition, icao]);
 
   const handleExport = async () => {
     const result = await writeFtgRoute();

@@ -14,6 +14,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useDragPosition } from '../hooks/useDragPosition';
+import TaxiGuidanceRow from './TaxiGuidanceRow';
 
 const PRIMARY_COLOR_CLASS = 'text-primary';
 
@@ -247,88 +248,95 @@ export default function FlightStrip({ onCenterPlane, detached = false }: FlightS
         >
           <div
             className={cn(
-              'flex items-center rounded-xl border',
+              'flex flex-col rounded-xl border',
               'border-border/50 bg-card/90 shadow-xl',
               'backdrop-blur-xl',
               !detached && 'cursor-grab active:cursor-grabbing'
             )}
             style={{ zoom: scale }}
           >
-            {/* Status indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-2">
-              <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
-              <Plane className="text-primary h-3.5 w-3.5" />
-              {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (
-                <div
-                  className="flex flex-col leading-tight"
-                  title={planeState?.aircraftName || undefined}
-                >
-                  <span className="text-foreground font-mono text-xs font-medium">
-                    {planeState?.icaoType}
-                  </span>
-                  <span className="text-muted-foreground text-2xs font-mono">
-                    {planeState?.tailNumber}
-                  </span>
+            <div className="flex items-center">
+              {/* Status indicator */}
+              <div className="flex items-center gap-1.5 px-3 py-2">
+                <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
+                <Plane className="text-primary h-3.5 w-3.5" />
+                {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (
+                  <div
+                    className="flex flex-col leading-tight"
+                    title={planeState?.aircraftName || undefined}
+                  >
+                    <span className="text-foreground font-mono text-xs font-medium">
+                      {planeState?.icaoType}
+                    </span>
+                    <span className="text-muted-foreground text-2xs font-mono">
+                      {planeState?.tailNumber}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <GroupSeparator />
+
+              {fields.attitude &&
+                planeState?.pitch !== undefined &&
+                planeState?.roll !== undefined && (
+                  <>
+                    <div className="flex items-center px-2.5 py-1">
+                      <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />
+                    </div>
+                    <GroupSeparator />
+                  </>
+                )}
+
+              {/* Up to five columns: the values you fly with are large, related
+                secondary readings sit underneath in a muted line. */}
+              {columns.length > 0 && (
+                <div className="flex items-center gap-4 px-4 py-1.5">
+                  {columns.map(({ key, node }, index) => (
+                    <Fragment key={key}>
+                      {index > 0 && <GroupSeparator />}
+                      {node}
+                    </Fragment>
+                  ))}
+                </div>
+              )}
+
+              {!detached && <GroupSeparator />}
+
+              {/* Center / Follow and pop-out buttons; the detached window has neither */}
+              {!detached && (
+                <div className="flex items-center gap-0.5 px-1.5 py-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCenter}
+                    className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
+                    tooltip={
+                      followPlane
+                        ? t('flightStrip.followingTooltip')
+                        : t('flightStrip.centerTooltip')
+                    }
+                  >
+                    <Crosshair className={cn('h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                    {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
+                  </Button>
+                  <DesktopOnly>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground h-8 rounded-lg px-2"
+                      onClick={() => void window.appAPI.openFlightStripWindow()}
+                      tooltip={t('flightStrip.detach')}
+                    >
+                      <PictureInPicture2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </DesktopOnly>
                 </div>
               )}
             </div>
 
-            <GroupSeparator />
-
-            {fields.attitude &&
-              planeState?.pitch !== undefined &&
-              planeState?.roll !== undefined && (
-                <>
-                  <div className="flex items-center px-2.5 py-1">
-                    <MiniAttitude pitch={planeState.pitch} roll={planeState.roll} />
-                  </div>
-                  <GroupSeparator />
-                </>
-              )}
-
-            {/* Up to five columns: the values you fly with are large, related
-                secondary readings sit underneath in a muted line. */}
-            {columns.length > 0 && (
-              <div className="flex items-center gap-4 px-4 py-1.5">
-                {columns.map(({ key, node }, index) => (
-                  <Fragment key={key}>
-                    {index > 0 && <GroupSeparator />}
-                    {node}
-                  </Fragment>
-                ))}
-              </div>
-            )}
-
-            {!detached && <GroupSeparator />}
-
-            {/* Center / Follow and pop-out buttons; the detached window has neither */}
-            {!detached && (
-              <div className="flex items-center gap-0.5 px-1.5 py-1.5">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCenter}
-                  className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
-                  tooltip={
-                    followPlane ? t('flightStrip.followingTooltip') : t('flightStrip.centerTooltip')
-                  }
-                >
-                  <Crosshair className={cn('h-3.5 w-3.5', followPlane && 'animate-pulse')} />
-                  {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
-                </Button>
-                <DesktopOnly>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground h-8 rounded-lg px-2"
-                    onClick={() => void window.appAPI.openFlightStripWindow()}
-                    tooltip={t('flightStrip.detach')}
-                  >
-                    <PictureInPicture2 className="h-3.5 w-3.5" />
-                  </Button>
-                </DesktopOnly>
-              </div>
-            )}
+            {/* Turn-by-turn taxi guidance, on the ground with a planned route */}
+            <TaxiGuidanceRow />
           </div>
         </motion.div>
       )}

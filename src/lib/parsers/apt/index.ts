@@ -753,11 +753,15 @@ export class AirportParser {
           const restriction = token(tokens, 4);
           const edgeName = tokens.slice(5).join(' ').trim();
 
-          // Parse width class from restriction (taxiway_A → 'A', runway → 'runway')
-          let widthClass: import('@/types/apt').TaxiWidthClass | 'runway' = 'runway';
-          if (restriction && restriction.startsWith('taxiway_')) {
+          // Width class from restriction (taxiway_A → 'A', runway → 'runway'). Only an
+          // explicit `runway` is a runway: a taxiway with a class letter we don't know
+          // is still a taxiway, with no width limit (F, the widest).
+          let widthClass: import('@/types/apt').TaxiWidthClass | 'runway' = 'F';
+          if (restriction === 'runway') {
+            widthClass = 'runway';
+          } else if (restriction && restriction.startsWith('taxiway_')) {
             const cls = restriction.charAt(8).toUpperCase();
-            if ('ABCDE'.includes(cls)) {
+            if ('ABCDEF'.includes(cls)) {
               widthClass = cls as import('@/types/apt').TaxiWidthClass;
             }
           }

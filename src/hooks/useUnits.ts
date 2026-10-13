@@ -15,6 +15,7 @@ import {
   formatCourse,
   formatCourseWithVariation,
   formatDistance,
+  formatShortDistance,
   formatSpeed,
   formatVerticalSpeed,
   formatWeight,
@@ -34,6 +35,8 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
   return {
     distance: (nm: NauticalMiles) => formatDistance(nm, units.distance, t),
     altitude: (ft: Feet) => formatAltitude(ft, units.altitude, t),
+    // Taxi distances: feet or metres following the altitude unit, rounded for a glance.
+    shortDistance: (ft: Feet) => formatShortDistance(ft, units.altitude, t),
     speed: (kts: Knots) => formatSpeed(kts, units.speed, t),
     verticalSpeed: (fpm: FeetPerMinute) => formatVerticalSpeed(fpm, units.verticalSpeed, t),
     weight: (lbs: number) => formatWeight(lbs, units.weight),

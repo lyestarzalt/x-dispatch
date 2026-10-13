@@ -20,15 +20,18 @@
  * we'll need a `CustomLayerInterface` WebGL layer.
  */
 import type * as maplibregl from 'maplibre-gl';
+import { safeAddGeoJSONSource } from '../types';
 
 const SOURCE_ID = 'taxi-route-source';
 const PREVIEW_SOURCE_ID = 'taxi-route-preview-source';
 const ENDPOINTS_SOURCE_ID = 'taxi-route-endpoints-source';
 const HANDLE_SOURCE_ID = 'taxi-route-handle-source';
+const HOLD_SOURCE_ID = 'taxi-route-hold-source';
 
 const CASING_LAYER_ID = 'taxi-route-casing';
 const LINE_LAYER_ID = 'taxi-route-line';
 const CHEVRON_LAYER_ID = 'taxi-route-chevrons';
+const HOLD_LAYER_ID = 'taxi-route-hold-bars';
 const PREVIEW_LAYER_ID = 'taxi-route-preview';
 const ENDPOINTS_LAYER_ID = 'taxi-route-endpoints';
 const HANDLE_LAYER_ID = 'taxi-route-handle';
@@ -38,11 +41,14 @@ const CHEVRON_IMAGE_ID = 'taxi-chevron';
 const ROUTE_GREEN = '#22c55e';
 const ROUTE_CASING = 'rgba(0, 0, 0, 0.7)';
 const PREVIEW_COLOR = 'rgba(34, 197, 94, 0.55)';
+/** Hold-short bars: stop-bar red, on both basemaps. */
+const HOLD_RED = '#ef4444';
 
 export const TAXI_ROUTE_LAYER_IDS = [
   CASING_LAYER_ID,
   LINE_LAYER_ID,
   CHEVRON_LAYER_ID,
+  HOLD_LAYER_ID,
   PREVIEW_LAYER_ID,
   ENDPOINTS_LAYER_ID,
   HANDLE_LAYER_ID,
@@ -114,22 +120,25 @@ function dedupCoincident(points: RoutePoint[], epsilon = 1e-6): RoutePoint[] {
   return out;
 }
 
-function buildLineFC(points: RoutePoint[]): GeoJSON.FeatureCollection {
-  const cleaned = dedupCoincident(points);
-  if (cleaned.length < 2) return EMPTY_FC;
-  return {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: cleaned.map((p) => [p.longitude, p.latitude]),
-        },
-        properties: {},
+function buildLinesFC(lines: RoutePoint[][]): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
+  for (const points of lines) {
+    const cleaned = dedupCoincident(points);
+    if (cleaned.length < 2) continue;
+    features.push({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: cleaned.map((p) => [p.longitude, p.latitude]),
       },
-    ],
-  };
+      properties: {},
+    });
+  }
+  return { type: 'FeatureCollection', features };
+}
+
+function buildLineFC(points: RoutePoint[]): GeoJSON.FeatureCollection {
+  return buildLinesFC([points]);
 }
 
 function buildEndpointsFC(endpoints: EndpointDef[]): GeoJSON.FeatureCollection {
@@ -185,6 +194,8 @@ export function addTaxiRouteLayer(map: maplibregl.Map): void {
     map.addSource(PREVIEW_SOURCE_ID, { type: 'geojson', data: EMPTY_FC });
     map.addSource(ENDPOINTS_SOURCE_ID, { type: 'geojson', data: EMPTY_FC });
     map.addSource(HANDLE_SOURCE_ID, { type: 'geojson', data: EMPTY_FC });
+    // Derived from the route, never user-drawn state: safe to reset on mount.
+    safeAddGeoJSONSource(map, HOLD_SOURCE_ID, EMPTY_FC);
     addTaxiRouteLayers(map);
     window.appAPI?.log?.info?.('[TaxiRouteLayer] mounted');
   } catch (err) {
@@ -193,7 +204,7 @@ export function addTaxiRouteLayer(map: maplibregl.Map): void {
 }
 
 function addTaxiRouteLayers(map: maplibregl.Map): void {
-  // All six layers go on top of the stack (no beforeId) so the green path
+  // All seven layers go on top of the stack (no beforeId) so the green path
   // stays unobscured by airport markings (hold-short bars, gate hold lines)
   // and by the runway/taxiway labels. The interactive helpers (preview,
   // endpoints, handle) need to be on top to remain clickable; keeping the
@@ -232,6 +243,17 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
       'icon-rotation-alignment': 'map',
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
+    },
+  });
+
+  map.addLayer({
+    id: HOLD_LAYER_ID,
+    type: 'line',
+    source: HOLD_SOURCE_ID,
+    layout: { 'line-cap': 'butt' },
+    paint: {
+      'line-color': HOLD_RED,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.5, 18, 3, 22, 5],
     },
   });
 
@@ -290,7 +312,7 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
  * marking pair ends up painting over the green path. Calling `moveLayer`
  * with no `beforeId` moves each layer to the very top in the order they're
  * passed — so we walk the list in stack order to preserve casing → line →
- * chevrons → preview → endpoints → handle.
+ * chevrons → hold bars → preview → endpoints → handle.
  */
 export function bringTaxiRouteToFront(map: maplibregl.Map): void {
   if (!map.getStyle()) return;
@@ -302,6 +324,18 @@ export function bringTaxiRouteToFront(map: maplibregl.Map): void {
 export function setTaxiRoute(map: maplibregl.Map, points: RoutePoint[]): void {
   const src = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
   src?.setData(buildLineFC(points));
+}
+
+/** Several routes at once: the planned departure and arrival while no route is being edited. */
+export function setTaxiRouteLines(map: maplibregl.Map, lines: RoutePoint[][]): void {
+  const src = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+  src?.setData(buildLinesFC(lines));
+}
+
+/** Hold-short bars across the route, each a two-point line. */
+export function setTaxiRouteHoldBars(map: maplibregl.Map, bars: RoutePoint[][]): void {
+  const src = map.getSource(HOLD_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+  src?.setData(buildLinesFC(bars));
 }
 
 export function setTaxiRoutePreview(map: maplibregl.Map, points: RoutePoint[] | null): void {
@@ -327,7 +361,13 @@ export function removeTaxiRouteLayer(map: maplibregl.Map): void {
   for (const id of TAXI_ROUTE_LAYER_IDS) {
     if (map.getLayer(id)) map.removeLayer(id);
   }
-  for (const id of [SOURCE_ID, PREVIEW_SOURCE_ID, ENDPOINTS_SOURCE_ID, HANDLE_SOURCE_ID]) {
+  for (const id of [
+    SOURCE_ID,
+    PREVIEW_SOURCE_ID,
+    ENDPOINTS_SOURCE_ID,
+    HANDLE_SOURCE_ID,
+    HOLD_SOURCE_ID,
+  ]) {
     if (map.getSource(id)) map.removeSource(id);
   }
 }

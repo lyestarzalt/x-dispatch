@@ -109,6 +109,16 @@ declare global {
           options: import('@/lib/flightStrip/windowOptions').FlightStripWindowOptions
         ) => void
       ) => () => void;
+      /** Main window only: the planned taxi routes, which the strip window follows. */
+      setFlightStripGuidance: (
+        routes: import('@/lib/taxiGuidance/windowRoutes').GuidanceRoutes
+      ) => void;
+      getFlightStripGuidance: () => Promise<
+        import('@/lib/taxiGuidance/windowRoutes').GuidanceRoutes
+      >;
+      onFlightStripGuidance: (
+        callback: (routes: import('@/lib/taxiGuidance/windowRoutes').GuidanceRoutes) => void
+      ) => () => void;
       /**
        * Strip window only: the pointer is on the lock grip (its rect in the window), so a
        * locked window takes clicks until main sees the cursor leave it.

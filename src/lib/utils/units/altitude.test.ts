@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Feet } from '@/lib/utils/geomath';
-import { convertAltitude, formatAltitude, parseAltitudeInput } from './altitude';
+import {
+  convertAltitude,
+  formatAltitude,
+  formatShortDistance,
+  parseAltitudeInput,
+} from './altitude';
 
 const ft = (v: number) => v as Feet;
 const t = (key: string) => ({ 'units.ft': 'ft', 'units.m': 'm' })[key] ?? key;
@@ -32,5 +37,16 @@ describe('parseAltitudeInput', () => {
 
   it('returns ft input unchanged', () => {
     expect(parseAltitudeInput(5000, 'ft')).toBe(5000);
+  });
+});
+
+describe('formatShortDistance', () => {
+  it('rounds to 10 in the display unit under 1,000', () => {
+    expect(formatShortDistance(ft(492), 'ft', t)).toBe('490 ft');
+    expect(formatShortDistance(ft(492), 'm', t)).toBe('150 m');
+  });
+
+  it('rounds to 50 from 1,000 up', () => {
+    expect(formatShortDistance(ft(1234), 'ft', t)).toBe('1,250 ft');
   });
 });

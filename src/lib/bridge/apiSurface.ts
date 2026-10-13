@@ -17,6 +17,7 @@ import type { NativeLabels } from '@/lib/nativeShell/labels';
 import type { AppMenuNode } from '@/lib/nativeShell/menuSerialization';
 import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { StartupFailureReport } from '@/lib/startup/startupFallback';
+import type { GuidanceRoutes } from '@/lib/taxiGuidance/windowRoutes';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type {
   XPLogReadResult,
@@ -116,6 +117,11 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getFlightStripWindowOptions: () => t.invoke('app:getFlightStripWindowOptions'),
       onFlightStripWindowOptions: (callback: (options: FlightStripWindowOptions) => void) =>
         t.on('app:flightStripWindowOptions', callback),
+      setFlightStripGuidance: (routes: GuidanceRoutes) =>
+        t.send('app:setFlightStripGuidance', routes),
+      getFlightStripGuidance: () => t.invoke('app:getFlightStripGuidance'),
+      onFlightStripGuidance: (callback: (routes: GuidanceRoutes) => void) =>
+        t.on('app:flightStripGuidance', callback),
       setFlightStripMouseCapture: (grip: FlightStripGripRect | null) =>
         t.send('app:setFlightStripMouseCapture', grip),
       toggleFlightStripLock: () => t.send('app:toggleFlightStripLock'),

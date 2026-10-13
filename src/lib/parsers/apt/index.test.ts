@@ -381,3 +381,23 @@ describe('start location names', () => {
     ]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Taxi network edges — width class A to F, runway edges only when marked so
+// ---------------------------------------------------------------------------
+
+describe('taxi network edge width class', () => {
+  const chunk = [
+    '1 499 0 0 LFBO Toulouse Blagnac',
+    '1201 43.62 1.36 both 1',
+    '1201 43.63 1.37 both 2',
+    '1201 43.64 1.38 both 3',
+    '1202 1 2 twoway taxiway_F T61',
+    '1202 2 3 twoway runway 14L/32R',
+  ].join('\n');
+
+  it('keeps class F taxiways as taxiways', () => {
+    const edges = new AirportParser(chunk).parse().data.taxiNetwork!.edges;
+    expect(edges.map((e) => e.widthClass)).toEqual(['F', 'runway']);
+  });
+});

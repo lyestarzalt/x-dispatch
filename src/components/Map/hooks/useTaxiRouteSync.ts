@@ -1,6 +1,9 @@
 /**
  * Taxi route lifecycle + interaction. Rendering is delegated to
  * `TaxiRouteLayer` (native MapLibre layers). This hook owns:
+ *   - showing the planned guidance routes while none is being edited, the
+ *     one the aircraft is on trimmed to what is still ahead, plus their
+ *     hold-short bars
  *   - building the taxi graph from the active airport
  *   - mounting / unmounting the route layer
  *   - syncing route + preview + endpoints + drag-handle data into the layer's
@@ -22,11 +25,16 @@ import {
   setTaxiRoute,
   setTaxiRouteEndpoints,
   setTaxiRouteHandle,
+  setTaxiRouteHoldBars,
+  setTaxiRouteLines,
   setTaxiRoutePreview,
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
 import { buildTaxiGraph, findNearestNode } from '@/lib/taxiGraph';
 import type { TaxiGraph } from '@/lib/taxiGraph';
+import { type GuidancePoint, createGuidanceTracker, prepareRoute } from '@/lib/taxiGuidance';
 import { useAppStore } from '@/stores/appStore';
+import { usePlaneStore } from '@/stores/planeStore';
+import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 import { resolveFullPath, useTaxiModeActive, useTaxiRouteStore } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
 
@@ -97,6 +105,13 @@ function resolveNetworkPoints(nodeIds: number[], graph: TaxiGraph | null): Route
   }
   return points;
 }
+
+function toRoutePoints(points: GuidancePoint[]): RoutePoint[] {
+  return points.map((p) => ({ longitude: p.lon, latitude: p.lat }));
+}
+
+/** Redraw the trimmed route only once the aircraft has moved this far along it. */
+const TRIM_STEP_M = 5;
 
 function buildEndpoints(points: RoutePoint[]): EndpointDef[] {
   if (points.length === 0) return [];
@@ -180,8 +195,7 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     const apply = () => {
       addTaxiRouteLayer(map);
       if (!taxiModeActive) {
-        setTaxiRoute(map, []);
-        setTaxiRouteEndpoints(map, []);
+        // The guidance effect below owns the route line while nothing is edited.
         setTaxiRoutePreview(map, null);
         setTaxiRouteHandle(map, null);
         return;
@@ -207,6 +221,65 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
       map.off('style.load', apply);
     };
   }, [mapRef, drawPoints, taxiModeActive]);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Guidance routes: hold bars always; while nothing is being edited, the
+  // planned routes themselves, the one the aircraft is on trimmed behind it.
+  // Follows the aircraft through a store subscription so the map component
+  // doesn't re-render at the position-stream rate.
+  // ──────────────────────────────────────────────────────────────────────
+
+  const departureRoute = useTaxiGuidanceStore((s) => s.departure);
+  const arrivalRoute = useTaxiGuidanceStore((s) => s.arrival);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const routes = guidanceRoutes({ departure: departureRoute, arrival: arrivalRoute });
+    const holdBars = routes.flatMap((r) => prepareRoute(r).holdBars.map(toRoutePoints));
+    const endpoints = routes.flatMap((r) => buildEndpoints(toRoutePoints(prepareRoute(r).drawn)));
+    const tracker = createGuidanceTracker();
+    let lastStep: string | null = null;
+
+    const draw = (force: boolean) => {
+      if (taxiModeActive) return;
+      const plane = usePlaneStore.getState().state;
+      const tracked = tracker.update(
+        routes,
+        plane ? { lat: plane.latitude, lon: plane.longitude } : null
+      );
+      const step = tracked
+        ? `${tracked.route.direction}:${Math.round(tracked.progress.along / TRIM_STEP_M)}`
+        : '';
+      if (!force && step === lastStep) return;
+      lastStep = step;
+      setTaxiRouteLines(
+        map,
+        routes.map((r) =>
+          toRoutePoints(tracked?.route === r ? tracked.remaining : prepareRoute(r).drawn)
+        )
+      );
+    };
+
+    const apply = () => {
+      addTaxiRouteLayer(map);
+      setTaxiRouteHoldBars(map, holdBars);
+      if (!taxiModeActive) setTaxiRouteEndpoints(map, endpoints);
+      draw(true);
+      bringTaxiRouteToFront(map);
+    };
+
+    apply();
+    map.on('load', apply);
+    map.on('style.load', apply);
+    const unsubscribe = usePlaneStore.subscribe(() => draw(false));
+    return () => {
+      map.off('load', apply);
+      map.off('style.load', apply);
+      unsubscribe();
+    };
+  }, [mapRef, departureRoute, arrivalRoute, taxiModeActive]);
 
   // Remove the layer only when the hook unmounts (or `mapRef` changes).
   useEffect(() => {

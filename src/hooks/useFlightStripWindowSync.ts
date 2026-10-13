@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import type { FlightStripWindowOptions } from '@/lib/flightStrip/windowOptions';
+import type { GuidanceRoutes } from '@/lib/taxiGuidance/windowRoutes';
 import { usePlaneStore } from '@/stores/planeStore';
 import { type FlightStripSettings, useSettingsStore } from '@/stores/settingsStore';
+import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
 function windowOptions(settings: FlightStripSettings): FlightStripWindowOptions {
   return {
@@ -13,7 +15,8 @@ function windowOptions(settings: FlightStripSettings): FlightStripWindowOptions 
 
 /**
  * Main window only. The strip window lives in its own renderer, so main relays its
- * window settings; and with auto-open on, the strip opens when X-Plane connects.
+ * window settings and the planned taxi routes; and with auto-open on, the strip
+ * opens when X-Plane connects.
  */
 export function useFlightStripWindowSync(): void {
   useEffect(() => {
@@ -30,6 +33,18 @@ export function useFlightStripWindowSync(): void {
         next.alwaysOnTop !== prev.alwaysOnTop
       ) {
         push(next);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (window.appAPI.isRemoteClient) return;
+    const push = ({ departure, arrival }: GuidanceRoutes) =>
+      window.appAPI.setFlightStripGuidance({ departure, arrival });
+    push(useTaxiGuidanceStore.getState());
+    return useTaxiGuidanceStore.subscribe((state, previous) => {
+      if (state.departure !== previous.departure || state.arrival !== previous.arrival) {
+        push(state);
       }
     });
   }, []);
