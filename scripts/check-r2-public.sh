@@ -8,7 +8,7 @@ set -uo pipefail
 BASE="${R2_PUBLIC_BASE:-https://dl.x-dispatch.app}"
 # User agents of the real clients: the in-app update check, the Windows updater, the website sync.
 UA_APP="X-Dispatch/health-check"
-UA_SQUIRREL="update-electron-app/3.3.0 (win32: x64)"
+UA_SQUIRREL="Squirrel/1.9 (win32: x64)"
 UA_NODE="node"
 
 WORK="$(mktemp -d)"
@@ -79,16 +79,25 @@ for pointer in latest.json latest-rc.json; do
   tags+=("$tag")
 done
 
-code="$(get "$BASE/win32/x64/RELEASES?id=XDispatch&localVersion=0.0.0&arch=amd64" "$WORK/RELEASES" "$UA_SQUIRREL")"
-if [ "$code" != "200" ]; then
-  fail "Windows feed RELEASES returned $code"
-else
+check_feed() {
+  local feed="$1" optional="$2" code
+  code="$(get "$BASE/$feed/RELEASES?id=XDispatch&localVersion=0.0.0&arch=amd64" "$WORK/RELEASES" "$UA_SQUIRREL")"
+  if [ "$code" = "404" ] && [ "$optional" = "optional" ]; then
+    return
+  elif [ "$code" != "200" ]; then
+    fail "$feed/RELEASES returned $code"
+    return
+  fi
   while read -r _ package _; do
     [ -n "${package:-}" ] || continue
-    result="$(probe "$BASE/win32/x64/$package" "$UA_SQUIRREL")"
-    [ "${result%% *}" = "206" ] || fail "Windows feed package $package returned ${result%% *}"
+    result="$(probe "$BASE/$feed/$package" "$UA_SQUIRREL")"
+    [ "${result%% *}" = "206" ] || fail "$feed package $package returned ${result%% *}"
   done < <(tr -d '\r' < "$WORK/RELEASES" | sed 's/^\xEF\xBB\xBF//')
-fi
+}
+
+check_feed win32/x64 required
+# The beta feed appears with the first RC published after it was introduced.
+check_feed win32/x64/rc optional
 
 for tag in "${tags[@]}" "$@"; do
   check_release "$tag"

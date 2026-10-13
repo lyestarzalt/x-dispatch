@@ -9,14 +9,16 @@
 #   publish-r2.sh prune                                                 delete builds the pointers no longer need
 #
 # R2 keeps the current and previous stable (KEEP_STABLE, default 2), the current RC,
-# and only the Windows packages RELEASES lists. \`release\` prunes after it moves a pointer.
+# and only the Windows packages a feed's RELEASES lists. \`release\` prunes after it moves
+# a pointer. Squirrel packages live only in the feeds, never under releases/.
 #
 # Bucket layout:
-#   releases/<tag>/<asset>          installers and Squirrel packages
+#   releases/<tag>/<asset>          installers
 #   releases/<tag>/sha256sums.txt
 #   releases/<tag>/notes.md
 #   releases/<tag>/manifest.json    version, channel, date, notes, files with size and sha256
-#   win32/x64/RELEASES + *.nupkg    Squirrel feed for update-electron-app, latest stable only
+#   win32/x64/RELEASES + *.nupkg    Squirrel feed, latest stable only
+#   win32/x64/rc/RELEASES + *.nupkg Squirrel feed for the in-app beta channel, latest RC only
 #   latest.json / latest-rc.json    copy of the newest manifest per channel
 #
 # Pointers are written after the files they reference, so a client never sees a
@@ -107,6 +109,8 @@ summary() { echo "$1" >> "${GITHUB_STEP_SUMMARY:-/dev/null}"; }
 
 pointer_key() { [ "$1" = "rc" ] && echo "latest-rc.json" || echo "latest.json"; }
 
+feed_dir() { [ "$1" = "rc" ] && echo "win32/x64/rc" || echo "win32/x64"; }
+
 is_package() { case "$1" in RELEASES | *.nupkg) return 0 ;; *) return 1 ;; esac; }
 
 # Written by this script from the manifest; copies in the assets dir are ignored.
@@ -134,6 +138,7 @@ upload_assets() {
   for f in "$dir"/*; do
     [ -f "$f" ] || continue
     is_generated "$(basename "$f")" && continue
+    is_package "$(basename "$f")" && continue
     put "$f" "releases/$tag/$(basename "$f")" "$ASSET_CACHE"
   done
 }
@@ -153,16 +158,17 @@ write_manifest() {
 }
 
 publish_feed() {
-  local dir="$1" pkg
+  local dir="$1" feed pkg
+  feed="$(feed_dir "$2")"
   if [ ! -f "$dir/RELEASES" ]; then
-    echo "::warning title=No Squirrel feed::RELEASES missing, the Windows feed still points at the previous version."
+    echo "::warning title=No Squirrel feed::RELEASES missing, $feed still points at the previous version."
     return
   fi
   for pkg in "$dir"/*.nupkg; do
     [ -f "$pkg" ] || continue
-    put "$pkg" "win32/x64/$(basename "$pkg")" "$IMMUTABLE"
+    put "$pkg" "$feed/$(basename "$pkg")" "$IMMUTABLE"
   done
-  put "$dir/RELEASES" "win32/x64/RELEASES" "$MUTABLE" "text/plain; charset=utf-8"
+  put "$dir/RELEASES" "$feed/RELEASES" "$MUTABLE" "text/plain; charset=utf-8"
 }
 
 # Rewrites the channel pointer only when it already names this tag.
@@ -202,7 +208,7 @@ cmd_release() {
   write_manifest "$WORK/manifest.json" "$tag"
 
   if [ "$mode" = "release" ]; then
-    [ "$channel" = "stable" ] && publish_feed "$dir"
+    publish_feed "$dir" "$channel"
     put "$WORK/manifest.json" "$(pointer_key "$channel")" "$MUTABLE" "application/json"
     summary "- :white_check_mark: Published \`$tag\` to R2 ($(pointer_key "$channel"))"
     cmd_prune
@@ -227,9 +233,8 @@ cmd_assets() {
   write_manifest "$WORK/manifest.json" "$tag"
 
   if [ "$(refresh_pointer_if_current "$WORK/manifest.json")" = "current" ] \
-    && [ "$(jq -r '.channel' "$WORK/manifest.json")" = "stable" ] \
     && [ -f "$dir/RELEASES" ]; then
-    publish_feed "$dir"
+    publish_feed "$dir" "$(jq -r '.channel' "$WORK/manifest.json")"
   fi
   summary "- :white_check_mark: Updated \`$tag\` assets on R2"
 }
@@ -251,8 +256,19 @@ pointer_tag() {
   fetch "$1" "$WORK/$1" && jq -r '.tag // empty' "$WORK/$1" || true
 }
 
+prune_feed() {
+  local feed name
+  feed="$(feed_dir "$1")"
+  fetch "$feed/RELEASES" "$WORK/RELEASES" || return 0
+  while IFS= read -r name; do
+    s3 rm "s3://$BUCKET/$feed/$name" --only-show-errors
+    summary "- :wastebasket: Removed \`$feed/$name\` from R2"
+  done < <(s3 ls "s3://$BUCKET/$feed/" | awk '$4 ~ /\.nupkg$/ { print $4 }' \
+    | feed_prune_plan "$WORK/RELEASES")
+}
+
 cmd_prune() {
-  local stable_tag rc_tag tag name
+  local stable_tag rc_tag tag key
   stable_tag="$(pointer_tag latest.json)"
   rc_tag="$(pointer_tag latest-rc.json)"
 
@@ -262,12 +278,15 @@ cmd_prune() {
   done < <(s3 ls "s3://$BUCKET/releases/" | awk '$1 == "PRE" { sub("/$", "", $2); print $2 }' \
     | prune_plan "$stable_tag" "$rc_tag")
 
-  fetch "win32/x64/RELEASES" "$WORK/RELEASES" || return 0
-  while IFS= read -r name; do
-    s3 rm "s3://$BUCKET/win32/x64/$name" --only-show-errors
-    summary "- :wastebasket: Removed \`win32/x64/$name\` from R2"
-  done < <(s3 ls "s3://$BUCKET/win32/x64/" | awk '$4 ~ /\.nupkg$/ { print $4 }' \
-    | feed_prune_plan "$WORK/RELEASES")
+  # Packages uploaded under releases/ before they moved to the feeds only.
+  while IFS= read -r key; do
+    s3 rm "s3://$BUCKET/$key" --only-show-errors
+    summary "- :wastebasket: Removed \`$key\` from R2"
+  done < <(s3 ls "s3://$BUCKET/releases/" --recursive \
+    | awk '$4 ~ /\.nupkg$/ || $4 ~ /\/RELEASES$/ { print $4 }')
+
+  prune_feed stable
+  prune_feed rc
 }
 
 cmd_check() {

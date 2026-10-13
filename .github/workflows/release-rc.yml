@@ -114,6 +114,8 @@ jobs:
           name: rc-${{ needs.resolve.outputs.rc_version }}-${{ matrix.name }}
           path: |
             out/make/**/*.exe
+            out/make/**/*.nupkg
+            out/make/**/RELEASES
             out/make/**/*.dmg
             out/make/**/*.AppImage
           retention-days: 7
@@ -139,8 +141,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-assets
-          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
-          test "$(find release-assets -type f | wc -l | tr -d ' ')" = "5"
+          find artifacts -type f \( -name '*.exe' -o -name '*.nupkg' -o -name 'RELEASES' -o -name '*.dmg' -o -name '*.AppImage' \) -exec cp {} release-assets/ \;
+          # 5 installers plus the Squirrel RELEASES and package for the in-app beta channel.
+          test "$(find release-assets -type f | wc -l | tr -d ' ')" = "7"
           echo "Collected RC release assets:"
           ls -la release-assets/
 
