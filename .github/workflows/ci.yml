@@ -31,7 +31,7 @@ jobs:
       # node_modules itself, keyed on the lockfile: a hit skips the install entirely.
       - name: Restore node_modules
         id: modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: modules-${{ runner.os }}-node22-${{ hashFiles('package-lock.json') }}
