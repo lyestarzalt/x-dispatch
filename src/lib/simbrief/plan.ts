@@ -80,6 +80,10 @@ export function enrichedPlanFromOfp(ofp: SimBriefOFP): EnrichedFlightPlan {
  * One path per run of consecutive procedure fixes sharing a `via_airway`. SimBrief names the
  * SID and STAR there, so the run's name decides its kind; a run that matches neither is a SID
  * when it opens the navlog and a STAR otherwise.
+ *
+ * SimBrief flags only the fixes a procedure adds. The fix the route names, where the SID
+ * hands over to the airway, carries the SID's name with `is_sid_star` 0; it still closes the
+ * run, or the line would leave the SID from the fix before it.
  */
 export function procedurePathsFromNavlog(
   navlog: SimBriefFix[],
@@ -91,7 +95,10 @@ export function procedurePathsFromNavlog(
   let sawEnroute = false;
 
   for (const fix of navlog) {
-    const inProcedure = fix.is_sid_star === '1' && !!fix.via_airway && fix.via_airway !== 'DCT';
+    const inProcedure =
+      !!fix.via_airway &&
+      fix.via_airway !== 'DCT' &&
+      (fix.is_sid_star === '1' || current?.via === fix.via_airway);
     if (!inProcedure) {
       current = null;
       sawEnroute = true;

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A SimBrief route no longer skips the last fix of the SID.** The line used to cut from the fix before it straight to the first airway fix; it now flies through the SID's exit fix, as the navlog does.
+
 ## [2.8.0] - 2026-10-16
 
 ### Added

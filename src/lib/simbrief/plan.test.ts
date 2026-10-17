@@ -131,6 +131,18 @@ describe('procedurePathsFromNavlog', () => {
     ]);
   });
 
+  it('keeps the exit fix SimBrief flags as enroute at the end of the SID', () => {
+    const navlog = [
+      fix('MG822', 'RIXU1H', '1', 36.8, -3.7),
+      fix('MG823', 'RIXU1H', '1', 36.85, -3.75),
+      fix('RIXUR', 'RIXU1H', '0', 37.05, -3.6),
+      fix('UNTOS', 'N851', '0', 37.3, -3.3),
+    ];
+    const [sid] = procedurePathsFromNavlog(navlog, 'RIXU1H', undefined);
+    expect(sid?.path).toHaveLength(3);
+    expect(sid?.path[2]).toEqual({ latitude: 37.05, longitude: -3.6 });
+  });
+
   it('drops a single-fix procedure, which has no line to colour', () => {
     const navlog = [fix('A', 'DEP1', '1'), fix('C', 'L1', '0')];
     expect(procedurePathsFromNavlog(navlog, 'DEP1', undefined)).toEqual([]);
