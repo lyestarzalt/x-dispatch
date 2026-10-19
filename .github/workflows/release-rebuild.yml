@@ -65,7 +65,7 @@ jobs:
       # Tags from before Velopack still build with the Forge makers they shipped with.
       - name: Set up .NET (Velopack packer)
         if: hashFiles('scripts/pack-velopack.sh') != ''
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 
