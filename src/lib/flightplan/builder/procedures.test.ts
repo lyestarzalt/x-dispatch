@@ -98,10 +98,53 @@ describe('composePlan', () => {
     expect(plan.waypoints[1]?.altitude).toBe(6000);
     expect(plan.waypoints[1]?.constraintLabel).toBe('FL60A');
     expect(plan.waypoints[2]?.constraintLabel).toBe('');
-    expect(plan.waypoints[3]?.via).toBe('UNOKO1A');
     expect(plan.departure.sid).toBe('ARNEM2S');
     expect(plan.arrival.star).toBe('UNOKO1A');
     expect(plan.arrival.starTransition).toBe('UNOKO');
+  });
+
+  it('keeps the airway on the fix where the route hands over to the STAR', () => {
+    // `via` names the leg into a fix. ARNEM UL620 UNOKO is flown on the airway; only the
+    // legs after UNOKO belong to the STAR, so the line and the chip show UL620 there.
+    const plan = composePlan(base, { sid, star });
+    const unoko = plan.waypoints.find((w) => w.id === 'UNOKO');
+    expect(unoko?.via).toBe('UL620');
+    expect(plan.waypoints.find((w) => w.id === 'ROLIS')?.via).toBe('UNOKO1A');
+  });
+
+  it('keeps the SID name on its exit fix when the route starts there', () => {
+    const plan = composePlan(base, { sid, star });
+    expect(plan.waypoints.find((w) => w.id === 'ARNEM')?.via).toBe('ARNEM2S');
+  });
+
+  it('flies direct into a STAR the route does not reach', () => {
+    const short = { ...base, waypoints: base.waypoints.filter((w) => w.id !== 'UNOKO') };
+    const plan = composePlan(short, { sid, star });
+    expect(plan.waypoints.map((w) => `${w.id}/${w.via}`)).toEqual([
+      'EHAM/ADEP',
+      'EH020/ARNEM2S',
+      'ARNEM/ARNEM2S',
+      'UNOKO/DRCT',
+      'ROLIS/UNOKO1A',
+      'EDDF/ADES',
+    ]);
+  });
+
+  it('keeps the procedure constraint on the hand-over fix', () => {
+    const limited: ResolvedProcedure = {
+      ...star,
+      waypoints: [
+        wp('UNOKO', 50.5, 8.0, {
+          altitude: { descriptor: '-', altitude1: 28000, altitude2: null, isFlightLevel: true },
+        }),
+        wp('ROLIS', 50.3, 8.2),
+      ],
+    };
+    const plan = composePlan(base, { sid, star: limited });
+    const unoko = plan.waypoints.find((w) => w.id === 'UNOKO');
+    expect(unoko?.via).toBe('UL620');
+    expect(unoko?.constraintLabel).toBe('FL280B');
+    expect(unoko?.constraint?.altitude1).toBe(28000);
   });
 
   it('draws only legs that fly to their fix, and reads the initial climb from course legs', () => {
@@ -319,6 +362,29 @@ describe('suggestProcedures', () => {
       suggestProcedures({ sids: [], stars: [], approaches, arrivalRunway: '27' }).approach
     ).toBeUndefined();
     expect(suggestProcedures({ sids: [], stars: [], approaches }).approach).toBeUndefined();
+  });
+
+  it('suggests no approach rather than guessing when every variant has a transition and nothing hands over yet', () => {
+    // Palma I24LY: BAVUM, CDP, MJV and POS transitions, no plain variant. Before the route or
+    // STAR is known there is nothing to match, so the slot waits instead of taking the first row.
+    const transitions = [
+      proc('APPROACH', 'I24LY', null, 'BAVUM', ['BAVUM', 'OBUMU', 'FI24L']),
+      proc('APPROACH', 'I24LY', null, 'POS', ['POS', 'BAVUM', 'OBUMU', 'FI24L']),
+    ];
+    expect(
+      suggestProcedures({ sids: [], stars: [], approaches: transitions, arrivalRunway: '24L' })
+        .approach
+    ).toBeUndefined();
+    const star = proc('STAR', 'GODO4P', null, null, ['GODOX', 'RUPIT', 'ADX', 'POS']);
+    expect(
+      suggestProcedures({
+        sids: [],
+        stars: [],
+        approaches: transitions,
+        arrivalRunway: '24L',
+        star,
+      }).approach
+    ).toEqual({ name: 'I24LY', transition: 'POS' });
   });
 });
 

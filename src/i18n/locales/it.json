@@ -212,7 +212,10 @@
       "speedLevel_one": "{{count}} nota di velocità e livello rimossa",
       "speedLevel_other": "{{count}} note di velocità e livello rimosse",
       "sid": "{{name}} spostato nella SID di partenza",
-      "star": "{{name}} spostato nella STAR di arrivo"
+      "star": "{{name}} spostato nella STAR di arrivo",
+      "sidMissing": "La SID {{name}} non è nei tuoi dati di navigazione",
+      "starMissing": "La STAR {{name}} non è nei tuoi dati di navigazione",
+      "approachMissing": "L'avvicinamento {{name}} non è nei tuoi dati di navigazione"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Scambia partenza e arrivo",

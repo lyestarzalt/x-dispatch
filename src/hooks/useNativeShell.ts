@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import i18n from 'i18next';
 import { toast } from 'sonner';
+import { importFmsFile } from '@/lib/flightplan/importFms';
 import type { MenuCommand } from '@/lib/nativeShell/appMenu';
 import type { DesktopPrefs } from '@/lib/nativeShell/desktopPrefs';
 import type { NativeLabels } from '@/lib/nativeShell/labels';
@@ -73,15 +74,14 @@ function closeTopmostOverlay(): boolean {
   return true;
 }
 
-async function runMenuCommand(command: MenuCommand): Promise<void> {
+async function runMenuCommand(command: MenuCommand, queryClient: QueryClient): Promise<void> {
   const app = useAppStore.getState();
   switch (command) {
     case 'openFlightPlan': {
       const result = await window.flightPlanAPI.openFile();
       if (!result) return;
-      const loaded = await useFlightPlanStore
-        .getState()
-        .loadFMSFile(result.content, result.fileName);
+      const airports = queryClient.getQueryData(airportsListQuery.queryKey) ?? [];
+      const loaded = importFmsFile(result.content, airports);
       trackEvent('flight_plan_file_loaded', { success: loaded });
       if (!loaded) toastError('flight_plan', i18n.t('toolbar.loadPlanFailed'));
       return;
@@ -155,8 +155,8 @@ export function useNativeShell() {
   // Menu items and accelerators: main forwards the command, the stores do the work.
   useEffect(() => {
     if (window.appAPI.isRemoteClient) return;
-    return window.appAPI.onMenuCommand((command) => void runMenuCommand(command));
-  }, []);
+    return window.appAPI.onMenuCommand((command) => void runMenuCommand(command, queryClient));
+  }, [queryClient]);
 
   // Window behaviour main applies: pushed now and on every change.
   useEffect(() => {

@@ -212,7 +212,10 @@
       "speedLevel_one": "{{count}} indication de vitesse et de niveau retirée",
       "speedLevel_other": "{{count}} indications de vitesse et de niveau retirées",
       "sid": "{{name}} reporté dans la SID de départ",
-      "star": "{{name}} reporté dans la STAR d'arrivée"
+      "star": "{{name}} reporté dans la STAR d'arrivée",
+      "sidMissing": "SID {{name}} absente de vos données de navigation",
+      "starMissing": "STAR {{name}} absente de vos données de navigation",
+      "approachMissing": "Approche {{name}} absente de vos données de navigation"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Inverser départ et arrivée",

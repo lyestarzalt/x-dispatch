@@ -289,22 +289,36 @@ function trimEnroute(
   return out;
 }
 
-/** Appends without repeating the fix where two legs meet. */
+/**
+ * Appends without repeating the fix where two legs meet. `via` names the leg into a fix, so
+ * the copy already in place keeps it: the SID's exit stays on the SID, the STAR's entry stays
+ * on the airway that reached it. A published constraint comes from whichever copy has one.
+ */
 function join(target: FMSWaypoint[], next: FMSWaypoint[]): void {
   for (const wp of next) {
     const last = target[target.length - 1];
     if (last && last.id === wp.id && last.via !== 'ADEP') {
-      // The procedure's own copy carries the constraint and airway name; keep it.
       target[target.length - 1] = {
-        ...wp,
-        altitude: wp.altitude || last.altitude,
-        constraintLabel: wp.constraintLabel ?? last.constraintLabel,
+        ...last,
+        altitude: last.altitude || wp.altitude,
+        constraintLabel: wp.constraintLabel || last.constraintLabel,
         constraint: wp.constraint ?? last.constraint,
       };
       continue;
     }
     target.push(wp);
   }
+}
+
+/** A procedure the route does not reach is flown to direct: its first fix carries no via. */
+function joinArrival(target: FMSWaypoint[], procedure: FMSWaypoint[]): void {
+  const first = procedure[0];
+  const last = target[target.length - 1];
+  if (first && last && last.id !== first.id) {
+    join(target, [{ ...first, via: 'DRCT' }, ...procedure.slice(1)]);
+    return;
+  }
+  join(target, procedure);
 }
 
 /** A single runway named by a procedure, "RW25L"; never the "RW25B" both-sides form. */
@@ -355,8 +369,8 @@ export function composePlan(base: FMSFlightPlan, parts: ProcedureParts): FMSFlig
   if (departure) waypoints.push(departure);
   if (parts.sid) join(waypoints, procedureWaypoints(parts.sid));
   join(waypoints, enroute);
-  if (parts.star) join(waypoints, procedureWaypoints(parts.star));
-  if (parts.approach) join(waypoints, procedureWaypoints(parts.approach));
+  if (parts.star) joinArrival(waypoints, procedureWaypoints(parts.star));
+  if (parts.approach) joinArrival(waypoints, procedureWaypoints(parts.approach));
   if (arrival) waypoints.push(arrival);
   return { ...base, ...header(base, parts), waypoints };
 }
@@ -489,10 +503,11 @@ export function suggestProcedures(input: ProcedureSuggestionInput): ProcedureSug
     if (bestName) {
       const variants = forRunway.filter((a) => a.name === bestName);
       const handover = procedureExit(star)?.id ?? input.lastEnrouteFixId;
+      // Without a hand-over match or a plain variant the slot waits: picking the first
+      // transition would be a guess, and it would stick once the route or STAR is known.
       const approach =
         (handover && variants.find((a) => a.transition && procedureEntry(a)?.id === handover)) ||
-        variants.find((a) => !a.transition) ||
-        variants[0];
+        variants.find((a) => !a.transition);
       if (approach) out.approach = toChoice(approach);
     }
   }

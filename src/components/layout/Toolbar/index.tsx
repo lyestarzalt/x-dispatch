@@ -42,6 +42,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
+import { importFmsFile } from '@/lib/flightplan/importFms';
 import { quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
@@ -404,7 +405,6 @@ function Toolbar({
   const filtersActive = isAirportFiltersActive(airportFilters);
 
   // Flight plan store
-  const loadFMSFile = useFlightPlanStore((s) => s.loadFMSFile);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const simbriefOpen = useFlightPlanStore((s) => s.simbriefDialogOpen);
@@ -551,10 +551,10 @@ function Toolbar({
   const handleLoadFlightPlan = useCallback(async () => {
     const result = await window.flightPlanAPI.openFile();
     if (!result) return;
-    const loaded = await loadFMSFile(result.content, result.fileName);
+    const loaded = importFmsFile(result.content, airports);
     trackEvent('flight_plan_file_loaded', { success: loaded });
     if (!loaded) toastError('flight_plan', t('toolbar.loadPlanFailed'));
-  }, [loadFMSFile, t]);
+  }, [airports, t]);
 
   const totalNavItems = navDataCounts.navaids + navDataCounts.ils + navDataCounts.airspaces;
 

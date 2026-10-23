@@ -212,7 +212,10 @@
       "speedLevel_one": "Usunięto {{count}} wpis prędkości i poziomu",
       "speedLevel_other": "Usunięto {{count}} wpisów prędkości i poziomu",
       "sid": "{{name}} przeniesiono do SID odlotu",
-      "star": "{{name}} przeniesiono do STAR dolotu"
+      "star": "{{name}} przeniesiono do STAR dolotu",
+      "sidMissing": "SID {{name}} nie ma w Twoich danych nawigacyjnych",
+      "starMissing": "STAR {{name}} nie ma w Twoich danych nawigacyjnych",
+      "approachMissing": "Podejścia {{name}} nie ma w Twoich danych nawigacyjnych"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Zamień odlot i przylot",

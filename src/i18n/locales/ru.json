@@ -212,7 +212,10 @@
       "speedLevel_one": "Убрана {{count}} отметка скорости и эшелона",
       "speedLevel_other": "Убрано отметок скорости и эшелона: {{count}}",
       "sid": "{{name}} перенесено в SID вылета",
-      "star": "{{name}} перенесено в STAR прилёта"
+      "star": "{{name}} перенесено в STAR прилёта",
+      "sidMissing": "SID {{name}} нет в ваших навданных",
+      "starMissing": "STAR {{name}} нет в ваших навданных",
+      "approachMissing": "Захода {{name}} нет в ваших навданных"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Поменять вылет и прилёт",
