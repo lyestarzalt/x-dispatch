@@ -212,7 +212,10 @@
       "speedLevel_one": "{{count}} Geschwindigkeits- und Höhenangabe entfernt",
       "speedLevel_other": "{{count}} Geschwindigkeits- und Höhenangaben entfernt",
       "sid": "{{name}} in die Abflug-SID übernommen",
-      "star": "{{name}} in die Anflug-STAR übernommen"
+      "star": "{{name}} in die Anflug-STAR übernommen",
+      "sidMissing": "SID {{name}} fehlt in deinen Navdaten",
+      "starMissing": "STAR {{name}} fehlt in deinen Navdaten",
+      "approachMissing": "Anflug {{name}} fehlt in deinen Navdaten"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Abflug und Ankunft tauschen",

@@ -309,7 +309,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   // Pick procedures the way a dispatcher would, once per runway/route combination: the SID that
   // exits where the route starts, the STAR that enters where it ends, and the best approach for
   // the runway. Only empty slots are filled, so a choice (or a deliberate "none") stays put until
-  // the runway or the route changes.
+  // the runway, the route or the STAR changes (the STAR decides the approach transition).
   const suggestedFor = useRef<string | null>(null);
   useEffect(() => {
     if (!isOpen || depLoading || arrLoading) return;
@@ -322,6 +322,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
       departure?.runway,
       arrival?.icao,
       arrival?.runway,
+      arrival?.star?.name,
       firstEnrouteFixId,
       lastEnrouteFixId,
     ].join('|');
@@ -451,6 +452,38 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
       last ? typed.lastIndexOf(last.text) : -1
     );
   }, [ready, tokens, routeText, sids, stars, setProcedureChoice, addRouteNote, removeRouteToken]);
+
+  // Procedures a loaded .fms file names go to the pickers once the airport data is here. A
+  // transition line may name the fix the route meets the procedure at rather than a published
+  // transition, which `filedProcedureChoice` falls back from. One the data does not publish is
+  // noted under "Adjusted" and its slot left to the suggestion above.
+  const filedProcedures = usePlanBuilderStore((s) => s.filedProcedures);
+  const setFiledProcedures = usePlanBuilderStore((s) => s.setFiledProcedures);
+  useEffect(() => {
+    if (!filedProcedures || !isOpen || depProcedures === undefined || arrProcedures === undefined) {
+      return;
+    }
+    const lists = { sid: sids, star: stars, approach: approaches } as const;
+    for (const kind of ['sid', 'star', 'approach'] as const) {
+      const filed = filedProcedures[kind];
+      if (!filed) continue;
+      const choice = filedProcedureChoice(lists[kind], filed.name, filed.transition);
+      if (choice) setProcedureChoice(kind, choice);
+      else addRouteNote({ text: filed.name, kind: `${kind}Missing` });
+    }
+    setFiledProcedures(null);
+  }, [
+    filedProcedures,
+    isOpen,
+    depProcedures,
+    arrProcedures,
+    sids,
+    stars,
+    approaches,
+    setProcedureChoice,
+    addRouteNote,
+    setFiledProcedures,
+  ]);
 
   // Departure, resolved en-route fixes and arrival, so the light band follows
   // the filed route rather than the great circle between the airports.

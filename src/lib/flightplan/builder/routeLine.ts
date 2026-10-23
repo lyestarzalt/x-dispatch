@@ -115,9 +115,19 @@ export function routeLineSegments(
       departs = true;
       continue;
     }
-    // The approach geometry already ends on the runway: nothing is drawn from there back to
-    // the airport datum (LNM: "Do not draw a line from runway end to airport center").
-    if (wp.via === 'ADES' && flysApproach) continue;
+    if (wp.via === 'ADES') {
+      // An arrival procedure whose only fix is where the previous leg ended carries no via of
+      // its own, so its geometry is drawn here, before the airport.
+      for (const p of procedurePaths ?? []) {
+        if ((p.kind === 'star' || p.kind === 'approach') && !used.has(p.via) && p.path.length > 1) {
+          used.add(p.via);
+          push(p.kind, p.path, p.via);
+        }
+      }
+      // The approach geometry already ends on the runway: nothing is drawn from there back to
+      // the airport datum (LNM: "Do not draw a line from runway end to airport center").
+      if (flysApproach) continue;
+    }
     const hint = wp.via ? hintByVia.get(wp.via) : undefined;
     if (hint && hint.path.length > 1) {
       if (!used.has(wp.via!)) {

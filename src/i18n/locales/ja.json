@@ -212,7 +212,10 @@
       "speedLevel_one": "速度・高度の指定を {{count}} 件除去",
       "speedLevel_other": "速度・高度の指定を {{count}} 件除去",
       "sid": "{{name}} を出発 SID に移動",
-      "star": "{{name}} を到着 STAR に移動"
+      "star": "{{name}} を到着 STAR に移動",
+      "sidMissing": "SID {{name}} はナビデータにありません",
+      "starMissing": "STAR {{name}} はナビデータにありません",
+      "approachMissing": "アプローチ {{name}} はナビデータにありません"
     },
     "runwayPlaceholder": "RWY",
     "swap": "出発と到着を入れ替え",

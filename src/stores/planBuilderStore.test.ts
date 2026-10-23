@@ -242,3 +242,46 @@ describe('planBuilderStore — whose route it is', () => {
     expect(routerOwnsRoute({ routeText: '', autoRoutedText: '' })).toBe(false);
   });
 });
+
+describe('planBuilderStore — loading an .fms file', () => {
+  const draft = {
+    departure: { ...LFMC, runway: '13' },
+    arrival: { ...LFLN, runway: '15' },
+    routeText: 'XATEL UY30 MTL',
+    cruiseAltitudeFt: 31000,
+    filed: { sid: { name: 'LUC1A', transition: 'XATEL' }, star: { name: 'YAN2B' } },
+  };
+
+  it('opens the planner on the file: ends, runways, route, cruise and the filed procedures', () => {
+    usePlanBuilderStore.getState().loadFromFms(draft);
+    const state = usePlanBuilderStore.getState();
+    expect(state.isOpen).toBe(true);
+    expect(state.departure).toMatchObject({ icao: 'LFMC', runway: '13' });
+    expect(state.arrival).toMatchObject({ icao: 'LFLN', runway: '15' });
+    expect(state.routeText).toBe('XATEL UY30 MTL');
+    expect(state.cruiseAltitudeFt).toBe(31000);
+    expect(state.filedProcedures).toEqual(draft.filed);
+    expect(state.result).toBeNull();
+    expect(state.routeNotes).toEqual([]);
+    expect(state.savedPath).toBeNull();
+  });
+
+  it('replaces whatever the planner had drawn before', () => {
+    drawnPlan();
+    usePlanBuilderStore.setState({
+      alternate: LFMC as PlanEndpoint,
+      procedures: { sid: {} as never },
+    });
+    usePlanBuilderStore.getState().loadFromFms(draft);
+    const state = usePlanBuilderStore.getState();
+    expect(useFlightPlanStore.getState().fmsData).toBeNull();
+    expect(state.alternate).toBeNull();
+    expect(state.procedures).toEqual({});
+  });
+
+  it('forgets the filed procedures once the dialog has taken them', () => {
+    usePlanBuilderStore.getState().loadFromFms(draft);
+    usePlanBuilderStore.getState().setFiledProcedures(null);
+    expect(usePlanBuilderStore.getState().filedProcedures).toBeNull();
+  });
+});

@@ -212,7 +212,10 @@
       "speedLevel_one": "{{count}} speed and level note dropped",
       "speedLevel_other": "{{count}} speed and level notes dropped",
       "sid": "{{name}} moved to the departure SID",
-      "star": "{{name}} moved to the arrival STAR"
+      "star": "{{name}} moved to the arrival STAR",
+      "sidMissing": "SID {{name}} is not in your nav data",
+      "starMissing": "STAR {{name}} is not in your nav data",
+      "approachMissing": "Approach {{name}} is not in your nav data"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Swap departure and arrival",

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **An X-Plane .fms file now opens in the flight planner.** The SID, STAR and approach the file names are loaded from your nav data and drawn in their own colours, the same as a plan built in X-Dispatch or imported from SimBrief. Files from SimBrief, Little Navmap and FlyCharts all work. A procedure your nav data does not have is pointed out under "Adjusted" so you can pick another.
+
+### Fixed
+
+- **The STAR no longer starts one leg early in a planned route.** The leg into the fix where the airway hands over to the STAR is drawn and labelled as the airway, as SimBrief plans already were.
+- **The approach picker no longer guesses a transition.** Where every version of an approach has a transition, the planner used to take the first one before it knew your STAR, and kept it. It now waits and fills in the transition that starts where your STAR ends.
+
 ## [2.8.2] - 2026-10-17
 
 ### Changed

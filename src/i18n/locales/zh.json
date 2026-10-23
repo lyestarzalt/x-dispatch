@@ -212,7 +212,10 @@
       "speedLevel_one": "已去除 {{count}} 处速度和高度标注",
       "speedLevel_other": "已去除 {{count}} 处速度和高度标注",
       "sid": "{{name}} 已移入离场 SID",
-      "star": "{{name}} 已移入进场 STAR"
+      "star": "{{name}} 已移入进场 STAR",
+      "sidMissing": "SID {{name}} 不在你的导航数据中",
+      "starMissing": "STAR {{name}} 不在你的导航数据中",
+      "approachMissing": "进近 {{name}} 不在你的导航数据中"
     },
     "runwayPlaceholder": "RWY",
     "swap": "交换出发和到达",

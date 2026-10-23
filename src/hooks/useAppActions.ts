@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { importFmsFile } from '@/lib/flightplan/importFms';
 import { type AppAction, describeRemoteUrl } from '@/lib/nativeShell/appUrl';
 import { toastError } from '@/lib/utils/toastError';
 import type { Airport } from '@/lib/xplaneServices/dataService';
@@ -130,9 +131,7 @@ export async function runAppAction(action: AppAction, ctx: ActionContext): Promi
         toastError('flight_plan', ctx.t('appActions.importFailed', { host }));
         return;
       }
-      const loaded = await useFlightPlanStore
-        .getState()
-        .loadFMSFile(result.content, result.fileName);
+      const loaded = importFmsFile(result.content, ctx.airports());
       trackEvent('flight_plan_file_loaded', { success: loaded });
       if (loaded) toast.success(ctx.t('appActions.importDone', { fileName: result.fileName }));
       else toastError('flight_plan', ctx.t('appActions.importFailed', { host }));
@@ -145,9 +144,7 @@ export async function runAppAction(action: AppAction, ctx: ActionContext): Promi
         toastError('flight_plan', ctx.t('appActions.importFileFailed'));
         return;
       }
-      const loaded = await useFlightPlanStore
-        .getState()
-        .loadFMSFile(result.content, result.fileName);
+      const loaded = importFmsFile(result.content, ctx.airports());
       trackEvent('flight_plan_file_loaded', { success: loaded });
       if (loaded) toast.success(ctx.t('appActions.importDone', { fileName: result.fileName }));
       else toastError('flight_plan', ctx.t('appActions.importFileFailed'));

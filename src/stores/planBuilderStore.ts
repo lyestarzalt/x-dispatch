@@ -11,6 +11,7 @@ import {
   planIsEastbound,
   procedureFloorFt,
 } from '@/lib/flightplan/builder/cruiseAdjust';
+import type { FiledProcedures, FmsDraft } from '@/lib/flightplan/builder/fmsDraft';
 import { fmsFileStem, serializeFms } from '@/lib/flightplan/builder/fmsWriter';
 import { builtProcedurePaths } from '@/lib/flightplan/builder/legGeometry';
 import {
@@ -46,7 +47,8 @@ export type ExploreTab = 'random' | 'routes' | 'weather';
 /** A token moved out of the route text into a picker, so the planner can say so. */
 export interface RouteNote {
   text: string;
-  kind: 'sid' | 'star';
+  /** `*Missing`: a loaded file named a procedure the airport data does not publish. */
+  kind: 'sid' | 'star' | 'sidMissing' | 'starMissing' | 'approachMissing';
 }
 
 /** The persisted part of the planner: what an undo of "New plan" brings back. */
@@ -67,6 +69,11 @@ interface PlanBuilderState extends PlanDraft {
   /** Procedures moved out of the route text since it was last typed. */
   routeNotes: RouteNote[];
   addRouteNote: (note: RouteNote) => void;
+  /** Procedures a loaded .fms file names, until the dialog has matched them against the airport data. */
+  filedProcedures: FiledProcedures | null;
+  setFiledProcedures: (filed: FiledProcedures | null) => void;
+  /** Starts the planner over on a loaded .fms file; the dialog resolves and draws it from there. */
+  loadFromFms: (draft: FmsDraft) => void;
   /** The network whose pilot filed the current route text, when it came from one. */
   routeSource: NetworkId | null;
   setRouteSource: (source: NetworkId | null) => void;
@@ -173,6 +180,28 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       routeSource: null,
       addRouteNote: (note) => set((state) => ({ routeNotes: [...state.routeNotes, note] })),
       setRouteSource: (source) => set({ routeSource: source }),
+      filedProcedures: null,
+      setFiledProcedures: (filed) => set({ filedProcedures: filed }),
+      loadFromFms: (draft) => {
+        clearDrawnPlan(get().departure, get().arrival);
+        resolvedDraft = null;
+        set({
+          isOpen: true,
+          departure: draft.departure,
+          arrival: draft.arrival,
+          alternate: null,
+          routeText: draft.routeText,
+          cruiseAltitudeFt: draft.cruiseAltitudeFt,
+          filedProcedures: draft.filed,
+          status: 'idle',
+          result: null,
+          procedures: {},
+          savedPath: null,
+          autoRoutedText: null,
+          routeNotes: [],
+          routeSource: null,
+        });
+      },
 
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false, explore: null }),

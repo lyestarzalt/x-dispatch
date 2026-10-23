@@ -212,7 +212,10 @@
       "speedLevel_one": "{{count}} nota de velocidade e nível removida",
       "speedLevel_other": "{{count}} notas de velocidade e nível removidas",
       "sid": "{{name}} movido para a SID de partida",
-      "star": "{{name}} movido para a STAR de chegada"
+      "star": "{{name}} movido para a STAR de chegada",
+      "sidMissing": "A SID {{name}} não está nos seus dados de navegação",
+      "starMissing": "A STAR {{name}} não está nos seus dados de navegação",
+      "approachMissing": "A aproximação {{name}} não está nos seus dados de navegação"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Trocar partida e chegada",

@@ -168,6 +168,35 @@ describe('routeLinePoints', () => {
     expect(line.slice(-3)).toEqual(approachPath);
   });
 
+  it('draws an approach whose only fix is the STAR exit, so no fix carries its name', () => {
+    // The shared fix keeps the STAR's via (the leg into it is the STAR's); the approach
+    // geometry from there to the runway still has to be drawn, before the airport is reached.
+    const starPath = [
+      { latitude: 50.4, longitude: 7.4 },
+      { latitude: 50.3, longitude: 7.6 },
+    ];
+    const approachPath = [
+      { latitude: 50.3, longitude: 7.6 },
+      { latitude: 50.1, longitude: 7.9 },
+      { latitude: 50, longitude: 8.05 },
+    ];
+    const wps = [
+      { via: 'FIX', latitude: 50.5, longitude: 7 },
+      { via: 'MOLI2A', latitude: 50.4, longitude: 7.4 },
+      { via: 'MOLI2A', latitude: 50.3, longitude: 7.6 },
+      { via: 'ADES', latitude: 50.01, longitude: 8 },
+    ];
+    const segments = routeLineSegments(wps, { arrival: RWY_27 }, undefined, [
+      { via: 'MOLI2A', path: starPath, kind: 'star' },
+      { via: 'I27', path: approachPath, kind: 'approach' },
+    ]);
+    expect(segments.map((s) => s.kind)).toEqual(['star', 'approach']);
+    expect(segments[1]!.points[segments[1]!.points.length - 1]).toEqual({
+      latitude: 50,
+      longitude: 8.05,
+    });
+  });
+
   it('still joins a STAR without an approach onto the arrival threshold', () => {
     const starPath = [
       { latitude: 50.4, longitude: 7.4 },

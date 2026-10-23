@@ -32,58 +32,53 @@ export function parseFMSFile(content: string): FMSParseResult {
       waypoints: [],
     };
 
-    let numEnroute = 0;
-    let waypointStartIndex = -1;
-
-    // Parse header lines
+    // Header lines and waypoint rows are told apart by their first word, wherever they sit:
+    // some planners write the SID and STAR after NUMENR, and NUMENR itself is not trusted
+    // (one planner counts the procedure legs it never writes). A key only matches whole,
+    // so SIDTRANS never overwrites SID.
     for (let i = 2; i < lines.length; i++) {
       const line = lines[i];
       if (!line) continue;
-
-      if (line.startsWith('CYCLE')) {
-        plan.cycle = line.split(/\s+/)[1];
-      } else if (line.startsWith('ADEP')) {
-        plan.departure.icao = line.split(/\s+/)[1] || '';
-      } else if (line.startsWith('DEPRWY')) {
-        const rwy = line.split(/\s+/)[1];
-        plan.departure.runway = rwy?.replace(/^RW/, '');
-      } else if (line.startsWith('SID')) {
-        plan.departure.sid = line.split(/\s+/)[1];
-      } else if (line.startsWith('SIDTRANS')) {
-        plan.departure.sidTransition = line.split(/\s+/)[1];
-      } else if (line.startsWith('ADES')) {
-        plan.arrival.icao = line.split(/\s+/)[1] || '';
-      } else if (line.startsWith('DESRWY')) {
-        const rwy = line.split(/\s+/)[1];
-        plan.arrival.runway = rwy?.replace(/^RW/, '');
-      } else if (line.startsWith('STAR')) {
-        plan.arrival.star = line.split(/\s+/)[1];
-      } else if (line.startsWith('STARTRANS')) {
-        plan.arrival.starTransition = line.split(/\s+/)[1];
-      } else if (line.startsWith('APP')) {
-        plan.arrival.approach = line.split(/\s+/)[1];
-      } else if (line.startsWith('APPTRANS')) {
-        plan.arrival.approachTransition = line.split(/\s+/)[1];
-      } else if (line.startsWith('NUMENR')) {
-        numEnroute = parseInt(line.split(/\s+/)[1] || '0', 10);
-        waypointStartIndex = i + 1;
-        break;
-      }
-    }
-
-    // Parse waypoints
-    if (waypointStartIndex > 0 && numEnroute > 0) {
-      for (
-        let i = waypointStartIndex;
-        i < lines.length && plan.waypoints.length < numEnroute;
-        i++
-      ) {
-        const line = lines[i];
-        if (!line) continue;
-
-        const waypoint = parseWaypointLine(line);
-        if (waypoint) {
-          plan.waypoints.push(waypoint);
+      const [key, value = ''] = line.split(/\s+/);
+      switch (key) {
+        case 'CYCLE':
+          plan.cycle = value;
+          break;
+        case 'ADEP':
+          plan.departure.icao = value;
+          break;
+        case 'DEPRWY':
+          plan.departure.runway = value.replace(/^RW/, '');
+          break;
+        case 'SID':
+          plan.departure.sid = value;
+          break;
+        case 'SIDTRANS':
+          plan.departure.sidTransition = value;
+          break;
+        case 'ADES':
+          plan.arrival.icao = value;
+          break;
+        case 'DESRWY':
+          plan.arrival.runway = value.replace(/^RW/, '');
+          break;
+        case 'STAR':
+          plan.arrival.star = value;
+          break;
+        case 'STARTRANS':
+          plan.arrival.starTransition = value;
+          break;
+        case 'APP':
+          plan.arrival.approach = value;
+          break;
+        case 'APPTRANS':
+          plan.arrival.approachTransition = value;
+          break;
+        case 'NUMENR':
+          break;
+        default: {
+          const waypoint = parseWaypointLine(line);
+          if (waypoint) plan.waypoints.push(waypoint);
         }
       }
     }

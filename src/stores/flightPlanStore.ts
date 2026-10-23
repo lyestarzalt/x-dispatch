@@ -4,7 +4,6 @@
  */
 import { create } from 'zustand';
 import { mergeStationData, toFmsPlan } from '@/lib/flightplan/stationData';
-import { parseFMSFile } from '@/lib/parsers/fms';
 import { enrichedPlanFromOfp } from '@/lib/simbrief/plan';
 import logger from '@/lib/utils/loggerRenderer';
 import type { EnrichedFlightPlan, FlightPlanChip } from '@/types/fms';
@@ -61,8 +60,6 @@ interface FlightPlanState {
   clearRoute: () => void;
   clearAll: () => void;
 
-  // FMS Actions
-  loadFMSFile: (content: string, fileName: string) => Promise<boolean>;
   setSelectedWaypoint: (index: number | null) => void;
   clearFlightPlan: () => void;
   getChips: () => FlightPlanChip[];
@@ -131,68 +128,6 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
       selectedWaypointIndex: null,
       showFlightPlanBar: false,
     });
-  },
-
-  loadFMSFile: async (content, fileName) => {
-    const result = parseFMSFile(content);
-    if (!result.success || !result.data) {
-      return false;
-    }
-
-    // Clear previous flight plan and set initial state
-    set({
-      fmsData: null,
-      simbriefData: null,
-      isEnriching: true,
-      showFlightPlanBar: true,
-      selectedWaypointIndex: null,
-      departure: {
-        icao: result.data.departure.icao,
-        runway: result.data.departure.runway,
-        procedure: result.data.departure.sid,
-        transition: result.data.departure.sidTransition,
-      },
-      arrival: {
-        icao: result.data.arrival.icao,
-        runway: result.data.arrival.runway,
-        procedure: result.data.arrival.star,
-        transition: result.data.arrival.starTransition,
-      },
-    });
-
-    // Enrich with nav database data
-    try {
-      const enriched = await window.flightPlanAPI.enrich(result.data);
-      if (enriched) {
-        set({
-          fmsData: enriched,
-          fileName,
-          isEnriching: false,
-        });
-        return true;
-      } else {
-        logger.flight.warn('Enrichment returned null');
-      }
-    } catch (err) {
-      logger.flight.error('Failed to enrich flight plan:', err);
-    }
-
-    // Fallback: use raw FMS data if enrichment fails
-    set({
-      fmsData: {
-        ...result.data,
-        waypoints: result.data.waypoints.map((wp) => ({ ...wp, found: true })),
-        resolution: {
-          total: result.data.waypoints.length,
-          found: result.data.waypoints.length,
-          notFound: 0,
-          cycleMatch: true,
-        },
-      },
-      fileName,
-      isEnriching: false,
-    });
-    return true;
   },
 
   setSelectedWaypoint: (index) => set({ selectedWaypointIndex: index }),

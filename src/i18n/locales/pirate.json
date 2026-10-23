@@ -212,7 +212,10 @@
       "speedLevel_one": "{{count}} speed an' height scribble tossed overboard",
       "speedLevel_other": "{{count}} speed an' height scribbles tossed overboard",
       "sid": "{{name}} hauled into the departin' SID",
-      "star": "{{name}} hauled into the arrivin' STAR"
+      "star": "{{name}} hauled into the arrivin' STAR",
+      "sidMissing": "SID {{name}} ain't on yer charts",
+      "starMissing": "STAR {{name}} ain't on yer charts",
+      "approachMissing": "Approach {{name}} ain't on yer charts"
     },
     "runwayPlaceholder": "RWY",
     "swap": "Swap the harbors",
