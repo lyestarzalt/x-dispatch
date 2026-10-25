@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Chart a Voyage",
+    "collapse": "Stow the chart table",
+    "halfHeight": "Trim the sails",
+    "fullHeight": "Full sail",
+    "expand": "Unstow the chart table",
     "description": "Pick both harbors, scrawl a route or sail straight, then send it to X-Plane.",
     "sections": {
       "enroute": "Open Sea",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY CHARTS"
     },
     "actions": {
+      "collapse": "Stow the panel",
       "addFavorite": "Add to favorites, matey",
       "removeFavorite": "Strike from favorites",
       "setHome": "Mark as home harbor",

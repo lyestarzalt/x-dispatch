@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Zaplanuj lot",
+    "collapse": "Zwiń planer",
+    "halfHeight": "Widok kompaktowy",
+    "fullHeight": "Pełny widok",
+    "expand": "Rozwiń planer",
     "description": "Wybierz oba lotniska, wpisz trasę lub leć bezpośrednio, a potem wyślij do X-Plane.",
     "sections": {
       "enroute": "Trasa",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Zwiń panel",
       "addFavorite": "Dodaj do ulubionych",
       "removeFavorite": "Usuń z ulubionych",
       "setHome": "Ustaw jako lotnisko bazowe",

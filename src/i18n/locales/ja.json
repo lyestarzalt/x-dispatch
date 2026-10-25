@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "フライトを計画",
+    "collapse": "プランナーを折りたたむ",
+    "halfHeight": "コンパクト表示",
+    "fullHeight": "全体表示",
+    "expand": "プランナーを広げる",
     "description": "出発地と到着地を選び、ルートを入力するか直行にして、X-Planeへ送ります。",
     "sections": {
       "enroute": "エンルート",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "パネルを折りたたむ",
       "addFavorite": "お気に入りに追加",
       "removeFavorite": "お気に入りから削除",
       "setHome": "拠点空港に設定",

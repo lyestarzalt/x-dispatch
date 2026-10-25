@@ -285,3 +285,39 @@ describe('planBuilderStore — loading an .fms file', () => {
     expect(usePlanBuilderStore.getState().filedProcedures).toBeNull();
   });
 });
+
+describe('planBuilderStore — panel size', () => {
+  it('opens at full size every time, and forgets a half or rail size on close', () => {
+    const store = usePlanBuilderStore.getState();
+    store.open();
+    store.setPanel('rail');
+    expect(usePlanBuilderStore.getState().panel).toBe('rail');
+    store.open();
+    expect(usePlanBuilderStore.getState().panel).toBe('full');
+    store.setPanel('half');
+    store.close();
+    expect(usePlanBuilderStore.getState()).toMatchObject({ isOpen: false, panel: 'full' });
+    store.setPanel('rail');
+    store.openExplore('random');
+    expect(usePlanBuilderStore.getState().panel).toBe('full');
+  });
+});
+
+describe('planBuilderStore — start at departure', () => {
+  it('keeps the planner open in its compact view', () => {
+    const store = usePlanBuilderStore.getState();
+    store.open();
+    store.setDeparture({
+      icao: 'DAAG',
+      name: 'Houari Boumediene',
+      latitude: 36.69,
+      longitude: 3.21,
+    } as PlanEndpoint);
+    store.startAtDeparture();
+    expect(usePlanBuilderStore.getState()).toMatchObject({
+      isOpen: true,
+      panel: 'half',
+      explore: null,
+    });
+  });
+});

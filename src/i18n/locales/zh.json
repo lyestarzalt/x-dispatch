@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "规划航班",
+    "collapse": "折叠规划器",
+    "halfHeight": "紧凑视图",
+    "fullHeight": "完整视图",
+    "expand": "展开规划器",
     "description": "选择起降机场，输入航路或直飞，然后发送到 X-Plane。",
     "sections": {
       "enroute": "航路",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "折叠面板",
       "addFavorite": "加入收藏",
       "removeFavorite": "取消收藏",
       "setHome": "设为基地机场",

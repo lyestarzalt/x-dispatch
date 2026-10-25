@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Planejar um voo",
+    "collapse": "Recolher o planeador",
+    "halfHeight": "Vista compacta",
+    "fullHeight": "Vista completa",
+    "expand": "Expandir o planeador",
     "description": "Escolha origem e destino, digite uma rota ou voe direto e envie ao X-Plane.",
     "sections": {
       "enroute": "Em rota",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Recolher o painel",
       "addFavorite": "Adicionar aos favoritos",
       "removeFavorite": "Remover dos favoritos",
       "setHome": "Definir como base",

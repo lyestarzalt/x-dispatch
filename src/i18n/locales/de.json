@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Flug planen",
+    "collapse": "Planer einklappen",
+    "halfHeight": "Kompaktansicht",
+    "fullHeight": "Vollansicht",
+    "expand": "Planer ausklappen",
     "description": "Start und Ziel wählen, Route eingeben oder direkt fliegen, dann an X-Plane senden.",
     "sections": {
       "enroute": "Streckenflug",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Panel einklappen",
       "addFavorite": "Zu Favoriten",
       "removeFavorite": "Aus Favoriten entfernen",
       "setHome": "Als Heimatflughafen festlegen",

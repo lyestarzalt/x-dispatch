@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Plan a flight",
+    "collapse": "Fold the planner",
+    "halfHeight": "Compact view",
+    "fullHeight": "Full view",
+    "expand": "Unfold the planner",
     "description": "Pick both ends, type a route or fly direct, then send it to X-Plane.",
     "sections": {
       "enroute": "Enroute",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Fold the panel",
       "addFavorite": "Add to favorites",
       "removeFavorite": "Remove from favorites",
       "setHome": "Set as home airport",

@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Pianifica un volo",
+    "collapse": "Richiudi il pianificatore",
+    "halfHeight": "Vista compatta",
+    "fullHeight": "Vista completa",
+    "expand": "Riapri il pianificatore",
     "description": "Scegli partenza e arrivo, scrivi una rotta o vola diretto, poi invia a X-Plane.",
     "sections": {
       "enroute": "In rotta",
@@ -1002,6 +1006,7 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Richiudi il pannello",
       "addFavorite": "Aggiungi ai preferiti",
       "removeFavorite": "Rimuovi dai preferiti",
       "setHome": "Imposta come aeroporto di base",
