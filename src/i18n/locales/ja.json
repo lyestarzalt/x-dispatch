@@ -1335,6 +1335,7 @@
     "spawnErrorNeedsAdmin": "Windows が X-Plane の起動を拒否しました。管理者権限が必要か、ウイルス対策ソフトがブロックしている可能性があります。X-Dispatch を管理者として実行してみてください。",
     "spawnErrorAccessBlocked": "X-Dispatch はすでに管理者として実行されていますが、Windows が X-Plane の起動を拒否しました。権限の問題ではありません。ウイルス対策ソフトまたはフォルダー アクセスの制御がブロックしている可能性が高いです。X-Plane のフォルダーを許可してから、もう一度お試しください。",
     "changeFlightRejected": "X-Plane がフライトを受け付けませんでした: {{message}}",
+    "changeFlightConnectionLost": "フライトの読み込み中にX-Planeとの接続が切れました（{{reason}}）。X-Planeを確認してください。フライトは読み込まれている可能性があります。",
     "spawnErrorAlreadyRunning": "X-Plane はすでに実行中です。代わりに「フライトを変更」ボタンをご利用ください。",
     "spawnErrorPathNotConfigured": "X-Plane のインストールパスが設定されていません。設定 > X-Plane インストール で指定してください。",
     "spawnErrorInvalidConfig": "フライト設定が未完了です。機体と出発地点を選択してから、もう一度お試しください。",

@@ -1335,6 +1335,7 @@
     "spawnErrorNeedsAdmin": "Windows a refusé de démarrer X-Plane. Des droits administrateur sont peut-être nécessaires, ou un antivirus le bloque. Essayez d’exécuter X-Dispatch en tant qu’administrateur.",
     "spawnErrorAccessBlocked": "Windows a refusé de démarrer X-Plane alors que X-Dispatch s’exécute déjà en tant qu’administrateur : ce n’est donc pas un problème de droits. Un antivirus ou l’Accès contrôlé aux dossiers le bloque probablement. Autorisez le dossier de X-Plane, puis réessayez.",
     "changeFlightRejected": "X-Plane n’a pas accepté le vol : {{message}}",
+    "changeFlightConnectionLost": "La connexion à X-Plane a été perdue pendant le chargement du vol ({{reason}}). Vérifiez X-Plane : le vol a peut-être été chargé malgré tout.",
     "spawnErrorAlreadyRunning": "X-Plane est déjà en cours d’exécution. Utilisez plutôt le bouton « Changer de vol ».",
     "spawnErrorPathNotConfigured": "Aucun chemin d’installation X-Plane n’est configuré. Définissez-le dans Paramètres > Installation X-Plane.",
     "spawnErrorInvalidConfig": "La configuration du vol est incomplète. Sélectionnez un appareil et un point de départ, puis réessayez.",

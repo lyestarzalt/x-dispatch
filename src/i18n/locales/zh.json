@@ -1335,6 +1335,7 @@
     "spawnErrorNeedsAdmin": "Windows 拒绝启动 X-Plane。可能需要管理员权限，或被杀毒软件阻止。请尝试以管理员身份运行 X-Dispatch。",
     "spawnErrorAccessBlocked": "X-Dispatch 已以管理员身份运行，但 Windows 仍拒绝启动 X-Plane，因此不是权限问题。很可能是杀毒软件或「受控文件夹访问」阻止了它。请允许 X-Plane 所在文件夹后重试。",
     "changeFlightRejected": "X-Plane 未接受此飞行：{{message}}",
+    "changeFlightConnectionLost": "加载飞行时与 X-Plane 的连接中断（{{reason}}）。请检查 X-Plane：飞行可能已经加载。",
     "spawnErrorAlreadyRunning": "X-Plane 已在运行。请改用「更改飞行」按钮。",
     "spawnErrorPathNotConfigured": "尚未配置 X-Plane 安装路径。请在「设置 > X-Plane 安装」中设置。",
     "spawnErrorInvalidConfig": "飞行配置不完整。请选择飞机和出发点后重试。",

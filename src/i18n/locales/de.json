@@ -1335,6 +1335,7 @@
     "spawnErrorNeedsAdmin": "Windows hat den Start von X-Plane verweigert. Möglicherweise sind Administratorrechte erforderlich oder ein Antivirenprogramm blockiert den Start. Führen Sie X-Dispatch als Administrator aus.",
     "spawnErrorAccessBlocked": "Windows hat den Start von X-Plane verweigert, obwohl X-Dispatch bereits als Administrator läuft. Es liegt also nicht an den Berechtigungen. Wahrscheinlich blockiert ein Antivirenprogramm oder der überwachte Ordnerzugriff den Start. Geben Sie den X-Plane-Ordner frei und versuchen Sie es erneut.",
     "changeFlightRejected": "X-Plane hat den Flug nicht akzeptiert: {{message}}",
+    "changeFlightConnectionLost": "Die Verbindung zu X-Plane ist beim Laden des Flugs abgebrochen ({{reason}}). Prüfe X-Plane: der Flug wurde möglicherweise trotzdem geladen.",
     "spawnErrorAlreadyRunning": "X-Plane läuft bereits. Verwenden Sie stattdessen die Schaltfläche „Flug ändern“.",
     "spawnErrorPathNotConfigured": "Es ist kein X-Plane-Installationspfad konfiguriert. Legen Sie ihn unter Einstellungen > X-Plane-Installation fest.",
     "spawnErrorInvalidConfig": "Die Flugkonfiguration ist unvollständig. Wählen Sie ein Flugzeug und einen Startpunkt und versuchen Sie es erneut.",
