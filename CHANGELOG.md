@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Show only airports with instrument procedures.** A new switch under Layers, Airports, hides every airport that has no SID, STAR or approach in your nav data, so an IFR flight can be planned from the map without opening each airport to find out. Reset Filters turns it off again.
+
 ### Changed
 
+- **The flight plan strip is easier to move around.** Buttons at each end jump straight to the departure or the arrival, the arrows next to them move a screenful at a time, and the mouse wheel scrolls the strip. The edge fades out where more waypoints are hidden, and the strip scrolls to a waypoint you pick on the map.
 - **An X-Plane .fms file now opens in the flight planner.** The SID, STAR and approach the file names are loaded from your nav data and drawn in their own colours, the same as a plan built in X-Dispatch or imported from SimBrief. Files from SimBrief, Little Navmap and FlyCharts all work. A procedure your nav data does not have is pointed out under "Adjusted" so you can pick another.
 
 ### Fixed
 
+- **Holding patterns are drawn as proper racetracks.** The two turns of a hold on an approach or missed approach started a quarter turn out of place, which drew a hook at the holding fix and left the oval open. The turns now join the legs cleanly in both directions.
 - **The STAR no longer starts one leg early in a planned route.** The leg into the fix where the airway hands over to the STAR is drawn and labelled as the airway, as SimBrief plans already were.
 - **The approach picker no longer guesses a transition.** Where every version of an approach has a transition, the planner used to take the first one before it knew your STAR, and kept it. It now waits and fills in the transition that starts where your STAR ends.
 
