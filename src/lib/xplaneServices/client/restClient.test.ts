@@ -113,3 +113,59 @@ describe('startFlight rejection parsing', () => {
     expect(result.error).toBe('<html>bad gateway');
   });
 });
+
+// X-Plane stops answering while it loads the new flight: the open connection drops before a
+// response is written, or nothing comes back at all. The flight loads anyway.
+describe('startFlight when the connection breaks during the load', () => {
+  const payload = {
+    aircraft: { path: 'Aircraft/test.acf' },
+    ramp_start: { airport_id: 'LFLS', ramp: 'Gate 9' },
+  };
+  const timing = { requestTimeoutMs: 30, recoveryWindowMs: 200, recoveryProbeMs: 5 };
+  const reset = (xplaneBack: boolean) => {
+    const dropped = Object.assign(new TypeError('fetch failed'), {
+      cause: Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }),
+    });
+    const fetch = vi.fn((url: string) =>
+      url.endsWith('/flight')
+        ? Promise.reject(dropped)
+        : xplaneBack
+          ? Promise.resolve({ ok: true })
+          : Promise.reject(new TypeError('fetch failed'))
+    );
+    vi.stubGlobal('fetch', fetch);
+    return fetch;
+  };
+
+  it('takes the change as accepted when X-Plane answers again, and says why it had to', async () => {
+    reset(true);
+    const result = await new XPlaneRestClient(8086, timing).startFlight(payload);
+    expect(result).toEqual({ success: true, connectionDropped: 'ECONNRESET: socket hang up' });
+  });
+
+  it('fails with the real reason when X-Plane never comes back', async () => {
+    const fetch = reset(false);
+    const result = await new XPlaneRestClient(8086, timing).startFlight(payload);
+    expect(result.success).toBe(false);
+    expect(result.code).toBeUndefined();
+    expect(result.connectionDropped).toBe('ECONNRESET: socket hang up');
+    expect(result.error).toContain('ECONNRESET: socket hang up');
+    // Probed more than once across the recovery window.
+    expect(fetch.mock.calls.filter(([url]) => !url.endsWith('/flight')).length).toBeGreaterThan(2);
+  });
+
+  it('gives up waiting for an answer and probes instead of hanging', async () => {
+    const fetch = vi.fn((url: string, init?: RequestInit) =>
+      url.endsWith('/flight')
+        ? new Promise((_, reject) =>
+            init?.signal?.addEventListener('abort', () =>
+              reject(Object.assign(new Error('This operation was aborted'), { name: 'AbortError' }))
+            )
+          )
+        : Promise.resolve({ ok: true })
+    );
+    vi.stubGlobal('fetch', fetch);
+    const result = await new XPlaneRestClient(8086, timing).startFlight(payload);
+    expect(result).toEqual({ success: true, connectionDropped: 'no answer within 30 ms' });
+  });
+});

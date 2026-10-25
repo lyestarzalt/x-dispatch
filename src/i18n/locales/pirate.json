@@ -1335,6 +1335,7 @@
     "spawnErrorNeedsAdmin": "Windows refused to start X-Plane, arr. She may be wantin’ administrator rights, or th’ antivirus be blockin’ her. Try runnin’ X-Dispatch as administrator.",
     "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch already sails under th’ captain’s flag, so it be no permissions trouble. Most likely th’ antivirus or Controlled Folder Access be blockin’ her. Allow X-Plane’s folder and try again.",
     "changeFlightRejected": "X-Plane refused th’ voyage: {{message}}",
+    "changeFlightConnectionLost": "Lost the line to X-Plane while it was loadin' the flight ({{reason}}). Check X-Plane: the flight may have loaded anyway, arr.",
     "spawnErrorAlreadyRunning": "X-Plane already be underway. Use th’ \"Change Voyage\" button instead.",
     "spawnErrorPathNotConfigured": "No X-Plane install course be set. Chart it in Settings > X-Plane Install.",
     "spawnErrorInvalidConfig": "Th’ voyage plan be incomplete. Choose yer craft and a departure, then try again.",

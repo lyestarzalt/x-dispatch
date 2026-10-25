@@ -1214,7 +1214,7 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
     requestAttention();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.main.error(`[AutoUpdate] ${message}`);
+    logger.main.error(`[AutoUpdate] ${message}`, err);
     updateStatus.patch({ install: 'error', error: message });
     const reason = updateFailureReason(message);
     // Retries come every 10 minutes; one report per kind of failure per session is enough.
@@ -2405,7 +2405,7 @@ function registerIpcHandlers() {
         return result;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        logger.launcher.error(`[User] Launch exception: ${message}`);
+        logger.launcher.error(`[User] Launch exception: ${message}`, error);
         return { success: false, error: message, code: 'SPAWN_FAILED' };
       }
     }
@@ -2482,20 +2482,30 @@ function registerIpcHandlers() {
           : `Change flight refused: ${result.code}`,
         level: result.success ? 'info' : 'warning',
       });
+      const version = dataManager.getXPlaneVersion();
+      const env = {
+        xplaneVersion: version?.raw ?? null,
+        xplaneSteam: version?.isSteam ?? false,
+        appVersion: app.getVersion(),
+        platform: process.platform,
+      };
       if (!result.success && result.code) {
         const { reportFlightRejection } =
           await import('./lib/xplaneServices/launch/flightRejection');
-        const version = dataManager.getXPlaneVersion();
         reportFlightRejection(
           analytics,
-          payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit,
+          flightPayload,
           { code: result.code, message: result.error ?? '' },
-          {
-            xplaneVersion: version?.raw ?? null,
-            xplaneSteam: version?.isSteam ?? false,
-            appVersion: app.getVersion(),
-            platform: process.platform,
-          }
+          env
+        );
+      }
+      if (result.connectionDropped) {
+        const { reportFlightConnectionDrop } =
+          await import('./lib/xplaneServices/launch/flightConnection');
+        reportFlightConnectionDrop(
+          flightPayload,
+          { reason: result.connectionDropped, recovered: result.success },
+          env
         );
       }
       return result;

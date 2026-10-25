@@ -355,7 +355,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             setLaunchError(
               result.code
                 ? t('launcher.changeFlightRejected', { message: result.error })
-                : result.error || t('launcher.spawnErrorGeneric')
+                : result.connectionDropped
+                  ? t('launcher.changeFlightConnectionLost', { reason: result.connectionDropped })
+                  : result.error || t('launcher.spawnErrorGeneric')
             );
             return;
           }

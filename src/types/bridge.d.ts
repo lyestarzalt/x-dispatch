@@ -359,9 +359,13 @@ declare global {
         api: { versions: string[] };
         'x-plane': { version: string };
       } | null>;
-      startFlight: (
-        payload: unknown
-      ) => Promise<{ success: boolean; error?: string; code?: string }>;
+      startFlight: (payload: unknown) => Promise<{
+        success: boolean;
+        error?: string;
+        code?: string;
+        /** The connection broke mid-request, and why; with `success`, X-Plane came back. */
+        connectionDropped?: string;
+      }>;
       getDataref: (name: string) => Promise<number | number[] | null>;
       setDataref: (
         name: string,

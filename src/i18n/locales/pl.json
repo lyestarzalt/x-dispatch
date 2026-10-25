@@ -1335,6 +1335,7 @@
     "spawnErrorNeedsAdmin": "Windows odmówił uruchomienia X-Plane. Mogą być potrzebne uprawnienia administratora lub blokuje to program antywirusowy. Spróbuj uruchomić X-Dispatch jako administrator.",
     "spawnErrorAccessBlocked": "Windows odmówił uruchomienia X-Plane, mimo że X-Dispatch działa już jako administrator, więc to nie problem z uprawnieniami. Najprawdopodobniej blokuje to program antywirusowy lub Kontrolowany dostęp do folderów. Zezwól na folder X-Plane i spróbuj ponownie.",
     "changeFlightRejected": "X-Plane nie zaakceptował lotu: {{message}}",
+    "changeFlightConnectionLost": "Utracono połączenie z X-Plane podczas wczytywania lotu ({{reason}}). Sprawdź X-Plane: lot mógł zostać mimo to wczytany.",
     "spawnErrorAlreadyRunning": "X-Plane jest już uruchomiony. Użyj zamiast tego przycisku „Zmień lot”.",
     "spawnErrorPathNotConfigured": "Nie skonfigurowano ścieżki instalacji X-Plane. Ustaw ją w Ustawienia > Instalacja X-Plane.",
     "spawnErrorInvalidConfig": "Konfiguracja lotu jest niekompletna. Wybierz samolot i miejsce startu, a następnie spróbuj ponownie.",

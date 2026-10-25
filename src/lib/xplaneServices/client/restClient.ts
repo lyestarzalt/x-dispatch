@@ -12,6 +12,23 @@ import type { FlightInit } from './generated/xplaneApi';
 const DEFAULT_PORT = 8086;
 const CONNECTION_TIMEOUT = 2000;
 
+/**
+ * How long a flight change may go unanswered, and how long to keep asking
+ * X-Plane whether it is back once the connection broke. Loading an aircraft
+ * stalls X-Plane's web server for several seconds, so both are generous.
+ */
+export interface FlightRequestTiming {
+  requestTimeoutMs: number;
+  recoveryWindowMs: number;
+  recoveryProbeMs: number;
+}
+
+const DEFAULT_FLIGHT_TIMING: FlightRequestTiming = {
+  requestTimeoutMs: 15_000,
+  recoveryWindowMs: 20_000,
+  recoveryProbeMs: 1_000,
+};
+
 interface ApiCapabilities {
   api: { versions: string[] };
   'x-plane': { version: string };
@@ -22,7 +39,30 @@ export interface StartFlightResult {
   error?: string;
   /** X-Plane's `error_code` when it refused the flight, e.g. `missing_ramp`. */
   code?: string;
+  /**
+   * The connection broke before X-Plane answered, and why. With `success` the
+   * request had been delivered and X-Plane answered again afterwards, so the
+   * change is taken as accepted; without it X-Plane stayed silent.
+   */
+  connectionDropped?: string;
 }
+
+/**
+ * What actually went wrong with a request, which `String(err)` hides: Node's
+ * fetch reports every network failure as "TypeError: fetch failed" and keeps
+ * the reason (ECONNRESET, ECONNREFUSED, "other side closed") in `cause`.
+ */
+export function describeFetchFailure(err: unknown): string {
+  const cause = (err as { cause?: unknown } | null)?.cause;
+  if (cause && typeof cause === 'object') {
+    const { code, name, message } = cause as { code?: unknown; name?: unknown; message?: unknown };
+    const label = typeof code === 'string' ? code : typeof name === 'string' ? name : null;
+    if (typeof message === 'string') return label ? `${label}: ${message}` : message;
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * X-Plane answers a refused flight with `{ error_code, error_message }`. Keep
@@ -52,13 +92,15 @@ function rejectionFromBody(body: string, fallback: string): StartFlightResult {
 
 export class XPlaneRestClient {
   private port: number;
+  private flightTiming: FlightRequestTiming;
   // Per X-Plane local web API docs: dataref id is stable within a session
   // (even across aircraft load/unload). Caching skips the name→id lookup
   // roundtrip on every setDataref/getDataref call after the first.
   private datarefIdCache = new Map<string, number>();
 
-  constructor(port: number = DEFAULT_PORT) {
+  constructor(port: number = DEFAULT_PORT, flightTiming: Partial<FlightRequestTiming> = {}) {
     this.port = port;
+    this.flightTiming = { ...DEFAULT_FLIGHT_TIMING, ...flightTiming };
   }
 
   private get baseUrl(): string {
@@ -115,15 +157,35 @@ export class XPlaneRestClient {
   async startFlight(payload: FlightInit): Promise<StartFlightResult> {
     try {
       payload = validateNewFlight(payload);
-      const response = await fetch(`${this.baseUrl}/flight`, {
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+
+    const { requestTimeoutMs } = this.flightTiming;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs);
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/flight`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
         body: JSON.stringify({ data: payload }),
+        signal: controller.signal,
       });
+    } catch (err) {
+      // The request left; X-Plane went quiet while loading. Wait for it to come back.
+      const reason = controller.signal.aborted
+        ? `no answer within ${requestTimeoutMs} ms`
+        : describeFetchFailure(err);
+      return this.afterConnectionDropped(reason);
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
+    try {
       if (!response.ok) {
         return rejectionFromBody(await response.text(), `HTTP ${response.status}`);
       }
@@ -144,8 +206,23 @@ export class XPlaneRestClient {
         error: 'X-Plane returned an invalid flight initialization response.',
       };
     } catch (err) {
-      return { success: false, error: String(err) };
+      return { success: false, error: describeFetchFailure(err) };
     }
+  }
+
+  /** Probes until X-Plane answers again or the recovery window runs out. */
+  private async afterConnectionDropped(reason: string): Promise<StartFlightResult> {
+    const { recoveryWindowMs, recoveryProbeMs } = this.flightTiming;
+    const deadline = Date.now() + recoveryWindowMs;
+    do {
+      await sleep(recoveryProbeMs);
+      if (await this.isRunning()) return { success: true, connectionDropped: reason };
+    } while (Date.now() < deadline);
+    return {
+      success: false,
+      connectionDropped: reason,
+      error: `Lost the connection to X-Plane while it loaded the flight (${reason}).`,
+    };
   }
 
   async getDataref(datarefName: string): Promise<number | number[] | null> {
