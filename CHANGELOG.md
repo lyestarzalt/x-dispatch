@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Changing the flight no longer reports "fetch failed" while X-Plane loads it.** X-Plane stops answering while it loads a new aircraft, so the request went through but the reply never came and the launcher showed an error. It now waits for X-Plane to come back and closes as normal. If X-Plane really does not come back, the message says the connection was lost and that the flight may have loaded anyway.
+- **Flight plans saved by an aircraft's own FMC open in the planner.** The Zibo 737's MCDU, among others, writes .fms files in the older X-Plane 10 layout, which the import refused with "Couldn't read this flight plan". They now open like any other, with the runway the FMC wrote as a fix taken as the landing runway.
 - **Holding patterns are drawn as proper racetracks.** The two turns of a hold on an approach or missed approach started a quarter turn out of place, which drew a hook at the holding fix and left the oval open. The turns now join the legs cleanly in both directions.
 - **The STAR no longer starts one leg early in a planned route.** The leg into the fix where the airway hands over to the STAR is drawn and labelled as the airway, as SimBrief plans already were.
 - **The approach picker no longer guesses a transition.** Where every version of an approach has a transition, the planner used to take the first one before it knew your STAR, and kept it. It now waits and fills in the transition that starts where your STAR ends.
