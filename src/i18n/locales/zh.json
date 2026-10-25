@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "规划航班",
+    "collapse": "折叠规划器",
+    "halfHeight": "紧凑视图",
+    "fullHeight": "完整视图",
+    "expand": "展开规划器",
     "description": "选择起降机场，输入航路或直飞，然后发送到 X-Plane。",
     "sections": {
       "enroute": "航路",
@@ -401,6 +405,7 @@
     "showOnly": "仅显示",
     "iataOnly": "商用航空 (IATA)",
     "customOnly": "自定义地景",
+    "proceduresOnly": "仅显示有仪表程序的机场",
     "surfaceType": "道面类型",
     "runwaySurface": "跑道道面",
     "water": "水面",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "隐私",
       "usageData": "共享匿名使用数据",
-      "usageDataDescription": "使用了哪些功能、应用版本和操作系统。立即生效。"
+      "usageDataDescription": "使用了哪些功能、应用版本和操作系统。立即生效。",
+      "crashReportId": "崩溃报告 ID",
+      "crashReportIdDescription": "在 Discord 报告问题时附上此 ID，以便找到你的崩溃报告。",
+      "crashReportIdCopied": "ID 已复制",
+      "copyCrashReportId": "复制 ID"
     },
     "simbrief": {
       "description": "从 SimBrief 导入飞行计划",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "中",
       "ownshipSizeLarge": "大",
       "ownshipColor": "颜色",
-      "ownshipColorDesc": "选择在你的底图上最醒目的颜色。在线交通仍为绿色和青色。",
+      "ownshipColorDesc": "选择在你的底图上最醒目的颜色。在线交通仍为绿色和蓝色，模拟器交通为琥珀色。",
       "ownshipColorWhite": "白色",
       "ownshipColorMagenta": "洋红色",
-      "ownshipColorOrange": "橙色",
+      "ownshipColorRed": "红色",
       "ownshipAltitudeCues": "显示高度",
       "ownshipAltitudeCuesDesc": "在图标下方显示地面阴影，飞得越高，阴影越远。",
       "ownshipPreviewDark": "深色地图",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "折叠面板",
       "addFavorite": "加入收藏",
       "removeFavorite": "取消收藏",
       "setHome": "设为基地机场",
       "clearHome": "清除基地机场"
     },
+    "localTime": "{{icao}}当地时间",
     "stats": {
       "elevation": "海拔",
       "runways": "跑道",
@@ -2254,6 +2265,13 @@
     "donate": "支持这个项目",
     "notNow": "以后再说",
     "dontShowAgain": "不再显示"
+  },
+  "flightPlanBar": {
+    "clear": "清除飞行计划",
+    "jumpToDeparture": "跳到出发机场",
+    "jumpToArrival": "跳到到达机场",
+    "scrollBack": "向后滚动",
+    "scrollForward": "向前滚动"
   },
   "profile": {
     "title": "垂直剖面",

@@ -551,7 +551,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 40,
+      version: 41,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -814,9 +814,11 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
   }
 
   if (version < 39) {
-    // The dark-with-cyan-edge scheme is gone; anything unknown takes the default.
+    // The dark-with-cyan-edge scheme is gone; anything unknown takes the default. Orange was
+    // still a scheme at this version and is renamed by the v41 step, so it passes through.
     const graphics = { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics };
-    if (!isOwnshipColorScheme(graphics.ownshipColor)) {
+    const colour = graphics.ownshipColor as string;
+    if (!isOwnshipColorScheme(colour) && colour !== 'orange') {
       graphics.ownshipColor = DEFAULT_GRAPHICS_SETTINGS.ownshipColor;
     }
     state = { ...state, graphics };
@@ -832,6 +834,13 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
         order: parseFlightStripOrder(state.flightStrip?.order),
       },
     };
+  }
+
+  if (version < 41) {
+    // Orange sat next to the sim traffic's amber; it is red now.
+    const graphics = { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics };
+    if ((graphics.ownshipColor as string) === 'orange') graphics.ownshipColor = 'red';
+    state = { ...state, graphics };
   }
 
   return state as SettingsState;

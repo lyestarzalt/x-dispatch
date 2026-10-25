@@ -20,6 +20,8 @@ interface ProcedureSelectProps {
   placeholder: string;
   onChange: (choice: ProcedureChoice | undefined) => void;
   className?: string;
+  /** Spell out the procedure name for display; the choice keeps the raw name. */
+  labelFor?: (procedure: ResolvedProcedure) => string;
 }
 
 /** One entry per procedure name and transition, filtered to the chosen runway. */
@@ -30,19 +32,24 @@ export function ProcedureSelect({
   placeholder,
   onChange,
   className,
+  labelFor,
 }: ProcedureSelectProps) {
   const { t } = useTranslation();
   const options = useMemo(() => {
-    const seen = new Map<string, ProcedureChoice>();
+    const seen = new Map<string, ProcedureChoice & { label: string }>();
     for (const p of proceduresForRunway(procedures, runway)) {
-      const choice = { name: p.name, transition: p.transition ?? null };
+      const choice = {
+        name: p.name,
+        transition: p.transition ?? null,
+        label: labelFor?.(p) ?? p.name,
+      };
       seen.set(choiceKey(choice), choice);
     }
     return [...seen.values()].sort(
       (a, b) =>
         a.name.localeCompare(b.name) || (a.transition ?? '').localeCompare(b.transition ?? '')
     );
-  }, [procedures, runway]);
+  }, [procedures, runway, labelFor]);
 
   return (
     <Select
@@ -57,7 +64,7 @@ export function ProcedureSelect({
         <SelectItem value={NONE}>{t('planBuilder.noProcedure')}</SelectItem>
         {options.map((o) => (
           <SelectItem key={choiceKey(o)} value={choiceKey(o)} className="font-mono text-xs">
-            {o.name}
+            {o.label}
             {o.transition && <span className="text-muted-foreground ml-2">{o.transition}</span>}
           </SelectItem>
         ))}

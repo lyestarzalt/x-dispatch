@@ -7,12 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **See what time it is at the airport.** The airport panel shows the local time at the selected airport with its offset from UTC, so when you browse for a place to fly you know whether it is morning or night there. The flight planner shows it under the departure and the arrival too. With the toolbar clock following X-Plane time, the readout follows the simulator's clock and says so.
+- **Show only airports with instrument procedures.** A new switch under Layers, Airports, hides every airport that has no SID, STAR or approach in your nav data, so an IFR flight can be planned from the map without opening each airport to find out. Reset Filters turns it off again.
+- **A reference ID for problem reports.** Settings, Support, shows a short ID next to the crash reports switch. Paste it with your message on Discord and your report can be matched to what the app saw, so it gets looked at faster. The ID is random, holds no personal details, and goes away when you turn crash reports off.
+- **The flight planner has a compact view and folds away, and the airport panel closes.** Two buttons in the planner's header: one switches to a compact read-out of the plan, the airports, times, figures and route with nothing to edit, small enough to leave the map's zoom and compass controls clear while you fly; the other folds it to a slim rail showing the route's ends, as the airport panel already does. The airport panel gains a close button next to its chevron, and its header no longer wraps.
+
 ### Changed
 
+- **Start at departure keeps the planner open.** It switches to the compact view beside the airport instead of closing, so the plan stays in sight while you pick a stand.
+- **A loaded flight plan is framed in the part of the map you can see.** The planner, the airport panel, the top bar and the profile strip no longer cover the ends of the route. Open or close a panel and the plan reframes itself, unless you have dragged or zoomed the map since, in which case your view stays put. Flying to an airport centres it in the visible area too.
+- **Your aircraft is drawn as its real silhouette again.** The map shows the outline of the type you are flying, the same shapes the traffic layers use, in your chosen colour with a black edge, at the fixed on-screen size from 2.8. A type without a shape gets the generic airplane, and a helicopter without one gets a drawn helicopter with its rotor.
+- **Approaches are listed by their chart names.** The airport panel and the planner's approach picker now read "ILS Z RWY 04L" or "RNAV (GPS) T RWY 29" instead of the nav data codes like I04LZ and R29-T. The code is still shown in small print beside the name. This comes from the nav data itself, so it works at every airport in the world, not only in the US.
+- **The flight plan strip is easier to move around.** Buttons at each end jump straight to the departure or the arrival, the arrows next to them move a screenful at a time, and the mouse wheel scrolls the strip. The edge fades out where more waypoints are hidden, and the strip scrolls to a waypoint you pick on the map.
 - **An X-Plane .fms file now opens in the flight planner.** The SID, STAR and approach the file names are loaded from your nav data and drawn in their own colours, the same as a plan built in X-Dispatch or imported from SimBrief. Files from SimBrief, Little Navmap and FlyCharts all work. A procedure your nav data does not have is pointed out under "Adjusted" so you can pick another.
 
 ### Fixed
 
+- **Holding patterns are drawn as proper racetracks.** The two turns of a hold on an approach or missed approach started a quarter turn out of place, which drew a hook at the holding fix and left the oval open. The turns now join the legs cleanly in both directions.
 - **The STAR no longer starts one leg early in a planned route.** The leg into the fix where the airway hands over to the STAR is drawn and labelled as the airway, as SimBrief plans already were.
 - **The approach picker no longer guesses a transition.** Where every version of an approach has a transition, the planner used to take the first one before it knew your STAR, and kept it. It now waits and fills in the transition that starts where your STAR ends.
 

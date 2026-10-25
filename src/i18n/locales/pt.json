@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Planejar um voo",
+    "collapse": "Recolher o planeador",
+    "halfHeight": "Vista compacta",
+    "fullHeight": "Vista completa",
+    "expand": "Expandir o planeador",
     "description": "Escolha origem e destino, digite uma rota ou voe direto e envie ao X-Plane.",
     "sections": {
       "enroute": "Em rota",
@@ -401,6 +405,7 @@
     "showOnly": "Mostrar apenas",
     "iataOnly": "Comercial (IATA)",
     "customOnly": "Cenários personalizados",
+    "proceduresOnly": "Só com procedimentos por instrumentos",
     "surfaceType": "Tipo de superfície",
     "runwaySurface": "Superfície de pista",
     "water": "Água",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Privacidade",
       "usageData": "Partilhar dados de utilização anónimos",
-      "usageDataDescription": "Funcionalidades usadas, versão da app e sistema. Aplica-se de imediato."
+      "usageDataDescription": "Funcionalidades usadas, versão da app e sistema. Aplica-se de imediato.",
+      "crashReportId": "ID de relatórios de falhas",
+      "crashReportIdDescription": "Indica este ID ao reportar um problema no Discord para encontrarmos os teus relatórios.",
+      "crashReportIdCopied": "ID copiado",
+      "copyCrashReportId": "Copiar ID"
     },
     "simbrief": {
       "description": "Importar planos de voo do SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Médio",
       "ownshipSizeLarge": "Grande",
       "ownshipColor": "Cor",
-      "ownshipColorDesc": "Escolha o que mais se destaca no seu mapa base. O tráfego online continua verde e ciano.",
+      "ownshipColorDesc": "Escolha o que mais se destaca no seu mapa base. O tráfego online continua verde e azul, o do simulador âmbar.",
       "ownshipColorWhite": "Branco",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Laranja",
+      "ownshipColorRed": "Vermelho",
       "ownshipAltitudeCues": "Mostrar altitude",
       "ownshipAltitudeCuesDesc": "Uma sombra no solo sob o símbolo, mais afastada quanto mais alto voa.",
       "ownshipPreviewDark": "Mapa escuro",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Recolher o painel",
       "addFavorite": "Adicionar aos favoritos",
       "removeFavorite": "Remover dos favoritos",
       "setHome": "Definir como base",
       "clearHome": "Remover base"
     },
+    "localTime": "Hora local em {{icao}}",
     "stats": {
       "elevation": "ELEV",
       "runways": "PISTA",
@@ -2254,6 +2265,13 @@
     "donate": "Apoiar o projeto",
     "notNow": "Agora não",
     "dontShowAgain": "Não mostrar novamente"
+  },
+  "flightPlanBar": {
+    "clear": "Limpar plano de voo",
+    "jumpToDeparture": "Ir para a partida",
+    "jumpToArrival": "Ir para a chegada",
+    "scrollBack": "Recuar",
+    "scrollForward": "Avançar"
   },
   "profile": {
     "title": "Perfil vertical",

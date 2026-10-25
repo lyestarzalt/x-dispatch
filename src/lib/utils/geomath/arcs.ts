@@ -209,12 +209,13 @@ export function createHoldingPattern(
   // Start at hold fix (point 1)
   points.push(point1);
 
-  // First turn (at hold fix) - 180 degree turn
+  // First turn (at hold fix) - 180 degree turn. Seen from the turn centre the fix sits
+  // opposite the offset side, so the sweep starts there and ends at the outbound leg.
   const turn1Center = destinationPoint(fixLat, fixLon, turnRadiusMeters, offsetAngle);
   for (let i = 1; i <= turnPoints; i++) {
     const fraction = i / turnPoints;
     const turnAngle = turnDirection === 'R' ? 180 * fraction : -180 * fraction;
-    const currentAngle = normalizeAngle(inboundCourse + 180 + turnAngle);
+    const currentAngle = normalizeAngle(offsetAngle + 180 + turnAngle);
     const point = destinationPoint(turn1Center[1], turn1Center[0], turnRadiusMeters, currentAngle);
     points.push(point);
   }
@@ -222,12 +223,13 @@ export function createHoldingPattern(
   // Outbound leg to point 3
   points.push(point3);
 
-  // Second turn (at far end) - 180 degree turn
+  // Second turn (at far end) - 180 degree turn. The outbound leg ends on the offset side of
+  // the centre, so the sweep starts there and ends at the inbound leg.
   const turn2Center = destinationPoint(point4[1], point4[0], turnRadiusMeters, offsetAngle);
   for (let i = 1; i <= turnPoints; i++) {
     const fraction = i / turnPoints;
     const turnAngle = turnDirection === 'R' ? 180 * fraction : -180 * fraction;
-    const currentAngle = normalizeAngle(outboundCourse + 180 + turnAngle);
+    const currentAngle = normalizeAngle(offsetAngle + turnAngle);
     const point = destinationPoint(turn2Center[1], turn2Center[0], turnRadiusMeters, currentAngle);
     points.push(point);
   }

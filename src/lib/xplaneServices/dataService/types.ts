@@ -19,6 +19,8 @@ export interface Airport {
   surfaceType: 'paved' | 'unpaved' | 'water' | 'other';
   elevation: number;
   country: string;
+  /** True when the airport's CIFP file holds at least one SID, STAR or approach. */
+  hasProcedures: boolean;
 }
 
 export interface AirportSourceBreakdown {

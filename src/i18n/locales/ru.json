@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Спланировать полёт",
+    "collapse": "Свернуть планировщик",
+    "halfHeight": "Компактный вид",
+    "fullHeight": "Полный вид",
+    "expand": "Развернуть планировщик",
     "description": "Выберите оба аэропорта, введите маршрут или летите напрямую, затем отправьте в X-Plane.",
     "sections": {
       "enroute": "Маршрут",
@@ -401,6 +405,7 @@
     "showOnly": "Показать только",
     "iataOnly": "Коммерческие (IATA)",
     "customOnly": "Пользовательские сценарии",
+    "proceduresOnly": "Только с процедурами ППП",
     "surfaceType": "Тип покрытия",
     "runwaySurface": "Покрытие ВПП",
     "water": "Вода",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Конфиденциальность",
       "usageData": "Делиться анонимными данными об использовании",
-      "usageDataDescription": "Используемые функции, версия приложения и ОС. Применяется сразу."
+      "usageDataDescription": "Используемые функции, версия приложения и ОС. Применяется сразу.",
+      "crashReportId": "ID отчётов о сбоях",
+      "crashReportIdDescription": "Укажите этот ID при сообщении о проблеме в Discord, чтобы мы нашли ваши отчёты.",
+      "crashReportIdCopied": "ID скопирован",
+      "copyCrashReportId": "Скопировать ID"
     },
     "simbrief": {
       "description": "Импорт планов полёта из SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Средний",
       "ownshipSizeLarge": "Большой",
       "ownshipColor": "Цвет",
-      "ownshipColorDesc": "Выберите то, что лучше выделяется на вашей подложке. Онлайн-трафик остаётся зелёным и голубым.",
+      "ownshipColorDesc": "Выберите то, что лучше выделяется на вашей подложке. Онлайн-трафик остаётся зелёным и синим, трафик симулятора — янтарным.",
       "ownshipColorWhite": "Белый",
       "ownshipColorMagenta": "Пурпурный",
-      "ownshipColorOrange": "Оранжевый",
+      "ownshipColorRed": "Красный",
       "ownshipAltitudeCues": "Показывать высоту",
       "ownshipAltitudeCuesDesc": "Тень на земле под символом, тем дальше, чем выше вы летите.",
       "ownshipPreviewDark": "Тёмная карта",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Свернуть панель",
       "addFavorite": "В избранное",
       "removeFavorite": "Убрать из избранного",
       "setHome": "Сделать домашним",
       "clearHome": "Убрать домашний"
     },
+    "localTime": "Местное время в {{icao}}",
     "stats": {
       "elevation": "ВЫСОТА",
       "runways": "ВПП",
@@ -2254,6 +2265,13 @@
     "donate": "Поддержать проект",
     "notNow": "Не сейчас",
     "dontShowAgain": "Больше не показывать"
+  },
+  "flightPlanBar": {
+    "clear": "Очистить план полёта",
+    "jumpToDeparture": "К вылету",
+    "jumpToArrival": "К прилёту",
+    "scrollBack": "Прокрутить назад",
+    "scrollForward": "Прокрутить вперёд"
   },
   "profile": {
     "title": "Вертикальный профиль",

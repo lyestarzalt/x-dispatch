@@ -1,6 +1,8 @@
-import { memo, useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ChevronFirst,
+  ChevronLast,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -16,9 +18,15 @@ import { cn } from '@/lib/utils/helpers';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
 import type { FlightPlanChip } from '@/types/fms';
+import { type ScrollEdges, getScrollEdges, pageStep } from './scrollEdges';
 
 // Minimum pixels moved to consider it a drag (not a click)
 const DRAG_THRESHOLD = 5;
+
+const NO_EDGES: ScrollEdges = { atStart: true, atEnd: true, overflows: false };
+
+/** Every control on the bar: full height, no radius, hairline between neighbours. */
+const RAIL_BUTTON = 'border-border h-10 w-9 shrink-0 rounded-none';
 
 interface FlightPlanBarProps {
   onWaypointClick?: (chip: FlightPlanChip) => void;
@@ -36,6 +44,9 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   const getChips = useFlightPlanStore((s) => s.getChips);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
 
+  // Which ends of the tape are in view: drives the rail buttons and the edge fades.
+  const [edges, setEdges] = useState<ScrollEdges>(NO_EDGES);
+
   // Drag-to-scroll refs (using refs to avoid re-renders)
   const isDraggingRef = useRef(false);
   const hasDraggedRef = useRef(false); // True if mouse moved beyond threshold
@@ -44,6 +55,37 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
 
   // getChips() reads fmsData internally - component re-renders when fmsData changes
   const chips = getChips();
+  const visible = showFlightPlanBar && fmsData !== null;
+
+  const updateEdges = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const next = getScrollEdges(el.scrollLeft, el.clientWidth, el.scrollWidth);
+    setEdges((prev) =>
+      prev.atStart === next.atStart &&
+      prev.atEnd === next.atEnd &&
+      prev.overflows === next.overflows
+        ? prev
+        : next
+    );
+  }, []);
+
+  // Track the edges through scrolling, resizing and plan changes.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !visible) return;
+    updateEdges();
+    const observer = new ResizeObserver(updateEdges);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visible, chips.length, updateEdges]);
+
+  // Bring the picked waypoint into view, e.g. after a click on the map or the profile.
+  useEffect(() => {
+    if (selectedWaypointIndex === null) return;
+    const el = scrollRef.current?.querySelector<HTMLElement>('[data-active="true"]');
+    el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [selectedWaypointIndex]);
 
   const handleChipClick = useCallback(
     (chip: FlightPlanChip) => {
@@ -55,12 +97,26 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
     [setSelectedWaypoint, onWaypointClick]
   );
 
-  const scrollLeft = useCallback(() => {
-    scrollRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+  const scrollByPage = useCallback((direction: -1 | 1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction * pageStep(el.clientWidth), behavior: 'smooth' });
   }, []);
 
-  const scrollRight = useCallback(() => {
-    scrollRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+  const jumpToStart = useCallback(() => {
+    scrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+  }, []);
+
+  const jumpToEnd = useCallback(() => {
+    const el = scrollRef.current;
+    el?.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+  }, []);
+
+  // A mouse wheel has no horizontal axis; let its vertical travel move the tape.
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    const el = scrollRef.current;
+    if (!el || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    el.scrollBy({ left: e.deltaY });
   }, []);
 
   // Drag-to-scroll handlers
@@ -107,7 +163,14 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
     }
   }, []);
 
-  if (!showFlightPlanBar || !fmsData) return null;
+  if (!visible) return null;
+
+  const clearLabel = t('flightPlanBar.clear');
+  const jumpStartLabel = t('flightPlanBar.jumpToDeparture');
+  const jumpEndLabel = t('flightPlanBar.jumpToArrival');
+  const backLabel = t('flightPlanBar.scrollBack');
+  const forwardLabel = t('flightPlanBar.scrollForward');
+  const profileLabel = profileStripOpen ? t('profile.hide') : t('profile.show');
 
   return (
     <div className="border-border bg-card/95 flex h-10 items-center overflow-hidden rounded-lg border backdrop-blur-sm">
@@ -116,49 +179,96 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
         variant="ghost"
         size="icon"
         onClick={clearFlightPlan}
-        className="border-border text-muted-foreground hover:text-destructive h-10 w-8 shrink-0 rounded-none border-r"
-        aria-label="Clear flight plan"
+        className={cn(RAIL_BUTTON, 'text-muted-foreground hover:text-destructive border-r')}
+        aria-label={clearLabel}
+        title={clearLabel}
       >
         <X className="h-4 w-4" />
       </Button>
 
-      {/* Left scroll button */}
+      {/* Left rail: back to the departure, then one page back */}
       <Button
         variant="ghost"
         size="icon"
-        onClick={scrollLeft}
-        className="border-border text-muted-foreground hover:text-foreground h-10 w-8 shrink-0 rounded-none border-r"
+        onClick={jumpToStart}
+        disabled={edges.atStart}
+        className={cn(RAIL_BUTTON, 'text-muted-foreground hover:text-foreground border-r')}
+        aria-label={jumpStartLabel}
+        title={jumpStartLabel}
+      >
+        <ChevronFirst className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => scrollByPage(-1)}
+        disabled={edges.atStart}
+        className={cn(RAIL_BUTTON, 'text-muted-foreground hover:text-foreground border-r')}
+        aria-label={backLabel}
+        title={backLabel}
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      {/* Scrollable chips area - drag to scroll */}
-      <div
-        ref={scrollRef}
-        className="scrollbar-hidden flex flex-1 cursor-grab items-center gap-1.5 overflow-x-auto px-2 py-1.5 select-none"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-      >
-        {chips.map((chip, index) => (
-          <WaypointChip
-            key={`${chip.type}-${chip.id}-${index}`}
-            chip={chip}
-            isActive={chip.waypointIndex === selectedWaypointIndex}
-            onClick={() => handleChipClick(chip)}
-          />
-        ))}
+      {/* Scrollable chips area - drag or wheel to scroll; fades show there is more */}
+      <div className="relative min-w-0 flex-1">
+        <div
+          ref={scrollRef}
+          className="scrollbar-hidden flex cursor-grab items-center gap-2 overflow-x-auto px-3 py-1.5 select-none"
+          onScroll={updateEdges}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+        >
+          {chips.map((chip, index) => (
+            <WaypointChip
+              key={`${chip.type}-${chip.id}-${index}`}
+              chip={chip}
+              isActive={chip.waypointIndex === selectedWaypointIndex}
+              onClick={() => handleChipClick(chip)}
+            />
+          ))}
+        </div>
+        <div
+          aria-hidden
+          className={cn(
+            'from-card pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r to-transparent transition-opacity',
+            edges.atStart ? 'opacity-0' : 'opacity-100'
+          )}
+        />
+        <div
+          aria-hidden
+          className={cn(
+            'from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent transition-opacity',
+            edges.atEnd ? 'opacity-0' : 'opacity-100'
+          )}
+        />
       </div>
 
-      {/* Right scroll button */}
+      {/* Right rail: one page forward, then on to the arrival */}
       <Button
         variant="ghost"
         size="icon"
-        onClick={scrollRight}
-        className="border-border text-muted-foreground hover:text-foreground h-10 w-8 shrink-0 rounded-none border-l"
+        onClick={() => scrollByPage(1)}
+        disabled={edges.atEnd}
+        className={cn(RAIL_BUTTON, 'text-muted-foreground hover:text-foreground border-l')}
+        aria-label={forwardLabel}
+        title={forwardLabel}
       >
         <ChevronRight className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={jumpToEnd}
+        disabled={edges.atEnd}
+        className={cn(RAIL_BUTTON, 'text-muted-foreground hover:text-foreground border-l')}
+        aria-label={jumpEndLabel}
+        title={jumpEndLabel}
+      >
+        <ChevronLast className="h-4 w-4" />
       </Button>
 
       {/* Vertical profile strip toggle */}
@@ -167,11 +277,12 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
         size="icon"
         onClick={() => setProfileStripOpen(!profileStripOpen)}
         className={cn(
-          'border-border h-10 w-8 shrink-0 rounded-none border-l',
+          RAIL_BUTTON,
+          'border-l',
           profileStripOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
         )}
-        aria-label={profileStripOpen ? t('profile.hide') : t('profile.show')}
-        title={profileStripOpen ? t('profile.hide') : t('profile.show')}
+        aria-label={profileLabel}
+        title={profileLabel}
       >
         <Mountain className="h-4 w-4" />
       </Button>
@@ -228,9 +339,10 @@ const WaypointChip = memo(function WaypointChip({ chip, isActive, onClick }: Way
     <Badge
       variant={variant}
       onClick={onClick}
+      data-active={isActive ? 'true' : undefined}
       className={cn(
-        'gap-1 px-2 py-0.5 text-xs whitespace-nowrap',
-        'transition-all hover:scale-[1.02] active:scale-[0.98]',
+        'h-7 shrink-0 cursor-pointer gap-1.5 px-2.5 text-xs whitespace-nowrap',
+        'transition-colors',
         isActive && 'ring-info ring-offset-background ring-1 ring-offset-1'
       )}
     >

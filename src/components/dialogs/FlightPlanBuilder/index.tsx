@@ -3,8 +3,13 @@ import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   ArrowLeftRight,
+  ArrowRight,
   ArrowUpDown,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   CloudSun,
   Dices,
   Eraser,
@@ -21,6 +26,7 @@ import {
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { IcaoCode } from '@/components/ui/icao-code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
@@ -63,6 +69,7 @@ import {
   trackInRoute,
 } from '@/lib/flightplan/builder/trackChoice';
 import type { LevelBand, PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
+import { formatApproachName } from '@/lib/parsers/nav/approachName';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -99,6 +106,9 @@ import { ExploreFlyout } from './explore/ExploreFlyout';
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
+
+/** The approach picker shows chart-style names; the chosen value stays the raw identifier. */
+const approachLabel = (p: ResolvedProcedure) => formatApproachName(p.name, p.approachType);
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Explore flyout tabs, in header order. */
 const EXPLORE_TABS = [
@@ -117,6 +127,10 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
   useTrackFeatureOpened('flight_plan_builder', isOpen);
   const close = usePlanBuilderStore((s) => s.close);
+  const panel = usePlanBuilderStore((s) => s.panel);
+  const setPanel = usePlanBuilderStore((s) => s.setPanel);
+  // Compact: a read-out of the plan for flying, sized to its content, nothing to edit.
+  const compact = panel === 'half';
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
   const departure = usePlanBuilderStore((s) => s.departure);
@@ -697,12 +711,42 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
 
   return (
     <div
+      data-map-dock="left"
       className={cn(
-        'absolute bottom-4 left-4 z-30 w-[26rem] transition-all duration-300 ease-out',
-        showFlightPlanBar ? 'top-28' : 'top-16'
+        'absolute left-4 z-30 transition-all duration-300 ease-out',
+        showFlightPlanBar ? 'top-28' : 'top-16',
+        panel === 'rail' ? 'w-12' : 'w-[26rem]',
+        // The compact read-out is as tall as its content, leaving the map's controls clear.
+        !compact && 'bottom-4'
       )}
     >
-      <div className="border-border/40 bg-card/95 flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
+      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
+        {/* Folded: a slim rail with the route's ends, same as the airport panel */}
+        <div
+          className={cn(
+            'bg-card absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
+            panel === 'rail' ? 'opacity-100' : 'pointer-events-none opacity-0'
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mb-4 h-8 w-8"
+            onClick={() => setPanel('full')}
+            aria-label={t('planBuilder.expand')}
+            title={t('planBuilder.expand')}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <span
+            className="text-muted-foreground flex items-center gap-1 text-sm"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            <IcaoCode>{departure?.icao ?? '----'}</IcaoCode>
+            <ArrowRight className="h-3 w-3 rotate-90" />
+            <IcaoCode>{arrival?.icao ?? '----'}</IcaoCode>
+          </span>
+        </div>
         <header className="border-border/30 space-y-3 border-b px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
@@ -723,6 +767,28 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               <Button
                 variant="ghost"
                 size="icon-sm"
+                className="text-muted-foreground/40 hover:text-foreground"
+                onClick={() => setPanel(panel === 'half' ? 'full' : 'half')}
+                tooltip={compact ? t('planBuilder.fullHeight') : t('planBuilder.halfHeight')}
+              >
+                {compact ? (
+                  <ChevronsUpDown className="h-4 w-4" />
+                ) : (
+                  <ChevronsDownUp className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground/40 hover:text-foreground"
+                onClick={() => setPanel('rail')}
+                tooltip={t('planBuilder.collapse')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 className="text-muted-foreground hover:text-foreground"
                 onClick={close}
                 tooltip={t('common.close')}
@@ -739,7 +805,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               size="icon-sm"
               className="text-muted-foreground hover:text-foreground shrink-0"
               onClick={swapEndpoints}
-              disabled={!departure && !arrival}
+              disabled={compact || (!departure && !arrival)}
               tooltip={t('planBuilder.swap')}
             >
               <ArrowLeftRight className="h-4 w-4" />
@@ -756,11 +822,15 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
               label={t('planBuilder.ete')}
               value={ready ? formatDuration(estimateMinutes(distanceNm, cls) * 60) : '—'}
             />
-            <CruiseStat
-              label={t('planBuilder.cruiseShort')}
-              value={cruiseAltitudeFt}
-              onChange={setCruiseAltitude}
-            />
+            {compact ? (
+              <Stat label={t('planBuilder.cruiseShort')} value={formatLevel(cruiseAltitudeFt)} />
+            ) : (
+              <CruiseStat
+                label={t('planBuilder.cruiseShort')}
+                value={cruiseAltitudeFt}
+                onChange={setCruiseAltitude}
+              />
+            )}
             <Stat
               label={t('planBuilder.fuel')}
               value={ready ? units.weight(kgToLbs(estimateFuelKg(distanceNm, cls))) : '—'}
@@ -789,7 +859,16 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             </div>
           )}
 
-          <div className="flex items-center justify-between gap-3">
+          {compact && routeText && (
+            <p
+              className="text-muted-foreground truncate font-mono text-xs tracking-wide uppercase"
+              title={routeText}
+            >
+              {routeText}
+            </p>
+          )}
+
+          <div className={cn('flex items-center justify-between gap-3', compact && 'hidden')}>
             <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
             <ToggleGroup
               type="single"
@@ -817,7 +896,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             variant="subtle"
             value={explore ?? ''}
             onValueChange={(v) => setExplore(v ? (v as ExploreTab) : null)}
-            className="w-full"
+            className={cn('w-full', compact && 'hidden')}
           >
             {EXPLORE_TABS.map(({ id, icon: Icon }) => (
               <ToggleGroupItem key={id} value={id} className="min-w-0 flex-1">
@@ -828,7 +907,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </ToggleGroup>
         </header>
 
-        <ScrollArea className="min-h-0 flex-1">
+        <ScrollArea className={cn('min-h-0 flex-1', compact && 'hidden')}>
           <div className="space-y-5 p-4">
             <div className="space-y-3">
               <section className="border-border space-y-3 rounded-lg border p-3">
@@ -907,6 +986,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                           placeholder={t('planBuilder.noProcedure')}
                           onChange={(choice) => setProcedureChoice('approach', choice)}
                           className={FIELD_CLASS}
+                          labelFor={approachLabel}
                         />
                       </Field>
                     </div>

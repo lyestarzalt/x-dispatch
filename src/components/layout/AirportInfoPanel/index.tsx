@@ -1,8 +1,19 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Compass, Home, Info, PlaneTakeoff, Star } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Home,
+  Info,
+  PlaneTakeoff,
+  Star,
+  X,
+} from 'lucide-react';
+import { AirportLocalClock } from '@/components/AirportLocalClock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { IcaoCode } from '@/components/ui/icao-code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatAirportCountry } from '@/lib/utils/format';
@@ -48,6 +59,7 @@ function AirportInfoPanel({
   const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
+  const clearAirport = useAppStore((s) => s.clearAirport);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
   const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const favoriteIcaos = useSettingsStore((s) => s.airports.favoriteIcaos);
@@ -102,6 +114,7 @@ function AirportInfoPanel({
 
   return (
     <div
+      data-map-dock="right"
       className={cn(
         'absolute right-4 bottom-4 z-20 transition-all duration-300 ease-out',
         showFlightPlanBar ? 'top-28' : 'top-16',
@@ -124,38 +137,54 @@ function AirportInfoPanel({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span
-            className="text-foreground font-mono text-sm font-bold tracking-wider"
-            style={{ writingMode: 'vertical-rl' }}
-          >
+          <IcaoCode className="text-sm" style={{ writingMode: 'vertical-rl' }}>
             {airport.id}
-          </span>
+          </IcaoCode>
         </div>
 
-        {/* Collapse button */}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className={cn(
-            'text-muted-foreground/40 hover:text-foreground absolute top-3 right-3 z-10',
-            isCollapsed && 'pointer-events-none opacity-0'
-          )}
-          onClick={() => setIsCollapsed(true)}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-
         {/* Header - Dense pilot info */}
-        <div className="border-border/30 border-b px-4 pt-4 pb-3">
-          {/* Row 1: ICAO + Flight Category */}
-          <div className="flex items-center justify-between gap-2 pr-8">
-            <div className="flex items-baseline gap-2">
+        <div className="border-border/30 border-b px-4 pt-3 pb-3">
+          {/* Row 1: ICAO, elevation and transition altitude; fold and close at the right */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-baseline gap-2">
               <h1 className="text-info font-mono text-xl font-bold tracking-tight">{airport.id}</h1>
-              <span className="text-muted-foreground font-mono text-xs">
-                {elevation}' {transitionAlt && `TA${transitionAlt}'`}
+              <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+                {elevation}'{transitionAlt ? ` · TA${transitionAlt}'` : ''}
               </span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground/40 hover:text-foreground"
+                onClick={() => setIsCollapsed(true)}
+                tooltip={t('airportInfo.actions.collapse')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={clearAirport}
+                tooltip={t('common.close')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Row 2: name and IATA, with favourite, home and the flight category */}
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-baseline gap-2">
+              <p className="text-muted-foreground truncate text-sm">{airport.name}</p>
+              {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
+                <span className="text-muted-foreground shrink-0 font-mono text-xs">
+                  ({airport.metadata.iata_code})
+                </span>
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -208,16 +237,6 @@ function AirportInfoPanel({
             </div>
           </div>
 
-          {/* Row 2: Airport Name + IATA */}
-          <div className="mt-1 flex items-baseline gap-2">
-            <p className="text-muted-foreground text-sm">{airport.name}</p>
-            {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
-              <span className="text-muted-foreground font-mono text-xs">
-                ({airport.metadata.iata_code})
-              </span>
-            )}
-          </div>
-
           {/* Row 3: Location */}
           {(airport.metadata.city || airport.metadata.country) && (
             <p className="text-muted-foreground text-sm">
@@ -230,6 +249,14 @@ function AirportInfoPanel({
                 .join(', ')}
             </p>
           )}
+
+          {/* Row 4: Local time at the airport */}
+          <AirportLocalClock
+            icao={airport.id}
+            latitude={airport.latitude}
+            longitude={airport.longitude}
+            className="mt-1"
+          />
         </div>
 
         {/* Selected position indicator */}

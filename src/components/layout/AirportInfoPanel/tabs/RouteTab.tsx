@@ -6,6 +6,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { runwayMatches } from '@/lib/flightplan/builder/procedures';
+import { formatApproachName } from '@/lib/parsers/nav/approachName';
 import { cn } from '@/lib/utils/helpers';
 import { trackEvent, useAirportProcedures } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
@@ -16,6 +17,30 @@ type ProcedureType = 'SID' | 'STAR' | 'APP';
 interface GroupedProcedure {
   name: string;
   variants: Procedure[];
+}
+
+/**
+ * The approach identifier spelled out; SIDs and STARs as they are. The raw code sits beside
+ * the name except on a row that also carries a variant count, where it would not fit.
+ */
+function ProcedureName({
+  proc,
+  type,
+  withCode = true,
+}: {
+  proc: Procedure;
+  type: ProcedureType;
+  withCode?: boolean;
+}) {
+  if (type !== 'APP') return <span className="font-mono text-sm">{proc.name}</span>;
+  const name = formatApproachName(proc.name, proc.approachType);
+  if (name === proc.name) return <span className="font-mono text-sm">{proc.name}</span>;
+  return (
+    <span className="flex min-w-0 items-baseline gap-2">
+      <span className="truncate text-sm">{name}</span>
+      {withCode && <span className="text-muted-foreground/50 text-2xs font-mono">{proc.name}</span>}
+    </span>
+  );
 }
 
 function groupProcedures(procedures: Procedure[]): GroupedProcedure[] {
@@ -181,7 +206,7 @@ export default function RouteTab() {
                       : 'text-foreground/80 hover:bg-muted/50'
                   )}
                 >
-                  <span className="font-mono text-sm">{proc.name}</span>
+                  <ProcedureName proc={proc} type={activeType} />
                   <div className="flex items-center gap-2">
                     {subtitle && (
                       <span className="text-muted-foreground/50 text-xs">{subtitle}</span>
@@ -230,16 +255,16 @@ export default function RouteTab() {
                       : 'text-foreground/80 hover:bg-muted/50'
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm">{group.name}</span>
+                  <ProcedureName proc={group.variants[0]!} type={activeType} withCode={false} />
+                  <div className="flex shrink-0 items-center gap-2">
                     <span className="text-muted-foreground/50 text-xs">{variantLabel}</span>
+                    <ChevronRight
+                      className={cn(
+                        'text-muted-foreground h-4 w-4 transition-transform',
+                        isExpanded && 'rotate-90'
+                      )}
+                    />
                   </div>
-                  <ChevronRight
-                    className={cn(
-                      'text-muted-foreground h-4 w-4 transition-transform',
-                      isExpanded && 'rotate-90'
-                    )}
-                  />
                 </Button>
 
                 {/* Variants: transitions for approaches, runways for SID/STAR */}

@@ -1,10 +1,16 @@
 /**
  * Own-aircraft map symbol.
  *
- * One generic airplane and one generic helicopter, drawn in code. The
- * symbol is rendered once into a canvas, a light body with a navy edge, so
- * it stays crisp at any heading and reads on every basemap. No SDF: the
- * outline is in the pixels.
+ * The symbol is the silhouette of the aircraft type being flown, from the
+ * same shape set the traffic layers use, in the pilot's colour with a black
+ * edge. It is rendered once into a canvas, so it stays crisp at any heading
+ * and reads on every basemap, and MapLibre draws it at a fixed on-screen
+ * size like every EFB. No SDF: the outline is in the pixels.
+ *
+ * Shapes are fetched, so each one arrives a moment after the layer is
+ * built. Until then the layer shows a placeholder drawn in code: a plain
+ * airplane, or a helicopter body with its rotor. A type with no shape keeps
+ * the generic airplane silhouette, or the drawn helicopter.
  */
 
 export type OwnshipIconKind = 'airplane' | 'helicopter';
@@ -14,9 +20,22 @@ export const OWNSHIP_ICON_ID: Record<OwnshipIconKind, string> = {
   helicopter: 'ownship-helicopter',
 };
 
-/** One registered image per symbol and colour scheme, so switching schemes never redraws an image a layer still uses. */
+/** One registered image per placeholder symbol and colour scheme, so switching schemes never redraws an image a layer still uses. */
 export function ownshipIconId(kind: OwnshipIconKind, scheme: OwnshipColorScheme): string {
   return `${OWNSHIP_ICON_ID[kind]}-${scheme}`;
+}
+
+/** The shape set's generic airplane, used when the type flown has no silhouette. */
+export const GENERIC_SHAPE = 'Unidentified';
+
+/** One registered image per aircraft-type silhouette and colour scheme. */
+export function ownshipShapeIconId(shape: string, scheme: OwnshipColorScheme): string {
+  return `ownship-shape-${shape}-${scheme}`;
+}
+
+/** The silhouette's shadow on the ground. */
+export function ownshipShapeShadowId(shape: string): string {
+  return `ownship-shape-${shape}-shadow`;
 }
 
 /** On-screen size of the symbol in CSS pixels, the same at every zoom. */
@@ -37,7 +56,7 @@ export const DEFAULT_OWNSHIP_STYLE: OwnshipStyle = {
   altitudeCues: true,
 };
 
-/** The symbol's shadow on the ground, one per kind. */
+/** The placeholder symbol's shadow on the ground, one per kind. */
 export function ownshipShadowId(kind: OwnshipIconKind): string {
   return `${OWNSHIP_ICON_ID[kind]}-shadow`;
 }
@@ -45,11 +64,18 @@ export function ownshipShadowId(kind: OwnshipIconKind): string {
 /** Canvas edge in CSS pixels; the symbol fills it with a small margin for the outline. */
 export const OWNSHIP_ICON_SIZE = 64;
 export const OWNSHIP_ICON_PIXEL_RATIO = 2;
-const EDGE_WIDTH = 2;
+/** Outline width in CSS pixels at the canvas size; the layer scales the whole sprite down. */
+const EDGE_WIDTH = 2.4;
+/** Blank border inside the canvas so the outline never clips. */
+const MARGIN = 3;
 
-/** Colour schemes the pilot can pick; online traffic is green and cyan, so each is a light body with a dark edge. */
-export type OwnshipColorScheme = 'white' | 'magenta' | 'orange';
-export const OWNSHIP_COLOR_SCHEMES: readonly OwnshipColorScheme[] = ['white', 'magenta', 'orange'];
+/**
+ * Colour schemes the pilot can pick. Online traffic is green (VATSIM) and
+ * blue (IVAO), and the sim's own traffic amber, so none of these is close to
+ * any of them; each is a light body with a black edge.
+ */
+export type OwnshipColorScheme = 'white' | 'magenta' | 'red';
+export const OWNSHIP_COLOR_SCHEMES: readonly OwnshipColorScheme[] = ['white', 'magenta', 'red'];
 
 export interface OwnshipColors {
   fill: string;
@@ -58,18 +84,17 @@ export interface OwnshipColors {
   accent: string;
 }
 
-// --xp-cyan-deepest from index.css
-const NAVY = '#07283D';
+const BLACK = '#000000';
 const WHITE = '#F8FAFC';
 // Farthest in OKLab from every ground, traffic colour and chart marking the map shows.
 const MAGENTA = '#E040FB';
-const ORANGE = '#FB923C';
-const SHADOW_COLORS: OwnshipColors = { fill: '#000000', edge: '#000000', accent: '#000000' };
+const RED = '#EF4444';
+const SHADOW_COLORS: OwnshipColors = { fill: BLACK, edge: BLACK, accent: BLACK };
 
 export const OWNSHIP_COLORS: Record<OwnshipColorScheme, OwnshipColors> = {
-  white: { fill: WHITE, edge: NAVY, accent: WHITE },
-  magenta: { fill: MAGENTA, edge: NAVY, accent: MAGENTA },
-  orange: { fill: ORANGE, edge: NAVY, accent: ORANGE },
+  white: { fill: WHITE, edge: BLACK, accent: WHITE },
+  magenta: { fill: MAGENTA, edge: BLACK, accent: MAGENTA },
+  red: { fill: RED, edge: BLACK, accent: RED },
 };
 
 /** The scheme's colours, or the default's for a value saved by an older build. */
@@ -85,7 +110,7 @@ export function isOwnshipColorScheme(value: unknown): value is OwnshipColorSchem
 
 type Point = readonly [number, number];
 
-/** Right half of the airplane, nose up, in a 0..1 box; mirrored to close the polygon. */
+/** Right half of the placeholder airplane, nose up, in a 0..1 box; mirrored to close the polygon. */
 const AIRPLANE_RIGHT_HALF: readonly Point[] = [
   [0.5, 0.03],
   [0.555, 0.12],
@@ -110,6 +135,16 @@ export function airplaneOutline(): Point[] {
   return [...right, ...left];
 }
 
+/**
+ * The helicopter body seen from above, nose up: cabin, boom, skids and
+ * tail. Its own path, since the shape set covers only a few types. The
+ * box below is its extent together with the rotor.
+ */
+const HELICOPTER_BODY =
+  'm 4.5262285,1.0018037 -0.637168,0.212389 -0.232617,0.586598 -0.0708,0.728193 0.02022,0.202275 -0.141593,-0.01012 -0.02023,-0.627054 -0.121366,0.01012 0.06069,3.206066 0.09102,-0.01011 -0.01012,-0.202275 0.141593,0.02023 0.101139,0.869784 0.303413,0.839444 0.242732,0.353982 0.0809,2.235144 -1.345135,-0.02023 -0.121366,0.8293303 h 0.13148 l 0.04046,-0.2326173 h 1.264223 l 0.121365,1.5676363 0.121367,0.525916 0.192161,-0.02023 0.05057,-2.0834383 1.213654,0.01011 0.01011,0.2326183 0.111252,0.01011 0.09102,-0.8394433 -1.405817,0.01012 -0.03033,-2.265486 0.303414,-0.374209 0.273072,-0.707965 0.06069,-1.001263 h 0.13148 l 0.01012,0.24273 0.161821,0.02023 -0.04046,-1.517067 v -1.689001 l -0.131479,-0.03034 v 0.627054 l -0.161821,0.02023 -0.05057,-0.849556 -0.202276,-0.566372 -0.21239,-0.202276 z';
+const HELICOPTER_ROTOR = { cx: 4.5, cy: 3.6, radius: 3.6, width: 0.4, angleDeg: 40 };
+const HELICOPTER_BOX = { x: 0.6, y: -0.4, w: 7.8, h: 12.6 };
+
 export interface OwnshipIconImage {
   width: number;
   height: number;
@@ -129,49 +164,44 @@ function drawAirplane(ctx: CanvasRenderingContext2D, s: number): void {
   ctx.stroke();
 }
 
-function drawHelicopter(ctx: CanvasRenderingContext2D, s: number): void {
-  // Rotor first: two outlined blades through the hub, under the cabin.
-  const r = 0.42 * s;
-  const w = 0.09 * s;
+/** Edge pass under the fill pass: a clean outside outline, and inner detail lines never show. */
+function strokeThenFill(ctx: CanvasRenderingContext2D, draw: () => void): void {
+  draw();
+  ctx.stroke();
+  draw();
+  ctx.fill();
+}
+
+function drawHelicopter(ctx: CanvasRenderingContext2D, px: number): void {
+  const inner = px - 2 * MARGIN * OWNSHIP_ICON_PIXEL_RATIO;
+  const scale = Math.min(inner / HELICOPTER_BOX.w, inner / HELICOPTER_BOX.h);
+  const tx = (px - HELICOPTER_BOX.w * scale) / 2 - HELICOPTER_BOX.x * scale;
+  const ty = (px - HELICOPTER_BOX.h * scale) / 2 - HELICOPTER_BOX.y * scale;
+  const body = new Path2D(HELICOPTER_BODY);
+  const { cx, cy, radius, width, angleDeg } = HELICOPTER_ROTOR;
+
   ctx.save();
-  ctx.translate(0.5 * s, 0.42 * s);
-  ctx.rotate(Math.PI / 4);
-  for (const angle of [0, Math.PI / 2]) {
-    ctx.save();
-    ctx.rotate(angle);
+  ctx.translate(tx, ty);
+  ctx.scale(scale, scale);
+  ctx.lineWidth = (EDGE_WIDTH * OWNSHIP_ICON_PIXEL_RATIO) / scale;
+  // Rotor blades under the cabin, then the body on top.
+  strokeThenFill(ctx, () => {
     ctx.beginPath();
-    ctx.roundRect(-r, -w / 2, r * 2, w, w / 2);
-    ctx.fill();
-    ctx.stroke();
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate((angleDeg * Math.PI) / 180);
+    ctx.roundRect(-radius, -width / 2, radius * 2, width, width / 2);
+    ctx.roundRect(-width / 2, -radius, width, radius * 2, width / 2);
     ctx.restore();
-  }
+  });
+  ctx.stroke(body);
+  ctx.fill(body);
   ctx.restore();
-  // Tail boom + fin, then the cabin on top of both.
-  tracePolygon(
-    ctx,
-    [
-      [0.47, 0.55],
-      [0.53, 0.55],
-      [0.52, 0.86],
-      [0.64, 0.9],
-      [0.64, 0.95],
-      [0.5, 0.93],
-      [0.47, 0.95],
-    ],
-    s
-  );
-  ctx.fill();
-  ctx.stroke();
-  // Cabin.
-  ctx.beginPath();
-  ctx.ellipse(0.5 * s, 0.42 * s, 0.14 * s, 0.2 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
 }
 
 /**
- * Rasterise the symbol. Returns a transparent image when no 2D canvas is
- * available (unit tests run in Node) so the layer can still be built.
+ * Rasterise a placeholder symbol. Returns a transparent image when no 2D
+ * canvas is available (unit tests run in Node) so the layer can still be built.
  */
 export function createOwnshipIcon(
   kind: OwnshipIconKind,
@@ -180,20 +210,25 @@ export function createOwnshipIcon(
   return renderOwnship(kind, ownshipColors(scheme));
 }
 
-/** The symbol as a flat black silhouette, drawn on the ground under the aircraft. */
+/** The placeholder symbol as a flat black silhouette, drawn on the ground under the aircraft. */
 export function createOwnshipShadow(kind: OwnshipIconKind): OwnshipIconImage {
   return renderOwnship(kind, SHADOW_COLORS);
 }
 
-function renderOwnship(kind: OwnshipIconKind, colors: OwnshipColors): OwnshipIconImage {
+function blankImage(): OwnshipIconImage {
   const px = OWNSHIP_ICON_SIZE * OWNSHIP_ICON_PIXEL_RATIO;
-  const blank: OwnshipIconImage = {
+  return {
     width: px,
     height: px,
     data: new Uint8Array(px * px * 4),
     pixelRatio: OWNSHIP_ICON_PIXEL_RATIO,
   };
+}
+
+function renderOwnship(kind: OwnshipIconKind, colors: OwnshipColors): OwnshipIconImage {
+  const blank = blankImage();
   if (typeof document === 'undefined') return blank;
+  const px = blank.width;
   const canvas = document.createElement('canvas');
   canvas.width = px;
   canvas.height = px;
@@ -211,4 +246,97 @@ function renderOwnship(kind: OwnshipIconKind, colors: OwnshipColors): OwnshipIco
     ...blank,
     data: new Uint8Array(ctx.getImageData(0, 0, px, px).data.buffer),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Aircraft-type silhouettes from the shape set
+// ---------------------------------------------------------------------------
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** The shape's drawable elements as markup, hidden layers and editor metadata dropped, plus its extent. */
+function prepareShape(svgText: string): { body: string; box: DOMRect } | null {
+  const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  if (doc.querySelector('parsererror')) return null;
+  doc.querySelectorAll('metadata, namedview, title, defs, text').forEach((el) => el.remove());
+  doc.querySelectorAll('g').forEach((g) => {
+    if (g.getAttribute('style')?.includes('display:none')) g.remove();
+  });
+  const shapes = doc.querySelectorAll('g, path, polygon, polyline, circle, ellipse, rect, line');
+  shapes.forEach((el) => {
+    for (const attr of ['style', 'fill', 'stroke', 'stroke-width', 'id', 'class']) {
+      el.removeAttribute(attr);
+    }
+  });
+
+  // Measure in the live document: getBBox needs a rendered tree.
+  const probe = document.importNode(doc.documentElement, true) as unknown as SVGSVGElement;
+  probe.setAttribute('width', '1');
+  probe.setAttribute('height', '1');
+  probe.style.position = 'absolute';
+  probe.style.visibility = 'hidden';
+  document.body.appendChild(probe);
+  const box = probe.getBBox();
+  document.body.removeChild(probe);
+  if (!(box.width > 0) || !(box.height > 0)) return null;
+
+  const body = Array.from(doc.documentElement.children)
+    .map((el) => new XMLSerializer().serializeToString(el))
+    .join('');
+  return { body, box };
+}
+
+/**
+ * Rasterise an aircraft-type silhouette: the shape fitted to the canvas,
+ * edge pass under fill pass so the outline sits outside the body. Resolves
+ * null outside the browser or when the SVG cannot be drawn.
+ */
+export function createOwnshipShapeIcon(
+  svgText: string,
+  colors: OwnshipColors
+): Promise<OwnshipIconImage | null> {
+  if (typeof document === 'undefined') return Promise.resolve(null);
+  const prepared = prepareShape(svgText);
+  if (!prepared) return Promise.resolve(null);
+  const { body, box } = prepared;
+
+  const inner = OWNSHIP_ICON_SIZE - 2 * MARGIN;
+  const unitsPerCssPx = Math.max(box.width, box.height) / inner;
+  const edge = EDGE_WIDTH * unitsPerCssPx;
+  const side = Math.max(box.width, box.height) + 2 * MARGIN * unitsPerCssPx;
+  const x = box.x + box.width / 2 - side / 2;
+  const y = box.y + box.height / 2 - side / 2;
+  const px = OWNSHIP_ICON_SIZE * OWNSHIP_ICON_PIXEL_RATIO;
+  const markup =
+    `<svg xmlns="${SVG_NS}" width="${px}" height="${px}" viewBox="${x} ${y} ${side} ${side}">` +
+    `<g fill="${colors.edge}" stroke="${colors.edge}" stroke-width="${edge}" stroke-linejoin="round">${body}</g>` +
+    `<g fill="${colors.fill}" stroke="none">${body}</g></svg>`;
+
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image(px, px);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = px;
+      canvas.height = px;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve(null);
+      ctx.drawImage(img, 0, 0, px, px);
+      resolve({
+        ...blankImage(),
+        data: new Uint8Array(ctx.getImageData(0, 0, px, px).data.buffer),
+      });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+    img.src = url;
+  });
+}
+
+/** The silhouette as a flat black shadow. */
+export function createOwnshipShapeShadow(svgText: string): Promise<OwnshipIconImage | null> {
+  return createOwnshipShapeIcon(svgText, SHADOW_COLORS);
 }

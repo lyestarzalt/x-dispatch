@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Plan a flight",
+    "collapse": "Fold the planner",
+    "halfHeight": "Compact view",
+    "fullHeight": "Full view",
+    "expand": "Unfold the planner",
     "description": "Pick both ends, type a route or fly direct, then send it to X-Plane.",
     "sections": {
       "enroute": "Enroute",
@@ -401,6 +405,7 @@
     "showOnly": "Show Only",
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Custom Scenery",
+    "proceduresOnly": "Instrument procedures only",
     "surfaceType": "Surface Type",
     "runwaySurface": "Runway Surface",
     "water": "Water",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Privacy",
       "usageData": "Share anonymous usage data",
-      "usageDataDescription": "Which features are used, app version and OS. Takes effect immediately."
+      "usageDataDescription": "Which features are used, app version and OS. Takes effect immediately.",
+      "crashReportId": "Crash report ID",
+      "crashReportIdDescription": "Quote this ID when you report a problem on Discord so your crash reports can be found.",
+      "crashReportIdCopied": "ID copied",
+      "copyCrashReportId": "Copy ID"
     },
     "simbrief": {
       "description": "Import flight plans from SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Medium",
       "ownshipSizeLarge": "Large",
       "ownshipColor": "Colour",
-      "ownshipColorDesc": "Pick what stands out on your basemap. Online traffic stays green and cyan.",
+      "ownshipColorDesc": "Pick what stands out on your basemap. Online traffic stays green and blue, sim traffic amber.",
       "ownshipColorWhite": "White",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Orange",
+      "ownshipColorRed": "Red",
       "ownshipAltitudeCues": "Show altitude",
       "ownshipAltitudeCuesDesc": "A shadow on the ground under the symbol, further away the higher you fly.",
       "ownshipPreviewDark": "Dark map",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Fold the panel",
       "addFavorite": "Add to favorites",
       "removeFavorite": "Remove from favorites",
       "setHome": "Set as home airport",
       "clearHome": "Clear home airport"
     },
+    "localTime": "Local time at {{icao}}",
     "stats": {
       "elevation": "ELEV",
       "runways": "RWY",
@@ -2254,6 +2265,13 @@
     "donate": "Support this project",
     "notNow": "Not now",
     "dontShowAgain": "Don't show again"
+  },
+  "flightPlanBar": {
+    "clear": "Clear flight plan",
+    "jumpToDeparture": "Jump to departure",
+    "jumpToArrival": "Jump to arrival",
+    "scrollBack": "Scroll back",
+    "scrollForward": "Scroll forward"
   },
   "profile": {
     "title": "Vertical profile",

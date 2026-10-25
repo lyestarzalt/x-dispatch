@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Pianifica un volo",
+    "collapse": "Richiudi il pianificatore",
+    "halfHeight": "Vista compatta",
+    "fullHeight": "Vista completa",
+    "expand": "Riapri il pianificatore",
     "description": "Scegli partenza e arrivo, scrivi una rotta o vola diretto, poi invia a X-Plane.",
     "sections": {
       "enroute": "In rotta",
@@ -401,6 +405,7 @@
     "showOnly": "Mostra solo",
     "iataOnly": "Commerciale (IATA)",
     "customOnly": "Scenari personalizzati",
+    "proceduresOnly": "Solo con procedure strumentali",
     "surfaceType": "Tipo di superficie",
     "runwaySurface": "Superficie della pista",
     "water": "Acqua",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Privacy",
       "usageData": "Condividi dati di utilizzo anonimi",
-      "usageDataDescription": "Funzioni usate, versione dell'app e sistema operativo. Effetto immediato."
+      "usageDataDescription": "Funzioni usate, versione dell'app e sistema operativo. Effetto immediato.",
+      "crashReportId": "ID segnalazioni crash",
+      "crashReportIdDescription": "Indica questo ID quando segnali un problema su Discord, così possiamo trovare le tue segnalazioni.",
+      "crashReportIdCopied": "ID copiato",
+      "copyCrashReportId": "Copia ID"
     },
     "simbrief": {
       "description": "Importa piani di volo da SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Medio",
       "ownshipSizeLarge": "Grande",
       "ownshipColor": "Colore",
-      "ownshipColorDesc": "Scegli ciò che risalta sulla tua mappa di base. Il traffico online resta verde e ciano.",
+      "ownshipColorDesc": "Scegli ciò che risalta sulla tua mappa di base. Il traffico online resta verde e blu, quello del simulatore ambra.",
       "ownshipColorWhite": "Bianco",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Arancione",
+      "ownshipColorRed": "Rosso",
       "ownshipAltitudeCues": "Mostra altitudine",
       "ownshipAltitudeCuesDesc": "Un'ombra a terra sotto il simbolo, più lontana quanto più in alto voli.",
       "ownshipPreviewDark": "Mappa scura",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Richiudi il pannello",
       "addFavorite": "Aggiungi ai preferiti",
       "removeFavorite": "Rimuovi dai preferiti",
       "setHome": "Imposta come aeroporto di base",
       "clearHome": "Rimuovi aeroporto di base"
     },
+    "localTime": "Ora locale a {{icao}}",
     "stats": {
       "elevation": "ELEV",
       "runways": "PISTA",
@@ -2254,6 +2265,13 @@
     "donate": "Sostieni il progetto",
     "notNow": "Non ora",
     "dontShowAgain": "Non mostrare più"
+  },
+  "flightPlanBar": {
+    "clear": "Cancella piano di volo",
+    "jumpToDeparture": "Vai alla partenza",
+    "jumpToArrival": "Vai all'arrivo",
+    "scrollBack": "Scorri indietro",
+    "scrollForward": "Scorri avanti"
   },
   "profile": {
     "title": "Profilo verticale",

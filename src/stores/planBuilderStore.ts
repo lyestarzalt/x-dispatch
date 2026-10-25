@@ -54,8 +54,12 @@ export interface RouteNote {
 /** The persisted part of the planner: what an undo of "New plan" brings back. */
 type SavedDraft = PlanDraft & { aircraftClass: RangeRingCategory | null };
 
+export type PlannerPanelSize = 'full' | 'half' | 'rail';
+
 interface PlanBuilderState extends PlanDraft {
   isOpen: boolean;
+  /** How much of the map the panel takes: all of its column, the top half, or a slim rail. */
+  panel: PlannerPanelSize;
   /** Which Explore tab is showing beside the planner; null when the flyout is closed. */
   explore: ExploreTab | null;
   status: PlanBuilderStatus;
@@ -80,6 +84,7 @@ interface PlanBuilderState extends PlanDraft {
 
   open: () => void;
   close: () => void;
+  setPanel: (panel: PlannerPanelSize) => void;
   setExplore: (tab: ExploreTab | null) => void;
   /** Open the planner with the Explore flyout on this tab. */
   openExplore: (tab: ExploreTab) => void;
@@ -169,6 +174,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       routeText: '',
       cruiseAltitudeFt: null,
       isOpen: false,
+      panel: 'full',
       explore: null,
       status: 'idle',
       result: null,
@@ -203,10 +209,12 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         });
       },
 
-      open: () => set({ isOpen: true }),
-      close: () => set({ isOpen: false, explore: null }),
+      open: () => set({ isOpen: true, panel: 'full' }),
+      close: () => set({ isOpen: false, panel: 'full', explore: null }),
+      // The Explore flyout hangs off the full panel only.
+      setPanel: (panel) => set(panel === 'full' ? { panel } : { panel, explore: null }),
       setExplore: (tab) => set({ explore: tab }),
-      openExplore: (tab) => set({ isOpen: true, explore: tab }),
+      openExplore: (tab) => set({ isOpen: true, panel: 'full', explore: tab }),
 
       // A route belongs to its pair of airports; changing either end starts the enroute part over.
       setDeparture: (endpoint) =>
@@ -448,7 +456,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         const { departure } = get();
         if (!departure) return;
         useAppStore.getState().requestSelectAirport(departure.icao);
-        set({ isOpen: false, explore: null });
+        // The planner stays, as the compact read-out, beside the airport it just opened.
+        set({ panel: 'half', explore: null });
       },
 
       reset: () => {

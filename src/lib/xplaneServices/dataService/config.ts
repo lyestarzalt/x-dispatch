@@ -18,6 +18,8 @@ interface XPlaneConfig {
   lastUpdated: string;
   /** Whether to send crash reports to Sentry (opt-in, default false) */
   sendCrashReports?: boolean;
+  /** Random anonymous ID sent as the Sentry user; only present while crash reports are on */
+  crashReportId?: string;
   /** Detected X-Plane version string, e.g. "12.4.0-r2-9b69b91a" */
   xplaneVersion?: string;
   /** Whether the X-Plane install is from Steam */
@@ -154,6 +156,8 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
       version: CONFIG_VERSION,
       lastUpdated: new Date().toISOString(),
       sendCrashReports: config.sendCrashReports ?? existing?.sendCrashReports ?? true,
+      // `in` check so turning crash reports off can delete the ID.
+      crashReportId: 'crashReportId' in config ? config.crashReportId : existing?.crashReportId,
       // `in` check so switching installs can clear the old install's version.
       xplaneVersion: 'xplaneVersion' in config ? config.xplaneVersion : existing?.xplaneVersion,
       xplaneIsSteam: 'xplaneIsSteam' in config ? config.xplaneIsSteam : existing?.xplaneIsSteam,
@@ -219,10 +223,25 @@ export function getSendCrashReports(): boolean {
 }
 
 /**
- * Set crash reports setting
+ * Stores the crash reports choice. Turning them off deletes the crash report ID
+ * so a later opt-in starts as a new, unlinked user.
  */
 export function setSendCrashReports(enabled: boolean): boolean {
-  return saveConfig({ sendCrashReports: enabled });
+  if (!enabled) return saveConfig({ sendCrashReports: false, crashReportId: undefined });
+  return saveConfig({ sendCrashReports: true });
+}
+
+/**
+ * The anonymous crash report ID, created on first use, or null while crash
+ * reports are off. Sent as the Sentry user so issues show how many installs
+ * they hit and a tester can quote the ID with a bug report.
+ */
+export function getCrashReportId(): string | null {
+  const config = loadConfig();
+  if (!(config?.sendCrashReports ?? true)) return null;
+  if (config?.crashReportId) return config.crashReportId;
+  const id = crypto.randomUUID();
+  return saveConfig({ crashReportId: id }) ? id : null;
 }
 
 export function getAnalyticsConsent(): 'granted' | 'denied' | null {

@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Zaplanuj lot",
+    "collapse": "Zwiń planer",
+    "halfHeight": "Widok kompaktowy",
+    "fullHeight": "Pełny widok",
+    "expand": "Rozwiń planer",
     "description": "Wybierz oba lotniska, wpisz trasę lub leć bezpośrednio, a potem wyślij do X-Plane.",
     "sections": {
       "enroute": "Trasa",
@@ -401,6 +405,7 @@
     "showOnly": "Pokaż tylko",
     "iataOnly": "Komercyjne (IATA)",
     "customOnly": "Scenerie użytkownika",
+    "proceduresOnly": "Tylko z procedurami IFR",
     "surfaceType": "Typ nawierzchni",
     "runwaySurface": "Nawierzchnia pasa",
     "water": "Woda",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Prywatność",
       "usageData": "Udostępniaj anonimowe dane o użytkowaniu",
-      "usageDataDescription": "Używane funkcje, wersja aplikacji i system. Działa od razu."
+      "usageDataDescription": "Używane funkcje, wersja aplikacji i system. Działa od razu.",
+      "crashReportId": "ID raportów o awariach",
+      "crashReportIdDescription": "Podaj to ID, zgłaszając problem na Discordzie, abyśmy mogli znaleźć Twoje raporty.",
+      "crashReportIdCopied": "ID skopiowano",
+      "copyCrashReportId": "Kopiuj ID"
     },
     "simbrief": {
       "description": "Importuj plany lotu z SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Średni",
       "ownshipSizeLarge": "Duży",
       "ownshipColor": "Kolor",
-      "ownshipColorDesc": "Wybierz to, co wyróżnia się na twojej mapie bazowej. Ruch online pozostaje zielony i cyjanowy.",
+      "ownshipColorDesc": "Wybierz to, co wyróżnia się na twojej mapie bazowej. Ruch online pozostaje zielony i niebieski, ruch z symulatora bursztynowy.",
       "ownshipColorWhite": "Biały",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Pomarańczowy",
+      "ownshipColorRed": "Czerwony",
       "ownshipAltitudeCues": "Pokaż wysokość",
       "ownshipAltitudeCuesDesc": "Cień na ziemi pod symbolem, tym dalej, im wyżej lecisz.",
       "ownshipPreviewDark": "Ciemna mapa",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Zwiń panel",
       "addFavorite": "Dodaj do ulubionych",
       "removeFavorite": "Usuń z ulubionych",
       "setHome": "Ustaw jako lotnisko bazowe",
       "clearHome": "Usuń lotnisko bazowe"
     },
+    "localTime": "Czas lokalny w {{icao}}",
     "stats": {
       "elevation": "WYS.",
       "runways": "DS",
@@ -2254,6 +2265,13 @@
     "donate": "Wesprzyj projekt",
     "notNow": "Nie teraz",
     "dontShowAgain": "Nie pokazuj ponownie"
+  },
+  "flightPlanBar": {
+    "clear": "Wyczyść plan lotu",
+    "jumpToDeparture": "Skocz do odlotu",
+    "jumpToArrival": "Skocz do przylotu",
+    "scrollBack": "Przewiń wstecz",
+    "scrollForward": "Przewiń dalej"
   },
   "profile": {
     "title": "Profil pionowy",

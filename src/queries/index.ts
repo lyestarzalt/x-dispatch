@@ -79,6 +79,7 @@ export {
   useTrackFeatureOpened,
 } from './useAnalytics';
 export { useUsageTracking } from './useUsageTracking';
+export { crashReportKeys, useCrashReportId } from './useCrashReportId';
 
 // Update check hook
 export { useCheckForUpdates, useUpdateStatus } from './useUpdateStatus';

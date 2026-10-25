@@ -3,17 +3,23 @@ import { labelFont } from '@/lib/map/labelFonts';
 import { destinationPoint } from '@/lib/utils/geomath';
 import type { PlanePosition } from '@/types/xplane';
 import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
+import { fetchAircraftShapeSvg, normalizeIcao } from './aircraftIcons';
 import {
   DEFAULT_OWNSHIP_STYLE,
+  GENERIC_SHAPE,
   OWNSHIP_ICON_SIZE,
   OWNSHIP_SIZE_PX,
   type OwnshipIconKind,
   type OwnshipStyle,
   createOwnshipIcon,
   createOwnshipShadow,
+  createOwnshipShapeIcon,
+  createOwnshipShapeShadow,
   ownshipColors,
   ownshipIconId,
   ownshipShadowId,
+  ownshipShapeIconId,
+  ownshipShapeShadowId,
 } from './ownshipIcon';
 
 const SOURCE_ID = 'player-plane-source';
@@ -40,6 +46,12 @@ export const TREND_VS_FPM = 300;
 
 function iconKind(position: PlanePosition | null): OwnshipIconKind {
   return position?.aircraftCategory === 'helicopter' ? 'helicopter' : 'airplane';
+}
+
+/** The ICAO type whose silhouette to draw, or null when the sim has not said. */
+function shapeOf(position: PlanePosition | null): string | null {
+  const icao = position?.icaoType ? normalizeIcao(position.icaoType) : '';
+  return icao || null;
 }
 
 /** Fixed on-screen size like every EFB, from globe view to the taxi map: the pilot picks how big. */
@@ -88,11 +100,74 @@ export function createGeoJSON(
   return { type: 'FeatureCollection', features };
 }
 
-/** Which symbol, size and colours the layer was built with, so a change in any rebuilds it. */
+/** Which symbol, type, size and colours the layer was built with, so a change in any rebuilds it. */
 const builtMemo = new WeakMap<maplibregl.Map, string>();
 
 function buildKey(position: PlanePosition | null, style: OwnshipStyle): string {
-  return `${iconKind(position)}|${style.size}|${style.color}|${style.altitudeCues ? 1 : 0}`;
+  return `${iconKind(position)}|${shapeOf(position) ?? ''}|${style.size}|${style.color}|${style.altitudeCues ? 1 : 0}`;
+}
+
+/** Shape images requested per map, so a sprite is fetched and rasterised once. */
+const requestedShapes = new WeakMap<maplibregl.Map, Set<string>>();
+
+/**
+ * Fetch and register one silhouette sprite. Fire and forget: the symbol
+ * layer's `coalesce` picks the image up as soon as it is added.
+ */
+function requestShape(
+  map: maplibregl.Map,
+  shape: string,
+  imageId: string,
+  render: (
+    svg: string
+  ) => Promise<({ pixelRatio: number } & Parameters<typeof map.addImage>[1]) | null>
+): void {
+  if (typeof document === 'undefined' || map.hasImage(imageId)) return;
+  let requested = requestedShapes.get(map);
+  if (!requested) {
+    requested = new Set();
+    requestedShapes.set(map, requested);
+  }
+  if (requested.has(imageId)) return;
+  requested.add(imageId);
+  void (async () => {
+    const svg = await fetchAircraftShapeSvg(shape);
+    const image = svg ? await render(svg) : null;
+    if (!image) {
+      requested.delete(imageId); // a missing shape: coalesce falls through to the next symbol
+      return;
+    }
+    if (!map.getStyle() || map.hasImage(imageId)) return;
+    map.addImage(imageId, image, { pixelRatio: image.pixelRatio });
+  })();
+}
+
+/**
+ * The symbol to draw, most specific first: the type's silhouette, the
+ * generic airplane silhouette for an airplane, then the placeholder drawn
+ * in code. Each falls through while its sprite is still loading or missing.
+ */
+function iconImageExpression(
+  map: maplibregl.Map,
+  position: PlanePosition | null,
+  kind: OwnshipIconKind,
+  style: OwnshipStyle,
+  shadow: boolean
+): maplibregl.ExpressionSpecification {
+  const colors = ownshipColors(style.color);
+  const candidates: string[] = [];
+  const shape = shapeOf(position);
+  const shapes = kind === 'airplane' ? [shape, GENERIC_SHAPE] : [shape];
+  for (const s of shapes) {
+    if (!s) continue;
+    const id = shadow ? ownshipShapeShadowId(s) : ownshipShapeIconId(s, style.color);
+    requestShape(map, s, id, (svg) =>
+      shadow ? createOwnshipShapeShadow(svg) : createOwnshipShapeIcon(svg, colors)
+    );
+    candidates.push(id);
+  }
+  candidates.push(shadow ? ensureShadow(map, kind) : ensureIcon(map, kind, style));
+  return ['coalesce', ...candidates.map((id): maplibregl.ExpressionSpecification => ['image', id])];
 }
 
 function ensureIcon(map: maplibregl.Map, kind: OwnshipIconKind, style: OwnshipStyle): string {
@@ -124,21 +199,21 @@ export function addPlaneLayer(
   removePlaneLayer(map);
 
   const kind = iconKind(position);
-  const iconId = ensureIcon(map, kind, style);
+  const iconImage = iconImageExpression(map, position, kind, style, false);
   const accent = ownshipColors(style.color).accent;
   builtMemo.set(map, buildKey(position, style));
 
   safeAddGeoJSONSource(map, SOURCE_ID, createGeoJSON(position, style.altitudeCues));
 
   if (style.altitudeCues) {
-    const shadowId = ensureShadow(map, kind);
+    const shadowImage = iconImageExpression(map, position, kind, style, true);
     map.addLayer({
       id: SHADOW_LAYER_ID,
       type: 'symbol',
       source: SOURCE_ID,
       filter: isKind('shadow'),
       layout: {
-        'icon-image': shadowId,
+        'icon-image': shadowImage,
         'icon-size': iconSize(style) * 0.9,
         'icon-rotate': ['get', 'heading'],
         'icon-rotation-alignment': 'map',
@@ -155,7 +230,7 @@ export function addPlaneLayer(
     source: SOURCE_ID,
     filter: isKind('aircraft'),
     layout: {
-      'icon-image': iconId,
+      'icon-image': iconImage,
       'icon-size': iconSize(style),
       'icon-rotate': ['get', 'heading'],
       'icon-rotation-alignment': 'map',

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Button } from '@/components/ui/button';
+import { IcaoCode } from '@/components/ui/icao-code';
 import { useOfpUnits } from '@/hooks/useOfpUnits';
 import { primaryAlternate } from '@/lib/simbrief/ofp';
 import type { NauticalMiles } from '@/lib/utils/geomath';
@@ -49,6 +50,7 @@ function FlightInfoPanel() {
 
   return (
     <div
+      data-map-dock="left"
       className={cn(
         'absolute left-4 z-30 transition-all duration-300 ease-out',
         isCollapsed ? 'top-28 w-12' : 'top-28 w-80'
@@ -88,9 +90,9 @@ function FlightInfoPanel() {
               className="text-muted-foreground flex items-center gap-1 font-mono text-xs"
               style={{ writingMode: 'vertical-rl' }}
             >
-              <span className="text-foreground/80">{origin.icao_code}</span>
+              <IcaoCode>{origin.icao_code}</IcaoCode>
               <ArrowRight className="h-3 w-3 rotate-90" />
-              <span className="text-foreground/80">{destination.icao_code}</span>
+              <IcaoCode>{destination.icao_code}</IcaoCode>
             </span>
             <span
               className="text-muted-foreground font-mono text-xs"

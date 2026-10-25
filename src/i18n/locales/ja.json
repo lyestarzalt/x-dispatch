@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "フライトを計画",
+    "collapse": "プランナーを折りたたむ",
+    "halfHeight": "コンパクト表示",
+    "fullHeight": "全体表示",
+    "expand": "プランナーを広げる",
     "description": "出発地と到着地を選び、ルートを入力するか直行にして、X-Planeへ送ります。",
     "sections": {
       "enroute": "エンルート",
@@ -401,6 +405,7 @@
     "showOnly": "表示のみ",
     "iataOnly": "商用空港 (IATA)",
     "customOnly": "カスタムシーナリー",
+    "proceduresOnly": "計器進入方式のある空港のみ",
     "surfaceType": "路面の種類",
     "runwaySurface": "滑走路面",
     "water": "水上",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "プライバシー",
       "usageData": "匿名の利用データを共有",
-      "usageDataDescription": "使われた機能、アプリのバージョン、OS。すぐに反映されます。"
+      "usageDataDescription": "使われた機能、アプリのバージョン、OS。すぐに反映されます。",
+      "crashReportId": "クラッシュレポートID",
+      "crashReportIdDescription": "Discordで問題を報告する際にこのIDを添えると、クラッシュレポートを特定できます。",
+      "crashReportIdCopied": "IDをコピーしました",
+      "copyCrashReportId": "IDをコピー"
     },
     "simbrief": {
       "description": "SimBrief からフライトプランをインポート",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "中",
       "ownshipSizeLarge": "大",
       "ownshipColor": "色",
-      "ownshipColorDesc": "ベースマップ上で目立つものを選んでください。オンライントラフィックは緑とシアンのままです。",
+      "ownshipColorDesc": "ベースマップ上で目立つものを選んでください。オンライントラフィックは緑と青、シム内のトラフィックは琥珀色のままです。",
       "ownshipColorWhite": "白",
       "ownshipColorMagenta": "マゼンタ",
-      "ownshipColorOrange": "オレンジ",
+      "ownshipColorRed": "赤",
       "ownshipAltitudeCues": "高度を表示",
       "ownshipAltitudeCuesDesc": "シンボルの下に地上の影を表示します。高く飛ぶほど影が離れます。",
       "ownshipPreviewDark": "ダークマップ",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "パネルを折りたたむ",
       "addFavorite": "お気に入りに追加",
       "removeFavorite": "お気に入りから削除",
       "setHome": "拠点空港に設定",
       "clearHome": "拠点空港を解除"
     },
+    "localTime": "{{icao}}の現地時間",
     "stats": {
       "elevation": "標高",
       "runways": "滑走路",
@@ -2254,6 +2265,13 @@
     "donate": "プロジェクトを支援",
     "notNow": "今はしない",
     "dontShowAgain": "今後表示しない"
+  },
+  "flightPlanBar": {
+    "clear": "フライトプランを消去",
+    "jumpToDeparture": "出発地へ移動",
+    "jumpToArrival": "到着地へ移動",
+    "scrollBack": "前へスクロール",
+    "scrollForward": "次へスクロール"
   },
   "profile": {
     "title": "垂直プロファイル",

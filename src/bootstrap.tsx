@@ -41,6 +41,8 @@ export async function bootstrap(): Promise<void> {
         reactInit
       );
       initSentryContext();
+      const crashReportId = await window.appAPI.getCrashReportId();
+      if (crashReportId) Sentry.setUser({ id: crashReportId });
     }
   } catch (err) {
     // Config not available yet (first run), or the desktop did not answer: skip Sentry.

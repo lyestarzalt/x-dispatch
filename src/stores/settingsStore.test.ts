@@ -707,6 +707,9 @@ describe('own-aircraft colour at v39', () => {
       ownshipSize: 'large',
       ownshipAltitudeCues: false,
     });
-    expect(migrateSettings(blob('orange'), 38).graphics.ownshipColor).toBe('orange');
+    // Orange became red in v41; the cascade carries a v38 blob through that step too.
+    expect(migrateSettings(blob('orange'), 38).graphics.ownshipColor).toBe('red');
+    expect(migrateSettings(blob('orange'), 40).graphics.ownshipColor).toBe('red');
+    expect(migrateSettings(blob('white'), 40).graphics.ownshipColor).toBe('white');
   });
 });

@@ -2,6 +2,7 @@
  * X-Plane Data Manager
  * Unified manager for all X-Plane navigation and airport data
  */
+import * as Sentry from '@sentry/electron/main';
 import { eq } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
@@ -85,6 +86,7 @@ import {
   getFixDataPath,
   getHoldDataPath,
   getNavDataPath,
+  listProcedureIcaos,
   validateXPlanePath,
 } from './paths';
 import type {
@@ -296,6 +298,7 @@ export class XPlaneDataManager {
       const info = await detectXPlaneVersion(xplanePath);
       if (info) {
         setStoredXPlaneVersion(info);
+        Sentry.setTag('xplane.version', info.raw);
         logger.data.info(`X-Plane version: ${info.raw}${info.isSteam ? ' (Steam)' : ''}`);
       }
     } catch (err) {
@@ -336,6 +339,7 @@ export class XPlaneDataManager {
 
     const startTime = Date.now();
     logger.data.info(`Loading X-Plane data from: ${pathToUse}`);
+    Sentry.addBreadcrumb({ category: 'data', message: 'Data load started', level: 'info' });
 
     // Load all data in parallel (core data)
     const results = await Promise.allSettled([
@@ -366,6 +370,16 @@ export class XPlaneDataManager {
     logger.data.info(
       `Loaded in ${elapsed}s: ${status.airports.count} airports, ${status.navaids.count} navaids, ${status.waypoints.count} waypoints`
     );
+    Sentry.addBreadcrumb({
+      category: 'data',
+      message: `Data load finished in ${elapsed}s`,
+      level: 'info',
+      data: {
+        airports: status.airports.count,
+        navaids: status.navaids.count,
+        waypoints: status.waypoints.count,
+      },
+    });
 
     return status;
   }
@@ -492,7 +506,16 @@ export class XPlaneDataManager {
    * Get all airports using database
    */
   getAllAirports(): Airport[] {
-    return getAllAirportsFromDb();
+    const xplanePath = this.getXPlanePath();
+    let procedureIcaos: Set<string> | undefined;
+    if (xplanePath) {
+      const start = Date.now();
+      procedureIcaos = listProcedureIcaos(xplanePath);
+      logger.data.info(
+        `Scanned CIFP for procedures: ${procedureIcaos.size} airports in ${Date.now() - start}ms`
+      );
+    }
+    return getAllAirportsFromDb(procedureIcaos);
   }
 
   /**

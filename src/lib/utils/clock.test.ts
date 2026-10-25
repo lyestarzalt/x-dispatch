@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatClock, resolveClock } from './clock';
+import { formatAirportLocalTime, formatClock, resolveClock } from './clock';
 
 // 2026-03-10T18:15:23Z
 const NOW_MS = Date.UTC(2026, 2, 10, 18, 15, 23);
@@ -61,5 +61,54 @@ describe('formatClock', () => {
 
   it('zero-pads single-digit hours', () => {
     expect(formatClock(Date.UTC(2026, 2, 10, 5, 7, 9), 'zulu')).toBe('05:07:09');
+  });
+});
+
+describe('formatAirportLocalTime', () => {
+  it('formats HH:MM and a whole-hour UTC offset', () => {
+    // 10 March: Paris is still on CET (UTC+1)
+    expect(formatAirportLocalTime(NOW_MS, 'Europe/Paris')).toEqual({
+      time: '19:15',
+      offset: 'UTC+1',
+    });
+  });
+
+  it('follows daylight saving time', () => {
+    // 2026-07-10T18:15:23Z, Paris on CEST (UTC+2)
+    const summer = Date.UTC(2026, 6, 10, 18, 15, 23);
+    expect(formatAirportLocalTime(summer, 'Europe/Paris')).toEqual({
+      time: '20:15',
+      offset: 'UTC+2',
+    });
+  });
+
+  it('shows minutes for half-hour zones', () => {
+    expect(formatAirportLocalTime(NOW_MS, 'Asia/Kolkata')).toEqual({
+      time: '23:45',
+      offset: 'UTC+5:30',
+    });
+  });
+
+  it('shows a minus sign for zones west of Greenwich', () => {
+    expect(formatAirportLocalTime(NOW_MS, 'America/New_York')).toEqual({
+      time: '14:15',
+      offset: 'UTC-4',
+    });
+  });
+
+  it('shows UTC with no sign at zero offset', () => {
+    expect(formatAirportLocalTime(NOW_MS, 'Atlantic/Reykjavik')).toEqual({
+      time: '18:15',
+      offset: 'UTC',
+    });
+  });
+
+  it('renders midnight as 00, not 24', () => {
+    // 18:15Z + 5:45 (Kathmandu) = 00:00 next day
+    const t = Date.UTC(2026, 2, 10, 18, 15, 0);
+    expect(formatAirportLocalTime(t, 'Asia/Kathmandu')).toEqual({
+      time: '00:00',
+      offset: 'UTC+5:45',
+    });
   });
 });

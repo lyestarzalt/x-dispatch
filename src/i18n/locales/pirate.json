@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Chart a Voyage",
+    "collapse": "Stow the chart table",
+    "halfHeight": "Trim the sails",
+    "fullHeight": "Full sail",
+    "expand": "Unstow the chart table",
     "description": "Pick both harbors, scrawl a route or sail straight, then send it to X-Plane.",
     "sections": {
       "enroute": "Open Sea",
@@ -401,6 +405,7 @@
     "showOnly": "Show only these",
     "iataOnly": "Trade Ports (IATA)",
     "customOnly": "Custom scenery only",
+    "proceduresOnly": "Only ports with proper charts",
     "surfaceType": "Ground Type",
     "runwaySurface": "Runway Ground",
     "water": "Watery",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Privacy charter",
       "usageData": "Share anonymous usage data",
-      "usageDataDescription": "Which features be used, app version and OS. Takes effect at once."
+      "usageDataDescription": "Which features be used, app version and OS. Takes effect at once.",
+      "crashReportId": "Crash report ID",
+      "crashReportIdDescription": "Quote this ID when ye report a problem on Discord so yer crash reports can be found.",
+      "crashReportIdCopied": "ID copied",
+      "copyCrashReportId": "Copy ID"
     },
     "simbrief": {
       "description": "Import voyage plans from SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Middlin",
       "ownshipSizeLarge": "Large",
       "ownshipColor": "Colour",
-      "ownshipColorDesc": "Pick what stands out on yer chart. Online traffic stays green and cyan.",
+      "ownshipColorDesc": "Pick what stands out on yer chart. Online traffic stays green and blue, sim traffic amber.",
       "ownshipColorWhite": "White",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Orange",
+      "ownshipColorRed": "Red",
       "ownshipAltitudeCues": "Show altitude",
       "ownshipAltitudeCuesDesc": "A shadow on the ground under the mark, further off the higher ye sail.",
       "ownshipPreviewDark": "Dark chart",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY CHARTS"
     },
     "actions": {
+      "collapse": "Stow the panel",
       "addFavorite": "Add to favorites, matey",
       "removeFavorite": "Strike from favorites",
       "setHome": "Mark as home harbor",
       "clearHome": "Strike home harbor"
     },
+    "localTime": "Local time at {{icao}}, by the ship's bell",
     "stats": {
       "elevation": "HEIGHT",
       "runways": "STRIPS",
@@ -2254,6 +2265,13 @@
     "donate": "Support this crew",
     "notNow": "Not now",
     "dontShowAgain": "Don't show again"
+  },
+  "flightPlanBar": {
+    "clear": "Scuttle the flight plan",
+    "jumpToDeparture": "Back to port",
+    "jumpToArrival": "On to the landfall",
+    "scrollBack": "Scroll astern",
+    "scrollForward": "Scroll ahead"
   },
   "profile": {
     "title": "Vertical profile",

@@ -5,7 +5,7 @@ vi.mock('@/lib/utils/loggerRenderer', () => {
   return { default: new Proxy({}, { get: () => scope }) };
 });
 
-const { migrateMapState } = await import('./mapStore');
+const { DEFAULT_AIRPORT_FILTERS, migrateMapState } = await import('./mapStore');
 
 describe('migrateMapState', () => {
   it('adds the NAT tracks layer, off, to a v16 blob', () => {
@@ -29,5 +29,32 @@ describe('migrateMapState', () => {
     ) as { navVisibility: Record<string, unknown>; profileStripPosition: unknown };
     expect(result.profileStripPosition).toBeNull();
     expect(result.navVisibility.natTracks).toBe(false);
+  });
+
+  it('adds the procedures-only airport filter, off, to a v17 blob', () => {
+    const result = migrateMapState(
+      {
+        airportFilters: {
+          ...DEFAULT_AIRPORT_FILTERS,
+          onlyWithProcedures: undefined,
+          country: 'France',
+        },
+      },
+      17
+    ) as { airportFilters: Record<string, unknown> };
+    expect(result.airportFilters.onlyWithProcedures).toBe(false);
+    expect(result.airportFilters.country).toBe('France');
+  });
+
+  it('cascades from v16 into the v18 step', () => {
+    const result = migrateMapState(
+      {
+        navVisibility: { navaids: true, ils: true, airspaces: true, airwaysMode: 'off' },
+        airportFilters: { ...DEFAULT_AIRPORT_FILTERS, onlyWithProcedures: undefined },
+      },
+      16
+    ) as { navVisibility: Record<string, unknown>; airportFilters: Record<string, unknown> };
+    expect(result.navVisibility.natTracks).toBe(false);
+    expect(result.airportFilters.onlyWithProcedures).toBe(false);
   });
 });

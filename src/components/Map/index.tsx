@@ -38,6 +38,7 @@ import { planePositionFrom, usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useStandHoverStore } from '@/stores/standHoverStore';
 import type { ParsedAirport } from '@/types/apt';
+import type { EnrichedFlightPlan } from '@/types/fms';
 import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import { PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
@@ -77,6 +78,7 @@ import {
   useTrackControl,
   useVatsimSectorSync,
 } from './hooks';
+import { useMapPadding } from './hooks/useMapPadding';
 import { useProfileControl } from './hooks/useProfileControl';
 import { useProfileHoverSync } from './hooks/useProfileHoverSync';
 import { useSatelliteClouds } from './hooks/useSatelliteClouds';
@@ -213,6 +215,7 @@ export default function Map({ airports }: MapProps) {
   }, []);
 
   // Map initialization
+  const mapRootRef = useRef<HTMLDivElement>(null);
   const { mapRef, mapContainerRef } = useMapSetup({
     airports,
     mapStyleUrl,
@@ -486,6 +489,43 @@ export default function Map({ airports }: MapProps) {
   // Only a different plan moves the camera. The builder republishes the same plan on every
   // SID, STAR, runway or route edit under an unchanged name, and the view has to stay put.
   const fittedPlanRef = useRef<string | null>(null);
+  // True from a plan fit until the camera moves for any other reason, a drag or zoom by the
+  // pilot or a fly-to of its own (an airport click opens a panel, which must not snap the view
+  // back to the plan). While it holds, a panel opening or closing refits the plan to the map
+  // area that is left.
+  const planFitUntouchedRef = useRef(false);
+  const planFitMovingRef = useRef(false);
+  const fitPlan = useCallback((map: maplibregl.Map, plan: EnrichedFlightPlan) => {
+    planFitMovingRef.current = true;
+    try {
+      fitMapToFlightPlan(map, plan); // fires movestart synchronously
+    } finally {
+      planFitMovingRef.current = false;
+    }
+    planFitUntouchedRef.current = true;
+  }, []);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const onMoveStart = () => {
+      if (!planFitMovingRef.current) planFitUntouchedRef.current = false;
+    };
+    map.on('movestart', onMoveStart);
+    return () => {
+      map.off('movestart', onMoveStart);
+    };
+  }, [mapRef]);
+  useMapPadding({
+    mapRef,
+    rootRef: mapRootRef,
+    onChange: () => {
+      const map = mapRef.current;
+      const plan = useFlightPlanStore.getState().fmsData;
+      if (!map || !plan || !planFitUntouchedRef.current) return false;
+      fitPlan(map, plan);
+      return true;
+    },
+  });
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -493,14 +533,14 @@ export default function Map({ airports }: MapProps) {
     if (fmsData) {
       addFlightPlanLayer(map, fmsData);
       if (planFileName !== fittedPlanRef.current) {
-        fitMapToFlightPlan(map, fmsData);
+        fitPlan(map, fmsData);
         fittedPlanRef.current = planFileName;
       }
     } else {
       removeFlightPlanLayer(map);
       fittedPlanRef.current = null;
     }
-  }, [mapRef, fmsData, planFileName]);
+  }, [mapRef, fmsData, planFileName, fitPlan]);
 
   // Fly to selected waypoint
   useEffect(() => {
@@ -913,14 +953,14 @@ export default function Map({ airports }: MapProps) {
   }, [mapRef, followPlane, setFollowPlane]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div ref={mapRootRef} className="relative h-full w-full overflow-hidden">
       {/* MapLibre container - fills entire viewport */}
       <div className="absolute inset-0">
         <div ref={mapContainerRef} className="h-full w-full" />
       </div>
 
       {/* Top bar overlay - full width, above the sidebar and the planner so search results stay visible */}
-      <div className="absolute top-4 right-4 left-4 z-40 space-y-2">
+      <div data-map-dock="top" className="absolute top-4 right-4 left-4 z-40 space-y-2">
         <Toolbar
           airports={airports}
           onSelectAirport={selectAirport}

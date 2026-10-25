@@ -229,6 +229,7 @@ export function buildFeatures(
         runwayCount: airport.runwayCount,
         elevation: airport.elevation,
         country: airport.country ?? '',
+        hasProcedures: airport.hasProcedures ? 1 : 0, // the procedures-only filter reads this
       },
     };
   });

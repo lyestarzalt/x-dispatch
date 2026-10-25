@@ -268,7 +268,9 @@ function deriveSurfaceType(code: number | null): Airport['surfaceType'] {
   return 'other';
 }
 
-export function getAllAirportsFromDb(): Airport[] {
+const NO_CIFP: ReadonlySet<string> = new Set();
+
+export function getAllAirportsFromDb(procedureIcaos: ReadonlySet<string> = NO_CIFP): Airport[] {
   const db = getDb();
 
   const selectFields = {
@@ -327,6 +329,7 @@ export function getAllAirportsFromDb(): Airport[] {
     surfaceType: deriveSurfaceType(r.primarySurfaceType ?? null),
     elevation: r.elevation ?? 0,
     country: r.country ?? '',
+    hasProcedures: procedureIcaos.has(r.icao),
   }));
 }
 

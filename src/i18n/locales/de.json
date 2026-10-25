@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Flug planen",
+    "collapse": "Planer einklappen",
+    "halfHeight": "Kompaktansicht",
+    "fullHeight": "Vollansicht",
+    "expand": "Planer ausklappen",
     "description": "Start und Ziel wählen, Route eingeben oder direkt fliegen, dann an X-Plane senden.",
     "sections": {
       "enroute": "Streckenflug",
@@ -401,6 +405,7 @@
     "showOnly": "Nur anzeigen",
     "iataOnly": "Kommerziell (IATA)",
     "customOnly": "Eigene Szenerien",
+    "proceduresOnly": "Nur mit Instrumentenverfahren",
     "surfaceType": "Oberflächentyp",
     "runwaySurface": "Pistenbelag",
     "water": "Wasser",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Datenschutz",
       "usageData": "Anonyme Nutzungsdaten teilen",
-      "usageDataDescription": "Welche Funktionen genutzt werden, App-Version und Betriebssystem. Wirkt sofort."
+      "usageDataDescription": "Welche Funktionen genutzt werden, App-Version und Betriebssystem. Wirkt sofort.",
+      "crashReportId": "Absturzbericht-ID",
+      "crashReportIdDescription": "Nenne diese ID, wenn du ein Problem auf Discord meldest, damit deine Absturzberichte gefunden werden können.",
+      "crashReportIdCopied": "ID kopiert",
+      "copyCrashReportId": "ID kopieren"
     },
     "simbrief": {
       "description": "Flugpläne von SimBrief importieren",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Mittel",
       "ownshipSizeLarge": "Groß",
       "ownshipColor": "Farbe",
-      "ownshipColorDesc": "Wähle, was sich auf deiner Karte abhebt. Online-Verkehr bleibt grün und cyan.",
+      "ownshipColorDesc": "Wähle, was sich auf deiner Karte abhebt. Online-Verkehr bleibt grün und blau, Sim-Verkehr bernsteinfarben.",
       "ownshipColorWhite": "Weiß",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Orange",
+      "ownshipColorRed": "Rot",
       "ownshipAltitudeCues": "Höhe anzeigen",
       "ownshipAltitudeCuesDesc": "Ein Schatten am Boden unter dem Symbol, umso weiter entfernt, je höher du fliegst.",
       "ownshipPreviewDark": "Dunkle Karte",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Panel einklappen",
       "addFavorite": "Zu Favoriten",
       "removeFavorite": "Aus Favoriten entfernen",
       "setHome": "Als Heimatflughafen festlegen",
       "clearHome": "Heimatflughafen entfernen"
     },
+    "localTime": "Ortszeit in {{icao}}",
     "stats": {
       "elevation": "HÖHE",
       "runways": "PISTEN",
@@ -2254,6 +2265,13 @@
     "donate": "Projekt unterstützen",
     "notNow": "Jetzt nicht",
     "dontShowAgain": "Nicht mehr anzeigen"
+  },
+  "flightPlanBar": {
+    "clear": "Flugplan löschen",
+    "jumpToDeparture": "Zum Abflug springen",
+    "jumpToArrival": "Zur Ankunft springen",
+    "scrollBack": "Zurück blättern",
+    "scrollForward": "Vor blättern"
   },
   "profile": {
     "title": "Vertikalprofil",

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/electron/main';
 import WebSocket from 'ws';
 import { RECORDER_DATAREF_NAMES } from '@/lib/flightRecorder/frames';
 import logger from '@/lib/utils/logger';
@@ -369,6 +370,7 @@ export class XPlaneWebSocketClient {
         this.state = 'CONNECTED';
         this.backoffMs = BACKOFF_INITIAL_MS;
         logger.tracker.info('WebSocket connected');
+        Sentry.addBreadcrumb({ category: 'xplane', message: 'WebSocket connected', level: 'info' });
 
         // Clear grace timer — connection re-established before state was cleared
         if (this.graceTimer) {
@@ -418,6 +420,11 @@ export class XPlaneWebSocketClient {
         this.forgetResolvedDatarefs();
         this.state = 'RECONNECTING';
         logger.tracker.info(`WebSocket disconnected, reconnecting in ${this.backoffMs}ms`);
+        Sentry.addBreadcrumb({
+          category: 'xplane',
+          message: `WebSocket disconnected, reconnecting in ${this.backoffMs}ms`,
+          level: 'warning',
+        });
         this.startGraceTimer();
         this.scheduleReconnect();
       });
@@ -452,6 +459,11 @@ export class XPlaneWebSocketClient {
       // Start pong timeout — if no pong within 5s, connection is dead
       this.pongTimeout = setTimeout(() => {
         logger.tracker.info('No pong or data for 20 s, terminating the connection');
+        Sentry.addBreadcrumb({
+          category: 'xplane',
+          message: 'WebSocket stalled',
+          level: 'warning',
+        });
         this.ws?.terminate();
       }, PONG_TIMEOUT_MS);
     }, PING_INTERVAL_MS);

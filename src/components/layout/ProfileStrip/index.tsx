@@ -38,7 +38,8 @@ function ProfileStrip({ airports }: ProfileStripProps) {
     storedPosition,
     setPosition
   );
-  const builderOpen = usePlanBuilderStore((s) => s.isOpen);
+  // Only a full-height planner takes the bottom-left corner the strip would use.
+  const builderOpen = usePlanBuilderStore((s) => s.isOpen && s.panel === 'full');
   const view = useRouteProfile(airports);
   const handleHover = useCallback(
     (row: VerticalProfileRow | null, next: VerticalProfileRow | null) => {
@@ -73,6 +74,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
   return (
     <div
       ref={stripRef}
+      data-map-dock={isDefault ? 'bottom' : undefined}
       className={cn(
         'z-20 select-none',
         // Default place: along the bottom, centred; beside the docked planner while it is open.

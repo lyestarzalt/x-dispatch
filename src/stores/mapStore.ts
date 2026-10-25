@@ -81,6 +81,8 @@ export interface AirportFilterState {
   onlyCustom: boolean;
   surfaceTypes: SurfaceTypeFilter[];
   country: string; // 'all' = no filter
+  /** Only airports with a CIFP file, so with at least one SID, STAR or approach. */
+  onlyWithProcedures: boolean;
 }
 
 export const ALL_SURFACE_TYPES: SurfaceTypeFilter[] = ['paved', 'unpaved', 'water', 'other'];
@@ -92,6 +94,7 @@ export const DEFAULT_AIRPORT_FILTERS: AirportFilterState = {
   onlyCustom: false,
   surfaceTypes: [...ALL_SURFACE_TYPES],
   country: 'all',
+  onlyWithProcedures: false,
 };
 
 interface MapState {
@@ -360,7 +363,7 @@ export const useMapStore = create<MapState>()(
     }),
     {
       name: 'xplane-viz-map',
-      version: 17,
+      version: 18,
       storage: createJSONStorage(() => dedupedLocalStorage),
       partialize: (state) => ({
         landingCardPosition: state.landingCardPosition,
@@ -476,6 +479,11 @@ export function migrateMapState(persisted: unknown, version: number): unknown {
     if (version < 17) {
       const nav = state.navVisibility as Record<string, unknown> | undefined;
       if (nav && nav.natTracks === undefined) nav.natTracks = false;
+    }
+    // v18: the instrument-procedures-only airport filter, off by default
+    if (version < 18) {
+      const filters = state.airportFilters as Record<string, unknown> | undefined;
+      if (filters && filters.onlyWithProcedures === undefined) filters.onlyWithProcedures = false;
     }
     return state;
   }

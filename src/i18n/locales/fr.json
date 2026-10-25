@@ -144,6 +144,10 @@
   },
   "planBuilder": {
     "title": "Planifier un vol",
+    "collapse": "Replier le planificateur",
+    "halfHeight": "Vue compacte",
+    "fullHeight": "Vue complète",
+    "expand": "Déplier le planificateur",
     "description": "Choisissez départ et arrivée, saisissez une route ou volez direct, puis envoyez à X-Plane.",
     "sections": {
       "enroute": "En route",
@@ -401,6 +405,7 @@
     "showOnly": "Afficher uniquement",
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Scènes personnalisées",
+    "proceduresOnly": "Procédures aux instruments uniquement",
     "surfaceType": "Type de surface",
     "runwaySurface": "Surface de piste",
     "water": "Eau",
@@ -495,7 +500,11 @@
       "discord": "Discord",
       "privacy": "Confidentialité",
       "usageData": "Partager des données d'utilisation anonymes",
-      "usageDataDescription": "Fonctionnalités utilisées, version de l'app et système. Effet immédiat."
+      "usageDataDescription": "Fonctionnalités utilisées, version de l'app et système. Effet immédiat.",
+      "crashReportId": "Identifiant des rapports de plantage",
+      "crashReportIdDescription": "Indiquez cet identifiant quand vous signalez un problème sur Discord pour retrouver vos rapports.",
+      "crashReportIdCopied": "Identifiant copié",
+      "copyCrashReportId": "Copier l'identifiant"
     },
     "simbrief": {
       "description": "Importer des plans de vol depuis SimBrief",
@@ -653,10 +662,10 @@
       "ownshipSizeMedium": "Moyen",
       "ownshipSizeLarge": "Grand",
       "ownshipColor": "Couleur",
-      "ownshipColorDesc": "Choisissez ce qui ressort le mieux sur votre fond de carte. Le trafic en ligne reste vert et cyan.",
+      "ownshipColorDesc": "Choisissez ce qui ressort le mieux sur votre fond de carte. Le trafic en ligne reste vert et bleu, le trafic du simulateur ambre.",
       "ownshipColorWhite": "Blanc",
       "ownshipColorMagenta": "Magenta",
-      "ownshipColorOrange": "Orange",
+      "ownshipColorRed": "Rouge",
       "ownshipAltitudeCues": "Afficher l'altitude",
       "ownshipAltitudeCuesDesc": "Une ombre au sol sous le symbole, d'autant plus éloignée que vous volez haut.",
       "ownshipPreviewDark": "Carte sombre",
@@ -997,11 +1006,13 @@
       "gateway": "GATEWAY"
     },
     "actions": {
+      "collapse": "Replier le panneau",
       "addFavorite": "Ajouter aux favoris",
       "removeFavorite": "Retirer des favoris",
       "setHome": "Définir comme aéroport de base",
       "clearHome": "Retirer l'aéroport de base"
     },
+    "localTime": "Heure locale à {{icao}}",
     "stats": {
       "elevation": "ALT",
       "runways": "PISTE",
@@ -2254,6 +2265,13 @@
     "donate": "Soutenir le projet",
     "notNow": "Pas maintenant",
     "dontShowAgain": "Ne plus afficher"
+  },
+  "flightPlanBar": {
+    "clear": "Effacer le plan de vol",
+    "jumpToDeparture": "Aller au départ",
+    "jumpToArrival": "Aller à l'arrivée",
+    "scrollBack": "Reculer",
+    "scrollForward": "Avancer"
   },
   "profile": {
     "title": "Profil vertical",
