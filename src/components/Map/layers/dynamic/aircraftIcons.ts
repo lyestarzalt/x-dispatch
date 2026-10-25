@@ -28,6 +28,17 @@ const FAMILY_FALLBACK: Record<string, string> = {
   B3X: 'B38M', // 737 MAX 10 → MAX 8
   AT7: 'AT75', // ATR 72 variant
   AT4: 'AT45', // ATR 42 variant
+  // Helicopters: the set has a handful of airframes, so each family maps to its nearest.
+  H13: 'EC35', // H135 → EC135
+  H14: 'EC45', // H145 → EC145
+  H16: 'EC45', // H160 → EC145
+  EC5: 'EC45', // EC155 → EC145
+  EC1: 'EC20', // EC120 → EC120
+  EC3: 'EC20', // EC130 → EC120
+  AS5: 'EC20', // AS350 Écureuil → EC120
+  S76: 'S61', // S-76 → S-61
+  B06: 'R44', // Bell 206 → R44
+  B40: 'R44', // Bell 407 → R44
 };
 
 // Track loaded ICAO codes per map instance
@@ -146,6 +157,30 @@ export async function fetchSvgIcon(
   }
 }
 
+/** The shape file's name for an ICAO type: the type itself, then its family's (B736 → B738). */
+function shapeCandidates(icaoCode: string): string[] {
+  const family = icaoCode.length >= 3 ? FAMILY_FALLBACK[icaoCode.slice(0, 3)] : undefined;
+  return family && family !== icaoCode ? [icaoCode, family] : [icaoCode];
+}
+
+async function fetchShapeText(filename: string): Promise<string | null> {
+  try {
+    const resp = await fetch(`./aircraft-shapes/${filename}.svg`);
+    return resp.ok ? await resp.text() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The raw SVG of an ICAO type's silhouette, with the family fallback, or null when the set has none. */
+export async function fetchAircraftShapeSvg(icaoCode: string): Promise<string | null> {
+  for (const name of shapeCandidates(icaoCode)) {
+    const text = await fetchShapeText(name);
+    if (text) return text;
+  }
+  return null;
+}
+
 /**
  * Load a single aircraft icon by ICAO code.
  * Tries exact match first, then family fallback (e.g. B736 → B738).
@@ -154,15 +189,10 @@ async function loadIcon(map: maplibregl.Map, icaoCode: string): Promise<boolean>
   const imageId = `${ICON_PREFIX}${icaoCode}`;
   if (map.hasImage(imageId)) return true;
 
-  // Try exact ICAO code
-  let iconData = await fetchSvgIcon(icaoCode);
-
-  // Try family fallback if exact code not found
-  if (!iconData && icaoCode.length >= 3) {
-    const familyCode = FAMILY_FALLBACK[icaoCode.slice(0, 3)];
-    if (familyCode && familyCode !== icaoCode) {
-      iconData = await fetchSvgIcon(familyCode);
-    }
+  let iconData: IconImageData | null = null;
+  for (const name of shapeCandidates(icaoCode)) {
+    iconData = await fetchSvgIcon(name);
+    if (iconData) break;
   }
 
   if (!iconData) return false;

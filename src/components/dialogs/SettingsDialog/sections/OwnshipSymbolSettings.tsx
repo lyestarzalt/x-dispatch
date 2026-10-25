@@ -1,12 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { fetchAircraftShapeSvg } from '@/components/Map/layers/dynamic/aircraftIcons';
 import {
+  GENERIC_SHAPE,
   OWNSHIP_COLOR_SCHEMES,
   OWNSHIP_SIZES,
   OWNSHIP_SIZE_PX,
   type OwnshipColorScheme,
+  type OwnshipIconImage,
   type OwnshipSize,
   createOwnshipIcon,
+  createOwnshipShapeIcon,
   ownshipColors,
 } from '@/components/Map/layers/dynamic/ownshipIcon';
 import { Button } from '@/components/ui/button';
@@ -23,7 +27,7 @@ const SIZE_LABEL: Record<OwnshipSize, string> = {
 const COLOR_LABEL: Record<OwnshipColorScheme, string> = {
   white: 'settings.appearance.ownshipColorWhite',
   magenta: 'settings.appearance.ownshipColorMagenta',
-  orange: 'settings.appearance.ownshipColorOrange',
+  red: 'settings.appearance.ownshipColorRed',
 };
 
 /** The grounds the symbol has to read on: the dark vector basemap, satellite imagery, a light vector map. */
@@ -35,6 +39,19 @@ const BACKDROPS: { labelKey: string; background: string }[] = [
   },
   { labelKey: 'settings.appearance.ownshipPreviewLight', background: '#e5e7eb' },
 ];
+
+/** The generic airplane silhouette, fetched once and rasterised per colour; null until it arrives. */
+const shapeCache = new Map<OwnshipColorScheme, Promise<OwnshipIconImage | null>>();
+function genericShapeIcon(scheme: OwnshipColorScheme): Promise<OwnshipIconImage | null> {
+  let pending = shapeCache.get(scheme);
+  if (!pending) {
+    pending = fetchAircraftShapeSvg(GENERIC_SHAPE).then((svg) =>
+      svg ? createOwnshipShapeIcon(svg, ownshipColors(scheme)) : null
+    );
+    shapeCache.set(scheme, pending);
+  }
+  return pending;
+}
 
 /** The symbol as the map draws it, scaled to `px`, with the data label beside it when asked. */
 function SymbolCanvas({
@@ -50,39 +67,51 @@ function SymbolCanvas({
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const w = label ? px + 84 : px;
-    canvas.width = w * dpr;
-    canvas.height = px * dpr;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${px}px`;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.scale(dpr, dpr);
+    let cancelled = false;
 
-    const icon = createOwnshipIcon('airplane', scheme);
-    const sprite = document.createElement('canvas');
-    sprite.width = icon.width;
-    sprite.height = icon.height;
-    sprite
-      .getContext('2d')
-      ?.putImageData(
-        new ImageData(new Uint8ClampedArray(icon.data), icon.width, icon.height),
-        0,
-        0
-      );
-    ctx.drawImage(sprite, 0, 0, px, px);
+    const paint = (icon: OwnshipIconImage) => {
+      const dpr = window.devicePixelRatio || 1;
+      const w = label ? px + 84 : px;
+      canvas.width = w * dpr;
+      canvas.height = px * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${px}px`;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.scale(dpr, dpr);
 
-    if (label) {
-      ctx.fillStyle = ownshipColors(scheme).accent;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-      ctx.shadowBlur = 3;
-      ctx.textBaseline = 'middle';
-      ctx.font = '600 12px system-ui, sans-serif';
-      ctx.fillText('N123AB', px + 8, px / 2 - 7);
-      ctx.font = '500 10px system-ui, sans-serif';
-      ctx.fillText('FL035  110 kt', px + 8, px / 2 + 7);
-    }
+      const sprite = document.createElement('canvas');
+      sprite.width = icon.width;
+      sprite.height = icon.height;
+      sprite
+        .getContext('2d')
+        ?.putImageData(
+          new ImageData(new Uint8ClampedArray(icon.data), icon.width, icon.height),
+          0,
+          0
+        );
+      ctx.drawImage(sprite, 0, 0, px, px);
+
+      if (label) {
+        ctx.fillStyle = ownshipColors(scheme).accent;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.shadowBlur = 3;
+        ctx.textBaseline = 'middle';
+        ctx.font = '600 12px system-ui, sans-serif';
+        ctx.fillText('N123AB', px + 8, px / 2 - 7);
+        ctx.font = '500 10px system-ui, sans-serif';
+        ctx.fillText('FL035  110 kt', px + 8, px / 2 + 7);
+      }
+    };
+
+    // The placeholder first, the silhouette as soon as it is rasterised.
+    paint(createOwnshipIcon('airplane', scheme));
+    void genericShapeIcon(scheme).then((icon) => {
+      if (!cancelled && icon) paint(icon);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [scheme, px, label]);
   return <canvas ref={ref} aria-hidden="true" />;
 }
@@ -101,13 +130,14 @@ export function OwnshipSymbolSettings() {
     >
       <div className="grid grid-cols-3 gap-2">
         {BACKDROPS.map(({ labelKey, background }) => (
-          <div
-            key={labelKey}
-            className="flex h-24 flex-col items-center justify-center gap-1 rounded-md"
-            style={{ background }}
-          >
-            <SymbolCanvas scheme={color} px={OWNSHIP_SIZE_PX[size]} label />
-            <span className="text-[10px] text-white/70 mix-blend-difference">{t(labelKey)}</span>
+          <div key={labelKey} className="space-y-1">
+            <div
+              className="flex h-20 items-center justify-center rounded-md"
+              style={{ background }}
+            >
+              <SymbolCanvas scheme={color} px={OWNSHIP_SIZE_PX[size]} label />
+            </div>
+            <p className="text-muted-foreground text-center text-xs">{t(labelKey)}</p>
           </div>
         ))}
       </div>

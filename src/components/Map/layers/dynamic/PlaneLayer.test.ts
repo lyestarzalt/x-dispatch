@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PlanePosition } from '@/types/xplane';
 import { addPlaneLayer, createGeoJSON, removePlaneLayer, updatePlaneLayer } from './PlaneLayer';
-import { airplaneOutline, createOwnshipIcon, ownshipIconId } from './ownshipIcon';
+import {
+  airplaneOutline,
+  createOwnshipIcon,
+  ownshipIconId,
+  ownshipShadowId,
+  ownshipShapeIconId,
+  ownshipShapeShadowId,
+} from './ownshipIcon';
 
 vi.mock('@/lib/map/labelFonts', () => ({ labelFont: () => ['Noto Sans Regular'] }));
 
@@ -96,7 +103,44 @@ describe('PlaneLayer', () => {
       expect.objectContaining({ pixelRatio: 2 }),
       { pixelRatio: 2 }
     );
-    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(airplane);
+    // The type's silhouette first, the generic silhouette next, the drawn placeholder last.
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toEqual([
+      'coalesce',
+      ['image', ownshipShapeIconId('C172', 'magenta')],
+      ['image', ownshipShapeIconId('Unidentified', 'magenta')],
+      ['image', airplane],
+    ]);
+    expect(map.layers.get('player-plane-shadow')?.layout?.['icon-image']).toEqual([
+      'coalesce',
+      ['image', ownshipShapeShadowId('C172')],
+      ['image', ownshipShapeShadowId('Unidentified')],
+      ['image', ownshipShadowId('airplane')],
+    ]);
+  });
+
+  it('draws a helicopter from its own silhouette, else the drawn body, never the airplane shape', () => {
+    const map = makeMapMock();
+    addPlaneLayer(
+      map as unknown as MlMap,
+      position({ aircraftCategory: 'helicopter', icaoType: 'EC35' })
+    );
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toEqual([
+      'coalesce',
+      ['image', ownshipShapeIconId('EC35', 'magenta')],
+      ['image', ownshipIconId('helicopter', 'magenta')],
+    ]);
+  });
+
+  it('rebuilds the symbol chain when the aircraft type changes', () => {
+    const map = makeMapMock();
+    addPlaneLayer(map as unknown as MlMap, position({ icaoType: 'C172' }));
+    updatePlaneLayer(map as unknown as MlMap, position({ icaoType: 'H/B744' }));
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toEqual([
+      'coalesce',
+      ['image', ownshipShapeIconId('B744', 'magenta')],
+      ['image', ownshipShapeIconId('Unidentified', 'magenta')],
+      ['image', ownshipIconId('airplane', 'magenta')],
+    ]);
   });
 
   it('keeps the same on-screen size regardless of wingspan and zoom', () => {
@@ -118,7 +162,10 @@ describe('PlaneLayer', () => {
       altitudeCues: true,
     });
     const yellow = ownshipIconId('airplane', 'magenta');
-    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(yellow);
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toContainEqual([
+      'image',
+      yellow,
+    ]);
     expect(map.layers.get('player-plane')?.layout?.['icon-size']).toBeGreaterThan(
       makeStyled('medium', 'magenta')
     );
@@ -136,13 +183,14 @@ describe('PlaneLayer', () => {
 
     updatePlaneLayer(map as unknown as MlMap, position(), {
       size: 'small',
-      color: 'orange',
+      color: 'red',
       altitudeCues: true,
     });
     expect(map.addImage).toHaveBeenCalledTimes(3);
-    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(
-      ownshipIconId('airplane', 'orange')
-    );
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toContainEqual([
+      'image',
+      ownshipIconId('airplane', 'red'),
+    ]);
   });
 
   it('only pushes data on a position update, and rebuilds when the category changes', () => {
@@ -158,7 +206,10 @@ describe('PlaneLayer', () => {
     expect(map.addImage).toHaveBeenCalledTimes(4);
     const helicopter = ownshipIconId('helicopter', 'magenta');
     expect(map.images.has(helicopter)).toBe(true);
-    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toBe(helicopter);
+    expect(map.layers.get('player-plane')?.layout?.['icon-image']).toContainEqual([
+      'image',
+      helicopter,
+    ]);
   });
 
   it('removes layers and source cleanly', () => {
