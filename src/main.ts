@@ -81,6 +81,7 @@ import {
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
+import { readLogTail } from './lib/sentry/logTail';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
@@ -126,8 +127,10 @@ import {
   getActiveInstallation,
   getActiveInstallationName,
   getAnalyticsConsent,
+  getCrashReportId,
   getInstallations,
   getSendCrashReports,
+  getStoredXPlaneVersion,
   removeInstallation,
   renameInstallation,
   setActiveInstallation,
@@ -222,9 +225,24 @@ if (shouldInitSentry) {
       // every writer we have reports them differently — too path-dependent for
       // an ignoreErrors pattern, so they get dropped here instead.
       if (isDiskFullEvent(event, hint?.originalException)) return null;
+      // The end of the app log rides along, so an issue carries the steps that
+      // led to it instead of a bare stack trace.
+      const logTail = readLogTail(getLogPath());
+      if (logTail) {
+        hint.attachments = [
+          ...(hint.attachments ?? []),
+          { filename: 'x-dispatch.log', data: logTail, contentType: 'text/plain' },
+        ];
+      }
       return event;
     },
   });
+  // Anonymous per-install ID, so an issue shows how many installs it hits and a
+  // tester can quote the ID with a report. Renderer events set it in bootstrap.
+  const crashReportId = getCrashReportId();
+  if (crashReportId) Sentry.setUser({ id: crashReportId });
+  // Last detected sim version; refreshed by the data manager once it detects again.
+  Sentry.setTag('xplane.version', getStoredXPlaneVersion()?.version ?? 'unknown');
 }
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -246,8 +264,12 @@ process.on('unhandledRejection', (reason) => {
   );
 });
 
+let isQuitting = false;
+
 app.on('render-process-gone', (_event, webContents, details) => {
   if (details.reason === 'clean-exit') return;
+  // Closing the app on Windows tears the renderer down as "killed"; not a crash.
+  if (isQuitting) return;
   if (rendererKillRequested && details.reason === 'killed') {
     // The unresponsive dialog asked for this kill; the reload is already on its way.
     rendererKillRequested = false;
@@ -280,6 +302,8 @@ app.on('render-process-gone', (_event, webContents, details) => {
 
 app.on('child-process-gone', (_event, details) => {
   if (details.reason === 'clean-exit') return;
+  // GPU and network services go down with the app; only report them mid-session.
+  if (isQuitting) return;
 
   // Group by what actually died. The Error is built at a single call site, so
   // without an explicit fingerprint Sentry buckets every child-process-gone
@@ -316,7 +340,6 @@ const sessionStartTime = Date.now();
 const analytics = initMainAnalytics();
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
-let isQuitting = false;
 /** Translated by the renderer; English until its first push. */
 let nativeLabels: NativeLabels = DEFAULT_NATIVE_LABELS;
 const crashRecovery = createCrashRecovery();
@@ -1495,6 +1518,7 @@ function registerIpcHandlers() {
     })
   );
   handle('app:getSendCrashReports', () => getSendCrashReports());
+  handle('app:getCrashReportId', () => getCrashReportId());
   handle('app:setSendCrashReports', (_, enabled: boolean) => {
     const success = setSendCrashReports(enabled);
     if (success) {
@@ -2026,6 +2050,9 @@ function registerIpcHandlers() {
   });
 
   handle('nav:getAirportMetadata', (_, icao: string) => {
+    // Main-process events get the airport too, not only the renderer's.
+    Sentry.setTag('airport', icao);
+    Sentry.addBreadcrumb({ category: 'navigation', message: `Airport ${icao}`, level: 'info' });
     if (!isValidICAO(icao)) return null;
     return dataManager.getAirportMetadata(icao.toUpperCase());
   });
@@ -2355,6 +2382,12 @@ function registerIpcHandlers() {
         flightPayload?.runway_start?.airport_id ||
         'unknown';
       logger.launcher.info(`[User] Launch attempt: ${aircraftPath} at ${airport}`);
+      Sentry.setTag('aircraft', path.basename(aircraftPath, '.acf'));
+      Sentry.addBreadcrumb({
+        category: 'launch',
+        message: `Launch ${path.basename(aircraftPath, '.acf')} at ${airport}`,
+        level: 'info',
+      });
 
       try {
         const { getLauncher } = await getLauncherModule();
@@ -2364,6 +2397,11 @@ function registerIpcHandlers() {
         } else {
           logger.launcher.error(`[User] Launch failed: ${result.code} — ${result.error}`);
         }
+        Sentry.addBreadcrumb({
+          category: 'launch',
+          message: result.success ? 'Launch succeeded' : `Launch failed: ${result.code}`,
+          level: result.success ? 'info' : 'warning',
+        });
         return result;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -2426,8 +2464,24 @@ function registerIpcHandlers() {
 
   handle('xplaneService:startFlight', async (_, payload) => {
     try {
+      const flightPayload =
+        payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
+      const aircraftName = path.basename(flightPayload?.aircraft?.path ?? 'unknown', '.acf');
+      Sentry.setTag('aircraft', aircraftName);
+      Sentry.addBreadcrumb({
+        category: 'launch',
+        message: `Change flight to ${aircraftName}`,
+        level: 'info',
+      });
       const { getXPlaneService } = await getXPlaneModule();
       const result = await getXPlaneService().startFlight(payload);
+      Sentry.addBreadcrumb({
+        category: 'launch',
+        message: result.success
+          ? 'Change flight accepted'
+          : `Change flight refused: ${result.code}`,
+        level: result.success ? 'info' : 'warning',
+      });
       if (!result.success && result.code) {
         const { reportFlightRejection } =
           await import('./lib/xplaneServices/launch/flightRejection');

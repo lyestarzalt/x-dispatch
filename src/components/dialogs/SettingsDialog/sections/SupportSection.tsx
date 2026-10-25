@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
-import { Heart, LifeBuoy, Send } from 'lucide-react';
+import { Copy, Heart, LifeBuoy, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,12 @@ import { DISCORD_INVITE, SUPPORT_PAGE } from '@/config/links';
 import { useIsRemoteClient } from '@/hooks/useIsRemoteClient';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
-import { trackEvent, useAnalyticsConsent, useSetAnalyticsConsent } from '@/queries';
+import {
+  trackEvent,
+  useAnalyticsConsent,
+  useCrashReportId,
+  useSetAnalyticsConsent,
+} from '@/queries';
 import { SettingsHeader, SettingsLinkRow, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
@@ -39,10 +44,19 @@ export default function SupportSection({ className }: SettingsSectionProps) {
 
   const analyticsConsent = useAnalyticsConsent();
   const setAnalyticsConsent = useSetAnalyticsConsent();
+  const crashReportId = useCrashReportId(sendCrashReports && !isLoadingCrashReports);
 
   const handleCrashReportsChange = async (enabled: boolean) => {
     setSendCrashReports(enabled);
     await window.appAPI.setSendCrashReports(enabled);
+    // Turning reports off deletes the ID and turning them on creates a new one.
+    await crashReportId.refetch();
+  };
+
+  const copyCrashReportId = async () => {
+    if (!crashReportId.data) return;
+    await window.appAPI.clipboardWrite(crashReportId.data);
+    toast.success(t('settings.support.crashReportIdCopied'));
   };
 
   const handleSubmitFeedback = async () => {
@@ -129,6 +143,26 @@ export default function SupportSection({ className }: SettingsSectionProps) {
           disabled={isRemoteClient || isLoadingCrashReports}
         />
         <p className="text-muted-foreground text-sm">{t('settings.about.crashReportsNote')}</p>
+        {sendCrashReports && crashReportId.data && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{t('settings.support.crashReportId')}</p>
+              <p className="text-muted-foreground text-sm">
+                {t('settings.support.crashReportIdDescription')}
+              </p>
+              <p className="mt-2 truncate font-mono text-sm">{crashReportId.data}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              className="shrink-0"
+              onClick={copyCrashReportId}
+              tooltip={t('settings.support.copyCrashReportId')}
+            >
+              <Copy className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
         <SettingsToggleRow
           title={t('settings.support.usageData')}
           description={t('settings.support.usageDataDescription')}

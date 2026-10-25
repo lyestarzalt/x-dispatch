@@ -496,7 +496,11 @@
       "discord": "Discord",
       "privacy": "隐私",
       "usageData": "共享匿名使用数据",
-      "usageDataDescription": "使用了哪些功能、应用版本和操作系统。立即生效。"
+      "usageDataDescription": "使用了哪些功能、应用版本和操作系统。立即生效。",
+      "crashReportId": "崩溃报告 ID",
+      "crashReportIdDescription": "在 Discord 报告问题时附上此 ID，以便找到你的崩溃报告。",
+      "crashReportIdCopied": "ID 已复制",
+      "copyCrashReportId": "复制 ID"
     },
     "simbrief": {
       "description": "从 SimBrief 导入飞行计划",

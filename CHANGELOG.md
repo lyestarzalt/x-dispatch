@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **See what time it is at the airport.** The airport panel shows the local time at the selected airport with its offset from UTC, so when you browse for a place to fly you know whether it is morning or night there. The flight planner shows it under the departure and the arrival too. With the toolbar clock following X-Plane time, the readout follows the simulator's clock and says so.
 - **Show only airports with instrument procedures.** A new switch under Layers, Airports, hides every airport that has no SID, STAR or approach in your nav data, so an IFR flight can be planned from the map without opening each airport to find out. Reset Filters turns it off again.
+- **A reference ID for problem reports.** Settings, Support, shows a short ID next to the crash reports switch. Paste it with your message on Discord and your report can be matched to what the app saw, so it gets looked at faster. The ID is random, holds no personal details, and goes away when you turn crash reports off.
 
 ### Changed
 

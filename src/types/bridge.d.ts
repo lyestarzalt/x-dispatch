@@ -153,6 +153,7 @@ declare global {
       clipboardWriteImage: (dataUrl: string) => Promise<boolean>;
       openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
       getSendCrashReports: () => Promise<boolean>;
+      getCrashReportId: () => Promise<string | null>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;
       getXPlaneVersion: () => Promise<{
         raw: string;

@@ -496,7 +496,11 @@
       "discord": "Discord",
       "privacy": "Privacy",
       "usageData": "Share anonymous usage data",
-      "usageDataDescription": "Which features are used, app version and OS. Takes effect immediately."
+      "usageDataDescription": "Which features are used, app version and OS. Takes effect immediately.",
+      "crashReportId": "Crash report ID",
+      "crashReportIdDescription": "Quote this ID when you report a problem on Discord so your crash reports can be found.",
+      "crashReportIdCopied": "ID copied",
+      "copyCrashReportId": "Copy ID"
     },
     "simbrief": {
       "description": "Import flight plans from SimBrief",

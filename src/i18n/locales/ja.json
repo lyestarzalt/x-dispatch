@@ -496,7 +496,11 @@
       "discord": "Discord",
       "privacy": "プライバシー",
       "usageData": "匿名の利用データを共有",
-      "usageDataDescription": "使われた機能、アプリのバージョン、OS。すぐに反映されます。"
+      "usageDataDescription": "使われた機能、アプリのバージョン、OS。すぐに反映されます。",
+      "crashReportId": "クラッシュレポートID",
+      "crashReportIdDescription": "Discordで問題を報告する際にこのIDを添えると、クラッシュレポートを特定できます。",
+      "crashReportIdCopied": "IDをコピーしました",
+      "copyCrashReportId": "IDをコピー"
     },
     "simbrief": {
       "description": "SimBrief からフライトプランをインポート",

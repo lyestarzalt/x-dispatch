@@ -159,6 +159,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       clipboardWriteImage: (dataUrl: string) => t.invoke('app:clipboardWriteImage', dataUrl),
       openExternal: (url: string) => t.invoke('app:openExternal', url),
       getSendCrashReports: () => t.invoke('app:getSendCrashReports'),
+      getCrashReportId: () => t.invoke('app:getCrashReportId'),
       setSendCrashReports: (enabled: boolean) => t.invoke('app:setSendCrashReports', enabled),
       getXPlaneVersion: () => t.invoke('app:getXPlaneVersion'),
       setZoomFactor: x.setZoomFactor,

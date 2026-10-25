@@ -496,7 +496,11 @@
       "discord": "Discord",
       "privacy": "Confidentialité",
       "usageData": "Partager des données d'utilisation anonymes",
-      "usageDataDescription": "Fonctionnalités utilisées, version de l'app et système. Effet immédiat."
+      "usageDataDescription": "Fonctionnalités utilisées, version de l'app et système. Effet immédiat.",
+      "crashReportId": "Identifiant des rapports de plantage",
+      "crashReportIdDescription": "Indiquez cet identifiant quand vous signalez un problème sur Discord pour retrouver vos rapports.",
+      "crashReportIdCopied": "Identifiant copié",
+      "copyCrashReportId": "Copier l'identifiant"
     },
     "simbrief": {
       "description": "Importer des plans de vol depuis SimBrief",

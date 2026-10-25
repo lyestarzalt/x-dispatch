@@ -14,11 +14,13 @@ vi.mock('@/lib/utils/logger', () => ({
 
 const {
   getAnalyticsConsent,
+  getCrashReportId,
   getInstallations,
   getStoredXPlaneVersion,
   isSetupComplete,
   saveAnalyticsPendingSession,
   setActiveInstallation,
+  setSendCrashReports,
 } = await import('./config');
 
 const configPath = () => path.join(userData, 'config.json');
@@ -121,5 +123,29 @@ describe('config persistence', () => {
   it('writes atomically, leaving no temp file behind', () => {
     saveAnalyticsPendingSession(SESSION);
     expect(fs.readdirSync(userData)).toEqual(['config.json']);
+  });
+
+  it('creates the crash report ID once and keeps it across reads', () => {
+    const first = getCrashReportId();
+    expect(first).toMatch(/^[0-9a-f-]{36}$/);
+    expect(getCrashReportId()).toBe(first);
+    expect(readConfig().crashReportId).toBe(first);
+  });
+
+  it('drops the crash report ID when crash reports are turned off and starts fresh on re-enable', () => {
+    const first = getCrashReportId();
+    setSendCrashReports(false);
+    expect(readConfig().crashReportId).toBeUndefined();
+    expect(getCrashReportId()).toBeNull();
+    setSendCrashReports(true);
+    const second = getCrashReportId();
+    expect(second).not.toBe(first);
+    expect(second).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('keeps the crash report ID when unrelated settings are saved', () => {
+    const id = getCrashReportId();
+    saveAnalyticsPendingSession(SESSION);
+    expect(readConfig().crashReportId).toBe(id);
   });
 });

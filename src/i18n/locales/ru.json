@@ -496,7 +496,11 @@
       "discord": "Discord",
       "privacy": "Конфиденциальность",
       "usageData": "Делиться анонимными данными об использовании",
-      "usageDataDescription": "Используемые функции, версия приложения и ОС. Применяется сразу."
+      "usageDataDescription": "Используемые функции, версия приложения и ОС. Применяется сразу.",
+      "crashReportId": "ID отчётов о сбоях",
+      "crashReportIdDescription": "Укажите этот ID при сообщении о проблеме в Discord, чтобы мы нашли ваши отчёты.",
+      "crashReportIdCopied": "ID скопирован",
+      "copyCrashReportId": "Скопировать ID"
     },
     "simbrief": {
       "description": "Импорт планов полёта из SimBrief",
