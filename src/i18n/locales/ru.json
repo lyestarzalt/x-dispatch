@@ -401,6 +401,7 @@
     "showOnly": "Показать только",
     "iataOnly": "Коммерческие (IATA)",
     "customOnly": "Пользовательские сценарии",
+    "proceduresOnly": "Только с процедурами ППП",
     "surfaceType": "Тип покрытия",
     "runwaySurface": "Покрытие ВПП",
     "water": "Вода",

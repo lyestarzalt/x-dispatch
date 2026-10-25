@@ -401,6 +401,7 @@
     "showOnly": "Show only these",
     "iataOnly": "Trade Ports (IATA)",
     "customOnly": "Custom scenery only",
+    "proceduresOnly": "Only ports with proper charts",
     "surfaceType": "Ground Type",
     "runwaySurface": "Runway Ground",
     "water": "Watery",

@@ -447,6 +447,13 @@ export function LayersPanel({
           checked={airportFilters.onlyCustom}
           onCheckedChange={() => setAirportFilters({ onlyCustom: !airportFilters.onlyCustom })}
         />
+        <SwitchRow
+          label={t('airportFilters.proceduresOnly')}
+          checked={airportFilters.onlyWithProcedures}
+          onCheckedChange={() =>
+            setAirportFilters({ onlyWithProcedures: !airportFilters.onlyWithProcedures })
+          }
+        />
       </section>
 
       {/* Navigation data around the selected airport */}

@@ -18,6 +18,7 @@ const airport = (
   runwayCount: 2,
   surfaceType: 'paved',
   elevation: 0,
+  hasProcedures: false,
   country: 'AA',
   ...extra,
 });

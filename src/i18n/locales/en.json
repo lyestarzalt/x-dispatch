@@ -401,6 +401,7 @@
     "showOnly": "Show Only",
     "iataOnly": "Commercial (IATA)",
     "customOnly": "Custom Scenery",
+    "proceduresOnly": "Instrument procedures only",
     "surfaceType": "Surface Type",
     "runwaySurface": "Runway Surface",
     "water": "Water",

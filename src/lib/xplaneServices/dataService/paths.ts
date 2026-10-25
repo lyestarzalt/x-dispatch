@@ -91,6 +91,50 @@ export function getCifpPath(xplanePath: string, icao: string): string {
   return path.join(xplanePath, XPLANE_PATHS.cifpDir, `${icao.toUpperCase()}.dat`);
 }
 
+/** A SID, STAR or approach record at the start of a CIFP line. */
+const CIFP_PROCEDURE_RECORD = /^(SID|STAR|APPCH):/m;
+/**
+ * How much of a CIFP file to read when looking for a procedure record. Procedures lead the
+ * file; the few files that open with runway records list under a dozen of them (about 60
+ * bytes each) before the first procedure. Measured on a full install: 0 misses at 1 KB.
+ */
+const CIFP_PEEK_BYTES = 2048;
+
+/**
+ * Every ICAO with at least one SID, STAR or approach, from the default data folder and Custom
+ * Data (Navigraph). Over half of the CIFP files only list runways, so a file's existence is not
+ * enough; the first {@link CIFP_PEEK_BYTES} of each are read. A Custom Data file replaces the
+ * default one for that ICAO, so its verdict wins. About 0.4 s for 31k files on an SSD.
+ */
+export function listProcedureIcaos(xplanePath: string): Set<string> {
+  const icaos = new Set<string>();
+  const buffer = Buffer.alloc(CIFP_PEEK_BYTES);
+  for (const dir of [XPLANE_PATHS.cifpDir, XPLANE_PATHS.customCifp]) {
+    const full = path.join(xplanePath, dir);
+    if (!fs.existsSync(full)) continue;
+    for (const entry of fs.readdirSync(full)) {
+      if (!entry.toLowerCase().endsWith('.dat')) continue;
+      const icao = entry.slice(0, -4).toUpperCase();
+      if (cifpFileHasProcedures(path.join(full, entry), buffer)) icaos.add(icao);
+      else icaos.delete(icao);
+    }
+  }
+  return icaos;
+}
+
+function cifpFileHasProcedures(filePath: string, buffer: Buffer): boolean {
+  let fd: number | null = null;
+  try {
+    fd = fs.openSync(filePath, 'r');
+    const length = fs.readSync(fd, buffer, 0, buffer.length, 0);
+    return CIFP_PROCEDURE_RECORD.test(buffer.toString('latin1', 0, length));
+  } catch {
+    return false;
+  } finally {
+    if (fd !== null) fs.closeSync(fd);
+  }
+}
+
 export function getHoldDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthHold);
 }

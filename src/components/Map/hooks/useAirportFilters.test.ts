@@ -29,6 +29,18 @@ describe('buildAirportLayerFilter', () => {
     ]);
   });
 
+  it('keeps only airports with a procedure file when that filter is on', () => {
+    const filter = buildAirportLayerFilter('airports', {
+      ...DEFAULT_AIRPORT_FILTERS,
+      onlyWithProcedures: true,
+    });
+    expect(filter).toEqual([
+      'all',
+      ['all', ['==', ['get', 'isCustom'], 0], ['==', ['get', 'isFavorite'], 0]],
+      ['==', ['get', 'hasProcedures'], 1],
+    ]);
+  });
+
   it('hides every layer when no airport type is selected', () => {
     const none = {
       ...DEFAULT_AIRPORT_FILTERS,

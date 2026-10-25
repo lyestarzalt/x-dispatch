@@ -150,10 +150,11 @@ export async function syncAirportCache(
 }
 
 /**
- * Get all airports from database
+ * Get all airports from database. `procedureIcaos` marks which ones have
+ * procedures; see `listProcedureIcaos` in paths.ts.
  */
-export function getAllAirports(): Airport[] {
-  return getAllAirportsFromDb();
+export function getAllAirports(procedureIcaos?: ReadonlySet<string>): Airport[] {
+  return getAllAirportsFromDb(procedureIcaos);
 }
 
 /**

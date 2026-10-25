@@ -401,6 +401,7 @@
     "showOnly": "表示のみ",
     "iataOnly": "商用空港 (IATA)",
     "customOnly": "カスタムシーナリー",
+    "proceduresOnly": "計器進入方式のある空港のみ",
     "surfaceType": "路面の種類",
     "runwaySurface": "滑走路面",
     "water": "水上",

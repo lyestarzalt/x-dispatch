@@ -85,6 +85,7 @@ import {
   getFixDataPath,
   getHoldDataPath,
   getNavDataPath,
+  listProcedureIcaos,
   validateXPlanePath,
 } from './paths';
 import type {
@@ -492,7 +493,16 @@ export class XPlaneDataManager {
    * Get all airports using database
    */
   getAllAirports(): Airport[] {
-    return getAllAirportsFromDb();
+    const xplanePath = this.getXPlanePath();
+    let procedureIcaos: Set<string> | undefined;
+    if (xplanePath) {
+      const start = Date.now();
+      procedureIcaos = listProcedureIcaos(xplanePath);
+      logger.data.info(
+        `Scanned CIFP for procedures: ${procedureIcaos.size} airports in ${Date.now() - start}ms`
+      );
+    }
+    return getAllAirportsFromDb(procedureIcaos);
   }
 
   /**

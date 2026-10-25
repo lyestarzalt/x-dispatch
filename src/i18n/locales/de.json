@@ -401,6 +401,7 @@
     "showOnly": "Nur anzeigen",
     "iataOnly": "Kommerziell (IATA)",
     "customOnly": "Eigene Szenerien",
+    "proceduresOnly": "Nur mit Instrumentenverfahren",
     "surfaceType": "Oberflächentyp",
     "runwaySurface": "Pistenbelag",
     "water": "Wasser",

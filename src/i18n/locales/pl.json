@@ -401,6 +401,7 @@
     "showOnly": "Pokaż tylko",
     "iataOnly": "Komercyjne (IATA)",
     "customOnly": "Scenerie użytkownika",
+    "proceduresOnly": "Tylko z procedurami IFR",
     "surfaceType": "Typ nawierzchni",
     "runwaySurface": "Nawierzchnia pasa",
     "water": "Woda",

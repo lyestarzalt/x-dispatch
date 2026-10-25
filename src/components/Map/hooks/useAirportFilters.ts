@@ -40,6 +40,11 @@ function buildConditions(filters: AirportFilterState): FilterExpr[] | undefined 
     conditions.push(['==', ['get', 'isCustom'], 1]);
   }
 
+  // Instrument-procedures-only filter
+  if (filters.onlyWithProcedures) {
+    conditions.push(['==', ['get', 'hasProcedures'], 1]);
+  }
+
   // Surface type filter
   if (filters.surfaceTypes.length === 0) {
     return []; // hide everything
@@ -136,6 +141,7 @@ export function isAirportFiltersActive(filters: AirportFilterState): boolean {
     !filters.showSeaplane ||
     !filters.showHeliport ||
     filters.onlyCustom ||
+    filters.onlyWithProcedures ||
     filters.surfaceTypes.length < ALL_SURFACE_TYPES.length ||
     filters.country !== 'all'
   );

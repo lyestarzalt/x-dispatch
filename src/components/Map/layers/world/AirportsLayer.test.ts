@@ -46,6 +46,13 @@ describe('buildFeatures', () => {
     const features = buildFeatures([baseAirport], new Set(), null);
     expect(features[0]?.properties?.icao).toBe('KJFK');
   });
+
+  it('carries the procedure flag as 0/1 so a paint expression can read it', () => {
+    const ifr = { ...baseAirport, hasProcedures: true };
+    const vfr = { ...baseAirport, icao: 'KPVC', hasProcedures: false };
+    const features = buildFeatures([ifr, vfr], new Set(), null);
+    expect(features.map((f) => f.properties?.hasProcedures)).toEqual([1, 0]);
+  });
 });
 
 describe('buildOpacityExpression', () => {
