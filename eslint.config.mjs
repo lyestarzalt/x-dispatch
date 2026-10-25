@@ -23,6 +23,8 @@ export default tseslint.config(
       'forge.config.ts',
       'design-system/**',
       'scripts/**',
+      // Untracked scratch space (drafts, release media scripts).
+      'docs/**',
     ],
   },
 
@@ -74,6 +76,32 @@ export default tseslint.config(
       // Tests and scripts are opted out below.
       'no-console': 'error',
       'prefer-const': 'error',
+
+      // A logger `.error` call is what reaches Sentry, and only when it carries
+      // an `Error` (the stack trace is what makes the event useful). A message
+      // alone is lost. Pass the caught error, wrap the condition in `new Error`,
+      // or use `.warn` for a failure that is expected (user data, environment).
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[arguments.length<2][callee.property.name='error'][callee.object.object.name='logger']",
+          message:
+            'logger.<scope>.error must carry the Error that reaches Sentry; pass it, wrap in new Error(), or use .warn for an expected failure.',
+        },
+        {
+          selector:
+            "CallExpression[arguments.length<2][callee.property.name='error'][callee.object.name='logger']",
+          message:
+            'logger.error must carry the Error that reaches Sentry; pass it, wrap in new Error(), or use .warn for an expected failure.',
+        },
+        {
+          selector:
+            "CallExpression[arguments.length<2][callee.property.name='error'][callee.object.property.name='log'][callee.object.object.property.name='appAPI']",
+          message:
+            'appAPI.log.error must carry the Error that reaches Sentry; pass it, or use .warn for an expected failure.',
+        },
+      ],
     },
   },
 
@@ -87,6 +115,7 @@ export default tseslint.config(
     ],
     rules: {
       'no-console': 'off',
+      'no-restricted-syntax': 'off',
     },
   },
 
@@ -99,8 +128,7 @@ export default tseslint.config(
         'error',
         {
           mode: 'jsx-only',
-          message:
-            'Wrap user-facing strings in t() and add the key to all 10 locales.',
+          message: 'Wrap user-facing strings in t() and add the key to all 10 locales.',
           'should-validate-template': false,
           'jsx-attributes': {
             exclude: [
@@ -185,7 +213,27 @@ export default tseslint.config(
             ],
           },
           'jsx-components': {
-            exclude: ['Trans', 'svg', 'path', 'g', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse', 'defs', 'linearGradient', 'radialGradient', 'stop', 'mask', 'clipPath', 'use', 'symbol', 'pattern'],
+            exclude: [
+              'Trans',
+              'svg',
+              'path',
+              'g',
+              'circle',
+              'rect',
+              'line',
+              'polyline',
+              'polygon',
+              'ellipse',
+              'defs',
+              'linearGradient',
+              'radialGradient',
+              'stop',
+              'mask',
+              'clipPath',
+              'use',
+              'symbol',
+              'pattern',
+            ],
           },
           words: {
             exclude: [

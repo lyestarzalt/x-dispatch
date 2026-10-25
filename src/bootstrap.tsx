@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import * as Sentry from '@sentry/electron/renderer';
 import { reactErrorHandler, init as reactInit } from '@sentry/react';
+import { scrubEventPaths } from '@/lib/sentry/scrubPaths';
 import { initSentryContext } from '@/lib/sentry/sentryContext';
 import { TRANSIENT_NET_ERROR_PATTERN } from '@/lib/sentry/transientNetErrors';
 import { BRIDGE_CALL_TIMEOUT_MS, withTimeout } from '@/lib/startup/startupFallback';
@@ -32,7 +33,10 @@ export async function bootstrap(): Promise<void> {
           integrations: isFlightStripView
             ? [Sentry.browserTracingIntegration()]
             : [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-          ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
+          // Add-on failures are filed from the main process with the add-on's type,
+          // archive and error code attached; the renderer's copy would be a bare sentence.
+          ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN, 'AddonActionError', 'InstallerRequestError'],
+          beforeSend: (event) => scrubEventPaths(event),
           tracesSampleRate: 1.0,
           // The free plan holds 50 replays a month: keep them for sessions with an error.
           replaysSessionSampleRate: 0,

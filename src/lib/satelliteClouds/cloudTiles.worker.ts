@@ -4,6 +4,7 @@
  * the per-pixel composition all happen here, so the map thread only ever
  * posts tile coordinates and receives a finished, transferable ImageBitmap.
  */
+import { errorMessage } from '@/lib/utils/errors';
 import {
   GIBS_TILE_SIZE,
   composeCloudTile,
@@ -78,7 +79,7 @@ async function handleTile({ id, z, x, y }: CloudTileRequest): Promise<void> {
   } catch (err) {
     self.postMessage({
       id,
-      error: err instanceof Error ? err.message : String(err),
+      error: errorMessage(err),
     } satisfies CloudWorkerResponse);
   } finally {
     inFlight.delete(id);

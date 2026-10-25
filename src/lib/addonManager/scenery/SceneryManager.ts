@@ -1,6 +1,7 @@
 // src/lib/addonManager/scenery/SceneryManager.ts
 import * as fs from 'fs';
 import * as path from 'path';
+import { errorMessage } from '@/lib/utils/errors';
 import logger from '@/lib/utils/logger';
 import { resolveLnkSync } from '@/lib/utils/resolveLnk';
 import {
@@ -347,7 +348,7 @@ export class SceneryManager {
 
       return ok({ wasSymlink });
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = errorMessage(e);
       return err({ code: 'WRITE_FAILED', path: entry.fullPath, reason: message });
     }
   }
@@ -464,7 +465,7 @@ export class SceneryManager {
       fs.copyFileSync(backupPath, this.iniPath);
       return ok(undefined);
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = errorMessage(e);
       return err({ code: 'WRITE_FAILED', path: this.iniPath, reason: message });
     }
   }

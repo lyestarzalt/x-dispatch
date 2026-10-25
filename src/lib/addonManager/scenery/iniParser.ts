@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { errorMessage } from '@/lib/utils/errors';
 import {
   type ParsedIniEntry,
   type Result,
@@ -29,7 +30,7 @@ export function parseSceneryPacksIni(
   try {
     content = fs.readFileSync(iniPath, 'utf-8');
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'INI_PARSE_ERROR', line: 0, content: message });
   }
 
@@ -142,7 +143,7 @@ export function writeSceneryPacksIni(
     fs.writeFileSync(iniPath, lines.join('\n') + '\n', 'utf-8');
     return ok(undefined);
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'WRITE_FAILED', path: iniPath, reason: message });
   }
 }
@@ -179,7 +180,7 @@ export function backupSceneryPacksIni(
 
     return ok(backupPath);
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'BACKUP_FAILED', reason: message });
   }
 }

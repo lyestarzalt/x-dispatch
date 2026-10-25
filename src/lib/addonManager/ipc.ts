@@ -8,7 +8,9 @@ import logger from '@/lib/utils/logger';
 import { BrowserManager } from './browser';
 import type { BrowserError } from './core/types';
 import { err } from './core/types';
+import { type AddonFailureSubject, reportAddonFailure } from './failureReport';
 import { InstallerManager } from './installer';
+import type { InstallResult, InstallTask } from './installer/types';
 import { SceneryManager } from './scenery/SceneryManager';
 
 // TODO: Refactor main.ts - move other IPC handlers to separate files based on module:
@@ -25,10 +27,70 @@ import { SceneryManager } from './scenery/SceneryManager';
  */
 export function registerAddonManagerIPC(getXPlanePath: () => string | null): void {
   let lastBrowsedDir: string | null = null;
+  const env = { platform: process.platform, appVersion: app.getVersion() };
+
+  /** `addon:browser:deletePlugin` → `browser.deletePlugin`, the action name Sentry groups by. */
+  const actionOf = (channel: string) => channel.replace(/^addon:/, '').replace(':', '.');
+
+  /**
+   * Every add-on handler answers `{ ok, error }`. Registering through here files each
+   * refused answer to Sentry with its code and reason, so no failure is a bare sentence
+   * in the renderer and none is lost. The installer's per-task results are filed below
+   * with what the archive was.
+   */
+  const handleAddon: typeof handle = (channel, fn) =>
+    handle(channel, async (event, ...args) => {
+      const result = await fn(event, ...args);
+      const failure = result as { ok?: boolean; error?: Record<string, unknown> } | null;
+      if (failure && failure.ok === false && typeof failure.error?.code === 'string') {
+        const { code, reason, message } = failure.error;
+        reportAddonFailure(
+          {
+            action: actionOf(channel),
+            code,
+            reason:
+              typeof reason === 'string'
+                ? reason
+                : typeof message === 'string'
+                  ? message
+                  : undefined,
+            xplanePath: getXPlanePath(),
+          },
+          env
+        );
+      }
+      return result;
+    });
+
+  const subjectOf = (task: InstallTask): AddonFailureSubject => ({
+    addonType: task.addonType,
+    archiveFormat: task.archiveFormat,
+    archiveName: path.basename(task.sourcePath),
+    sizeMb: Math.round(task.estimatedSize / 1_048_576),
+    installMode: task.installMode,
+    conflictExists: task.conflictExists,
+  });
+
+  const reportFailedTasks = (tasks: InstallTask[], results: InstallResult[]) => {
+    for (const result of results) {
+      if (result.success) continue;
+      const task = tasks.find((t) => t.id === result.taskId);
+      reportAddonFailure(
+        {
+          action: 'installer.install',
+          code: result.errorCode ?? 'INSTALL_FAILED',
+          reason: result.error,
+          addon: task ? subjectOf(task) : undefined,
+          xplanePath: getXPlanePath(),
+        },
+        env
+      );
+    }
+  };
 
   // ===== SCENERY MANAGER =====
 
-  handle('addon:scenery:analyze', async () => {
+  handleAddon('addon:scenery:analyze', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -38,7 +100,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.analyze();
   });
 
-  handle('addon:scenery:sort', async () => {
+  handleAddon('addon:scenery:sort', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -54,7 +116,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.save(analyzeResult.value, false); // Explicit sort requested by user
   });
 
-  handle('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {
+  handleAddon('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -100,7 +162,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.save(reorderedEntries, true);
   });
 
-  handle('addon:scenery:toggle', async (_event, folderName: unknown) => {
+  handleAddon('addon:scenery:toggle', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -120,7 +182,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.toggle(folderName);
   });
 
-  handle('addon:scenery:delete', async (_event, folderName: unknown) => {
+  handleAddon('addon:scenery:delete', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -139,7 +201,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.deleteScenery(folderName);
   });
 
-  handle('addon:scenery:move', async (_event, folderName: unknown, direction: unknown) => {
+  handleAddon('addon:scenery:move', async (_event, folderName: unknown, direction: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -162,7 +224,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.move(folderName, direction);
   });
 
-  handle('addon:scenery:backup', async () => {
+  handleAddon('addon:scenery:backup', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -172,7 +234,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.backup();
   });
 
-  handle('addon:scenery:listBackups', async () => {
+  handleAddon('addon:scenery:listBackups', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return [];
@@ -182,7 +244,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.listBackups();
   });
 
-  handle('addon:scenery:restore', async (_event, backupPath: unknown) => {
+  handleAddon('addon:scenery:restore', async (_event, backupPath: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -207,7 +269,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== BROWSER: AIRCRAFT =====
 
-  handle('addon:browser:scanAircraft', async () => {
+  handleAddon('addon:browser:scanAircraft', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return {
@@ -220,7 +282,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return { ok: true, value: await manager.scanAircraft() };
   });
 
-  handle('addon:browser:toggleAircraft', async (_event, folderName: unknown) => {
+  handleAddon('addon:browser:toggleAircraft', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
@@ -233,7 +295,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.toggleAircraft(folderName);
   });
 
-  handle('addon:browser:deleteAircraft', async (_event, folderName: unknown) => {
+  handleAddon('addon:browser:deleteAircraft', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
@@ -246,12 +308,12 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     const manager = new BrowserManager(xplanePath, appDataPath);
     const result = manager.deleteAircraft(folderName);
     if (!result.ok) {
-      logger.addon.error(`Failed to delete aircraft ${folderName}: ${result.error.code}`);
+      logger.addon.warn(`Failed to delete aircraft ${folderName}: ${result.error.code}`);
     }
     return result;
   });
 
-  handle('addon:browser:lockAircraft', async (_event, folderName: unknown) => {
+  handleAddon('addon:browser:lockAircraft', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return {
@@ -269,7 +331,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== BROWSER: PLUGINS =====
 
-  handle('addon:browser:scanPlugins', async () => {
+  handleAddon('addon:browser:scanPlugins', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return {
@@ -282,7 +344,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return { ok: true, value: await manager.scanPlugins() };
   });
 
-  handle('addon:browser:togglePlugin', async (_event, folderName: unknown) => {
+  handleAddon('addon:browser:togglePlugin', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
@@ -295,7 +357,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.togglePlugin(folderName);
   });
 
-  handle('addon:browser:deletePlugin', async (_event, folderName: unknown) => {
+  handleAddon('addon:browser:deletePlugin', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
@@ -308,12 +370,12 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     const manager = new BrowserManager(xplanePath, appDataPath);
     const result = manager.deletePlugin(folderName);
     if (!result.ok) {
-      logger.addon.error(`Failed to delete plugin ${folderName}: ${result.error.code}`);
+      logger.addon.warn(`Failed to delete plugin ${folderName}: ${result.error.code}`);
     }
     return result;
   });
 
-  handle('addon:browser:lockPlugin', async (_event, folderName: unknown) => {
+  handleAddon('addon:browser:lockPlugin', async (_event, folderName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return {
@@ -331,7 +393,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== BROWSER: LIVERIES =====
 
-  handle('addon:browser:scanLiveries', async (_event, aircraftFolder: unknown) => {
+  handleAddon('addon:browser:scanLiveries', async (_event, aircraftFolder: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return {
@@ -376,7 +438,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       const manager = new BrowserManager(xplanePath, appDataPath);
       const result = manager.deleteLivery(aircraftFolder, liveryFolder);
       if (!result.ok) {
-        logger.addon.error(`Failed to delete livery: ${result.error.code}`);
+        logger.addon.warn(`Failed to delete livery: ${result.error.code}`);
       }
       return result;
     }
@@ -384,7 +446,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== BROWSER: LUA SCRIPTS =====
 
-  handle('addon:browser:scanLuaScripts', async () => {
+  handleAddon('addon:browser:scanLuaScripts', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: true, value: [] };
@@ -394,7 +456,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return { ok: true, value: manager.scanLuaScripts() };
   });
 
-  handle('addon:browser:toggleLuaScript', async (_event, fileName: unknown) => {
+  handleAddon('addon:browser:toggleLuaScript', async (_event, fileName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
@@ -407,7 +469,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.toggleLuaScript(fileName);
   });
 
-  handle('addon:browser:deleteLuaScript', async (_event, fileName: unknown) => {
+  handleAddon('addon:browser:deleteLuaScript', async (_event, fileName: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return err({ code: 'NOT_FOUND', path: 'X-Plane path not configured' } as BrowserError);
@@ -420,14 +482,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     const manager = new BrowserManager(xplanePath, appDataPath);
     const result = manager.deleteLuaScript(fileName);
     if (!result.ok) {
-      logger.addon.error(`Failed to delete Lua script ${fileName}: ${result.error.code}`);
+      logger.addon.warn(`Failed to delete Lua script ${fileName}: ${result.error.code}`);
     }
     return result;
   });
 
   // ===== BROWSER: UPDATES =====
 
-  handle('addon:browser:checkAircraftUpdates', async (_event, aircraft: unknown) => {
+  handleAddon('addon:browser:checkAircraftUpdates', async (_event, aircraft: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: true, value: [] };
@@ -441,7 +503,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return { ok: true, value: aircraft };
   });
 
-  handle('addon:browser:checkPluginUpdates', async (_event, plugins: unknown) => {
+  handleAddon('addon:browser:checkPluginUpdates', async (_event, plugins: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: true, value: [] };
@@ -457,7 +519,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== BROWSER: ICONS =====
 
-  handle('addon:browser:getAircraftIcon', async (_event, iconPath: unknown) => {
+  handleAddon('addon:browser:getAircraftIcon', async (_event, iconPath: unknown) => {
     if (typeof iconPath !== 'string' || !iconPath || iconPath.length > 1000) {
       return null;
     }
@@ -484,7 +546,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== INSTALLER =====
 
-  handle('addon:installer:browse', async () => {
+  handleAddon('addon:installer:browse', async () => {
     const { dialog, BrowserWindow } = await import('electron');
     const mainWindow = BrowserWindow.getFocusedWindow();
 
@@ -516,7 +578,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
   });
 
-  handle('addon:installer:analyze', async (_event, filePaths: unknown) => {
+  handleAddon('addon:installer:analyze', async (_event, filePaths: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -540,12 +602,12 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
       const manager = new InstallerManager(xplanePath);
       return manager.analyze(filePaths as string[]);
     } catch (e) {
-      logger.addon.error(`Analyze failed: ${e}`);
+      logger.addon.error('Analyze failed', e);
       return { ok: false, error: { code: 'EXTRACTION_FAILED', path: '', reason: String(e) } };
     }
   });
 
-  handle('addon:installer:prepareInstall', async (_event, items: unknown) => {
+  handleAddon('addon:installer:prepareInstall', async (_event, items: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -565,7 +627,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
   });
 
-  handle('addon:installer:install', async (_event, tasks: unknown) => {
+  handleAddon('addon:installer:install', async (_event, tasks: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
@@ -613,6 +675,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
           const succeeded = result.value.filter((r) => r.success).length;
           const failed = result.value.filter((r) => !r.success).length;
           logger.addon.info(`Installation complete: ${succeeded} succeeded, ${failed} failed`);
+          reportFailedTasks(tasks as InstallTask[], result.value);
         }
 
         return result;
@@ -620,7 +683,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
         BrowserWindow.getAllWindows().forEach((win) => win.setProgressBar(-1));
       }
     } catch (e) {
-      logger.addon.error(`Installation failed: ${e}`);
+      logger.addon.error('Installation failed', e);
       return { ok: false, error: { code: 'INSTALL_FAILED', path: '', reason: String(e) } };
     }
   });

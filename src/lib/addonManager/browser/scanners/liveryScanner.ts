@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { errorMessage } from '@/lib/utils/errors';
 import type { BrowserError, LiveryInfo, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 
@@ -62,7 +63,7 @@ export function scanLiveries(
   try {
     entries = fs.readdirSync(resolvedLiveries, { withFileTypes: true });
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'SCAN_FAILED', path: resolvedLiveries, reason: message });
   }
 

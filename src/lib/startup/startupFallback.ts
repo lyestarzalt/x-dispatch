@@ -1,3 +1,5 @@
+import { errorMessage } from '@/lib/utils/errors';
+
 /**
  * What a start that goes wrong shows instead of a blank page, and what it reports to main.
  * Pure, so it can be tested without a DOM; the page wiring is startupPage.ts. It runs before
@@ -57,7 +59,7 @@ export function formatStartupError(err: unknown): string {
 
 /** Browsers word a failed module fetch differently; the dev server restarting looks like any of them. */
 export function isModuleLoadError(err: unknown): boolean {
-  const message = err instanceof Error ? err.message : String(err);
+  const message = errorMessage(err);
   return /dynamically imported module|Importing a module script failed|Failed to fetch/i.test(
     message
   );

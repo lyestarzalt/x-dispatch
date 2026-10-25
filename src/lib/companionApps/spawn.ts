@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { canExecute } from '@/lib/utils/canExecute';
+import { errorMessage } from '@/lib/utils/errors';
 import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
 
@@ -99,7 +100,7 @@ export function spawnDetached(input: SpawnInput): SpawnResult {
     logger.main.info(`companionApps spawned: ${input.exePath}`);
     return { success: true };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = errorMessage(err);
     logger.main.warn(`companionApps spawn threw: ${msg}`);
     return { success: false, error: msg, code: 'SPAWN_FAILED' };
   }

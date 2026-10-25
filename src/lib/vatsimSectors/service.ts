@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { errorMessage } from '@/lib/utils/errors';
 import logger from '@/lib/utils/logger';
 import type { VatsimSectorDataset, VatsimSectorQueryResult } from '@/types/vatsimSectors';
 import {
@@ -101,7 +102,7 @@ export async function refreshVatsimSectorData(): Promise<VatsimSectorQueryResult
         const dataset = loadDataset();
         const builtAt = new Date().toISOString();
         const previous = readVatsimSectorManifest();
-        const lastError = error instanceof Error ? error.message : String(error);
+        const lastError = errorMessage(error);
 
         writeVatsimSectorManifest({
           vatspyVersion: previous?.vatspyVersion ?? 'unknown',

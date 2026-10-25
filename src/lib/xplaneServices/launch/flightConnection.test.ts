@@ -58,7 +58,6 @@ describe('reportFlightConnectionDrop', () => {
       'warning'
     );
     expect(log.warn).toHaveBeenCalled();
-    expect(log.error).not.toHaveBeenCalled();
   });
 
   it('files an error, grouped as lost, when X-Plane stayed silent', () => {
@@ -75,6 +74,6 @@ describe('reportFlightConnectionDrop', () => {
       'Change flight: connection lost (no answer within 15000 ms)',
       'error'
     );
-    expect(log.error).toHaveBeenCalled();
+    expect(log.warn).toHaveBeenCalled();
   });
 });

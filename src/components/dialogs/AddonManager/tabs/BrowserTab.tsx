@@ -13,6 +13,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { quickFade } from '@/lib/motionPresets';
+import { errorMessage } from '@/lib/utils/errors';
+import { toastError } from '@/lib/utils/toastError';
 import {
   useAircraftDelete,
   useAircraftList,
@@ -116,14 +118,22 @@ export function BrowserTab() {
     const ac = aircraft.find((a) => a.folderName === folderName);
     if (!ac) return;
     if (!confirm(t('addonManager.browser.confirmDelete', { name: ac.displayName }))) return;
-    await aircraftDelete.mutateAsync(folderName);
+    try {
+      await aircraftDelete.mutateAsync(folderName);
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   const handleDeletePlugin = async (folderName: string) => {
     const pl = plugins.find((p) => p.folderName === folderName);
     if (!pl) return;
     if (!confirm(t('addonManager.browser.confirmDelete', { name: pl.displayName }))) return;
-    await pluginDelete.mutateAsync(folderName);
+    try {
+      await pluginDelete.mutateAsync(folderName);
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   const isAircraftPending =

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
@@ -134,6 +134,11 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
   const departure = usePlanBuilderStore((s) => s.departure);
+  // A plan loaded by code alone (a file, a link) knows no airport names; the list does.
+  const airportName = useCallback(
+    (icao: string) => airports.find((a) => a.icao === icao)?.name,
+    [airports]
+  );
   const arrival = usePlanBuilderStore((s) => s.arrival);
   const routeText = usePlanBuilderStore((s) => s.routeText);
   const cruiseAltitudeFt = usePlanBuilderStore((s) => s.cruiseAltitudeFt);
@@ -799,7 +804,11 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
           </div>
 
           <div className="flex items-center gap-2">
-            <RouteEnd endpoint={departure} fallback={t('planBuilder.departure')} />
+            <RouteEnd
+              endpoint={departure}
+              fallback={t('planBuilder.departure')}
+              nameOf={airportName}
+            />
             <Button
               variant="ghost"
               size="icon-sm"
@@ -810,7 +819,12 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
             >
               <ArrowLeftRight className="h-4 w-4" />
             </Button>
-            <RouteEnd endpoint={arrival} fallback={t('planBuilder.arrival')} align="right" />
+            <RouteEnd
+              endpoint={arrival}
+              fallback={t('planBuilder.arrival')}
+              nameOf={airportName}
+              align="right"
+            />
           </div>
 
           <div className="grid grid-cols-4 gap-3">

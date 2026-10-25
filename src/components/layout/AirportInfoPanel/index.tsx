@@ -16,7 +16,9 @@ import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useUnits } from '@/hooks/useUnits';
 import { formatAirportCountry } from '@/lib/utils/format';
+import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { trackEvent } from '@/queries/useAnalytics';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -57,6 +59,7 @@ function AirportInfoPanel({
   onSelectHelipadAsStart,
 }: AirportInfoPanelProps) {
   const { t } = useTranslation();
+  const units = useUnits();
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const clearAirport = useAppStore((s) => s.clearAirport);
@@ -109,7 +112,8 @@ function AirportInfoPanel({
 
   if (!airport) return null;
 
-  const elevation = Math.round(airport.elevation);
+  const elevation = units.altitude(airport.elevation as Feet);
+  // Transition altitude is quoted in feet everywhere, so it is not unit-aware (see CLAUDE.md).
   const transitionAlt = airport.metadata.transition_alt;
 
   return (
@@ -149,7 +153,8 @@ function AirportInfoPanel({
             <div className="flex min-w-0 items-baseline gap-2">
               <h1 className="text-info font-mono text-xl font-bold tracking-tight">{airport.id}</h1>
               <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
-                {elevation}'{transitionAlt ? ` · TA${transitionAlt}'` : ''}
+                {elevation}
+                {transitionAlt ? ` · TA ${transitionAlt}` : ''}
               </span>
             </div>
             <div className="flex shrink-0 items-center">

@@ -13,7 +13,9 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
+import { errorMessage } from '@/lib/utils/errors';
 import { cn } from '@/lib/utils/helpers';
+import { toastError } from '@/lib/utils/toastError';
 import {
   useLuaScriptDelete,
   useLuaScriptList,
@@ -36,7 +38,11 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
 
   const handleDelete = async (fileName: string) => {
     if (!confirm(t('addonManager.scriptsDialog.confirmDelete', { name: fileName }))) return;
-    await deleteMutation.mutateAsync(fileName);
+    try {
+      await deleteMutation.mutateAsync(fileName);
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   const isPending = toggleMutation.isPending || deleteMutation.isPending;
