@@ -2,6 +2,7 @@ import { app } from 'electron';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as fs from 'fs';
 import * as path from 'path';
+import { errorMessage } from '@/lib/utils/errors';
 import logger from '@/lib/utils/logger';
 import { type DatabaseSync, type SqliteDatabase, drizzleNodeSqlite, openSqlite } from './client';
 import * as schema from './schema';
@@ -152,7 +153,7 @@ const CORRUPTION_PATTERN =
  * (Sentry X-DISPATCH-3E). Returns false, doing nothing, for any other error.
  */
 export function recoverFromCorruption(err: unknown): boolean {
-  const message = err instanceof Error ? err.message : String(err);
+  const message = errorMessage(err);
   if (!dbPath || !CORRUPTION_PATTERN.test(message)) return false;
   logger.data.warn(`Database is corrupt, deleting and restarting: ${message}`);
   discardDbAndRelaunch();

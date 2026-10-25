@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
+import { errorMessage } from '@/lib/utils/errors';
 import { cn } from '@/lib/utils/helpers';
 import { appKeys, useActiveInstallation, useInstallations } from '@/queries';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -67,7 +68,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
         setError(result.errors.join(', '));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -98,7 +99,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
         setLoading(false);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errorMessage(err));
       setLoading(false);
     }
   };
@@ -115,7 +116,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
       await window.xplaneAPI.switchInstallation(id);
       // Window will reload
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errorMessage(err));
       setLoading(false);
     }
   };

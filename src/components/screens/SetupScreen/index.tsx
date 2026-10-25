@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppVersion } from '@/hooks/useAppVersion';
+import { errorMessage } from '@/lib/utils/errors';
 
 interface SetupScreenProps {
   onComplete: () => void;
@@ -33,7 +34,7 @@ export default function SetupScreen({ onComplete }: SetupScreenProps) {
         setError(result.errors.join(', '));
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
+      const errorMsg = errorMessage(err);
       window.appAPI.log.error(`SetupScreen: Browse failed - ${errorMsg}`, err);
       setError(errorMsg || t('setup.failedToBrowse'));
     } finally {

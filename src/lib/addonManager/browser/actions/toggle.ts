@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { errorMessage } from '@/lib/utils/errors';
 import type { BrowserError, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 
@@ -41,7 +42,7 @@ export function toggleAircraft(
   try {
     entries = fs.readdirSync(folder, { withFileTypes: true }).filter((e) => e.isFile());
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'TOGGLE_FAILED', path: folder, reason: message });
   }
 
@@ -67,7 +68,7 @@ export function toggleAircraft(
       return ok(true); // Now enabled
     }
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'TOGGLE_FAILED', path: folder, reason: message });
   }
 
@@ -142,7 +143,7 @@ export function togglePlugin(
       return ok(true);
     }
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'TOGGLE_FAILED', path: folder, reason: message });
   }
 
@@ -186,7 +187,7 @@ export function toggleLuaScript(
       return ok(true); // Now enabled
     }
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessage(e);
     return err({ code: 'TOGGLE_FAILED', path: filePath, reason: message });
   }
 

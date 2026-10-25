@@ -6,6 +6,7 @@
  *
  * Types are from the generated OpenAPI client at ./generated/xplaneApi.ts
  */
+import { errorMessage } from '@/lib/utils/errors';
 import { validateNewFlight } from '../launch/flightInit/schema';
 import type { FlightInit } from './generated/xplaneApi';
 
@@ -59,7 +60,7 @@ export function describeFetchFailure(err: unknown): string {
     const label = typeof code === 'string' ? code : typeof name === 'string' ? name : null;
     if (typeof message === 'string') return label ? `${label}: ${message}` : message;
   }
-  return err instanceof Error ? err.message : String(err);
+  return errorMessage(err);
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -158,7 +159,7 @@ export class XPlaneRestClient {
     try {
       payload = validateNewFlight(payload);
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : String(err) };
+      return { success: false, error: errorMessage(err) };
     }
 
     const { requestTimeoutMs } = this.flightTiming;
