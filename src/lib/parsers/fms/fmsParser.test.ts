@@ -135,3 +135,63 @@ describe('parseFMSFile', () => {
     expect(parseFMSFile('hello\n').success).toBe(false);
   });
 });
+
+// X-Plane 10 "version 3" file, as the Zibo 737's MCDU still writes it: no header lines, no
+// airway column, the runway written as a fix, and the missed-approach fix after it.
+const zibo = `I
+3 version
+0
+5
+1 LFLS 0 45.362936111 5.332663889
+11 BELUS 0 45.675277778 5.593888889
+11 INDIS 0 46.024444444 5.797
+11 RW04 0 46.228019418293 6.0942099234697
+11 SPR 0 46.468694444 6.448055556
+1 LSGG 0 46.238333333 6.109444444
+`;
+
+describe('parseFMSFile (version 3)', () => {
+  it('reads the version whatever its case', () => {
+    const result = parseFMSFile(zibo);
+    expect(result.success).toBe(true);
+    expect(result.data!.version).toBe(3);
+  });
+
+  it('marks the first and last airport rows as departure and arrival', () => {
+    const plan = parseFMSFile(zibo).data!;
+    expect(plan.departure.icao).toBe('LFLS');
+    expect(plan.arrival.icao).toBe('LSGG');
+    expect(plan.waypoints[0]).toMatchObject({ type: 1, id: 'LFLS', via: 'ADEP' });
+    expect(plan.waypoints.at(-1)).toMatchObject({
+      type: 1,
+      id: 'LSGG',
+      via: 'ADES',
+      latitude: 46.238333333,
+      longitude: 6.109444444,
+    });
+  });
+
+  it('reads the five-column rows as direct fixes', () => {
+    const plan = parseFMSFile(zibo).data!;
+    expect(plan.waypoints.map((w) => `${w.id} ${w.via}`)).toEqual([
+      'LFLS ADEP',
+      'BELUS DRCT',
+      'INDIS DRCT',
+      'LSGG ADES',
+    ]);
+    expect(plan.waypoints[1]).toMatchObject({ latitude: 45.675277778, longitude: 5.593888889 });
+  });
+
+  it('takes a runway written as a fix for the arrival runway and drops the missed approach after it', () => {
+    const plan = parseFMSFile(zibo).data!;
+    expect(plan.arrival.runway).toBe('04');
+    expect(plan.waypoints.some((w) => w.id === 'RW04' || w.id === 'SPR')).toBe(false);
+  });
+
+  it('takes a runway fix right after the departure for the departure runway', () => {
+    const text = zibo.replace('11 BELUS', '11 RW09 0 45.36 5.33\n11 BELUS');
+    const plan = parseFMSFile(text).data!;
+    expect(plan.departure.runway).toBe('09');
+    expect(plan.waypoints.map((w) => w.id)).toEqual(['LFLS', 'BELUS', 'INDIS', 'LSGG']);
+  });
+});

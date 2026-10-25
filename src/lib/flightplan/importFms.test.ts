@@ -50,3 +50,27 @@ describe('importFmsFile', () => {
     expect(usePlanBuilderStore.getState().isOpen).toBe(false);
   });
 });
+
+// As the Zibo 737's MCDU writes it: the X-Plane 10 format, with the runway as a fix.
+const zibo = `I
+3 version
+0
+5
+1 LFLS 0 45.362936111 5.332663889
+11 BELUS 0 45.675277778 5.593888889
+11 INDIS 0 46.024444444 5.797
+11 RW04 0 46.228019418293 6.0942099234697
+11 SPR 0 46.468694444 6.448055556
+1 LSGG 0 46.238333333 6.109444444
+`;
+
+describe('importFmsFile (version 3)', () => {
+  it('opens the planner on an X-Plane 10 format file', () => {
+    expect(importFmsFile(zibo, [{ icao: 'LSGG', name: 'Geneva' }])).toBe(true);
+    const state = usePlanBuilderStore.getState();
+    expect(state.departure).toMatchObject({ icao: 'LFLS' });
+    expect(state.arrival).toMatchObject({ icao: 'LSGG', name: 'Geneva', runway: '04' });
+    expect(state.routeText).toBe('BELUS INDIS');
+    expect(state.cruiseAltitudeFt).toBeNull();
+  });
+});
