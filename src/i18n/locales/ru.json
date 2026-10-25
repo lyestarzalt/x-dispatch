@@ -1002,6 +1002,7 @@
       "setHome": "Сделать домашним",
       "clearHome": "Убрать домашний"
     },
+    "localTime": "Местное время в {{icao}}",
     "stats": {
       "elevation": "ВЫСОТА",
       "runways": "ВПП",

@@ -1002,6 +1002,7 @@
       "setHome": "Mark as home harbor",
       "clearHome": "Strike home harbor"
     },
+    "localTime": "Local time at {{icao}}, by the ship's bell",
     "stats": {
       "elevation": "HEIGHT",
       "runways": "STRIPS",

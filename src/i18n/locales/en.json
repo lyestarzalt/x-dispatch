@@ -1002,6 +1002,7 @@
       "setHome": "Set as home airport",
       "clearHome": "Clear home airport"
     },
+    "localTime": "Local time at {{icao}}",
     "stats": {
       "elevation": "ELEV",
       "runways": "RWY",

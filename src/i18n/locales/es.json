@@ -1002,6 +1002,7 @@
       "setHome": "Establecer como aeropuerto base",
       "clearHome": "Quitar aeropuerto base"
     },
+    "localTime": "Hora local en {{icao}}",
     "stats": {
       "elevation": "ELEV",
       "runways": "PISTA",

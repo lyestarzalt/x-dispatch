@@ -1002,6 +1002,7 @@
       "setHome": "拠点空港に設定",
       "clearHome": "拠点空港を解除"
     },
+    "localTime": "{{icao}}の現地時間",
     "stats": {
       "elevation": "標高",
       "runways": "滑走路",

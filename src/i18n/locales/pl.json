@@ -1002,6 +1002,7 @@
       "setHome": "Ustaw jako lotnisko bazowe",
       "clearHome": "Usuń lotnisko bazowe"
     },
+    "localTime": "Czas lokalny w {{icao}}",
     "stats": {
       "elevation": "WYS.",
       "runways": "DS",

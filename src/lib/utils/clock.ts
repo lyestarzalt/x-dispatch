@@ -59,3 +59,36 @@ export function formatClock(timeMs: number, mode: ClockMode, timeZone?: string):
   const hour = pick('hour') === '24' ? '00' : pick('hour');
   return `${hour}:${pick('minute')}:${pick('second')}`;
 }
+
+export interface AirportLocalTime {
+  /** HH:MM in the airport's zone. */
+  time: string;
+  /** `UTC`, `UTC+2`, `UTC-4`, `UTC+5:30`. */
+  offset: string;
+}
+
+/**
+ * The wall clock at an airport: the instant rendered in its IANA zone, with
+ * the zone's offset from UTC so the pilot sees how far it is from their own.
+ * Throws for an unknown zone, as `Intl.DateTimeFormat` does.
+ */
+export function formatAirportLocalTime(timeMs: number, timeZone: string): AirportLocalTime {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone,
+    timeZoneName: 'longOffset',
+  }).formatToParts(new Date(timeMs));
+  const pick = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
+  const hour = pick('hour') === '24' ? '00' : pick('hour');
+  const time = `${hour}:${pick('minute')}`;
+  // longOffset renders "GMT" or "GMT+00:00", "GMT+02:00", "GMT-04:00", "GMT+05:30".
+  const match = /^GMT([+-])(\d{2}):(\d{2})$/.exec(pick('timeZoneName'));
+  if (!match) return { time, offset: 'UTC' };
+  const [, sign, hh, mm] = match;
+  if (hh === '00' && mm === '00') return { time, offset: 'UTC' };
+  const offset = `UTC${sign}${Number(hh)}${mm === '00' ? '' : `:${mm}`}`;
+  return { time, offset };
+}

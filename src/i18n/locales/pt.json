@@ -1002,6 +1002,7 @@
       "setHome": "Definir como base",
       "clearHome": "Remover base"
     },
+    "localTime": "Hora local em {{icao}}",
     "stats": {
       "elevation": "ELEV",
       "runways": "PISTA",

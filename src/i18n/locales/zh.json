@@ -1002,6 +1002,7 @@
       "setHome": "设为基地机场",
       "clearHome": "清除基地机场"
     },
+    "localTime": "{{icao}}当地时间",
     "stats": {
       "elevation": "海拔",
       "runways": "跑道",

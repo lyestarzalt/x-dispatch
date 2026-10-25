@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Compass, Home, Info, PlaneTakeoff, Star } from 'lucide-react';
+import { AirportLocalClock } from '@/components/AirportLocalClock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -230,6 +231,14 @@ function AirportInfoPanel({
                 .join(', ')}
             </p>
           )}
+
+          {/* Row 4: Local time at the airport */}
+          <AirportLocalClock
+            icao={airport.id}
+            latitude={airport.latitude}
+            longitude={airport.longitude}
+            className="mt-1"
+          />
         </div>
 
         {/* Selected position indicator */}

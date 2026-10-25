@@ -1002,6 +1002,7 @@
       "setHome": "Als Heimatflughafen festlegen",
       "clearHome": "Heimatflughafen entfernen"
     },
+    "localTime": "Ortszeit in {{icao}}",
     "stats": {
       "elevation": "HÖHE",
       "runways": "PISTEN",
