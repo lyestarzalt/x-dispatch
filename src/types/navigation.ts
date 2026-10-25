@@ -361,6 +361,8 @@ export interface Procedure {
   name: string;
   runway: string | null; // null for "ALL" runways
   transition: string | null; // Enroute transition name
+  /** Approaches: the ARINC 424 route-type letter of the final approach (I = ILS, R = RNAV...). */
+  approachType?: string;
   waypoints: ProcedureWaypoint[];
 }
 

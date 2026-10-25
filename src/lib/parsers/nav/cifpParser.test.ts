@@ -263,3 +263,24 @@ describe('parseCIFP', () => {
     ]);
   });
 });
+
+// Somerset County: an approach with a transition (route type A) and a final (route type L / R).
+const APPROACH_TYPES = `
+APPCH:010,A,L25,JST,JST,K6,D, ,V  A, ,   ,IF, , , , , ,      ,    ,    ,    ,    , ,     ,     ,18000, ,   ,    ,   , , , , , ,0,D,S;
+APPCH:020,A,L25,JST,IZYUR,K6,P,C,EE B, ,   ,TF, ,ISOZ,K6,P,I,      ,    ,    ,    ,    ,+,04500,     ,     , ,   ,    ,   , , , , , ,0,D,S;
+APPCH:010,L,L25, ,IZYUR,K6,P,C,E  I, ,   ,IF, ,ISOZ,K6,P,I,      ,0662,0119,    ,    ,+,04500,     ,18000, ,   ,    ,   , , , , , ,0,D,S;
+APPCH:020,L,L25, ,RICKB,K6,P,C,E  F, ,   ,CF, ,ISOZ,K6,P,I,      ,0662,0059,2460,0061,+,03800,     ,     , ,   ,    ,   ,JST,K6,D, , ,0,D,S;
+APPCH:010,R,R07, ,KAVGY,K6,P,C,E  I, ,   ,IF, , , , , ,      ,    ,    ,    ,    ,+,05600,     ,18000, ,   ,    ,   , , , , , ,A,J,S;
+APPCH:020,R,R07, ,SATKE,K6,P,C,E  F, ,   ,TF, , , , , ,      ,    ,    ,0660,0060,+,03700,     ,     , ,   ,    ,   , , , , , ,A,J,S;
+`;
+
+describe('approach route type', () => {
+  it('keeps the final approach route-type letter, not the transition one, on every variant', () => {
+    const { approaches } = parseCIFP(APPROACH_TYPES, '2G9');
+    const byName = new Map(
+      approaches.map((a) => [`${a.name}/${a.transition ?? ''}`, a.approachType])
+    );
+    expect(byName.get('L25/JST')).toBe('L');
+    expect(byName.get('R07/')).toBe('R');
+  });
+});

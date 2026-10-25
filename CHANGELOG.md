@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Approaches are listed by their chart names.** The airport panel and the planner's approach picker now read "ILS Z RWY 04L" or "RNAV (GPS) T RWY 29" instead of the nav data codes like I04LZ and R29-T. The code is still shown in small print beside the name. This comes from the nav data itself, so it works at every airport in the world, not only in the US.
 - **The flight plan strip is easier to move around.** Buttons at each end jump straight to the departure or the arrival, the arrows next to them move a screenful at a time, and the mouse wheel scrolls the strip. The edge fades out where more waypoints are hidden, and the strip scrolls to a waypoint you pick on the map.
 - **An X-Plane .fms file now opens in the flight planner.** The SID, STAR and approach the file names are loaded from your nav data and drawn in their own colours, the same as a plan built in X-Dispatch or imported from SimBrief. Files from SimBrief, Little Navmap and FlyCharts all work. A procedure your nav data does not have is pointed out under "Adjusted" so you can pick another.
 

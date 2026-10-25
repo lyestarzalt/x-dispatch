@@ -379,7 +379,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
   // Separate storage for approach components
   const approachComponents: Map<
     string,
-    { transitions: Map<string, string[]>; finalApproach: string[] }
+    { transitions: Map<string, string[]>; finalApproach: string[]; routeType?: string }
   > = new Map();
 
   // Separate storage for SID/STAR components
@@ -413,6 +413,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
       }
       const component = approachComponents.get(name)!;
 
+      if (routeType !== 'A' && routeType !== '') component.routeType ??= routeType;
       if (routeType === 'A') {
         const transitionName = runway;
         if (!component.transitions.has(transitionName)) {
@@ -472,6 +473,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
           name,
           runway: null,
           transition: null,
+          approachType: component.routeType,
           waypoints: finalWaypoints,
         });
       }
@@ -485,6 +487,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
             name,
             runway: null,
             transition: transitionName,
+            approachType: component.routeType,
             waypoints: combined,
           });
         }

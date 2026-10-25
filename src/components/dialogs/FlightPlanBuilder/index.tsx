@@ -63,6 +63,7 @@ import {
   trackInRoute,
 } from '@/lib/flightplan/builder/trackChoice';
 import type { LevelBand, PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
+import { formatApproachName } from '@/lib/parsers/nav/approachName';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -99,6 +100,9 @@ import { ExploreFlyout } from './explore/ExploreFlyout';
 const RESOLVE_DEBOUNCE_MS = 400;
 const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
+
+/** The approach picker shows chart-style names; the chosen value stays the raw identifier. */
+const approachLabel = (p: ResolvedProcedure) => formatApproachName(p.name, p.approachType);
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Explore flyout tabs, in header order. */
 const EXPLORE_TABS = [
@@ -907,6 +911,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                           placeholder={t('planBuilder.noProcedure')}
                           onChange={(choice) => setProcedureChoice('approach', choice)}
                           className={FIELD_CLASS}
+                          labelFor={approachLabel}
                         />
                       </Field>
                     </div>
