@@ -206,7 +206,7 @@ class XPlaneLauncher {
       // Direct launch for non-Steam or Windows/Linux
       const executable = getXPlaneExecutable(this.xplanePath);
       if (!executable) {
-        logger.launcher.error(`X-Plane executable not found in: ${this.xplanePath}`);
+        logger.launcher.warn(`X-Plane executable not found in: ${this.xplanePath}`);
         return { success: false, error: 'X-Plane executable not found', code: 'EXE_NOT_FOUND' };
       }
 

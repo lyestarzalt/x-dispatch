@@ -434,7 +434,10 @@ export function useAirportInteractions({
       }
 
       if (gate.xplaneIndex === undefined) {
-        logger.map.error(`Missing xplaneIndex for gate "${gate.name}"`);
+        logger.map.error(
+          `Missing xplaneIndex for gate "${gate.name}"`,
+          new Error('Gate parsed without an X-Plane ramp index')
+        );
       }
       setStartPosition({
         type: 'ramp',

@@ -27,8 +27,7 @@ export function reportFlightConnectionDrop(
   const message = drop.recovered
     ? `Change flight: connection dropped, X-Plane came back (${drop.reason})`
     : `Change flight: connection lost (${drop.reason})`;
-  if (drop.recovered) logger.launcher.warn(message);
-  else logger.launcher.error(message);
+  logger.launcher.warn(message);
 
   Sentry.withScope((scope) => {
     scope.setFingerprint(['xplane-change-flight-connection', outcome]);

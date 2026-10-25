@@ -229,9 +229,7 @@ export class InstallerManager {
       });
 
       if (!extractResult.ok) {
-        logger.addon.error(
-          `Extraction failed for ${task.displayName}: ${extractResult.error.code}`
-        );
+        logger.addon.warn(`Extraction failed for ${task.displayName}: ${extractResult.error.code}`);
         return {
           taskId: task.id,
           success: false,
@@ -283,7 +281,7 @@ export class InstallerManager {
         verificationStats: extractResult.value.stats,
       };
     } catch (e) {
-      logger.addon.error(`Install failed for ${task.displayName}: ${e}`);
+      logger.addon.error(`Install failed for ${task.displayName}`, e);
       // Cleanup temp on failure
       await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
 
