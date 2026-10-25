@@ -2257,6 +2257,13 @@
     "notNow": "今はしない",
     "dontShowAgain": "今後表示しない"
   },
+  "flightPlanBar": {
+    "clear": "フライトプランを消去",
+    "jumpToDeparture": "出発地へ移動",
+    "jumpToArrival": "到着地へ移動",
+    "scrollBack": "前へスクロール",
+    "scrollForward": "次へスクロール"
+  },
   "profile": {
     "title": "垂直プロファイル",
     "show": "垂直プロファイルを表示",

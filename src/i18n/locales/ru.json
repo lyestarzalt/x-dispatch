@@ -2257,6 +2257,13 @@
     "notNow": "Не сейчас",
     "dontShowAgain": "Больше не показывать"
   },
+  "flightPlanBar": {
+    "clear": "Очистить план полёта",
+    "jumpToDeparture": "К вылету",
+    "jumpToArrival": "К прилёту",
+    "scrollBack": "Прокрутить назад",
+    "scrollForward": "Прокрутить вперёд"
+  },
   "profile": {
     "title": "Вертикальный профиль",
     "show": "Показать вертикальный профиль",

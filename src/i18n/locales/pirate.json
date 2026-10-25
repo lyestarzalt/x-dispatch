@@ -2257,6 +2257,13 @@
     "notNow": "Not now",
     "dontShowAgain": "Don't show again"
   },
+  "flightPlanBar": {
+    "clear": "Scuttle the flight plan",
+    "jumpToDeparture": "Back to port",
+    "jumpToArrival": "On to the landfall",
+    "scrollBack": "Scroll astern",
+    "scrollForward": "Scroll ahead"
+  },
   "profile": {
     "title": "Vertical profile",
     "show": "Show th' vertical profile",

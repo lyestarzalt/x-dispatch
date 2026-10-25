@@ -2257,6 +2257,13 @@
     "notNow": "Ahora no",
     "dontShowAgain": "No volver a mostrar"
   },
+  "flightPlanBar": {
+    "clear": "Borrar plan de vuelo",
+    "jumpToDeparture": "Ir a la salida",
+    "jumpToArrival": "Ir a la llegada",
+    "scrollBack": "Desplazar atrás",
+    "scrollForward": "Desplazar adelante"
+  },
   "profile": {
     "title": "Perfil vertical",
     "show": "Mostrar perfil vertical",

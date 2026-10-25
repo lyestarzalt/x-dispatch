@@ -2257,6 +2257,13 @@
     "notNow": "Nie teraz",
     "dontShowAgain": "Nie pokazuj ponownie"
   },
+  "flightPlanBar": {
+    "clear": "Wyczyść plan lotu",
+    "jumpToDeparture": "Skocz do odlotu",
+    "jumpToArrival": "Skocz do przylotu",
+    "scrollBack": "Przewiń wstecz",
+    "scrollForward": "Przewiń dalej"
+  },
   "profile": {
     "title": "Profil pionowy",
     "show": "Pokaż profil pionowy",

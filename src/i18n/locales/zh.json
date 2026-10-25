@@ -2257,6 +2257,13 @@
     "notNow": "以后再说",
     "dontShowAgain": "不再显示"
   },
+  "flightPlanBar": {
+    "clear": "清除飞行计划",
+    "jumpToDeparture": "跳到出发机场",
+    "jumpToArrival": "跳到到达机场",
+    "scrollBack": "向后滚动",
+    "scrollForward": "向前滚动"
+  },
   "profile": {
     "title": "垂直剖面",
     "show": "显示垂直剖面",
