@@ -8,7 +8,12 @@ import type {
   SceneryEntry,
   SceneryError,
 } from '@/lib/addonManager/core/types';
-import { getBrowserErrorMessage, getSceneryErrorMessage } from '@/lib/addonManager/core/types';
+import {
+  type BrowserError,
+  type SceneryError as SceneryErrorT,
+  getBrowserErrorMessage,
+  getSceneryErrorMessage,
+} from '@/lib/addonManager/core/types';
 import { type InstallerError, getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
 import { launchKeys } from './useLaunchQuery';
 
@@ -34,7 +39,7 @@ export function useSceneryList(enabled = true) {
     queryFn: async (): Promise<SceneryEntry[]> => {
       const result = await window.addonManagerAPI.scenery.analyze();
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -53,7 +58,7 @@ export function useScenerySort() {
     mutationFn: async () => {
       const result = await window.addonManagerAPI.scenery.sort();
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -73,7 +78,7 @@ export function useScenarySaveOrder() {
     mutationFn: async (folderNames: string[]) => {
       const result = await window.addonManagerAPI.scenery.saveOrder(folderNames);
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -93,7 +98,7 @@ export function useSceneryToggle() {
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.scenery.toggle(folderName);
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -122,7 +127,7 @@ export function useSceneryDelete() {
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.scenery.deleteScenery(folderName);
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -148,7 +153,7 @@ export function useSceneryMove() {
     }) => {
       const result = await window.addonManagerAPI.scenery.move(folderName, direction);
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -168,7 +173,7 @@ export function useSceneryBackup() {
     mutationFn: async () => {
       const result = await window.addonManagerAPI.scenery.backup();
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -199,7 +204,7 @@ export function useSceneryRestore() {
     mutationFn: async (backupPath: string) => {
       const result = await window.addonManagerAPI.scenery.restore(backupPath);
       if (!result.ok) {
-        throw new Error(getSceneryErrorMessage(result.error as SceneryError));
+        throw sceneryError(result.error as SceneryError);
       }
       return result.value;
     },
@@ -218,7 +223,7 @@ export function useAircraftList(enabled = true) {
     queryFn: async (): Promise<AircraftInfo[]> => {
       const result = await window.addonManagerAPI.browser.scanAircraft();
       if (!result.ok) {
-        throw new Error(getBrowserErrorMessage(result.error));
+        throw browserError(result.error);
       }
       return result.value;
     },
@@ -232,7 +237,7 @@ export function useAircraftToggle() {
   return useMutation({
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.browser.toggleAircraft(folderName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onMutate: async (folderName) => {
@@ -258,7 +263,7 @@ export function useAircraftDelete() {
   return useMutation({
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.browser.deleteAircraft(folderName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: () => {
@@ -273,7 +278,7 @@ export function useAircraftLock() {
   return useMutation({
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.browser.lockAircraft(folderName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.aircraft }),
@@ -301,7 +306,7 @@ export function usePluginList(enabled = true) {
     queryFn: async (): Promise<PluginInfo[]> => {
       const result = await window.addonManagerAPI.browser.scanPlugins();
       if (!result.ok) {
-        throw new Error(getBrowserErrorMessage(result.error));
+        throw browserError(result.error);
       }
       return result.value;
     },
@@ -315,7 +320,7 @@ export function usePluginToggle() {
   return useMutation({
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.browser.togglePlugin(folderName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onMutate: async (folderName) => {
@@ -340,7 +345,7 @@ export function usePluginDelete() {
   return useMutation({
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.browser.deletePlugin(folderName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.plugins }),
@@ -352,7 +357,7 @@ export function usePluginLock() {
   return useMutation({
     mutationFn: async (folderName: string) => {
       const result = await window.addonManagerAPI.browser.lockPlugin(folderName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: addonKeys.plugins }),
@@ -367,7 +372,7 @@ export function useLiveryList(aircraftFolder: string, enabled = true) {
     queryFn: async (): Promise<LiveryInfo[]> => {
       const result = await window.addonManagerAPI.browser.scanLiveries(aircraftFolder);
       if (!result.ok) {
-        throw new Error(getBrowserErrorMessage(result.error));
+        throw browserError(result.error);
       }
       return result.value;
     },
@@ -390,7 +395,7 @@ export function useLiveryDelete() {
         aircraftFolder,
         liveryFolder
       );
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: (_, { aircraftFolder }) => {
@@ -409,7 +414,7 @@ export function useLuaScriptList(enabled = true) {
     queryFn: async (): Promise<LuaScriptInfo[]> => {
       const result = await window.addonManagerAPI.browser.scanLuaScripts();
       if (!result.ok) {
-        throw new Error(getBrowserErrorMessage(result.error));
+        throw browserError(result.error);
       }
       return result.value;
     },
@@ -423,7 +428,7 @@ export function useLuaScriptToggle() {
   return useMutation({
     mutationFn: async (fileName: string) => {
       const result = await window.addonManagerAPI.browser.toggleLuaScript(fileName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: () => {
@@ -438,7 +443,7 @@ export function useLuaScriptDelete() {
   return useMutation({
     mutationFn: async (fileName: string) => {
       const result = await window.addonManagerAPI.browser.deleteLuaScript(fileName);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: () => {
@@ -455,7 +460,7 @@ export function useAircraftCheckUpdates() {
   return useMutation({
     mutationFn: async (aircraft: AircraftInfo[]) => {
       const result = await window.addonManagerAPI.browser.checkAircraftUpdates(aircraft);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: (data) => {
@@ -470,7 +475,7 @@ export function usePluginCheckUpdates() {
   return useMutation({
     mutationFn: async (plugins: PluginInfo[]) => {
       const result = await window.addonManagerAPI.browser.checkPluginUpdates(plugins);
-      if (!result.ok) throw new Error(getBrowserErrorMessage(result.error));
+      if (!result.ok) throw browserError(result.error);
       return result.value;
     },
     onSuccess: (data) => {
@@ -478,6 +483,30 @@ export function usePluginCheckUpdates() {
       queryClient.setQueryData(addonKeys.plugins, data);
     },
   });
+}
+
+/**
+ * An add-on action X-Plane's folder refused, with the code kept. The main process has
+ * already filed the failure to Sentry with the add-on's details, so the renderer's
+ * Sentry ignores this class by name; callers show `message` and move on.
+ */
+export class AddonActionError extends Error {
+  constructor(
+    readonly action: 'browser' | 'scenery',
+    readonly code: string,
+    message: string
+  ) {
+    super(message);
+    this.name = 'AddonActionError';
+  }
+}
+
+function browserError(error: BrowserError): AddonActionError {
+  return new AddonActionError('browser', error.code, getBrowserErrorMessage(error));
+}
+
+function sceneryError(error: SceneryErrorT): AddonActionError {
+  return new AddonActionError('scenery', error.code, getSceneryErrorMessage(error));
 }
 
 // ===== INSTALLER =====

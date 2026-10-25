@@ -45,6 +45,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
+import { errorMessage } from '@/lib/utils/errors';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import {
@@ -210,8 +211,12 @@ export function SceneryTab() {
 
   const handleSaveOrder = async () => {
     const folderNames = localEntries.map((e) => e.folderName);
-    await saveOrderMutation.mutateAsync(folderNames);
-    setHasUnsavedChanges(false);
+    try {
+      await saveOrderMutation.mutateAsync(folderNames);
+      setHasUnsavedChanges(false);
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   const handleDiscard = () => {
@@ -220,8 +225,12 @@ export function SceneryTab() {
   };
 
   const handleAutoSort = async () => {
-    await sortMutation.mutateAsync();
-    setHasUnsavedChanges(false);
+    try {
+      await sortMutation.mutateAsync();
+      setHasUnsavedChanges(false);
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   const handleDelete = async () => {
@@ -239,9 +248,13 @@ export function SceneryTab() {
   };
 
   const handleRestore = async (backupPath: string) => {
-    await restoreMutation.mutateAsync(backupPath);
-    setShowBackups(false);
-    setHasUnsavedChanges(false);
+    try {
+      await restoreMutation.mutateAsync(backupPath);
+      setShowBackups(false);
+      setHasUnsavedChanges(false);
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   if (isLoading) {

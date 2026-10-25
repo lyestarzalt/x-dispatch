@@ -13,6 +13,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import type { LiveryInfo } from '@/lib/addonManager/core/types';
+import { errorMessage } from '@/lib/utils/errors';
+import { toastError } from '@/lib/utils/toastError';
 import { useAircraftIcon, useLiveryDelete, useLiveryList } from '@/queries/useAddonManager';
 
 interface LiveryItemProps {
@@ -66,7 +68,11 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
 
   const handleDelete = async (liveryFolder: string) => {
     if (!confirm(t('addonManager.liveryDialog.confirmDelete', { name: liveryFolder }))) return;
-    await deleteMutation.mutateAsync({ aircraftFolder, liveryFolder });
+    try {
+      await deleteMutation.mutateAsync({ aircraftFolder, liveryFolder });
+    } catch (e) {
+      toastError('addon_manager', errorMessage(e));
+    }
   };
 
   return (

@@ -19,6 +19,7 @@ import { execFile } from 'node:child_process';
 import type { StatementSync } from 'node:sqlite';
 import path from 'path';
 import { HttpSource, type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
+import { errorMessage } from '@/lib/utils/errors';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
@@ -82,6 +83,7 @@ import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
 import { readLogTail } from './lib/sentry/logTail';
+import { scrubEventPaths } from './lib/sentry/scrubPaths';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
 import { validateDownloadArgs } from './lib/simbrief/downloadValidation';
 import { isSimbriefUser, parseOfpResponse, simbriefFetchUrl } from './lib/simbrief/ofp';
@@ -153,7 +155,7 @@ if (app.isPackaged) {
     // Updates are applied on restart or quit, once checked against the user's channel.
     VelopackApp.build()
       .setLogger((level, msg) => {
-        if (level === 'error') logger.main.error(`[Velopack] ${msg}`);
+        if (level === 'error') logger.main.error(`[Velopack] ${msg}`, new Error(msg));
         else if (level === 'warn') logger.main.warn(`[Velopack] ${msg}`);
         else if (level === 'info') logger.main.info(`[Velopack] ${msg}`);
       })
@@ -225,6 +227,8 @@ if (shouldInitSentry) {
       // every writer we have reports them differently — too path-dependent for
       // an ignoreErrors pattern, so they get dropped here instead.
       if (isDiskFullEvent(event, hint?.originalException)) return null;
+      // File errors quote full paths, which name the account; an issue title must not.
+      scrubEventPaths(event);
       // The end of the app log rides along, so an issue carries the steps that
       // led to it instead of a bare stack trace.
       const logTail = readLogTail(getLogPath());
@@ -883,6 +887,7 @@ function createWindow(): BrowserWindow {
     const source = details.sourceId ? ` (${details.sourceId}:${details.lineNumber})` : '';
     const message = `[Renderer Console] ${details.message}${source}`;
 
+    // eslint-disable-next-line no-restricted-syntax -- log mirror; the renderer's Sentry owns its errors
     if (details.level === 'error') logger.error(message);
     else if (details.level === 'warning') logger.warn(message);
     else if (details.level === 'debug') logger.debug(message);
@@ -1213,7 +1218,7 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
     });
     requestAttention();
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = errorMessage(err);
     logger.main.error(`[AutoUpdate] ${message}`, err);
     updateStatus.patch({ install: 'error', error: message });
     const reason = updateFailureReason(message);
@@ -1764,7 +1769,7 @@ function registerIpcHandlers() {
       const validation = dataManager.validatePath(selectedPath);
       return { path: selectedPath, valid: validation.valid, errors: validation.errors };
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
+      const errorMsg = errorMessage(err);
       logger.main.error(`browseForPath: dialog failed - ${errorMsg}`, err);
       throw new Error(`Failed to open folder picker: ${errorMsg}`, { cause: err });
     }
@@ -2223,7 +2228,7 @@ function registerIpcHandlers() {
       );
     } catch (err) {
       logger.main.error('Failed to load NAT tracks', err);
-      const reason = err instanceof Error ? err.message : String(err);
+      const reason = errorMessage(err);
       return { messages: [], fetchedAt: null, error: reason };
     }
   });
@@ -2244,7 +2249,7 @@ function registerIpcHandlers() {
       logger.main.info(`Flight plan written to ${target}`);
       return { success: true, path: target };
     } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
+      const reason = errorMessage(err);
       logger.main.warn(`Flight plan write failed for ${target}: ${reason}`);
       return { success: false, error: reason };
     }
@@ -2284,7 +2289,7 @@ function registerIpcHandlers() {
       try {
         await fs.promises.mkdir(targetDir, { recursive: true });
       } catch (err) {
-        const reason = err instanceof Error ? err.message : String(err);
+        const reason = errorMessage(err);
         logger.main.warn(`downloadFmsFile mkdir failed for ${targetDir}: ${reason}`);
         return { success: false, error: `Couldn't create folder: ${reason}` };
       }
@@ -2298,7 +2303,7 @@ function registerIpcHandlers() {
       try {
         await fs.promises.writeFile(targetPath, result.data);
       } catch (err) {
-        const reason = err instanceof Error ? err.message : String(err);
+        const reason = errorMessage(err);
         logger.main.warn(`downloadFmsFile write failed for ${targetPath}: ${reason}`);
         return { success: false, error: `Couldn't write file: ${reason}` };
       }
@@ -2395,7 +2400,7 @@ function registerIpcHandlers() {
         if (result.success) {
           logger.launcher.info('[User] Launch successful');
         } else {
-          logger.launcher.error(`[User] Launch failed: ${result.code} — ${result.error}`);
+          logger.launcher.warn(`[User] Launch failed: ${result.code} — ${result.error}`);
         }
         Sentry.addBreadcrumb({
           category: 'launch',
@@ -2404,7 +2409,7 @@ function registerIpcHandlers() {
         });
         return result;
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = errorMessage(error);
         logger.launcher.error(`[User] Launch exception: ${message}`, error);
         return { success: false, error: message, code: 'SPAWN_FAILED' };
       }
