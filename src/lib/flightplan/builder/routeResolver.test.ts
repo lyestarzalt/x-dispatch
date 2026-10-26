@@ -170,3 +170,43 @@ describe('resolveRoute with a NAT track', () => {
     expect(result.plan.waypoints.map((w) => w.id)).toEqual(['EGXX', 'AAAAA', 'BBBBB', 'CYXX']);
   });
 });
+
+// Every other writer (X-Plane, Little Navmap, FlyCharts) puts the field elevation on the
+// ADEP and ADES rows; a 0 there is a plan an FMC may read as a sea-level airport.
+describe('resolveRoute airport rows', () => {
+  const elevations: Record<string, number> = { EGXX: 1998, CYXX: 27 };
+  const airportRows = (res: ReturnType<typeof resolveRoute>) =>
+    res!.plan.waypoints.filter((w) => w.type === 1).map((w) => `${w.id}/${w.via}/${w.altitude}`);
+
+  it('carries each airport at its field elevation', () => {
+    const res = resolveRoute(draft('AAAAA L1 BBBBB'), undefined, (icao) => elevations[icao]);
+    expect(airportRows(res)).toEqual(['EGXX/ADEP/1998', 'CYXX/ADES/27']);
+  });
+
+  it('falls back to the chosen runway end, then to 0, when the airport is not known', () => {
+    const d = {
+      ...draft('AAAAA L1 BBBBB'),
+      departure: {
+        ...draft('').departure,
+        runway: '09',
+        runwayEnd: {
+          name: '09',
+          latitude: 50,
+          longitude: -8,
+          headingDeg: 90,
+          lengthNm: 1.6,
+          elevationFt: 1299,
+        },
+      },
+    };
+    const res = resolveRoute(d, undefined, () => undefined);
+    expect(airportRows(res)).toEqual(['EGXX/ADEP/1299', 'CYXX/ADES/0']);
+  });
+
+  it('keeps the enroute rows at the cruise altitude', () => {
+    const res = resolveRoute(draft('AAAAA L1 BBBBB'), undefined, (icao) => elevations[icao]);
+    expect(res!.plan.waypoints.filter((w) => w.type !== 1).map((w) => w.altitude)).toEqual([
+      36000, 36000,
+    ]);
+  });
+});

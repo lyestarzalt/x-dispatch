@@ -2176,7 +2176,8 @@ function registerIpcHandlers() {
       const cycle = dataManager.getDataSources()?.global?.cycle ?? undefined;
       const resolution = resolveRoute(
         draft as import('./lib/flightplan/builder/types').PlanDraft,
-        cycle
+        cycle,
+        (icao) => dataManager.getAirportElevation(icao)
       );
       if (!resolution) return null;
       return { ...resolution, enriched: enrichFlightPlan(resolution.plan, cycle) };
