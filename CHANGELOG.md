@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-10-26
+
 ### Added
 
 - **See what time it is at the airport.** The airport panel shows the local time at the selected airport with its offset from UTC, so when you browse for a place to fly you know whether it is morning or night there. The flight planner shows it under the departure and the arrival too. With the toolbar clock following X-Plane time, the readout follows the simulator's clock and says so.
@@ -344,7 +346,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.2...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.9.0...HEAD
+[2.9.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.2...v2.9.0
 [2.8.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.1...v2.8.2
 [2.8.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.7.0...v2.8.0
