@@ -1,3 +1,4 @@
+import { fmsFileStem } from '@/lib/flightplan/builder/fmsWriter';
 import type { SimBriefOFP } from '@/types/simbrief';
 
 /**
@@ -8,10 +9,6 @@ const REQUIRED_NAMES: Readonly<Record<string, string>> = {
   // Zibo 737 only reads Output/FMS plans/b738x.xml.
   zbo: 'b738x.xml',
 };
-
-function icaoPart(code: string): string {
-  return code.replace(/[^a-z0-9]/gi, '');
-}
 
 /**
  * Extension of the file behind a SimBrief download link, e.g. ".fms".
@@ -29,11 +26,13 @@ function linkExtension(link: string): string {
 
 /**
  * On-disk name for one FMS export: the add-on's required name when it has one,
- * otherwise `ORIG_DEST` from the OFP plus the extension of the downloaded file.
+ * otherwise `ORIGDEST` from the OFP plus the extension of the downloaded file.
+ * Aircraft FMCs list these files and the pilot types the name on the CDU, whose
+ * keyboard has no underscore (the A330's among them), so the name is the same
+ * letters-and-digits stem the planner's Save to X-Plane writes.
  */
 export function fmsExportFilename(formatKey: string, ofp: SimBriefOFP, link: string): string {
   const required = REQUIRED_NAMES[formatKey];
   if (required) return required;
-  const route = `${icaoPart(ofp.origin.icao_code)}_${icaoPart(ofp.destination.icao_code)}`;
-  return route + linkExtension(link);
+  return fmsFileStem(ofp.origin.icao_code, ofp.destination.icao_code) + linkExtension(link);
 }

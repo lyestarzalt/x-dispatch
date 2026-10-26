@@ -15,7 +15,7 @@ import { narrowBand, pairBand, segmentAllowsDirection, segmentsForPair } from '.
 import { type LatLon, pathDistanceNm } from './geometry';
 import { getOceanicTracks, isTrackName, trackSegments } from './oceanicTracks';
 import { type LexedToken, isProcedureName, lexRoute, stripEndpoints } from './routeTokens';
-import type { LevelBand, PlanDraft, RouteResolution, RouteToken } from './types';
+import type { LevelBand, PlanDraft, PlanEndpoint, RouteResolution, RouteToken } from './types';
 
 /** Idents are looked up within this radius of the previous point; legs longer than this are rare. */
 const SEARCH_RADIUS_NM = 1500;
@@ -141,7 +141,23 @@ function checkAirway(
   return band;
 }
 
-export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution | null {
+/** Field elevation in feet for an ICAO code, when the airport is known. */
+export type ElevationLookup = (icao: string) => number | null | undefined;
+
+/**
+ * The altitude written on an airport row. Every other .fms writer (X-Plane, Little Navmap,
+ * FlyCharts) puts the field elevation there; the chosen runway end carries it too when the
+ * airport list does not, and 0 is the last resort the format allows.
+ */
+function airportAltitude(endpoint: PlanEndpoint, elevationOf?: ElevationLookup): number {
+  return elevationOf?.(endpoint.icao) ?? endpoint.runwayEnd?.elevationFt ?? 0;
+}
+
+export function resolveRoute(
+  draft: PlanDraft,
+  cycle?: string,
+  elevationOf?: ElevationLookup
+): RouteResolution | null {
   const { departure, arrival } = draft;
   if (!departure || !arrival) return null;
 
@@ -151,7 +167,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
       type: 1,
       id: departure.icao,
       via: 'ADEP',
-      altitude: 0,
+      altitude: airportAltitude(departure, elevationOf),
       latitude: departure.latitude,
       longitude: departure.longitude,
     },
@@ -297,7 +313,7 @@ export function resolveRoute(draft: PlanDraft, cycle?: string): RouteResolution 
     type: 1,
     id: arrival.icao,
     via: 'ADES',
-    altitude: 0,
+    altitude: airportAltitude(arrival, elevationOf),
     latitude: arrival.latitude,
     longitude: arrival.longitude,
   });

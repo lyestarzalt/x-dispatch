@@ -570,6 +570,16 @@ export class XPlaneDataManager {
     return result ? { lat: result.lat, lon: result.lon } : null;
   }
 
+  /** Field elevation in feet from apt.dat, or null for an unknown airport. */
+  getAirportElevation(icao: string): number | null {
+    const result = getDb()
+      .select({ elevation: airports.elevation })
+      .from(airports)
+      .where(eq(airports.icao, icao.toUpperCase()))
+      .get();
+    return result?.elevation ?? null;
+  }
+
   /**
    * Get airport procedures (CIFP) with resolved coordinates
    * Uses SQL-based coordinate resolver for memory efficiency
