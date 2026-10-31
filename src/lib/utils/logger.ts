@@ -2,6 +2,7 @@ import { app } from 'electron';
 import log from 'electron-log/main';
 import * as Sentry from '@sentry/electron/main';
 import * as fs from 'fs';
+import { sentryLogTransport } from '@/lib/sentry/sentryLogTransport';
 import { isInstallerHookRun } from './installerHookRun';
 
 log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}] [{level}] {text}';
@@ -28,6 +29,8 @@ if (logFile && !isInstallerHookRun(process.argv)) {
 }
 
 log.transports.file.maxSize = 1 * 1024 * 1024;
+// Warnings and errors also go to Sentry Logs (see sentryLogTransport.ts).
+log.transports.sentry = sentryLogTransport;
 
 /**
  * When a `.error` call's args include an `Error` instance, forward it to
