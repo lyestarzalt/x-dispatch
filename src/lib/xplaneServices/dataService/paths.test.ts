@@ -342,7 +342,7 @@ describe('listProcedureIcaos', () => {
   const APPCH = 'APPCH:010,A,I04L,KILMA,KILMA,K6,E,A,EE B, ,   ,IF, , , , , ,      ,    ;\n';
   const SID = 'SID:010,4,NEWARK1,RW04L,  ,  , , , ,  , ,   ,VA, , , , , ,      ,    ;\n';
 
-  it('collects upper-cased ICAOs whose file holds a SID, STAR or approach', () => {
+  it('collects upper-cased ICAOs whose file holds a SID, STAR or approach', async () => {
     const root = tempInstall('cifp');
     const defaultDir = path.join(root, XPLANE_PATHS.cifpDir);
     const customDir = path.join(root, XPLANE_PATHS.customCifp);
@@ -353,29 +353,29 @@ describe('listProcedureIcaos', () => {
     fs.writeFileSync(path.join(defaultDir, 'notes.txt'), APPCH);
     fs.writeFileSync(path.join(customDir, 'LFPG.dat'), APPCH);
 
-    expect(listProcedureIcaos(root)).toEqual(new Set(['KEWR', 'EGLL', 'LFPG']));
+    expect(await listProcedureIcaos(root)).toEqual(new Set(['KEWR', 'EGLL', 'LFPG']));
   });
 
-  it('leaves out a file that only lists runways', () => {
+  it('leaves out a file that only lists runways', async () => {
     const root = tempInstall('rwyonly');
     const defaultDir = path.join(root, XPLANE_PATHS.cifpDir);
     fs.mkdirSync(defaultDir, { recursive: true });
     fs.writeFileSync(path.join(defaultDir, '00C.dat'), RWY + RWY);
     fs.writeFileSync(path.join(defaultDir, 'KPVC.dat'), RWY + APPCH);
 
-    expect(listProcedureIcaos(root)).toEqual(new Set(['KPVC']));
+    expect(await listProcedureIcaos(root)).toEqual(new Set(['KPVC']));
   });
 
-  it('finds procedures that follow a long runway list', () => {
+  it('finds procedures that follow a long runway list', async () => {
     const root = tempInstall('manyrwy');
     const defaultDir = path.join(root, XPLANE_PATHS.cifpDir);
     fs.mkdirSync(defaultDir, { recursive: true });
     fs.writeFileSync(path.join(defaultDir, 'VHHX.dat'), RWY.repeat(12) + APPCH);
 
-    expect(listProcedureIcaos(root)).toEqual(new Set(['VHHX']));
+    expect(await listProcedureIcaos(root)).toEqual(new Set(['VHHX']));
   });
 
-  it('lets a Custom Data file override the default verdict, both ways', () => {
+  it('lets a Custom Data file override the default verdict, both ways', async () => {
     const root = tempInstall('override');
     const defaultDir = path.join(root, XPLANE_PATHS.cifpDir);
     const customDir = path.join(root, XPLANE_PATHS.customCifp);
@@ -386,10 +386,10 @@ describe('listProcedureIcaos', () => {
     fs.writeFileSync(path.join(defaultDir, 'BBBB.dat'), RWY);
     fs.writeFileSync(path.join(customDir, 'BBBB.dat'), APPCH);
 
-    expect(listProcedureIcaos(root)).toEqual(new Set(['BBBB']));
+    expect(await listProcedureIcaos(root)).toEqual(new Set(['BBBB']));
   });
 
-  it('returns an empty set when neither CIFP folder exists', () => {
-    expect(listProcedureIcaos(tempInstall('nocifp'))).toEqual(new Set());
+  it('returns an empty set when neither CIFP folder exists', async () => {
+    expect(await listProcedureIcaos(tempInstall('nocifp'))).toEqual(new Set());
   });
 });

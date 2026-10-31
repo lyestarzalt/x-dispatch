@@ -1,12 +1,15 @@
 /**
- * Disk cache for the CIFP procedure index.
+ * The CIFP procedure index: which airports have a SID, STAR or approach.
  *
- * `listProcedureIcaos` opens every CIFP file (about 7,000 on a stock install)
- * to see whether it holds a SID, STAR or approach. That is seconds of
- * synchronous IO on the main process every time the airport list is fetched.
- * A stat of the same files is a fraction of the cost, so the scan result is
- * stored next to a fingerprint of the CIFP folders (file names, sizes and
- * modification times) and reused until any of them change.
+ * Building it means opening every CIFP file (about 7,000 on a stock install).
+ * That took seconds on a Mac and over a minute on Windows with real-time
+ * antivirus, and in 2.9.0 it ran synchronously inside the airport list fetch,
+ * which froze the main process at startup. Nothing waits on it any more:
+ *
+ *  - a cache file next to a fingerprint of the CIFP folders (file names, sizes
+ *    and mtimes) is served when the folders are unchanged;
+ *  - on a miss, `get` answers null straight away and one rebuild runs in the
+ *    background, after which `onReady` fires so the caller can refetch.
  */
 import { createHash } from 'crypto';
 import * as fs from 'fs';
@@ -14,6 +17,8 @@ import * as path from 'path';
 import { XPLANE_PATHS, listProcedureIcaos } from './paths';
 
 const CACHE_VERSION = 1;
+/** Files stat'ed at once while fingerprinting. */
+const STAT_CONCURRENCY = 32;
 
 interface ProcedureIndexCacheFile {
   version: number;
@@ -21,85 +26,104 @@ interface ProcedureIndexCacheFile {
   icaos: string[];
 }
 
-export interface ProcedureIndexResult {
-  icaos: Set<string>;
-  /** True when the set came from the cache file rather than a fresh scan. */
-  cached: boolean;
-}
+export type ProcedureScanner = (xplanePath: string) => Promise<Set<string>>;
 
-/** Returns null when neither CIFP folder exists, so nothing is worth caching. */
-function fingerprintCifpDirs(xplanePath: string): string | null {
+/** Returns null when neither CIFP folder exists, so there is nothing to index. */
+async function fingerprintCifpDirs(xplanePath: string): Promise<string | null> {
   const hash = createHash('sha1');
   let found = false;
   for (const dir of [XPLANE_PATHS.cifpDir, XPLANE_PATHS.customCifp]) {
     const full = path.join(xplanePath, dir);
     let entries: string[];
     try {
-      entries = fs.readdirSync(full);
+      entries = await fs.promises.readdir(full);
     } catch {
       continue;
     }
     found = true;
     hash.update(`dir:${dir}\n`);
-    for (const entry of entries.filter((e) => e.toLowerCase().endsWith('.dat')).sort()) {
-      try {
-        const stat = fs.statSync(path.join(full, entry));
-        hash.update(`${entry}:${stat.size}:${stat.mtimeMs}\n`);
-      } catch {
-        hash.update(`${entry}:missing\n`);
-      }
+    const files = entries.filter((e) => e.toLowerCase().endsWith('.dat')).sort();
+    for (let i = 0; i < files.length; i += STAT_CONCURRENCY) {
+      const batch = files.slice(i, i + STAT_CONCURRENCY);
+      const stats = await Promise.all(
+        batch.map((entry) => fs.promises.stat(path.join(full, entry)).catch(() => null))
+      );
+      batch.forEach((entry, j) => {
+        const stat = stats[j];
+        hash.update(stat ? `${entry}:${stat.size}:${stat.mtimeMs}\n` : `${entry}:missing\n`);
+      });
     }
   }
   return found ? hash.digest('hex') : null;
 }
 
-function readCache(cacheFile: string): ProcedureIndexCacheFile | null {
+async function readCache(cacheFile: string): Promise<ProcedureIndexCacheFile | null> {
   try {
-    const parsed: unknown = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
+    const parsed: unknown = JSON.parse(await fs.promises.readFile(cacheFile, 'utf-8'));
+    const file = parsed as ProcedureIndexCacheFile;
     if (
       typeof parsed === 'object' &&
       parsed !== null &&
-      (parsed as ProcedureIndexCacheFile).version === CACHE_VERSION &&
-      typeof (parsed as ProcedureIndexCacheFile).fingerprint === 'string' &&
-      Array.isArray((parsed as ProcedureIndexCacheFile).icaos)
+      file.version === CACHE_VERSION &&
+      typeof file.fingerprint === 'string' &&
+      Array.isArray(file.icaos)
     ) {
-      return parsed as ProcedureIndexCacheFile;
+      return file;
     }
   } catch {
-    // Missing or corrupt: treated as a miss.
+    // Missing or corrupt: a miss.
   }
   return null;
 }
 
-function writeCache(cacheFile: string, data: ProcedureIndexCacheFile): void {
+async function writeCache(cacheFile: string, data: ProcedureIndexCacheFile): Promise<void> {
   try {
-    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+    await fs.promises.mkdir(path.dirname(cacheFile), { recursive: true });
     const tmp = `${cacheFile}.${process.pid}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(data));
-    fs.renameSync(tmp, cacheFile);
+    await fs.promises.writeFile(tmp, JSON.stringify(data));
+    await fs.promises.rename(tmp, cacheFile);
   } catch {
-    // A failed cache write only costs the next launch a rescan.
+    // A failed write only costs the next launch a rebuild.
   }
 }
 
-/**
- * The set of ICAOs with procedures, from the cache when the CIFP folders are
- * unchanged since it was written, otherwise from a fresh scan that refreshes it.
- */
-export function loadProcedureIcaos(
-  xplanePath: string,
-  cacheFile: string,
-  scan: (xplanePath: string) => Set<string> = listProcedureIcaos
-): ProcedureIndexResult {
-  const fingerprint = fingerprintCifpDirs(xplanePath);
-  if (fingerprint === null) return { icaos: new Set(), cached: false };
+export class ProcedureIndex {
+  private rebuild: Promise<void> | null = null;
 
-  const cache = readCache(cacheFile);
-  if (cache && cache.fingerprint === fingerprint) {
-    return { icaos: new Set(cache.icaos), cached: true };
+  constructor(
+    private readonly cacheFile: string,
+    private readonly scan: ProcedureScanner = listProcedureIcaos,
+    private readonly onReady: () => void
+  ) {}
+
+  /**
+   * The ICAOs with procedures when the cache matches the CIFP folders, an
+   * empty set when there are no CIFP folders, or null when a rebuild is needed:
+   * one is then running in the background and `onReady` fires when it lands.
+   */
+  async get(xplanePath: string): Promise<Set<string> | null> {
+    const fingerprint = await fingerprintCifpDirs(xplanePath);
+    if (fingerprint === null) return new Set();
+
+    const cache = await readCache(this.cacheFile);
+    if (cache && cache.fingerprint === fingerprint) return new Set(cache.icaos);
+
+    this.rebuild ??= this.runRebuild(xplanePath, fingerprint);
+    return null;
   }
 
-  const icaos = scan(xplanePath);
-  writeCache(cacheFile, { version: CACHE_VERSION, fingerprint, icaos: [...icaos] });
-  return { icaos, cached: false };
+  /** Resolves once no rebuild is in flight; for callers that need the index now, and tests. */
+  async idle(): Promise<void> {
+    await this.rebuild;
+  }
+
+  private async runRebuild(xplanePath: string, fingerprint: string): Promise<void> {
+    try {
+      const icaos = await this.scan(xplanePath);
+      await writeCache(this.cacheFile, { version: CACHE_VERSION, fingerprint, icaos: [...icaos] });
+      this.onReady();
+    } finally {
+      this.rebuild = null;
+    }
+  }
 }
