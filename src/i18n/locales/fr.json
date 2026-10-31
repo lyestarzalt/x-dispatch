@@ -124,11 +124,13 @@
       "airways": "Chargement des routes aériennes...",
       "airwaysDone": "Routes aériennes chargées",
       "complete": "Toutes les données sont chargées",
-      "failed": "Échec du chargement"
+      "failed": "Échec du chargement",
+      "airportList": "Chargement de la liste des aéroports..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Toujours en cours, {{seconds}} s depuis la dernière mise à jour"
   },
   "stands": {
     "sizeClass": "Code {{code}}, envergure jusqu'à {{m}} m",

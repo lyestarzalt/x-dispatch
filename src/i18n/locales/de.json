@@ -124,11 +124,13 @@
       "airways": "Luftstraßen werden geladen...",
       "airwaysDone": "Luftstraßen geladen",
       "complete": "Alle Daten geladen",
-      "failed": "Laden fehlgeschlagen"
+      "failed": "Laden fehlgeschlagen",
+      "airportList": "Flughafenliste wird geladen..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Läuft noch, {{seconds}} s seit der letzten Meldung"
   },
   "stands": {
     "sizeClass": "Code {{code}}, Spannweite bis {{m}} m",

@@ -89,7 +89,7 @@ import {
   getNavDataPath,
   validateXPlanePath,
 } from './paths';
-import { loadProcedureIcaos } from './procedureIndexCache';
+import { ProcedureIndex } from './procedureIndexCache';
 import type {
   Airport,
   AirportProgressCallback,
@@ -131,6 +131,14 @@ export class XPlaneDataManager {
     customScenery: 0,
     customSceneryPacks: 0,
   };
+
+  /** Fires when a background rebuild of the procedure index lands; the airport list is then worth refetching. */
+  onProcedureIndexReady: (() => void) | null = null;
+  private readonly procedureIndex = new ProcedureIndex(
+    getProcedureIndexCachePath(),
+    undefined,
+    () => this.onProcedureIndexReady?.()
+  );
 
   constructor() {
     getDb();
@@ -506,18 +514,45 @@ export class XPlaneDataManager {
   /**
    * Get all airports using database
    */
-  getAllAirports(): Airport[] {
-    const xplanePath = this.getXPlanePath();
-    let procedureIcaos: Set<string> | undefined;
-    if (xplanePath) {
-      const start = Date.now();
-      const index = loadProcedureIcaos(xplanePath, getProcedureIndexCachePath());
-      procedureIcaos = index.icaos;
-      logger.data.info(
-        `${index.cached ? 'Loaded cached' : 'Scanned'} CIFP procedure index: ${procedureIcaos.size} airports in ${Date.now() - start}ms`
-      );
-    }
-    return getAllAirportsFromDb(procedureIcaos);
+  /**
+   * Every airport with its procedures flag. One Sentry transaction per call, so
+   * a slow airport list shows up per platform and release instead of only as a
+   * user report.
+   */
+  getAllAirports(): Promise<Airport[]> {
+    return Sentry.startSpan(
+      { name: 'airports.list', op: 'data.load', forceTransaction: true },
+      async (span) => {
+        const xplanePath = this.getXPlanePath();
+        if (!xplanePath) return getAllAirportsFromDb();
+
+        const start = Date.now();
+        const procedureIcaos = await this.procedureIndex.get(xplanePath);
+        const indexMs = Date.now() - start;
+        span.setAttribute('cifp.index_ms', indexMs);
+        span.setAttribute('cifp.cached', procedureIcaos !== null);
+
+        // The index is being rebuilt in the background when it is null. Every
+        // airport passes the procedures filter until it lands, rather than an
+        // empty map; the airports-updated refetch brings the real flags.
+        const airports = procedureIcaos
+          ? getAllAirportsFromDb(procedureIcaos)
+          : getAllAirportsFromDb().map((airport) => ({ ...airport, hasProcedures: true }));
+        logger.data.info(
+          procedureIcaos
+            ? `CIFP procedure index: ${procedureIcaos.size} airports in ${indexMs}ms`
+            : 'CIFP procedure index is being rebuilt; serving airports without it'
+        );
+        // One wide log per launch: the startup numbers, queryable per release and platform.
+        Sentry.logger.info('Airport list served', {
+          airports: airports.length,
+          cifp_cached: procedureIcaos !== null,
+          cifp_index_ms: indexMs,
+          since_process_start_ms: Math.round(process.uptime() * 1000),
+        });
+        return airports;
+      }
+    );
   }
 
   /**

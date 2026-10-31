@@ -106,32 +106,53 @@ const CIFP_PEEK_BYTES = 2048;
  * enough; the first {@link CIFP_PEEK_BYTES} of each are read. A Custom Data file replaces the
  * default one for that ICAO, so its verdict wins. About 0.4 s for 31k files on an SSD.
  */
-export function listProcedureIcaos(xplanePath: string): Set<string> {
+/** Files opened at once while scanning CIFP; keeps the event loop free of a 7,000-file burst. */
+const CIFP_SCAN_CONCURRENCY = 16;
+
+/**
+ * ICAOs whose CIFP file holds a SID, STAR or approach, from the default folder
+ * and then Custom Data (which overrides per airport). Opens every file, so it
+ * runs asynchronously in small batches: a synchronous pass blocked the main
+ * process for seconds on a Mac and over a minute on Windows with real-time
+ * antivirus scanning each open.
+ */
+export async function listProcedureIcaos(xplanePath: string): Promise<Set<string>> {
   const icaos = new Set<string>();
-  const buffer = Buffer.alloc(CIFP_PEEK_BYTES);
   for (const dir of [XPLANE_PATHS.cifpDir, XPLANE_PATHS.customCifp]) {
     const full = path.join(xplanePath, dir);
-    if (!fs.existsSync(full)) continue;
-    for (const entry of fs.readdirSync(full)) {
-      if (!entry.toLowerCase().endsWith('.dat')) continue;
-      const icao = entry.slice(0, -4).toUpperCase();
-      if (cifpFileHasProcedures(path.join(full, entry), buffer)) icaos.add(icao);
-      else icaos.delete(icao);
+    let entries: string[];
+    try {
+      entries = await fs.promises.readdir(full);
+    } catch {
+      continue;
+    }
+    const files = entries.filter((e) => e.toLowerCase().endsWith('.dat'));
+    for (let i = 0; i < files.length; i += CIFP_SCAN_CONCURRENCY) {
+      const batch = files.slice(i, i + CIFP_SCAN_CONCURRENCY);
+      const results = await Promise.all(
+        batch.map((entry) => cifpFileHasProcedures(path.join(full, entry)))
+      );
+      batch.forEach((entry, j) => {
+        const icao = entry.slice(0, -4).toUpperCase();
+        if (results[j]) icaos.add(icao);
+        else icaos.delete(icao);
+      });
     }
   }
   return icaos;
 }
 
-function cifpFileHasProcedures(filePath: string, buffer: Buffer): boolean {
-  let fd: number | null = null;
+async function cifpFileHasProcedures(filePath: string): Promise<boolean> {
+  let handle: fs.promises.FileHandle | null = null;
   try {
-    fd = fs.openSync(filePath, 'r');
-    const length = fs.readSync(fd, buffer, 0, buffer.length, 0);
-    return CIFP_PROCEDURE_RECORD.test(buffer.toString('latin1', 0, length));
+    handle = await fs.promises.open(filePath, 'r');
+    const buffer = Buffer.alloc(CIFP_PEEK_BYTES);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    return CIFP_PROCEDURE_RECORD.test(buffer.toString('latin1', 0, bytesRead));
   } catch {
     return false;
   } finally {
-    if (fd !== null) fs.closeSync(fd);
+    await handle?.close();
   }
 }
 

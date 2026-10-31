@@ -19,11 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **The installer's progress bar runs from start to finish.** It used to jump back with every file.
-- **The app starts faster on every launch after the first.** Which airports have instrument procedures used to be worked out from scratch each time the app started, by opening every procedure file in your nav data. That answer is now kept between launches and only rebuilt when your nav data changes, so the airport list appears a few seconds sooner.
 - **Installer messages are in your language and say what to do.** A missing part of a split download names the missing file; a damaged archive says to download it again; a folder X-Dispatch can't write to points at the folder's permissions.
 
 ### Fixed
 
+- **Startup no longer hangs on "Checking for changes".** Since 2.9.0 the app read through every procedure file in your nav data before showing the map, which took a minute or more on Windows and left the window "Not Responding". That work now runs in the background: the map comes up right away, and the procedures-only airport filter fills in a moment later on the first launch after a nav data update. Later launches reuse the answer. The loading screen also says when it is fetching the airport list and how long it has been waiting, instead of a label that no longer applied.
 - **Dropping a .rar or .7z add-on always failed with "EXTRACTION_FAILED".** Every release since 2.4 shipped without the pieces needed to open them. Both work now, including RAR5 and multi-volume RAR.
 - **A scenery with both library.txt and Earth nav data at its top level was installed as a library.** It is a scenery.
 - **A stray blue marker followed the Add-on Manager's tabs along the dialog's right edge.**

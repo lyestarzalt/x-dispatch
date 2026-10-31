@@ -124,11 +124,13 @@
       "airways": "航空路を読み込み中...",
       "airwaysDone": "航空路を読み込みました",
       "complete": "すべてのデータを読み込みました",
-      "failed": "読み込みに失敗しました"
+      "failed": "読み込みに失敗しました",
+      "airportList": "空港リストを読み込んでいます..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "処理中です。最後の更新から {{seconds}} 秒"
   },
   "stands": {
     "sizeClass": "コード{{code}}、翼幅{{m}} mまで",

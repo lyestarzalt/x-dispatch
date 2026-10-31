@@ -91,3 +91,33 @@ describe('LoadingScreen progress helpers', () => {
     expect(getLoadingDetailLabel({ current: 1, label: 'Custom Pack' }, t)).toBe('Custom Pack');
   });
 });
+
+describe('loading badge and stall hint', () => {
+  it('shows the neutral badge until the main process says which phase it is in', async () => {
+    const { loadingBadgeKey } = await import('./progress');
+    expect(loadingBadgeKey({ phase: null, verifyComplete: false, awaitingAirports: false })).toBe(
+      'loading.badge'
+    );
+    expect(
+      loadingBadgeKey({ phase: 'verifying', verifyComplete: false, awaitingAirports: false })
+    ).toBe('loading.verifying');
+    expect(
+      loadingBadgeKey({ phase: 'loading', verifyComplete: false, awaitingAirports: false })
+    ).toBe('loading.badge');
+  });
+
+  it('says the airport list is loading once the data steps are done', async () => {
+    const { loadingBadgeKey } = await import('./progress');
+    expect(
+      loadingBadgeKey({ phase: 'verifying', verifyComplete: true, awaitingAirports: true })
+    ).toBe('loading.badge');
+  });
+
+  it('reports how long the screen has waited once no update came for a while', async () => {
+    const { stalledForSeconds } = await import('./progress');
+    expect(stalledForSeconds(1_000, 5_000)).toBeNull();
+    expect(stalledForSeconds(1_000, 9_000)).toBeNull();
+    expect(stalledForSeconds(1_000, 9_001)).toBe(8);
+    expect(stalledForSeconds(1_000, 31_400)).toBe(30);
+  });
+});

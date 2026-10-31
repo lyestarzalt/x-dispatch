@@ -7,6 +7,7 @@ import {
   dialog,
   nativeTheme,
   net,
+  powerMonitor,
   screen,
   session,
   shell,
@@ -82,6 +83,7 @@ import {
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
+import { BLOCK_THRESHOLD_MS, watchEventLoop } from './lib/sentry/eventLoopWatch';
 import { readLogTail } from './lib/sentry/logTail';
 import { scrubEventPaths } from './lib/sentry/scrubPaths';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
@@ -240,6 +242,21 @@ if (shouldInitSentry) {
       }
       return event;
     },
+  });
+  // A frozen main process throws nothing; this is how it still gets reported.
+  logger.main.info(`Event loop watchdog armed (${BLOCK_THRESHOLD_MS} ms)`);
+  const loopWatch = watchEventLoop((block) => {
+    logger.main.warn(block.message);
+    Sentry.captureMessage(block.message, {
+      level: 'error',
+      tags: { 'main.block_seconds': String(block.seconds) },
+      fingerprint: ['main-process-blocked'],
+    });
+  });
+  // Sleep stalls the loop exactly like a block; both edges of it are discarded.
+  app.whenReady().then(() => {
+    powerMonitor.on('suspend', () => loopWatch.discardCurrentWindow());
+    powerMonitor.on('resume', () => loopWatch.discardCurrentWindow());
   });
   // Anonymous per-install ID, so an issue shows how many installs it hits and a
   // tester can quote the ID with a report. Renderer events set it in bootstrap.
@@ -1823,6 +1840,9 @@ function registerIpcHandlers() {
   });
 
   handle('get-airports', () => dataManager.getAllAirports());
+  // A first launch after a nav data update rebuilds the procedure index in the
+  // background; the renderer refetches the airport list when it lands.
+  dataManager.onProcedureIndexReady = () => broadcast('airports-updated');
   handle('data:getDistinctCountries', () => dataManager.getDistinctCountries());
 
   handle('airport:resync-custom', async () => {

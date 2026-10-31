@@ -124,11 +124,13 @@
       "airways": "正在加载航路...",
       "airwaysDone": "航路已加载",
       "complete": "所有数据已加载",
-      "failed": "加载失败"
+      "failed": "加载失败",
+      "airportList": "正在加载机场列表..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "仍在处理，距上次更新已 {{seconds}} 秒"
   },
   "stands": {
     "sizeClass": "代码 {{code}}，翼展不超过 {{m}} 米",

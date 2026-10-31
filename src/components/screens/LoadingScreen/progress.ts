@@ -68,3 +68,28 @@ export function getLoadingDetailLabel(detail: LoadingDetail, t: Translate): stri
 
   return detail.label ?? '';
 }
+
+export type LoadingPhase = 'verifying' | 'loading' | null;
+
+/**
+ * The badge over the progress bar. "Checking for changes" is only true while
+ * the main process says it is verifying the cache; before the first event, and
+ * once the data steps are done and the airport list is being fetched, the
+ * neutral "Loading data" badge is the honest one.
+ */
+export function loadingBadgeKey(state: {
+  phase: LoadingPhase;
+  verifyComplete: boolean;
+  awaitingAirports: boolean;
+}): 'loading.verifying' | 'loading.badge' {
+  if (state.awaitingAirports || state.phase !== 'verifying') return 'loading.badge';
+  return 'loading.verifying';
+}
+
+/** How long to admit the screen has waited without an update, or null while that is short. */
+export const STALL_HINT_AFTER_MS = 8_000;
+export function stalledForSeconds(lastUpdateAt: number, now: number): number | null {
+  const waited = now - lastUpdateAt;
+  if (waited <= STALL_HINT_AFTER_MS) return null;
+  return Math.floor(waited / 1000);
+}

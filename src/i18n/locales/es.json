@@ -124,11 +124,13 @@
       "airways": "Cargando aerovías...",
       "airwaysDone": "Aerovías cargadas",
       "complete": "Todos los datos cargados",
-      "failed": "Error al cargar"
+      "failed": "Error al cargar",
+      "airportList": "Cargando la lista de aeropuertos..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Sigue en marcha, {{seconds}} s desde la última actualización"
   },
   "stands": {
     "sizeClass": "Código {{code}}, envergadura hasta {{m}} m",
