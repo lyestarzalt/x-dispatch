@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
@@ -121,7 +121,7 @@ interface FlightPlanBuilderProps {
   airports: Airport[];
 }
 
-export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
+function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
   const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
@@ -155,6 +155,21 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
   const setArrival = usePlanBuilderStore((s) => s.setArrival);
   const setRunway = usePlanBuilderStore((s) => s.setRunway);
   const setProcedureChoice = usePlanBuilderStore((s) => s.setProcedureChoice);
+  // Stable handlers: ProcedureSelect is memoised, and an inline lambda would re-render
+  // its hundred items on every planner render
+  type Choice = Parameters<typeof setProcedureChoice>[1];
+  const onSidChange = useCallback(
+    (choice: Choice) => setProcedureChoice('sid', choice),
+    [setProcedureChoice]
+  );
+  const onStarChange = useCallback(
+    (choice: Choice) => setProcedureChoice('star', choice),
+    [setProcedureChoice]
+  );
+  const onApproachChange = useCallback(
+    (choice: Choice) => setProcedureChoice('approach', choice),
+    [setProcedureChoice]
+  );
   const setResolvedProcedures = usePlanBuilderStore((s) => s.setResolvedProcedures);
   const swapEndpoints = usePlanBuilderStore((s) => s.swapEndpoints);
   const setRouteText = usePlanBuilderStore((s) => s.setRouteText);
@@ -949,7 +964,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                           runway={departure.runway}
                           value={departure.sid}
                           placeholder={t('planBuilder.noProcedure')}
-                          onChange={(choice) => setProcedureChoice('sid', choice)}
+                          onChange={onSidChange}
                           className={FIELD_CLASS}
                         />
                       </Field>
@@ -988,7 +1003,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                           runway={arrival.runway}
                           value={arrival.star}
                           placeholder={t('planBuilder.noProcedure')}
-                          onChange={(choice) => setProcedureChoice('star', choice)}
+                          onChange={onStarChange}
                           className={FIELD_CLASS}
                         />
                       </Field>
@@ -998,7 +1013,7 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
                           runway={arrival.runway}
                           value={arrival.approach}
                           placeholder={t('planBuilder.noProcedure')}
-                          onChange={(choice) => setProcedureChoice('approach', choice)}
+                          onChange={onApproachChange}
                           className={FIELD_CLASS}
                           labelFor={approachLabel}
                         />
@@ -1191,3 +1206,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     </div>
   );
 }
+
+// The planner stays mounted beside the map, and the Map component renders on
+// many store changes that have nothing to do with it. Its only prop is the
+// airport list, which is stable between data loads, so a memo keeps those
+// renders out of the planner tree.
+export default memo(FlightPlanBuilder);

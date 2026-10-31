@@ -553,7 +553,7 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     const dialogOptions: Electron.OpenDialogOptions = {
       title: 'Select Addon Archives',
       filters: [
-        { name: 'Archive Files', extensions: ['zip', '7z', 'rar'] },
+        { name: 'Archive Files', extensions: ['zip', '7z', 'rar', '001'] },
         { name: 'All Files', extensions: ['*'] },
       ],
       properties: ['openFile', 'multiSelections'],
@@ -578,34 +578,49 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     }
   });
 
-  handleAddon('addon:installer:analyze', async (_event, filePaths: unknown) => {
-    const xplanePath = getXPlanePath();
-    if (!xplanePath) {
-      return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
-    }
+  handleAddon(
+    'addon:installer:analyze',
+    async (_event, filePaths: unknown, passwords: unknown = undefined) => {
+      const xplanePath = getXPlanePath();
+      if (!xplanePath) {
+        return { ok: false, error: { code: 'NOT_FOUND', path: 'X-Plane path not configured' } };
+      }
 
-    // Validate input
-    if (!Array.isArray(filePaths) || !filePaths.every((p) => typeof p === 'string')) {
-      return { ok: false, error: { code: 'INVALID_INPUT', field: 'filePaths' } };
-    }
+      // Validate input
+      if (!Array.isArray(filePaths) || !filePaths.every((p) => typeof p === 'string')) {
+        return { ok: false, error: { code: 'INVALID_INPUT', field: 'filePaths' } };
+      }
+      if (
+        passwords !== undefined &&
+        (typeof passwords !== 'object' ||
+          passwords === null ||
+          !Object.values(passwords).every((v) => typeof v === 'string'))
+      ) {
+        return { ok: false, error: { code: 'INVALID_INPUT', field: 'passwords' } };
+      }
 
-    // Security: validate paths
-    for (const filePath of filePaths) {
-      if (filePath.includes('..') || filePath.length > 1000) {
-        logger.security.warn(`Path traversal attempt in installer analyze: ${filePath}`);
-        return { ok: false, error: { code: 'PATH_TRAVERSAL', path: filePath } };
+      // Security: validate paths
+      for (const filePath of filePaths) {
+        if (filePath.includes('..') || filePath.length > 1000) {
+          logger.security.warn(`Path traversal attempt in installer analyze: ${filePath}`);
+          return { ok: false, error: { code: 'PATH_TRAVERSAL', path: filePath } };
+        }
+      }
+
+      try {
+        logger.addon.debug(`Analyzing ${filePaths.length} archive(s)`);
+        const manager = new InstallerManager(xplanePath);
+        // Awaited here so a thrown error lands in this catch, not in the renderer
+        return await manager.analyze(
+          filePaths as string[],
+          (passwords ?? {}) as Record<string, string>
+        );
+      } catch (e) {
+        logger.addon.error('Analyze failed', e);
+        return { ok: false, error: { code: 'EXTRACTION_FAILED', path: '', reason: String(e) } };
       }
     }
-
-    try {
-      logger.addon.debug(`Analyzing ${filePaths.length} archive(s)`);
-      const manager = new InstallerManager(xplanePath);
-      return manager.analyze(filePaths as string[]);
-    } catch (e) {
-      logger.addon.error('Analyze failed', e);
-      return { ok: false, error: { code: 'EXTRACTION_FAILED', path: '', reason: String(e) } };
-    }
-  });
+  );
 
   handleAddon('addon:installer:prepareInstall', async (_event, items: unknown) => {
     const xplanePath = getXPlanePath();

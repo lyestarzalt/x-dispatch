@@ -1609,7 +1609,7 @@
     "installer": {
       "dropZone": {
         "title": "Arraste ficheiros para instalar",
-        "subtitle": "Ficheiros ZIP, 7z ou RAR",
+        "subtitle": "Arquivos ZIP, 7z ou RAR, ou uma pasta",
         "ariaLabel": "Arraste ou clique para selecionar ficheiros de add-ons",
         "addMore": "Adicionar mais ficheiros",
         "browse": "ou procurar ficheiros"
@@ -1636,9 +1636,60 @@
       "clear": "Limpar tudo",
       "successSceneryHint": "Inicie o X-Plane uma vez para que ele adicione o novo cenário ao scenery_packs.ini. O X-Dispatch só altera esse arquivo quando você pede explicitamente.",
       "noAddonFound": "Nenhum add-on do X-Plane encontrado neste arquivo. Ele pode conter um instalador ou outro arquivo compactado; extraia-o e solte o add-on diretamente.",
-      "notArchive": "Isto não é um arquivo .zip, .7z ou .rar.",
-      "folderNotSupported": "Ainda não é possível instalar pastas. Compacte a pasta em .zip e solte o .zip aqui.",
-      "onlyFirstFile": "{{count}} arquivos soltos. Só o primeiro é instalado; solte os outros um de cada vez."
+      "notArchive": "Isto não é um arquivo .zip, .7z ou .rar, nem uma pasta.",
+      "password": {
+        "title": "Senha necessária",
+        "description": "{{name}} está protegido. Digite a senha para continuar.",
+        "label": "Senha",
+        "unlock": "Desbloquear",
+        "cancel": "Cancelar",
+        "wrong": "Senha incorreta. Restam {{remaining}} tentativas.",
+        "tooMany": "Muitas senhas incorretas. Verifique a senha na página de download do add-on e tente novamente."
+      },
+      "errors": {
+        "NOT_ARCHIVE": "Isto não é um arquivo .zip, .7z ou .rar, nem uma pasta.",
+        "UNSUPPORTED_FORMAT": "Este formato de arquivo não é suportado. Zips divididos .z01 precisam ser unidos em um único .zip primeiro.",
+        "PASSWORD_REQUIRED": "Este arquivo precisa de uma senha.",
+        "INVALID_PASSWORD": "Senha incorreta para este arquivo.",
+        "EXTRACTION_FAILED": "Não foi possível ler o arquivo. Ele pode estar incompleto ou danificado; baixe-o novamente.",
+        "MISSING_VOLUME": "Falta a parte {{missing}} deste arquivo dividido. Coloque todas as partes na mesma pasta.",
+        "PATH_TRAVERSAL": "O arquivo contém caminhos inseguros e foi recusado.",
+        "SIZE_EXCEEDED": "O arquivo é grande demais para ser instalado.",
+        "SUSPICIOUS_RATIO": "O arquivo parece uma zip bomb e foi recusado.",
+        "DISK_SPACE": "Espaço em disco insuficiente.",
+        "INSTALL_FAILED": "A instalação falhou.",
+        "NOT_FOUND": "A pasta do X-Plane não está definida.",
+        "EACCES": "O X-Dispatch não consegue gravar na pasta do X-Plane. Verifique as permissões da pasta.",
+        "EPERM": "O X-Dispatch não consegue gravar na pasta do X-Plane. Verifique as permissões da pasta.",
+        "ENOSPC": "O disco está cheio.",
+        "EBUSY": "Um arquivo está em uso. Feche o X-Plane e tente novamente.",
+        "ENAMETOOLONG": "Um caminho de arquivo é longo demais para este sistema.",
+        "UNKNOWN": "Algo deu errado durante a instalação."
+      },
+      "warnings": {
+        "LARGE_ADDON": "Add-on grande: {{gb}} GB",
+        "FLYWITHLUA_MISSING": "O FlyWithLua não está instalado, então o script não funcionará até que esteja.",
+        "AIRCRAFT_NOT_FOUND": "Nenhuma aeronave instalada corresponde a {{aircraft}}. A pintura vai para Aircraft/Unknown; mova-a para a pasta liveries da aeronave.",
+        "UNKNOWN_NAVDATA_PROVIDER": "Provedor de navdata desconhecido \"{{name}}\". Instalado em Custom Data.",
+        "NESTED_ARCHIVE": "Encontrado dentro de {{name}}",
+        "MISSING_LIBRARIES": "Precisa de bibliotecas que não estão instaladas: {{libraries}}. Instale-as ou partes do cenário ficarão vazias."
+      },
+      "version": "Versão {{version}}",
+      "forAircraft": "Para {{aircraft}}",
+      "review": {
+        "alreadyInstalled": "Já instalado",
+        "installedVersion": "Instalado {{version}}",
+        "newVersion": "Novo {{version}}",
+        "installedCycle": "Ciclo instalado {{cycle}}",
+        "newCycle": "Novo ciclo {{cycle}}",
+        "overwrite": "Sobrescrever",
+        "overwriteHint": "Mantém os arquivos que a nova versão não substitui.",
+        "clean": "Instalação limpa",
+        "cleanHint": "Remove a pasta antiga primeiro. Pinturas e configurações são salvas e restauradas; navdata substituídos são salvos.",
+        "backedUp": "Arquivos anteriores salvos em {{path}}",
+        "noneSelected": "Selecione pelo menos um add-on para instalar",
+        "selectToInstall": "Instalar"
+      }
     },
     "browser": {
       "searchPlaceholder": "Pesquisar...",
@@ -1761,7 +1812,12 @@
     },
     "sceneryEntry": {
       "openFolder": "Abrir pasta",
-      "delete": "Eliminar do disco"
+      "delete": "Eliminar do disco",
+      "missingLibraries": "{{count}} bibliotecas em falta",
+      "missingLibrariesHint": "Os objetos dessas bibliotecas não aparecerão até que sejam instaladas: {{libraries}}",
+      "missingLibrariesTitle": "Bibliotecas que este pacote precisa",
+      "openDownload": "Abrir página de download",
+      "searchDownload": "Buscar nos downloads do X-Plane.org"
     },
     "addonTypes": {
       "Aircraft": "Aeronave",

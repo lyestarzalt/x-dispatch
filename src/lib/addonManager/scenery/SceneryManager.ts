@@ -17,6 +17,8 @@ import {
 import { classifyScenery } from './classifier';
 import { scanSceneryFolder } from './folderScanner';
 import { backupSceneryPacksIni, parseSceneryPacksIni, writeSceneryPacksIni } from './iniParser';
+import type { LibraryIndex } from './missingLibraries';
+import { buildLibraryIndex, missingLibrariesFor, ownFileChecker } from './missingLibraries';
 
 /** Folder scans are I/O bound; a small pool keeps a large Custom Scenery
  * rescan fast without flooding the libuv threadpool. */
@@ -50,11 +52,13 @@ interface AnalyzeOptions {
 }
 
 export class SceneryManager {
+  private readonly xplanePath: string;
   private readonly customSceneryPath: string;
   private readonly iniPath: string;
   private readonly backupDir: string;
 
   constructor(xplanePath: string) {
+    this.xplanePath = xplanePath;
     this.customSceneryPath = path.join(xplanePath, 'Custom Scenery');
     this.iniPath = path.join(this.customSceneryPath, 'scenery_packs.ini');
     this.backupDir = path.join(xplanePath, 'Output', 'scenery_backups');
@@ -187,8 +191,17 @@ export class SceneryManager {
       // Non-critical — new folders will be picked up by X-Plane on next launch
     }
 
+    // Every library's exports, read once: each pack's tiles are checked against them.
+    // Packs outside Custom Scenery (external drives, shortcuts) count too.
+    const libraries = classify
+      ? await buildLibraryIndex(
+          this.xplanePath,
+          pendingEntries.map((item) => item.iniEntry.fullPath)
+        )
+      : null;
+
     const processed = await mapWithConcurrency(pendingEntries, SCAN_CONCURRENCY, (item) =>
-      this.processEntry(item.iniEntry, item.index, classify)
+      this.processEntry(item.iniEntry, item.index, classify, libraries)
     );
     processed.forEach((entry, i) => {
       slots[pendingEntries[i]!.slot] = entry;
@@ -205,9 +218,11 @@ export class SceneryManager {
   private async processEntry(
     iniEntry: ParsedIniEntry,
     index: number,
-    classify = true
+    classify = true,
+    libraries: LibraryIndex | null = null
   ): Promise<SceneryEntry> {
     let classification = createDefaultClassification();
+    let missingLibraries: string[] | undefined;
 
     if (classify) {
       // If the INI references a .lnk file directly, resolve to its target
@@ -230,6 +245,14 @@ export class SceneryManager {
       }
 
       classification = await scanSceneryFolder(scanPath);
+
+      if (libraries && classification.dsfPaths.length > 0) {
+        missingLibraries = await missingLibrariesFor({
+          dsfPaths: classification.dsfPaths,
+          hasOwnFile: ownFileChecker(scanPath),
+          index: libraries,
+        });
+      }
     }
 
     const priority = classifyScenery(iniEntry.folderName, classification);
@@ -242,6 +265,7 @@ export class SceneryManager {
       classification,
       originalIndex: index,
       sceneryPath: iniEntry.sceneryPath,
+      ...(missingLibraries && missingLibraries.length > 0 ? { missingLibraries } : {}),
     };
   }
 

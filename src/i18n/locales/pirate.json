@@ -1609,7 +1609,7 @@
     "installer": {
       "dropZone": {
         "title": "Drop cargo ta install",
-        "subtitle": "ZIP, 7z, or RAR cargo",
+        "subtitle": "ZIP, 7z or RAR chests, or a whole hold",
         "ariaLabel": "Drop or click ta choose addon archive files",
         "addMore": "Add more cargo",
         "browse": "or scout files"
@@ -1636,9 +1636,60 @@
       "clear": "Clear cargo",
       "successSceneryHint": "Run X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only touches that file when ye give the order.",
       "noAddonFound": "No X-Plane plunder in this chest, matey. There may be another chest or an installer inside; crack it open and drop the treasure itself.",
-      "notArchive": "That ain't a .zip, .7z or .rar chest.",
-      "folderNotSupported": "Ye can't stow a whole folder yet. Pack it in a .zip, then drop the .zip here.",
-      "onlyFirstFile": "{{count}} files dropped. Only the first be stowed; drop the rest one at a time."
+      "notArchive": "That be no .zip, .7z or .rar chest, nor a hold o' files.",
+      "password": {
+        "title": "Secret word needed",
+        "description": "{{name}} be locked tight. Speak the secret word to carry on.",
+        "label": "Secret word",
+        "unlock": "Open 'er up",
+        "cancel": "Belay that",
+        "wrong": "Wrong word, matey. {{remaining}} tries left afore ye walk the plank.",
+        "tooMany": "Too many wrong words. Check the word on the add-on's port o' call and try again."
+      },
+      "errors": {
+        "NOT_ARCHIVE": "That be no .zip, .7z or .rar chest, nor a hold o' files.",
+        "UNSUPPORTED_FORMAT": "This kind o' chest we cannae open. Spanned .z01 zips must be nailed into one .zip first.",
+        "PASSWORD_REQUIRED": "This chest be locked; it wants a secret word.",
+        "INVALID_PASSWORD": "Wrong secret word for this chest.",
+        "EXTRACTION_FAILED": "The chest wouldnae open. It may be short a plank or rotten; fetch it again.",
+        "MISSING_VOLUME": "Part {{missing}} o' this split chest be missin'. Stow all parts in the same hold.",
+        "PATH_TRAVERSAL": "The chest hides treacherous paths and was tossed overboard.",
+        "SIZE_EXCEEDED": "The chest be too heavy to haul aboard.",
+        "SUSPICIOUS_RATIO": "The chest smells o' a zip bomb and was tossed overboard.",
+        "DISK_SPACE": "Not enough room in the hold.",
+        "INSTALL_FAILED": "The stowin' failed.",
+        "NOT_FOUND": "The X-Plane hold be not charted.",
+        "EACCES": "X-Dispatch cannae write in the X-Plane hold. Check who holds the keys.",
+        "EPERM": "X-Dispatch cannae write in the X-Plane hold. Check who holds the keys.",
+        "ENOSPC": "The hold be full to the brim.",
+        "EBUSY": "A file be in use. Dock X-Plane and try again.",
+        "ENAMETOOLONG": "A file path be too long for this ship.",
+        "UNKNOWN": "Somethin' went awry while stowin'."
+      },
+      "warnings": {
+        "LARGE_ADDON": "Hefty add-on: {{gb}} GB",
+        "FLYWITHLUA_MISSING": "FlyWithLua be not aboard, so the script sits idle till it is.",
+        "AIRCRAFT_NOT_FOUND": "No bird aboard matches {{aircraft}}. The colours go under Aircraft/Unknown; haul 'em to the bird's liveries hold.",
+        "UNKNOWN_NAVDATA_PROVIDER": "Unknown chart-maker \"{{name}}\". Stowed in Custom Data.",
+        "NESTED_ARCHIVE": "Found inside {{name}}",
+        "MISSING_LIBRARIES": "Needs libraries that be not aboard: {{libraries}}. Fetch 'em or parts o' the scenery stay bare."
+      },
+      "version": "Version {{version}}",
+      "forAircraft": "For {{aircraft}}",
+      "review": {
+        "alreadyInstalled": "Already aboard",
+        "installedVersion": "Aboard {{version}}",
+        "newVersion": "Fresh {{version}}",
+        "installedCycle": "Charts aboard, cycle {{cycle}}",
+        "newCycle": "Fresh charts, cycle {{cycle}}",
+        "overwrite": "Paint over",
+        "overwriteHint": "Keeps the planks the new version doesnae replace.",
+        "clean": "Scuttle an' rebuild",
+        "cleanHint": "Tears out the old hold first. Colours an' settings be stowed safe an' put back; replaced charts be stowed too.",
+        "backedUp": "Old planks stowed at {{path}}",
+        "noneSelected": "Pick at least one add-on to haul aboard",
+        "selectToInstall": "Haul aboard"
+      }
     },
     "browser": {
       "searchPlaceholder": "Search fer...",
@@ -1761,7 +1812,12 @@
     },
     "sceneryEntry": {
       "openFolder": "Open locker",
-      "delete": "Scuttle from disk"
+      "delete": "Scuttle from disk",
+      "missingLibraries": "{{count}} missin' libraries",
+      "missingLibrariesHint": "Objects from these libraries stay hidden till they be aboard: {{libraries}}",
+      "missingLibrariesTitle": "Libraries this chest be needin'",
+      "openDownload": "Open the download page",
+      "searchDownload": "Search the X-Plane.org hold"
     },
     "addonTypes": {
       "Aircraft": "Flying craft",

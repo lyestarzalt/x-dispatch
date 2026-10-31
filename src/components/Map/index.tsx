@@ -3,9 +3,6 @@ import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import FlightPlanBuilder from '@/components/dialogs/FlightPlanBuilder';
-import LaunchDialog from '@/components/dialogs/LaunchDialog';
-import LogbookDialog from '@/components/dialogs/LogbookDialog';
-import SettingsDialog from '@/components/dialogs/SettingsDialog';
 import AirportInfoPanel from '@/components/layout/AirportInfoPanel';
 import FlightInfoPanel from '@/components/layout/FlightInfoPanel';
 import FlightPlanBar from '@/components/layout/FlightPlanBar';
@@ -42,6 +39,7 @@ import type { EnrichedFlightPlan } from '@/types/fms';
 import { Coordinates } from '@/types/geo';
 import { LayerVisibility, NavLayerVisibility } from '@/types/layers';
 import { PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
+import { MapDialogs } from './MapDialogs';
 import {
   applyAirportTheme,
   applyNavVisibilityChange,
@@ -139,12 +137,7 @@ export default function Map({ airports }: MapProps) {
   const selectedICAO = useAppStore((s) => s.selectedICAO);
   const selectedAirportData = useAppStore((s) => s.selectedAirportData);
   const showSidebar = useAppStore((s) => s.showSidebar);
-  const showSettings = useAppStore((s) => s.showSettings);
-  const showLaunchDialog = useAppStore((s) => s.showLaunchDialog);
-  const startPosition = useAppStore((s) => s.startPosition);
   const storeSelectAirport = useAppStore((s) => s.selectAirport);
-  const setShowSettings = useAppStore((s) => s.setShowSettings);
-  const setShowLaunchDialog = useAppStore((s) => s.setShowLaunchDialog);
   const pendingAirportSelectionIcao = useAppStore((s) => s.pendingAirportSelectionIcao);
   const clearPendingAirportSelection = useAppStore((s) => s.clearPendingAirportSelection);
   const pendingStartRunway = useAppStore((s) => s.pendingStartRunway);
@@ -1023,16 +1016,8 @@ export default function Map({ airports }: MapProps) {
         </SectionErrorBoundary>
       )}
 
-      {/* Dialogs - render as modals, positioning handled by dialog component */}
-      <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
-
-      <LaunchDialog
-        open={showLaunchDialog}
-        onClose={() => setShowLaunchDialog(false)}
-        startPosition={startPosition}
-      />
-
-      <LogbookDialog />
+      {/* Dialogs read their own open state so toggling one never re-renders the map tree */}
+      <MapDialogs />
     </div>
   );
 }

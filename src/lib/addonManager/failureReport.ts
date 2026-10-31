@@ -36,6 +36,7 @@ const USER_SIDE_CODES = new Set([
   'UNSUPPORTED_FORMAT',
   'PASSWORD_REQUIRED',
   'INVALID_PASSWORD',
+  'MISSING_VOLUME',
   'SIZE_EXCEEDED',
   'SUSPICIOUS_RATIO',
   'DISK_SPACE',
@@ -92,9 +93,10 @@ export function reportAddonFailure(failure: AddonFailure, env: AddonFailureEnvir
     : '';
   const message = `Add-on ${failure.action} failed: ${failure.code}${subject}`;
 
+  // Logged as a warning either way: the Sentry message below carries the level and
+  // the fingerprint. An error here would file a second, stack-grouped event.
   const line = reason ? `${message}: ${reason}` : message;
-  if (level === 'error') logger.addon.error(line, new Error(message));
-  else logger.addon.warn(line);
+  logger.addon.warn(line);
 
   Sentry.withScope((scope) => {
     scope.setFingerprint(['addon-failure', failure.action, failure.code]);

@@ -1,174 +1,165 @@
 /**
  * Archive Extraction Module
- * Unified extraction interface for ZIP, 7z, and RAR archives.
+ * Unified extraction interface for ZIP, 7z, RAR archives and dropped folders.
  */
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import type { Result } from '../../core/types';
-import { err } from '../../core/types';
-import { detectArchiveFormat } from '../detection/ArchiveScanner';
-import type { ArchiveFormat, InstallerError, VerificationStats } from '../types';
-import { IGNORE_PATTERNS } from '../types';
+import { err, ok } from '../../core/types';
+import { concatenateVolumes } from '../detection/archiveFormat';
+import type { ArchiveFormat, InstallerError } from '../types';
+import { extractFolder } from './folderExtractor';
+import type { ExtractOptions, ExtractResult } from './options';
+import { sanitizePath } from './options';
+import { extractRar } from './rarExtractor';
 import { extractSevenZip } from './sevenZipExtractor';
 import { extractZip } from './zipExtractor';
 
-/**
- * Check if a path component should be ignored
- */
-function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split(/[/\\]/);
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
-}
+export type { ExtractOptions, ExtractResult } from './options';
 
 /**
- * Sanitize path to prevent directory traversal attacks
- */
-function sanitizePath(entryPath: string): string | null {
-  // Normalize separators
-  const normalized = entryPath.replace(/\\/g, '/');
-
-  // Reject absolute paths
-  if (normalized.startsWith('/') || /^[a-zA-Z]:/.test(normalized)) return null;
-
-  // Reject path traversal
-  const parts = normalized.split('/');
-  if (parts.some((p) => p === '..')) return null;
-
-  return parts.filter((p) => p !== '').join('/');
-}
-
-export interface ExtractOptions {
-  /** Archive path */
-  archivePath: string;
-  /** Target directory */
-  targetDir: string;
-  /** Internal root to strip from paths (e.g., "MyAddon/") */
-  internalRoot?: string;
-  /** Password for encrypted archives */
-  password?: string;
-  /** Progress callback: (bytesWritten, currentFile) */
-  onProgress?: (bytes: number, file: string) => void;
-}
-
-export interface ExtractResult {
-  stats: VerificationStats;
-  extractedFiles: string[];
-}
-
-/**
- * Extract an archive to a target directory
+ * Extract an archive (or copy a folder) to a target directory
  */
 export async function extractArchive(
-  options: ExtractOptions
-): Promise<Result<ExtractResult, InstallerError>> {
-  const format = detectArchiveFormat(options.archivePath);
-
-  if (!format) {
-    return err({ code: 'UNSUPPORTED_FORMAT', path: options.archivePath });
-  }
-
-  return extractByFormat(format, options);
-}
-
-/**
- * Extract archive by format
- */
-async function extractByFormat(
   format: ArchiveFormat,
   options: ExtractOptions
 ): Promise<Result<ExtractResult, InstallerError>> {
   switch (format) {
     case 'zip':
-      return extractZip(options);
-
+      // yauzl reads plain zips; 7-Zip knows ZipCrypto and AES
+      if (!options.password) return extractZip(options);
+      // 7-Zip cannot read a byte-split zip by its volumes: join them for it
+      if (options.volumes && options.volumes.length > 1) return withJoinedVolumes(options);
+      return extractSevenZip(options);
     case '7z':
       return extractSevenZip(options);
-
     case 'rar':
       return extractRar(options);
-
+    case 'folder':
+      return extractFolder(options);
     default:
       return err({ code: 'UNSUPPORTED_FORMAT', path: options.archivePath });
   }
 }
 
-/**
- * Extract RAR archive using node-unrar-js
- */
-async function extractRar(options: ExtractOptions): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, password, onProgress } = options;
-  const fs = await import('fs');
-  const path = await import('path');
-
+async function withJoinedVolumes(
+  options: ExtractOptions
+): Promise<Result<ExtractResult, InstallerError>> {
+  const joined = path.join(os.tmpdir(), `xdispatch_joined_${crypto.randomUUID()}.zip`);
   try {
-    const { createExtractorFromFile } = await import('node-unrar-js');
-
-    const extractor = await createExtractorFromFile({
-      filepath: archivePath,
-      targetPath: targetDir,
-      password: password,
-    });
-
-    const stats: VerificationStats = {
-      totalFiles: 0,
-      verifiedFiles: 0,
-      failedFiles: 0,
-      skippedFiles: 0,
-    };
-    const extractedFiles: string[] = [];
-
-    // Extract all files
-    const extracted = extractor.extract();
-
-    for (const file of extracted.files) {
-      if (file.fileHeader.flags.directory) continue;
-
-      let relativePath = file.fileHeader.name;
-
-      // Skip ignored files (macOS/Windows junk)
-      if (shouldIgnore(relativePath)) {
-        stats.skippedFiles++;
-        continue;
-      }
-
-      // Apply internal root filter
-      if (internalRoot) {
-        const normalizedPath = relativePath.replace(/\\/g, '/');
-        if (!normalizedPath.startsWith(internalRoot)) {
-          stats.skippedFiles++;
-          continue;
-        }
-        relativePath = normalizedPath.substring(internalRoot.length);
-      }
-
-      // Sanitize path to prevent directory traversal
-      const sanitized = sanitizePath(relativePath);
-      if (!sanitized) {
-        stats.skippedFiles++;
-        continue;
-      }
-
-      stats.totalFiles++;
-
-      // Check if file was extracted successfully
-      const fullPath = path.join(targetDir, sanitized);
-      if (fs.existsSync(fullPath)) {
-        const stat = fs.statSync(fullPath);
-        onProgress?.(stat.size, sanitized);
-        stats.verifiedFiles++;
-        extractedFiles.push(sanitized);
-      } else {
-        stats.failedFiles++;
-      }
-    }
-
-    return { ok: true, value: { stats, extractedFiles } };
+    await concatenateVolumes(options.volumes ?? [], joined);
+    return await extractSevenZip({ ...options, archivePath: joined, volumes: undefined });
   } catch (e) {
-    const errorMsg = String(e);
-    if (errorMsg.includes('password') || errorMsg.includes('encrypted')) {
-      return err({ code: 'PASSWORD_REQUIRED', path: archivePath });
+    return err({ code: 'EXTRACTION_FAILED', path: options.archivePath, reason: String(e) });
+  } finally {
+    await fs.promises.rm(joined, { force: true }).catch(() => {});
+  }
+}
+
+/** What `readArchiveEntry` and `probeArchiveEntry` need to know about an archive. */
+export interface ArchiveRef {
+  format: ArchiveFormat;
+  readPath: string;
+  volumes?: string[];
+}
+
+/**
+ * Extract one entry to a temporary folder and throw it away: proves the archive
+ * opens and the password fits without reading anything into memory.
+ */
+export async function probeArchiveEntry(
+  source: ArchiveRef,
+  entryPath: string,
+  password?: string
+): Promise<Result<void, InstallerError>> {
+  const tempDir = path.join(os.tmpdir(), `xdispatch_probe_${crypto.randomUUID()}`);
+  try {
+    const result = await extractArchive(source.format, {
+      archivePath: source.readPath,
+      volumes: source.volumes,
+      targetDir: tempDir,
+      only: [entryPath],
+      password,
+    });
+    if (!result.ok) return result;
+    if (!result.value.extractedFiles[0]) {
+      return err({
+        code: 'EXTRACTION_FAILED',
+        path: source.readPath,
+        reason: `${entryPath} not found`,
+      });
     }
-    return err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: errorMsg });
+    return ok(undefined);
+  } catch (e) {
+    return err({ code: 'EXTRACTION_FAILED', path: source.readPath, reason: String(e) });
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+/** Largest file read into memory during analysis (cycle.json, version files). */
+const MAX_INLINE_READ = 256 * 1024;
+
+/**
+ * Read one entry of an archive into memory, by extracting it to a temporary folder.
+ * Used during analysis for small metadata files, and to check a password.
+ */
+export async function readArchiveEntry(
+  source: ArchiveRef,
+  entryPath: string,
+  password?: string,
+  maxBytes: number = MAX_INLINE_READ
+): Promise<Result<Buffer, InstallerError>> {
+  const { format, readPath: archivePath } = source;
+  if (format === 'folder') {
+    const sanitized = sanitizePath(entryPath);
+    if (!sanitized) return err({ code: 'PATH_TRAVERSAL', path: entryPath });
+    try {
+      const file = path.join(archivePath, ...sanitized.split('/'));
+      const stat = await fs.promises.stat(file);
+      if (stat.size > maxBytes) {
+        return err({ code: 'SIZE_EXCEEDED', size: stat.size, limit: maxBytes });
+      }
+      return ok(await fs.promises.readFile(file));
+    } catch (e) {
+      return err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) });
+    }
+  }
+
+  const tempDir = path.join(os.tmpdir(), `xdispatch_read_${crypto.randomUUID()}`);
+  try {
+    const result = await extractArchive(format, {
+      archivePath,
+      volumes: source.volumes,
+      targetDir: tempDir,
+      only: [entryPath],
+      password,
+    });
+    if (!result.ok) return result;
+    const written = result.value.extractedFiles[0];
+    if (!written) {
+      return err({
+        code: 'EXTRACTION_FAILED',
+        path: archivePath,
+        reason: `${entryPath} not found`,
+      });
+    }
+    const file = path.join(tempDir, written);
+    const stat = await fs.promises.stat(file);
+    if (stat.size > maxBytes) {
+      return err({ code: 'SIZE_EXCEEDED', size: stat.size, limit: maxBytes });
+    }
+    return ok(await fs.promises.readFile(file));
+  } catch (e) {
+    return err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) });
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
 export { extractZip } from './zipExtractor';
 export { extractSevenZip } from './sevenZipExtractor';
+export { extractRar } from './rarExtractor';
+export { extractFolder } from './folderExtractor';

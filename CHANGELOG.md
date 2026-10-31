@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The add-on installer opens every kind of download.** Drop a .zip, .7z or .rar, a split download (`.7z.001`, `.part1.rar`), an archive with another archive inside, a password-protected archive (the app asks for the password), or a plain folder. An archive whose name lies about its format still opens. Several files dropped or picked together are read as one drop.
+- **Everything in a download is installed at once.** A package holding an aircraft, its plugins and a scenery, or a livery pack with several paints, is listed as separate add-ons with a tick box each, and one button installs the ones you keep. Archives laid out like the X-Plane folder (`Aircraft/…`, `Resources/plugins/…`) are understood too.
+- **See what an install replaces before it happens.** An add-on that is already installed shows the installed version next to the new one (or the navdata cycle), and you choose Overwrite, which keeps files the new version doesn't replace, or Clean install, which removes the old folder first, backs up your liveries and settings and puts them back. The result tells you where the backup went.
+- **Liveries are recognised and go to the right aircraft.** A livery for the Zibo 737, ToLiss, FlightFactor 777, LevelUp, X-Crafts, Felis or Rotate aircraft, or for any aircraft whose livery ships its icon, is installed into that aircraft's liveries folder. The installer says which aircraft it is for and warns when that aircraft isn't installed.
+- **Navdata is read before it is installed.** The provider and cycle are shown, and GNS430, UFMC and FlightFactor 777 data go to their own folders under Custom Data.
+- **Scenery that needs a library you don't have says so.** The Scenery tab marks each pack whose tiles use objects from a library that isn't installed, and names the library with a link to its download page, or to an X-Plane.org search for it. The installer shows the same warning before you install a scenery.
+
+### Changed
+
+- **The installer's progress bar runs from start to finish.** It used to jump back with every file.
+- **The app starts faster on every launch after the first.** Which airports have instrument procedures used to be worked out from scratch each time the app started, by opening every procedure file in your nav data. That answer is now kept between launches and only rebuilt when your nav data changes, so the airport list appears a few seconds sooner.
+- **Installer messages are in your language and say what to do.** A missing part of a split download names the missing file; a damaged archive says to download it again; a folder X-Dispatch can't write to points at the folder's permissions.
+
+### Fixed
+
+- **Dropping a .rar or .7z add-on always failed with "EXTRACTION_FAILED".** Every release since 2.4 shipped without the pieces needed to open them. Both work now, including RAR5 and multi-volume RAR.
+- **A scenery with both library.txt and Earth nav data at its top level was installed as a library.** It is a scenery.
+- **A stray blue marker followed the Add-on Manager's tabs along the dialog's right edge.**
+- **Opening Settings or another window with the flight planner docked no longer stutters.** The planner, its procedure pickers and the map were redrawn every time a window opened or closed, which showed as a short freeze at large airports. They now stay put.
+
 ## [2.9.0] - 2026-10-26
 
 ### Added

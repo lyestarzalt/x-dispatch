@@ -387,7 +387,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       },
       installer: {
         browse: () => t.invoke('addon:installer:browse'),
-        analyze: (filePaths: string[]) => t.invoke('addon:installer:analyze', filePaths),
+        analyze: (filePaths: string[], passwords?: Record<string, string>) =>
+          t.invoke('addon:installer:analyze', filePaths, passwords),
         prepareInstall: (items: import('@/lib/addonManager/installer/types').DetectedItem[]) =>
           t.invoke('addon:installer:prepareInstall', items),
         install: (tasks: import('@/lib/addonManager/installer/types').InstallTask[]) =>

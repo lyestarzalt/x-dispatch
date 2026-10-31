@@ -7,6 +7,8 @@ import { type SceneryClassification, createDefaultClassification } from '../core
 const MAX_APT_DAT_DEPTH = 5;
 const MAX_DSF_SEARCH_DEPTH = 3;
 const MAX_LIBRARY_READ_BYTES = 64 * 1024;
+/** Tiles kept for the library check; one pack's tiles all ask for the same libraries. */
+const MAX_DSF_PATHS = 3;
 
 /**
  * Symlink-aware directory check.
@@ -152,6 +154,7 @@ export async function scanSceneryFolder(folderPath: string): Promise<SceneryClas
           classification.hasDsf = earthNavResult.hasDsf;
           classification.dsfCount = earthNavResult.dsfCount;
           classification.dsfFilenames = earthNavResult.dsfFilenames;
+          classification.dsfPaths = earthNavResult.dsfPaths;
 
           if (earthNavResult.firstDsfPath) {
             classification.dsfInfo = parseDsfHeader(earthNavResult.firstDsfPath);
@@ -177,6 +180,7 @@ interface EarthNavScanResult {
   firstDsfPath: string;
   dsfCount: number;
   dsfFilenames: string[];
+  dsfPaths: string[];
 }
 
 async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResult> {
@@ -186,6 +190,7 @@ async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResul
     firstDsfPath: '',
     dsfCount: 0,
     dsfFilenames: [],
+    dsfPaths: [],
   };
 
   async function scan(dir: string, depth: number): Promise<void> {
@@ -210,6 +215,7 @@ async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResul
             if (!result.firstDsfPath) {
               result.firstDsfPath = entryPath;
             }
+            if (result.dsfPaths.length < MAX_DSF_PATHS) result.dsfPaths.push(entryPath);
           }
         }
 

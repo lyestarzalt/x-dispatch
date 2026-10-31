@@ -1609,7 +1609,7 @@
     "installer": {
       "dropZone": {
         "title": "Suelta archivos para instalar",
-        "subtitle": "Archivos ZIP, 7z o RAR",
+        "subtitle": "Archivos ZIP, 7z o RAR, o una carpeta",
         "ariaLabel": "Suelta o haz clic para seleccionar archivos de complementos",
         "addMore": "Añadir más archivos",
         "browse": "o examinar archivos"
@@ -1636,9 +1636,60 @@
       "clear": "Limpiar todo",
       "successSceneryHint": "Inicia X-Plane una vez para que añada el nuevo escenario a scenery_packs.ini. X-Dispatch solo modifica ese archivo cuando se lo pides expresamente.",
       "noAddonFound": "No se encontró ningún add-on de X-Plane en este archivo. Puede contener un instalador u otro archivo comprimido; extráelo y suelta el add-on directamente.",
-      "notArchive": "Esto no es un archivo .zip, .7z o .rar.",
-      "folderNotSupported": "Aún no se pueden instalar carpetas. Comprime la carpeta en .zip y suelta el .zip aquí.",
-      "onlyFirstFile": "Se soltaron {{count}} archivos. Solo se instala el primero; suelta los demás de uno en uno."
+      "notArchive": "Esto no es un archivo .zip, .7z o .rar, ni una carpeta.",
+      "password": {
+        "title": "Se necesita contraseña",
+        "description": "{{name}} está protegido. Introduce su contraseña para continuar.",
+        "label": "Contraseña",
+        "unlock": "Desbloquear",
+        "cancel": "Cancelar",
+        "wrong": "Contraseña incorrecta. Quedan {{remaining}} intentos.",
+        "tooMany": "Demasiadas contraseñas incorrectas. Comprueba la contraseña en la página de descarga del add-on e inténtalo de nuevo."
+      },
+      "errors": {
+        "NOT_ARCHIVE": "Esto no es un archivo .zip, .7z o .rar, ni una carpeta.",
+        "UNSUPPORTED_FORMAT": "Este formato de archivo no es compatible. Los zips divididos .z01 deben unirse primero en un solo .zip.",
+        "PASSWORD_REQUIRED": "Este archivo necesita una contraseña.",
+        "INVALID_PASSWORD": "Contraseña incorrecta para este archivo.",
+        "EXTRACTION_FAILED": "No se pudo leer el archivo. Puede estar incompleto o dañado; descárgalo de nuevo.",
+        "MISSING_VOLUME": "Falta la parte {{missing}} de este archivo dividido. Pon todas las partes en la misma carpeta.",
+        "PATH_TRAVERSAL": "El archivo contiene rutas inseguras y se rechazó.",
+        "SIZE_EXCEEDED": "El archivo es demasiado grande para instalarlo.",
+        "SUSPICIOUS_RATIO": "El archivo parece una bomba zip y se rechazó.",
+        "DISK_SPACE": "No hay suficiente espacio libre en disco.",
+        "INSTALL_FAILED": "La instalación falló.",
+        "NOT_FOUND": "La carpeta de X-Plane no está configurada.",
+        "EACCES": "X-Dispatch no puede escribir en la carpeta de X-Plane. Comprueba los permisos de la carpeta.",
+        "EPERM": "X-Dispatch no puede escribir en la carpeta de X-Plane. Comprueba los permisos de la carpeta.",
+        "ENOSPC": "El disco está lleno.",
+        "EBUSY": "Un archivo está en uso. Cierra X-Plane e inténtalo de nuevo.",
+        "ENAMETOOLONG": "Una ruta de archivo es demasiado larga para este sistema.",
+        "UNKNOWN": "Algo salió mal durante la instalación."
+      },
+      "warnings": {
+        "LARGE_ADDON": "Add-on grande: {{gb}} GB",
+        "FLYWITHLUA_MISSING": "FlyWithLua no está instalado, así que el script no funcionará hasta que lo esté.",
+        "AIRCRAFT_NOT_FOUND": "Ningún avión instalado coincide con {{aircraft}}. La librea va a Aircraft/Unknown; muévela a la carpeta liveries del avión.",
+        "UNKNOWN_NAVDATA_PROVIDER": "Proveedor de navdata desconocido \"{{name}}\". Se instala en Custom Data.",
+        "NESTED_ARCHIVE": "Encontrado dentro de {{name}}",
+        "MISSING_LIBRARIES": "Necesita librerías que no están instaladas: {{libraries}}. Instálalas o partes del escenario quedarán vacías."
+      },
+      "version": "Versión {{version}}",
+      "forAircraft": "Para {{aircraft}}",
+      "review": {
+        "alreadyInstalled": "Ya instalado",
+        "installedVersion": "Instalado {{version}}",
+        "newVersion": "Nuevo {{version}}",
+        "installedCycle": "Ciclo instalado {{cycle}}",
+        "newCycle": "Ciclo nuevo {{cycle}}",
+        "overwrite": "Sobrescribir",
+        "overwriteHint": "Conserva los archivos que la nueva versión no reemplaza.",
+        "clean": "Instalación limpia",
+        "cleanHint": "Elimina primero la carpeta antigua. Las libreas y los ajustes se respaldan y se restauran; los navdata reemplazados se respaldan.",
+        "backedUp": "Archivos anteriores respaldados en {{path}}",
+        "noneSelected": "Selecciona al menos un add-on para instalar",
+        "selectToInstall": "Instalar"
+      }
     },
     "browser": {
       "searchPlaceholder": "Buscar...",
@@ -1761,7 +1812,12 @@
     },
     "sceneryEntry": {
       "openFolder": "Abrir carpeta",
-      "delete": "Eliminar del disco"
+      "delete": "Eliminar del disco",
+      "missingLibraries": "{{count}} librerías faltantes",
+      "missingLibrariesHint": "Los objetos de estas librerías no aparecerán hasta instalarlas: {{libraries}}",
+      "missingLibrariesTitle": "Librerías que necesita este paquete",
+      "openDownload": "Abrir página de descarga",
+      "searchDownload": "Buscar en las descargas de X-Plane.org"
     },
     "addonTypes": {
       "Aircraft": "Aeronave",

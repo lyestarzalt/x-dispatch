@@ -108,7 +108,7 @@ export function AddonManager({ open, onClose }: AddonManagerProps) {
                   variant="ghost"
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    'group h-auto w-full items-start gap-3 px-3 py-2.5 text-left',
+                    'group relative h-auto w-full items-start gap-3 px-3 py-2.5 text-left',
                     isActive
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'

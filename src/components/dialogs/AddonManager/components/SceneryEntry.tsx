@@ -3,7 +3,8 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FolderOpen, GripVertical, Power, Trash2 } from 'lucide-react';
+import { AlertTriangle, FolderOpen, GripVertical, Power, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   ContextMenu,
@@ -12,10 +13,12 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SceneryEntry } from '@/lib/addonManager/core/types';
 import { cn } from '@/lib/utils/helpers';
+import { MissingLibraryLinks } from './MissingLibraryLinks';
 import { PriorityBadge } from './PriorityBadge';
 
 interface SortableSceneryEntryProps {
@@ -118,6 +121,25 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
               {entry.folderName}
             </span>
           </div>
+
+          {/* Libraries the pack needs that are not installed */}
+          {entry.missingLibraries && entry.missingLibraries.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="shrink-0">
+                  <Badge variant="warning" className="gap-1 text-xs">
+                    <AlertTriangle className="h-3 w-3" />
+                    {t('addonManager.sceneryEntry.missingLibraries', {
+                      count: entry.missingLibraries.length,
+                    })}
+                  </Badge>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 p-3">
+                <MissingLibraryLinks libraries={entry.missingLibraries} />
+              </PopoverContent>
+            </Popover>
+          )}
 
           {/* Open folder button */}
           <Tooltip>

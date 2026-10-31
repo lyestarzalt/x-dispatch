@@ -15,9 +15,27 @@ export const ADDON_TYPE_PRIORITY: Record<AddonType, number> = {
 };
 
 /**
- * Archive formats supported
+ * Archive formats supported. `folder` is a dropped directory, read in place.
  */
-export type ArchiveFormat = 'zip' | '7z' | 'rar';
+export type ArchiveFormat = 'zip' | '7z' | 'rar' | 'folder';
+
+/** An archive found inside another archive; the chain runs outer to inner. */
+export interface NestedArchiveStep {
+  /** Entry path inside the enclosing archive, e.g. `Aircraft/A330.7z`. */
+  entryPath: string;
+}
+
+/** Something the user should know about an item before installing it. */
+export interface InstallerWarning {
+  code:
+    | 'LARGE_ADDON'
+    | 'FLYWITHLUA_MISSING'
+    | 'AIRCRAFT_NOT_FOUND'
+    | 'UNKNOWN_NAVDATA_PROVIDER'
+    | 'NESTED_ARCHIVE'
+    | 'MISSING_LIBRARIES';
+  params?: Record<string, string | number>;
+}
 
 /**
  * Entry from archive listing (no extraction needed)
@@ -47,14 +65,24 @@ export interface DetectedItem {
   id: string;
   addonType: AddonType;
   displayName: string;
+  /** The dropped file or folder. With `extractionChain`, the outermost archive. */
   sourcePath: string;
+  /** Format of the archive that holds the add-on (the innermost one when nested). */
   archiveFormat: ArchiveFormat;
+  /** Format of what was dropped: the outer archive, or `folder`. */
+  sourceFormat?: ArchiveFormat;
   archiveInternalRoot?: string;
+  /** Archives to open, outer to inner, before `archiveInternalRoot` applies. */
+  extractionChain?: NestedArchiveStep[];
+  /** The marker file the type was read from, relative to the archive root. */
+  markerPath?: string;
+  /** Password the archive was opened with; carried to the install, never persisted. */
+  password?: string;
   estimatedSize: number;
   versionInfo?: VersionInfo;
   liveryInfo?: DetectedLiveryInfo;
   navdataInfo?: NavdataInfo;
-  warnings: string[];
+  warnings: InstallerWarning[];
 }
 
 export interface VersionInfo {
@@ -82,6 +110,9 @@ export interface InstallTask extends DetectedItem {
   installMode: 'fresh' | 'overwrite' | 'clean';
   backupOptions: BackupOptions;
   sizeConfirmed: boolean;
+  /** What is installed at `targetPath` now, when something is. */
+  existingVersion?: string;
+  existingNavdata?: NavdataInfo;
 }
 
 export interface BackupOptions {
@@ -111,6 +142,8 @@ export interface InstallProgress {
 export interface InstallResult {
   taskId: string;
   success: boolean;
+  /** Where a clean install put the previous liveries, settings or navdata. */
+  backupPath?: string;
   error?: string;
   /** On failure: the installer's error code, or the file system's (EACCES, ENOSPC, ...). */
   errorCode?: string;
@@ -133,6 +166,7 @@ export type InstallerError =
   | { code: 'PASSWORD_REQUIRED'; path: string }
   | { code: 'INVALID_PASSWORD'; path: string }
   | { code: 'EXTRACTION_FAILED'; path: string; reason: string }
+  | { code: 'MISSING_VOLUME'; path: string; missing: string }
   | { code: 'PATH_TRAVERSAL'; path: string }
   | { code: 'SIZE_EXCEEDED'; size: number; limit: number }
   | { code: 'SUSPICIOUS_RATIO'; ratio: number; limit: number }
@@ -145,8 +179,15 @@ export type InstallerError =
 export const INSTALLER_CONSTANTS = {
   MAX_EXTRACTION_SIZE: 20 * 1024 * 1024 * 1024, // 20 GB
   MAX_COMPRESSION_RATIO: 100,
+  /** Archive in archive in add-on: two openings at most. */
   NESTED_ARCHIVE_MAX_DEPTH: 2,
-  PROGRESS_THROTTLE_MS: 16,
+  /** Nested archives looked into per archive; a docs folder full of zips is not an add-on. */
+  NESTED_ARCHIVE_MAX_COUNT: 6,
+  /** Folder drops are walked this deep. */
+  FOLDER_SCAN_MAX_DEPTH: 15,
+  LARGE_ADDON_BYTES: 5 * 1024 * 1024 * 1024,
+  /** Progress events are IPC messages; a 20,000-file scenery must not send 20,000 of them. */
+  PROGRESS_THROTTLE_MS: 50,
   MIN_FREE_SPACE: 1024 * 1024 * 1024, // 1 GB
 } as const;
 
@@ -166,9 +207,7 @@ export const PLATFORM_FOLDERS = ['32', '64', 'win', 'lin', 'mac', 'win_x64', 'ma
 export function getInstallerErrorMessage(error: InstallerError): string {
   switch (error.code) {
     case 'NOT_ARCHIVE':
-      return error.folder
-        ? `Folders can't be installed directly. Zip it first: ${error.path}`
-        : `Not a .zip, .7z or .rar archive: ${error.path}`;
+      return `Not a .zip, .7z or .rar archive, or a folder: ${error.path}`;
     case 'UNSUPPORTED_FORMAT':
       return `Unsupported archive format: ${error.path}`;
     case 'PASSWORD_REQUIRED':
@@ -177,6 +216,8 @@ export function getInstallerErrorMessage(error: InstallerError): string {
       return `Invalid password for: ${error.path}`;
     case 'EXTRACTION_FAILED':
       return `Extraction failed: ${error.reason}`;
+    case 'MISSING_VOLUME':
+      return `Missing part of a split archive: ${error.missing}`;
     case 'PATH_TRAVERSAL':
       return `Invalid path detected: ${error.path}`;
     case 'SIZE_EXCEEDED':

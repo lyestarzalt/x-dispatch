@@ -52,6 +52,8 @@ export interface SceneryClassification {
   dsfInfo: DsfInfo;
   dsfCount: number;
   dsfFilenames: string[];
+  /** Full paths of the first few tiles, enough to learn which libraries the pack needs. */
+  dsfPaths: string[];
   libraryExports: string[];
 }
 
@@ -68,6 +70,8 @@ export interface SceneryEntry {
   isGlobalAirports?: boolean;
   /** Original path as written in scenery_packs.ini (for absolute/external paths) */
   sceneryPath?: string;
+  /** Libraries the pack's tiles reference that no installed package exports. */
+  missingLibraries?: string[];
 }
 
 /**
@@ -108,6 +112,7 @@ export function createDefaultClassification(): SceneryClassification {
     dsfInfo: { parsed: false },
     dsfCount: 0,
     dsfFilenames: [],
+    dsfPaths: [],
     libraryExports: [],
   };
 }

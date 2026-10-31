@@ -4,7 +4,10 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import { liveryAcfMatcher } from './detection/liveryPatterns';
+import { readInstalledNavdata, readInstalledVersion } from './detection/versionInfo';
 import type { DetectedItem, InstallTask } from './types';
+import { INSTALLER_CONSTANTS } from './types';
 
 /**
  * Sanitize a folder name to prevent path traversal
@@ -90,40 +93,46 @@ function resolveLiveryTarget(item: DetectedItem, xplanePath: string): string {
   return path.join(xplanePath, 'Aircraft', 'Unknown', 'liveries', safeName);
 }
 
+/** How deep under Aircraft/ an .acf may sit: Aircraft/Vendor/Model/model.acf. */
+const ACF_SEARCH_DEPTH = 3;
+
 /**
- * Find aircraft folder that matches a livery's aircraft type
+ * Find the folder of the installed aircraft whose .acf a livery's aircraft id matches
  */
 function findAircraftForLivery(aircraftDir: string, aircraftTypeId: string): string | null {
   if (!fs.existsSync(aircraftDir)) return null;
+  const matches = liveryAcfMatcher(aircraftTypeId);
 
-  // Known aircraft folder patterns based on type ID
-  const patterns: Record<string, string[]> = {
-    FF_B777: ['777', 'FlightFactor 777'],
-    TOLISS_A319: ['A319', 'ToLiss A319'],
-    TOLISS_A320: ['A320', 'ToLiss A320'],
-    TOLISS_A321: ['A321', 'ToLiss A321'],
-    TOLISS_A339: ['A330', 'ToLiss A330'],
-    TOLISS_A346: ['A340', 'ToLiss A340'],
-    ZIBO_B738: ['B737-800X', 'b738', 'zibo'],
-    LEVELUP_B737: ['737', 'LevelUp'],
+  const walk = (dir: string, depth: number): string | null => {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return null;
+    }
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      if (!entry.name.toLowerCase().endsWith('.acf')) continue;
+      if (matches(entry.name.slice(0, -4))) return dir;
+    }
+    if (depth >= ACF_SEARCH_DEPTH) return null;
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const found = walk(path.join(dir, entry.name), depth + 1);
+      if (found) return found;
+    }
+    return null;
   };
 
-  const searchPatterns = patterns[aircraftTypeId] || [aircraftTypeId];
-
-  const entries = fs.readdirSync(aircraftDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-
-    const lowerName = entry.name.toLowerCase();
-    for (const pattern of searchPatterns) {
-      if (lowerName.includes(pattern.toLowerCase())) {
-        return path.join(aircraftDir, entry.name);
-      }
-    }
-  }
-
-  return null;
+  return walk(aircraftDir, 1);
 }
+
+/** Where a provider's data lives under Custom Data; the first matching keyword wins. */
+const NAVDATA_TARGETS: Array<{ keyword: RegExp; subpath: string[] }> = [
+  { keyword: /GNS430/i, subpath: ['GNS430'] },
+  { keyword: /UFMC/i, subpath: ['UFMC'] },
+  { keyword: /FlightFactor Boeing 777/i, subpath: ['STSFF', 'nav-data', 'ndbl', 'data'] },
+];
 
 /**
  * Resolve navdata target path based on provider
@@ -136,16 +145,8 @@ function resolveNavdataTarget(item: DetectedItem, xplanePath: string): string {
   }
 
   const name = item.navdataInfo.name;
-
-  if (name.includes('GNS430')) {
-    return path.join(customData, 'GNS430');
-  }
-
-  if (name.includes('FlightFactor Boeing 777v2')) {
-    return path.join(customData, 'STSFF', 'nav-data', 'ndbl', 'data');
-  }
-
-  return customData;
+  const target = NAVDATA_TARGETS.find((t) => t.keyword.test(name));
+  return target ? path.join(customData, ...target.subpath) : customData;
 }
 
 /**
@@ -154,8 +155,17 @@ function resolveNavdataTarget(item: DetectedItem, xplanePath: string): string {
 export function createInstallTask(item: DetectedItem, xplanePath: string): InstallTask {
   const { targetPath, conflictExists } = resolveTargetPath(item, xplanePath);
 
+  const existing: Pick<InstallTask, 'existingVersion' | 'existingNavdata'> = {};
+  if (conflictExists && (item.addonType === 'Aircraft' || item.addonType === 'Plugin')) {
+    existing.existingVersion = readInstalledVersion(targetPath);
+  }
+  if (conflictExists && item.addonType === 'Navdata') {
+    existing.existingNavdata = readInstalledNavdata(targetPath);
+  }
+
   return {
     ...item,
+    ...existing,
     targetPath,
     conflictExists,
     installMode: conflictExists ? 'overwrite' : 'fresh',
@@ -165,7 +175,7 @@ export function createInstallTask(item: DetectedItem, xplanePath: string): Insta
       configPatterns: ['*_prefs.txt', '*.cfg', '*.ini'],
       navdata: item.addonType === 'Navdata',
     },
-    sizeConfirmed: item.estimatedSize < 5 * 1024 * 1024 * 1024, // Auto-confirm < 5GB
+    sizeConfirmed: item.estimatedSize < INSTALLER_CONSTANTS.LARGE_ADDON_BYTES,
   };
 }
 

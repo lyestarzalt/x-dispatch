@@ -1,6 +1,22 @@
 import * as path from 'path';
-import type { AddonType, ArchiveEntry, ArchiveFormat, DetectedItem, MarkerFile } from '../types';
+import type {
+  AddonType,
+  ArchiveEntry,
+  ArchiveFormat,
+  DetectedItem,
+  DetectedLiveryInfo,
+} from '../types';
 import { ADDON_TYPE_PRIORITY, IGNORE_PATTERNS, PLATFORM_FOLDERS } from '../types';
+import { matchLivery } from './liveryPatterns';
+
+/** A file that tells the add-on's type, and the folder it belongs to. */
+interface Marker {
+  path: string;
+  type: AddonType;
+  /** The add-on's folder inside the archive, with a trailing slash; null at the root. */
+  root: string | null;
+  liveryInfo?: DetectedLiveryInfo;
+}
 
 /**
  * Check if a path should be ignored
@@ -28,9 +44,44 @@ function detectMarkerType(filePath: string): AddonType | null {
 }
 
 /**
+ * Some archives mirror the X-Plane folder: `Aircraft/Bird/bird.acf` next to
+ * `Resources/plugins/Tool/64/win.xpl`. The layout folders are not the add-on's
+ * name; they only say where it goes, which the type already tells us.
+ */
+const LAYOUT_PREFIXES = [
+  'resources/plugins/flywithlua/scripts/',
+  'resources/plugins/',
+  'custom scenery/',
+  'custom data/',
+  'aircraft/',
+];
+
+/** Split a marker path into an X-Plane layout prefix (or '') and the rest. */
+function splitLayoutPrefix(markerPath: string): { prefix: string; rest: string } {
+  const lower = markerPath.toLowerCase();
+  for (const candidate of LAYOUT_PREFIXES) {
+    if (lower.startsWith(candidate)) {
+      return {
+        prefix: markerPath.slice(0, candidate.length),
+        rest: markerPath.slice(candidate.length),
+      };
+    }
+  }
+  return { prefix: '', rest: markerPath };
+}
+
+/**
  * Get the addon root folder from a marker file path
  */
 function getAddonRoot(markerPath: string, markerType: AddonType): string | null {
+  const { prefix, rest } = splitLayoutPrefix(markerPath);
+  const root = getAddonRootWithin(rest, markerType);
+  if (root === null) return prefix || null;
+  return prefix + root;
+}
+
+/** The add-on's folder relative to `markerPath`'s own tree, with no layout prefix. */
+function getAddonRootWithin(markerPath: string, markerType: AddonType): string | null {
   const parts = markerPath.split('/').filter((p) => p.length > 0);
 
   switch (markerType) {
@@ -94,8 +145,9 @@ function getDisplayName(archivePath: string, internalRoot: string | null): strin
     // Remove trailing slash and get last component
     return path.basename(internalRoot.replace(/\/$/, ''));
   }
-  // Use archive filename without extension
-  return path.basename(archivePath, path.extname(archivePath));
+  // Use archive filename without extension (and without a volume suffix)
+  const base = path.basename(archivePath).replace(/\.(zip|7z|rar)(\.\d{3,})?$/i, '');
+  return base.replace(/\.part\d+$/i, '');
 }
 
 /**
@@ -133,9 +185,10 @@ export function detectAddons(
   entries: ArchiveEntry[]
 ): DetectedItem[] {
   // Collect markers and directory sets
-  const markers: MarkerFile[] = [];
+  const markers: Marker[] = [];
   const pluginDirs = new Set<string>();
   const aircraftDirs = new Set<string>();
+  const liveryRoots = new Set<string>();
 
   // Pass 1: Collect all markers
   for (const entry of entries) {
@@ -147,7 +200,7 @@ export function detectAddons(
       markers.push({
         path: entry.path,
         type: markerType,
-        encrypted: entry.encrypted,
+        root: getAddonRoot(entry.path, markerType),
       });
 
       // Track actual plugin directories for exclusion (not the addon root,
@@ -160,6 +213,26 @@ export function detectAddons(
         const root = getAddonRoot(entry.path, 'Aircraft');
         if (root) aircraftDirs.add(root);
       }
+      continue;
+    }
+
+    // A livery has no marker file of its own; its textures or icon name the aircraft
+    const livery = matchLivery(entry.path);
+    if (livery && !liveryRoots.has(livery.root)) {
+      liveryRoots.add(livery.root);
+      markers.push({
+        path: entry.path,
+        type: 'Livery',
+        root: livery.root || null,
+        liveryInfo: { aircraftTypeId: livery.aircraftTypeId, aircraftName: livery.aircraftName },
+      });
+    }
+  }
+
+  // An archive with an .acf is an aircraft; its icons and liveries are part of it
+  if (markers.some((m) => m.type === 'Aircraft')) {
+    for (let i = markers.length - 1; i >= 0; i--) {
+      if (markers[i]?.type === 'Livery') markers.splice(i, 1);
     }
   }
 
@@ -184,27 +257,25 @@ export function detectAddons(
       if (isInsideAny(marker.path, pluginDirs)) continue;
     }
 
-    // Skip .xpl inside aircraft directories
-    if (marker.type === 'Plugin') {
+    // Skip .xpl inside aircraft directories, and an aircraft's own liveries and icons
+    if (marker.type === 'Plugin' || marker.type === 'Livery') {
       if (isInsideAny(marker.path, aircraftDirs)) continue;
     }
 
     // Check SceneryLibrary vs Scenery conflict
     // If folder has both library.txt AND .dsf, it's Scenery (higher priority)
     if (marker.type === 'SceneryLibrary') {
-      const root = getAddonRoot(marker.path, 'SceneryLibrary');
-      if (root) {
-        const hasDsf = entries.some(
-          (e) =>
-            e.path.startsWith(root) &&
-            e.path.toLowerCase().includes('earth nav data') &&
-            e.path.toLowerCase().endsWith('.dsf')
-        );
-        if (hasDsf) continue; // Skip, will be detected as Scenery
-      }
+      const root = marker.root ?? '';
+      const hasDsf = entries.some(
+        (e) =>
+          e.path.startsWith(root) &&
+          e.path.toLowerCase().includes('earth nav data') &&
+          e.path.toLowerCase().endsWith('.dsf')
+      );
+      if (hasDsf) continue; // Skip, will be detected as Scenery
     }
 
-    const internalRoot = getAddonRoot(marker.path, marker.type);
+    const internalRoot = marker.root;
     const displayName = getDisplayName(archivePath, internalRoot);
 
     // Calculate size for this addon
@@ -220,13 +291,18 @@ export function detectAddons(
       sourcePath: archivePath,
       archiveFormat,
       archiveInternalRoot: internalRoot ?? undefined,
+      markerPath: marker.path,
       estimatedSize,
       warnings: [],
     };
+    if (marker.liveryInfo) item.liveryInfo = marker.liveryInfo;
 
     // Add to skip prefixes
     if (internalRoot) {
       skipPrefixes.push(internalRoot);
+    } else {
+      // The whole archive is this add-on; nothing deeper is another one
+      skipPrefixes.push('');
     }
 
     detected.push(item);

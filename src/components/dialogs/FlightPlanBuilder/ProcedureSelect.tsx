@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Select,
@@ -24,8 +24,16 @@ interface ProcedureSelectProps {
   labelFor?: (procedure: ResolvedProcedure) => string;
 }
 
-/** One entry per procedure name and transition, filtered to the chosen runway. */
-export function ProcedureSelect({
+/**
+ * One entry per procedure name and transition, filtered to the chosen runway.
+ *
+ * A large airport has about a hundred entries, and the planner re-renders often
+ * while it is open. Radix keeps every item mounted (the closed trigger shows the
+ * chosen item's text, and typing a letter searches them), so the component is
+ * memoised and every call site passes stable props; the items then render only
+ * when the procedures, the runway or the choice change.
+ */
+export const ProcedureSelect = memo(function ProcedureSelect({
   procedures,
   runway,
   value,
@@ -71,4 +79,4 @@ export function ProcedureSelect({
       </SelectContent>
     </Select>
   );
-}
+});

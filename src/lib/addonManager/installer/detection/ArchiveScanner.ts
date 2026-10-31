@@ -1,58 +1,49 @@
 import type { Data as SevenZipData } from 'node-7z';
-import * as path from 'path';
-import * as yauzl from 'yauzl';
+import type * as yauzl from 'yauzl';
 import type { Result } from '../../core/types';
 import { err, ok } from '../../core/types';
+import { openZipFile } from '../extraction/multiVolumeReader';
+import { rarErrorCode } from '../extraction/rarExtractor';
+import { get7zipPath, sevenZipErrorCode, sevenZipPassword } from '../extraction/sevenZipExtractor';
 import type { ArchiveEntry, ArchiveFormat, InstallerError } from '../types';
 import { INSTALLER_CONSTANTS } from '../types';
+import { listDirectoryEntries } from './folderScanner';
+
+export { detectArchiveFormat, isArchiveFileName as isArchiveFile } from './archiveFormat';
 
 /** Extended node-7z data with encryption info (not in official types) */
 interface SevenZipListData extends SevenZipData {
   encrypted?: string;
 }
 
-/**
- * Detect archive format from file extension
- */
-export function detectArchiveFormat(filePath: string): ArchiveFormat | null {
-  const ext = path.extname(filePath).toLowerCase();
-  switch (ext) {
-    case '.zip':
-      return 'zip';
-    case '.7z':
-      return '7z';
-    case '.rar':
-      return 'rar';
-    default:
-      return null;
-  }
+export interface ArchiveSourceRef {
+  format: ArchiveFormat;
+  /** The file to read: the archive, its first volume, or the folder. */
+  readPath: string;
+  /** Every volume of a split archive, in order. */
+  volumes?: string[];
 }
 
 /**
- * Check if a file is a supported archive
- */
-export function isArchiveFile(filePath: string): boolean {
-  return detectArchiveFormat(filePath) !== null;
-}
-
-/**
- * List contents of an archive without extracting
+ * List contents of an archive (or folder) without extracting
  */
 export async function listArchiveEntries(
-  archivePath: string
+  source: ArchiveSourceRef,
+  password?: string
 ): Promise<Result<ArchiveEntry[], InstallerError>> {
-  const format = detectArchiveFormat(archivePath);
-  if (!format) {
-    return err({ code: 'UNSUPPORTED_FORMAT', path: archivePath });
-  }
-
-  switch (format) {
+  switch (source.format) {
     case 'zip':
-      return listZipEntries(archivePath);
+      return listZipEntries(source.readPath, source.volumes);
     case '7z':
-      return listSevenZipEntries(archivePath);
+      return listSevenZipEntries(source.readPath, password);
     case 'rar':
-      return listRarEntries(archivePath);
+      return listRarEntries(source.readPath, password);
+    case 'folder':
+      try {
+        return ok(await listDirectoryEntries(source.readPath));
+      } catch (e) {
+        return err({ code: 'EXTRACTION_FAILED', path: source.readPath, reason: String(e) });
+      }
   }
 }
 
@@ -60,10 +51,11 @@ export async function listArchiveEntries(
  * List ZIP archive entries using yauzl
  */
 async function listZipEntries(
-  archivePath: string
+  archivePath: string,
+  volumes: string[] | undefined
 ): Promise<Result<ArchiveEntry[], InstallerError>> {
   return new Promise((resolve) => {
-    yauzl.open(archivePath, { lazyEntries: false }, (openErr, zipFile) => {
+    openZipFile(volumes ?? [archivePath], { lazyEntries: false }, (openErr, zipFile) => {
       if (openErr || !zipFile) {
         resolve(
           err({
@@ -106,7 +98,8 @@ async function listZipEntries(
  * List 7z archive entries using node-7z
  */
 async function listSevenZipEntries(
-  archivePath: string
+  archivePath: string,
+  password: string | undefined
 ): Promise<Result<ArchiveEntry[], InstallerError>> {
   // Dynamic import to avoid issues if 7zip-bin not available
   const node7z = await import('node-7z');
@@ -115,9 +108,13 @@ async function listSevenZipEntries(
 
   return new Promise((resolve) => {
     const entries: ArchiveEntry[] = [];
+    let settled = false;
 
     try {
-      const listStream = list(archivePath, { $bin: pathTo7zip });
+      const listStream = list(archivePath, {
+        $bin: pathTo7zip,
+        password: sevenZipPassword(password),
+      });
 
       listStream.on('data', (data: SevenZipListData) => {
         entries.push({
@@ -130,11 +127,15 @@ async function listSevenZipEntries(
       });
 
       listStream.on('end', () => {
+        if (settled) return;
+        settled = true;
         resolve(ok(entries));
       });
 
       listStream.on('error', (listErr: Error) => {
-        resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(listErr) }));
+        if (settled) return;
+        settled = true;
+        resolve(err(sevenZipErrorCode(listErr, archivePath, password)));
       });
     } catch (e) {
       resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) }));
@@ -146,15 +147,16 @@ async function listSevenZipEntries(
  * List RAR archive entries using node-unrar-js
  */
 async function listRarEntries(
-  archivePath: string
+  archivePath: string,
+  password: string | undefined
 ): Promise<Result<ArchiveEntry[], InstallerError>> {
   const { createExtractorFromFile } = await import('node-unrar-js');
 
   try {
-    const extractor = await createExtractorFromFile({ filepath: archivePath });
+    const extractor = await createExtractorFromFile({ filepath: archivePath, password });
     const fileList = extractor.getFileList();
 
-    if (fileList.arcHeader.flags.headerEncrypted) {
+    if (fileList.arcHeader.flags.headerEncrypted && !password) {
       return err({ code: 'PASSWORD_REQUIRED', path: archivePath });
     }
 
@@ -171,16 +173,8 @@ async function listRarEntries(
 
     return ok(entries);
   } catch (e) {
-    return err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) });
+    return err(rarErrorCode(e, archivePath, password));
   }
-}
-
-/**
- * Get path to bundled 7zip binary
- */
-async function get7zipPath(): Promise<string> {
-  const sevenZipBin = await import('7zip-bin');
-  return sevenZipBin.path7za;
 }
 
 /**

@@ -4,6 +4,7 @@ import type { ForgeConfig } from '@electron-forge/shared-types';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { cp, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { collectPackageDependencies } from './src/lib/build/packageDependencies';
 import { buildThirdPartyLicenses } from './src/lib/build/thirdPartyLicenses';
 import { macDocumentTypesInfo } from './src/lib/nativeShell/fileAssociations';
 
@@ -67,6 +68,7 @@ const config: ForgeConfig = {
   ],
   hooks: {
     async packageAfterCopy(_forgeConfig, buildPath) {
+      // Modules Vite leaves external, with everything they require at runtime
       const requiredPackages = [
         'electron-squirrel-startup',
         'ws',
@@ -74,17 +76,19 @@ const config: ForgeConfig = {
         'utf-8-validate',
         '7zip-bin',
         'node-7z',
+        'node-unrar-js',
         'velopack',
         '@neon-rs/load',
       ];
 
       const sourceNodeModulesPath = path.resolve(__dirname, 'node_modules');
       const destNodeModulesPath = path.resolve(buildPath, 'node_modules');
+      const packageDirs = collectPackageDependencies(sourceNodeModulesPath, requiredPackages);
 
       await Promise.all(
-        requiredPackages.map(async (packageName) => {
-          const sourcePath = path.join(sourceNodeModulesPath, packageName);
-          const destPath = path.join(destNodeModulesPath, packageName);
+        packageDirs.map(async (packageDir) => {
+          const sourcePath = path.join(sourceNodeModulesPath, packageDir);
+          const destPath = path.join(destNodeModulesPath, packageDir);
 
           await mkdir(path.dirname(destPath), { recursive: true });
           await cp(sourcePath, destPath, {

@@ -60,6 +60,11 @@ function getConfigPath(): string {
   return path.join(userDataPath, CONFIG_FILENAME);
 }
 
+/** Where the CIFP procedure index cache lives (see procedureIndexCache.ts). */
+export function getProcedureIndexCachePath(): string {
+  return path.join(app.getPath('userData'), 'cifp-procedures.json');
+}
+
 function getOldConfigPath(): string {
   const userDataPath = app.getPath('userData');
   return path.join(userDataPath, OLD_CONFIG_FILENAME);
