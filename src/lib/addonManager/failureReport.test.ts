@@ -81,7 +81,8 @@ describe('reportAddonFailure', () => {
       'Add-on installer.install failed: EXTRACTION_FAILED (Aircraft, zip)',
       'error'
     );
-    expect(log.error).toHaveBeenCalled();
+    expect(log.warn).toHaveBeenCalled();
+    expect(log.error).not.toHaveBeenCalled();
   });
 
   it('spots a protected X-Plane folder from the permission error and says so', () => {

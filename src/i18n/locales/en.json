@@ -1609,7 +1609,7 @@
     "installer": {
       "dropZone": {
         "title": "Drop files to install",
-        "subtitle": "ZIP, 7z, or RAR archives",
+        "subtitle": "ZIP, 7z or RAR archives, or a folder",
         "ariaLabel": "Drop or click to select add-on archive files",
         "addMore": "Add more files",
         "browse": "or browse files"
@@ -1636,9 +1636,60 @@
       "clear": "Clear all",
       "successSceneryHint": "Start X-Plane once so it adds the new scenery to scenery_packs.ini. X-Dispatch only changes that file when you explicitly ask it to.",
       "noAddonFound": "No X-Plane add-on found in this archive. It may hold an installer or another archive inside; extract it and drop the add-on itself.",
-      "notArchive": "This isn't a .zip, .7z or .rar archive.",
-      "folderNotSupported": "Folders can't be installed yet. Zip the folder, then drop the .zip here.",
-      "onlyFirstFile": "{{count}} files dropped. Only the first one is installed; drop the others one at a time."
+      "notArchive": "This isn't a .zip, .7z or .rar archive, or a folder.",
+      "password": {
+        "title": "Password required",
+        "description": "{{name}} is protected. Enter its password to continue.",
+        "label": "Password",
+        "unlock": "Unlock",
+        "cancel": "Cancel",
+        "wrong": "Wrong password. {{remaining}} attempts left.",
+        "tooMany": "Too many wrong passwords. Check the password on the add-on's download page and try again."
+      },
+      "errors": {
+        "NOT_ARCHIVE": "This isn't a .zip, .7z or .rar archive, or a folder.",
+        "UNSUPPORTED_FORMAT": "This archive format isn't supported. Spanned .z01 zips must be joined into one .zip first.",
+        "PASSWORD_REQUIRED": "This archive needs a password.",
+        "INVALID_PASSWORD": "Wrong password for this archive.",
+        "EXTRACTION_FAILED": "The archive couldn't be read. It may be incomplete or damaged; download it again.",
+        "MISSING_VOLUME": "Part {{missing}} of this split archive is missing. Put all parts in the same folder.",
+        "PATH_TRAVERSAL": "The archive contains unsafe file paths and was refused.",
+        "SIZE_EXCEEDED": "The archive is too large to install.",
+        "SUSPICIOUS_RATIO": "The archive looks like a zip bomb and was refused.",
+        "DISK_SPACE": "Not enough free disk space.",
+        "INSTALL_FAILED": "The installation failed.",
+        "NOT_FOUND": "The X-Plane folder isn't set.",
+        "EACCES": "X-Dispatch can't write to the X-Plane folder. Check the folder's permissions.",
+        "EPERM": "X-Dispatch can't write to the X-Plane folder. Check the folder's permissions.",
+        "ENOSPC": "The drive is full.",
+        "EBUSY": "A file is in use. Close X-Plane and try again.",
+        "ENAMETOOLONG": "A file path is too long for this system.",
+        "UNKNOWN": "Something went wrong during the installation."
+      },
+      "warnings": {
+        "LARGE_ADDON": "Large add-on: {{gb}} GB",
+        "FLYWITHLUA_MISSING": "FlyWithLua isn't installed, so the script won't run until it is.",
+        "AIRCRAFT_NOT_FOUND": "No installed aircraft matches {{aircraft}}. The livery goes under Aircraft/Unknown; move it into the aircraft's liveries folder.",
+        "UNKNOWN_NAVDATA_PROVIDER": "Unknown navdata provider \"{{name}}\". It is installed into Custom Data.",
+        "NESTED_ARCHIVE": "Found inside {{name}}",
+        "MISSING_LIBRARIES": "Needs libraries that aren't installed: {{libraries}}. Install them or parts of the scenery stay empty."
+      },
+      "version": "Version {{version}}",
+      "forAircraft": "For {{aircraft}}",
+      "review": {
+        "alreadyInstalled": "Already installed",
+        "installedVersion": "Installed {{version}}",
+        "newVersion": "New {{version}}",
+        "installedCycle": "Installed cycle {{cycle}}",
+        "newCycle": "New cycle {{cycle}}",
+        "overwrite": "Overwrite",
+        "overwriteHint": "Keeps files the new version doesn't replace.",
+        "clean": "Clean install",
+        "cleanHint": "Removes the old folder first. Liveries and settings are backed up and put back; replaced navdata is backed up.",
+        "backedUp": "Previous files backed up to {{path}}",
+        "noneSelected": "Select at least one add-on to install",
+        "selectToInstall": "Install"
+      }
     },
     "browser": {
       "searchPlaceholder": "Search...",
@@ -1761,7 +1812,12 @@
     },
     "sceneryEntry": {
       "openFolder": "Open folder",
-      "delete": "Delete from disk"
+      "delete": "Delete from disk",
+      "missingLibraries": "{{count}} missing libraries",
+      "missingLibrariesHint": "Objects from these libraries won't appear until they are installed: {{libraries}}",
+      "missingLibrariesTitle": "Libraries this pack needs",
+      "openDownload": "Open download page",
+      "searchDownload": "Search X-Plane.org downloads"
     },
     "addonTypes": {
       "Aircraft": "Aircraft",

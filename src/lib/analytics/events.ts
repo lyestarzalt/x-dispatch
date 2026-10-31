@@ -150,6 +150,7 @@ export const ANALYTICS_ADDON_DETECT_REASONS = [
   'invalid_password',
   'unsupported_format',
   'extraction_failed',
+  'missing_volume',
   'path_traversal',
   'size_exceeded',
   'suspicious_ratio',
@@ -160,6 +161,7 @@ export const ANALYTICS_ADDON_DETECT_REASONS = [
 /** Why an install failed: the installer's code or the file system error class. */
 export const ANALYTICS_ADDON_INSTALL_ERRORS = [
   'extraction_failed',
+  'missing_volume',
   'password_required',
   'invalid_password',
   'unsupported_format',

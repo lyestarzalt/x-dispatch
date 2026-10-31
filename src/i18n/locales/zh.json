@@ -1609,7 +1609,7 @@
     "installer": {
       "dropZone": {
         "title": "拖放文件进行安装",
-        "subtitle": "ZIP、7z 或 RAR 压缩包",
+        "subtitle": "ZIP、7z 或 RAR 压缩包，或一个文件夹",
         "ariaLabel": "拖放或点击选择附加组件压缩文件",
         "addMore": "添加更多文件",
         "browse": "或浏览文件"
@@ -1636,9 +1636,60 @@
       "clear": "全部清除",
       "successSceneryHint": "请启动一次 X-Plane，让它把新地景加入 scenery_packs.ini。X-Dispatch 只有在你明确要求时才会修改该文件。",
       "noAddonFound": "此压缩包中未找到 X-Plane 插件。里面可能是安装程序或另一个压缩包；请解压后直接拖入插件本身。",
-      "notArchive": "这不是 .zip、.7z 或 .rar 压缩包。",
-      "folderNotSupported": "暂不支持直接安装文件夹。请先将文件夹压缩为 .zip，再拖到这里。",
-      "onlyFirstFile": "拖入了 {{count}} 个文件。只会安装第一个；请逐个拖入其余文件。"
+      "notArchive": "这不是 .zip、.7z 或 .rar 压缩包，也不是文件夹。",
+      "password": {
+        "title": "需要密码",
+        "description": "{{name}} 受密码保护。请输入密码以继续。",
+        "label": "密码",
+        "unlock": "解锁",
+        "cancel": "取消",
+        "wrong": "密码错误。还剩 {{remaining}} 次机会。",
+        "tooMany": "密码错误次数过多。请在插件下载页面核对密码后重试。"
+      },
+      "errors": {
+        "NOT_ARCHIVE": "这不是 .zip、.7z 或 .rar 压缩包，也不是文件夹。",
+        "UNSUPPORTED_FORMAT": "不支持此压缩包格式。.z01 分卷 zip 需要先合并为一个 .zip。",
+        "PASSWORD_REQUIRED": "此压缩包需要密码。",
+        "INVALID_PASSWORD": "此压缩包的密码错误。",
+        "EXTRACTION_FAILED": "无法读取压缩包。它可能不完整或已损坏，请重新下载。",
+        "MISSING_VOLUME": "此分卷压缩包缺少第 {{missing}} 部分。请把所有分卷放在同一文件夹中。",
+        "PATH_TRAVERSAL": "压缩包包含不安全的文件路径，已拒绝。",
+        "SIZE_EXCEEDED": "压缩包太大，无法安装。",
+        "SUSPICIOUS_RATIO": "压缩包疑似 zip 炸弹，已拒绝。",
+        "DISK_SPACE": "磁盘可用空间不足。",
+        "INSTALL_FAILED": "安装失败。",
+        "NOT_FOUND": "尚未设置 X-Plane 文件夹。",
+        "EACCES": "X-Dispatch 无法写入 X-Plane 文件夹。请检查文件夹权限。",
+        "EPERM": "X-Dispatch 无法写入 X-Plane 文件夹。请检查文件夹权限。",
+        "ENOSPC": "磁盘已满。",
+        "EBUSY": "有文件正在使用中。请关闭 X-Plane 后重试。",
+        "ENAMETOOLONG": "文件路径对此系统来说太长。",
+        "UNKNOWN": "安装过程中出现问题。"
+      },
+      "warnings": {
+        "LARGE_ADDON": "大型插件：{{gb}} GB",
+        "FLYWITHLUA_MISSING": "未安装 FlyWithLua，脚本在安装它之前不会运行。",
+        "AIRCRAFT_NOT_FOUND": "没有已安装的机体与 {{aircraft}} 匹配。涂装将放到 Aircraft/Unknown，请把它移到对应机体的 liveries 文件夹。",
+        "UNKNOWN_NAVDATA_PROVIDER": "未知的导航数据提供方“{{name}}”。将安装到 Custom Data。",
+        "NESTED_ARCHIVE": "在 {{name}} 内找到",
+        "MISSING_LIBRARIES": "需要尚未安装的库：{{libraries}}。请安装它们，否则部分地景将是空的。"
+      },
+      "version": "版本 {{version}}",
+      "forAircraft": "适用于 {{aircraft}}",
+      "review": {
+        "alreadyInstalled": "已安装",
+        "installedVersion": "已安装 {{version}}",
+        "newVersion": "新版 {{version}}",
+        "installedCycle": "已安装周期 {{cycle}}",
+        "newCycle": "新周期 {{cycle}}",
+        "overwrite": "覆盖",
+        "overwriteHint": "保留新版本未替换的文件。",
+        "clean": "全新安装",
+        "cleanHint": "先删除旧文件夹。涂装和设置会先备份再放回；被替换的导航数据会备份。",
+        "backedUp": "之前的文件已备份到 {{path}}",
+        "noneSelected": "请至少选择一个插件进行安装",
+        "selectToInstall": "安装"
+      }
     },
     "browser": {
       "searchPlaceholder": "搜索...",
@@ -1761,7 +1812,12 @@
     },
     "sceneryEntry": {
       "openFolder": "打开文件夹",
-      "delete": "从磁盘删除"
+      "delete": "从磁盘删除",
+      "missingLibraries": "缺少 {{count}} 个库",
+      "missingLibrariesHint": "安装这些库之前，其中的物体不会显示：{{libraries}}",
+      "missingLibrariesTitle": "此地景需要的库",
+      "openDownload": "打开下载页面",
+      "searchDownload": "在 X-Plane.org 下载区搜索"
     },
     "addonTypes": {
       "Aircraft": "飞机",

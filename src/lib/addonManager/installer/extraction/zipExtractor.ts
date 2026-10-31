@@ -1,55 +1,19 @@
 /**
  * ZIP Extraction Module
- * Extracts ZIP files with CRC32 verification and progress tracking.
+ * Extracts ZIP files with size verification and progress tracking. Encrypted
+ * zips are handed to 7-Zip by the dispatcher; yauzl only reads plain entries.
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import * as yauzl from 'yauzl';
+import type * as yauzl from 'yauzl';
 import type { Result } from '../../core/types';
 import { err, ok } from '../../core/types';
-import type { InstallerError, VerificationStats } from '../types';
-import { IGNORE_PATTERNS } from '../types';
+import type { InstallerError } from '../types';
+import { openZipFile } from './multiVolumeReader';
+import type { ExtractOptions, ExtractResult } from './options';
+import { emptyStats, resolveEntryTarget } from './options';
 
-export interface ExtractOptions {
-  /** Archive path */
-  archivePath: string;
-  /** Target directory */
-  targetDir: string;
-  /** Internal root to strip from paths (e.g., "MyAddon/") */
-  internalRoot?: string;
-  /** Password for encrypted archives */
-  password?: string;
-  /** Progress callback: (bytesWritten, currentFile) */
-  onProgress?: (bytes: number, file: string) => void;
-}
-
-export interface ExtractResult {
-  stats: VerificationStats;
-  extractedFiles: string[];
-}
-
-/**
- * Check if a path component should be ignored
- */
-function shouldIgnore(filePath: string): boolean {
-  const parts = filePath.split('/');
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
-}
-
-/**
- * Sanitize path to prevent directory traversal attacks
- */
-function sanitizePath(entryPath: string): string | null {
-  // Reject absolute paths
-  if (path.isAbsolute(entryPath)) return null;
-
-  // Reject path traversal
-  const parts = entryPath.split('/');
-  if (parts.some((p) => p === '..')) return null;
-
-  // Normalize and return
-  return parts.filter((p) => p !== '').join('/');
-}
+export type { ExtractOptions, ExtractResult } from './options';
 
 /**
  * Extract a ZIP archive
@@ -57,10 +21,10 @@ function sanitizePath(entryPath: string): string | null {
 export async function extractZip(
   options: ExtractOptions
 ): Promise<Result<ExtractResult, InstallerError>> {
-  const { archivePath, targetDir, internalRoot, onProgress } = options;
+  const { archivePath, targetDir, onProgress } = options;
 
   return new Promise((resolve) => {
-    yauzl.open(archivePath, { lazyEntries: true }, (openErr, zipFile) => {
+    openZipFile(options.volumes ?? [archivePath], { lazyEntries: true }, (openErr, zipFile) => {
       if (openErr || !zipFile) {
         resolve(
           err({
@@ -72,21 +36,23 @@ export async function extractZip(
         return;
       }
 
-      const stats: VerificationStats = {
-        totalFiles: 0,
-        verifiedFiles: 0,
-        failedFiles: 0,
-        skippedFiles: 0,
-      };
+      const stats = emptyStats();
       const extractedFiles: string[] = [];
-      let hasError = false;
+      let settled = false;
+
+      const fail = (error: InstallerError) => {
+        if (settled) return;
+        settled = true;
+        zipFile.close();
+        resolve(err(error));
+      };
 
       const processEntry = () => {
         zipFile.readEntry();
       };
 
       zipFile.on('entry', (entry: yauzl.Entry) => {
-        if (hasError) return;
+        if (settled) return;
 
         const entryPath = entry.fileName;
 
@@ -96,36 +62,15 @@ export async function extractZip(
           return;
         }
 
-        // Skip ignored files
-        if (shouldIgnore(entryPath)) {
-          stats.skippedFiles++;
-          processEntry();
-          return;
-        }
-
-        // Apply internal root filter
-        let relativePath = entryPath;
-        if (internalRoot) {
-          if (!entryPath.startsWith(internalRoot)) {
-            stats.skippedFiles++;
-            processEntry();
-            return;
-          }
-          relativePath = entryPath.substring(internalRoot.length);
-        }
-
-        // Skip if empty path after stripping
-        if (!relativePath || relativePath === '') {
-          stats.skippedFiles++;
-          processEntry();
-          return;
-        }
-
-        // Sanitize path
-        const sanitized = sanitizePath(relativePath);
+        const sanitized = resolveEntryTarget(entryPath, options);
         if (!sanitized) {
           stats.skippedFiles++;
           processEntry();
+          return;
+        }
+
+        if (entry.isEncrypted()) {
+          fail({ code: 'PASSWORD_REQUIRED', path: archivePath });
           return;
         }
 
@@ -183,16 +128,14 @@ export async function extractZip(
       });
 
       zipFile.on('end', () => {
+        if (settled) return;
+        settled = true;
         zipFile.close();
-        if (!hasError) {
-          resolve(ok({ stats, extractedFiles }));
-        }
+        resolve(ok({ stats, extractedFiles }));
       });
 
       zipFile.on('error', (readErr) => {
-        hasError = true;
-        zipFile.close();
-        resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: readErr.message }));
+        fail({ code: 'EXTRACTION_FAILED', path: archivePath, reason: readErr.message });
       });
 
       // Start processing

@@ -1609,7 +1609,7 @@
     "installer": {
       "dropZone": {
         "title": "インストールするファイルをドロップ",
-        "subtitle": "ZIP、7z、RAR アーカイブ",
+        "subtitle": "ZIP、7z、RAR アーカイブ、またはフォルダー",
         "ariaLabel": "アドオンアーカイブをドロップ、またはクリックして選択",
         "addMore": "ファイルを追加",
         "browse": "または参照"
@@ -1636,9 +1636,60 @@
       "clear": "すべてクリア",
       "successSceneryHint": "新しいシーナリーを scenery_packs.ini に登録するため、X-Plane を一度起動してください。X-Dispatch は明示的に指示された場合にのみこのファイルを変更します。",
       "noAddonFound": "このアーカイブに X-Plane アドオンが見つかりません。インストーラーや別のアーカイブが入っている可能性があります。展開してアドオン本体をドロップしてください。",
-      "notArchive": "これは .zip、.7z、.rar のアーカイブではありません。",
-      "folderNotSupported": "フォルダーはまだインストールできません。フォルダーを .zip にしてからドロップしてください。",
-      "onlyFirstFile": "{{count}} 個のファイルがドロップされました。インストールされるのは最初の 1 つだけです。残りは 1 つずつドロップしてください。"
+      "notArchive": ".zip、.7z、.rar アーカイブでもフォルダーでもありません。",
+      "password": {
+        "title": "パスワードが必要です",
+        "description": "{{name}} は保護されています。続行するにはパスワードを入力してください。",
+        "label": "パスワード",
+        "unlock": "解除",
+        "cancel": "キャンセル",
+        "wrong": "パスワードが違います。残り {{remaining}} 回。",
+        "tooMany": "パスワードの誤りが多すぎます。アドオンのダウンロードページでパスワードを確認して、やり直してください。"
+      },
+      "errors": {
+        "NOT_ARCHIVE": ".zip、.7z、.rar アーカイブでもフォルダーでもありません。",
+        "UNSUPPORTED_FORMAT": "このアーカイブ形式には対応していません。分割された .z01 zip は先に 1 つの .zip に結合してください。",
+        "PASSWORD_REQUIRED": "このアーカイブにはパスワードが必要です。",
+        "INVALID_PASSWORD": "このアーカイブのパスワードが違います。",
+        "EXTRACTION_FAILED": "アーカイブを読み取れませんでした。不完全か破損している可能性があります。もう一度ダウンロードしてください。",
+        "MISSING_VOLUME": "この分割アーカイブのパート {{missing}} がありません。すべてのパートを同じフォルダーに置いてください。",
+        "PATH_TRAVERSAL": "アーカイブに安全でないファイルパスが含まれているため拒否しました。",
+        "SIZE_EXCEEDED": "アーカイブが大きすぎてインストールできません。",
+        "SUSPICIOUS_RATIO": "アーカイブが zip 爆弾のように見えるため拒否しました。",
+        "DISK_SPACE": "ディスクの空き容量が足りません。",
+        "INSTALL_FAILED": "インストールに失敗しました。",
+        "NOT_FOUND": "X-Plane フォルダーが設定されていません。",
+        "EACCES": "X-Dispatch は X-Plane フォルダーに書き込めません。フォルダーの権限を確認してください。",
+        "EPERM": "X-Dispatch は X-Plane フォルダーに書き込めません。フォルダーの権限を確認してください。",
+        "ENOSPC": "ドライブがいっぱいです。",
+        "EBUSY": "ファイルが使用中です。X-Plane を終了してやり直してください。",
+        "ENAMETOOLONG": "ファイルパスがこのシステムには長すぎます。",
+        "UNKNOWN": "インストール中に問題が発生しました。"
+      },
+      "warnings": {
+        "LARGE_ADDON": "大きなアドオン: {{gb}} GB",
+        "FLYWITHLUA_MISSING": "FlyWithLua がインストールされていないため、インストールするまでスクリプトは動作しません。",
+        "AIRCRAFT_NOT_FOUND": "{{aircraft}} に一致する機体がインストールされていません。リバリーは Aircraft/Unknown に入ります。機体の liveries フォルダーへ移動してください。",
+        "UNKNOWN_NAVDATA_PROVIDER": "不明な navdata プロバイダー「{{name}}」です。Custom Data にインストールされます。",
+        "NESTED_ARCHIVE": "{{name}} の中で見つかりました",
+        "MISSING_LIBRARIES": "未インストールのライブラリが必要です: {{libraries}}。インストールしないとシーナリーの一部が空のままになります。"
+      },
+      "version": "バージョン {{version}}",
+      "forAircraft": "{{aircraft}} 用",
+      "review": {
+        "alreadyInstalled": "インストール済み",
+        "installedVersion": "インストール済み {{version}}",
+        "newVersion": "新規 {{version}}",
+        "installedCycle": "インストール済みサイクル {{cycle}}",
+        "newCycle": "新しいサイクル {{cycle}}",
+        "overwrite": "上書き",
+        "overwriteHint": "新しいバージョンが置き換えないファイルは残します。",
+        "clean": "クリーンインストール",
+        "cleanHint": "先に古いフォルダーを削除します。リバリーと設定はバックアップして戻します。置き換えられる navdata はバックアップします。",
+        "backedUp": "以前のファイルを {{path}} にバックアップしました",
+        "noneSelected": "インストールするアドオンを 1 つ以上選んでください",
+        "selectToInstall": "インストール"
+      }
     },
     "browser": {
       "searchPlaceholder": "検索...",
@@ -1761,7 +1812,12 @@
     },
     "sceneryEntry": {
       "openFolder": "フォルダを開く",
-      "delete": "ディスクから削除"
+      "delete": "ディスクから削除",
+      "missingLibraries": "ライブラリ不足 {{count}} 件",
+      "missingLibrariesHint": "これらのライブラリをインストールするまでオブジェクトは表示されません: {{libraries}}",
+      "missingLibrariesTitle": "このパックに必要なライブラリ",
+      "openDownload": "ダウンロードページを開く",
+      "searchDownload": "X-Plane.org のダウンロードを検索"
     },
     "addonTypes": {
       "Aircraft": "機体",

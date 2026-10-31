@@ -525,7 +525,8 @@ declare global {
           { ok: true; value: string[] } | { ok: false; error: { code: string; reason: string } }
         >;
         analyze: (
-          filePaths: string[]
+          filePaths: string[],
+          passwords?: Record<string, string>
         ) => Promise<
           | { ok: true; value: import('@/lib/addonManager/installer/types').DetectedItem[] }
           | { ok: false; error: import('@/lib/addonManager/installer/types').InstallerError }

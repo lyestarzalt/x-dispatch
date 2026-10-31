@@ -34,6 +34,7 @@ const DETECT_REASONS: Record<string, AnalyticsAddonDetectReason> = {
   INVALID_PASSWORD: 'invalid_password',
   UNSUPPORTED_FORMAT: 'unsupported_format',
   EXTRACTION_FAILED: 'extraction_failed',
+  MISSING_VOLUME: 'missing_volume',
   PATH_TRAVERSAL: 'path_traversal',
   SIZE_EXCEEDED: 'size_exceeded',
   SUSPICIOUS_RATIO: 'suspicious_ratio',
@@ -47,6 +48,7 @@ export function addonDetectReason(code: string | undefined): AnalyticsAddonDetec
 
 const INSTALL_ERRORS: Record<string, AnalyticsAddonInstallError> = {
   EXTRACTION_FAILED: 'extraction_failed',
+  MISSING_VOLUME: 'missing_volume',
   PASSWORD_REQUIRED: 'password_required',
   INVALID_PASSWORD: 'invalid_password',
   UNSUPPORTED_FORMAT: 'unsupported_format',

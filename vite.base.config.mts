@@ -14,6 +14,8 @@ export const external = [
   'electron-squirrel-startup',
   '7zip-bin',
   'node-7z',
+  // Loaded by its CommonJS entry: the ESM one is the browser build, without file support
+  'node-unrar-js',
   'velopack',
 ];
 

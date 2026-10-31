@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildMinimalLnk } from '@/lib/utils/buildLnkFixture';
+import { buildDsf } from '../core/dsfFixture';
 
 vi.mock('@/lib/utils/logger', () => {
   const noop = () => {};
@@ -156,5 +157,41 @@ describe('SceneryManager — .lnk shortcut discovery', () => {
     const entry = result.value.find((e) => e.folderName === 'SymlinkTarget');
     expect(entry).toBeDefined();
     expect(entry!.classification.hasAptDat).toBe(true);
+  });
+});
+
+describe('SceneryManager \u2014 missing libraries', () => {
+  function pack(name: string, files: Record<string, string | Buffer>) {
+    for (const [rel, content] of Object.entries(files)) {
+      const file = path.join(customScenery, name, ...rel.split('/'));
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
+  }
+
+  it('flags a pack whose tiles need a library nobody exports, until it is installed', async () => {
+    pack('KSEA', {
+      'Earth nav data/+40-130/+47-123.dsf': buildDsf({
+        objects: ['objects/tower.obj', 'opensceneryx/objects/car.obj'],
+      }),
+      'objects/tower.obj': 'obj',
+    });
+    fs.writeFileSync(
+      path.join(customScenery, 'scenery_packs.ini'),
+      'I\n1000 Version\nSCENERY\n\nSCENERY_PACK Custom Scenery/KSEA/\n'
+    );
+
+    let result = await new SceneryManager(xpRoot).analyze();
+    if (!result.ok) throw new Error(result.error.code);
+    expect(result.value.find((e) => e.folderName === 'KSEA')?.missingLibraries).toEqual([
+      'opensceneryx',
+    ]);
+
+    pack('OpenSceneryX', {
+      'library.txt': 'A\n800\nLIBRARY\nEXPORT opensceneryx/objects/car.obj car.obj\n',
+    });
+    result = await new SceneryManager(xpRoot).analyze();
+    if (!result.ok) throw new Error(result.error.code);
+    expect(result.value.find((e) => e.folderName === 'KSEA')?.missingLibraries).toBeUndefined();
   });
 });

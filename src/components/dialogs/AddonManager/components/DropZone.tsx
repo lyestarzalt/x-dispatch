@@ -36,17 +36,17 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
 
       if (disabled) return;
 
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      // Use Electron's webUtils API to get file path (works with sandbox: true)
-      try {
-        const filePath = window.appAPI.getFilePathForDrop(file);
-        if (filePath) {
-          onFilesDropped([filePath]);
+      const paths: string[] = [];
+      for (const file of Array.from(e.dataTransfer.files)) {
+        // Use Electron's webUtils API to get file path (works with sandbox: true)
+        try {
+          const filePath = window.appAPI.getFilePathForDrop(file);
+          if (filePath) paths.push(filePath);
+        } catch {
+          // Non-local file dropped (e.g., from browser) — ignore
         }
-      } catch {
-        // Non-local file dropped (e.g., from browser) — ignore
       }
+      if (paths.length) onFilesDropped(paths);
     },
     [disabled, onFilesDropped]
   );
@@ -55,11 +55,7 @@ export function DropZone({ onFilesDropped, disabled }: DropZoneProps) {
     if (disabled) return;
 
     const result = await window.addonManagerAPI.installer.browse();
-    if (result.ok && result.value.length > 0) {
-      // Only take the first file
-      const firstFile = result.value[0];
-      if (firstFile) onFilesDropped([firstFile]);
-    }
+    if (result.ok && result.value.length > 0) onFilesDropped(result.value);
   }, [disabled, onFilesDropped]);
 
   const handleKeyDown = useCallback(

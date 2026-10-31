@@ -517,7 +517,9 @@ export class InstallerRequestError extends Error {
     readonly code: string,
     message: string,
     /** A folder was dropped where an archive is expected. */
-    readonly folder = false
+    readonly folder = false,
+    /** What the translated message names: the missing volume, the file. */
+    readonly details: Record<string, string | number> = {}
   ) {
     super(message);
     this.name = 'InstallerRequestError';
@@ -525,17 +527,43 @@ export class InstallerRequestError extends Error {
 }
 
 function installerError(error: InstallerError): InstallerRequestError {
+  const details: Record<string, string | number> = {};
+  if ('missing' in error) details.missing = error.missing;
+  if ('path' in error) {
+    details.path = error.path;
+    details.name = error.path.split(/[/\\]/).pop() ?? error.path;
+  }
   return new InstallerRequestError(
     error.code,
     getInstallerErrorMessage(error),
-    error.code === 'NOT_ARCHIVE' && error.folder
+    error.code === 'NOT_ARCHIVE' && error.folder,
+    details
   );
+}
+
+export interface InstallerAnalyzeRequest {
+  filePaths: string[];
+  /** Passwords typed for encrypted archives, keyed by path; kept in memory only. */
+  passwords?: Record<string, string>;
 }
 
 export function useInstallerAnalyze() {
   return useMutation({
-    mutationFn: async (filePaths: string[]) => {
-      const result = await window.addonManagerAPI.installer.analyze(filePaths);
+    mutationFn: async ({ filePaths, passwords }: InstallerAnalyzeRequest) => {
+      const result = await window.addonManagerAPI.installer.analyze(filePaths, passwords);
+      if (!result.ok) {
+        throw installerError(result.error);
+      }
+      return result.value;
+    },
+  });
+}
+
+/** Resolve where each detected add-on goes and what it would replace. */
+export function useInstallerPrepare() {
+  return useMutation({
+    mutationFn: async (items: import('@/lib/addonManager/installer/types').DetectedItem[]) => {
+      const result = await window.addonManagerAPI.installer.prepareInstall(items);
       if (!result.ok) {
         throw installerError(result.error);
       }
@@ -548,15 +576,8 @@ export function useInstallerInstall() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (items: import('@/lib/addonManager/installer/types').DetectedItem[]) => {
-      // First prepare install tasks
-      const prepareResult = await window.addonManagerAPI.installer.prepareInstall(items);
-      if (!prepareResult.ok) {
-        throw installerError(prepareResult.error);
-      }
-
-      // Then execute installation
-      const installResult = await window.addonManagerAPI.installer.install(prepareResult.value);
+    mutationFn: async (tasks: import('@/lib/addonManager/installer/types').InstallTask[]) => {
+      const installResult = await window.addonManagerAPI.installer.install(tasks);
       if (!installResult.ok) {
         throw installerError(installResult.error);
       }
