@@ -8,7 +8,7 @@ import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { initReactI18next } from 'react-i18next';
 import i18next from 'i18next';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ResolvedProcedure } from '@/types/navigation';
 import { countMountedComponents } from '../../../../tests/helpers/reactFibers';
 import { ProcedureSelect } from './ProcedureSelect';
@@ -85,5 +85,32 @@ describe('ProcedureSelect', () => {
     });
     const trigger = container.querySelector('button[role="combobox"]');
     expect(trigger?.textContent).toContain('planBuilder.noProcedure');
+  });
+
+  it('still jumps to a procedure when a letter is typed on the closed, focused select', () => {
+    const onChange = vi.fn();
+    act(() => {
+      root.render(
+        <ProcedureSelect
+          procedures={procedures}
+          runway="04L"
+          value={undefined}
+          placeholder="Choose"
+          onChange={onChange}
+        />
+      );
+    });
+    const trigger = container.querySelector<HTMLButtonElement>('button[role="combobox"]');
+    if (!trigger) throw new Error('no trigger');
+    act(() => trigger.focus());
+    // Typeahead needs the items in Radix's collection; a focused trigger mounts them
+    expect(countMountedComponents(container, 'SelectItem')).toBeGreaterThan(0);
+    act(() => {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'S', bubbles: true }));
+    });
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ name: 'SID000' }));
+
+    act(() => trigger.blur());
+    expect(countMountedComponents(container, 'SelectItem')).toBe(0);
   });
 });

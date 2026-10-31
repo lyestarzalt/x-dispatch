@@ -53,9 +53,11 @@ export function ProcedureSelect({
 
   // Radix mounts every item even while the list is closed, so that the trigger
   // can show the chosen item's text. A hundred procedures re-rendered on every
-  // planner render adds up, so the items only mount while the list is open and
-  // the trigger text is written here instead.
+  // planner render adds up, so the items only mount while the list is open or
+  // the trigger has focus (typing a letter on the closed select searches them),
+  // and the trigger text is written here instead.
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const selectedKey = value ? choiceKey(value) : NONE;
   const selected = value ? options.find((o) => choiceKey(o) === selectedKey) : undefined;
   const label = (o: { label: string; transition: string | null }) => (
@@ -73,13 +75,17 @@ export function ProcedureSelect({
       open={open}
       onOpenChange={setOpen}
     >
-      <SelectTrigger className={className ?? 'h-9 font-mono text-xs'}>
+      <SelectTrigger
+        className={className ?? 'h-9 font-mono text-xs'}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+      >
         <SelectValue placeholder={placeholder}>
           {value ? selected && label(selected) : t('planBuilder.noProcedure')}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {open && (
+        {(open || focused) && (
           <>
             <SelectItem value={NONE}>{t('planBuilder.noProcedure')}</SelectItem>
             {options.map((o) => (
