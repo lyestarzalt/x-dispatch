@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The app starts faster on every launch after the first.** Which airports have instrument procedures used to be worked out from scratch each time the app started, by opening every procedure file in your nav data. That answer is now kept between launches and only rebuilt when your nav data changes, so the airport list appears a few seconds sooner.
+
+### Fixed
+
+- **Opening Settings or another window with the flight planner docked no longer stutters.** The planner, its procedure pickers and the map were redrawn every time a window opened or closed, which showed as a short freeze at large airports. They now stay put.
+
 ## [2.9.0] - 2026-10-26
 
 ### Added
